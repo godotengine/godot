@@ -21,6 +21,7 @@ class ViewportBlitShaderRD;
 // Manages framebuffer caching, viewport blitting, and final output composition
 class OutputCompositor : public RefCounted, public IOutputCompositor {
     GDCLASS(OutputCompositor, RefCounted);
+    friend class GaussianSplatRenderer;
 
 public:
     OutputCompositor();
@@ -213,6 +214,7 @@ private:
     static bool _is_depth_attachment_format(RD::DataFormat p_format);
     static bool _is_srgb_format(RD::DataFormat p_format);
     static String _attachment_usage_label(bool p_is_depth);
+    void test_reset_last_viewport_copy_state();
 };
 
 #endif // GS_OUTPUT_COMPOSITOR_H

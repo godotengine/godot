@@ -3,12 +3,33 @@
 
 #include "gaussian_splat_renderer.h"
 
+#include <functional>
+
 // Manages quality settings (LOD, culling parameters, presets) and
 // executes the GPU culling pass. Merged from the former
 // RenderQualityOrchestrator + RenderCullingOrchestrator (ISSUE-016).
 class RenderQualityOrchestrator {
 public:
-	RenderQualityOrchestrator(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler);
+	struct RuntimePorts {
+		void (GaussianSplatRenderer::*refresh_gpu_sorter)(const char *p_context) = &GaussianSplatRenderer::refresh_gpu_sorter;
+		void (GaussianSplatRenderer::*track_resource_owner)(const RID &p_rid, RenderingDevice *p_device,
+				bool p_owned, const char *p_label) = &GaussianSplatRenderer::track_resource_owner;
+		GaussianSplatRenderer::StreamingState &(GaussianSplatRenderer::*get_streaming_state_mut)() =
+				static_cast<GaussianSplatRenderer::StreamingState &(GaussianSplatRenderer::*)()>(
+						&GaussianSplatRenderer::get_streaming_state);
+		const GaussianSplatRenderer::StreamingState &(GaussianSplatRenderer::*get_streaming_state_view)() const =
+				static_cast<const GaussianSplatRenderer::StreamingState &(GaussianSplatRenderer::*)() const>(
+						&GaussianSplatRenderer::get_streaming_state);
+	};
+
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		GPUCuller *gpu_culler = nullptr;
+		GaussianSplatRenderer::TestDataState *test_data_state = nullptr;
+		RuntimePorts runtime_ports;
+	};
+
+	explicit RenderQualityOrchestrator(const Dependencies &p_dependencies);
 
 	// Quality / LOD settings
 	void set_lod_enabled(bool p_enabled);
@@ -29,8 +50,10 @@ public:
 	void set_overflow_autotune_enabled(bool p_enabled);
 	void set_max_splats(int p_count);
 	void set_frustum_culling(bool p_enabled);
+	void set_async_upload_enabled(bool p_enabled);
 	void set_quality_preset(const String &p_preset);
 	String get_quality_preset() const;
+	bool get_async_upload_enabled() const;
 
 	// GPU culling pass (absorbed from RenderCullingOrchestrator)
 	GaussianRenderState::CullStageOutput cull_for_view(const Transform3D &p_world_to_camera_transform,
@@ -43,6 +66,8 @@ private:
 	GaussianSplatRenderer::PerformanceSettings performance_settings;
 	GaussianSplatRenderer *renderer = nullptr;
 	GPUCuller *gpu_culler = nullptr;
+	GaussianSplatRenderer::TestDataState *test_data_state = nullptr;
+	RuntimePorts runtime_ports;
 };
 
 #endif

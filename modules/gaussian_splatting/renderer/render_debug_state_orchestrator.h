@@ -43,8 +43,20 @@ struct RenderRouteUID {
 
 class RenderDebugStateOrchestrator {
 public:
-	RenderDebugStateOrchestrator(GaussianSplatRenderer *p_renderer, Ref<TileRenderer> *p_tile_renderer,
-			Ref<DebugOverlaySystem> *p_debug_overlay_system, GaussianSplatRenderer::JacobianDebugConfig *p_jacobian_debug);
+	struct RuntimePorts {
+		Error (GaussianSplatRenderer::*dump_pipeline_trace_to_file)(const String &p_path) const = &GaussianSplatRenderer::dump_pipeline_trace_to_file;
+		RenderingDevice *(GaussianSplatRenderer::*resolve_resource_owner)(const RID &p_rid, RenderingDevice *p_fallback) const = &GaussianSplatRenderer::get_resource_owner;
+	};
+
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		Ref<TileRenderer> *tile_renderer = nullptr;
+		Ref<DebugOverlaySystem> *debug_overlay_system = nullptr;
+		GaussianSplatRenderer::JacobianDebugConfig *jacobian_debug = nullptr;
+		RuntimePorts runtime_ports;
+	};
+
+	explicit RenderDebugStateOrchestrator(const Dependencies &p_dependencies);
 
 	GaussianSplatRenderer::DebugConfig &get_config() { return debug_config; }
 	const GaussianSplatRenderer::DebugConfig &get_config() const { return debug_config; }
@@ -60,6 +72,13 @@ public:
 	void update_raster_metrics(const RasterPerformance &p_perf, const RasterStats &p_stats);
 	void clear_overlay_dirty_flags();
 	void apply_debug_options_to_render_params(TileRenderer::RenderParams &r_params) const;
+	int get_overflow_tile_count() const;
+	int get_clamped_records() const;
+	int get_aggregated_count() const;
+	Dictionary get_overflow_stats() const;
+	Dictionary get_pipeline_trace_snapshot() const;
+	String get_pipeline_trace_json() const;
+	Error dump_pipeline_trace_to_file(const String &p_path) const;
 	void set_debug_show_tile_grid(bool p_enabled);
 	void set_debug_show_density_heatmap(bool p_enabled);
 	void set_debug_show_shadow_opacity(bool p_enabled);
@@ -94,6 +113,7 @@ private:
 	Ref<TileRenderer> *tile_renderer = nullptr;
 	Ref<DebugOverlaySystem> *debug_overlay_system = nullptr;
 	GaussianSplatRenderer::JacobianDebugConfig *jacobian_debug = nullptr;
+	RuntimePorts runtime_ports;
 	GaussianSplatRenderer::DebugConfig debug_config;
 	GaussianSplatRenderer::DebugState debug_state;
 	bool has_prev_visible = false;

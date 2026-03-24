@@ -63,7 +63,8 @@ public:
 	StageResult execute_sort_stage(const GaussianSplatRenderer::SortStageInput &p_input,
 			GaussianSplatRenderer::SortStageOutput &r_output);
 	void render_sorted_splats_with_context(const GaussianSplatRenderer::RenderFrameContext &p_context);
-	void reset_render_state_for_frame(const GaussianSplatRenderer::IFrameStateProvider *p_state_provider = nullptr);
+	void reset_render_state_for_frame(const GaussianSplatRenderer::IFrameStateView *p_state_view = nullptr,
+			GaussianSplatRenderer::IFrameMutationAccess *p_mutation_access = nullptr);
 	void set_debug_state_orchestrator(RenderDebugStateOrchestrator *p_debug_state_orchestrator);
 	void set_diagnostics_orchestrator(RenderDiagnosticsOrchestrator *p_diagnostics_orchestrator);
 

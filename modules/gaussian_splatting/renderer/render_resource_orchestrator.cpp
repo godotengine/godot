@@ -11,18 +11,34 @@
 #include "../shaders/gaussian_splat.glsl.gen.h"
 #include <cstring>
 
-RenderResourceOrchestrator::RenderResourceOrchestrator(GaussianSplatRenderer *p_renderer,
-		GaussianSplatRenderer::DeviceState *p_device_state,
-		PipelineFeatureSet *p_pipeline_features_effective,
-		String *p_pipeline_features_warning_cache) :
-		renderer(p_renderer),
-		device_state(p_device_state),
-		pipeline_features_effective(p_pipeline_features_effective),
-		pipeline_features_warning_cache(p_pipeline_features_warning_cache) {
+RenderResourceOrchestrator::RenderResourceOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		device_state(p_dependencies.device_state),
+		performance_settings(p_dependencies.performance_settings),
+		painterly_config(p_dependencies.painterly_config),
+		debug_config(p_dependencies.debug_config),
+		test_data_state(p_dependencies.test_data_state),
+		tile_renderer_state(p_dependencies.tile_renderer_state),
+		subsystem_state(p_dependencies.subsystem_state),
+		pipeline_features_effective(p_dependencies.pipeline_features_effective),
+		pipeline_features_warning_cache(p_dependencies.pipeline_features_warning_cache),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(device_state);
+	ERR_FAIL_NULL(performance_settings);
+	ERR_FAIL_NULL(painterly_config);
+	ERR_FAIL_NULL(debug_config);
+	ERR_FAIL_NULL(test_data_state);
+	ERR_FAIL_NULL(tile_renderer_state);
+	ERR_FAIL_NULL(subsystem_state);
 	ERR_FAIL_NULL(pipeline_features_effective);
 	ERR_FAIL_NULL(pipeline_features_warning_cache);
+	ERR_FAIL_COND_MSG(!runtime_ports.ensure_rendering_device, "RenderResourceOrchestrator requires ensure_rendering_device runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.get_submission_device, "RenderResourceOrchestrator requires get_submission_device runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.get_main_rendering_device, "RenderResourceOrchestrator requires get_main_rendering_device runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.refresh_gpu_sorter, "RenderResourceOrchestrator requires refresh_gpu_sorter runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.track_resource_owner, "RenderResourceOrchestrator requires track_resource_owner runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.free_owned_resource, "RenderResourceOrchestrator requires free_owned_resource runtime port.");
 	resource_state.gpu_resources_initialized = false;
 	resource_state.gpu_initialization_pending = false;
 	resource_state.buffer_manager.instantiate();
@@ -31,7 +47,7 @@ RenderResourceOrchestrator::RenderResourceOrchestrator(GaussianSplatRenderer *p_
 
 void RenderResourceOrchestrator::initialize_shaders() {
 	// Skip shader initialization if no RenderingDevice (headless mode)
-	if (!renderer->ensure_rendering_device("_initialize_shaders")) {
+	if (!(renderer->*runtime_ports.ensure_rendering_device)("_initialize_shaders")) {
 		// This is OK in headless mode or when using fallback rendering
 		return;
 	}
@@ -43,16 +59,16 @@ void RenderResourceOrchestrator::initialize_shaders() {
 
 	PackedStringArray painterly_defines;
 	Ref<PainterlyMaterial> painterly_material;
-	if (renderer->get_subsystem_state().painterly_renderer.is_valid()) {
-		painterly_material = renderer->get_subsystem_state().painterly_renderer->get_material();
+	if (subsystem_state->painterly_renderer.is_valid()) {
+		painterly_material = subsystem_state->painterly_renderer->get_material();
 	}
 	if (painterly_material.is_valid()) {
 		painterly_defines = painterly_material->get_shader_define_strings();
 	}
 
 	// Initialize state shaders for interactive system
-	if (renderer->get_subsystem_state().interactive_state_manager.is_valid()) {
-		renderer->get_subsystem_state().interactive_state_manager->initialize_renderer_state_shaders(renderer);
+	if (subsystem_state->interactive_state_manager.is_valid()) {
+		subsystem_state->interactive_state_manager->initialize_renderer_state_shaders(renderer);
 	}
 
 	// Always build a baseline variant along with an optional painterly override so we can
@@ -96,18 +112,25 @@ void RenderResourceOrchestrator::initialize_shaders() {
 		return;
 	}
 
-	if (renderer->get_subsystem_state().interactive_state_manager.is_valid()) {
-		renderer->get_subsystem_state().interactive_state_manager->ensure_renderer_state_shader_cache(renderer);
+	if (subsystem_state->interactive_state_manager.is_valid()) {
+		subsystem_state->interactive_state_manager->ensure_renderer_state_shader_cache(renderer);
 	}
 }
 
 void RenderResourceOrchestrator::create_gpu_resources_safe() {
 	// Safe GPU resource creation - called during first process frame
+	GaussianSplatRenderer::TestDataState &local_test_data_state = *test_data_state;
+	const GaussianSplatRenderer::PerformanceSettings &local_performance_settings = *performance_settings;
+	const GaussianSplatRenderer::PainterlyConfig &local_painterly_config = *painterly_config;
+	const GaussianSplatRenderer::DebugConfig &local_debug_config = *debug_config;
+	GaussianSplatRenderer::TileRendererState &local_tile_renderer_state = *tile_renderer_state;
+	GaussianSplatRenderer::SubsystemState &local_subsystem_state = *subsystem_state;
+
 	bool needs_buffer_resize = false;
 	if (resource_state.gpu_resources_initialized && !resource_state.gpu_initialization_pending) {
 		if (resource_state.buffer_manager.is_valid() && resource_state.buffer_manager_initialized) {
 			const uint32_t current_capacity = resource_state.buffer_manager->get_buffer_capacity();
-			const uint32_t desired_capacity = static_cast<uint32_t>(MAX(0, renderer->get_performance_settings().max_splats));
+			const uint32_t desired_capacity = static_cast<uint32_t>(MAX(0, local_performance_settings.max_splats));
 			needs_buffer_resize = desired_capacity > current_capacity;
 		}
 		if (!needs_buffer_resize) {
@@ -117,7 +140,7 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 
 	resource_state.gpu_initialization_pending = true;
 
-	if (!renderer->ensure_rendering_device("_create_gpu_resources_safe")) {
+	if (!(renderer->*runtime_ports.ensure_rendering_device)("_create_gpu_resources_safe")) {
 		if (!device_state->reported_missing_render_device) {
 			GS_LOG_RENDERER_WARN("[Hello Splat] RenderingDevice not available (headless mode or no GPU)");
 			device_state->reported_missing_render_device = true;
@@ -132,13 +155,13 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 		GS_LOG_WARN_DEFAULT("[Hello Splat] GaussianSplatManager unavailable; GPU submissions may fail");
 	}
 
-	renderer->get_submission_device();
+	(renderer->*runtime_ports.get_submission_device)();
 
 	bool buffer_manager_ready = true;
 
 	// Initialize GPU buffer manager
 	if (resource_state.buffer_manager.is_valid() && (!resource_state.buffer_manager_initialized || needs_buffer_resize)) {
-		int max_splats_for_buffer = renderer->get_performance_settings().max_splats;
+		int max_splats_for_buffer = local_performance_settings.max_splats;
 		Error err = resource_state.buffer_manager->initialize(
 				device_state->rd, max_splats_for_buffer);
 		if (err == OK) {
@@ -157,39 +180,39 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 		}
 	}
 
-	RenderingDevice *painterly_device = renderer->get_main_rendering_device();
-	if (renderer->get_subsystem_state().painterly_renderer.is_valid()) {
-		PainterlyPassGraph *pass_graph = renderer->get_subsystem_state().painterly_renderer->get_pass_graph();
+	RenderingDevice *painterly_device = (renderer->*runtime_ports.get_main_rendering_device)();
+	if (local_subsystem_state.painterly_renderer.is_valid()) {
+		PainterlyPassGraph *pass_graph = local_subsystem_state.painterly_renderer->get_pass_graph();
 		if (pass_graph) {
 			pass_graph->setup(painterly_device);
 		}
 
 		// Initialize painterly pipeline resources
-		if (renderer->get_painterly_config().enabled && pass_graph) {
+		if (local_painterly_config.enabled && pass_graph) {
 			Size2i default_size(1280, 720);
-			pass_graph->configure(default_size, renderer->get_painterly_config().internal_scale,
-					renderer->get_painterly_config().enable_strokes, renderer->get_painterly_config().low_end_mode);
+			pass_graph->configure(default_size, local_painterly_config.internal_scale,
+					local_painterly_config.enable_strokes, local_painterly_config.low_end_mode);
 		}
 
 		if (painterly_device) {
-			Error err = renderer->get_subsystem_state().painterly_renderer->initialize(painterly_device, Size2i(1280, 720));
+			Error err = local_subsystem_state.painterly_renderer->initialize(painterly_device, Size2i(1280, 720));
 			if (err == OK) {
 				// Configure with current settings
 				::PainterlyConfig config;
 				config.viewport_size = Size2i(1280, 720);
-				config.internal_scale = renderer->get_painterly_config().internal_scale;
-				config.enable_stylization = renderer->get_painterly_config().enable_strokes;
-				config.enable_strokes = renderer->get_painterly_config().enable_strokes;
-				config.low_end_mode = renderer->get_painterly_config().low_end_mode;
-				config.edge_threshold = renderer->get_painterly_config().edge_threshold;
-				config.edge_intensity = renderer->get_painterly_config().edge_intensity;
-				config.stroke_length = renderer->get_painterly_config().stroke_length;
-				config.stroke_opacity = renderer->get_painterly_config().stroke_opacity;
-				config.gamma = renderer->get_painterly_config().gamma;
-				renderer->get_subsystem_state().painterly_renderer->configure(config);
+				config.internal_scale = local_painterly_config.internal_scale;
+				config.enable_stylization = local_painterly_config.enable_strokes;
+				config.enable_strokes = local_painterly_config.enable_strokes;
+				config.low_end_mode = local_painterly_config.low_end_mode;
+				config.edge_threshold = local_painterly_config.edge_threshold;
+				config.edge_intensity = local_painterly_config.edge_intensity;
+				config.stroke_length = local_painterly_config.stroke_length;
+				config.stroke_opacity = local_painterly_config.stroke_opacity;
+				config.gamma = local_painterly_config.gamma;
+				local_subsystem_state.painterly_renderer->configure(config);
 
 				// Compile shaders
-				err = renderer->get_subsystem_state().painterly_renderer->compile_shaders();
+				err = local_subsystem_state.painterly_renderer->compile_shaders();
 				if (err != OK) {
 					GS_LOG_WARN_DEFAULT("[Painterly] Failed to compile PainterlyRenderer shaders");
 				}
@@ -202,20 +225,20 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 	// Initialize shaders and GPU sorter infrastructure
 	initialize_shaders();
 	if (buffer_manager_ready) {
-		renderer->refresh_gpu_sorter("create_gpu_resources_safe");
+		(renderer->*runtime_ports.refresh_gpu_sorter)("create_gpu_resources_safe");
 	}
 	if (!buffer_manager_ready && g_gpu_sorting_config.enable_performance_logging) {
 		static uint32_t sorter_skip_log_counter = 0;
 		if (++sorter_skip_log_counter % 60u == 1u) {
 			GS_LOG_GPU_SORT_WARN(vformat("[GPU Sort] Skipping sorter init; buffer manager not ready (max_splats=%d)",
-					renderer->get_performance_settings().max_splats));
+					local_performance_settings.max_splats));
 		}
 	}
 
 	// Create vertex buffer for test splats
-	const int splat_count = renderer->get_test_data_state().positions.size();
+	const int splat_count = local_test_data_state.positions.size();
 	if (splat_count > 0) {
-		auto &test_state = renderer->get_test_data_state();
+		auto &test_state = local_test_data_state;
 		const bool buffers_valid = test_state.vertex_buffer.is_valid() &&
 				test_state.position_buffer.is_valid() &&
 				test_state.scale_buffer.is_valid() &&
@@ -233,26 +256,26 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 		for (int i = 0; i < splat_count; i++) {
 			float *vertex = (float *)(w + i * sizeof(float) * 10);
 			// Position
-			vertex[0] = renderer->get_test_data_state().positions[i].x;
-			vertex[1] = renderer->get_test_data_state().positions[i].y;
-			vertex[2] = renderer->get_test_data_state().positions[i].z;
+			vertex[0] = local_test_data_state.positions[i].x;
+			vertex[1] = local_test_data_state.positions[i].y;
+			vertex[2] = local_test_data_state.positions[i].z;
 			// Color
-			vertex[3] = renderer->get_test_data_state().colors[i].r;
-			vertex[4] = renderer->get_test_data_state().colors[i].g;
-			vertex[5] = renderer->get_test_data_state().colors[i].b;
-			vertex[6] = renderer->get_test_data_state().colors[i].a;
+			vertex[3] = local_test_data_state.colors[i].r;
+			vertex[4] = local_test_data_state.colors[i].g;
+			vertex[5] = local_test_data_state.colors[i].b;
+			vertex[6] = local_test_data_state.colors[i].a;
 			// Scale
-			vertex[7] = renderer->get_test_data_state().scales[i].x;
-			vertex[8] = renderer->get_test_data_state().scales[i].y;
-			vertex[9] = renderer->get_test_data_state().scales[i].z;
+			vertex[7] = local_test_data_state.scales[i].x;
+			vertex[8] = local_test_data_state.scales[i].y;
+			vertex[9] = local_test_data_state.scales[i].z;
 		}
 
-		renderer->get_test_data_state().vertex_buffer = device_state->rd->vertex_buffer_create(vertex_data.size(), vertex_data);
-		if (renderer->get_test_data_state().vertex_buffer.is_valid()) {
-			device_state->rd->set_resource_name(renderer->get_test_data_state().vertex_buffer, "GS_RenderResourceOrchestrator_VertexBuffer");
+		local_test_data_state.vertex_buffer = device_state->rd->vertex_buffer_create(vertex_data.size(), vertex_data);
+		if (local_test_data_state.vertex_buffer.is_valid()) {
+			device_state->rd->set_resource_name(local_test_data_state.vertex_buffer, "GS_RenderResourceOrchestrator_VertexBuffer");
 		}
-		renderer->track_resource_owner(renderer->get_test_data_state().vertex_buffer, device_state->rd);
-		if (!renderer->get_test_data_state().vertex_buffer.is_valid()) {
+		(renderer->*runtime_ports.track_resource_owner)(local_test_data_state.vertex_buffer, device_state->rd, true, nullptr);
+		if (!local_test_data_state.vertex_buffer.is_valid()) {
 			GS_LOG_RENDERER_WARN("[Hello Splat] Failed to create vertex buffer");
 		}
 
@@ -272,9 +295,9 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 		float *sh_ptr_base = sh_data.ptrw();
 
 		for (int i = 0; i < splat_count; i++) {
-			const Vector3 &pos = renderer->get_test_data_state().positions[i];
-			const Color &col = renderer->get_test_data_state().colors[i];
-			const Vector3 &scl = renderer->get_test_data_state().scales[i];
+			const Vector3 &pos = local_test_data_state.positions[i];
+			const Color &col = local_test_data_state.colors[i];
+			const Vector3 &scl = local_test_data_state.scales[i];
 
 			float *pos_out = position_ptr + i * 4;
 			pos_out[0] = pos.x;
@@ -321,66 +344,65 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 		sh_bytes.resize(sh_data.size() * sizeof(float));
 		memcpy(sh_bytes.ptrw(), sh_data.ptr(), sh_bytes.size());
 
-		if (renderer->get_test_data_state().position_buffer.is_valid()) {
-			renderer->free_owned_resource(device_state->rd, renderer->get_test_data_state().position_buffer);
+		if (local_test_data_state.position_buffer.is_valid()) {
+			(renderer->*runtime_ports.free_owned_resource)(device_state->rd, local_test_data_state.position_buffer);
 		}
-		renderer->get_test_data_state().position_buffer = device_state->rd->storage_buffer_create(position_bytes.size(), position_bytes);
-		if (renderer->get_test_data_state().position_buffer.is_valid()) {
-			device_state->rd->set_resource_name(renderer->get_test_data_state().position_buffer, "GS_RenderResourceOrchestrator_PositionBuffer");
+		local_test_data_state.position_buffer = device_state->rd->storage_buffer_create(position_bytes.size(), position_bytes);
+		if (local_test_data_state.position_buffer.is_valid()) {
+			device_state->rd->set_resource_name(local_test_data_state.position_buffer, "GS_RenderResourceOrchestrator_PositionBuffer");
 		}
-		renderer->track_resource_owner(renderer->get_test_data_state().position_buffer, device_state->rd);
+		(renderer->*runtime_ports.track_resource_owner)(local_test_data_state.position_buffer, device_state->rd, true, nullptr);
 
-		if (renderer->get_test_data_state().scale_buffer.is_valid()) {
-			renderer->free_owned_resource(device_state->rd, renderer->get_test_data_state().scale_buffer);
+		if (local_test_data_state.scale_buffer.is_valid()) {
+			(renderer->*runtime_ports.free_owned_resource)(device_state->rd, local_test_data_state.scale_buffer);
 		}
-		renderer->get_test_data_state().scale_buffer = device_state->rd->storage_buffer_create(scale_bytes.size(), scale_bytes);
-		if (renderer->get_test_data_state().scale_buffer.is_valid()) {
-			device_state->rd->set_resource_name(renderer->get_test_data_state().scale_buffer, "GS_RenderResourceOrchestrator_ScaleBuffer");
+		local_test_data_state.scale_buffer = device_state->rd->storage_buffer_create(scale_bytes.size(), scale_bytes);
+		if (local_test_data_state.scale_buffer.is_valid()) {
+			device_state->rd->set_resource_name(local_test_data_state.scale_buffer, "GS_RenderResourceOrchestrator_ScaleBuffer");
 		}
-		renderer->track_resource_owner(renderer->get_test_data_state().scale_buffer, device_state->rd);
+		(renderer->*runtime_ports.track_resource_owner)(local_test_data_state.scale_buffer, device_state->rd, true, nullptr);
 
-		if (renderer->get_test_data_state().rotation_buffer.is_valid()) {
-			renderer->free_owned_resource(device_state->rd, renderer->get_test_data_state().rotation_buffer);
+		if (local_test_data_state.rotation_buffer.is_valid()) {
+			(renderer->*runtime_ports.free_owned_resource)(device_state->rd, local_test_data_state.rotation_buffer);
 		}
-		renderer->get_test_data_state().rotation_buffer = device_state->rd->storage_buffer_create(rotation_bytes.size(), rotation_bytes);
-		if (renderer->get_test_data_state().rotation_buffer.is_valid()) {
-			device_state->rd->set_resource_name(renderer->get_test_data_state().rotation_buffer, "GS_RenderResourceOrchestrator_RotationBuffer");
+		local_test_data_state.rotation_buffer = device_state->rd->storage_buffer_create(rotation_bytes.size(), rotation_bytes);
+		if (local_test_data_state.rotation_buffer.is_valid()) {
+			device_state->rd->set_resource_name(local_test_data_state.rotation_buffer, "GS_RenderResourceOrchestrator_RotationBuffer");
 		}
-		renderer->track_resource_owner(renderer->get_test_data_state().rotation_buffer, device_state->rd);
+		(renderer->*runtime_ports.track_resource_owner)(local_test_data_state.rotation_buffer, device_state->rd, true, nullptr);
 
-		if (renderer->get_test_data_state().sh_buffer.is_valid()) {
-			renderer->free_owned_resource(device_state->rd, renderer->get_test_data_state().sh_buffer);
+		if (local_test_data_state.sh_buffer.is_valid()) {
+			(renderer->*runtime_ports.free_owned_resource)(device_state->rd, local_test_data_state.sh_buffer);
 		}
-		renderer->get_test_data_state().sh_buffer = device_state->rd->storage_buffer_create(sh_bytes.size(), sh_bytes);
-		if (renderer->get_test_data_state().sh_buffer.is_valid()) {
-			device_state->rd->set_resource_name(renderer->get_test_data_state().sh_buffer, "GS_RenderResourceOrchestrator_SHBuffer");
+		local_test_data_state.sh_buffer = device_state->rd->storage_buffer_create(sh_bytes.size(), sh_bytes);
+		if (local_test_data_state.sh_buffer.is_valid()) {
+			device_state->rd->set_resource_name(local_test_data_state.sh_buffer, "GS_RenderResourceOrchestrator_SHBuffer");
 		}
-		renderer->track_resource_owner(renderer->get_test_data_state().sh_buffer, device_state->rd);
+		(renderer->*runtime_ports.track_resource_owner)(local_test_data_state.sh_buffer, device_state->rd, true, nullptr);
 
 		test_state.uploaded_generation = test_state.content_generation;
 		test_state.uploaded_count = static_cast<uint32_t>(splat_count);
 		}
 
-	if (!renderer->get_test_data_state().position_buffer.is_valid() || !renderer->get_test_data_state().scale_buffer.is_valid() ||
-			!renderer->get_test_data_state().rotation_buffer.is_valid() || !renderer->get_test_data_state().sh_buffer.is_valid()) {
+	if (!local_test_data_state.position_buffer.is_valid() || !local_test_data_state.scale_buffer.is_valid() ||
+			!local_test_data_state.rotation_buffer.is_valid() || !local_test_data_state.sh_buffer.is_valid()) {
 		GS_LOG_WARN_DEFAULT("[Hello Splat] Failed to allocate splat attribute buffers for shader path");
 	}
 	}
 
 	// Prepare painterly material GPU resources if available
-	if (renderer->get_subsystem_state().painterly_renderer.is_valid()) {
-		renderer->get_subsystem_state().painterly_renderer->update_painterly_gpu_resources(renderer);
+	if (local_subsystem_state.painterly_renderer.is_valid()) {
+		local_subsystem_state.painterly_renderer->update_painterly_gpu_resources(renderer);
 	}
 
 	// Initialize TileRenderer and TileRasterizer (proper initialization, not lazy)
 	// This ensures the tile rendering pipeline is ready before first render call
-	bool tile_renderer_exists = renderer->get_tile_renderer_state().renderer.is_valid();
-	bool tile_init_failed = renderer->get_tile_renderer_state().init_failed;
-	const auto &debug_config = renderer->get_debug_config();
-	const bool log_enabled = debug_config.enable_data_logging ||
-			debug_config.enable_frame_logging ||
-			debug_config.enable_tile_pipeline_logs ||
-			debug_config.enable_all_debug;
+	bool tile_renderer_exists = local_tile_renderer_state.renderer.is_valid();
+	bool tile_init_failed = local_tile_renderer_state.init_failed;
+	const bool log_enabled = local_debug_config.enable_data_logging ||
+			local_debug_config.enable_frame_logging ||
+			local_debug_config.enable_tile_pipeline_logs ||
+			local_debug_config.enable_all_debug;
 #ifdef DEBUG_ENABLED
 	if (log_enabled) {
 		GS_LOG_RENDERER_DEBUG(vformat("[GPU-RESOURCES] TileRenderer check: exists=%s init_failed=%s",
@@ -393,8 +415,8 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 			GS_LOG_RENDERER_DEBUG("[GPU-RESOURCES] Creating TileRenderer...");
 		}
 #endif
-		renderer->get_tile_renderer_state().renderer.instantiate();
-		renderer->get_tile_renderer_state().renderer->set_performance_monitor(&renderer->get_tile_renderer_state().gpu_performance_monitor);
+		local_tile_renderer_state.renderer.instantiate();
+		local_tile_renderer_state.renderer->set_performance_monitor(&local_tile_renderer_state.gpu_performance_monitor);
 		Size2i default_viewport(1280, 720);
 #ifdef DEBUG_ENABLED
 		if (log_enabled) {
@@ -402,7 +424,7 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 					device_state->rd ? "valid" : "null"));
 		}
 #endif
-		Error init_err = renderer->get_tile_renderer_state().renderer->initialize(
+		Error init_err = local_tile_renderer_state.renderer->initialize(
 				device_state->rd,
 				default_viewport,
 				TileRenderer::DEFAULT_TILE_SIZE,
@@ -414,22 +436,22 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 		}
 #endif
 		if (init_err == OK) {
-			bool is_init = renderer->get_tile_renderer_state().renderer->is_initialized();
+			bool is_init = local_tile_renderer_state.renderer->is_initialized();
 #ifdef DEBUG_ENABLED
 			if (log_enabled) {
 				GS_LOG_RENDERER_DEBUG(vformat("[GPU-RESOURCES] TileRenderer is_initialized after init: %s", is_init ? "yes" : "no"));
 			}
 #endif
-			if (!renderer->get_subsystem_state().rasterizer.is_valid()) {
-				renderer->get_subsystem_state().rasterizer.instantiate();
+			if (!local_subsystem_state.rasterizer.is_valid()) {
+				local_subsystem_state.rasterizer.instantiate();
 			}
-			renderer->get_subsystem_state().rasterizer->set_device_manager(renderer->get_subsystem_state().device_manager);
-			renderer->get_subsystem_state().rasterizer->set_tile_renderer(renderer->get_tile_renderer_state().renderer);
+			local_subsystem_state.rasterizer->set_device_manager(local_subsystem_state.device_manager);
+			local_subsystem_state.rasterizer->set_tile_renderer(local_tile_renderer_state.renderer);
 			GS_LOG_INFO_DEFAULT("[TileRenderer] Initialized during GPU resource setup");
 		} else {
 			GS_LOG_WARN_DEFAULT(vformat("[TileRenderer] Failed to initialize: %d", init_err));
-			renderer->get_tile_renderer_state().renderer.unref();
-			renderer->get_tile_renderer_state().init_failed = true;
+			local_tile_renderer_state.renderer.unref();
+			local_tile_renderer_state.init_failed = true;
 		}
 	} else {
 #ifdef DEBUG_ENABLED
@@ -440,9 +462,9 @@ void RenderResourceOrchestrator::create_gpu_resources_safe() {
 	}
 
 	// Initialize InteractiveStateManager now that we have a RenderingDevice
-	if (renderer->get_subsystem_state().interactive_state_manager.is_valid() &&
-			!renderer->get_subsystem_state().interactive_state_manager->is_initialized()) {
-		Error state_err = renderer->get_subsystem_state().interactive_state_manager->initialize(device_state->rd);
+	if (local_subsystem_state.interactive_state_manager.is_valid() &&
+			!local_subsystem_state.interactive_state_manager->is_initialized()) {
+		Error state_err = local_subsystem_state.interactive_state_manager->initialize(device_state->rd);
 		if (state_err != OK) {
 			GS_LOG_WARN_DEFAULT(vformat("[InteractiveStateManager] Failed to initialize: %d", state_err));
 		}
@@ -484,47 +506,52 @@ void RenderResourceOrchestrator::update_pipeline_features(RenderingDevice *p_dev
 }
 
 void RenderResourceOrchestrator::update_gpu_pass_metrics_from_tile_renderer() {
-	if (!renderer->get_tile_renderer_state().renderer.is_valid()) {
-		renderer->get_performance_state().metrics.gpu_tile_binning_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_tile_raster_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_tile_prefix_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_tile_resolve_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_frame_time_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_utilization = 0.0f;
-		renderer->get_performance_state().metrics.gpu_timing_frame_serial = 0;
-		renderer->get_performance_state().metrics.gpu_timing_frames_behind = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_inflight_frames = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_completed_frames = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_stall_count = 0;
-		renderer->get_performance_state().metrics.gpu_timeline_stall_ms = 0.0f;
-		renderer->get_performance_state().metrics.gpu_timeline_last_value = 0;
-		renderer->get_performance_state().metrics.tile_sort_sync_fallback_count = 0;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	GaussianSplatRenderer::PerformanceMetrics &metrics = state_mut.get_performance_state_mut().metrics;
+
+	if (!tile_renderer_state->renderer.is_valid()) {
+		metrics.gpu_tile_binning_time_ms = 0.0f;
+		metrics.gpu_tile_raster_time_ms = 0.0f;
+		metrics.gpu_tile_prefix_time_ms = 0.0f;
+		metrics.gpu_tile_resolve_time_ms = 0.0f;
+		metrics.gpu_frame_time_ms = 0.0f;
+		metrics.gpu_utilization = 0.0f;
+		metrics.gpu_timing_frame_serial = 0;
+		metrics.gpu_timing_frames_behind = 0;
+		metrics.gpu_timeline_inflight_frames = 0;
+		metrics.gpu_timeline_completed_frames = 0;
+		metrics.gpu_timeline_stall_count = 0;
+		metrics.gpu_timeline_stall_ms = 0.0f;
+		metrics.gpu_timeline_last_value = 0;
+		metrics.tile_sort_sync_fallback_count = 0;
 		return;
 	}
 
 	// Use subsystem_state.rasterizer interface for GPU timing (Phase 8 migration)
-	renderer->get_subsystem_state().rasterizer->resolve_gpu_timestamps_async();
-	RasterPerformance perf = renderer->get_subsystem_state().rasterizer->get_performance();
+	state_view.get_subsystem_state_view().rasterizer->resolve_gpu_timestamps_async();
+	RasterPerformance perf = state_view.get_subsystem_state_view().rasterizer->get_performance();
 
-	renderer->get_performance_state().metrics.gpu_tile_binning_time_ms = perf.binning_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_tile_raster_time_ms = perf.raster_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_tile_prefix_time_ms = perf.prefix_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_tile_resolve_time_ms = perf.resolve_gpu_ms;
-	renderer->get_performance_state().metrics.gpu_frame_time_ms = perf.frame_gpu_ms;
-	renderer->get_performance_state().metrics.tile_sort_sync_fallback_count = perf.sort_sync_fallback_count;
-	renderer->get_performance_state().metrics.gpu_timing_frame_serial = perf.timing_frame_serial;
-	renderer->get_performance_state().metrics.gpu_timing_frames_behind = perf.timing_frames_behind;
+	metrics.gpu_tile_binning_time_ms = perf.binning_gpu_ms;
+	metrics.gpu_tile_raster_time_ms = perf.raster_gpu_ms;
+	metrics.gpu_tile_prefix_time_ms = perf.prefix_gpu_ms;
+	metrics.gpu_tile_resolve_time_ms = perf.resolve_gpu_ms;
+	metrics.gpu_frame_time_ms = perf.frame_gpu_ms;
+	metrics.tile_sort_sync_fallback_count = perf.sort_sync_fallback_count;
+	metrics.gpu_timing_frame_serial = perf.timing_frame_serial;
+	metrics.gpu_timing_frames_behind = perf.timing_frames_behind;
 
 	GPUPerformanceMonitor::SummaryMetrics timeline_summary =
-			renderer->get_tile_renderer_state().gpu_performance_monitor.get_summary_metrics();
-	renderer->get_performance_state().metrics.gpu_timeline_inflight_frames = timeline_summary.inflight_frames;
-	renderer->get_performance_state().metrics.gpu_timeline_completed_frames = timeline_summary.completed_frames;
-	renderer->get_performance_state().metrics.gpu_timeline_stall_count = timeline_summary.stall_count;
-	renderer->get_performance_state().metrics.gpu_timeline_stall_ms = float(timeline_summary.total_stall_ns) / 1000000.0f;
-	renderer->get_performance_state().metrics.gpu_timeline_last_value = timeline_summary.last_frame_index;
+		tile_renderer_state->gpu_performance_monitor.get_summary_metrics();
+	metrics.gpu_timeline_inflight_frames = timeline_summary.inflight_frames;
+	metrics.gpu_timeline_completed_frames = timeline_summary.completed_frames;
+	metrics.gpu_timeline_stall_count = timeline_summary.stall_count;
+	metrics.gpu_timeline_stall_ms = float(timeline_summary.total_stall_ns) / 1000000.0f;
+	metrics.gpu_timeline_last_value = timeline_summary.last_frame_index;
 
-	float utilization = renderer->get_tile_renderer_state().gpu_performance_monitor.get_gpu_utilization_async();
-	renderer->get_performance_state().metrics.gpu_utilization = utilization * 100.0f;
+	float utilization = tile_renderer_state->gpu_performance_monitor.get_gpu_utilization_async();
+	metrics.gpu_utilization = utilization * 100.0f;
 }
 
 RID RenderResourceOrchestrator::load_graphics_shader(const Vector<String> &p_vertex_paths,
@@ -607,7 +634,7 @@ RID RenderResourceOrchestrator::load_graphics_shader(const Vector<String> &p_ver
 
 	RID shader = device->shader_create_from_spirv(stages);
 	if (shader.is_valid()) {
-		renderer->track_resource_owner(shader, device);
+		(renderer->*runtime_ports.track_resource_owner)(shader, device, true, nullptr);
 	}
 	return shader;
 }

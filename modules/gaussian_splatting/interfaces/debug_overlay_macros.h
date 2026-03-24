@@ -57,41 +57,41 @@
 // ============================================================================
 
 /**
- * Renderer-syncing setter that updates both DebugOverlaySystem and
- * GaussianSplatRenderer::DebugState, then invalidates the overlay.
+ * Command-sink setter that updates both DebugOverlaySystem and debug state,
+ * then invalidates the overlay.
  */
 #define GS_DEBUG_OVERLAY_RENDERER_SETTER_OVERLAY_IMPL(field_name)                          \
     void DebugOverlaySystem::set_renderer_##field_name(                                    \
-            GaussianSplatRenderer *p_renderer, bool p_enabled) {                           \
-        if (!p_renderer) {                                                                 \
+            const DebugOverlayCommandSink &p_sink, bool p_enabled) {                       \
+        if (!p_sink.debug_state) {                                                         \
             return;                                                                        \
         }                                                                                  \
-        auto &debug_state = p_renderer->get_debug_state();                                 \
+        auto &debug_state = *p_sink.debug_state;                                           \
         if (debug_state.field_name == p_enabled) {                                         \
             return;                                                                        \
         }                                                                                  \
         debug_state.field_name = p_enabled;                                                \
         set_##field_name(p_enabled);                                                       \
-        invalidate_renderer_overlay(p_renderer, true);                                     \
+        invalidate_renderer_overlay(p_sink, true);                                         \
     }
 
 /**
- * Renderer-syncing setter that updates both DebugOverlaySystem and
- * GaussianSplatRenderer::DebugState, then invalidates the HUD.
+ * Command-sink setter that updates both DebugOverlaySystem and debug state,
+ * then invalidates the HUD.
  */
 #define GS_DEBUG_OVERLAY_RENDERER_SETTER_HUD_IMPL(field_name)                              \
     void DebugOverlaySystem::set_renderer_##field_name(                                    \
-            GaussianSplatRenderer *p_renderer, bool p_enabled) {                           \
-        if (!p_renderer) {                                                                 \
+            const DebugOverlayCommandSink &p_sink, bool p_enabled) {                       \
+        if (!p_sink.debug_state) {                                                         \
             return;                                                                        \
         }                                                                                  \
-        auto &debug_state = p_renderer->get_debug_state();                                 \
+        auto &debug_state = *p_sink.debug_state;                                           \
         if (debug_state.field_name == p_enabled) {                                         \
             return;                                                                        \
         }                                                                                  \
         debug_state.field_name = p_enabled;                                                \
         set_##field_name(p_enabled);                                                       \
-        invalidate_renderer_hud(p_renderer, true);                                         \
+        invalidate_renderer_hud(p_sink, true);                                             \
     }
 
 // ============================================================================
@@ -101,13 +101,13 @@
 /**
  * Orchestrator setter that delegates to DebugOverlaySystem if available,
  * otherwise updates the orchestrator-owned debug state directly.
- * Uses set_renderer_show_X delegation method.
+ * Uses the explicit command sink delegation method.
  */
 #define GS_DEBUG_ORCHESTRATOR_SETTER_IMPL(field_name)                                       \
     void RenderDebugStateOrchestrator::set_debug_##field_name(bool p_enabled) {             \
         if (renderer->subsystem_state.debug_overlay_system.is_valid()) {                    \
-            renderer->subsystem_state.debug_overlay_system->set_renderer_##field_name(      \
-                    renderer, p_enabled);                                                   \
+            renderer->subsystem_state.debug_overlay_system->build_command_sink(renderer)     \
+                    .set_##field_name(p_enabled);                                            \
             return;                                                                         \
         }                                                                                   \
         if (debug_state.field_name == p_enabled) {                                \

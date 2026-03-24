@@ -18,16 +18,9 @@
 #include "gaussian_inspector_plugins.h"
 
 class Label;
-class Button;
-class VBoxContainer;
-class HBoxContainer;
-class OptionButton;
-class CheckBox;
-class SpinBox;
-class ColorPickerButton;
-class TextureRect;
 class GaussianSplatNode3D;
 class GaussianThumbnailGenerator;
+class GaussianSplatAssetPreviewGenerator;
 class SceneTreeTimer;
 
 // Custom editor plugin for Gaussian Splatting
@@ -35,18 +28,6 @@ class GaussianEditorPlugin : public EditorPlugin {
     GDCLASS(GaussianEditorPlugin, EditorPlugin);
 
 private:
-    // Editor UI components
-    VBoxContainer *panel_container = nullptr;
-    Button *panel_toggle_button = nullptr;
-    Button *import_button = nullptr;
-    Button *optimize_button = nullptr;
-    Label *stats_label = nullptr;
-    OptionButton *quality_selector = nullptr;
-    CheckBox *compression_positions = nullptr;
-    CheckBox *compression_colors = nullptr;
-    CheckBox *compression_scales = nullptr;
-    CheckBox *compression_rotations = nullptr;
-    TextureRect *thumbnail_preview = nullptr;
     EditorFileDialog *import_dialog = nullptr;
     GaussianImportDialog *import_settings_dialog = nullptr;
 
@@ -56,8 +37,6 @@ private:
     Ref<GaussianSplatAsset> active_asset;
     String current_source_path;
     Dictionary last_import_options;
-    bool pending_reimport = false;
-    bool updating_ui = false;
 
     // Gizmo plugin for 3D visualization
     Ref<GaussianSplatGizmoPlugin> gizmo_plugin;
@@ -68,6 +47,7 @@ private:
     Ref<GaussianAssetInspectorPlugin> asset_inspector_plugin;
     Ref<GaussianEditorIntegration> editor_integration;
     Ref<GaussianThumbnailGenerator> runtime_thumbnail_generator;
+    Ref<GaussianSplatAssetPreviewGenerator> resource_preview_generator;
 
     struct HotReloadWatch {
         uint64_t last_modified = 0;
@@ -87,21 +67,13 @@ private:
     Vector<InspectorStatsBinding> inspector_stats_bindings;
     int inspector_stats_frame_accumulator = 0;
 
-    void _import_gaussian_data();
     void _on_import_file_selected(const String &p_path);
-    void _optimize_gaussian_data();
     void _update_stats();
     void _update_inspector_stats();
     void _on_stats_label_tree_exiting(Node *p_label);
     Error _import_from_path(const String &p_path, const Dictionary &p_options);
-    Dictionary _gather_import_options_dict() const;
-    void _on_quality_preset_selected(int p_index);
-    void _on_compression_toggled(bool p_pressed, CheckBox *p_box);
-    void _apply_import_settings();
     void _sync_ui_from_asset();
-    void _update_thumbnail_preview();
     void _clear_selection();
-    void _build_panel_ui();
     HashMap<StringName, Variant> _dictionary_to_hashmap(const Dictionary &p_dict) const;
     void _on_import_settings_confirmed(const String &p_source_path, const Dictionary &p_options);
     void _show_reimport_dialog(const Dictionary &p_options);

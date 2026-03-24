@@ -3,6 +3,7 @@
 #include "gaussian_inspector_plugins.h"
 #include "gaussian_editor_plugin.h"
 #include "gaussian_editor_services.h"
+#include "gaussian_asset_preview_control.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -17,7 +18,6 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
 #include "servers/text_server.h"
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
@@ -72,24 +72,20 @@ void GaussianAssetInspectorPlugin::parse_begin(Object *p_object) {
 
     VBoxContainer *root = memnew(VBoxContainer);
     root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+    root->add_theme_constant_override("separation", int(Math::round(6.0f * EDSCALE)));
 
-    HBoxContainer *header = memnew(HBoxContainer);
-    header->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    root->add_child(header);
+    GaussianAssetPreviewControl *preview = memnew(GaussianAssetPreviewControl);
+    preview->set_custom_minimum_size(Size2(0, 220 * EDSCALE));
+    preview->set_asset(asset_ref);
+    root->add_child(preview);
 
-    TextureRect *thumb = memnew(TextureRect);
-    thumb->set_custom_minimum_size(Size2(128, 128));
-    thumb->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-    if (editor_plugin) {
-        thumb->set_texture(editor_plugin->_internal_resolve_asset_thumbnail(asset_ref));
-    } else {
-        thumb->set_texture(asset->get_thumbnail());
-    }
-    header->add_child(thumb);
+    HBoxContainer *info_row = memnew(HBoxContainer);
+    info_row->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+    root->add_child(info_row);
 
     VBoxContainer *info_column = memnew(VBoxContainer);
     info_column->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    header->add_child(info_column);
+    info_row->add_child(info_column);
 
     Label *summary = memnew(Label);
     summary->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -101,7 +97,7 @@ void GaussianAssetInspectorPlugin::parse_begin(Object *p_object) {
     reimport_button->set_focus_mode(Control::FOCUS_NONE);
     reimport_button->set_tooltip_text(TTR("Open the Gaussian import dialog with the saved settings."));
     reimport_button->connect("pressed", callable_mp(this, &GaussianAssetInspectorPlugin::_on_reimport_pressed).bind(asset_ref));
-    info_column->add_child(reimport_button);
+    info_row->add_child(reimport_button);
 
     add_custom_control(root);
 }

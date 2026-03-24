@@ -144,8 +144,10 @@ void RenderDeviceOrchestrator::safe_submit_sync(RenderingDevice *p_device) {
 
 	RenderingError error(RenderingErrorCodes::command_buffer_synchronization_failed(), RenderingError::Severity::WARNING,
 			"Unable to submit and synchronize non-main RenderingDevice");
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	error.add_context("context", sync_context);
-	error.add_context("frame", static_cast<int64_t>(renderer->get_frame_state().frame_counter));
+	error.add_context("frame", static_cast<int64_t>(state_view.get_frame_state_view().frame_counter));
 	error.add_context("sync_device_instance_id", static_cast<int64_t>(sync_device->get_device_instance_id()));
 	error.add_context("source_device_instance_id", static_cast<int64_t>(p_device->get_device_instance_id()));
 	if (record_rendering_error) {
@@ -285,8 +287,11 @@ RD::TextureFormat RenderDeviceOrchestrator::get_texture_format(RenderingDevice *
 
 void RenderDeviceOrchestrator::update_tile_renderer_output_tracking(const RID &p_color_output, RenderingDevice *p_color_device,
 		const RID &p_depth_output, RenderingDevice *p_depth_device) {
-	if (renderer->get_subsystem_state().rasterizer.is_valid()) {
-		renderer->get_subsystem_state().rasterizer->track_output_resources(p_color_output, p_color_device, p_depth_output, p_depth_device);
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const GaussianSplatRenderer::SubsystemState &subsystem_state = state_view.get_subsystem_state_view();
+	if (subsystem_state.rasterizer.is_valid()) {
+		subsystem_state.rasterizer->track_output_resources(p_color_output, p_color_device, p_depth_output, p_depth_device);
 	}
 }
 
@@ -376,8 +381,10 @@ bool RenderDeviceOrchestrator::ensure_rendering_device(const char *p_context) {
 	WARN_PRINT_ONCE(String("[GaussianSplatRenderer] ") + p_context + ": RenderingDevice unavailable; deferring operation");
 	RenderingError error(RenderingErrorCodes::device_unavailable(), RenderingError::Severity::RECOVERABLE,
 			vformat("RenderingDevice unavailable during %s", p_context));
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	error.add_context("context", p_context);
-	error.add_context("frame", static_cast<int64_t>(renderer->get_frame_state().frame_counter));
+	error.add_context("frame", static_cast<int64_t>(state_view.get_frame_state_view().frame_counter));
 	if (record_rendering_error) {
 		record_rendering_error(error);
 	}
@@ -396,8 +403,10 @@ bool RenderDeviceOrchestrator::ensure_submission_device(const char *p_context) {
 	WARN_PRINT_ONCE(String("[GaussianSplatRenderer] ") + p_context + ": Submission device unavailable; deferring operation");
 	RenderingError error(RenderingErrorCodes::submission_device_unavailable(), RenderingError::Severity::RECOVERABLE,
 			vformat("Submission device unavailable during %s", p_context));
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	error.add_context("context", p_context);
-	error.add_context("frame", static_cast<int64_t>(renderer->get_frame_state().frame_counter));
+	error.add_context("frame", static_cast<int64_t>(state_view.get_frame_state_view().frame_counter));
 	if (record_rendering_error) {
 		record_rendering_error(error);
 	}
@@ -443,8 +452,10 @@ void RenderDeviceOrchestrator::synchronize_tile_submission(RenderingDevice *p_de
 	WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] %s: Unable to synchronize RenderingDevice before tile fallback", sync_context));
 	RenderingError error(RenderingErrorCodes::command_buffer_synchronization_failed(), RenderingError::Severity::WARNING,
 			vformat("Unable to synchronize RenderingDevice before tile fallback (%s)", sync_context));
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	error.add_context("context", sync_context);
-	error.add_context("frame", static_cast<int64_t>(renderer->get_frame_state().frame_counter));
+	error.add_context("frame", static_cast<int64_t>(state_view.get_frame_state_view().frame_counter));
 	if (record_rendering_error) {
 		record_rendering_error(error);
 	}

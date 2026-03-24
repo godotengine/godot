@@ -23,14 +23,12 @@ static void _reset_output_cache_after_readiness_failure(OutputCompositor::Output
 
 } // namespace
 
-RenderInstancingOrchestrator::RenderInstancingOrchestrator(GaussianSplatRenderer *p_renderer,
-		OutputCompositor *p_output_compositor, RenderPipelineStages *p_pipeline_stages,
-		PrepareRenderFrameContextFn p_prepare_render_frame_context, RenderSortedSplatsFn p_render_sorted_splats) :
-		renderer(p_renderer),
-		output_compositor(p_output_compositor),
-		pipeline_stages(p_pipeline_stages),
-		prepare_render_frame_context(p_prepare_render_frame_context),
-		render_sorted_splats(p_render_sorted_splats) {
+RenderInstancingOrchestrator::RenderInstancingOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		output_compositor(p_dependencies.output_compositor),
+		pipeline_stages(p_dependencies.pipeline_stages),
+		prepare_render_frame_context(p_dependencies.prepare_render_frame_context),
+		render_sorted_splats(p_dependencies.render_sorted_splats) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(output_compositor);
 	ERR_FAIL_NULL(pipeline_stages);
@@ -85,8 +83,11 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 	(void)p_handle;
 	ERR_FAIL_NULL_MSG(renderer, "RenderInstancingOrchestrator requires a renderer.");
 	ERR_FAIL_NULL_MSG(pipeline_stages, "RenderInstancingOrchestrator requires pipeline stages.");
-	ERR_FAIL_COND_MSG(!output_compositor, "OutputCompositor not initialized");
-	auto &output_cache = output_compositor->get_cache_state();
+	GaussianSplatRenderer::FrameStateProvider root_state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &root_state_view = root_state_provider;
+	OutputCompositor *root_output_compositor = root_state_view.get_output_compositor();
+	ERR_FAIL_COND_MSG(!root_output_compositor, "OutputCompositor not initialized");
+	auto &output_cache = root_output_compositor->get_cache_state();
 
 	bool defer_commit = p_render_data && p_render_data->render_buffers.is_valid();
 
@@ -95,18 +96,20 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 		return;
 	}
 
-	const GaussianSplatRenderer::StreamingState &streaming_state = renderer->get_streaming_state();
+	GaussianSplatRenderer::IFrameMutationAccess &root_state_mut = root_state_provider;
+	GaussianSplatRenderer::FrameState &root_frame_state = root_state_mut.get_frame_state_mut();
+	GaussianSplatRenderer::SortingState &root_sorting_state = root_state_mut.get_sorting_state_mut();
+	GaussianSplatRenderer::PerformanceMetrics &metrics = root_state_mut.get_performance_state_mut().metrics;
+
+	const GaussianSplatRenderer::StreamingState &streaming_state = root_state_view.get_streaming_state();
 	const bool streaming_system_ready = streaming_state.current_streaming_system.is_valid();
 	const InstanceReadinessResult readiness = evaluate_instance_pipeline_readiness(
 			streaming_system_ready, renderer->has_instance_pipeline_buffers(),
 			renderer->get_instance_pipeline_buffers());
 	if (!readiness.ready) {
 		_warn_instanced_readiness_failure_once(readiness.failure_mode);
-		GaussianSplatRenderer::FrameState &frame_state = renderer->get_frame_state();
-		GaussianSplatRenderer::SortingState &sorting_state = renderer->get_sorting_state();
-		GaussianSplatRenderer::PerformanceMetrics &metrics = renderer->get_performance_state().metrics;
-		frame_state.render_time_ms = 0.0f;
-		frame_state.sort_time_ms = 0.0f;
+		root_frame_state.render_time_ms = 0.0f;
+		root_frame_state.sort_time_ms = 0.0f;
 		metrics.rendered_splat_count = 0;
 		metrics.sort_submission_time_ms = 0.0f;
 		metrics.sort_wait_time_ms = 0.0f;
@@ -114,8 +117,8 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 		metrics.async_sort_used = false;
 		metrics.async_sort_waited = false;
 		metrics.async_overlap_efficiency = 0.0f;
-		frame_state.visible_splat_count.store(0, std::memory_order_release);
-		sorting_state.sorted_splat_count = 0;
+		root_frame_state.visible_splat_count.store(0, std::memory_order_release);
+		root_sorting_state.sorted_splat_count = 0;
 		renderer->get_debug_state().last_stage_metrics = GaussianSplatRenderer::StageMetrics();
 		renderer->get_debug_state().last_stage_metrics_valid = false;
 		_reset_output_cache_after_readiness_failure(output_cache);
@@ -123,7 +126,6 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 	}
 
 	uint64_t instanced_frame_start_usec = OS::get_singleton()->get_ticks_usec();
-	auto &metrics = renderer->get_performance_state().metrics;
 	uint64_t frames_before_instances = metrics.total_frames_rendered;
 	float avg_before_instances = metrics.avg_frame_time_ms;
 	float peak_before_instances = metrics.peak_frame_time_ms;
@@ -153,10 +155,13 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 				instance_defer_commit, frame_context);
 		frame_context.metrics = &stage_metrics;
 		GaussianSplatRenderer::FrameStateProvider frame_provider(renderer, &frame_context.deps);
-		frame_context.state_provider = &frame_provider;
+		const GaussianSplatRenderer::IFrameStateView &frame_state_view = frame_provider;
+		GaussianSplatRenderer::IFrameMutationAccess &frame_mutation_access = frame_provider;
+		frame_context.state_view = &frame_state_view;
+		frame_context.mutation_access = &frame_mutation_access;
 		GaussianSplatRenderer::RenderFramePlan frame_plan = GaussianSplatRenderer::build_frame_plan(
-				renderer->get_scene_state(), renderer->get_streaming_state(), renderer->get_sorting_state(),
-				renderer->get_resource_state(), renderer->get_subsystem_state(), frame_provider.get_pipeline_features(),
+				frame_state_view.get_scene_state(), frame_state_view.get_streaming_state(), frame_state_view.get_sorting_state_view(),
+				frame_state_view.get_resource_state_view(), frame_state_view.get_subsystem_state_view(), frame_state_view.get_pipeline_features(),
 				true, String(), String(), GaussianSplatRenderer::RenderFallbackReason::NONE,
 				GaussianSplatRenderer::RenderFallbackReason::NONE, false, false);
 		frame_context.deps.frame_plan = &frame_plan;
@@ -203,13 +208,14 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 		uint64_t before_total_frames = metrics.total_frames_rendered;
 		float before_avg_time = metrics.avg_frame_time_ms;
 		float before_peak_time = metrics.peak_frame_time_ms;
-		uint64_t before_frame_counter = renderer->get_frame_state().frame_counter;
+		uint64_t before_frame_counter = frame_state_view.get_frame_state_view().frame_counter;
 
 		pipeline_stages->render_sorted_splats_with_context(frame_context);
 
-		accumulated_render_time_ms += renderer->get_frame_state().render_time_ms;
+		const GaussianSplatRenderer::FrameState &render_frame_state = frame_state_view.get_frame_state_view();
+		accumulated_render_time_ms += render_frame_state.render_time_ms;
 		accumulated_rendered_splats += metrics.rendered_splat_count;
-		aggregated_visible_splats += renderer->get_frame_state().visible_splat_count.load(std::memory_order_acquire);
+		aggregated_visible_splats += render_frame_state.visible_splat_count.load(std::memory_order_acquire);
 		any_render_performed = any_render_performed || output_cache.has_valid_render;
 		if (output_cache.last_viewport_copy_success) {
 			any_viewport_copy = true;
@@ -218,16 +224,16 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 		}
 
 		if (instance_count > 1 && instance_index < instance_count - 1) {
-			renderer->get_frame_state().frame_counter = before_frame_counter;
+			root_frame_state.frame_counter = before_frame_counter;
 			metrics.total_frames_rendered = before_total_frames;
 			metrics.avg_frame_time_ms = before_avg_time;
 			metrics.peak_frame_time_ms = before_peak_time;
 		}
 	}
 
-	renderer->get_frame_state().render_time_ms = accumulated_render_time_ms;
+	root_frame_state.render_time_ms = accumulated_render_time_ms;
 	metrics.rendered_splat_count = accumulated_rendered_splats;
-	renderer->get_frame_state().visible_splat_count.store(
+	root_frame_state.visible_splat_count.store(
 			static_cast<uint32_t>(MIN<uint64_t>(aggregated_visible_splats, UINT32_MAX)),
 			std::memory_order_release);
 	output_cache.has_valid_render = any_render_performed;

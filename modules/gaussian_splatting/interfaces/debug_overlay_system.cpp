@@ -7,6 +7,171 @@
 #include "../renderer/gaussian_splat_renderer.h"
 #include "gpu_sorting_pipeline.h"
 
+DebugOverlayOptions DebugOverlayQueryView::get_options() const {
+    return system ? system->get_options() : DebugOverlayOptions();
+}
+
+DebugCounterSnapshot DebugOverlayQueryView::get_debug_counters() const {
+    return system ? system->get_debug_counters() : DebugCounterSnapshot();
+}
+
+Dictionary DebugOverlayQueryView::get_binning_debug_counters() const {
+    return system ? system->get_binning_debug_counters() : Dictionary();
+}
+
+bool DebugOverlayQueryView::is_dirty() const {
+    return system ? system->is_dirty() : false;
+}
+
+uint64_t DebugOverlayQueryView::get_version() const {
+    return system ? system->get_version() : 0;
+}
+
+bool DebugOverlayQueryView::has_active_overlays() const {
+    return system ? system->has_active_overlays() : false;
+}
+
+const Vector<String> &DebugOverlayQueryView::get_hud_lines() const {
+    static const Vector<String> empty;
+    if (debug_state) {
+        return debug_state->hud_lines;
+    }
+    return system ? system->get_hud_lines() : empty;
+}
+
+uint32_t DebugOverlayQueryView::get_tile_density_peak() const {
+    if (debug_state) {
+        return debug_state->tile_density_peak;
+    }
+    return system ? system->get_tile_density_peak() : 0;
+}
+
+float DebugOverlayQueryView::get_tile_density_average() const {
+    if (debug_state) {
+        return debug_state->tile_density_average;
+    }
+    return system ? system->get_tile_density_average() : 0.0f;
+}
+
+const Vector<uint32_t> &DebugOverlayQueryView::get_tile_density_cache() const {
+    static const Vector<uint32_t> empty;
+    if (debug_state) {
+        return debug_state->tile_density_cache;
+    }
+    return system ? system->get_tile_density_cache() : empty;
+}
+
+int DebugOverlayQueryView::get_tile_density_width() const {
+    if (debug_state) {
+        return debug_state->tile_density_width;
+    }
+    return system ? system->get_tile_density_width() : 0;
+}
+
+int DebugOverlayQueryView::get_tile_density_height() const {
+    if (debug_state) {
+        return debug_state->tile_density_height;
+    }
+    return system ? system->get_tile_density_height() : 0;
+}
+
+void DebugOverlayCommandSink::set_show_tile_grid(bool p_enabled) const {
+    if (system) {
+        system->set_renderer_show_tile_grid(*this, p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::set_show_density_heatmap(bool p_enabled) const {
+    if (system) {
+        system->set_renderer_show_density_heatmap(*this, p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::set_show_performance_hud(bool p_enabled) const {
+    if (system) {
+        system->set_renderer_show_performance_hud(*this, p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::set_show_residency_hud(bool p_enabled) const {
+    if (system) {
+        system->set_renderer_show_residency_hud(*this, p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::set_show_device_boundaries(bool p_enabled) const {
+    if (system) {
+        system->set_renderer_show_device_boundaries(*this, p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::set_show_texture_states(bool p_enabled) const {
+    if (system) {
+        system->set_renderer_show_texture_states(*this, p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::set_show_shadow_opacity(bool p_enabled) const {
+    if (system) {
+        system->set_show_shadow_opacity(p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::set_overlay_opacity(float p_opacity) const {
+    if (system) {
+        system->set_renderer_overlay_opacity(*this, p_opacity);
+    }
+}
+
+void DebugOverlayCommandSink::set_dump_gpu_counters(bool p_enabled) const {
+    if (system) {
+        system->set_dump_gpu_counters(p_enabled);
+    }
+}
+
+void DebugOverlayCommandSink::invalidate_overlay(bool p_increment_version) const {
+    if (system) {
+        system->invalidate_renderer_overlay(*this, p_increment_version);
+    }
+}
+
+void DebugOverlayCommandSink::invalidate_hud(bool p_increment_version) const {
+    if (system) {
+        system->invalidate_renderer_hud(*this, p_increment_version);
+    }
+}
+
+DebugOverlayQueryView DebugOverlaySystem::build_query_view(const GaussianSplatRenderer *p_renderer) const {
+    DebugOverlayQueryView query_view(this);
+    if (!p_renderer) {
+        return query_view;
+    }
+
+    GaussianSplatRenderer::FrameStateProvider frame_provider(const_cast<GaussianSplatRenderer *>(p_renderer));
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+
+    query_view.debug_state = &p_renderer->get_debug_state();
+    query_view.frame_state = &state_view.get_frame_state_view();
+    query_view.sorting_state = &state_view.get_sorting_state_view();
+    query_view.performance_state = &state_view.get_performance_state_view();
+    query_view.device_state = &p_renderer->get_device_state();
+    query_view.subsystem_state = &state_view.get_subsystem_state_view();
+    query_view.submission_device = const_cast<GaussianSplatRenderer *>(p_renderer)->get_submission_device();
+    query_view.main_rendering_device = p_renderer->get_main_rendering_device();
+    return query_view;
+}
+
+DebugOverlayCommandSink DebugOverlaySystem::build_command_sink(GaussianSplatRenderer *p_renderer) {
+    DebugOverlayCommandSink command_sink(this);
+    if (!p_renderer) {
+        return command_sink;
+    }
+
+    command_sink.debug_state = &p_renderer->get_debug_state();
+    command_sink.debug_config = &p_renderer->get_debug_config();
+    return command_sink;
+}
+
 void DebugOverlaySystem::_bind_methods() {
     // Bind methods for script access if needed
 }
@@ -180,28 +345,56 @@ GS_DEBUG_OVERLAY_RENDERER_SETTER_OVERLAY_IMPL(show_texture_states)
 GS_DEBUG_OVERLAY_RENDERER_SETTER_HUD_IMPL(show_performance_hud)
 GS_DEBUG_OVERLAY_RENDERER_SETTER_HUD_IMPL(show_residency_hud)
 
-void DebugOverlaySystem::set_renderer_overlay_opacity(GaussianSplatRenderer *p_renderer, float p_opacity) {
-    if (!p_renderer) {
+void DebugOverlaySystem::set_renderer_show_tile_grid(GaussianSplatRenderer *p_renderer, bool p_enabled) {
+    set_renderer_show_tile_grid(build_command_sink(p_renderer), p_enabled);
+}
+
+void DebugOverlaySystem::set_renderer_show_density_heatmap(GaussianSplatRenderer *p_renderer, bool p_enabled) {
+    set_renderer_show_density_heatmap(build_command_sink(p_renderer), p_enabled);
+}
+
+void DebugOverlaySystem::set_renderer_show_performance_hud(GaussianSplatRenderer *p_renderer, bool p_enabled) {
+    set_renderer_show_performance_hud(build_command_sink(p_renderer), p_enabled);
+}
+
+void DebugOverlaySystem::set_renderer_show_residency_hud(GaussianSplatRenderer *p_renderer, bool p_enabled) {
+    set_renderer_show_residency_hud(build_command_sink(p_renderer), p_enabled);
+}
+
+void DebugOverlaySystem::set_renderer_show_device_boundaries(GaussianSplatRenderer *p_renderer, bool p_enabled) {
+    set_renderer_show_device_boundaries(build_command_sink(p_renderer), p_enabled);
+}
+
+void DebugOverlaySystem::set_renderer_show_texture_states(GaussianSplatRenderer *p_renderer, bool p_enabled) {
+    set_renderer_show_texture_states(build_command_sink(p_renderer), p_enabled);
+}
+
+void DebugOverlaySystem::set_renderer_overlay_opacity(const DebugOverlayCommandSink &p_sink, float p_opacity) {
+    if (!p_sink.debug_config) {
         return;
     }
 
     float clamped = CLAMP(p_opacity, 0.0f, 1.0f);
-    auto &debug_config = p_renderer->get_debug_config();
+    auto &debug_config = *p_sink.debug_config;
     if (Math::is_equal_approx(debug_config.overlay_opacity, clamped)) {
         return;
     }
 
     debug_config.overlay_opacity = clamped;
     set_overlay_opacity(clamped);
-    invalidate_renderer_overlay(p_renderer, true);
+    invalidate_renderer_overlay(p_sink, true);
 }
 
-void DebugOverlaySystem::invalidate_renderer_overlay(GaussianSplatRenderer *p_renderer, bool p_increment_version) {
-    if (!p_renderer) {
+void DebugOverlaySystem::set_renderer_overlay_opacity(GaussianSplatRenderer *p_renderer, float p_opacity) {
+    set_renderer_overlay_opacity(build_command_sink(p_renderer), p_opacity);
+}
+
+void DebugOverlaySystem::invalidate_renderer_overlay(const DebugOverlayCommandSink &p_sink, bool p_increment_version) {
+    if (!p_sink.debug_state) {
         return;
     }
 
-    auto &debug_state = p_renderer->get_debug_state();
+    auto &debug_state = *p_sink.debug_state;
     if (p_increment_version) {
         debug_state.overlay_version++;
     }
@@ -217,12 +410,16 @@ void DebugOverlaySystem::invalidate_renderer_overlay(GaussianSplatRenderer *p_re
     }
 }
 
-void DebugOverlaySystem::invalidate_renderer_hud(GaussianSplatRenderer *p_renderer, bool p_increment_version) {
-    if (!p_renderer) {
+void DebugOverlaySystem::invalidate_renderer_overlay(GaussianSplatRenderer *p_renderer, bool p_increment_version) {
+    invalidate_renderer_overlay(build_command_sink(p_renderer), p_increment_version);
+}
+
+void DebugOverlaySystem::invalidate_renderer_hud(const DebugOverlayCommandSink &p_sink, bool p_increment_version) {
+    if (!p_sink.debug_state) {
         return;
     }
 
-    auto &debug_state = p_renderer->get_debug_state();
+    auto &debug_state = *p_sink.debug_state;
     if (p_increment_version) {
         debug_state.hud_version++;
     }
@@ -234,32 +431,38 @@ void DebugOverlaySystem::invalidate_renderer_hud(GaussianSplatRenderer *p_render
     debug_state.hud_dirty = true;
 }
 
-void DebugOverlaySystem::rebuild_renderer_overlay_statistics_from_cache(GaussianSplatRenderer *p_renderer) {
-    if (!p_renderer) {
+void DebugOverlaySystem::invalidate_renderer_hud(GaussianSplatRenderer *p_renderer, bool p_increment_version) {
+    invalidate_renderer_hud(build_command_sink(p_renderer), p_increment_version);
+}
+
+void DebugOverlaySystem::rebuild_renderer_overlay_statistics_from_cache(const DebugOverlayQueryView &p_query_view,
+        const DebugOverlayCommandSink &p_sink) {
+    if (!p_query_view.debug_state || !p_sink.debug_state) {
         return;
     }
 
-    auto &debug_state = p_renderer->get_debug_state();
-    if (!debug_state.show_tile_grid && !debug_state.show_density_heatmap) {
+    const auto &debug_state_view = *p_query_view.debug_state;
+    auto &debug_state = *p_sink.debug_state;
+    if (!debug_state_view.show_tile_grid && !debug_state_view.show_density_heatmap) {
         debug_state.overlay_dirty = false;
         debug_state.tile_density_peak = 0;
         debug_state.tile_density_average = 0.0f;
         return;
     }
 
-    if (debug_state.tile_density_cache.is_empty()) {
+    if (debug_state_view.tile_density_cache.is_empty()) {
         debug_state.overlay_dirty = false;
         debug_state.tile_density_peak = 0;
         debug_state.tile_density_average = 0.0f;
         return;
     }
 
-    const uint32_t *density_ptr = debug_state.tile_density_cache.ptr();
+    const uint32_t *density_ptr = debug_state_view.tile_density_cache.ptr();
     uint64_t total = 0;
     uint32_t peak = 0;
     uint32_t non_zero_tiles = 0;
 
-    const int density_count = debug_state.tile_density_cache.size();
+    const int density_count = debug_state_view.tile_density_cache.size();
     for (int i = 0; i < density_count; i++) {
         uint32_t value = density_ptr[i];
         peak = MAX(peak, value);
@@ -274,22 +477,31 @@ void DebugOverlaySystem::rebuild_renderer_overlay_statistics_from_cache(Gaussian
     debug_state.overlay_dirty = false;
 }
 
-void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRenderer *p_renderer) {
-    if (!p_renderer) {
+void DebugOverlaySystem::rebuild_renderer_overlay_statistics_from_cache(GaussianSplatRenderer *p_renderer) {
+    DebugOverlayQueryView query_view = build_query_view(p_renderer);
+    rebuild_renderer_overlay_statistics_from_cache(query_view, build_command_sink(p_renderer));
+}
+
+void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(const DebugOverlayQueryView &p_query_view,
+        const DebugOverlayCommandSink &p_sink) {
+    if (!p_query_view.debug_state || !p_query_view.frame_state || !p_query_view.sorting_state ||
+            !p_query_view.performance_state || !p_query_view.device_state ||
+            !p_query_view.subsystem_state || !p_sink.debug_state) {
         return;
     }
 
-    auto &debug_state = p_renderer->get_debug_state();
-    auto &frame_state = p_renderer->get_frame_state();
-    auto &sorting_state = p_renderer->get_sorting_state();
-    auto &performance_state = p_renderer->get_performance_state();
-    auto &device_state = p_renderer->get_device_state();
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    const auto &debug_state_view = *p_query_view.debug_state;
+    const auto &frame_state = *p_query_view.frame_state;
+    const auto &sorting_state = *p_query_view.sorting_state;
+    const auto &performance_state = *p_query_view.performance_state;
+    const auto &device_state = *p_query_view.device_state;
+    const auto &subsystem_state = *p_query_view.subsystem_state;
+    auto &debug_state = *p_sink.debug_state;
 
     debug_state.hud_lines.clear();
 
-    if (debug_state.show_performance_hud) {
-        const String route_uid = debug_state.route_uid.is_empty() ? String("unset") : debug_state.route_uid;
+    if (debug_state_view.show_performance_hud) {
+        const String route_uid = debug_state_view.route_uid.is_empty() ? String("unset") : debug_state_view.route_uid;
         debug_state.hud_lines.push_back(vformat("Route UID: %s", route_uid));
 		debug_state.hud_lines.push_back(String("Visible Splats: ") +
 				String::num_uint64(frame_state.visible_splat_count.load(std::memory_order_acquire)));
@@ -300,16 +512,16 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRen
 				debug_state.hud_lines.push_back(vformat("Data Error: %s", performance_state.metrics.data_source_error));
 			}
 		}
-		float sort_time_ms = debug_state.last_sort_time_ms;
-		float render_time_ms = debug_state.last_render_time_ms;
-        if (debug_state.last_stage_metrics_valid) {
-            sort_time_ms = debug_state.last_stage_metrics.sort.sort_time_ms;
-            render_time_ms = debug_state.last_stage_metrics.raster.render_time_ms;
+		float sort_time_ms = debug_state_view.last_sort_time_ms;
+		float render_time_ms = debug_state_view.last_render_time_ms;
+        if (debug_state_view.last_stage_metrics_valid) {
+            sort_time_ms = debug_state_view.last_stage_metrics.sort.sort_time_ms;
+            render_time_ms = debug_state_view.last_stage_metrics.raster.render_time_ms;
         }
         debug_state.hud_lines.push_back(vformat("Sort Time: %.2f ms", sort_time_ms));
         debug_state.hud_lines.push_back(vformat("Render Time: %.2f ms", render_time_ms));
-        debug_state.hud_lines.push_back(vformat("Tile Assign: %.2f ms", debug_state.last_tile_assignment_ms));
-        debug_state.hud_lines.push_back(vformat("Tile Raster: %.2f ms", debug_state.last_tile_rasterization_ms));
+        debug_state.hud_lines.push_back(vformat("Tile Assign: %.2f ms", debug_state_view.last_tile_assignment_ms));
+        debug_state.hud_lines.push_back(vformat("Tile Raster: %.2f ms", debug_state_view.last_tile_rasterization_ms));
         if (subsystem_state.rasterizer.is_valid()) {
             RasterStats raster_stats = subsystem_state.rasterizer->get_render_stats();
             debug_state.hud_lines.push_back(vformat("Raster Path: %s (compute=%s, fragment=%s)",
@@ -330,8 +542,8 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRen
                         raster_stats.overlap_thinning_keep_ratio * 100.0f));
             }
         }
-        if (debug_state.last_stage_metrics_valid) {
-            const auto &stage_metrics = debug_state.last_stage_metrics;
+        if (debug_state_view.last_stage_metrics_valid) {
+            const auto &stage_metrics = debug_state_view.last_stage_metrics;
             debug_state.hud_lines.push_back(vformat("Cull: %.2f ms (cand %u -> vis %u)",
                     stage_metrics.cull.cull_time_ms, stage_metrics.cull.candidate_count, stage_metrics.cull.visible_count));
             if (stage_metrics.sort.did_sort) {
@@ -402,7 +614,7 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRen
         }
 
 
-        if (debug_state.show_device_boundaries) {
+        if (debug_state_view.show_device_boundaries) {
             debug_state.hud_lines.push_back(String());
             debug_state.hud_lines.push_back(String("Device Boundaries"));
             auto append_device = [&](const char *p_label, RenderingDevice *p_device) {
@@ -425,13 +637,13 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRen
             }
 
             append_device("Primary", device_state.rd);
-            append_device("Local", p_renderer->get_submission_device());
-            append_device("Viewport", p_renderer->get_main_rendering_device());
+            append_device("Local", p_query_view.submission_device);
+            append_device("Viewport", p_query_view.main_rendering_device);
             append_device("Tile", tile_device);
             append_device("Sorter", sort_device);
         }
 
-        if (debug_state.show_texture_states) {
+        if (debug_state_view.show_texture_states) {
             debug_state.hud_lines.push_back(String());
             debug_state.hud_lines.push_back(String("Texture States"));
             if (subsystem_state.device_manager.is_valid()) {
@@ -443,7 +655,7 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRen
         }
     }
 
-    if (debug_state.show_residency_hud) {
+    if (debug_state_view.show_residency_hud) {
         if (!debug_state.hud_lines.is_empty()) {
             debug_state.hud_lines.push_back(String());
         }
@@ -470,4 +682,9 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRen
     }
 
     debug_state.hud_dirty = false;
+}
+
+void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(GaussianSplatRenderer *p_renderer) {
+    DebugOverlayQueryView query_view = build_query_view(p_renderer);
+    rebuild_renderer_performance_hud_lines(query_view, build_command_sink(p_renderer));
 }

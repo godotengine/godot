@@ -96,14 +96,15 @@ static String _normalize_sort_route_uid_for_snapshot(const String &p_sort_route_
 	return p_sort_route_uid;
 }
 
-static void _record_debug_pipeline_event(GaussianSplatRenderer *p_renderer, const String &p_message,
+static void _record_debug_pipeline_event(GaussianSplatRenderer *p_renderer, bool p_trace_enabled, const String &p_message,
 		uint32_t p_input_count, uint32_t p_output_count, bool p_is_error) {
-	if (!p_renderer || !p_renderer->get_debug_config().enable_pipeline_trace) {
+	if (!p_renderer || !p_trace_enabled) {
 		return;
 	}
-	auto &debug_state = p_renderer->get_debug_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(p_renderer);
+	auto &debug_state = state_provider.get_debug_state_mut();
 	if (!debug_state.pipeline_events_valid) {
-		debug_state.pipeline_events_frame = p_renderer->get_frame_state().frame_counter;
+		debug_state.pipeline_events_frame = state_provider.get_frame_state_view().frame_counter;
 		debug_state.pipeline_events_valid = true;
 	}
 	GaussianSplatRenderer::PipelineEvent event;
@@ -298,17 +299,20 @@ static Dictionary _splat_audit_to_dict(const GaussianSplatRenderer::SplatAuditSu
 
 } // namespace
 
-RenderDebugStateOrchestrator::RenderDebugStateOrchestrator(GaussianSplatRenderer *p_renderer,
-		Ref<TileRenderer> *p_tile_renderer, Ref<DebugOverlaySystem> *p_debug_overlay_system,
-		GaussianSplatRenderer::JacobianDebugConfig *p_jacobian_debug) :
-		renderer(p_renderer),
-		tile_renderer(p_tile_renderer),
-		debug_overlay_system(p_debug_overlay_system),
-		jacobian_debug(p_jacobian_debug) {
+RenderDebugStateOrchestrator::RenderDebugStateOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		tile_renderer(p_dependencies.tile_renderer),
+		debug_overlay_system(p_dependencies.debug_overlay_system),
+		jacobian_debug(p_dependencies.jacobian_debug),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(tile_renderer);
 	ERR_FAIL_NULL(debug_overlay_system);
 	ERR_FAIL_NULL(jacobian_debug);
+	ERR_FAIL_COND_MSG(!runtime_ports.dump_pipeline_trace_to_file,
+			"RenderDebugStateOrchestrator requires a pipeline trace dump callback.");
+	ERR_FAIL_COND_MSG(!runtime_ports.resolve_resource_owner,
+			"RenderDebugStateOrchestrator requires a resource-owner callback.");
 
 	const bool default_trace = _default_pipeline_trace_enabled();
 	if (ProjectSettings *ps = ProjectSettings::get_singleton()) {
@@ -539,10 +543,12 @@ bool RenderDebugStateOrchestrator::_check_cull_guardrails(uint64_t p_frame_id, u
 	if (!debug_config.enable_cull_guardrails || !renderer) {
 		return false;
 	}
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 
 	const float pos_step = debug_config.cull_guardrail_position_epsilon;
 	const float rot_step = debug_config.cull_guardrail_rotation_epsilon;
-	uint64_t pose_key = _hash_camera_pose(renderer->get_view_state().last_camera_to_world_transform, pos_step, rot_step);
+	uint64_t pose_key = _hash_camera_pose(renderer->get_camera_transform(), pos_step, rot_step);
 	if (pose_key == 0) {
 		return false;
 	}
@@ -551,7 +557,7 @@ bool RenderDebugStateOrchestrator::_check_cull_guardrails(uint64_t p_frame_id, u
 	uint32_t static_total = 0;
 	uint32_t gpu_visible = 0;
 	uint32_t cpu_visible = 0;
-	GPUCuller *gpu_culler = renderer->get_subsystem_state().gpu_culler.ptr();
+	GPUCuller *gpu_culler = state_view.get_gpu_culler();
 	if (gpu_culler) {
 		const auto &cull_state = gpu_culler->get_state();
 		static_visible = static_cast<uint32_t>(cull_state.visible_static_chunk_indices.size());
@@ -562,7 +568,7 @@ bool RenderDebugStateOrchestrator::_check_cull_guardrails(uint64_t p_frame_id, u
 
 	bool streaming_active = false;
 	uint32_t streaming_visible = 0;
-	const auto &streaming_state = renderer->get_streaming_state();
+	const auto &streaming_state = state_view.get_streaming_state();
 	if (streaming_state.current_streaming_system.is_valid()) {
 		streaming_active = true;
 		streaming_visible = streaming_state.current_streaming_system->get_visible_count();
@@ -622,13 +628,15 @@ void RenderDebugStateOrchestrator::reset_debug_overlay_metrics(float p_sort_ms) 
 }
 
 void RenderDebugStateOrchestrator::update_raster_metrics(const RasterPerformance &p_perf, const RasterStats &p_stats) {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	debug_state.last_tile_assignment_ms = p_perf.tile_assignment_ms;
 	debug_state.last_tile_rasterization_ms = p_perf.rasterization_ms;
 	debug_state.tile_density_peak = p_stats.max_splats_in_tile;
 	debug_state.tile_density_average = p_stats.average_splats_per_tile;
 
-	uint64_t frame_id = renderer->get_frame_state().frame_counter;
-	uint32_t visible_count = renderer->get_frame_state().visible_splat_count.load(std::memory_order_acquire);
+	uint64_t frame_id = state_view.get_frame_state_view().frame_counter;
+	uint32_t visible_count = state_view.get_frame_state_view().visible_splat_count.load(std::memory_order_acquire);
 	const bool trace_enabled = debug_config.enable_pipeline_trace;
 	const bool audit_enabled = debug_config.enable_splat_audit;
 	if (!trace_enabled && !audit_enabled) {
@@ -708,7 +716,7 @@ void RenderDebugStateOrchestrator::update_raster_metrics(const RasterPerformance
 			message += " audit_first_px=" + String::num_uint64(audit_summary.first_mismatch_expected_x) + "," +
 					String::num_uint64(audit_summary.first_mismatch_expected_y);
 		}
-		_record_debug_pipeline_event(renderer, message, last_visible_count, visible_count, true);
+		_record_debug_pipeline_event(renderer, trace_enabled, message, last_visible_count, visible_count, true);
 
 		const bool dump_ready = !has_anomaly_dump_frame ||
 				frame_id >= last_anomaly_dump_frame + kAnomalyDumpCooldownFrames;
@@ -716,13 +724,14 @@ void RenderDebugStateOrchestrator::update_raster_metrics(const RasterPerformance
 		const bool artifact_writes_enabled = debug_config.enable_data_logging || debug_config.enable_all_debug;
 		if (dump_ready && artifact_writes_enabled) {
 			const String trace_path = "user://gs_pipeline_trace_" + String::num_uint64(frame_id) + ".json";
-			renderer->dump_pipeline_trace_to_file(trace_path);
+			(renderer->*runtime_ports.dump_pipeline_trace_to_file)(trace_path);
 
-			OutputCompositor *output_compositor = renderer->get_subsystem_state().output_compositor.ptr();
+			OutputCompositor *output_compositor = state_view.get_output_compositor();
 			if (output_compositor) {
 				RID final_texture = output_compositor->get_final_render_texture();
 				if (final_texture.is_valid()) {
-					RenderingDevice *device = renderer->get_resource_owner(final_texture, renderer->get_device_state().rd);
+					RenderingDevice *device = (renderer->*runtime_ports.resolve_resource_owner)(
+							final_texture, state_view.get_rendering_device());
 					const String image_path = "user://gs_anomaly_frame_" + String::num_uint64(frame_id) + ".png";
 					_save_texture_snapshot(device, final_texture, image_path);
 				}
@@ -757,18 +766,20 @@ void RenderDebugStateOrchestrator::apply_debug_options_to_render_params(TileRend
 	const bool depth_visualization = (debug_state.preview_mode == GaussianSplatRenderer::DEBUG_PREVIEW_DEPTH);
 	if (debug_overlay_system->is_valid()) {
 		DebugOverlaySystem *overlay = debug_overlay_system->ptr();
-		r_params.debug_show_tile_bounds = overlay->get_show_tile_bounds();
-		r_params.debug_show_splat_coverage = overlay->get_show_splat_coverage();
-		r_params.debug_show_overflow_tiles = overlay->get_show_overflow_tiles();
-		r_params.debug_show_projection_issues = overlay->get_show_projection_issues();
-		r_params.debug_show_white_albedo = overlay->get_show_white_albedo();
-		r_params.debug_show_shadow_opacity = overlay->get_show_shadow_opacity();
-		r_params.debug_show_tile_grid = overlay->get_show_tile_grid();
-		r_params.debug_show_density_heatmap = overlay->get_show_density_heatmap();
-		r_params.debug_show_performance_hud = overlay->get_show_performance_hud();
+		const DebugOverlayQueryView overlay_view = overlay->build_query_view(renderer);
+		const DebugOverlayOptions overlay_options = overlay_view.get_options();
+		r_params.debug_show_tile_bounds = overlay_options.show_tile_bounds;
+		r_params.debug_show_splat_coverage = overlay_options.show_splat_coverage;
+		r_params.debug_show_overflow_tiles = overlay_options.show_overflow_tiles;
+		r_params.debug_show_projection_issues = overlay_options.show_projection_issues;
+		r_params.debug_show_white_albedo = overlay_options.show_white_albedo;
+		r_params.debug_show_shadow_opacity = overlay_options.show_shadow_opacity;
+		r_params.debug_show_tile_grid = overlay_options.show_tile_grid;
+		r_params.debug_show_density_heatmap = overlay_options.show_density_heatmap;
+		r_params.debug_show_performance_hud = overlay_options.show_performance_hud;
 		r_params.debug_show_depth_visualization = depth_visualization;
-		r_params.debug_overlay_opacity = overlay->get_overlay_opacity();
-		r_params.debug_dump_gpu_counters = overlay->get_dump_gpu_counters() || debug_config.enable_gpu_counter_logs;
+		r_params.debug_overlay_opacity = overlay_options.overlay_opacity;
+		r_params.debug_dump_gpu_counters = overlay_options.dump_gpu_counters || debug_config.enable_gpu_counter_logs;
 		r_params.debug_enable_tile_logs = debug_config.enable_tile_logs;
 		r_params.debug_enable_tile_pipeline_logs = debug_config.enable_tile_pipeline_logs;
 		r_params.debug_enable_tile_dispatch_logs = debug_config.enable_tile_dispatch_logs;
@@ -803,10 +814,148 @@ void RenderDebugStateOrchestrator::apply_debug_options_to_render_params(TileRend
 	}
 }
 
+int RenderDebugStateOrchestrator::get_overflow_tile_count() const {
+	if (!tile_renderer || !tile_renderer->is_valid()) {
+		return 0;
+	}
+	return tile_renderer->ptr()->get_overflow_tile_count();
+}
+
+int RenderDebugStateOrchestrator::get_clamped_records() const {
+	if (!tile_renderer || !tile_renderer->is_valid()) {
+		return 0;
+	}
+	return tile_renderer->ptr()->get_clamped_records();
+}
+
+int RenderDebugStateOrchestrator::get_aggregated_count() const {
+	if (!tile_renderer || !tile_renderer->is_valid()) {
+		return 0;
+	}
+	return tile_renderer->ptr()->get_aggregated_count();
+}
+
+Dictionary RenderDebugStateOrchestrator::get_overflow_stats() const {
+	Dictionary out;
+	if (!tile_renderer || !tile_renderer->is_valid()) {
+		return out;
+	}
+
+	const TileRenderer::OverflowStatsSnapshot overflow = tile_renderer->ptr()->get_overflow_stats();
+	out["overflow_tile_count"] = static_cast<int64_t>(overflow.overflow_tile_count);
+	out["clamped_records"] = static_cast<int64_t>(overflow.overflow_splats_clamped);
+	out["aggregated_records"] = static_cast<int64_t>(overflow.overflow_splats_aggregated);
+	out["raster_sample_count"] = static_cast<int64_t>(overflow.raster_sample_count);
+	out["raster_splats_iterated"] = static_cast<int64_t>(overflow.raster_splats_iterated);
+	out["raster_splats_contributed"] = static_cast<int64_t>(overflow.raster_splats_contributed);
+	return out;
+}
+
+Dictionary RenderDebugStateOrchestrator::get_pipeline_trace_snapshot() const {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const GaussianSplatRenderer::DebugState &debug_state = get_state();
+	const GaussianSplatRenderer::DebugConfig &debug_config = get_config();
+
+	Dictionary snapshot;
+	const uint64_t frame_id = debug_state.pipeline_events_valid
+			? debug_state.pipeline_events_frame
+			: state_view.get_frame_state_view().frame_counter;
+	const bool trace_fresh = debug_state.pipeline_events_valid;
+	String route_uid = debug_state.route_uid;
+	if (trace_fresh && RenderRouteUID::is_route_uid_missing(route_uid) && !debug_state.pipeline_events.is_empty()) {
+		for (int i = debug_state.pipeline_events.size() - 1; i >= 0; --i) {
+			const String &event_uid = debug_state.pipeline_events[i].route_uid;
+			if (!RenderRouteUID::is_route_uid_missing(event_uid)) {
+				route_uid = event_uid;
+				break;
+			}
+		}
+	}
+	route_uid = _normalize_route_uid_for_snapshot(route_uid);
+	snapshot["frame"] = static_cast<int64_t>(frame_id);
+	snapshot["dump_frame"] = static_cast<int64_t>(state_view.get_frame_state_view().frame_counter);
+	snapshot["trace_enabled"] = debug_config.enable_pipeline_trace;
+	snapshot["events_valid"] = debug_state.pipeline_events_valid;
+	snapshot["trace_fresh"] = trace_fresh;
+	snapshot["trace_generation"] = static_cast<int64_t>(debug_state.pipeline_trace_generation);
+	snapshot["route_uid"] = route_uid;
+	snapshot["sort_route_uid"] = _normalize_sort_route_uid_for_snapshot(debug_state.sort_route_uid);
+
+	Array events;
+	if (trace_fresh) {
+		events.resize(debug_state.pipeline_events.size());
+		for (int i = 0; i < debug_state.pipeline_events.size(); i++) {
+			events[i] = _pipeline_event_to_dict(debug_state.pipeline_events[i]);
+		}
+	}
+	snapshot["events"] = events;
+
+	snapshot["stage_metrics_valid"] = debug_state.last_stage_metrics_valid;
+	if (debug_state.last_stage_metrics_valid) {
+		Dictionary stage_results;
+		stage_results["cull"] = _stage_result_to_dict(debug_state.last_stage_metrics.cull_result);
+		stage_results["sort"] = _stage_result_to_dict(debug_state.last_stage_metrics.sort_result);
+		stage_results["raster"] = _stage_result_to_dict(debug_state.last_stage_metrics.raster_result);
+		stage_results["composite"] = _stage_result_to_dict(debug_state.last_stage_metrics.composite_result);
+		snapshot["stage_results"] = stage_results;
+
+		Dictionary stage_metrics;
+		stage_metrics["cull"] = _cull_output_to_dict(debug_state.last_stage_metrics.cull);
+		stage_metrics["sort"] = _sort_output_to_dict(debug_state.last_stage_metrics.sort);
+		stage_metrics["raster"] = _raster_output_to_dict(debug_state.last_stage_metrics.raster);
+		Dictionary composite_metrics;
+		composite_metrics["executed"] = debug_state.last_stage_metrics.composite_executed;
+		composite_metrics["time_ms"] = debug_state.last_stage_metrics.composite_time_ms;
+		stage_metrics["composite"] = composite_metrics;
+		snapshot["stage_metrics"] = stage_metrics;
+
+		Dictionary stage_io;
+		stage_io["cull"] = _stage_io_to_dict(debug_state.last_stage_metrics.cull_io);
+		stage_io["sort"] = _stage_io_to_dict(debug_state.last_stage_metrics.sort_io);
+		stage_io["raster"] = _stage_io_to_dict(debug_state.last_stage_metrics.raster_io);
+		stage_io["composite"] = _stage_io_to_dict(debug_state.last_stage_metrics.composite_io);
+		snapshot["stage_io"] = stage_io;
+	}
+
+	if (debug_state.splat_audit.valid || debug_config.enable_splat_audit) {
+		snapshot["splat_audit"] = _splat_audit_to_dict(debug_state.splat_audit);
+	}
+
+	if (debug_config.enable_pipeline_trace) {
+		Dictionary data_flow = GaussianSplatting::debug_trace_get_data_flow_snapshot();
+		if (!data_flow.is_empty()) {
+			snapshot["data_flow"] = data_flow;
+		}
+		Array debug_events = GaussianSplatting::debug_trace_get_recent_events();
+		if (!debug_events.is_empty()) {
+			snapshot["debug_events"] = debug_events;
+		}
+	}
+
+	return snapshot;
+}
+
+String RenderDebugStateOrchestrator::get_pipeline_trace_json() const {
+	return JSON::stringify(get_pipeline_trace_snapshot(), String::utf8("  "));
+}
+
+Error RenderDebugStateOrchestrator::dump_pipeline_trace_to_file(const String &p_path) const {
+	if (p_path.is_empty()) {
+		return ERR_INVALID_PARAMETER;
+	}
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE); // GS_CI_ALLOW_RENDER_PATH_FS_WRITE
+	if (!file.is_valid()) {
+		return FileAccess::get_open_error();
+	}
+	file->store_string(get_pipeline_trace_json()); // GS_CI_ALLOW_RENDER_PATH_FS_WRITE
+	return OK;
+}
+
 // Orchestrator setters - delegate to DebugOverlaySystem if available, otherwise update debug state directly.
 void RenderDebugStateOrchestrator::set_debug_show_tile_grid(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_tile_grid(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_tile_grid(p_enabled);
 		return;
 	}
 	if (debug_state.show_tile_grid == p_enabled) {
@@ -817,7 +966,7 @@ void RenderDebugStateOrchestrator::set_debug_show_tile_grid(bool p_enabled) {
 
 void RenderDebugStateOrchestrator::set_debug_show_density_heatmap(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_density_heatmap(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_density_heatmap(p_enabled);
 		return;
 	}
 	if (debug_state.show_density_heatmap == p_enabled) {
@@ -828,7 +977,7 @@ void RenderDebugStateOrchestrator::set_debug_show_density_heatmap(bool p_enabled
 
 void RenderDebugStateOrchestrator::set_debug_show_shadow_opacity(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_show_shadow_opacity(p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_shadow_opacity(p_enabled);
 		return;
 	}
 	if (debug_state.show_shadow_opacity == p_enabled) {
@@ -839,7 +988,7 @@ void RenderDebugStateOrchestrator::set_debug_show_shadow_opacity(bool p_enabled)
 
 void RenderDebugStateOrchestrator::set_debug_show_performance_hud(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_performance_hud(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_performance_hud(p_enabled);
 		return;
 	}
 	if (debug_state.show_performance_hud == p_enabled) {
@@ -850,7 +999,7 @@ void RenderDebugStateOrchestrator::set_debug_show_performance_hud(bool p_enabled
 
 void RenderDebugStateOrchestrator::set_debug_show_residency_hud(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_residency_hud(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_residency_hud(p_enabled);
 		return;
 	}
 	if (debug_state.show_residency_hud == p_enabled) {
@@ -861,7 +1010,7 @@ void RenderDebugStateOrchestrator::set_debug_show_residency_hud(bool p_enabled) 
 
 void RenderDebugStateOrchestrator::set_debug_show_device_boundaries(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_device_boundaries(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_device_boundaries(p_enabled);
 		return;
 	}
 	if (debug_state.show_device_boundaries == p_enabled) {
@@ -872,7 +1021,7 @@ void RenderDebugStateOrchestrator::set_debug_show_device_boundaries(bool p_enabl
 
 void RenderDebugStateOrchestrator::set_debug_show_texture_states(bool p_enabled) {
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_show_texture_states(renderer, p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_show_texture_states(p_enabled);
 		return;
 	}
 	if (debug_state.show_texture_states == p_enabled) {
@@ -884,7 +1033,7 @@ void RenderDebugStateOrchestrator::set_debug_show_texture_states(bool p_enabled)
 void RenderDebugStateOrchestrator::set_debug_overlay_opacity(float p_opacity) {
 	float clamped = CLAMP(p_opacity, 0.0f, 1.0f);
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_renderer_overlay_opacity(renderer, clamped);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_overlay_opacity(clamped);
 		return;
 	}
 
@@ -908,13 +1057,13 @@ int RenderDebugStateOrchestrator::get_debug_compute_raster_policy() const {
 void RenderDebugStateOrchestrator::set_debug_dump_gpu_counters(bool p_enabled) {
 	debug_config.dump_gpu_counters = p_enabled;
 	if (debug_overlay_system->is_valid()) {
-		debug_overlay_system->ptr()->set_dump_gpu_counters(p_enabled);
+		debug_overlay_system->ptr()->build_command_sink(renderer).set_dump_gpu_counters(p_enabled);
 	}
 }
 
 bool RenderDebugStateOrchestrator::get_debug_dump_gpu_counters() const {
 	if (debug_overlay_system->is_valid()) {
-		return debug_overlay_system->ptr()->get_dump_gpu_counters();
+		return debug_overlay_system->ptr()->build_query_view(renderer).get_options().dump_gpu_counters;
 	}
 	return debug_config.dump_gpu_counters;
 }
@@ -993,139 +1142,31 @@ Dictionary GaussianSplatRenderer::get_binning_debug_counters() const {
 }
 
 int GaussianSplatRenderer::get_overflow_tile_count() const {
-	if (!tile_renderer_state.renderer.is_valid()) {
-		return 0;
-	}
-	return tile_renderer_state.renderer->get_overflow_tile_count();
+	return debug_state_orchestrator->get_overflow_tile_count();
 }
 
 int GaussianSplatRenderer::get_clamped_records() const {
-	if (!tile_renderer_state.renderer.is_valid()) {
-		return 0;
-	}
-	return tile_renderer_state.renderer->get_clamped_records();
+	return debug_state_orchestrator->get_clamped_records();
 }
 
 int GaussianSplatRenderer::get_aggregated_count() const {
-	if (!tile_renderer_state.renderer.is_valid()) {
-		return 0;
-	}
-	return tile_renderer_state.renderer->get_aggregated_count();
+	return debug_state_orchestrator->get_aggregated_count();
 }
 
 Dictionary GaussianSplatRenderer::get_overflow_stats() const {
-	Dictionary out;
-	if (!tile_renderer_state.renderer.is_valid()) {
-		return out;
-	}
-
-	const TileRenderer::OverflowStatsSnapshot overflow = tile_renderer_state.renderer->get_overflow_stats();
-	out["overflow_tile_count"] = static_cast<int64_t>(overflow.overflow_tile_count);
-	out["clamped_records"] = static_cast<int64_t>(overflow.overflow_splats_clamped);
-	out["aggregated_records"] = static_cast<int64_t>(overflow.overflow_splats_aggregated);
-	out["raster_sample_count"] = static_cast<int64_t>(overflow.raster_sample_count);
-	out["raster_splats_iterated"] = static_cast<int64_t>(overflow.raster_splats_iterated);
-	out["raster_splats_contributed"] = static_cast<int64_t>(overflow.raster_splats_contributed);
-	return out;
+	return debug_state_orchestrator->get_overflow_stats();
 }
 
 Dictionary GaussianSplatRenderer::get_pipeline_trace_snapshot() const {
-	const DebugState &debug_state = debug_state_orchestrator->get_state();
-	const DebugConfig &debug_config = debug_state_orchestrator->get_config();
-
-	Dictionary snapshot;
-	const uint64_t frame_id = debug_state.pipeline_events_valid
-			? debug_state.pipeline_events_frame
-			: get_frame_state().frame_counter;
-	const bool trace_fresh = debug_state.pipeline_events_valid;
-	String route_uid = debug_state.route_uid;
-	if (trace_fresh && RenderRouteUID::is_route_uid_missing(route_uid) && !debug_state.pipeline_events.is_empty()) {
-		for (int i = debug_state.pipeline_events.size() - 1; i >= 0; --i) {
-			const String &event_uid = debug_state.pipeline_events[i].route_uid;
-			if (!RenderRouteUID::is_route_uid_missing(event_uid)) {
-				route_uid = event_uid;
-				break;
-			}
-		}
-	}
-	route_uid = _normalize_route_uid_for_snapshot(route_uid);
-	snapshot["frame"] = static_cast<int64_t>(frame_id);
-	snapshot["dump_frame"] = static_cast<int64_t>(get_frame_state().frame_counter);
-	snapshot["trace_enabled"] = debug_config.enable_pipeline_trace;
-	snapshot["events_valid"] = debug_state.pipeline_events_valid;
-	snapshot["trace_fresh"] = trace_fresh;
-	snapshot["trace_generation"] = static_cast<int64_t>(debug_state.pipeline_trace_generation);
-	snapshot["route_uid"] = route_uid;
-	snapshot["sort_route_uid"] = _normalize_sort_route_uid_for_snapshot(debug_state.sort_route_uid);
-
-	Array events;
-	if (trace_fresh) {
-		events.resize(debug_state.pipeline_events.size());
-		for (int i = 0; i < debug_state.pipeline_events.size(); i++) {
-			events[i] = _pipeline_event_to_dict(debug_state.pipeline_events[i]);
-		}
-	}
-	snapshot["events"] = events;
-
-	snapshot["stage_metrics_valid"] = debug_state.last_stage_metrics_valid;
-	if (debug_state.last_stage_metrics_valid) {
-		Dictionary stage_results;
-		stage_results["cull"] = _stage_result_to_dict(debug_state.last_stage_metrics.cull_result);
-		stage_results["sort"] = _stage_result_to_dict(debug_state.last_stage_metrics.sort_result);
-		stage_results["raster"] = _stage_result_to_dict(debug_state.last_stage_metrics.raster_result);
-		stage_results["composite"] = _stage_result_to_dict(debug_state.last_stage_metrics.composite_result);
-		snapshot["stage_results"] = stage_results;
-
-		Dictionary stage_metrics;
-		stage_metrics["cull"] = _cull_output_to_dict(debug_state.last_stage_metrics.cull);
-		stage_metrics["sort"] = _sort_output_to_dict(debug_state.last_stage_metrics.sort);
-		stage_metrics["raster"] = _raster_output_to_dict(debug_state.last_stage_metrics.raster);
-		Dictionary composite_metrics;
-		composite_metrics["executed"] = debug_state.last_stage_metrics.composite_executed;
-		composite_metrics["time_ms"] = debug_state.last_stage_metrics.composite_time_ms;
-		stage_metrics["composite"] = composite_metrics;
-		snapshot["stage_metrics"] = stage_metrics;
-
-		Dictionary stage_io;
-		stage_io["cull"] = _stage_io_to_dict(debug_state.last_stage_metrics.cull_io);
-		stage_io["sort"] = _stage_io_to_dict(debug_state.last_stage_metrics.sort_io);
-		stage_io["raster"] = _stage_io_to_dict(debug_state.last_stage_metrics.raster_io);
-		stage_io["composite"] = _stage_io_to_dict(debug_state.last_stage_metrics.composite_io);
-		snapshot["stage_io"] = stage_io;
-	}
-
-	if (debug_state.splat_audit.valid || debug_config.enable_splat_audit) {
-		snapshot["splat_audit"] = _splat_audit_to_dict(debug_state.splat_audit);
-	}
-
-	if (debug_config.enable_pipeline_trace) {
-		Dictionary data_flow = GaussianSplatting::debug_trace_get_data_flow_snapshot();
-		if (!data_flow.is_empty()) {
-			snapshot["data_flow"] = data_flow;
-		}
-		Array debug_events = GaussianSplatting::debug_trace_get_recent_events();
-		if (!debug_events.is_empty()) {
-			snapshot["debug_events"] = debug_events;
-		}
-	}
-
-	return snapshot;
+	return debug_state_orchestrator->get_pipeline_trace_snapshot();
 }
 
 String GaussianSplatRenderer::get_pipeline_trace_json() const {
-	return JSON::stringify(get_pipeline_trace_snapshot(), String::utf8("  "));
+	return debug_state_orchestrator->get_pipeline_trace_json();
 }
 
 Error GaussianSplatRenderer::dump_pipeline_trace_to_file(const String &p_path) const {
-	if (p_path.is_empty()) {
-		return ERR_INVALID_PARAMETER;
-	}
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
-	if (!file.is_valid()) {
-		return FileAccess::get_open_error();
-	}
-	file->store_string(get_pipeline_trace_json());
-	return OK;
+	return debug_state_orchestrator->dump_pipeline_trace_to_file(p_path);
 }
 
 void GaussianSplatRenderer::update_debug_raster_metrics(const RasterPerformance &p_perf, const RasterStats &p_stats) {

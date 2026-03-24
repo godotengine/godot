@@ -13,9 +13,15 @@ public:
 	using RenderSortedSplatsFn = std::function<void(RenderDataRD *, const Transform3D &, const Projection &,
 			const Projection &, bool)>;
 
-	RenderInstancingOrchestrator(GaussianSplatRenderer *p_renderer, OutputCompositor *p_output_compositor,
-			RenderPipelineStages *p_pipeline_stages, PrepareRenderFrameContextFn p_prepare_render_frame_context,
-			RenderSortedSplatsFn p_render_sorted_splats);
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		OutputCompositor *output_compositor = nullptr;
+		RenderPipelineStages *pipeline_stages = nullptr;
+		PrepareRenderFrameContextFn prepare_render_frame_context;
+		RenderSortedSplatsFn render_sorted_splats;
+	};
+
+	explicit RenderInstancingOrchestrator(const Dependencies &p_dependencies);
 
 	void render_instanced(RenderDataRD *p_render_data,
 			const GaussianSplatManager::SharedDynamicAssetHandle &p_handle,

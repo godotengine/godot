@@ -108,8 +108,10 @@ RenderingDevice *PainterlyRenderer::_resolve_tracked_device(const RidOwner &p_ow
 
     add_candidate(rd);
     if (p_renderer) {
+        GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+        const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
         add_candidate(p_renderer->get_main_rendering_device());
-        add_candidate(p_renderer->get_device_state().rd);
+        add_candidate(state_view.get_rendering_device());
     }
     if (GaussianSplatManager *manager = GaussianSplatManager::get_singleton()) {
         add_candidate(_ensure_local_device(manager->get_primary_rendering_device()));
@@ -1022,7 +1024,9 @@ void PainterlyRenderer::_update_painterly_texture_tracking(GaussianSplatRenderer
         return;
     }
 
-    RenderingDevice *fallback_device = p_renderer->get_device_state().rd;
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+    RenderingDevice *fallback_device = state_view.get_rendering_device();
     RenderingDevice *local_tracking_device = rd ? rd : fallback_device;
     for (int slot = 0; slot < PainterlyPassGraph::TEXTURE_COUNT; slot++) {
         PainterlyPassGraph::TextureSlot texture_slot = static_cast<PainterlyPassGraph::TextureSlot>(slot);
@@ -1188,7 +1192,9 @@ Error PainterlyRenderer::render_painterly_frame(GaussianSplatRenderer *p_rendere
         }
     };
 
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+    const auto &subsystem_state = state_view.get_subsystem_state_view();
     if (subsystem_state.rasterizer.is_valid()) {
         RID tile_color = subsystem_state.rasterizer->get_output_texture();
         RID tile_depth = subsystem_state.rasterizer->has_depth_output()
@@ -1242,6 +1248,9 @@ void PainterlyRenderer::_ensure_painterly_composite_resources(GaussianSplatRende
         return;
     }
 
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+
     if (!painterly_composite_shader.is_valid()) {
         Vector<String> vertex_paths;
         vertex_paths.push_back("res://modules/gaussian_splatting/shaders/painterly_composite.vert.glsl");
@@ -1260,7 +1269,7 @@ void PainterlyRenderer::_ensure_painterly_composite_resources(GaussianSplatRende
     }
     if (painterly_composite_shader.is_valid()) {
         painterly_composite_shader_owner.set(
-                p_renderer->get_resource_owner(painterly_composite_shader, p_renderer->get_device_state().rd));
+                p_renderer->get_resource_owner(painterly_composite_shader, state_view.get_rendering_device()));
     }
 
     if (!painterly_composite_pipeline_initialized && painterly_composite_shader.is_valid()) {
@@ -1470,8 +1479,10 @@ void PainterlyRenderer::clear_painterly_gpu_resources(GaussianSplatRenderer *p_r
     if (!p_renderer) {
         return;
     }
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    GaussianSplatRenderer::IFrameMutationAccess &state_mut = frame_provider;
     // Phase 15: Fully delegated to PainterlyMaterialManager
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    auto &subsystem_state = state_mut.get_subsystem_state_mut();
     if (subsystem_state.painterly_material_manager.is_valid()) {
         subsystem_state.painterly_material_manager->clear_resources();
     }
@@ -1489,13 +1500,16 @@ void PainterlyRenderer::update_painterly_gpu_resources(GaussianSplatRenderer *p_
         return;
     }
 
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+    GaussianSplatRenderer::IFrameMutationAccess &state_mut = frame_provider;
     // Phase 15: Delegate resource management to PainterlyMaterialManager
-    auto &subsystem_state = p_renderer->get_subsystem_state();
-    auto &device_state = p_renderer->get_device_state();
+    auto &subsystem_state = state_mut.get_subsystem_state_mut();
+    RenderingDevice *rendering_device = state_view.get_rendering_device();
     if (subsystem_state.painterly_material_manager.is_valid()) {
         // Initialize manager if needed (requires RenderingDevice)
-        if (!subsystem_state.painterly_material_manager->is_initialized() && device_state.rd) {
-            subsystem_state.painterly_material_manager->initialize(device_state.rd);
+        if (!subsystem_state.painterly_material_manager->is_initialized() && rendering_device) {
+            subsystem_state.painterly_material_manager->initialize(rendering_device);
         }
 
         // Manager handles material signal connection and resource updates
@@ -1546,19 +1560,23 @@ Error PainterlyRenderer::populate_painterly_gbuffer(GaussianSplatRenderer *p_ren
         return ERR_UNCONFIGURED;
     }
 
-    auto &scene_state = p_renderer->get_scene_state();
-    auto &resource_state = p_renderer->get_resource_state();
-    auto &streaming_state = p_renderer->get_streaming_state();
-    auto &sorting_state = p_renderer->get_sorting_state();
+    GaussianSplatRenderer::FrameStateProvider frame_provider(p_renderer);
+    const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;
+    GaussianSplatRenderer::IFrameMutationAccess &state_mut = frame_provider;
+
+    const auto &scene_state = state_view.get_scene_state();
+    const auto &resource_state = state_view.get_resource_state_view();
+    const auto &streaming_state = state_view.get_streaming_state();
+    const auto &sorting_state = state_view.get_sorting_state_view();
     auto &culling_config = p_renderer->get_culling_config();
     auto &view_state = p_renderer->get_view_state();
     auto &tile_renderer_state = p_renderer->get_tile_renderer_state();
-    auto &subsystem_state = p_renderer->get_subsystem_state();
+    auto &subsystem_state = state_mut.get_subsystem_state_mut();
     auto &debug_state = p_renderer->get_debug_state();
-    auto &jacobian_debug = p_renderer->get_jacobian_debug();
-    auto &frame_state = p_renderer->get_frame_state();
-    auto &performance_state = p_renderer->get_performance_state();
-    auto &device_state = p_renderer->get_device_state();
+    const auto &jacobian_debug = state_view.get_jacobian_debug_view();
+    const auto &frame_state = state_view.get_frame_state_view();
+    auto &performance_state = state_mut.get_performance_state_mut();
+    RenderingDevice *rendering_device = state_view.get_rendering_device();
 
     RID color_texture = pass_graph->get_texture(PainterlyPassGraph::TEXTURE_COLOR);
     RID depth_texture = pass_graph->get_texture(PainterlyPassGraph::TEXTURE_DEPTH);
@@ -1704,7 +1722,7 @@ Error PainterlyRenderer::populate_painterly_gbuffer(GaussianSplatRenderer *p_ren
 	render_params.projection = p_projection;
 	render_params.render_projection = p_render_projection;
 	render_params.tile_size = TileRenderer::DEFAULT_TILE_SIZE;
-    render_params.opacity_multiplier = p_renderer->get_opacity_multiplier();
+    render_params.opacity_multiplier = state_view.get_render_config_view().opacity_multiplier;
 
 	// Read debug options from interface subsystem (Phase 8 migration)
 	p_renderer->apply_debug_options_to_render_params(render_params);
@@ -1796,7 +1814,7 @@ Error PainterlyRenderer::populate_painterly_gbuffer(GaussianSplatRenderer *p_ren
         tile_device = _ensure_local_device(previous_tile_device);
     }
     if (!tile_device) {
-        tile_device = _ensure_local_device(device_state.rd);
+        tile_device = _ensure_local_device(rendering_device);
     }
     if (!tile_device) {
         tile_device = p_renderer->get_submission_device();

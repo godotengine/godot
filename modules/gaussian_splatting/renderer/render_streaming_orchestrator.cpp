@@ -516,15 +516,22 @@ static void _collect_instance_pipeline_residency_requests(const LocalVector<Inst
 	}
 }
 
-RenderStreamingOrchestrator::RenderStreamingOrchestrator(GaussianSplatRenderer *p_renderer,
-		RenderDataOrchestrator *p_data_orchestrator,
-		RenderDeviceOrchestrator *p_device_orchestrator) :
-		renderer(p_renderer),
-		data_orchestrator(p_data_orchestrator),
-		device_orchestrator(p_device_orchestrator) {
+RenderStreamingOrchestrator::RenderStreamingOrchestrator(const RenderStreamingOrchestratorDependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		data_orchestrator(p_dependencies.data_orchestrator),
+		device_orchestrator(p_dependencies.device_orchestrator),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(data_orchestrator);
 	ERR_FAIL_NULL(device_orchestrator);
+	ERR_FAIL_COND_MSG(runtime_ports.ensure_rendering_device == nullptr, "RenderStreamingOrchestrator requires ensure_rendering_device runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.build_cull_projection == nullptr, "RenderStreamingOrchestrator requires build_cull_projection runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.validate_cull_projection_contract == nullptr, "RenderStreamingOrchestrator requires validate_cull_projection_contract runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.clear_instance_pipeline_buffers == nullptr, "RenderStreamingOrchestrator requires clear_instance_pipeline_buffers runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.update_instance_buffer == nullptr, "RenderStreamingOrchestrator requires update_instance_buffer runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.run_cull_sort_pipeline_frame == nullptr, "RenderStreamingOrchestrator requires run_cull_sort_pipeline_frame runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.get_cull_radius_multiplier == nullptr, "RenderStreamingOrchestrator requires get_cull_radius_multiplier runtime port.");
+	ERR_FAIL_COND_MSG(runtime_ports.get_cull_frustum_plane_slack == nullptr, "RenderStreamingOrchestrator requires get_cull_frustum_plane_slack runtime port.");
 }
 
 const RenderStreamingOrchestrator::VisibleLODSelection &RenderStreamingOrchestrator::produce_visible_lod_selection(
@@ -584,7 +591,9 @@ void RenderStreamingOrchestrator::consume_visible_lod_selection_for_residency(
 
 bool RenderStreamingOrchestrator::should_throttle_streaming_rebuild(uint32_t p_chunks_loaded, uint32_t p_chunks_evicted,
 		uint32_t p_visible_evicted, uint64_t p_current_frame) {
-	StreamingState &streaming_state = renderer->get_streaming_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
 
 	uint32_t total_chunks_changed = p_chunks_loaded + p_chunks_evicted;
 
@@ -627,14 +636,17 @@ bool RenderStreamingOrchestrator::should_throttle_streaming_rebuild(uint32_t p_c
 }
 
 bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
-	StreamingState &streaming_state = renderer->get_streaming_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
 	if (streaming_state.current_streaming_system.is_valid()) {
 		return true;
 	}
-	if (!renderer->ensure_rendering_device("instance_pipeline_streaming")) {
+	if (!(renderer->*runtime_ports.ensure_rendering_device)("instance_pipeline_streaming")) {
 		return false;
 	}
-	RenderingDevice *rd = renderer->get_device_state().rd;
+	RenderingDevice *rd = state_view.get_rendering_device();
 	if (!rd) {
 		return false;
 	}
@@ -657,8 +669,9 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	overrides.vram_budget_config = instance_budget;
 	streaming_system->set_config_overrides(overrides);
 	streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
-	const Ref<GaussianData> primary_data = renderer->get_scene_state().gaussian_data;
+			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
+			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
+	const Ref<GaussianData> primary_data = state_view.get_scene_state().gaussian_data;
 	if (primary_data.is_valid() && primary_data->get_count() > 0) {
 		// Recover world/static-only renderers that populated gaussian_data before
 		// the RenderingDevice was available. In that case set_gaussian_data() can
@@ -710,6 +723,8 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 
 void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamingSystem *p_streaming_system) {
 	const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	if (!p_streaming_system) {
 		if (trace_enabled) {
 			GaussianSplatting::debug_trace_record_event("instance_pipeline", "SyncAssets FAIL: streaming_system=NULL", true);
@@ -748,7 +763,7 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 		instance_pipeline_empty_asset_sync_streak = 0;
 	}
 
-	const auto &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+	const auto &cull_state = state_view.get_subsystem_state_view().gpu_culler->get_state();
 	const Vector<GaussianSplatRenderer::StaticChunk> &static_chunks = cull_state.static_chunks;
 	const uint64_t static_chunks_revision = cull_state.static_chunks_revision;
 	const bool static_layout_cache_miss = static_layout_cache_revision != static_chunks_revision;
@@ -858,7 +873,7 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 			}
 			if (primary_layout_valid && total_source_indices > 0) {
 				primary_layout_cache_source_indices.resize(static_cast<int>(total_source_indices));
-				const Ref<GaussianData> primary_data = renderer->get_scene_state().gaussian_data;
+				const Ref<GaussianData> primary_data = state_view.get_scene_state().gaussian_data;
 				const uint32_t primary_splat_count = primary_data.is_valid() ? primary_data->get_count() : 0;
 				uint32_t write_offset = 0;
 				for (int chunk_idx = 0; chunk_idx < static_chunks.size() && primary_layout_valid; chunk_idx++) {
@@ -1177,17 +1192,22 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 				false);
 	}
 
-	StreamingState &streaming_state = renderer->get_streaming_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
+	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
+	GaussianSplatRenderer::ResourceState &resource_state = state_mut.get_resource_state_mut();
 	auto publish_not_ready_route = [&](StreamingReadinessState p_state) {
-		renderer->get_debug_state().route_uid = _streaming_not_ready_route_uid(p_state);
+		state_mut.get_debug_state_mut().route_uid = _streaming_not_ready_route_uid(p_state);
 	};
 	if (!streaming_state.current_streaming_system.is_valid()) {
 		const StreamingReadinessState readiness_state = StreamingReadinessState::MISSING_STREAMING_SYSTEM;
 		publish_not_ready_route(readiness_state);
-		Dictionary streaming_metrics = renderer->get_performance_state().metrics.streaming_state;
+		Dictionary streaming_metrics = performance_state.metrics.streaming_state;
 		_apply_streaming_render_readiness_diagnostics(streaming_metrics, readiness_state,
 				"current_streaming_system invalid");
-		renderer->get_performance_state().metrics.streaming_state = streaming_metrics;
+		performance_state.metrics.streaming_state = streaming_metrics;
 		return false;
 	}
 	auto log_streaming_reset = [&](const char *p_reason) {
@@ -1242,13 +1262,13 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 				static_cast<int64_t>(owner_mismatch_detected_count);
 		streaming_metrics["instance_pipeline_owner_mismatch_forced_invalidation"] =
 				static_cast<int64_t>(owner_mismatch_forced_invalidation_count);
-		renderer->get_performance_state().metrics.streaming_state = streaming_metrics;
+		performance_state.metrics.streaming_state = streaming_metrics;
 	};
 
 	streaming_state.current_streaming_system->begin_frame();
 
-	Projection cull_projection = renderer->build_cull_projection(p_render_data, p_projection);
-	renderer->validate_cull_projection_contract(p_render_data, p_projection, cull_projection,
+	Projection cull_projection = (renderer->*runtime_ports.build_cull_projection)(p_render_data, p_projection);
+	(renderer->*runtime_ports.validate_cull_projection_contract)(p_render_data, p_projection, cull_projection,
 			"render_streaming_orchestrator::render_streaming_frame");
 
 	// Update streaming based on camera transform and projection.
@@ -1262,7 +1282,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		publish_not_ready_route(readiness_state);
 		log_streaming_reset("null_system_ptr");
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return false;
 	}
 	String bootstrap_error;
@@ -1273,7 +1293,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		publish_not_ready_route(readiness_state);
 		log_streaming_reset("runtime_not_ready");
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return false;
 	}
 	instance_pipeline_instance_cache.clear();
@@ -1291,8 +1311,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 	// synthetic primary instance so cull/sort buffer contracts remain valid.
 	if (p_allow_runtime_fallback_instance &&
 			instance_pipeline_instance_cache.is_empty() &&
-			renderer->get_scene_state().gaussian_data.is_valid() &&
-			renderer->get_scene_state().gaussian_data->get_count() > 0) {
+			state_view.get_scene_state().gaussian_data.is_valid() &&
+			state_view.get_scene_state().gaussian_data->get_count() > 0) {
 		InstanceDataGPU fallback_instance = {};
 		fallback_instance.rotation[3] = 1.0f;
 		fallback_instance.inv_rotation[3] = 1.0f;
@@ -1331,13 +1351,14 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		publish_not_ready_route(readiness_state);
 		log_streaming_reset("instances_without_registered_assets");
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return false;
 	}
-	renderer->update_instance_buffer(instance_pipeline_instance_cache);
+	(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache);
 
 	streaming_state.current_streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
+			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
+			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
 
 	streaming_state.current_streaming_system->update_streaming(streaming_camera_transform, cull_projection);
 
@@ -1350,7 +1371,6 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		atlas_generation = streaming_state.current_streaming_system->get_atlas_generation();
 	}
 	const uint64_t base_content_generation = _mix_content_generation(instance_generation, atlas_generation);
-	ResourceState &resource_state = renderer->get_resource_state();
 	resource_state.instance_pipeline_content_generation = base_content_generation;
 	bool instance_buffers_atlas_ready = false;
 	bool instance_buffers_cull_ready = false;
@@ -1429,8 +1449,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		buffers.max_visible_chunks = max_visible_chunks;
 		instance_pipeline_max_visible_chunks = buffers.max_visible_chunks;
 
-		ResourceState &resource_state_mut = renderer->get_resource_state();
-		RenderingDevice *rd = renderer->get_device_state().rd;
+		ResourceState &resource_state_mut = resource_state;
+		RenderingDevice *rd = state_view.get_rendering_device();
 		if (rd) {
 			const auto remediate_instance_pipeline_buffer = [&](RID &r_buffer, uint32_t *r_capacity, const char *p_label) {
 				const OwnerMismatchRemediationResult remediation =
@@ -1538,7 +1558,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			buffers.instance_count_buffer = resource_state_mut.instance_count_buffer;
 		}
 
-		GPUSortingPipeline *sorting_pipeline = renderer->get_subsystem_state().sorting_pipeline.ptr();
+		GPUSortingPipeline *sorting_pipeline = state_view.get_subsystem_state_view().sorting_pipeline.ptr();
 		if (sorting_pipeline) {
 			// Instance pipeline may need more sort capacity than the per-instance
 			// max_splats budget used to initialize the sorter. Rebuild the sorter
@@ -1843,7 +1863,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		return false;
 	}
 
-	renderer->run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
+	(renderer->*runtime_ports.run_cull_sort_pipeline_frame)(p_render_data, effective_view_transform, p_projection, p_render_projection,
 			p_render_buffers, stream_ready,
 			"Cull skipped: streaming data unavailable",
 			"Sort skipped: streaming data unavailable",
@@ -1856,7 +1876,12 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 }
 
 void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection) {
-	StreamingState &streaming_state = renderer->get_streaming_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
+	GaussianSplatRenderer::FrameState &frame_state_mut = state_mut.get_frame_state_mut();
+	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
 	if (!streaming_state.current_streaming_system.is_valid()) {
 		if (!ensure_instance_streaming_system()) {
 			return;
@@ -1876,7 +1901,7 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 		ERR_PRINT(vformat("[GaussianSplatRenderer] Streaming system reset (tick_runtime_not_ready), previous_system=%s",
 				String::num_uint64(system_id)));
 		streaming_state.current_streaming_system.unref();
-		renderer->clear_instance_pipeline_buffers();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return;
 	}
 
@@ -1900,7 +1925,7 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 			ERR_PRINT(vformat("[GaussianSplatRenderer] Streaming system reset (tick_instances_without_registered_assets), previous_system=%s",
 					String::num_uint64(system_id)));
 			streaming_state.current_streaming_system.unref();
-			renderer->clear_instance_pipeline_buffers();
+			(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 			return;
 		}
 
@@ -1908,13 +1933,13 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 	}
 
 	streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
-	const Projection cull_projection = renderer->build_cull_projection(nullptr, p_projection);
-	renderer->validate_cull_projection_contract(nullptr, p_projection, cull_projection,
+			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
+			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
+	const Projection cull_projection = (renderer->*runtime_ports.build_cull_projection)(nullptr, p_projection);
+	(renderer->*runtime_ports.validate_cull_projection_contract)(nullptr, p_projection, cull_projection,
 			"render_streaming_orchestrator::tick_streaming_only");
 	streaming_system->update_streaming(p_camera_to_world_transform, cull_projection);
-	renderer->get_frame_state().visible_splat_count.store(
-			streaming_system->get_visible_count(), std::memory_order_release);
+	frame_state_mut.visible_splat_count.store(streaming_system->get_visible_count(), std::memory_order_release);
 
 	streaming_system->end_frame();
 
@@ -1930,9 +1955,9 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 			static_layout_fallback_last_reason_category,
 			static_layout_fallback_last_context,
 			static_layout_fallback_last_detail);
-	auto &perf_metrics = renderer->get_performance_state().metrics;
-	const auto &frame_state = renderer->get_frame_state();
-	const auto &debug_state = renderer->get_debug_state();
+	auto &perf_metrics = performance_state.metrics;
+	const auto &frame_state = state_view.get_frame_state_view();
+	const auto &debug_state = state_view.get_debug_state_view();
 
 	bool stage_metrics_valid = debug_state.last_stage_metrics_valid;
 	float stage_cull_time_ms = perf_metrics.culling_time_ms;

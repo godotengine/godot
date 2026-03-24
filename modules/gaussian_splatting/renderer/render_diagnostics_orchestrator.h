@@ -11,9 +11,22 @@ class RenderDiagnosticsOrchestrator {
 public:
 	using BuildDeviceCapabilityReportFn = std::function<Dictionary()>;
 
-	RenderDiagnosticsOrchestrator(GaussianSplatRenderer *p_renderer,
-			RenderDebugStateOrchestrator *p_debug_state_orchestrator,
-			BuildDeviceCapabilityReportFn p_build_device_capability_report);
+	struct RuntimePorts {
+		void (GaussianSplatRenderer::*update_gpu_pass_metrics_from_tile_renderer)() = &GaussianSplatRenderer::update_gpu_pass_metrics_from_tile_renderer;
+		const GaussianSplatRenderer::PainterlyConfig &(GaussianSplatRenderer::*get_painterly_config)() const = &GaussianSplatRenderer::get_painterly_config;
+		const GaussianSplatRenderer::ViewState &(GaussianSplatRenderer::*get_view_state)() const = &GaussianSplatRenderer::get_view_state;
+		const GaussianSplatRenderer::DebugConfig &(GaussianSplatRenderer::*get_debug_config)() const = &GaussianSplatRenderer::get_debug_config;
+		RenderingDevice *(GaussianSplatRenderer::*resolve_resource_owner)(const RID &, RenderingDevice *) const = &GaussianSplatRenderer::get_resource_owner;
+	};
+
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		RenderDebugStateOrchestrator *debug_state_orchestrator = nullptr;
+		BuildDeviceCapabilityReportFn build_device_capability_report;
+		RuntimePorts runtime_ports;
+	};
+
+	explicit RenderDiagnosticsOrchestrator(const Dependencies &p_dependencies);
 
 	GaussianSplatRenderer::DiagnosticsState &get_state() { return diagnostics_state; }
 	const GaussianSplatRenderer::DiagnosticsState &get_state() const { return diagnostics_state; }
@@ -44,6 +57,7 @@ private:
 	GaussianSplatRenderer *renderer = nullptr;
 	RenderDebugStateOrchestrator *debug_state_orchestrator = nullptr;
 	BuildDeviceCapabilityReportFn build_device_capability_report;
+	RuntimePorts runtime_ports;
 	GaussianSplatRenderer::DiagnosticsState diagnostics_state;
 };
 

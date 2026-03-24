@@ -6,32 +6,39 @@
 #include "../interfaces/gpu_sorting_pipeline.h"
 #include "../logger/gs_logger.h"
 
-static bool _is_data_orchestrator_log_enabled(const GaussianSplatRenderer *p_renderer) {
-	if (!p_renderer) {
+static bool _is_data_orchestrator_log_enabled(const GaussianSplatRenderer::DebugConfig *p_debug_config) {
+	if (!p_debug_config) {
 		return false;
 	}
-	const auto &debug_config = p_renderer->get_debug_config();
-	return debug_config.enable_data_logging ||
-			debug_config.enable_frame_logging ||
-			debug_config.enable_all_debug;
+	return p_debug_config->enable_data_logging ||
+			p_debug_config->enable_frame_logging ||
+			p_debug_config->enable_all_debug;
 }
 
-RenderDataOrchestrator::RenderDataOrchestrator(GaussianSplatRenderer *p_renderer,
-		ReleaseSharedDynamicAssetFn p_release_shared_dynamic_asset,
-		AcquireRenderingDeviceFn p_acquire_rendering_device,
-		InvalidateStaticChunkCachesFn p_invalidate_static_chunk_caches) :
-		renderer(p_renderer),
-		release_shared_dynamic_asset(p_release_shared_dynamic_asset),
-		acquire_rendering_device(p_acquire_rendering_device),
-		invalidate_static_chunk_caches(p_invalidate_static_chunk_caches) {
+RenderDataOrchestrator::RenderDataOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		debug_config(p_dependencies.debug_config),
+		performance_settings(p_dependencies.performance_settings),
+		culling_config(p_dependencies.culling_config),
+		release_shared_dynamic_asset(p_dependencies.release_shared_dynamic_asset),
+		acquire_rendering_device(p_dependencies.acquire_rendering_device),
+		invalidate_static_chunk_caches(p_dependencies.invalidate_static_chunk_caches),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
+	ERR_FAIL_NULL(debug_config);
+	ERR_FAIL_NULL(performance_settings);
+	ERR_FAIL_NULL(culling_config);
 	ERR_FAIL_COND_MSG(!release_shared_dynamic_asset, "RenderDataOrchestrator requires release callback.");
 	ERR_FAIL_COND_MSG(!acquire_rendering_device, "RenderDataOrchestrator requires device acquisition callback.");
 	ERR_FAIL_COND_MSG(!invalidate_static_chunk_caches, "RenderDataOrchestrator requires cache invalidation callback.");
+	ERR_FAIL_COND_MSG(!runtime_ports.invalidate_cached_render, "RenderDataOrchestrator requires invalidate_cached_render runtime port.");
+
+	GaussianSplatRenderer::FrameStateProvider init_state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &init_state_view = init_state_provider;
 
 	streaming_state.memory_stream.instantiate();
 	if (streaming_state.memory_stream.is_valid()) {
-		streaming_state.memory_stream->set_device_manager(renderer->get_subsystem_state().device_manager);
+		streaming_state.memory_stream->set_device_manager(init_state_view.get_subsystem_state_view().device_manager);
 	}
 	streaming_state.gpu_gaussian_cache.clear();
 	streaming_state.gpu_gaussian_cache_buffer = RID();
@@ -61,11 +68,20 @@ void RenderDataOrchestrator::set_gaussian_asset(const Ref<GaussianSplatAsset> &p
 }
 
 Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_data) {
-	const bool log_enabled = _is_data_orchestrator_log_enabled(renderer);
+	const bool log_enabled = _is_data_orchestrator_log_enabled(debug_config);
 	if (log_enabled) {
 		GS_LOG_RENDERER_DEBUG(vformat("[RDO-SET-DATA] ENTER count=%d", p_data.is_valid() ? p_data->get_count() : -1));
 	}
 	ObjectID incoming_data_id = p_data.is_valid() ? p_data->get_instance_id() : ObjectID();
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const GaussianSplatRenderer::SubsystemState &subsystem_state_view = state_view.get_subsystem_state_view();
+	GaussianSplatRenderer::SubsystemState &subsystem_state = state_mut.get_subsystem_state_mut();
+	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
+	GaussianSplatRenderer::SortingState &sorting_state = state_mut.get_sorting_state_mut();
+	GaussianSplatRenderer::FrameState &frame_state = state_mut.get_frame_state_mut();
+	GaussianSplatRenderer::ResourceState &resource_state = state_mut.get_resource_state_mut();
 
 	if (incoming_data_id != streaming_state.registered_gaussian_data_id) {
 		release_shared_dynamic_asset();
@@ -83,15 +99,15 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 
 	scene_state.gaussian_data = p_data;
 	// Scene data identity changed: never reuse last-frame color/depth outputs.
-	renderer->invalidate_cached_render();
+	(renderer->*runtime_ports.invalidate_cached_render)();
 
-	renderer->get_subsystem_state().gpu_culler->get_state().hierarchical_structure_dirty = true;
+	subsystem_state.gpu_culler->get_state().hierarchical_structure_dirty = true;
 
-	renderer->get_performance_state().metrics.data_source = GaussianSplatRenderer::SplatDataSource::kSourceNone;
-	renderer->get_performance_state().metrics.using_real_data = false;
-	renderer->get_performance_state().metrics.data_source_error = String();
-	renderer->get_performance_state().metrics.uploaded_splat_count = 0;
-	renderer->get_performance_state().metrics.raster_path = "unknown";
+	performance_state.metrics.data_source = GaussianSplatRenderer::SplatDataSource::kSourceNone;
+	performance_state.metrics.using_real_data = false;
+	performance_state.metrics.data_source_error = String();
+	performance_state.metrics.uploaded_splat_count = 0;
+	performance_state.metrics.raster_path = "unknown";
 
 	if (!scene_state.gaussian_data.is_valid()) {
 		// Clearing data resets streaming state and metrics.
@@ -108,20 +124,20 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 		streaming_state.streamed_indices_are_local = false;
 		streaming_state.cached_streamed_indices_valid = false;
 		streaming_state.current_streaming_system.unref();
-		renderer->get_sorting_state().sorted_splat_count = 0;
-		renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
+		sorting_state.sorted_splat_count = 0;
+		frame_state.visible_splat_count.store(0, std::memory_order_release);
 		clear_static_chunks();
 		return OK;
 	}
 
-	renderer->get_performance_state().metrics.data_source = GaussianSplatRenderer::SplatDataSource::kSourceCpuData;
-	renderer->get_performance_state().metrics.data_source_error = String();
-	renderer->get_performance_state().metrics.raster_path = "unknown";
+	performance_state.metrics.data_source = GaussianSplatRenderer::SplatDataSource::kSourceCpuData;
+	performance_state.metrics.data_source_error = String();
+	performance_state.metrics.raster_path = "unknown";
 
 	Error status = OK;
 
-	bool buf_valid = renderer->get_resource_state().buffer_manager.is_valid();
-	bool buf_init = renderer->get_resource_state().buffer_manager_initialized;
+	bool buf_valid = resource_state.buffer_manager.is_valid();
+	bool buf_init = resource_state.buffer_manager_initialized;
 	if (log_enabled) {
 		GS_LOG_RENDERER_DEBUG(vformat("[RenderDataOrch] buffer_manager valid=%s initialized=%s",
 				buf_valid ? "yes" : "no", buf_init ? "yes" : "no"));
@@ -129,7 +145,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 				buf_valid ? "yes" : "no", buf_init ? "yes" : "no"));
 	}
 	if (buf_valid && buf_init) {
-		renderer->get_resource_state().buffer_manager->clear_gaussian_data();
+		resource_state.buffer_manager->clear_gaussian_data();
 	}
 
 	if (log_enabled) {
@@ -141,7 +157,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 			GS_LOG_RENDERER_DEBUG(vformat("[SET-DATA-DBG] update_gpu_buffers_with_real_data returned init_err=%d", init_err));
 		}
 		if (init_err != OK) {
-			renderer->get_performance_state().metrics.using_real_data = false;
+			performance_state.metrics.using_real_data = false;
 			status = init_err;
 		}
 	}
@@ -161,7 +177,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 				streaming_state.shared_dynamic_asset_handle =
 						manager->acquire_dynamic_asset(scene_state.active_asset,
 							scene_state.gaussian_data,
-							renderer->get_device_state().rd);
+							state_view.get_rendering_device());
 				if (streaming_state.shared_dynamic_asset_handle.is_valid()) {
 					using_shared_dynamic = true;
 					streaming_state.registered_gaussian_buffer =
@@ -177,11 +193,11 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 		}
 
 		if (!using_shared_dynamic) {
-			if (renderer->get_sorting_state().sort_indices_external) {
-				renderer->get_sorting_state().sort_indices_external = false;
-				renderer->get_sorting_state().sort_buffers_pipeline_managed = false;
-				if (renderer->get_subsystem_state().sorting_pipeline.is_valid()) {
-					renderer->get_subsystem_state().sorting_pipeline->clear_external_sort_indices();
+			if (sorting_state.sort_indices_external) {
+				sorting_state.sort_indices_external = false;
+				sorting_state.sort_buffers_pipeline_managed = false;
+				if (subsystem_state_view.sorting_pipeline.is_valid()) {
+					subsystem_state_view.sorting_pipeline->clear_external_sort_indices();
 				}
 			}
 
@@ -216,7 +232,11 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 }
 
 Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
-	const bool log_enabled = _is_data_orchestrator_log_enabled(renderer);
+	const bool log_enabled = _is_data_orchestrator_log_enabled(debug_config);
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	GaussianSplatRenderer::FrameState &frame_state = state_mut.get_frame_state_mut();
+	GaussianSplatRenderer::SortingState &sorting_state = state_mut.get_sorting_state_mut();
 	if (log_enabled) {
 		GS_LOG_STREAMING_DEBUG("[STREAM-INIT] update_gpu_buffers_with_real_data CALLED");
 		GS_LOG_STREAMING_DEBUG("[RenderDataOrch] update_gpu_buffers_with_real_data ENTERED");
@@ -232,7 +252,7 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 		if (log_enabled) {
 			GS_LOG_STREAMING_DEBUG("[RenderDataOrch] early return: real_count==0");
 		}
-		renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
+		frame_state.visible_splat_count.store(0, std::memory_order_release);
 		streaming_state.current_streaming_system.unref();
 		streaming_state.use_streamed_data = false;
 		streaming_state.cached_streamed_gaussians.clear();
@@ -246,7 +266,7 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 		streaming_state.streamed_indices_generation = 0;
 		streaming_state.streamed_indices_are_local = false;
 		streaming_state.cached_streamed_indices_valid = false;
-		renderer->get_sorting_state().sorted_splat_count = 0;
+		sorting_state.sorted_splat_count = 0;
 		return OK;
 	}
 
@@ -288,9 +308,9 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 	streaming_state.streamed_indices_generation = 0;
 	streaming_state.streamed_indices_are_local = false;
 	streaming_state.cached_streamed_indices_valid = false;
-	renderer->get_sorting_state().sorted_splat_count = 0;
+	sorting_state.sorted_splat_count = 0;
 
-	const uint32_t max_streamed = MIN<uint32_t>(real_count, (uint32_t)renderer->get_performance_settings().max_splats);
+	const uint32_t max_streamed = MIN<uint32_t>(real_count, (uint32_t)performance_settings->max_splats);
 	if (max_streamed == 0) {
 		GS_LOG_WARN_DEFAULT("[GPU Streaming] Max splat budget is zero; skipping real data upload");
 		return ERR_PARAMETER_RANGE_ERROR;
@@ -306,7 +326,7 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 	streaming_system.instantiate();
 	streaming_system->set_config_overrides(streaming_config_overrides);
 	streaming_system->set_chunk_radius_multiplier(
-			renderer->get_cull_radius_multiplier() * renderer->get_cull_frustum_plane_slack());
+			culling_config->cull_radius_multiplier * culling_config->cull_frustum_plane_slack);
 	streaming_system->initialize_with_device(scene_state.gaussian_data, rd_ptr);
 	if (log_enabled) {
 		GS_LOG_STREAMING_DEBUG(vformat("[RenderDataOrch] streaming_system after initialize: chunks=%d",
@@ -319,7 +339,7 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 				streaming_state.current_streaming_system.is_valid() ? "yes" : "no"));
 		GS_LOG_STREAMING_DEBUG("[STREAM-INIT] Resetting visible_splat_count to 0 until first streaming visibility pass.");
 	}
-	renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
+	frame_state.visible_splat_count.store(0, std::memory_order_release);
 	if (log_enabled) {
 		GS_LOG_STREAMING_DEBUG(vformat("[RenderDataOrch] Streaming system created, max_streamed=%d", max_streamed));
 	}
@@ -331,8 +351,11 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 }
 
 void RenderDataOrchestrator::set_static_chunks(const Vector<StaticChunk> &p_chunks) {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	GaussianSplatRenderer::SubsystemState &subsystem_state = state_mut.get_subsystem_state_mut();
 	invalidate_static_chunk_caches(true);
-	auto &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+	auto &cull_state = subsystem_state.gpu_culler->get_state();
 	cull_state.static_chunks = p_chunks;
 	cull_state.static_chunks_revision++;
 	if (cull_state.static_chunks_revision == 0) {
@@ -342,8 +365,11 @@ void RenderDataOrchestrator::set_static_chunks(const Vector<StaticChunk> &p_chun
 }
 
 void RenderDataOrchestrator::clear_static_chunks() {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	GaussianSplatRenderer::SubsystemState &subsystem_state = state_mut.get_subsystem_state_mut();
 	invalidate_static_chunk_caches(true);
-	auto &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+	auto &cull_state = subsystem_state.gpu_culler->get_state();
 	cull_state.static_chunks.clear();
 	cull_state.static_chunks_revision++;
 	if (cull_state.static_chunks_revision == 0) {

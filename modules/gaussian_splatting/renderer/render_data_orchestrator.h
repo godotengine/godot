@@ -3,6 +3,8 @@
 
 #include "../core/gaussian_streaming.h"
 #include "../interfaces/gpu_culler.h"
+#include "render_types/render_debug_types.h"
+#include "render_types/render_performance_types.h"
 #include "render_types/render_state_types.h"
 
 #include <functional>
@@ -12,14 +14,26 @@ class RenderingDevice;
 
 class RenderDataOrchestrator {
 public:
+	struct RuntimePorts {
+		void (GaussianSplatRenderer::*invalidate_cached_render)() = nullptr;
+	};
+
 	using ReleaseSharedDynamicAssetFn = std::function<void()>;
 	using AcquireRenderingDeviceFn = std::function<RenderingDevice *()>;
 	using InvalidateStaticChunkCachesFn = std::function<void(bool)>;
 
-	RenderDataOrchestrator(GaussianSplatRenderer *p_renderer,
-			ReleaseSharedDynamicAssetFn p_release_shared_dynamic_asset,
-			AcquireRenderingDeviceFn p_acquire_rendering_device,
-			InvalidateStaticChunkCachesFn p_invalidate_static_chunk_caches);
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		const GaussianRenderDebug::DebugConfig *debug_config = nullptr;
+		const GaussianRenderPerformance::PerformanceSettings *performance_settings = nullptr;
+		const GPUCuller::CullingConfig *culling_config = nullptr;
+		ReleaseSharedDynamicAssetFn release_shared_dynamic_asset;
+		AcquireRenderingDeviceFn acquire_rendering_device;
+		InvalidateStaticChunkCachesFn invalidate_static_chunk_caches;
+		RuntimePorts runtime_ports;
+	};
+
+	explicit RenderDataOrchestrator(const Dependencies &p_dependencies);
 
 	Error set_gaussian_data(const Ref<::GaussianData> &p_data);
 	void set_gaussian_asset(const Ref<GaussianSplatAsset> &p_asset);
@@ -35,12 +49,16 @@ public:
 
 private:
 	GaussianSplatRenderer *renderer = nullptr;
+	const GaussianRenderDebug::DebugConfig *debug_config = nullptr;
+	const GaussianRenderPerformance::PerformanceSettings *performance_settings = nullptr;
+	const GPUCuller::CullingConfig *culling_config = nullptr;
 	GaussianRenderState::SceneState scene_state;
 	GaussianRenderState::StreamingState streaming_state;
 	GaussianStreamingSystem::ConfigOverrides streaming_config_overrides;
 	ReleaseSharedDynamicAssetFn release_shared_dynamic_asset;
 	AcquireRenderingDeviceFn acquire_rendering_device;
 	InvalidateStaticChunkCachesFn invalidate_static_chunk_caches;
+	RuntimePorts runtime_ports;
 };
 
 #endif

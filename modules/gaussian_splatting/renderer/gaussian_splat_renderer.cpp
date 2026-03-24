@@ -464,7 +464,16 @@ const GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStatePr
     return renderer->get_streaming_state();
 }
 
-GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state() const {
+const GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::get_debug_state_view() const {
+    static DebugState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->debug_state) {
+        return *deps->debug_state;
+    }
+    return renderer->get_debug_state();
+}
+
+const GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_view() const {
     static SortingState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->sorting_state) {
@@ -473,7 +482,7 @@ GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::
     return renderer->get_sorting_state();
 }
 
-GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config() const {
+const GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_view() const {
     static RenderConfig fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->render_config) {
@@ -482,7 +491,7 @@ GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::
     return renderer->get_render_config();
 }
 
-GaussianSplatRenderer::JacobianDebugConfig &GaussianSplatRenderer::FrameStateProvider::get_jacobian_debug() const {
+const GaussianSplatRenderer::JacobianDebugConfig &GaussianSplatRenderer::FrameStateProvider::get_jacobian_debug_view() const {
     static JacobianDebugConfig fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->jacobian_debug) {
@@ -491,7 +500,7 @@ GaussianSplatRenderer::JacobianDebugConfig &GaussianSplatRenderer::FrameStatePro
     return renderer->get_jacobian_debug();
 }
 
-GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state() const {
+const GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state_view() const {
     static ResourceState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->resource_state) {
@@ -500,7 +509,7 @@ GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider:
     return renderer->get_resource_state();
 }
 
-GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state() const {
+const GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state_view() const {
     static FrameState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->frame_state) {
@@ -509,7 +518,7 @@ GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::ge
     return renderer->get_frame_state();
 }
 
-GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state() const {
+const GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state_view() const {
     static PerformanceState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->performance_state) {
@@ -518,7 +527,79 @@ GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvid
     return renderer->get_performance_state();
 }
 
-GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state() const {
+const GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state_view() const {
+    static SubsystemState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->subsystem_state) {
+        return *deps->subsystem_state;
+    }
+    return renderer->get_subsystem_state();
+}
+
+GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_mut() {
+    static SortingState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->sorting_state) {
+        return *deps->sorting_state;
+    }
+    return renderer->get_sorting_state();
+}
+
+GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStateProvider::get_streaming_state_mut() {
+    static StreamingState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->streaming_state) {
+        return *deps->streaming_state;
+    }
+    return renderer->get_streaming_state();
+}
+
+GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::get_debug_state_mut() {
+    static DebugState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->debug_state) {
+        return *deps->debug_state;
+    }
+    return renderer->get_debug_state();
+}
+
+GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_mut() {
+    static RenderConfig fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->render_config) {
+        return *deps->render_config;
+    }
+    return renderer->get_render_config();
+}
+
+GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state_mut() {
+    static ResourceState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->resource_state) {
+        return *deps->resource_state;
+    }
+    return renderer->get_resource_state();
+}
+
+GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state_mut() {
+    static FrameState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->frame_state) {
+        return *deps->frame_state;
+    }
+    return renderer->get_frame_state();
+}
+
+GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state_mut() {
+    static PerformanceState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->performance_state) {
+        return *deps->performance_state;
+    }
+    return renderer->get_performance_state();
+}
+
+GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state_mut() {
     static SubsystemState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->subsystem_state) {
@@ -613,16 +694,26 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     float position_threshold = 0.05f;
     subsystem_state.gpu_culler->get_state().sort_cache_position_threshold_sq = position_threshold * position_threshold;
 
-    // Initialize orchestrators.
-    pipeline_stages = std::make_unique<RenderPipelineStages>(this);
-    debug_state_orchestrator = std::make_unique<RenderDebugStateOrchestrator>(
-            this, &tile_renderer_state.renderer, &subsystem_state.debug_overlay_system, &jacobian_debug);
-    diagnostics_orchestrator = std::make_unique<RenderDiagnosticsOrchestrator>(
-            this,
-            debug_state_orchestrator.get(),
-            [this]() { return _build_device_capability_report(); });
-    pipeline_stages->set_debug_state_orchestrator(debug_state_orchestrator.get());
-    pipeline_stages->set_diagnostics_orchestrator(diagnostics_orchestrator.get());
+	// Initialize orchestrators.
+	pipeline_stages = std::make_unique<RenderPipelineStages>(this);
+	RenderDebugStateOrchestrator::Dependencies debug_state_dependencies;
+	debug_state_dependencies.renderer = this;
+	debug_state_dependencies.tile_renderer = &tile_renderer_state.renderer;
+	debug_state_dependencies.debug_overlay_system = &subsystem_state.debug_overlay_system;
+	debug_state_dependencies.jacobian_debug = &jacobian_debug;
+	debug_state_dependencies.runtime_ports.dump_pipeline_trace_to_file = &GaussianSplatRenderer::dump_pipeline_trace_to_file;
+	debug_state_dependencies.runtime_ports.resolve_resource_owner = &GaussianSplatRenderer::get_resource_owner;
+	debug_state_orchestrator = std::make_unique<RenderDebugStateOrchestrator>(debug_state_dependencies);
+
+	RenderDiagnosticsOrchestrator::Dependencies diagnostics_dependencies;
+	diagnostics_dependencies.renderer = this;
+	diagnostics_dependencies.debug_state_orchestrator = debug_state_orchestrator.get();
+	diagnostics_dependencies.build_device_capability_report = [this]() { return _build_device_capability_report(); };
+	diagnostics_dependencies.runtime_ports.update_gpu_pass_metrics_from_tile_renderer =
+			&GaussianSplatRenderer::update_gpu_pass_metrics_from_tile_renderer;
+	diagnostics_orchestrator = std::make_unique<RenderDiagnosticsOrchestrator>(diagnostics_dependencies);
+	pipeline_stages->set_debug_state_orchestrator(debug_state_orchestrator.get());
+	pipeline_stages->set_diagnostics_orchestrator(diagnostics_orchestrator.get());
     device_orchestrator = std::make_unique<RenderDeviceOrchestrator>(
             this, subsystem_state.device_manager.ptr(), subsystem_state.sorting_pipeline.ptr(),
             [this](const CrossDeviceOperation &p_operation) {
@@ -646,50 +737,110 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
         GS_LOG_WARN_DEFAULT("[GaussianSplatRenderer] Local RenderingDevice unavailable; GPU operations will be deferred until device is available");
     }
 
-    sorting_orchestrator = std::make_unique<RenderSortingOrchestrator>(
-            this, subsystem_state.gpu_culler.ptr(), subsystem_state.sorting_pipeline.ptr(),
+    RenderSortingOrchestrator::Dependencies sorting_dependencies;
+    sorting_dependencies.renderer = this;
+    sorting_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    sorting_dependencies.sorting_pipeline = subsystem_state.sorting_pipeline.ptr();
+    sorting_dependencies.performance_settings = &get_performance_settings();
+    sorting_dependencies.test_data_state = &get_test_data_state();
+    sorting_dependencies.device_state = &get_device_state();
+    sorting_dependencies.cull_for_view =
             [this](const Transform3D &p_world_to_camera_transform, const Projection &p_projection,
                     const Size2i &p_viewport_size) {
                 return _cull_for_view(p_world_to_camera_transform, p_projection, p_viewport_size);
-            },
-            [this](const RenderingError &p_error) {
-                if (diagnostics_orchestrator) {
-                    diagnostics_orchestrator->record_rendering_error(p_error);
-                }
-            });
-    quality_orchestrator = std::make_unique<RenderQualityOrchestrator>(this, subsystem_state.gpu_culler.ptr());
-    config_orchestrator = std::make_unique<RenderConfigOrchestrator>(
-            this, &subsystem_state.interactive_state_manager, &subsystem_state.painterly_renderer);
-    instancing_orchestrator = std::make_unique<RenderInstancingOrchestrator>(
-            this, subsystem_state.output_compositor.ptr(), pipeline_stages.get(),
+            };
+    sorting_dependencies.record_rendering_error = [this](const RenderingError &p_error) {
+        if (diagnostics_orchestrator) {
+            diagnostics_orchestrator->record_rendering_error(p_error);
+        }
+    };
+    sorting_dependencies.ensure_rendering_device = [this](const char *p_context) {
+        return ensure_rendering_device(p_context);
+    };
+    sorting_orchestrator = std::make_unique<RenderSortingOrchestrator>(sorting_dependencies);
+    RenderQualityOrchestrator::Dependencies quality_dependencies;
+    quality_dependencies.renderer = this;
+    quality_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    quality_dependencies.test_data_state = &get_test_data_state();
+    quality_dependencies.runtime_ports.refresh_gpu_sorter = &GaussianSplatRenderer::refresh_gpu_sorter;
+    quality_dependencies.runtime_ports.track_resource_owner = &GaussianSplatRenderer::track_resource_owner;
+    quality_dependencies.runtime_ports.get_streaming_state_mut =
+            static_cast<StreamingState &(GaussianSplatRenderer::*)()>(&GaussianSplatRenderer::get_streaming_state);
+    quality_dependencies.runtime_ports.get_streaming_state_view =
+            static_cast<const StreamingState &(GaussianSplatRenderer::*)() const>(&GaussianSplatRenderer::get_streaming_state);
+    quality_orchestrator = std::make_unique<RenderQualityOrchestrator>(quality_dependencies);
+
+    RenderConfigOrchestrator::Dependencies config_dependencies;
+    config_dependencies.renderer = this;
+    config_dependencies.interactive_state_manager = &subsystem_state.interactive_state_manager;
+    config_dependencies.painterly_renderer = &subsystem_state.painterly_renderer;
+    config_dependencies.runtime_ports.invalidate_cached_render = &GaussianSplatRenderer::invalidate_cached_render;
+    config_orchestrator = std::make_unique<RenderConfigOrchestrator>(config_dependencies);
+
+    RenderInstancingOrchestrator::Dependencies instancing_dependencies;
+    instancing_dependencies.renderer = this;
+    instancing_dependencies.output_compositor = subsystem_state.output_compositor.ptr();
+    instancing_dependencies.pipeline_stages = pipeline_stages.get();
+    instancing_dependencies.prepare_render_frame_context =
             [this](RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
                     const Projection &p_projection, const Projection &p_render_projection,
                     bool p_defer_render_buffers_commit, RenderFrameContext &r_context) {
                 _prepare_render_frame_context(p_render_data, p_world_to_camera_transform, p_projection,
                         p_render_projection, p_defer_render_buffers_commit, r_context);
-            },
+            };
+    instancing_dependencies.render_sorted_splats =
             [this](RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
                     const Projection &p_projection, const Projection &p_render_projection,
                     bool p_defer_render_buffers_commit) {
                 render_sorted_splats(p_render_data, p_world_to_camera_transform, p_projection,
                         p_render_projection, p_defer_render_buffers_commit);
-            });
-    resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(
-            this, &get_device_state(), &pipeline_features_effective, &pipeline_features_warning_cache);
-    data_orchestrator = std::make_unique<RenderDataOrchestrator>(
-            this,
-            [this]() { _release_shared_dynamic_asset(); },
-            [this]() { return _acquire_rendering_device(); },
-            [this](bool p_free_rids) { _invalidate_static_chunk_caches(p_free_rids); });
+            };
+    instancing_orchestrator = std::make_unique<RenderInstancingOrchestrator>(instancing_dependencies);
+    RenderResourceOrchestrator::Dependencies resource_dependencies;
+    resource_dependencies.renderer = this;
+    resource_dependencies.device_state = &get_device_state();
+    resource_dependencies.performance_settings = &get_performance_settings();
+    resource_dependencies.painterly_config = &get_painterly_config();
+    resource_dependencies.debug_config = &get_debug_config();
+    resource_dependencies.test_data_state = &get_test_data_state();
+    resource_dependencies.tile_renderer_state = &get_tile_renderer_state();
+    resource_dependencies.subsystem_state = &get_subsystem_state();
+    resource_dependencies.pipeline_features_effective = &pipeline_features_effective;
+    resource_dependencies.pipeline_features_warning_cache = &pipeline_features_warning_cache;
+    resource_dependencies.runtime_ports.ensure_rendering_device = &GaussianSplatRenderer::ensure_rendering_device;
+    resource_dependencies.runtime_ports.get_submission_device = &GaussianSplatRenderer::get_submission_device;
+    resource_dependencies.runtime_ports.get_main_rendering_device = &GaussianSplatRenderer::get_main_rendering_device;
+    resource_dependencies.runtime_ports.refresh_gpu_sorter = &GaussianSplatRenderer::refresh_gpu_sorter;
+    resource_dependencies.runtime_ports.track_resource_owner = &GaussianSplatRenderer::track_resource_owner;
+    resource_dependencies.runtime_ports.free_owned_resource = &GaussianSplatRenderer::free_owned_resource;
+    resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(resource_dependencies);
+    RenderDataOrchestrator::Dependencies data_dependencies;
+    data_dependencies.renderer = this;
+    data_dependencies.debug_config = &get_debug_config();
+    data_dependencies.performance_settings = &get_performance_settings();
+    data_dependencies.culling_config = &get_subsystem_state().gpu_culler->get_config();
+    data_dependencies.release_shared_dynamic_asset = [this]() { _release_shared_dynamic_asset(); };
+    data_dependencies.acquire_rendering_device = [this]() { return _acquire_rendering_device(); };
+    data_dependencies.invalidate_static_chunk_caches = [this](bool p_free_rids) { _invalidate_static_chunk_caches(p_free_rids); };
+    data_dependencies.runtime_ports.invalidate_cached_render = &GaussianSplatRenderer::invalidate_cached_render;
+    data_orchestrator = std::make_unique<RenderDataOrchestrator>(data_dependencies);
     streaming_orchestrator = std::make_unique<RenderStreamingOrchestrator>(
-            this, data_orchestrator.get(), device_orchestrator.get());
-    output_orchestrator = std::make_unique<RenderOutputOrchestrator>(
-            this, subsystem_state.output_compositor.ptr(), subsystem_state.painterly_renderer.ptr(),
-            subsystem_state.gpu_culler.ptr(),
-            [this]() { _create_gpu_resources_safe(); },
-            [this](RD::DataFormat p_format, const char *p_context) { _set_active_viewport_format(p_format, p_context); },
-            [this](RD::DataFormat p_format, const char *p_context) { _set_manual_viewport_format(p_format, p_context); },
-            [this](RenderingDevice *p_device, RID p_texture) { return _get_texture_format(p_device, p_texture); });
+            RenderStreamingOrchestratorDependencies{this, data_orchestrator.get(), device_orchestrator.get()});
+    RenderOutputOrchestrator::Dependencies output_dependencies;
+    output_dependencies.renderer = this;
+    output_dependencies.output_compositor = subsystem_state.output_compositor.ptr();
+    output_dependencies.painterly_renderer = subsystem_state.painterly_renderer.ptr();
+    output_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    output_dependencies.view_state = &get_view_state();
+    output_dependencies.test_data_state = &get_test_data_state();
+    output_dependencies.runtime_ports.create_gpu_resources = [this]() { _create_gpu_resources_safe(); };
+    output_dependencies.runtime_ports.ensure_rendering_device = &GaussianSplatRenderer::ensure_rendering_device;
+    output_dependencies.runtime_ports.get_texture_format = &GaussianSplatRenderer::get_texture_format;
+    output_dependencies.runtime_ports.set_active_viewport_format = &GaussianSplatRenderer::set_active_viewport_format;
+    output_dependencies.runtime_ports.set_manual_viewport_format = &GaussianSplatRenderer::set_manual_viewport_format;
+    output_dependencies.runtime_ports.get_resource_owner = &GaussianSplatRenderer::get_resource_owner;
+    output_dependencies.runtime_ports.render_gaussians = &GaussianSplatRenderer::render_gaussians;
+    output_orchestrator = std::make_unique<RenderOutputOrchestrator>(output_dependencies);
 
     GaussianRenderingDiagnostics::ensure_singleton();
     if (GaussianRenderingDiagnostics::get_singleton()) {
@@ -910,7 +1061,9 @@ void GaussianSplatRenderer::_teardown_resources() {
         subsystem_state.debug_overlay_system.unref();
     }
     if (subsystem_state.sorting_pipeline.is_valid()) {
-        subsystem_state.sorting_pipeline->release_sort_buffers(this);
+        subsystem_state.sorting_pipeline->set_sort_result_sink(this);
+        subsystem_state.sorting_pipeline->set_sort_buffer_host_context(this);
+        subsystem_state.sorting_pipeline->release_sort_buffers();
         subsystem_state.sorting_pipeline->shutdown();
         subsystem_state.sorting_pipeline.unref();
     }
@@ -1473,6 +1626,11 @@ void GaussianSplatRenderer::_run_cull_sort_pipeline_frame(RenderDataRD *p_render
     _prepare_render_frame_context(p_render_data, p_world_to_camera_transform, p_projection, p_render_projection,
             p_render_buffers != nullptr, frame_context);
     frame_context.metrics = &stage_metrics;
+    FrameStateProvider frame_provider(this, &frame_context.deps);
+    const IFrameStateView &state_view = frame_provider;
+    IFrameMutationAccess &state_mut = frame_provider;
+    frame_context.state_view = &state_view;
+    frame_context.mutation_access = &state_mut;
     _run_pipeline_entry(frame_context, p_has_render_data, p_cull_skip_reason, p_sort_skip_reason,
             p_cull_skip_reason_code, p_sort_skip_reason_code, p_set_skip_metrics, p_clear_cull_state_on_skip);
 }
@@ -1812,15 +1970,18 @@ void GaussianSplatRenderer::render_sorted_splats(RenderDataRD *p_render_data,
 			p_defer_render_buffers_commit, frame_context);
 	frame_context.metrics = &stage_metrics;
 	FrameStateProvider frame_provider(this, &frame_context.deps);
-	frame_context.state_provider = &frame_provider;
-	RenderFramePlan frame_plan = build_frame_plan(get_scene_state(), get_streaming_state(), get_sorting_state(),
-			get_resource_state(), get_subsystem_state(), frame_provider.get_pipeline_features(),
+	const IFrameStateView &state_view = frame_provider;
+	IFrameMutationAccess &state_mut = frame_provider;
+	frame_context.state_view = &state_view;
+	frame_context.mutation_access = &state_mut;
+	RenderFramePlan frame_plan = build_frame_plan(state_view.get_scene_state(), state_view.get_streaming_state(), state_view.get_sorting_state_view(),
+			state_view.get_resource_state_view(), state_view.get_subsystem_state_view(), state_view.get_pipeline_features(),
 			true, String(), String(), RenderFallbackReason::NONE, RenderFallbackReason::NONE, false, false);
     frame_context.deps.frame_plan = &frame_plan;
     DEV_ASSERT(frame_context.deps.frame_plan);
 	ERR_FAIL_COND(!frame_context.deps.validate());
-	FrameState &frame_state = frame_provider.get_frame_state();
-	SortingState &sorting_state = frame_provider.get_sorting_state();
+	const FrameState &frame_state = state_view.get_frame_state_view();
+	const SortingState &sorting_state = state_view.get_sorting_state_view();
 	frame_context.snapshot.valid = true;
 	frame_context.snapshot.visible_splats = frame_state.visible_splat_count.load(std::memory_order_acquire);
 	frame_context.snapshot.sorted_splats = sorting_state.sorted_splat_count;
@@ -2097,6 +2258,56 @@ void GaussianSplatRenderer::test_force_disable_streaming() {
     streaming_state.current_stream_gpu_buffer = RID();
     if (streaming_state.memory_stream.is_valid()) {
         streaming_state.memory_stream->shutdown();
+    }
+}
+
+void GaussianSplatRenderer::test_release_current_streaming_system() {
+    StreamingState &streaming_state = get_streaming_state();
+    if (streaming_state.current_streaming_system.is_valid()) {
+        streaming_state.current_streaming_system->end_frame();
+        streaming_state.current_streaming_system.unref();
+    }
+}
+
+bool GaussianSplatRenderer::test_has_current_streaming_system() const {
+    return get_streaming_state().current_streaming_system.is_valid();
+}
+
+bool GaussianSplatRenderer::test_has_output_compositor() const {
+    return get_subsystem_state().output_compositor.is_valid();
+}
+
+RID GaussianSplatRenderer::test_get_cached_render_depth() const {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    return output_compositor.is_valid() ? output_compositor->get_cached_render_depth() : RID();
+}
+
+uint32_t GaussianSplatRenderer::test_get_output_blit_variant_count() const {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    return output_compositor.is_valid() ? output_compositor->get_blit_variant_count() : 0;
+}
+
+void GaussianSplatRenderer::test_clear_output_viewport_blit_resources() {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    if (output_compositor.is_valid()) {
+        output_compositor->clear_viewport_blit_resources();
+    }
+}
+
+void GaussianSplatRenderer::test_reset_output_viewport_copy_state() {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    if (output_compositor.is_valid()) {
+        output_compositor->test_reset_last_viewport_copy_state();
+    }
+}
+
+void GaussianSplatRenderer::test_integrate_final_output(RenderDataRD *p_render_data, RenderSceneBuffersRD *p_render_buffers,
+        const RID &p_final_output, RID &r_render_target, const Size2i &p_viewport_size,
+        bool p_defer_commit, bool p_painterly_active, const RID &p_cached_depth) {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    if (output_compositor.is_valid()) {
+        output_compositor->integrate_final_output(this, p_render_data, p_render_buffers, p_final_output,
+                r_render_target, p_viewport_size, p_defer_commit, p_painterly_active, p_cached_depth);
     }
 }
 

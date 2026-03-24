@@ -8,9 +8,18 @@ class PainterlyRenderer;
 
 class RenderConfigOrchestrator {
 public:
-	RenderConfigOrchestrator(GaussianSplatRenderer *p_renderer,
-			Ref<InteractiveStateManager> *p_interactive_state_manager,
-			Ref<PainterlyRenderer> *p_painterly_renderer);
+	struct RuntimePorts {
+		void (GaussianSplatRenderer::*invalidate_cached_render)() = &GaussianSplatRenderer::invalidate_cached_render;
+	};
+
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		Ref<InteractiveStateManager> *interactive_state_manager = nullptr;
+		Ref<PainterlyRenderer> *painterly_renderer = nullptr;
+		RuntimePorts runtime_ports;
+	};
+
+	explicit RenderConfigOrchestrator(const Dependencies &p_dependencies);
 
 	void set_render_mode(GaussianSplatRenderer::RenderMode p_mode);
 	void set_opacity_multiplier(float p_opacity);
@@ -43,6 +52,7 @@ private:
 	GaussianSplatRenderer *renderer = nullptr;
 	Ref<InteractiveStateManager> *interactive_state_manager = nullptr;
 	Ref<PainterlyRenderer> *painterly_renderer = nullptr;
+	RuntimePorts runtime_ports;
 	GaussianSplatRenderer::RenderConfig render_config;
 	GaussianSplatRenderer::InteractiveStateConfig interactive_state;
 	GaussianSplatRenderer::CullingConfig culling_config;

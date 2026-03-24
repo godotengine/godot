@@ -10,8 +10,6 @@
 #include "../renderer/gpu_sorter.h"
 #include "../renderer/gpu_sorting_config.h"
 
-class GaussianSplatRenderer;
-
 // Concrete implementation of IGPUSortingPipeline
 // Manages GPU sorter lifecycle, sort buffers, and depth compute resources
 class GPUSortingPipeline : public RefCounted, public IGPUSortingPipeline {
@@ -61,8 +59,6 @@ public:
     void set_sort_buffer_host_context(ISortBufferHostContext *p_context);
     void ensure_sort_buffers(uint32_t p_required_elements);
     void release_sort_buffers();
-    void ensure_sort_buffers(GaussianSplatRenderer *p_renderer, uint32_t p_required_elements);
-    void release_sort_buffers(GaussianSplatRenderer *p_renderer);
     void set_external_sort_indices(RID p_buffer, RenderingDevice *p_device);
     void clear_external_sort_indices();
     RID get_sort_indices_buffer() const { return sort_indices_buffer; }
@@ -83,7 +79,7 @@ public:
     bool populate_gpu_positions(RID p_buffer, uint32_t p_total_gaussians, uint32_t p_visible_splats,
             const Transform3D &p_cam_transform, float *r_position_ptr, bool p_write_distances,
             SortPositionInputs &p_inputs) override;
-    bool sort_gaussians_gpu(GaussianSplatRenderer *p_renderer, const Transform3D &p_cam_transform);
+    bool sort_gaussians_gpu(const Transform3D &p_cam_transform, const SortFrameContext &p_context);
 
     // IGPUSortingPipeline interface - Sort execution
     SortOperationResult sort(const SortOperationParams &p_params) override;
@@ -234,7 +230,7 @@ private:
     void _ensure_instance_param_buffer(RenderingDevice *p_device);
     void _ensure_instance_count_resources(RenderingDevice *p_device);
     void _ensure_instance_chunk_dispatch_resources(RenderingDevice *p_device);
-    bool _sort_instance_pipeline(GaussianSplatRenderer &p_renderer, const Transform3D &p_cam_transform);
+    bool _sort_instance_pipeline(const Transform3D &p_cam_transform, const SortFrameContext &p_context);
 };
 
 #endif // GS_GPU_SORTING_PIPELINE_H

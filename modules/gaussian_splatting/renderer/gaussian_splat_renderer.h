@@ -253,7 +253,8 @@ public:
     using ShadowBlitState = GaussianRenderFacadeState::ShadowBlitState;
 
     // Stage types exposed for RenderPipelineStages and orchestrators
-    class IFrameStateProvider;
+    class IFrameStateView;
+    class IFrameMutationAccess;
 
     struct RenderFrameContext {
         uint64_t frame_id = 0;
@@ -269,9 +270,9 @@ public:
         bool defer_commit = false;
         bool painterly_enabled = false;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
+        IFrameMutationAccess *mutation_access = nullptr;
         RenderFrameSnapshot snapshot;
-        // Deprecated: use IFrameStateProvider for state queries.
         struct FrameDeps {
             // -- Required: must be non-null for any render path ---------------
             RenderingDevice *rendering_device = nullptr;
@@ -279,6 +280,7 @@ public:
             ResourceState *resource_state = nullptr;
             FrameState *frame_state = nullptr;
             PerformanceState *performance_state = nullptr;
+            DebugState *debug_state = nullptr;
             SubsystemState *subsystem_state = nullptr;
             RenderConfig *render_config = nullptr;
             const PipelineFeatureSet *pipeline_features = nullptr;
@@ -304,6 +306,7 @@ public:
                 ERR_FAIL_NULL_V_MSG(resource_state, false, "FrameDeps: resource_state is null");
                 ERR_FAIL_NULL_V_MSG(frame_state, false, "FrameDeps: frame_state is null");
                 ERR_FAIL_NULL_V_MSG(performance_state, false, "FrameDeps: performance_state is null");
+                ERR_FAIL_NULL_V_MSG(debug_state, false, "FrameDeps: debug_state is null");
                 ERR_FAIL_NULL_V_MSG(subsystem_state, false, "FrameDeps: subsystem_state is null");
                 ERR_FAIL_NULL_V_MSG(render_config, false, "FrameDeps: render_config is null");
                 ERR_FAIL_NULL_V_MSG(pipeline_features, false, "FrameDeps: pipeline_features is null");
@@ -319,9 +322,9 @@ public:
         } deps;
     };
 
-    class IFrameStateProvider {
+    class IFrameStateView {
     public:
-        virtual ~IFrameStateProvider() = default;
+        virtual ~IFrameStateView() = default;
 
         virtual OutputCompositor *get_output_compositor() const = 0;
         virtual GPUCuller *get_gpu_culler() const = 0;
@@ -331,18 +334,33 @@ public:
 
         virtual const SceneState &get_scene_state() const = 0;
         virtual const StreamingState &get_streaming_state() const = 0;
-        virtual SortingState &get_sorting_state() const = 0;
-        virtual RenderConfig &get_render_config() const = 0;
-        virtual JacobianDebugConfig &get_jacobian_debug() const = 0;
-        virtual ResourceState &get_resource_state() const = 0;
-        virtual FrameState &get_frame_state() const = 0;
-        virtual PerformanceState &get_performance_state() const = 0;
-        virtual SubsystemState &get_subsystem_state() const = 0;
+        virtual const DebugState &get_debug_state_view() const = 0;
+        virtual const SortingState &get_sorting_state_view() const = 0;
+        virtual const RenderConfig &get_render_config_view() const = 0;
+        virtual const JacobianDebugConfig &get_jacobian_debug_view() const = 0;
+        virtual const ResourceState &get_resource_state_view() const = 0;
+        virtual const FrameState &get_frame_state_view() const = 0;
+        virtual const PerformanceState &get_performance_state_view() const = 0;
+        virtual const SubsystemState &get_subsystem_state_view() const = 0;
         virtual const PipelineFeatureSet *get_pipeline_features() const = 0;
         virtual const RenderFramePlan *get_frame_plan() const = 0;
     };
 
-    class FrameStateProvider : public IFrameStateProvider {
+    class IFrameMutationAccess {
+    public:
+        virtual ~IFrameMutationAccess() = default;
+
+        virtual SortingState &get_sorting_state_mut() = 0;
+        virtual StreamingState &get_streaming_state_mut() = 0;
+        virtual DebugState &get_debug_state_mut() = 0;
+        virtual RenderConfig &get_render_config_mut() = 0;
+        virtual ResourceState &get_resource_state_mut() = 0;
+        virtual FrameState &get_frame_state_mut() = 0;
+        virtual PerformanceState &get_performance_state_mut() = 0;
+        virtual SubsystemState &get_subsystem_state_mut() = 0;
+    };
+
+    class FrameStateProvider : public IFrameStateView, public IFrameMutationAccess {
         GaussianSplatRenderer *renderer = nullptr;
         const RenderFrameContext::FrameDeps *deps = nullptr;
 
@@ -357,13 +375,22 @@ public:
 
         const SceneState &get_scene_state() const override;
         const StreamingState &get_streaming_state() const override;
-        SortingState &get_sorting_state() const override;
-        RenderConfig &get_render_config() const override;
-        JacobianDebugConfig &get_jacobian_debug() const override;
-        ResourceState &get_resource_state() const override;
-        FrameState &get_frame_state() const override;
-        PerformanceState &get_performance_state() const override;
-        SubsystemState &get_subsystem_state() const override;
+        const DebugState &get_debug_state_view() const override;
+        const SortingState &get_sorting_state_view() const override;
+        const RenderConfig &get_render_config_view() const override;
+        const JacobianDebugConfig &get_jacobian_debug_view() const override;
+        const ResourceState &get_resource_state_view() const override;
+        const FrameState &get_frame_state_view() const override;
+        const PerformanceState &get_performance_state_view() const override;
+        const SubsystemState &get_subsystem_state_view() const override;
+        SortingState &get_sorting_state_mut() override;
+        StreamingState &get_streaming_state_mut() override;
+        DebugState &get_debug_state_mut() override;
+        RenderConfig &get_render_config_mut() override;
+        ResourceState &get_resource_state_mut() override;
+        FrameState &get_frame_state_mut() override;
+        PerformanceState &get_performance_state_mut() override;
+        SubsystemState &get_subsystem_state_mut() override;
         const PipelineFeatureSet *get_pipeline_features() const override;
         const RenderFramePlan *get_frame_plan() const override;
     };
@@ -374,7 +401,7 @@ public:
         Projection projection;
         Size2i viewport_size;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
     };
 
     struct SortStageInput {
@@ -382,7 +409,7 @@ public:
         Transform3D world_to_camera_transform;
         uint32_t input_count = 0;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
         IndexDomain input_domain = IndexDomain::UNKNOWN;
     };
 
@@ -433,7 +460,8 @@ public:
         IndexDomain sorted_index_domain = IndexDomain::UNKNOWN;
         bool painterly_requested = false;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
+        IFrameMutationAccess *mutation_access = nullptr;
     };
 
     struct CompositeStageInput {
@@ -445,7 +473,7 @@ public:
         bool defer_commit = false;
         RasterStageOutput raster_output;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
     };
 
 public:
@@ -600,6 +628,7 @@ public:
     FrameState &get_frame_state() { return frame_context_manager.get_frame_state(); }
     const FrameState &get_frame_state() const { return frame_context_manager.get_frame_state(); }
     PerformanceState &get_performance_state() { return performance_state; }
+    const PerformanceState &get_performance_state() const { return performance_state; }
     DeviceState &get_device_state();
     const DeviceState &get_device_state() const;
     RenderConfig &get_render_config();
@@ -1170,6 +1199,58 @@ public:
     /// @{
 
     /**
+     * @brief Read-only snapshot consumed by performance monitor callbacks.
+     *
+     * The snapshot intentionally flattens streaming-system query data so
+     * monitor consumers avoid broad direct access to renderer mutable state.
+     */
+    struct MonitorStreamingSnapshot {
+        bool has_streaming_system = false;
+        bool has_streaming_data = false;
+        bool runtime_ready = false;
+        Dictionary streaming_analytics;
+        Dictionary vram_debug_stats;
+        Dictionary chunk_culling_stats;
+        Dictionary lod_debug_stats;
+        String route_uid;
+        String sort_route_uid;
+        bool stage_metrics_valid = false;
+        float stage_cull_time_ms = 0.0f;
+        float stage_sort_time_ms = 0.0f;
+        float frame_sort_time_ms = 0.0f;
+        float metrics_gpu_frame_time_ms = 0.0f;
+        float metrics_culling_time_ms = 0.0f;
+        float metrics_gpu_tile_binning_time_ms = 0.0f;
+        float metrics_gpu_tile_prefix_time_ms = 0.0f;
+        float metrics_gpu_tile_raster_time_ms = 0.0f;
+        float metrics_gpu_tile_resolve_time_ms = 0.0f;
+        uint32_t metrics_visible_after_culling = 0;
+        uint32_t metrics_rendered_splat_count = 0;
+        uint32_t frame_visible_splat_count = 0;
+        uint64_t vram_usage_bytes = 0;
+        uint32_t chunks_loaded_this_frame = 0;
+        uint32_t chunks_evicted_this_frame = 0;
+        uint32_t visible_splat_count = 0;
+        uint32_t buffer_capacity_splats = 0;
+        uint32_t effective_splat_count = 0;
+        float visible_chunk_change_ratio = 0.0f;
+        float global_lod_blend_factor = 0.0f;
+        int global_sh_band_level = 0;
+        float lod_hysteresis_zone = 0.0f;
+        float lod_blend_distance = 0.0f;
+        float lod_distance_multiplier = 1.0f;
+        bool memory_stream_valid = false;
+        StreamingStats memory_stream_stats;
+        bool sh_compression_metrics_valid = false;
+        SHCompressionMetrics sh_compression_metrics;
+    };
+
+    /**
+     * @brief Builds a read-only streaming/LOD monitor snapshot for tooling.
+     */
+    MonitorStreamingSnapshot get_monitor_streaming_snapshot() const;
+
+    /**
      * @brief Returns comprehensive rendering statistics.
      * @return Dictionary containing timing, memory, and splat count metrics.
      */
@@ -1429,6 +1510,16 @@ public:
     void test_disable_rasterizer();
     bool test_copy_final_output(RID p_source, RID p_destination, const Size2i &p_viewport_size);
     void test_force_disable_streaming();
+    void test_release_current_streaming_system();
+    bool test_has_current_streaming_system() const;
+    bool test_has_output_compositor() const;
+    RID test_get_cached_render_depth() const;
+    uint32_t test_get_output_blit_variant_count() const;
+    void test_clear_output_viewport_blit_resources();
+    void test_reset_output_viewport_copy_state();
+    void test_integrate_final_output(RenderDataRD *p_render_data, RenderSceneBuffersRD *p_render_buffers,
+            const RID &p_final_output, RID &r_render_target, const Size2i &p_viewport_size,
+            bool p_defer_commit, bool p_painterly_active, const RID &p_cached_depth);
     void test_set_test_splats(const Vector<Vector3> &p_positions, const Vector<Vector3> &p_scales = Vector<Vector3>());
     int test_cull_visible_count(const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Size2i &p_viewport_size);
     void test_set_render_thread_dispatch_timeout_usec(uint64_t p_timeout_usec);
