@@ -1162,7 +1162,7 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Verification status:
   - `git diff --check` passed for the batch.
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
-  - Native Windows verification pending.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23490508420` on commit `a11f35010c` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
 ### Phase 5: Lock Down Mutable Renderer State Access
 - Purpose:
