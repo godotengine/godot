@@ -538,6 +538,7 @@ const GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStatePr
 
 GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_mut() {
     static SortingState fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->sorting_state) {
         return *deps->sorting_state;
@@ -547,6 +548,7 @@ GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::
 
 GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStateProvider::get_streaming_state_mut() {
     static StreamingState fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->streaming_state) {
         return *deps->streaming_state;
@@ -556,6 +558,7 @@ GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStateProvider
 
 GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::get_debug_state_mut() {
     static DebugState fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->debug_state) {
         return *deps->debug_state;
@@ -565,6 +568,7 @@ GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::ge
 
 GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_mut() {
     static RenderConfig fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->render_config) {
         return *deps->render_config;
@@ -574,6 +578,7 @@ GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::
 
 GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state_mut() {
     static ResourceState fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->resource_state) {
         return *deps->resource_state;
@@ -583,6 +588,7 @@ GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider:
 
 GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state_mut() {
     static FrameState fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->frame_state) {
         return *deps->frame_state;
@@ -592,6 +598,7 @@ GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::ge
 
 GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state_mut() {
     static PerformanceState fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->performance_state) {
         return *deps->performance_state;
@@ -601,6 +608,7 @@ GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvid
 
 GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state_mut() {
     static SubsystemState fallback;
+    DEV_ASSERT(renderer != nullptr);
     ERR_FAIL_NULL_V(renderer, fallback);
     if (deps && deps->subsystem_state) {
         return *deps->subsystem_state;
