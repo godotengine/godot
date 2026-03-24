@@ -30,14 +30,25 @@
 
 #pragma once
 
-#include "scene/main/node.h"
+#include "scene/2d/node_2d.h"
+#include "scene/3d/node_3d.h"
 
-class GameObject : public Node {
-	GDCLASS(GameObject, Node);
+class GameObject : public Node3D {
+	GDCLASS(GameObject, Node3D);
 
 protected:
 	static void _bind_methods();
 
 public:
 	GameObject();
+};
+
+class GameObject2D : public Node2D {
+	GDCLASS(GameObject2D, Node2D);
+
+protected:
+	static void _bind_methods();
+
+public:
+	GameObject2D();
 };

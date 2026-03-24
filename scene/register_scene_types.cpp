@@ -429,7 +429,6 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Node);
-	GDREGISTER_CLASS(GameObject);
 	GDREGISTER_CLASS(MissingNode);
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
 
@@ -614,6 +613,7 @@ void register_scene_types() {
 
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(Node3D);
+	GDREGISTER_CLASS(GameObject);
 	GDREGISTER_ABSTRACT_CLASS(Node3DGizmo);
 	GDREGISTER_CLASS(Skin);
 	GDREGISTER_ABSTRACT_CLASS(SkinReference);
@@ -894,6 +894,7 @@ void register_scene_types() {
 	/* REGISTER 2D */
 
 	GDREGISTER_CLASS(Node2D);
+	GDREGISTER_CLASS(GameObject2D);
 	GDREGISTER_CLASS(CanvasGroup);
 	GDREGISTER_CLASS(CPUParticles2D);
 	GDREGISTER_CLASS(GPUParticles2D);

@@ -41,7 +41,7 @@
 class GameObjectComponentList : public VBoxContainer {
 	GDCLASS(GameObjectComponentList, VBoxContainer);
 
-	GameObject *game_object = nullptr;
+	Node *game_object = nullptr;
 	ItemList *component_list = nullptr;
 	CreateDialog *create_dialog = nullptr;
 	EditorFileDialog *script_file_dialog = nullptr;
@@ -60,7 +60,7 @@ class GameObjectComponentList : public VBoxContainer {
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
-	void set_game_object(GameObject *p_game_object);
+	void set_game_object(Node *p_game_object);
 	GameObjectComponentList();
 };
 

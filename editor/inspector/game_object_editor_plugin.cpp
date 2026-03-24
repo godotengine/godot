@@ -217,7 +217,7 @@ void GameObjectComponentList::_drop_data_fw(const Point2 &p_point, const Variant
 	undo_redo->commit_action();
 }
 
-void GameObjectComponentList::set_game_object(GameObject *p_game_object) {
+void GameObjectComponentList::set_game_object(Node *p_game_object) {
 	if (game_object && game_object->is_connected("child_order_changed", callable_mp(this, &GameObjectComponentList::_on_child_order_changed))) {
 		game_object->disconnect("child_order_changed", callable_mp(this, &GameObjectComponentList::_on_child_order_changed));
 	}
@@ -263,11 +263,15 @@ GameObjectComponentList::GameObjectComponentList() {
 // GameObjectInspectorPlugin
 
 bool GameObjectInspectorPlugin::can_handle(Object *p_object) {
-	return Object::cast_to<GameObject>(p_object) != nullptr;
+	return Object::cast_to<GameObject>(p_object) != nullptr ||
+			Object::cast_to<GameObject2D>(p_object) != nullptr;
 }
 
 void GameObjectInspectorPlugin::parse_begin(Object *p_object) {
-	GameObject *go = Object::cast_to<GameObject>(p_object);
+	Node *go = Object::cast_to<GameObject>(p_object);
+	if (!go) {
+		go = Object::cast_to<GameObject2D>(p_object);
+	}
 	if (!go) {
 		return;
 	}

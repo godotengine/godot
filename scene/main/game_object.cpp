@@ -35,3 +35,9 @@ void GameObject::_bind_methods() {
 
 GameObject::GameObject() {
 }
+
+void GameObject2D::_bind_methods() {
+}
+
+GameObject2D::GameObject2D() {
+}
