@@ -768,7 +768,10 @@ void BBCodeEdit::_try_resume_mirror() {
 	// Determine frozen state: freeze if tag contains '=' (value tags like [color=...]).
 	bool has_eq = false;
 	for (int i = open_pos + 1; i < tag_close; i++) {
-		if (line[i] == '=') { has_eq = true; break; }
+		if (line[i] == '=') {
+			has_eq = true;
+			break;
+		}
 	}
 
 	mirror_line = cur_line;
@@ -801,31 +804,52 @@ void BBCodeEdit::post_completion_reposition() {
 // BBCode tag list used for code completion.
 const BBCodeTagDef TAGS[] = {
 	// Simple paired formatting
-	{ "b", false, false }, { "i", false, false }, { "u", false, false },
-	{ "s", false, false }, { "code", false, false },
+	{ "b", false, false },
+	{ "i", false, false },
+	{ "u", false, false },
+	{ "s", false, false },
+	{ "code", false, false },
 	// Layout
-	{ "center", false, false }, { "fill", false, false },
-	{ "left", false, false }, { "right", false, false },
-	{ "indent", false, false }, { "p", false, false },
+	{ "center", false, false },
+	{ "fill", false, false },
+	{ "left", false, false },
+	{ "right", false, false },
+	{ "indent", false, false },
+	{ "p", false, false },
 	// Lists
-	{ "ol", false, false }, { "ul", false, false }, { "li", false, false },
+	{ "ol", false, false },
+	{ "ul", false, false },
+	{ "li", false, false },
 	// Table
-	{ "table", true, false }, { "cell", false, false },
+	{ "table", true, false },
+	{ "cell", false, false },
 	// Media / links
-	{ "img", false, false }, { "url", true, false }, { "hint", true, false },
+	{ "img", false, false },
+	{ "url", true, false },
+	{ "hint", true, false },
 	// Misc paired
-	{ "spoiler", false, false }, { "dropcap", false, false },
+	{ "spoiler", false, false },
+	{ "dropcap", false, false },
 	{ "opentype_features", true, false },
 	// Effects
-	{ "wave", false, false }, { "shake", false, false },
-	{ "tornado", false, false }, { "rainbow", false, false },
-	{ "pulse", false, false }, { "fade", false, false },
+	{ "wave", false, false },
+	{ "shake", false, false },
+	{ "tornado", false, false },
+	{ "rainbow", false, false },
+	{ "pulse", false, false },
+	{ "fade", false, false },
 	// Color / style
-	{ "color", true, false }, { "bgcolor", true, false }, { "fgcolor", true, false },
-	{ "font", true, false }, { "font_size", true, false },
-	{ "outline_color", true, false }, { "outline_size", true, false },
+	{ "color", true, false },
+	{ "bgcolor", true, false },
+	{ "fgcolor", true, false },
+	{ "font", true, false },
+	{ "font_size", true, false },
+	{ "outline_color", true, false },
+	{ "outline_size", true, false },
 	// Standalone (no closing tag)
-	{ "br", false, true }, { "lb", false, true }, { "rb", false, true },
+	{ "br", false, true },
+	{ "lb", false, true },
+	{ "rb", false, true },
 	{ nullptr, false, false },
 };
 

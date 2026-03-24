@@ -122,7 +122,7 @@ public:
 
 struct BBCodeTagDef {
 	const char *name;
-	bool has_value;  // requires '=' before the closing ']'
+	bool has_value; // requires '=' before the closing ']'
 	bool standalone; // no closing tag
 };
 
