@@ -988,6 +988,36 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.4 --no-regen-architecture`.
   - Native Windows verification passed via `Gaussian Production Gates` run `23480421484` on commit `f659aeff64` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
+### Phase 1b.5 implementation status (provider lock-down completion batch, slice 19)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.h` / `.cpp`:
+    - Removed the legacy `IFrameStateProvider` compatibility surface.
+    - Promoted `FrameStateProvider` to implement `IFrameStateView` + `IFrameMutationAccess` directly with explicit `*_view()` / `*_mut()` methods.
+    - Removed `RenderFrameContext::state_provider`; stage-entry contexts now carry only explicit `state_view` and `mutation_access`.
+    - Updated renderer entry paths that create frame contexts to populate the explicit view/mutation seams directly.
+  - `modules/gaussian_splatting/renderer/render_pipeline_stages.cpp`:
+    - Removed the `const_cast`-based legacy provider bridge from `_resolve_mutation_access(...)`.
+    - Rebound frame-entry execution to explicit view/mutation seams only.
+    - Final runtime fix: when `execute_frame_entry(...)` copies `RenderFrameContext`, it now always rebinds both seams against the copied `deps` object before raster/composite execution so `frame_plan` and state pointers cannot go stale.
+  - `modules/gaussian_splatting/renderer/render_instancing_orchestrator.cpp`:
+    - Updated instanced render entry to populate explicit `state_view` + `mutation_access` on per-instance frame contexts.
+- Explicitly preserved for this slice:
+  - No sorting-seam work.
+  - No composition-root cleanup.
+  - No debug/tooling redesign.
+  - No painterly redesign.
+  - No public `GaussianSplatRenderer` facade break.
+- Remaining caveat:
+  - `IFrameStateView` no longer hides mutable state buckets behind `const`, but it still exposes mutable service pointers (`OutputCompositor *`, `GPUCuller *`, `PainterlyRenderer *`, `GPUSortingPipeline *`, `RenderingDevice *`) until later seam narrowing.
+- Rollback boundary:
+  - Revert only the explicit provider-lockdown changes in `gaussian_splat_renderer.h`, `gaussian_splat_renderer.cpp`, `render_pipeline_stages.cpp`, and `render_instancing_orchestrator.cpp`.
+- Verification status:
+  - `git diff --check` passed for the batch.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.5 --no-regen-architecture`.
+  - Initial Windows workflow run `23481131357` on commit `30fbd0efa3` failed only in the world-streaming runtime gate; the batch was fixed by rebinding frame-entry seams to the copied `RenderFrameContext::deps` in `render_pipeline_stages.cpp`.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23481647454` on commit `620996d67e` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
 ## Tests That Mutated Internals And The Current Replacement Hooks
 Replaced in `1b.4`:
 - Streaming-system teardown in `test_renderer_pipeline.h` now uses `GaussianSplatRenderer::test_release_current_streaming_system()` and `test_has_current_streaming_system()`.
