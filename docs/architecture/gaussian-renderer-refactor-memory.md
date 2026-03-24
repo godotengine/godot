@@ -986,7 +986,7 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Verification status:
   - `git diff --check` passed for the batch.
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.4 --no-regen-architecture`.
-  - Native Windows verification is pending for this batch.
+  - Native Windows verification passed via `Gaussian Production Gates` run `23480421484` on commit `f659aeff64` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
 ## Tests That Mutated Internals And The Current Replacement Hooks
 Replaced in `1b.4`:
