@@ -62,9 +62,15 @@
 #include "editor/shader/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
+#include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/main/game_object.h"
 #include "scene/audio/audio_stream_player.h"
+#include "scene/main/game_object.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/property_utils.h"
@@ -1566,6 +1572,216 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			EditorNode::get_singleton()->edit_node(new_node);
 			editor_selection->clear();
 			editor_selection->add_node(new_node);
+			scene_tree->get_scene_tree()->grab_focus(true);
+		} break;
+		case TOOL_CREATE_CUBE:
+		case TOOL_CREATE_SPHERE:
+		case TOOL_CREATE_CAPSULE:
+		case TOOL_CREATE_CYLINDER:
+		case TOOL_CREATE_PLANE:
+		case TOOL_CREATE_QUAD: {
+			// Create a GameObject with a MeshInstance3D child containing the primitive mesh.
+			GameObject *go = memnew(GameObject);
+			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
+
+			Ref<Mesh> mesh;
+			switch (p_tool) {
+				case TOOL_CREATE_CUBE: {
+					go->set_name("Cube");
+					mesh = Ref<BoxMesh>(memnew(BoxMesh));
+				} break;
+				case TOOL_CREATE_SPHERE: {
+					go->set_name("Sphere");
+					mesh = Ref<SphereMesh>(memnew(SphereMesh));
+				} break;
+				case TOOL_CREATE_CAPSULE: {
+					go->set_name("Capsule");
+					mesh = Ref<CapsuleMesh>(memnew(CapsuleMesh));
+				} break;
+				case TOOL_CREATE_CYLINDER: {
+					go->set_name("Cylinder");
+					mesh = Ref<CylinderMesh>(memnew(CylinderMesh));
+				} break;
+				case TOOL_CREATE_PLANE: {
+					go->set_name("Plane");
+					mesh = Ref<PlaneMesh>(memnew(PlaneMesh));
+				} break;
+				case TOOL_CREATE_QUAD: {
+					go->set_name("Quad");
+					mesh = Ref<QuadMesh>(memnew(QuadMesh));
+				} break;
+				default:
+					break;
+			}
+			mesh_instance->set_mesh(mesh);
+			mesh_instance->set_name("MeshInstance3D");
+
+			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+				go->set_name(Node::adjust_name_casing(go->get_name()));
+			}
+
+			Node *selected = scene_tree->get_selected();
+			if (selected) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Create 3D Object"));
+				undo_redo->add_do_method(selected, "add_child", go, true);
+				undo_redo->add_do_method(go, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_method(go, "add_child", mesh_instance, true);
+				undo_redo->add_do_method(mesh_instance, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_reference(go);
+				undo_redo->add_undo_method(selected, "remove_child", go);
+				undo_redo->commit_action();
+			} else {
+				add_root_node(go);
+				go->add_child(mesh_instance, true);
+				mesh_instance->set_owner(get_tree()->get_edited_scene_root());
+			}
+
+			EditorNode::get_singleton()->edit_node(go);
+			editor_selection->clear();
+			editor_selection->add_node(go);
+			scene_tree->get_scene_tree()->grab_focus(true);
+		} break;
+		case TOOL_CREATE_DIRECTIONAL_LIGHT:
+		case TOOL_CREATE_POINT_LIGHT:
+		case TOOL_CREATE_SPOT_LIGHT: {
+			GameObject *go = memnew(GameObject);
+			Node3D *light = nullptr;
+
+			switch (p_tool) {
+				case TOOL_CREATE_DIRECTIONAL_LIGHT: {
+					go->set_name("DirectionalLight");
+					light = memnew(DirectionalLight3D);
+				} break;
+				case TOOL_CREATE_POINT_LIGHT: {
+					go->set_name("PointLight");
+					light = memnew(OmniLight3D);
+				} break;
+				case TOOL_CREATE_SPOT_LIGHT: {
+					go->set_name("SpotLight");
+					light = memnew(SpotLight3D);
+				} break;
+				default:
+					break;
+			}
+
+			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+				go->set_name(Node::adjust_name_casing(go->get_name()));
+			}
+
+			Node *selected = scene_tree->get_selected();
+			if (selected) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Create Light"));
+				undo_redo->add_do_method(selected, "add_child", go, true);
+				undo_redo->add_do_method(go, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_method(go, "add_child", light, true);
+				undo_redo->add_do_method(light, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_reference(go);
+				undo_redo->add_undo_method(selected, "remove_child", go);
+				undo_redo->commit_action();
+			} else {
+				add_root_node(go);
+				go->add_child(light, true);
+				light->set_owner(get_tree()->get_edited_scene_root());
+			}
+
+			EditorNode::get_singleton()->edit_node(go);
+			editor_selection->clear();
+			editor_selection->add_node(go);
+			scene_tree->get_scene_tree()->grab_focus(true);
+		} break;
+		case TOOL_CREATE_CAMERA: {
+			GameObject *go = memnew(GameObject);
+			go->set_name("Camera");
+			Camera3D *camera = memnew(Camera3D);
+
+			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+				go->set_name(Node::adjust_name_casing(go->get_name()));
+			}
+
+			Node *selected = scene_tree->get_selected();
+			if (selected) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Create Camera"));
+				undo_redo->add_do_method(selected, "add_child", go, true);
+				undo_redo->add_do_method(go, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_method(go, "add_child", camera, true);
+				undo_redo->add_do_method(camera, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_reference(go);
+				undo_redo->add_undo_method(selected, "remove_child", go);
+				undo_redo->commit_action();
+			} else {
+				add_root_node(go);
+				go->add_child(camera, true);
+				camera->set_owner(get_tree()->get_edited_scene_root());
+			}
+
+			EditorNode::get_singleton()->edit_node(go);
+			editor_selection->clear();
+			editor_selection->add_node(go);
+			scene_tree->get_scene_tree()->grab_focus(true);
+		} break;
+		case TOOL_CREATE_AUDIO_SOURCE: {
+			GameObject *go = memnew(GameObject);
+			go->set_name("AudioSource");
+			AudioStreamPlayer3D *audio = memnew(AudioStreamPlayer3D);
+
+			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+				go->set_name(Node::adjust_name_casing(go->get_name()));
+			}
+
+			Node *selected = scene_tree->get_selected();
+			if (selected) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Create Audio Source"));
+				undo_redo->add_do_method(selected, "add_child", go, true);
+				undo_redo->add_do_method(go, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_method(go, "add_child", audio, true);
+				undo_redo->add_do_method(audio, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_reference(go);
+				undo_redo->add_undo_method(selected, "remove_child", go);
+				undo_redo->commit_action();
+			} else {
+				add_root_node(go);
+				go->add_child(audio, true);
+				audio->set_owner(get_tree()->get_edited_scene_root());
+			}
+
+			EditorNode::get_singleton()->edit_node(go);
+			editor_selection->clear();
+			editor_selection->add_node(go);
+			scene_tree->get_scene_tree()->grab_focus(true);
+		} break;
+		case TOOL_CREATE_PARTICLE_SYSTEM: {
+			GameObject *go = memnew(GameObject);
+			go->set_name("ParticleSystem");
+			CPUParticles3D *particles = memnew(CPUParticles3D);
+
+			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+				go->set_name(Node::adjust_name_casing(go->get_name()));
+			}
+
+			Node *selected = scene_tree->get_selected();
+			if (selected) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Create Particle System"));
+				undo_redo->add_do_method(selected, "add_child", go, true);
+				undo_redo->add_do_method(go, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_method(go, "add_child", particles, true);
+				undo_redo->add_do_method(particles, "set_owner", get_tree()->get_edited_scene_root());
+				undo_redo->add_do_reference(go);
+				undo_redo->add_undo_method(selected, "remove_child", go);
+				undo_redo->commit_action();
+			} else {
+				add_root_node(go);
+				go->add_child(particles, true);
+				particles->set_owner(get_tree()->get_edited_scene_root());
+			}
+
+			EditorNode::get_singleton()->edit_node(go);
+			editor_selection->clear();
+			editor_selection->add_node(go);
 			scene_tree->get_scene_tree()->grab_focus(true);
 		} break;
 		case TOOL_CREATE_2D_SCENE:
@@ -3879,8 +4095,14 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
 		menu->add_separator();
-		menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject")), TTR("Add GameObject"), TOOL_CREATE_GAME_OBJECT);
-		menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject2D")), TTR("Add GameObject2D"), TOOL_CREATE_GAME_OBJECT_2D);
+		menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject")), TTR("Create Empty"), TOOL_CREATE_GAME_OBJECT);
+		menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject2D")), TTR("Create Empty 2D"), TOOL_CREATE_GAME_OBJECT_2D);
+		menu->add_separator();
+		menu->add_submenu_node_item(TTR("3D Object"), menu_create_3d_object);
+		menu->add_submenu_node_item(TTR("Light"), menu_create_light);
+		menu->add_item(TTR("Camera"), TOOL_CREATE_CAMERA);
+		menu->add_item(TTR("Audio Source"), TOOL_CREATE_AUDIO_SOURCE);
+		menu->add_item(TTR("Particle System"), TOOL_CREATE_PARTICLE_SYSTEM);
 
 		menu->reset_size();
 		menu->set_position(p_menu_pos);
@@ -3927,8 +4149,14 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
-			menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject")), TTR("Add GameObject"), TOOL_CREATE_GAME_OBJECT);
-			menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject2D")), TTR("Add GameObject2D"), TOOL_CREATE_GAME_OBJECT_2D);
+			menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject")), TTR("Create Empty"), TOOL_CREATE_GAME_OBJECT);
+			menu->add_icon_item(get_editor_theme_icon(SNAME("GameObject2D")), TTR("Create Empty 2D"), TOOL_CREATE_GAME_OBJECT_2D);
+			menu->add_separator();
+			menu->add_submenu_node_item(TTR("3D Object"), menu_create_3d_object);
+			menu->add_submenu_node_item(TTR("Light"), menu_create_light);
+			menu->add_item(TTR("Camera"), TOOL_CREATE_CAMERA);
+			menu->add_item(TTR("Audio Source"), TOOL_CREATE_AUDIO_SOURCE);
+			menu->add_item(TTR("Particle System"), TOOL_CREATE_PARTICLE_SYSTEM);
 		}
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Collapse")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 
@@ -5064,6 +5292,26 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	menu_subresources = memnew(PopupMenu);
 	menu_subresources->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 	menu->add_child(menu_subresources);
+
+	// Unity-style quick create submenus.
+	menu_create_3d_object = memnew(PopupMenu);
+	menu_create_3d_object->set_name("create_3d_object");
+	menu_create_3d_object->add_item(TTR("Cube"), TOOL_CREATE_CUBE);
+	menu_create_3d_object->add_item(TTR("Sphere"), TOOL_CREATE_SPHERE);
+	menu_create_3d_object->add_item(TTR("Capsule"), TOOL_CREATE_CAPSULE);
+	menu_create_3d_object->add_item(TTR("Cylinder"), TOOL_CREATE_CYLINDER);
+	menu_create_3d_object->add_item(TTR("Plane"), TOOL_CREATE_PLANE);
+	menu_create_3d_object->add_item(TTR("Quad"), TOOL_CREATE_QUAD);
+	menu_create_3d_object->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	menu->add_child(menu_create_3d_object);
+
+	menu_create_light = memnew(PopupMenu);
+	menu_create_light->set_name("create_light");
+	menu_create_light->add_item(TTR("Directional Light"), TOOL_CREATE_DIRECTIONAL_LIGHT);
+	menu_create_light->add_item(TTR("Point Light"), TOOL_CREATE_POINT_LIGHT);
+	menu_create_light->add_item(TTR("Spot Light"), TOOL_CREATE_SPOT_LIGHT);
+	menu_create_light->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
+	menu->add_child(menu_create_light);
 
 	menu_properties = memnew(PopupMenu);
 	add_child(menu_properties);

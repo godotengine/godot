@@ -54,6 +54,13 @@
 // GameObjectComponentList
 
 void GameObjectComponentList::_rebuild_list() {
+	// Disconnect child_order_changed from all previously tracked nodes.
+	for (Node *node : displayed_nodes) {
+		if (node && node->is_connected("child_order_changed", callable_mp(this, &GameObjectComponentList::_on_child_order_changed))) {
+			node->disconnect("child_order_changed", callable_mp(this, &GameObjectComponentList::_on_child_order_changed));
+		}
+	}
+
 	// Remove all existing component entries.
 	while (component_container->get_child_count() > 0) {
 		Node *child = component_container->get_child(0);
@@ -62,6 +69,7 @@ void GameObjectComponentList::_rebuild_list() {
 	}
 
 	if (!game_object) {
+		displayed_nodes.clear();
 		return;
 	}
 
@@ -74,10 +82,15 @@ void GameObjectComponentList::_rebuild_list() {
 }
 
 void GameObjectComponentList::_rebuild_list_recursive(Node *p_node, int p_depth) {
+	// Track this node and listen for its children changing.
+	displayed_nodes.push_back(p_node);
+	if (!p_node->is_connected("child_order_changed", callable_mp(this, &GameObjectComponentList::_on_child_order_changed))) {
+		p_node->connect("child_order_changed", callable_mp(this, &GameObjectComponentList::_on_child_order_changed));
+	}
+
 	// Outer container for this component entry.
 	VBoxContainer *entry = memnew(VBoxContainer);
 	component_container->add_child(entry);
-	displayed_nodes.push_back(p_node);
 
 	int entry_index = component_container->get_child_count() - 1;
 
@@ -193,6 +206,9 @@ void GameObjectComponentList::_delete_component(int p_index) {
 	undo_redo->add_undo_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_undo_reference(child);
 	undo_redo->commit_action();
+
+	// Force rebuild since nested deletions won't trigger game_object's child_order_changed.
+	_rebuild_list();
 }
 
 Node *GameObjectComponentList::_find_target_parent(Node *p_child) {
@@ -437,6 +453,9 @@ void GameObjectComponentList::_on_create_confirmed() {
 	}
 
 	undo_redo->commit_action();
+
+	// Force rebuild since nested additions won't trigger game_object's child_order_changed.
+	_rebuild_list();
 }
 
 void GameObjectComponentList::_on_add_script_pressed() {
@@ -506,6 +525,9 @@ void GameObjectComponentList::_on_script_file_selected(const String &p_path) {
 	}
 
 	undo_redo->commit_action();
+
+	// Force rebuild since nested additions won't trigger game_object's child_order_changed.
+	_rebuild_list();
 }
 
 void GameObjectComponentList::_on_child_order_changed() {

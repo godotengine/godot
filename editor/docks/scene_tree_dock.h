@@ -95,10 +95,27 @@ class SceneTreeDock : public EditorDock {
 		TOOL_ACCESSIBILITY_WARNINGS,
 		TOOL_CREATE_GAME_OBJECT,
 		TOOL_CREATE_GAME_OBJECT_2D,
+		// Unity-style quick create items (offset base).
+		TOOL_CREATE_3D_OBJECT_BASE = 200,
+		TOOL_CREATE_CUBE = 200,
+		TOOL_CREATE_SPHERE,
+		TOOL_CREATE_CAPSULE,
+		TOOL_CREATE_CYLINDER,
+		TOOL_CREATE_PLANE,
+		TOOL_CREATE_QUAD,
+		TOOL_CREATE_3D_OBJECT_MAX,
+		TOOL_CREATE_LIGHT_BASE = 210,
+		TOOL_CREATE_DIRECTIONAL_LIGHT = 210,
+		TOOL_CREATE_POINT_LIGHT,
+		TOOL_CREATE_SPOT_LIGHT,
+		TOOL_CREATE_LIGHT_MAX,
+		TOOL_CREATE_CAMERA = 220,
+		TOOL_CREATE_AUDIO_SOURCE = 221,
+		TOOL_CREATE_PARTICLE_SYSTEM = 222,
 	};
 
 	enum {
-		EDIT_SUBRESOURCE_BASE = 100
+		EDIT_SUBRESOURCE_BASE = 300
 	};
 
 	Vector<ObjectID> subresources;
@@ -174,6 +191,8 @@ class SceneTreeDock : public EditorDock {
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_subresources = nullptr;
 	PopupMenu *menu_properties = nullptr;
+	PopupMenu *menu_create_3d_object = nullptr;
+	PopupMenu *menu_create_light = nullptr;
 	ConfirmationDialog *clear_inherit_confirm = nullptr;
 
 	bool first_enter = true;
