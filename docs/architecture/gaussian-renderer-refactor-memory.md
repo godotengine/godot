@@ -671,7 +671,11 @@ This is not a rewrite plan. It is a migration plan that preserves shipping behav
 - Verification status:
   - `git diff --check` passed for touched files.
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.2a --no-regen-architecture`.
-  - Native Windows verification: pending.
+  - Native Windows verification passed via `Gaussian Production Gates` on `refactor/gs-renderer-architecture`:
+    - Build: pass (Windows self-hosted module-validation lane).
+    - Guard lane: pass.
+    - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
+    - Runtime/benchmark gates: pass (runtime harness, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
 ### Phase 1b.1 implementation status (query-only callsite migration, slice 2)
 - Date: 2026-03-23
