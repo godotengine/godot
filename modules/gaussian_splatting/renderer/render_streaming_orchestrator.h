@@ -17,13 +17,14 @@ struct RenderStreamingOrchestratorDependencies {
 		bool (GaussianSplatRenderer::*ensure_rendering_device)(const char *p_context) = &GaussianSplatRenderer::ensure_rendering_device;
 		Projection (GaussianSplatRenderer::*build_cull_projection)(RenderDataRD *p_render_data, const Projection &p_projection) const = &GaussianSplatRenderer::build_cull_projection;
 		bool (GaussianSplatRenderer::*validate_cull_projection_contract)(RenderDataRD *p_render_data, const Projection &p_projection,
-				const Projection &p_cull_projection, const char *p_context) const = &GaussianSplatRenderer::validate_cull_projection_contract;
+				const Projection &p_cull_projection, const char *p_context) = &GaussianSplatRenderer::validate_cull_projection_contract;
 		void (GaussianSplatRenderer::*clear_instance_pipeline_buffers)() = &GaussianSplatRenderer::clear_instance_pipeline_buffers;
 		bool (GaussianSplatRenderer::*update_instance_buffer)(LocalVector<InstanceDataGPU> &p_instances) = &GaussianSplatRenderer::update_instance_buffer;
 		void (GaussianSplatRenderer::*run_cull_sort_pipeline_frame)(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
 				const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers,
 				bool p_has_render_data, const String &p_cull_skip_reason, const String &p_sort_skip_reason,
-				RenderFallbackReason p_cull_skip_reason_code, RenderFallbackReason p_sort_skip_reason_code,
+				GaussianSplatRenderer::RenderFallbackReason p_cull_skip_reason_code,
+				GaussianSplatRenderer::RenderFallbackReason p_sort_skip_reason_code,
 				bool p_set_skip_metrics, bool p_clear_cull_state_on_skip) = &GaussianSplatRenderer::run_cull_sort_pipeline_frame;
 		float (GaussianSplatRenderer::*get_cull_radius_multiplier)() const = &GaussianSplatRenderer::get_cull_radius_multiplier;
 		float (GaussianSplatRenderer::*get_cull_frustum_plane_slack)() const = &GaussianSplatRenderer::get_cull_frustum_plane_slack;
