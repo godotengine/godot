@@ -2068,6 +2068,10 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 	float accum_blend = 0.0;
 
 	InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
+	// Don't blend if only one lightmap affects the dynamic object.
+	// This prevents ambient light from being pure black until the object has fully entered the LightmapGI's AABB.
+	const bool use_blending = geom->lightmap_captures.size() >= 2;
+
 	for (Instance *E : geom->lightmap_captures) {
 		Instance *lightmap = E;
 
@@ -2083,9 +2087,6 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 		Vector3 lm_pos = to_bounds.xform(center);
 
 		AABB bounds = RSG::light_storage->lightmap_get_aabb(lightmap->base);
-		if (!bounds.has_point(lm_pos)) {
-			continue; //not in this lightmap
-		}
 
 		Color sh[9];
 		RSG::light_storage->lightmap_tap_sh_light(lightmap->base, lm_pos, sh);
@@ -2105,11 +2106,14 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 
 		Vector3 inner_pos = ((lm_pos - bounds.position) / bounds.size) * 2.0 - Vector3(1.0, 1.0, 1.0);
 
-		real_t blend = MAX(Math::abs(inner_pos.x), MAX(Math::abs(inner_pos.y), Math::abs(inner_pos.z)));
-		//make blend more rounded
-		blend = Math::lerp(inner_pos.length(), blend, blend);
-		blend *= blend;
-		blend = MAX(0.0, 1.0 - blend);
+		real_t blend = 1.0;
+		if (use_blending) {
+			blend = MAX(Math::abs(inner_pos.x), MAX(Math::abs(inner_pos.y), Math::abs(inner_pos.z)));
+			// Make blend more rounded.
+			blend = Math::lerp(inner_pos.length(), blend, blend);
+			blend *= blend;
+			blend = MAX(0.0, 1.0 - blend);
+		}
 
 		if (interior && !inside) {
 			//do not blend, just replace
