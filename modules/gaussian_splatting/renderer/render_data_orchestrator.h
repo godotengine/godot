@@ -15,7 +15,7 @@ class RenderingDevice;
 class RenderDataOrchestrator {
 public:
 	struct RuntimePorts {
-		void (GaussianSplatRenderer::*invalidate_cached_render)() = &GaussianSplatRenderer::invalidate_cached_render;
+		void (GaussianSplatRenderer::*invalidate_cached_render)() = nullptr;
 	};
 
 	using ReleaseSharedDynamicAssetFn = std::function<void()>;
