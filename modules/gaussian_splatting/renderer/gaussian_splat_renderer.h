@@ -361,11 +361,13 @@ public:
     };
 
     class FrameStateProvider : public IFrameStateView, public IFrameMutationAccess {
-        GaussianSplatRenderer *renderer = nullptr;
+        const GaussianSplatRenderer *renderer_view = nullptr;
+        GaussianSplatRenderer *renderer_mut = nullptr;
         const RenderFrameContext::FrameDeps *deps = nullptr;
 
     public:
         FrameStateProvider(GaussianSplatRenderer *p_renderer, const RenderFrameContext::FrameDeps *p_deps = nullptr);
+        FrameStateProvider(const GaussianSplatRenderer *p_renderer, const RenderFrameContext::FrameDeps *p_deps = nullptr);
 
         OutputCompositor *get_output_compositor() const override;
         GPUCuller *get_gpu_culler() const override;

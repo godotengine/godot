@@ -402,226 +402,234 @@ void GaussianSplatRenderer::_warn_tile_depth_copy_incompatible() {
 
 GaussianSplatRenderer::FrameStateProvider::FrameStateProvider(GaussianSplatRenderer *p_renderer,
         const RenderFrameContext::FrameDeps *p_deps) :
-        renderer(p_renderer),
+        renderer_view(p_renderer),
+        renderer_mut(p_renderer),
+        deps(p_deps) {
+}
+
+GaussianSplatRenderer::FrameStateProvider::FrameStateProvider(const GaussianSplatRenderer *p_renderer,
+        const RenderFrameContext::FrameDeps *p_deps) :
+        renderer_view(p_renderer),
+        renderer_mut(nullptr),
         deps(p_deps) {
 }
 
 OutputCompositor *GaussianSplatRenderer::FrameStateProvider::get_output_compositor() const {
-    ERR_FAIL_NULL_V(renderer, nullptr);
+    ERR_FAIL_NULL_V(renderer_view, nullptr);
     if (deps && deps->output_compositor) {
         return deps->output_compositor;
     }
-    return renderer->get_subsystem_state().output_compositor.ptr();
+    return renderer_view->get_subsystem_state().output_compositor.ptr();
 }
 
 GPUCuller *GaussianSplatRenderer::FrameStateProvider::get_gpu_culler() const {
-    ERR_FAIL_NULL_V(renderer, nullptr);
+    ERR_FAIL_NULL_V(renderer_view, nullptr);
     if (deps && deps->gpu_culler) {
         return deps->gpu_culler;
     }
-    return renderer->get_subsystem_state().gpu_culler.ptr();
+    return renderer_view->get_subsystem_state().gpu_culler.ptr();
 }
 
 PainterlyRenderer *GaussianSplatRenderer::FrameStateProvider::get_painterly_renderer() const {
-    ERR_FAIL_NULL_V(renderer, nullptr);
+    ERR_FAIL_NULL_V(renderer_view, nullptr);
     if (deps && deps->painterly_renderer) {
         return deps->painterly_renderer;
     }
-    return renderer->get_subsystem_state().painterly_renderer.ptr();
+    return renderer_view->get_subsystem_state().painterly_renderer.ptr();
 }
 
 GPUSortingPipeline *GaussianSplatRenderer::FrameStateProvider::get_sorting_pipeline() const {
-    ERR_FAIL_NULL_V(renderer, nullptr);
+    ERR_FAIL_NULL_V(renderer_view, nullptr);
     if (deps && deps->sorting_pipeline) {
         return deps->sorting_pipeline;
     }
-    return renderer->get_subsystem_state().sorting_pipeline.ptr();
+    return renderer_view->get_subsystem_state().sorting_pipeline.ptr();
 }
 
 RenderingDevice *GaussianSplatRenderer::FrameStateProvider::get_rendering_device() const {
-    ERR_FAIL_NULL_V(renderer, nullptr);
+    ERR_FAIL_NULL_V(renderer_view, nullptr);
     if (deps && deps->rendering_device) {
         return deps->rendering_device;
     }
-    return renderer->get_device_state().rd;
+    return renderer_view->get_device_state().rd;
 }
 
 const GaussianSplatRenderer::SceneState &GaussianSplatRenderer::FrameStateProvider::get_scene_state() const {
     static SceneState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->scene_state) {
         return *deps->scene_state;
     }
-    return renderer->get_scene_state();
+    return renderer_view->get_scene_state();
 }
 
 const GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStateProvider::get_streaming_state() const {
     static StreamingState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->streaming_state) {
         return *deps->streaming_state;
     }
-    return renderer->get_streaming_state();
+    return renderer_view->get_streaming_state();
 }
 
 const GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::get_debug_state_view() const {
     static DebugState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->debug_state) {
         return *deps->debug_state;
     }
-    return renderer->get_debug_state();
+    return renderer_view->get_debug_state();
 }
 
 const GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_view() const {
     static SortingState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->sorting_state) {
         return *deps->sorting_state;
     }
-    return renderer->get_sorting_state();
+    return renderer_view->get_sorting_state();
 }
 
 const GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_view() const {
     static RenderConfig fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->render_config) {
         return *deps->render_config;
     }
-    return renderer->get_render_config();
+    return renderer_view->get_render_config();
 }
 
 const GaussianSplatRenderer::JacobianDebugConfig &GaussianSplatRenderer::FrameStateProvider::get_jacobian_debug_view() const {
     static JacobianDebugConfig fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->jacobian_debug) {
         return *deps->jacobian_debug;
     }
-    return renderer->get_jacobian_debug();
+    return renderer_view->get_jacobian_debug();
 }
 
 const GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state_view() const {
     static ResourceState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->resource_state) {
         return *deps->resource_state;
     }
-    return renderer->get_resource_state();
+    return renderer_view->get_resource_state();
 }
 
 const GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state_view() const {
     static FrameState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->frame_state) {
         return *deps->frame_state;
     }
-    return renderer->get_frame_state();
+    return renderer_view->get_frame_state();
 }
 
 const GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state_view() const {
     static PerformanceState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->performance_state) {
         return *deps->performance_state;
     }
-    return renderer->get_performance_state();
+    return renderer_view->get_performance_state();
 }
 
 const GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state_view() const {
     static SubsystemState fallback;
-    ERR_FAIL_NULL_V(renderer, fallback);
+    ERR_FAIL_NULL_V(renderer_view, fallback);
     if (deps && deps->subsystem_state) {
         return *deps->subsystem_state;
     }
-    return renderer->get_subsystem_state();
+    return renderer_view->get_subsystem_state();
 }
 
 GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_mut() {
     static SortingState fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->sorting_state) {
         return *deps->sorting_state;
     }
-    return renderer->get_sorting_state();
+    return renderer_mut->get_sorting_state();
 }
 
 GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStateProvider::get_streaming_state_mut() {
     static StreamingState fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->streaming_state) {
         return *deps->streaming_state;
     }
-    return renderer->get_streaming_state();
+    return renderer_mut->get_streaming_state();
 }
 
 GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::get_debug_state_mut() {
     static DebugState fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->debug_state) {
         return *deps->debug_state;
     }
-    return renderer->get_debug_state();
+    return renderer_mut->get_debug_state();
 }
 
 GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_mut() {
     static RenderConfig fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->render_config) {
         return *deps->render_config;
     }
-    return renderer->get_render_config();
+    return renderer_mut->get_render_config();
 }
 
 GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::FrameStateProvider::get_resource_state_mut() {
     static ResourceState fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->resource_state) {
         return *deps->resource_state;
     }
-    return renderer->get_resource_state();
+    return renderer_mut->get_resource_state();
 }
 
 GaussianSplatRenderer::FrameState &GaussianSplatRenderer::FrameStateProvider::get_frame_state_mut() {
     static FrameState fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->frame_state) {
         return *deps->frame_state;
     }
-    return renderer->get_frame_state();
+    return renderer_mut->get_frame_state();
 }
 
 GaussianSplatRenderer::PerformanceState &GaussianSplatRenderer::FrameStateProvider::get_performance_state_mut() {
     static PerformanceState fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->performance_state) {
         return *deps->performance_state;
     }
-    return renderer->get_performance_state();
+    return renderer_mut->get_performance_state();
 }
 
 GaussianSplatRenderer::SubsystemState &GaussianSplatRenderer::FrameStateProvider::get_subsystem_state_mut() {
     static SubsystemState fallback;
-    DEV_ASSERT(renderer != nullptr);
-    ERR_FAIL_NULL_V(renderer, fallback);
+    DEV_ASSERT(renderer_mut != nullptr);
+    ERR_FAIL_NULL_V(renderer_mut, fallback);
     if (deps && deps->subsystem_state) {
         return *deps->subsystem_state;
     }
-    return renderer->get_subsystem_state();
+    return renderer_mut->get_subsystem_state();
 }
 
 const PipelineFeatureSet *GaussianSplatRenderer::FrameStateProvider::get_pipeline_features() const {
-    ERR_FAIL_NULL_V(renderer, nullptr);
+    ERR_FAIL_NULL_V(renderer_view, nullptr);
     if (deps && deps->pipeline_features) {
         return deps->pipeline_features;
     }
-    return &renderer->pipeline_features_effective;
+    return &renderer_view->pipeline_features_effective;
 }
 
 const GaussianSplatRenderer::RenderFramePlan *GaussianSplatRenderer::FrameStateProvider::get_frame_plan() const {

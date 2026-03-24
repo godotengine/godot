@@ -215,7 +215,7 @@ static Dictionary _build_production_metrics_snapshot(GaussianSplatRenderer &p_re
 	return metrics;
 }
 
-static void _append_telemetry_extras(GaussianSplatRenderer &p_renderer,
+static void _append_telemetry_extras(const GaussianSplatRenderer &p_renderer,
 		const GaussianSplatRenderer::StageMetrics &p_stage_metrics, bool p_stage_valid,
 		float p_frame_time_ms, Dictionary &r_metrics) {
 	GaussianSplatRenderer::FrameStateProvider state_provider(&p_renderer);
@@ -882,8 +882,8 @@ Dictionary RenderDiagnosticsOrchestrator::serialize_error_statistics() const {
 
 Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	Dictionary stats;
-	GaussianSplatRenderer *mutable_renderer = const_cast<GaussianSplatRenderer *>(renderer);
-	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer *const_renderer = renderer;
+	GaussianSplatRenderer::FrameStateProvider state_provider(const_renderer);
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	const auto &frame_state = state_view.get_frame_state_view();
 	const auto &debug_state = state_view.get_debug_state_view();
@@ -902,7 +902,7 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	const Ref<DebugOverlaySystem> &overlay_system_ref = subsystem_state.debug_overlay_system;
 	DebugOverlaySystem *overlay_system = overlay_system_ref.is_valid() ? overlay_system_ref.ptr() : nullptr;
 	const DebugOverlayQueryView overlay_query = overlay_system
-			? overlay_system->build_query_view(mutable_renderer)
+			? overlay_system->build_query_view(const_renderer)
 			: DebugOverlayQueryView();
 	const DebugOverlayOptions overlay_options = overlay_query.get_options();
 	const DebugOverlayCommandSink overlay_command = overlay_system
@@ -927,7 +927,7 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 		GaussianSplatRenderer::StageMetrics stage_metrics = stage_metrics_valid
 				? debug_state.last_stage_metrics
 				: GaussianSplatRenderer::StageMetrics();
-		_append_telemetry_extras(*mutable_renderer, stage_metrics, stage_metrics_valid,
+		_append_telemetry_extras(*const_renderer, stage_metrics, stage_metrics_valid,
 				frame_state.render_time_ms, stats);
 	}
 	stats["painterly_enabled"] = painterly_config.enabled;
@@ -1375,7 +1375,7 @@ Dictionary GaussianSplatRenderer::get_runtime_diagnostic_snapshot() const {
 
 GaussianSplatRenderer::MonitorStreamingSnapshot GaussianSplatRenderer::get_monitor_streaming_snapshot() const {
 	MonitorStreamingSnapshot snapshot;
-	FrameStateProvider state_provider(const_cast<GaussianSplatRenderer *>(this));
+	FrameStateProvider state_provider(static_cast<const GaussianSplatRenderer *>(this));
 	const IFrameStateView &state_view = state_provider;
 	const DebugState &debug_state = state_view.get_debug_state_view();
 	const SceneState &scene_state = state_view.get_scene_state();
