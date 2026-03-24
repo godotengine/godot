@@ -1676,3 +1676,46 @@ Before any code phase starts:
   - Resource-owner/device selection calls remain candidates for future cleanup if they can be grouped with a broader owner-bridge simplification.
 - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
   - Broad facade-owner pass-through wiring remains, but that is now Phase 6 / cleanup territory rather than a Phase 5 consumer batch.
+
+## Phase 6.1 Implementation Status (config invalidation cleanup)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_config_orchestrator.h` / `.cpp`
+  - Added a narrow runtime port for `invalidate_cached_render()`.
+  - Rewired `set_opacity_multiplier()` and `set_color_grading()` to invalidate cached render state through that runtime port instead of direct renderer method calls.
+  - Added constructor validation for the runtime port.
+- `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - Updated config orchestrator construction to supply the invalidation runtime port.
+
+### Explicitly preserved
+- Existing config ownership inside `RenderConfigOrchestrator`.
+- Interactive-state behavior and fallback logic.
+- Painterly-config mutation behavior and pass-graph reset behavior.
+- External renderer facade behavior and script/API names.
+
+### Caveat
+- This is a narrow owner-bridge cleanup only. It does not remove the broader facade pass-through surface, and it intentionally avoids cosmetic wrapper churn with no measurable coupling reduction.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_config_orchestrator.h`
+  - `modules/gaussian_splatting/renderer/render_config_orchestrator.cpp`
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 6 --no-regen-architecture` passed.
+- Native Windows verification passed via `Gaussian Production Gates` run `23504205325` on commit `61c1088ffa` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
+## Overall Completion Assessment
+
+### Result
+- The planned refactor is treated as complete through all non-optional phases.
+- Optional Phase 6 cleanup produced one real seam reduction (`render_config_orchestrator` cached-render invalidation).
+- No further cleanup batch is justified right now without dropping below the “real payoff” threshold.
+
+### Remaining optional residuals
+- Thin facade-owner pass-throughs in `gaussian_splat_renderer.cpp` that mainly preserve API shape.
+- Painterly direct config/view/debug reads where no materially narrower seam exists yet.
+- Miscellaneous wrapper removal only if it can be bundled with a future owner-bridge simplification instead of standalone churn.
