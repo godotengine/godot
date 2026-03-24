@@ -31,14 +31,15 @@
 #pragma once
 
 #include "core/io/dir_access.h"
-#include "core/io/resource_importer.h"
-#include "core/io/resource_loader.h"
+#include "core/io/resource_loader_constants.h"
+#include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
+class ResourceFormatImporter;
 class FileAccess;
 
 struct EditorProgressBG;
@@ -330,7 +331,7 @@ class EditorFileSystem : public Node {
 	ScriptClassInfo _get_global_script_class(const String &p_type, const String &p_path) const;
 
 	static Error _resource_import(const String &p_path);
-	static Ref<Resource> _load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode);
+	static Ref<Resource> _load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceLoaderConstants::CacheMode p_cache_mode);
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 

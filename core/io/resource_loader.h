@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/io/resource_loader_constants.h"
 #include "core/object/gdvirtual.gen.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
@@ -48,13 +49,12 @@ class ResourceFormatLoader : public RefCounted {
 	GDCLASS(ResourceFormatLoader, RefCounted);
 
 public:
-	enum CacheMode {
-		CACHE_MODE_IGNORE,
-		CACHE_MODE_REUSE,
-		CACHE_MODE_REPLACE,
-		CACHE_MODE_IGNORE_DEEP,
-		CACHE_MODE_REPLACE_DEEP,
-	};
+	using CacheMode = ResourceLoaderConstants::CacheMode;
+	static constexpr CacheMode CACHE_MODE_IGNORE = ResourceLoaderConstants::CACHE_MODE_IGNORE;
+	static constexpr CacheMode CACHE_MODE_REUSE = ResourceLoaderConstants::CACHE_MODE_REUSE;
+	static constexpr CacheMode CACHE_MODE_REPLACE = ResourceLoaderConstants::CACHE_MODE_REPLACE;
+	static constexpr CacheMode CACHE_MODE_IGNORE_DEEP = ResourceLoaderConstants::CACHE_MODE_IGNORE_DEEP;
+	static constexpr CacheMode CACHE_MODE_REPLACE_DEEP = ResourceLoaderConstants::CACHE_MODE_REPLACE_DEEP;
 
 protected:
 	static void _bind_methods();
@@ -94,8 +94,6 @@ public:
 	virtual ~ResourceFormatLoader() {}
 };
 
-VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
-
 typedef void (*ResourceLoadErrorNotify)(const String &p_text);
 typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_which, const String &p_type);
 
@@ -113,6 +111,13 @@ class ResourceLoader {
 	struct ThreadLoadTask;
 
 public:
+	using CacheMode = ResourceLoaderConstants::CacheMode;
+	static constexpr CacheMode CACHE_MODE_IGNORE = ResourceLoaderConstants::CACHE_MODE_IGNORE;
+	static constexpr CacheMode CACHE_MODE_REUSE = ResourceLoaderConstants::CACHE_MODE_REUSE;
+	static constexpr CacheMode CACHE_MODE_REPLACE = ResourceLoaderConstants::CACHE_MODE_REPLACE;
+	static constexpr CacheMode CACHE_MODE_IGNORE_DEEP = ResourceLoaderConstants::CACHE_MODE_IGNORE_DEEP;
+	static constexpr CacheMode CACHE_MODE_REPLACE_DEEP = ResourceLoaderConstants::CACHE_MODE_REPLACE_DEEP;
+
 	enum ThreadLoadStatus {
 		THREAD_LOAD_INVALID_RESOURCE,
 		THREAD_LOAD_IN_PROGRESS,
@@ -139,7 +144,7 @@ public:
 
 	static const int BINARY_MUTEX_TAG = 1;
 
-	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user = false);
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, CacheMode p_cache_mode, bool p_for_user = false);
 	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
 
 private:
@@ -167,7 +172,7 @@ private:
 
 	friend class ResourceFormatImporter;
 
-	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
+	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
 
@@ -185,7 +190,7 @@ private:
 		float max_reported_progress = 0.0f;
 		uint64_t last_progress_check_main_thread_frame = UINT64_MAX;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
-		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
+		CacheMode cache_mode = CACHE_MODE_REUSE;
 		Error error = OK;
 		Ref<Resource> resource;
 		ThreadLoadTask *parent_task = nullptr;
@@ -231,7 +236,7 @@ private:
 	static String _validate_local_path(const String &p_path);
 
 public:
-	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
+	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
@@ -241,7 +246,7 @@ public:
 	static void resource_changed_disconnect(Resource *p_source, const Callable &p_callable);
 	static void resource_changed_emit(Resource *p_source);
 
-	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
+	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
