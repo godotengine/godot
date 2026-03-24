@@ -1138,6 +1138,32 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
     - Large-scene benchmark gate: pass.
     - Eviction-churn benchmark gate: pass.
 
+### Phase 4 implementation status (diagnostics/debug state-path batch 5, slice 25)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.cpp`:
+    - Moved frame/performance/sorting/resource/subsystem reads in production-metrics assembly, render-stats assembly, sort-history helpers, frame-transition bookkeeping, and runtime diagnostic snapshot building onto local `FrameStateProvider` view/mutation access.
+    - Preserved frame-finalize ordering while keeping the explicit GPU-metric runtime port and debug overlay query/command seam unchanged.
+  - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.cpp`:
+    - Moved pipeline-trace frame stamping, cull-guardrail state reads, anomaly-dump frame/visible-count reads, and anomaly snapshot device/compositor resolution onto local `FrameStateProvider` view/mutation access.
+    - Kept anomaly-dump side effects on the existing runtime ports.
+- Explicitly preserved for this batch:
+  - No sorting-seam redesign.
+  - No painterly redesign.
+  - No debug overlay redesign.
+  - No constructor signature changes.
+  - No public `GaussianSplatRenderer` facade break.
+- Remaining caveat:
+  - Direct reads of `view_state`, `painterly_config`, and `debug_config` remain where no matching read-only seam exists yet; this batch narrows state/config fan-in without inventing new interfaces just to remove those accesses.
+- Rollback boundary:
+  - Revert only:
+    - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.cpp`
+    - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.cpp`
+- Verification status:
+  - `git diff --check` passed for the batch.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
+  - Native Windows verification pending.
+
 ### Phase 5: Lock Down Mutable Renderer State Access
 - Purpose:
   - remove/deny broad mutable `get_*_state()` usage outside sanctioned mutator surfaces.

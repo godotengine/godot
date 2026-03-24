@@ -155,11 +155,13 @@ static bool _is_finite(float p_value) {
 static Dictionary _build_production_metrics_snapshot(GaussianSplatRenderer &p_renderer,
 		const GaussianSplatRenderer::StageMetrics &p_stage_metrics, bool p_stage_valid, float p_frame_time_ms) {
 	Dictionary metrics;
-	const auto &frame_state = p_renderer.get_frame_state();
-	const auto &perf = p_renderer.get_performance_state().metrics;
-	const auto &debug_state = p_renderer.get_debug_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(&p_renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const auto &frame_state = state_view.get_frame_state_view();
+	const auto &perf = state_view.get_performance_state_view().metrics;
+	const auto &debug_state = state_view.get_debug_state_view();
 	uint32_t visible_splats = frame_state.visible_splat_count.load(std::memory_order_acquire);
-	const auto &scene_state = p_renderer.get_scene_state();
+	const auto &scene_state = state_view.get_scene_state();
 	uint32_t total_splats = scene_state.gaussian_data.is_valid()
 			? scene_state.gaussian_data->get_count()
 			: 0;
@@ -200,7 +202,7 @@ static Dictionary _build_production_metrics_snapshot(GaussianSplatRenderer &p_re
 		raster_path = "unknown";
 	}
 	metrics["raster_path"] = raster_path;
-	const auto &render_config = p_renderer.get_render_config();
+	const auto &render_config = state_view.get_render_config_view();
 	metrics["render_mode"] = static_cast<int64_t>(render_config.render_mode);
 	metrics["stage_metrics_valid"] = p_stage_valid;
 	metrics["stage_cull_status"] = p_stage_valid ? _stage_status_to_string(p_stage_metrics.cull_result.status) : String("unknown");
@@ -216,11 +218,13 @@ static Dictionary _build_production_metrics_snapshot(GaussianSplatRenderer &p_re
 static void _append_telemetry_extras(GaussianSplatRenderer &p_renderer,
 		const GaussianSplatRenderer::StageMetrics &p_stage_metrics, bool p_stage_valid,
 		float p_frame_time_ms, Dictionary &r_metrics) {
-	const auto &frame_state = p_renderer.get_frame_state();
-	const auto &perf = p_renderer.get_performance_state().metrics;
-	const auto &sorting_state = p_renderer.get_sorting_state();
-	const auto &debug_state = p_renderer.get_debug_state();
-	const auto &subsystem_state = p_renderer.get_subsystem_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(&p_renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const auto &frame_state = state_view.get_frame_state_view();
+	const auto &perf = state_view.get_performance_state_view().metrics;
+	const auto &sorting_state = state_view.get_sorting_state_view();
+	const auto &debug_state = state_view.get_debug_state_view();
+	const auto &subsystem_state = state_view.get_subsystem_state_view();
 
 	r_metrics["frame_count"] = static_cast<int64_t>(frame_state.frame_counter);
 	r_metrics["sorted_splats"] = static_cast<int64_t>(sorting_state.sorted_splat_count);
@@ -732,9 +736,10 @@ void RenderDiagnosticsOrchestrator::transition_recovery_state(GaussianSplatRende
 			diagnostics_state.recovery_state_machine.reason == p_reason) {
 		return;
 	}
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	diagnostics_state.recovery_state_machine.state = p_state;
 	diagnostics_state.recovery_state_machine.reason = p_reason;
-	diagnostics_state.recovery_state_machine.last_transition_frame = renderer->get_frame_state().frame_counter;
+	diagnostics_state.recovery_state_machine.last_transition_frame = state_provider.get_frame_state_view().frame_counter;
 	diagnostics_state.recovery_state_machine.last_transition_time_usec = OS::get_singleton()->get_ticks_usec();
 }
 
@@ -748,14 +753,17 @@ void RenderDiagnosticsOrchestrator::record_cross_device_operation(
 }
 
 void RenderDiagnosticsOrchestrator::capture_frame_timing_sample() {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const auto &frame_state = state_provider.get_frame_state_view();
+	const auto &sorting_state = state_provider.get_sorting_state_view();
 	GaussianSplatRenderer::FrameTimingSample sample;
 	sample.timestamp_usec = OS::get_singleton()->get_ticks_usec();
-	sample.frame = renderer->get_frame_state().frame_counter;
-	sample.render_ms = renderer->get_frame_state().render_time_ms;
-	sample.sort_ms = renderer->get_frame_state().sort_time_ms;
-	sample.total_ms = renderer->get_frame_state().render_time_ms + renderer->get_frame_state().sort_time_ms;
-	sample.visible_splats = renderer->get_frame_state().visible_splat_count.load(std::memory_order_acquire);
-	sample.used_gpu = renderer->get_sorting_state().gpu_sorter.is_valid();
+	sample.frame = frame_state.frame_counter;
+	sample.render_ms = frame_state.render_time_ms;
+	sample.sort_ms = frame_state.sort_time_ms;
+	sample.total_ms = frame_state.render_time_ms + frame_state.sort_time_ms;
+	sample.visible_splats = frame_state.visible_splat_count.load(std::memory_order_acquire);
+	sample.used_gpu = sorting_state.gpu_sorter.is_valid();
 	diagnostics_state.frame_timing_history.push_back(sample);
 	const int MAX_SAMPLES = 240;
 	while (diagnostics_state.frame_timing_history.size() > MAX_SAMPLES) {
@@ -764,8 +772,9 @@ void RenderDiagnosticsOrchestrator::capture_frame_timing_sample() {
 }
 
 void RenderDiagnosticsOrchestrator::increment_frame_counter() {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	capture_frame_timing_sample();
-	renderer->get_frame_state().frame_counter++;
+	state_provider.get_frame_state_mut().frame_counter++;
 	GaussianRenderingDiagnostics::ensure_singleton();
 	if (GaussianRenderingDiagnostics::get_singleton()) {
 		GaussianRenderingDiagnostics::get_singleton()->notify_frame_completed(renderer);
@@ -866,7 +875,20 @@ Dictionary RenderDiagnosticsOrchestrator::serialize_error_statistics() const {
 Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	Dictionary stats;
 	GaussianSplatRenderer *mutable_renderer = const_cast<GaussianSplatRenderer *>(renderer);
-	const Ref<DebugOverlaySystem> &overlay_system_ref = mutable_renderer->get_subsystem_state().debug_overlay_system;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const auto &frame_state = state_view.get_frame_state_view();
+	const auto &debug_state = state_view.get_debug_state_view();
+	const auto &scene_state = state_view.get_scene_state();
+	const auto &render_config = state_view.get_render_config_view();
+	const auto &sorting_state = state_view.get_sorting_state_view();
+	const auto &resource_state = state_view.get_resource_state_view();
+	const auto &subsystem_state = state_view.get_subsystem_state_view();
+	GPUCuller *gpu_culler = state_view.get_gpu_culler();
+	PainterlyRenderer *painterly_renderer = state_view.get_painterly_renderer();
+	GPUSortingPipeline *sorting_pipeline = state_view.get_sorting_pipeline();
+	RenderingDevice *rendering_device = state_view.get_rendering_device();
+	const Ref<DebugOverlaySystem> &overlay_system_ref = subsystem_state.debug_overlay_system;
 	DebugOverlaySystem *overlay_system = overlay_system_ref.is_valid() ? overlay_system_ref.ptr() : nullptr;
 	const DebugOverlayQueryView overlay_query = overlay_system
 			? overlay_system->build_query_view(mutable_renderer)
@@ -875,32 +897,32 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	const DebugOverlayCommandSink overlay_command = overlay_system
 			? overlay_system->build_command_sink(mutable_renderer)
 			: DebugOverlayCommandSink();
-	if (overlay_system && mutable_renderer->get_debug_state().overlay_dirty) {
+	if (overlay_system && debug_state.overlay_dirty) {
 		overlay_system->rebuild_renderer_overlay_statistics_from_cache(overlay_query, overlay_command);
 	}
-	if (overlay_system && mutable_renderer->get_debug_state().hud_dirty) {
+	if (overlay_system && debug_state.hud_dirty) {
 		overlay_system->rebuild_renderer_performance_hud_lines(overlay_query, overlay_command);
 	}
 	if (!diagnostics_state.last_telemetry_snapshot.is_empty()) {
 		_merge_dictionary(stats, diagnostics_state.last_telemetry_snapshot);
 	} else {
-		stats["visible_splats"] = renderer->get_frame_state().visible_splat_count.load(std::memory_order_acquire);
-		stats["total_splats"] = renderer->get_scene_state().gaussian_data.is_valid() ? renderer->get_scene_state().gaussian_data->get_count() : 0;
-		stats["sort_time_ms"] = renderer->get_frame_state().sort_time_ms;
-		stats["render_time_ms"] = renderer->get_frame_state().render_time_ms;
-		stats["frame_count"] = renderer->get_frame_state().frame_counter;
-		stats["render_mode"] = renderer->get_render_config().render_mode;
-		const bool stage_metrics_valid = mutable_renderer->get_debug_state().last_stage_metrics_valid;
+		stats["visible_splats"] = frame_state.visible_splat_count.load(std::memory_order_acquire);
+		stats["total_splats"] = scene_state.gaussian_data.is_valid() ? scene_state.gaussian_data->get_count() : 0;
+		stats["sort_time_ms"] = frame_state.sort_time_ms;
+		stats["render_time_ms"] = frame_state.render_time_ms;
+		stats["frame_count"] = frame_state.frame_counter;
+		stats["render_mode"] = render_config.render_mode;
+		const bool stage_metrics_valid = debug_state.last_stage_metrics_valid;
 		GaussianSplatRenderer::StageMetrics stage_metrics = stage_metrics_valid
-				? mutable_renderer->get_debug_state().last_stage_metrics
+				? debug_state.last_stage_metrics
 				: GaussianSplatRenderer::StageMetrics();
 		_append_telemetry_extras(*mutable_renderer, stage_metrics, stage_metrics_valid,
-				renderer->get_frame_state().render_time_ms, stats);
+				frame_state.render_time_ms, stats);
 	}
 	stats["painterly_enabled"] = renderer->get_painterly_config().enabled;
 	stats["painterly_low_end_mode"] = renderer->get_painterly_config().low_end_mode;
-	PainterlyPassGraph *pass_graph = renderer->get_subsystem_state().painterly_renderer.is_valid()
-			? renderer->get_subsystem_state().painterly_renderer->get_pass_graph()
+	PainterlyPassGraph *pass_graph = painterly_renderer
+			? painterly_renderer->get_pass_graph()
 			: nullptr;
 	stats["painterly_internal_scale"] = pass_graph ? pass_graph->get_internal_scale() : renderer->get_painterly_config().internal_scale;
 	stats["using_scene_data_camera"] = renderer->get_view_state().using_scene_data;
@@ -925,21 +947,22 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	}
 
 	PackedInt32Array sorted_preview;
-	if (renderer->get_subsystem_state().gpu_culler.is_valid()) {
-		int preview_count = MIN((int)renderer->get_subsystem_state().gpu_culler->get_state().culled_indices.size(), 32);
+	if (gpu_culler) {
+		const auto &cull_state = gpu_culler->get_state();
+		int preview_count = MIN((int)cull_state.culled_indices.size(), 32);
 		if (preview_count > 0) {
 			sorted_preview.resize(preview_count);
 			for (int i = 0; i < preview_count; i++) {
-				sorted_preview.set(i, (int)renderer->get_subsystem_state().gpu_culler->get_state().culled_indices[i]);
+				sorted_preview.set(i, (int)cull_state.culled_indices[i]);
 			}
 		}
 	}
-	if (sorted_preview.is_empty() && renderer->get_subsystem_state().sorting_pipeline.is_valid()) {
-		const uint32_t sorted_count = renderer->get_sorting_state().sorted_splat_count;
+	if (sorted_preview.is_empty() && sorting_pipeline) {
+		const uint32_t sorted_count = sorting_state.sorted_splat_count;
 		const int preview_count = MIN((int)sorted_count, 32);
 		if (preview_count > 0) {
-			RID sort_indices_buffer = renderer->get_subsystem_state().sorting_pipeline->get_sort_indices_buffer();
-			RenderingDevice *fallback_device = renderer->get_device_state().rd;
+			RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
+			RenderingDevice *fallback_device = rendering_device;
 			RenderingDevice *owner = renderer->get_resource_owner(sort_indices_buffer, fallback_device);
 			if (!owner) {
 				owner = fallback_device;
@@ -961,23 +984,23 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	stats["sorted_indices_preview"] = sorted_preview;
 
 	// GPU sorter state and metrics
-	const bool has_gpu_sorter = renderer->get_sorting_state().gpu_sorter.is_valid();
+	const bool has_gpu_sorter = sorting_state.gpu_sorter.is_valid();
 	stats["gpu_sorter_initialized"] = has_gpu_sorter;
 	stats["gpu_sorter_async_pipeline_ready"] = false;
-	stats["rendering_device_ready"] = renderer->get_device_state().rd != nullptr;
-	stats["sort_active_algorithm"] = renderer->get_sorting_state().active_sort_algorithm;
-	stats["sort_switch_reason"] = renderer->get_sorting_state().sort_switch_reason;
-	stats["sort_override_force_cpu"] = renderer->get_sorting_state().override_force_cpu;
-	stats["sort_override_force_algorithm"] = renderer->get_sorting_state().override_force_algorithm;
-	stats["sort_override_forced_algorithm"] = renderer->get_sorting_state().override_forced_algorithm;
+	stats["rendering_device_ready"] = rendering_device != nullptr;
+	stats["sort_active_algorithm"] = sorting_state.active_sort_algorithm;
+	stats["sort_switch_reason"] = sorting_state.sort_switch_reason;
+	stats["sort_override_force_cpu"] = sorting_state.override_force_cpu;
+	stats["sort_override_force_algorithm"] = sorting_state.override_force_algorithm;
+	stats["sort_override_forced_algorithm"] = sorting_state.override_forced_algorithm;
 
 	if (has_gpu_sorter) {
-		stats["gpu_sorter_algorithm"] = renderer->get_sorting_state().gpu_sorter->get_algorithm_name();
-		stats["gpu_sorter_ready"] = renderer->get_sorting_state().gpu_sorter->is_ready();
-		stats["gpu_sorter_max_elements"] = (int)renderer->get_sorting_state().gpu_sorter->get_max_elements();
-		stats["gpu_sorter_last_sort_ms"] = renderer->get_sorting_state().gpu_sorter->get_last_sort_time_ms();
+		stats["gpu_sorter_algorithm"] = sorting_state.gpu_sorter->get_algorithm_name();
+		stats["gpu_sorter_ready"] = sorting_state.gpu_sorter->is_ready();
+		stats["gpu_sorter_max_elements"] = (int)sorting_state.gpu_sorter->get_max_elements();
+		stats["gpu_sorter_last_sort_ms"] = sorting_state.gpu_sorter->get_last_sort_time_ms();
 
-		SortingMetrics sorter_metrics = renderer->get_sorting_state().gpu_sorter->get_metrics();
+		SortingMetrics sorter_metrics = sorting_state.gpu_sorter->get_metrics();
 		stats["gpu_sorter_avg_sort_ms"] = sorter_metrics.avg_sort_time_ms;
 		stats["gpu_sorter_peak_sort_ms"] = sorter_metrics.peak_sort_time_ms;
 		stats["gpu_sorter_total_sorts"] = (int64_t)sorter_metrics.total_sorts;
@@ -1004,30 +1027,30 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	}
 
 	// GPU buffer manager stats
-	if (renderer->get_resource_state().buffer_manager.is_valid() && renderer->get_resource_state().buffer_manager_initialized) {
-		stats["buffer_manager_memory_mb"] = renderer->get_resource_state().buffer_manager->get_memory_usage_mb();
-		stats["buffer_manager_capacity"] = renderer->get_resource_state().buffer_manager->get_buffer_capacity();
-		stats["buffer_manager_count"] = renderer->get_resource_state().buffer_manager->get_gaussian_count();
+	if (resource_state.buffer_manager.is_valid() && resource_state.buffer_manager_initialized) {
+		stats["buffer_manager_memory_mb"] = resource_state.buffer_manager->get_memory_usage_mb();
+		stats["buffer_manager_capacity"] = resource_state.buffer_manager->get_buffer_capacity();
+		stats["buffer_manager_count"] = resource_state.buffer_manager->get_gaussian_count();
 	} else {
 		stats["visible_ratio"] = 0.0;
 		stats["culled_ratio"] = 0.0;
 	}
 
-	stats["debug_show_tile_grid"] = overlay_system ? overlay_options.show_tile_grid : renderer->get_debug_state().show_tile_grid;
-	stats["debug_show_density_heatmap"] = overlay_system ? overlay_options.show_density_heatmap : renderer->get_debug_state().show_density_heatmap;
-	stats["debug_show_performance_hud"] = overlay_system ? overlay_options.show_performance_hud : renderer->get_debug_state().show_performance_hud;
-	stats["debug_show_residency_hud"] = overlay_system ? overlay_options.show_residency_hud : renderer->get_debug_state().show_residency_hud;
-	const String normalized_route_uid = _normalize_route_uid_for_stats(renderer->get_debug_state().route_uid);
-	const String normalized_sort_route_uid = _normalize_sort_route_uid_for_stats(renderer->get_debug_state().sort_route_uid);
+	stats["debug_show_tile_grid"] = overlay_system ? overlay_options.show_tile_grid : debug_state.show_tile_grid;
+	stats["debug_show_density_heatmap"] = overlay_system ? overlay_options.show_density_heatmap : debug_state.show_density_heatmap;
+	stats["debug_show_performance_hud"] = overlay_system ? overlay_options.show_performance_hud : debug_state.show_performance_hud;
+	stats["debug_show_residency_hud"] = overlay_system ? overlay_options.show_residency_hud : debug_state.show_residency_hud;
+	const String normalized_route_uid = _normalize_route_uid_for_stats(debug_state.route_uid);
+	const String normalized_sort_route_uid = _normalize_sort_route_uid_for_stats(debug_state.sort_route_uid);
 	stats["route_uid"] = normalized_route_uid;
 	stats["sort_route_uid"] = normalized_sort_route_uid;
 	stats["route_uid_missing"] = RenderRouteUID::is_route_uid_missing(normalized_route_uid);
 	stats["sort_route_uid_missing"] = RenderRouteUID::is_sort_route_uid_missing(normalized_sort_route_uid);
 	stats["instance_pipeline_content_generation"] =
-			static_cast<int64_t>(renderer->get_resource_state().instance_pipeline_content_generation);
+			static_cast<int64_t>(resource_state.instance_pipeline_content_generation);
 	stats["cached_render_reuse_enabled"] = renderer->is_cached_render_reuse_enabled();
-	if (renderer->get_subsystem_state().gpu_culler.is_valid()) {
-		const auto &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+	if (gpu_culler) {
+		const auto &cull_state = gpu_culler->get_state();
 		stats["cull_static_chunk_total"] = static_cast<int64_t>(cull_state.static_chunks.size());
 		stats["cull_visible_static_chunks"] = static_cast<int64_t>(cull_state.visible_static_chunk_indices.size());
 		stats["cull_gpu_visible_count"] = static_cast<int64_t>(cull_state.gpu_visible_indices_count);
@@ -1040,22 +1063,22 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 		stats["cull_cpu_visible_count"] = static_cast<int64_t>(0);
 		stats["cull_total_splats_pre_cull"] = static_cast<int64_t>(0);
 	}
-	stats["debug_overlay_version"] = renderer->get_debug_state().overlay_version;
-	stats["debug_hud_version"] = renderer->get_debug_state().hud_version;
-	stats["debug_tile_density_peak"] = (int)(overlay_system ? overlay_query.get_tile_density_peak() : renderer->get_debug_state().tile_density_peak);
-	stats["debug_tile_density_average"] = overlay_system ? overlay_query.get_tile_density_average() : renderer->get_debug_state().tile_density_average;
+	stats["debug_overlay_version"] = debug_state.overlay_version;
+	stats["debug_hud_version"] = debug_state.hud_version;
+	stats["debug_tile_density_peak"] = (int)(overlay_system ? overlay_query.get_tile_density_peak() : debug_state.tile_density_peak);
+	stats["debug_tile_density_average"] = overlay_system ? overlay_query.get_tile_density_average() : debug_state.tile_density_average;
 	stats["debug_tile_density_size"] =
 			overlay_system
 					? Vector2i(overlay_query.get_tile_density_width(), overlay_query.get_tile_density_height())
-					: Vector2i(renderer->get_debug_state().tile_density_width, renderer->get_debug_state().tile_density_height);
+					: Vector2i(debug_state.tile_density_width, debug_state.tile_density_height);
 
 	Array hud_lines_array;
-	const Vector<String> &hud_lines = overlay_system ? overlay_query.get_hud_lines() : renderer->get_debug_state().hud_lines;
+	const Vector<String> &hud_lines = overlay_system ? overlay_query.get_hud_lines() : debug_state.hud_lines;
 	for (const String &line : hud_lines) {
 		hud_lines_array.push_back(line);
 	}
 	stats["performance_hud_lines"] = hud_lines_array;
-	stats["debug_preview_mode"] = renderer->get_debug_state().preview_mode;
+	stats["debug_preview_mode"] = debug_state.preview_mode;
 	stats["telemetry"] = diagnostics_state.last_telemetry_snapshot;
 	stats["production_metrics"] = diagnostics_state.last_production_metrics;
 	stats["production_metrics_validation"] = diagnostics_state.last_production_metrics_validation;
@@ -1065,19 +1088,24 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 }
 
 float RenderDiagnosticsOrchestrator::get_sort_time_ms_internal() const {
-	return renderer->get_frame_state().sort_time_ms;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	return state_provider.get_frame_state_view().sort_time_ms;
 }
 
 float RenderDiagnosticsOrchestrator::get_render_time_ms_internal() const {
-	return renderer->get_frame_state().render_time_ms;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	return state_provider.get_frame_state_view().render_time_ms;
 }
 
 Dictionary RenderDiagnosticsOrchestrator::get_last_sort_metrics_internal() const {
 	Dictionary metrics;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const auto &performance_state = state_provider.get_performance_state_view();
+	const auto &sorting_state = state_provider.get_sorting_state_view();
 	SortingStrategyConfig config = SortingStrategyConfig::load_from_project_settings();
-	if (!renderer->get_performance_state().sort_metrics_history.is_empty()) {
+	if (!performance_state.sort_metrics_history.is_empty()) {
 		const GaussianSplatRenderer::SortFrameMetrics &sample =
-				renderer->get_performance_state().sort_metrics_history[renderer->get_performance_state().sort_metrics_history.size() - 1];
+				performance_state.sort_metrics_history[performance_state.sort_metrics_history.size() - 1];
 		metrics["frame"] = sample.frame_index;
 		metrics["elements"] = sample.element_count;
 		metrics["total_ms"] = sample.total_ms;
@@ -1090,7 +1118,6 @@ Dictionary RenderDiagnosticsOrchestrator::get_last_sort_metrics_internal() const
 		metrics["hybrid"] = sample.used_hybrid;
 	}
 	metrics["target_ms"] = config.target_sort_time_ms;
-	const auto &sorting_state = renderer->get_sorting_state();
 	metrics["active_algorithm"] = sorting_state.active_sort_algorithm;
 	metrics["switch_reason"] = sorting_state.sort_switch_reason;
 	metrics["override_force_cpu"] = sorting_state.override_force_cpu;
@@ -1101,7 +1128,8 @@ Dictionary RenderDiagnosticsOrchestrator::get_last_sort_metrics_internal() const
 
 Array RenderDiagnosticsOrchestrator::get_sort_metrics_history_internal() const {
 	Array history;
-	for (const GaussianSplatRenderer::SortFrameMetrics &sample : renderer->get_performance_state().sort_metrics_history) {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	for (const GaussianSplatRenderer::SortFrameMetrics &sample : state_provider.get_performance_state_view().sort_metrics_history) {
 		Dictionary entry;
 		entry["frame"] = sample.frame_index;
 		entry["elements"] = sample.element_count;
@@ -1121,10 +1149,12 @@ Array RenderDiagnosticsOrchestrator::get_sort_metrics_history_internal() const {
 void RenderDiagnosticsOrchestrator::record_sort_sample(const GaussianSplatRenderer::SortFrameMetrics &p_sample) {
 	SortingStrategyConfig config = SortingStrategyConfig::load_from_project_settings();
 	uint32_t history_limit = config.history_size > 0 ? config.history_size : 120;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::PerformanceState &performance_state = state_provider.get_performance_state_mut();
 
-	renderer->get_performance_state().sort_metrics_history.push_back(p_sample);
-	while (renderer->get_performance_state().sort_metrics_history.size() > history_limit) {
-		renderer->get_performance_state().sort_metrics_history.remove_at(0);
+	performance_state.sort_metrics_history.push_back(p_sample);
+	while (performance_state.sort_metrics_history.size() > history_limit) {
+		performance_state.sort_metrics_history.remove_at(0);
 	}
 
 	if (config.log_metrics && config.log_interval_frames > 0) {
@@ -1140,14 +1170,22 @@ void RenderDiagnosticsOrchestrator::record_sort_sample(const GaussianSplatRender
 }
 
 void RenderDiagnosticsOrchestrator::finalize_frame_metrics(uint64_t p_frame_start_usec) {
-	debug_state_orchestrator->update_frame_times(renderer->get_frame_state().render_time_ms, renderer->get_frame_state().sort_time_ms);
-	const Ref<DebugOverlaySystem> &overlay_system_ref = renderer->get_subsystem_state().debug_overlay_system;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const auto &frame_state = state_view.get_frame_state_view();
+	const auto &debug_state = state_view.get_debug_state_view();
+	const auto &subsystem_state = state_view.get_subsystem_state_view();
+	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
+
+	debug_state_orchestrator->update_frame_times(frame_state.render_time_ms, frame_state.sort_time_ms);
+	const Ref<DebugOverlaySystem> &overlay_system_ref = subsystem_state.debug_overlay_system;
 	DebugOverlaySystem *overlay_system = overlay_system_ref.is_valid() ? overlay_system_ref.ptr() : nullptr;
 	const DebugOverlayOptions overlay_options = overlay_system
 			? overlay_system->build_query_view(renderer).get_options()
 			: DebugOverlayOptions();
 	if ((overlay_system ? (overlay_options.show_performance_hud || overlay_options.show_residency_hud)
-			: (renderer->get_debug_state().show_performance_hud || renderer->get_debug_state().show_residency_hud))) {
+			: (debug_state.show_performance_hud || debug_state.show_residency_hud))) {
 		if (overlay_system) {
 			overlay_system->build_command_sink(renderer).invalidate_hud(false);
 		}
@@ -1158,40 +1196,40 @@ void RenderDiagnosticsOrchestrator::finalize_frame_metrics(uint64_t p_frame_star
 	float frame_time_ms = (frame_end - p_frame_start_usec) / 1000.0f;
 
 	// Frame-to-frame timing (measures actual throughput including GPU wait)
-	if (renderer->get_performance_state().metrics.last_frame_start_usec > 0) {
-		renderer->get_performance_state().metrics.frame_to_frame_time_ms =
-				(p_frame_start_usec - renderer->get_performance_state().metrics.last_frame_start_usec) / 1000.0f;
+	if (performance_state.metrics.last_frame_start_usec > 0) {
+		performance_state.metrics.frame_to_frame_time_ms =
+				(p_frame_start_usec - performance_state.metrics.last_frame_start_usec) / 1000.0f;
 	}
-	renderer->get_performance_state().metrics.last_frame_start_usec = p_frame_start_usec;
+	performance_state.metrics.last_frame_start_usec = p_frame_start_usec;
 
-	renderer->get_performance_state().metrics.total_frames_rendered++;
-	renderer->get_performance_state().metrics.rendered_splat_count = renderer->get_frame_state().visible_splat_count.load(std::memory_order_acquire);
+	performance_state.metrics.total_frames_rendered++;
+	performance_state.metrics.rendered_splat_count = frame_state.visible_splat_count.load(std::memory_order_acquire);
 
 	// Update rolling average frame time (use frame-to-frame for true FPS)
 	float alpha = 0.1f; // Smoothing factor
-	float timing_for_avg = renderer->get_performance_state().metrics.frame_to_frame_time_ms > 0.0f
-			? renderer->get_performance_state().metrics.frame_to_frame_time_ms
+	float timing_for_avg = performance_state.metrics.frame_to_frame_time_ms > 0.0f
+			? performance_state.metrics.frame_to_frame_time_ms
 			: frame_time_ms;
-	if (renderer->get_performance_state().metrics.total_frames_rendered <= 2) {
-		renderer->get_performance_state().metrics.avg_frame_time_ms = timing_for_avg;
-		renderer->get_performance_state().metrics.avg_frame_to_frame_ms = timing_for_avg;
+	if (performance_state.metrics.total_frames_rendered <= 2) {
+		performance_state.metrics.avg_frame_time_ms = timing_for_avg;
+		performance_state.metrics.avg_frame_to_frame_ms = timing_for_avg;
 	} else {
-		renderer->get_performance_state().metrics.avg_frame_time_ms =
-				renderer->get_performance_state().metrics.avg_frame_time_ms * (1.0f - alpha) + frame_time_ms * alpha;
-		renderer->get_performance_state().metrics.avg_frame_to_frame_ms =
-				renderer->get_performance_state().metrics.avg_frame_to_frame_ms * (1.0f - alpha) + timing_for_avg * alpha;
+		performance_state.metrics.avg_frame_time_ms =
+				performance_state.metrics.avg_frame_time_ms * (1.0f - alpha) + frame_time_ms * alpha;
+		performance_state.metrics.avg_frame_to_frame_ms =
+				performance_state.metrics.avg_frame_to_frame_ms * (1.0f - alpha) + timing_for_avg * alpha;
 	}
 
-	renderer->get_performance_state().metrics.peak_frame_time_ms =
-			MAX(renderer->get_performance_state().metrics.peak_frame_time_ms, renderer->get_performance_state().metrics.frame_to_frame_time_ms);
+	performance_state.metrics.peak_frame_time_ms =
+			MAX(performance_state.metrics.peak_frame_time_ms, performance_state.metrics.frame_to_frame_time_ms);
 
 	// Ensure GPU metrics are up to date before logging
 	(renderer->*runtime_ports.update_gpu_pass_metrics_from_tile_renderer)();
 
 	ProductionMetricsConfig metrics_config = _load_production_metrics_config();
-	const bool stage_metrics_valid = renderer->get_debug_state().last_stage_metrics_valid;
+	const bool stage_metrics_valid = debug_state.last_stage_metrics_valid;
 	GaussianSplatRenderer::StageMetrics stage_metrics = stage_metrics_valid
-			? renderer->get_debug_state().last_stage_metrics
+			? debug_state.last_stage_metrics
 			: GaussianSplatRenderer::StageMetrics();
 	Dictionary production_metrics = _build_production_metrics_snapshot(
 			*renderer, stage_metrics, stage_metrics_valid, frame_time_ms);
@@ -1223,7 +1261,13 @@ void RenderDiagnosticsOrchestrator::finalize_frame_metrics(uint64_t p_frame_star
 
 Dictionary RenderDiagnosticsOrchestrator::get_runtime_diagnostic_snapshot() const {
 	Dictionary snapshot;
-	snapshot["frame"] = static_cast<int64_t>(renderer->get_frame_state().frame_counter);
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const auto &frame_state = state_view.get_frame_state_view();
+	const auto &performance_state = state_view.get_performance_state_view();
+	const auto &subsystem_state = state_view.get_subsystem_state_view();
+
+	snapshot["frame"] = static_cast<int64_t>(frame_state.frame_counter);
 	snapshot["device_capability_report"] = build_device_capability_report();
 	snapshot["texture_allocation_trace"] = serialize_texture_trace();
 	snapshot["cross_device_operation_log"] = serialize_cross_device_operations();
@@ -1244,7 +1288,7 @@ Dictionary RenderDiagnosticsOrchestrator::get_runtime_diagnostic_snapshot() cons
 
 	// Read debug modes from DebugOverlaySystem (1b.3 debug seam)
 	Dictionary debug_modes;
-	const Ref<DebugOverlaySystem> &overlay_system_ref = renderer->get_subsystem_state().debug_overlay_system;
+	const Ref<DebugOverlaySystem> &overlay_system_ref = subsystem_state.debug_overlay_system;
 	if (overlay_system_ref.is_valid()) {
 		const DebugOverlaySystem *overlay_system = overlay_system_ref.ptr();
 		const DebugOverlayOptions overlay_options = overlay_system->build_query_view(renderer).get_options();
@@ -1266,7 +1310,7 @@ Dictionary RenderDiagnosticsOrchestrator::get_runtime_diagnostic_snapshot() cons
 	snapshot["debug_modes"] = debug_modes;
 
 	Dictionary gpu_performance;
-	const auto &perf = renderer->get_performance_state().metrics;
+	const auto &perf = performance_state.metrics;
 	gpu_performance["utilization_percent"] = perf.gpu_utilization;
 	gpu_performance["frame_gpu_ms"] = perf.gpu_frame_time_ms;
 	gpu_performance["binning_gpu_ms"] = perf.gpu_tile_binning_time_ms;
@@ -1321,10 +1365,12 @@ Dictionary GaussianSplatRenderer::get_runtime_diagnostic_snapshot() const {
 
 GaussianSplatRenderer::MonitorStreamingSnapshot GaussianSplatRenderer::get_monitor_streaming_snapshot() const {
 	MonitorStreamingSnapshot snapshot;
-	const DebugState &debug_state = get_debug_state();
-	const SceneState &scene_state = get_scene_state();
-	const FrameState &frame_state = get_frame_state();
-	const PerformanceMetrics &metrics = get_performance_state().metrics;
+	FrameStateProvider state_provider(const_cast<GaussianSplatRenderer *>(this));
+	const IFrameStateView &state_view = state_provider;
+	const DebugState &debug_state = state_view.get_debug_state_view();
+	const SceneState &scene_state = state_view.get_scene_state();
+	const FrameState &frame_state = state_view.get_frame_state_view();
+	const PerformanceMetrics &metrics = state_view.get_performance_state_view().metrics;
 
 	snapshot.route_uid = debug_state.route_uid;
 	snapshot.sort_route_uid = debug_state.sort_route_uid;
@@ -1346,7 +1392,7 @@ GaussianSplatRenderer::MonitorStreamingSnapshot GaussianSplatRenderer::get_monit
 	snapshot.has_streaming_data = (scene_state.gaussian_data.is_valid() && scene_state.gaussian_data->get_count() > 0) ||
 			scene_state.active_asset.is_valid();
 
-	const StreamingState &streaming_state = get_streaming_state();
+	const StreamingState &streaming_state = state_view.get_streaming_state();
 	if (!streaming_state.current_streaming_system.is_valid()) {
 		return snapshot;
 	}

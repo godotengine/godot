@@ -101,9 +101,10 @@ static void _record_debug_pipeline_event(GaussianSplatRenderer *p_renderer, cons
 	if (!p_renderer || !p_renderer->get_debug_config().enable_pipeline_trace) {
 		return;
 	}
-	auto &debug_state = p_renderer->get_debug_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(p_renderer);
+	auto &debug_state = state_provider.get_debug_state_mut();
 	if (!debug_state.pipeline_events_valid) {
-		debug_state.pipeline_events_frame = p_renderer->get_frame_state().frame_counter;
+		debug_state.pipeline_events_frame = state_provider.get_frame_state_view().frame_counter;
 		debug_state.pipeline_events_valid = true;
 	}
 	GaussianSplatRenderer::PipelineEvent event;
@@ -542,6 +543,8 @@ bool RenderDebugStateOrchestrator::_check_cull_guardrails(uint64_t p_frame_id, u
 	if (!debug_config.enable_cull_guardrails || !renderer) {
 		return false;
 	}
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 
 	const float pos_step = debug_config.cull_guardrail_position_epsilon;
 	const float rot_step = debug_config.cull_guardrail_rotation_epsilon;
@@ -554,7 +557,7 @@ bool RenderDebugStateOrchestrator::_check_cull_guardrails(uint64_t p_frame_id, u
 	uint32_t static_total = 0;
 	uint32_t gpu_visible = 0;
 	uint32_t cpu_visible = 0;
-	GPUCuller *gpu_culler = renderer->get_subsystem_state().gpu_culler.ptr();
+	GPUCuller *gpu_culler = state_view.get_gpu_culler();
 	if (gpu_culler) {
 		const auto &cull_state = gpu_culler->get_state();
 		static_visible = static_cast<uint32_t>(cull_state.visible_static_chunk_indices.size());
@@ -565,7 +568,7 @@ bool RenderDebugStateOrchestrator::_check_cull_guardrails(uint64_t p_frame_id, u
 
 	bool streaming_active = false;
 	uint32_t streaming_visible = 0;
-	const auto &streaming_state = renderer->get_streaming_state();
+	const auto &streaming_state = state_view.get_streaming_state();
 	if (streaming_state.current_streaming_system.is_valid()) {
 		streaming_active = true;
 		streaming_visible = streaming_state.current_streaming_system->get_visible_count();
@@ -625,13 +628,15 @@ void RenderDebugStateOrchestrator::reset_debug_overlay_metrics(float p_sort_ms) 
 }
 
 void RenderDebugStateOrchestrator::update_raster_metrics(const RasterPerformance &p_perf, const RasterStats &p_stats) {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	debug_state.last_tile_assignment_ms = p_perf.tile_assignment_ms;
 	debug_state.last_tile_rasterization_ms = p_perf.rasterization_ms;
 	debug_state.tile_density_peak = p_stats.max_splats_in_tile;
 	debug_state.tile_density_average = p_stats.average_splats_per_tile;
 
-	uint64_t frame_id = renderer->get_frame_state().frame_counter;
-	uint32_t visible_count = renderer->get_frame_state().visible_splat_count.load(std::memory_order_acquire);
+	uint64_t frame_id = state_view.get_frame_state_view().frame_counter;
+	uint32_t visible_count = state_view.get_frame_state_view().visible_splat_count.load(std::memory_order_acquire);
 	const bool trace_enabled = debug_config.enable_pipeline_trace;
 	const bool audit_enabled = debug_config.enable_splat_audit;
 	if (!trace_enabled && !audit_enabled) {
@@ -721,12 +726,12 @@ void RenderDebugStateOrchestrator::update_raster_metrics(const RasterPerformance
 			const String trace_path = "user://gs_pipeline_trace_" + String::num_uint64(frame_id) + ".json";
 			(renderer->*runtime_ports.dump_pipeline_trace_to_file)(trace_path);
 
-			OutputCompositor *output_compositor = renderer->get_subsystem_state().output_compositor.ptr();
+			OutputCompositor *output_compositor = state_view.get_output_compositor();
 			if (output_compositor) {
 				RID final_texture = output_compositor->get_final_render_texture();
 				if (final_texture.is_valid()) {
 					RenderingDevice *device = (renderer->*runtime_ports.resolve_resource_owner)(
-							final_texture, renderer->get_device_state().rd);
+							final_texture, state_view.get_rendering_device());
 					const String image_path = "user://gs_anomaly_frame_" + String::num_uint64(frame_id) + ".png";
 					_save_texture_snapshot(device, final_texture, image_path);
 				}
@@ -1036,13 +1041,15 @@ Dictionary GaussianSplatRenderer::get_overflow_stats() const {
 }
 
 Dictionary GaussianSplatRenderer::get_pipeline_trace_snapshot() const {
+	GaussianSplatRenderer::FrameStateProvider state_provider(const_cast<GaussianSplatRenderer *>(this));
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	const DebugState &debug_state = debug_state_orchestrator->get_state();
 	const DebugConfig &debug_config = debug_state_orchestrator->get_config();
 
 	Dictionary snapshot;
 	const uint64_t frame_id = debug_state.pipeline_events_valid
 			? debug_state.pipeline_events_frame
-			: get_frame_state().frame_counter;
+			: state_view.get_frame_state_view().frame_counter;
 	const bool trace_fresh = debug_state.pipeline_events_valid;
 	String route_uid = debug_state.route_uid;
 	if (trace_fresh && RenderRouteUID::is_route_uid_missing(route_uid) && !debug_state.pipeline_events.is_empty()) {
@@ -1056,7 +1063,7 @@ Dictionary GaussianSplatRenderer::get_pipeline_trace_snapshot() const {
 	}
 	route_uid = _normalize_route_uid_for_snapshot(route_uid);
 	snapshot["frame"] = static_cast<int64_t>(frame_id);
-	snapshot["dump_frame"] = static_cast<int64_t>(get_frame_state().frame_counter);
+	snapshot["dump_frame"] = static_cast<int64_t>(state_view.get_frame_state_view().frame_counter);
 	snapshot["trace_enabled"] = debug_config.enable_pipeline_trace;
 	snapshot["events_valid"] = debug_state.pipeline_events_valid;
 	snapshot["trace_fresh"] = trace_fresh;
