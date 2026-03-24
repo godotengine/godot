@@ -17,6 +17,14 @@
         android:glEsVersion="0x00030000"
         android:required="true" />
     <uses-feature
+        android:name="android.hardware.vulkan.version"
+        android:required="true"
+        android:version="0x401000" />
+    <uses-feature
+        android:name="android.hardware.vulkan.level"
+        android:required="true"
+        android:version="1" />
+    <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
 

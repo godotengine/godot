@@ -659,6 +659,8 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
 		</member>
+		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" overrides="Viewport" enum="Viewport.DefaultCanvasItemTextureFilter" default="4" />
+		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" overrides="Viewport" enum="Viewport.DefaultCanvasItemTextureRepeat" default="3" />
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
 		</member>
@@ -670,6 +672,34 @@
 		</member>
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
+		</member>
+		<member name="item_{index}/checkable" type="int" setter="" getter="" default="0">
+			The checkable item type of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/checked" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is checked.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is disabled.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/icon" type="Texture2D" setter="" getter="">
+			The icon of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/id" type="int" setter="" getter="" default="0">
+			The ID of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/separator" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is a separator.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/text" type="String" setter="" getter="" default="&quot;&quot;">
+			The text of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
 		<member name="prefer_native_menu" type="bool" setter="set_prefer_native_menu" getter="is_prefer_native_menu" default="false">
 			If [code]true[/code], [MenuBar] will use native menu when supported.
@@ -764,6 +794,9 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="search_bar_separation" data_type="constant" type="int" default="4">
+			The vertical space between search bar and menu items.
 		</theme_item>
 		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
 			The size of the labeled separator text outline.

@@ -31,10 +31,10 @@
 #include "label_3d.h"
 
 #include "core/config/engine.h"
+#include "core/math/triangle_mesh.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/window.h"
-#include "scene/resources/mesh.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering/rendering_server.h"

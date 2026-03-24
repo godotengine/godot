@@ -1,6 +1,6 @@
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Copyright (c) 2018-2025 Cosmin Truta
+ * Copyright (c) 2018-2026 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -708,8 +708,8 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
                          break;
 
                      t->next = hash[d];
-                     t->left = (png_byte)i;
-                     t->right = (png_byte)j;
+                     t->left = png_ptr->palette_to_index[i];
+                     t->right = png_ptr->palette_to_index[j];
                      hash[d] = t;
                   }
                }

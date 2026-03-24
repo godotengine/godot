@@ -33,7 +33,10 @@
 TEST_FORCE_LINK(test_config_file)
 
 #include "core/io/config_file.h"
+
+#ifdef WINDOWS_ENABLED
 #include "core/os/os.h"
+#endif
 
 namespace TestConfigFile {
 

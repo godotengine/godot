@@ -42,6 +42,8 @@ struct SourceLine {
 };
 
 class RegEx;
+template <typename T>
+class Ref;
 
 class ProjectConverter3To4 {
 	class RegExContainer;
@@ -85,8 +87,8 @@ class ProjectConverter3To4 {
 	void custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to);
 	Vector<String> check_for_custom_rename(Vector<String> &lines, const String &from, const String &to);
 
-	void rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceLine> &source_lines);
-	Vector<String> check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines);
+	void rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<SourceLine> &source_lines);
+	Vector<String> check_for_rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<String> &lines);
 
 	Vector<String> check_for_files();
 
@@ -105,7 +107,7 @@ class ProjectConverter3To4 {
 	bool test_single_array(const char *array[][2], bool ignore_second_check = false);
 	bool test_conversion_gdscript_builtin(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), const String &what, const RegExContainer &reg_container, bool builtin);
 	bool test_conversion_with_regex(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), const String &what, const RegExContainer &reg_container);
-	bool test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, const String &what);
+	bool test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<Ref<RegEx>> &regex_cache, const String &what);
 	bool test_array_names();
 	bool test_conversion(RegExContainer &reg_container);
 

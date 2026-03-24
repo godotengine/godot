@@ -50,10 +50,6 @@
 
 #include "rendering_device_driver_metal.h"
 
-#include "pixel_formats.h"
-#include "rendering_context_driver_metal.h"
-#include "rendering_shader_container_metal.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -61,10 +57,14 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "drivers/apple/foundation_helpers.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/rendering_context_driver_metal.h"
+#include "drivers/metal/rendering_shader_container_metal.h"
 
+#include <Metal/Metal.hpp>
 #include <os/log.h>
 #include <os/signpost.h>
-#include <Metal/Metal.hpp>
+
 #include <algorithm>
 
 #ifndef MTLGPUAddress
@@ -2848,6 +2848,7 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	device_properties = memnew(MetalDeviceProperties(device));
+	pixel_formats = memnew(PixelFormats(device, device_properties->features));
 	device_profile = device_profile_from_properties(device_properties);
 	resource_cache = std::make_unique<MDResourceCache>(device, *pixel_formats, device_properties->limits.maxPerStageBufferCount);
 	shader_container_format = memnew(RenderingShaderContainerFormatMetal(&device_profile));
@@ -2862,7 +2863,6 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 	// Set the pipeline cache ID based on the Metal version.
 	pipeline_cache_id = "metal-driver-" + get_api_version();
 
-	pixel_formats = memnew(PixelFormats(device, device_properties->features));
 	if (device_properties->features.layeredRendering) {
 		multiview_capabilities.is_supported = true;
 		multiview_capabilities.max_view_count = device_properties->limits.maxViewports;

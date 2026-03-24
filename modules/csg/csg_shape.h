@@ -39,7 +39,7 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
-#include "thirdparty/misc/mikktspace.h"
+#include <thirdparty/misc/mikktspace.h>
 
 class Mesh;
 class NavigationMesh;

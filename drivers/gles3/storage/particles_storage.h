@@ -38,7 +38,7 @@
 #include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 namespace GLES3 {
 
@@ -171,8 +171,10 @@ private:
 
 		RID process_material;
 		uint32_t frame_counter = 0;
-		RSE::ParticlesTransformAlign transform_align = RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED;
 
+		RSE::ParticlesTransformAlign transform_align = RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED;
+		RSE::ParticlesTransformAlignAxis transform_align_axis = RSE::PARTICLES_ALIGN_AXIS_Y;
+		RSE::ParticlesTransformAlignCustomSrc transform_align_channel_filter = RSE::PARTICLES_ALIGN_CHANNEL_FILTER_X;
 		RSE::ParticlesDrawOrder draw_order = RSE::PARTICLES_DRAW_ORDER_INDEX;
 
 		Vector<RID> draw_passes;
@@ -345,6 +347,9 @@ public:
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 
 	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) override;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_channel_filter) override;
+	virtual void particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) override;
+
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override;

@@ -32,12 +32,118 @@
 #include "split_container.compat.inc"
 
 #include "core/config/engine.h"
+#include "core/input/input.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+
+void SplitContainerMultiDragger::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_MOUSE_ENTER: {
+			if (!dragging && !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+				split_container->show_grabber_icon(dragger_index);
+			}
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (!dragging && !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+				split_container->show_grabber_icon(-1);
+			}
+		} break;
+	}
+}
+
+void SplitContainerMultiDragger::gui_input(const Ref<InputEvent> &p_event) {
+	SplitContainer *parent_sc = Object::cast_to<SplitContainer>(get_parent()->get_parent());
+	ERR_FAIL_NULL(parent_sc);
+
+	if (parent_sc->collapsed || parent_sc->valid_children.size() < 2u || !parent_sc->dragging_enabled) {
+		return;
+	}
+	if (split_container->collapsed || split_container->valid_children.size() < 2u || !split_container->dragging_enabled || !split_container->is_visible_in_tree()) {
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+		if (mb->is_pressed()) {
+			// To match the visual position, clamp on the first split.
+			split_container->_update_dragger_positions(0);
+			dragging = true;
+			split_container->show_grabber_icon(dragger_index);
+			split_container->emit_signal(SNAME("drag_started"));
+			const int axis = split_container->vertical ? 1 : 0;
+			start_drag_split_offset = split_container->get_split_offset(dragger_index);
+			drag_from = (int)get_transform().xform(mb->get_position())[axis];
+		} else {
+			stop_dragging();
+		}
+		// Don't accept to allow the event to go to the parent dragger.
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
+		if (!dragging) {
+			return;
+		}
+
+		Vector2i in_parent_pos = get_transform().xform(mm->get_position());
+		int new_drag_offset;
+		if (!split_container->vertical && is_layout_rtl()) {
+			new_drag_offset = start_drag_split_offset - (in_parent_pos.x - drag_from);
+		} else {
+			new_drag_offset = start_drag_split_offset + ((split_container->vertical ? in_parent_pos.y : in_parent_pos.x) - drag_from);
+		}
+		split_container->set_split_offset(new_drag_offset, dragger_index);
+		split_container->_update_dragger_positions(dragger_index);
+		split_container->queue_sort();
+		split_container->emit_signal(SNAME("dragged"), split_container->get_split_offset(dragger_index));
+	}
+}
+
+Control::CursorShape SplitContainerMultiDragger::get_cursor_shape(const Point2 &p_pos) const {
+	SplitContainer *parent_sc = Object::cast_to<SplitContainer>(get_parent()->get_parent());
+	ERR_FAIL_NULL_V(parent_sc, CURSOR_ARROW);
+	if (dragging || (!parent_sc->collapsed && parent_sc->dragging_enabled)) {
+		return CURSOR_DRAG;
+	}
+	return Control::get_cursor_shape(p_pos);
+}
+
+void SplitContainerMultiDragger::update_position() {
+	if (dragging || is_queued_for_deletion()) {
+		return;
+	}
+	SplitContainer *parent_sc = Object::cast_to<SplitContainer>(get_parent()->get_parent());
+	ERR_FAIL_NULL(parent_sc);
+	ERR_FAIL_INDEX(dragger_index, (int)split_container->dragging_area_controls.size());
+	const int axis = parent_sc->vertical ? 1 : 0;
+	const int cross_axis = parent_sc->vertical ? 0 : 1;
+	Control *control = split_container->dragging_area_controls[dragger_index];
+	Point2 pos;
+	pos[axis] = get_parent_control()->get_global_position()[axis];
+	pos[cross_axis] = control->get_global_position()[cross_axis];
+	set_global_position(pos);
+}
+
+void SplitContainerMultiDragger::stop_dragging() {
+	if (!dragging) {
+		return;
+	}
+	dragging = false;
+	split_container->show_grabber_icon(-1);
+	update_position();
+	split_container->emit_signal(SNAME("drag_ended"));
+}
+
+SplitContainerMultiDragger::SplitContainerMultiDragger() {
+	set_mouse_filter(MOUSE_FILTER_PASS);
+}
 
 void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -77,9 +183,7 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 					drag_from = (int)get_transform().xform(mb->get_position()).x;
 				}
 			} else {
-				dragging = false;
-				queue_redraw();
-				sc->emit_signal(SNAME("drag_ended"));
+				stop_dragging();
 			}
 			accept_event();
 		}
@@ -198,6 +302,24 @@ void SplitContainerDragger::update_touch_dragger() {
 	touch_dragger->set_texture(sc->_get_touch_dragger_icon());
 	touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 	touch_dragger->set_default_cursor_shape(sc->vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
+	touch_dragger->set_visible(sc->dragging_enabled);
+}
+
+void SplitContainerDragger::stop_dragging() {
+	ERR_THREAD_GUARD;
+	if (!dragging) {
+		return;
+	}
+	dragging = false;
+	queue_redraw();
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+	sc->emit_signal(SNAME("drag_ended"));
+	for (Node *child : iterate_children()) {
+		SplitContainerMultiDragger *dragger = Object::cast_to<SplitContainerMultiDragger>(child);
+		if (dragger) {
+			dragger->stop_dragging();
+		}
+	}
 }
 
 void SplitContainerDragger::_notification(int p_what) {
@@ -249,22 +371,19 @@ void SplitContainerDragger::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			if (dragging) {
-				dragging = false;
-				queue_redraw();
-			}
+			stop_dragging();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (dragging && !is_visible_in_tree()) {
-				dragging = false;
+				stop_dragging();
 			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 			draw_style_box(sc->theme_cache.split_bar_background, split_bar_rect);
-			if (sc->dragger_visibility == SplitContainer::DRAGGER_VISIBLE && (dragging || mouse_inside || !sc->theme_cache.autohide) && !sc->touch_dragger_enabled) {
+			if (!sc->touch_dragger_enabled && sc->dragger_visibility == SplitContainer::DRAGGER_VISIBLE && (dragging || mouse_inside || !sc->theme_cache.autohide || sc->force_show_grabber_icon == dragger_index)) {
 				Ref<Texture2D> tex = sc->_get_grabber_icon();
 				float available_size = sc->vertical ? (sc->get_size().x - tex->get_size().x) : (sc->get_size().y - tex->get_size().y);
 				if (available_size - sc->drag_area_margin_begin - sc->drag_area_margin_end > 0) { // Draw the grabber only if it fits.
@@ -724,13 +843,14 @@ void SplitContainer::_resort() {
 		for (SplitContainerDragger *dragger : dragging_area_controls) {
 			dragger->hide();
 		}
+		if (drag_nested_intersections) {
+			// Ancestors may need to remove multi draggers.
+			_update_nested_ancestors();
+		}
 		return;
 	}
 	for (SplitContainerDragger *dragger : dragging_area_controls) {
 		dragger->set_visible(!collapsed);
-		if (touch_dragger_enabled) {
-			dragger->touch_dragger->set_visible(dragging_enabled);
-		}
 	}
 
 	_update_default_dragger_positions();
@@ -783,15 +903,47 @@ void SplitContainer::_resort() {
 		dragging_area_controls[i]->queue_redraw();
 	}
 	queue_redraw();
+
+	if (drag_nested_intersections) {
+		_update_nested_ancestors();
+		// Update all multi dragger positions in case size changed.
+		for (SplitContainerDragger *dragger : dragging_area_controls) {
+			for (Node *child : dragger->iterate_children()) {
+				SplitContainerMultiDragger *multi_dragger = Object::cast_to<SplitContainerMultiDragger>(child);
+				if (multi_dragger) {
+					multi_dragger->update_position();
+				}
+			}
+		}
+	}
 }
 
 void SplitContainer::_update_draggers() {
+	ERR_THREAD_GUARD;
 	if (!is_visible_in_tree()) {
 		return;
 	}
 	const int valid_child_count = (int)valid_children.size();
 	const int dragger_count = MAX(valid_child_count - 1, 1);
 	const int draggers_size_diff = dragger_count - (int)dragging_area_controls.size();
+
+	if (draggers_size_diff != 0) {
+		LocalVector<SplitContainer *> to_update;
+		for (SplitContainerDragger *dragger : dragging_area_controls) {
+			for (Node *child : dragger->iterate_children()) {
+				SplitContainerMultiDragger *multi_dragger = Object::cast_to<SplitContainerMultiDragger>(child);
+				if (multi_dragger == nullptr || multi_dragger->is_queued_for_deletion()) {
+					continue;
+				}
+				to_update.push_back(multi_dragger->split_container);
+			}
+		}
+		_remove_nested_descendent(nullptr);
+		// Existing descendents may not resort, so need to update them after draggers update.
+		for (SplitContainer *to_update_sc : to_update) {
+			callable_mp(to_update_sc, &SplitContainer::_update_nested_ancestors).call_deferred(false);
+		}
+	}
 
 	// Add new draggers.
 	for (int i = 0; i < draggers_size_diff; i++) {
@@ -807,6 +959,7 @@ void SplitContainer::_update_draggers() {
 	for (int i = 0; i < -draggers_size_diff; i++) {
 		const int remove_at = (int)dragging_area_controls.size() - 1;
 		SplitContainerDragger *dragger = dragging_area_controls[remove_at];
+		dragger->stop_dragging();
 		dragging_area_controls.remove_at(remove_at);
 		// replace_by removes all children, so make sure it is a child before removing.
 		if (dragger->get_parent() == this) {
@@ -862,9 +1015,17 @@ void SplitContainer::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible_in_tree()) {
+				_update_nested_ancestors();
+			}
+		} break;
 		case NOTIFICATION_PREDELETE: {
 			valid_children.clear();
 			dragging_area_controls.clear();
+			if (drag_nested_intersections) {
+				_remove_nested_descendent(nullptr);
+			}
 		} break;
 	}
 }
@@ -1057,6 +1218,178 @@ void SplitContainer::_remove_valid_child(Control *p_control) {
 	_set_desired_sizes(desired_sizes);
 }
 
+void SplitContainer::_remove_nested_descendent(SplitContainer *p_nested_sc) {
+	for (SplitContainerDragger *dragger : dragging_area_controls) {
+		for (int i = dragger->get_child_count() - 1; i >= 0; i--) {
+			SplitContainerMultiDragger *multi_dragger = Object::cast_to<SplitContainerMultiDragger>(dragger->get_child(i));
+			if (multi_dragger == nullptr || multi_dragger->is_queued_for_deletion()) {
+				continue;
+			}
+			if (p_nested_sc != nullptr && multi_dragger->split_container != p_nested_sc) {
+				continue;
+			}
+			dragger->stop_dragging();
+
+			SplitContainer *nested_sc = multi_dragger->split_container;
+			if (nested_sc->is_connected(SceneStringName(tree_exiting), callable_mp(this, &SplitContainer::_remove_nested_descendent))) {
+				nested_sc->disconnect(SceneStringName(tree_exiting), callable_mp(this, &SplitContainer::_remove_nested_descendent).bind(nested_sc));
+			}
+			multi_dragger->queue_free();
+		}
+	}
+}
+
+void SplitContainer::_update_nested_descendent(SplitContainer *p_nested_sc, Control *p_direct_child) {
+	ERR_THREAD_GUARD;
+	// Remove multi draggers if the descendent cannot drag or is not orthogonal. If any of these change, the descendent will call this update again.
+	if (!p_nested_sc->is_dragging_enabled() || !p_nested_sc->is_dragging_nested_intersections() || p_nested_sc->is_collapsed() || !p_nested_sc->is_visible_in_tree() || p_nested_sc->is_vertical() == vertical || p_nested_sc->valid_children.size() < 2u) {
+		_remove_nested_descendent(p_nested_sc);
+		return;
+	}
+	if (dragging_area_controls.size() != valid_children.size() - 1) {
+		_update_draggers();
+	}
+
+	// Make sure the nested SplitContainer is adjacent.
+	const int child_index = valid_children.find(p_direct_child);
+	if (child_index < 0) {
+		return;
+	}
+	const int axis = vertical ? 1 : 0;
+	const float max_delta_pos = theme_cache.minimum_grab_thickness;
+
+	const float start_pos = p_direct_child->get_global_rect().get_position()[axis];
+	const float end_pos = p_direct_child->get_global_rect().get_end()[axis];
+	const float child_start_pos = p_nested_sc->get_global_rect().get_position()[axis];
+	const float child_end_pos = p_nested_sc->get_global_rect().get_end()[axis];
+	bool nested_to_start = Math::abs(start_pos - child_start_pos) <= max_delta_pos;
+	bool nested_to_end = Math::abs(end_pos - child_end_pos) <= max_delta_pos;
+
+	if (is_layout_rtl() && !is_vertical()) {
+		SWAP(nested_to_start, nested_to_end);
+	}
+
+	LocalVector<SplitContainerDragger *> connected_draggers;
+	if (nested_to_start && child_index > 0) {
+		connected_draggers.push_back(dragging_area_controls[child_index - 1]);
+	}
+	if (nested_to_end && child_index < (int)dragging_area_controls.size()) {
+		connected_draggers.push_back(dragging_area_controls[child_index]);
+	}
+
+	if (connected_draggers.is_empty()) {
+		_remove_nested_descendent(p_nested_sc);
+		return;
+	}
+
+	bool needs_rebuild = false;
+	for (SplitContainerDragger *dragger : connected_draggers) {
+		int needed = (int)p_nested_sc->valid_children.size() - 1;
+		for (Node *child : dragger->iterate_children()) {
+			SplitContainerMultiDragger *multi_dragger = Object::cast_to<SplitContainerMultiDragger>(child);
+			if (multi_dragger == nullptr || multi_dragger->is_queued_for_deletion()) {
+				continue;
+			}
+			if (multi_dragger->split_container != p_nested_sc) {
+				continue;
+			}
+			needed--;
+			if (needed < 0) {
+				break;
+			}
+		}
+		if (needed != 0) {
+			needs_rebuild = true;
+			break;
+		}
+	}
+	if (!needs_rebuild) {
+		// Only update the positions.
+		for (SplitContainerDragger *dragger : dragging_area_controls) {
+			for (Node *child : dragger->iterate_children()) {
+				SplitContainerMultiDragger *multi_dragger = Object::cast_to<SplitContainerMultiDragger>(child);
+				if (multi_dragger) {
+					multi_dragger->update_position();
+				}
+			}
+		}
+		return;
+	}
+
+	_remove_nested_descendent(p_nested_sc);
+
+	// Add new multi draggers.
+	const int sep = _get_separation();
+	const int drag_thickness = MAX(sep, theme_cache.minimum_grab_thickness);
+
+	for (SplitContainerDragger *dragger : connected_draggers) {
+		for (int i = 0; i < (int)p_nested_sc->dragging_area_controls.size(); i++) {
+			SplitContainerMultiDragger *new_dragger = memnew(SplitContainerMultiDragger);
+			new_dragger->dragger_index = i;
+			new_dragger->split_container = p_nested_sc;
+			new_dragger->set_size(Size2(drag_thickness, drag_thickness));
+			dragger->add_child(new_dragger, false, INTERNAL_MODE_FRONT);
+
+			if (!p_nested_sc->is_connected(SceneStringName(tree_exiting), callable_mp(this, &SplitContainer::_remove_nested_descendent))) {
+				p_nested_sc->connect(SceneStringName(tree_exiting), callable_mp(this, &SplitContainer::_remove_nested_descendent).bind(p_nested_sc));
+			}
+			callable_mp(new_dragger, &SplitContainerMultiDragger::update_position).call_deferred();
+		}
+	}
+}
+
+void SplitContainer::_update_nested_ancestors(bool p_remove) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	if (!p_remove && !drag_nested_intersections) {
+		return;
+	}
+	Control *last_ancestor = this;
+	Control *ancestor = get_parent_control();
+	while (ancestor) {
+		SplitContainer *ancestor_split_container = Object::cast_to<SplitContainer>(ancestor);
+		if (ancestor_split_container && ancestor_split_container->is_dragging_nested_intersections()) {
+			if (p_remove) {
+				ancestor_split_container->_remove_nested_descendent(this);
+			} else {
+				ancestor_split_container->_update_nested_descendent(this, last_ancestor);
+			}
+		}
+		if (ancestor->is_part_of_edited_scene() != is_part_of_edited_scene()) {
+			break;
+		}
+
+		if (ancestor->is_set_as_top_level()) {
+			break;
+		}
+		last_ancestor = ancestor;
+		ancestor = ancestor->get_parent_control();
+	}
+}
+
+void SplitContainer::_update_all_nested_descendents(Control *p_control, Control *p_first_child) {
+	ERR_THREAD_GUARD;
+	for (Node *child_node : p_control->iterate_children<false>()) {
+		Control *child_control = Object::cast_to<Control>(child_node);
+		if (!child_control || child_control->is_set_as_top_level()) {
+			break;
+		}
+		if (child_control->is_part_of_edited_scene() != is_part_of_edited_scene()) {
+			break;
+		}
+		if (p_first_child == nullptr) {
+			p_first_child = child_control;
+		}
+
+		SplitContainer *control_sc = Object::cast_to<SplitContainer>(child_control);
+		if (control_sc) {
+			_update_nested_descendent(control_sc, p_first_child);
+		}
+		_update_all_nested_descendents(child_control, p_first_child);
+	}
+}
+
 void SplitContainer::set_split_offset(int p_offset, int p_index) {
 	ERR_FAIL_INDEX(p_index, split_offsets.size());
 	if (split_offsets[p_index] == p_offset) {
@@ -1144,13 +1477,13 @@ void SplitContainer::set_dragging_enabled(bool p_enabled) {
 	}
 	dragging_enabled = p_enabled;
 	if (!dragging_enabled) {
-		bool was_dragging = false;
 		for (SplitContainerDragger *dragger : dragging_area_controls) {
-			was_dragging |= dragger->dragging;
-			dragger->dragging = false;
+			dragger->stop_dragging();
 		}
-		if (was_dragging) {
-			emit_signal(SNAME("drag_ended"));
+	}
+	if (touch_dragger_enabled) {
+		for (SplitContainerDragger *dragger : dragging_area_controls) {
+			dragger->update_touch_dragger();
 		}
 	}
 	if (get_viewport()) {
@@ -1257,6 +1590,36 @@ bool SplitContainer::is_touch_dragger_enabled() const {
 	return touch_dragger_enabled;
 }
 
+void SplitContainer::show_grabber_icon(int p_index) {
+	if (force_show_grabber_icon == p_index) {
+		return;
+	}
+	force_show_grabber_icon = p_index;
+	for (SplitContainerDragger *dragger : dragging_area_controls) {
+		dragger->queue_redraw();
+	}
+}
+
+void SplitContainer::set_drag_nested_intersections(bool p_enabled) {
+	if (drag_nested_intersections == p_enabled) {
+		return;
+	}
+	drag_nested_intersections = p_enabled;
+	if (!is_inside_tree()) {
+		return;
+	}
+	_update_nested_ancestors(!drag_nested_intersections);
+	if (drag_nested_intersections) {
+		_update_all_nested_descendents(this);
+	} else {
+		_remove_nested_descendent(nullptr);
+	}
+}
+
+bool SplitContainer::is_dragging_nested_intersections() const {
+	return drag_nested_intersections;
+}
+
 void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_split_offsets", "offsets"), &SplitContainer::set_split_offsets);
 	ClassDB::bind_method(D_METHOD("get_split_offsets"), &SplitContainer::get_split_offsets);
@@ -1292,6 +1655,9 @@ void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_touch_dragger_enabled", "enabled"), &SplitContainer::set_touch_dragger_enabled);
 	ClassDB::bind_method(D_METHOD("is_touch_dragger_enabled"), &SplitContainer::is_touch_dragger_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_drag_nested_intersections", "enabled"), &SplitContainer::set_drag_nested_intersections);
+	ClassDB::bind_method(D_METHOD("is_dragging_nested_intersections"), &SplitContainer::is_dragging_nested_intersections);
+
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::INT, "offset")));
 	ADD_SIGNAL(MethodInfo("drag_started"));
 	ADD_SIGNAL(MethodInfo("drag_ended"));
@@ -1302,6 +1668,7 @@ void SplitContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dragger_visibility", PROPERTY_HINT_ENUM, "Visible,Hidden,Hidden and Collapsed"), "set_dragger_visibility", "get_dragger_visibility");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "touch_dragger_enabled"), "set_touch_dragger_enabled", "is_touch_dragger_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_nested_intersections"), "set_drag_nested_intersections", "is_dragging_nested_intersections");
 
 	ADD_GROUP("Drag Area", "drag_area_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "drag_area_margin_begin", PROPERTY_HINT_NONE, "suffix:px"), "set_drag_area_margin_begin", "get_drag_area_margin_begin");

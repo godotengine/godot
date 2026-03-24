@@ -77,6 +77,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
@@ -2125,8 +2126,8 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	String path = ResourceLoader::path_remap(local_path);
 
-	TextFile *text_file = memnew(TextFile);
-	Ref<TextFile> text_res(text_file);
+	Ref<TextFile> text_file;
+	text_file.instantiate();
 	Error err = text_file->load_text(path);
 
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load text file '" + path + "'.");
@@ -2142,7 +2143,7 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 		*r_error = OK;
 	}
 
-	return text_res;
+	return text_file;
 }
 
 Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_path) {
@@ -2376,6 +2377,18 @@ PackedStringArray ScriptEditor::get_unsaved_scripts() const {
 		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (seb && seb->is_unsaved()) {
 			unsaved_list.append(seb->get_name());
+		}
+	}
+	return unsaved_list;
+}
+
+PackedStringArray ScriptEditor::get_unsaved_files() const {
+	PackedStringArray unsaved_list;
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (seb && seb->is_unsaved()) {
+			unsaved_list.append(seb->get_edited_resource()->get_path());
 		}
 	}
 	return unsaved_list;
@@ -3774,6 +3787,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_docs_from_script", "script"), &ScriptEditor::update_docs_from_script);
 	ClassDB::bind_method(D_METHOD("clear_docs_from_script", "script"), &ScriptEditor::clear_docs_from_script);
 
+	ClassDB::bind_method(D_METHOD("get_unsaved_files"), &ScriptEditor::get_unsaved_files);
+
 	ClassDB::bind_method(D_METHOD("save_all_scripts"), &ScriptEditor::save_all_scripts);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static())));
@@ -3803,6 +3818,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_split = memnew(HSplitContainer);
 	main_container->add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	script_split->set_drag_nested_intersections(true);
 
 #ifdef ANDROID_ENABLED
 	virtual_keyboard_spacer = memnew(Control);
@@ -3813,6 +3829,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	list_split = memnew(VSplitContainer);
 	script_split->add_child(list_split);
 	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	list_split->set_drag_nested_intersections(true);
 
 	scripts_vbox = memnew(VBoxContainer);
 	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);

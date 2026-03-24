@@ -579,7 +579,7 @@ private:
 
 	void _texture_changed(RID p_item);
 
-	RID_PtrOwner<Item> items;
+	static inline RID_PtrOwner<Item, true> items;
 	List<String> tag_stack;
 	HashSet<RID> hr_list;
 
@@ -606,13 +606,20 @@ private:
 		int to_char = 0;
 		mutable bool to_line_found = false;
 
-		bool double_click = false; // Selecting whole words?
+		enum SelectionMode {
+			SINGLE_CLICK,
+			DOUBLE_CLICK,
+			TRIPLE_CLICK,
+		};
+		SelectionMode selection_mode = SINGLE_CLICK;
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
 		bool enabled = false; // allow selections?
 		bool drag_attempt = false;
 	};
 
 	Selection selection;
+	uint64_t last_double_click = 0;
+	Vector2 last_double_click_pos;
 	Callable selection_modifier;
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;

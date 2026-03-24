@@ -36,12 +36,12 @@
 #include "core/templates/local_vector.h"
 #include "servers/rendering/rendering_context_driver.h"
 
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+#if defined(DEBUG_ENABLED)
 #define VK_TRACK_DRIVER_MEMORY
 #define VK_TRACK_DEVICE_MEMORY
 #endif
 
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 
 class RenderingContextDriverVulkan : public RenderingContextDriver {
 public:
@@ -155,6 +155,7 @@ public:
 	virtual bool surface_get_needs_resize(SurfaceID p_surface) const override;
 	virtual void surface_destroy(SurfaceID p_surface) override;
 	virtual bool is_debug_utils_enabled() const override;
+	virtual bool is_colorspace_externally_managed() const { return false; }
 	bool is_colorspace_supported() const;
 
 	// Vulkan-only methods.

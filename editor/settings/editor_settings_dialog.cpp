@@ -50,6 +50,7 @@
 #include "editor/settings/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
@@ -86,7 +87,7 @@ void EditorSettingsDialog::_settings_property_edited() {
 	} else if (full_name.begins_with("editors/visual_editors/connection_colors") || full_name.begins_with("editors/visual_editors/category_colors")) {
 		EditorSettings::get_singleton()->set_manually("editors/visual_editors/color_theme", "Custom");
 	} else if (full_name == "editors/3d/navigation/orbit_mouse_button" || full_name == "editors/3d/navigation/pan_mouse_button" || full_name == "editors/3d/navigation/zoom_mouse_button" || full_name == "editors/3d/navigation/emulate_3_button_mouse") {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
 		update_navigation_preset();
 		_update_shortcuts();
@@ -94,10 +95,10 @@ void EditorSettingsDialog::_settings_property_edited() {
 }
 
 void EditorSettingsDialog::update_navigation_preset() {
-	Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
-	Node3DEditorViewport::ViewportNavMouseButton set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+	View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	View3DController::NavigationMouseButton set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+	View3DController::NavigationMouseButton set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+	View3DController::NavigationMouseButton set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
 	bool set_3_button_mouse = false;
 	Ref<InputEventKey> orbit_mod_key_1;
 	Ref<InputEventKey> orbit_mod_key_2;
@@ -109,11 +110,11 @@ void EditorSettingsDialog::update_navigation_preset() {
 	Ref<InputEventKey> orbit_snap_mod_key_2;
 	bool set_preset = false;
 
-	if (nav_scheme == Node3DEditorViewport::NAVIGATION_GODOT) {
+	if (nav_scheme == View3DController::NAV_SCHEME_GODOT) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::NONE);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -123,11 +124,11 @@ void EditorSettingsDialog::update_navigation_preset() {
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA) {
+	} else if (nav_scheme == View3DController::NAV_SCHEME_MAYA) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_RIGHT_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_RIGHT;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -137,11 +138,11 @@ void EditorSettingsDialog::update_navigation_preset() {
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
 		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) {
+	} else if (nav_scheme == View3DController::NAV_SCHEME_MODO) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -151,11 +152,11 @@ void EditorSettingsDialog::update_navigation_preset() {
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::CTRL);
 		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
 		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_TABLET) {
+	} else if (nav_scheme == View3DController::NAV_SCHEME_TABLET) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
 		set_3_button_mouse = true;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -303,6 +304,10 @@ void EditorSettingsDialog::_notification(int p_what) {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				inspector->update_category_list();
 			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				inspector->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
 		} break;
 	}
 }
@@ -428,7 +433,7 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
 	bool path_is_zoom_mod = p_path == "spatial_editor/viewport_zoom_modifier_1" || p_path == "spatial_editor/viewport_zoom_modifier_2";
 	if (path_is_orbit_mod || path_is_pan_mod || path_is_zoom_mod) {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	}
 }
 

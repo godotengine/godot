@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/docks/dock_tab_container.h"
+#include "scene/gui/texture_progress_bar.h"
 
 class Button;
 class ConfigFile;
@@ -38,11 +39,25 @@ class EditorDock;
 class EditorToaster;
 class HBoxContainer;
 
+class ProgressIndicator : public TextureProgressBar {
+	GDCLASS(ProgressIndicator, TextureProgressBar);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+public:
+	ProgressIndicator();
+};
+
 class EditorBottomPanel : public DockTabContainer {
 	GDCLASS(EditorBottomPanel, DockTabContainer);
 
 	HBoxContainer *bottom_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
+	ProgressIndicator *progress_indicator = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
 
@@ -83,6 +98,8 @@ public:
 	void set_expanded(bool p_expanded);
 	void _theme_changed();
 	bool is_locked() const { return lock_panel_switching; }
+
+	ProgressIndicator *get_progress_indicator() { return progress_indicator; }
 
 	void set_bottom_panel_offset(int p_offset);
 	int get_bottom_panel_offset();

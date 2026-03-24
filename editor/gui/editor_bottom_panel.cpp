@@ -41,6 +41,7 @@
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/separator.h"
@@ -151,7 +152,7 @@ void EditorBottomPanel::load_selected_tab(int p_idx) {
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
 	Dictionary offsets;
 	for (const KeyValue<String, int> &E : dock_offsets) {
-		offsets[E.key] = E.value;
+		offsets[E.key] = E.value / EDSCALE;
 	}
 	p_config_file->set_value(p_section, "bottom_panel_offsets", offsets);
 }
@@ -161,7 +162,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 	const LocalVector<Variant> offset_list = offsets.get_key_list();
 
 	for (const Variant &v : offset_list) {
-		dock_offsets[v] = offsets[v];
+		dock_offsets[v] = (int)offsets[v] * EDSCALE;
 	}
 	_update_center_split_offset();
 }
@@ -286,6 +287,12 @@ EditorBottomPanel::EditorBottomPanel() :
 	editor_toaster = memnew(EditorToaster);
 	bottom_hbox->add_child(editor_toaster);
 
+	// NOTE: This is currently used only for ExportTemplateManager and hard-coded for that task.
+	progress_indicator = memnew(ProgressIndicator);
+	progress_indicator->set_v_size_flags(SIZE_SHRINK_CENTER);
+	progress_indicator->hide();
+	bottom_hbox->add_child(progress_indicator);
+
 	EditorVersionButton *version_btn = memnew(EditorVersionButton(EditorVersionButton::FORMAT_BASIC));
 	// Fade out the version label to be less prominent, but still readable.
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
@@ -319,4 +326,31 @@ EditorBottomPanel::~EditorBottomPanel() {
 	for (Button *b : legacy_buttons) {
 		memdelete(b);
 	}
+}
+
+void ProgressIndicator::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		const Ref<Texture2D> ring_texture = get_editor_theme_icon(SNAME("ProgressRing"));
+		set_progress_texture(ring_texture);
+		set_tint_progress(get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		set_under_texture(ring_texture);
+	}
+}
+
+void ProgressIndicator::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("clicked"));
+}
+
+void ProgressIndicator::gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		emit_signal("clicked");
+	}
+}
+
+ProgressIndicator::ProgressIndicator() {
+	set_fill_mode(FILL_CLOCKWISE);
+	set_tint_under(Color());
+	set_step(0.0);
+	set_max(1.0);
 }

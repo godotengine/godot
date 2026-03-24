@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/io/stream_peer.h"
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 
@@ -248,6 +249,21 @@ String ResourceUID::ensure_path(const String &p_uid_or_path) {
 	return p_uid_or_path;
 }
 
+Vector<uint8_t> ResourceUID::encode_binary_cache(const Vector<Pair<ID, String>> &p_entries) {
+	Ref<StreamPeerBuffer> buffer;
+	buffer.instantiate();
+	buffer->put_u32(p_entries.size());
+
+	for (const Pair<ID, String> &entry : p_entries) {
+		buffer->put_u64(uint64_t(entry.first));
+		CharString cs = entry.second.utf8();
+		buffer->put_u32(cs.length());
+		buffer->put_data((const uint8_t *)cs.ptr(), cs.length());
+	}
+
+	return buffer->get_data_array();
+}
+
 Error ResourceUID::save_to_cache() {
 	String cache_file = get_cache_file();
 	if (!FileAccess::exists(cache_file)) {
@@ -261,18 +277,19 @@ Error ResourceUID::save_to_cache() {
 	}
 
 	MutexLock l(mutex);
-	f->store_32(unique_ids.size());
 
+	Vector<Pair<ID, String>> entries;
+	entries.reserve(unique_ids.size());
 	cache_entries = 0;
 
 	for (KeyValue<ID, Cache> &E : unique_ids) {
-		f->store_64(uint64_t(E.key));
-		uint32_t s = E.value.cs.length();
-		f->store_32(s);
-		f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
+		entries.push_back(Pair<ID, String>(E.key, String::utf8(E.value.cs.ptr(), E.value.cs.length())));
 		E.value.saved_to_cache = true;
 		cache_entries++;
 	}
+
+	Vector<uint8_t> data = encode_binary_cache(entries);
+	f->store_buffer(data.ptr(), data.size());
 
 	changed = false;
 	return OK;

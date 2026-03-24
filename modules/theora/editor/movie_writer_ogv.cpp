@@ -30,9 +30,10 @@
 
 #include "movie_writer_ogv.h"
 
+#include "rgb2yuv.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
-#include "rgb2yuv.h"
 
 void MovieWriterOGV::push_audio(const int32_t *p_audio_data) {
 	// Read and process more audio.

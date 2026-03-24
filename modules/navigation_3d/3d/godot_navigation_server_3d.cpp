@@ -30,10 +30,10 @@
 
 #include "godot_navigation_server_3d.h"
 
+#include "nav_mesh_generator_3d.h"
+
 #include "core/os/mutex.h"
 #include "scene/main/node.h"
-
-#include "nav_mesh_generator_3d.h"
 
 using namespace NavigationDefaults3D;
 

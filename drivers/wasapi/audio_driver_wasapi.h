@@ -37,10 +37,10 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio/audio_server.h"
 
+#include <windows.h>
+
 #include <audioclient.h>
 #include <mmdeviceapi.h>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {

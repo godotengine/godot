@@ -30,6 +30,7 @@
 
 #import "openxr_metal_extension.h"
 
+#include "../../openxr_api.h"
 #include "../../openxr_util.h"
 
 #import "drivers/metal/rendering_device_driver_metal.h"

@@ -678,7 +678,7 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the [url=https://en.wikipedia.org/wiki/Natural_logarithm]natural logarithm[/url] of [param x] (base [url=https://en.wikipedia.org/wiki/E_(mathematical_constant)][i]e[/i][/url], with [i]e[/i] being approximately 2.71828). This is the amount of time needed to reach a certain level of continuous growth.
+				Returns the [url=https://en.wikipedia.org/wiki/Natural_logarithm]natural logarithm[/url] of [param x] (base [url=https://en.wikipedia.org/wiki/E_(mathematical_constant)]e[/url], with [i]e[/i] being approximately 2.71828). This is the amount of time needed to reach a certain level of continuous growth.
 				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm. To use base 10 logarithm, use [code]log(x) / log(10)[/code].
 				[codeblock]
 				log(10) # Returns 2.302585
@@ -2374,10 +2374,20 @@
 			Section sign ([code]§[/code]) key.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
-			Key Code mask.
+			Bit mask with all bits enabled except for modifier keys. Apply it to remove modifiers.
+			[codeblock]
+			var keycode = KEY_A | KEY_MASK_SHIFT
+			keycode = keycode &amp; KEY_CODE_MASK
+			print(keycode) # KEY_A
+			[/codeblock]
 		</constant>
 		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask" is_bitfield="true">
-			Modifier key mask.
+			Bit mask with all modifier bits enabled. Apply it to isolate modifiers.
+			[codeblock]
+			var keycode = KEY_A | KEY_MASK_SHIFT
+			keycode = keycode &amp; KEY_MODIFIER_MASK
+			print(keycode) # KEY_MASK_SHIFT
+			[/codeblock]
 		</constant>
 		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask" is_bitfield="true">
 			Automatically remapped to [constant KEY_META] on macOS and [constant KEY_CTRL] on other platforms, this mask is never set in the actual events, and should be used for key mapping only.

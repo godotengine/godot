@@ -32,6 +32,8 @@
 
 #include "scene/gui/graph_edit.h"
 
+#include <cfloat> // FLT_MIN, FLT_MAX
+
 void GraphEditArranger::arrange_nodes() {
 	ERR_FAIL_NULL(graph_edit);
 

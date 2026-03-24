@@ -31,10 +31,10 @@
 #include "sprite_3d.h"
 
 #include "core/config/engine.h"
+#include "core/math/triangle_mesh.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/atlas_texture.h"
-#include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -1217,7 +1217,6 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	if (frames.is_valid()) {
 		frames->disconnect(CoreStringName(changed), callable_mp(this, &AnimatedSprite3D::_res_changed));
 	}
-	stop();
 	frames = p_frames;
 	if (frames.is_valid()) {
 		frames->connect(CoreStringName(changed), callable_mp(this, &AnimatedSprite3D::_res_changed));
@@ -1236,6 +1235,7 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 			}
 		}
 	}
+	stop();
 
 	notify_property_list_changed();
 	_queue_redraw();

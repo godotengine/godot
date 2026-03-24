@@ -225,6 +225,12 @@
 				Emitted by nodes that inherit from this class and that have an internal tree when one of their animation node names changes. The animation nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
 			</description>
 		</signal>
+		<signal name="node_updated" experimental="">
+			<param index="0" name="object_id" type="int" />
+			<description>
+				Emitted by [AnimationNodeAnimation] when its [member AnimationNodeAnimation.animation] resource is changed, or by [AnimationNodeBlendTree] when its connections change.
+			</description>
+		</signal>
 		<signal name="tree_changed">
 			<description>
 				Emitted by nodes that inherit from this class and that have an internal tree when one of their animation nodes changes. The animation nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], [AnimationNodeBlendTree] and [AnimationNodeTransition].

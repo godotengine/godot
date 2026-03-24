@@ -61,9 +61,9 @@ TEST_CASE("[SceneTree][AnimationBlendTree] Create AnimationBlendTree and add Ani
 	CHECK_EQ(blend_tree->can_connect_node("output", 0, "test_node"), AnimationNodeBlendTree::CONNECTION_OK);
 	blend_tree->connect_node("output", 0, "test_node");
 
-	Vector<StringName> connections = blend_tree->get_node_connection_array("output");
-	CHECK_EQ(connections.size(), 1);
-	CHECK_EQ(connections[0], StringName("test_node"));
+	const LocalVector<StringName> *connections = blend_tree->get_node_connection_array("output");
+	CHECK_EQ(connections->size(), 1);
+	CHECK_EQ(connections->operator[](0), StringName("test_node"));
 
 	// Test node rename.
 	blend_tree->rename_node("test_node", "renamed_node");
@@ -71,14 +71,14 @@ TEST_CASE("[SceneTree][AnimationBlendTree] Create AnimationBlendTree and add Ani
 	CHECK(blend_tree->has_node("renamed_node"));
 
 	connections = blend_tree->get_node_connection_array("output");
-	CHECK_EQ(connections[0], StringName("renamed_node"));
+	CHECK_EQ(connections->operator[](0), StringName("renamed_node"));
 
 	// Test node removal.
 	blend_tree->remove_node("renamed_node");
 	CHECK_FALSE(blend_tree->has_node("renamed_node"));
 
 	connections = blend_tree->get_node_connection_array("output");
-	CHECK_EQ(connections[0], StringName());
+	CHECK_EQ(connections->operator[](0), StringName());
 }
 
 } // namespace TestAnimationBlendTree

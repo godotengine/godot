@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/debugger/engine_debugger.h"
-#include "core/object/script_language.h"
 #include "core/templates/list.h"
 
 class LocalDebugger : public EngineDebugger {

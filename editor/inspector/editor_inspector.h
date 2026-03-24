@@ -278,7 +278,7 @@ public:
 	void set_draw_warning(bool p_draw_warning);
 	bool is_draw_warning() const;
 
-	void set_keying(bool p_keying);
+	virtual void set_keying(bool p_keying);
 	bool is_keying() const;
 
 	virtual bool is_colored(ColorationMode p_mode) { return false; }
@@ -466,6 +466,8 @@ class EditorInspectorSection : public Container {
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping_for_unfold = false;
 
+	Rect2 revert_rect;
+	bool revert_hover = false;
 	Rect2 check_rect;
 	bool check_hover = false;
 	Rect2 keying_rect;
@@ -477,6 +479,7 @@ class EditorInspectorSection : public Container {
 	PopupMenu *menu = nullptr;
 
 	HashSet<StringName> revertable_properties;
+	bool can_revert = false;
 
 	void _test_unfold();
 	int _get_header_height();
@@ -490,7 +493,7 @@ class EditorInspectorSection : public Container {
 		int vertical_separation = 0;
 		int inspector_margin = 0;
 		int indent_size = 0;
-		int key_padding_size = 0;
+		int padding_size = 0;
 
 		Color warning_color;
 		Color prop_subsection;
@@ -511,6 +514,7 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow_collapsed_mirrored;
+		Ref<Texture2D> icon_gui_revert;
 		Ref<Texture2D> icon_gui_checked;
 		Ref<Texture2D> icon_gui_unchecked;
 		Ref<Texture2D> icon_gui_animation_key;
@@ -518,7 +522,7 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> icon_paste;
 
 		Ref<StyleBoxFlat> indent_box;
-		Ref<StyleBoxFlat> key_hover;
+		Ref<StyleBoxFlat> icon_hover;
 	} theme_cache;
 
 protected:
@@ -720,6 +724,21 @@ class EditorInspector : public ScrollContainer {
 
 	friend class EditorPropertyResource;
 
+public:
+	struct PropertyClipboard {
+		enum class Type {
+			EMPTY,
+			PROPERTY,
+			SECTION,
+			CATEGORY,
+		};
+		Type type = Type::EMPTY;
+		Variant value;
+
+		PropertyClipboard() {}
+	};
+
+private:
 	enum {
 		MAX_PLUGINS = 1024
 	};
@@ -800,8 +819,7 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; // Used for sectioned inspector.
 	String object_class;
-
-	static inline Variant property_clipboard;
+	static inline PropertyClipboard property_clipboard;
 
 	bool restrict_to_basic = false;
 
@@ -869,8 +887,9 @@ public:
 	static void initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control);
 	static void initialize_property_theme(EditorProperty::ThemeCache &p_cache, Control *p_control);
 
-	static void set_property_clipboard(const Variant &p_value);
-	static Variant get_property_clipboard();
+	static void set_property_clipboard(PropertyClipboard::Type p_type, const Variant &p_value);
+	static PropertyClipboard::Type get_property_clipboard_type() { return property_clipboard.type; }
+	static Variant get_property_clipboard_value() { return property_clipboard.value; }
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;

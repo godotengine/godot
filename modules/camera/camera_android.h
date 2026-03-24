@@ -40,6 +40,7 @@
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
 #include <media/NdkImageReader.h>
+
 #include <optional>
 
 enum class CameraFacing {

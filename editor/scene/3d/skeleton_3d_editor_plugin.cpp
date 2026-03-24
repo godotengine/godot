@@ -48,6 +48,7 @@
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/surface_tool.h"
@@ -621,7 +622,8 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	const real_t half_height(child_rest.origin.length() * 0.5);
 	const real_t radius(half_height * 0.2);
 
-	CapsuleShape3D *bone_shape_capsule = memnew(CapsuleShape3D);
+	Ref<CapsuleShape3D> bone_shape_capsule;
+	bone_shape_capsule.instantiate();
 	bone_shape_capsule->set_height(half_height * 2);
 	bone_shape_capsule->set_radius(radius);
 

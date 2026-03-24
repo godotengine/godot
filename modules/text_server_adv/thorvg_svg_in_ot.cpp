@@ -33,7 +33,6 @@
 #include "core/error/error_macros.h"
 #include "core/io/xml_parser.h"
 #include "core/os/memory.h"
-#include "core/os/os.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
@@ -45,8 +44,6 @@
 
 #include <freetype/otsvg.h>
 #include <ft2build.h>
-
-#include <cstdlib>
 
 FT_Error tvg_svg_in_ot_init(FT_Pointer *p_state) {
 	*p_state = memnew(TVG_State);

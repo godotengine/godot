@@ -44,6 +44,7 @@
 #include "servers/xr/xr_hand_tracker.h"
 
 #include <emscripten.h>
+
 #include <cstdlib>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {

@@ -69,6 +69,10 @@ void main() {
 #extension GL_KHR_shader_subgroup_arithmetic : enable
 #extension GL_KHR_shader_subgroup_vote : enable
 
+// On Apple platforms, gl_HelperInvocation (simd_is_helper_thread()) is unreliable with MSAA, causing rendering artifacts.
+// Setting this to false will disable the helper invocation check.
+layout(constant_id = 0) const bool sc_use_helper_check = true;
+
 layout(location = 0) in float depth_interp;
 layout(location = 1) in flat uint element_index;
 
@@ -114,11 +118,7 @@ void main() {
 	uint aux = 0;
 
 	uint cluster_thread_group_index;
-#ifndef MOLTENVK_USED
-	if (!gl_HelperInvocation) {
-#else
-	{
-#endif
+	if (!sc_use_helper_check || !gl_HelperInvocation) {
 		//https://advances.realtimerendering.com/s2017/2017_Sig_Improved_Culling_final.pdf
 
 		uvec4 mask;
@@ -151,11 +151,7 @@ void main() {
 	uint z_write_offset = cluster_offset + state.cluster_depth_offset + element_index;
 	uint z_write_bit = 1 << z_bit;
 
-#ifndef MOLTENVK_USED
-	if (!gl_HelperInvocation) {
-#else
-	{
-#endif
+	if (!sc_use_helper_check || !gl_HelperInvocation) {
 		z_write_bit = subgroupOr(z_write_bit); //merge all Zs
 		if (cluster_thread_group_index == 0) {
 			aux = atomicOr(cluster_render.data[z_write_offset], z_write_bit);

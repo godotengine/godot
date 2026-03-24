@@ -33,7 +33,6 @@
 #ifdef SDL_ENABLED
 
 #include "core/input/default_controller_mappings.h"
-#include "core/os/time.h"
 #include "core/variant/dictionary.h"
 
 #include <SDL3/SDL.h>
@@ -72,7 +71,7 @@ Error JoypadSDL::initialize() {
 		String mapping_string = DefaultControllerMappings::mappings[i++];
 		CharString data = mapping_string.utf8();
 		SDL_IOStream *rw = SDL_IOFromMem((void *)data.ptr(), data.size());
-		SDL_AddGamepadMappingsFromIO(rw, 1);
+		SDL_AddGamepadMappingsFromIO(rw, true);
 	}
 
 	// Make sure that we handle already connected joypads when the driver is initialized.

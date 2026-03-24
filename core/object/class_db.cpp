@@ -193,8 +193,8 @@ public:
 		// We need need to make sure that all the things it would have done (even if
 		// done in a different way to support placeholders) will also be done here.
 
-		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
-		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
+		obj->_extension = ClassDB::get_placeholder_extension(ti->gdtype->get_name());
+		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->gdtype->get_name()));
 
 		obj->_reset_gdtype();
 
@@ -209,7 +209,7 @@ public:
 
 	static GDExtensionObjectPtr placeholder_class_recreate_instance(void *p_class_userdata, GDExtensionObjectPtr p_object) {
 		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
-		return memnew(PlaceholderExtensionInstance(ti->name));
+		return memnew(PlaceholderExtensionInstance(ti->gdtype->get_name()));
 	}
 
 	static void placeholder_class_free_instance(void *p_class_userdata, GDExtensionClassInstancePtr p_instance) {
@@ -224,15 +224,8 @@ public:
 #endif
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
-	ClassInfo *c = classes.getptr(p_class);
-	while (c) {
-		if (c->name == p_inherits) {
-			return true;
-		}
-		c = c->inherits_ptr;
-	}
-
-	return false;
+	const ClassInfo *c = classes.getptr(p_class);
+	return c ? c->gdtype->get_name_hierarchy().has(p_inherits) : false;
 }
 
 bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) {
@@ -314,7 +307,7 @@ void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<S
 	Locker::Lock lock(Locker::STATE_READ);
 
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
-		if (E.value.inherits == p_class) {
+		if (E.value.gdtype->get_super_type_name() == p_class) {
 			p_classes->push_back(E.key);
 		}
 	}
@@ -324,31 +317,18 @@ StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *ti = classes.getptr(p_class);
-	if (!ti) {
-		return StringName();
-	}
-	return ti->inherits;
+	return ti ? ti->gdtype->get_super_type_name() : StringName();
 }
 
 bool ClassDB::get_inheritance_chain_nocheck(const StringName &p_class, Vector<StringName> &r_result) {
 	Locker::Lock lock(Locker::STATE_READ);
 
-	ClassInfo *start = classes.getptr(p_class);
-	if (!start) {
+	ClassInfo *ti = classes.getptr(p_class);
+	if (!ti) {
 		return false;
 	}
 
-	int classes_to_add = 0;
-	for (ClassInfo *ti = start; ti; ti = ti->inherits_ptr) {
-		classes_to_add++;
-	}
-
-	int64_t old_size = r_result.size();
-	r_result.resize(old_size + classes_to_add);
-	StringName *w = r_result.ptrw() + old_size;
-	for (ClassInfo *ti = start; ti; ti = ti->inherits_ptr) {
-		*w++ = ti->name;
-	}
+	r_result.append_array(ti->gdtype->get_name_hierarchy());
 
 	return true;
 }
@@ -368,7 +348,7 @@ StringName ClassDB::get_compatibility_remapped_class(const StringName &p_class) 
 StringName ClassDB::_get_parent_class(const StringName &p_class) {
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_NULL_V_MSG(ti, StringName(), vformat("Cannot get class '%s'.", String(p_class)));
-	return ti->inherits;
+	return ti->gdtype->get_super_type_name();
 }
 
 StringName ClassDB::get_parent_class(const StringName &p_class) {
@@ -409,8 +389,8 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}
-		hash = hash_murmur3_one_64(t->name.hash(), hash);
-		hash = hash_murmur3_one_64(t->inherits.hash(), hash);
+		hash = hash_murmur3_one_64(t->gdtype->get_name().hash(), hash);
+		hash = hash_murmur3_one_64(t->gdtype->get_super_type_name().hash(), hash);
 
 		{ //methods
 
@@ -461,7 +441,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+			for (const KeyValue<StringName, int64_t> &F : t->gdtype->get_integer_constant_map(true)) {
 				snames.push_back(F.key);
 			}
 
@@ -469,7 +449,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				hash = hash_murmur3_one_64(uint64_t(t->constant_map[F]), hash);
+				hash = hash_murmur3_one_64(uint64_t(t->gdtype->get_integer_constant_map(true)[F]), hash);
 			}
 		}
 
@@ -477,14 +457,14 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+			for (const KeyValue<StringName, const MethodInfo *> &F : t->gdtype->get_signal_map(true)) {
 				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				MethodInfo &mi = t->signal_map[F];
+				const MethodInfo &mi = *t->gdtype->get_signal_map(true)[F];
 				hash = hash_murmur3_one_64(F.hash(), hash);
 				for (const PropertyInfo &pi : mi.arguments) {
 					hash = hash_murmur3_one_64(pi.type, hash);
@@ -597,13 +577,13 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 			}
 #endif // DISABLE_DEPRECATED
 		} else if (!ti->inherits_ptr || !ti->inherits_ptr->creation_func) {
-			ERR_PRINT(vformat("Cannot make a placeholder instance of runtime class %s because its parent cannot be constructed.", ti->name));
+			ERR_PRINT(vformat("Cannot make a placeholder instance of runtime class %s because its parent cannot be constructed.", ti->gdtype->get_name()));
 		} else {
 			can_create_placeholder = true;
 		}
 
 		if (can_create_placeholder) {
-			ObjectGDExtension *extension = get_placeholder_extension(ti->name);
+			ObjectGDExtension *extension = get_placeholder_extension(ti->gdtype->get_name());
 			return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
 		}
 	}
@@ -717,8 +697,8 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	} else {
 		placeholder_extension->library = nullptr;
 		placeholder_extension->parent = nullptr;
-		placeholder_extension->parent_class_name = ti->inherits;
-		placeholder_extension->class_name = ti->name;
+		placeholder_extension->parent_class_name = ti->gdtype->get_super_type_name();
+		placeholder_extension->class_name = ti->gdtype->get_name();
 		placeholder_extension->editor_class = ti->api == API_EDITOR;
 		placeholder_extension->reloadable = false;
 		placeholder_extension->is_virtual = ti->is_virtual;
@@ -883,7 +863,7 @@ use_script:
 	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
-void ClassDB::_add_class(const GDType &p_class, const GDType *p_inherits) {
+void ClassDB::_add_class(GDType &p_class, const GDType *p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	const StringName &name = p_class.get_name();
@@ -892,17 +872,12 @@ void ClassDB::_add_class(const GDType &p_class, const GDType *p_inherits) {
 
 	classes[name] = ClassInfo();
 	ClassInfo &ti = classes[name];
-	ti.name = name;
 	ti.gdtype = &p_class;
-	if (p_inherits) {
-		ti.inherits = p_inherits->get_name();
-	}
 	ti.api = current_api;
 
-	if (ti.inherits) {
-		ERR_FAIL_COND(!classes.has(ti.inherits)); //it MUST be registered.
-		ti.inherits_ptr = &classes[ti.inherits];
-
+	if (p_inherits) {
+		ERR_FAIL_COND(!classes.has(ti.gdtype->get_super_type_name())); //it MUST be registered.
+		ti.inherits_ptr = &classes[ti.gdtype->get_super_type_name()];
 	} else {
 		ti.inherits_ptr = nullptr;
 	}
@@ -1158,61 +1133,19 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ClassInfo *type = classes.getptr(p_class);
-
 	ERR_FAIL_NULL(type);
 
-	if (type->constant_map.has(p_name)) {
-		ERR_FAIL();
-	}
-
-	type->constant_map[p_name] = p_constant;
-
-	String enum_name = p_enum;
-	if (!enum_name.is_empty()) {
-		if (enum_name.contains_char('.')) {
-			enum_name = enum_name.get_slicec('.', 1);
-		}
-
-		ClassInfo::EnumInfo *constants_list = type->enum_map.getptr(enum_name);
-
-		if (constants_list) {
-			constants_list->constants.push_back(p_name);
-			constants_list->is_bitfield = p_is_bitfield;
-		} else {
-			ClassInfo::EnumInfo new_list;
-			new_list.is_bitfield = p_is_bitfield;
-			new_list.constants.push_back(p_name);
-			type->enum_map[enum_name] = new_list;
-		}
-	}
-
-#ifdef DEBUG_ENABLED
-	type->constant_order.push_back(p_name);
-#endif // DEBUG_ENABLED
+	type->gdtype->bind_integer_constant(p_enum, p_name, p_constant, p_is_bitfield);
 }
 
 void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
 
-	while (type) {
-#ifdef DEBUG_ENABLED
-		for (const StringName &E : type->constant_order) {
-			p_constants->push_back(E);
-		}
-#else
-
-		for (const KeyValue<StringName, int64_t> &E : type->constant_map) {
-			p_constants->push_back(E.key);
-		}
-
-#endif // DEBUG_ENABLED
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
+	for (const KeyValue<StringName, int64_t> &E : type->gdtype->get_integer_constant_map(p_no_inheritance)) {
+		p_constants->push_back(E.key);
 	}
 }
 
@@ -1220,23 +1153,19 @@ int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringNam
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-
-	while (type) {
-		int64_t *constant = type->constant_map.getptr(p_name);
+	if (type) {
+		const int64_t *constant = type->gdtype->get_integer_constant_map(false).getptr(p_name);
 		if (constant) {
 			if (p_success) {
 				*p_success = true;
 			}
 			return *constant;
 		}
-
-		type = type->inherits_ptr;
 	}
 
 	if (p_success) {
 		*p_success = false;
 	}
-
 	return 0;
 }
 
@@ -1244,60 +1173,33 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, false);
 
-	while (type) {
-		if (type->constant_map.has(p_name)) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-
-		type = type->inherits_ptr;
-	}
-
-	return false;
+	return type->gdtype->get_integer_constant_map(p_no_inheritance).has(p_name);
 }
 
 StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, StringName());
 
-	while (type) {
-		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
-			List<StringName> &constants_list = E.value.constants;
-			const List<StringName>::Element *found = constants_list.find(p_name);
-			if (found) {
-				return E.key;
-			}
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
-	}
-
-	return StringName();
+	const GDType::EnumInfo *enum_info = type->gdtype->get_integer_constant_enum(p_name, p_no_inheritance);
+	return enum_info ? enum_info->name : StringName();
 }
 
 void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	if (!type) {
+		// TODO This should probably error, but didn't previously.
+		// Making this error leads to a few prints during unit tests.
+		return;
+	}
 
-	while (type) {
-		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
-			p_enums->push_back(E.key);
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
+	for (const KeyValue<StringName, const GDType::EnumInfo *> &E : type->gdtype->get_enum_map(p_no_inheritance)) {
+		p_enums->push_back(E.key);
 	}
 }
 
@@ -1305,21 +1207,13 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
 
-	while (type) {
-		const ClassInfo::EnumInfo *constants = type->enum_map.getptr(p_enum);
+	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_enum);
+	ERR_FAIL_NULL(enum_info);
 
-		if (constants) {
-			for (const List<StringName>::Element *E = constants->constants.front(); E; E = E->next()) {
-				p_constants->push_back(E->get());
-			}
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-
-		type = type->inherits_ptr;
+	for (const KeyValue<StringName, int64_t> &kv : (*enum_info)->values) {
+		p_constants->push_back(kv.key);
 	}
 }
 
@@ -1354,38 +1248,25 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, false);
 
-	while (type) {
-		if (type->enum_map.has(p_name)) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-
-		type = type->inherits_ptr;
-	}
-
-	return false;
+	return type->gdtype->get_enum_map(p_no_inheritance).has(p_name);
 }
 
 bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, false);
 
-	while (type) {
-		if (type->enum_map.has(p_name) && type->enum_map[p_name].is_bitfield) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-
-		type = type->inherits_ptr;
+	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_name);
+	// FIXME This fails unexpectedly often. Keeping legacy behavior to silently fail for now.
+	//ERR_FAIL_NULL_V(enum_info, false);
+	if (!enum_info) {
+		return false;
 	}
 
-	return false;
+	return (*enum_info)->is_bitfield;
 }
 
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
@@ -1394,17 +1275,7 @@ void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) 
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 
-	StringName sname = p_signal.name;
-
-#ifdef DEBUG_ENABLED
-	ClassInfo *check = type;
-	while (check) {
-		ERR_FAIL_COND_MSG(check->signal_map.has(sname), vformat("Class '%s' already has signal '%s'.", String(p_class), String(sname)));
-		check = check->inherits_ptr;
-	}
-#endif // DEBUG_ENABLED
-
-	type->signal_map[sname] = p_signal;
+	type->gdtype->add_signal(p_signal);
 }
 
 void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_signals, bool p_no_inheritance) {
@@ -1413,52 +1284,31 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 
-	ClassInfo *check = type;
-
-	while (check) {
-		for (KeyValue<StringName, MethodInfo> &E : check->signal_map) {
-			p_signals->push_back(E.value);
-		}
-
-		if (p_no_inheritance) {
-			return;
-		}
-
-		check = check->inherits_ptr;
+	for (const KeyValue<StringName, const MethodInfo *> &kv : type->gdtype->get_signal_map(p_no_inheritance)) {
+		p_signals->push_back(*kv.value);
 	}
 }
 
 bool ClassDB::has_signal(const StringName &p_class, const StringName &p_signal, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		if (check->signal_map.has(p_signal)) {
-			return true;
-		}
-		if (p_no_inheritance) {
-			return false;
-		}
-		check = check->inherits_ptr;
+	if (!type) {
+		return false;
 	}
-
-	return false;
+	return type->gdtype->get_signal_map(p_no_inheritance).has(p_signal);
 }
 
 bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal) {
 	Locker::Lock lock(Locker::STATE_READ);
 	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		if (check->signal_map.has(p_signal)) {
-			if (r_signal) {
-				*r_signal = check->signal_map[p_signal];
-			}
-			return true;
-		}
-		check = check->inherits_ptr;
+	if (!type) {
+		return false;
 	}
-
+	const MethodInfo *const *method_info = type->gdtype->get_signal_map(false).getptr(p_signal);
+	if (method_info) {
+		*r_signal = **method_info;
+		return true;
+	}
 	return false;
 }
 
@@ -1727,7 +1577,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		const int64_t *c = check->constant_map.getptr(p_property); //constants count
+		const int64_t *c = check->gdtype->get_integer_constant_map(true).getptr(p_property); //constants count
 		if (c) {
 			r_value = *c;
 			return true;
@@ -1738,7 +1588,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		if (check->signal_map.has(p_property)) { //signals count
+		if (check->gdtype->get_signal_map(true).has(p_property)) { //signals count
 			r_value = Signal(p_object, p_property);
 			return true;
 		}
@@ -2334,13 +2184,12 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 
 #ifdef TOOLS_ENABLED
 	// @todo This is a limitation of the current implementation, but it should be possible to remove.
-	ERR_FAIL_COND_MSG(p_extension->is_runtime && parent->gdextension && !parent->is_runtime, vformat("Extension runtime class '%s' cannot descend from '%s' which isn't also a runtime class.", String(p_extension->class_name), parent->name));
+	ERR_FAIL_COND_MSG(p_extension->is_runtime && parent->gdextension && !parent->is_runtime, vformat("Extension runtime class '%s' cannot descend from '%s' which isn't also a runtime class.", String(p_extension->class_name), parent->gdtype->get_name()));
 #endif
 
 	ClassInfo c;
 	c.api = p_extension->editor_class ? API_EDITOR_EXTENSION : API_EXTENSION;
 	c.gdextension = p_extension;
-	c.name = p_extension->class_name;
 	c.is_virtual = p_extension->is_virtual;
 	if (!p_extension->is_abstract) {
 		// Find the closest ancestor which is either non-abstract or native (or both).
@@ -2350,10 +2199,9 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 				concrete_ancestor->gdextension != nullptr) {
 			concrete_ancestor = concrete_ancestor->inherits_ptr;
 		}
-		ERR_FAIL_NULL_MSG(concrete_ancestor->creation_func, vformat("Extension class '%s' cannot extend native abstract class '%s'.", String(p_extension->class_name), String(concrete_ancestor->name)));
+		ERR_FAIL_NULL_MSG(concrete_ancestor->creation_func, vformat("Extension class '%s' cannot extend native abstract class '%s'.", String(p_extension->class_name), String(concrete_ancestor->gdtype->get_name())));
 		c.creation_func = concrete_ancestor->creation_func;
 	}
-	c.inherits = parent->name;
 	c.class_ptr = parent->class_ptr;
 	c.inherits_ptr = parent;
 	c.exposed = p_extension->is_exposed;
@@ -2361,7 +2209,7 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 		// The parent classes should be exposed if it has an exposed child class.
 		while (parent && !parent->exposed) {
 			parent->exposed = true;
-			parent = classes.getptr(parent->name);
+			parent = classes.getptr(parent->gdtype->get_name());
 		}
 	}
 	c.reloadable = p_extension->reloadable;
@@ -2446,8 +2294,9 @@ void ClassDB::cleanup() {
 	native_structs.clear();
 
 	for (GDType **type : gdtype_autorelease_pool) {
-		if (!type) {
+		if (!*type) {
 			WARN_PRINT("GDType in autorelease pool was cleaned up before being auto-released. Ignoring.");
+			continue;
 		}
 		memdelete(*type);
 		*type = nullptr;

@@ -33,9 +33,9 @@
 #include "../jolt_physics_server_3d.h"
 #include "jolt_joint_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Constraints/SliderConstraint.h"
+#include <Jolt/Physics/Constraints/SliderConstraint.h>
 
 class JoltSliderJoint3D final : public JoltJoint3D {
 	typedef PhysicsServer3D::SliderJointParam Parameter;

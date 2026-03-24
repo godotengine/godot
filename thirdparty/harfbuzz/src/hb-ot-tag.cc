@@ -234,6 +234,29 @@ lang_matches (const char *lang_str,
 	 (lang_str[spec_len] == '\0' || lang_str[spec_len] == '-');
 }
 
+static bool
+bfind_tag (const hb_tag_t *array,
+	   unsigned        len,
+	   hb_tag_t        key)
+{
+  unsigned min = 0;
+  unsigned max = len;
+
+  while (min < max)
+  {
+    unsigned mid = min + (max - min) / 2;
+    hb_tag_t val = array[mid];
+    if (key < val)
+      max = mid;
+    else if (key > val)
+      min = mid + 1;
+    else
+      return true;
+  }
+
+  return false;
+}
+
 struct LangTag
 {
   hb_tag_t language;
@@ -244,6 +267,20 @@ struct LangTag
     return a < this->language ? -1 : a > this->language ? +1 : 0;
   }
   int cmp (const LangTag *that) const
+  { return cmp (that->language); }
+};
+
+struct LangTagRange
+{
+  hb_tag_t language;
+  uint16_t offset;
+  uint8_t count;
+
+  int cmp (hb_tag_t a) const
+  {
+    return a < this->language ? -1 : a > this->language ? +1 : 0;
+  }
+  int cmp (const LangTagRange *that) const
   { return cmp (that->language); }
 };
 
@@ -307,46 +344,84 @@ hb_ot_tags_from_language (const char   *lang_str,
 	lang_str = s + 1;
     }
 #endif
-    const LangTag *ot_languages = nullptr;
-    unsigned ot_languages_len = 0;
     const char *dash = strchr (lang_str, '-');
     unsigned first_len = dash ? dash - lang_str : limit - lang_str;
+    hb_tag_t lang_tag = hb_tag_from_string (lang_str, first_len);
+
     if (first_len == 2)
     {
-      ot_languages = ot_languages2;
-      ot_languages_len = ARRAY_LENGTH (ot_languages2);
+      static hb_atomic_t<unsigned> last_tag_idx_2 = 0; /* Poor man's cache. */
+      unsigned tag_idx = last_tag_idx_2;
+
+      if (likely (tag_idx < ARRAY_LENGTH (ot_languages2) &&
+		  ot_languages2[tag_idx].language == lang_tag) ||
+	  hb_sorted_array (ot_languages2).bfind (lang_tag, &tag_idx))
+      {
+	last_tag_idx_2 = tag_idx;
+	unsigned int i;
+	while (tag_idx != 0 &&
+	       ot_languages2[tag_idx].language == ot_languages2[tag_idx - 1].language)
+	  tag_idx--;
+	for (i = 0;
+	     i < *count &&
+	     tag_idx + i < ARRAY_LENGTH (ot_languages2) &&
+	     ot_languages2[tag_idx + i].tag != HB_TAG_NONE &&
+	     ot_languages2[tag_idx + i].language == ot_languages2[tag_idx].language;
+	     i++)
+	  tags[i] = ot_languages2[tag_idx + i].tag;
+	*count = i;
+	return;
+      }
     }
 #ifndef HB_NO_LANGUAGE_LONG
     else if (first_len == 3)
     {
-      ot_languages = ot_languages3;
-      ot_languages_len = ARRAY_LENGTH (ot_languages3);
-    }
-#endif
+      static hb_atomic_t<unsigned> last_tag_idx_3 = 0; /* Poor man's cache. */
+      unsigned tag_idx = last_tag_idx_3;
 
-    hb_tag_t lang_tag = hb_tag_from_string (lang_str, first_len);
+      if (likely (tag_idx < ARRAY_LENGTH (ot_languages3) &&
+		  ot_languages3[tag_idx].language == lang_tag) ||
+	  hb_sorted_array (ot_languages3).bfind (lang_tag, &tag_idx))
+      {
+	last_tag_idx_3 = tag_idx;
+	if (*count)
+	{
+	  tags[0] = ot_languages3[tag_idx].tag;
+	  *count = 1;
+	}
+	else
+	  *count = 0;
+	return;
+      }
 
-    static hb_atomic_t<unsigned> last_tag_idx = 0; /* Poor man's cache. */
-    unsigned tag_idx = last_tag_idx;
+      static hb_atomic_t<unsigned> last_tag_idx_3_multi = 0; /* Poor man's cache. */
+      unsigned multi_tag_idx = last_tag_idx_3_multi;
 
-    if (likely (tag_idx < ot_languages_len && ot_languages[tag_idx].language == lang_tag) ||
-	hb_sorted_array (ot_languages, ot_languages_len).bfind (lang_tag, &tag_idx))
-    {
-      last_tag_idx = tag_idx;
-      unsigned int i;
-      while (tag_idx != 0 &&
-	     ot_languages[tag_idx].language == ot_languages[tag_idx - 1].language)
-	tag_idx--;
-      for (i = 0;
-	   i < *count &&
-	   tag_idx + i < ot_languages_len &&
-	   ot_languages[tag_idx + i].tag != HB_TAG_NONE &&
-	   ot_languages[tag_idx + i].language == ot_languages[tag_idx].language;
-	   i++)
-	tags[i] = ot_languages[tag_idx + i].tag;
-      *count = i;
+      if (likely (multi_tag_idx < ARRAY_LENGTH (ot_languages3_multi) &&
+		  ot_languages3_multi[multi_tag_idx].language == lang_tag) ||
+	  hb_sorted_array (ot_languages3_multi).bfind (lang_tag, &multi_tag_idx))
+      {
+	last_tag_idx_3_multi = multi_tag_idx;
+	const LangTagRange &range = ot_languages3_multi[multi_tag_idx];
+	unsigned int i;
+	for (i = 0; i < *count && i < range.count; i++)
+	  tags[i] = ot_languages3_multi_values[range.offset + i];
+	*count = i;
+	return;
+      }
+
+      if (bfind_tag (ot_languages3_blocked, ARRAY_LENGTH (ot_languages3_blocked), lang_tag))
+      {
+	*count = 0;
+	return;
+      }
+
+      /* Assume it's ISO-639-3 and upper-case and use it. */
+      tags[0] = lang_tag & ~0x20202000u;
+      *count = 1;
       return;
     }
+#endif
   }
 
 #ifndef HB_NO_LANGUAGE_LONG
@@ -525,6 +600,13 @@ hb_ot_tag_to_language (hb_tag_t tag)
       hb_tag_to_string (ot_languages3[i].language, buf);
       return hb_language_from_string (buf, 3);
     }
+  for (i = 0; i < ARRAY_LENGTH (ot_languages3_multi); i++)
+    for (unsigned int j = 0; j < ot_languages3_multi[i].count; j++)
+      if (ot_languages3_multi_values[ot_languages3_multi[i].offset + j] == tag)
+      {
+	hb_tag_to_string (ot_languages3_multi[i].language, buf);
+	return hb_language_from_string (buf, 3);
+      }
 #endif
 
   /* Return a custom language in the form of "x-hbot-AABBCCDD".
@@ -642,6 +724,23 @@ test_langs_sorted ()
       abort();
     }
   }
+  for (unsigned int i = 1; i < ARRAY_LENGTH (ot_languages3_multi); i++)
+  {
+    int c = ot_languages3_multi[i].cmp (&ot_languages3_multi[i - 1]);
+    if (c > 0)
+    {
+      fprintf (stderr, "ot_languages3_multi not sorted at index %u: %08x %d %08x\n",
+	       i, ot_languages3_multi[i-1].language, c, ot_languages3_multi[i].language);
+      abort();
+    }
+  }
+  for (unsigned int i = 1; i < ARRAY_LENGTH (ot_languages3_blocked); i++)
+    if (ot_languages3_blocked[i] < ot_languages3_blocked[i - 1])
+    {
+      fprintf (stderr, "ot_languages3_blocked not sorted at index %u: %08x < %08x\n",
+	       i, ot_languages3_blocked[i], ot_languages3_blocked[i - 1]);
+      abort();
+    }
 #endif
 }
 

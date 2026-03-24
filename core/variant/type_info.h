@@ -290,6 +290,13 @@ inline StringName __constant_get_bitfield_name(T param) {
 }
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
 
+#define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum, m_enum)
+#define VARIANT_BITFIELD_CAST(m_enum) MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum)
+
+// Use only for backwards compatibility when the location of an enum changes.
+#define VARIANT_ENUM_CAST_EXT(m_enum, m_bound_name) MAKE_ENUM_TYPE_INFO(m_enum, m_bound_name)
+#define VARIANT_BITFIELD_CAST_EXT(m_enum, m_bound_name) MAKE_BITFIELD_TYPE_INFO(m_enum, m_bound_name)
+
 // No initialization by default, except for scalar types.
 template <typename T>
 struct ZeroInitializer {

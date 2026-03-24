@@ -37,7 +37,6 @@
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
-#include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 #include "core/variant/callable.h"

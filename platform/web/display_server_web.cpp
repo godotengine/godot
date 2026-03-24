@@ -37,13 +37,13 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_event.h"
-#include "core/object/callable_mp.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
+#include "core/object/callable_mp.h"
 #endif
 
 #ifdef GLES3_ENABLED

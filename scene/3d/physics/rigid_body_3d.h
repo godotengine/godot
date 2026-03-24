@@ -33,6 +33,8 @@
 #include "core/templates/vset.h"
 #include "scene/3d/physics/physics_body_3d.h"
 
+class PhysicsMaterial;
+
 class RigidBody3D : public PhysicsBody3D {
 	GDCLASS(RigidBody3D, PhysicsBody3D);
 

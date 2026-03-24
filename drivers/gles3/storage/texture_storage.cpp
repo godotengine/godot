@@ -3346,7 +3346,7 @@ GLuint TextureStorage::render_target_get_depth(RID p_render_target) const {
 
 bool TextureStorage::render_target_get_depth_has_stencil(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_NULL_V(rt, 0);
+	ERR_FAIL_NULL_V(rt, false);
 
 	return rt->depth_has_stencil;
 }

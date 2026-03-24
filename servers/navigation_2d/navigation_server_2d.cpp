@@ -35,7 +35,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "scene/main/node.h"
+#include "scene/main/node.h" // IWYU pragma: keep. Needed to bind `Node *` arg.
 #include "servers/navigation_2d/navigation_server_2d_dummy.h"
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;

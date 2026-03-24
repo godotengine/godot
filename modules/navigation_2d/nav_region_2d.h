@@ -30,13 +30,12 @@
 
 #pragma once
 
+#include "2d/nav_region_iteration_2d.h"
 #include "nav_base_2d.h"
 #include "nav_utils_2d.h"
 
 #include "core/os/rw_lock.h"
 #include "scene/resources/2d/navigation_polygon.h"
-
-#include "2d/nav_region_iteration_2d.h"
 
 class NavRegion2D : public NavBase2D {
 	RWLock region_rwlock;

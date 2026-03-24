@@ -37,11 +37,8 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio/audio_server.h"
 
-#ifdef SOWRAP_ENABLED
-#include "asound-so_wrap.h"
-#else
-#include <alsa/asoundlib.h>
-#endif
+typedef struct _snd_pcm snd_pcm_t;
+typedef unsigned long snd_pcm_uframes_t;
 
 class AudioDriverALSA : public AudioDriver {
 	Thread thread;

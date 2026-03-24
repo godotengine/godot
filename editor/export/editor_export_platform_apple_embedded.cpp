@@ -30,26 +30,30 @@
 
 #include "editor_export_platform_apple_embedded.h"
 
-#include "core/io/json.h"
+#include "core/io/file_access.h"
 #include "core/io/plist.h"
-#include "core/object/callable_mp.h"
+#include "core/io/zip_io.h"
 #include "core/os/os.h"
-#include "core/os/process_id.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
-#include "editor/export/lipo.h"
-#include "editor/export/macho.h"
-#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
+
+#ifdef MACOS_ENABLED
+#include "core/io/json.h"
+#include "core/object/callable_mp.h"
+#include "core/os/process_id.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
+#endif
 
 void EditorExportPlatformAppleEmbedded::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.

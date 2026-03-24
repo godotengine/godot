@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include "metal_device_properties.h"
-#include "metal_utils.h"
-#include "pixel_formats.h"
-#include "sha256_digest.h"
+#include "drivers/metal/metal_device_properties.h"
+#include "drivers/metal/metal_utils.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/sha256_digest.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+
 #include <memory>
 #include <optional>
 
@@ -762,7 +763,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) UniformI
 	MTL::TextureType textureType = MTL::TextureType2D;
 	uint32_t imageFormat = 0;
 	uint32_t arrayLength = 0;
-	bool isMultisampled = 0;
+	bool isMultisampled = false;
 
 	struct Indexes {
 		uint32_t buffer = UINT32_MAX;

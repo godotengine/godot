@@ -50,7 +50,7 @@
 
 #include "pixel_formats.h"
 
-#include "metal_utils.h"
+#include "drivers/metal/metal_utils.h"
 
 #if TARGET_OS_IPHONE || TARGET_OS_TV
 #if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 160400) // iOS/tvOS 16.4

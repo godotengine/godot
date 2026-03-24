@@ -30,14 +30,18 @@
 
 #include "csharp_script.h"
 
+#include "godotsharp_defs.h"
 #include "godotsharp_dirs.h"
-#include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
-#include "utils/path_utils.h"
 #include "utils/string_utils.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "managed_callable.h"
+#include "utils/path_utils.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 #include "class_db_api_json.h"
@@ -61,11 +65,14 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/docks/inspector_dock.h"
-#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/signals_dock.h"
+#endif
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
@@ -1151,12 +1158,12 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
 	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
 	// classes is added to C#. See #75955 for more details.
-	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->name))) {
+	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->gdtype->get_name()))) {
 		classinfo = classinfo->inherits_ptr;
 	}
 
 	ERR_FAIL_NULL_V(classinfo, false);
-	type_name = classinfo->name;
+	type_name = classinfo->gdtype->get_name();
 
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,

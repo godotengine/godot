@@ -30,39 +30,11 @@
 
 #pragma once
 
-#include "core/os/mutex.h"
-#include "core/string/ustring.h"
-#include "core/templates/rid_owner.h"
-#include "rendering_device_driver_d3d12.h"
+#include "drivers/d3d12/rendering_device_driver_d3d12.h"
 #include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_context_driver.h"
 
-#if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
-// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
-#endif // !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-
-#include <thirdparty/directx_headers/include/directx/d3dx12.h>
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-
-#if defined(AS)
-#undef AS
-#endif
+#include <drivers/d3d12/godot_d3dx12.h>
 
 #ifdef DCOMP_ENABLED
 #include <dcomp.h>

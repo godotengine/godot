@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/object.h"
-#include "core/variant/type_info.h"
 
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
@@ -444,6 +443,7 @@ public:
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
+		bool is_subsampled = false;
 
 		bool operator==(const TextureFormat &b) const {
 			if (format != b.format) {

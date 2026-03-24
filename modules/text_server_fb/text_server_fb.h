@@ -36,7 +36,6 @@
 /*************************************************************************/
 
 #include "core/extension/ext_wrappers.gen.h"
-#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/safe_refcount.h"
@@ -376,6 +375,7 @@ class TextServerFallback : public TextServerExtension {
 
 	struct TextRun {
 		Vector2i range;
+		Vector2i gl_range;
 		RID font_rid;
 		int font_size = 0;
 		int64_t span_index = -1;
@@ -649,6 +649,14 @@ public:
 	MODBIND2(font_set_modulate_color_glyphs, const RID &, bool);
 	MODBIND1RC(bool, font_is_modulate_color_glyphs, const RID &);
 
+	MODBIND1RC(int64_t, font_get_palette_count, const RID &);
+	MODBIND2RC(String, font_get_palette_name, const RID &, int64_t);
+	MODBIND2RC(Vector<Color>, font_get_palette_colors, const RID &, int64_t);
+	MODBIND2(font_set_palette_custom_colors, const RID &, const Vector<Color> &);
+	MODBIND1RC(Vector<Color>, font_get_palette_custom_colors, const RID &);
+	MODBIND1RC(int64_t, font_get_used_palette, const RID &);
+	MODBIND2(font_set_used_palette, const RID &, int64_t);
+
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);
 
@@ -818,6 +826,7 @@ public:
 	MODBIND1RC(int64_t, shaped_get_run_count, const RID &);
 	MODBIND2RC(String, shaped_get_run_text, const RID &, int64_t);
 	MODBIND2RC(Vector2i, shaped_get_run_range, const RID &, int64_t);
+	MODBIND2RC(Vector2i, shaped_get_run_glyph_range, const RID &, int64_t);
 	MODBIND2RC(RID, shaped_get_run_font_rid, const RID &, int64_t);
 	MODBIND2RC(int, shaped_get_run_font_size, const RID &, int64_t);
 	MODBIND2RC(String, shaped_get_run_language, const RID &, int64_t);

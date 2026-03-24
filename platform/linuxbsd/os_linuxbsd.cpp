@@ -80,6 +80,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -89,6 +90,14 @@
 
 #if defined(__FreeBSD__)
 #include <sys/sysctl.h>
+#endif
+
+#ifdef FONTCONFIG_ENABLED
+#ifdef SOWRAP_ENABLED
+#include "fontconfig-so_wrap.h"
+#else
+#include <fontconfig/fontconfig.h>
+#endif
 #endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {

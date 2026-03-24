@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_binding_modifiers_dialog.h"
+
 #include "../action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_action_map_editor.h"
 

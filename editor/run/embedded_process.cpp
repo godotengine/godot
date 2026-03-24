@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "scene/main/timer.h"
@@ -445,8 +445,7 @@ Window *EmbeddedProcess::_get_current_modal_window() {
 	return nullptr;
 }
 
-EmbeddedProcess::EmbeddedProcess() :
-		EmbeddedProcessBase() {
+EmbeddedProcess::EmbeddedProcess() {
 	timer_embedding = memnew(Timer);
 	timer_embedding->set_wait_time(0.1);
 	timer_embedding->set_one_shot(true);

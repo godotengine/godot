@@ -71,7 +71,7 @@ void NetSocketAndroid::multicast_lock_release() {
 	}
 }
 
-NetSocket *NetSocketAndroid::_create_func() {
+Ref<NetSocket> NetSocketAndroid::_create_func() {
 	return memnew(NetSocketAndroid);
 }
 

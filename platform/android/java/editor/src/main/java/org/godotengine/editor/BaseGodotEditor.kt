@@ -37,7 +37,9 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.os.Debug
@@ -155,6 +157,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val GAME_MENU_ACTION_SET_TIME_SCALE = "setTimeScale"
 
 		private const val GAME_WORKSPACE = "Game"
+		private const val SCRIPT_WORKSPACE = "Script"
 
 		internal const val SNACKBAR_SHOW_DURATION_MS = 5000L
 
@@ -202,6 +205,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	protected val gameMenuState = Bundle()
 
 	private val updatedCommandLineParams = ArrayList<String>()
+
+	private var changingOrientationAllowed = false
+	private var distractionFreeModeEnabled = false
+	private var activeWorkspace: String? = null
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
@@ -267,6 +274,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Add the game menu bar.
 		setupGameMenuBar()
+	}
+
+	override fun onConfigurationChanged(newConfig: Configuration) {
+		super.onConfigurationChanged(newConfig)
+
+		// Show EditorTitleBar only in landscape due to width limitations in portrait.
+		// TODO: Enable for portrait once the title bar width is optimized.
+		EditorUtils.toggleTitleBar(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
 	}
 
 	override fun onDestroy() {
@@ -435,6 +450,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
 		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
+		val hapticEnabled = enableHapticOnLongPress()
 
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
@@ -442,6 +458,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)
+				enableHapticFeedback(hapticEnabled)
 			}
 		}
 	}
@@ -696,7 +713,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	/**
 	 * The Godot Android Editor sets its own orientation via its AndroidManifest
 	 */
-	protected open fun overrideOrientationRequest() = true
+	protected open fun overrideOrientationRequest() = !changingOrientationAllowed
 
 	protected open fun overrideVolumeButtons() = false
 
@@ -705,6 +722,12 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	 */
 	protected open fun enableLongPressGestures() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
+
+	/**
+	 * Enable haptic feedback on long-press right-click for the Godot Android editor.
+	 */
+	protected open fun enableHapticOnLongPress() =
+		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/haptic_on_long_press"))
 
 	/**
 	 * Disable scroll deadzone for the Godot Android editor.
@@ -894,6 +917,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onEditorWorkspaceSelected(workspace: String) {
+		activeWorkspace = workspace
+
 		if (workspace == GAME_WORKSPACE && shouldShowGameMenuBar()) {
 			if (editorMessageDispatcher.bringEditorWindowToFront(EMBEDDED_RUN_GAME_INFO) || editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO)) {
 				return
@@ -905,6 +930,23 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				updateEmbeddedGameView(xrGameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
 				embeddedGameViewContainerWindow?.isVisible = true
 			}
+		}
+
+		toggleScriptEditorOrientation()
+	}
+
+	override fun onDistractionFreeModeChanged(enabled: Boolean) {
+		distractionFreeModeEnabled = enabled
+		toggleScriptEditorOrientation()
+	}
+
+	private fun toggleScriptEditorOrientation() {
+		if (activeWorkspace == SCRIPT_WORKSPACE && distractionFreeModeEnabled) {
+			changingOrientationAllowed = true
+			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+		} else if (changingOrientationAllowed) {
+			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+			changingOrientationAllowed = false
 		}
 	}
 

@@ -195,6 +195,12 @@ public:
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) = 0;
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const = 0;
 
+	virtual void render_target_set_subsampled_enabled(RID p_render_target, bool p_enabled) = 0;
+	virtual bool render_target_is_subsampled_enabled(RID p_render_target) const = 0;
+
+	virtual void render_target_set_subsampled_allowed(RID p_render_target, bool p_allowed) = 0;
+	virtual bool render_target_is_subsampled_allowed(RID p_render_target) const = 0;
+
 	// get textures
 	virtual RID render_target_get_texture(RID p_render_target) = 0;
 

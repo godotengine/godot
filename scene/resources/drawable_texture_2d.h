@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "scene/resources/atlas_texture.h"
-#include "scene/resources/image_texture.h"
-#include "scene/resources/material.h"
+#include "scene/resources/texture.h"
+
+class Material;
 
 class DrawableTexture2D : public Texture2D {
 	GDCLASS(DrawableTexture2D, Texture2D);

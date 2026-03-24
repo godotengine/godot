@@ -142,6 +142,7 @@ void MovieWriter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_audio_speaker_mode)
 
 	GDVIRTUAL_BIND(_handles_file, "path")
+	GDVIRTUAL_BIND(_get_supported_extensions)
 
 	GDVIRTUAL_BIND(_write_begin, "movie_size", "fps", "base_path")
 	GDVIRTUAL_BIND(_write_frame, "frame_image", "audio_frame_block")

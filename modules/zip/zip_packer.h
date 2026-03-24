@@ -33,7 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 
-#include "thirdparty/minizip/zip.h"
+#include <thirdparty/minizip/zip.h>
 
 class ZIPPacker : public RefCounted {
 	GDCLASS(ZIPPacker, RefCounted);

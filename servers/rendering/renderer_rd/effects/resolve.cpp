@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "resolve.h"
+
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 

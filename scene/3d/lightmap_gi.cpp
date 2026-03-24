@@ -48,7 +48,15 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
-#include "modules/modules_enabled.gen.h" // For lightmapper_rd.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For lightmapper_rd.
+
+#ifdef MODULE_LIGHTMAPPER_RD_ENABLED
+#include "servers/display/display_server.h"
+#endif
+
+#if defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+#include "core/os/os.h"
+#endif
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;

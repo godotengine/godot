@@ -47,7 +47,6 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
-#include "scene/resources/style_box_flat.h"
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
 

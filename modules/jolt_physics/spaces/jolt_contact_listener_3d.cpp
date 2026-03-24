@@ -37,8 +37,8 @@
 #include "../objects/jolt_soft_body_3d.h"
 #include "jolt_space_3d.h"
 
-#include "Jolt/Physics/Collision/EstimateCollisionResponse.h"
-#include "Jolt/Physics/SoftBody/SoftBodyManifold.h"
+#include <Jolt/Physics/Collision/EstimateCollisionResponse.h>
+#include <Jolt/Physics/SoftBody/SoftBodyManifold.h>
 
 void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
 	_try_override_collision_response(p_body1, p_body2, p_settings);

@@ -56,6 +56,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/style_box_flat.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -134,8 +135,6 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void ScriptTextEditor::EditMenusSTE::_update_breakpoint_list() {
-	TextEditorBase *script_text_editor = _get_active_editor();
-	ERR_FAIL_NULL(script_text_editor);
 	breakpoints_menu->clear();
 	breakpoints_menu->reset_size();
 
@@ -143,6 +142,11 @@ void ScriptTextEditor::EditMenusSTE::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
+
+	TextEditorBase *script_text_editor = _get_active_editor();
+	if (script_text_editor == nullptr) {
+		return;
+	}
 
 	PackedInt32Array breakpoint_list = script_text_editor->get_code_editor()->get_text_editor()->get_breakpointed_lines();
 	if (breakpoint_list.is_empty()) {
@@ -195,6 +199,9 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 	goto_menu->get_popup()->add_submenu_node_item(TTRC("Breakpoints"), breakpoints_menu);
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &EditMenusSTE::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &EditMenusSTE::_breakpoint_item_pressed));
+
+	// Update immediately for shortcuts.
+	_update_breakpoint_list();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1581,7 +1588,7 @@ void ScriptTextEditor::_update_connected_methods() {
 				if (base_class_ptr == nullptr) {
 					break;
 				}
-				base_class = base_class_ptr->name;
+				base_class = base_class_ptr->gdtype->get_name();
 			}
 		}
 

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class PhysicsDirectBodyState2DDummy : public PhysicsDirectBodyState2D {
 	GDCLASS(PhysicsDirectBodyState2DDummy, PhysicsDirectBodyState2D);

@@ -718,6 +718,7 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 		// TODO: We can use this information more intelligently to do partial theme updates and speed things up.
 		outdated_cache = EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/enable_touch_optimizations") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||

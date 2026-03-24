@@ -937,7 +937,9 @@ hb_ot_paint_glyph_or_fail (hb_font_t *font,
 {
 #ifndef HB_NO_COLOR
   if (font->face->table.COLR->paint_glyph (font, glyph, paint_funcs, paint_data, palette, foreground)) return true;
+#ifndef HB_NO_SVG
   if (font->face->table.SVG->paint_glyph (font, glyph, paint_funcs, paint_data)) return true;
+#endif
 #ifndef HB_NO_OT_FONT_BITMAP
   if (font->face->table.CBDT->paint_glyph (font, glyph, paint_funcs, paint_data)) return true;
   if (font->face->table.sbix->paint_glyph (font, glyph, paint_funcs, paint_data)) return true;

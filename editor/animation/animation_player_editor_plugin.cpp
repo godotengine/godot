@@ -52,6 +52,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
@@ -471,12 +472,12 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			Node *root = player->get_node_or_null(player->get_root_node());
 
 			// Player shouldn't access parent if it's the scene root.
-			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == SceneStringName(path_pp))) {
+			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == NodePath(".."))) {
 				NodePath cached_root_path = player->get_path_to(get_cached_root_node());
 				if (player->get_node_or_null(cached_root_path) != nullptr) {
 					player->set_root_node(cached_root_path);
 				} else {
-					player->set_root_node(SceneStringName(path_pp)); // No other choice, preventing crash.
+					player->set_root_node(NodePath("..")); // No other choice, preventing crash.
 				}
 			} else {
 				cached_root_node_id = root->get_instance_id(); // Caching as `track_editor` can lose track of player's root node.
@@ -828,10 +829,8 @@ void AnimationPlayerEditor::_update_animation_blend() {
 
 	blend_editor.tree->clear();
 
-	String current = animation->get_item_text(animation->get_selected());
+	StringName current = animation->get_item_text(animation->get_selected());
 
-	List<StringName> anims;
-	player->get_animation_list(&anims);
 	TreeItem *root = blend_editor.tree->create_item();
 	updating_blends = true;
 
@@ -840,7 +839,7 @@ void AnimationPlayerEditor::_update_animation_blend() {
 	blend_editor.next->clear();
 	blend_editor.next->add_item("", i);
 
-	for (const StringName &to : anims) {
+	for (const StringName &to : player->get_sorted_animation_list()) {
 		TreeItem *blend = blend_editor.tree->create_item(root);
 		blend->set_editable(0, false);
 		blend->set_editable(1, true);
@@ -1037,7 +1036,7 @@ void AnimationPlayerEditor::_update_player() {
 		return;
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 
 	int active_idx = -1;
@@ -1062,7 +1061,7 @@ void AnimationPlayerEditor::_update_player() {
 			}
 		}
 
-		List<StringName> animlist;
+		LocalVector<StringName> animlist;
 		anim_library->get_animation_list(&animlist);
 
 		for (const StringName &E : animlist) {
@@ -1168,7 +1167,7 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 		}
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 	library->clear();
 
@@ -1510,7 +1509,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 		}
 
 		// Determine the read-only status of the animation's library and the libraries as a whole.
-		List<StringName> libraries;
+		LocalVector<StringName> libraries;
 		player->get_animation_library_list(&libraries);
 
 		bool current_animation_library_is_readonly = false;
@@ -1522,7 +1521,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 				all_animation_libraries_are_readonly = false;
 			}
 
-			List<StringName> animlist;
+			LocalVector<StringName> animlist;
 			anim_library->get_animation_list(&animlist);
 			bool animation_found = false;
 			for (const StringName &E : animlist) {
@@ -2463,7 +2462,13 @@ void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) 
 	memdelete(default_node);
 
 	// Library list is dynamically added to property list, should be copied explicitly.
-	List<StringName> libraries;
+	LocalVector<StringName> existing_libs;
+	dummy_player->get_animation_library_list(&existing_libs);
+	for (const StringName &K : existing_libs) {
+		dummy_player->remove_animation_library(K);
+	}
+
+	LocalVector<StringName> libraries;
 	p_mixer->get_animation_library_list(&libraries);
 	for (const StringName &K : libraries) {
 		dummy_player->add_animation_library(K, p_mixer->get_animation_library(K));

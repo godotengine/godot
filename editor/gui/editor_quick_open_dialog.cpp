@@ -38,7 +38,6 @@
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_toaster.h"
@@ -149,7 +148,7 @@ String EditorQuickOpenDialog::get_dialog_title(const Vector<StringName> &p_base_
 		return TTR("Select Scene");
 	}
 
-	return TTR("Select") + " " + p_base_types[0];
+	return vformat(TTR("Select %s"), p_base_types[0]);
 }
 
 void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback) {

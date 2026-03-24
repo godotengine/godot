@@ -48,8 +48,11 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/bit_map.h"
 #include "scene/resources/mesh.h"
-#include "thirdparty/clipper2/include/clipper2/clipper.h"
+
+#include <thirdparty/clipper2/include/clipper2/clipper.h>
 
 #define PRECISION 1
 

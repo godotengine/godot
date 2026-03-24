@@ -185,6 +185,25 @@ private:
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
+		struct OffsetTransform {
+			static constexpr Vector2 DEFAULT_TRANSLATION_ABSOLUTE = Vector2();
+			static constexpr Vector2 DEFAULT_TRANSLATION_RELATIVE = Vector2();
+			static constexpr Vector2 DEFAULT_SCALE = Vector2(1, 1);
+			static constexpr real_t DEFAULT_ROTATION = 0.0;
+			static constexpr Vector2 DEFAULT_PIVOT_ABSOLUTE = Vector2();
+			static constexpr Vector2 DEFAULT_PIVOT_RELATIVE = Vector2(0.5, 0.5);
+			static constexpr bool DEFAULT_VISUAL_ONLY = true;
+
+			bool enabled = false;
+			Vector2 translation_absolute = DEFAULT_TRANSLATION_ABSOLUTE;
+			Vector2 translation_relative = DEFAULT_TRANSLATION_RELATIVE;
+			Vector2 scale = DEFAULT_SCALE;
+			real_t rotation = DEFAULT_ROTATION;
+			Vector2 pivot_absolute = DEFAULT_PIVOT_ABSOLUTE;
+			Vector2 pivot_relative = DEFAULT_PIVOT_RELATIVE;
+			bool visual_only = DEFAULT_VISUAL_ONLY;
+		};
+
 		bool initialized = false;
 
 		// Global relations.
@@ -215,6 +234,8 @@ private:
 		Vector2 scale = Vector2(1, 1);
 		Vector2 pivot_offset;
 		Vector2 pivot_offset_ratio;
+
+		OffsetTransform *offset_transform = nullptr;
 
 		Point2 pos_cache;
 		Size2 size_cache;
@@ -366,6 +387,8 @@ private:
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
 
+	void _ensure_allocated_offset_transform();
+
 	// Extra properties.
 
 	static int root_layout_direction;
@@ -412,11 +435,14 @@ protected:
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
+	GDVIRTUAL1RC(AutoTranslateMode, _get_tooltip_auto_translate_mode_at, Vector2)
 
 	GDVIRTUAL1R(Variant, _get_drag_data, Vector2)
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
 	GDVIRTUAL2(_drop_data, Vector2, Variant)
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL1RC(int, _get_cursor_shape, Vector2)
 
 	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
 	GDVIRTUAL1RC(String, _get_accessibility_container_name, RequiredParam<const Node>)
@@ -572,6 +598,26 @@ public:
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
 
+	// Offset transform.
+
+	void set_offset_transform_enabled(bool p_enabled);
+	bool is_offset_transform_enabled() const;
+	void set_offset_transform_position(const Vector2 &p_offset);
+	Vector2 get_offset_transform_position() const;
+	void set_offset_transform_position_ratio(const Vector2 &p_offset);
+	Vector2 get_offset_transform_position_ratio() const;
+	void set_offset_transform_scale(const Vector2 &p_scale);
+	Vector2 get_offset_transform_scale() const;
+	void set_offset_transform_rotation(real_t p_rotation);
+	real_t get_offset_transform_rotation() const;
+	void set_offset_transform_pivot(const Vector2 &p_pivot);
+	Vector2 get_offset_transform_pivot() const;
+	void set_offset_transform_pivot_ratio(const Vector2 &p_pivot);
+	Vector2 get_offset_transform_pivot_ratio() const;
+	void set_offset_transform_visual_only(bool p_enabled);
+	bool is_offset_transform_visual_only() const;
+	Transform2D get_offset_transform() const;
+
 	// Input events.
 
 	virtual void gui_input(const Ref<InputEvent> &p_event);
@@ -660,7 +706,7 @@ public:
 
 	void set_default_cursor_shape(CursorShape p_shape);
 	CursorShape get_default_cursor_shape() const;
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2()) const;
 
 	void set_clip_contents(bool p_clip);
 	bool is_clipping_contents();
@@ -745,6 +791,7 @@ public:
 
 	void set_tooltip_auto_translate_mode(AutoTranslateMode p_mode);
 	AutoTranslateMode get_tooltip_auto_translate_mode() const;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Vector2 &p_at) const;
 
 	// Extra properties.
 

@@ -42,6 +42,7 @@
 #include "editor/script/script_editor_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
+#include "language_server/gdscript_language_protocol.h"
 #include "language_server/gdscript_language_server.h"
 #endif
 #endif // TOOLS_ENABLED

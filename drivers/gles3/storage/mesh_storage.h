@@ -42,7 +42,7 @@
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 namespace GLES3 {
 

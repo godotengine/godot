@@ -31,7 +31,6 @@
 #include "editor_dock.h"
 
 #include "core/input/shortcut.h"
-#include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/docks/dock_tab_container.h"

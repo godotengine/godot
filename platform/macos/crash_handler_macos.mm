@@ -40,6 +40,8 @@
 
 #include <unistd.h>
 
+#include <cstdio>
+
 #if defined(DEBUG_ENABLED)
 #define CRASH_HANDLER_ENABLED 1
 #endif
@@ -48,11 +50,11 @@
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
-#include <csignal>
-#include <cstdlib>
-
 #import <mach-o/dyld.h>
 #import <mach-o/getsect.h>
+
+#include <csignal>
+#include <cstdlib>
 
 static uint64_t load_address() {
 	char full_path[1024];

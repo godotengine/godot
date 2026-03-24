@@ -30,6 +30,10 @@
 
 #include "delta_encoding.h"
 
+#include "core/error/error_list.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h" // vformat
+
 #include <zstd.h>
 
 #define ERR_FAIL_ZSTD_V_MSG(m_result, m_retval, m_msg) \

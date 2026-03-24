@@ -32,6 +32,8 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "core/config/project_settings.h"
+
 /*
  * Set of prebuilt plugins.
  * Currently unused, this is just for future reference:

@@ -38,17 +38,9 @@
 
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
-
-#include "dynwrappers/xext-so_wrap.h"
-#include "dynwrappers/xrender-so_wrap.h"
 #else
-#include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-
-#include <X11/extensions/Xext.h>
-#include <X11/extensions/Xrender.h>
-#include <X11/extensions/shape.h>
 #endif
 
 struct GLManager_X11_Private;

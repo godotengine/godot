@@ -7,10 +7,23 @@ everything:
 #  files changing would result in SCons rebuilding the engine, or are otherwise pertinent to the
 #  buildsystem itself.
 sources:
-  - .github/{actions,workflows}/*.yml
+  - .github/{actions/*,workflows}/*.yml
   - "**/{SConstruct,SCsub,*.py}"
   - "**/*.{h,hpp,hh,hxx,c,cpp,cc,cxx,m,mm,inc,glsl}"
   - modules/mono/**/*.{cs,csproj,sln,props,targets}
   - platform/android/java/{gradle*,**/*.{jar,java,kt,gradle}}
   - platform/web/{package{,-lock}.json,js/**/*.js}
   - tests/**
+
+# Determines which files are appropriate for running clangd-tidy checks on. This is a subset out
+#  of necessity, as we're only evaluating a Linux runner.
+clangd:
+  - "**/*.{h,hpp,hxx,hh,c,cpp,cxx,cc}"
+  - "!**/thirdparty/**"
+  - "!**/*-so_wrap.{h,c}"
+  - "!drivers/{apple*,core*,d3d12,metal,wasapi,windows,winmidi,xaudio2}/**"
+  - "!editor/shader/shader_baker/shader_baker_export_plugin_platform_{d3d12,metal}.{h,cpp}"
+  - "!modules/camera/camera_{android,macos,win}.{h,cpp}"
+  - "!modules/openxr/extensions/platform/openxr_{android,metal}_extension.{h,cpp}"
+  - "!platform/{android,ios,macos,visionos,web,windows}/**"
+  - "platform/{android,ios,macos,visionos,web,windows}/{api,export}/*.{h,hpp,hxx,hh,c,cpp,cxx,cc}"

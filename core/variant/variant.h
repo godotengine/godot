@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/core_string_names.h"
+#include "core/core_string_names.h" // IWYU pragma: export. Make available everywhere.
 #include "core/error/error_macros.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"

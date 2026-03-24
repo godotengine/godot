@@ -96,6 +96,7 @@ private:
 			toggle_button->set_accessibility_name(TTRGET(p_name));
 			toggle_button->set_tooltip_text(TTRGET(p_tooltip));
 			toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+			toggle_button->set_theme_type_variation("EditorLogFilterButton");
 			// When toggled call the callback and pass the MessageType this button is for.
 			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
 		}
@@ -132,12 +133,10 @@ private:
 	RichTextLabel *log = nullptr;
 
 	Button *clear_button = nullptr;
-	Button *copy_button = nullptr;
 
 	Button *collapse_button = nullptr;
 	bool collapse = false;
 
-	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
 
 	// Reusable RichTextLabel for BBCode parsing during search
@@ -153,7 +152,6 @@ private:
 	//void _dragged(const Point2& p_ofs);
 	void _meta_clicked(const String &p_meta);
 	void _clear_request();
-	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
@@ -161,7 +159,6 @@ private:
 	bool _check_display_message(LogMessage &p_message);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
-	void _set_search_visible(bool p_visible);
 	void _search_changed(const String &p_text);
 
 	void _process_message(const String &p_msg, MessageType p_type, bool p_clear);
@@ -179,6 +176,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);

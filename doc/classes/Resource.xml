@@ -48,6 +48,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="copy_from_resource">
+			<return type="int" enum="Error" />
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				Copies the data from [param resource] into this resource. Both resources must share the same class.
+			</description>
+		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Resource" />
 			<param index="0" name="deep" type="bool" default="false" />

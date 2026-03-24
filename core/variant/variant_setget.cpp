@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "variant_setget.h"
-#include "variant_callable.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/resource.h"
+#include "core/variant/variant_callable.h"
 
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);

@@ -43,10 +43,6 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server.h"
 
-#ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_2d/navigation_server_2d.h"
-#endif // NAVIGATION_2D_DISABLED
-
 /////////////////////////////// TileMapPattern //////////////////////////////////////
 
 void TileMapPattern::_set_tile_data(const Vector<int> &p_data) {
@@ -846,6 +842,22 @@ void TileSet::remove_terrain(int p_terrain_set, int p_index) {
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_terrain(p_terrain_set, p_index);
 	}
+	notify_property_list_changed();
+	terrains_cache_dirty = true;
+	emit_changed();
+}
+
+void TileSet::clear_terrains(int p_terrain_set) {
+	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
+	Vector<Terrain> &terrains = terrain_sets.write[p_terrain_set].terrains;
+
+	int terrain_count = terrains.size();
+	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
+		for (int i = terrain_count - 1; i >= 0; i--) {
+			source.value->remove_terrain(p_terrain_set, i);
+		}
+	}
+	terrains.clear();
 	notify_property_list_changed();
 	terrains_cache_dirty = true;
 	emit_changed();
@@ -3359,8 +3371,9 @@ void TileSet::_compatibility_conversion() {
 		CompatibilityTileData *ctd = E.value;
 
 		// Add the texture
-		TileSetAtlasSource *atlas_source = memnew(TileSetAtlasSource);
-		int source_id = add_source(Ref<TileSetSource>(atlas_source));
+		Ref<TileSetAtlasSource> atlas_source;
+		atlas_source.instantiate();
+		int source_id = add_source(atlas_source);
 
 		atlas_source->set_texture(ctd->texture);
 
@@ -4317,6 +4330,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_terrain", "terrain_set", "to_position"), &TileSet::add_terrain, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("move_terrain", "terrain_set", "terrain_index", "to_position"), &TileSet::move_terrain);
 	ClassDB::bind_method(D_METHOD("remove_terrain", "terrain_set", "terrain_index"), &TileSet::remove_terrain);
+	ClassDB::bind_method(D_METHOD("clear_terrains", "terrain_set"), &TileSet::clear_terrains);
 	ClassDB::bind_method(D_METHOD("set_terrain_name", "terrain_set", "terrain_index", "name"), &TileSet::set_terrain_name);
 	ClassDB::bind_method(D_METHOD("get_terrain_name", "terrain_set", "terrain_index"), &TileSet::get_terrain_name);
 	ClassDB::bind_method(D_METHOD("set_terrain_color", "terrain_set", "terrain_index", "color"), &TileSet::set_terrain_color);

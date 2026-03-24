@@ -33,10 +33,13 @@
 #ifdef GLES3_ENABLED
 
 #include "core/io/dir_access.h"
-#include "core/io/file_access.h"
 #include "core/string/string_builder.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/config.h"
+
+#ifndef WEB_ENABLED
+#include "core/io/file_access.h"
+#endif
 
 static String _mkid(const String &p_id) {
 	String id = "m_" + p_id.replace("__", "_dus_");

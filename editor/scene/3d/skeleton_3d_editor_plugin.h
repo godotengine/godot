@@ -268,12 +268,11 @@ public:
 class Skeleton3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginSkeleton *skeleton_plugin = nullptr;
+	Ref<EditorInspectorPluginSkeleton> skeleton_plugin;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
 	virtual String get_plugin_name() const override { return "Skeleton3D"; }

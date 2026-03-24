@@ -23,6 +23,7 @@ ext.versions = [
     kotlinTestVersion  : '1.3.11',
     testRunnerVersion  : '1.7.0',
     testOrchestratorVersion: '1.6.1',
+    documentfileVersion: '1.1.0',
 ]
 
 ext.getExportPackageName = { ->

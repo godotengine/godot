@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 namespace RendererDummy {
@@ -214,6 +215,12 @@ public:
 
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override {}
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const override { return Rect2i(); }
+
+	virtual void render_target_set_subsampled_enabled(RID p_render_target, bool p_enabled) override {}
+	virtual bool render_target_is_subsampled_enabled(RID p_render_target) const override { return false; }
+
+	virtual void render_target_set_subsampled_allowed(RID p_render_target, bool p_allowed) override {}
+	virtual bool render_target_is_subsampled_allowed(RID p_render_target) const override { return false; }
 
 	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }
 

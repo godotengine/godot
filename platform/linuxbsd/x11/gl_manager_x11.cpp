@@ -35,11 +35,15 @@
 #include "core/os/os.h"
 #include "servers/display/display_server.h"
 
-#include "thirdparty/glad/glad/glx.h"
+#include <thirdparty/glad/glad/glx.h>
+
+#ifdef SOWRAP_ENABLED
+#include "dynwrappers/xrender-so_wrap.h"
+#else
+#include <X11/extensions/Xrender.h>
+#endif
 
 #include <unistd.h>
-#include <cstdio>
-#include <cstdlib>
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092

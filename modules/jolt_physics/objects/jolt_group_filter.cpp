@@ -30,8 +30,6 @@
 
 #include "jolt_group_filter.h"
 
-#include "jolt_area_3d.h"
-#include "jolt_body_3d.h"
 #include "jolt_object_3d.h"
 
 bool JoltGroupFilter::CanCollide(const JPH::CollisionGroup &p_group1, const JPH::CollisionGroup &p_group2) const {

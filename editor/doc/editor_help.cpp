@@ -72,6 +72,8 @@
 #include "modules/mono/csharp_script.h"
 #endif
 
+#include "modules/regex/regex.h"
+
 #define CONTRIBUTE_URL "https://contributing.godotengine.org/en/latest/documentation/class_reference.html"
 
 #ifdef MODULE_MONO_ENABLED
@@ -3696,6 +3698,18 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 				}
 			}
 
+			if (property.name.contains("{index}")) {
+				RegEx reg_index = RegEx(property.name.replace("{index}", "\\d*"));
+				Ref<RegExMatch> match = reg_index.search(p_property_name);
+				if (match.is_valid()) {
+					result = current;
+
+					if (!is_native) {
+						break;
+					}
+				}
+			}
+
 			if (is_native) {
 				doc_property_cache[p_class_name][property.name] = current;
 			}
@@ -4343,6 +4357,7 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 		OS::get_singleton()->shell_open(p_select);
 	} else if (p_select.begins_with("^")) { // Copy button.
 		DisplayServer::get_singleton()->clipboard_set(p_select.substr(1));
+		EditorToaster::get_singleton()->popup_str(TTR("Code snippet copied to clipboard."), EditorToaster::SEVERITY_INFO);
 	}
 }
 

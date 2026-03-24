@@ -641,6 +641,80 @@ RID RenderSceneBuffersRD::get_depth_texture(const uint32_t p_layer) {
 	}
 }
 
+// Subsampled textures.
+
+RID RenderSceneBuffersRD::get_color_subsampled() {
+	const bool use_msaa = (msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
+
+	RD::TextureFormat tf;
+	tf.format = get_base_data_format();
+	if (view_count > 1) {
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	}
+	tf.width = internal_size.x;
+	tf.height = internal_size.y;
+	tf.array_layers = view_count;
+	tf.usage_bits = get_color_usage_bits(use_msaa, false, can_be_storage);
+	tf.is_subsampled = true;
+
+	return create_texture_from_format(RB_SCOPE_BUFFERS, RB_TEX_COLOR_SUBSAMPLED, tf);
+}
+
+RID RenderSceneBuffersRD::get_color_msaa_subsampled() {
+	ERR_FAIL_COND_V(msaa_3d == RSE::VIEWPORT_MSAA_DISABLED, RID());
+
+	RD::TextureFormat tf;
+	tf.format = get_base_data_format();
+	if (view_count > 1) {
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	}
+	tf.width = internal_size.x;
+	tf.height = internal_size.y;
+	tf.array_layers = view_count;
+	tf.samples = msaa_to_samples(msaa_3d);
+	tf.usage_bits = get_color_usage_bits(false, true, can_be_storage);
+	tf.is_discardable = true;
+	tf.is_subsampled = true;
+
+	return create_texture_from_format(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA_SUBSAMPLED, tf);
+}
+
+RID RenderSceneBuffersRD::get_depth_subsampled() {
+	const bool use_msaa = (msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
+
+	RD::TextureFormat tf;
+	tf.format = get_depth_format(use_msaa, false, can_be_storage);
+	if (view_count > 1) {
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	}
+	tf.width = internal_size.x;
+	tf.height = internal_size.y;
+	tf.array_layers = view_count;
+	tf.usage_bits = get_depth_usage_bits(use_msaa, false, can_be_storage);
+	tf.is_subsampled = true;
+
+	return create_texture_from_format(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_SUBSAMPLED, tf);
+}
+
+RID RenderSceneBuffersRD::get_depth_msaa_subsampled() {
+	ERR_FAIL_COND_V(msaa_3d == RSE::VIEWPORT_MSAA_DISABLED, RID());
+
+	RD::TextureFormat tf;
+	tf.format = get_depth_format(false, true, can_be_storage);
+	if (view_count > 1) {
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+	}
+	tf.width = internal_size.x;
+	tf.height = internal_size.y;
+	tf.array_layers = view_count;
+	tf.samples = msaa_to_samples(msaa_3d);
+	tf.usage_bits = get_depth_usage_bits(false, true, can_be_storage);
+	tf.is_discardable = true;
+	tf.is_subsampled = true;
+
+	return create_texture_from_format(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA_SUBSAMPLED, tf);
+}
+
 // Upscaled texture.
 
 void RenderSceneBuffersRD::ensure_upscaled() {

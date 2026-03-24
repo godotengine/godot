@@ -35,6 +35,7 @@
 
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
+
 #include "platform/android/export/export_plugin.h"
 
 #include <openxr/openxr.h>

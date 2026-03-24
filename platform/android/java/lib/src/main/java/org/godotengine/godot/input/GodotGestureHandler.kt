@@ -57,6 +57,11 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 
 	var scrollDeadzoneDisabled = false
 
+	/**
+	 * Enable haptic feedback on long-press right-click
+	 */
+	var hapticFeedbackEnabled = false
+
 	private var nextDownIsDoubleTap = false
 	private var dragInProgress = false
 	private var scaleInProgress = false
@@ -80,6 +85,9 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	override fun onLongPress(event: MotionEvent) {
 		val toolType = GodotInputHandler.getEventToolType(event)
 		if (toolType != MotionEvent.TOOL_TYPE_MOUSE) {
+			if (hapticFeedbackEnabled) {
+				inputHandler.performHapticFeedback()
+			}
 			contextClickRouter(event)
 		}
 	}

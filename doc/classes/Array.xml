@@ -429,6 +429,13 @@
 
 				func _ready():
 					print([1, 3, 4, 7].find_custom(is_even.bind())) # Prints 2
+
+				# Another example using `bind()` to pass an additional parameter:
+				func is_specific_number(number, expected):
+					return number == expected
+
+				func _ready():
+					print([1, 3, 4, 7].find_custom(is_specific_number.bind(4))) # Prints 2
 				[/gdscript]
 				[/codeblocks]
 			</description>

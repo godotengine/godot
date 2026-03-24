@@ -30,7 +30,17 @@
 
 #pragma once
 
+#include "core/math/math_defs.h" // real_t
 #include "servers/rendering/rendering_server_enums.h"
+
+class RID;
+struct AABB;
+struct Color;
+struct Transform3D;
+struct Vector3;
+
+template <typename T>
+class Vector;
 
 class RendererParticlesStorage {
 public:
@@ -66,6 +76,8 @@ public:
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) = 0;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_channel_filter) = 0;
+	virtual void particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) = 0;
 
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) = 0;
 

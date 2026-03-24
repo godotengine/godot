@@ -207,6 +207,12 @@
 				Returns [code]true[/code] if this basis is finite, by calling [method @GlobalScope.is_finite] on all vector components.
 			</description>
 		</method>
+		<method name="is_orthonormal" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this basis is orthonormal. An orthonormal basis is both [i]orthogonal[/i] (the axes are perpendicular to each other) and [i]normalized[/i] (the length of every axis is [code]1.0[/code]). This method can be especially useful during physics calculations.
+			</description>
+		</method>
 		<method name="looking_at" qualifiers="static">
 			<return type="Basis" />
 			<param index="0" name="target" type="Vector3" />

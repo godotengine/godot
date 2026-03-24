@@ -39,7 +39,7 @@
 #include "scene/3d/visual_instance_3d.h"
 
 #ifdef GODOT_SCENE_TREE_FTI_VERIFY
-#include "scene_tree_fti_tests.h"
+#include "scene/main/scene_tree_fti_tests.h"
 #endif
 
 #ifdef DEV_ENABLED

@@ -45,6 +45,7 @@ class HScrollBar;
 class HSplitContainer;
 class MenuButton;
 class PanelContainer;
+class RichTextLabel;
 class StyleBoxTexture;
 class Timer;
 class ViewPanner;
@@ -243,6 +244,9 @@ private:
 	Vector2i primary_grid_step;
 	int grid_step_multiplier = 0;
 
+	Color selection_rectangle_color;
+	Color locked_selection_rectangle_color;
+
 	real_t snap_rotation_step = 0.0;
 	real_t snap_rotation_offset = 0.0;
 	real_t snap_scale_step = 0.0;
@@ -278,7 +282,7 @@ private:
 	real_t grab_distance = 0.0;
 	bool simple_panning = false;
 
-	MenuOption last_option;
+	MenuOption last_option = SNAP_USE;
 
 public:
 	struct SelectResult {
@@ -668,8 +672,7 @@ class CanvasItemEditorViewport : public Control {
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *texture_node_type_selector = nullptr;
-	Label *label = nullptr;
-	Label *label_desc = nullptr;
+	RichTextLabel *tooltip_panel = nullptr;
 	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
@@ -688,6 +691,8 @@ class CanvasItemEditorViewport : public Control {
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
+
+	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 protected:
 	void _notification(int p_what);

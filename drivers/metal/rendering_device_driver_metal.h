@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "metal_device_profile.h"
-#include "metal_objects_shared.h"
-
+#include "drivers/metal/metal_device_profile.h"
+#include "drivers/metal/metal_objects_shared.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
+
 #include <variant>
 
 class RenderingShaderContainerFormatMetal;

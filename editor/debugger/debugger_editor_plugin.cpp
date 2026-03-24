@@ -39,7 +39,6 @@
 #include "editor/editor_node.h"
 #include "editor/run/run_instances_dialog.h"
 #include "editor/script/script_editor_plugin.h"
-#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/popup_menu.h"
 

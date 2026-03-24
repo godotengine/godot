@@ -208,7 +208,5 @@ public:
 	void tag_saved_version();
 	ShaderTextEditor *get_code_editor() { return code_editor; }
 
-	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
-
 	TextShaderEditor();
 };

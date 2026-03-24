@@ -373,6 +373,7 @@ private:
 
 	ConfirmationDialog *confirmation = nullptr;
 	bool stop_project_confirmation = false;
+	bool stop_download_confirmation = false;
 	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
@@ -633,8 +634,6 @@ private:
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-
-	bool has_main_screen() const { return true; }
 
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);

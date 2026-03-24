@@ -834,6 +834,7 @@ public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Point2 &p_at) const override;
 
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual Variant get_drag_data(const Point2 &p_point) override;

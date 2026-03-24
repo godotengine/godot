@@ -213,6 +213,21 @@ public:
 	GDVIRTUAL2(_font_set_modulate_color_glyphs, RID, bool);
 	GDVIRTUAL1RC(bool, _font_is_modulate_color_glyphs, RID);
 
+	virtual int64_t font_get_palette_count(const RID &p_font_rid) const override;
+	GDVIRTUAL1RC(int64_t, _font_get_palette_count, const RID &);
+	virtual String font_get_palette_name(const RID &p_font_rid, int64_t p_index) const override;
+	GDVIRTUAL2RC(String, _font_get_palette_name, const RID &, int64_t);
+	virtual Vector<Color> font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const override;
+	GDVIRTUAL2RC(Vector<Color>, _font_get_palette_colors, const RID &, int64_t);
+	virtual void font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) override;
+	GDVIRTUAL2(_font_set_palette_custom_colors, const RID &, const Vector<Color> &);
+	virtual Vector<Color> font_get_palette_custom_colors(const RID &p_font_rid) const override;
+	GDVIRTUAL1RC(Vector<Color>, _font_get_palette_custom_colors, const RID &);
+	virtual int64_t font_get_used_palette(const RID &p_font_rid) const override;
+	GDVIRTUAL1RC(int64_t, _font_get_used_palette, const RID &);
+	virtual void font_set_used_palette(const RID &p_font_rid, int64_t p_index) override;
+	GDVIRTUAL2(_font_set_used_palette, const RID &, int64_t);
+
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) override;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_hinting, RID, Hinting);
@@ -486,6 +501,7 @@ public:
 	virtual int64_t shaped_get_run_count(const RID &p_shaped) const override;
 	virtual String shaped_get_run_text(const RID &p_shaped, int64_t p_index) const override;
 	virtual Vector2i shaped_get_run_range(const RID &p_shaped, int64_t p_index) const override;
+	virtual Vector2i shaped_get_run_glyph_range(const RID &p_shaped, int64_t p_index) const override;
 	virtual RID shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const override;
 	virtual int shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const override;
 	virtual String shaped_get_run_language(const RID &p_shaped, int64_t p_index) const override;
@@ -494,6 +510,7 @@ public:
 	GDVIRTUAL1RC(int64_t, _shaped_get_run_count, RID);
 	GDVIRTUAL2RC(String, _shaped_get_run_text, RID, int64_t);
 	GDVIRTUAL2RC(Vector2i, _shaped_get_run_range, RID, int64_t);
+	GDVIRTUAL2RC(Vector2i, _shaped_get_run_glyph_range, RID, int64_t);
 	GDVIRTUAL2RC(RID, _shaped_get_run_font_rid, RID, int64_t);
 	GDVIRTUAL2RC(int, _shaped_get_run_font_size, RID, int64_t);
 	GDVIRTUAL2RC(String, _shaped_get_run_language, RID, int64_t);

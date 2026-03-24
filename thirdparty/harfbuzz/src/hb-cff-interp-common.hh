@@ -344,25 +344,25 @@ struct cff_stack_t
 {
   ELEM& operator [] (unsigned int i)
   {
-    if (unlikely (i >= count))
+    if (unlikely (i >= length))
     {
       set_error ();
       return Crap (ELEM);
     }
-    return elements[i];
+    return arrayZ[i];
   }
 
   void push (const ELEM &v)
   {
-    if (likely (count < LIMIT))
-      elements[count++] = v;
+    if (likely (length < LIMIT))
+      arrayZ[length++] = v;
     else
       set_error ();
   }
   ELEM &push ()
   {
-    if (likely (count < LIMIT))
-      return elements[count++];
+    if (likely (length < LIMIT))
+      return arrayZ[length++];
     else
     {
       set_error ();
@@ -372,8 +372,8 @@ struct cff_stack_t
 
   ELEM& pop ()
   {
-    if (likely (count > 0))
-      return elements[--count];
+    if (likely (length > 0))
+      return arrayZ[--length];
     else
     {
       set_error ();
@@ -382,45 +382,44 @@ struct cff_stack_t
   }
   void pop (unsigned int n)
   {
-    if (likely (count >= n))
-      count -= n;
+    if (likely (length >= n))
+      length -= n;
     else
       set_error ();
   }
 
   const ELEM& peek ()
   {
-    if (unlikely (count == 0))
+    if (unlikely (length == 0))
     {
       set_error ();
       return Null (ELEM);
     }
-    return elements[count - 1];
+    return arrayZ[length - 1];
   }
 
   void unpop ()
   {
-    if (likely (count < LIMIT))
-      count++;
+    if (likely (length < LIMIT))
+      length++;
     else
       set_error ();
   }
 
-  void clear () { count = 0; }
+  void clear () { length = 0; }
 
   bool in_error () const { return (error); }
   void set_error ()      { error = true; }
 
-  unsigned int get_count () const { return count; }
-  bool is_empty () const          { return !count; }
+  unsigned int get_count () const { return length; }
+  bool is_empty () const          { return !length; }
 
   hb_array_t<const ELEM> sub_array (unsigned start, unsigned length) const
-  { return hb_array_t<const ELEM> (elements).sub_array (start, length); }
+  { return hb_array_t<const ELEM> (arrayZ).sub_array (start, length); }
 
-  private:
   bool error = false;
-  unsigned int count = 0;
-  ELEM elements[LIMIT];
+  unsigned int length = 0;
+  ELEM arrayZ[LIMIT];
 };
 
 /* argument stack */

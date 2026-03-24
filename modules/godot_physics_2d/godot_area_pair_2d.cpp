@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_area_pair_2d.h"
+
 #include "godot_collision_solver_2d.h"
 
 bool GodotAreaPair2D::setup(real_t p_step) {

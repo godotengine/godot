@@ -71,7 +71,10 @@ protected:
 	String y_label = "y";
 	BlendMode blend_mode = BLEND_MODE_INTERPOLATED;
 
-	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	void _set_triangles(const Vector<int> &p_triangles);
 	Vector<int> _get_triangles() const;
 
@@ -92,19 +95,31 @@ protected:
 	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) override;
 	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
 
+#ifndef DISABLE_DEPRECATED
+	void _add_blend_point_bind_compat_110369(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+
+	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual void get_child_nodes(LocalVector<ChildNode> *r_child_nodes) override;
 
-	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
+	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1, const StringName &p_name = StringName());
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
 	void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
+	void set_blend_point_name(int p_point, const StringName &p_name);
+	const StringName &get_blend_point_name(int p_point) const;
+	int find_blend_point_by_name(const StringName &p_name) const;
 	Vector2 get_blend_point_position(int p_point) const;
 	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
+
+	void reorder_blend_point(int p_from_index, int p_to_index);
 
 	bool has_triangle(int p_x, int p_y, int p_z) const;
 	void add_triangle(int p_x, int p_y, int p_z, int p_at_index = -1);
@@ -127,7 +142,7 @@ public:
 	void set_y_label(const String &p_label);
 	String get_y_label() const;
 
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	Vector2 get_closest_point(const Vector2 &p_point);

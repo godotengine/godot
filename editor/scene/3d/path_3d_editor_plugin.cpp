@@ -40,6 +40,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/main/scene_tree.h"
@@ -579,7 +580,6 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 
 	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
 	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
-	path->connect("curve_changed", callable_mp(Path3DEditorPlugin::singleton, &Path3DEditorPlugin::_update_toolbar));
 	path->connect("debug_color_changed", callable_mp(this, &Path3DGizmo::redraw));
 
 	Path3DEditorPlugin::singleton->curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
@@ -605,6 +605,13 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+			View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+			if ((nav_scheme == View3DController::NAV_SCHEME_MAYA || nav_scheme == View3DController::NAV_SCHEME_MODO) && mb->is_alt_pressed()) {
+				return EditorPlugin::AFTER_GUI_INPUT_PASS;
+			}
+		}
+
 		Point2 mbpos(mb->get_position().x, mb->get_position().y);
 
 		Node3DEditorViewport *viewport = nullptr;
@@ -780,7 +787,16 @@ void Path3DEditorPlugin::update_handles() {
 }
 
 void Path3DEditorPlugin::edit(Object *p_object) {
+	if (path) {
+		path->disconnect("curve_changed", callable_mp(this, &Path3DEditorPlugin::_update_toolbar));
+	}
+
 	path = Object::cast_to<Path3D>(p_object);
+
+	if (path) {
+		path->connect("curve_changed", callable_mp(this, &Path3DEditorPlugin::_update_toolbar));
+	}
+
 	_update_toolbar();
 	update_overlays();
 }

@@ -30,13 +30,10 @@
 
 #include "dpi_texture.h"
 
-#include "core/io/image_loader.h"
 #include "core/object/class_db.h"
-#include "scene/main/canvas_item.h"
-#include "scene/main/viewport.h"
 #include "scene/resources/bit_map.h"
-#include "scene/resources/placeholder_textures.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/text/text_server.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -104,6 +101,30 @@ void DPITexture::set_source(const String &p_source) {
 
 String DPITexture::get_source() const {
 	return source;
+}
+
+void DPITexture::set_fix_alpha_border(bool p_enabled) {
+	if (fix_alpha_border == p_enabled) {
+		return;
+	}
+	fix_alpha_border = p_enabled;
+	_update_texture();
+}
+
+bool DPITexture::get_fix_alpha_border() const {
+	return fix_alpha_border;
+}
+
+void DPITexture::set_premult_alpha(bool p_enabled) {
+	if (premult_alpha == p_enabled) {
+		return;
+	}
+	premult_alpha = p_enabled;
+	_update_texture();
+}
+
+bool DPITexture::get_premult_alpha() const {
+	return premult_alpha;
 }
 
 void DPITexture::set_base_scale(float p_scale) {
@@ -203,6 +224,16 @@ RID DPITexture::_load_at_scale(double p_scale, bool p_set_size) const {
 #endif
 	if (saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, saturation);
+	}
+
+	// Fix alpha border.
+	if (fix_alpha_border) {
+		img->fix_alpha_edges();
+	}
+
+	// Premultiply the alpha.
+	if (premult_alpha) {
+		img->premultiply_alpha();
 	}
 
 	Size2 current_size = size;
@@ -356,6 +387,10 @@ void DPITexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_source", "source"), &DPITexture::set_source);
 	ClassDB::bind_method(D_METHOD("get_source"), &DPITexture::get_source);
+	ClassDB::bind_method(D_METHOD("set_fix_alpha_border", "fix_alpha_border"), &DPITexture::set_fix_alpha_border);
+	ClassDB::bind_method(D_METHOD("get_fix_alpha_border"), &DPITexture::get_fix_alpha_border);
+	ClassDB::bind_method(D_METHOD("set_premult_alpha", "premult_alpha"), &DPITexture::set_premult_alpha);
+	ClassDB::bind_method(D_METHOD("get_premult_alpha"), &DPITexture::get_premult_alpha);
 	ClassDB::bind_method(D_METHOD("set_base_scale", "base_scale"), &DPITexture::set_base_scale);
 	ClassDB::bind_method(D_METHOD("get_base_scale"), &DPITexture::get_base_scale);
 	ClassDB::bind_method(D_METHOD("set_saturation", "saturation"), &DPITexture::set_saturation);
@@ -366,6 +401,8 @@ void DPITexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scaled_rid"), &DPITexture::get_scaled_rid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE), "set_source", "get_source");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fix_alpha_border", PROPERTY_HINT_NONE, ""), "set_fix_alpha_border", "get_fix_alpha_border");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "premult_alpha", PROPERTY_HINT_NONE, ""), "set_premult_alpha", "get_premult_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.01,10.0,0.01"), "set_base_scale", "get_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "saturation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_saturation", "get_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_map", PROPERTY_HINT_DICTIONARY_TYPE, "Color;Color"), "set_color_map", "get_color_map");

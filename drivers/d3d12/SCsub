@@ -120,7 +120,7 @@ if (
 ):
     print_error(
         "The Direct3D 12 rendering driver dependencies are outdated or missing.\n"
-        "You can re-install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+        f"You can re-install them by running `python {os.path.join('misc', 'scripts', 'install_d3d12_sdk_windows.py')}`.\n"
     )
     sys.exit(255)
 

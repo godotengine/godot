@@ -132,6 +132,8 @@ public:
 	Error install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset);
 
 	void popup_manager();
+	bool is_downloading() const { return is_downloading_templates; }
+	void stop_download();
 
 	ExportTemplateManager();
 };

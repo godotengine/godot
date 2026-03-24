@@ -41,7 +41,6 @@
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"

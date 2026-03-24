@@ -30,7 +30,7 @@
 
 #include "visual_shader_language_plugin.h"
 
-#include "visual_shader_editor_plugin.h"
+#include "editor/shader/visual_shader_editor_plugin.h"
 
 bool VisualShaderLanguagePlugin::handles_shader(const Ref<Shader> &p_shader) const {
 	return Object::cast_to<VisualShader>(p_shader.ptr()) != nullptr;

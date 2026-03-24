@@ -36,23 +36,22 @@
 #include "core/os/mutex.h"
 #include "core/os/process_id.h"
 #include "core/os/thread.h"
+#include "core/os/thread_safe.h"
 #include "core/templates/local_vector.h"
 #include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
-#include "x11/dynwrappers/xlib-so_wrap.h"
-
 #include "x11/dynwrappers/xcursor-so_wrap.h"
 #include "x11/dynwrappers/xinput2-so_wrap.h"
+#include "x11/dynwrappers/xlib-so_wrap.h"
 #include "x11/dynwrappers/xrandr-so_wrap.h"
 
 #ifdef XKB_ENABLED
 #include "xkbcommon-so_wrap.h"
 #endif
 #else // !SOWRAP_ENABLED
-#include <X11/Xlib.h>
-
 #include <X11/Xcursor/Xcursor.h>
+#include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 

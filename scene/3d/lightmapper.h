@@ -37,7 +37,7 @@ class Image;
 class LightmapDenoiser : public RefCounted {
 	GDCLASS(LightmapDenoiser, RefCounted)
 protected:
-	static LightmapDenoiser *(*create_function)();
+	static Ref<LightmapDenoiser> (*create_function)();
 
 public:
 	virtual Ref<Image> denoise_image(const Ref<Image> &p_image) = 0;
@@ -47,7 +47,7 @@ public:
 class LightmapRaycaster : public RefCounted {
 	GDCLASS(LightmapRaycaster, RefCounted)
 protected:
-	static LightmapRaycaster *(*create_function)();
+	static Ref<LightmapRaycaster> (*create_function)();
 
 public:
 	// Compatible with embree4 rays.
@@ -145,7 +145,7 @@ public:
 		BAKE_QUALITY_ULTRA,
 	};
 
-	typedef Lightmapper *(*CreateFunc)();
+	typedef Ref<Lightmapper> (*CreateFunc)();
 
 	static CreateFunc create_custom;
 	static CreateFunc create_gpu;

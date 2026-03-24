@@ -43,7 +43,6 @@
 
 #ifndef PHYSICS_3D_DISABLED
 #include "core/math/convex_hull.h"
-#include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"

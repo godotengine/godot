@@ -30,7 +30,7 @@
 
 #include "godot_step_3d.h"
 
-#include "godot_joint_3d.h"
+#include "godot_constraint_3d.h"
 
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"

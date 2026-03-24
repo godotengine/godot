@@ -30,10 +30,9 @@
 
 #pragma once
 
-#include "core/object/ref_counted.h"
-
 #include "core/extension/ext_wrappers.gen.h"
 #include "core/object/gdvirtual.gen.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/native_ptr.h"
 
 class StreamPeer : public RefCounted {

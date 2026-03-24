@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "core/variant/binder_common.h"
+#include "core/variant/type_info.h"
 
 class Tween;
 class Node;
@@ -159,6 +159,7 @@ public:
 	void play();
 	void kill();
 
+	bool has_tweeners() const;
 	bool is_running();
 	bool is_valid();
 	void clear();

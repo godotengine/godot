@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "profiling.gen.h"
+#include "profiling.gen.h" // IWYU pragma: keep.
 
 // This header provides profiling primitives (implemented as macros) for various backends.
 // See the "No profiling" branch at the bottom for a short description of the functions.
@@ -96,9 +96,9 @@ void godot_cleanup_profiler();
 #elif defined(GODOT_USE_PERFETTO)
 // Use the perfetto profiler.
 
-#include <perfetto.h>
-
 #include "core/typedefs.h"
+
+#include <perfetto.h>
 
 PERFETTO_DEFINE_CATEGORIES(
 		perfetto::Category("godot")

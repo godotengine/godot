@@ -154,6 +154,11 @@ public interface GodotHost {
 	default void onEditorWorkspaceSelected(String workspace) {}
 
 	/**
+	 * Triggered when the editor's distraction-free mode changes.
+	 */
+	default void onDistractionFreeModeChanged(Boolean enabled) {}
+
+	/**
 	 * Runs the specified action on a host provided thread.
 	 */
 	default void runOnHostThread(Runnable action) {

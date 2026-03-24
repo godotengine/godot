@@ -48,7 +48,9 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <link.h>
+
 #include <csignal>
+#include <cstdio>
 #include <cstdlib>
 
 static void handle_crash(int sig) {

@@ -30,8 +30,6 @@
 
 #pragma once
 
-#include "jni_utils.h"
-
 #include "core/math/vector2.h"
 
 #include <android/log.h>
@@ -44,12 +42,12 @@ private:
 
 	jobject _godot_view;
 
-	jmethodID _can_capture_pointer = 0;
-	jmethodID _request_pointer_capture = 0;
-	jmethodID _release_pointer_capture = 0;
+	jmethodID _can_capture_pointer = nullptr;
+	jmethodID _request_pointer_capture = nullptr;
+	jmethodID _release_pointer_capture = nullptr;
 
-	jmethodID _configure_pointer_icon = 0;
-	jmethodID _set_pointer_icon = 0;
+	jmethodID _configure_pointer_icon = nullptr;
+	jmethodID _set_pointer_icon = nullptr;
 
 public:
 	GodotJavaViewWrapper(jobject godot_view);

@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../../openxr_api.h"
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
@@ -38,7 +37,7 @@
 #include "drivers/vulkan/vulkan_hooks.h"
 
 // Always include this as late as possible.
-#include "../../openxr_platform_inc.h"
+#include "../../openxr_platform_inc.h" // IWYU pragma: keep.
 
 class OpenXRVulkanExtension : public OpenXRGraphicsExtensionWrapper, VulkanHooks {
 public:
@@ -54,6 +53,7 @@ public:
 	virtual bool get_physical_device(VkPhysicalDevice *r_device) override final;
 	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) override final;
 	virtual void set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) override final;
+	virtual bool use_subsampled_images() override final;
 	virtual bool use_fragment_density_offsets() override final;
 	virtual void get_fragment_density_offsets(LocalVector<VkOffset2D> &r_offets, const Vector2i &p_granularity) override final;
 

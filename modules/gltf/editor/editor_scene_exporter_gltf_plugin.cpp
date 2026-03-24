@@ -40,13 +40,10 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
+#include "scene/main/scene_tree.h"
 
 String SceneExporterGLTFPlugin::get_plugin_name() const {
 	return "ConvertGLTF2";
-}
-
-bool SceneExporterGLTFPlugin::has_main_screen() const {
-	return false;
 }
 
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {

@@ -43,6 +43,7 @@
 #ifdef HB_TINY
 #define HB_LEAN
 #define HB_MINI
+#define HB_NO_SVG
 #define HB_OPTIMIZE_SIZE
 #define HB_OPTIMIZE_SIZE_MORE
 #define HB_MINIMIZE_MEMORY_USAGE

@@ -41,6 +41,8 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
 
+#include <cfloat> // FLT_MAX
+
 class AnimationMarkerEdit;
 class AnimationTrackEditor;
 class AnimationTrackEdit;
@@ -481,6 +483,7 @@ class AnimationTrackEdit : public Control {
 	String path_cache;
 
 	void _menu_selected(int p_index);
+	void _popup_key_context_menu(int p_hovering_key_idx, Vector2 p_popup_pos);
 
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
@@ -520,6 +523,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
+	const Ref<Texture2D> &get_key_type_icon() const { return type_icon; }
 	virtual int get_key_height() const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;

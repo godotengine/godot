@@ -32,11 +32,11 @@
 #include "gdextension.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension_library_loader.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
-#include "gdextension_library_loader.h"
-#include "gdextension_manager.h"
 
 extern void gdextension_setup_interface();
 extern GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name);

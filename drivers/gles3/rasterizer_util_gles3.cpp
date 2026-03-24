@@ -30,7 +30,7 @@
 
 #include "rasterizer_util_gles3.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 bool RasterizerUtilGLES3::gles_over_gl = true;
 

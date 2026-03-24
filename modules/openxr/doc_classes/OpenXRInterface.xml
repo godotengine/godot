@@ -176,11 +176,12 @@
 		</member>
 		<member name="foveation_dynamic" type="bool" setter="set_foveation_dynamic" getter="get_foveation_dynamic" default="false">
 			If [code]true[/code], enables dynamic foveation adjustment. The interface must be initialized before this is accessible. If enabled, foveation will automatically be adjusted between low and [member foveation_level].
-			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
 		<member name="foveation_level" type="int" setter="set_foveation_level" getter="get_foveation_level" default="0">
 			The foveation level, from [code]0[/code] (off) to [code]3[/code] (high). The interface must be initialized before this is accessible.
-			[b]Note:[/b] Only works on the Compatibility renderer.
+		</member>
+		<member name="foveation_with_subsampled_images" type="bool" setter="set_foveation_with_subsampled_images" getter="get_foveation_with_subsampled_images" default="false">
+			If [code]true[/code], enables subsampled images with foveation, which can provide a performance boost on Vulkan.
 		</member>
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.

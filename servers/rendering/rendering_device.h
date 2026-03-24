@@ -36,7 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/variant/binder_common.h"
+#include "core/variant/type_info.h"
 #include "core/variant/typed_array.h"
 #include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_device_commons.h"
@@ -356,6 +356,7 @@ public:
 
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
+		bool is_subsampled = false;
 		bool has_initial_data = false;
 		bool pending_clear = false;
 

@@ -31,6 +31,7 @@
 		</member>
 		<member name="solver_priority" type="int" setter="set_solver_priority" getter="get_solver_priority" default="1">
 			The priority used to define which solver is executed first for multiple joints. The lower the value, the higher the priority.
+			[b]Note:[/b] Only supported when using GodotPhysics3D. This property is ignored when using Jolt Physics.
 		</member>
 	</members>
 </class>
