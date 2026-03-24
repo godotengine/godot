@@ -1658,3 +1658,21 @@ Before any code phase starts:
 - `git diff --check` passed before checkpoint commit.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture` passed on the diagnostics checkpoint.
 - Native Windows verification passed as part of `Gaussian Production Gates` run `23502430431` on commit `923dabc985` (the verified branch head includes diagnostics checkpoint `ed062e5570` plus the follow-up Windows-only data fixes above).
+
+## Phase 5 Closeout Assessment
+
+### Result
+- Phase 5 is treated as effectively complete after slices 32-34.
+- No additional bounded Phase 5 consumer batch is justified right now.
+
+### Reasoning
+- Re-audit of `modules/gaussian_splatting/interfaces/painterly_renderer.cpp` shows the largest remaining direct facade reads are mostly seam-blocked rather than honestly removable without new abstraction churn.
+- The one realistic residual win is the device/resource-owner path, but by itself it is too narrow to justify another full phase-sized patch and Windows gate.
+- Remaining broad facade-owner bridge work now looks more like optional Phase 6 cleanup / owner hardening than another Phase 5 consumer migration.
+
+### Deferred residuals
+- `modules/gaussian_splatting/interfaces/painterly_renderer.cpp`
+  - Direct `get_painterly_config()` / `get_view_state()` / `get_culling_config()` / `get_debug_state()` reads remain where no materially narrower seam exists yet.
+  - Resource-owner/device selection calls remain candidates for future cleanup if they can be grouped with a broader owner-bridge simplification.
+- `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - Broad facade-owner pass-through wiring remains, but that is now Phase 6 / cleanup territory rather than a Phase 5 consumer batch.
