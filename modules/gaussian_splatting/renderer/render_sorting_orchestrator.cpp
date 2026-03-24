@@ -183,6 +183,12 @@ static GPUSorterFactory::SortingAlgorithm _get_forced_sort_algorithm(const Sorti
 static String _algorithm_override_label(const SortingStrategyConfig &p_config) {
 	return p_config.get_forced_algorithm_name();
 }
+
+static void _queue_sort_benchmark_buffer_free(GaussianSplatRenderer::IFrameMutationAccess &p_state_mut,
+		RenderingDevice *p_render_device, RID &r_buffer) {
+	p_state_mut.get_resource_state_mut().deletion_queue.queue_free(p_render_device, r_buffer);
+	r_buffer = RID();
+}
 } // namespace
 
 RenderSortingOrchestrator::RenderSortingOrchestrator(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler,
@@ -201,13 +207,22 @@ RenderSortingOrchestrator::RenderSortingOrchestrator(GaussianSplatRenderer *p_re
 }
 
 void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	GaussianRenderState::SortingState &sorting_state = state_mut.get_sorting_state_mut();
+	const GaussianSplatRenderer::FrameState &frame_state = state_view.get_frame_state_view();
+	RenderingDevice *render_device = nullptr;
+
 	if (!renderer->ensure_rendering_device(p_context)) {
 		sorting_state.sorter_needs_rebuild = false;
 		return;
 	}
+	render_device = state_view.get_rendering_device();
+	ERR_FAIL_NULL(render_device);
 
 	// Phase 4: Backoff on repeated sorter init failures to prevent OOM crash
-	const uint64_t current_frame = renderer->get_frame_state().frame_counter;
+	const uint64_t current_frame = frame_state.frame_counter;
 	if (sorting_state.sorter_init_failure_count > 0) {
 		// Check if we've exceeded max failures - disable GPU sorting entirely
 		if (sorting_state.sorter_init_failure_count >= sorting_state.kSorterInitMaxFailures) {
@@ -229,7 +244,7 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 		capacity = 1;
 	}
 	if (g_gpu_sorting_config.enable_performance_logging) {
-		const uint64_t device_id = renderer->get_device_state().rd ? renderer->get_device_state().rd->get_device_instance_id() : 0;
+		const uint64_t device_id = render_device ? render_device->get_device_instance_id() : 0;
 		GS_LOG_GPU_SORT_DEBUG(vformat("[GPU Sort] Refresh (%s): max_splats=%d capacity=%u device_id=%s",
 				p_context ? p_context : "unknown",
 				renderer->get_performance_settings().max_splats,
@@ -242,7 +257,7 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 		SortingStrategyConfig sort_config = SortingStrategyConfig::load_from_project_settings();
 		sorting_pipeline->set_forced_sort_algorithm(_get_forced_sort_algorithm(sort_config));
 		new_sorter = sorting_pipeline->rebuild_sorter_if_needed(
-				renderer->get_device_state().rd, capacity, sorting_state.sorter_needs_rebuild);
+				render_device, capacity, sorting_state.sorter_needs_rebuild);
 	}
 
 	sorting_state.gpu_sorter = new_sorter;
@@ -283,6 +298,12 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 }
 
 void RenderSortingOrchestrator::initialize_sorting() {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	GaussianRenderState::SortingState &sorting_state = state_mut.get_sorting_state_mut();
+	RenderingDevice *render_device = nullptr;
+
 	sorting_state.sorter_needs_rebuild = true;
 	if (sorting_pipeline) {
 		sorting_pipeline->mark_sorter_dirty();
@@ -292,10 +313,11 @@ void RenderSortingOrchestrator::initialize_sorting() {
 		sorting_state.sorting_initialized = false;
 		return;
 	}
+	render_device = state_view.get_rendering_device();
+	ERR_FAIL_NULL(render_device);
 
-	const RDD::Capabilities &caps = renderer->get_device_state().rd->get_device_capabilities();
-	uint64_t max_workgroup_x = renderer->get_device_state().rd->limit_get(RenderingDevice::LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X);
-	uint64_t max_invocations = renderer->get_device_state().rd->limit_get(RenderingDevice::LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS);
+	uint64_t max_workgroup_x = render_device->limit_get(RenderingDevice::LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X);
+	uint64_t max_invocations = render_device->limit_get(RenderingDevice::LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS);
 	bool has_compute_limits = max_workgroup_x > 0 && max_invocations > 0;
 	bool compute_supported = has_compute_limits && max_workgroup_x >= 256 && max_invocations >= 256;
 	if (!compute_supported) {
@@ -304,7 +326,7 @@ void RenderSortingOrchestrator::initialize_sorting() {
 				"GPU sorting unavailable: compute shader limits below requirements");
 		error.add_context("max_workgroup_size_x", static_cast<int64_t>(max_workgroup_x));
 		error.add_context("max_workgroup_invocations", static_cast<int64_t>(max_invocations));
-		error.add_context("device_name", renderer->get_device_state().rd ? renderer->get_device_state().rd->get_device_name() : String());
+		error.add_context("device_name", render_device ? render_device->get_device_name() : String());
 		error.add_recovery_step("Enable force_cpu_sort to use CPU sorting fallback");
 		error.add_recovery_step("Use a device with compute workgroup size >= 256");
 		record_rendering_error(error);
@@ -327,10 +349,16 @@ void RenderSortingOrchestrator::initialize_sorting() {
 
 Array RenderSortingOrchestrator::run_sort_benchmark(const PackedInt32Array &p_sizes) {
 	Array results;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	GaussianRenderState::SortingState &sorting_state = state_provider.get_sorting_state_mut();
+	RenderingDevice *render_device = nullptr;
 
 	if (!renderer->ensure_rendering_device("run_sort_benchmark")) {
 		return results;
 	}
+	render_device = state_view.get_rendering_device();
+	ERR_FAIL_NULL_V(render_device, results);
 
 	if (sorting_state.sorter_needs_rebuild) {
 		refresh_gpu_sorter("run_sort_benchmark");
@@ -378,16 +406,16 @@ Array RenderSortingOrchestrator::run_sort_benchmark(const PackedInt32Array &p_si
 		}
 		GaussianSplatting::fill_sort_padding(keys, values, size, sorter_capacity);
 
-		RID keys_rid = renderer->get_device_state().rd->storage_buffer_create(key_data.size(), key_data);
+		RID keys_rid = render_device->storage_buffer_create(key_data.size(), key_data);
 		if (keys_rid.is_valid()) {
-			renderer->get_device_state().rd->set_resource_name(keys_rid, "GS_RenderSortingOrchestrator_BenchmarkKeys");
+			render_device->set_resource_name(keys_rid, "GS_RenderSortingOrchestrator_BenchmarkKeys");
 		}
-		RID values_rid = renderer->get_device_state().rd->storage_buffer_create(value_data.size(), value_data);
+		RID values_rid = render_device->storage_buffer_create(value_data.size(), value_data);
 		if (values_rid.is_valid()) {
-			renderer->get_device_state().rd->set_resource_name(values_rid, "GS_RenderSortingOrchestrator_BenchmarkValues");
+			render_device->set_resource_name(values_rid, "GS_RenderSortingOrchestrator_BenchmarkValues");
 		}
-		GPUBuffer keys_buffer(renderer->get_device_state().rd, keys_rid);
-		GPUBuffer values_buffer(renderer->get_device_state().rd, values_rid);
+		GPUBuffer keys_buffer(render_device, keys_rid);
+		GPUBuffer values_buffer(render_device, values_rid);
 
 		if (!keys_buffer.is_valid() || !values_buffer.is_valid()) {
 			GS_LOG_WARN_DEFAULT("[GPU Sort Benchmark] Failed to allocate GPU buffers for benchmark");
@@ -437,9 +465,17 @@ Array RenderSortingOrchestrator::run_sort_benchmark(const PackedInt32Array &p_si
 }
 
 void RenderSortingOrchestrator::benchmark_sorting_performance() {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	GaussianRenderState::SortingState &sorting_state = state_mut.get_sorting_state_mut();
+	RenderingDevice *render_device = nullptr;
+
 	if (!renderer->ensure_rendering_device("benchmark_sorting_performance")) {
 		return;
 	}
+	render_device = state_view.get_rendering_device();
+	ERR_FAIL_NULL(render_device);
 
 	if (sorting_state.sorter_needs_rebuild) {
 		refresh_gpu_sorter("benchmark_sorting_performance");
@@ -478,24 +514,19 @@ void RenderSortingOrchestrator::benchmark_sorting_performance() {
 		}
 		GaussianSplatting::fill_sort_padding(keys, values, size, sorter_capacity);
 
-		RID keys_buffer = renderer->get_device_state().rd->storage_buffer_create(key_data.size(), key_data);
+		RID keys_buffer = render_device->storage_buffer_create(key_data.size(), key_data);
 		if (keys_buffer.is_valid()) {
-			renderer->get_device_state().rd->set_resource_name(keys_buffer, "GS_RenderSortingOrchestrator_PerfBenchmarkKeys");
+			render_device->set_resource_name(keys_buffer, "GS_RenderSortingOrchestrator_PerfBenchmarkKeys");
 		}
-		RID values_buffer = renderer->get_device_state().rd->storage_buffer_create(value_data.size(), value_data);
+		RID values_buffer = render_device->storage_buffer_create(value_data.size(), value_data);
 		if (values_buffer.is_valid()) {
-			renderer->get_device_state().rd->set_resource_name(values_buffer, "GS_RenderSortingOrchestrator_PerfBenchmarkValues");
+			render_device->set_resource_name(values_buffer, "GS_RenderSortingOrchestrator_PerfBenchmarkValues");
 		}
-
-		auto queue_free = [&](RID &r_buffer) {
-			renderer->get_resource_state().deletion_queue.queue_free(renderer->get_device_state().rd, r_buffer);
-			r_buffer = RID();
-		};
 
 		if (!keys_buffer.is_valid() || !values_buffer.is_valid()) {
 			GS_LOG_WARN_DEFAULT("[GPU Sort Benchmark] Failed to allocate buffers for benchmark");
-			queue_free(keys_buffer);
-			queue_free(values_buffer);
+			_queue_sort_benchmark_buffer_free(state_mut, render_device, keys_buffer);
+			_queue_sort_benchmark_buffer_free(state_mut, render_device, values_buffer);
 			continue;
 		}
 
@@ -516,8 +547,8 @@ void RenderSortingOrchestrator::benchmark_sorting_performance() {
 		if (timeline_value == 0 && !timing.waited_for_completion &&
 				(reported_ms <= 0.0f || Math::is_equal_approx(reported_ms, reported_before_ms))) {
 			GS_LOG_WARN_DEFAULT(vformat("[GPU Sort Benchmark] sort_async submit failed for %d elements; skipping benchmark sample", size));
-			queue_free(keys_buffer);
-			queue_free(values_buffer);
+			_queue_sort_benchmark_buffer_free(state_mut, render_device, keys_buffer);
+			_queue_sort_benchmark_buffer_free(state_mut, render_device, values_buffer);
 			continue;
 		}
 		if (!timing.async_requested && timing.waited_for_completion) {
@@ -526,8 +557,8 @@ void RenderSortingOrchestrator::benchmark_sorting_performance() {
 		}
 		if (timing.gpu_ms <= 0.0f) {
 			GS_LOG_WARN_DEFAULT("[GPU Sort Benchmark] Sort invocation produced non-positive timing");
-			queue_free(keys_buffer);
-			queue_free(values_buffer);
+			_queue_sort_benchmark_buffer_free(state_mut, render_device, keys_buffer);
+			_queue_sort_benchmark_buffer_free(state_mut, render_device, values_buffer);
 			continue;
 		}
 
@@ -541,8 +572,8 @@ void RenderSortingOrchestrator::benchmark_sorting_performance() {
 				throughput,
 				timing.used_async ? "true" : "false"));
 
-		queue_free(keys_buffer);
-		queue_free(values_buffer);
+		_queue_sort_benchmark_buffer_free(state_mut, render_device, keys_buffer);
+		_queue_sort_benchmark_buffer_free(state_mut, render_device, values_buffer);
 	}
 
 	GS_LOG_INFO_DEFAULT("==============================\n");

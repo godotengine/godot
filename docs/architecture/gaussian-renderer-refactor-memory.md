@@ -1,6 +1,6 @@
 # Gaussian Renderer Refactor Memory
 
-Last updated: 2026-03-23 (Europe/Berlin)  
+Last updated: 2026-03-24 (Europe/Berlin)
 Owner role: Rendering architecture lead / refactor orchestrator  
 Branch context: `/mnt/c/projects/godotgs-clean-refactor` (`refactor/gs-renderer-architecture`, dirty worktree)
 
@@ -1164,6 +1164,29 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
   - Native Windows verification passed via `Gaussian Production Gates` run `23490508420` on commit `a11f35010c` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
 
+### Phase 4 implementation status (sorting bootstrap/benchmark batch 6, slice 26)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`:
+    - Moved frame/sorting/resource access in `refresh_gpu_sorter(...)`, `initialize_sorting()`, `run_sort_benchmark(...)`, and `benchmark_sorting_performance()` onto local `FrameStateProvider` view/mutation access where state buckets are the right seam.
+    - Switched benchmark buffer allocation/device metadata to the local `RenderingDevice *` from `IFrameStateView`.
+    - Consolidated benchmark queue-free cleanup through a tiny local helper that writes through `IFrameMutationAccess` to preserve the existing deletion-queue path.
+- Explicitly preserved for this batch:
+  - No sorting-seam redesign.
+  - No `GPUSortingPipeline` signature changes.
+  - No changes to `sort_gaussians_for_view(...)`, `force_sort_for_view(...)`, or sort-cache helpers.
+  - No painterly/debug overlay/composition-root work.
+  - No public `GaussianSplatRenderer` facade break.
+- Remaining caveat:
+  - Direct renderer access remains for non-frame buckets and owned service/control boundaries in these bootstrap paths, including device initialization, performance settings, test-data sizing, and host-context binding. This batch narrows state-bucket fan-in without pretending the whole sorting subsystem is decoupled.
+- Rollback boundary:
+  - Revert only:
+    - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+- Verification status:
+  - `git diff --check` passed for the batch.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
+  - Native Windows verification pending.
+
 ### Phase 5: Lock Down Mutable Renderer State Access
 - Purpose:
   - remove/deny broad mutable `get_*_state()` usage outside sanctioned mutator surfaces.
@@ -1319,3 +1342,38 @@ Before any code phase starts:
 - list exact callsites being moved in that phase
 - identify read-only vs mutator consumers explicitly
 - define rollback commit boundary before first edit
+
+## Phase 4.1 Implementation Status (sorting bootstrap + diagnostics only)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+  - Bootstrapping and benchmark/diagnostic entry points now bind the renderer-owned frame buckets through the existing `FrameStateProvider` seam where it already fits:
+    - `refresh_gpu_sorter`
+    - `initialize_sorting`
+    - `run_sort_benchmark`
+    - `benchmark_sorting_performance`
+  - The batch keeps backoff timing, sorter rebuild flow, benchmark math, logging, and cleanup behavior intact.
+  - A tiny local helper centralizes benchmark buffer queue-free so the resource cleanup path stays identical.
+- `modules/gaussian_splatting/renderer/render_sorting_orchestrator.h`
+  - No signature changes were required for this batch.
+- `docs/architecture/gaussian-renderer-refactor-memory.md`
+  - Added this batch note and rollback boundary.
+
+### Explicitly preserved
+- No changes to `sort_gaussians_for_view`.
+- No changes to `force_sort_for_view`.
+- No cache-helper changes.
+- No `GPUSortingPipeline` signature changes.
+- No sorting-seam redesign.
+- No painterly, debug-overlay, or composition-root changes.
+
+### Caveat
+- This is dependency narrowing, not full sorting decoupling.
+- The target functions still use direct renderer access for things the current provider does not expose, such as device initialization and non-frame buckets like performance settings and test data.
+- That is deliberate; I did not widen the seam just to remove every renderer getter.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+- If this batch regresses, do not roll back unrelated renderer or pipeline work.
