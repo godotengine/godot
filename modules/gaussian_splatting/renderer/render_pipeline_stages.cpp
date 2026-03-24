@@ -739,12 +739,12 @@ void RenderPipelineStages::execute_frame_entry(const RenderFrameContext &p_frame
 	// Update deps with the frame_plan BEFORE constructing provider.
 	frame_context.deps.frame_plan = &frame_plan;
 
-	// Rebind the context through explicit view/mutation seams after deps are finalized.
+	// This path copies RenderFrameContext before attaching frame_plan, so any incoming
+	// provider-backed seams still point at the caller's deps object. Rebind both seams
+	// to a local provider over the copied deps to avoid stale frame_plan/state pointers.
 	GaussianSplatRenderer::FrameStateProvider fallback_provider(renderer, &frame_context.deps);
-	const GaussianSplatRenderer::IFrameStateView &state_view =
-			_resolve_state_view(frame_context.state_view, fallback_provider);
-	GaussianSplatRenderer::IFrameMutationAccess &state_mut =
-			_resolve_mutation_access(frame_context.mutation_access, fallback_provider);
+	const GaussianSplatRenderer::IFrameStateView &state_view = fallback_provider;
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = fallback_provider;
 	frame_context.state_view = &state_view;
 	frame_context.mutation_access = &state_mut;
 	DEV_ASSERT(frame_context.deps.frame_plan);
