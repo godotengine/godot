@@ -632,7 +632,10 @@ This is not a rewrite plan. It is a migration plan that preserves shipping behav
 - Verification status:
   - `git diff --check` passed for touched files.
   - Local guard-only lane passed (`python3 tests/ci/run_module_tests.py --guard-only`).
-  - Native Windows build + module lane rerun pending external lane execution (Claude build runner).
+  - Native Windows verification passed via `Gaussian Production Gates` on `refactor/gs-renderer-architecture`:
+    - Build: pass (Windows self-hosted module-validation lane).
+    - Guard lane: pass.
+    - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
 
 ### Phase 1b.1 implementation status (query-only callsite migration, slice 2)
 - Date: 2026-03-23
