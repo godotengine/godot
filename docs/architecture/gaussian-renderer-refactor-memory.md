@@ -1377,3 +1377,33 @@ Before any code phase starts:
   - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
   - `docs/architecture/gaussian-renderer-refactor-memory.md`
 - If this batch regresses, do not roll back unrelated renderer or pipeline work.
+
+## Phase 4.2 Implementation Status (sorting execution dependency narrowing, slice 27)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+  - Routed `sort_gaussians_for_view(...)` through a local `FrameStateProvider` plus explicit `IFrameStateView` / `IFrameMutationAccess` aliases.
+  - Moved route-UID publication, visible-count publication, and sort-metric resets/timings onto local frame/perf/debug references, with tiny local helpers for the repeated metric/count updates.
+  - Preserved strict-global-sort fallback behavior, cache reuse, cull-signature tracking, and the existing device/buffer ownership flow.
+  - Kept `force_sort_for_view(...)` focused on projection/viewport preparation and the streaming fallback path; it now uses local view-state aliasing for the read side without widening the seam.
+- `docs/architecture/gaussian-renderer-refactor-memory.md`
+  - Added this batch note and verification status.
+
+### Explicitly preserved
+- No `GPUSortingPipeline` signature changes.
+- No sorting-seam redesign.
+- No painterly/debug overlay/composition-root work.
+- No broad new interface just to remove every remaining renderer getter.
+
+### Caveat
+- `force_sort_for_view(...)` still reaches through `renderer` for the current view-state and streaming orchestrator because the existing frame provider seam does not expose a view-state contract. That is intentional for this slice.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
+- Native Windows verification pending for this slice.
