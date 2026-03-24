@@ -1204,6 +1204,26 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Rollback point:
   - temporarily re-enable adapter methods with deprecation guards if migration gaps remain
 
+### Phase 5 debug-state slice (pending native Windows verification)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/render_debug_state_orchestrator.cpp`:
+    - Pipeline-trace event gating now uses the orchestrator's local debug-config state instead of re-reading `renderer->get_debug_config()` at the helper entry.
+    - Cull-guardrail pose hashing now uses the public camera-transform facade instead of direct `view_state` reach-through.
+    - Tile overflow summary helpers (`get_overflow_tile_count()`, `get_clamped_records()`, `get_aggregated_count()`, `get_overflow_stats()`) now live behind `RenderDebugStateOrchestrator` instead of reaching through `GaussianSplatRenderer` tile-renderer state in the facade.
+    - Pipeline-trace snapshot assembly now lives behind `RenderDebugStateOrchestrator`; the renderer facade is now a thin delegate for snapshot/json/file-dump access.
+- Explicitly preserved for this slice:
+  - No diagnostics lock-down.
+  - No painterly changes.
+  - No sorting-seam changes.
+  - No broad renderer/provider hardening.
+- Rollback boundary:
+  - Revert only this debug-state batch in `render_debug_state_orchestrator.h` and `render_debug_state_orchestrator.cpp`.
+- Verification status:
+  - `git diff --check` passed for touched files.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture`.
+  - Native Windows verification pending.
+
 ### Phase 6: Optional Cleanup Of Thin Config-Style Wrappers
 - Purpose:
   - remove temporary wrappers that no longer carry architectural value after coupling reduction.
