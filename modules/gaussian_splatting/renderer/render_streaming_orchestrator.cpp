@@ -591,7 +591,8 @@ void RenderStreamingOrchestrator::consume_visible_lod_selection_for_residency(
 
 bool RenderStreamingOrchestrator::should_throttle_streaming_rebuild(uint32_t p_chunks_loaded, uint32_t p_chunks_evicted,
 		uint32_t p_visible_evicted, uint64_t p_current_frame) {
-	StreamingState &streaming_state = renderer->get_streaming_state();
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	const StreamingState &streaming_state = state_provider.get_streaming_state();
 
 	uint32_t total_chunks_changed = p_chunks_loaded + p_chunks_evicted;
 
@@ -634,16 +635,17 @@ bool RenderStreamingOrchestrator::should_throttle_streaming_rebuild(uint32_t p_c
 }
 
 bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
-	StreamingState &streaming_state = renderer->get_streaming_state();
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
 	if (streaming_state.current_streaming_system.is_valid()) {
 		return true;
 	}
 	if (!(renderer->*runtime_ports.ensure_rendering_device)("instance_pipeline_streaming")) {
 		return false;
 	}
-	RenderingDevice *rd = renderer->get_device_state().rd;
+	RenderingDevice *rd = state_view.get_rendering_device();
 	if (!rd) {
 		return false;
 	}
@@ -1189,14 +1191,14 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 				false);
 	}
 
-	StreamingState &streaming_state = renderer->get_streaming_state();
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
 	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
 	GaussianSplatRenderer::ResourceState &resource_state = state_mut.get_resource_state_mut();
 	auto publish_not_ready_route = [&](StreamingReadinessState p_state) {
-		renderer->get_debug_state().route_uid = _streaming_not_ready_route_uid(p_state);
+		state_mut.get_debug_state_mut().route_uid = _streaming_not_ready_route_uid(p_state);
 	};
 	if (!streaming_state.current_streaming_system.is_valid()) {
 		const StreamingReadinessState readiness_state = StreamingReadinessState::MISSING_STREAMING_SYSTEM;
@@ -1447,7 +1449,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		instance_pipeline_max_visible_chunks = buffers.max_visible_chunks;
 
 		ResourceState &resource_state_mut = resource_state;
-		RenderingDevice *rd = renderer->get_device_state().rd;
+		RenderingDevice *rd = state_view.get_rendering_device();
 		if (rd) {
 			const auto remediate_instance_pipeline_buffer = [&](RID &r_buffer, uint32_t *r_capacity, const char *p_label) {
 				const OwnerMismatchRemediationResult remediation =
@@ -1873,10 +1875,10 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 }
 
 void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection) {
-	StreamingState &streaming_state = renderer->get_streaming_state();
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
 	GaussianSplatRenderer::FrameState &frame_state_mut = state_mut.get_frame_state_mut();
 	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
 	if (!streaming_state.current_streaming_system.is_valid()) {
@@ -1954,7 +1956,7 @@ void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camer
 			static_layout_fallback_last_detail);
 	auto &perf_metrics = performance_state.metrics;
 	const auto &frame_state = state_view.get_frame_state_view();
-	const auto &debug_state = renderer->get_debug_state();
+	const auto &debug_state = state_view.get_debug_state_view();
 
 	bool stage_metrics_valid = debug_state.last_stage_metrics_valid;
 	float stage_cull_time_ms = perf_metrics.culling_time_ms;

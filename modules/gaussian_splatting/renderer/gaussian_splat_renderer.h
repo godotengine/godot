@@ -332,6 +332,7 @@ public:
 
         virtual const SceneState &get_scene_state() const = 0;
         virtual const StreamingState &get_streaming_state() const = 0;
+        virtual const DebugState &get_debug_state_view() const = 0;
         virtual const SortingState &get_sorting_state_view() const = 0;
         virtual const RenderConfig &get_render_config_view() const = 0;
         virtual const JacobianDebugConfig &get_jacobian_debug_view() const = 0;
@@ -348,6 +349,8 @@ public:
         virtual ~IFrameMutationAccess() = default;
 
         virtual SortingState &get_sorting_state_mut() = 0;
+        virtual StreamingState &get_streaming_state_mut() = 0;
+        virtual DebugState &get_debug_state_mut() = 0;
         virtual RenderConfig &get_render_config_mut() = 0;
         virtual ResourceState &get_resource_state_mut() = 0;
         virtual FrameState &get_frame_state_mut() = 0;
@@ -370,6 +373,7 @@ public:
 
         const SceneState &get_scene_state() const override;
         const StreamingState &get_streaming_state() const override;
+        const DebugState &get_debug_state_view() const override;
         const SortingState &get_sorting_state_view() const override;
         const RenderConfig &get_render_config_view() const override;
         const JacobianDebugConfig &get_jacobian_debug_view() const override;
@@ -378,6 +382,8 @@ public:
         const PerformanceState &get_performance_state_view() const override;
         const SubsystemState &get_subsystem_state_view() const override;
         SortingState &get_sorting_state_mut() override;
+        StreamingState &get_streaming_state_mut() override;
+        DebugState &get_debug_state_mut() override;
         RenderConfig &get_render_config_mut() override;
         ResourceState &get_resource_state_mut() override;
         FrameState &get_frame_state_mut() override;

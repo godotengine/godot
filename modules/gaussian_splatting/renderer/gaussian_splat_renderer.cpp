@@ -464,6 +464,15 @@ const GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStatePr
     return renderer->get_streaming_state();
 }
 
+const GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::get_debug_state_view() const {
+    static DebugState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->debug_state) {
+        return *deps->debug_state;
+    }
+    return renderer->get_debug_state();
+}
+
 const GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::get_sorting_state_view() const {
     static SortingState fallback;
     ERR_FAIL_NULL_V(renderer, fallback);
@@ -534,6 +543,24 @@ GaussianSplatRenderer::SortingState &GaussianSplatRenderer::FrameStateProvider::
         return *deps->sorting_state;
     }
     return renderer->get_sorting_state();
+}
+
+GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::FrameStateProvider::get_streaming_state_mut() {
+    static StreamingState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->streaming_state) {
+        return *deps->streaming_state;
+    }
+    return renderer->get_streaming_state();
+}
+
+GaussianSplatRenderer::DebugState &GaussianSplatRenderer::FrameStateProvider::get_debug_state_mut() {
+    static DebugState fallback;
+    ERR_FAIL_NULL_V(renderer, fallback);
+    if (deps && deps->debug_state) {
+        return *deps->debug_state;
+    }
+    return renderer->get_debug_state();
 }
 
 GaussianSplatRenderer::RenderConfig &GaussianSplatRenderer::FrameStateProvider::get_render_config_mut() {
