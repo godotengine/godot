@@ -1503,3 +1503,37 @@ Before any code phase starts:
 - `git diff --check` passed.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
 - Native Windows verification passed via `Gaussian Production Gates` run `23496475589` on commit `69ade68383` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
+## Phase 4.6 Implementation Status (resource dependency-bundle narrowing, slice 31)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_resource_orchestrator.h` / `.cpp`
+  - Added an explicit dependency bundle for resource setup paths: `performance_settings`, `painterly_config`, `debug_config`, `test_data_state`, `tile_renderer_state`, and `subsystem_state`.
+  - Added resource-specific runtime ports for renderer-owned behavior that still belongs on the facade: `ensure_rendering_device(...)`, `get_submission_device()`, `get_main_rendering_device()`, `refresh_gpu_sorter(...)`, `track_resource_owner(...)`, and `free_owned_resource(...)`.
+  - Rewired `initialize_shaders()`, `create_gpu_resources_safe()`, and `load_graphics_shader()` to use those explicit dependencies and ports instead of repeated direct `renderer->get_*` reach-through.
+  - Kept `update_gpu_pass_metrics_from_tile_renderer()` bounded to the current metric seam; it still uses local provider access where metric mutation remains the correct contract.
+- `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - Updated resource orchestrator construction to supply the narrowed dependency bundle and runtime ports.
+
+### Explicitly preserved
+- No sorting-seam changes.
+- No painterly redesign.
+- No debug-overlay redesign.
+- No Phase 5 mutable-access lock-down.
+- No public `GaussianSplatRenderer` facade entrypoint changes.
+
+### Caveat
+- This batch narrows the large resource-setup fan-in, but it does not invert ownership for painterly or interactive subsystem behavior. Calls that inherently require the renderer facade still use the explicit runtime ports or existing subsystem APIs.
+- `update_gpu_pass_metrics_from_tile_renderer()` still uses local provider access for metric mutation and rasterizer timing access; that seam is intentionally left for the later hardening phase.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_resource_orchestrator.h`
+  - `modules/gaussian_splatting/renderer/render_resource_orchestrator.cpp`
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
+- Native Windows verification pending.
