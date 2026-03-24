@@ -325,7 +325,10 @@ This is not a rewrite plan. It is a migration plan that preserves shipping behav
   - Revert only the interface scaffold/bridge hunk in `gaussian_splat_renderer.h` (RP-1).
 - Verification status:
   - `git diff --check` passed for scaffold edits.
-  - Full native Windows build/test rerun pending external lane execution (Claude build runner).
+  - Full native Windows build/test rerun passed on the branch in subsequent validation workflows:
+    - Build: pass.
+    - Guard lane: pass.
+    - Module lane: pass.
 
 ### Phase 1b.1 implementation status (query-only callsite migration, slice 1)
 - Date: 2026-03-23
@@ -346,6 +349,12 @@ This is not a rewrite plan. It is a migration plan that preserves shipping behav
   - Revert only the query-only signature/callsite edits in `render_pipeline_stages.cpp` (RP-2).
 - Verification status:
   - `git diff --check` passed for the slice.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.2b --no-regen-architecture`.
+  - Native Windows verification passed via `Gaussian Production Gates` on `refactor/gs-renderer-architecture`:
+    - Build: pass (Windows self-hosted module-validation lane).
+    - Guard lane: pass.
+    - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
+    - Runtime/benchmark gates: pass (runtime harness, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
   - Native Windows verification passed:
     - Build: pass (incremental, `render_pipeline_stages.cpp` recompiled).
     - Guard lane: pass.
