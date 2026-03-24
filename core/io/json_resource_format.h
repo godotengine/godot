@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_loader.h                                                        */
+/*  json_resource_format.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,70 +30,29 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/io/image.h"
-#include "core/object/gdvirtual.gen.h"
-#include "core/string/ustring.h"
-#include "core/templates/list.h"
-#include "core/variant/type_info.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/io/resource_uid.h"
 
-class ImageLoader;
-
-class ImageFormatLoader : public RefCounted {
-	GDCLASS(ImageFormatLoader, RefCounted);
-
-	friend class ImageLoader;
-	friend class ResourceFormatLoaderImage;
+class ResourceFormatLoaderJSON : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderJSON, ResourceFormatLoader);
 
 public:
-	enum LoaderFlags {
-		FLAG_NONE = 0,
-		FLAG_FORCE_LINEAR = 1,
-		FLAG_CONVERT_COLORS = 2,
-	};
-
-protected:
-	static void _bind_methods();
-
-	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags = FLAG_NONE, float p_scale = 1.0) = 0;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
-	bool recognize(const String &p_extension) const;
-
-public:
-	virtual ~ImageFormatLoader() {}
-};
-
-VARIANT_BITFIELD_CAST(ImageFormatLoader::LoaderFlags);
-
-class ImageFormatLoaderExtension : public ImageFormatLoader {
-	GDCLASS(ImageFormatLoaderExtension, ImageFormatLoader);
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags = FLAG_NONE, float p_scale = 1.0) override;
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 
-	void add_format_loader();
-	void remove_format_loader();
-
-	GDVIRTUAL0RC(PackedStringArray, _get_recognized_extensions);
-	GDVIRTUAL4R(Error, _load_image, Ref<Image>, Ref<FileAccess>, BitField<ImageFormatLoader::LoaderFlags>, float);
+	// Treat JSON as a text file, do not generate a `*.json.uid` file.
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override { return ResourceUID::INVALID_ID; }
+	virtual bool has_custom_uid_support() const override { return true; }
 };
 
-class ImageLoader {
-	static inline Vector<Ref<ImageFormatLoader>> loader;
-	friend class ResourceFormatLoaderImage;
+class ResourceFormatSaverJSON : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverJSON, ResourceFormatSaver);
 
-protected:
 public:
-	static Error load_image(const String &p_file, Ref<Image> p_image, Ref<FileAccess> p_custom = Ref<FileAccess>(), BitField<ImageFormatLoader::LoaderFlags> p_flags = ImageFormatLoader::FLAG_NONE, float p_scale = 1.0);
-	static void get_recognized_extensions(List<String> *p_extensions);
-	static Ref<ImageFormatLoader> recognize(const String &p_extension);
-
-	static void add_image_format_loader(Ref<ImageFormatLoader> p_loader);
-	static void remove_image_format_loader(Ref<ImageFormatLoader> p_loader);
-
-	static void cleanup();
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };

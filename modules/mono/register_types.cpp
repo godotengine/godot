@@ -31,6 +31,7 @@
 #include "register_types.h"
 
 #include "csharp_script.h"
+#include "csharp_script_resource_format.h"
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  shader_include.cpp                                                    */
+/*  image_resource_format.cpp                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,57 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "shader_include.h"
+#include "image_resource_format.h"
 
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "servers/rendering/shader_preprocessor.h"
-
-void ShaderInclude::_dependency_changed() {
-	emit_changed();
-}
-
-void ShaderInclude::set_code(const String &p_code) {
-	code = p_code;
-
-	for (const Ref<ShaderInclude> &E : dependencies) {
-		E->disconnect_changed(callable_mp(this, &ShaderInclude::_dependency_changed));
-	}
-
-	{
-		String path = get_path();
-		if (path.is_empty()) {
-			path = include_path;
+Ref<Resource> ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
 		}
+		return Ref<Resource>();
+	}
 
-		String pp_code;
-		HashSet<Ref<ShaderInclude>> new_dependencies;
-		ShaderPreprocessor preprocessor;
-		Error result = preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_dependencies);
-		if (result == OK) {
-			// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
-			dependencies = new_dependencies;
+	uint8_t header[4] = { 0, 0, 0, 0 };
+	f->get_buffer(header, 4);
+
+	bool unrecognized = header[0] != 'G' || header[1] != 'D' || header[2] != 'I' || header[3] != 'M';
+	if (unrecognized) {
+		if (r_error) {
+			*r_error = ERR_FILE_UNRECOGNIZED;
+		}
+		ERR_FAIL_V(Ref<Resource>());
+	}
+
+	String extension = f->get_pascal_string();
+
+	int idx = -1;
+
+	for (int i = 0; i < ImageLoader::loader.size(); i++) {
+		if (ImageLoader::loader[i]->recognize(extension)) {
+			idx = i;
+			break;
 		}
 	}
 
-	for (const Ref<ShaderInclude> &E : dependencies) {
-		E->connect_changed(callable_mp(this, &ShaderInclude::_dependency_changed));
+	if (idx == -1) {
+		if (r_error) {
+			*r_error = ERR_FILE_UNRECOGNIZED;
+		}
+		ERR_FAIL_V(Ref<Resource>());
 	}
 
-	emit_changed();
+	Ref<Image> image;
+	image.instantiate();
+
+	Error err = ImageLoader::loader.write[idx]->load_image(image, f);
+
+	if (err != OK) {
+		if (r_error) {
+			*r_error = err;
+		}
+		return Ref<Resource>();
+	}
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return image;
 }
 
-String ShaderInclude::get_code() const {
-	return code;
+void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("image");
 }
 
-void ShaderInclude::set_include_path(const String &p_path) {
-	include_path = p_path;
+bool ResourceFormatLoaderImage::handles_type(const String &p_type) const {
+	return p_type == "Image";
 }
 
-void ShaderInclude::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_code", "code"), &ShaderInclude::set_code);
-	ClassDB::bind_method(D_METHOD("get_code"), &ShaderInclude::get_code);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
+String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const {
+	return p_path.get_extension().to_lower() == "image" ? "Image" : String();
 }
