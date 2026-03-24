@@ -2273,8 +2273,42 @@ bool GaussianSplatRenderer::test_has_current_streaming_system() const {
     return get_streaming_state().current_streaming_system.is_valid();
 }
 
-Ref<OutputCompositor> GaussianSplatRenderer::test_get_output_compositor() const {
-    return get_subsystem_state().output_compositor;
+bool GaussianSplatRenderer::test_has_output_compositor() const {
+    return get_subsystem_state().output_compositor.is_valid();
+}
+
+RID GaussianSplatRenderer::test_get_cached_render_depth() const {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    return output_compositor.is_valid() ? output_compositor->get_cached_render_depth() : RID();
+}
+
+uint32_t GaussianSplatRenderer::test_get_output_blit_variant_count() const {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    return output_compositor.is_valid() ? output_compositor->get_blit_variant_count() : 0;
+}
+
+void GaussianSplatRenderer::test_clear_output_viewport_blit_resources() {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    if (output_compositor.is_valid()) {
+        output_compositor->clear_viewport_blit_resources();
+    }
+}
+
+void GaussianSplatRenderer::test_reset_output_viewport_copy_state() {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    if (output_compositor.is_valid()) {
+        output_compositor->test_reset_last_viewport_copy_state();
+    }
+}
+
+void GaussianSplatRenderer::test_integrate_final_output(RenderDataRD *p_render_data, RenderSceneBuffersRD *p_render_buffers,
+        const RID &p_final_output, RID &r_render_target, const Size2i &p_viewport_size,
+        bool p_defer_commit, bool p_painterly_active, const RID &p_cached_depth) {
+    const Ref<OutputCompositor> output_compositor = get_subsystem_state().output_compositor;
+    if (output_compositor.is_valid()) {
+        output_compositor->integrate_final_output(this, p_render_data, p_render_buffers, p_final_output,
+                r_render_target, p_viewport_size, p_defer_commit, p_painterly_active, p_cached_depth);
+    }
 }
 
 void GaussianSplatRenderer::test_set_test_splats(const Vector<Vector3> &p_positions, const Vector<Vector3> &p_scales) {

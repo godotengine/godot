@@ -1512,7 +1512,14 @@ public:
     void test_force_disable_streaming();
     void test_release_current_streaming_system();
     bool test_has_current_streaming_system() const;
-    Ref<OutputCompositor> test_get_output_compositor() const;
+    bool test_has_output_compositor() const;
+    RID test_get_cached_render_depth() const;
+    uint32_t test_get_output_blit_variant_count() const;
+    void test_clear_output_viewport_blit_resources();
+    void test_reset_output_viewport_copy_state();
+    void test_integrate_final_output(RenderDataRD *p_render_data, RenderSceneBuffersRD *p_render_buffers,
+            const RID &p_final_output, RID &r_render_target, const Size2i &p_viewport_size,
+            bool p_defer_commit, bool p_painterly_active, const RID &p_cached_depth);
     void test_set_test_splats(const Vector<Vector3> &p_positions, const Vector<Vector3> &p_scales = Vector<Vector3>());
     int test_cull_visible_count(const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Size2i &p_viewport_size);
     void test_set_render_thread_dispatch_timeout_usec(uint64_t p_timeout_usec);

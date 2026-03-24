@@ -1702,9 +1702,8 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
     for (int frame = 0; frame < 2; frame++) {
         renderer->render_scene_instance(&render_data);
     }
-    Ref<OutputCompositor> output_compositor = renderer->test_get_output_compositor();
-    CHECK(output_compositor.is_valid());
-    if (!output_compositor.is_valid()) {
+    CHECK(renderer->test_has_output_compositor());
+    if (!renderer->test_has_output_compositor()) {
         renderer.unref();
         RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
         if (texture_storage != nullptr && render_target.is_valid()) {
@@ -1713,7 +1712,7 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
         return;
     }
 
-    const RID cached_depth = output_compositor->get_cached_render_depth();
+    const RID cached_depth = renderer->test_get_cached_render_depth();
     if (!cached_depth.is_valid()) {
         MESSAGE("Skipping test - Cached raster depth unavailable");
         renderer.unref();
@@ -1723,14 +1722,14 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
         }
         return;
     }
-    const uint32_t blit_variants_before_commit = output_compositor->get_blit_variant_count();
+    const uint32_t blit_variants_before_commit = renderer->test_get_output_blit_variant_count();
 
     renderer->commit_to_render_buffers(&render_data);
 
     CHECK(renderer->was_last_viewport_copy_successful());
     CHECK(renderer->get_last_viewport_copy_source_size() == resolution);
     CHECK(renderer->get_last_viewport_copy_dest_size() == resolution);
-    CHECK(output_compositor->get_blit_variant_count() > blit_variants_before_commit);
+    CHECK(renderer->test_get_output_blit_variant_count() > blit_variants_before_commit);
 
     renderer.unref();
 
@@ -1833,9 +1832,8 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
         renderer->render_scene_instance(&render_data);
     }
 
-    Ref<OutputCompositor> output_compositor = renderer->test_get_output_compositor();
-    CHECK(output_compositor.is_valid());
-    if (!output_compositor.is_valid()) {
+    CHECK(renderer->test_has_output_compositor());
+    if (!renderer->test_has_output_compositor()) {
         renderer.unref();
         RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
         if (texture_storage != nullptr && render_target.is_valid()) {
@@ -1845,7 +1843,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
     }
 
     RID final_output = renderer->get_final_texture();
-    RID cached_depth = output_compositor->get_cached_render_depth();
+    RID cached_depth = renderer->test_get_cached_render_depth();
     if (!final_output.is_valid() || !cached_depth.is_valid()) {
         MESSAGE("Skipping test - Final output or cached depth unavailable");
         renderer.unref();
@@ -1856,15 +1854,15 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
         return;
     }
 
-    output_compositor->clear_viewport_blit_resources();
-    output_compositor->test_reset_last_viewport_copy_state();
+    renderer->test_clear_output_viewport_blit_resources();
+    renderer->test_reset_output_viewport_copy_state();
 
     RID resolved_render_target;
-    output_compositor->integrate_final_output(renderer.ptr(), &render_data, render_buffers.ptr(),
-            final_output, resolved_render_target, resolution, false, false, RID());
+    renderer->test_integrate_final_output(&render_data, render_buffers.ptr(), final_output,
+            resolved_render_target, resolution, false, false, RID());
 
     CHECK_FALSE(renderer->was_last_viewport_copy_successful());
-    CHECK(output_compositor->get_blit_variant_count() == 0);
+    CHECK(renderer->test_get_output_blit_variant_count() == 0);
 
     renderer.unref();
 

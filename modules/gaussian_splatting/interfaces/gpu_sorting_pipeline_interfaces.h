@@ -1,17 +1,17 @@
 #ifndef GS_GPU_SORTING_PIPELINE_INTERFACES_H
 #define GS_GPU_SORTING_PIPELINE_INTERFACES_H
 
+#include <atomic>
 #include <cstdint>
 
+#include "core/math/projection.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
+#include "core/math/vector2i.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/vector.h"
-#include "../renderer/render_frame_context_manager.h"
-#include "../renderer/render_types/render_performance_types.h"
-#include "../renderer/render_types/render_state_types.h"
 #include "servers/rendering/rendering_device.h"
 #include "../renderer/gpu_sorter.h"  // For SortKeyConfig and SortingMetrics
 
@@ -42,13 +42,53 @@ struct SortPublicationPayload {
     RenderingDevice *default_device = nullptr;
 };
 
+struct SortRuntimeState {
+    uint32_t *sorted_splat_count = nullptr;
+    bool fallback_sorter_valid = false;
+    uint32_t fallback_sorter_max_elements = 0;
+    bool *sort_keys_external = nullptr;
+    bool *sort_indices_external = nullptr;
+    bool *sort_buffers_pipeline_managed = nullptr;
+    uint32_t *sort_buffer_capacity = nullptr;
+    std::atomic<uint32_t> *visible_splat_count = nullptr;
+    uint64_t frame_counter = 0;
+    float *sort_time_ms = nullptr;
+    float *sort_submission_time_ms = nullptr;
+    float *sort_wait_time_ms = nullptr;
+    uint64_t *instance_sort_sync_fallback_count = nullptr;
+    bool *async_sort_used = nullptr;
+    bool *async_sort_waited = nullptr;
+    float *async_overlap_efficiency = nullptr;
+};
+
+struct SortViewContext {
+    Projection camera_projection;
+    Size2i manual_viewport_override = Size2i();
+};
+
 struct SortFrameContext {
-    GaussianRenderState::SortingState *sorting_state = nullptr;
-    RenderFrameContextManager::FrameState *frame_state = nullptr;
-    GaussianRenderPerformance::PerformanceState *performance_state = nullptr;
-    RenderFrameContextManager::ViewState *view_state = nullptr;
+    SortRuntimeState runtime;
+    SortViewContext view;
     GPUCuller *gpu_culler = nullptr;
     RenderingDevice *render_device = nullptr;
+
+    bool is_valid() const {
+        return runtime.sorted_splat_count != nullptr &&
+                runtime.sort_keys_external != nullptr &&
+                runtime.sort_indices_external != nullptr &&
+                runtime.sort_buffers_pipeline_managed != nullptr &&
+                runtime.sort_buffer_capacity != nullptr &&
+                runtime.visible_splat_count != nullptr &&
+                runtime.sort_time_ms != nullptr &&
+                runtime.sort_submission_time_ms != nullptr &&
+                runtime.sort_wait_time_ms != nullptr &&
+                runtime.instance_sort_sync_fallback_count != nullptr &&
+                runtime.async_sort_used != nullptr &&
+                runtime.async_sort_waited != nullptr &&
+                runtime.async_overlap_efficiency != nullptr &&
+                gpu_culler != nullptr &&
+                render_device != nullptr;
+    }
 };
 
 struct SortPositionInputs {

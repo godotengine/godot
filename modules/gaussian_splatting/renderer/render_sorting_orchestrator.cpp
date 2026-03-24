@@ -125,10 +125,27 @@ static void _bind_sort_pipeline_host_context(GPUSortingPipeline *p_sorting_pipel
 static SortFrameContext _build_sort_frame_context(const GaussianSplatRenderer::IFrameStateView &p_state_view,
 		GaussianSplatRenderer::IFrameMutationAccess &p_state_mut, GaussianSplatRenderer::ViewState &p_view_state) {
 	SortFrameContext frame_context;
-	frame_context.sorting_state = &p_state_mut.get_sorting_state_mut();
-	frame_context.frame_state = &p_state_mut.get_frame_state_mut();
-	frame_context.performance_state = &p_state_mut.get_performance_state_mut();
-	frame_context.view_state = &p_view_state;
+	GaussianSplatRenderer::SortingState &sorting_state = p_state_mut.get_sorting_state_mut();
+	GaussianSplatRenderer::FrameState &frame_state = p_state_mut.get_frame_state_mut();
+	GaussianSplatRenderer::PerformanceState &performance_state = p_state_mut.get_performance_state_mut();
+	frame_context.runtime.sorted_splat_count = &sorting_state.sorted_splat_count;
+	frame_context.runtime.fallback_sorter_valid = sorting_state.gpu_sorter.is_valid();
+	frame_context.runtime.fallback_sorter_max_elements = sorting_state.gpu_sorter.is_valid() ? sorting_state.gpu_sorter->get_max_elements() : 0;
+	frame_context.runtime.sort_keys_external = &sorting_state.sort_keys_external;
+	frame_context.runtime.sort_indices_external = &sorting_state.sort_indices_external;
+	frame_context.runtime.sort_buffers_pipeline_managed = &sorting_state.sort_buffers_pipeline_managed;
+	frame_context.runtime.sort_buffer_capacity = &sorting_state.sort_buffer_capacity;
+	frame_context.runtime.visible_splat_count = &frame_state.visible_splat_count;
+	frame_context.runtime.frame_counter = frame_state.frame_counter;
+	frame_context.runtime.sort_time_ms = &frame_state.sort_time_ms;
+	frame_context.runtime.sort_submission_time_ms = &performance_state.metrics.sort_submission_time_ms;
+	frame_context.runtime.sort_wait_time_ms = &performance_state.metrics.sort_wait_time_ms;
+	frame_context.runtime.instance_sort_sync_fallback_count = &performance_state.metrics.instance_sort_sync_fallback_count;
+	frame_context.runtime.async_sort_used = &performance_state.metrics.async_sort_used;
+	frame_context.runtime.async_sort_waited = &performance_state.metrics.async_sort_waited;
+	frame_context.runtime.async_overlap_efficiency = &performance_state.metrics.async_overlap_efficiency;
+	frame_context.view.camera_projection = p_view_state.last_camera_projection;
+	frame_context.view.manual_viewport_override = p_view_state.manual_viewport_override;
 	frame_context.gpu_culler = p_state_view.get_gpu_culler();
 	frame_context.render_device = p_state_view.get_rendering_device();
 	return frame_context;
@@ -866,9 +883,9 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			instance_pipeline_active && instance_sort_inputs_ready) {
 		if (sorting_pipeline) {
 			_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
-			sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(state_view, state_mut, view_state));
 		}
-		if (sorting_pipeline && sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform)) {
+		if (sorting_pipeline && sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform,
+				_build_sort_frame_context(state_view, state_mut, view_state))) {
 			debug_state.sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
 			sorting_state.last_sort_world_to_camera_transform = p_world_to_camera_transform;
 			sorting_state.last_sort_transform_valid = true;
@@ -1326,10 +1343,10 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 
 	if (sorting_pipeline) {
 		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
-		sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(state_view, state_mut, view_state));
 	}
 	if (sorting_pipeline &&
-			sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform)) {
+			sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform,
+					_build_sort_frame_context(state_view, state_mut, view_state))) {
 		debug_state.sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
 		sorting_state.last_sort_world_to_camera_transform = p_world_to_camera_transform;
 		sorting_state.last_sort_transform_valid = true;

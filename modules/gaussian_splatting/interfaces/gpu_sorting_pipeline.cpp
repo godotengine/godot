@@ -398,7 +398,6 @@ void GPUSortingPipeline::shutdown() {
     rd = nullptr;
     sort_result_sink = nullptr;
     sort_buffer_host_context = nullptr;
-    clear_sort_frame_context();
     sort_readback_state.pending = false;
     sort_readback_state.generation++;
     instance_count_readback_state.pending = false;
@@ -417,14 +416,6 @@ void GPUSortingPipeline::set_sort_result_sink(ISortResultSink *p_sink) {
 
 void GPUSortingPipeline::set_sort_buffer_host_context(ISortBufferHostContext *p_context) {
     sort_buffer_host_context = p_context;
-}
-
-void GPUSortingPipeline::set_sort_frame_context(const SortFrameContext &p_context) {
-    sort_frame_context = p_context;
-}
-
-void GPUSortingPipeline::clear_sort_frame_context() {
-    sort_frame_context = SortFrameContext();
 }
 
 void GPUSortingPipeline::set_device_manager(Ref<RenderDeviceManager> p_device_manager) {
@@ -1994,7 +1985,7 @@ bool GPUSortingPipeline::populate_gpu_positions(RID p_buffer, uint32_t p_total_g
     return true;
 }
 
-bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transform) {
+bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transform, const SortFrameContext &p_sort_context) {
     const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
     if (trace_enabled) {
         GaussianSplatting::debug_trace_record_event("sort",
@@ -2010,9 +2001,8 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
         return false;
     }
 
-    const SortFrameContext &sort_ctx = sort_frame_context;
-    ERR_FAIL_COND_V_MSG(!sort_ctx.sorting_state || !sort_ctx.frame_state || !sort_ctx.performance_state ||
-                    !sort_ctx.view_state || !sort_ctx.gpu_culler,
+    const SortFrameContext &sort_ctx = p_sort_context;
+    ERR_FAIL_COND_V_MSG(!sort_ctx.is_valid(),
             false, "[GPU Sort] Missing sort frame context");
 
     InstancePipelineInputs inputs = instance_inputs;
@@ -2027,10 +2017,6 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
     if (!compute_rd) {
         return false;
     }
-    GaussianRenderState::SortingState &sorting_state = *sort_ctx.sorting_state;
-    RenderFrameContextManager::FrameState &frame_state = *sort_ctx.frame_state;
-    GaussianRenderPerformance::PerformanceState &performance_state = *sort_ctx.performance_state;
-    RenderFrameContextManager::ViewState &view_state = *sort_ctx.view_state;
     GPUCuller *gpu_culler = sort_ctx.gpu_culler;
     if (gpu_culler) {
         gpu_culler->update_culling_settings();
@@ -2042,7 +2028,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
     if (!gpu_sorter.is_valid()) {
         // Fallback: also accept sorting_state.gpu_sorter for the validity check
         // (it may have been rebuilt via refresh_gpu_sorter above).
-        if (!sorting_state.gpu_sorter.is_valid()) {
+        if (!sort_ctx.runtime.fallback_sorter_valid) {
             return false;
         }
     }
@@ -2081,7 +2067,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
     // budget), not sorting_state.gpu_sorter (single-instance perf_settings.max_splats).
     const uint32_t sorter_capacity = gpu_sorter.is_valid()
             ? gpu_sorter->get_max_elements()
-            : (sorting_state.gpu_sorter.is_valid() ? sorting_state.gpu_sorter->get_max_elements() : 0);
+            : (sort_ctx.runtime.fallback_sorter_valid ? sort_ctx.runtime.fallback_sorter_max_elements : 0);
     if (sorter_capacity > 0 && max_visible_splats > sorter_capacity) {
         max_visible_splats = sorter_capacity;
     }
@@ -2093,10 +2079,10 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
                     true);
         }
         last_instance_visible_splat_count = 0;
-        sorting_state.sorted_splat_count = 0;
-        frame_state.visible_splat_count.store(0, std::memory_order_release);
-        performance_state.metrics.sort_submission_time_ms = 0.0f;
-        performance_state.metrics.sort_wait_time_ms = 0.0f;
+        *sort_ctx.runtime.sorted_splat_count = 0;
+        sort_ctx.runtime.visible_splat_count->store(0, std::memory_order_release);
+        *sort_ctx.runtime.sort_submission_time_ms = 0.0f;
+        *sort_ctx.runtime.sort_wait_time_ms = 0.0f;
         return true;
     }
     if (trace_enabled) {
@@ -2158,10 +2144,10 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
                 "[GPUSortingPipeline] External sort key/index buffers must share the same owner device");
         sort_resource_device = key_owner;
     }
-    sorting_state.sort_keys_external = sort_keys_external;
-    sorting_state.sort_indices_external = sort_indices_external;
-    sorting_state.sort_buffers_pipeline_managed = false;
-    sorting_state.sort_buffer_capacity = max_visible_splats;
+    *sort_ctx.runtime.sort_keys_external = sort_keys_external;
+    *sort_ctx.runtime.sort_indices_external = sort_indices_external;
+    *sort_ctx.runtime.sort_buffers_pipeline_managed = false;
+    *sort_ctx.runtime.sort_buffer_capacity = max_visible_splats;
 
     if (depth_uniform_set.is_valid()) {
         _free_owned_resource(sort_resource_device ? sort_resource_device : compute_rd, depth_uniform_set, true);
@@ -2246,7 +2232,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
         params.wind_dir_strength[1] = _get_float_setting(ps, wind_direction_y_path, 0.0f);
         params.wind_dir_strength[2] = _get_float_setting(ps, wind_direction_z_path, 0.0f);
         params.wind_dir_strength[3] = MAX(_get_float_setting(ps, wind_strength_path, 0.0f), 0.0f);
-        params.wind_time_config[0] = float(double(frame_state.frame_counter) * (1.0 / 60.0) *
+        params.wind_time_config[0] = float(double(sort_ctx.runtime.frame_counter) * (1.0 / 60.0) *
                 double(wind_time_scale));
         params.wind_time_config[1] = MAX(_get_float_setting(ps, wind_frequency_path, 1.0f), 0.0f);
         params.wind_time_config[2] = _get_float_setting(ps, wind_spatial_frequency_path, 0.1f);
@@ -2265,7 +2251,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
         params.effector_config[3] = MAX(_get_float_setting(ps, sphere_effector_frequency_path, 2.0f), 0.1f);
     }
 
-    Projection projection = view_state.last_camera_projection;
+    Projection projection = sort_ctx.view.camera_projection;
     if (projection.get_z_far() <= projection.get_z_near()) {
         projection.set_perspective(60.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
     }
@@ -2295,7 +2281,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
         }
     }
     if (viewport_size.x <= 0 || viewport_size.y <= 0) {
-        const Size2i manual_override = view_state.manual_viewport_override;
+        const Size2i manual_override = sort_ctx.view.manual_viewport_override;
         if (manual_override.x > 0 && manual_override.y > 0) {
             viewport_size = manual_override;
         } else {
@@ -2528,8 +2514,8 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
     constexpr uint32_t kInstanceCountAsyncResetAgeFrames = 45u;
     uint32_t pending_count_age_frames = 0;
     if (instance_count_readback_state.pending &&
-            frame_state.frame_counter >= instance_count_readback_state.pending_frame_counter) {
-        pending_count_age_frames = frame_state.frame_counter - instance_count_readback_state.pending_frame_counter;
+            sort_ctx.runtime.frame_counter >= instance_count_readback_state.pending_frame_counter) {
+        pending_count_age_frames = sort_ctx.runtime.frame_counter - instance_count_readback_state.pending_frame_counter;
     }
 
     RenderingDevice *sort_submission_device = nullptr;
@@ -2614,7 +2600,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
             compute_rd &&
             inputs.instance_count_buffer.is_valid()) {
         instance_count_readback_state.bootstrap_sync_attempted = true;
-        performance_state.metrics.instance_sort_sync_fallback_count++;
+        (*sort_ctx.runtime.instance_sort_sync_fallback_count)++;
         Vector<uint8_t> bootstrap_count_data = compute_rd->buffer_get_data(
                 inputs.instance_count_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
         if (bootstrap_count_data.size() >= static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
@@ -2622,19 +2608,19 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
                     reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(bootstrap_count_data.ptr());
             last_instance_visible_splat_count = indirect->element_count;
             last_instance_visible_splat_count_valid = true;
-            last_instance_visible_splat_count_frame = frame_state.frame_counter;
+            last_instance_visible_splat_count_frame = sort_ctx.runtime.frame_counter;
         }
     }
 
     const bool stale_pending_readback =
             instance_count_readback_state.pending &&
-            frame_state.frame_counter >= instance_count_readback_state.pending_frame_counter &&
+            sort_ctx.runtime.frame_counter >= instance_count_readback_state.pending_frame_counter &&
             pending_count_age_frames > kInstanceCountAsyncMaxAgeFrames;
     if (stale_pending_readback) {
         // Once pending async readback is stale, recover immediately with a sync snapshot
         // so visibility changes are not masked until the much later hard-reset window.
         if (compute_rd && inputs.instance_count_buffer.is_valid() && readback_policy.allow_sync_pending_readback) {
-            performance_state.metrics.instance_sort_sync_fallback_count++;
+            (*sort_ctx.runtime.instance_sort_sync_fallback_count)++;
             const uint32_t stale_age_frames = pending_count_age_frames;
             // Invalidate the stale async request so its callback cannot overwrite the
             // refreshed count and so we can immediately enqueue a fresh async readback.
@@ -2649,7 +2635,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
                         reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(stale_count_data.ptr());
                 last_instance_visible_splat_count = indirect->element_count;
                 last_instance_visible_splat_count_valid = true;
-                last_instance_visible_splat_count_frame = frame_state.frame_counter;
+                last_instance_visible_splat_count_frame = sort_ctx.runtime.frame_counter;
             } else {
                 static uint32_t stale_readback_log_counter = 0;
                 stale_readback_log_counter++;
@@ -2683,7 +2669,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
     if (compute_rd && inputs.instance_count_buffer.is_valid() && !instance_count_readback_state.pending) {
         instance_count_readback_state.pending = true;
         instance_count_readback_state.generation++;
-        instance_count_readback_state.pending_frame_counter = frame_state.frame_counter;
+        instance_count_readback_state.pending_frame_counter = sort_ctx.runtime.frame_counter;
         const int64_t readback_generation = int64_t(instance_count_readback_state.generation);
         Callable count_callback =
                 callable_mp(this, &GPUSortingPipeline::_on_instance_count_readback).bind(readback_generation);
@@ -2696,7 +2682,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
             if (compute_rd && inputs.instance_count_buffer.is_valid() && readback_policy.allow_sync_enqueue_fallback) {
                 // Preserve count freshness when async enqueue fails, while honoring strict
                 // async/timestamp-preserving policy modes that disallow blocking fallbacks.
-                performance_state.metrics.instance_sort_sync_fallback_count++;
+                (*sort_ctx.runtime.instance_sort_sync_fallback_count)++;
                 Vector<uint8_t> sync_count_data = compute_rd->buffer_get_data(
                         inputs.instance_count_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
                 if (sync_count_data.size() >= static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
@@ -2704,7 +2690,7 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
                             reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(sync_count_data.ptr());
                     last_instance_visible_splat_count = indirect->element_count;
                     last_instance_visible_splat_count_valid = true;
-                    last_instance_visible_splat_count_frame = frame_state.frame_counter;
+                    last_instance_visible_splat_count_frame = sort_ctx.runtime.frame_counter;
                     resolved_visible = MIN(indirect->element_count, current_frame_safe_max);
                     enqueue_sync_fallback_used = true;
                 }
@@ -2724,25 +2710,25 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
             compute_rd->submit();
         }
     }
-    sorting_state.sorted_splat_count = resolved_visible;
-    frame_state.visible_splat_count.store(resolved_visible, std::memory_order_release);
+    *sort_ctx.runtime.sorted_splat_count = resolved_visible;
+    sort_ctx.runtime.visible_splat_count->store(resolved_visible, std::memory_order_release);
     if (trace_enabled) {
         GaussianSplatting::debug_trace_record_event("sort",
                 vformat("InstancePipeline COMPLETE: sorted_budget=%d",
-                        sorting_state.sorted_splat_count),
+                        *sort_ctx.runtime.sorted_splat_count),
                 false);
     }
-    frame_state.sort_time_ms = sort_result.gpu_time_ms;
-    performance_state.metrics.sort_submission_time_ms = sort_result.gpu_time_ms;
-    performance_state.metrics.sort_wait_time_ms = 0.0f;
-    performance_state.metrics.async_sort_used = true;
-    performance_state.metrics.async_sort_waited = false;
-    performance_state.metrics.async_overlap_efficiency = 0.0f;
+    *sort_ctx.runtime.sort_time_ms = sort_result.gpu_time_ms;
+    *sort_ctx.runtime.sort_submission_time_ms = sort_result.gpu_time_ms;
+    *sort_ctx.runtime.sort_wait_time_ms = 0.0f;
+    *sort_ctx.runtime.async_sort_used = true;
+    *sort_ctx.runtime.async_sort_waited = false;
+    *sort_ctx.runtime.async_overlap_efficiency = 0.0f;
     last_compute_error = String();
     return true;
 }
 
-bool GPUSortingPipeline::sort_gaussians_gpu(const Transform3D &p_cam_transform) {
+bool GPUSortingPipeline::sort_gaussians_gpu(const Transform3D &p_cam_transform, const SortFrameContext &p_context) {
     if (GaussianSplatting::debug_trace_is_enabled()) {
         GaussianSplatting::debug_trace_record_event("sort",
                 vformat("SortGaussiansGPU ENTER: inst_pipe=YES inst_inputs_valid=%s",
@@ -2750,7 +2736,7 @@ bool GPUSortingPipeline::sort_gaussians_gpu(const Transform3D &p_cam_transform) 
                 false);
     }
     if (instance_inputs_valid) {
-        if (_sort_instance_pipeline(p_cam_transform)) {
+        if (_sort_instance_pipeline(p_cam_transform, p_context)) {
             return true;
         }
     }

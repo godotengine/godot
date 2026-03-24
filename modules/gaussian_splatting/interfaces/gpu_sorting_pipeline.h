@@ -57,8 +57,6 @@ public:
     SortBufferHandles get_buffer_handles() const override;
     void set_sort_result_sink(ISortResultSink *p_sink);
     void set_sort_buffer_host_context(ISortBufferHostContext *p_context);
-    void set_sort_frame_context(const SortFrameContext &p_context);
-    void clear_sort_frame_context();
     void ensure_sort_buffers(uint32_t p_required_elements);
     void release_sort_buffers();
     void set_external_sort_indices(RID p_buffer, RenderingDevice *p_device);
@@ -81,7 +79,7 @@ public:
     bool populate_gpu_positions(RID p_buffer, uint32_t p_total_gaussians, uint32_t p_visible_splats,
             const Transform3D &p_cam_transform, float *r_position_ptr, bool p_write_distances,
             SortPositionInputs &p_inputs) override;
-    bool sort_gaussians_gpu(const Transform3D &p_cam_transform);
+    bool sort_gaussians_gpu(const Transform3D &p_cam_transform, const SortFrameContext &p_context);
 
     // IGPUSortingPipeline interface - Sort execution
     SortOperationResult sort(const SortOperationParams &p_params) override;
@@ -186,7 +184,6 @@ private:
 
     InstancePipelineInputs instance_inputs;
     bool instance_inputs_valid = false;
-    SortFrameContext sort_frame_context;
     uint32_t last_instance_visible_splat_count = 0;
     bool last_instance_visible_splat_count_valid = false;
     uint32_t last_instance_visible_splat_count_frame = 0;
@@ -233,7 +230,7 @@ private:
     void _ensure_instance_param_buffer(RenderingDevice *p_device);
     void _ensure_instance_count_resources(RenderingDevice *p_device);
     void _ensure_instance_chunk_dispatch_resources(RenderingDevice *p_device);
-    bool _sort_instance_pipeline(const Transform3D &p_cam_transform);
+    bool _sort_instance_pipeline(const Transform3D &p_cam_transform, const SortFrameContext &p_context);
 };
 
 #endif // GS_GPU_SORTING_PIPELINE_H
