@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/error/error_macros.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/sort_list.h"
 #include "core/typedefs.h"
 
@@ -115,13 +116,41 @@ public:
 				return;
 			}
 
-			struct PtrComparator {
-				C compare;
-				_FORCE_INLINE_ bool operator()(const T *p_a, const T *p_b) const { return compare(*p_a, *p_b); }
-			};
-			using Element = SelfList<T>;
-			SortList<Element, T *, &Element::_self, &Element::_prev, &Element::_next, PtrComparator> sorter;
-			sorter.sort(_first, _last);
+			// Collect into a flat array, sort, then relink.
+			// This avoids SortList member-pointer template args which break on MSVC.
+			int count = 0;
+			for (SelfList<T> *e = _first; e; e = e->_next) {
+				count++;
+			}
+			if (count < 2) {
+				return;
+			}
+			LocalVector<SelfList<T> *> elems;
+			elems.resize(count);
+			int idx = 0;
+			for (SelfList<T> *e = _first; e; e = e->_next) {
+				elems[idx++] = e;
+			}
+
+			// Sort using a simple insertion sort to avoid nested-struct issues on MSVC.
+			C compare;
+			for (int i = 1; i < count; i++) {
+				SelfList<T> *key = elems[i];
+				int j = i - 1;
+				while (j >= 0 && compare(*key->_self, *elems[j]->_self)) {
+					elems[j + 1] = elems[j];
+					j--;
+				}
+				elems[j + 1] = key;
+			}
+
+			// Relink the list.
+			_first = elems[0];
+			_last = elems[count - 1];
+			for (int i = 0; i < count; i++) {
+				elems[i]->_prev = (i > 0) ? elems[i - 1] : nullptr;
+				elems[i]->_next = (i < count - 1) ? elems[i + 1] : nullptr;
+			}
 		}
 
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
@@ -136,13 +165,13 @@ public:
 		}
 	};
 
-private:
+public:
+	// These are public to allow SortList template member pointer access on MSVC.
 	List *_root = nullptr;
 	T *_self = nullptr;
 	SelfList<T> *_next = nullptr;
 	SelfList<T> *_prev = nullptr;
 
-public:
 	_FORCE_INLINE_ bool in_list() const { return _root; }
 	_FORCE_INLINE_ void remove_from_list() {
 		if (_root) {

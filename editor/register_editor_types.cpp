@@ -73,6 +73,7 @@
 #include "editor/inspector/editor_resource_tooltip_plugins.h"
 #include "editor/inspector/input_event_editor_plugin.h"
 #include "editor/inspector/sub_viewport_preview_editor_plugin.h"
+#include "editor/inspector/game_object_editor_plugin.h"
 #include "editor/inspector/tool_button_editor_plugin.h"
 #include "editor/scene/2d/camera_2d_editor_plugin.h"
 #include "editor/scene/2d/light_occluder_2d_editor_plugin.h"
@@ -255,6 +256,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<TextureLayeredEditorPlugin>();
 	EditorPlugins::add_by_type<TextureRegionEditorPlugin>();
 	EditorPlugins::add_by_type<ThemeEditorPlugin>();
+	EditorPlugins::add_by_type<GameObjectEditorPlugin>();
 	EditorPlugins::add_by_type<ToolButtonEditorPlugin>();
 	EditorPlugins::add_by_type<VoxelGIEditorPlugin>();
 #ifndef DISABLE_DEPRECATED
