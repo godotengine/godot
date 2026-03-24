@@ -211,19 +211,25 @@ static void _publish_rendered_splat_count(GaussianSplatRenderer::FrameState &p_f
 }
 } // namespace
 
-RenderSortingOrchestrator::RenderSortingOrchestrator(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler,
-		GPUSortingPipeline *p_sorting_pipeline,
-		CullForViewFn p_cull_for_view, RecordRenderingErrorFn p_record_rendering_error) :
-		renderer(p_renderer),
-		gpu_culler(p_gpu_culler),
-		sorting_pipeline(p_sorting_pipeline),
-		cull_for_view(p_cull_for_view),
-		record_rendering_error(p_record_rendering_error) {
+RenderSortingOrchestrator::RenderSortingOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		gpu_culler(p_dependencies.gpu_culler),
+		sorting_pipeline(p_dependencies.sorting_pipeline),
+		performance_settings(p_dependencies.performance_settings),
+		test_data_state(p_dependencies.test_data_state),
+		device_state(p_dependencies.device_state),
+		cull_for_view(p_dependencies.cull_for_view),
+		record_rendering_error(p_dependencies.record_rendering_error),
+		ensure_rendering_device_fn(p_dependencies.ensure_rendering_device) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(gpu_culler);
 	ERR_FAIL_NULL(sorting_pipeline);
+	ERR_FAIL_NULL(performance_settings);
+	ERR_FAIL_NULL(test_data_state);
+	ERR_FAIL_NULL(device_state);
 	ERR_FAIL_COND_MSG(!cull_for_view, "RenderSortingOrchestrator requires a cull callback.");
 	ERR_FAIL_COND_MSG(!record_rendering_error, "RenderSortingOrchestrator requires an error reporting callback.");
+	ERR_FAIL_COND_MSG(!ensure_rendering_device_fn, "RenderSortingOrchestrator requires a device bootstrap callback.");
 }
 
 void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
@@ -232,13 +238,15 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	GaussianRenderState::SortingState &sorting_state = state_mut.get_sorting_state_mut();
 	const GaussianSplatRenderer::FrameState &frame_state = state_view.get_frame_state_view();
+	const GaussianSplatRenderer::PerformanceSettings &local_performance_settings = *performance_settings;
+	const GaussianSplatRenderer::TestDataState &local_test_data_state = *test_data_state;
 	RenderingDevice *render_device = nullptr;
 
-	if (!renderer->ensure_rendering_device(p_context)) {
+	if (!ensure_rendering_device_fn(p_context)) {
 		sorting_state.sorter_needs_rebuild = false;
 		return;
 	}
-	render_device = state_view.get_rendering_device();
+	render_device = device_state->rd;
 	ERR_FAIL_NULL(render_device);
 
 	// Phase 4: Backoff on repeated sorter init failures to prevent OOM crash
@@ -258,8 +266,8 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 		}
 	}
 
-	uint32_t capacity = MAX<uint32_t>(renderer->get_performance_settings().max_splats,
-			renderer->get_test_data_state().positions.size());
+	uint32_t capacity = MAX<uint32_t>(local_performance_settings.max_splats,
+			local_test_data_state.positions.size());
 	if (capacity == 0) {
 		capacity = 1;
 	}
@@ -267,7 +275,7 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 		const uint64_t device_id = render_device ? render_device->get_device_instance_id() : 0;
 		GS_LOG_GPU_SORT_DEBUG(vformat("[GPU Sort] Refresh (%s): max_splats=%d capacity=%u device_id=%s",
 				p_context ? p_context : "unknown",
-				renderer->get_performance_settings().max_splats,
+				local_performance_settings.max_splats,
 				capacity,
 				device_id > 0 ? String::num_uint64(device_id) : String("none")));
 	}
@@ -319,7 +327,6 @@ void RenderSortingOrchestrator::refresh_gpu_sorter(const char *p_context) {
 
 void RenderSortingOrchestrator::initialize_sorting() {
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
-	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	GaussianRenderState::SortingState &sorting_state = state_mut.get_sorting_state_mut();
 	RenderingDevice *render_device = nullptr;
@@ -329,11 +336,11 @@ void RenderSortingOrchestrator::initialize_sorting() {
 		sorting_pipeline->mark_sorter_dirty();
 	}
 
-	if (!renderer->ensure_rendering_device("initialize_sorting")) {
+	if (!ensure_rendering_device_fn("initialize_sorting")) {
 		sorting_state.sorting_initialized = false;
 		return;
 	}
-	render_device = state_view.get_rendering_device();
+	render_device = device_state->rd;
 	ERR_FAIL_NULL(render_device);
 
 	uint64_t max_workgroup_x = render_device->limit_get(RenderingDevice::LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X);
@@ -370,14 +377,13 @@ void RenderSortingOrchestrator::initialize_sorting() {
 Array RenderSortingOrchestrator::run_sort_benchmark(const PackedInt32Array &p_sizes) {
 	Array results;
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
-	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	GaussianRenderState::SortingState &sorting_state = state_provider.get_sorting_state_mut();
 	RenderingDevice *render_device = nullptr;
 
-	if (!renderer->ensure_rendering_device("run_sort_benchmark")) {
+	if (!ensure_rendering_device_fn("run_sort_benchmark")) {
 		return results;
 	}
-	render_device = state_view.get_rendering_device();
+	render_device = device_state->rd;
 	ERR_FAIL_NULL_V(render_device, results);
 
 	if (sorting_state.sorter_needs_rebuild) {
@@ -486,15 +492,14 @@ Array RenderSortingOrchestrator::run_sort_benchmark(const PackedInt32Array &p_si
 
 void RenderSortingOrchestrator::benchmark_sorting_performance() {
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
-	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	GaussianRenderState::SortingState &sorting_state = state_mut.get_sorting_state_mut();
 	RenderingDevice *render_device = nullptr;
 
-	if (!renderer->ensure_rendering_device("benchmark_sorting_performance")) {
+	if (!ensure_rendering_device_fn("benchmark_sorting_performance")) {
 		return;
 	}
-	render_device = state_view.get_rendering_device();
+	render_device = device_state->rd;
 	ERR_FAIL_NULL(render_device);
 
 	if (sorting_state.sorter_needs_rebuild) {

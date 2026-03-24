@@ -737,17 +737,27 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
         GS_LOG_WARN_DEFAULT("[GaussianSplatRenderer] Local RenderingDevice unavailable; GPU operations will be deferred until device is available");
     }
 
-    sorting_orchestrator = std::make_unique<RenderSortingOrchestrator>(
-            this, subsystem_state.gpu_culler.ptr(), subsystem_state.sorting_pipeline.ptr(),
+    RenderSortingOrchestrator::Dependencies sorting_dependencies;
+    sorting_dependencies.renderer = this;
+    sorting_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    sorting_dependencies.sorting_pipeline = subsystem_state.sorting_pipeline.ptr();
+    sorting_dependencies.performance_settings = &performance_settings;
+    sorting_dependencies.test_data_state = &test_data_state;
+    sorting_dependencies.device_state = &device_state;
+    sorting_dependencies.cull_for_view =
             [this](const Transform3D &p_world_to_camera_transform, const Projection &p_projection,
                     const Size2i &p_viewport_size) {
                 return _cull_for_view(p_world_to_camera_transform, p_projection, p_viewport_size);
-            },
-            [this](const RenderingError &p_error) {
-                if (diagnostics_orchestrator) {
-                    diagnostics_orchestrator->record_rendering_error(p_error);
-                }
-            });
+            };
+    sorting_dependencies.record_rendering_error = [this](const RenderingError &p_error) {
+        if (diagnostics_orchestrator) {
+            diagnostics_orchestrator->record_rendering_error(p_error);
+        }
+    };
+    sorting_dependencies.ensure_rendering_device = [this](const char *p_context) {
+        return ensure_rendering_device(p_context);
+    };
+    sorting_orchestrator = std::make_unique<RenderSortingOrchestrator>(sorting_dependencies);
     RenderQualityOrchestrator::Dependencies quality_dependencies;
     quality_dependencies.renderer = this;
     quality_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();

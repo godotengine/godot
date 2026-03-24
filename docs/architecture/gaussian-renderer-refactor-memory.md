@@ -1438,3 +1438,36 @@ Before any code phase starts:
 - `git diff --check` passed.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
 - Native Windows verification passed via `Gaussian Production Gates` run `23492944688` on commit `1e1c5d28eb` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
+## Phase 4.4 Implementation Status (sorting bootstrap/benchmark lifecycle narrowing, slice 29)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_sorting_orchestrator.h` / `.cpp`
+  - Introduced an explicit `Dependencies` bundle for the sorting orchestrator bootstrap and benchmark lifecycle paths.
+  - Routed sorter refresh, initialization, and benchmark device bootstrap through explicit `performance_settings`, `test_data_state`, `device_state`, and `ensure_rendering_device` dependencies instead of repeated renderer reach-through in those paths.
+  - Preserved sorter rebuild, benchmark timing/output, and failure/fallback behavior.
+- `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - Updated sorting orchestrator construction to supply the explicit lifecycle dependencies.
+
+### Explicitly preserved
+- No `GPUSortingPipeline` signature changes.
+- No changes to the already-closed core sort execution path beyond constructor wiring.
+- No route UID behavior changes.
+- No diagnostics/debug overlay work.
+- No composition-root redesign.
+- No resource/output/painterly/quality/test changes.
+
+### Caveat
+- This batch narrows bootstrap/benchmark lifecycle fan-in, not the remaining execution-path reads that still legitimately depend on renderer-owned services and buffers.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.h`
+  - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
+- Native Windows verification pending for this slice.

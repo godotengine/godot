@@ -17,10 +17,21 @@ class RenderSortingOrchestrator {
 public:
 	using CullForViewFn = std::function<GaussianRenderState::CullStageOutput(const Transform3D &, const Projection &, const Size2i &)>;
 	using RecordRenderingErrorFn = std::function<void(const RenderingError &)>;
+	using EnsureRenderingDeviceFn = std::function<bool(const char *)>;
 
-	RenderSortingOrchestrator(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler,
-			GPUSortingPipeline *p_sorting_pipeline,
-			CullForViewFn p_cull_for_view, RecordRenderingErrorFn p_record_rendering_error);
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		GPUCuller *gpu_culler = nullptr;
+		GPUSortingPipeline *sorting_pipeline = nullptr;
+		GaussianSplatRenderer::PerformanceSettings *performance_settings = nullptr;
+		GaussianSplatRenderer::TestDataState *test_data_state = nullptr;
+		GaussianSplatRenderer::DeviceState *device_state = nullptr;
+		CullForViewFn cull_for_view;
+		RecordRenderingErrorFn record_rendering_error;
+		EnsureRenderingDeviceFn ensure_rendering_device;
+	};
+
+	explicit RenderSortingOrchestrator(const Dependencies &p_dependencies);
 
 	void refresh_gpu_sorter(const char *p_context);
 	void initialize_sorting();
@@ -71,8 +82,12 @@ private:
 	GaussianSplatRenderer *renderer = nullptr;
 	GPUCuller *gpu_culler = nullptr;
 	GPUSortingPipeline *sorting_pipeline = nullptr;
+	GaussianSplatRenderer::PerformanceSettings *performance_settings = nullptr;
+	GaussianSplatRenderer::TestDataState *test_data_state = nullptr;
+	GaussianSplatRenderer::DeviceState *device_state = nullptr;
 	CullForViewFn cull_for_view;
 	RecordRenderingErrorFn record_rendering_error;
+	EnsureRenderingDeviceFn ensure_rendering_device_fn;
 	Transform3D cached_world_to_camera;
 	Transform3D cached_camera_to_world;
 	bool cached_camera_to_world_valid = false;
