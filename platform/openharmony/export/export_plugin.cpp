@@ -35,17 +35,16 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/io/json.h"
-#include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
-#include "core/version.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
+#include "core/variant/callable.h"
 #include "editor/editor_node.h"
 #include "editor/export/editor_export.h"
 #include "editor/file_system/editor_paths.h"
-#include "editor/import/resource_importer_texture.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
@@ -54,7 +53,7 @@
 #include "modules/regex/regex.h"
 #endif
 
-#include <string.h>
+#include <cstring>
 
 // OpenHarmony permissions
 static const char *OPENHARMONY_PERMISSIONS[] = {
@@ -927,12 +926,12 @@ Error EditorExportPlatformOpenHarmony::run(const Ref<EditorExportPreset> &p_pres
 
 	String tmp_export_path = EditorPaths::get_singleton()->get_temp_dir().path_join("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".hap");
 
-#define CLEANUP_AND_RETURN(m_err)                              \
-	{                                                          \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
 		_remove_dir_recursive(tmp_export_path.get_basename()); \
-		DirAccess::remove_file_or_error(tmp_export_path);      \
-		return m_err;                                          \
-	}                                                          \
+		DirAccess::remove_file_or_error(tmp_export_path); \
+		return m_err; \
+	} \
 	((void)0)
 
 	// Export to temporary HAP with signing forced to true

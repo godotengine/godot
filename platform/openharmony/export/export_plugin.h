@@ -30,19 +30,8 @@
 
 #pragma once
 
-#include "core/config/project_settings.h"
-#include "core/io/image_loader.h"
-#include "core/io/marshalls.h"
-#include "core/io/resource_saver.h"
-#include "core/io/zip_io.h"
-#include "core/os/os.h"
-#include "core/version.h"
 #include "editor/export/editor_export_platform.h"
-#include "editor/import/resource_importer_texture_settings.h"
-#include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
-
-#include <string.h>
 
 class EditorExportPlatformOpenHarmony : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformOpenHarmony, EditorExportPlatform);

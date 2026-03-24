@@ -136,6 +136,10 @@ void volkLoadDeviceTable(struct VolkDeviceTable* table, VkDevice device);
 #include <vulkan/vulkan_android.h>
 #endif
 
+#ifdef VK_USE_PLATFORM_OHOS
+#include <vulkan/vulkan_ohos.h>
+#endif
+
 #ifdef VK_USE_PLATFORM_FUCHSIA
 #include <zircon/types.h>
 #include <vulkan/vulkan_fuchsia.h>
@@ -3040,9 +3044,6 @@ extern PFN_vkQueueSignalReleaseImageOHOS vkQueueSignalReleaseImageOHOS;
 #if defined(VK_QCOM_tile_memory_heap)
 extern PFN_vkCmdBindTileMemoryQCOM vkCmdBindTileMemoryQCOM;
 #endif /* defined(VK_QCOM_tile_memory_heap) */
-#if defined(VK_OHOS_surface)
-extern PFN_vkCreateSurfaceOHOS vkCreateSurfaceOHOS;
-#endif /* defined(VK_OHOS_surface) */
 #if defined(VK_QCOM_tile_properties)
 extern PFN_vkGetDynamicRenderingTilePropertiesQCOM vkGetDynamicRenderingTilePropertiesQCOM;
 extern PFN_vkGetFramebufferTilePropertiesQCOM vkGetFramebufferTilePropertiesQCOM;

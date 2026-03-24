@@ -31,6 +31,7 @@
 #pragma once
 
 #include <rawfile/raw_file_manager.h>
+
 #include <cstdint>
 
 extern "C" {

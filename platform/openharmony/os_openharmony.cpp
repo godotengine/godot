@@ -401,7 +401,7 @@ void OS_OpenHarmony::on_focus_out() {
 		is_focused = false;
 
 		if (DisplayServerOpenHarmony::get_singleton()) {
-			DisplayServerOpenHarmony::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			DisplayServerOpenHarmony::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
@@ -417,7 +417,7 @@ void OS_OpenHarmony::on_focus_in() {
 		is_focused = true;
 
 		if (DisplayServerOpenHarmony::get_singleton()) {
-			DisplayServerOpenHarmony::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			DisplayServerOpenHarmony::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {

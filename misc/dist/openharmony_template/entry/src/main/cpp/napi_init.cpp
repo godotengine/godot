@@ -34,6 +34,7 @@
 #include <napi/native_api.h>
 #include <native_window/external_window.h>
 #include <rawfile/raw_file_manager.h>
+
 #include <cstdint>
 #include <vector>
 
