@@ -944,11 +944,11 @@ Error RenderDebugStateOrchestrator::dump_pipeline_trace_to_file(const String &p_
 	if (p_path.is_empty()) {
 		return ERR_INVALID_PARAMETER;
 	}
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE); // GS_CI_ALLOW_RENDER_PATH_FS_WRITE
 	if (!file.is_valid()) {
 		return FileAccess::get_open_error();
 	}
-	file->store_string(get_pipeline_trace_json());
+	file->store_string(get_pipeline_trace_json()); // GS_CI_ALLOW_RENDER_PATH_FS_WRITE
 	return OK;
 }
 
