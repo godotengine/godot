@@ -685,6 +685,12 @@ This is not a rewrite plan. It is a migration plan that preserves shipping behav
     - Rewired `clear_painterly_gpu_resources(...)` and `update_painterly_gpu_resources(...)` to mutate `SubsystemState` through `IFrameMutationAccess` instead of direct renderer getters.
     - Rewired `render_painterly_frame(...)` to query `SubsystemState` through `IFrameStateView` for tile-raster output access.
     - Rewired `populate_painterly_gbuffer(...)` to source `scene_state`, `resource_state`, `streaming_state`, `sorting_state`, `subsystem_state`, `frame_state`, `performance_state`, and `jacobian_debug` through `IFrameStateView` / `IFrameMutationAccess` aliases instead of direct renderer getters.
+    - Also moved direct render-device / render-config reads that already had provider seams:
+      - `_resolve_tracked_device(...)`
+      - `_update_painterly_texture_tracking(...)`
+      - `_ensure_painterly_composite_resources(...)`
+      - `update_painterly_gpu_resources(...)`
+      - `populate_painterly_gbuffer(...)` opacity multiplier
     - Kept direct access for surfaces that still lack a provider seam in this slice, including `device_state`, `view_state`, `tile_renderer_state`, `debug_state`, `culling_config`, and `painterly_config`.
 - Explicitly preserved for this slice:
   - No painterly public API redesign.
