@@ -991,6 +991,8 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
   - No attempt to force `view_state`, `device_state`, or render submission paths through speculative new interfaces.
 - Remaining caveat:
   - `RenderOutputOrchestrator` still reaches through `renderer` directly for `view_state`, `device_state`, test-data presence checks, resource-owner lookup, and `render_gaussians(...)`. This batch narrows the orchestrator’s constructor/runtime seam and selected state-bucket access; it is not a full ownership inversion.
+- Follow-up fix after initial acceptance:
+  - Resolved the viewport-copy status getters against the live compositor from `FrameStateProvider`, so the copy path and its status readers observe the same compositor instance if renderer subsystem bindings change.
 - Rollback boundary:
   - Revert only:
     - `modules/gaussian_splatting/renderer/render_output_orchestrator.h`
@@ -999,7 +1001,7 @@ Current renderer-dependent APIs/pathways to remove in staged migration:
 - Verification status:
   - `git diff --check` passed.
   - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture`.
-  - Native Windows verification passed via `Gaussian Production Gates` run `23485077836` on commit `a0508b3f5e`:
+  - Native Windows verification passed via `Gaussian Production Gates` run `23485345156` on commit `f92dbab666`:
     - Build: pass.
     - Smoke tests: pass.
     - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
