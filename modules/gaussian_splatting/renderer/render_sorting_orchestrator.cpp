@@ -91,27 +91,26 @@ static bool _get_sort_position(const GaussianSplatRenderer &p_renderer, uint32_t
 	return false;
 }
 
-static void _set_instance_sort_inputs(GaussianSplatRenderer *p_renderer, GPUSortingPipeline *p_sorting_pipeline,
-		uint32_t p_visible_chunk_count) {
-	const auto &buffers = p_renderer->get_instance_pipeline_buffers();
+static void _set_instance_sort_inputs(const GaussianSplatRenderer::InstancePipelineBuffers &p_buffers,
+		RenderingDevice *p_render_device, GPUSortingPipeline *p_sorting_pipeline, uint32_t p_visible_chunk_count) {
 	GPUSortingPipeline::InstancePipelineInputs instance_inputs;
-	instance_inputs.atlas_gaussian_buffer = buffers.atlas_gaussian_buffer;
-	instance_inputs.quantization_buffer = buffers.quantization_required ? buffers.quantization_buffer : RID();
-	instance_inputs.instance_buffer = buffers.instance_buffer;
-	instance_inputs.chunk_meta_buffer = buffers.chunk_meta_buffer;
-	instance_inputs.visible_chunk_buffer = buffers.visible_chunk_buffer;
-	instance_inputs.splat_ref_buffer = buffers.splat_ref_buffer;
-	instance_inputs.sort_key_buffer = buffers.sort_key_buffer;
-	instance_inputs.sort_value_buffer = buffers.sort_value_buffer;
-	instance_inputs.counter_buffer = buffers.counter_buffer;
-	instance_inputs.chunk_dispatch_buffer = buffers.chunk_dispatch_buffer;
-	instance_inputs.indirect_count_buffer = buffers.indirect_count_buffer;
-	instance_inputs.instance_count_buffer = buffers.instance_count_buffer;
-	instance_inputs.visible_chunk_count = MIN(p_visible_chunk_count, buffers.max_visible_chunks);
-	instance_inputs.max_visible_chunks = buffers.max_visible_chunks;
-	instance_inputs.max_visible_splats = buffers.max_visible_splats;
-	instance_inputs.max_chunk_splats = buffers.max_chunk_splats;
-	instance_inputs.device = p_renderer->get_device_state().rd;
+	instance_inputs.atlas_gaussian_buffer = p_buffers.atlas_gaussian_buffer;
+	instance_inputs.quantization_buffer = p_buffers.quantization_required ? p_buffers.quantization_buffer : RID();
+	instance_inputs.instance_buffer = p_buffers.instance_buffer;
+	instance_inputs.chunk_meta_buffer = p_buffers.chunk_meta_buffer;
+	instance_inputs.visible_chunk_buffer = p_buffers.visible_chunk_buffer;
+	instance_inputs.splat_ref_buffer = p_buffers.splat_ref_buffer;
+	instance_inputs.sort_key_buffer = p_buffers.sort_key_buffer;
+	instance_inputs.sort_value_buffer = p_buffers.sort_value_buffer;
+	instance_inputs.counter_buffer = p_buffers.counter_buffer;
+	instance_inputs.chunk_dispatch_buffer = p_buffers.chunk_dispatch_buffer;
+	instance_inputs.indirect_count_buffer = p_buffers.indirect_count_buffer;
+	instance_inputs.instance_count_buffer = p_buffers.instance_count_buffer;
+	instance_inputs.visible_chunk_count = MIN(p_visible_chunk_count, p_buffers.max_visible_chunks);
+	instance_inputs.max_visible_chunks = p_buffers.max_visible_chunks;
+	instance_inputs.max_visible_splats = p_buffers.max_visible_splats;
+	instance_inputs.max_chunk_splats = p_buffers.max_chunk_splats;
+	instance_inputs.device = p_render_device;
 	p_sorting_pipeline->set_instance_pipeline_inputs(instance_inputs);
 }
 
@@ -123,22 +122,21 @@ static void _bind_sort_pipeline_host_context(GPUSortingPipeline *p_sorting_pipel
 	p_sorting_pipeline->set_sort_buffer_host_context(p_renderer);
 }
 
-static SortFrameContext _build_sort_frame_context(GaussianSplatRenderer *p_renderer) {
+static SortFrameContext _build_sort_frame_context(const GaussianSplatRenderer::IFrameStateView &p_state_view,
+		GaussianSplatRenderer::IFrameMutationAccess &p_state_mut, GaussianSplatRenderer::ViewState &p_view_state) {
 	SortFrameContext frame_context;
-	if (!p_renderer) {
-		return frame_context;
-	}
-	frame_context.sorting_state = &p_renderer->get_sorting_state();
-	frame_context.frame_state = &p_renderer->get_frame_state();
-	frame_context.performance_state = &p_renderer->get_performance_state();
-	frame_context.view_state = &p_renderer->get_view_state();
-	frame_context.gpu_culler = p_renderer->get_subsystem_state().gpu_culler.ptr();
-	frame_context.render_device = p_renderer->get_device_state().rd;
+	frame_context.sorting_state = &p_state_mut.get_sorting_state_mut();
+	frame_context.frame_state = &p_state_mut.get_frame_state_mut();
+	frame_context.performance_state = &p_state_mut.get_performance_state_mut();
+	frame_context.view_state = &p_view_state;
+	frame_context.gpu_culler = p_state_view.get_gpu_culler();
+	frame_context.render_device = p_state_view.get_rendering_device();
 	return frame_context;
 }
 
-static bool _sync_instance_sort_inputs(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler,
-		GPUSortingPipeline *p_sorting_pipeline, uint32_t *r_visible_chunk_count) {
+static bool _sync_instance_sort_inputs(const GaussianSplatRenderer::IFrameStateView &p_state_view,
+		GaussianSplatRenderer *p_renderer, GPUSortingPipeline *p_sorting_pipeline,
+		uint32_t *r_visible_chunk_count) {
 	if (r_visible_chunk_count) {
 		*r_visible_chunk_count = 0;
 	}
@@ -159,7 +157,7 @@ static bool _sync_instance_sort_inputs(GaussianSplatRenderer *p_renderer, GPUCul
 	// FIX: Use buffer capacity instead of stale async readback.
 	// GPU-side counter drives actual dispatch; this is a structural guard only.
 	uint32_t visible_chunk_count = buffers.max_visible_chunks;
-	_set_instance_sort_inputs(p_renderer, p_sorting_pipeline, visible_chunk_count);
+	_set_instance_sort_inputs(buffers, p_state_view.get_rendering_device(), p_sorting_pipeline, visible_chunk_count);
 	if (r_visible_chunk_count) {
 		*r_visible_chunk_count = visible_chunk_count;
 	}
@@ -613,6 +611,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
 	const GaussianSplatRenderer::PerformanceState &performance_state_view = state_view.get_performance_state_view();
 	GaussianSplatRenderer::DebugState &debug_state = state_mut.get_debug_state_mut();
+	GaussianSplatRenderer::ViewState &view_state = renderer->get_view_state();
 	uint32_t available_splats = cull_state.culled_indices.size();
 	auto resolve_output_domain_for_input = [](GaussianRenderState::IndexDomain p_domain) {
 		switch (p_domain) {
@@ -696,7 +695,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	uint32_t instance_max_visible_splats = 0;
 	uint32_t instance_visible_chunk_count = 0;
 	uint32_t instance_max_chunk_splats = 0;
-	const bool instance_pipeline_active = _sync_instance_sort_inputs(renderer, gpu_culler, sorting_pipeline,
+	const bool instance_pipeline_active = _sync_instance_sort_inputs(state_view, renderer, sorting_pipeline,
 			&instance_visible_chunk_count);
 	const bool input_domain_is_chunk = p_input_domain == GaussianRenderState::IndexDomain::CHUNK_REF;
 	const bool input_domain_is_global = p_input_domain == GaussianRenderState::IndexDomain::GAUSSIAN_GLOBAL;
@@ -862,7 +861,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			instance_pipeline_active && instance_sort_inputs_ready) {
 		if (sorting_pipeline) {
 			_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
-			sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(renderer));
+			sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(state_view, state_mut, view_state));
 		}
 		if (sorting_pipeline && sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform)) {
 			debug_state.sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
@@ -1322,7 +1321,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 
 	if (sorting_pipeline) {
 		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
-		sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(renderer));
+		sorting_pipeline->set_sort_frame_context(_build_sort_frame_context(state_view, state_mut, view_state));
 	}
 	if (sorting_pipeline &&
 			sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform)) {
@@ -1479,21 +1478,24 @@ void RenderSortingOrchestrator::update_instance_sort_cache(const Transform3D &p_
 bool RenderSortingOrchestrator::_try_reuse_instance_sort_cache_with_camera(const Transform3D &p_camera_to_world,
 		uint64_t p_content_generation, uint32_t p_max_visible_splats, uint32_t p_visible_chunk_count,
 		uint32_t &r_sorted_count) {
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
 	if (!gpu_culler->get_state().static_sort_cache_enabled) {
 		return false;
 	}
 	if (!instance_sort_cache.valid || p_max_visible_splats == 0) {
-		renderer->get_performance_state().metrics.sort_cache_misses++;
+		performance_state.metrics.sort_cache_misses++;
 		return false;
 	}
 	if (instance_sort_cache.content_generation != p_content_generation ||
 			instance_sort_cache.max_visible_splats != p_max_visible_splats ||
 			instance_sort_cache.visible_chunk_count != p_visible_chunk_count) {
-		renderer->get_performance_state().metrics.sort_cache_misses++;
+		performance_state.metrics.sort_cache_misses++;
 		return false;
 	}
 	if (!sorting_pipeline || !sorting_pipeline->get_sort_indices_buffer().is_valid()) {
-		renderer->get_performance_state().metrics.sort_cache_misses++;
+		performance_state.metrics.sort_cache_misses++;
 		return false;
 	}
 
@@ -1510,14 +1512,14 @@ bool RenderSortingOrchestrator::_try_reuse_instance_sort_cache_with_camera(const
 			: camera_forward.dot(instance_sort_cache.camera_direction);
 	if (gpu_culler->get_state().sort_cache_angle_cos_threshold > 0.0f &&
 			dot < gpu_culler->get_state().sort_cache_angle_cos_threshold) {
-		renderer->get_performance_state().metrics.sort_cache_misses++;
+		performance_state.metrics.sort_cache_misses++;
 		return false;
 	}
 
 	if (gpu_culler->get_state().sort_cache_position_threshold_sq > 0.0f) {
 		Vector3 delta = instance_sort_cache.camera_position - camera_position;
 		if (delta.length_squared() > gpu_culler->get_state().sort_cache_position_threshold_sq) {
-			renderer->get_performance_state().metrics.sort_cache_misses++;
+			performance_state.metrics.sort_cache_misses++;
 			return false;
 		}
 	}
@@ -1527,7 +1529,7 @@ bool RenderSortingOrchestrator::_try_reuse_instance_sort_cache_with_camera(const
 	r_sorted_count = p_visible_chunk_count == 0
 			? 0u
 			: MIN(instance_sort_cache.sorted_count, p_max_visible_splats);
-	renderer->get_performance_state().metrics.sort_cache_hits++;
+	performance_state.metrics.sort_cache_hits++;
 	return true;
 }
 

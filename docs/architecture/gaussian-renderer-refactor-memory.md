@@ -1407,3 +1407,34 @@ Before any code phase starts:
 - `git diff --check` passed.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
 - Native Windows verification passed via `Gaussian Production Gates` run `23491967749` on commit `a931f3a1e6` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+
+## Phase 4.3 Implementation Status (sorting helper/cache support-path narrowing, slice 28)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+  - Narrowed `_set_instance_sort_inputs(...)` to consume explicit instance-pipeline buffers plus the render device from the existing frame-state seam instead of pulling the device from `renderer`.
+  - Narrowed `_build_sort_frame_context(...)` to build `SortFrameContext` from the explicit `IFrameStateView` / `IFrameMutationAccess` seams and a passed-in view-state reference, instead of reading all frame/perf/device fields from `renderer`.
+  - Routed instance-sort cache hit/miss publication through a local `FrameStateProvider` inside the cache helper so cache metrics no longer write to `renderer->get_performance_state()` directly.
+  - Kept route UID, visible-count, timing, strict-global-sort, cache-reuse, and device/buffer semantics unchanged.
+- `docs/architecture/gaussian-renderer-refactor-memory.md`
+  - Added this batch note and verification status.
+
+### Explicitly preserved
+- No `GPUSortingPipeline` signature changes.
+- No composition-root work.
+- No diagnostics/debug overlay work.
+- No test-hook changes.
+- No broad renderer facade redesign.
+
+### Caveat
+- The residual instance-pipeline buffer lookup in `sort_gaussians_for_view(...)` still comes from `renderer` because the current frame-state seam does not expose instance buffer ownership. That is intentionally outside the seam narrowed in this slice.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_sorting_orchestrator.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 4 --no-regen-architecture` passed.
+- Native Windows verification pending for this slice.
