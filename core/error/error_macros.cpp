@@ -30,6 +30,7 @@
 
 #include "error_macros.h"
 
+#include "core/core_globals.h"
 #include "core/io/logger.h"
 #include "core/object/object_id.h"
 #include "core/object/script_language.h"
@@ -106,6 +107,12 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
+	if (!CoreGlobals::print_ready) {
+		const char *err_details = (p_message && *p_message) ? p_message : p_error;
+		_err_print_fallback(p_function, p_file, p_line, err_details, p_type, false);
+		return;
+	}
+
 	if (is_printing_error) {
 		// Fallback if we're already printing an error, to prevent infinite recursion.
 		const char *err_details = (p_message && *p_message) ? p_message : p_error;
@@ -141,6 +148,11 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 // been printing by a preceding _err_print_error).
 void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type) {
 	const char *err_details = p_error.utf8().get_data();
+
+	if (!CoreGlobals::print_ready) {
+		_err_print_fallback(nullptr, nullptr, 0, err_details, p_type, false);
+		return;
+	}
 
 	if (is_printing_error) {
 		// Fallback if we're already printing an error, to prevent infinite recursion.
