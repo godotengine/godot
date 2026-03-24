@@ -703,6 +703,14 @@ RenderDiagnosticsOrchestrator::RenderDiagnosticsOrchestrator(const Dependencies 
 	ERR_FAIL_COND_MSG(!build_device_capability_report, "RenderDiagnosticsOrchestrator requires device capability callback.");
 	ERR_FAIL_COND_MSG(!runtime_ports.update_gpu_pass_metrics_from_tile_renderer,
 			"RenderDiagnosticsOrchestrator requires GPU pass metric refresh callback.");
+	ERR_FAIL_COND_MSG(!runtime_ports.get_painterly_config,
+			"RenderDiagnosticsOrchestrator requires painterly-config runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.get_view_state,
+			"RenderDiagnosticsOrchestrator requires view-state runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.get_debug_config,
+			"RenderDiagnosticsOrchestrator requires debug-config runtime port.");
+	ERR_FAIL_COND_MSG(!runtime_ports.resolve_resource_owner,
+			"RenderDiagnosticsOrchestrator requires resource-owner runtime port.");
 }
 
 void RenderDiagnosticsOrchestrator::record_rendering_error(const RenderingError &p_error) {
@@ -888,6 +896,9 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	PainterlyRenderer *painterly_renderer = state_view.get_painterly_renderer();
 	GPUSortingPipeline *sorting_pipeline = state_view.get_sorting_pipeline();
 	RenderingDevice *rendering_device = state_view.get_rendering_device();
+	const auto &painterly_config = (renderer->*runtime_ports.get_painterly_config)();
+	const auto &view_state = (renderer->*runtime_ports.get_view_state)();
+	const auto &debug_config = (renderer->*runtime_ports.get_debug_config)();
 	const Ref<DebugOverlaySystem> &overlay_system_ref = subsystem_state.debug_overlay_system;
 	DebugOverlaySystem *overlay_system = overlay_system_ref.is_valid() ? overlay_system_ref.ptr() : nullptr;
 	const DebugOverlayQueryView overlay_query = overlay_system
@@ -919,22 +930,21 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 		_append_telemetry_extras(*mutable_renderer, stage_metrics, stage_metrics_valid,
 				frame_state.render_time_ms, stats);
 	}
-	stats["painterly_enabled"] = renderer->get_painterly_config().enabled;
-	stats["painterly_low_end_mode"] = renderer->get_painterly_config().low_end_mode;
+	stats["painterly_enabled"] = painterly_config.enabled;
+	stats["painterly_low_end_mode"] = painterly_config.low_end_mode;
 	PainterlyPassGraph *pass_graph = painterly_renderer
 			? painterly_renderer->get_pass_graph()
 			: nullptr;
-	stats["painterly_internal_scale"] = pass_graph ? pass_graph->get_internal_scale() : renderer->get_painterly_config().internal_scale;
-	stats["using_scene_data_camera"] = renderer->get_view_state().using_scene_data;
+	stats["painterly_internal_scale"] = pass_graph ? pass_graph->get_internal_scale() : painterly_config.internal_scale;
+	stats["using_scene_data_camera"] = view_state.using_scene_data;
 	// Debug: expose camera transform values to verify they're updating
-	stats["debug_cam_origin_x"] = renderer->get_view_state().last_camera_to_world_transform.origin.x;
-	stats["debug_cam_origin_y"] = renderer->get_view_state().last_camera_to_world_transform.origin.y;
-	stats["debug_cam_origin_z"] = renderer->get_view_state().last_camera_to_world_transform.origin.z;
+	stats["debug_cam_origin_x"] = view_state.last_camera_to_world_transform.origin.x;
+	stats["debug_cam_origin_y"] = view_state.last_camera_to_world_transform.origin.y;
+	stats["debug_cam_origin_z"] = view_state.last_camera_to_world_transform.origin.z;
 	// Expose view matrix basis[0][0] as rotation indicator
-	stats["debug_cam_basis_00"] = renderer->get_view_state().last_camera_to_world_transform.basis[0][0];
+	stats["debug_cam_basis_00"] = view_state.last_camera_to_world_transform.basis[0][0];
 
 	if (debug_state_orchestrator) {
-		const GaussianSplatRenderer::DebugConfig &debug_config = renderer->get_debug_config();
 		if (debug_config.enable_binning_counters || debug_config.dump_gpu_counters) {
 			const Dictionary binning = debug_state_orchestrator->get_binning_debug_counters();
 			if (!binning.is_empty()) {
@@ -963,7 +973,7 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 		if (preview_count > 0) {
 			RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
 			RenderingDevice *fallback_device = rendering_device;
-			RenderingDevice *owner = renderer->get_resource_owner(sort_indices_buffer, fallback_device);
+			RenderingDevice *owner = (renderer->*runtime_ports.resolve_resource_owner)(sort_indices_buffer, fallback_device);
 			if (!owner) {
 				owner = fallback_device;
 			}

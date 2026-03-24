@@ -13,6 +13,10 @@ public:
 
 	struct RuntimePorts {
 		void (GaussianSplatRenderer::*update_gpu_pass_metrics_from_tile_renderer)() = &GaussianSplatRenderer::update_gpu_pass_metrics_from_tile_renderer;
+		const GaussianSplatRenderer::PainterlyConfig &(GaussianSplatRenderer::*get_painterly_config)() const = &GaussianSplatRenderer::get_painterly_config;
+		const GaussianSplatRenderer::ViewState &(GaussianSplatRenderer::*get_view_state)() const = &GaussianSplatRenderer::get_view_state;
+		const GaussianSplatRenderer::DebugConfig &(GaussianSplatRenderer::*get_debug_config)() const = &GaussianSplatRenderer::get_debug_config;
+		RenderingDevice *(GaussianSplatRenderer::*resolve_resource_owner)(const RID &, RenderingDevice *) const = &GaussianSplatRenderer::get_resource_owner;
 	};
 
 	struct Dependencies {
