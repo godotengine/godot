@@ -16,14 +16,11 @@ static bool _is_data_orchestrator_log_enabled(const GaussianSplatRenderer *p_ren
 			debug_config.enable_all_debug;
 }
 
-RenderDataOrchestrator::RenderDataOrchestrator(GaussianSplatRenderer *p_renderer,
-		ReleaseSharedDynamicAssetFn p_release_shared_dynamic_asset,
-		AcquireRenderingDeviceFn p_acquire_rendering_device,
-		InvalidateStaticChunkCachesFn p_invalidate_static_chunk_caches) :
-		renderer(p_renderer),
-		release_shared_dynamic_asset(p_release_shared_dynamic_asset),
-		acquire_rendering_device(p_acquire_rendering_device),
-		invalidate_static_chunk_caches(p_invalidate_static_chunk_caches) {
+RenderDataOrchestrator::RenderDataOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		release_shared_dynamic_asset(p_dependencies.release_shared_dynamic_asset),
+		acquire_rendering_device(p_dependencies.acquire_rendering_device),
+		invalidate_static_chunk_caches(p_dependencies.invalidate_static_chunk_caches) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_COND_MSG(!release_shared_dynamic_asset, "RenderDataOrchestrator requires release callback.");
 	ERR_FAIL_COND_MSG(!acquire_rendering_device, "RenderDataOrchestrator requires device acquisition callback.");
@@ -72,6 +69,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	const GaussianSplatRenderer::SubsystemState &subsystem_state_view = state_view.get_subsystem_state_view();
 	GaussianSplatRenderer::SubsystemState &subsystem_state = state_mut.get_subsystem_state_mut();
 	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
 	GaussianSplatRenderer::SortingState &sorting_state = state_mut.get_sorting_state_mut();
@@ -172,7 +170,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 				streaming_state.shared_dynamic_asset_handle =
 						manager->acquire_dynamic_asset(scene_state.active_asset,
 							scene_state.gaussian_data,
-							renderer->get_device_state().rd);
+							state_view.get_rendering_device());
 				if (streaming_state.shared_dynamic_asset_handle.is_valid()) {
 					using_shared_dynamic = true;
 					streaming_state.registered_gaussian_buffer =
@@ -191,8 +189,8 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 			if (sorting_state.sort_indices_external) {
 				sorting_state.sort_indices_external = false;
 				sorting_state.sort_buffers_pipeline_managed = false;
-				if (state_view.get_subsystem_state_view().sorting_pipeline.is_valid()) {
-					state_view.get_subsystem_state_view().sorting_pipeline->clear_external_sort_indices();
+				if (subsystem_state_view.sorting_pipeline.is_valid()) {
+					subsystem_state_view.sorting_pipeline->clear_external_sort_indices();
 				}
 			}
 

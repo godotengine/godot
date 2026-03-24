@@ -23,14 +23,12 @@ static void _reset_output_cache_after_readiness_failure(OutputCompositor::Output
 
 } // namespace
 
-RenderInstancingOrchestrator::RenderInstancingOrchestrator(GaussianSplatRenderer *p_renderer,
-		OutputCompositor *p_output_compositor, RenderPipelineStages *p_pipeline_stages,
-		PrepareRenderFrameContextFn p_prepare_render_frame_context, RenderSortedSplatsFn p_render_sorted_splats) :
-		renderer(p_renderer),
-		output_compositor(p_output_compositor),
-		pipeline_stages(p_pipeline_stages),
-		prepare_render_frame_context(p_prepare_render_frame_context),
-		render_sorted_splats(p_render_sorted_splats) {
+RenderInstancingOrchestrator::RenderInstancingOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		output_compositor(p_dependencies.output_compositor),
+		pipeline_stages(p_dependencies.pipeline_stages),
+		prepare_render_frame_context(p_dependencies.prepare_render_frame_context),
+		render_sorted_splats(p_dependencies.render_sorted_splats) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(output_compositor);
 	ERR_FAIL_NULL(pipeline_stages);
@@ -85,8 +83,11 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 	(void)p_handle;
 	ERR_FAIL_NULL_MSG(renderer, "RenderInstancingOrchestrator requires a renderer.");
 	ERR_FAIL_NULL_MSG(pipeline_stages, "RenderInstancingOrchestrator requires pipeline stages.");
-	ERR_FAIL_COND_MSG(!output_compositor, "OutputCompositor not initialized");
-	auto &output_cache = output_compositor->get_cache_state();
+	GaussianSplatRenderer::FrameStateProvider root_state_provider(renderer);
+	const GaussianSplatRenderer::IFrameStateView &root_state_view = root_state_provider;
+	OutputCompositor *root_output_compositor = root_state_view.get_output_compositor();
+	ERR_FAIL_COND_MSG(!root_output_compositor, "OutputCompositor not initialized");
+	auto &output_cache = root_output_compositor->get_cache_state();
 
 	bool defer_commit = p_render_data && p_render_data->render_buffers.is_valid();
 
@@ -95,9 +96,7 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 		return;
 	}
 
-	GaussianSplatRenderer::FrameStateProvider root_state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &root_state_mut = root_state_provider;
-	const GaussianSplatRenderer::IFrameStateView &root_state_view = root_state_provider;
 	GaussianSplatRenderer::FrameState &root_frame_state = root_state_mut.get_frame_state_mut();
 	GaussianSplatRenderer::SortingState &root_sorting_state = root_state_mut.get_sorting_state_mut();
 	GaussianSplatRenderer::PerformanceMetrics &metrics = root_state_mut.get_performance_state_mut().metrics;

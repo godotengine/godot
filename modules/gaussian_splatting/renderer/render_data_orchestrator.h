@@ -16,10 +16,14 @@ public:
 	using AcquireRenderingDeviceFn = std::function<RenderingDevice *()>;
 	using InvalidateStaticChunkCachesFn = std::function<void(bool)>;
 
-	RenderDataOrchestrator(GaussianSplatRenderer *p_renderer,
-			ReleaseSharedDynamicAssetFn p_release_shared_dynamic_asset,
-			AcquireRenderingDeviceFn p_acquire_rendering_device,
-			InvalidateStaticChunkCachesFn p_invalidate_static_chunk_caches);
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		ReleaseSharedDynamicAssetFn release_shared_dynamic_asset;
+		AcquireRenderingDeviceFn acquire_rendering_device;
+		InvalidateStaticChunkCachesFn invalidate_static_chunk_caches;
+	};
+
+	explicit RenderDataOrchestrator(const Dependencies &p_dependencies);
 
 	Error set_gaussian_data(const Ref<::GaussianData> &p_data);
 	void set_gaussian_asset(const Ref<GaussianSplatAsset> &p_asset);

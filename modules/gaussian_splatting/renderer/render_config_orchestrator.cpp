@@ -11,12 +11,10 @@
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 
-RenderConfigOrchestrator::RenderConfigOrchestrator(GaussianSplatRenderer *p_renderer,
-		Ref<InteractiveStateManager> *p_interactive_state_manager,
-		Ref<PainterlyRenderer> *p_painterly_renderer) :
-		renderer(p_renderer),
-		interactive_state_manager(p_interactive_state_manager),
-		painterly_renderer(p_painterly_renderer) {
+RenderConfigOrchestrator::RenderConfigOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		interactive_state_manager(p_dependencies.interactive_state_manager),
+		painterly_renderer(p_dependencies.painterly_renderer) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(interactive_state_manager);
 	ERR_FAIL_NULL(painterly_renderer);

@@ -711,30 +711,45 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
                     diagnostics_orchestrator->record_rendering_error(p_error);
                 }
             });
-    quality_orchestrator = std::make_unique<RenderQualityOrchestrator>(this, subsystem_state.gpu_culler.ptr());
-    config_orchestrator = std::make_unique<RenderConfigOrchestrator>(
-            this, &subsystem_state.interactive_state_manager, &subsystem_state.painterly_renderer);
-    instancing_orchestrator = std::make_unique<RenderInstancingOrchestrator>(
-            this, subsystem_state.output_compositor.ptr(), pipeline_stages.get(),
+    RenderQualityOrchestrator::Dependencies quality_dependencies;
+    quality_dependencies.renderer = this;
+    quality_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    quality_dependencies.runtime_ports.refresh_gpu_sorter = &GaussianSplatRenderer::refresh_gpu_sorter;
+    quality_orchestrator = std::make_unique<RenderQualityOrchestrator>(quality_dependencies);
+
+    RenderConfigOrchestrator::Dependencies config_dependencies;
+    config_dependencies.renderer = this;
+    config_dependencies.interactive_state_manager = &subsystem_state.interactive_state_manager;
+    config_dependencies.painterly_renderer = &subsystem_state.painterly_renderer;
+    config_orchestrator = std::make_unique<RenderConfigOrchestrator>(config_dependencies);
+
+    RenderInstancingOrchestrator::Dependencies instancing_dependencies;
+    instancing_dependencies.renderer = this;
+    instancing_dependencies.output_compositor = subsystem_state.output_compositor.ptr();
+    instancing_dependencies.pipeline_stages = pipeline_stages.get();
+    instancing_dependencies.prepare_render_frame_context =
             [this](RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
                     const Projection &p_projection, const Projection &p_render_projection,
                     bool p_defer_render_buffers_commit, RenderFrameContext &r_context) {
                 _prepare_render_frame_context(p_render_data, p_world_to_camera_transform, p_projection,
                         p_render_projection, p_defer_render_buffers_commit, r_context);
-            },
+            };
+    instancing_dependencies.render_sorted_splats =
             [this](RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
                     const Projection &p_projection, const Projection &p_render_projection,
                     bool p_defer_render_buffers_commit) {
                 render_sorted_splats(p_render_data, p_world_to_camera_transform, p_projection,
                         p_render_projection, p_defer_render_buffers_commit);
-            });
+            };
+    instancing_orchestrator = std::make_unique<RenderInstancingOrchestrator>(instancing_dependencies);
     resource_orchestrator = std::make_unique<RenderResourceOrchestrator>(
             this, &get_device_state(), &pipeline_features_effective, &pipeline_features_warning_cache);
-    data_orchestrator = std::make_unique<RenderDataOrchestrator>(
-            this,
-            [this]() { _release_shared_dynamic_asset(); },
-            [this]() { return _acquire_rendering_device(); },
-            [this](bool p_free_rids) { _invalidate_static_chunk_caches(p_free_rids); });
+    RenderDataOrchestrator::Dependencies data_dependencies;
+    data_dependencies.renderer = this;
+    data_dependencies.release_shared_dynamic_asset = [this]() { _release_shared_dynamic_asset(); };
+    data_dependencies.acquire_rendering_device = [this]() { return _acquire_rendering_device(); };
+    data_dependencies.invalidate_static_chunk_caches = [this](bool p_free_rids) { _invalidate_static_chunk_caches(p_free_rids); };
+    data_orchestrator = std::make_unique<RenderDataOrchestrator>(data_dependencies);
     streaming_orchestrator = std::make_unique<RenderStreamingOrchestrator>(
             RenderStreamingOrchestratorDependencies{this, data_orchestrator.get(), device_orchestrator.get()});
     RenderOutputOrchestrator::Dependencies output_dependencies;

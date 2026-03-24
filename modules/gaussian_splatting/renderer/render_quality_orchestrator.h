@@ -3,12 +3,24 @@
 
 #include "gaussian_splat_renderer.h"
 
+#include <functional>
+
 // Manages quality settings (LOD, culling parameters, presets) and
 // executes the GPU culling pass. Merged from the former
 // RenderQualityOrchestrator + RenderCullingOrchestrator (ISSUE-016).
 class RenderQualityOrchestrator {
 public:
-	RenderQualityOrchestrator(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler);
+	struct RuntimePorts {
+		void (GaussianSplatRenderer::*refresh_gpu_sorter)(const char *p_context) = &GaussianSplatRenderer::refresh_gpu_sorter;
+	};
+
+	struct Dependencies {
+		GaussianSplatRenderer *renderer = nullptr;
+		GPUCuller *gpu_culler = nullptr;
+		RuntimePorts runtime_ports;
+	};
+
+	explicit RenderQualityOrchestrator(const Dependencies &p_dependencies);
 
 	// Quality / LOD settings
 	void set_lod_enabled(bool p_enabled);
@@ -43,6 +55,7 @@ private:
 	GaussianSplatRenderer::PerformanceSettings performance_settings;
 	GaussianSplatRenderer *renderer = nullptr;
 	GPUCuller *gpu_culler = nullptr;
+	RuntimePorts runtime_ports;
 };
 
 #endif

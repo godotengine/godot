@@ -8,11 +8,13 @@
 #include "core/string/ustring.h"
 #include "servers/rendering_server.h"
 
-RenderQualityOrchestrator::RenderQualityOrchestrator(GaussianSplatRenderer *p_renderer, GPUCuller *p_gpu_culler) :
-		renderer(p_renderer),
-		gpu_culler(p_gpu_culler) {
+RenderQualityOrchestrator::RenderQualityOrchestrator(const Dependencies &p_dependencies) :
+		renderer(p_dependencies.renderer),
+		gpu_culler(p_dependencies.gpu_culler),
+		runtime_ports(p_dependencies.runtime_ports) {
 	ERR_FAIL_NULL(renderer);
 	ERR_FAIL_NULL(gpu_culler);
+	ERR_FAIL_COND_MSG(!runtime_ports.refresh_gpu_sorter, "RenderQualityOrchestrator requires a GPU sorter refresh callback.");
 }
 
 void RenderQualityOrchestrator::set_lod_enabled(bool p_enabled) {
@@ -161,8 +163,10 @@ void RenderQualityOrchestrator::set_max_splats(int p_count) {
 		return;
 	}
 	performance_settings.max_splats = p_count;
-	renderer->get_sorting_state().sorter_needs_rebuild = true;
-	renderer->refresh_gpu_sorter("set_max_splats");
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	state_mut.get_sorting_state_mut().sorter_needs_rebuild = true;
+	(renderer->*runtime_ports.refresh_gpu_sorter)("set_max_splats");
 }
 
 void RenderQualityOrchestrator::set_frustum_culling(bool p_enabled) {
@@ -193,7 +197,9 @@ void RenderQualityOrchestrator::set_quality_preset(const String &p_preset) {
 		gpu_culler->get_config().temporal_coherence = false;
 	}
 
-	renderer->get_sorting_state().sorter_needs_rebuild = true;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	state_mut.get_sorting_state_mut().sorter_needs_rebuild = true;
 }
 
 String RenderQualityOrchestrator::get_quality_preset() const {
@@ -214,9 +220,15 @@ String RenderQualityOrchestrator::get_quality_preset() const {
 GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(const Transform3D &p_world_to_camera_transform,
 		const Projection &p_projection, const Size2i &p_viewport_size) {
 	GaussianRenderState::CullStageOutput output;
+	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
+	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
+	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
+	GaussianSplatRenderer::FrameState &frame_state = state_mut.get_frame_state_mut();
+	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
+	auto &metrics = performance_state.metrics;
+	const GaussianSplatRenderer::SceneState &scene_state = state_view.get_scene_state();
 	if (!gpu_culler) {
-		renderer->get_frame_state().visible_splat_count.store(0, std::memory_order_release);
-		auto &metrics = renderer->get_performance_state().metrics;
+		frame_state.visible_splat_count.store(0, std::memory_order_release);
 		metrics.visible_after_culling = 0;
 		metrics.culling_candidate_count = 0;
 		metrics.culled_frustum_count = 0;
@@ -229,7 +241,7 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 	}
 
 	GPUCuller::CullingInputs inputs;
-	inputs.gaussian_data = renderer->get_scene_state().gaussian_data;
+	inputs.gaussian_data = scene_state.gaussian_data;
 	inputs.test_positions = &renderer->get_test_data_state().positions;
 	inputs.test_scales = &renderer->get_test_data_state().scales;
 	const int max_splats = performance_settings.max_splats;
@@ -250,8 +262,7 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 				false, "gpu_cull_visible_indices");
 	}
 
-	renderer->get_frame_state().visible_splat_count.store(summary.visible_after_culling, std::memory_order_release);
-	auto &metrics = renderer->get_performance_state().metrics;
+	frame_state.visible_splat_count.store(summary.visible_after_culling, std::memory_order_release);
 	metrics.visible_after_culling = summary.visible_after_culling;
 	metrics.culling_candidate_count = summary.culling_candidate_count;
 	metrics.culled_frustum_count = summary.culled_frustum_count;
@@ -293,16 +304,20 @@ void GaussianSplatRenderer::set_importance_cull_threshold(float p_threshold) {
 
 void GaussianSplatRenderer::set_cull_radius_multiplier(float p_multiplier) {
 	quality_orchestrator->set_cull_radius_multiplier(p_multiplier);
-	if (get_streaming_state().current_streaming_system.is_valid()) {
-		get_streaming_state().current_streaming_system->set_chunk_radius_multiplier(
+	FrameStateProvider state_provider(this);
+	const IFrameStateView &state_view = state_provider;
+	if (state_view.get_streaming_state().current_streaming_system.is_valid()) {
+		state_view.get_streaming_state().current_streaming_system->set_chunk_radius_multiplier(
 				p_multiplier * get_cull_frustum_plane_slack());
 	}
 }
 
 void GaussianSplatRenderer::set_cull_frustum_plane_slack(float p_slack) {
 	quality_orchestrator->set_cull_frustum_plane_slack(p_slack);
-	if (get_streaming_state().current_streaming_system.is_valid()) {
-		get_streaming_state().current_streaming_system->set_chunk_radius_multiplier(
+	FrameStateProvider state_provider(this);
+	const IFrameStateView &state_view = state_provider;
+	if (state_view.get_streaming_state().current_streaming_system.is_valid()) {
+		state_view.get_streaming_state().current_streaming_system->set_chunk_radius_multiplier(
 				get_cull_radius_multiplier() * p_slack);
 	}
 }
@@ -370,8 +385,10 @@ void GaussianSplatRenderer::set_frustum_culling(bool p_enabled) {
 }
 
 void GaussianSplatRenderer::set_async_upload_enabled(bool p_enabled) {
-	if (get_streaming_state().memory_stream.is_valid()) {
-		get_streaming_state().memory_stream->set_async_upload(p_enabled);
+	FrameStateProvider state_provider(this);
+	const IFrameStateView &state_view = state_provider;
+	if (state_view.get_streaming_state().memory_stream.is_valid()) {
+		state_view.get_streaming_state().memory_stream->set_async_upload(p_enabled);
 	}
 }
 
