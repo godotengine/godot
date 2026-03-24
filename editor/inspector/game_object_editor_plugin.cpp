@@ -34,34 +34,124 @@
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 
 // GameObjectComponentList
 
-void GameObjectComponentList::_refresh_list() {
-	component_list->clear();
+void GameObjectComponentList::_rebuild_list() {
+	// Remove all existing component entries.
+	while (component_container->get_child_count() > 0) {
+		Node *child = component_container->get_child(0);
+		component_container->remove_child(child);
+		child->queue_free();
+	}
+
 	if (!game_object) {
 		return;
 	}
 
 	for (int i = 0; i < game_object->get_child_count(); i++) {
 		Node *child = game_object->get_child(i);
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(child);
-		component_list->add_item(child->get_name(), icon);
+
+		// Outer container for this component entry.
+		VBoxContainer *entry = memnew(VBoxContainer);
+		component_container->add_child(entry);
+
+		// Header bar: [fold toggle] [icon] [name] [delete button].
+		HBoxContainer *header = memnew(HBoxContainer);
+		entry->add_child(header);
+
+		Button *fold_btn = memnew(Button);
+		fold_btn->set_toggle_mode(true);
+		fold_btn->set_pressed_no_signal(false);
+		fold_btn->set_text(String::utf8("\u25BC")); // Down arrow (expanded).
+		fold_btn->set_tooltip_text(TTR("Toggle component properties"));
+		fold_btn->set_flat(true);
+		fold_btn->set_custom_minimum_size(Size2(24 * EDSCALE, 0));
+		fold_btn->connect(SceneStringName(pressed), callable_mp(this, &GameObjectComponentList::_toggle_component).bind(i));
+		header->add_child(fold_btn);
+
+		// Icon.
+		TextureRect *icon_rect = memnew(TextureRect);
+		icon_rect->set_texture(EditorNode::get_singleton()->get_object_icon(child));
+		icon_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		icon_rect->set_custom_minimum_size(Size2(16 * EDSCALE, 16 * EDSCALE));
+		icon_rect->set_v_size_flags(SIZE_SHRINK_CENTER);
+		header->add_child(icon_rect);
+
+		// Name label.
+		Label *name_label = memnew(Label);
+		name_label->set_text(child->get_name());
+		name_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		header->add_child(name_label);
+
+		// Delete button.
+		Button *delete_btn = memnew(Button);
+		delete_btn->set_text(String::utf8("\u2716")); // X mark.
+		delete_btn->set_tooltip_text(TTR("Delete component"));
+		delete_btn->set_flat(true);
+		delete_btn->set_custom_minimum_size(Size2(24 * EDSCALE, 0));
+		delete_btn->connect(SceneStringName(pressed), callable_mp(this, &GameObjectComponentList::_delete_component).bind(i));
+		header->add_child(delete_btn);
+
+		// Separator under header.
+		HSeparator *sep = memnew(HSeparator);
+		entry->add_child(sep);
+
+		// Sub-inspector for this component's properties.
+		EditorInspector *sub_inspector = memnew(EditorInspector);
+		sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+		sub_inspector->set_use_doc_hints(true);
+		sub_inspector->set_use_folding(true);
+		sub_inspector->set_draw_focus_border(false);
+		sub_inspector->set_focus_mode(Control::FOCUS_NONE);
+		sub_inspector->edit(child);
+		entry->add_child(sub_inspector);
+	}
+}
+
+void GameObjectComponentList::_toggle_component(int p_index) {
+	if (p_index < 0 || p_index >= component_container->get_child_count()) {
+		return;
 	}
 
-	// Resize to fit contents, with a minimum and maximum height.
-	int item_count = component_list->get_item_count();
-	if (item_count == 0) {
-		component_list->set_custom_minimum_size(Size2(0, 0));
-		component_list->hide();
-	} else {
-		component_list->show();
-		int height = CLAMP(item_count * 26 + 4, 30, 200);
-		component_list->set_custom_minimum_size(Size2(0, height));
+	VBoxContainer *entry = Object::cast_to<VBoxContainer>(component_container->get_child(p_index));
+	ERR_FAIL_NULL(entry);
+
+	// The sub-inspector is the last child of the entry (after header and separator).
+	EditorInspector *sub_inspector = Object::cast_to<EditorInspector>(entry->get_child(entry->get_child_count() - 1));
+	ERR_FAIL_NULL(sub_inspector);
+
+	// The fold button is the first child of the header (first child of entry).
+	HBoxContainer *header = Object::cast_to<HBoxContainer>(entry->get_child(0));
+	ERR_FAIL_NULL(header);
+	Button *fold_btn = Object::cast_to<Button>(header->get_child(0));
+	ERR_FAIL_NULL(fold_btn);
+
+	bool collapsed = fold_btn->is_pressed();
+	sub_inspector->set_visible(!collapsed);
+	fold_btn->set_text(collapsed ? String::utf8("\u25B6") : String::utf8("\u25BC")); // Right arrow / Down arrow.
+}
+
+void GameObjectComponentList::_delete_component(int p_index) {
+	if (!game_object || p_index < 0 || p_index >= game_object->get_child_count()) {
+		return;
 	}
+
+	Node *child = game_object->get_child(p_index);
+	ERR_FAIL_NULL(child);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Delete Component"));
+	undo_redo->add_do_method(game_object, "remove_child", child);
+	undo_redo->add_undo_method(game_object, "add_child", child, true);
+	undo_redo->add_undo_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_undo_reference(child);
+	undo_redo->commit_action();
 }
 
 void GameObjectComponentList::_on_add_component_pressed() {
@@ -72,14 +162,6 @@ void GameObjectComponentList::_on_add_component_pressed() {
 		create_dialog->connect("create", callable_mp(this, &GameObjectComponentList::_on_create_confirmed));
 	}
 	create_dialog->popup_create(true);
-}
-
-void GameObjectComponentList::_on_component_selected(int p_index) {
-	if (!game_object || p_index < 0 || p_index >= game_object->get_child_count()) {
-		return;
-	}
-	Node *child = game_object->get_child(p_index);
-	EditorNode::get_singleton()->push_item(child);
 }
 
 void GameObjectComponentList::_on_create_confirmed() {
@@ -160,61 +242,7 @@ void GameObjectComponentList::_on_script_file_selected(const String &p_path) {
 }
 
 void GameObjectComponentList::_on_child_order_changed() {
-	_refresh_list();
-}
-
-Variant GameObjectComponentList::_get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	int idx = component_list->get_item_at_position(p_point);
-	if (idx < 0) {
-		return Variant();
-	}
-
-	Dictionary drag_data;
-	drag_data["type"] = "game_object_component";
-	drag_data["index"] = idx;
-
-	// Create preview label.
-	Label *label = memnew(Label);
-	label->set_text(component_list->get_item_text(idx));
-	set_drag_preview(label);
-
-	return drag_data;
-}
-
-bool GameObjectComponentList::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-	if (p_data.get_type() != Variant::DICTIONARY) {
-		return false;
-	}
-	Dictionary d = p_data;
-	if (!d.has("type") || String(d["type"]) != "game_object_component") {
-		return false;
-	}
-	return true;
-}
-
-void GameObjectComponentList::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	if (!game_object) {
-		return;
-	}
-
-	Dictionary d = p_data;
-	int from_idx = d["index"];
-	int to_idx = component_list->get_item_at_position(p_point);
-	if (to_idx < 0) {
-		to_idx = component_list->get_item_count() - 1;
-	}
-	if (from_idx == to_idx) {
-		return;
-	}
-
-	Node *child = game_object->get_child(from_idx);
-	ERR_FAIL_NULL(child);
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Reorder Component"));
-	undo_redo->add_do_method(game_object, "move_child", child, to_idx);
-	undo_redo->add_undo_method(game_object, "move_child", child, from_idx);
-	undo_redo->commit_action();
+	_rebuild_list();
 }
 
 void GameObjectComponentList::set_game_object(Node *p_game_object) {
@@ -225,7 +253,7 @@ void GameObjectComponentList::set_game_object(Node *p_game_object) {
 	if (game_object) {
 		game_object->connect("child_order_changed", callable_mp(this, &GameObjectComponentList::_on_child_order_changed));
 	}
-	_refresh_list();
+	_rebuild_list();
 }
 
 GameObjectComponentList::GameObjectComponentList() {
@@ -235,14 +263,9 @@ GameObjectComponentList::GameObjectComponentList() {
 	header->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	add_child(header);
 
-	// Component list.
-	component_list = memnew(ItemList);
-	component_list->set_select_mode(ItemList::SELECT_SINGLE);
-	component_list->set_allow_reselect(true);
-	component_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	SET_DRAG_FORWARDING_GCDU(component_list, GameObjectComponentList);
-	component_list->connect("item_selected", callable_mp(this, &GameObjectComponentList::_on_component_selected));
-	add_child(component_list);
+	// Component container (rebuilt dynamically).
+	component_container = memnew(VBoxContainer);
+	add_child(component_container);
 
 	// Separator.
 	add_child(memnew(HSeparator));

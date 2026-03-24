@@ -35,29 +35,27 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/item_list.h"
 #include "scene/main/game_object.h"
+
+class Button;
 
 class GameObjectComponentList : public VBoxContainer {
 	GDCLASS(GameObjectComponentList, VBoxContainer);
 
 	Node *game_object = nullptr;
-	ItemList *component_list = nullptr;
+	VBoxContainer *component_container = nullptr;
 	CreateDialog *create_dialog = nullptr;
 	EditorFileDialog *script_file_dialog = nullptr;
 
-	void _refresh_list();
+	void _rebuild_list();
 	void _on_add_component_pressed();
 	void _on_add_script_pressed();
-	void _on_component_selected(int p_index);
 	void _on_create_confirmed();
 	void _on_script_file_selected(const String &p_path);
 	void _on_child_order_changed();
 
-	// Drag forwarding.
-	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	void _toggle_component(int p_index);
+	void _delete_component(int p_index);
 
 public:
 	void set_game_object(Node *p_game_object);
