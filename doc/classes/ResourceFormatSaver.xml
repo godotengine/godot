@@ -12,15 +12,15 @@
 		class_name GameSaveSaver
 		extends ResourceFormatSaver
 
-		func _get_recognized_extensions(resource: Resource) -> PackedStringArray:
+		func _get_recognized_extensions(resource: Resource) -&gt; PackedStringArray:
 			if resource is GameSave:
 				return PackedStringArray(["save"])
 			return PackedStringArray()
 
-		func _recognize(resource: Resource) -> bool:
+		func _recognize(resource: Resource) -&gt; bool:
 			return resource is GameSave
 
-		func _save(resource: Resource, path: String, flags: int) -> Error:
+		func _save(resource: Resource, path: String, flags: int) -&gt; Error:
 			if not resource:
 				return ERR_INVALID_PARAMETER
 
@@ -32,13 +32,13 @@
 					push_error("Cannot save GameSave file %s." % path)
 					return err
 
-			# Store serialized file bits here
+			# Store serialized file bits here.
 			file.store_string(data)
 
 			return OK
 
-		func to_json(game_save: GameSave) -> String:
-			# ... Convert to json text from GameSave here
+		func to_json(game_save: GameSave) -&gt; String:
+			# ... Convert to json text from GameSave here.
 		[/codeblock]
 	</description>
 	<tutorials>

@@ -13,20 +13,20 @@
 		class_name GameSaveLoader
 		extends ResourceFormatLoader
 
-		func _get_recognized_extensions() -> PackedStringArray:
+		func _get_recognized_extensions() -&gt; PackedStringArray:
 			return PackedStringArray(["save"])
 
-		func _get_resource_type(path: String) -> String:
+		func _get_resource_type(path: String) -&gt; String:
 			if path.get_extension() == "save":
 				return "Resource" # Use the ClassDB recognized class here.
 			return ""
 
-		func _get_resource_script_class(path: String) -> String:
+		func _get_resource_script_class(path: String) -&gt; String:
 			if path.get_extension() == "save":
 				return "GameSave"
 			return ""
 
-		func _load(path: String, original_path: String, use_sub_threads: bool, cache_mode: int) -> Variant:
+		func _load(path: String, original_path: String, use_sub_threads: bool, cache_mode: int) -&gt; Variant:
 			var file = FileAccess.open(path, FileAccess.READ)
 
 			if not file:
@@ -42,8 +42,8 @@
 
 			return from_json(file_data)
 
-		func from_json(file_data: String) -> GameSave:
-			# ... Convert to GameSave from json text here
+		func from_json(file_data: String) -&gt; GameSave:
+			# ... Convert to GameSave from json text here.
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -61,9 +61,9 @@
 			<return type="PackedStringArray" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Gets a list of all [ClassDB] recognized classes that are used by this loader at the given [param path]. 
+				Gets a list of all [ClassDB] recognized classes that are used by this loader at the given [param path].
 				If it is not implemented, returns the class given by [method _get_resource_type].
-				[b]NOTE:[/b] This is used to trim unused features by the [url=$DOCS_URL//tutorials/editor/using_engine_compilation_configuration_editor.html]Compilation Configuration Editor[/url].
+				[b]NOTE:[/b] This is used to trim unused features by the [url=$DOCS_URL/tutorials/editor/using_engine_compilation_configuration_editor.html]Compilation Configuration Editor[/url].
 			</description>
 		</method>
 		<method name="_get_dependencies" qualifiers="virtual const">
