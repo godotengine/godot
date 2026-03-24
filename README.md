@@ -1,6 +1,6 @@
 # Godot Gaussian Splatting
 
-<video src="media/demo.webm" autoplay loop muted playsinline></video>
+<video src="media/demo.mp4" autoplay loop muted playsinline></video>
 
 GodotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module.
 
