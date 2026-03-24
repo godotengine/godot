@@ -637,6 +637,42 @@ This is not a rewrite plan. It is a migration plan that preserves shipping behav
     - Guard lane: pass.
     - Module lane: pass (`GaussianSplatting` 144 tests / 4,066 assertions).
 
+### Phase 1b.2a implementation status (stage-writer split with explicit mutation access, slice 15)
+- Date: 2026-03-24
+- Scope applied:
+  - `modules/gaussian_splatting/renderer/gaussian_splat_renderer.h`:
+    - Stage carriers were split so query-only stage inputs (`CullStageInput`, `SortStageInput`) now carry `const IFrameStateView *`.
+    - Mutating raster-stage input now carries both `const IFrameStateView *` and `IFrameMutationAccess *`.
+    - `RenderFrameContext` continues to carry the legacy `state_provider` bridge, but also exposes explicit `state_view` / `mutation_access` slots for in-flight stage execution.
+  - `modules/gaussian_splatting/renderer/render_pipeline_stages.h`:
+    - `reset_render_state_for_frame(...)` now accepts explicit `IFrameStateView` + `IFrameMutationAccess` instead of a const provider.
+  - `modules/gaussian_splatting/renderer/render_pipeline_stages.cpp`:
+    - Added `_resolve_state_view(...)` and `_resolve_mutation_access(...)` helpers so older provider-only callers can bridge into the new split contract without behavior changes.
+    - `execute_frame_entry(...)` now resolves explicit view/mutation access before stage dispatch and uses mutation access for frame-count writes.
+    - `RasterCompositeStage::execute(...)` now builds raster/composite inputs with explicit `state_view` / `mutation_access` instead of provider-only stage contracts.
+    - Mutating stage helpers now source bucket writes from `IFrameMutationAccess`:
+      - `reset_render_state_for_frame(...)`
+      - `RasterStage::render_tile_fallback(...)`
+      - `RasterStage::try_reuse_cached_render(...)`
+      - `RasterStage::render_baseline_stage(...)`
+      - `RasterStage::render_painterly_or_baseline_stage(...)`
+      - `render_sorted_splats_with_context(...)`
+    - Query-only cull/sort stage paths continue to read through `IFrameStateView`.
+- Explicitly preserved for this slice:
+  - No service-pointer narrowing.
+  - No debug overlay or painterly direct-facade redesign.
+  - No sorting-seam API work.
+  - No public `GaussianSplatRenderer` facade behavior change.
+- Remaining caveat:
+  - The legacy provider bridge still exists in `RenderFrameContext::state_provider`, and `_resolve_mutation_access(...)` still falls back through that bridge for older callers that have not populated explicit mutation access yet.
+  - Service pointers exposed by `IFrameStateView` remain mutable and are still under the known 1b caveat.
+- Rollback boundary:
+  - Revert only slice-15 stage-writer split changes in `gaussian_splat_renderer.h`, `render_pipeline_stages.h`, and `render_pipeline_stages.cpp`.
+- Verification status:
+  - `git diff --check` passed for touched files.
+  - Local phase checks passed via `python3 scripts/refactor_phase_runner.py local-checks --phase 1b.2a --no-regen-architecture`.
+  - Native Windows verification: pending.
+
 ### Phase 1b.1 implementation status (query-only callsite migration, slice 2)
 - Date: 2026-03-23
 - Scope applied:

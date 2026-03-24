@@ -272,6 +272,8 @@ public:
         bool painterly_enabled = false;
         StageMetrics *metrics = nullptr;
         const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
+        IFrameMutationAccess *mutation_access = nullptr;
         RenderFrameSnapshot snapshot;
         // Deprecated: use IFrameStateProvider for state queries.
         struct FrameDeps {
@@ -419,7 +421,7 @@ public:
         Projection projection;
         Size2i viewport_size;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
     };
 
     struct SortStageInput {
@@ -427,7 +429,7 @@ public:
         Transform3D world_to_camera_transform;
         uint32_t input_count = 0;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
         IndexDomain input_domain = IndexDomain::UNKNOWN;
     };
 
@@ -478,7 +480,8 @@ public:
         IndexDomain sorted_index_domain = IndexDomain::UNKNOWN;
         bool painterly_requested = false;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
+        IFrameMutationAccess *mutation_access = nullptr;
     };
 
     struct CompositeStageInput {
@@ -490,7 +493,7 @@ public:
         bool defer_commit = false;
         RasterStageOutput raster_output;
         StageMetrics *metrics = nullptr;
-        const IFrameStateProvider *state_provider = nullptr;
+        const IFrameStateView *state_view = nullptr;
     };
 
 public:
