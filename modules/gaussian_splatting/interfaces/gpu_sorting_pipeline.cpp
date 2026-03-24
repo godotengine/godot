@@ -2028,9 +2028,9 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
         return false;
     }
     GaussianRenderState::SortingState &sorting_state = *sort_ctx.sorting_state;
-    GaussianRenderState::FrameState &frame_state = *sort_ctx.frame_state;
-    GaussianRenderState::PerformanceState &performance_state = *sort_ctx.performance_state;
-    GaussianRenderState::ViewState &view_state = *sort_ctx.view_state;
+    RenderFrameContextManager::FrameState &frame_state = *sort_ctx.frame_state;
+    GaussianRenderPerformance::PerformanceState &performance_state = *sort_ctx.performance_state;
+    RenderFrameContextManager::ViewState &view_state = *sort_ctx.view_state;
     GPUCuller *gpu_culler = sort_ctx.gpu_culler;
     if (gpu_culler) {
         gpu_culler->update_culling_settings();
