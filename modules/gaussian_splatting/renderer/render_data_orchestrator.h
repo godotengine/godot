@@ -3,6 +3,8 @@
 
 #include "../core/gaussian_streaming.h"
 #include "../interfaces/gpu_culler.h"
+#include "render_types/render_debug_types.h"
+#include "render_types/render_performance_types.h"
 #include "render_types/render_state_types.h"
 
 #include <functional>
@@ -22,8 +24,8 @@ public:
 
 	struct Dependencies {
 		GaussianSplatRenderer *renderer = nullptr;
-		const GaussianSplatRenderer::DebugConfig *debug_config = nullptr;
-		const GaussianSplatRenderer::PerformanceSettings *performance_settings = nullptr;
+		const GaussianRenderDebug::DebugConfig *debug_config = nullptr;
+		const GaussianRenderPerformance::PerformanceSettings *performance_settings = nullptr;
 		const GPUCuller::CullingConfig *culling_config = nullptr;
 		ReleaseSharedDynamicAssetFn release_shared_dynamic_asset;
 		AcquireRenderingDeviceFn acquire_rendering_device;
@@ -47,8 +49,8 @@ public:
 
 private:
 	GaussianSplatRenderer *renderer = nullptr;
-	const GaussianSplatRenderer::DebugConfig *debug_config = nullptr;
-	const GaussianSplatRenderer::PerformanceSettings *performance_settings = nullptr;
+	const GaussianRenderDebug::DebugConfig *debug_config = nullptr;
+	const GaussianRenderPerformance::PerformanceSettings *performance_settings = nullptr;
 	const GPUCuller::CullingConfig *culling_config = nullptr;
 	GaussianRenderState::SceneState scene_state;
 	GaussianRenderState::StreamingState streaming_state;
