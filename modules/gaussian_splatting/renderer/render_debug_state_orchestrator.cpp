@@ -854,8 +854,8 @@ Dictionary RenderDebugStateOrchestrator::get_overflow_stats() const {
 Dictionary RenderDebugStateOrchestrator::get_pipeline_trace_snapshot() const {
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
-	const DebugState &debug_state = get_state();
-	const DebugConfig &debug_config = get_config();
+	const GaussianSplatRenderer::DebugState &debug_state = get_state();
+	const GaussianSplatRenderer::DebugConfig &debug_config = get_config();
 
 	Dictionary snapshot;
 	const uint64_t frame_id = debug_state.pipeline_events_valid
