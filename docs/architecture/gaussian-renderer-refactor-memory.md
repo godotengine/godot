@@ -1626,4 +1626,35 @@ Before any code phase starts:
 ### Verification status
 - `git diff --check` passed.
 - `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture` passed.
-- Native Windows verification is pending for this slice.
+- Native Windows verification passed via `Gaussian Production Gates` run `23502430431` on commit `923dabc985` (build, smoke tests, module lane, runtime validation, world-streaming gate, large-scene benchmark, eviction-churn benchmark).
+- Follow-up fix commits were required after earlier Windows-only failures:
+  - `e563238383` `fix(data): use direct config types in orchestrator deps`
+  - `923dabc985` `fix(data): defer runtime port default binding`
+
+## Phase 5.3 Implementation Status (diagnostics stats-query narrowing, slice 34)
+
+### Scope applied
+- `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.h` / `.cpp`
+  - Added narrow runtime ports for painterly-config, view-state, debug-config, and resource-owner resolution used by `build_render_stats()`.
+  - Rewired `build_render_stats()` query reads to use those runtime ports instead of direct renderer getter reach-through for painterly flags, camera/view telemetry, binning-counter gate checks, and sort-preview buffer owner lookup.
+  - Added constructor validation for the new runtime ports so the narrowed query path cannot silently dereference missing bindings.
+
+### Explicitly preserved
+- `finalize_frame_metrics()` ordering and mutation behavior.
+- `get_runtime_diagnostic_snapshot()` behavior and external diagnostics payload shape.
+- Existing stats keys, monitor naming, route UID reporting, and renderer facade behavior.
+- No sorting-seam redesign, painterly redesign, or debug-overlay redesign.
+
+### Caveat
+- This slice narrows the `build_render_stats()` query fan-in only. Diagnostics still owns mixed query/mutation behavior in finalize/runtime-report paths where that is still the correct orchestrator responsibility.
+
+### Rollback boundary
+- Revert only:
+  - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.h`
+  - `modules/gaussian_splatting/renderer/render_diagnostics_orchestrator.cpp`
+  - `docs/architecture/gaussian-renderer-refactor-memory.md`
+
+### Verification status
+- `git diff --check` passed before checkpoint commit.
+- `python3 scripts/refactor_phase_runner.py local-checks --phase 5 --no-regen-architecture` passed on the diagnostics checkpoint.
+- Native Windows verification passed as part of `Gaussian Production Gates` run `23502430431` on commit `923dabc985` (the verified branch head includes diagnostics checkpoint `ed062e5570` plus the follow-up Windows-only data fixes above).
