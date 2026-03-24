@@ -1001,7 +1001,7 @@ void Viewport::_process_picking() {
 		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
 			capture_object = ObjectDB::get_instance<CollisionObject3D>(physics_object_capture);
-			if (!capture_object || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
+			if (!capture_object || !capture_object->is_inside_tree() || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
 				physics_object_capture = ObjectID();
 			} else {
 				last_id = physics_object_capture;
@@ -1011,12 +1011,15 @@ void Viewport::_process_picking() {
 
 		if (pos == last_pos) {
 			if (last_id.is_valid()) {
-				if (ObjectDB::get_instance(last_id) && last_object) {
-					// Good, exists.
-					_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
-					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+				CollisionObject3D *current_last_object = ObjectDB::get_instance<CollisionObject3D>(last_id);
+				if (current_last_object && current_last_object == last_object && current_last_object->is_inside_tree()) {
+					_collision_object_3d_input_event(current_last_object, camera_3d, ev, result.position, result.normal, result.shape);
+					if (current_last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 						physics_object_capture = last_id;
 					}
+				} else {
+					last_id = ObjectID();
+					last_object = nullptr;
 				}
 			}
 		} else {
@@ -1050,7 +1053,7 @@ void Viewport::_process_picking() {
 					if (is_mouse && new_collider != physics_object_over) {
 						if (physics_object_over.is_valid()) {
 							CollisionObject3D *previous_co = ObjectDB::get_instance<CollisionObject3D>(physics_object_over);
-							if (previous_co) {
+							if (previous_co && previous_co->is_inside_tree()) {
 								previous_co->_mouse_exit();
 							}
 						}
@@ -4723,6 +4726,13 @@ void Viewport::_audio_listener_3d_make_next_current(AudioListener3D *p_exclude) 
 
 #ifndef PHYSICS_3D_DISABLED
 void Viewport::_collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
+	ERR_FAIL_NULL(p_object);
+	ERR_FAIL_NULL(p_camera);
+	if (!p_object->is_inside_tree() || !p_camera->is_inside_tree()) {
+		physics_last_id = ObjectID();
+		return;
+	}
+
 	Transform3D object_transform = p_object->get_global_transform();
 	Transform3D camera_transform = p_camera->get_global_transform();
 	ObjectID id = p_object->get_instance_id();
