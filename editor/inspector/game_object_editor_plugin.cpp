@@ -30,6 +30,8 @@
 
 #include "game_object_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/button.h"
@@ -93,6 +95,63 @@ void GameObjectComponentList::_on_create_confirmed() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Component"));
+	undo_redo->add_do_method(game_object, "add_child", child, true);
+	undo_redo->add_do_method(child, "set_owner", edited_scene);
+	undo_redo->add_do_reference(child);
+	undo_redo->add_undo_method(game_object, "remove_child", child);
+	undo_redo->commit_action();
+}
+
+void GameObjectComponentList::_on_add_script_pressed() {
+	if (!script_file_dialog) {
+		script_file_dialog = memnew(EditorFileDialog);
+		script_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		script_file_dialog->set_title(TTR("Add Script Component"));
+		script_file_dialog->clear_filters();
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptLanguage *lang = ScriptServer::get_language(i);
+			List<String> extensions;
+			lang->get_recognized_extensions(&extensions);
+			for (const String &ext : extensions) {
+				script_file_dialog->add_filter("*." + ext, lang->get_name());
+			}
+		}
+		EditorNode::get_singleton()->get_gui_base()->add_child(script_file_dialog);
+		script_file_dialog->connect("file_selected", callable_mp(this, &GameObjectComponentList::_on_script_file_selected));
+	}
+	script_file_dialog->popup_file_dialog();
+}
+
+void GameObjectComponentList::_on_script_file_selected(const String &p_path) {
+	if (!game_object) {
+		return;
+	}
+
+	Ref<Script> scr = ResourceLoader::load(p_path, "Script");
+	ERR_FAIL_COND_MSG(scr.is_null(), "Failed to load script: " + p_path);
+
+	StringName base_type = scr->get_instance_base_type();
+	ERR_FAIL_COND_MSG(base_type == StringName(), "Script does not have a valid base type.");
+
+	Object *obj = ClassDB::instantiate(base_type);
+	ERR_FAIL_NULL_MSG(obj, "Failed to instantiate base type: " + String(base_type));
+
+	Node *child = Object::cast_to<Node>(obj);
+	if (!child) {
+		if (!obj->is_ref_counted()) {
+			memdelete(obj);
+		}
+		ERR_FAIL_MSG("Script base type is not a Node-derived type.");
+	}
+
+	child->set_name(Node::adjust_name_casing(p_path.get_file().get_basename()));
+	child->set_script(scr);
+
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	ERR_FAIL_NULL(edited_scene);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Add Script Component"));
 	undo_redo->add_do_method(game_object, "add_child", child, true);
 	undo_redo->add_do_method(child, "set_owner", edited_scene);
 	undo_redo->add_do_reference(child);
@@ -193,6 +252,12 @@ GameObjectComponentList::GameObjectComponentList() {
 	add_btn->set_text(TTR("Add Component"));
 	add_btn->connect(SceneStringName(pressed), callable_mp(this, &GameObjectComponentList::_on_add_component_pressed));
 	add_child(add_btn);
+
+	// Add Script button.
+	Button *add_script_btn = memnew(Button);
+	add_script_btn->set_text(TTR("Add Script"));
+	add_script_btn->connect(SceneStringName(pressed), callable_mp(this, &GameObjectComponentList::_on_add_script_pressed));
+	add_child(add_script_btn);
 }
 
 // GameObjectInspectorPlugin

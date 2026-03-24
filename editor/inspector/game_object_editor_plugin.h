@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/gui/create_dialog.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
@@ -43,11 +44,14 @@ class GameObjectComponentList : public VBoxContainer {
 	GameObject *game_object = nullptr;
 	ItemList *component_list = nullptr;
 	CreateDialog *create_dialog = nullptr;
+	EditorFileDialog *script_file_dialog = nullptr;
 
 	void _refresh_list();
 	void _on_add_component_pressed();
+	void _on_add_script_pressed();
 	void _on_component_selected(int p_index);
 	void _on_create_confirmed();
+	void _on_script_file_selected(const String &p_path);
 	void _on_child_order_changed();
 
 	// Drag forwarding.
