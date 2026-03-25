@@ -99,6 +99,7 @@ void GPUBufferManager::_reset_state(bool p_reset_handles) {
     pending_submission_requires_sync = false;
     if (p_reset_handles) {
         uniform_buffer_device = nullptr;
+        sequential_index_cache.reset();
     }
 }
 
@@ -201,6 +202,11 @@ Error GPUBufferManager::create_buffers() {
             cleanup_buffers();
             return err;
         }
+    }
+
+    sequential_index_cache.resize_uninitialized(max_gaussians);
+    for (uint32_t i = 0; i < max_gaussians; i++) {
+        sequential_index_cache[i] = i;
     }
 
     Vector<uint8_t> uniform_data;
@@ -580,17 +586,11 @@ Error GPUBufferManager::upload_gaussian_data(const Ref<::GaussianData> &p_data) 
         GaussianSplatManager::ScopedSubmissionLock upload_lock;
         RenderingDevice *upload_device = _acquire_submission_device(write_set.device ? write_set.device : rd, upload_lock);
         ERR_FAIL_NULL_V(upload_device, ERR_CANT_CREATE);
+        ERR_FAIL_COND_V_MSG(sequential_index_cache.size() < target_count, ERR_BUG, "Sequential index cache is smaller than the requested upload count");
 
         uint64_t start_time = OS::get_singleton()->get_ticks_usec();
         upload_device->buffer_update(write_set.gaussian_buffer, 0, sizeof(PackedGaussian) * target_count, packed_data.ptr());
-
-        Vector<uint32_t> indices;
-        indices.resize(target_count);
-        for (uint32_t i = 0; i < target_count; i++) {
-            indices.write[i] = i;
-        }
-
-        upload_device->buffer_update(write_set.sorted_indices_buffer, 0, sizeof(uint32_t) * target_count, indices.ptr());
+        upload_device->buffer_update(write_set.sorted_indices_buffer, 0, sizeof(uint32_t) * target_count, sequential_index_cache.ptr());
         gs_device_utils::safe_submit_and_sync(upload_device);
 
         uint64_t upload_time = OS::get_singleton()->get_ticks_usec() - start_time;

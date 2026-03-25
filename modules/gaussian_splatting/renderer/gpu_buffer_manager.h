@@ -144,6 +144,7 @@ private:
     uint32_t current_count = 0;
     uint32_t current_visible_count = 0;
     bool buffers_created = false;
+    LocalVector<uint32_t> sequential_index_cache;
 
     // Submission batching (Issue #142)
     RenderingDevice *pending_submission_device = nullptr;
