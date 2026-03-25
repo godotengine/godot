@@ -1446,8 +1446,10 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			if (p_pass_mode == PASS_MODE_COLOR) {
 #ifdef DEBUG_ENABLED
 				bool force_alpha = unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW);
+				bool force_depth = unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER);
 #else
 				bool force_alpha = false;
+				bool force_depth = false;
 #endif
 				if (!force_alpha && (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE))) {
 					rl->add_element(surf);
@@ -1462,7 +1464,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 				if (surf->flags & GeometryInstanceSurface::FLAG_USES_NORMAL_TEXTURE) {
 					scene_state.used_normal_texture = true;
 				}
-				if (surf->flags & GeometryInstanceSurface::FLAG_USES_DEPTH_TEXTURE) {
+				if (force_depth || surf->flags & GeometryInstanceSurface::FLAG_USES_DEPTH_TEXTURE) {
 					scene_state.used_depth_texture = true;
 				}
 				if ((surf->flags & GeometryInstanceSurface::FLAG_USES_STENCIL) && !force_alpha && (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE))) {
@@ -2360,12 +2362,13 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.render_shadow_count = p_render_shadow_count;
 	}
 
+#ifdef DEBUG_ENABLED
 	PagedArray<RID> empty;
-
-	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 	}
+#endif
 
 	bool reverse_cull = render_data.cam_transform.basis.determinant() < 0;
 
@@ -2402,6 +2405,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		tonemap_ubo.contrast = environment_get_adjustments_contrast(render_data.environment);
 		tonemap_ubo.saturation = environment_get_adjustments_saturation(render_data.environment);
 	}
+
+#ifdef DEBUG_ENABLED
+	if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER)) {
+		apply_color_adjustments_in_post = false;
+	}
+#endif
 
 	if (scene_state.tonemap_buffer == 0) {
 		// Only create if using 3D
@@ -2455,6 +2464,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_feed = false;
 	float sky_energy_multiplier = 1.0;
 	int camera_feed_id = -1;
+	bool disable_fog = false;
 
 	if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -2511,6 +2521,16 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		sky_reflections |= reflection_source == RSE::ENV_REFLECTION_SOURCE_BG && bg_mode == RSE::ENV_BG_SKY;
 		bool sky_ambient = ambient_source == RSE::ENV_AMBIENT_SOURCE_SKY;
 		sky_ambient |= ambient_source == RSE::ENV_AMBIENT_SOURCE_BG && bg_mode == RSE::ENV_BG_SKY;
+
+#ifdef DEBUG_ENABLED
+		if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER)) {
+			draw_sky = false;
+			draw_sky_fog_only = false;
+			sky_reflections = false;
+			sky_ambient = false;
+			disable_fog = true;
+		}
+#endif
 
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || sky_reflections || sky_ambient) {
@@ -2695,7 +2715,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 		}
 
-		if (render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment))) {
+		if (disable_fog || render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment))) {
 			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_FOG;
 		}
 
@@ -4133,6 +4153,9 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+	}
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
+		copy_effects->copy_depth_to_rect_and_linearize(Rect2(Vector2(), Vector2(1.0, 1.0)), scene_state.data.z_near, scene_state.data.z_far);
 	}
 }
 

@@ -1006,6 +1006,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES:
 		case RSE::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
+		case RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER:
 			can_use_effects = false;
 			break;
 		// Modes that draws information over part of the viewport needs camera effects because we see partially the normal draw mode.
@@ -1116,6 +1117,32 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(rb).is_valid()) {
 		Size2 rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(_render_buffers_get_normal_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, false, RID(), false, false, false, true);
+	}
+
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER && _render_buffers_get_depth_texture(rb).is_valid()) {
+		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+
+		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
+		RD::DataFormat format = _render_buffers_get_preferred_color_format();
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		RID debug_depth_texture = rb->create_texture(RB_SCOPE_BUFFERS, SNAME("debug_depth"), format, usage_bits, texture_samples);
+
+		double z_near = p_render_data->scene_data->cam_projection.get_z_near();
+		double z_far = p_render_data->scene_data->cam_projection.get_z_far();
+		copy_effects->copy_depth_to_rect_and_linearize(
+				_render_buffers_get_depth_texture(rb),
+				debug_depth_texture,
+				Rect2(Vector2(), rtsize),
+				false,
+				z_near,
+				z_far);
+		copy_effects->copy_to_fb_rect(
+				debug_depth_texture,
+				texture_storage->render_target_get_rd_framebuffer(render_target),
+				Rect2(Vector2(), rtsize),
+				false,
+				false);
 	}
 
 	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
@@ -1461,7 +1488,9 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 	PagedArray<RID> empty;
 
-	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED ||
+			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
+			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
@@ -1471,7 +1500,8 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED ||
 			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
 			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING ||
-			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
+			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS ||
+			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
 		render_data.decals = &empty;
 	}
 
