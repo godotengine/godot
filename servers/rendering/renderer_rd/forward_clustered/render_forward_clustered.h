@@ -257,7 +257,9 @@ private:
 		float normal_xform[12];
 		float texture_size[2];
 		float exposure_normalization;
+		float specular_strength;
 		uint32_t flags;
+		float pad[3];
 	};
 
 	struct LightmapCaptureData {
