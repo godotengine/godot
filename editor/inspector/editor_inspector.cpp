@@ -2261,7 +2261,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				Ref<Texture2D> key = theme_cache.icon_gui_animation_key;
 				if (keying && key.is_valid()) {
 					Point2 key_position;
-					key_position.x = (rtl ? margin_end : (get_size().width - key->get_width() - margin_end)) - theme_cache.padding_size / 2;
+					key_position.x = rtl ? margin_end + theme_cache.padding_size / 2 : (get_size().width - key->get_width() - margin_end - theme_cache.padding_size / 2);
 					keying_rect = Rect2(key_position.x - theme_cache.padding_size / 2, 0, key->get_width() + theme_cache.padding_size, header_height);
 
 					Color key_color(1, 1, 1);
@@ -2321,7 +2321,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				const Ref<Texture2D> &revert = theme_cache.icon_gui_revert;
 				if (can_revert && revert.is_valid()) {
 					Point2 revert_position;
-					revert_position.x = (rtl ? margin_end : (get_size().width - revert->get_width() - margin_end)) - theme_cache.padding_size / 2;
+					revert_position.x = rtl ? margin_end + theme_cache.padding_size / 2 : (get_size().width - revert->get_width() - margin_end - theme_cache.padding_size / 2);
 					revert_rect = Rect2(revert_position.x - theme_cache.padding_size / 2, 0, revert->get_width() + theme_cache.padding_size, header_height);
 
 					Color revert_color(1, 1, 1);
