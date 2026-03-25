@@ -37,6 +37,7 @@ class TranslationServer : public Object {
 	GDCLASS(TranslationServer, Object);
 
 	String locale = "en";
+	bool allow_fallback = true;
 	String fallback;
 
 	Ref<TranslationDomain> main_domain;
@@ -109,6 +110,8 @@ public:
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
+	void set_fallback_allowed(const bool &p_allow);
+	bool is_fallback_allowed() const;
 	void set_fallback_locale(const String &p_locale);
 	String get_fallback_locale() const;
 
