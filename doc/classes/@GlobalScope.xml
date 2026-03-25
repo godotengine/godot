@@ -2801,13 +2801,13 @@
 			[b]Note:[/b] If a built-in method returns this code, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub Issue Tracker[/url].
 		</constant>
 		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
-			Printer on fire error (This is an easter egg, no built-in methods return this error code).
+			Printer on fire error (this is an easter egg, no built-in methods return this error code).
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
-			The property has no hint for the editor.
+			The property has no hint for the editor. However, the hint string is still read, which can be used to specify a suffix for a property that has no range limit (see [constant PROPERTY_HINT_RANGE]'s description).
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
-			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
+			Hints that an [int], [float], or packed/typed [Array] property containing [int] or [float] types should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
 			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
 			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle, [code]"prefer_slider"[/code] to show the slider for integers, [code]"hide_control"[/code] to hide the slider or up-down arrows, and [code]"suffix:px/s"[/code] to display a suffix indicating the value's unit (e.g. [code]px/s[/code] for pixels per second).
 		</constant>
@@ -2820,10 +2820,10 @@
 			Unlike [constant PROPERTY_HINT_ENUM], a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
-			Hints that a [float] property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero.
+			Hints that a [float] property should be edited using a curve editor showing an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero. This displays differently to a property that uses [constant PROPERTY_HINT_RANGE] with the [code]"exp"[/code] keyword, as it's edited with a slider instead of a curve editor.
 		</constant>
 		<constant name="PROPERTY_HINT_LINK" value="5" enum="PropertyHint">
-			Hints that a vector property should allow its components to be linked. For example, this allows [member Vector2.x] and [member Vector2.y] to be edited together.
+			Hints that a vector property should allow its components to be linked. For example, this allows [member Vector2.x] and [member Vector2.y] to be edited together. This hint is supported on [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], and [Vector4i]. The hint string can be used to specify a suffix indicating each value's unit with the [code]"suffix:px/s"[/code] syntax.
 		</constant>
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an [int] property is a bitmask with named bit flags.
