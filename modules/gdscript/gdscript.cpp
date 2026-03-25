@@ -1104,6 +1104,12 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 	String old_path = path;
 	path = p_path;
 	path_valid = true;
+
+	String old_base = GDScript::canonicalize_path(old_path);
+	if (!old_base.is_empty() && fully_qualified_name.begins_with(old_base)) {
+		fully_qualified_name = GDScript::canonicalize_path(p_path) + fully_qualified_name.substr(old_base.length());
+	}
+
 	if (is_root_script()) {
 		GDScriptCache::move_script(old_path, p_path);
 	}
