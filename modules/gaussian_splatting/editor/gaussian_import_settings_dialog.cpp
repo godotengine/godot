@@ -394,12 +394,23 @@ void GaussianImportSettingsDialog::_populate_settings_data() {
 	}
 
 	// Override with values from the .import sidecar.
+	// Legacy .import files may use unnamespaced keys (e.g. "asset_type" instead
+	// of "general/asset_type"). Map them to the current names so existing
+	// projects don't silently lose their settings on reimport.
+	static const HashMap<StringName, StringName> legacy_key_map = {
+		{ StringName("asset_type"), StringName("general/asset_type") },
+	};
+
 	if (!import_options.is_empty()) {
 		Array keys = import_options.keys();
 		for (int i = 0; i < keys.size(); i++) {
 			StringName key = keys[i];
-			if (settings_data->defaults.has(key)) {
-				settings_data->current[key] = import_options[keys[i]];
+			StringName mapped_key = key;
+			if (legacy_key_map.has(key)) {
+				mapped_key = legacy_key_map[key];
+			}
+			if (settings_data->defaults.has(mapped_key)) {
+				settings_data->current[mapped_key] = import_options[keys[i]];
 			}
 		}
 	}
