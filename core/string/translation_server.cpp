@@ -641,7 +641,7 @@ String TranslationServer::get_tool_locale() {
 			}
 		}
 	}
-	return res.is_valid() ? res->get_locale() : fallback;
+	return res.is_valid() ? res->get_locale() : main_domain->get_fallback_locale();
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
