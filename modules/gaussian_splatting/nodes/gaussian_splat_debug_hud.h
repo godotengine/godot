@@ -12,6 +12,7 @@
 
 #include "scene/gui/control.h"
 #include "core/object/ref_counted.h"
+#include "core/templates/local_vector.h"
 
 class GaussianSplatNode3D;
 class Font;
@@ -67,6 +68,7 @@ private:
 
 	// Cached renderer-provided HUD text (updated periodically)
 	Vector<String> cached_hud_lines;
+	LocalVector<Vector2> line_size_scratch;
 
 	// Drawing resources
 	Ref<Font> hud_font;
