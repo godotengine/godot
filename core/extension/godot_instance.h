@@ -45,7 +45,7 @@ public:
 	GodotInstance();
 	~GodotInstance();
 
-	bool initialize(GDExtensionInitializationFunction p_init_func);
+	bool initialize();
 
 	bool start();
 	bool is_started();
