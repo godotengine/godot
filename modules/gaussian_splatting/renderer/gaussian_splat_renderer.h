@@ -361,11 +361,13 @@ public:
     };
 
     class FrameStateProvider : public IFrameStateView, public IFrameMutationAccess {
-        GaussianSplatRenderer *renderer = nullptr;
+        const GaussianSplatRenderer *renderer_view = nullptr;
+        GaussianSplatRenderer *renderer_mut = nullptr;
         const RenderFrameContext::FrameDeps *deps = nullptr;
 
     public:
         FrameStateProvider(GaussianSplatRenderer *p_renderer, const RenderFrameContext::FrameDeps *p_deps = nullptr);
+        FrameStateProvider(const GaussianSplatRenderer *p_renderer, const RenderFrameContext::FrameDeps *p_deps = nullptr);
 
         OutputCompositor *get_output_compositor() const override;
         GPUCuller *get_gpu_culler() const override;
@@ -645,6 +647,7 @@ public:
     TestDataState &get_test_data_state() { return test_data_state; }
     const TestDataState &get_test_data_state() const { return test_data_state; }
     SortingState &get_sorting_state();
+    const SortingState &get_sorting_state() const;
     ViewState &get_view_state() { return frame_context_manager.get_view_state(); }
     const ViewState &get_view_state() const { return frame_context_manager.get_view_state(); }
     TileRendererState &get_tile_renderer_state() { return tile_renderer_state; }
@@ -657,6 +660,7 @@ public:
     SubsystemState &get_subsystem_state() { return subsystem_state; }
     const SubsystemState &get_subsystem_state() const { return subsystem_state; }
     JacobianDebugConfig &get_jacobian_debug() { return jacobian_debug; }
+    const JacobianDebugConfig &get_jacobian_debug() const { return jacobian_debug; }
     void set_instance_pipeline_buffers(const InstancePipelineBuffers &p_buffers);
     void clear_instance_pipeline_buffers();
     bool has_instance_pipeline_buffers() const { return instance_pipeline_buffers_valid; }
