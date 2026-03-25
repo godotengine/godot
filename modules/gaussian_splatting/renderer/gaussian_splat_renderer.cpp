@@ -2134,6 +2134,12 @@ GaussianSplatRenderer::SortingState &GaussianSplatRenderer::get_sorting_state() 
     return sorting_orchestrator->access_sorting_state_mutable();
 }
 
+const GaussianSplatRenderer::SortingState &GaussianSplatRenderer::get_sorting_state() const {
+    static const SortingState fallback;
+    ERR_FAIL_NULL_V(sorting_orchestrator, fallback);
+    return sorting_orchestrator->get_sorting_state();
+}
+
 GaussianSplatRenderer::StreamingState &GaussianSplatRenderer::get_streaming_state() {
     static StreamingState fallback;
     ERR_FAIL_NULL_V(data_orchestrator, fallback);

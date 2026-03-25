@@ -883,6 +883,7 @@ Dictionary RenderDiagnosticsOrchestrator::serialize_error_statistics() const {
 Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	Dictionary stats;
 	const GaussianSplatRenderer *const_renderer = renderer;
+	GaussianSplatRenderer *mutable_renderer = renderer;
 	GaussianSplatRenderer::FrameStateProvider state_provider(const_renderer);
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	const auto &frame_state = state_view.get_frame_state_view();
