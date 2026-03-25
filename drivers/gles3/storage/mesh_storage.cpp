@@ -450,6 +450,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 	mesh->material_cache.clear();
 }
 
+void MeshStorage::mesh_add_surface_rd(RID p_mesh, const RenderingServerTypes::SurfaceDataRD &p_surface) {
+	ERR_PRINT("MeshRD requires the RenderingDevice backend.");
+}
+
 void MeshStorage::_mesh_surface_clear(Mesh *mesh, int p_surface) {
 	Mesh::Surface &s = *mesh->surfaces[p_surface];
 
@@ -596,6 +600,22 @@ void MeshStorage::mesh_surface_update_index_region(RID p_mesh, int p_surface, in
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void MeshStorage::mesh_surface_set_active_range(RID p_mesh, int p_surface, int p_vertex_count, int p_index_count) {
+	ERR_PRINT("Dynamic active vertex/index counts require the RenderingDevice backend.");
+}
+
+void MeshStorage::mesh_surface_set_indirect_buffer(RID p_mesh, int p_surface, RID p_indirect_buffer, int p_offset) {
+	ERR_PRINT("Mesh surface indirect buffers require the RenderingDevice backend.");
+}
+
+void MeshStorage::mesh_surface_mark_dirty(RID p_mesh, int p_surface) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+}
+
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
@@ -669,6 +689,10 @@ RenderingServerTypes::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int 
 	sd.uv_scale = s.uv_scale;
 
 	return sd;
+}
+
+Ref<SurfaceDataRD> MeshStorage::mesh_surface_get_rd_data(RID p_mesh, int p_surface, uint64_t p_input_mask) const {
+	return Ref<SurfaceDataRD>();
 }
 
 int MeshStorage::mesh_get_surface_count(RID p_mesh) const {

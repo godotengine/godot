@@ -307,6 +307,8 @@ public:
 
 	virtual void mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) override;
 
+	virtual void mesh_add_surface_rd(RID p_mesh, const RenderingServerTypes::SurfaceDataRD &p_surface) override;
+
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override;
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) override;
@@ -317,10 +319,15 @@ public:
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 
+	virtual void mesh_surface_set_active_range(RID p_mesh, int p_surface, int p_vertex_count, int p_index_count) override;
+	virtual void mesh_surface_set_indirect_buffer(RID p_mesh, int p_surface, RID p_indirect_buffer, int p_offset) override;
+	virtual void mesh_surface_mark_dirty(RID p_mesh, int p_surface) override;
+
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
 
 	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
+	virtual Ref<SurfaceDataRD> mesh_surface_get_rd_data(RID p_mesh, int p_surface, uint64_t p_input_mask = 0) const override;
 	virtual int mesh_get_surface_count(RID p_mesh) const override;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override;

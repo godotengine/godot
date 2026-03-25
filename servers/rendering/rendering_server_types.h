@@ -110,6 +110,26 @@ struct SurfaceData {
 	RID material;
 };
 
+struct SurfaceDataRD {
+	RSE::PrimitiveType primitive = RSE::PRIMITIVE_MAX;
+
+	uint64_t format = RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION;
+	uint32_t vertex_count = 0;
+	RID vertex_buffer;
+	bool owns_vertex_buffer = false;
+	RID attribute_buffer;
+	bool owns_attribute_buffer = false;
+	RID skin_buffer;
+	bool owns_skin_buffer = false;
+	uint32_t index_count = 0;
+	RID index_buffer;
+	bool owns_index_buffer = false;
+
+	AABB aabb;
+	Vector4 uv_scale;
+	RID material;
+};
+
 struct MeshInfo {
 	RID mesh;
 	String path;

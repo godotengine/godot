@@ -2613,12 +2613,53 @@
 				Returns a mesh's surface's material.
 			</description>
 		</method>
+		<method name="mesh_surface_get_rd_data" qualifiers="const">
+			<return type="SurfaceDataRD" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<param index="2" name="input_mask" type="int" default="0" />
+			<description>
+				Returns a [SurfaceDataRD] object containing the internal [RenderingDevice] buffer RIDs and metadata for the given mesh surface. This allows direct GPU-level access to a surface's vertex, attribute, skin, and index buffers.
+				[param input_mask] optionally specifies which vertex input attributes to include when populating the vertex attribute and buffer binding information. Pass [code]0[/code] to use the surface's full format.
+				[b]Note:[/b] This method is only available when using the RenderingDevice backend.
+			</description>
+		</method>
+		<method name="mesh_surface_mark_dirty">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Marks the given mesh surface as dirty, forcing the rendering server to re-read its buffer data. Call this after modifying a surface's GPU buffers externally (e.g., via compute shaders) to ensure the changes are reflected in rendering.
+			</description>
+		</method>
 		<method name="mesh_surface_remove">
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="int" />
 			<description>
 				Removes the surface at the given index from the Mesh, shifting surfaces with higher index down by one.
+			</description>
+		</method>
+		<method name="mesh_surface_set_active_range">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<param index="2" name="vertex_count" type="int" />
+			<param index="3" name="index_count" type="int" />
+			<description>
+				Sets the active vertex and index counts for the given mesh surface. This allows rendering only a subset of the surface's buffer capacity without reallocating buffers. Useful for dynamically sized geometry where a compute shader writes a variable number of vertices or indices each frame.
+			</description>
+		</method>
+		<method name="mesh_surface_set_indirect_buffer">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<param index="2" name="indirect_buffer" type="RID" />
+			<param index="3" name="offset" type="int" default="0" />
+			<description>
+				Sets an indirect draw buffer for the given mesh surface. When set, the rendering server will use indirect drawing commands, reading draw parameters from [param indirect_buffer] at the given byte [param offset].
+				The indirect buffer should contain draw parameters in the format expected by the graphics API (e.g., [code]VkDrawIndexedIndirectCommand[/code] for indexed surfaces or [code]VkDrawIndirectCommand[/code] for non-indexed surfaces).
+				Pass an invalid [RID] to disable indirect drawing for this surface.
 			</description>
 		</method>
 		<method name="mesh_surface_set_material">

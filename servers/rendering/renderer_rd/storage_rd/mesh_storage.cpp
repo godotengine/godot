@@ -375,7 +375,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 	s->primitive = new_surface.primitive;
 
 	const bool use_as_storage = (new_surface.skin_data.size() || mesh->blend_shape_count > 0);
-	const BitField<RD::BufferCreationBits> as_storage_flag = use_as_storage ? RD::BUFFER_CREATION_AS_STORAGE_BIT : 0;
+	BitField<RD::BufferCreationBits> buffer_flags = use_as_storage ? RD::BUFFER_CREATION_AS_STORAGE_BIT : 0;
+	if (RD::get_singleton()->has_feature(RD::SUPPORTS_RAYTRACING_PIPELINE) || RD::get_singleton()->has_feature(RD::SUPPORTS_RAY_QUERY)) {
+		buffer_flags.set_flag(RD::BUFFER_CREATION_DEVICE_ADDRESS_BIT);
+	}
 
 	if (new_surface.vertex_data.size()) {
 		// If we have an uncompressed surface that contains normals, but not tangents, we need to differentiate the array
@@ -389,24 +392,25 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 			Vector<uint8_t> new_vertex_data;
 			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
 			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, as_storage_flag);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, buffer_flags);
 			s->vertex_buffer_size = new_vertex_data.size();
 		} else {
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, as_storage_flag);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, buffer_flags);
 			s->vertex_buffer_size = new_surface.vertex_data.size();
 		}
 	}
 
 	if (new_surface.attribute_data.size()) {
-		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.attribute_data.size(), new_surface.attribute_data);
+		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.attribute_data.size(), new_surface.attribute_data, buffer_flags);
 		s->attribute_buffer_size = new_surface.attribute_data.size();
 	}
 	if (new_surface.skin_data.size()) {
-		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, as_storage_flag);
+		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, buffer_flags);
 		s->skin_buffer_size = new_surface.skin_data.size();
 	}
 
 	s->vertex_count = new_surface.vertex_count;
+	s->active_vertex_count = new_surface.vertex_count;
 
 	if (new_surface.format & RSE::ARRAY_FORMAT_BONES) {
 		mesh->has_bone_weights = true;
@@ -415,9 +419,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 	if (new_surface.index_count) {
 		bool is_index_16 = new_surface.vertex_count <= 65536 && new_surface.vertex_count > 0;
 
-		s->index_buffer = RD::get_singleton()->index_buffer_create(new_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.index_data, false);
+		s->index_buffer = RD::get_singleton()->index_buffer_create(new_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.index_data, false, buffer_flags);
 		s->index_buffer_size = new_surface.index_data.size();
 		s->index_count = new_surface.index_count;
+		s->active_index_count = new_surface.index_count;
 		s->index_array = RD::get_singleton()->index_array_create(s->index_buffer, 0, s->index_count);
 		if (new_surface.lods.size()) {
 			s->lods = memnew_arr(Mesh::Surface::LOD, new_surface.lods.size());
@@ -425,7 +430,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 
 			for (int i = 0; i < new_surface.lods.size(); i++) {
 				uint32_t indices = new_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
-				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.lods[i].index_data);
+				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.lods[i].index_data, false, buffer_flags);
 				s->lods[i].index_buffer_size = new_surface.lods[i].index_data.size();
 				s->lods[i].index_array = RD::get_singleton()->index_array_create(s->lods[i].index_buffer, 0, indices);
 				s->lods[i].edge_length = new_surface.lods[i].edge_length;
@@ -514,34 +519,127 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 	mesh->material_cache.clear();
 }
 
+void MeshStorage::mesh_add_surface_rd(RID p_mesh, const RenderingServerTypes::SurfaceDataRD &p_surface) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+
+	ERR_FAIL_COND(mesh->surface_count == RSE::MAX_MESH_SURFACES);
+	ERR_FAIL_COND_MSG(mesh->blend_shape_count > 0, "MeshRD surfaces do not support blend shapes yet.");
+	ERR_FAIL_COND_MSG(p_surface.format & (RSE::ARRAY_FORMAT_BONES | RSE::ARRAY_FORMAT_WEIGHTS), "MeshRD surfaces do not support skeleton skinning yet.");
+
+	uint64_t surface_version = p_surface.format & (uint64_t(RSE::ARRAY_FLAG_FORMAT_VERSION_MASK) << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+	ERR_FAIL_COND_MSG(surface_version != RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+			"Surface version provided (" + itos(int(surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT)) + ") does not match current version (" + itos(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) + ")");
+	ERR_FAIL_COND_MSG(!p_surface.index_count && !p_surface.vertex_count, "Meshes must contain a vertex array, an index array, or both");
+
+	const bool uses_empty_vertex_array = p_surface.format & RSE::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY;
+	const bool needs_attribute_buffer = p_surface.format & (RSE::ARRAY_FORMAT_COLOR | RSE::ARRAY_FORMAT_TEX_UV | RSE::ARRAY_FORMAT_TEX_UV2 | RSE::ARRAY_FORMAT_CUSTOM0 | RSE::ARRAY_FORMAT_CUSTOM1 | RSE::ARRAY_FORMAT_CUSTOM2 | RSE::ARRAY_FORMAT_CUSTOM3);
+	const uint32_t vertex_stride = RS::get_singleton()->mesh_surface_get_format_vertex_stride(BitField<RSE::ArrayFormat>(p_surface.format), p_surface.vertex_count);
+	const uint32_t normal_tangent_stride = RS::get_singleton()->mesh_surface_get_format_normal_tangent_stride(BitField<RSE::ArrayFormat>(p_surface.format), p_surface.vertex_count);
+	const uint32_t attribute_stride = RS::get_singleton()->mesh_surface_get_format_attribute_stride(BitField<RSE::ArrayFormat>(p_surface.format), p_surface.vertex_count);
+	const uint32_t skin_stride = RS::get_singleton()->mesh_surface_get_format_skin_stride(BitField<RSE::ArrayFormat>(p_surface.format), p_surface.vertex_count);
+	const uint32_t index_stride = p_surface.index_count > 0 ? RS::get_singleton()->mesh_surface_get_format_index_stride(BitField<RSE::ArrayFormat>(p_surface.format), p_surface.vertex_count) : 0;
+	ERR_FAIL_COND_MSG(p_surface.vertex_count > 0 && !uses_empty_vertex_array && p_surface.vertex_buffer.is_null(), "MeshRD surfaces require a vertex buffer when vertex_count is greater than zero.");
+	ERR_FAIL_COND_MSG(needs_attribute_buffer && p_surface.attribute_buffer.is_null(), "MeshRD surface format requires an attribute buffer.");
+	ERR_FAIL_COND_MSG(p_surface.index_count > 0 && p_surface.index_buffer.is_null(), "MeshRD surfaces require an index buffer when index_count is greater than zero.");
+
+	Mesh::Surface *s = memnew(Mesh::Surface);
+	s->format = p_surface.format;
+	s->primitive = p_surface.primitive;
+	s->vertex_count = p_surface.vertex_count;
+	s->active_vertex_count = p_surface.vertex_count;
+	s->vertex_buffer = p_surface.vertex_buffer;
+	s->vertex_buffer_size = p_surface.vertex_count * (vertex_stride + normal_tangent_stride);
+	s->owns_vertex_buffer = p_surface.owns_vertex_buffer;
+	s->attribute_buffer = p_surface.attribute_buffer;
+	s->attribute_buffer_size = p_surface.vertex_count * attribute_stride;
+	s->owns_attribute_buffer = p_surface.owns_attribute_buffer;
+	s->skin_buffer = p_surface.skin_buffer;
+	s->skin_buffer_size = p_surface.vertex_count * skin_stride;
+	s->owns_skin_buffer = p_surface.owns_skin_buffer;
+	s->index_buffer = p_surface.index_buffer;
+	s->index_buffer_size = p_surface.index_count * index_stride;
+	s->owns_index_buffer = p_surface.owns_index_buffer;
+	s->index_count = p_surface.index_count;
+	s->active_index_count = p_surface.index_count;
+	s->aabb = p_surface.aabb;
+	s->uv_scale = p_surface.uv_scale;
+	s->material = p_surface.material;
+
+	if (s->index_buffer.is_valid()) {
+		s->index_array = RD::get_singleton()->index_array_create(s->index_buffer, 0, s->active_index_count);
+	}
+
+	if (mesh->surface_count == 0) {
+		mesh->aabb = p_surface.aabb;
+	} else {
+		mesh->aabb.merge_with(p_surface.aabb);
+	}
+	mesh->skeleton_aabb_version = 0;
+
+	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count + 1));
+	mesh->surfaces[mesh->surface_count] = s;
+	mesh->surface_count++;
+
+	for (MeshInstance *mi : mesh->instances) {
+		_mesh_instance_add_surface(mi, mesh, mesh->surface_count - 1);
+	}
+
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+
+	for (Mesh *E : mesh->shadow_owners) {
+		Mesh *shadow_owner = E;
+		shadow_owner->shadow_mesh = RID();
+		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+	}
+
+	mesh->material_cache.clear();
+}
+
 void MeshStorage::_mesh_surface_clear(Mesh *p_mesh, int p_surface) {
 	Mesh::Surface &s = *p_mesh->surfaces[p_surface];
 
-	if (s.vertex_buffer.is_valid()) {
-		RD::get_singleton()->free_rid(s.vertex_buffer); // Clears arrays as dependency automatically, including all versions.
-	}
-	if (s.attribute_buffer.is_valid()) {
-		RD::get_singleton()->free_rid(s.attribute_buffer);
-	}
-	if (s.skin_buffer.is_valid()) {
-		RD::get_singleton()->free_rid(s.skin_buffer);
-	}
 	if (s.versions) {
+		for (uint32_t i = 0; i < s.version_count; i++) {
+			if (s.versions[i].vertex_array.is_valid()) {
+				RD::get_singleton()->free_rid(s.versions[i].vertex_array);
+			}
+		}
 		memfree(s.versions); // reallocs, so free with memfree.
 	}
 
-	if (s.index_buffer.is_valid()) {
+	if (s.index_array.is_valid()) {
+		RD::get_singleton()->free_rid(s.index_array);
+	}
+	if (s.uniform_set.is_valid()) {
+		RD::get_singleton()->free_rid(s.uniform_set);
+	}
+
+	if (s.vertex_buffer.is_valid() && s.owns_vertex_buffer) {
+		RD::get_singleton()->free_rid(s.vertex_buffer);
+	}
+	if (s.attribute_buffer.is_valid() && s.owns_attribute_buffer) {
+		RD::get_singleton()->free_rid(s.attribute_buffer);
+	}
+	if (s.skin_buffer.is_valid() && s.owns_skin_buffer) {
+		RD::get_singleton()->free_rid(s.skin_buffer);
+	}
+
+	if (s.index_buffer.is_valid() && s.owns_index_buffer) {
 		RD::get_singleton()->free_rid(s.index_buffer);
 	}
 
 	if (s.lod_count) {
 		for (uint32_t j = 0; j < s.lod_count; j++) {
+			if (s.lods[j].index_array.is_valid()) {
+				RD::get_singleton()->free_rid(s.lods[j].index_array);
+			}
 			RD::get_singleton()->free_rid(s.lods[j].index_buffer);
 		}
 		memdelete_arr(s.lods);
 	}
 
-	if (s.blend_shape_buffer.is_valid()) {
+	if (s.blend_shape_buffer.is_valid() && s.owns_blend_shape_buffer) {
 		RD::get_singleton()->free_rid(s.blend_shape_buffer);
 	}
 
@@ -574,8 +672,10 @@ void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, i
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->vertex_buffer.is_null());
+	ERR_FAIL_COND_MSG(p_offset < 0, "Vertex buffer update offset must be non-negative.");
 
 	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND_MSG(uint64_t(p_offset) + data_size > mesh->surfaces[p_surface]->vertex_buffer_size, "Vertex buffer update exceeds the surface vertex buffer size.");
 	const uint8_t *r = p_data.ptr();
 
 	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->vertex_buffer, p_offset, data_size, r);
@@ -587,8 +687,10 @@ void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->attribute_buffer.is_null());
+	ERR_FAIL_COND_MSG(p_offset < 0, "Attribute buffer update offset must be non-negative.");
 
 	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND_MSG(uint64_t(p_offset) + data_size > mesh->surfaces[p_surface]->attribute_buffer_size, "Attribute buffer update exceeds the surface attribute buffer size.");
 	const uint8_t *r = p_data.ptr();
 
 	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->attribute_buffer, p_offset, data_size, r);
@@ -600,8 +702,10 @@ void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->skin_buffer.is_null());
+	ERR_FAIL_COND_MSG(p_offset < 0, "Skin buffer update offset must be non-negative.");
 
 	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND_MSG(uint64_t(p_offset) + data_size > mesh->surfaces[p_surface]->skin_buffer_size, "Skin buffer update exceeds the surface skin buffer size.");
 	const uint8_t *r = p_data.ptr();
 
 	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->skin_buffer, p_offset, data_size, r);
@@ -613,11 +717,22 @@ void RendererRD::MeshStorage::mesh_surface_update_index_region(RID p_mesh, int p
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->index_buffer.is_null());
+	ERR_FAIL_COND_MSG(p_offset < 0, "Index buffer update offset must be non-negative.");
 
 	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND_MSG(uint64_t(p_offset) + data_size > mesh->surfaces[p_surface]->index_buffer_size, "Index buffer update exceeds the surface index buffer size.");
 	const uint8_t *r = p_data.ptr();
 
 	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->index_buffer, p_offset, data_size, r);
+}
+
+void MeshStorage::mesh_surface_mark_dirty(RID p_mesh, int p_surface) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	mesh->skeleton_aabb_version = 0;
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 }
 
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
@@ -1263,7 +1378,7 @@ void MeshStorage::update_mesh_instances() {
 	RD::get_singleton()->compute_list_end();
 }
 
-RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride) {
+Vector<RD::VertexAttribute> MeshStorage::_mesh_surface_generate_vertex_attributes(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride) const {
 	Vector<RD::VertexAttribute> attributes;
 	uint32_t normal_tangent_stride = 0;
 	uint32_t attribute_stride = 0;
@@ -1452,29 +1567,28 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 		}
 	}
 
+	return attributes;
+}
+
+RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride) {
+	Vector<RD::VertexAttribute> attributes = _mesh_surface_generate_vertex_attributes(p_surface_format, p_input_mask, p_instanced_surface, p_input_motion_vectors, p_point_size_emulated, r_position_stride);
 	return RD::get_singleton()->vertex_format_create(attributes);
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
-	uint32_t position_stride = 0;
-	v.vertex_format = _mesh_surface_generate_vertex_format(s->format, p_input_mask, mis != nullptr, p_input_motion_vectors, p_point_size_emulated, position_stride);
-
-	Vector<RID> buffers;
-	Vector<uint64_t> offsets;
+void MeshStorage::_mesh_surface_generate_buffers_for_input_mask(Mesh::Surface *s, uint64_t p_input_mask, uint32_t p_position_stride, Vector<RID> &r_buffers, Vector<uint64_t> &r_offsets, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer, bool p_input_motion_vectors) const {
 	RID buffer;
 	uint64_t offset = 0;
+
 	for (int i = 0; i < RSE::ARRAY_INDEX; i++) {
 		offset = 0;
 
 		if (!(s->format & (1ULL << i))) {
-			// Not supplied by surface, use default buffers.
 			buffer = mesh_default_rd_buffers[i];
 		} else {
-			// Supplied by surface, use buffer.
 			switch (i) {
 				case RSE::ARRAY_VERTEX:
 				case RSE::ARRAY_NORMAL:
-					offset = i == RSE::ARRAY_NORMAL ? position_stride * s->vertex_count : 0;
+					offset = i == RSE::ARRAY_NORMAL ? p_position_stride * s->vertex_count : 0;
 					buffer = mis != nullptr ? mis->vertex_buffer[p_current_buffer] : s->vertex_buffer;
 					break;
 				case RSE::ARRAY_TANGENT:
@@ -1497,32 +1611,205 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		}
 
 		if (!(p_input_mask & (1ULL << i))) {
-			continue; // Shader does not need this, skip it (but computing stride was important anyway)
+			continue;
 		}
 
-		buffers.push_back(buffer);
-		offsets.push_back(offset);
+		r_buffers.push_back(buffer);
+		r_offsets.push_back(offset);
 
 		if (p_input_motion_vectors) {
-			// Push the buffer for motion vector inputs.
 			if (i == RSE::ARRAY_VERTEX || i == RSE::ARRAY_NORMAL || i == RSE::ARRAY_TANGENT) {
 				if (mis && buffer != mesh_default_rd_buffers[i]) {
-					buffers.push_back(mis->vertex_buffer[p_previous_buffer]);
+					r_buffers.push_back(mis->vertex_buffer[p_previous_buffer]);
 				} else {
-					buffers.push_back(buffer);
+					r_buffers.push_back(buffer);
 				}
 
-				offsets.push_back(offset);
+				r_offsets.push_back(offset);
 			}
 		}
 	}
+}
+
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
+	uint32_t position_stride = 0;
+	v.vertex_format = _mesh_surface_generate_vertex_format(s->format, p_input_mask, mis != nullptr, p_input_motion_vectors, p_point_size_emulated, position_stride);
+
+	Vector<RID> buffers;
+	Vector<uint64_t> offsets;
+	_mesh_surface_generate_buffers_for_input_mask(s, p_input_mask, position_stride, buffers, offsets, mis, p_current_buffer, p_previous_buffer, p_input_motion_vectors);
 
 	v.input_mask = p_input_mask;
 	v.current_buffer = p_current_buffer;
 	v.previous_buffer = p_previous_buffer;
 	v.input_motion_vectors = p_input_motion_vectors;
 	v.point_size_emulated = p_point_size_emulated;
-	v.vertex_array = RD::get_singleton()->vertex_array_create(p_point_size_emulated ? 0 : s->vertex_count, v.vertex_format, buffers, offsets);
+	v.vertex_array = RD::get_singleton()->vertex_array_create(p_point_size_emulated ? 0 : (s->indirect_buffer.is_valid() ? s->vertex_count : s->active_vertex_count), v.vertex_format, buffers, offsets);
+}
+
+Ref<SurfaceDataRD> MeshStorage::mesh_surface_get_rd_data(RID p_mesh, int p_surface, uint64_t p_input_mask) const {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL_V(mesh, Ref<SurfaceDataRD>());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, Ref<SurfaceDataRD>());
+
+	Mesh::Surface &s = *mesh->surfaces[p_surface];
+	if (p_input_mask == 0) {
+		p_input_mask = s.format & ((uint64_t(1) << RSE::ARRAY_INDEX) - 1);
+	}
+
+	Ref<SurfaceDataRD> ret;
+	ret.instantiate();
+	ret->primitive = RSE::PrimitiveType(s.primitive);
+	ret->format = s.format;
+	ret->vertex_count = s.active_vertex_count;
+	ret->index_count = s.active_index_count;
+	ret->max_vertex_count = s.vertex_count;
+	ret->max_index_count = s.index_count;
+	ret->vertex_buffer = s.vertex_buffer;
+	ret->attribute_buffer = s.attribute_buffer;
+	ret->skin_buffer = s.skin_buffer;
+	ret->index_buffer = s.index_buffer;
+	ret->indirect_buffer = s.indirect_buffer;
+	ret->indirect_buffer_offset = s.indirect_buffer_offset;
+	ret->material = s.material;
+	ret->input_mask = p_input_mask;
+
+	TypedArray<RID> lod_index_buffers;
+	for (uint32_t i = 0; i < s.lod_count; i++) {
+		lod_index_buffers.push_back(s.lods[i].index_buffer);
+	}
+	ret->lod_index_buffers = lod_index_buffers;
+
+	uint32_t position_stride = 0;
+	Vector<RD::VertexAttribute> vertex_attributes = _mesh_surface_generate_vertex_attributes(s.format, p_input_mask, false, false, false, position_stride);
+	Array vertex_attribute_array;
+	for (int i = 0; i < vertex_attributes.size(); i++) {
+		const RD::VertexAttribute &attribute = vertex_attributes[i];
+		Dictionary attribute_dict;
+		attribute_dict["binding"] = i;
+		attribute_dict["location"] = attribute.location;
+		attribute_dict["offset"] = attribute.offset;
+		attribute_dict["format"] = attribute.format;
+		attribute_dict["stride"] = attribute.stride;
+		attribute_dict["frequency"] = attribute.frequency;
+		vertex_attribute_array.push_back(attribute_dict);
+	}
+	ret->vertex_attributes = vertex_attribute_array;
+
+	Vector<RID> buffers;
+	Vector<uint64_t> offsets;
+	_mesh_surface_generate_buffers_for_input_mask(&s, p_input_mask, position_stride, buffers, offsets);
+	TypedArray<RID> buffer_array;
+	PackedInt64Array offset_array;
+	offset_array.resize(offsets.size());
+	for (int i = 0; i < buffers.size(); i++) {
+		buffer_array.push_back(buffers[i]);
+		offset_array.write[i] = offsets[i];
+	}
+	ret->vertex_buffers = buffer_array;
+	ret->vertex_buffer_offsets = offset_array;
+
+	return ret;
+}
+
+void MeshStorage::_mesh_surface_invalidate_vertex_versions(Mesh *p_mesh, int p_surface) {
+	Mesh::Surface *surface = p_mesh->surfaces[p_surface];
+
+	if (surface->versions) {
+		for (uint32_t i = 0; i < surface->version_count; i++) {
+			if (surface->versions[i].vertex_array.is_valid()) {
+				RD::get_singleton()->free_rid(surface->versions[i].vertex_array);
+			}
+		}
+		memfree(surface->versions);
+		surface->versions = nullptr;
+		surface->version_count = 0;
+	}
+
+	for (MeshInstance *mi : p_mesh->instances) {
+		MeshInstance::Surface &mi_surface = mi->surfaces[p_surface];
+		if (mi_surface.versions) {
+			for (uint32_t i = 0; i < mi_surface.version_count; i++) {
+				if (mi_surface.versions[i].vertex_array.is_valid()) {
+					RD::get_singleton()->free_rid(mi_surface.versions[i].vertex_array);
+				}
+			}
+			memfree(mi_surface.versions);
+			mi_surface.versions = nullptr;
+			mi_surface.version_count = 0;
+		}
+		mi->dirty = true;
+	}
+}
+
+void MeshStorage::_mesh_surface_recreate_index_array(Mesh::Surface *p_surface) {
+	if (p_surface->index_array.is_valid()) {
+		RD::get_singleton()->free_rid(p_surface->index_array);
+		p_surface->index_array = RID();
+	}
+	uint32_t draw_index_count = p_surface->indirect_buffer.is_valid() ? p_surface->index_count : p_surface->active_index_count;
+	if (p_surface->index_buffer.is_valid() && draw_index_count > 0) {
+		p_surface->index_array = RD::get_singleton()->index_array_create(p_surface->index_buffer, 0, draw_index_count);
+	}
+
+	// Recreate LOD index arrays so indirect draws can address the full index range.
+	for (uint32_t i = 0; i < p_surface->lod_count; i++) {
+		if (p_surface->lods[i].index_array.is_valid()) {
+			RD::get_singleton()->free_rid(p_surface->lods[i].index_array);
+			p_surface->lods[i].index_array = RID();
+		}
+		if (p_surface->lods[i].index_buffer.is_valid() && p_surface->lods[i].index_count > 0) {
+			p_surface->lods[i].index_array = RD::get_singleton()->index_array_create(p_surface->lods[i].index_buffer, 0, p_surface->lods[i].index_count);
+		}
+	}
+}
+
+void MeshStorage::mesh_surface_set_active_range(RID p_mesh, int p_surface, int p_vertex_count, int p_index_count) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	Mesh::Surface *surface = mesh->surfaces[p_surface];
+	ERR_FAIL_COND_MSG(p_vertex_count < 0, "Active vertex count must be non-negative.");
+	ERR_FAIL_COND_MSG(p_index_count < 0, "Active index count must be non-negative.");
+	ERR_FAIL_COND_MSG((uint32_t)p_vertex_count > surface->vertex_count, "Active vertex count exceeds surface vertex capacity.");
+	ERR_FAIL_COND_MSG((uint32_t)p_index_count > surface->index_count, "Active index count exceeds surface index capacity.");
+	if (surface->active_vertex_count == (uint32_t)p_vertex_count && surface->active_index_count == (uint32_t)p_index_count) {
+		return;
+	}
+
+	surface->active_vertex_count = p_vertex_count;
+	surface->active_index_count = p_index_count;
+
+	// When indirect buffer is set, index_array and vertex_array versions already use max counts,
+	// so they don't need to be recreated when active range changes.
+	if (!surface->indirect_buffer.is_valid()) {
+		_mesh_surface_recreate_index_array(surface);
+		_mesh_surface_invalidate_vertex_versions(mesh, p_surface);
+	}
+
+	mesh_surface_mark_dirty(p_mesh, p_surface);
+}
+
+void MeshStorage::mesh_surface_set_indirect_buffer(RID p_mesh, int p_surface, RID p_indirect_buffer, int p_offset) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	Mesh::Surface *surface = mesh->surfaces[p_surface];
+	ERR_FAIL_COND_MSG(p_offset < 0, "Indirect buffer offset must be non-negative.");
+
+	if (surface->indirect_buffer == p_indirect_buffer && surface->indirect_buffer_offset == (uint32_t)p_offset) {
+		return;
+	}
+
+	surface->indirect_buffer = p_indirect_buffer;
+	surface->indirect_buffer_offset = p_offset;
+
+	_mesh_surface_recreate_index_array(surface);
+	_mesh_surface_invalidate_vertex_versions(mesh, p_surface);
+
+	mesh_surface_mark_dirty(p_mesh, p_surface);
 }
 
 ////////////////// MULTIMESH
