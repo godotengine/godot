@@ -28,6 +28,7 @@ namespace {
 
 constexpr float kSortCameraPositionEpsilon = 1e-3f;
 constexpr float kSortCameraRotationEpsilon = 1e-3f;
+const float kSortCameraRotationDotThreshold = Math::cos(kSortCameraRotationEpsilon * 0.5f);
 
 // Ignore sub-millimeter/milliradian jitter to avoid re-sorting every frame.
 static bool _is_sort_camera_move_significant(const Transform3D &a, const Transform3D &b) {
@@ -38,8 +39,7 @@ static bool _is_sort_camera_move_significant(const Transform3D &a, const Transfo
 
 	Quaternion qa(a.basis);
 	Quaternion qb(b.basis);
-	float angle = qa.angle_to(qb);
-	return angle > kSortCameraRotationEpsilon;
+	return Math::abs(qa.dot(qb)) < kSortCameraRotationDotThreshold;
 }
 
 static bool _get_sort_position(const GaussianSplatRenderer &p_renderer, uint32_t p_index, Vector3 &r_position) {
@@ -420,6 +420,10 @@ Array RenderSortingOrchestrator::run_sort_benchmark(const PackedInt32Array &p_si
 
 	RandomPCG rng;
 	rng.randomize();
+	Vector<uint8_t> key_data;
+	Vector<uint8_t> value_data;
+	key_data.resize(sorter_capacity * sizeof(float));
+	value_data.resize(sorter_capacity * sizeof(uint32_t));
 
 	const int size_count = p_sizes.size();
 	for (int i = 0; i < size_count; i++) {
@@ -434,11 +438,6 @@ Array RenderSortingOrchestrator::run_sort_benchmark(const PackedInt32Array &p_si
 					size, sorter_capacity));
 			continue;
 		}
-
-		Vector<uint8_t> key_data;
-		Vector<uint8_t> value_data;
-		key_data.resize(sorter_capacity * sizeof(float));
-		value_data.resize(sorter_capacity * sizeof(uint32_t));
 
 		float *keys = reinterpret_cast<float *>(key_data.ptrw());
 		uint32_t *values = reinterpret_cast<uint32_t *>(value_data.ptrw());
@@ -536,16 +535,15 @@ void RenderSortingOrchestrator::benchmark_sorting_performance() {
 	uint32_t test_sizes[] = {1000, 10000, 50000, 100000, 500000};
 	RandomPCG rng;
 	rng.randomize();
+	Vector<uint8_t> key_data;
+	Vector<uint8_t> value_data;
+	key_data.resize(sorter_capacity * sizeof(float));
+	value_data.resize(sorter_capacity * sizeof(uint32_t));
 
 	for (uint32_t size : test_sizes) {
 		if (size > sorter_capacity) {
 			continue;
 		}
-
-		Vector<uint8_t> key_data;
-		Vector<uint8_t> value_data;
-		key_data.resize(sorter_capacity * sizeof(float));
-		value_data.resize(sorter_capacity * sizeof(uint32_t));
 
 		float *keys = reinterpret_cast<float *>(key_data.ptrw());
 		uint32_t *values = reinterpret_cast<uint32_t *>(value_data.ptrw());
@@ -1139,28 +1137,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		uint64_t sort_start = OS::get_singleton()->get_ticks_usec();
 		auto &cpu_cull_state = gpu_culler->get_state();
 
-		if ((uint32_t)cpu_sort_original_indices_scratch.size() < available_splats) {
-			cpu_sort_original_indices_scratch.resize(available_splats);
-		}
-		for (uint32_t i = 0; i < available_splats; i++) {
-			cpu_sort_original_indices_scratch[i] = cpu_cull_state.culled_indices[i];
-		}
-
 		const uint32_t original_distances_count = cpu_cull_state.culled_distances_sq.size();
-		if ((uint32_t)cpu_sort_original_distances_scratch.size() < original_distances_count) {
-			cpu_sort_original_distances_scratch.resize(original_distances_count);
-		}
-		for (uint32_t i = 0; i < original_distances_count; i++) {
-			cpu_sort_original_distances_scratch[i] = cpu_cull_state.culled_distances_sq[i];
-		}
-
 		const uint32_t original_importance_count = cpu_cull_state.culled_importance_weights.size();
-		if ((uint32_t)cpu_sort_original_importance_scratch.size() < original_importance_count) {
-			cpu_sort_original_importance_scratch.resize(original_importance_count);
-		}
-		for (uint32_t i = 0; i < original_importance_count; i++) {
-			cpu_sort_original_importance_scratch[i] = cpu_cull_state.culled_importance_weights[i];
-		}
 
 		if ((uint32_t)cpu_sort_entries_scratch.size() < available_splats) {
 			cpu_sort_entries_scratch.resize(available_splats);
@@ -1169,7 +1147,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		bool positions_ready = true;
 		for (uint32_t i = 0; i < available_splats; i++) {
 			Vector3 position;
-			if (!_get_sort_position(*renderer, cpu_sort_original_indices_scratch[i], position)) {
+			const uint32_t source_index = cpu_cull_state.culled_indices[i];
+			if (!_get_sort_position(*renderer, source_index, position)) {
 				positions_ready = false;
 				break;
 			}
@@ -1179,7 +1158,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 				depth = 1e10f;
 			}
 			entries[i].depth = depth;
-			entries[i].index = cpu_sort_original_indices_scratch[i];
+			entries[i].index = source_index;
 			entries[i].source_index = i;
 		}
 
@@ -1189,6 +1168,19 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		}
 
 		if (positions_ready) {
+			if ((uint32_t)cpu_sort_original_distances_scratch.size() < original_distances_count) {
+				cpu_sort_original_distances_scratch.resize(original_distances_count);
+			}
+			for (uint32_t i = 0; i < original_distances_count; i++) {
+				cpu_sort_original_distances_scratch[i] = cpu_cull_state.culled_distances_sq[i];
+			}
+			if ((uint32_t)cpu_sort_original_importance_scratch.size() < original_importance_count) {
+				cpu_sort_original_importance_scratch.resize(original_importance_count);
+			}
+			for (uint32_t i = 0; i < original_importance_count; i++) {
+				cpu_sort_original_importance_scratch[i] = cpu_cull_state.culled_importance_weights[i];
+			}
+
 			struct CpuSortComparator {
 				_FORCE_INLINE_ bool operator()(const CpuSortEntry &a, const CpuSortEntry &b) const {
 					return a.depth < b.depth;

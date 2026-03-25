@@ -73,7 +73,6 @@ private:
 		uint32_t index = 0;
 		uint32_t source_index = 0;
 	};
-	LocalVector<uint32_t> cpu_sort_original_indices_scratch;
 	LocalVector<float> cpu_sort_original_distances_scratch;
 	LocalVector<float> cpu_sort_original_importance_scratch;
 	LocalVector<CpuSortEntry> cpu_sort_entries_scratch;
