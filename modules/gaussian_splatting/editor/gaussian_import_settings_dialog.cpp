@@ -225,6 +225,10 @@ GaussianImportSettingsDialog::GaussianImportSettingsDialog() {
 	_build_ui();
 }
 
+GaussianImportSettingsDialog::~GaussianImportSettingsDialog() {
+	memdelete(settings_data);
+}
+
 // ---------------------------------------------------------------------------
 // UI construction
 // ---------------------------------------------------------------------------

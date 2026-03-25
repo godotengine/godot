@@ -101,6 +101,7 @@ public:
 	static GaussianImportSettingsDialog *get_singleton();
 
 	GaussianImportSettingsDialog();
+	~GaussianImportSettingsDialog();
 };
 
 #endif // TOOLS_ENABLED
