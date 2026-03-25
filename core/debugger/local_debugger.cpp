@@ -134,6 +134,13 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	print_line("\nDebugger Break, Reason: '" + script_lang->debug_get_error() + "'");
 	print_line("*Frame " + itos(0) + " - " + script_lang->debug_get_stack_level_source(0) + ":" + itos(script_lang->debug_get_stack_level_line(0)) + " in function '" + script_lang->debug_get_stack_level_function(0) + "'");
 	print_line("Enter \"help\" for assistance.");
+
+	// Check if the stdin type is compatible with the interactive debugger, if not print error and return
+	if (OS::get_singleton()->get_stdin_type() != OS::STD_HANDLE_CONSOLE) {
+		print_line("Cannot start interactive debugger: invalid stdin type");
+		return;
+	}
+
 	int current_frame = 0;
 	int total_frames = script_lang->debug_get_stack_level_count();
 	while (true) {
