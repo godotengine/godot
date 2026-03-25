@@ -273,11 +273,11 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 }
 #endif
 
-void TranslationServer::set_fallback_locale(const String &p_locale) {
+void TranslationDomain::set_fallback_locale(const String &p_locale) {
 	fallback = p_locale;
 }
 
-String TranslationServer::get_fallback_locale() const {
+String TranslationDomain::get_fallback_locale() const {
 	return fallback;
 }
 
