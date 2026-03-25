@@ -556,7 +556,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 
 	// Set the selected tabs.
 	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
-		int selected_tab_idx = p_layout->get_value(p_section, DockTabContainer::get_config_key(i) + "_selected_tab_idx", 0);
+		int selected_tab_idx = p_layout->get_value(p_section, DockTabContainer::get_config_key(i) + "_selected_tab_idx", -1);
 		dock_slots[i]->load_selected_tab(selected_tab_idx);
 	}
 
