@@ -248,6 +248,7 @@ EditorPluginSettings::EditorPluginSettings() {
 	add_child(title_hb);
 
 	plugin_list = memnew(Tree);
+	plugin_list->set_alternate_rows_visible(true);
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	plugin_list->set_theme_type_variation("TreeTable");
 	plugin_list->set_hide_folding(true);

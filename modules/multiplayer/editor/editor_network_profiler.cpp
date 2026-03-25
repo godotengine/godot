@@ -408,6 +408,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_column_clip_content(2, true);
 	counters_display->set_theme_type_variation("TreeSecondary");
 	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
+	counters_display->set_alternate_rows_visible(true);
 	sc->add_child(counters_display);
 
 	// Replication
@@ -441,6 +442,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	replication_display->set_column_custom_minimum_width(4, 80 * EDSCALE);
 	replication_display->set_theme_type_variation("TreeSecondary");
 	replication_display->connect("button_clicked", callable_mp(this, &EditorNetworkProfiler::_replication_button_clicked));
+	replication_display->set_alternate_rows_visible(true);
 	sc->add_child(replication_display);
 
 	refresh_timer = memnew(Timer);

@@ -905,6 +905,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_child(mc);
 
 	tree = memnew(Tree);
+	tree->set_alternate_rows_visible(true);
 	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
