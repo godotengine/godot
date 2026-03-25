@@ -363,6 +363,16 @@ public:
 		v->_get_obj().ref(r);
 	}
 
+	// This should be used with extreme caution, as it does not increment the reference count in the
+	// case where the object is `RefCounted`. You *must* ensure that the destructor of this
+	// `Variant` is never called, and that the assigned object always outlives the `Variant`.
+	_FORCE_INLINE_ static void object_assign_without_ref_unsafe(Variant *v, Object *o) {
+		v->type = Variant::OBJECT;
+		Variant::ObjData &obj_data = v->_get_obj();
+		obj_data.id = o->get_instance_id();
+		obj_data.obj = o;
+	}
+
 	_FORCE_INLINE_ static void object_reset_data(Variant *v) {
 		v->_get_obj() = Variant::ObjData();
 	}
