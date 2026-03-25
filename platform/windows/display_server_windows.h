@@ -548,9 +548,9 @@ class DisplayServerWindows : public DisplayServer {
 	};
 	AHashMap<int, ScreenHdrData> hdr_output_cache;
 
-	ScreenHdrData _get_screen_hdr_data(int p_screen) const;
+	ScreenHdrData _get_screen_hdr_data(int p_screen, bool p_include_sdr_white_level) const;
 	void _update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data);
-	void _update_hdr_output_for_tracked_windows();
+	void _update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
