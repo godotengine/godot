@@ -552,7 +552,8 @@ public:
      */
     void gather_frustum_indices(const Vector<Plane> &p_planes, LocalVector<uint32_t> &r_indices) const;
 
-    /** @brief Direct access to internal storage for performance-critical code. */
+    /** @brief Direct access to internal storage. Render-thread only.
+     *  Worker threads must use capture_chunk_snapshot() instead. */
     const LocalVector<Gaussian> &get_gaussian_storage() const { return gaussians; }
 
     /**

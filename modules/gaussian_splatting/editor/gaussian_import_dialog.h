@@ -29,7 +29,11 @@ class VBoxContainer;
 class GaussianImportDialog : public AcceptDialog {
     GDCLASS(GaussianImportDialog, AcceptDialog);
 
+    static GaussianImportDialog *singleton;
+
 public:
+    static GaussianImportDialog *get_singleton();
+
     /**
      * @struct ImportConfiguration
      * @brief Import settings for Gaussian splat files.
@@ -168,6 +172,7 @@ protected:
 
 public:
     GaussianImportDialog();
+    ~GaussianImportDialog();
 
     void configure_for_file(const String &p_source_path, const Ref<GaussianSplatAsset> &p_existing_asset, bool p_reimport,
             const Dictionary &p_override_options = Dictionary());

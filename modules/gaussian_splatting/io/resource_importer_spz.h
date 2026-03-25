@@ -33,6 +33,8 @@ public:
             List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
     virtual bool can_import_threaded() const override { return true; }
+    virtual bool has_advanced_options() const override;
+    virtual void show_advanced_options(const String &p_path) override;
 
     ResourceImporterSPZ();
 };

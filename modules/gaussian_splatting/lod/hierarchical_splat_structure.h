@@ -82,7 +82,7 @@ public:
         uint32_t min_splats_per_node = 16; // Minimum splats to subdivide
         float size_threshold = 0.01f;      // Minimum node size
         bool compute_importance = true;    // Calculate importance metrics
-        bool parallel_build = true;        // Use parallel construction
+        bool parallel_build = false;       // Disabled: parallel_build_level() is a stub (see #70)
     };
 
 public:
