@@ -46,6 +46,7 @@
 #include "core/string/string_builder.h"
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"
+#include "editor/doc/doc_tools.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -58,7 +59,12 @@
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_bar.h"
 #include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -3395,6 +3401,10 @@ void EditorHelp::popup_search() {
 
 String EditorHelp::get_class() {
 	return edited_class;
+}
+
+void EditorHelp::set_focused() {
+	class_desc->grab_focus();
 }
 
 void EditorHelp::search_again(bool p_search_previous) {

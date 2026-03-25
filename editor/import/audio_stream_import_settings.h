@@ -37,6 +37,7 @@
 #include "scene/gui/spin_box.h"
 
 class CheckBox;
+class HScrollBar;
 
 class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(AudioStreamImportSettingsDialog, ConfirmationDialog);

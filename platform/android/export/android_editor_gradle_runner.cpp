@@ -37,6 +37,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_interface.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/rich_text_label.h"
 

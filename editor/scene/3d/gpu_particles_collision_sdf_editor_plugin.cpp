@@ -37,6 +37,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/main/scene_tree.h"
 
 void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {

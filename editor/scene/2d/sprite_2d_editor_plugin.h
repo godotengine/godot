@@ -39,9 +39,11 @@ class Button;
 class ConfirmationDialog;
 class EditorZoomWidget;
 class HBoxContainer;
+class HScrollBar;
 class MenuButton;
 class Panel;
 class ViewPanner;
+class VScrollBar;
 
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);

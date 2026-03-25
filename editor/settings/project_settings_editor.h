@@ -40,12 +40,13 @@
 #include "editor/settings/editor_autoload_settings.h"
 #include "editor/shader/shader_globals_editor.h"
 #include "editor/translations/localization_editor.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/texture_rect.h"
+#include "scene/gui/dialogs.h"
 
 class EditorVariantTypeOptionButton;
 class FileSystemDock;
+class PanelContainer;
+class TabContainer;
+class Timer;
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);

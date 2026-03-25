@@ -36,9 +36,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/spin_box.h"
+#include "scene/gui/popup.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 
@@ -59,6 +58,7 @@ class OptionButton;
 class PanelContainer;
 class ProceduralSkyMaterial;
 class RichTextLabel;
+class SpinBox;
 class SplitContainer;
 class SubViewport;
 class SubViewportContainer;
@@ -923,17 +923,17 @@ public:
 
 	Vector3 snap_point(Vector3 p_target, Vector3 p_start = Vector3(0, 0, 0)) const;
 
-	float get_znear() const { return settings_znear->get_value(); }
-	float get_zfar() const { return settings_zfar->get_value(); }
-	float get_fov() const { return settings_fov->get_value(); }
+	float get_znear() const;
+	float get_zfar() const;
+	float get_fov() const;
 
 	Transform3D get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const;
 
 	ToolMode get_tool_mode() const { return tool_mode; }
-	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
-	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
-	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
+	bool are_local_coords_enabled() const;
+	void set_local_coords_enabled(bool on) const;
+	bool is_preserve_children_transform_enabled() const;
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
 	real_t get_translate_snap() const;

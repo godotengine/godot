@@ -34,6 +34,7 @@
 #include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
 
+class ButtonGroup;
 class Label;
 class MenuButton;
 class SpinBox;

@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/box_container.h"
 
 class Button;
 class CheckBox;
 class CheckButton;
+class ConfirmationDialog;
 class EditorValidationPanel;
 class Label;
 class LineEdit;

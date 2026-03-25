@@ -31,12 +31,12 @@
 #pragma once
 
 #include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/text_edit.h"
 
 class ConfigFile;
 class EditorValidationPanel;
+class LineEdit;
+class OptionButton;
+class TextEdit;
 
 class PluginConfigDialog : public ConfirmationDialog {
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);

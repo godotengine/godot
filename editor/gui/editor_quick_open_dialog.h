@@ -31,7 +31,9 @@
 #pragma once
 
 #include "core/templates/a_hash_map.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 
 class Button;

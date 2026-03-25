@@ -32,14 +32,20 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/version_control/editor_vcs_interface.h"
-#include "scene/gui/check_button.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
 
+class AcceptDialog;
+class CheckButton;
+class ConfirmationDialog;
 class EditorDock;
+class FileDialog;
+class LineEdit;
+class MenuButton;
+class OptionButton;
+class RichTextLabel;
+class TextEdit;
+class Tree;
+class TreeItem;
+class VBoxContainer;
 
 class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)

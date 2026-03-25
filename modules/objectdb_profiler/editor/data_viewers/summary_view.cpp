@@ -33,10 +33,12 @@
 #include "core/os/time.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_container.h"
 
 SnapshotSummaryView::SnapshotSummaryView() {
 	set_name(TTRC("Summary"));

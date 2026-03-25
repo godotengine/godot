@@ -30,19 +30,11 @@
 
 #pragma once
 
-#include "scene/gui/line_edit.h"
 #include "scene/gui/range.h"
 #include "scene/main/timer.h"
 
-class SpinBoxLineEdit : public LineEdit {
-	GDCLASS(SpinBoxLineEdit, LineEdit);
-
-protected:
-	void _notification(int p_what);
-
-	void _accessibility_action_inc(const Variant &p_data);
-	void _accessibility_action_dec(const Variant &p_data);
-};
+class LineEdit;
+class SpinBoxLineEdit;
 
 class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);

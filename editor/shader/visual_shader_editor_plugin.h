@@ -30,11 +30,13 @@
 
 #pragma once
 
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_node.h"
 #include "scene/resources/material.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
@@ -49,8 +51,9 @@ class HFlowContainer;
 class MenuButton;
 class PopupPanel;
 class RichTextLabel;
+class TextureRect;
+class Timer;
 class Tree;
-
 class VisualShaderEditor;
 class MaterialEditor;
 

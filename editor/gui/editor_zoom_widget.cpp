@@ -37,6 +37,7 @@
 #include "core/string/translation_server.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
 
 void EditorZoomWidget::_update_zoom_label() {
 	const String &lang = _get_locale();

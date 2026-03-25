@@ -35,6 +35,7 @@
 
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector.h"
 
 #include "platform/android/export/export_plugin.h"
 

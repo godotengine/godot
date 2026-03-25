@@ -44,6 +44,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/settings/editor_command_palette.h"
@@ -51,6 +52,13 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -2001,6 +2009,15 @@ AnimationMixer *AnimationPlayerEditor::fetch_mixer_for_library() const {
 
 Node *AnimationPlayerEditor::get_cached_root_node() const {
 	return ObjectDB::get_instance<Node>(cached_root_node_id);
+}
+
+bool AnimationPlayerEditor::is_pinned() const {
+	return pin->is_pressed();
+}
+
+void AnimationPlayerEditor::unpin() {
+	pin->set_pressed(false);
+	_pin_pressed();
 }
 
 bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {

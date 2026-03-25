@@ -34,6 +34,8 @@
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 
 AddMetadataDialog::AddMetadataDialog() {

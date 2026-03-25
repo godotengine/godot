@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_plugin.h"
+#include "editor/inspector/editor_properties.h"
 #include "scene/gui/dialogs.h"
 
 class CheckButton;
@@ -41,6 +42,7 @@ class PanelContainer;
 class SectionedInspector;
 class TabContainer;
 class TextureRect;
+class Timer;
 class Tree;
 class TreeItem;
 

@@ -32,8 +32,10 @@
 
 #include "core/object/callable_mp.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector/editor_inspector_action_button.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
+#include "scene/gui/label.h"
 
 void InputEventConfigContainer::_configure_pressed() {
 	config_dialog->popup_and_configure(input_event);

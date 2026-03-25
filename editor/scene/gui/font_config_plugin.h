@@ -30,9 +30,12 @@
 
 #pragma once
 
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_array_dict.h"
 #include "editor/plugins/editor_plugin.h"
+
+class EditorPaginator;
 
 /*************************************************************************/
 

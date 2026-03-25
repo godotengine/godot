@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/plugins/plugin_config_dialog.h"
+#include "scene/gui/box_container.h"
 
 class TextureRect;
 class Tree;

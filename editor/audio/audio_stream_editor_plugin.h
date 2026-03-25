@@ -30,13 +30,13 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
-#include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/label.h"
 
+class Button;
+class Label;
 class AudioStreamEditor : public ColorRect {
 	GDCLASS(AudioStreamEditor, ColorRect);
 

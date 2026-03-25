@@ -35,8 +35,11 @@ TEST_FORCE_LINK(test_text_edit)
 #ifndef ADVANCED_GUI_DISABLED
 
 #include "core/input/input_map.h"
+#include "scene/gui/scroll_bar.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
 

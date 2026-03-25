@@ -38,6 +38,9 @@
 #include "scene/gui/tree.h"
 
 class FilterLineEdit;
+class OptionButton;
+class Tree;
+class TreeItem;
 
 class EditorHelpSearch : public ConfirmationDialog {
 	GDCLASS(EditorHelpSearch, ConfirmationDialog);

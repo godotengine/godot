@@ -31,14 +31,14 @@
 #pragma once
 
 #include "core/object/script_language.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
 
+class CheckBox;
 class CreateDialog;
 class EditorFileDialog;
 class EditorValidationPanel;
 class LineEdit;
+class OptionButton;
 
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);

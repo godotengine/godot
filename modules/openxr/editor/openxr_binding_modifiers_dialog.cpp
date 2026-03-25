@@ -32,10 +32,15 @@
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_action_map_editor.h"
+#include "openxr_binding_modifier_editor.h"
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/gui/create_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/scroll_container.h"
 
 void OpenXRBindingModifiersDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_add_binding_modifier_editor", "binding_modifier_editor"), &OpenXRBindingModifiersDialog::_do_add_binding_modifier_editor);

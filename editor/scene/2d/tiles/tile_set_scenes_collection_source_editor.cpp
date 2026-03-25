@@ -37,6 +37,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/scene/2d/tiles/tile_set_editor.h"
 #include "editor/settings/editor_settings.h"
@@ -44,6 +45,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/split_container.h"
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::set_id(int p_id) {

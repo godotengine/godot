@@ -32,19 +32,25 @@
 
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/sprite_frames.h"
 
-class OptionButton;
+class AcceptDialog;
+class Button;
+class ConfirmationDialog;
 class EditorFileDialog;
+class EditorUndoRedoManager;
+class HBoxContainer;
+class ImageTexture;
+class ItemList;
+class LineEdit;
+class OptionButton;
+class PopupMenu;
+class ScrollContainer;
+class SpinBox;
+class SpriteFrames;
+class TextureRect;
+class Tree;
+class VBoxContainer;
 
 class ClipboardSpriteFrames : public Resource {
 	GDCLASS(ClipboardSpriteFrames, Resource);

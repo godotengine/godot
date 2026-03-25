@@ -152,12 +152,7 @@ protected:
 		EditMenus();
 	};
 
-	static void _popup_move_item(int p_target_id, PopupMenu *r_popup, bool p_move_after = true, int p_idx = -1) {
-		int target_idx = r_popup->get_item_index(p_target_id) + p_move_after;
-		if (target_idx >= 0 && target_idx < r_popup->get_item_count()) {
-			r_popup->set_item_index(p_idx, target_idx);
-		}
-	}
+	static void _popup_move_item(int p_target_id, PopupMenu *r_popup, bool p_move_after = true, int p_idx = -1);
 
 	static inline EditMenus *edit_menus = nullptr;
 

@@ -101,10 +101,17 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/scene_tree.h"
@@ -10720,11 +10727,33 @@ Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	return p_target;
 }
 
+float Node3DEditor::get_znear() const {
+	return settings_znear->get_value();
+}
+
+float Node3DEditor::get_zfar() const {
+	return settings_zfar->get_value();
+}
+
+float Node3DEditor::get_fov() const {
+	return settings_fov->get_value();
+}
+
 bool Node3DEditor::is_gizmo_visible() const {
 	if (selected) {
 		return gizmo.visible && selected->is_transform_gizmo_visible();
 	}
 	return gizmo.visible;
+}
+
+bool Node3DEditor::are_local_coords_enabled() const {
+	return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed();
+}
+void Node3DEditor::set_local_coords_enabled(bool on) const {
+	tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on);
+}
+bool Node3DEditor::is_preserve_children_transform_enabled() const {
+	return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed();
 }
 
 real_t Node3DEditor::get_translate_snap() const {

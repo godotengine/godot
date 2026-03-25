@@ -30,21 +30,30 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "scene/gui/container.h"
 
+class AcceptDialog;
+class BoxContainer;
+class Button;
 class CheckBox;
 class ColorPickerButton;
 class ConfirmationDialog;
 class CreateDialog;
 class EditorFileDialog;
+class EditorInspector;
 class EditorLocaleDialog;
 class EditorResourcePicker;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
+class HBoxContainer;
+class LineEdit;
 class MenuButton;
+class OptionButton;
+class PopupMenu;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
+class VBoxContainer;
 
 struct EditorPropertyRangeHint {
 	bool or_greater = true;
@@ -57,6 +66,278 @@ struct EditorPropertyRangeHint {
 	bool prefer_slider = false;
 	bool hide_control = true;
 	bool radians_as_degrees = false;
+};
+
+class EditorPropertyRevert {
+public:
+	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
+	static bool can_property_revert(Object *p_object, const StringName &p_property, const Variant *p_custom_current_value = nullptr);
+};
+
+class EditorProperty : public Container {
+	GDCLASS(EditorProperty, Container);
+
+	friend class EditorInspector;
+
+	struct ThemeCache {
+		Ref<Font> font;
+
+		Ref<StyleBox> background;
+		Ref<StyleBox> background_selected;
+		Ref<StyleBox> child_background;
+		Ref<StyleBox> hover;
+		Ref<StyleBox> sub_inspector_background[17];
+
+		Ref<Texture2D> key_icon;
+		Ref<Texture2D> key_next_icon;
+		Ref<Texture2D> delete_icon;
+		Ref<Texture2D> checked_icon;
+		Ref<Texture2D> unchecked_icon;
+		Ref<Texture2D> revert_icon;
+		Ref<Texture2D> pin_icon;
+		Ref<Texture2D> copy_icon;
+		Ref<Texture2D> copy_node_path_icon;
+		Ref<Texture2D> paste_icon;
+		Ref<Texture2D> unfavorite_icon;
+		Ref<Texture2D> favorite_icon;
+		Ref<Texture2D> override_icon;
+		Ref<Texture2D> remove_icon;
+		Ref<Texture2D> help_icon;
+
+		int font_size = 0;
+		int font_offset = 0;
+		int horizontal_separation = 0;
+		int vertical_separation = 0;
+		int padding = 0;
+		int inspector_property_height = 0;
+
+		Color property_color;
+		Color readonly_property_color;
+		Color warning_color;
+		Color readonly_warning_color;
+		Color property_color_x;
+		Color property_color_y;
+		Color property_color_z;
+		Color property_color_w;
+		Color sub_inspector_property_color;
+	} theme_cache;
+
+public:
+	enum MenuItems {
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
+		MENU_COPY_PROPERTY_PATH,
+		MENU_OVERRIDE_FOR_PROJECT,
+		MENU_FAVORITE_PROPERTY,
+		MENU_PIN_VALUE,
+		MENU_DELETE,
+		MENU_REVERT_VALUE,
+		MENU_OPEN_DOCUMENTATION,
+	};
+
+	enum ColorationMode {
+		COLORATION_CONTAINER_RESOURCE,
+		COLORATION_RESOURCE,
+		COLORATION_EXTERNAL,
+	};
+
+	enum InlineControlSide {
+		INLINE_CONTROL_LEFT,
+		INLINE_CONTROL_RIGHT
+	};
+
+private:
+	String label;
+	int text_size;
+	friend class EditorInspector;
+	Object *object = nullptr;
+	StringName property;
+	String property_path;
+	String doc_path;
+	bool internal = false;
+	bool has_doc_tooltip = false;
+
+	int property_usage;
+
+	bool draw_label = true;
+	bool draw_background = true;
+	bool read_only = false;
+	bool checkable = false;
+	bool checked = false;
+	bool draw_warning = false;
+	bool draw_prop_warning = false;
+	bool keying = false;
+	bool deletable = false;
+	bool label_overlayed = false;
+
+	Rect2 right_child_rect;
+	Rect2 bottom_child_rect;
+
+	Rect2 keying_rect;
+	bool keying_hover = false;
+	Rect2 revert_rect;
+	bool revert_hover = false;
+	Rect2 check_rect;
+	bool check_hover = false;
+	Rect2 delete_rect;
+	bool delete_hover = false;
+
+	bool can_revert = false;
+	bool can_pin = false;
+	bool pin_hidden = false;
+	bool pinned = false;
+
+	bool can_favorite = false;
+	bool favorited = false;
+
+	bool use_folding = false;
+	bool draw_top_bg = true;
+
+	int sub_inspector_color_level = -1;
+
+	void _update_popup();
+	void _focusable_focused(int p_index);
+	int _get_v_separation() const { return bottom_editor ? 0 : theme_cache.vertical_separation; }
+
+	bool selectable = true;
+	bool selected = false;
+	int selected_focusable;
+	bool deferred_drag_mode = false;
+
+	float split_ratio;
+
+	Vector<Control *> focusables;
+	Control *label_reference = nullptr;
+	Control *bottom_editor = nullptr;
+	PopupMenu *menu = nullptr;
+	HBoxContainer *left_container = nullptr;
+	HBoxContainer *right_container = nullptr;
+
+	HashMap<StringName, Variant> cache;
+
+	GDVIRTUAL0(_update_property)
+	GDVIRTUAL1(_set_read_only, bool)
+
+	void _update_flags();
+
+protected:
+	bool has_borders = false;
+	bool can_override = false;
+
+	void _notification(int p_what);
+	static void _bind_methods();
+	virtual void _set_read_only(bool p_read_only);
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	const Color *_get_property_colors();
+
+	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
+	virtual StringName _get_revert_property() const;
+
+	void _update_property_bg();
+
+	void _accessibility_action_menu(const Variant &p_data);
+	void _accessibility_action_click(const Variant &p_data);
+
+public:
+	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
+
+	String get_tooltip_string(const String &p_string) const;
+
+	virtual Size2 get_minimum_size() const override;
+
+	void set_label(const String &p_label);
+	String get_label() const;
+
+	void set_read_only(bool p_read_only);
+	bool is_read_only() const;
+
+	void set_draw_label(bool p_draw_label);
+	bool is_draw_label() const;
+
+	void set_draw_background(bool p_draw_background);
+	bool is_draw_background() const;
+
+	Object *get_edited_object();
+	StringName get_edited_property() const;
+	inline Variant get_edited_property_value() const {
+		ERR_FAIL_NULL_V(object, Variant());
+		return object->get(property);
+	}
+	Variant get_edited_property_display_value() const;
+	EditorInspector *get_parent_inspector() const;
+
+	void set_doc_path(const String &p_doc_path);
+	void set_internal(bool p_internal);
+
+	virtual void update_property();
+	void update_editor_property_status();
+
+	virtual bool use_keying_next() const;
+
+	void set_checkable(bool p_checkable);
+	bool is_checkable() const;
+
+	void set_checked(bool p_checked);
+	bool is_checked() const;
+
+	void set_draw_warning(bool p_draw_warning);
+	bool is_draw_warning() const;
+
+	virtual void set_keying(bool p_keying);
+	bool is_keying() const;
+
+	virtual bool is_colored(ColorationMode p_mode) { return false; }
+
+	void set_deletable(bool p_enable);
+	bool is_deletable() const;
+	void add_focusable(Control *p_control);
+	void grab_focus(int p_focusable = -1);
+	void select(int p_focusable = -1);
+	void deselect();
+	bool is_selected() const;
+
+	void add_inline_control(Control *p_control, InlineControlSide p_side);
+	HBoxContainer *get_inline_container(InlineControlSide p_side);
+	void set_label_overlayed(bool p_overlay);
+
+	void set_label_reference(Control *p_control);
+	void set_bottom_editor(Control *p_control);
+
+	void set_use_folding(bool p_use_folding);
+	bool is_using_folding() const;
+
+	virtual void expand_all_folding();
+	virtual void collapse_all_folding();
+	virtual void expand_revertable();
+
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual void update_cache();
+	virtual bool is_cache_valid() const;
+
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true);
+	bool is_deferred_drag_mode_enabled() const;
+
+	void set_selectable(bool p_selectable);
+	bool is_selectable() const;
+
+	void set_name_split_ratio(float p_ratio);
+	float get_name_split_ratio() const;
+
+	void set_favoritable(bool p_favoritable);
+	bool is_favoritable() const;
+
+	void set_object_and_property(Object *p_object, const StringName &p_property);
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
+
+	void set_draw_top_bg(bool p_draw) { draw_top_bg = p_draw; }
+
+	bool can_revert_to_default() const { return can_revert; }
+
+	void menu_option(int p_option);
+
+	EditorProperty();
 };
 
 class EditorPropertyNil : public EditorProperty {
@@ -785,17 +1066,4 @@ public:
 	virtual bool is_colored(ColorationMode p_mode) override;
 
 	EditorPropertyResource();
-};
-
-///////////////////////////////////////////////////
-/// \brief The EditorInspectorDefaultPlugin class
-///
-class EditorInspectorDefaultPlugin : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorDefaultPlugin, EditorInspectorPlugin);
-
-public:
-	virtual bool can_handle(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
-
-	static EditorProperty *get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false);
 };

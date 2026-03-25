@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
 #include "scene/gui/box_container.h"
 #include "scene/resources/2d/tile_set.h"
 
@@ -38,6 +37,7 @@ class Button;
 class ItemList;
 class Label;
 class EditorFileDialog;
+class EditorInspector;
 
 class TileSetScenesCollectionSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetScenesCollectionSourceEditor, HBoxContainer);

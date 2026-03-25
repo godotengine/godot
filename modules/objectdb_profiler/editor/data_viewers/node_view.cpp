@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/split_container.h"

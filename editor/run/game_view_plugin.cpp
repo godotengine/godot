@@ -55,6 +55,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 #include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"

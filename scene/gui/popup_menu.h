@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/input/shortcut.h"
+#include "scene/gui/control.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/scroll_container.h"
 #include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
 #include "servers/display/native_menu.h"
@@ -40,6 +40,7 @@
 class PanelContainer;
 class VBoxContainer;
 class LineEdit;
+class ScrollContainer;
 class Timer;
 
 class PopupMenu : public Popup {

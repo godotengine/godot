@@ -40,6 +40,7 @@ class Tree;
 class TreeItem;
 class VBoxContainer;
 class LineEdit;
+class MarginContainer;
 class MenuButton;
 
 enum class DependencyEditorSortBy {

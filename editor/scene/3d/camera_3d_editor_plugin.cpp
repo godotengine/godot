@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/foldable_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"

@@ -32,7 +32,7 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/code_edit.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/popup.h"
 
 class Button;
 class CheckBox;

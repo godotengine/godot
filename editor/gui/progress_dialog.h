@@ -31,10 +31,11 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
-#include "scene/gui/label.h"
 #include "scene/gui/progress_bar.h"
+
+class Button;
+class ProgressBar;
 
 class BackgroundProgress : public HBoxContainer {
 	GDCLASS(BackgroundProgress, HBoxContainer);

@@ -35,6 +35,10 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/scroll_container.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Interaction profile editor base
