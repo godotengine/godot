@@ -57,6 +57,19 @@ static void _release_uniform_set(RenderingDevice *p_device, RID &p_uniform_set) 
 	p_uniform_set = RID();
 }
 
+template <typename T>
+static bool _readback_typed_buffer(RenderingDevice *p_device, RID p_buffer, uint64_t p_offset, Vector<uint8_t> &r_bytes, const T *&r_ptr) {
+	if (!p_device) {
+		return false;
+	}
+	r_bytes = p_device->buffer_get_data(p_buffer, p_offset, sizeof(T));
+	if ((size_t)r_bytes.size() < sizeof(T)) {
+		return false;
+	}
+	r_ptr = reinterpret_cast<const T *>(r_bytes.ptr());
+	return true;
+}
+
 } // namespace
 
 TileRenderer::TilePrefixScanStage::PrefixParams TileRenderer::TilePrefixScanStage::build_prefix_params() const {
@@ -221,15 +234,12 @@ bool TileRenderer::TilePrefixScanStage::run_cpu_prefix_fallback(RenderingDevice 
         return false;
     }
 
-    Vector<uint32_t> tile_counts_words;
-    tile_counts_words.resize(p_params.total_tiles);
-    std::memcpy(tile_counts_words.ptrw(), counts_data.ptr(), size_t(counts_bytes));
-
     Vector<uint32_t> tile_ranges_words;
     tile_ranges_words.resize(p_params.total_tiles * 2u);
 
     GaussianSplatting::TilePrefixCpuScanResult cpu_result;
-    if (!GaussianSplatting::compute_tile_prefix_cpu(tile_counts_words.ptr(),
+    const uint32_t *tile_counts_words = reinterpret_cast<const uint32_t *>(counts_data.ptr());
+    if (!GaussianSplatting::compute_tile_prefix_cpu(tile_counts_words,
                 p_params.total_tiles, tile_ranges_words.ptrw(), p_params.global_sort_capacity, cpu_result)) {
         GS_LOG_ERROR_DEFAULT("[TileRenderer] CPU prefix fallback failed while building ranges");
         return false;
@@ -477,28 +487,11 @@ bool TileRenderer::TilePrefixScanStage::update_global_tile_ranges(const RID &p_g
 		return true;
 	}
 
-	// Read back the total overlap count from the GPU (enabled for validation or explicit readback).
-	// Cached/estimated values are used by default to avoid per-frame GPU/CPU stalls.
-	Vector<uint8_t> total_bytes = device->buffer_get_data(owner.global_sort_resources.prefix_total_buffer, 0, sizeof(uint32_t));
-	if ((size_t)total_bytes.size() < sizeof(uint32_t)) {
-		GS_LOG_ERROR_DEFAULT("[TileRenderer] Failed to read global overlap total");
-		free_prefix_param_set();
-		return false;
-	}
-	const uint32_t *total_ptr = reinterpret_cast<const uint32_t *>(total_bytes.ptr());
-	uint64_t total_records64 = uint64_t(*total_ptr);
-	if (total_records64 > UINT32_MAX) {
-		WARN_PRINT_ONCE(vformat("[TileRenderer] Overlap total exceeds 32-bit range; truncating to %u (raw=%s)",
-				UINT32_MAX, String::num_uint64(total_records64)));
-	}
-	total_records = total_records64 > UINT32_MAX ? UINT32_MAX : uint32_t(total_records64);
-
 	uint32_t raw_total_records = total_records;
 	if (owner.global_sort_resources.indirect_dispatch_buffer.is_valid()) {
-		Vector<uint8_t> indirect_bytes = device->buffer_get_data(owner.global_sort_resources.indirect_dispatch_buffer, 0,
-				sizeof(IndirectDispatchReadback));
-		if (indirect_bytes.size() >= int(sizeof(IndirectDispatchReadback))) {
-			const IndirectDispatchReadback *indirect = reinterpret_cast<const IndirectDispatchReadback *>(indirect_bytes.ptr());
+		Vector<uint8_t> indirect_bytes;
+		const IndirectDispatchReadback *indirect = nullptr;
+		if (_readback_typed_buffer(device, owner.global_sort_resources.indirect_dispatch_buffer, 0, indirect_bytes, indirect)) {
 			total_records = indirect->element_count;
 			raw_total_records = indirect->unclamped_total;
 			// DEBUG: Log indirect buffer values
@@ -510,7 +503,39 @@ bool TileRenderer::TilePrefixScanStage::update_global_tile_ranges(const RID &p_g
 						indirect->element_count, indirect->unclamped_total, indirect->overflow_flag,
 						indirect->dispatch_xyz[0], indirect->dispatch_xyz[1], indirect->dispatch_xyz[2]));
 			}
+		} else {
+			Vector<uint8_t> total_bytes;
+			const uint32_t *total_ptr = nullptr;
+			if (!_readback_typed_buffer(device, owner.global_sort_resources.prefix_total_buffer, 0, total_bytes, total_ptr)) {
+				GS_LOG_ERROR_DEFAULT("[TileRenderer] Failed to read global overlap total");
+				free_prefix_param_set();
+				return false;
+			}
+			uint64_t total_records64 = uint64_t(*total_ptr);
+			if (total_records64 > UINT32_MAX) {
+				WARN_PRINT_ONCE(vformat("[TileRenderer] Overlap total exceeds 32-bit range; truncating to %u (raw=%s)",
+						UINT32_MAX, String::num_uint64(total_records64)));
+			}
+			total_records = total_records64 > UINT32_MAX ? UINT32_MAX : uint32_t(total_records64);
+			raw_total_records = total_records;
 		}
+	} else {
+		// Read back the total overlap count from the GPU (enabled for validation or explicit readback).
+		// Cached/estimated values are used by default to avoid per-frame GPU/CPU stalls.
+		Vector<uint8_t> total_bytes;
+		const uint32_t *total_ptr = nullptr;
+		if (!_readback_typed_buffer(device, owner.global_sort_resources.prefix_total_buffer, 0, total_bytes, total_ptr)) {
+			GS_LOG_ERROR_DEFAULT("[TileRenderer] Failed to read global overlap total");
+			free_prefix_param_set();
+			return false;
+		}
+		uint64_t total_records64 = uint64_t(*total_ptr);
+		if (total_records64 > UINT32_MAX) {
+			WARN_PRINT_ONCE(vformat("[TileRenderer] Overlap total exceeds 32-bit range; truncating to %u (raw=%s)",
+					UINT32_MAX, String::num_uint64(total_records64)));
+		}
+		total_records = total_records64 > UINT32_MAX ? UINT32_MAX : uint32_t(total_records64);
+		raw_total_records = total_records;
 	}
 
 	owner.perf_metrics.profiling_cached_overlap_total = raw_total_records;

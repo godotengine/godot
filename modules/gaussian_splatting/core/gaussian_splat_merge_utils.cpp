@@ -6,6 +6,7 @@
 #include "core/config/project_settings.h"
 #include "core/templates/hash_set.h"
 #include "core/variant/typed_array.h"
+#include <cstring>
 #include "../logger/gs_logger.h"
 
 namespace {
@@ -328,24 +329,40 @@ bool gaussian_splat_merge_sources(const Vector<GaussianSplatMergeSource> &source
             continue;
         }
         uint32_t splat_count = asset->get_splat_count();
-        PackedFloat32Array asset_sh = sh_buffers[source_index];
+        const PackedFloat32Array &asset_sh = sh_buffers[source_index];
+        const float *asset_sh_ptr = asset_sh.ptr();
         uint32_t base_offset = sh_offsets[source_index];
-        int local_terms = (splat_count > 0) ? (asset_sh.size() / splat_count) : 0;
-        if (local_terms <= 0) {
-            local_terms = 3;
+        uint32_t source_stride = 0u;
+        if (splat_count > 0) {
+            source_stride = uint32_t(asset_sh.size() / int(splat_count));
+            if (source_stride % 3u != 0u) {
+                source_stride -= source_stride % 3u;
+            }
+            if (source_stride == 0u) {
+                source_stride = 3u;
+            }
         }
-        if (local_terms > sh_terms_per_gaussian) {
-            local_terms = sh_terms_per_gaussian;
+        const uint32_t target_stride = uint32_t(sh_terms_per_gaussian);
+        const uint32_t copy_terms = MIN(source_stride, target_stride);
+
+        const uint32_t asset_sh_size = uint32_t(asset_sh.size());
+        if (asset_sh_ptr != nullptr && source_stride == target_stride && splat_count > 0u &&
+                uint64_t(asset_sh_size) >= uint64_t(splat_count) * uint64_t(source_stride)) {
+            const size_t copy_bytes = size_t(splat_count) * size_t(source_stride) * sizeof(float);
+            std::memcpy(sh_ptr + size_t(base_offset) * size_t(target_stride), asset_sh_ptr, copy_bytes);
+            continue;
         }
+
         for (uint32_t splat = 0; splat < splat_count; splat++) {
-            uint32_t target_base = (base_offset + splat) * sh_terms_per_gaussian;
-            uint32_t source_base = splat * local_terms;
-            for (int term = 0; term < sh_terms_per_gaussian; term++) {
-                float value = 0.0f;
-                if (term < local_terms && (source_base + term) < (uint32_t)asset_sh.size()) {
-                    value = asset_sh[source_base + term];
-                }
-                sh_ptr[target_base + term] = value;
+            const uint32_t target_base = (base_offset + splat) * target_stride;
+            const uint32_t source_base = splat * source_stride;
+            const uint32_t source_available_terms = source_base < asset_sh_size ? asset_sh_size - source_base : 0u;
+            const uint32_t available_terms = MIN(copy_terms, source_available_terms);
+            if (asset_sh_ptr != nullptr && available_terms > 0u) {
+                std::memcpy(sh_ptr + target_base, asset_sh_ptr + source_base, size_t(available_terms) * sizeof(float));
+            }
+            for (uint32_t term = available_terms; term < target_stride; term++) {
+                sh_ptr[target_base + term] = 0.0f;
             }
         }
     }

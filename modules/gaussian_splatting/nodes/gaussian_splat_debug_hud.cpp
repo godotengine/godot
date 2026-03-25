@@ -100,28 +100,18 @@ void GaussianSplatDebugHUD::_draw_hud() {
 	}
 
 	const Vector<String> &lines = cached_hud_lines;
-	Vector<Color> line_colors;
-	line_colors.resize(lines.size());
-	Color *colors_write = line_colors.ptrw();
-	for (int i = 0; i < lines.size(); i++) {
-		const String &line = lines[i];
-		Color color = text_color;
-		if (i == 0) {
-			color = highlight_color;
-		} else if (line.begins_with("IO Error")) {
-			color = warning_color;
-		}
-		colors_write[i] = color;
-	}
+	const int line_count = lines.size();
+	line_size_scratch.resize(line_count);
 
 	// Calculate HUD size
 	float max_width = 0.0f;
 	float total_height = 0.0f;
-	for (int i = 0; i < lines.size(); i++) {
-		Vector2 text_size = hud_font->get_string_size(lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+	for (int i = 0; i < line_count; i++) {
+		const Vector2 text_size = hud_font->get_string_size(lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+		line_size_scratch[i] = text_size;
 		max_width = MAX(max_width, text_size.x);
 		total_height += text_size.y;
-		if (i < lines.size() - 1) {
+		if (i + 1 < line_count) {
 			total_height += line_spacing;
 		}
 	}
@@ -138,10 +128,17 @@ void GaussianSplatDebugHUD::_draw_hud() {
 
 	// Draw text lines
 	float y_offset = hud_pos.y + padding;
-	for (int i = 0; i < lines.size(); i++) {
-		Vector2 text_size = hud_font->get_string_size(lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+	for (int i = 0; i < line_count; i++) {
+		const String &line = lines[i];
+		const Vector2 &text_size = line_size_scratch[i];
+		Color color = text_color;
+		if (i == 0) {
+			color = highlight_color;
+		} else if (line.begins_with("IO Error")) {
+			color = warning_color;
+		}
 		Vector2 text_pos(hud_pos.x + padding, y_offset + text_size.y * 0.8f);
-		draw_string(hud_font, text_pos, lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, line_colors[i]);
+		draw_string(hud_font, text_pos, line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 		y_offset += text_size.y + line_spacing;
 	}
 }

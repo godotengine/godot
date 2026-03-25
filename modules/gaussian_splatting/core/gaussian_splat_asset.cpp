@@ -271,9 +271,18 @@ PackedVector3Array GaussianSplatAsset::get_position_vectors() const {
     const float *read = positions.ptr();
     const int available = positions.size();
 
+    if (available >= int(splat_count) * 3 && read != nullptr) {
+        for (uint32_t i = 0; i < splat_count; i++) {
+            const uint32_t base = i * 3u;
+            write[i] = Vector3(read[base + 0], read[base + 1], read[base + 2]);
+        }
+        return result;
+    }
+
     for (uint32_t i = 0; i < splat_count; i++) {
-        if (available >= int(i * 3 + 3) && read != nullptr) {
-            write[i] = Vector3(read[i * 3 + 0], read[i * 3 + 1], read[i * 3 + 2]);
+        const uint32_t base = i * 3u;
+        if (available >= int(base + 3u) && read != nullptr) {
+            write[i] = Vector3(read[base + 0], read[base + 1], read[base + 2]);
         } else {
             write[i] = Vector3();
         }
@@ -294,9 +303,18 @@ PackedVector3Array GaussianSplatAsset::get_scale_vectors() const {
     const float *read = scales.ptr();
     const int available = scales.size();
 
+    if (available >= int(splat_count) * 3 && read != nullptr) {
+        for (uint32_t i = 0; i < splat_count; i++) {
+            const uint32_t base = i * 3u;
+            write[i] = Vector3(read[base + 0], read[base + 1], read[base + 2]);
+        }
+        return result;
+    }
+
     for (uint32_t i = 0; i < splat_count; i++) {
-        if (available >= int(i * 3 + 3) && read != nullptr) {
-            write[i] = Vector3(read[i * 3 + 0], read[i * 3 + 1], read[i * 3 + 2]);
+        const uint32_t base = i * 3u;
+        if (available >= int(base + 3u) && read != nullptr) {
+            write[i] = Vector3(read[base + 0], read[base + 1], read[base + 2]);
         } else {
             write[i] = Vector3(1.0f, 1.0f, 1.0f);
         }
@@ -993,12 +1011,32 @@ Error GaussianSplatAsset::populate_from_gaussian_data(const Ref<::GaussianData> 
     float *brush_axes_ptr = brush_axes.is_empty() ? nullptr : brush_axes.ptrw();
     float *stroke_ages_ptr = stroke_ages.is_empty() ? nullptr : stroke_ages.ptrw();
 
+    const bool has_positions = positions_ptr != nullptr;
+    const bool has_colors = colors_ptr != nullptr;
+    const bool has_scales = scales_ptr != nullptr;
+    const bool has_rotations = rotations_ptr != nullptr;
+    const bool has_sh_dc = sh_dc_ptr != nullptr;
+    const bool has_first_order = sh_first_order_terms > 0 && sh_first_order_ptr != nullptr;
+    const bool has_high_order = sh_high_order_terms > 0 && high_order_ptr != nullptr && sh_high_order_ptr != nullptr;
+    const bool has_opacity_logits = opacity_logits_ptr != nullptr;
+    const bool has_normals = normals_ptr != nullptr;
+    const bool has_brush_axes = brush_axes_ptr != nullptr;
+    const bool has_stroke_ages = stroke_ages_ptr != nullptr;
+    const bool has_palette_ids = palette_ids_ptr != nullptr;
+    const bool has_painterly_flags = painterly_flags_ptr != nullptr;
+
     bool bounds_initialized = false;
     Vector3 min_pos;
     Vector3 max_pos;
 
     for (int i = 0; i < count; i++) {
         Gaussian g = p_gaussian_data->get_gaussian(i);
+        const uint32_t base3 = uint32_t(i) * 3u;
+        const uint32_t base4 = uint32_t(i) * 4u;
+        const int first_base = i * int(sh_first_order_terms) * 3;
+        const int high_base = i * int(sh_high_order_terms) * 3;
+        const size_t high_order_base = size_t(i) * size_t(sh_high_order_terms);
+        const uint32_t brush_base = uint32_t(i) * 2u;
 
         // Rotation-aware AABB extent for anisotropic Gaussian scales:
         // extent = abs(R) * sigma, then expand to 3-sigma coverage.
@@ -1023,84 +1061,83 @@ Error GaussianSplatAsset::populate_from_gaussian_data(const Ref<::GaussianData> 
             max_pos = max_pos.max(local_max);
         }
 
-        if (positions_ptr != nullptr) {
-            positions_ptr[i * 3 + 0] = g.position.x;
-            positions_ptr[i * 3 + 1] = g.position.y;
-            positions_ptr[i * 3 + 2] = g.position.z;
+        if (has_positions) {
+            positions_ptr[base3 + 0] = g.position.x;
+            positions_ptr[base3 + 1] = g.position.y;
+            positions_ptr[base3 + 2] = g.position.z;
         }
 
-        if (colors_ptr != nullptr) {
+        if (has_colors) {
             Color color = g.sh_dc;
             color.a = g.opacity;
             colors_ptr[i] = color;
         }
 
-        if (scales_ptr != nullptr) {
-            scales_ptr[i * 3 + 0] = g.scale.x;
-            scales_ptr[i * 3 + 1] = g.scale.y;
-            scales_ptr[i * 3 + 2] = g.scale.z;
+        if (has_scales) {
+            scales_ptr[base3 + 0] = g.scale.x;
+            scales_ptr[base3 + 1] = g.scale.y;
+            scales_ptr[base3 + 2] = g.scale.z;
         }
 
-        if (rotations_ptr != nullptr) {
-            rotations_ptr[i * 4 + 0] = g.rotation.w;
-            rotations_ptr[i * 4 + 1] = g.rotation.x;
-            rotations_ptr[i * 4 + 2] = g.rotation.y;
-            rotations_ptr[i * 4 + 3] = g.rotation.z;
+        if (has_rotations) {
+            rotations_ptr[base4 + 0] = g.rotation.w;
+            rotations_ptr[base4 + 1] = g.rotation.x;
+            rotations_ptr[base4 + 2] = g.rotation.y;
+            rotations_ptr[base4 + 3] = g.rotation.z;
         }
 
         // SH coefficients
-        if (sh_dc_ptr != nullptr) {
-            sh_dc_ptr[i * 3 + 0] = g.sh_dc.r;
-            sh_dc_ptr[i * 3 + 1] = g.sh_dc.g;
-            sh_dc_ptr[i * 3 + 2] = g.sh_dc.b;
+        if (has_sh_dc) {
+            sh_dc_ptr[base3 + 0] = g.sh_dc.r;
+            sh_dc_ptr[base3 + 1] = g.sh_dc.g;
+            sh_dc_ptr[base3 + 2] = g.sh_dc.b;
         }
 
-        if (sh_first_order_terms > 0 && sh_first_order_ptr != nullptr) {
-            int base = i * sh_first_order_terms * 3;
+        if (has_first_order) {
             for (uint32_t term = 0; term < sh_first_order_terms; term++) {
                 const Vector3 &coeff = g.sh_1[term];
-                sh_first_order_ptr[base + term * 3 + 0] = coeff.x;
-                sh_first_order_ptr[base + term * 3 + 1] = coeff.y;
-                sh_first_order_ptr[base + term * 3 + 2] = coeff.z;
+                const int term_base = first_base + int(term) * 3;
+                sh_first_order_ptr[term_base + 0] = coeff.x;
+                sh_first_order_ptr[term_base + 1] = coeff.y;
+                sh_first_order_ptr[term_base + 2] = coeff.z;
             }
         }
 
-        if (sh_high_order_terms > 0 && high_order_ptr != nullptr && sh_high_order_ptr != nullptr) {
-            size_t base_index = (size_t)i * sh_high_order_terms;
-            int base = i * sh_high_order_terms * 3;
+        if (has_high_order) {
             for (uint32_t term = 0; term < sh_high_order_terms; term++) {
-                const Vector3 &coeff = high_order_ptr[base_index + term];
-                sh_high_order_ptr[base + term * 3 + 0] = coeff.x;
-                sh_high_order_ptr[base + term * 3 + 1] = coeff.y;
-                sh_high_order_ptr[base + term * 3 + 2] = coeff.z;
+                const Vector3 &coeff = high_order_ptr[high_order_base + term];
+                const int term_base = high_base + int(term) * 3;
+                sh_high_order_ptr[term_base + 0] = coeff.x;
+                sh_high_order_ptr[term_base + 1] = coeff.y;
+                sh_high_order_ptr[term_base + 2] = coeff.z;
             }
         }
 
         float clamped_opacity = CLAMP(g.opacity, 0.0001f, 0.9999f);
-        if (opacity_logits_ptr != nullptr) {
+        if (has_opacity_logits) {
             opacity_logits_ptr[i] = Math::log(clamped_opacity / (1.0f - clamped_opacity));
         }
 
-        if (normals_ptr != nullptr) {
-            normals_ptr[i * 3 + 0] = g.normal.x;
-            normals_ptr[i * 3 + 1] = g.normal.y;
-            normals_ptr[i * 3 + 2] = g.normal.z;
+        if (has_normals) {
+            normals_ptr[base3 + 0] = g.normal.x;
+            normals_ptr[base3 + 1] = g.normal.y;
+            normals_ptr[base3 + 2] = g.normal.z;
         }
 
-        if (brush_axes_ptr != nullptr) {
-            brush_axes_ptr[i * 2 + 0] = g.brush_axes.x;
-            brush_axes_ptr[i * 2 + 1] = g.brush_axes.y;
+        if (has_brush_axes) {
+            brush_axes_ptr[brush_base + 0] = g.brush_axes.x;
+            brush_axes_ptr[brush_base + 1] = g.brush_axes.y;
         }
 
-        if (stroke_ages_ptr != nullptr) {
+        if (has_stroke_ages) {
             stroke_ages_ptr[i] = g.stroke_age;
         }
 
-        if (palette_ids_ptr != nullptr) {
+        if (has_palette_ids) {
             palette_ids_ptr[i] = (int)gaussian_get_palette_id(g.painterly_meta);
         }
 
-        if (painterly_flags_ptr != nullptr) {
+        if (has_painterly_flags) {
             painterly_flags_ptr[i] = (int)gaussian_get_brush_override_id(g.painterly_meta);
         }
     }

@@ -53,11 +53,11 @@ static uint64_t _hash_combine(uint64_t p_seed, uint64_t p_value) {
 	return p_seed ^ (p_value + 0x9e3779b97f4a7c15ULL + (p_seed << 6) + (p_seed >> 2));
 }
 
-static int64_t _quantize_float(float p_value, float p_step) {
-	if (p_step <= 0.0f) {
+static int64_t _quantize_float(float p_value, float p_inverse_step) {
+	if (p_inverse_step <= 0.0f) {
 		return 0;
 	}
-	return static_cast<int64_t>(Math::round(p_value / p_step));
+	return static_cast<int64_t>(Math::round(p_value * p_inverse_step));
 }
 
 static uint64_t _hash_camera_pose(const Transform3D &p_transform, float p_pos_step, float p_rot_step) {
@@ -70,15 +70,17 @@ static uint64_t _hash_camera_pose(const Transform3D &p_transform, float p_pos_st
 	if (rot.w < 0.0f) {
 		rot = Quaternion(-rot.x, -rot.y, -rot.z, -rot.w);
 	}
+	const float inv_pos_step = 1.0f / p_pos_step;
+	const float inv_rot_step = 1.0f / p_rot_step;
 
 	uint64_t seed = 1469598103934665603ULL;
-	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(pos.x, p_pos_step)));
-	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(pos.y, p_pos_step)));
-	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(pos.z, p_pos_step)));
-	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.x, p_rot_step)));
-	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.y, p_rot_step)));
-	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.z, p_rot_step)));
-	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.w, p_rot_step)));
+	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(pos.x, inv_pos_step)));
+	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(pos.y, inv_pos_step)));
+	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(pos.z, inv_pos_step)));
+	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.x, inv_rot_step)));
+	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.y, inv_rot_step)));
+	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.z, inv_rot_step)));
+	seed = _hash_combine(seed, static_cast<uint64_t>(_quantize_float(rot.w, inv_rot_step)));
 	return seed;
 }
 
@@ -575,15 +577,16 @@ bool RenderDebugStateOrchestrator::_check_cull_guardrails(uint64_t p_frame_id, u
 	}
 
 	CullGuardrailSample *match = nullptr;
-	for (uint32_t i = 0; i < kCullGuardrailSamples; i++) {
-		if (cull_guardrail_samples[i].valid && cull_guardrail_samples[i].key == pose_key) {
-			match = &cull_guardrail_samples[i];
+	for (CullGuardrailSample &sample : cull_guardrail_samples) {
+		if (sample.valid && sample.key == pose_key) {
+			match = &sample;
 			break;
 		}
 	}
 
 	bool triggered = false;
-	if (match && match->visible_count >= static_cast<uint32_t>(debug_config.cull_guardrail_min_visible)) {
+	const uint32_t min_visible = static_cast<uint32_t>(debug_config.cull_guardrail_min_visible);
+	if (match && match->visible_count >= min_visible) {
 		float ratio = match->visible_count > 0
 				? float(p_visible_count) / float(match->visible_count)
 				: 1.0f;
@@ -884,8 +887,9 @@ Dictionary RenderDebugStateOrchestrator::get_pipeline_trace_snapshot() const {
 
 	Array events;
 	if (trace_fresh) {
-		events.resize(debug_state.pipeline_events.size());
-		for (int i = 0; i < debug_state.pipeline_events.size(); i++) {
+		const int event_count = debug_state.pipeline_events.size();
+		events.resize(event_count);
+		for (int i = 0; i < event_count; i++) {
 			events[i] = _pipeline_event_to_dict(debug_state.pipeline_events[i]);
 		}
 	}

@@ -1,7 +1,5 @@
 #include "asset_dependency_manager.h"
 
-#include <functional>
-
 #include "core/crypto/crypto.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
@@ -254,22 +252,22 @@ Error AssetDependencyManager::update_asset_metadata(const AssetID &p_asset_id, c
 }
 
 AssetID AssetDependencyManager::get_asset_id_from_path(const String &p_file_path) const {
-    if (path_to_id_map.has(p_file_path)) {
-        return path_to_id_map[p_file_path];
+    if (const AssetID *asset_id = path_to_id_map.getptr(p_file_path)) {
+        return *asset_id;
     }
     return AssetID();
 }
 
 String AssetDependencyManager::get_asset_path_from_id(const AssetID &p_asset_id) const {
-    if (asset_registry.has(p_asset_id)) {
-        return asset_registry[p_asset_id].file_path;
+    if (const AssetMetadata *asset_metadata = asset_registry.getptr(p_asset_id)) {
+        return asset_metadata->file_path;
     }
     return String();
 }
 
 AssetMetadata AssetDependencyManager::get_asset_metadata(const AssetID &p_asset_id) const {
-    if (asset_registry.has(p_asset_id)) {
-        return asset_registry[p_asset_id];
+    if (const AssetMetadata *asset_metadata = asset_registry.getptr(p_asset_id)) {
+        return *asset_metadata;
     }
     return AssetMetadata();
 }
@@ -344,13 +342,14 @@ Error AssetDependencyManager::remove_dependency(const AssetID &p_asset_id, const
 }
 
 Vector<AssetID> AssetDependencyManager::get_dependencies(const AssetID &p_asset_id, bool p_recursive) const {
-    if (!asset_registry.has(p_asset_id)) {
+    const AssetMetadata *asset_metadata = asset_registry.getptr(p_asset_id);
+    if (asset_metadata == nullptr) {
         return Vector<AssetID>();
     }
 
     if (!p_recursive) {
         Vector<AssetID> deps;
-        for (const AssetID &dep_id : asset_registry[p_asset_id].dependencies) {
+        for (const AssetID &dep_id : asset_metadata->dependencies) {
             deps.push_back(dep_id);
         }
         return deps;
@@ -361,8 +360,7 @@ Vector<AssetID> AssetDependencyManager::get_dependencies(const AssetID &p_asset_
         dependency_cache_dirty = false;
     }
 
-    const Vector<AssetID> *cached = resolved_dependency_cache.getptr(p_asset_id);
-    if (cached != nullptr) {
+    if (const Vector<AssetID> *cached = resolved_dependency_cache.getptr(p_asset_id)) {
         return *cached;
     }
     Vector<AssetID> resolved = _topological_sort_dependencies(p_asset_id);
@@ -378,23 +376,23 @@ Vector<AssetID> AssetDependencyManager::get_dependents(const AssetID &p_asset_id
     HashSet<AssetID, AssetIDHasher> visited;
     Vector<AssetID> result;
 
-    std::function<void(const AssetID &)> collect_dependents = [&](const AssetID &current_id) {
+    auto collect_dependents = [&](auto &&self, const AssetID &current_id) -> void {
         if (visited.has(current_id)) {
             return;
         }
         visited.insert(current_id);
 
-        if (asset_registry.has(current_id)) {
-            for (const AssetID &dependent_id : asset_registry[current_id].dependents) {
+        if (const AssetMetadata *asset_metadata = asset_registry.getptr(current_id)) {
+            for (const AssetID &dependent_id : asset_metadata->dependents) {
                 result.push_back(dependent_id);
                 if (p_recursive) {
-                    collect_dependents(dependent_id);
+                    self(self, dependent_id);
                 }
             }
         }
     };
 
-    collect_dependents(p_asset_id);
+    collect_dependents(collect_dependents, p_asset_id);
     return result;
 }
 
@@ -451,16 +449,17 @@ Vector<AssetID> AssetDependencyManager::_topological_sort_dependencies(const Ass
     Vector<AssetID> result;
     HashSet<AssetID, AssetIDHasher> visited;
 
-    std::function<void(const AssetID &)> visit = [&](const AssetID &current_id) {
-        if (visited.has(current_id) || !asset_registry.has(current_id)) {
+    auto visit = [&](auto &&self, const AssetID &current_id) -> void {
+        const AssetMetadata *asset_metadata = asset_registry.getptr(current_id);
+        if (visited.has(current_id) || asset_metadata == nullptr) {
             return;
         }
 
         visited.insert(current_id);
 
         // Visit all dependencies first (depth-first)
-        for (const AssetID &dep_id : asset_registry[current_id].dependencies) {
-            visit(dep_id);
+        for (const AssetID &dep_id : asset_metadata->dependencies) {
+            self(self, dep_id);
         }
 
         // Add current asset after its dependencies
@@ -469,9 +468,9 @@ Vector<AssetID> AssetDependencyManager::_topological_sort_dependencies(const Ass
 
     // Recursive dependency queries should only return dependencies,
     // not the queried asset itself.
-    if (asset_registry.has(p_asset_id)) {
-        for (const AssetID &dep_id : asset_registry[p_asset_id].dependencies) {
-            visit(dep_id);
+    if (const AssetMetadata *asset_metadata = asset_registry.getptr(p_asset_id)) {
+        for (const AssetID &dep_id : asset_metadata->dependencies) {
+            visit(visit, dep_id);
         }
     }
     return result;
