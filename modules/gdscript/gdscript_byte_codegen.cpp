@@ -189,7 +189,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 			opcodes.write[temporaries[i].bytecode_indices[j]] = stack_index | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
 		}
 		if (temporaries[i].type != Variant::NIL) {
-			function->temporary_slots[stack_index] = temporaries[i].type;
+			function->temporary_slots.push_back(Pair(stack_index, temporaries[i].type));
 		}
 	}
 

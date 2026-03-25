@@ -648,8 +648,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			instruction_args = nullptr;
 		}
 
-		for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
-			type_init_function_table[E.value](&stack[E.key]);
+		for (const Pair<int, Variant::Type> &E : temporary_slots) {
+			type_init_function_table[E.second](&stack[E.first]);
 		}
 	}
 
