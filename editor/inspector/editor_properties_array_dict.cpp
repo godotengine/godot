@@ -514,8 +514,6 @@ void EditorPropertyArray::update_property() {
 			// Check if the editor property needs to be updated.
 			bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
 			if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
-				Variant elem = array.get(idx);
-
 				slot.as_id = value_as_id;
 				slot.type = value_type;
 				EditorProperty *new_prop = nullptr;
@@ -525,12 +523,14 @@ void EditorPropertyArray::update_property() {
 					new_prop = editor;
 				} else {
 					Variant e = array.get(idx);
+					PropertyHint obj_subtype_hint = subtype_hint;
+					Variant::Type var_type = value_type;
 					if (Object::cast_to<Node>(e.get_validated_object())) {
-						subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
-						value_type = Variant::OBJECT;
+						obj_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						var_type = Variant::OBJECT;
 					}
 
-					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+					new_prop = EditorInspector::instantiate_property_editor(this, var_type, "", obj_subtype_hint, "", PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
@@ -1400,12 +1400,14 @@ void EditorPropertyDictionary::update_property() {
 						editor->setup("Object");
 						new_prop = editor;
 					} else {
+						PropertyHint obj_subtype_hint = key_subtype_hint;
+						Variant::Type var_type = key_type;
 						if (Object::cast_to<Node>(key.get_validated_object())) {
-							key_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
-							key_type = Variant::OBJECT;
+							obj_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+							var_type = Variant::OBJECT;
 						}
 
-						new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
+						new_prop = EditorInspector::instantiate_property_editor(this, var_type, "", obj_subtype_hint, "", PROPERTY_USAGE_NONE);
 					}
 					new_prop->set_read_only(true);
 					new_prop->set_selectable(false);
@@ -1457,9 +1459,14 @@ void EditorPropertyDictionary::update_property() {
 						value_type = Variant::OBJECT;
 					}
 
-					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
-					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
-							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);
+					PropertyHint obj_subtype_hint = value_subtype_hint;
+					Variant::Type var_type = value_type;
+					if (Object::cast_to<Node>(value.get_validated_object())) {
+						obj_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						var_type = Variant::OBJECT;
+					}
+
+					new_prop = EditorInspector::instantiate_property_editor(this, var_type, "", obj_subtype_hint, "", PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());

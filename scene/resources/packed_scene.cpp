@@ -393,6 +393,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						dnp.value = props[nprops[j].value];
 						dnp.base = node->get_instance_id();
 						dnp.property = snames[name_idx];
+						dnp.nd = &n;
 						deferred_node_paths.push_back(dnp);
 						continue;
 					}
@@ -595,6 +596,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
 		// Replace properties stored as NodePaths with actual Nodes.
 		Node *base = ObjectDB::get_instance<Node>(dnp.base);
+		HashMap<Ref<Resource>, Ref<Resource>> resources_local_to_sub_scene;
 		NodeBinding *maybe_node_binding = Object::cast_to<NodeBinding>(dnp.value.get_validated_object());
 		ERR_CONTINUE_EDMSG(!base, vformat("Failed to set deferred property '%s' as the base node disappeared.", dnp.property));
 		if (dnp.value.get_type() == Variant::ARRAY) {
@@ -604,13 +606,18 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Array array = base->get(dnp.property, &valid);
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
 
-			Array new_array = bind_deferred_node_paths_in_array(paths, base, true);
+			int idx = dnp.nd - nd;
+			setup_resources_in_array(array, *dnp.nd, resources_local_to_scenes, base, dnp.property, idx, ret_nodes, p_edit_state);
+
+			Array new_array = bind_deferred_node_paths_in_array(paths, base);
 			base->set(dnp.property, new_array);
 		} else if (dnp.value.get_type() == Variant::DICTIONARY) {
 			bool valid;
 			Dictionary dict = base->get(dnp.property, &valid);
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-			dict = dict.duplicate();
+
+			int idx = dnp.nd - nd;
+			setup_resources_in_dictionary(dict, *dnp.nd, resources_local_to_scenes, base, dnp.property, idx, ret_nodes, p_edit_state);
 
 			dict = bind_deferred_node_paths_in_dictionary(dict, base);
 			base->set(dnp.property, dict);
@@ -720,13 +727,15 @@ Array SceneState::setup_resources_in_array(Array &p_array_to_scan, const SceneSt
 	return p_array_to_scan;
 }
 
-Array SceneState::bind_deferred_node_paths_in_array(const Array &p_array_to_scan, const Node *p_base_node, bool p_should_bind_paths) const {
+Array SceneState::bind_deferred_node_paths_in_array(const Array &p_array_to_scan, const Node *p_base_node) const {
+	bool bind_paths = p_array_to_scan.get_typed_builtin() == Variant::OBJECT &&
+			ClassDB::is_parent_class(p_array_to_scan.get_typed_class_name(), "Node");
 	Array out_array;
 	int array_len = p_array_to_scan.size();
 	out_array.resize(array_len);
 	for (int i = 0; i < array_len; i++) {
 		Variant var = p_array_to_scan[i];
-		out_array.set(i, bind_node_paths(var, p_base_node, p_should_bind_paths));
+		out_array.set(i, bind_node_paths(var, p_base_node, bind_paths));
 	}
 	return out_array;
 }
@@ -756,7 +765,8 @@ Dictionary SceneState::bind_deferred_node_paths_in_dictionary(const Dictionary &
 	bool convert_value = p_dictionary_to_scan.get_typed_value_builtin() == Variant::OBJECT &&
 			ClassDB::is_parent_class(p_dictionary_to_scan.get_typed_value_class_name(), "Node");
 
-	Dictionary out_dict;
+	// duplicate to maintain types
+	Dictionary out_dict = p_dictionary_to_scan.duplicate(true);
 	for (const KeyValue<Variant, Variant> &kv : p_dictionary_to_scan) {
 		Variant key = kv.key;
 		key = bind_node_paths(key, p_base_node, convert_key);
@@ -775,7 +785,7 @@ Variant SceneState::bind_node_paths(const Variant p_var, const Node *p_base_node
 	NodeBinding *maybe_node_binding = Object::cast_to<NodeBinding>(p_var.get_validated_object());
 	if (type == Variant::ARRAY) {
 		Array nested_array = p_var;
-		out_var = bind_deferred_node_paths_in_array(nested_array, p_base_node, p_should_bind_paths);
+		out_var = bind_deferred_node_paths_in_array(nested_array, p_base_node);
 	} else if (type == Variant::DICTIONARY) {
 		Dictionary nested_dict = p_var;
 		out_var = bind_deferred_node_paths_in_dictionary(nested_dict, p_base_node);
@@ -823,24 +833,25 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 	return idx;
 }
 
-// Recursively parses arrays, mostly to look for Nodes to turn into NodePaths
-void SceneState::_parse_array(Array &r_out_array, Node *p_node, const Array &p_orig_array) {
+// Recursively parses arrays, mostly to look for Nodes to turn into NodeBindings
+void SceneState::_parse_array(Array &r_out_array, Node *p_node, const Array &p_orig_array, bool &r_has_bindings) {
 	for (int i = 0; i < p_orig_array.size(); i++) {
 		Variant elem = p_orig_array[i];
 
 		if (elem.get_type() == Variant::OBJECT) {
 			if (Node *n = Object::cast_to<Node>(elem.get_validated_object())) {
+				r_has_bindings = true;
 				NodeBinding *binding = memnew(NodeBinding);
 				binding->path = p_node->get_path_to(n);
 				r_out_array.push_back(binding);
 			}
 		} else if (elem.get_type() == Variant::DICTIONARY) {
 			Dictionary new_dict;
-			_parse_dict(new_dict, p_node, elem);
+			_parse_dict(new_dict, p_node, elem, r_has_bindings);
 			r_out_array.push_back(new_dict);
 		} else if (elem.get_type() == Variant::ARRAY) {
 			Array new_array;
-			_parse_array(new_array, p_node, elem);
+			_parse_array(new_array, p_node, elem, r_has_bindings);
 			r_out_array.push_back(new_array);
 		} else {
 			r_out_array.push_back(elem);
@@ -848,8 +859,8 @@ void SceneState::_parse_array(Array &r_out_array, Node *p_node, const Array &p_o
 	}
 }
 
-// Recursively parses dictionaries, mostly to look for Nodes to turn into NodePaths
-void SceneState::_parse_dict(Dictionary &r_out_dict, Node *p_node, const Dictionary &p_orig_dict) {
+// Recursively parses dictionaries, mostly to look for Nodes to turn into NodeBindings
+void SceneState::_parse_dict(Dictionary &r_out_dict, Node *p_node, const Dictionary &p_orig_dict, bool &r_has_bindings) {
 	Array keys = p_orig_dict.keys();
 
 	for (int i = 0; i < keys.size(); i++) {
@@ -857,13 +868,14 @@ void SceneState::_parse_dict(Dictionary &r_out_dict, Node *p_node, const Diction
 
 		if (key.get_type() == Variant::DICTIONARY) {
 			Dictionary key_dict;
-			_parse_dict(key_dict, p_node, key);
+			_parse_dict(key_dict, p_node, key, r_has_bindings);
 			key = key_dict;
 		} else if (key.get_type() == Variant::ARRAY) {
 			Array key_arr;
-			_parse_array(key_arr, p_node, key);
+			_parse_array(key_arr, p_node, key, r_has_bindings);
 			key = key_arr;
 		} else if (Node *key_n = Object::cast_to<Node>(key)) {
+			r_has_bindings = true;
 			NodeBinding *binding = memnew(NodeBinding);
 			binding->path = p_node->get_path_to(key_n);
 			key = binding;
@@ -873,13 +885,14 @@ void SceneState::_parse_dict(Dictionary &r_out_dict, Node *p_node, const Diction
 
 		if (value.get_type() == Variant::DICTIONARY) {
 			Dictionary value_dict;
-			_parse_dict(value_dict, p_node, value);
+			_parse_dict(value_dict, p_node, value, r_has_bindings);
 			value = value_dict;
 		} else if (value.get_type() == Variant::ARRAY) {
 			Array value_arr;
-			_parse_array(value_arr, p_node, value);
+			_parse_array(value_arr, p_node, value, r_has_bindings);
 			value = value_arr;
 		} else if (Node *value_n = Object::cast_to<Node>(value)) {
+			r_has_bindings = true;
 			NodeBinding *binding = memnew(NodeBinding);
 			binding->path = p_node->get_path_to(value_n);
 			key = binding;
@@ -1032,7 +1045,11 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			Array array = value;
 			Array new_array;
 
-			_parse_array(new_array, p_node, array);
+			bool has_node_binding;
+			_parse_array(new_array, p_node, array, has_node_binding);
+			if (has_node_binding) {
+				use_deferred_node_path_bit = true;
+			}
 
 			value = new_array;
 		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
@@ -1086,7 +1103,11 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			Dictionary dict = value;
 			Dictionary new_dict;
 
-			_parse_dict(new_dict, p_node, dict);
+			bool has_node_binding;
+			_parse_dict(new_dict, p_node, dict, has_node_binding);
+			if (has_node_binding) {
+				use_deferred_node_path_bit = true;
+			}
 
 			value = new_dict;
 		}
