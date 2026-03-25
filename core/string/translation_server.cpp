@@ -498,6 +498,14 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
+void TranslationServer::set_fallback_allowed(const bool &p_allow) {
+	allow_fallback = p_allow;
+}
+
+bool TranslationServer::is_fallback_allowed() const {
+	return allow_fallback;
+}
+
 void TranslationServer::set_fallback_locale(const String &p_locale) {
 	fallback = p_locale;
 }
@@ -601,6 +609,7 @@ void TranslationServer::setup() {
 	}
 
 	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
+	allow_fallback = GLOBAL_DEF("internationalization/locale/allow_fallback", true);
 	main_domain->set_pseudolocalization_enabled(GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false));
 	main_domain->set_pseudolocalization_accents_enabled(GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true));
 	main_domain->set_pseudolocalization_double_vowels_enabled(GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false));

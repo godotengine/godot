@@ -357,8 +357,9 @@ StringName TranslationDomain::translate(const StringName &p_message, const Strin
 	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_context);
 
+	const bool &allow_fallback = TranslationServer::get_singleton()->is_fallback_allowed();
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
-	if (!res && fallback.length() >= 2) {
+	if (!res && allow_fallback && fallback.length() >= 2) {
 		res = get_message_from_translations(fallback, p_message, p_context);
 	}
 
@@ -376,8 +377,9 @@ StringName TranslationDomain::translate_plural(const StringName &p_message, cons
 	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_message_plural, p_n, p_context);
 
+	const bool &allow_fallback = TranslationServer::get_singleton()->is_fallback_allowed();
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
-	if (!res && fallback.length() >= 2) {
+	if (!res && allow_fallback && fallback.length() >= 2) {
 		res = get_message_from_translations(fallback, p_message, p_message_plural, p_n, p_context);
 	}
 
