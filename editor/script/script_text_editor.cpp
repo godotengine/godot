@@ -766,6 +766,7 @@ void ScriptTextEditor::update_settings() {
 		code_editor->get_text_editor()->set_inline_object_handlers(Callable(), Callable(), Callable());
 	}
 	TextEditorBase::update_settings();
+	code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 }
 
 Variant ScriptTextEditor::get_edit_state() {
