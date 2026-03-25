@@ -77,6 +77,10 @@ protected:
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 	virtual void _post_popup() override;
 
+	bool _child_forces_resizable(Control *c) const;
+	bool _has_resizable_content(Node *p_node) const;
+	void _update_resizable();
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;

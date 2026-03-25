@@ -110,7 +110,13 @@ void AcceptDialog::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_READY:
+		case NOTIFICATION_READY: {
+			_update_resizable();
+			if (is_visible()) {
+				_update_child_rects();
+			}
+		} break;
+
 		case NOTIFICATION_WM_SIZE_CHANGED: {
 			if (is_visible()) {
 				_update_child_rects();
@@ -119,6 +125,10 @@ void AcceptDialog::_notification(int p_what) {
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_cancel_pressed();
+		} break;
+
+		case NOTIFICATION_CHILD_ORDER_CHANGED: {
+			_update_resizable();
 		} break;
 	}
 }
@@ -317,6 +327,41 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	}
 
 	return content_minsize;
+}
+
+bool AcceptDialog::_child_forces_resizable(Control *c) const {
+	// Dialog content that should be able to be resized
+    return c->is_class("RichTextLabel")		||
+		c->is_class("TextEdit")			||
+		c->is_class("CodeEdit")			||
+		c->is_class("Tree")				||
+		c->is_class("ItemList")			||
+		c->is_class("GraphEdit")		||
+		c->is_class("ScrollContainer")	||
+		c->is_class("TabContainer")		||
+		c->is_class("SplitContainer");
+}
+
+bool AcceptDialog::_has_resizable_content(Node *p_node) const {
+	Control *c = Object::cast_to<Control>(p_node);
+    if (c && _child_forces_resizable(c)) {
+		return true;
+    }
+
+	// Recursively checks if any of the dialog's children has content that should be able 
+	// to be resized.
+    for (int i = 0; i < p_node->get_child_count(); i++) {
+        if (_has_resizable_content(p_node->get_child(i))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void AcceptDialog::_update_resizable() {
+    bool should_resize = _has_resizable_content(this);
+    set_flag(FLAG_RESIZE_DISABLED, !should_resize);
 }
 
 void AcceptDialog::set_default_ok_text(const String &p_text) {
