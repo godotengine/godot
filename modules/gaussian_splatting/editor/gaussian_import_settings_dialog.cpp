@@ -226,6 +226,7 @@ GaussianImportSettingsDialog::GaussianImportSettingsDialog() {
 }
 
 GaussianImportSettingsDialog::~GaussianImportSettingsDialog() {
+	singleton = nullptr;
 	memdelete(settings_data);
 }
 
@@ -571,8 +572,7 @@ void GaussianImportSettingsDialog::_update_stats() {
 	int count = loaded_asset->get_splat_count();
 	text += vformat(TTR("Splats: %s"), String::num_int64(count)) + "\n";
 
-	AABB b = _resolve_bounds();
-	text += vformat(TTR("Bounds: %.2f x %.2f x %.2f"), b.size.x, b.size.y, b.size.z) + "\n";
+	text += vformat(TTR("Bounds: %.2f x %.2f x %.2f"), asset_bounds.size.x, asset_bounds.size.y, asset_bounds.size.z) + "\n";
 
 	Dictionary meta = loaded_asset->get_import_metadata();
 	if (meta.has(StringName("memory_estimate_bytes"))) {
@@ -682,7 +682,8 @@ void GaussianImportSettingsDialog::_re_import() {
 	} else if (ext == "spz") {
 		importer_name = "gaussian_splat_spz";
 	} else {
-		importer_name = "";
+		WARN_PRINT(vformat("GaussianImportSettingsDialog: unknown file extension '%s' for '%s'.", ext, source_path));
+		return;
 	}
 
 	// Gather all settings from the inspector data object.
@@ -707,9 +708,8 @@ void GaussianImportSettingsDialog::_re_import() {
 	_clear_viewport_scene();
 	loaded_asset.unref();
 
-	if (!importer_name.is_empty()) {
-		EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(source_path, importer_name, params);
-	}
+	ERR_FAIL_NULL(EditorFileSystem::get_singleton());
+	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(source_path, importer_name, params);
 }
 
 // ---------------------------------------------------------------------------
@@ -739,6 +739,10 @@ void GaussianImportSettingsDialog::open_settings(const String &p_path) {
 
 	// Load the imported asset for preview.
 	_load_source_asset();
+
+	if (loaded_asset.is_null()) {
+		stats_label->set_text(TTR("Failed to load asset. Check the file format and path."));
+	}
 
 	// Populate the EditorInspector with import settings.
 	_populate_settings_data();

@@ -79,6 +79,10 @@ GaussianImportDialog::GaussianImportDialog() {
     _build_ui();
 }
 
+GaussianImportDialog::~GaussianImportDialog() {
+    singleton = nullptr;
+}
+
 void GaussianImportDialog::_build_ui() {
     VBoxContainer *root = memnew(VBoxContainer);
     add_child(root);

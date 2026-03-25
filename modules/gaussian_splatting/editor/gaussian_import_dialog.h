@@ -172,6 +172,7 @@ protected:
 
 public:
     GaussianImportDialog();
+    ~GaussianImportDialog();
 
     void configure_for_file(const String &p_source_path, const Ref<GaussianSplatAsset> &p_existing_asset, bool p_reimport,
             const Dictionary &p_override_options = Dictionary());

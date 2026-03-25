@@ -73,7 +73,7 @@ class GaussianImportSettingsDialog : public ConfirmationDialog {
 
 	float cam_rot_x = 0.0f;
 	float cam_rot_y = 0.0f;
-	float cam_zoom = 0.0f;
+	float cam_zoom = 1.0f;
 
 	void _build_ui();
 	void _build_viewport_scene();
