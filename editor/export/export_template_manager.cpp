@@ -34,6 +34,7 @@
 #include "core/error/error_list.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
@@ -55,7 +56,6 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
-#include "scene/main/http_request.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server.h"
@@ -82,8 +82,11 @@ void ExportTemplateManager::_request_mirrors() {
 	} else {
 		mirrors_list->set_tooltip_text(String());
 	}
-	const String mirrors_metadata_url = vformat("https://godotengine.org/mirrorlist/%s.json", "4.6.stable" /*GODOT_VERSION_FULL_CONFIG*/); // TODO: debug-adjusted, uncomment before merging xd
-	mirrors_requester->request(mirrors_metadata_url);
+
+	if (mirrors_list->get_tooltip_text().is_empty()) {
+		const String mirrors_metadata_url = vformat("https://godotengine.org/mirrorlist/%s.json", GODOT_VERSION_FULL_CONFIG);
+		mirrors_requester->request(mirrors_metadata_url);
+	}
 }
 
 void ExportTemplateManager::_mirrors_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
@@ -117,7 +120,6 @@ void ExportTemplateManager::_mirrors_request_completed(int p_result, int p_respo
 	Dictionary mirror_data = json.get_data();
 	if (mirror_data.has("mirrors")) {
 		Array mirrors = mirror_data["mirrors"];
-		mirrors.push_front(Dictionary({ { "name", "localhost8k" }, { "url", "http://127.0.0.1:8000" } })); // TODO: debug-only, remove before merging xd
 		for (const Variant &mirror : mirrors) {
 			Dictionary m = mirror;
 			ERR_CONTINUE(!m.has("url") || !m.has("name"));
@@ -185,54 +187,72 @@ void ExportTemplateManager::_open_mirror() {
 	OS::get_singleton()->shell_open(_get_current_mirror_url());
 }
 
+void ExportTemplateManager::_delete_confirmed() {
+	const String selected_version = version_list->get_item_text(version_list->get_current());
+	const String template_directory = _get_template_folder_path(selected_version);
+
+	if (_item_is_file(item_to_delete)) {
+		OS::get_singleton()->move_to_trash(template_directory.path_join(item_to_delete->get_text(0)));
+		file_metadata.erase(item_to_delete->get_text(0));
+	} else {
+		for (TreeItem *child = item_to_delete->get_first_child(); child; child = child->get_next()) {
+			if (!_get_file_metadata(child)->is_missing) {
+				OS::get_singleton()->move_to_trash(template_directory.path_join(child->get_text(0)));
+			}
+			file_metadata.erase(child->get_text(0));
+		}
+	}
+	_update_template_tree();
+}
+
 void ExportTemplateManager::_initialize_template_data() {
 	// Base templates.
 	{
 		TemplateInfo info;
-		info.name = "Windows x86-32";
+		info.name = "Windows x86_32";
 		info.description = TTRC("32-bit build for Microsoft Windows, including console wrapper.");
 		info.file_list = { "windows_debug_x86_32.exe", "windows_debug_x86_32_console.exe", "windows_release_x86_32.exe", "windows_release_x86_32_console.exe" };
 		template_data[TemplateID::WINDOWS_X86_32] = info;
 	}
 	{
 		TemplateInfo info;
-		info.name = "Windows x86-64";
+		info.name = "Windows x86_64";
 		info.description = TTRC("64-bit build for Microsoft Windows, including console wrapper.");
 		info.file_list = { "windows_debug_x86_64.exe", "windows_debug_x86_64_console.exe", "windows_release_x86_64.exe", "windows_release_x86_64_console.exe" };
 		template_data[TemplateID::WINDOWS_X86_64] = info;
 	}
 	{
 		TemplateInfo info;
-		info.name = "Windows ARM-64";
-		info.description = TTRC("32-bit build for Microsoft Windows on ARM architecture, including console wrapper.");
+		info.name = "Windows arm64";
+		info.description = TTRC("64-bit build for Microsoft Windows on ARM architecture, including console wrapper.");
 		info.file_list = { "windows_debug_arm64.exe", "windows_debug_arm64_console.exe", "windows_release_arm64.exe", "windows_release_arm64_console.exe" };
 		template_data[TemplateID::WINDOWS_ARM64] = info;
 	}
 
 	{
 		TemplateInfo info;
-		info.name = "Linux x86-32";
+		info.name = "Linux x86_32";
 		info.description = TTRC("32-bit build for Linux systems.");
 		info.file_list = { "linux_debug.x86_32", "linux_release.x86_32" };
 		template_data[TemplateID::LINUX_X86_32] = info;
 	}
 	{
 		TemplateInfo info;
-		info.name = "Linux x86-64";
+		info.name = "Linux x86_64";
 		info.description = TTRC("64-bit build for Linux systems.");
 		info.file_list = { "linux_debug.x86_64", "linux_release.x86_64" };
 		template_data[TemplateID::LINUX_X86_64] = info;
 	}
 	{
 		TemplateInfo info;
-		info.name = "Linux ARM-32";
+		info.name = "Linux arm32";
 		info.description = TTRC("32-bit build for Linux systems on ARM architecture.");
 		info.file_list = { "linux_debug.arm32", "linux_release.arm32" };
 		template_data[TemplateID::LINUX_ARM32] = info;
 	}
 	{
 		TemplateInfo info;
-		info.name = "Linux ARM-64";
+		info.name = "Linux arm64";
 		info.description = TTRC("64-bit build for Linux systems on ARM architecture.");
 		info.file_list = { "linux_debug.arm64", "linux_release.arm64" };
 		template_data[TemplateID::LINUX_ARM64] = info;
@@ -687,21 +707,8 @@ void ExportTemplateManager::_tree_button_clicked(TreeItem *p_item, int p_column,
 		} break;
 
 		case ButtonID::REMOVE: {
-			const String selected_version = version_list->get_item_text(version_list->get_current());
-			const String template_directory = _get_template_folder_path(selected_version);
-
-			if (_item_is_file(p_item)) {
-				OS::get_singleton()->move_to_trash(template_directory.path_join(p_item->get_text(0)));
-				file_metadata.erase(p_item->get_text(0));
-			} else {
-				for (TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
-					if (!_get_file_metadata(child)->is_missing) {
-						OS::get_singleton()->move_to_trash(template_directory.path_join(child->get_text(0)));
-					}
-					file_metadata.erase(child->get_text(0));
-				}
-			}
-			_update_template_tree();
+			item_to_delete = p_item;
+			confirm_delete->popup_centered();
 		} break;
 
 		case ButtonID::CANCEL: {
@@ -799,21 +806,18 @@ void ExportTemplateManager::_process_download_queue() {
 			continue;
 		}
 
-		HTTPRequest *downloader = _get_available_downloader(&downloader_index);
+		TemplateDownloader *downloader = _get_available_downloader(&downloader_index);
 		if (!downloader) {
 			break;
 		}
 		downloader_index++;
 
-		const String filename = item->get_text(0);
-		downloader->set_download_file(EditorPaths::get_singleton()->get_cache_dir().path_join(filename));
-
-		Error err = downloader->request(_get_current_mirror_url() + "/" + filename);
+		Error err = downloader->download_template(item->get_text(0), _get_current_mirror_url());
 		if (err == OK) {
 			meta->download_status = DownloadStatus::IN_PROGRESS;
 			meta->downloader = downloader;
 		} else {
-			_item_download_failed(item, TTR(error_names[err]));
+			_item_download_failed(item, vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
 		}
 	}
 
@@ -839,14 +843,14 @@ void ExportTemplateManager::_queue_process_download_queue() {
 	queue_update_pending = true;
 }
 
-HTTPRequest *ExportTemplateManager::_get_available_downloader(int *r_from_index) {
+TemplateDownloader *ExportTemplateManager::_get_available_downloader(int *r_from_index) {
 	int counter = -1;
-	for (HTTPRequest *downloader : downloaders) {
+	for (TemplateDownloader *downloader : downloaders) {
 		counter++;
 		if (counter < *r_from_index) {
 			continue;
 		}
-		if (downloader->get_http_client_status() == HTTPClient::STATUS_DISCONNECTED) {
+		if (!downloader->is_downloading()) {
 			*r_from_index = counter;
 			return downloader;
 		}
@@ -854,36 +858,59 @@ HTTPRequest *ExportTemplateManager::_get_available_downloader(int *r_from_index)
 	return nullptr;
 }
 
-void ExportTemplateManager::_download_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body, HTTPRequest *p_downloader) {
-	const String filename = p_downloader->get_download_file().get_file();
+void ExportTemplateManager::_download_request_completed(const String &p_filename) {
 	bool found = false;
 	bool template_finished = false;
 
-	queued_files.erase(filename);
+	queued_files.erase(p_filename);
 	for (TreeItem *item : downloading_items) {
-		if (item->get_text(0) != filename) {
+		if (item->get_text(0) != p_filename) {
 			continue;
 		}
+		item->clear_buttons();
 
-		FileMetadata *meta = _get_file_metadata(filename);
+		FileMetadata *meta = _get_file_metadata(p_filename);
 		meta->downloader = nullptr;
-
-		if (p_result == HTTPRequest::RESULT_SUCCESS && p_response_code == HTTPClient::RESPONSE_OK) {
-			DirAccess::rename_absolute(p_downloader->get_download_file(), _get_template_folder_path(VERSION_FULL_CONFIG).path_join(filename));
-
-			item->clear_buttons();
-			meta->download_status = DownloadStatus::COMPLETED;
-			meta->is_missing = false;
-		} else {
-			_item_download_failed(item, _get_download_error(p_result, p_response_code));
-		}
+		meta->download_status = DownloadStatus::COMPLETED;
+		meta->is_missing = false;
 
 		found = true;
 		template_finished = _is_template_download_finished(item->get_parent());
 		if (template_finished) {
 			queued_templates.erase(item->get_parent()->get_text(0));
 		}
+		break;
+	}
+	if (!found) {
+		ERR_FAIL_COND(!found);
+	}
+	_queue_process_download_queue();
 
+	if (template_finished) {
+		_update_template_tree();
+	}
+}
+
+void ExportTemplateManager::_download_request_failed(const String &p_filename, const String &p_reason) {
+	bool found = false;
+	bool template_finished = false;
+
+	queued_files.erase(p_filename);
+	for (TreeItem *item : downloading_items) {
+		if (item->get_text(0) != p_filename) {
+			continue;
+		}
+
+		FileMetadata *meta = _get_file_metadata(p_filename);
+		meta->downloader = nullptr;
+
+		_item_download_failed(item, p_reason);
+
+		found = true;
+		template_finished = _is_template_download_finished(item->get_parent());
+		if (template_finished) {
+			queued_templates.erase(item->get_parent()->get_text(0));
+		}
 		break;
 	}
 	if (!found) {
@@ -909,34 +936,6 @@ bool ExportTemplateManager::_is_template_download_finished(TreeItem *p_template)
 	return true;
 }
 
-String ExportTemplateManager::_get_download_error(int p_result, int p_response_code) const {
-	switch (p_result) {
-		case HTTPRequest::RESULT_CANT_RESOLVE:
-			return TTR("Can't resolve the requested address");
-		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
-		case HTTPRequest::RESULT_CONNECTION_ERROR:
-		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
-		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
-		case HTTPRequest::RESULT_CANT_CONNECT:
-			return TTR("Can't connect to the mirror");
-		case HTTPRequest::RESULT_NO_RESPONSE:
-			return TTR("No response from the mirror");
-		case HTTPRequest::RESULT_REQUEST_FAILED:
-			return TTR("Request failed");
-		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED:
-			return TTR("Request ended up in a redirect loop");
-	}
-
-	switch (p_response_code) {
-		case HTTPClient::RESPONSE_FORBIDDEN:
-			return TTR("Forbidden");
-		case HTTPClient::RESPONSE_NOT_FOUND:
-			return TTR("Not found");
-		default: // Handle only common errors.
-			return vformat(TTR("Response code: %d"), p_response_code);
-	}
-}
-
 void ExportTemplateManager::_apply_item_folding(TreeItem *p_item, bool p_default) {
 	if (folding_cache.is_empty()) {
 		if (p_default) {
@@ -958,7 +957,7 @@ void ExportTemplateManager::_cancel_item_download(TreeItem *p_item) {
 
 	FileMetadata *meta = _get_file_metadata(p_item);
 	if (meta->downloader) {
-		meta->downloader->cancel_request();
+		meta->downloader->cancel_download();
 		meta->downloader = nullptr;
 	}
 }
@@ -1050,7 +1049,7 @@ float ExportTemplateManager::_get_download_progress(const TreeItem *p_item) cons
 			if (!meta->downloader) {
 				return 0.0;
 			}
-			return (float)meta->downloader->get_downloaded_bytes() / (float)meta->downloader->get_body_size();
+			return meta->downloader->get_download_progress();
 		}
 
 		case DownloadStatus::COMPLETED: {
@@ -1141,10 +1140,10 @@ void ExportTemplateManager::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			open_folder_button->set_button_icon(get_editor_theme_icon("Folder"));
-			install_button->set_button_icon(get_editor_theme_icon("AssetLib"));
+			install_button->set_button_icon(get_editor_theme_icon("AssetStore"));
 			open_mirror->set_button_icon(get_editor_theme_icon("ExternalLink"));
 
-			theme_cache.install_icon = get_editor_theme_icon("AssetLib");
+			theme_cache.install_icon = get_editor_theme_icon("AssetStore");
 			theme_cache.remove_icon = get_editor_theme_icon("Remove");
 			theme_cache.repair_icon = get_editor_theme_icon("Tools");
 			theme_cache.failure_icon = get_editor_theme_icon("NodeWarning");
@@ -1456,15 +1455,334 @@ ExportTemplateManager::ExportTemplateManager() {
 	offline_container->add_child(enable_online_button);
 	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
+	confirm_delete = memnew(ConfirmationDialog);
+	confirm_delete->set_text(TTRC("Remove the selected template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
+	add_child(confirm_delete);
+	confirm_delete->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_delete_confirmed));
+
 	mirrors_requester = memnew(HTTPRequest);
 	mirrors_requester->connect("request_completed", callable_mp(this, &ExportTemplateManager::_mirrors_request_completed));
 	add_child(mirrors_requester);
 
+	const String template_directory = _get_template_folder_path(GODOT_VERSION_FULL_CONFIG);
 	for (int i = 0; i < 5; i++) {
-		HTTPRequest *downloader = memnew(HTTPRequest);
+		TemplateDownloader *downloader = memnew(TemplateDownloader(template_directory));
 		downloader->set_use_threads(true);
 		add_child(downloader);
 		downloaders.push_back(downloader);
-		downloader->connect("request_completed", callable_mp(this, &ExportTemplateManager::_download_request_completed).bind(downloader), CONNECT_DEFERRED);
+		downloader->connect("download_completed", callable_mp(this, &ExportTemplateManager::_download_request_completed));
+		downloader->connect("download_failed", callable_mp(this, &ExportTemplateManager::_download_request_failed));
 	}
+}
+
+int TemplateDownloader::_find_sequence_backwards(const PackedByteArray &p_source, const PackedByteArray &p_target) const {
+	const int64_t source_size = p_source.size();
+	const int64_t target_size = p_target.size();
+
+	if (target_size == 0) {
+		return -1;
+	}
+	if (target_size > source_size) {
+		return -1;
+	}
+	const uint8_t *src_ptr = p_source.ptr();
+	const uint8_t *tgt_ptr = p_target.ptr();
+
+	for (int64_t i = source_size - target_size; i >= 0; i--) {
+		if (memcmp(&src_ptr[i], tgt_ptr, target_size) == 0) {
+			return (int)i;
+		}
+	}
+	return -1;
+}
+
+String TemplateDownloader::_get_download_error(int p_result, int p_response_code) const {
+	switch (p_result) {
+		case HTTPRequest::RESULT_CANT_RESOLVE:
+			return TTR("Can't resolve the requested address");
+		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+		case HTTPRequest::RESULT_CONNECTION_ERROR:
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
+		case HTTPRequest::RESULT_CANT_CONNECT:
+			return TTR("Can't connect to the mirror");
+		case HTTPRequest::RESULT_NO_RESPONSE:
+			return TTR("No response from the mirror");
+		case HTTPRequest::RESULT_REQUEST_FAILED:
+			return TTR("Request failed");
+		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED:
+			return TTR("Request ended up in a redirect loop");
+	}
+
+	switch (p_response_code) {
+		case HTTPClient::RESPONSE_FORBIDDEN:
+			return TTR("Forbidden");
+		case HTTPClient::RESPONSE_NOT_FOUND:
+			return TTR("Not found");
+		default: // Handle only common errors.
+			return vformat(TTR("Response code: %d"), p_response_code);
+	}
+}
+
+void TemplateDownloader::_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
+	switch (current_step) {
+		case Step::WAITING: {
+			_download_failed(String()); // Not really possible to happen, so just fail with empty message.
+			ERR_FAIL_MSG("Request completed on wrong step.");
+		} break;
+
+		case Step::QUERYING: {
+			if (p_result != HTTPRequest::RESULT_SUCCESS || p_response_code != HTTPClient::RESPONSE_OK) {
+				_download_failed(_get_download_error(p_result, p_response_code));
+				return;
+			}
+			for (const String &header : p_headers) {
+				if (header.to_lower().begins_with("content-length:")) {
+					file_size = header.split(":")[1].to_int();
+				}
+			}
+
+			current_step = Step::SCANNING;
+			// Request the last 64 KB of the file to read the Central Directory.
+			const String tail_range = vformat("Range: bytes=%d-%d", MAX(0, file_size - 0x10000), file_size - 1);
+
+			Error err = request(url, PackedStringArray{ tail_range }, HTTPClient::METHOD_GET);
+			if (err != OK) {
+				_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
+			}
+		} break;
+
+		case Step::SCANNING: {
+			if (p_result != HTTPRequest::RESULT_SUCCESS || p_response_code != HTTPClient::RESPONSE_PARTIAL_CONTENT) {
+				_download_failed(_get_download_error(p_result, p_response_code));
+				return;
+			}
+			PackedByteArray eocd_sig = { 0x50, 0x4b, 0x05, 0x06 };
+			int eocd_pos = _find_sequence_backwards(p_body, eocd_sig);
+			if (eocd_pos == -1) {
+				_download_failed(TTR("Invalid template archive header."));
+				return;
+			}
+			const uint8_t *tail_data = p_body.ptr();
+
+			int total_entries = decode_uint16(tail_data + eocd_pos + 10);
+			int cd_start_offset = decode_uint32(tail_data + eocd_pos + 16);
+			int buffer_start_abs = file_size - p_body.size();
+			int current_pos = cd_start_offset - buffer_start_abs;
+			const String target_path = "templates/" + filename;
+
+			for (int i = 0; i < total_entries; i++) {
+				if (decode_uint32(tail_data + current_pos) != 0x02014b50) {
+					break;
+				}
+
+				int comp_method = decode_uint16(tail_data + current_pos + 10); // 0 = Stored, 8 = Deflated
+				int comp_size = decode_uint32(tail_data + current_pos + 20);
+				int uncomp_size = decode_uint32(tail_data + current_pos + 24);
+				int name_len = decode_uint16(tail_data + current_pos + 28);
+				int extra_len = decode_uint16(tail_data + current_pos + 30);
+				int comm_len = decode_uint16(tail_data + current_pos + 32);
+				int local_offset = decode_uint32(tail_data + current_pos + 42);
+
+				int full_record_len = 46 + name_len + extra_len + comm_len;
+				const PackedByteArray raw_record = p_body.slice(current_pos, current_pos + full_record_len);
+				const String file_name = String::utf8((const char *)p_body.slice(current_pos + 46, current_pos + 46 + name_len).ptr(), name_len);
+
+				if (file_name == target_path) {
+					file_info.offset = local_offset;
+					file_info.compressed_size = comp_size;
+					file_info.uncompressed_size = uncomp_size;
+					file_info.raw_record = raw_record;
+					file_info.method = comp_method;
+					file_info.name = file_name;
+					break;
+				}
+				current_pos += full_record_len;
+			}
+
+			if (file_info.name.is_empty()) {
+				_download_failed(TTR("Requested template not found in the archive."));
+				return;
+			}
+
+			int start_byte = file_info.offset;
+			int end_byte = file_info.offset + file_info.compressed_size + file_info.raw_record.size();
+
+			current_step = Step::DOWNLOADING;
+			const String data_range = vformat("Range: bytes=%d-%d", start_byte, end_byte);
+
+			Error err = request(url, PackedStringArray{ data_range }, HTTPClient::METHOD_GET);
+			if (err != OK) {
+				_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
+			}
+		} break;
+
+		case Step::DOWNLOADING: {
+			if (p_result != HTTPRequest::RESULT_SUCCESS || p_response_code != HTTPClient::RESPONSE_PARTIAL_CONTENT) {
+				_download_failed(_get_download_error(p_result, p_response_code));
+				return;
+			}
+			const String mini_zip_path = EditorPaths::get_singleton()->get_temp_dir().path_join(filename + ".zip");
+			const uint8_t *fragment = p_body.ptr();
+
+			int local_name_len = decode_uint16(fragment + 26);
+			int local_extra_len = decode_uint16(fragment + 28);
+			int full_file_chunk_size = 30 + local_name_len + local_extra_len + file_info.compressed_size;
+
+			if (p_body.size() < full_file_chunk_size) {
+				_download_failed(vformat(TTR("Archive fragment too small. Loaded: %d, required: %d."), p_body.size(), full_file_chunk_size));
+				return;
+			}
+
+			const PackedByteArray clean_fragment = p_body.slice(0, full_file_chunk_size);
+
+			PackedByteArray cd_record = file_info.raw_record.duplicate();
+			uint8_t *record_write = cd_record.ptrw();
+			encode_uint32(0, record_write + 42); // IMPORTANT: Set the offset to 0, as the file is at the very beginning of the mini-ZIP.
+
+			// EOCD (End of Central Directory)
+			PackedByteArray eocd;
+			eocd.resize_initialized(22);
+
+			uint8_t *eocd_write = eocd.ptrw();
+			encode_uint32(0x06054b50, eocd_write); // Signature (4 bytes).
+			// Offsets 4-7 remain 0 (disk numbers).
+			encode_uint16(1, eocd_write + 8); // Number of entries on this disk (2 bytes).
+			encode_uint16(1, eocd_write + 10); // Total number of entries (2 bytes).
+			encode_uint32(cd_record.size(), eocd_write + 12); // Central Directory size (4 bytes).
+			encode_uint32(clean_fragment.size(), eocd_write + 16); // CD start offset (after file data) (4 bytes).
+
+			// Write Mini-Zip to a file.
+			Ref<FileAccess> f = FileAccess::open(mini_zip_path, FileAccess::WRITE);
+			if (f.is_null()) {
+				_download_failed(TTR("Failed to open mini-ZIP for writing."));
+				return;
+			}
+			f->store_buffer(clean_fragment);
+			f->store_buffer(cd_record);
+			f->store_buffer(eocd);
+			f.unref();
+
+			PackedByteArray extracted_data;
+			{
+				// Read back the mini-ZIP.
+				Ref<FileAccess> zip_access;
+				zlib_filefunc_def io = zipio_create_io(&zip_access);
+				unzFile uzf = unzOpen2(mini_zip_path.utf8().get_data(), &io);
+				if (!uzf) {
+					_download_failed(TTR("ZIP reader could not open mini-ZIP."));
+					return;
+				}
+
+				// IMPORTANT: The path in the ZIP reader must exactly match the one in the CD.
+
+				int err = UNZ_OK;
+
+				// Locate and open the file.
+				err = godot_unzip_locate_file(uzf, file_info.name, true);
+				if (err != UNZ_OK) {
+					_download_failed(TTR("File does not exist in zip archive."));
+					return;
+				}
+
+				err = unzOpenCurrentFile(uzf);
+				if (err != UNZ_OK) {
+					_download_failed(TTR("Could not open file within zip archive."));
+					return;
+				}
+
+				// Read the file info.
+				unz_file_info info;
+				err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
+				if (err != UNZ_OK) {
+					_download_failed(TTR("Unable to read file information from zip archive."));
+					return;
+				}
+
+				// Read the file data.
+				extracted_data.resize(info.uncompressed_size);
+				uint8_t *buffer = extracted_data.ptrw();
+				int to_read = extracted_data.size();
+				while (to_read > 0) {
+					int bytes_read = unzReadCurrentFile(uzf, buffer, to_read);
+					if (bytes_read < 0 || (bytes_read == UNZ_EOF && to_read != 0)) {
+						_download_failed(TTR("IO/zlib error reading file from zip archive."));
+						return;
+					}
+					buffer += bytes_read;
+					to_read -= bytes_read;
+				}
+
+				// Verify the data and return.
+				err = unzCloseCurrentFile(uzf);
+				if (err != UNZ_OK) {
+					_download_failed(TTR("CRC error reading file from zip archive."));
+					return;
+				}
+			}
+
+			if (extracted_data.is_empty()) {
+				_download_failed(TTR("Mini-ZIP data was empty."));
+				// The mini-ZIP is not deleted for inspection.
+				return;
+			} else {
+				DirAccess::remove_absolute(mini_zip_path);
+
+				f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
+				if (f.is_null()) {
+					_download_failed(TTR("Failed to template file for writing."));
+					return;
+				}
+				f->store_buffer(extracted_data);
+				f.unref();
+
+				current_step = Step::WAITING;
+				emit_signal(SNAME("download_completed"), filename);
+			}
+		} break;
+	}
+}
+
+void TemplateDownloader::_download_failed(const String &p_reason) {
+	const String failed_file = filename;
+	cancel_download();
+	emit_signal(SNAME("download_failed"), failed_file, p_reason);
+}
+
+void TemplateDownloader::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect(SNAME("request_completed"), callable_mp(this, &TemplateDownloader::_request_completed), CONNECT_DEFERRED);
+		} break;
+	}
+}
+
+void TemplateDownloader::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("download_completed"));
+	ADD_SIGNAL(MethodInfo("download_failed"));
+}
+
+Error TemplateDownloader::download_template(const String &p_file_name, const String &p_source) {
+	url = p_source;
+	filename = p_file_name;
+
+	current_step = Step::QUERYING;
+	return request(p_source, PackedStringArray(), HTTPClient::METHOD_HEAD);
+}
+
+void TemplateDownloader::cancel_download() {
+	cancel_request();
+
+	current_step = Step::WAITING;
+	filename = String();
+	url = String();
+	file_size = 0;
+	file_info = FileInfo();
+}
+
+float TemplateDownloader::get_download_progress() const {
+	if (current_step == Step::DOWNLOADING) {
+		return (float)get_downloaded_bytes() / get_body_size();
+	}
+	return 0.0f;
 }

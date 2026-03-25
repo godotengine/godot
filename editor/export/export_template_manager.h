@@ -31,16 +31,64 @@
 #pragma once
 
 #include "scene/gui/dialogs.h"
+#include "scene/main/http_request.h"
 
 class Button;
 class EditorExportPreset;
-class HTTPRequest;
 class ItemList;
 class HBoxContainer;
 class OptionButton;
 class Texture2D;
 class Tree;
 class TreeItem;
+
+class TemplateDownloader : public HTTPRequest {
+	GDCLASS(TemplateDownloader, HTTPRequest);
+
+	struct FileInfo {
+		int offset = 0;
+		int compressed_size = 0;
+		int uncompressed_size = 0;
+		int method = 0;
+		PackedByteArray raw_record;
+		String name;
+	};
+
+	enum class Step {
+		WAITING,
+		QUERYING,
+		SCANNING,
+		DOWNLOADING,
+	};
+
+	String url;
+	String filename;
+	String target_directory;
+
+	Step current_step = Step::WAITING;
+	int file_size = 0;
+	FileInfo file_info;
+
+	int _find_sequence_backwards(const PackedByteArray &p_source, const PackedByteArray &p_target) const;
+	String _get_download_error(int p_result, int p_response_code) const;
+
+	void _request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
+	void _download_failed(const String &p_reason);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	Error download_template(const String &p_file_name, const String &p_source);
+	void cancel_download();
+
+	bool is_downloading() const { return current_step != Step::WAITING; }
+	float get_download_progress() const;
+
+	TemplateDownloader(const String &p_template_directory) :
+			target_directory(p_template_directory) {}
+};
 
 class ExportTemplateManager : public AcceptDialog {
 	GDCLASS(ExportTemplateManager, AcceptDialog);
@@ -115,7 +163,7 @@ class ExportTemplateManager : public AcceptDialog {
 
 	struct FileMetadata {
 		DownloadStatus download_status = DownloadStatus::NONE;
-		HTTPRequest *downloader = nullptr;
+		TemplateDownloader *downloader = nullptr;
 		String fail_reason;
 		float progress_cache = 0.0;
 		bool is_missing = false;
@@ -127,7 +175,7 @@ class ExportTemplateManager : public AcceptDialog {
 	HashMap<TemplateID, TemplateInfo> template_data;
 
 	HTTPRequest *mirrors_requester = nullptr;
-	LocalVector<HTTPRequest *> downloaders;
+	LocalVector<TemplateDownloader *> downloaders;
 
 	bool download_all_enabled = true;
 	HashSet<String> queued_templates;
@@ -136,6 +184,7 @@ class ExportTemplateManager : public AcceptDialog {
 	mutable HashMap<String, FileMetadata> file_metadata;
 	LocalVector<TreeItem *> downloading_items;
 	bool queue_update_pending = false;
+	TreeItem *item_to_delete = nullptr;
 
 	HashMap<String, int> checked_cache;
 	HashMap<String, bool> folding_cache;
@@ -148,6 +197,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *open_folder_button = nullptr;
 	Button *install_button = nullptr;
 	HBoxContainer *offline_container = nullptr;
+	ConfirmationDialog *confirm_delete = nullptr;
 
 	void _request_mirrors();
 	void _mirrors_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
@@ -157,6 +207,7 @@ class ExportTemplateManager : public AcceptDialog {
 	bool _is_online() const;
 	void _force_online_mode();
 	void _open_mirror();
+	void _delete_confirmed();
 
 	void _initialize_template_data();
 	void _update_template_tree();
@@ -180,10 +231,10 @@ class ExportTemplateManager : public AcceptDialog {
 	void _queue_download_tree_item(TreeItem *p_item);
 	void _process_download_queue();
 	void _queue_process_download_queue();
-	HTTPRequest *_get_available_downloader(int *r_from_index);
-	void _download_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body, HTTPRequest *p_downloader);
+	TemplateDownloader *_get_available_downloader(int *r_from_index);
+	void _download_request_completed(const String &p_filename);
+	void _download_request_failed(const String &p_filename, const String &p_reason);
 	bool _is_template_download_finished(TreeItem *p_template);
-	String _get_download_error(int p_result, int p_response_code) const;
 
 	void _set_item_type(TreeItem *p_item, int p_type);
 	void _setup_item_text(TreeItem *p_item, const String &p_text);
