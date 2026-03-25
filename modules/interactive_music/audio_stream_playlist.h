@@ -102,6 +102,7 @@ private:
 	double fade_volume = 1.0;
 	int play_index = 0;
 	double offset = 0.0;
+	double clip_offset = 0.0;
 	int next_stream = -1;
 
 	int loop_count = 0;
@@ -126,7 +127,8 @@ public:
 
 	virtual void tag_used_streams() override;
 
-	int get_current_clip_index();
+	double get_clip_playback_position() const;
+	int get_current_clip_index() const;
 	void change_clip(int clip_index);
 	void next_clip();
 	void previous_clip();

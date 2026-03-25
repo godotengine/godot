@@ -286,6 +286,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 		}
 
 		offset += time_dec * to_mix;
+		clip_offset += time_dec * to_mix;
 
 		for (int i = 0; i < to_mix; i++) {
 			*p_buffer = mix_buffer[i];
@@ -321,6 +322,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 						play_index = 0;
 						loop_count++;
 						offset = time_dec * (to_mix - i);
+						clip_offset = time_dec * (to_mix - 1);
 					}
 					if (playback[play_order[play_index]].is_valid()) {
 						break;
@@ -370,6 +372,12 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 				} else {
 					stream_todo = playlist->audio_streams[idx]->get_length();
 				}
+				clip_offset = 0.0;
+				if (idx == prev) {
+					emit_signal(SNAME("clip_looped"));
+				} else {
+					emit_signal(SNAME("clip_changed"));
+				}
 			}
 
 			if (fade_index != -1) {
@@ -404,6 +412,10 @@ int AudioStreamPlaybackPlaylist::get_loop_count() const {
 
 double AudioStreamPlaybackPlaylist::get_playback_position() const {
 	return offset;
+}
+
+double AudioStreamPlaybackPlaylist::get_clip_playback_position() const {
+	return clip_offset;
 }
 
 bool AudioStreamPlaybackPlaylist::is_playing() const {
@@ -441,7 +453,7 @@ void AudioStreamPlaybackPlaylist::previous_clip() {
 	}
 }
 
-int AudioStreamPlaybackPlaylist::get_current_clip_index() {
+int AudioStreamPlaybackPlaylist::get_current_clip_index() const {
 	return play_order[play_index];
 }
 
@@ -462,4 +474,8 @@ void AudioStreamPlaybackPlaylist::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("next_clip"), &AudioStreamPlaybackPlaylist::next_clip);
 	ClassDB::bind_method(D_METHOD("previous_clip"), &AudioStreamPlaybackPlaylist::previous_clip);
 	ClassDB::bind_method(D_METHOD("get_current_clip_index"), &AudioStreamPlaybackPlaylist::get_current_clip_index);
+	ClassDB::bind_method(D_METHOD("get_clip_playback_position"), &AudioStreamPlaybackPlaylist::get_clip_playback_position);
+
+	ADD_SIGNAL(MethodInfo("clip_changed"));
+	ADD_SIGNAL(MethodInfo("clip_looped"));
 }
