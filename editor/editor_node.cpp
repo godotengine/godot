@@ -2866,17 +2866,18 @@ void EditorNode::_dialog_action(String p_file) {
 		case LAYOUT_DELETE: {
 			Ref<ConfigFile> config;
 			config.instantiate();
-			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 
+			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 			if (err != OK || !config->has_section(p_file)) {
 				show_warning(TTR("Layout name not found!"));
 				return;
 			}
 
-			// Erase key values.
-			Vector<String> keys = config->get_section_keys(p_file);
-			for (const String &key : keys) {
-				config->set_value(p_file, key, Variant());
+			for (const String &section : config->get_sections()) {
+				// Erase sections related to the layout.
+				if (section == p_file || section.begins_with(p_file + "/")) {
+					config->erase_section(section);
+				}
 			}
 
 			config->save(EditorSettings::get_singleton()->get_editor_layouts_config());
@@ -6359,8 +6360,8 @@ void EditorNode::_load_editor_layout() {
 			favorites->set_collapsed(false);
 		}
 
-		if (overridden_default_layout >= 0) {
-			_layout_menu_option(overridden_default_layout);
+		if (overridden_default_layout) {
+			_layout_menu_option(LAYOUT_DEFAULT);
 		} else {
 			ep.step(TTR("Loading docks..."), 1, true);
 			// Initialize some default values.
@@ -6652,36 +6653,32 @@ void EditorNode::cleanup() {
 
 void EditorNode::_update_layouts_menu() {
 	editor_layouts->clear();
-	overridden_default_layout = -1;
+	overridden_default_layout = false;
 
 	editor_layouts->reset_size();
 	editor_layouts->add_shortcut(ED_SHORTCUT("layout/save", TTRC("Save Layout...")), LAYOUT_SAVE);
 	editor_layouts->add_shortcut(ED_SHORTCUT("layout/delete", TTRC("Delete Layout...")), LAYOUT_DELETE);
 	editor_layouts->add_separator();
-	editor_layouts->add_shortcut(ED_SHORTCUT("layout/default", TTRC("Default")), LAYOUT_DEFAULT);
 
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
+	if (err == OK && config->has_section("Default")) {
+		overridden_default_layout = true;
+	}
+
+	editor_layouts->add_shortcut(ED_SHORTCUT("layout/default", overridden_default_layout ? TTRC("Default (Overridden)") : TTRC("Default")), LAYOUT_DEFAULT);
+
 	if (err != OK) {
 		return; // No config.
 	}
 
 	Vector<String> layouts = config->get_sections();
-	const String default_layout_name = TTR("Default");
-
 	for (const String &layout : layouts) {
-		if (layout.contains_char('/')) {
-			continue;
+		if (layout != "Default" && !layout.contains_char('/')) {
+			editor_layouts->add_item(layout);
+			editor_layouts->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
 		}
-
-		if (layout == default_layout_name) {
-			editor_layouts->remove_item(editor_layouts->get_item_index(LAYOUT_DEFAULT));
-			overridden_default_layout = editor_layouts->get_item_count();
-		}
-
-		editor_layouts->add_item(layout);
-		editor_layouts->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
 	}
 }
 
@@ -6689,32 +6686,40 @@ void EditorNode::_layout_menu_option(int p_id) {
 	switch (p_id) {
 		case LAYOUT_SAVE: {
 			current_menu_option = p_id;
-			layout_dialog->set_title(TTR("Save Layout"));
-			layout_dialog->set_ok_button_text(TTR("Save"));
-			layout_dialog->set_name_line_enabled(true);
+			layout_dialog->set_save_mode_enabled(true);
 			layout_dialog->popup_centered();
 		} break;
+
 		case LAYOUT_DELETE: {
 			current_menu_option = p_id;
-			layout_dialog->set_title(TTR("Delete Layout"));
-			layout_dialog->set_ok_button_text(TTR("Delete"));
-			layout_dialog->set_name_line_enabled(false);
+			layout_dialog->set_save_mode_enabled(false);
 			layout_dialog->popup_centered();
 		} break;
+
 		case LAYOUT_DEFAULT: {
+			// Check if the default layout was overridden, and if so, select that instead.
+			Ref<ConfigFile> config;
+			config.instantiate();
+			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
+			if (err == OK && config->has_section("Default")) {
+				editor_dock_manager->load_docks_from_config(config, "Default");
+				_save_editor_layout();
+
+				return;
+			}
+
 			editor_dock_manager->load_docks_from_config(default_layout, "docks");
 			_save_editor_layout();
 		} break;
+
 		default: {
 			Ref<ConfigFile> config;
 			config.instantiate();
 			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
-			if (err != OK) {
-				return; // No config.
+			if (err == OK) {
+				editor_dock_manager->load_docks_from_config(config, editor_layouts->get_item_text(p_id));
+				_save_editor_layout();
 			}
-
-			editor_dock_manager->load_docks_from_config(config, editor_layouts->get_item_text(p_id));
-			_save_editor_layout();
 		}
 	}
 }

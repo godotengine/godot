@@ -387,7 +387,7 @@ private:
 	AcceptDialog *warning = nullptr;
 	EditorPlugin *plugin_to_save = nullptr;
 
-	int overridden_default_layout = -1;
+	bool overridden_default_layout = false;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
