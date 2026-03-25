@@ -391,6 +391,7 @@ public:
 	FUNCRIDSPLIT(mesh)
 
 	FUNC2(mesh_add_surface, RID, const RenderingServerTypes::SurfaceData &)
+	FUNC2(mesh_add_surface_from_buffers, RID, const RenderingServerTypes::SurfaceBuffers &)
 
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
 
@@ -401,6 +402,8 @@ public:
 	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_index_region, RID, int, int, const Vector<uint8_t> &)
+
+	FUNC4(mesh_surface_set_indirect_buffer, RID, int, RID, int)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)

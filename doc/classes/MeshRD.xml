@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshRD" inherits="Mesh" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		[Mesh] backed by caller-owned [RenderingDevice] buffers.
+	</brief_description>
+	<description>
+		[MeshRD] is a low-level mesh for GPU-generated geometry. It uses caller-supplied [RenderingDevice] buffers and can draw from an indirect command buffer.
+		Use it for procedural meshes updated from compute shaders. Use [ArrayMesh] for CPU-built mesh data.
+		[b]Note:[/b] [MeshRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [Mesh] instead.
+		[MeshRD] does not own, free, or serialize its buffers. Keep them valid while the mesh uses them.
+		Blend shapes and skinning are not supported yet.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_surface">
+			<return type="void" />
+			<param index="0" name="format" type="int" enum="Mesh.ArrayFormat" is_bitfield="true" />
+			<param index="1" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<param index="2" name="vertex_count" type="int" />
+			<param index="3" name="vertex_buffer" type="RID" />
+			<param index="4" name="aabb" type="AABB" />
+			<param index="5" name="attribute_buffer" type="RID" default="RID()" />
+			<param index="6" name="index_count" type="int" default="0" />
+			<param index="7" name="index_buffer" type="RID" default="RID()" />
+			<param index="8" name="material" type="Material" default="null" />
+			<param index="9" name="uv_scale" type="Vector4" default="Vector4(0, 0, 0, 0)" />
+			<param index="10" name="indirect_buffer" type="RID" default="RID()" />
+			<param index="11" name="indirect_buffer_offset" type="int" default="0" />
+			<description>
+				Adds a surface from caller-owned [RenderingDevice] buffers.
+				[param format] describes the vertex layout. Provide [param vertex_buffer] unless using [constant Mesh.ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY]. Provide [param attribute_buffer] when the format uses color, UV, UV2, or custom attributes. Provide [param index_buffer] when [param index_count] is greater than [code]0[/code].
+				[param vertex_count] and [param index_count] are used for direct draws. [param aabb] sets the surface bounds. For GPU-written draw counts, use [param indirect_buffer] or [method surface_set_indirect_buffer]. Indirect buffers must use [constant RenderingDevice.STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT].
+			</description>
+		</method>
+		<method name="clear_surfaces">
+			<return type="void" />
+			<description>
+				Removes all surfaces. Buffers passed to [method add_surface] are not freed.
+			</description>
+		</method>
+		<method name="surface_remove">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Removes the surface, shifting later indices down. Buffers passed to [method add_surface] are not freed.
+			</description>
+		</method>
+		<method name="surface_set_indirect_buffer">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<param index="1" name="indirect_buffer" type="RID" />
+			<param index="2" name="offset" type="int" default="0" />
+			<description>
+				Sets the surface's indirect draw buffer. The renderer reads one draw command at byte [param offset].
+				Pass an invalid [RID] to disable indirect drawing for this surface.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			Custom culling bounds. If empty, [MeshRD] uses its surface bounds.
+		</member>
+	</members>
+</class>

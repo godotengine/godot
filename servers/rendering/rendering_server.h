@@ -212,6 +212,7 @@ public:
 
 	virtual void mesh_add_surface_from_arrays(RID p_mesh, RSE::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), BitField<RSE::ArrayFormat> p_compress_format = 0);
 	virtual void mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) = 0;
+	virtual void mesh_add_surface_from_buffers(RID p_mesh, const RenderingServerTypes::SurfaceBuffers &p_surface) = 0;
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
 
@@ -223,6 +224,7 @@ public:
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) = 0;
 
+	virtual void mesh_surface_set_indirect_buffer(RID p_mesh, int p_surface, RID p_indirect_buffer, int p_offset) = 0;
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
 

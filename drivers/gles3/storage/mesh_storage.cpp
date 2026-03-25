@@ -450,6 +450,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 	mesh->material_cache.clear();
 }
 
+void MeshStorage::mesh_add_surface_from_buffers(RID p_mesh, const RenderingServerTypes::SurfaceBuffers &p_surface) {
+	ERR_PRINT("MeshRD requires the RenderingDevice backend.");
+}
+
 void MeshStorage::_mesh_surface_clear(Mesh *mesh, int p_surface) {
 	Mesh::Surface &s = *mesh->surfaces[p_surface];
 
@@ -594,6 +598,10 @@ void MeshStorage::mesh_surface_update_index_region(RID p_mesh, int p_surface, in
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->index_buffer);
 	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void MeshStorage::mesh_surface_set_indirect_buffer(RID p_mesh, int p_surface, RID p_indirect_buffer, int p_offset) {
+	ERR_PRINT("Mesh surface indirect buffers require the RenderingDevice backend.");
 }
 
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
