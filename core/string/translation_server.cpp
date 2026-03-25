@@ -499,11 +499,11 @@ String TranslationServer::get_locale() const {
 }
 
 void TranslationServer::set_fallback_locale(const String &p_locale) {
-	fallback = p_locale;
+	main_domain->set_fallback_locale(p_locale);
 }
 
 String TranslationServer::get_fallback_locale() const {
-	return fallback;
+	return main_domain->get_fallback_locale();
 }
 
 bool TranslationServer::is_script_suppored_by_locale(const String &p_locale, const String &p_script) const {
@@ -582,6 +582,7 @@ Ref<TranslationDomain> TranslationServer::get_or_add_domain(const StringName &p_
 		ERR_PRINT("Bug (please report): Found invalid translation domain.");
 	}
 	Ref<TranslationDomain> new_domain = memnew(TranslationDomain);
+	new_domain->set_fallback_locale(GLOBAL_DEF("internationalization/locale/fallback", "en"));
 	custom_domains[p_domain] = new_domain;
 	return new_domain;
 }
@@ -600,7 +601,7 @@ void TranslationServer::setup() {
 		set_locale(OS::get_singleton()->get_locale());
 	}
 
-	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
+	main_domain->set_fallback_locale(GLOBAL_DEF("internationalization/locale/fallback", "en"));
 	main_domain->set_pseudolocalization_enabled(GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false));
 	main_domain->set_pseudolocalization_accents_enabled(GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true));
 	main_domain->set_pseudolocalization_double_vowels_enabled(GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false));
@@ -704,6 +705,8 @@ void TranslationServer::get_argument_options(const StringName &p_function, int p
 void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationServer::get_locale);
+	ClassDB::bind_method(D_METHOD("set_fallback_locale", "locale"), &TranslationServer::set_fallback_locale);
+	ClassDB::bind_method(D_METHOD("get_fallback_locale"), &TranslationServer::get_fallback_locale);
 	ClassDB::bind_method(D_METHOD("get_tool_locale"), &TranslationServer::get_tool_locale);
 
 	ClassDB::bind_method(D_METHOD("compare_locales", "locale_a", "locale_b"), &TranslationServer::compare_locales);

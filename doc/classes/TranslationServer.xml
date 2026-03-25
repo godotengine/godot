@@ -149,6 +149,12 @@
 				Returns all available [Translation] instances in the main translation domain as added by [method add_translation].
 			</description>
 		</method>
+		<method name="get_fallback_locale">
+			<return type="String" />
+			<description>
+				Returns the locale to fall back to if a translation isn't available in a given language.
+			</description>
+		</method>
 		<method name="has_domain" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="domain" type="StringName" />
@@ -214,6 +220,13 @@
 			<description>
 				Sets the locale of the project. The [param locale] string will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 				If translations have been loaded beforehand for the new locale, they will be applied.
+			</description>
+		</method>
+		<method name="set_fallback_locale">
+			<return type="void" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Sets the locale to fall back to if a translation isn't available in a given language.
 			</description>
 		</method>
 		<method name="standardize_locale" qualifiers="const">

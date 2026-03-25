@@ -50,6 +50,7 @@ class TranslationDomain : public RefCounted {
 	};
 
 	bool enabled = true;
+	String fallback;
 
 	String locale_override;
 	HashSet<Ref<Translation>> translations;
@@ -78,6 +79,9 @@ public:
 	TypedArray<Translation> find_translations_bind(const String &p_locale, bool p_exact) const;
 
 #ifndef DISABLE_DEPRECATED
+	void set_fallback_locale(const String &p_locale);
+	String get_fallback_locale() const;
+
 	Ref<Translation> get_translation_object(const String &p_locale) const;
 #endif
 
