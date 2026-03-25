@@ -53,11 +53,12 @@ void PainterlyManager::apply_temporal_smoothing(AdaptiveLODSystem::LODSelection 
     selection.painterly_blend_weights.resize(target_size);
 
     float step = settings.blend_rate * delta_time;
+    const float blend_step = MIN(step, 1.0f);
     float hold = settings.hold_strength;
 
     for (uint32_t i = 0; i < target_size; i++) {
         uint32_t idx = selection.visible_indices[i];
-        PainterlyMetadata current_meta = selection.painterly_metadata[i];
+        const PainterlyMetadata &current_meta = selection.painterly_metadata[i];
         uint32_t current_seed = current_meta.temporal_seed;
         uint8_t lod_level = selection.lod_levels[i];
 
@@ -79,7 +80,7 @@ void PainterlyManager::apply_temporal_smoothing(AdaptiveLODSystem::LODSelection 
                 entry.blend = 0.0f;
             } else {
                 // Keep metadata in sync when seed stays the same.
-                entry.active_metadata = blend_metadata(entry.active_metadata, current_meta, MIN(step, 1.0f));
+                entry.active_metadata = blend_metadata(entry.active_metadata, current_meta, blend_step);
                 entry.previous_metadata = entry.active_metadata;
                 entry.previous_seed = entry.active_seed;
             }
@@ -147,6 +148,27 @@ PainterlyMetadata PainterlyManager::blend_metadata(const PainterlyMetadata &from
     float weight_from = 1.0f - weight_to;
 
     PainterlyMetadata result;
+
+    if (weight_to == 0.0f) {
+        result.temporal_seed = to.temporal_seed != 0 ? to.temporal_seed : from.temporal_seed;
+        result.jitter = from.jitter;
+        result.blue_noise = from.blue_noise;
+        result.stroke_scale = from.stroke_scale;
+        result.stroke_angle = from.stroke_angle;
+        result.stability = from.stability;
+        return result;
+    }
+
+    if (weight_to == 1.0f) {
+        result.temporal_seed = to.temporal_seed != 0 ? to.temporal_seed : from.temporal_seed;
+        result.jitter = to.jitter;
+        result.blue_noise = to.blue_noise;
+        result.stroke_scale = to.stroke_scale;
+        result.stroke_angle = to.stroke_angle;
+        result.stability = to.stability;
+        return result;
+    }
+
     result.temporal_seed = to.temporal_seed != 0 ? to.temporal_seed : from.temporal_seed;
     result.jitter = from.jitter * weight_from + to.jitter * weight_to;
     result.blue_noise = from.blue_noise * weight_from + to.blue_noise * weight_to;
