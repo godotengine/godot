@@ -70,22 +70,28 @@ void Camera::fti_update_servers_property() {
 	if (camera.is_valid()) {
 		float f = Engine::get_singleton()->get_physics_interpolation_fraction();
 
+		bool res_fov = fov.interpolate(f);
+		bool res_near = near.interpolate(f);
+		bool res_far = far.interpolate(f);
+		bool res_size = size.interpolate(f);
+		bool res_frustum_offset = frustum_offset.interpolate(f);
+
+		// If there have been changes due to interpolated values, OR we are forcing an update, update the servers.
 		switch (mode) {
 			default:
 				break;
 			case PROJECTION_PERSPECTIVE: {
-				// If there have been changes due to interpolation, update the servers.
-				if (fov.interpolate(f) || near.interpolate(f) || far.interpolate(f)) {
+				if (res_fov || res_near || res_far) {
 					VisualServer::get_singleton()->camera_set_perspective(camera, fov.interpolated(), near.interpolated(), far.interpolated());
 				}
 			} break;
 			case PROJECTION_ORTHOGONAL: {
-				if (size.interpolate(f) || near.interpolate(f) || far.interpolate(f)) {
+				if (res_size || res_near || res_far) {
 					VisualServer::get_singleton()->camera_set_orthogonal(camera, size.interpolated(), near.interpolated(), far.interpolated());
 				}
 			} break;
 			case PROJECTION_FRUSTUM: {
-				if (size.interpolate(f) || frustum_offset.interpolate(f) || near.interpolate(f) || far.interpolate(f)) {
+				if (res_size || res_frustum_offset || res_near || res_far) {
 					VisualServer::get_singleton()->camera_set_frustum(camera, size.interpolated(), frustum_offset.interpolated(), near.interpolated(), far.interpolated());
 				}
 			} break;
