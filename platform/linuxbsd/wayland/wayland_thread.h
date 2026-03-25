@@ -284,6 +284,7 @@ public:
 		DisplayServerEnums::WindowMode mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
 
 		bool ready = false; // Is configured or otherwise ready to be mapped.
+		bool exported_listener_registered = false;
 
 		// Toplevel states.
 		bool maximized = false; // MUST obey configure size.
@@ -863,6 +864,8 @@ private:
 	static void _xdg_exported_v1_on_handle(void *data, zxdg_exported_v1 *exported, const char *handle);
 
 	static void _xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exported, const char *handle);
+
+	static void _register_xdg_exported_listener(WindowState *p_ws);
 
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
 

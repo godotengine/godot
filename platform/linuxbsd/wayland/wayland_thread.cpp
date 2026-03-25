@@ -1436,6 +1436,11 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	ws->ready = true;
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure rect %s", ws->rect));
+
+	if (ws->xdg_toplevel && !ws->exported_listener_registered) {
+		_register_xdg_exported_listener(ws);
+		ws->exported_listener_registered = true;
+	}
 }
 
 void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
@@ -1635,6 +1640,16 @@ void WaylandThread::_xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exp
 	ws->exported_handle = vformat("wayland:%s", String::utf8(handle));
 }
 
+void WaylandThread::_register_xdg_exported_listener(WindowState *p_ws) {
+	if (p_ws->registry->xdg_exporter_v2) {
+		p_ws->xdg_exported_v2 = zxdg_exporter_v2_export_toplevel(p_ws->registry->xdg_exporter_v2, p_ws->wl_surface);
+		zxdg_exported_v2_add_listener(p_ws->xdg_exported_v2, &xdg_exported_v2_listener, p_ws);
+	} else if (p_ws->registry->xdg_exporter_v1) {
+		p_ws->xdg_exported_v1 = zxdg_exporter_v1_export(p_ws->registry->xdg_exporter_v1, p_ws->wl_surface);
+		zxdg_exported_v1_add_listener(p_ws->xdg_exported_v1, &xdg_exported_v1_listener, p_ws);
+	}
+}
+
 void WaylandThread::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
 	if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
 #ifdef LIBDECOR_ENABLED
@@ -1723,6 +1738,11 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 	window_state_update_size(ws, width, height);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("libdecor frame on configure rect %s", ws->rect));
+
+	if (ws->xdg_toplevel && !ws->exported_listener_registered) {
+		_register_xdg_exported_listener(ws);
+		ws->exported_listener_registered = true;
+	}
 }
 
 void WaylandThread::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
@@ -4110,9 +4130,9 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 		ws.wp_color_management_surface = wp_color_manager_v1_get_surface(registry.wp_color_manager, ws.wl_surface);
 	}
 
+#ifdef LIBDECOR_ENABLED
 	bool decorated = false;
 
-#ifdef LIBDECOR_ENABLED
 	if (!decorated && libdecor_context) {
 		ws.libdecor_frame = libdecor_decorate(libdecor_context, ws.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &ws);
 		libdecor_frame_map(ws.libdecor_frame);
@@ -4126,12 +4146,13 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 
 		decorated = true;
 	}
-#endif
 
 	if (!decorated) {
 		// libdecor has failed loading or is disabled, we shall handle xdg_toplevel
 		// creation and decoration ourselves (and by decorating for now I just mean
 		// asking for SSDs and hoping for the best).
+#endif // LIBDECOR_ENABLED
+
 		ws.xdg_surface = xdg_wm_base_get_xdg_surface(registry.xdg_wm_base, ws.wl_surface);
 		xdg_surface_add_listener(ws.xdg_surface, &xdg_surface_listener, &ws);
 
@@ -4141,14 +4162,15 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 		if (registry.xdg_decoration_manager) {
 			ws.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(registry.xdg_decoration_manager, ws.xdg_toplevel);
 			zxdg_toplevel_decoration_v1_add_listener(ws.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &ws);
-
-			decorated = true;
 		}
 
 		if (registry.xdg_toplevel_icon_manager) {
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
 		}
+
+#ifdef LIBDECOR_ENABLED
 	}
+#endif // LIBDECOR_ENABLED
 
 	if (p_parent_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		// NOTE: It's important to set the parent ASAP to avoid misunderstandings with
@@ -4159,14 +4181,6 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
 	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
-
-	if (registry.xdg_exporter_v2) {
-		ws.xdg_exported_v2 = zxdg_exporter_v2_export_toplevel(registry.xdg_exporter_v2, ws.wl_surface);
-		zxdg_exported_v2_add_listener(ws.xdg_exported_v2, &xdg_exported_v2_listener, &ws);
-	} else if (registry.xdg_exporter_v1) {
-		ws.xdg_exported_v1 = zxdg_exporter_v1_export(registry.xdg_exporter_v1, ws.wl_surface);
-		zxdg_exported_v1_add_listener(ws.xdg_exported_v1, &xdg_exported_v1_listener, &ws);
-	}
 
 	wl_surface_commit(ws.wl_surface);
 }
@@ -4359,6 +4373,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 		new_size = new_size.min(ws.rect.size);
 	}
 
+#ifdef LIBDECOR_ENABLED
 	// NOTE: Older versions of libdecor (~2022) do not have a way to get the max
 	// content size. Let's also check for its pointer so that we can preserve
 	// compatibility with older distros.
@@ -4375,6 +4390,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 			new_size.height = MIN(new_size.height, max_height);
 		}
 	}
+#endif // LIBDECOR_ENABLED
 
 	window_state_update_size(&ws, new_size.width, new_size.height);
 
@@ -4561,12 +4577,14 @@ bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id
 		};
 
 		case DisplayServerEnums::WINDOW_MODE_MAXIMIZED: {
+#ifdef LIBDECOR_ENABLED
 			if (ws.libdecor_frame) {
 				// NOTE: libdecor doesn't seem to have a maximize capability query?
 				// The fact that there's a fullscreen one makes me suspicious. Anyways,
 				// let's act as if we always can.
 				return true;
 			}
+#endif // LIBDECOR_ENABLED
 			return ws.can_maximize;
 		};
 
