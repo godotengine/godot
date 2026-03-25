@@ -128,9 +128,10 @@ inline bool compute_tile_prefix_cpu(const uint32_t *p_tile_counts, uint32_t p_to
     const uint64_t max_u32 = uint64_t(std::numeric_limits<uint32_t>::max());
 
     for (uint32_t i = 0; i < p_total_tiles; i++) {
+        const uint32_t pair_index = i * 2u;
         const uint32_t prefix_u32 = prefix64 > max_u32 ? std::numeric_limits<uint32_t>::max() : uint32_t(prefix64);
-        p_out_ranges_words[i * 2u + 0u] = prefix_u32;
-        p_out_ranges_words[i * 2u + 1u] = p_tile_counts[i];
+        p_out_ranges_words[pair_index + 0u] = prefix_u32;
+        p_out_ranges_words[pair_index + 1u] = p_tile_counts[i];
         prefix64 += p_tile_counts[i];
     }
 
