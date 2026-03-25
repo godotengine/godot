@@ -1603,14 +1603,14 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 	}
 
 	static const MTL::LoadAction LOAD_ACTIONS[] = {
-		[ATTACHMENT_LOAD_OP_LOAD] = MTL::LoadActionLoad,
-		[ATTACHMENT_LOAD_OP_CLEAR] = MTL::LoadActionClear,
-		[ATTACHMENT_LOAD_OP_DONT_CARE] = MTL::LoadActionDontCare,
+		MTL::LoadActionLoad, // ATTACHMENT_LOAD_OP_LOAD
+		MTL::LoadActionClear, // ATTACHMENT_LOAD_OP_CLEAR
+		MTL::LoadActionDontCare, // ATTACHMENT_LOAD_OP_DONT_CARE
 	};
 
 	static const MTL::StoreAction STORE_ACTIONS[] = {
-		[ATTACHMENT_STORE_OP_STORE] = MTL::StoreActionStore,
-		[ATTACHMENT_STORE_OP_DONT_CARE] = MTL::StoreActionDontCare,
+		MTL::StoreActionStore, // ATTACHMENT_STORE_OP_STORE
+		MTL::StoreActionDontCare, // ATTACHMENT_STORE_OP_DONT_CARE
 	};
 
 	Vector<MDAttachment> attachments;
