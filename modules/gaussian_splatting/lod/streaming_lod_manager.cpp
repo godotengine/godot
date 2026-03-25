@@ -193,10 +193,9 @@ void StreamingLODManager::initialize(
     // Generate LOD levels
     generate_lod_levels(base_splats);
 
-    // Async loads are processed on the main thread to avoid cross-thread LOD mutations.
-    if (config.enable_async_loading) {
-        // loading_thread = std::thread(&StreamingLODManager::async_load_worker, this);
-    }
+    // Async loads run synchronously on the main thread via process_async_load_queue().
+    // The background thread is intentionally disabled -- lod_mutex coverage is incomplete
+    // for concurrent lod_data access. Do not re-enable without a full lock audit.
 
     GS_LOG_STREAMING_INFO(vformat("StreamingLODManager initialized with %d LOD levels, %d base splats",
             lod_levels.size(), base_splats.size()));
