@@ -195,6 +195,7 @@ void GaussianImportSettingsDialog::_on_inspector_property_edited(const String &p
 		int idx = gaussian_find_import_preset_index(preset_id);
 		if (idx >= 0) {
 			const GaussianImportPresetDefinition &preset = gaussian_get_import_preset_by_index(idx);
+			settings_data->current[StringName("general/asset_type")] = preset.default_asset_type;
 			settings_data->current[StringName("quality/max_splats")] = preset.max_splats;
 			settings_data->current[StringName("quality/density_multiplier")] = preset.density_multiplier;
 			settings_data->current[StringName("quality/enable_lod")] = preset.enable_lod;
