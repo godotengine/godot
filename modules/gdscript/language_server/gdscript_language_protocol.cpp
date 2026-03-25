@@ -607,7 +607,10 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 					item.kind = LSP::CompletionItemKind::Text;
 					break;
-				default: {
+				case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+					item.kind = LSP::CompletionItemKind::Keyword;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_MAX: {
 				}
 			}
 
