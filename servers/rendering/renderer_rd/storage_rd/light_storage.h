@@ -1014,8 +1014,8 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
 	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) override;
-	virtual float lightmap_get_specular_strength(RID p_lightmap) override;
-	virtual void lightmap_set_specular_strength(RID p_lightmap, float p_strength) override;
+	virtual float lightmap_get_specular_intensity(RID p_lightmap) override;
+	virtual void lightmap_set_specular_intensity(RID p_lightmap, float p_intensity) override;
 
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;

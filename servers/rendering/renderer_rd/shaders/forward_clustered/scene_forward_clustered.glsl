@@ -1875,9 +1875,9 @@ void fragment_shader(in SceneData scene_data) {
 				// Discard diffuse light from this fake light, as we're only interested in its specular light output.
 				vec3 diffuse_light_discarded = diffuse_light;
 
-				float specular_strength = l1_len * lightmaps.data[ofs].specular_strength * 10.0;
+				float specular_intensity = l1_len * lightmaps.data[ofs].specular_intensity * 10.0;
 
-				light_compute(indirect_normal, L_view, view, 0.0, sh_light, false, 1.5, f0, roughness, metallic, specular_strength, albedo, alpha, screen_uv, energy_compensation,
+				light_compute(indirect_normal, L_view, view, 0.0, sh_light, false, 1.5, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif

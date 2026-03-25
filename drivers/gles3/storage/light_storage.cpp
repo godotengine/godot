@@ -1264,11 +1264,11 @@ float LightStorage::lightmap_get_specular_intensity(RID p_lightmap) {
 	return lightmap->specular_intensity;
 }
 
-void LightStorage::lightmap_set_specular_intensity(RID p_lightmap, float p_strength) {
+void LightStorage::lightmap_set_specular_intensity(RID p_lightmap, float p_intensity) {
 	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL(lightmap);
 
-	lightmap->specular_intensity = p_strength;
+	lightmap->specular_intensity = p_intensity;
 }
 
 /* LIGHTMAP INSTANCE */

@@ -2386,7 +2386,7 @@ void main() {
 			// Discard diffuse light from this fake light, as we're only interested in its specular light output.
 			vec3 diffuse_light_discarded = diffuse_light;
 
-			float specular_strength = l1_len * lightmap_specular_strength * 150.0;
+			float specular_intensity = l1_len * lightmap_specular_intensity * 150.0;
 
 			light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
