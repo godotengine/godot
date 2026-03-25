@@ -77,11 +77,10 @@ public:
 	// These two methods are public for easier TranslationServer bindings.
 	TypedArray<Translation> get_translations_bind() const;
 	TypedArray<Translation> find_translations_bind(const String &p_locale, bool p_exact) const;
-
-#ifndef DISABLE_DEPRECATED
 	void set_fallback_locale(const String &p_locale);
 	String get_fallback_locale() const;
 
+#ifndef DISABLE_DEPRECATED
 	Ref<Translation> get_translation_object(const String &p_locale) const;
 #endif
 
