@@ -150,6 +150,8 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 
 	p_session->send_message("scene:setup_embedded_shortcuts", { shortcut_settings });
 
+	p_session->send_message("scene:setup_game_view", Array());
+
 	emit_signal(SNAME("session_started"));
 }
 
@@ -159,6 +161,22 @@ void GameViewDebugger::_session_stopped() {
 	}
 
 	emit_signal(SNAME("session_stopped"));
+}
+
+void GameViewDebugger::window_request_size() {
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:window_request_size", Array());
+		}
+	}
+}
+
+void GameViewDebugger::hdr_output_request_state() {
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:hdr_output_request_state", Array());
+		}
+	}
 }
 
 void GameViewDebugger::set_suspend(bool p_enabled) {
@@ -272,6 +290,15 @@ void GameViewDebugger::set_debug_mute_audio(bool p_enabled) {
 	EditorDebuggerNode::get_singleton()->set_debug_mute_audio(p_enabled);
 }
 
+void GameViewDebugger::toggle_hdr_output_requested() {
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:hdr_output_toggle_requested");
+			I->send_message("scene:hdr_output_request_state", Array());
+		}
+	}
+}
+
 void GameViewDebugger::set_camera_override(bool p_enabled) {
 	EditorDebuggerNode::get_singleton()->set_camera_override(p_enabled ? camera_override_mode : EditorDebuggerNode::OVERRIDE_NONE);
 }
@@ -329,6 +356,9 @@ void GameViewDebugger::_feature_profile_changed() {
 void GameViewDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_started"));
 	ADD_SIGNAL(MethodInfo("session_stopped"));
+	ADD_SIGNAL(MethodInfo("setup_complete"));
+	ADD_SIGNAL(MethodInfo("game_window_size_received", PropertyInfo(Variant::VECTOR2I, "size")));
+	ADD_SIGNAL(MethodInfo("hdr_state_received", PropertyInfo(Variant::ARRAY, "hdr_state")));
 }
 
 bool GameViewDebugger::add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect) {
@@ -373,6 +403,15 @@ bool GameViewDebugger::capture(const String &p_message, const Array &p_data, int
 
 	if (p_message == "game_view:get_screenshot") {
 		return _msg_get_screenshot(p_data);
+	} else if (p_message == "game_view:setup_complete") {
+		emit_signal(SNAME("setup_complete"));
+		return true;
+	} else if (p_message == "game_view:window_size") {
+		emit_signal(SNAME("game_window_size_received"), p_data);
+		return true;
+	} else if (p_message == "game_view:hdr_state") {
+		emit_signal(SNAME("hdr_state_received"), p_data);
+		return true;
 	} else {
 		// Any other messages with this prefix should be ignored.
 		WARN_PRINT("GameViewDebugger unknown message: " + p_message);
@@ -577,11 +616,6 @@ void GameView::_embedding_failed() {
 	state_label->set_text(TTRC("Connection impossible to the game process."));
 }
 
-void GameView::_embedded_process_updated() {
-	const Rect2i game_rect = embedded_process->get_screen_embedded_window_rect();
-	game_size_label->set_text(vformat("%dx%d", game_rect.size.x, game_rect.size.y));
-}
-
 void GameView::_embedded_process_focused() {
 	if (embed_on_play && !window_wrapper->get_window_enabled()) {
 		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
@@ -612,6 +646,8 @@ void GameView::_update_debugger_buttons() {
 	suspend_button->set_disabled(empty);
 	camera_override_button->set_disabled(empty);
 	speed_state_button->set_disabled(empty);
+	game_size_label->set_visible(!empty);
+	game_size_placeholder->set_visible(empty);
 	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
 
 	reset_speed_button->set_disabled(empty || disabled);
@@ -626,9 +662,42 @@ void GameView::_update_debugger_buttons() {
 		suspend_button->set_pressed(false);
 		camera_override_button->set_pressed(false);
 		_reset_time_scales();
+		game_size_label->set_text("");
+		game_size_label->set_tooltip_text("");
+		game_window_size = Size2i(-1, -1);
+		hdr_output_enabled = false;
+		output_max_linear_value = 1.0f;
 	}
 
 	next_frame_button->set_disabled(!suspend_button->is_pressed());
+
+	menu = game_window_options_menu->get_popup();
+	if (empty) {
+		int menu_item_index = menu->get_item_index(WINDOW_SEPARATOR_DYNAMIC_RANGE);
+		if (menu_item_index >= 0) {
+			menu->remove_item(menu_item_index);
+		}
+		menu_item_index = menu->get_item_index(WINDOW_REQUEST_HDR_OUTPUT);
+		if (menu_item_index >= 0) {
+			menu->remove_item(menu_item_index);
+		}
+		menu_item_index = menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR);
+		if (menu_item_index >= 0) {
+			menu->remove_item(menu_item_index);
+		}
+	} else {
+		int menu_item_index = menu->get_item_index(WINDOW_SEPARATOR_DYNAMIC_RANGE);
+		if (menu_item_index < 0) {
+			menu->add_separator(TTRC("Window Dynamic Range"), WINDOW_SEPARATOR_DYNAMIC_RANGE);
+		}
+		if (menu->get_item_index(WINDOW_REQUEST_HDR_OUTPUT) < 0) {
+			if (menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR) < 0) {
+				menu->add_item(TTRC("Loading..."), WINDOW_HDR_OUTPUT_ERROR);
+				menu->set_item_disabled(menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR), true);
+				menu->set_item_tooltip(menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR), "");
+			}
+		}
+	}
 }
 
 void GameView::_handle_shortcut_requested(int p_embed_action) {
@@ -699,29 +768,42 @@ void GameView::_selection_options_menu_id_pressed(int p_id) {
 	menu->set_item_checked(menu->get_item_index(SELECTION_PREFER_GROUP), selection_prefer_group);
 }
 
-void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
+void GameView::_game_window_options_menu_menu_id_pressed(int p_id) {
 	switch (p_id) {
-		case EMBED_RUN_GAME_EMBEDDED: {
+		case WINDOW_RUN_GAME_EMBEDDED: {
 			embed_on_play = !embed_on_play;
 			int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
 			if (game_mode == 0) { // Save only if not overridden by editor.
 				EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_on_play", embed_on_play);
 			}
 		} break;
-		case EMBED_MAKE_FLOATING_ON_PLAY: {
+		case WINDOW_MAKE_FLOATING_ON_PLAY: {
 			make_floating_on_play = !make_floating_on_play;
 			int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
 			if (game_mode == 0) { // Save only if not overridden by editor.
 				EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_on_play", make_floating_on_play);
 			}
 		} break;
-		case SIZE_MODE_FIXED:
-		case SIZE_MODE_KEEP_ASPECT:
-		case SIZE_MODE_STRETCH: {
-			embed_size_mode = (EmbedSizeMode)p_id;
-			EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_size_mode", p_id);
+		case WINDOW_SIZE_MODE_FIXED:
+		case WINDOW_SIZE_MODE_KEEP_ASPECT:
+		case WINDOW_SIZE_MODE_STRETCH: {
+			switch (p_id) {
+				case WINDOW_SIZE_MODE_FIXED: {
+					embed_size_mode = EmbedSizeMode::SIZE_MODE_FIXED;
+				} break;
+				case WINDOW_SIZE_MODE_KEEP_ASPECT: {
+					embed_size_mode = EmbedSizeMode::SIZE_MODE_KEEP_ASPECT;
+				} break;
+				case WINDOW_SIZE_MODE_STRETCH: {
+					embed_size_mode = EmbedSizeMode::SIZE_MODE_STRETCH;
+				} break;
+			}
+			EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_size_mode", embed_size_mode);
 
 			_update_embed_window_size();
+		} break;
+		case WINDOW_REQUEST_HDR_OUTPUT: {
+			debugger->toggle_hdr_output_requested();
 		} break;
 	}
 	_update_embed_menu_options();
@@ -815,14 +897,12 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 }
 
 void GameView::_update_ui() {
-	bool show_game_size = false;
 	EmbedAvailability available = _get_embed_available();
 
 	switch (available) {
 		case EMBED_AVAILABLE:
 			if (embedded_process->is_embedding_completed()) {
 				state_label->set_text("");
-				show_game_size = true;
 			} else if (embedded_process->is_embedding_in_progress()) {
 				state_label->set_text(TTRC("Game starting..."));
 			} else if (EditorRunBar::get_singleton()->is_playing()) {
@@ -863,21 +943,34 @@ void GameView::_update_ui() {
 	} else {
 		state_label->add_theme_color_override(SceneStringName(font_color), state_label->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	}
-
-	game_size_label->set_visible(show_game_size);
 }
 
 void GameView::_update_embed_menu_options() {
 	bool is_multi_window = window_wrapper->is_window_available();
-	PopupMenu *menu = embed_options_menu->get_popup();
-	menu->set_item_checked(menu->get_item_index(EMBED_RUN_GAME_EMBEDDED), embed_on_play);
-	menu->set_item_checked(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), make_floating_on_play && is_multi_window);
+	PopupMenu *menu = game_window_options_menu->get_popup();
+	menu->set_item_checked(menu->get_item_index(WINDOW_RUN_GAME_EMBEDDED), embed_on_play);
+	menu->set_item_checked(menu->get_item_index(WINDOW_MAKE_FLOATING_ON_PLAY), make_floating_on_play && is_multi_window);
 
-	menu->set_item_checked(menu->get_item_index(SIZE_MODE_FIXED), embed_size_mode == SIZE_MODE_FIXED);
-	menu->set_item_checked(menu->get_item_index(SIZE_MODE_KEEP_ASPECT), embed_size_mode == SIZE_MODE_KEEP_ASPECT);
-	menu->set_item_checked(menu->get_item_index(SIZE_MODE_STRETCH), embed_size_mode == SIZE_MODE_STRETCH);
+	menu->set_item_checked(menu->get_item_index(WINDOW_SIZE_MODE_FIXED), embed_size_mode == SIZE_MODE_FIXED);
+	menu->set_item_checked(menu->get_item_index(WINDOW_SIZE_MODE_KEEP_ASPECT), embed_size_mode == SIZE_MODE_KEEP_ASPECT);
+	menu->set_item_checked(menu->get_item_index(WINDOW_SIZE_MODE_STRETCH), embed_size_mode == SIZE_MODE_STRETCH);
 
-	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), !embed_on_play || !is_multi_window);
+	menu->set_item_disabled(menu->get_item_index(WINDOW_MAKE_FLOATING_ON_PLAY), !embed_on_play || !is_multi_window);
+}
+
+void GameView::_update_game_window_size_label() {
+	String window_size_string = game_window_size.x < 0 ? "" : vformat("%dx%d", game_window_size.x, game_window_size.y);
+	game_size_label->set_text(hdr_output_enabled ? vformat("%s %s (%.2f)", window_size_string, TTRC("HDR"), output_max_linear_value)
+												 : window_size_string);
+	game_size_label->set_tooltip_text(
+			vformat(TTR("Window size: %s\nMode: %s\nMaximum linear value: %.2f%s"),
+					window_size_string,
+					hdr_output_enabled ? TTRC("HDR") : TTRC("SDR"),
+					output_max_linear_value,
+					hdr_output_enabled ? vformat(TTR("\nReference luminance: %.0f nits\nMaximum luminance: %.0f nits"),
+												 current_reference_luminance,
+												 current_max_luminance)
+									   : ""));
 }
 
 void GameView::_update_embed_window_size() {
@@ -916,6 +1009,72 @@ void GameView::_debug_mute_audio_button_pressed() {
 	debug_mute_audio_button->set_button_icon(get_editor_theme_icon(debug_mute_audio ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
 	debugger->set_debug_mute_audio(debug_mute_audio);
+}
+
+void GameView::_setup_complete() {
+	debugger->window_request_size();
+	debugger->hdr_output_request_state();
+}
+
+void GameView::_game_window_size_received(const Array &p_state) {
+	ERR_FAIL_COND_MSG(p_state.size() != 1, "_game_window_size_received: invalid number of arguments");
+	game_window_size = p_state[0];
+	_update_game_window_size_label();
+}
+
+void GameView::_hdr_state_received(const Array &p_state) {
+	ERR_FAIL_COND_MSG(p_state.size() != 7, "_hdr_state_received: invalid number of arguments");
+
+	PopupMenu *menu = game_window_options_menu->get_popup();
+
+	// Matches SceneDebugger::_msg_hdr_output_request_state
+	bool requested = p_state[0];
+	hdr_output_enabled = p_state[1];
+	current_reference_luminance = p_state[2];
+	current_max_luminance = p_state[3];
+	output_max_linear_value = p_state[4];
+	display_server_supports_hdr_output = p_state[5];
+	renderer_supports_hdr_output = p_state[6];
+
+	int request_hdr_output_index = menu->get_item_index(WINDOW_REQUEST_HDR_OUTPUT);
+	if (display_server_supports_hdr_output && renderer_supports_hdr_output) {
+		if (menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR) >= 0) {
+			menu->remove_item(menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR));
+		}
+
+		if (request_hdr_output_index < 0) {
+			menu->add_check_item(TTRC("Request HDR Output"), WINDOW_REQUEST_HDR_OUTPUT);
+		}
+		menu->set_item_checked(menu->get_item_index(WINDOW_REQUEST_HDR_OUTPUT), requested);
+
+		if (requested && !hdr_output_enabled) {
+			String error_text = TTRC("Window does not support HDR output.");
+			String error_tooltip_text = TTRC("Move the game window to a screen\nthat is operating in HDR mode.");
+			menu->add_item(error_text, WINDOW_HDR_OUTPUT_ERROR);
+			int error_item_index = menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR);
+			menu->set_item_disabled(error_item_index, true);
+			menu->set_item_tooltip(error_item_index, error_tooltip_text);
+		}
+	} else {
+		if (request_hdr_output_index >= 0) {
+			menu->remove_item(request_hdr_output_index);
+		}
+		int error_item_index = menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR);
+		String error_text = !display_server_supports_hdr_output ? TTRC("Display server does not support HDR output.")
+																: TTRC("Renderer does not support HDR output.");
+		String error_tooltip_text = !display_server_supports_hdr_output ? TTRC("Change the display/display_server/driver\nadvanced project setting to a driver\nthat supports HDR output.")
+																		: TTRC("Change the rendering/renderer/rendering_method\nproject setting to a renderer that supports HDR output and\nthe rendering/rendering_device/driver advanced project\nsetting to a driver that supports HDR output.");
+		if (error_item_index < 0) {
+			menu->add_item(error_text, WINDOW_HDR_OUTPUT_ERROR);
+			error_item_index = menu->get_item_index(WINDOW_HDR_OUTPUT_ERROR);
+			menu->set_item_disabled(error_item_index, true);
+		} else {
+			menu->set_item_text(error_item_index, error_text);
+		}
+		menu->set_item_tooltip(error_item_index, error_tooltip_text);
+	}
+
+	_update_game_window_size_label();
 }
 
 void GameView::_camera_override_button_toggled(bool p_pressed) {
@@ -983,12 +1142,13 @@ void GameView::_notification(int p_what) {
 
 			hide_selection->set_button_icon(get_editor_theme_icon(hide_selection->is_pressed() ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
 			selection_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-			embed_options_menu->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 
 			debug_mute_audio_button->set_button_icon(get_editor_theme_icon(debug_mute_audio ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 
 			camera_override_button->set_button_icon(get_editor_theme_icon(SNAME("Camera")));
 			camera_override_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+			game_window_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			_update_speed_state_size();
 			_update_speed_state_color();
@@ -1454,26 +1614,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	embedding_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_menu_fc->add_child(embedding_hb);
 
-	embed_options_menu = memnew(MenuButton);
-	embedding_hb->add_child(embed_options_menu);
-	embed_options_menu->set_flat(false);
-	embed_options_menu->set_theme_type_variation("FlatMenuButton");
-	embed_options_menu->set_h_size_flags(SIZE_SHRINK_END);
-	embed_options_menu->set_tooltip_text(TTRC("Embedding Options"));
-
-	menu = embed_options_menu->get_popup();
-	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_embed_options_menu_menu_id_pressed));
-	menu->add_check_item(TTRC("Embed Game on Next Play"), EMBED_RUN_GAME_EMBEDDED);
-	menu->add_check_item(TTRC("Make Game Workspace Floating on Next Play"), EMBED_MAKE_FLOATING_ON_PLAY);
-	menu->add_separator(TTRC("Embedded Window Sizing"));
-
-	menu->add_radio_check_item(TTRC("Fixed Size"), SIZE_MODE_FIXED);
-	menu->set_item_tooltip(menu->get_item_index(SIZE_MODE_FIXED), TTRC("Embedded game size is based on project settings.\nThe 'Keep Aspect' mode is used when the Game Workspace is smaller than the desired size."));
-	menu->add_radio_check_item(TTRC("Keep Aspect Ratio"), SIZE_MODE_KEEP_ASPECT);
-	menu->set_item_tooltip(menu->get_item_index(SIZE_MODE_KEEP_ASPECT), TTRC("Keep the aspect ratio of the embedded game."));
-	menu->add_radio_check_item(TTRC("Stretch to Fit"), SIZE_MODE_STRETCH);
-	menu->set_item_tooltip(menu->get_item_index(SIZE_MODE_STRETCH), TTRC("Embedded game size stretches to fit the Game Workspace."));
-
 	game_size_label = memnew(Label());
 	embedding_hb->add_child(game_size_label);
 	game_size_label->hide();
@@ -1483,6 +1623,31 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	game_size_label->set_custom_minimum_size(Size2(80 * EDSCALE, 0));
 	game_size_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	game_size_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
+	game_size_label->set_mouse_filter(MouseFilter::MOUSE_FILTER_PASS);
+
+	game_size_placeholder = memnew(Control());
+	embedding_hb->add_child(game_size_placeholder);
+	game_size_placeholder->set_h_size_flags(game_size_label->get_h_size_flags());
+
+	game_window_options_menu = memnew(MenuButton);
+	embedding_hb->add_child(game_window_options_menu);
+	game_window_options_menu->set_flat(false);
+	game_window_options_menu->set_theme_type_variation("FlatMenuButton");
+	game_window_options_menu->set_h_size_flags(SIZE_SHRINK_END);
+	game_window_options_menu->set_tooltip_text(TTRC("Game Window Options"));
+
+	menu = game_window_options_menu->get_popup();
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_game_window_options_menu_menu_id_pressed));
+	menu->add_check_item(TTRC("Embed Game on Next Play"), WINDOW_RUN_GAME_EMBEDDED);
+	menu->add_check_item(TTRC("Make Game Workspace Floating on Next Play"), WINDOW_MAKE_FLOATING_ON_PLAY);
+
+	menu->add_separator(TTRC("Embedded Window Sizing"));
+	menu->add_radio_check_item(TTRC("Fixed Size"), WINDOW_SIZE_MODE_FIXED);
+	menu->set_item_tooltip(menu->get_item_index(WINDOW_SIZE_MODE_FIXED), TTRC("Embedded game size is based on project settings.\nThe 'Keep Aspect' mode is used when the Game Workspace is smaller than the desired size."));
+	menu->add_radio_check_item(TTRC("Keep Aspect Ratio"), WINDOW_SIZE_MODE_KEEP_ASPECT);
+	menu->set_item_tooltip(menu->get_item_index(WINDOW_SIZE_MODE_KEEP_ASPECT), TTRC("Keep the aspect ratio of the embedded game."));
+	menu->add_radio_check_item(TTRC("Stretch to Fit"), WINDOW_SIZE_MODE_STRETCH);
+	menu->set_item_tooltip(menu->get_item_index(WINDOW_SIZE_MODE_STRETCH), TTRC("Embedded game size stretches to fit the Game Workspace."));
 
 	panel = memnew(Panel);
 	add_child(panel);
@@ -1493,7 +1658,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	embedded_process->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	embedded_process->connect("embedding_failed", callable_mp(this, &GameView::_embedding_failed));
 	embedded_process->connect("embedding_completed", callable_mp(this, &GameView::_embedding_completed));
-	embedded_process->connect("embedded_process_updated", callable_mp(this, &GameView::_embedded_process_updated));
 	embedded_process->connect("embedded_process_focused", callable_mp(this, &GameView::_embedded_process_focused));
 	embedded_process->set_custom_minimum_size(Size2i(100, 100));
 
@@ -1517,6 +1681,9 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	p_debugger->connect("session_started", callable_mp(this, &GameView::_sessions_changed));
 	p_debugger->connect("session_stopped", callable_mp(this, &GameView::_sessions_changed));
+	p_debugger->connect("setup_complete", callable_mp(this, &GameView::_setup_complete));
+	p_debugger->connect("game_window_size_received", callable_mp(this, &GameView::_game_window_size_received));
+	p_debugger->connect("hdr_state_received", callable_mp(this, &GameView::_hdr_state_received));
 
 	p_wrapper->set_override_close_request(true);
 	p_wrapper->connect("window_close_requested", callable_mp(this, &GameView::_window_close_request));

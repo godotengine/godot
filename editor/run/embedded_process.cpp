@@ -82,7 +82,6 @@ void EmbeddedProcessBase::_project_settings_changed() {
 void EmbeddedProcessBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("embedding_completed"));
 	ADD_SIGNAL(MethodInfo("embedding_failed"));
-	ADD_SIGNAL(MethodInfo("embedded_process_updated"));
 	ADD_SIGNAL(MethodInfo("embedded_process_focused"));
 }
 
@@ -304,7 +303,6 @@ void EmbeddedProcess::_update_embedded_process() {
 	}
 
 	DisplayServer::get_singleton()->embed_process(window->get_window_id(), current_process_id, get_screen_embedded_window_rect(), is_visible_in_tree(), must_grab_focus);
-	emit_signal(SNAME("embedded_process_updated"));
 }
 
 void EmbeddedProcess::_timer_embedding_timeout() {
