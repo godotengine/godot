@@ -1,8 +1,19 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/2.0.1">
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <PackageType>MSBuildSdk</PackageType>
+    <PackageTags>MSBuildSdk</PackageTags>
+  </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Exclude target framework from the package dependencies as we don't include the build output -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Description>MSBuild .NET Sdk for Godot projects.</Description>
     <Authors>Godot Engine contributors</Authors>
 
@@ -11,15 +22,9 @@
     <PackageVersion>$(PackageVersion_Godot_NET_Sdk)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-    <PackageType>MSBuildSdk</PackageType>
-    <PackageTags>MSBuildSdk</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) Godot Engine contributors</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
-    <!-- Exclude target framework from the package dependencies as we don't include the build output -->
-    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,7 +36,8 @@
       <Link>Sdk\SdkPackageVersions.props</Link>
     </None>
     <None Include="Sdk\Android.props" Pack="true" PackagePath="Sdk" />
-    <None Include="Sdk\iOSNativeAOT.props" Pack="true" PackagePath="Sdk" />
-    <None Include="Sdk\iOSNativeAOT.targets" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\iOS.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\iOS.targets" Pack="true" PackagePath="Sdk" />
   </ItemGroup>
+
 </Project>
