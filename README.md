@@ -34,3 +34,15 @@ I hate c++ but my spite is greater. contribute and I'll be in your eternal debt 
 ## clarification
 i don't hate the godot dev team, i fucking love them!!!
 i just don't like the whole 'approachability over correctness' philosophy that is used to explain away the absence of BASIC fucking language features. that's it. 
+
+## Lmao why not c#
+Because I don't want to use C#.
+
+More importantly, this project ain't about replacing GDScript at all but instead *improving* it.
+
+GDScript is extremely quick to work with and has very low mental overhead. That's its biggest strength. The problem is that it lacks some static guarantees, which makes certain mistakes way too easy to make.
+
+So instead of switching languages entirely and lose the ability to export to web (something I REALLY need for game jams, as a borderline game jam addict (help me)), I find it infinitely easier to go ahead and fix those issues :)
+
+If you prefer C#, that's completely fine dude! But 'just use C# lol' doesn't answer the question of why GDScript shouldn't be better.
+
