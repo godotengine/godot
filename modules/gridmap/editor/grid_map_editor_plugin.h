@@ -34,6 +34,7 @@
 
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/box_container.h"
 
 class Button;
@@ -50,8 +51,6 @@ class SpinBox;
 
 class GridMapEditor : public EditorDock {
 	GDCLASS(GridMapEditor, EditorDock);
-
-	static constexpr int32_t GRID_CURSOR_SIZE = 50;
 
 	enum InputAction {
 		INPUT_NONE,
@@ -218,6 +217,11 @@ class GridMapEditor : public EditorDock {
 
 	ItemList *mesh_library_palette = nullptr;
 	Label *info_message = nullptr;
+
+	// Editor settings.
+	int grid_cursor_size = 0;
+	View3DController::NavigationScheme nav_scheme = View3DController::NavigationScheme::NAV_SCHEME_GODOT;
+	float preview_size = 0;
 
 	void update_grid(); // Change which and where the grid is displayed
 	void _draw_grids(const Vector3 &cell_size);

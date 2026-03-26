@@ -661,6 +661,9 @@
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
 		</member>
+		<member name="editors/grid_map/grid_cursor_size" type="int" setter="" getter="">
+			The radius, in cells, of the grid that follows the cursor.
+		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
 		</member>
