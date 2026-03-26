@@ -39,9 +39,10 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
-#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
-#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+
+class GodotNavigationServer3D;
+class NavMeshGenerator3D;
 
 /// The commands are functions executed during the `sync` phase.
 
@@ -55,9 +56,6 @@
 #define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
 	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
-
-class GodotNavigationServer3D;
-class NavMeshGenerator3D;
 
 struct SetCommand3D {
 	virtual ~SetCommand3D() {}

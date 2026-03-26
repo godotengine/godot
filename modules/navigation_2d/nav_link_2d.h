@@ -32,9 +32,9 @@
 
 #include "2d/nav_base_iteration_2d.h"
 #include "nav_base_2d.h"
-#include "nav_utils_2d.h"
 
 #include "core/os/rw_lock.h"
+#include "core/templates/self_list.h"
 
 class NavLinkIteration2D : public NavBaseIteration2D {
 	GDCLASS(NavLinkIteration2D, NavBaseIteration2D);
@@ -53,8 +53,6 @@ public:
 		internal_connections.clear();
 	}
 };
-
-#include "core/templates/self_list.h"
 
 class NavLink2D : public NavBase2D {
 	NavMap2D *map = nullptr;

@@ -30,9 +30,11 @@
 
 #pragma once
 
-#include "scene/resources/navigation_mesh.h"
+#include "core/object/object.h"
 
+class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
+class Node;
 
 class NavigationMeshGenerator : public Object {
 	GDCLASS(NavigationMeshGenerator, Object);

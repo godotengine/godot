@@ -31,6 +31,7 @@
 #include "shader_preprocessor.h"
 
 #include "core/os/os.h"
+#include "scene/resources/shader_include.h"
 #include "servers/rendering/shader_expression.h"
 
 const char32_t CURSOR = 0xFFFF;

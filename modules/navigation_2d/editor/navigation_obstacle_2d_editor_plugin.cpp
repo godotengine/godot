@@ -31,6 +31,7 @@
 #include "navigation_obstacle_2d_editor_plugin.h"
 
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/2d/navigation/navigation_obstacle_2d.h"
 
 Node2D *NavigationObstacle2DEditor::_get_node() const {
 	return node;

@@ -35,6 +35,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/2d/navigation/navigation_link_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 

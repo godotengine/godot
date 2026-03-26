@@ -33,6 +33,8 @@
 #include "navigation_server_3d.h"
 
 #include "core/object/class_db.h"
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 
 Vector<Vector3> NavigationServer3D::_map_get_path_bind_compat_100129(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
 	return const_cast<NavigationServer3D *>(this)->map_get_path(p_map, p_origin, p_destination, p_optimize, p_navigation_layers);

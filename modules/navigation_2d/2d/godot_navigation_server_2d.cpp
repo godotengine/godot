@@ -30,14 +30,16 @@
 
 #include "godot_navigation_server_2d.h"
 
-#include "core/os/mutex.h"
-#include "scene/main/node.h"
-
-#include <cstdint>
-
 #ifdef CLIPPER2_ENABLED
 #include "nav_mesh_generator_2d.h"
 #endif // CLIPPER2_ENABLED
+
+#include "core/os/mutex.h"
+#include "scene/main/node.h"
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
+#include "servers/navigation_2d/navigation_path_query_result_2d.h"
+
+#include <cstdint>
 
 #define COMMAND_1(F_NAME, T_0, D_0) \
 	struct MERGE(F_NAME, _command_2d) : public SetCommand2D { \

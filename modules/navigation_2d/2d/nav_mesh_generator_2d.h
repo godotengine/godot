@@ -34,11 +34,11 @@
 
 #include "core/object/object.h"
 #include "core/object/worker_thread_pool.h"
-#include "servers/navigation_2d/navigation_server_2d.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
 
 class Node;
-class NavigationPolygon;
-class NavigationMeshSourceGeometryData2D;
+struct NavMeshGeometryParser2D;
 
 class NavMeshGenerator2D : public Object {
 	GDSOFTCLASS(NavMeshGenerator2D, Object);

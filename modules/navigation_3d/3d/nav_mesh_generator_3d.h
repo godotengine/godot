@@ -32,11 +32,12 @@
 
 #include "core/object/object.h"
 #include "core/object/worker_thread_pool.h"
-#include "servers/navigation_3d/navigation_server_3d.h"
+#include "core/os/rw_lock.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
 
 class Node;
-class NavigationMesh;
-class NavigationMeshSourceGeometryData3D;
+struct NavMeshGeometryParser3D;
 
 class NavMeshGenerator3D : public Object {
 	GDSOFTCLASS(NavMeshGenerator3D, Object);

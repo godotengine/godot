@@ -31,9 +31,10 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/2d/navigation/navigation_link_2d.h"
+#include "scene/gui/control.h"
 
 class CanvasItemEditor;
+class NavigationLink2D;
 
 class NavigationLink2DEditor : public Control {
 	GDCLASS(NavigationLink2DEditor, Control);
