@@ -54,6 +54,8 @@ public:
 private:
 	static void _handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut);
 	static void _handle_embed_input(const Ref<InputEvent> &p_event, const Dictionary &p_settings);
+	static void _on_window_size_changed();
+	static void _on_output_max_linear_value_changed(float output_max_linear_value);
 
 	static void _save_node(ObjectID id, const String &p_path);
 	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
@@ -67,6 +69,7 @@ private:
 	static void _init_message_handlers();
 
 	static Error _msg_setup_scene(const Array &p_args);
+	static Error _msg_setup_game_view(const Array &p_args);
 	static Error _msg_setup_embedded_shortcuts(const Array &p_args);
 	static Error _msg_request_scene_tree(const Array &p_args);
 	static Error _msg_save_node(const Array &p_args);
@@ -79,6 +82,9 @@ private:
 	static Error _msg_next_frame(const Array &p_args);
 	static Error _msg_speed_changed(const Array &p_args);
 	static Error _msg_debug_mute_audio(const Array &p_args);
+	static Error _msg_window_request_size(const Array &p_args);
+	static Error _msg_hdr_output_request_state(const Array &p_args);
+	static Error _msg_hdr_output_toggle_requested(const Array &p_args);
 	static Error _msg_override_cameras(const Array &p_args);
 	static Error _msg_set_object_property(const Array &p_args);
 	static Error _msg_set_object_property_field(const Array &p_args);
