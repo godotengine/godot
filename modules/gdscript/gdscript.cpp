@@ -53,6 +53,7 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
+#include "core/os/os.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 
@@ -2153,6 +2154,34 @@ void GDScriptLanguage::init() {
 #ifdef TESTS_ENABLED
 	GDScriptTests::GDScriptTestRunner::handle_cmdline();
 #endif // TESTS_ENABLED
+
+#ifdef TOOLS_ENABLED
+	// Parse coverage args only on the first init() call. GDScriptLanguage::init() may be called
+	// multiple times (e.g., from GDScriptTestRunner and individual test cases). Subsequent calls
+	// must not reset coverage state or overwrite the already-configured output path.
+	if (coverage_output_path.is_empty()) {
+		const List<String> &args = OS::get_singleton()->get_cmdline_args();
+		for (const List<String>::Element *E = args.front(); E; E = E->next()) {
+			const String &arg = E->get();
+			if (arg == "--coverage-output" && E->next()) {
+				coverage_set_output(E->next()->get());
+			} else if (arg == "--coverage-mode" && E->next()) {
+				coverage_set_mode(E->next()->get());
+			} else if (arg == "--coverage-format" && E->next()) {
+				coverage_set_format(E->next()->get());
+			} else if (arg == "--coverage-threshold" && E->next()) {
+				coverage_set_threshold(E->next()->get().to_float());
+			} else if (arg == "--coverage-include" && E->next()) {
+				coverage_add_include(E->next()->get());
+			} else if (arg == "--coverage-exclude" && E->next()) {
+				coverage_add_exclude(E->next()->get());
+			}
+		}
+		if (!coverage_output_path.is_empty()) {
+			coverage_start();
+		}
+	}
+#endif // TOOLS_ENABLED
 }
 
 #ifdef TOOLS_ENABLED
@@ -2190,6 +2219,16 @@ void GDScriptLanguage::finish() {
 		return;
 	}
 	finishing = true;
+
+#ifdef TOOLS_ENABLED
+	if (coverage_enabled && !coverage_written) {
+		coverage_write();
+		if (!coverage_check_threshold()) {
+			OS::get_singleton()->set_exit_code(1);
+			print_line("GDScript coverage threshold not met.");
+		}
+	}
+#endif // TOOLS_ENABLED
 
 	// Clear the cache before parsing the script_list
 	GDScriptCache::clear();
