@@ -1307,6 +1307,12 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 			} catch (InterruptedException e) {
 				// fall thru and exit normally
 			} finally {
+				synchronized (sGLThreadManager) {
+					for (Runnable r : mEventQueue) {
+						r.run();
+					}
+					mEventQueue.clear();
+				}
 				sGLThreadManager.threadExiting(this);
 			}
 		}

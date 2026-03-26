@@ -788,7 +788,9 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	private void dispatchInputEventRunnable(@NonNull InputEventRunnable runnable) {
 		if (shouldDispatchInputToRenderThread()) {
-			godot.runOnRenderThread(runnable);
+			if (!godot.runOnRenderThread(runnable)) {
+				runnable.run();
+			}
 		} else {
 			runnable.run();
 		}

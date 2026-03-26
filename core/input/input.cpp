@@ -1608,6 +1608,8 @@ void Input::release_pressed_events() {
 	keys_pressed.clear();
 	physical_keys_pressed.clear();
 	key_label_pressed.clear();
+	mouse_button_mask.clear();
+	touch_velocity_track.clear();
 	if (ignore_joypad_on_unfocused_application) {
 		joy_buttons_pressed.clear();
 		_joy_axis.clear();

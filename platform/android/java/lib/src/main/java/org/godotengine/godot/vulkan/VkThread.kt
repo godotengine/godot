@@ -79,6 +79,11 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 			Log.d(TAG, "Exiting render thread")
 			vkRenderer.onRenderThreadExiting()
 
+			for (event in eventQueue) {
+				event.run()
+			}
+			eventQueue.clear()
+
 			exited = true
 			lockCondition.signalAll()
 		}
