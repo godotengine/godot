@@ -60,8 +60,27 @@ TEST_SUITE("[Modules][GDScript]") {
 	TEST_CASE("Script compilation and runtime") {
 		bool print_filenames = OS::get_singleton()->get_cmdline_args().find("--print-filenames") != nullptr;
 		bool use_binary_tokens = OS::get_singleton()->get_cmdline_args().find("--use-binary-tokens") != nullptr;
+
+		// GDScriptTestRunner calls init_language(), which calls GDScriptLanguage::init(),
+		// which parses --coverage-* args and auto-starts coverage if --coverage-output is set.
 		GDScriptTestRunner runner("modules/gdscript/tests/scripts", true, print_filenames, use_binary_tokens);
+
+		// Check after init_language() so coverage_output_path is already populated.
+		const bool coverage_active = !GDScriptLanguage::get_singleton()->coverage_output_path.is_empty();
+		if (coverage_active) {
+			// Reset to exclude any data recorded during language init / script loading.
+			GDScriptLanguage::get_singleton()->coverage_start();
+		}
+
 		int fail_count = runner.run_tests();
+
+		if (coverage_active) {
+			GDScriptLanguage::get_singleton()->coverage_write();
+			print_line(GDScriptLanguage::get_singleton()->coverage_summary_string());
+			REQUIRE_MESSAGE(GDScriptLanguage::get_singleton()->coverage_check_threshold(),
+					"GDScript coverage below configured threshold.");
+		}
+
 		INFO("Make sure `*.out` files have expected results.");
 		REQUIRE_MESSAGE(fail_count == 0, "All GDScript tests should pass.");
 	}
