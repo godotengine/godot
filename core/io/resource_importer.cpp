@@ -490,14 +490,11 @@ void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importe
 }
 
 void ResourceFormatImporter::get_importers_for_file(const String &p_file, List<Ref<ResourceImporter>> *r_importers) {
-	for (int i = 0; i < importers.size(); i++) {
+	for (const Ref<ResourceImporter> &I : importers) {
 		List<String> local_exts;
-		importers[i]->get_recognized_extensions(&local_exts);
-		for (const String &F : local_exts) {
-			if (p_file.right(F.length()).nocasecmp_to(F) == 0) {
-				r_importers->push_back(importers[i]);
-				break;
-			}
+		I->get_recognized_extensions(&local_exts);
+		if (p_file.validate_extension(local_exts)) {
+			r_importers->push_back(I);
 		}
 	}
 }
@@ -511,16 +508,15 @@ void ResourceFormatImporter::get_importers(List<Ref<ResourceImporter>> *r_import
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_file(const String &p_file) const {
 	Ref<ResourceImporter> importer;
 	float priority = 0;
-
-	for (int i = 0; i < importers.size(); i++) {
+	for (const Ref<ResourceImporter> &I : importers) {
+		if (I->get_priority() <= priority) {
+			continue;
+		}
 		List<String> local_exts;
-		importers[i]->get_recognized_extensions(&local_exts);
-		for (const String &F : local_exts) {
-			if (p_file.right(F.length()).nocasecmp_to(F) == 0 && importers[i]->get_priority() > priority) {
-				importer = importers[i];
-				priority = importers[i]->get_priority();
-				break;
-			}
+		I->get_recognized_extensions(&local_exts);
+		if (p_file.validate_extension(local_exts)) {
+			importer = I;
+			priority = I->get_priority();
 		}
 	}
 

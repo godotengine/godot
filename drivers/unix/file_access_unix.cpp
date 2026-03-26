@@ -376,15 +376,13 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG || (st.st_mode & S_IFDIR) == S_IFDIR) {
 			modified_time = st.st_mtime;
 		}
-#ifdef ANDROID_ENABLED
 		// Workaround for GH-101007
-		//FIXME: After saving, all timestamps (st_mtime, st_ctime, st_atime) are set to the same value.
-		// After exporting or after some time, only 'modified_time' resets to a past timestamp.
+		// `mv` may only update the ctime, whereas `cp -p` preserves the mtime as well.
+		// The file operations in OS file managers (such as Nemo and Nautilus) also preserves the mtime.
 		uint64_t created_time = st.st_ctime;
 		if (modified_time < created_time) {
 			modified_time = created_time;
 		}
-#endif
 		return modified_time;
 	} else {
 		return 0;

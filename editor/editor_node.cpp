@@ -1147,7 +1147,7 @@ void EditorNode::_notification(int p_what) {
 				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size() || updated_other_file_extensions.size() < other_file_extensions.size()) {
 					textfile_extensions = updated_textfile_extensions;
 					other_file_extensions = updated_other_file_extensions;
-					EditorFileSystem::get_singleton()->scan();
+					EditorFileSystem::get_singleton()->update_extensions();
 				}
 			}
 
@@ -1673,7 +1673,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	Error err;
 
 	Ref<Resource> res;
-	if (force_textfile_extensions.has(p_resource.get_extension())) {
+	if (p_resource.validate_extension(force_textfile_extensions)) {
 		const String resource_type = ResourceLoader::get_resource_type(p_resource);
 		if (resource_type != "Translation" && ResourceLoader::exists(p_resource, "")) {
 			res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
@@ -1686,9 +1686,9 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		}
 	} else if (ResourceLoader::exists(p_resource, "")) {
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
-	} else if (textfile_extensions.has(p_resource.get_extension())) {
+	} else if (p_resource.validate_extension(textfile_extensions)) {
 		res = ScriptEditor::get_singleton()->open_file(p_resource);
-	} else if (other_file_extensions.has(p_resource.get_extension())) {
+	} else if (p_resource.validate_extension(other_file_extensions)) {
 		OS::get_singleton()->shell_open(ProjectSettings::get_singleton()->globalize_path(p_resource));
 		return OK;
 	}
@@ -6966,7 +6966,7 @@ void EditorNode::_dropped_files(const Vector<String> &p_files) {
 
 	_add_dropped_files_recursive(p_files, to_path);
 
-	EditorFileSystem::get_singleton()->scan_changes();
+	EditorFileSystem::get_singleton()->pending_scan_fs_changes(to_path, true);
 }
 
 void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {

@@ -138,7 +138,9 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
 
 	if (success) {
-		return flags.st_mtime;
+		// `mv` may only update the ctime, whereas `cp -p` preserves the mtime as well.
+		// The file operations in OS file managers (such as Nemo and Nautilus) also preserves the mtime.
+		return MAX(flags.st_mtime, flags.st_ctime);
 	} else {
 		ERR_FAIL_V(0);
 	}

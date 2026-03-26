@@ -34,7 +34,9 @@
 
 #include "core/string/char_utils.h" // IWYU pragma: export
 #include "core/templates/cowdata.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/list.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 
@@ -289,6 +291,7 @@ class [[nodiscard]] String {
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	int _count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	String _separate_compound_words() const;
+	String _get_longest_suffix_with_dot() const;
 
 public:
 	enum {
@@ -516,6 +519,8 @@ public:
 	char32_t unicode_at(int p_idx) const;
 	bool has_extension(const char *p_ext) const { return get_extension().to_lower() == p_ext; }
 	bool has_extension(const String &p_ext) const { return get_extension().to_lower() == p_ext; }
+	bool validate_extension(const HashSet<String> &p_extensions) const;
+	bool validate_extension(const List<String> &p_extensions) const;
 
 	CharString ascii(bool p_allow_extended = false) const;
 	// Parse an ascii string.
