@@ -443,16 +443,38 @@ int UndoRedo::get_history_count() {
 	return actions.size();
 }
 
+// Use the word "action" everywhere rather than mixing in "history".
+int UndoRedo::get_action_count() {
+	return get_history_count();
+}
+
 int UndoRedo::get_current_action() {
 	ERR_FAIL_COND_V(action_level > 0, -1);
 
 	return current_action;
 }
 
+// This is more descriptive than "get_current_action()"
+int UndoRedo::get_current_action_index() {
+	return get_current_action();
+}
+
 String UndoRedo::get_action_name(int p_id) {
-	ERR_FAIL_INDEX_V(p_id, actions.size(), "");
+	// Allow negative indices, as long as it doesn't double wrap.
+	// i.e. ensure abs(p_id) <= actions.size().
+	if (p_id < 0) {
+		p_id = actions.size() + p_id;
+		if (p_id < 0) {
+			ERR_FAIL_INDEX_V(p_id, actions.size(), "");
+		}
+	}
 
 	return actions[p_id].name;
+}
+
+// More descriptive version of get_action_name.
+String UndoRedo::get_action_name_at_index(int p_index) {
+	return get_action_name(p_index);
 }
 
 void UndoRedo::clear_history(bool p_increase_version) {
@@ -540,12 +562,16 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("end_force_keep_in_merge_ends"), &UndoRedo::end_force_keep_in_merge_ends);
 
 	ClassDB::bind_method(D_METHOD("get_history_count"), &UndoRedo::get_history_count);
+	ClassDB::bind_method(D_METHOD("get_action_count"), &UndoRedo::get_action_count);
+	ClassDB::bind_method(D_METHOD("get_current_action_index"), &UndoRedo::get_current_action_index);
 	ClassDB::bind_method(D_METHOD("get_current_action"), &UndoRedo::get_current_action);
 	ClassDB::bind_method(D_METHOD("get_action_name", "id"), &UndoRedo::get_action_name);
+	ClassDB::bind_method(D_METHOD("get_action_name_at_index", "index"), &UndoRedo::get_action_name_at_index);
 	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
 
+	ClassDB::bind_method(D_METHOD("discard_redo"), &UndoRedo::discard_redo);
 	ClassDB::bind_method(D_METHOD("has_undo"), &UndoRedo::has_undo);
 	ClassDB::bind_method(D_METHOD("has_redo"), &UndoRedo::has_redo);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
