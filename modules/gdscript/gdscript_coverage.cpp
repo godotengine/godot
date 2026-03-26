@@ -475,8 +475,15 @@ static Error _write_lcov(const String &p_path,
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = p_lang->_coverage_enumerate_func_start_lines();
 
+	// Sort file paths for deterministic, reproducible output.
+	Vector<String> sorted_paths;
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
-		const String &res_path = kv.key;
+		sorted_paths.push_back(kv.key);
+	}
+	sorted_paths.sort();
+
+	for (const String &res_path : sorted_paths) {
+		const HashMap<int, int> &lines_for_path = *p_hits.getptr(res_path);
 		f->store_line("TN:");
 		f->store_line("SF:" + _coverage_globalize(res_path));
 
@@ -496,7 +503,7 @@ static Error _write_lcov(const String &p_path,
 		}
 
 		HashMap<int, int> all_lines;
-		Vector<int> sorted = _merge_line_hits(kv.value, coverable, res_path, all_lines);
+		Vector<int> sorted = _merge_line_hits(lines_for_path, coverable, res_path, all_lines);
 		_lcov_write_lines(f, sorted, all_lines);
 
 		f->store_line("end_of_record");
@@ -578,7 +585,7 @@ static Error _write_cobertura(const String &p_path,
 	f->store_line("<?xml version=\"1.0\" ?>");
 	f->store_line("<!DOCTYPE coverage SYSTEM \"http://cobertura.sourceforge.net/xml/coverage-04.dtd\">");
 	f->store_line(vformat("<coverage version=\"5.0\" timestamp=\"%d\" line-rate=\"%.4f\" branch-rate=\"%.4f\" lines-covered=\"%d\" lines-valid=\"%d\" branches-covered=\"%d\" branches-valid=\"%d\">",
-			ts, line_rate, branch_rate, t.hit_lines, t.lines, t.hit_branches, t.branches));
+			(int64_t)ts, line_rate, branch_rate, t.hit_lines, t.lines, t.hit_branches, t.branches));
 	f->store_line("  <packages><package name=\"gdscript\"><classes>");
 
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {

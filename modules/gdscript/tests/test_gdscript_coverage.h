@@ -690,7 +690,7 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK_MESSAGE(contents.contains("Threshold:"), "Text output must show the threshold");
 	}
 
-	TEST_CASE("[Modules][GDScript] Coverage: write filters files from output") {
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV contains only recorded files") {
 		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
 		REQUIRE(lang != nullptr);
 		CoverageScopedReset guard;
@@ -698,11 +698,11 @@ TEST_SUITE("[Modules][GDScript]") {
 		const String out_path = TestUtils::get_temp_path("coverage_filtered.lcov");
 		lang->coverage_set_output(out_path);
 		lang->coverage_set_format("lcov");
-		// Include only src/, exclude addons/ even if it somehow appeared.
+		// Filtering happens at record time: only paths passing the include filter
+		// enter coverage_hits, so only those paths appear in the LCOV output.
 		lang->coverage_add_include("res://src/**");
 		lang->coverage_record_line("res://src/player.gd", 1);
-		// Addons path bypasses the filter by being injected directly.
-		lang->coverage_hits["res://addons/gut/gut.gd"][1] = 1;
+		lang->coverage_record_line("res://addons/gut/gut.gd", 1); // filtered out at record time
 
 		Error err = lang->coverage_write();
 		REQUIRE(err == OK);
@@ -711,13 +711,8 @@ TEST_SUITE("[Modules][GDScript]") {
 		REQUIRE(f.is_valid());
 		String contents = f->get_as_text();
 
-		// The LCOV writer iterates coverage_hits which has both entries,
-		// but SF: uses _coverage_globalize; the path string itself must appear.
-		CHECK_MESSAGE(contents.contains("player.gd"), "Included file must appear in output");
-		// gut.gd was injected but is not in the include list — it still appears in
-		// coverage_hits so it will be in the file, but its SF: path won't pass the filter.
-		// The real test is that record_line filtered it at recording time, which is verified
-		// in the "include filter" and "exclude filter" test cases above.
+		CHECK_MESSAGE(contents.contains("player.gd"), "Included file must appear in LCOV output");
+		CHECK_MESSAGE(!contents.contains("gut.gd"), "Excluded file must not appear in LCOV output");
 	}
 
 	TEST_CASE("[Modules][GDScript] Coverage: write LCOV multiple files") {
