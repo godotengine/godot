@@ -715,19 +715,35 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK_MESSAGE(!contents.contains("gut.gd"), "Excluded file must not appear in LCOV output");
 	}
 
-	TEST_CASE("[Modules][GDScript] Coverage: write JSON zero-hit file shows coverable lines") {
+	TEST_CASE("[Modules][GDScript] Coverage: write JSON compiled-but-unexecuted file shows coverable lines") {
+		// Exercises the p_lines==null, p_coverable!=null path in _json_write_file_entry:
+		// a script that was compiled (in script_list) but never had any VM opcodes
+		// recorded must still appear in JSON output with its coverable lines at count 0.
 		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
 		REQUIRE(lang != nullptr);
 		CoverageScopedReset guard;
 
+		// Write a simple GDScript with executable lines.
+		const String script_path = TestUtils::get_temp_path("coverage_zero_compiled.gd");
+		{
+			Ref<FileAccess> fw = FileAccess::open(script_path, FileAccess::WRITE);
+			REQUIRE(fw.is_valid());
+			fw->store_string("extends RefCounted\n\nfunc greet():\n\tvar x = 1\n\treturn x\n");
+		}
+
+		// Load (compile) the script — this adds it to script_list without executing any function.
+		// Suppress the spurious "Condition err is true" message from reload().
+		ERR_PRINT_OFF;
+		Ref<GDScript> script = ResourceLoader::load(script_path, "GDScript");
+		ERR_PRINT_ON;
+		REQUIRE_MESSAGE(script.is_valid(), "Script must compile successfully");
+
+		// coverage_hits is empty (CoverageScopedReset cleared it). No function was called, so
+		// p_hits.getptr(script_path) returns null inside _write_json → p_lines == null.
+		// _coverage_enumerate_coverable_lines() finds the script in script_list → p_coverable != null.
 		const String out_path = TestUtils::get_temp_path("coverage_zero_hit.json");
 		lang->coverage_set_output(out_path);
 		lang->coverage_set_format("json");
-		// Record a hit file and inject a zero-hit coverable file directly.
-		lang->coverage_record_line("res://hit_file.gd", 5);
-		// Inject coverable lines for a file that was "compiled but never executed".
-		lang->coverage_hits["res://zero_file.gd"]; // create empty entry in hits
-		lang->coverage_hits["res://zero_file.gd"][7] = 0; // line 7: explicitly zero
 
 		Error err = lang->coverage_write();
 		REQUIRE(err == OK);
@@ -736,9 +752,10 @@ TEST_SUITE("[Modules][GDScript]") {
 		REQUIRE(f.is_valid());
 		String contents = f->get_as_text();
 
-		CHECK_MESSAGE(contents.contains("hit_file.gd"), "Hit file must appear in JSON");
-		CHECK_MESSAGE(contents.contains("zero_file.gd"), "Zero-hit file must appear in JSON");
-		CHECK_MESSAGE(contents.contains("\"7\":0"), "Zero-hit line must appear with count 0");
+		const String script_basename = script_path.get_file();
+		CHECK_MESSAGE(contents.contains(script_basename), "Compiled-but-unexecuted script must appear in JSON output");
+		// Lines must appear with count 0, not be omitted entirely.
+		CHECK_MESSAGE(contents.contains(": 0"), "Coverable lines of unexecuted script must show count 0 in JSON");
 	}
 
 	TEST_CASE("[Modules][GDScript] Coverage: write LCOV multiple files") {
@@ -749,6 +766,9 @@ TEST_SUITE("[Modules][GDScript]") {
 		const String out_path = TestUtils::get_temp_path("coverage_multi.lcov");
 		lang->coverage_set_output(out_path);
 		lang->coverage_set_format("lcov");
+		// Restrict to these two synthetic paths so real scripts compiled by other
+		// tests and still alive in script_list do not add extra records.
+		lang->coverage_add_include("res://file_*.gd");
 		lang->coverage_record_line("res://file_a.gd", 1);
 		lang->coverage_record_line("res://file_b.gd", 5);
 
