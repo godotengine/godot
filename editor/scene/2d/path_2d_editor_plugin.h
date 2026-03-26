@@ -37,6 +37,7 @@
 class CanvasItemEditor;
 class ConfirmationDialog;
 class MenuButton;
+class SpinBox;
 
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);
