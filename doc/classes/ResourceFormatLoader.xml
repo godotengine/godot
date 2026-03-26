@@ -63,7 +63,7 @@
 			<description>
 				Gets a list of all [ClassDB] recognized classes that are used by this loader at the given [param path].
 				If it is not implemented, returns the class given by [method _get_resource_type].
-				[b]NOTE:[/b] This is used to trim unused features by the [url=$DOCS_URL/tutorials/editor/using_engine_compilation_configuration_editor.html]Compilation Configuration Editor[/url].
+				[b]Note:[/b] This is used to trim unused features by the [url=$DOCS_URL/tutorials/editor/using_engine_compilation_configuration_editor.html]Compilation Configuration Editor[/url].
 			</description>
 		</method>
 		<method name="_get_dependencies" qualifiers="virtual const">
