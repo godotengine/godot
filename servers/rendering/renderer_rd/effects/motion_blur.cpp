@@ -30,6 +30,7 @@
 
 #include "motion_blur.h"
 
+#include "editor/settings/editor_settings.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -214,6 +215,11 @@ void RendererRD::MotionBlur::motion_blur_process(const MotionBlurBuffers &p_buff
 }
 
 void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool transparent_bg, float time_step, CopyEffects *p_copy_effects) {
+	if (Engine::get_singleton()->is_editor_hint() && !EDITOR_GET("editors/3d/viewport_visuals/show_motion_blur_in_editor")) {
+		// Skip motion blur in editor viewport if `show motion blur in viewport` not enabled
+		return;
+	}
+
 	Size2i base_size = p_render_buffers->get_internal_size();
 	Size2i tiled_size = Size2i(Math::division_round_up(base_size.width, tile_size), Math::division_round_up(base_size.height, tile_size));
 	uint32_t view_count = p_render_buffers->get_view_count();
