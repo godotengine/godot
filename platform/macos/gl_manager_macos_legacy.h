@@ -32,6 +32,8 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
+#include "platform_gl.h"
+
 #include "core/error/error_list.h"
 #include "core/templates/rb_map.h"
 #include "servers/display/display_server_enums.h"
