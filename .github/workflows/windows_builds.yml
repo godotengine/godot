@@ -84,7 +84,7 @@ jobs:
         continue-on-error: true
 
       - name: Download pre-built ANGLE static libraries
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        uses: dsaltares/fetch-gh-release-asset@aa2ab1243d6e0d5b405b973c89fa4d06a2d0fff7 # 1.1.2
         with:
           repo: godotengine/godot-angle-static
           version: tags/chromium/6601.2
