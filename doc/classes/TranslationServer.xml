@@ -74,7 +74,7 @@
 				Returns a readable country name for the [param country] code.
 			</description>
 		</method>
-		<method name="get_fallback_locale">
+		<method name="get_fallback_locale" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the locale to fall back to if a translation isn't available in a given language.

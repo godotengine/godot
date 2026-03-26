@@ -31,7 +31,7 @@
 				Returns the [Translation] instances that match [param locale] (see [method TranslationServer.compare_locales]). If [param exact] is [code]true[/code], only instances whose locale exactly equals [param locale] will be returned.
 			</description>
 		</method>
-		<method name="get_fallback_locale">
+		<method name="get_fallback_locale" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the locale to fall back to if a translation isn't available in a given language.
