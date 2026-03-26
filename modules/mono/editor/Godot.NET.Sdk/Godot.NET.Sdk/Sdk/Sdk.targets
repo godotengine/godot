@@ -1,5 +1,5 @@
 <Project>
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition=" '$(GodotSdkImportsMicrosoftNetSdk)' == 'true' " />
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(GodotSdkImportsMicrosoftNetSdk)' == 'true'" />
 
   <PropertyGroup>
     <!--
@@ -20,21 +20,35 @@
     <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
     <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
 
-    <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
+    <DefineConstants>$(_GodotDefineConstants);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
-  <!-- C# source generators -->
+  <PropertyGroup Condition="'$(EnableGodotDotNetPreview)' == 'true'">
+    <DisableImplicitGodotGeneratorReferences>true</DisableImplicitGodotGeneratorReferences>
+    <DisableImplicitGodotSharpReferences>true</DisableImplicitGodotSharpReferences>
+  </PropertyGroup>
+
+  <!-- GodotSharp references -->
   <ItemGroup Condition=" '$(DisableImplicitGodotGeneratorReferences)' != 'true' ">
     <PackageReference Include="Godot.SourceGenerators" IsImplicitlyDefined="true" Version="$(PackageVersion_Godot_SourceGenerators)" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
-
-  <!-- Godot API references -->
   <ItemGroup Condition=" '$(DisableImplicitGodotSharpReferences)' != 'true' ">
     <PackageReference Include="GodotSharp" IsImplicitlyDefined="true" Version="$(PackageVersion_GodotSharp)" />
     <PackageReference Include="GodotSharpEditor" IsImplicitlyDefined="true" Version="$(PackageVersion_GodotSharp)" Condition=" '$(Configuration)' == 'Debug' " />
   </ItemGroup>
+  <Target Name="CheckGodotDotNetReferences" BeforeTargets="Build" Condition=" '$(EnableGodotDotNetPreview)' != 'true' ">
+    <Error Text="The project or one of its dependencies references Godot .NET packages which are incompatible with the active Godot C# bindings. The active C# bindings is GodotSharp." Condition="$([System.String]::Copy('%(Reference.Identity)').Contains('Godot.Bindings.dll'))" />
+  </Target>
+
+  <!-- Godot .NET references -->
+  <ItemGroup Condition=" '$(EnableGodotDotNetPreview)' == 'true' ">
+    <PackageReference Include="Godot" IsImplicitlyDefined="true" Version="$(PackageVersion_GodotDotNet)" />
+  </ItemGroup>
+  <Target Name="CheckGodotSharpReferences" BeforeTargets="Build" Condition=" '$(EnableGodotDotNetPreview)' == 'true' ">
+    <Error Text="The project or one of its dependencies references GodotSharp packages which is incompatible with the active Godot C# bindings. The active C# bindings is Godot .NET." Condition="$([System.String]::Copy('%(Reference.Identity)').Contains('GodotSharp.dll'))" />
+  </Target>
 
   <!-- iOS-specific build targets -->
-  <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
+  <Import Project="$(MSBuildThisFileDirectory)\iOS.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
 
 </Project>
