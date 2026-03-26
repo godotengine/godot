@@ -230,6 +230,16 @@ static HashMap<String, CoverageFileStats> _gather_file_stats(
 	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
 		_compute_branch_stats(kv.value, out[kv.key]);
 	}
+	// Files that were compiled and filtered-in but never executed at all must
+	// appear in stats as 0% covered rather than being invisible.
+	if (p_coverable) {
+		static const HashMap<int, int> empty_hits;
+		for (const KeyValue<String, HashMap<int, int>> &cv : *p_coverable) {
+			if (!out.has(cv.key)) {
+				_compute_line_stats(empty_hits, &cv.value, out[cv.key]);
+			}
+		}
+	}
 	return out;
 }
 
@@ -475,15 +485,25 @@ static Error _write_lcov(const String &p_path,
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = p_lang->_coverage_enumerate_func_start_lines();
 
-	// Sort file paths for deterministic, reproducible output.
-	Vector<String> sorted_paths;
+	// Sort the union of hit paths and coverable paths for deterministic output.
+	// Files compiled but never executed must appear with DA:line,0 entries.
+	HashSet<String> path_set;
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
-		sorted_paths.push_back(kv.key);
+		path_set.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
+		path_set.insert(cv.key);
+	}
+	Vector<String> sorted_paths;
+	for (const String &s : path_set) {
+		sorted_paths.push_back(s);
 	}
 	sorted_paths.sort();
 
+	static const HashMap<int, int> empty_hits;
 	for (const String &res_path : sorted_paths) {
-		const HashMap<int, int> &lines_for_path = *p_hits.getptr(res_path);
+		const HashMap<int, int> *hits_ptr = p_hits.getptr(res_path);
+		const HashMap<int, int> &lines_for_path = hits_ptr ? *hits_ptr : empty_hits;
 		f->store_line("TN:");
 		f->store_line("SF:" + _coverage_globalize(res_path));
 
@@ -588,11 +608,26 @@ static Error _write_cobertura(const String &p_path,
 			(int64_t)ts, line_rate, branch_rate, t.hit_lines, t.lines, t.hit_branches, t.branches));
 	f->store_line("  <packages><package name=\"gdscript\"><classes>");
 
+	HashSet<String> cobertura_paths;
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
-		_cobertura_write_class(f, kv.key, kv.value,
-				p_func_hits.getptr(kv.key),
-				p_branch_hits.getptr(kv.key),
-				coverable.getptr(kv.key));
+		cobertura_paths.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
+		cobertura_paths.insert(cv.key);
+	}
+	Vector<String> sorted_cobertura;
+	for (const String &s : cobertura_paths) {
+		sorted_cobertura.push_back(s);
+	}
+	sorted_cobertura.sort();
+
+	static const HashMap<int, int> empty_cob_hits;
+	for (const String &res_path : sorted_cobertura) {
+		const HashMap<int, int> *lines = p_hits.getptr(res_path);
+		_cobertura_write_class(f, res_path, lines ? *lines : empty_cob_hits,
+				p_func_hits.getptr(res_path),
+				p_branch_hits.getptr(res_path),
+				coverable.getptr(res_path));
 	}
 
 	f->store_line("  </classes></package></packages>");
@@ -692,7 +727,7 @@ static Error _write_json(const String &p_path,
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open coverage output: " + p_path);
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
 
-	// Union of all file paths.
+	// Union of all file paths, including coverable files never executed.
 	HashSet<String> all_files;
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
 		all_files.insert(kv.key);
@@ -702,6 +737,9 @@ static Error _write_json(const String &p_path,
 	}
 	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
 		all_files.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
+		all_files.insert(cv.key);
 	}
 	Vector<String> file_list;
 	for (const String &s : all_files) {
