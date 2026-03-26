@@ -106,7 +106,6 @@ void ProjectExportDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
 				show_script_key->set_pressed(false);
 			}
 		} break;
@@ -147,13 +146,7 @@ void ProjectExportDialog::popup_export() {
 		_update_current_preset(); // triggers rescan for templates if newly installed
 	}
 
-	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "export", Rect2());
-	if (saved_size != Rect2()) {
-		popup(saved_size);
-	} else {
-		popup_centered_clamped(Size2(900, 500) * EDSCALE, 0.7);
-	}
+	popup_centered_clamped(Size2(900, 500) * EDSCALE, 0.7);
 }
 
 void ProjectExportDialog::_add_preset(int p_platform) {
