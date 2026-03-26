@@ -47,7 +47,7 @@ private:
 
 	bool shuffle = false;
 	bool loop = true;
-	bool loop_clip = false;
+	bool loop_stream = false;
 	double fade_time = 0.3;
 
 	int stream_count = 0;
@@ -64,8 +64,8 @@ public:
 	bool get_shuffle() const;
 	void set_loop(bool p_loop);
 	virtual bool has_loop() const override;
-	void set_loop_clip(bool p_loop);
-	bool has_loop_clip() const;
+	void set_loop_stream(bool p_loop);
+	bool has_loop_stream() const;
 	void set_list_stream(int p_stream_index, Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_list_stream(int p_stream_index) const;
 
@@ -102,8 +102,8 @@ private:
 	double fade_volume = 1.0;
 	int play_index = 0;
 	double offset = 0.0;
-	double clip_offset = 0.0;
-	int next_stream = -1;
+	double stream_offset = 0.0;
+	int next_stream_index = -1;
 
 	int loop_count = 0;
 
@@ -127,11 +127,11 @@ public:
 
 	virtual void tag_used_streams() override;
 
-	double get_clip_playback_position() const;
-	int get_current_clip_index() const;
-	void change_clip(int clip_index);
-	void next_clip();
-	void previous_clip();
+	double get_stream_playback_position() const;
+	int get_current_stream_index() const;
+	void change_stream(int stream_index);
+	void next_stream();
+	void previous_stream();
 
 	~AudioStreamPlaybackPlaylist();
 };

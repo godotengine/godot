@@ -128,12 +128,12 @@ bool AudioStreamPlaylist::has_loop() const {
 	return loop;
 }
 
-void AudioStreamPlaylist::set_loop_clip(bool p_loop) {
-	loop_clip = p_loop;
+void AudioStreamPlaylist::set_loop_stream(bool p_loop) {
+	loop_stream = p_loop;
 }
 
-bool AudioStreamPlaylist::has_loop_clip() const {
-	return loop_clip;
+bool AudioStreamPlaylist::has_loop_stream() const {
+	return loop_stream;
 }
 
 void AudioStreamPlaylist::_validate_property(PropertyInfo &r_property) const {
@@ -162,12 +162,12 @@ void AudioStreamPlaylist::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &AudioStreamPlaylist::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamPlaylist::has_loop);
-	ClassDB::bind_method(D_METHOD("set_loop_clip", "loop"), &AudioStreamPlaylist::set_loop_clip);
-	ClassDB::bind_method(D_METHOD("has_loop_clip"), &AudioStreamPlaylist::has_loop_clip);
+	ClassDB::bind_method(D_METHOD("set_loop_stream", "loop"), &AudioStreamPlaylist::set_loop_stream);
+	ClassDB::bind_method(D_METHOD("has_loop_stream"), &AudioStreamPlaylist::has_loop_stream);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shuffle"), "set_shuffle", "get_shuffle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop_clip"), "set_loop_clip", "has_loop_clip");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop_stream"), "set_loop_stream", "has_loop_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_time", PROPERTY_HINT_RANGE, "0,1,0.01,suffix:s"), "set_fade_time", "get_fade_time");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "0," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Streams,stream_,unfoldable,page_size=999,add_button_text=" + String(TTRC("Add Stream"))), "set_stream_count", "get_stream_count");
@@ -286,24 +286,24 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 		}
 
 		offset += time_dec * to_mix;
-		clip_offset += time_dec * to_mix;
+		stream_offset += time_dec * to_mix;
 
 		for (int i = 0; i < to_mix; i++) {
 			*p_buffer = mix_buffer[i];
 			stream_todo -= time_dec;
-			if (stream_todo < 0 || next_stream != -1) {
+			if (stream_todo < 0 || next_stream_index != -1) {
 				//find next stream.
 				int prev = play_order[play_index];
 
 				for (int j = 0; j < playlist->stream_count; j++) {
-					if (next_stream != -1) {
+					if (next_stream_index != -1) {
 						// Manually changed streams, exit
-						play_index = next_stream;
-						next_stream = -1;
+						play_index = next_stream_index;
+						next_stream_index = -1;
 						break;
 					}
-					if (playlist->has_loop_clip()) {
-						// Don't advance if looping audio clip, exit
+					if (playlist->has_loop_stream()) {
+						// Don't advance if looping this stream, exit
 						break;
 					}
 					play_index++;
@@ -322,7 +322,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 						play_index = 0;
 						loop_count++;
 						offset = time_dec * (to_mix - i);
-						clip_offset = time_dec * (to_mix - 1);
+						stream_offset = time_dec * (to_mix - 1);
 					}
 					if (playback[play_order[play_index]].is_valid()) {
 						break;
@@ -372,11 +372,11 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 				} else {
 					stream_todo = playlist->audio_streams[idx]->get_length();
 				}
-				clip_offset = 0.0;
+				stream_offset = 0.0;
 				if (idx == prev) {
-					call_deferred("emit_signal", SNAME("clip_looped"));
+					call_deferred("emit_signal", SNAME("stream_looped"));
 				} else {
-					call_deferred("emit_signal", SNAME("clip_changed"));
+					call_deferred("emit_signal", SNAME("stream_changed"));
 				}
 			}
 
@@ -414,46 +414,46 @@ double AudioStreamPlaybackPlaylist::get_playback_position() const {
 	return offset;
 }
 
-double AudioStreamPlaybackPlaylist::get_clip_playback_position() const {
-	return clip_offset;
+double AudioStreamPlaybackPlaylist::get_stream_playback_position() const {
+	return stream_offset;
 }
 
 bool AudioStreamPlaybackPlaylist::is_playing() const {
 	return active;
 }
 
-void AudioStreamPlaybackPlaylist::change_clip(int stream_index) {
+void AudioStreamPlaybackPlaylist::change_stream(int stream_index) {
 	ERR_FAIL_INDEX(stream_index, playlist->stream_count);
-	next_stream = stream_index;
+	next_stream_index = stream_index;
 }
 
-void AudioStreamPlaybackPlaylist::next_clip() {
-	next_stream = play_index + 1;
+void AudioStreamPlaybackPlaylist::next_stream() {
+	next_stream_index = play_index + 1;
 
-	if (next_stream >= playlist->stream_count) {
+	if (next_stream_index >= playlist->stream_count) {
 		if (!playlist->loop) {
-			// If playlist doesn't loop, don't change clips
-			next_stream = -1;
+			// If playlist doesn't loop, don't change streams
+			next_stream_index = -1;
 		} else {
-			next_stream = 0;
+			next_stream_index = 0;
 		}
 	}
 }
 
-void AudioStreamPlaybackPlaylist::previous_clip() {
-	next_stream = play_index - 1;
+void AudioStreamPlaybackPlaylist::previous_stream() {
+	next_stream_index = play_index - 1;
 
-	if (next_stream < 0) {
+	if (next_stream_index < 0) {
 		if (!playlist->loop) {
-			// If playlist doesn't loop, don't change clips
-			next_stream = -1;
+			// If playlist doesn't loop, don't change streams
+			next_stream_index = -1;
 		} else {
-			next_stream = playlist->stream_count - 1;
+			next_stream_index = playlist->stream_count - 1;
 		}
 	}
 }
 
-int AudioStreamPlaybackPlaylist::get_current_clip_index() const {
+int AudioStreamPlaybackPlaylist::get_current_stream_index() const {
 	return play_order[play_index];
 }
 
@@ -470,12 +470,12 @@ void AudioStreamPlaybackPlaylist::_update_playback_instances() {
 }
 
 void AudioStreamPlaybackPlaylist::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("change_clip", "clip_index"), &AudioStreamPlaybackPlaylist::change_clip);
-	ClassDB::bind_method(D_METHOD("next_clip"), &AudioStreamPlaybackPlaylist::next_clip);
-	ClassDB::bind_method(D_METHOD("previous_clip"), &AudioStreamPlaybackPlaylist::previous_clip);
-	ClassDB::bind_method(D_METHOD("get_current_clip_index"), &AudioStreamPlaybackPlaylist::get_current_clip_index);
-	ClassDB::bind_method(D_METHOD("get_clip_playback_position"), &AudioStreamPlaybackPlaylist::get_clip_playback_position);
+	ClassDB::bind_method(D_METHOD("change_stream", "stream_index"), &AudioStreamPlaybackPlaylist::change_stream);
+	ClassDB::bind_method(D_METHOD("next_stream"), &AudioStreamPlaybackPlaylist::next_stream);
+	ClassDB::bind_method(D_METHOD("previous_stream"), &AudioStreamPlaybackPlaylist::previous_stream);
+	ClassDB::bind_method(D_METHOD("get_current_stream_index"), &AudioStreamPlaybackPlaylist::get_current_stream_index);
+	ClassDB::bind_method(D_METHOD("get_stream_playback_position"), &AudioStreamPlaybackPlaylist::get_stream_playback_position);
 
-	ADD_SIGNAL(MethodInfo("clip_changed"));
-	ADD_SIGNAL(MethodInfo("clip_looped"));
+	ADD_SIGNAL(MethodInfo("stream_changed"));
+	ADD_SIGNAL(MethodInfo("stream_looped"));
 }
