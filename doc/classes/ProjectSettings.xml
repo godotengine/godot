@@ -2902,8 +2902,6 @@
 		<member name="rendering/camera/motion_blur/motion_blur_reference_framerate" type="int" setter="" getter="" default="30">
 			Defines a framerate to be used as reference by [member rendering/camera/motion_blur/motion_blur_framerate_mode].
 		</member>
-		<member name="rendering/camera/motion_blur/motion_blur_show_in_editor" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="rendering/camera/motion_blur/motion_blur_tile_size" type="int" setter="" getter="" default="1">
 			Defines, in pixels, the size of velocity dilation tiles to be used by the motion blur. These tiles collect dominant velocities from neighboring tiles so that fast moving objects can be blurred beyond their original silhouettes. Changing the tile size has little performance cost, rather the cost and effect come in the form of detail vs range. Large tile sizes can blur objects further, but will do so in less detail. The sizes are:
 			MOTION_BLUR_TILE_SIZE_SMALL = 20 pixels

@@ -70,13 +70,6 @@ void RendererCameraAttributes::camera_attributes_set_motion_blur_tile_size(RSE::
 	motion_blur_tile_size = p_tile_size;
 }
 
-void RendererCameraAttributes::camera_attributes_set_motion_blur_show_in_editor(bool p_enabled) {
-	if (motion_blur_show_in_editor == p_enabled) {
-		return;
-	}
-	motion_blur_show_in_editor = p_enabled;
-}
-
 void RendererCameraAttributes::camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, bool p_clamp_velocities_to_tile, float p_object_velocity_multiplier, float p_movement_velocity_multiplier, float p_rotation_velocity_multiplier, float p_velocity_lower_threshold, float p_velocity_upper_threshold) {
 	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
 	ERR_FAIL_NULL(cam_attributes);

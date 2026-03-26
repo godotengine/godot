@@ -950,6 +950,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_near", 0.05, "0.01,10,0.01,or_greater,suffix:m")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_far", 4000.0, "0.1,4000,0.1,or_greater,suffix:m")
 
+	// 3D: Viewport visuals
+	_initial_set("editors/3d/viewport_visuals/show_motion_blur_in_editor", true);
+
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/invert_x_axis", false, true);
 	_initial_set("editors/3d/navigation/invert_y_axis", false, true);

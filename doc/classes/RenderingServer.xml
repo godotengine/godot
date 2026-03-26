@@ -129,12 +129,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="camera_attributes_set_motion_blur_show_in_editor">
-			<return type="void" />
-			<param index="0" name="enabled" type="bool" />
-			<description>
-			</description>
-		</method>
 		<method name="camera_attributes_set_motion_blur_tile_size">
 			<return type="void" />
 			<param index="0" name="tile_size" type="int" enum="RenderingServer.MotionBlurTileSize" />
