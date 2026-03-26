@@ -70,7 +70,7 @@ public:
 
 	static ResourceLoader *get_singleton() { return singleton; }
 
-	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE, bool p_queue_front = false);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ClassDB::default_array_arg);
 	Ref<Resource> load_threaded_get(const String &p_path);
 
@@ -88,6 +88,12 @@ public:
 	Vector<String> list_directory(const String &p_directory);
 
 	ResourceLoader() { singleton = this; }
+
+#ifndef DISABLE_DEPRECATED
+protected:
+	Error _load_threaded_request_bind_compat_115964(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	static void _bind_compatibility_methods();
+#endif
 };
 
 class ResourceSaver : public Object {

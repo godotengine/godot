@@ -221,7 +221,7 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 	}
 }
 
-void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock, bool p_pump_task) {
+void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, bool p_enqueue_as_low_priority, MutexLock<BinaryMutex> &p_lock, bool p_pump_task) {
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
@@ -247,16 +247,20 @@ void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high
 	ThreadData *caller_pool_thread = thread_ids.has(Thread::get_caller_id()) ? &threads[thread_ids[Thread::get_caller_id()]] : nullptr;
 
 	for (uint32_t i = 0; i < p_count; i++) {
-		p_tasks[i]->low_priority = !p_high_priority;
-		if (p_high_priority || low_priority_threads_used < max_low_priority_threads) {
+		p_tasks[i]->low_priority = p_enqueue_as_low_priority || !p_high_priority;
+		if ((p_high_priority && !p_enqueue_as_low_priority) || low_priority_threads_used < max_low_priority_threads) {
 			task_queue.add_last(&p_tasks[i]->task_elem);
-			if (!p_high_priority) {
+			if (p_tasks[i]->low_priority) {
 				low_priority_threads_used++;
 			}
 			to_process++;
 		} else {
 			// Too many threads using low priority, must go to queue.
-			low_priority_task_queue.add_last(&p_tasks[i]->task_elem);
+			if (p_high_priority && p_enqueue_as_low_priority) {
+				low_priority_task_queue.add(&p_tasks[i]->task_elem);
+			} else {
+				low_priority_task_queue.add_last(&p_tasks[i]->task_elem);
+			}
 			to_promote++;
 		}
 	}
@@ -340,11 +344,11 @@ bool WorkerThreadPool::_try_promote_low_priority_task() {
 	}
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority, const String &p_description) {
-	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority, p_description);
+WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority, bool p_enqueue_as_low_priority, const String &p_description) {
+	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority, p_enqueue_as_low_priority, p_description);
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description, bool p_pump_task) {
+WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, bool p_enqueue_as_low_priority, const String &p_description, bool p_pump_task) {
 	MutexLock<BinaryMutex> lock(task_mutex);
 
 	// Get a free task
@@ -377,17 +381,17 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 	}
 #endif
 
-	_post_tasks(&task, 1, p_high_priority, lock, p_pump_task);
+	_post_tasks(&task, 1, p_high_priority, p_enqueue_as_low_priority, lock, p_pump_task);
 
 	return id;
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bool p_high_priority, const String &p_description, bool p_pump_task) {
-	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description, p_pump_task);
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, false, p_description, p_pump_task);
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::add_task_bind(const Callable &p_action, bool p_high_priority, const String &p_description) {
-	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description, false);
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, false, p_description, false);
 }
 
 bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
@@ -694,7 +698,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 
 	groups[id] = group;
 
-	_post_tasks(tasks_posted, p_tasks, p_high_priority, lock, false);
+	_post_tasks(tasks_posted, p_tasks, p_high_priority, false, lock, false);
 
 	return id;
 }

@@ -1108,7 +1108,7 @@ static int64_t gdextension_worker_thread_pool_add_native_group_task(GDExtensionO
 static int64_t gdextension_worker_thread_pool_add_native_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *), void *p_userdata, GDExtensionBool p_high_priority, GDExtensionConstStringPtr p_description) {
 	WorkerThreadPool *p = (WorkerThreadPool *)p_instance;
 	const String *description = (const String *)p_description;
-	return (int64_t)p->add_native_task(p_func, p_userdata, static_cast<bool>(p_high_priority), *description);
+	return (int64_t)p->add_native_task(p_func, p_userdata, static_cast<bool>(p_high_priority), false, *description);
 }
 
 /* Packed array functions */

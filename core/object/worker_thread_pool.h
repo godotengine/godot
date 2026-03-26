@@ -178,7 +178,7 @@ private:
 
 	void _process_task(Task *task);
 
-	void _post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock, bool p_pump_task);
+	void _post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, bool p_enqueue_as_low_priority, MutexLock<BinaryMutex> &p_lock, bool p_pump_task);
 	void _notify_threads(const ThreadData *p_current_thread_data, uint32_t p_process_count, uint32_t p_promote_count);
 
 	bool _try_promote_low_priority_task();
@@ -194,7 +194,7 @@ private:
 	static thread_local UnlockableLocks unlockable_locks[MAX_UNLOCKABLE_LOCKS];
 #endif
 
-	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description, bool p_pump_task = false);
+	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, bool p_enqueue_as_low_priority, const String &p_description, bool p_pump_task = false);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
 
 	template <typename C, typename M, typename U>
@@ -240,9 +240,9 @@ public:
 		ud->instance = p_instance;
 		ud->method = p_method;
 		ud->userdata = p_userdata;
-		return _add_task(Callable(), nullptr, nullptr, ud, p_high_priority, p_description);
+		return _add_task(Callable(), nullptr, nullptr, ud, p_high_priority, false, p_description);
 	}
-	TaskID add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority = false, const String &p_description = String());
+	TaskID add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority = false, bool p_enqueue_as_low_priority = false, const String &p_description = String());
 	TaskID add_task(const Callable &p_action, bool p_high_priority = false, const String &p_description = String(), bool p_pump_task = false);
 	TaskID add_task_bind(const Callable &p_action, bool p_high_priority = false, const String &p_description = String());
 

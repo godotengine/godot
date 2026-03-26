@@ -63,6 +63,16 @@ void OS::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
 }
 
+// ResourceLoader
+
+Error ResourceLoader::_load_threaded_request_bind_compat_115964(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
+	return load_threaded_request(p_path, p_type_hint, p_use_sub_threads, p_cache_mode, false);
+}
+
+void ResourceLoader::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads", "cache_mode"), &ResourceLoader::_load_threaded_request_bind_compat_115964, DEFVAL(""), DEFVAL(false), DEFVAL(CACHE_MODE_REUSE));
+}
+
 } // namespace CoreBind
 
 #endif // DISABLE_DEPRECATED
