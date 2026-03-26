@@ -42,7 +42,7 @@
 #endif
 
 class RWLock {
-	mutable THREADING_NAMESPACE::shared_timed_mutex mutex;
+	mutable THREADING_NAMESPACE::shared_mutex mutex;
 
 public:
 	// Lock the RWLock, block if locked by someone else.

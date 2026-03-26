@@ -42,6 +42,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/gui/filter_line_edit.h"
+#include "editor/inspector/editor_resource_preview.h"
 #include "editor/scene/3d/mesh_library_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -1138,7 +1139,14 @@ void GridMapEditor::update_palette() {
 		if (preview.is_valid()) {
 			mesh_library_palette->set_item_icon(item, preview);
 			mesh_library_palette->set_item_tooltip(item, name);
+		} else {
+			Ref<Mesh> mesh = mesh_library->get_item_mesh(id);
+			if (mesh.is_valid()) {
+				// Fallback to the item's mesh preview.
+				EditorResourcePreview::get_singleton()->queue_edited_resource_preview(mesh, callable_mp(this, &GridMapEditor::_update_resource_preview).bind(item));
+			}
 		}
+
 		mesh_library_palette->set_item_text(item, name);
 		mesh_library_palette->set_item_metadata(item, id);
 
@@ -1147,6 +1155,12 @@ void GridMapEditor::update_palette() {
 		}
 
 		item++;
+	}
+}
+
+void GridMapEditor::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_idx) {
+	if (p_idx < mesh_library_palette->get_item_count()) {
+		mesh_library_palette->set_item_icon(p_idx, p_preview);
 	}
 }
 

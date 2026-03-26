@@ -1901,7 +1901,23 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandThread::WindowRectMessage> winrect_msg = msg;
 		if (winrect_msg.is_valid()) {
+			int scale = winrect_msg->buffer_scale;
+
+			WaylandThread::WindowState *ws = wayland_thread.window_get_state(winrect_msg->id);
+			ERR_CONTINUE(ws == nullptr);
+
+			if (scale == 0) {
+				// This should *never* happen. We fallback to the latest scale but it might
+				// have changed in the meantime to something invalid (non-integer divisor),
+				// leading to a protocol error.
+				ERR_PRINT("Wayland Thread did not report buffer scale at the time of resize.");
+				scale = wayland_thread.window_state_get_preferred_buffer_scale(ws);
+			}
+
+			wayland_thread.window_state_set_buffer_scale(ws, scale);
+
 			_update_window_rect(winrect_msg->rect, winrect_msg->id);
+
 			continue;
 		}
 

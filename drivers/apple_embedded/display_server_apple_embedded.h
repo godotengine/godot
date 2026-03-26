@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/thread_safe.h"
 #include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)

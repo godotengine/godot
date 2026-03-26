@@ -147,6 +147,7 @@ private:
 	bool visible = true;
 	bool parent_visible_in_tree = true;
 	bool disable_folding = false;
+	bool accepts_children = true;
 	int custom_min_height = 0;
 
 	TreeItem *parent = nullptr; // Parent item.
@@ -411,6 +412,9 @@ public:
 	void set_disable_folding(bool p_disable);
 	bool is_folding_disabled() const;
 
+	void set_accept_children(bool p_allowed);
+	bool is_accepting_children() const;
+
 	Size2 get_minimum_size(int p_column);
 
 	// Item manipulation.
@@ -424,6 +428,7 @@ public:
 	TreeItem *get_next() const;
 	TreeItem *get_parent() const;
 	TreeItem *get_first_child() const;
+	TreeItem *get_last_child() const;
 
 	TreeItem *get_prev_in_tree(bool p_wrap = false);
 	TreeItem *get_next_in_tree(bool p_wrap = false);
@@ -492,6 +497,7 @@ private:
 
 	TreeItem *drop_mode_over = nullptr;
 	int drop_mode_section = 0;
+	bool drop_mode_unchanged = false;
 
 	TreeItem *single_select_defer = nullptr;
 	int single_select_defer_column = 0;
@@ -521,6 +527,7 @@ private:
 	int blocked = 0;
 
 	int drop_mode_flags = 0;
+	static constexpr int COLUMN_NOT_FOUND = -100;
 
 	struct ColumnInfo {
 		mutable RID accessibility_col_element;
@@ -550,6 +557,7 @@ private:
 	RID accessibility_scroll_element;
 	RID header_ci; // Separate canvas item for drawing column headers
 	RID content_ci; // Separate canvas item for drawing tree rows
+	RID drop_indicator_ci;
 
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
@@ -646,6 +654,7 @@ private:
 		Color font_selected_color;
 		Color font_disabled_color;
 		Color guide_color;
+		Color drop_on_item_color;
 		Color drop_position_color;
 		Color relationship_line_color;
 		Color parent_hl_line_color;

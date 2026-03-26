@@ -181,10 +181,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		PopupMenu(context, optionsButton).apply {
 			setOnMenuItemClickListener(this@GameMenuFragment)
 			inflate(R.menu.options_menu)
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				menu.setGroupDividerEnabled(true)
-			}
+			menu.setGroupDividerEnabled(true)
 		}
 	}
 

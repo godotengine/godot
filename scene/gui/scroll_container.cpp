@@ -146,11 +146,12 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (mb.is_valid()) {
 		if (mb->is_pressed()) {
 			bool scroll_value_modified = false;
+			bool swap_axes = scroll_horizontal_by_default != mb->is_shift_pressed();
 
 			bool v_scroll_hidden = !v_scroll->is_visible() && vertical_scroll_mode != SCROLL_MODE_SHOW_NEVER;
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				// By default, the vertical orientation takes precedence. This is an exception.
-				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
+				if ((h_scroll_enabled && swap_axes) || v_scroll_hidden) {
 					h_scroll->scroll(-h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
@@ -159,7 +160,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
+				if ((h_scroll_enabled && swap_axes) || v_scroll_hidden) {
 					h_scroll->scroll(h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
@@ -171,7 +172,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			bool h_scroll_hidden = !h_scroll->is_visible() && horizontal_scroll_mode != SCROLL_MODE_SHOW_NEVER;
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				// By default, the horizontal orientation takes precedence. This is an exception.
-				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
+				if ((v_scroll_enabled && swap_axes) || h_scroll_hidden) {
 					v_scroll->scroll(-v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
@@ -180,7 +181,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
-				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
+				if ((v_scroll_enabled && swap_axes) || h_scroll_hidden) {
 					v_scroll->scroll(v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
@@ -730,6 +731,14 @@ ScrollContainer::ScrollMode ScrollContainer::get_vertical_scroll_mode() const {
 	return vertical_scroll_mode;
 }
 
+void ScrollContainer::set_scroll_horizontal_by_default(bool p_enable) {
+	scroll_horizontal_by_default = p_enable;
+}
+
+bool ScrollContainer::is_scroll_horizontal_by_default() const {
+	return scroll_horizontal_by_default;
+}
+
 int ScrollContainer::get_deadzone() const {
 	return deadzone;
 }
@@ -826,6 +835,9 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertical_scroll_mode", "enable"), &ScrollContainer::set_vertical_scroll_mode);
 	ClassDB::bind_method(D_METHOD("get_vertical_scroll_mode"), &ScrollContainer::get_vertical_scroll_mode);
 
+	ClassDB::bind_method(D_METHOD("set_scroll_horizontal_by_default", "enable"), &ScrollContainer::set_scroll_horizontal_by_default);
+	ClassDB::bind_method(D_METHOD("is_scroll_horizontal_by_default"), &ScrollContainer::is_scroll_horizontal_by_default);
+
 	ClassDB::bind_method(D_METHOD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
 	ClassDB::bind_method(D_METHOD("get_deadzone"), &ScrollContainer::get_deadzone);
 
@@ -858,6 +870,7 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_vertical_custom_step", "get_vertical_custom_step");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_by_default"), "set_scroll_horizontal_by_default", "is_scroll_horizontal_by_default");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
 
 	ADD_GROUP("Scroll Hint", "");
@@ -926,11 +939,13 @@ ScrollContainer::ScrollContainer() {
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll, false, INTERNAL_MODE_BACK);
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
+	h_scroll->set_focus_mode(FOCUS_NONE);
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
+	v_scroll->set_focus_mode(FOCUS_NONE);
 
 	// We need to use a PanelContainer for the focus style instead of just drawing it directly with RenderingService
 	// due to a clippling issues. The Control that is being scrolled will be over the focus border because both will be

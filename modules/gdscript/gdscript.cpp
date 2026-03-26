@@ -2886,26 +2886,6 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 	return Ref<GDScript>(Object::cast_to<GDScript>(obj));
 }
 
-Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String &p_name) {
-	{
-		MutexLock lock(mutex);
-
-		SelfList<GDScript> *elem = script_list.first();
-		while (elem) {
-			GDScript *scr = elem->self();
-			if (scr->fully_qualified_name == p_name) {
-				return scr;
-			}
-			elem = elem->next();
-		}
-	}
-
-	Ref<GDScript> scr;
-	scr.instantiate();
-	scr->fully_qualified_name = p_name;
-	return scr;
-}
-
 /*************** RESOURCE ***************/
 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {

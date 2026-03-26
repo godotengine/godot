@@ -719,7 +719,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	mesh_items->set_theme_type_variation("ItemListSecondary");
 	mesh_items->set_h_size_flags(SIZE_EXPAND_FILL);
 	mesh_items->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	mesh_items->set_auto_translate(false);
+	mesh_items->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	item_split->add_child(mesh_items);
 	mesh_items->connect(SceneStringName(item_selected), callable_mp(this, &MeshLibraryEditor::_mesh_items_cbk));
 	mesh_items->connect(SceneStringName(gui_input), callable_mp(this, &MeshLibraryEditor::_mesh_items_input));

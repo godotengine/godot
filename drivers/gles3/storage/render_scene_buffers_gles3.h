@@ -50,6 +50,7 @@ public:
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
 	bool apply_environment_effects_in_post = false;
+	bool apply_canvas_bg_exposure = false;
 
 	RID render_target;
 
@@ -107,6 +108,7 @@ public:
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override {}
 	virtual void set_use_debanding(bool p_use_debanding) override {}
 	void set_apply_environment_effects_in_post(bool p_apply_environment_effects_in_post);
+	void set_apply_canvas_bg_exposure(bool p_apply_canvas_bg_exposure);
 
 	void free_render_buffer_data();
 
