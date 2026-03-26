@@ -2167,7 +2167,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					}
 				}
 
-				if (return_n->void_return) {
+				if (return_n->void_return || return_value.mode == GDScriptCodeGenerator::Address::NIL) {
 					// Always return `null`, even if the expression is a call to a `void` function.
 					gen->write_return(codegen.add_constant(Variant()), false);
 				} else {

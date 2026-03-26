@@ -561,7 +561,7 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 
 		append_opcode(GDScriptFunction::OPCODE_OPERATOR_VALIDATED);
 		append(p_left_operand);
-		append(Address());
+		append(get_constant_pos(Variant()) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
 		append(p_target);
 		append(op_func);
 #ifdef DEBUG_ENABLED
@@ -573,7 +573,7 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 	// No specific types, perform variant evaluation.
 	append_opcode(GDScriptFunction::OPCODE_OPERATOR);
 	append(p_left_operand);
-	append(Address());
+	append(get_constant_pos(Variant()) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
 	append(p_target);
 	append(p_operator);
 	append(0); // Signature storage.
@@ -1249,7 +1249,13 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 }
 
 void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) {
-	write_call_builtin_type(p_target, Address(), p_type, p_method, true, p_arguments);
+	GDScriptDataType nil_type;
+	nil_type.kind = GDScriptDataType::BUILTIN;
+	nil_type.builtin_type = Variant::NIL;
+
+	const Address nil_addr(Address::CONSTANT, get_constant_pos(Variant()) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS), nil_type);
+
+	write_call_builtin_type(p_target, nil_addr, p_type, p_method, true, p_arguments);
 }
 
 void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) {
