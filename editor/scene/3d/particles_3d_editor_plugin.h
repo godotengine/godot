@@ -57,7 +57,7 @@ protected:
 	virtual void _menu_callback(int p_idx) override;
 	virtual void _add_menu_options(PopupMenu *p_menu) override;
 
-	bool _generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals);
+	bool _generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals, bool p_generate_normals);
 	virtual bool _can_generate_points() const = 0;
 	virtual void _generate_emission_points() = 0;
 
