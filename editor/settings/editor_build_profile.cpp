@@ -1017,7 +1017,7 @@ void EditorBuildProfileManager::_detect_from_project() {
 			continue; // This class is editor-only or not from Godot itself.
 		}
 
-		if (class_name != "Resource" && class_name != "Node" && (ClassDB::is_parent_class(class_name, "Resource") || ClassDB::is_parent_class(class_name, "Node"))) {
+		if (class_name != "Resource" && class_name != "Node" && !ClassDB::is_parent_class(class_name, "Resource") && !ClassDB::is_parent_class(class_name, "Node")) {
 			continue;
 		}
 
