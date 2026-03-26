@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeGroup" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A visual shader node that instances a [VisualShaderGroup].
+	</brief_description>
+	<description>
+		Represents a [VisualShaderGroup] inside a [VisualShader] or another [VisualShaderGroup]. Its input and output ports are defined by the assigned [member group] resource.
+		If the group contains nodes incompatible with the current shader context, the outputs will use default values and a warning will be shown.
+		If the group contains several outputs only the first one will be used.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="group" type="VisualShaderGroup" setter="set_group" getter="get_group">
+			The [VisualShaderGroup] resource instanced by this node.
+		</member>
+	</members>
+</class>
