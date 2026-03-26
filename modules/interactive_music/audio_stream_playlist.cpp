@@ -374,9 +374,9 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 				}
 				clip_offset = 0.0;
 				if (idx == prev) {
-					emit_signal(SNAME("clip_looped"));
+					call_deferred("emit_signal", SNAME("clip_looped"));
 				} else {
-					emit_signal(SNAME("clip_changed"));
+					call_deferred("emit_signal", SNAME("clip_changed"));
 				}
 			}
 
