@@ -44,6 +44,18 @@ void GraphElement::_edit_set_position(const Point2 &p_position) {
 	}
 	set_position(p_position);
 }
+
+Dictionary GraphElement::_edit_get_state() const {
+	Dictionary state = super_type::_edit_get_state();
+	state["position_offset"] = position_offset;
+	return state;
+}
+
+void GraphElement::_edit_set_state(const Dictionary &p_state) {
+	super_type::_edit_set_state(p_state);
+	ERR_FAIL_COND(!p_state.has("position_offset"));
+	set_position_offset(p_state["position_offset"]);
+}
 #endif
 
 void GraphElement::_resort() {
