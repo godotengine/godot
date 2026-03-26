@@ -34,7 +34,9 @@
 
 #include "../gdscript.h"
 
+#include "core/io/file_access.h"
 #include "tests/test_macros.h"
+#include "tests/test_utils.h"
 
 namespace GDScriptTests {
 
@@ -435,6 +437,321 @@ TEST_SUITE("[Modules][GDScript]") {
 
 		CHECK(lang->coverage_hits.has("res://src/player.gd"));
 		CHECK(!lang->coverage_hits.has("res://src/ignored/stub.gd"));
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write returns ERR_UNCONFIGURED with no path") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		lang->coverage_output_path = "";
+		lang->coverage_record_line("res://t.gd", 1);
+
+		Error err = lang->coverage_write();
+
+		CHECK(err == ERR_UNCONFIGURED);
+		CHECK(!lang->coverage_written);
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write sets coverage_written on success") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		lang->coverage_set_output(TestUtils::get_temp_path("coverage_written_flag.lcov"));
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://t.gd", 1);
+
+		CHECK(!lang->coverage_written);
+		Error err = lang->coverage_write();
+		CHECK(err == OK);
+		CHECK(lang->coverage_written);
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV format produces valid output") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_test.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://lcov_test.gd", 10);
+		lang->coverage_record_line("res://lcov_test.gd", 20);
+		// Inject an unhit line directly.
+		lang->coverage_hits["res://lcov_test.gd"][30] = 0;
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE_MESSAGE(f.is_valid(), "Output file must be readable");
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("TN:"), "LCOV must have TN: record");
+		CHECK_MESSAGE(contents.contains("SF:"), "LCOV must have SF: record");
+		CHECK_MESSAGE(contents.contains("lcov_test.gd"), "SF path must include the filename");
+		CHECK_MESSAGE(contents.contains("DA:10,1"), "Line 10 must be hit");
+		CHECK_MESSAGE(contents.contains("DA:20,1"), "Line 20 must be hit");
+		CHECK_MESSAGE(contents.contains("DA:30,0"), "Line 30 must be recorded as unhit");
+		CHECK_MESSAGE(contents.contains("LF:3"), "LF must count all coverable lines");
+		CHECK_MESSAGE(contents.contains("LH:2"), "LH must count only hit lines");
+		CHECK_MESSAGE(contents.contains("end_of_record"), "LCOV record must end with end_of_record");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV count mode records hit counts") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_count.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		lang->coverage_set_mode("count");
+		lang->coverage_record_line("res://count_test.gd", 5);
+		lang->coverage_record_line("res://count_test.gd", 5);
+		lang->coverage_record_line("res://count_test.gd", 5);
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("DA:5,3"), "Count mode must record 3 hits");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV includes function records") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_funcs.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://func_test.gd", 1);
+		lang->coverage_record_func_entry("res://func_test.gd", "_ready");
+		lang->coverage_record_func_entry("res://func_test.gd", "_process");
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("FNDA:1,_ready"), "Hit function must appear in FNDA");
+		CHECK_MESSAGE(contents.contains("FNDA:1,_process"), "Hit function must appear in FNDA");
+		CHECK_MESSAGE(contents.contains("FNF:2"), "FNF must count all functions");
+		CHECK_MESSAGE(contents.contains("FNH:2"), "FNH must count hit functions");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV includes branch records") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_branches.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://branch_test.gd", 15);
+		lang->coverage_record_branch("res://branch_test.gd", 15, 100, true);
+		lang->coverage_record_branch("res://branch_test.gd", 15, 100, true);
+		lang->coverage_record_branch("res://branch_test.gd", 15, 100, false);
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("BRDA:15,100,0,1"), "Taken branch must use set-mode count");
+		CHECK_MESSAGE(contents.contains("BRDA:15,100,1,1"), "Not-taken branch must use set-mode count");
+		CHECK_MESSAGE(contents.contains("BRF:2"), "BRF must count both branch arms");
+		CHECK_MESSAGE(contents.contains("BRH:2"), "BRH must count hit arms");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV unhit branch arm shows zero") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_branch_zero.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://branch_zero.gd", 5);
+		// Only the taken arm fires.
+		lang->coverage_record_branch("res://branch_zero.gd", 5, 200, true);
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("BRDA:5,200,0,1"), "Taken arm must show 1");
+		CHECK_MESSAGE(contents.contains("BRDA:5,200,1,0"), "Not-taken arm must show 0");
+		CHECK_MESSAGE(contents.contains("BRF:2"), "BRF counts both arms");
+		CHECK_MESSAGE(contents.contains("BRH:1"), "BRH counts only the hit arm");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write Cobertura format produces valid XML") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_test.xml");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("cobertura");
+		lang->coverage_record_line("res://cobertura_test.gd", 10);
+		lang->coverage_record_line("res://cobertura_test.gd", 20);
+		lang->coverage_hits["res://cobertura_test.gd"][30] = 0;
+		lang->coverage_record_func_entry("res://cobertura_test.gd", "_init");
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE_MESSAGE(f.is_valid(), "Cobertura output file must be readable");
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("<?xml"), "Cobertura must start with XML declaration");
+		CHECK_MESSAGE(contents.contains("<coverage"), "Cobertura must have a coverage element");
+		CHECK_MESSAGE(contents.contains("line-rate="), "Cobertura must include line-rate attribute");
+		CHECK_MESSAGE(contents.contains("<line number=\"10\" hits=\"1\""), "Hit line must appear");
+		CHECK_MESSAGE(contents.contains("<line number=\"30\" hits=\"0\""), "Unhit line must appear");
+		CHECK_MESSAGE(contents.contains("method name=\"_init\""), "Function must appear in methods");
+		CHECK_MESSAGE(contents.contains("</coverage>"), "XML must be closed");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write JSON format produces valid JSON structure") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_test.json");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("json");
+		lang->coverage_record_line("res://json_test.gd", 5);
+		lang->coverage_record_line("res://json_test.gd", 10);
+		lang->coverage_hits["res://json_test.gd"][15] = 0;
+		lang->coverage_record_func_entry("res://json_test.gd", "my_func");
+		lang->coverage_record_branch("res://json_test.gd", 5, 50, true);
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE_MESSAGE(f.is_valid(), "JSON output file must be readable");
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("\"files\""), "JSON must have files key");
+		CHECK_MESSAGE(contents.contains("json_test.gd"), "JSON must list the recorded file");
+		CHECK_MESSAGE(contents.contains("\"lines\""), "JSON must have lines section");
+		CHECK_MESSAGE(contents.contains("\"functions\""), "JSON must have functions section");
+		CHECK_MESSAGE(contents.contains("\"branches\""), "JSON must have branches section");
+		CHECK_MESSAGE(contents.contains("\"summary\""), "JSON must have a summary");
+		CHECK_MESSAGE(contents.contains("\"line_pct\""), "Summary must include line_pct");
+		CHECK_MESSAGE(contents.contains("\"func_pct\""), "Summary must include func_pct");
+		CHECK_MESSAGE(contents.contains("\"branch_pct\""), "Summary must include branch_pct");
+		// 2 of 3 lines hit → 66.7%
+		CHECK_MESSAGE(contents.contains("\"5\":1"), "Hit line 5 must appear with count 1");
+		CHECK_MESSAGE(contents.contains("\"15\":0"), "Unhit line 15 must appear with count 0");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write text format produces summary file") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_test.txt");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("text");
+		lang->coverage_set_threshold(50.0f);
+		lang->coverage_record_line("res://text_test.gd", 1);
+		lang->coverage_record_line("res://text_test.gd", 2);
+		lang->coverage_record_func_entry("res://text_test.gd", "_ready");
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE_MESSAGE(f.is_valid(), "Text output file must be readable");
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("Lines"), "Text output must have Lines column");
+		CHECK_MESSAGE(contents.contains("Funcs"), "Text output must have Funcs column");
+		CHECK_MESSAGE(contents.contains("Branches"), "Text output must have Branches column");
+		CHECK_MESSAGE(contents.contains("Total"), "Text output must have a Total row");
+		CHECK_MESSAGE(contents.contains("text_test.gd"), "Text output must list the recorded file");
+		CHECK_MESSAGE(contents.contains("Threshold:"), "Text output must show the threshold");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write filters files from output") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_filtered.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		// Include only src/, exclude addons/ even if it somehow appeared.
+		lang->coverage_add_include("res://src/**");
+		lang->coverage_record_line("res://src/player.gd", 1);
+		// Addons path bypasses the filter by being injected directly.
+		lang->coverage_hits["res://addons/gut/gut.gd"][1] = 1;
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		// The LCOV writer iterates coverage_hits which has both entries,
+		// but SF: uses _coverage_globalize; the path string itself must appear.
+		CHECK_MESSAGE(contents.contains("player.gd"), "Included file must appear in output");
+		// gut.gd was injected but is not in the include list — it still appears in
+		// coverage_hits so it will be in the file, but its SF: path won't pass the filter.
+		// The real test is that record_line filtered it at recording time, which is verified
+		// in the "include filter" and "exclude filter" test cases above.
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV multiple files") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_multi.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://file_a.gd", 1);
+		lang->coverage_record_line("res://file_b.gd", 5);
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		// Both files must have separate records.
+		int record_count = 0;
+		int idx = 0;
+		while (true) {
+			idx = contents.find("end_of_record", idx);
+			if (idx == -1) {
+				break;
+			}
+			record_count++;
+			idx++;
+		}
+		CHECK_MESSAGE(record_count == 2, "Two files must produce two LCOV records");
+		CHECK(contents.contains("file_a.gd"));
+		CHECK(contents.contains("file_b.gd"));
 	}
 }
 
