@@ -336,6 +336,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_custom_bg_color(0, parent_bg_color);
 			}
 			file_item->set_metadata(0, file_metadata);
+			file_item->set_accept_children(false);
 			if (!p_select_in_favorites && current_path == file_metadata) {
 				file_item->select(0);
 				file_item->set_as_cursor(0);
@@ -391,6 +392,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	tree_update_id++;
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
+	root->set_accept_children(false);
 	folder_map.clear();
 
 	// Handles the favorites.
@@ -458,6 +460,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		ti->set_tooltip_text(0, favorite);
 		ti->set_selectable(0, true);
 		ti->set_metadata(0, favorite);
+		ti->set_accept_children(false);
 
 		if (!favorite.ends_with("/")) {
 			EditorResourcePreview::get_singleton()->queue_resource_preview(favorite, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, ti->get_instance_id()));
@@ -3276,8 +3279,9 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 	// In the tree.
 	if (p_from == tree) {
 		TreeItem *ti = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
-		int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 		if (ti) {
+			int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
+
 			// Check the favorites first.
 			if (ti == tree->get_root()->get_first_child() && section >= 0) {
 				target_favorites = true;
@@ -3287,7 +3291,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 				return;
 			} else {
 				String fpath = ti->get_metadata(0);
-				if (section == 0) {
+				if (section == 0 || section == 2) {
 					if (fpath.ends_with("/")) {
 						// We drop on a folder.
 						target = fpath;
