@@ -6,6 +6,7 @@
 	<description>
 		This resource is used by the Skeleton and holds a stack of [SkeletonModification2D]s.
 		This controls the order of the modifications and how they are applied. Modification order is especially important for full-body IK setups, as you need to execute the modifications in the correct order to get the desired results. For example, you want to execute a modification on the spine [i]before[/i] the arms on a humanoid skeleton.
+		Runtime state for this stack is stored per [Skeleton2D] instance that uses it, allowing a single stack resource to be shared by multiple skeletons without state conflicts.
 		This resource also controls how strongly all of the modifications are applied to the [Skeleton2D].
 	</description>
 	<tutorials>
@@ -37,14 +38,15 @@
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="execution_mode" type="int" />
 			<description>
-				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [param execution_mode], starting from index [code]0[/code] to [member modification_count].
+				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [param execution_mode], starting from index [code]0[/code] to [code][member modification_count] - 1[/code].
+				[b]Note:[/b] While the internal implementation uses per-skeleton state, this script-facing method remains the same. When called through [Skeleton2D], the correct state context is provided automatically.
 				[b]Note:[/b] The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.
 			</description>
 		</method>
 		<method name="get_is_setup" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns a boolean that indicates whether the modification stack is setup and can execute.
+				Returns a boolean that indicates whether the modification stack is setup and can execute for the currently active [Skeleton2D] context.
 			</description>
 		</method>
 		<method name="get_modification" qualifiers="const">
@@ -72,6 +74,7 @@
 			<return type="void" />
 			<description>
 				Sets up the modification stack so it can execute. This function should be called by [Skeleton2D] and shouldn't be manually called unless you know what you are doing.
+				[b]Note:[/b] While the internal implementation uses per-skeleton state, this script-facing method remains the same. When called through [Skeleton2D], the correct state context is provided automatically.
 			</description>
 		</method>
 	</methods>

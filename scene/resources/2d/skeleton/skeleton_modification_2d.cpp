@@ -150,30 +150,30 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 			Bone2D *operation_bone_parent_bone = Object::cast_to<Bone2D>(operation_bone_parent);
 
 			if (operation_bone_parent_bone) {
-				stack->skeleton->draw_set_transform(
-						stack->skeleton->to_local(p_operation_bone->get_global_position()),
-						operation_bone_parent_bone->get_global_rotation() - stack->skeleton->get_global_rotation());
+				stack->get_skeleton()->draw_set_transform(
+						stack->get_skeleton()->to_local(p_operation_bone->get_global_position()),
+						operation_bone_parent_bone->get_global_rotation() - stack->get_skeleton()->get_global_rotation());
 			} else {
-				stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
+				stack->get_skeleton()->draw_set_transform(stack->get_skeleton()->to_local(p_operation_bone->get_global_position()));
 			}
 		} else {
-			stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
+			stack->get_skeleton()->draw_set_transform(stack->get_skeleton()->to_local(p_operation_bone->get_global_position()));
 		}
 
 		if (p_constraint_inverted) {
-			stack->skeleton->draw_arc(Vector2(0, 0), p_operation_bone->get_length(),
+			stack->get_skeleton()->draw_arc(Vector2(0, 0), p_operation_bone->get_length(),
 					arc_angle_min + (Math::PI * 2), arc_angle_max, 32, bone_ik_color, 1.0);
 		} else {
-			stack->skeleton->draw_arc(Vector2(0, 0), p_operation_bone->get_length(),
+			stack->get_skeleton()->draw_arc(Vector2(0, 0), p_operation_bone->get_length(),
 					arc_angle_min, arc_angle_max, 32, bone_ik_color, 1.0);
 		}
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_min), Math::sin(arc_angle_min)) * p_operation_bone->get_length(), bone_ik_color, 1.0);
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_max), Math::sin(arc_angle_max)) * p_operation_bone->get_length(), bone_ik_color, 1.0);
+		stack->get_skeleton()->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_min), Math::sin(arc_angle_min)) * p_operation_bone->get_length(), bone_ik_color, 1.0);
+		stack->get_skeleton()->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_max), Math::sin(arc_angle_max)) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 
 	} else {
-		stack->skeleton->draw_set_transform(stack->skeleton->to_local(p_operation_bone->get_global_position()));
-		stack->skeleton->draw_arc(Vector2(0, 0), p_operation_bone->get_length(), 0, Math::PI * 2, 32, bone_ik_color, 1.0);
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(1, 0) * p_operation_bone->get_length(), bone_ik_color, 1.0);
+		stack->get_skeleton()->draw_set_transform(stack->get_skeleton()->to_local(p_operation_bone->get_global_position()));
+		stack->get_skeleton()->draw_arc(Vector2(0, 0), p_operation_bone->get_length(), 0, Math::PI * 2, 32, bone_ik_color, 1.0);
+		stack->get_skeleton()->draw_line(Vector2(0, 0), Vector2(1, 0) * p_operation_bone->get_length(), bone_ik_color, 1.0);
 	}
 }
 

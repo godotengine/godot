@@ -65,13 +65,17 @@ bool SkeletonModificationStack2D::_get(const StringName &p_path, Variant &r_ret)
 	return false;
 }
 
-void SkeletonModificationStack2D::setup() {
-	if (is_setup) {
+void SkeletonModificationStack2D::setup_with_state(SkeletonModificationStackState2D &r_state, Skeleton2D *p_skeleton) {
+	active_state = &r_state;
+
+	if (r_state.is_setup) {
 		return;
 	}
 
-	if (skeleton != nullptr) {
-		is_setup = true;
+	r_state.skeleton = p_skeleton;
+
+	if (r_state.skeleton != nullptr) {
+		r_state.is_setup = true;
 		for (int i = 0; i < modifications.size(); i++) {
 			if (modifications[i].is_null()) {
 				continue;
@@ -80,7 +84,7 @@ void SkeletonModificationStack2D::setup() {
 		}
 
 #ifdef TOOLS_ENABLED
-		set_editor_gizmos_dirty(true);
+		set_editor_gizmos_dirty_with_state(r_state, true);
 #endif // TOOLS_ENABLED
 
 	} else {
@@ -88,11 +92,14 @@ void SkeletonModificationStack2D::setup() {
 	}
 }
 
-void SkeletonModificationStack2D::execute(float p_delta, int p_execution_mode) {
-	ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr || is_queued_for_deletion(),
-			"Modification stack is not properly setup and therefore cannot execute!");
+void SkeletonModificationStack2D::execute_with_state(SkeletonModificationStackState2D &r_state, float p_delta, int p_execution_mode) {
+	active_state = &r_state;
 
-	if (!skeleton->is_inside_tree()) {
+	if (!r_state.is_setup || r_state.skeleton == nullptr || is_queued_for_deletion()) {
+		ERR_FAIL_MSG("Modification stack is not properly setup and therefore cannot execute!");
+	}
+
+	if (!r_state.skeleton->is_inside_tree()) {
 		ERR_PRINT_ONCE("Skeleton is not inside SceneTree! Cannot execute modification!");
 		return;
 	}
@@ -112,12 +119,14 @@ void SkeletonModificationStack2D::execute(float p_delta, int p_execution_mode) {
 	}
 }
 
-void SkeletonModificationStack2D::draw_editor_gizmos() {
-	if (!is_setup) {
+void SkeletonModificationStack2D::draw_editor_gizmos_with_state(SkeletonModificationStackState2D &r_state) {
+	active_state = &r_state;
+
+	if (!r_state.is_setup) {
 		return;
 	}
 
-	if (editor_gizmo_dirty) {
+	if (r_state.editor_gizmo_dirty) {
 		for (int i = 0; i < modifications.size(); i++) {
 			if (modifications[i].is_null()) {
 				continue;
@@ -127,23 +136,46 @@ void SkeletonModificationStack2D::draw_editor_gizmos() {
 				modifications.get(i)->_draw_editor_gizmo();
 			}
 		}
-		skeleton->draw_set_transform(Vector2(0, 0));
-		editor_gizmo_dirty = false;
+		r_state.skeleton->draw_set_transform(Vector2(0, 0));
+		r_state.editor_gizmo_dirty = false;
 	}
 }
 
-void SkeletonModificationStack2D::set_editor_gizmos_dirty(bool p_dirty) {
-	if (!is_setup) {
+void SkeletonModificationStack2D::set_editor_gizmos_dirty_with_state(SkeletonModificationStackState2D &r_state, bool p_dirty) {
+	active_state = &r_state;
+
+	if (!r_state.is_setup) {
 		return;
 	}
 
-	if (!editor_gizmo_dirty && p_dirty) {
-		editor_gizmo_dirty = p_dirty;
-		if (skeleton) {
-			skeleton->queue_redraw();
+	if (!r_state.editor_gizmo_dirty && p_dirty) {
+		r_state.editor_gizmo_dirty = p_dirty;
+		if (r_state.skeleton) {
+			r_state.skeleton->queue_redraw();
 		}
 	} else {
-		editor_gizmo_dirty = p_dirty;
+		r_state.editor_gizmo_dirty = p_dirty;
+	}
+}
+
+void SkeletonModificationStack2D::setup() {
+	ERR_FAIL_NULL_MSG(active_state, "Cannot call setup() without active state context.");
+	setup_with_state(*active_state, active_state->skeleton);
+}
+
+void SkeletonModificationStack2D::execute(float p_delta, int p_execution_mode) {
+	ERR_FAIL_NULL_MSG(active_state, "Cannot call execute() without active state context.");
+	execute_with_state(*active_state, p_delta, p_execution_mode);
+}
+
+void SkeletonModificationStack2D::draw_editor_gizmos() {
+	ERR_FAIL_NULL_MSG(active_state, "Cannot call draw_editor_gizmos() without active state context.");
+	draw_editor_gizmos_with_state(*active_state);
+}
+
+void SkeletonModificationStack2D::set_editor_gizmos_dirty(bool p_dirty) {
+	if (active_state) {
+		set_editor_gizmos_dirty_with_state(*active_state, p_dirty);
 	}
 }
 
@@ -211,15 +243,25 @@ int SkeletonModificationStack2D::get_modification_count() const {
 }
 
 void SkeletonModificationStack2D::set_skeleton(Skeleton2D *p_skeleton) {
-	skeleton = p_skeleton;
+	if (active_state) {
+		active_state->skeleton = p_skeleton;
+	}
 }
 
 Skeleton2D *SkeletonModificationStack2D::get_skeleton() const {
-	return skeleton;
+	return active_state->skeleton;
+}
+
+SkeletonModificationStackState2D *SkeletonModificationStack2D::get_active_state() {
+	return active_state;
+}
+
+const SkeletonModificationStackState2D *SkeletonModificationStack2D::get_active_state() const {
+	return active_state;
 }
 
 bool SkeletonModificationStack2D::get_is_setup() const {
-	return is_setup;
+	return active_state->is_setup;
 }
 
 void SkeletonModificationStack2D::set_enabled(bool p_enabled) {

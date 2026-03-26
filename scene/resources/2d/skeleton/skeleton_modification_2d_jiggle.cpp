@@ -134,7 +134,7 @@ void SkeletonModification2DJiggle::_get_property_list(List<PropertyInfo> *p_list
 }
 
 void SkeletonModification2DJiggle::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->get_skeleton() == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
 		return;
@@ -159,7 +159,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	// Adopted from: https://wiki.unity3d.com/index.php/JiggleBone
 	// With modifications by TwistedTwigleg.
 
-	if (jiggle_data_chain[p_joint_idx].bone_idx <= -1 || jiggle_data_chain[p_joint_idx].bone_idx > stack->skeleton->get_bone_count()) {
+	if (jiggle_data_chain[p_joint_idx].bone_idx <= -1 || jiggle_data_chain[p_joint_idx].bone_idx > stack->get_skeleton()->get_bone_count()) {
 		ERR_PRINT_ONCE("Jiggle joint " + itos(p_joint_idx) + " bone index is invalid. Cannot execute modification on joint...");
 		return;
 	}
@@ -169,7 +169,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 		jiggle_joint_update_bone2d_cache(p_joint_idx);
 	}
 
-	Bone2D *operation_bone = stack->skeleton->get_bone(jiggle_data_chain[p_joint_idx].bone_idx);
+	Bone2D *operation_bone = stack->get_skeleton()->get_bone(jiggle_data_chain[p_joint_idx].bone_idx);
 	if (!operation_bone) {
 		ERR_PRINT_ONCE("Jiggle joint " + itos(p_joint_idx) + " does not have a Bone2D node or it cannot be found!");
 		return;
@@ -194,7 +194,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	// Collision detection/response
 	if (use_colliders) {
 		if (execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process) {
-			Ref<World2D> world_2d = stack->skeleton->get_world_2d();
+			Ref<World2D> world_2d = stack->get_skeleton()->get_world_2d();
 			ERR_FAIL_COND(world_2d.is_null());
 			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 			PhysicsDirectSpaceState2D::RayResult ray_result;
@@ -227,7 +227,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	operation_bone_trans.set_scale(operation_bone->get_global_scale());
 
 	operation_bone->set_global_transform(operation_bone_trans);
-	stack->skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, operation_bone->get_transform(), stack->strength, true);
+	stack->get_skeleton()->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, operation_bone->get_transform(), stack->strength, true);
 }
 
 void SkeletonModification2DJiggle::_update_jiggle_joint_data() {
@@ -248,11 +248,11 @@ void SkeletonModification2DJiggle::_setup_modification(SkeletonModificationStack
 	if (stack) {
 		is_setup = true;
 
-		if (stack->skeleton) {
+		if (stack->get_skeleton()) {
 			for (int i = 0; i < jiggle_data_chain.size(); i++) {
 				int bone_idx = jiggle_data_chain[i].bone_idx;
-				if (bone_idx > 0 && bone_idx < stack->skeleton->get_bone_count()) {
-					Bone2D *bone2d_node = stack->skeleton->get_bone(bone_idx);
+				if (bone_idx > 0 && bone_idx < stack->get_skeleton()->get_bone_count()) {
+					Bone2D *bone2d_node = stack->get_skeleton()->get_bone(bone_idx);
 					jiggle_data_chain.write[i].dynamic_position = bone2d_node->get_global_position();
 				}
 
@@ -273,11 +273,11 @@ void SkeletonModification2DJiggle::update_target_cache() {
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(target_node)) {
+				Node *node = stack->get_skeleton()->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in scene tree!");
@@ -297,11 +297,11 @@ void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_
 	}
 
 	jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(jiggle_data_chain[p_joint_idx].bone2d_node)) {
-				Node *node = stack->skeleton->get_node(jiggle_data_chain[p_joint_idx].bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(jiggle_data_chain[p_joint_idx].bone2d_node)) {
+				Node *node = stack->get_skeleton()->get_node(jiggle_data_chain[p_joint_idx].bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: node is not in scene tree!");
@@ -422,11 +422,11 @@ void SkeletonModification2DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, 
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (stack->get_skeleton()) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->get_skeleton()->get_bone_count(), "Passed-in Bone index is out of range!");
 			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			jiggle_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = stack->get_skeleton()->get_bone(p_bone_idx)->get_instance_id();
+			jiggle_data_chain.write[p_joint_idx].bone2d_node = stack->get_skeleton()->get_path_to(stack->get_skeleton()->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the Jiggle joint " + itos(p_joint_idx) + " bone index for this modification...");
 			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;

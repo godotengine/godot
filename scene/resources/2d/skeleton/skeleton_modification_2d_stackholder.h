@@ -48,6 +48,7 @@ protected:
 
 public:
 	Ref<SkeletonModificationStack2D> held_modification_stack;
+	SkeletonModificationStackState2D held_stack_state;
 
 	void _execute(float p_delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;

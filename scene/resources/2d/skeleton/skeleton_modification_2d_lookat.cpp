@@ -108,7 +108,7 @@ void SkeletonModification2DLookAt::_get_property_list(List<PropertyInfo> *p_list
 }
 
 void SkeletonModification2DLookAt::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->get_skeleton() == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
 		return;
@@ -138,7 +138,7 @@ void SkeletonModification2DLookAt::_execute(float p_delta) {
 		return;
 	}
 
-	Bone2D *operation_bone = stack->skeleton->get_bone(bone_idx);
+	Bone2D *operation_bone = stack->get_skeleton()->get_bone(bone_idx);
 	if (operation_bone == nullptr) {
 		ERR_PRINT_ONCE("bone_idx for modification does not point to a valid bone! Cannot execute modification");
 		return;
@@ -169,7 +169,7 @@ void SkeletonModification2DLookAt::_execute(float p_delta) {
 	}
 
 	// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
-	stack->skeleton->set_bone_local_pose_override(bone_idx, operation_bone->get_transform(), stack->strength, true);
+	stack->get_skeleton()->set_bone_local_pose_override(bone_idx, operation_bone->get_transform(), stack->strength, true);
 }
 
 void SkeletonModification2DLookAt::_setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -187,7 +187,7 @@ void SkeletonModification2DLookAt::_draw_editor_gizmo() {
 		return;
 	}
 
-	Bone2D *operation_bone = stack->skeleton->get_bone(bone_idx);
+	Bone2D *operation_bone = stack->get_skeleton()->get_bone(bone_idx);
 	editor_draw_angle_constraints(operation_bone, constraint_angle_min, constraint_angle_max,
 			enable_constraint, constraint_in_localspace, constraint_angle_invert);
 }
@@ -201,11 +201,11 @@ void SkeletonModification2DLookAt::update_bone2d_cache() {
 	}
 
 	bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(bone2d_node)) {
-				Node *node = stack->skeleton->get_node(bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(bone2d_node)) {
+				Node *node = stack->get_skeleton()->get_node(bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update Bone2D cache: node is not in the scene tree!");
@@ -242,11 +242,11 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup && stack) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (stack->get_skeleton()) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->get_skeleton()->get_bone_count(), "Passed-in Bone index is out of range!");
 			bone_idx = p_bone_idx;
-			bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			bone2d_node_cache = stack->get_skeleton()->get_bone(p_bone_idx)->get_instance_id();
+			bone2d_node = stack->get_skeleton()->get_path_to(stack->get_skeleton()->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the bone index for this modification...");
 			bone_idx = p_bone_idx;
@@ -267,11 +267,11 @@ void SkeletonModification2DLookAt::update_target_cache() {
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(target_node)) {
+				Node *node = stack->get_skeleton()->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in the scene tree!");
