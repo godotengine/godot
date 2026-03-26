@@ -65,6 +65,7 @@ class Path2DEditor : public HBoxContainer {
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
 	Button *curve_auto_tangent = nullptr;
+	SpinBox *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
 	Button *create_curve_button = nullptr;

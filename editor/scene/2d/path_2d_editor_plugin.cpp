@@ -38,6 +38,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/mesh.h"
 
 void Path2DEditor::_notification(int p_what) {
@@ -815,7 +816,7 @@ void Path2DEditor::_auto_tangent() {
 	Ref<Curve2D> curve = node->get_curve();
 	undo_redo->create_action(TTR("Auto Tangent"));
 	int point_count = curve->get_point_count();
-	const float smooth_ratio = 0.5;
+	const float smooth_ratio = auto_tangent_torsion->get_value();
 	for (int i = 1; i < point_count - 1; i++) {
 		Vector2 prev_p = curve->get_point_position(i - 1);
 		Vector2 next_p = curve->get_point_position(i + 1);
@@ -940,6 +941,18 @@ Path2DEditor::Path2DEditor() {
 	curve_auto_tangent->set_tooltip_text(TTR("Auto Tangent"));
 	curve_auto_tangent->connect(SceneStringName(pressed), callable_mp(this, &Path2DEditor::_auto_tangent));
 	toolbar->add_child(curve_auto_tangent);
+
+	auto_tangent_torsion = memnew(SpinBox);
+	auto_tangent_torsion->set_min(0.0);
+	auto_tangent_torsion->set_max(1.0);
+	auto_tangent_torsion->set_step(0.1);
+	auto_tangent_torsion->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	auto_tangent_torsion->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	auto_tangent_torsion->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	auto_tangent_torsion->set_tooltip_text(TTR("Auto Tangent Torsion"));
+	auto_tangent_torsion->set_accessibility_name(TTRC("Auto Tangent Torsion"));
+	toolbar->add_child(auto_tangent_torsion);
+	auto_tangent_torsion->set_value(0.5);
 
 	curve_clear_points = memnew(Button);
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
