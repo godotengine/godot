@@ -668,6 +668,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	GDScriptLanguage::CallLevel call_level;
 	GDScriptLanguage::get_singleton()->enter_function(&call_level, p_instance, this, stack, &ip, &line);
 
+#ifdef TOOLS_ENABLED
+	if (unlikely(GDScriptLanguage::get_singleton()->coverage_enabled)) {
+		GDScriptLanguage::get_singleton()->coverage_record_func_entry(source, name);
+	}
+#endif // TOOLS_ENABLED
+
 #ifdef DEBUG_ENABLED
 #define GD_ERR_BREAK(m_cond) \
 	{ \
@@ -2747,6 +2753,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool result = test->booleanize();
 
+#ifdef TOOLS_ENABLED
+				if (unlikely(GDScriptLanguage::get_singleton()->coverage_enabled)) {
+					GDScriptLanguage::get_singleton()->coverage_record_branch(source, line, ip, result);
+				}
+#endif // TOOLS_ENABLED
+
 				if (result) {
 					int to = _code_ptr[ip + 2];
 					GD_ERR_BREAK(to < 0 || to > _code_size);
@@ -2763,6 +2775,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(test, 0);
 
 				bool result = test->booleanize();
+
+#ifdef TOOLS_ENABLED
+				if (unlikely(GDScriptLanguage::get_singleton()->coverage_enabled)) {
+					GDScriptLanguage::get_singleton()->coverage_record_branch(source, line, ip, !result);
+				}
+#endif // TOOLS_ENABLED
 
 				if (!result) {
 					int to = _code_ptr[ip + 2];
@@ -3910,6 +3928,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				line = _code_ptr[ip + 1];
 				ip += 2;
+
+#ifdef TOOLS_ENABLED
+				if (unlikely(GDScriptLanguage::get_singleton()->coverage_enabled)) {
+					GDScriptLanguage::get_singleton()->coverage_record_line(source, line);
+				}
+#endif // TOOLS_ENABLED
 
 				if (EngineDebugger::is_active()) {
 					// line
