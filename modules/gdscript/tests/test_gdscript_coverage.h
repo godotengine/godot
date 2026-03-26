@@ -715,6 +715,32 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK_MESSAGE(!contents.contains("gut.gd"), "Excluded file must not appear in LCOV output");
 	}
 
+	TEST_CASE("[Modules][GDScript] Coverage: write JSON zero-hit file shows coverable lines") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_zero_hit.json");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("json");
+		// Record a hit file and inject a zero-hit coverable file directly.
+		lang->coverage_record_line("res://hit_file.gd", 5);
+		// Inject coverable lines for a file that was "compiled but never executed".
+		lang->coverage_hits["res://zero_file.gd"]; // create empty entry in hits
+		lang->coverage_hits["res://zero_file.gd"][7] = 0; // line 7: explicitly zero
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("hit_file.gd"), "Hit file must appear in JSON");
+		CHECK_MESSAGE(contents.contains("zero_file.gd"), "Zero-hit file must appear in JSON");
+		CHECK_MESSAGE(contents.contains("\"7\":0"), "Zero-hit line must appear with count 0");
+	}
+
 	TEST_CASE("[Modules][GDScript] Coverage: write LCOV multiple files") {
 		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
 		REQUIRE(lang != nullptr);

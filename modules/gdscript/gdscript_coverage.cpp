@@ -700,8 +700,9 @@ static void _json_write_file_entry(Ref<FileAccess> f, const String &p_path,
 		const HashMap<int, GDScriptLanguage::BranchResult> *p_branches,
 		const HashMap<int, int> *p_coverable) {
 	f->store_line("    \"" + p_path.c_escape() + "\": {");
-	if (p_lines) {
-		_json_write_lines(f, *p_lines, p_coverable);
+	if (p_lines || (p_coverable && !p_coverable->is_empty())) {
+		static const HashMap<int, int> empty_json_lines;
+		_json_write_lines(f, p_lines ? *p_lines : empty_json_lines, p_coverable);
 	} else {
 		f->store_line("      \"lines\": {},");
 	}
