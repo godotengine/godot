@@ -5487,15 +5487,18 @@ void WaylandThread::selection_set_text(const String &p_text) {
 
 	ss->selection_data = p_text.to_utf8_buffer();
 
-	if (ss->wl_data_source_selection == nullptr) {
-		ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
-		wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
-		wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
-		wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
-
-		// TODO: Implement a good way of getting the latest serial from the user.
-		wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	if (ss->wl_data_source_selection != nullptr) {
+		wl_data_source_destroy(ss->wl_data_source_selection);
+		ss->wl_data_source_selection = nullptr;
 	}
+
+	ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
+	wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
+	wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
+	wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
@@ -5608,15 +5611,18 @@ void WaylandThread::primary_set_text(const String &p_text) {
 
 	ss->primary_data = p_text.to_utf8_buffer();
 
-	if (ss->wp_primary_selection_source == nullptr) {
-		ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
-		zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
-		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
-		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
-
-		// TODO: Implement a good way of getting the latest serial from the user.
-		zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	if (ss->wp_primary_selection_source != nullptr) {
+		zwp_primary_selection_source_v1_destroy(ss->wp_primary_selection_source);
+		ss->wp_primary_selection_source = nullptr;
 	}
+
+	ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
+	zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
+	zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
+	zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
