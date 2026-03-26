@@ -658,6 +658,55 @@ public:
 
 	Ref<GDScript> get_script_by_fully_qualified_name(const String &p_name);
 
+#ifdef TOOLS_ENABLED
+	// --- GDScript Coverage ---
+	struct BranchResult {
+		int taken = 0;
+		int not_taken = 0;
+		int line = 0; // source line number for LCOV BRDA output
+	};
+	enum CoverageMode { COVERAGE_MODE_SET,
+		COVERAGE_MODE_COUNT };
+	enum CoverageFormat { COVERAGE_FORMAT_LCOV,
+		COVERAGE_FORMAT_COBERTURA,
+		COVERAGE_FORMAT_JSON,
+		COVERAGE_FORMAT_TEXT };
+
+	bool coverage_enabled = false;
+	bool coverage_written = false;
+	CoverageMode coverage_mode = COVERAGE_MODE_SET;
+	CoverageFormat coverage_format = COVERAGE_FORMAT_LCOV;
+	String coverage_output_path;
+	float coverage_threshold = 0.0f;
+	Vector<String> coverage_include; // empty = include all
+	Vector<String> coverage_exclude;
+
+	HashMap<String, HashMap<int, int>> coverage_hits; // file -> line -> count
+	HashMap<String, HashMap<String, int>> coverage_func_hits; // file -> func_name -> count
+	HashMap<String, HashMap<int, BranchResult>> coverage_branch_hits; // file -> ip -> BranchResult
+
+	void coverage_set_output(const String &p_path);
+	void coverage_set_mode(const String &p_mode);
+	void coverage_set_format(const String &p_format);
+	void coverage_set_threshold(float p_pct);
+	void coverage_add_include(const String &p_glob);
+	void coverage_add_exclude(const String &p_glob);
+	void coverage_start(); // clears data, sets coverage_enabled=true, coverage_written=false
+	void coverage_record_line(const StringName &p_source, int p_line);
+	void coverage_record_func_entry(const StringName &p_source, const StringName &p_func);
+	void coverage_record_branch(const StringName &p_source, int p_line, int p_ip, bool p_taken);
+	Error coverage_write(); // writes output file, sets coverage_written=true
+	bool coverage_check_threshold() const; // true if line% >= threshold (or threshold == 0)
+	String coverage_summary_string() const; // formatted multi-line summary for terminal/test output
+
+	// Static helpers: must be methods of GDScriptLanguage to access private members of
+	// GDScriptFunction (via friend at gdscript_function.h:344) and script_list (private).
+	static void _coverage_collect_lines(GDScript *p_script, HashMap<int, int> &r_lines);
+	static void _coverage_collect_func_starts(const GDScript *p_script, HashMap<String, int> &r_starts);
+	HashMap<String, HashMap<int, int>> _coverage_enumerate_coverable_lines() const;
+	HashMap<String, HashMap<String, int>> _coverage_enumerate_func_start_lines() const;
+#endif // TOOLS_ENABLED
+
 	GDScriptLanguage();
 	~GDScriptLanguage();
 };
