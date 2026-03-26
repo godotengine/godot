@@ -929,6 +929,8 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		CUSTOM = vec4(0.0);\n";
 	code += "		CUSTOM.w = params.lifetime;\n";
 	code += "		CUSTOM.x = dynamic_params.angle;\n";
+	// Accumulated angle from angular velocity is stored in userdata W
+	code += "		USERDATA1.w = 0.0;\n";
 	code += "	}\n";
 	code += "	if (RESTART_COLOR) {\n";
 	code += "		COLOR = params.color;\n";
@@ -1165,11 +1167,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	base_angle *= texture(angle_texture, vec2(lifetime_percent)).r;\n";
 	}
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-		code += "	base_angle += CUSTOM.y * LIFETIME * dynamic_params.angular_velocity * texture(angular_velocity_texture, vec2(lifetime_percent)).r;\n";
+		code += "	USERDATA1.w += texture(angular_velocity_texture, vec2(lifetime_percent)).r * DELTA * dynamic_params.angular_velocity;\n";
+		code += "	CUSTOM.x = base_angle * degree_to_rad + USERDATA1.w;\n";
 	} else {
 		code += "	base_angle += CUSTOM.y * LIFETIME * dynamic_params.angular_velocity;\n";
+		code += "	CUSTOM.x = base_angle * degree_to_rad;\n";
 	}
-	code += "	CUSTOM.x = base_angle * degree_to_rad;\n";
 	code += "	COLOR = params.color;\n\n";
 
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
