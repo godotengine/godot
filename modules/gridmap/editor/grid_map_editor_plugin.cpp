@@ -905,7 +905,6 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 
 		if (mb->is_pressed()) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
-				View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 				if ((nav_scheme == View3DController::NAV_SCHEME_MAYA || nav_scheme == View3DController::NAV_SCHEME_MODO) && mb->is_alt_pressed()) {
 					return EditorPlugin::AFTER_GUI_INPUT_PASS;
 				}
@@ -1078,7 +1077,7 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 }
 
 void GridMapEditor::update_palette() {
-	float min_size = EDITOR_GET("editors/grid_map/preview_size");
+	float min_size = preview_size;
 	min_size *= EDSCALE;
 
 	mesh_library_palette->clear();
@@ -1271,16 +1270,16 @@ void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
 		Vector3 axis_n2;
 		axis_n2[(i + 2) % 3] = cell_size[(i + 2) % 3];
 
-		for (int j = -GRID_CURSOR_SIZE; j <= GRID_CURSOR_SIZE; j++) {
-			for (int k = -GRID_CURSOR_SIZE; k <= GRID_CURSOR_SIZE; k++) {
+		for (int j = -grid_cursor_size; j <= grid_cursor_size; j++) {
+			for (int k = -grid_cursor_size; k <= grid_cursor_size; k++) {
 				Vector3 p = axis_n1 * j + axis_n2 * k;
-				float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / GRID_CURSOR_SIZE)), 2);
+				float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / grid_cursor_size)), 2);
 
 				Vector3 pj = axis_n1 * (j + 1) + axis_n2 * k;
-				float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / GRID_CURSOR_SIZE)), 2);
+				float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / grid_cursor_size)), 2);
 
 				Vector3 pk = axis_n1 * j + axis_n2 * (k + 1);
-				float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / GRID_CURSOR_SIZE)), 2);
+				float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / grid_cursor_size)), 2);
 
 				grid_points[i].push_back(p);
 				grid_points[i].push_back(pk);
@@ -1408,10 +1407,20 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d_gizmos/gizmo_colors")) {
+				indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d/navigation")) {
+				nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/grid_map")) {
+				preview_size = EDITOR_GET("editors/grid_map/preview_size");
+				grid_cursor_size = EDITOR_GET("editors/grid_map/grid_cursor_size");
 
-			// Take Preview Size changes into account.
-			update_palette();
+				update_palette();
+				_draw_grids(node->get_cell_size());
+				update_grid();
+			}
 		} break;
 	}
 }
@@ -1938,6 +1947,10 @@ GridMapEditor::GridMapEditor() {
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+
+	nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	preview_size = EDITOR_GET("editors/grid_map/preview_size");
+	grid_cursor_size = EDITOR_GET("editors/grid_map/grid_cursor_size");
 }
 
 GridMapEditor::~GridMapEditor() {
