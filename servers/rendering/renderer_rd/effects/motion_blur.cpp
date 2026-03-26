@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "motion_blur.h"
+#include "servers/rendering/renderer_rd/effects/motion_blur.h"
 
 #include "editor/settings/editor_settings.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -214,7 +214,7 @@ void RendererRD::MotionBlur::motion_blur_process(const MotionBlurBuffers &p_buff
 	RD::get_singleton()->compute_list_end();
 }
 
-void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool transparent_bg, float time_step, CopyEffects *p_copy_effects) {
+void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, float p_time_step, CopyEffects *p_copy_effects) {
 	if (Engine::get_singleton()->is_editor_hint() && !EDITOR_GET("editors/3d/viewport_visuals/show_motion_blur_in_editor")) {
 		// Skip motion blur in editor viewport if `show motion blur in viewport` not enabled
 		return;
@@ -249,11 +249,11 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 				// Use raw intensity, ignore frame time
 				break;
 			case RSE::MOTION_BLUR_FRAMERATE_MODE_CAPPED:
-				intensity *= MIN(1.f / reference_framerate, time_step) / time_step;
+				intensity *= MIN(1.f / reference_framerate, p_time_step) / p_time_step;
 				break;
 			case RSE::MOTION_BLUR_FRAMERATE_MODE_FIXED:
 				// Scale intensity by frame time
-				intensity /= reference_framerate * time_step;
+				intensity /= reference_framerate * p_time_step;
 				break;
 		}
 
@@ -295,7 +295,7 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 		motion_blur.blur_push_constant.sample_count = sample_count;
 		motion_blur.blur_push_constant.frame = Engine::get_singleton()->get_frames_drawn() % 8;
 		motion_blur.blur_push_constant.clamp_velocities_to_tile = clamp_velocities_to_tile ? 1 : 0;
-		motion_blur.blur_push_constant.transparent_bg = transparent_bg ? 1 : 0;
+		motion_blur.blur_push_constant.transparent_bg = p_transparent_bg ? 1 : 0;
 	}
 
 	buffers.scene_data_uniform = p_scene_data->get_uniform_buffer();

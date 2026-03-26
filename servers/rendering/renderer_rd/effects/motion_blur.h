@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include "copy_effects.h"
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/motion_blur_blur.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/motion_blur_neighbor_max.glsl.gen.h"
@@ -136,6 +135,6 @@ public:
 	MotionBlur(RSE::MotionBlurTileSize p_tile_size_level);
 	~MotionBlur();
 
-	void motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool transparent_bg, float time_step, CopyEffects *p_copy_effects);
+	void motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, float p_time_step, CopyEffects *p_copy_effects);
 };
 } //namespace RendererRD

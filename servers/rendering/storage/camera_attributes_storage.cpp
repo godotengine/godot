@@ -74,7 +74,7 @@ void RendererCameraAttributes::camera_attributes_set_motion_blur(RID p_camera_at
 	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
 	ERR_FAIL_NULL(cam_attributes);
 #ifdef DEBUG_ENABLED
-	if ((OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile") && p_enable) {
+	if (p_enable && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile")) {
 		WARN_PRINT_ONCE_ED("Motion blur is only available when using the Forward+ renderer.");
 	}
 #endif
@@ -102,7 +102,7 @@ bool RendererCameraAttributes::camera_attributes_get_motion_blur_clamp_velocitie
 
 float RendererCameraAttributes::camera_attributes_get_motion_blur_object_velocity_multiplier(RID p_camera_attributes) {
 	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
-	ERR_FAIL_NULL_V(cam_attributes, false);
+	ERR_FAIL_NULL_V(cam_attributes, 0.0);
 	return cam_attributes->motion_blur_object_velocity_multiplier;
 }
 
