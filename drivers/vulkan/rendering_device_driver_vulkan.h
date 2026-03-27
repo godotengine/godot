@@ -473,25 +473,15 @@ public:
 	/**** SHADER ****/
 	/****************/
 private:
-	struct RaytracingShaderRegionCount {
-		uint32_t raygen_count = 0;
-		uint32_t hit_count = 0;
-		uint32_t miss_count = 0;
-		uint32_t group_count = 0;
-	};
-
 	struct ShaderInfo {
 		String name;
 		VkShaderStageFlags vk_push_constant_stages = 0;
 		TightLocalVector<VkPipelineShaderStageCreateInfo> vk_stages_create_info;
-		TightLocalVector<VkRayTracingShaderGroupCreateInfoKHR> vk_groups_create_info;
 		TightLocalVector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
 		TightLocalVector<respv::Shader> respv_stage_shaders;
 		TightLocalVector<Vector<uint8_t>> spirv_stage_bytes;
 		TightLocalVector<uint64_t> original_stage_size;
 		VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
-		// Used to update the shader binding table buffer.
-		RaytracingShaderRegionCount region_count;
 	};
 
 public:
@@ -729,40 +719,23 @@ public:
 private:
 	void _acceleration_structure_create(VkAccelerationStructureTypeKHR p_type, VkAccelerationStructureBuildSizesInfoKHR p_size_info, AccelerationStructureInfo *r_accel_info);
 
+private:
+	VkStridedDeviceAddressRegionKHR _sbt_to_vk_strided_device_address_region(const ShaderBindingTable &p_sbt);
+
 public:
 	// ----- COMMANDS -----
-
 	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
 	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) override final;
 	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
 	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
-	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) override final;
-
-private:
-	RaytracingPipelineID bound_raytracing_pipeline_id;
-
-	// ----- PIPELINE -----
-
-	struct RaytracingShaderRegions {
-		VkStridedDeviceAddressRegionKHR raygen;
-		VkStridedDeviceAddressRegionKHR hit;
-		VkStridedDeviceAddressRegionKHR miss;
-		VkStridedDeviceAddressRegionKHR call;
-	};
-
-	struct RaytracingPipelineInfo {
-		VkPipeline vk_pipeline = VK_NULL_HANDLE;
-		ShaderID shader;
-		// Used vkCmdTraceRaysKHR.
-		RaytracingShaderRegions regions;
-		// Shader binding table.
-		BufferID sbt_buffer;
-	};
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) override final;
 
 public:
-	virtual RaytracingPipelineID raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
-	VkResult _raytracing_pipeline_stb_create(RaytracingPipelineID p_pipeline, ShaderID p_shader);
+	// ----- PIPELINE -----
+	virtual RaytracingPipelineID raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) override final;
 	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) override final;
+
+	virtual bool raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data) override final;
 
 	/*****************/
 	/**** QUERIES ****/

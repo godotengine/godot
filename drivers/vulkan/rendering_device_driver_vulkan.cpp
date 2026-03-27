@@ -1866,6 +1866,7 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_STORAGE_BIT, VK_BUFFER_USAGE_
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDEX_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VERTEX_BIT, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDIRECT_BIT, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_SHADER_BINDING_TABLE_BIT, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR));
@@ -4197,9 +4198,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		shader_info.respv_stage_shaders.reserve(stage_count);
 	}
 
-	// AnyHit and ClosestHit go in the same group.
-	uint32_t hit_group_index = UINT32_MAX;
-
 	for (int i = 0; i < stage_count; i++) {
 		const RenderingShaderContainer::Shader &shader = p_shader_container->shaders[i];
 		bool requires_decompression = (shader.code_decompressed_size > 0);
@@ -4281,52 +4279,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		create_info.module = vk_module;
 		create_info.pName = "main";
 		shader_info.vk_stages_create_info.push_back(create_info);
-
-		ShaderStage stage = shader_refl.stages_vector[i];
-
-		if (stage == ShaderStage::SHADER_STAGE_RAYGEN || stage == ShaderStage::SHADER_STAGE_MISS) {
-			VkRayTracingShaderGroupCreateInfoKHR group_info = {};
-			group_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			group_info.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-			group_info.anyHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.closestHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.intersectionShader = VK_SHADER_UNUSED_KHR;
-			group_info.generalShader = i;
-
-			shader_info.vk_groups_create_info.push_back(group_info);
-		}
-		if (stage == ShaderStage::SHADER_STAGE_ANY_HIT || stage == ShaderStage::SHADER_STAGE_CLOSEST_HIT) {
-			if (hit_group_index == UINT32_MAX) {
-				VkRayTracingShaderGroupCreateInfoKHR group_info = {};
-				group_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-				group_info.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
-				group_info.anyHitShader = VK_SHADER_UNUSED_KHR;
-				group_info.closestHitShader = VK_SHADER_UNUSED_KHR;
-				group_info.intersectionShader = VK_SHADER_UNUSED_KHR;
-				group_info.generalShader = VK_SHADER_UNUSED_KHR;
-
-				hit_group_index = shader_info.vk_groups_create_info.size();
-				shader_info.vk_groups_create_info.push_back(group_info);
-			}
-
-			VkRayTracingShaderGroupCreateInfoKHR &group_info = shader_info.vk_groups_create_info[hit_group_index];
-			if (stage == ShaderStage::SHADER_STAGE_ANY_HIT) {
-				group_info.anyHitShader = i;
-			} else if (stage == ShaderStage::SHADER_STAGE_CLOSEST_HIT) {
-				group_info.closestHitShader = i;
-			}
-		}
-		if (stage == ShaderStage::SHADER_STAGE_INTERSECTION) {
-			VkRayTracingShaderGroupCreateInfoKHR group_info = {};
-			group_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-			group_info.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR;
-			group_info.anyHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.closestHitShader = VK_SHADER_UNUSED_KHR;
-			group_info.intersectionShader = i;
-			group_info.generalShader = VK_SHADER_UNUSED_KHR;
-
-			shader_info.vk_groups_create_info.push_back(group_info);
-		}
 	}
 
 	// Descriptor sets.
@@ -4394,30 +4346,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		}
 
 		ERR_FAIL_V_MSG(ShaderID(), error_text);
-	}
-
-	if (shader_refl.pipeline_type == PIPELINE_TYPE_RAYTRACING) {
-		// Regions
-
-		for (ShaderStage stage : shader_refl.stages_vector) {
-			switch (stage) {
-				case ShaderStage::SHADER_STAGE_RAYGEN:
-					shader_info.region_count.raygen_count += 1;
-					break;
-				case ShaderStage::SHADER_STAGE_ANY_HIT:
-				case ShaderStage::SHADER_STAGE_CLOSEST_HIT:
-					shader_info.region_count.hit_count += 1;
-					break;
-				case ShaderStage::SHADER_STAGE_MISS:
-					shader_info.region_count.miss_count += 1;
-					break;
-				default:
-					// nothing
-					break;
-			}
-		}
-
-		shader_info.region_count.group_count = shader_info.region_count.raygen_count + shader_info.region_count.hit_count + shader_info.region_count.miss_count;
 	}
 
 	// Bookkeep.
@@ -6310,7 +6238,7 @@ void RenderingDeviceDriverVulkan::acceleration_structure_instance_write(uint8_t 
 	_store_transform_transposed_3x4(p_instance.transform, vk_instance->transform);
 	vk_instance->instanceCustomIndex = p_instance.id;
 	vk_instance->mask = p_instance.mask;
-	vk_instance->instanceShaderBindingTableRecordOffset = 0;
+	vk_instance->instanceShaderBindingTableRecordOffset = p_instance.hit_sbt_offset;
 	vk_instance->flags = p_instance.flags;
 
 	if (p_instance.blas) {
@@ -6368,6 +6296,19 @@ uint32_t RenderingDeviceDriverVulkan::acceleration_structure_get_scratch_size_by
 	return accel_info->scratch_size;
 }
 
+VkStridedDeviceAddressRegionKHR RenderingDeviceDriverVulkan::_sbt_to_vk_strided_device_address_region(const ShaderBindingTable &p_sbt) {
+	VkStridedDeviceAddressRegionKHR vk_strided_device_address_region = {};
+	if (p_sbt.buffer) {
+		vk_strided_device_address_region.deviceAddress = buffer_get_device_address(p_sbt.buffer) + p_sbt.offset;
+		vk_strided_device_address_region.stride = p_sbt.stride;
+		vk_strided_device_address_region.size = p_sbt.size;
+
+		DEV_ASSERT((vk_strided_device_address_region.deviceAddress & (raytracing_capabilities.shader_group_base_alignment - 1)) == 0 && "Shader binding table address must be aligned to API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT.");
+		DEV_ASSERT((vk_strided_device_address_region.stride & (raytracing_capabilities.shader_group_handle_alignment - 1)) == 0 && "Shader binding table stride must be aligned to API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT.");
+	}
+	return vk_strided_device_address_region;
+}
+
 // ----- COMMANDS -----
 
 void RenderingDeviceDriverVulkan::command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
@@ -6405,9 +6346,7 @@ void RenderingDeviceDriverVulkan::command_build_tlas(CommandBufferID p_cmd_buffe
 
 void RenderingDeviceDriverVulkan::command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) {
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	bound_raytracing_pipeline_id = p_pipeline;
-	const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)p_pipeline.id;
-	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rpi->vk_pipeline);
+	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, (VkPipeline)p_pipeline.id);
 }
 
 void RenderingDeviceDriverVulkan::command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
@@ -6417,160 +6356,135 @@ void RenderingDeviceDriverVulkan::command_bind_raytracing_uniform_set(CommandBuf
 	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
 }
 
-void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 #if VULKAN_RAYTRACING_ENABLED
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	ERR_FAIL_COND_MSG(bound_raytracing_pipeline_id == RaytracingPipelineID(), "A raytracing pipeline must have been bound with `command_bind_raytracing_pipeline()`.");
-	const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)bound_raytracing_pipeline_id.id;
-	vkCmdTraceRaysKHR(command_buffer->vk_command_buffer, &rpi->regions.raygen, &rpi->regions.miss, &rpi->regions.hit, &rpi->regions.call, p_width, p_height, 1);
+	VkStridedDeviceAddressRegionKHR raygen_sbt = _sbt_to_vk_strided_device_address_region(p_raygen_sbt);
+	VkStridedDeviceAddressRegionKHR miss_sbt = _sbt_to_vk_strided_device_address_region(p_miss_sbt);
+	VkStridedDeviceAddressRegionKHR hit_sbt = _sbt_to_vk_strided_device_address_region(p_hit_sbt);
+	VkStridedDeviceAddressRegionKHR callable_sbt = {};
+	vkCmdTraceRaysKHR(command_buffer->vk_command_buffer, &raygen_sbt, &miss_sbt, &hit_sbt, &callable_sbt, p_width, p_height, p_depth);
 #endif
 }
 
 // --- PIPELINE ---
 
-RDD::RaytracingPipelineID RenderingDeviceDriverVulkan::raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::RaytracingPipelineID RenderingDeviceDriverVulkan::raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) {
 #if VULKAN_RAYTRACING_ENABLED
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
+	VkPipelineShaderStageCreateInfo *stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, p_shaders.size());
+
+	for (uint32_t i = 0; i < p_shaders.size(); i++) {
+		const PipelineShader &shader = p_shaders[i];
+		const ShaderInfo *shader_info = (const ShaderInfo *)shader.shader.id;
+		bool found_shader_stage = false;
+
+		for (uint32_t j = 0; j < shader_info->vk_stages_create_info.size(); j++) {
+			const VkPipelineShaderStageCreateInfo &create_info = shader_info->vk_stages_create_info[j];
+			if (create_info.stage & RD_STAGE_TO_VK_SHADER_STAGE_BITS[shader.shader_stage]) {
+				stages[i] = create_info;
+
+				if (shader.specialization_constants.size()) {
+					VkSpecializationMapEntry *specialization_map_entries = ALLOCA_ARRAY(VkSpecializationMapEntry, shader.specialization_constants.size());
+					for (uint32_t k = 0; k < shader.specialization_constants.size(); k++) {
+						specialization_map_entries[k] = {};
+						specialization_map_entries[k].constantID = shader.specialization_constants[k].constant_id;
+						specialization_map_entries[k].offset = (const char *)&shader.specialization_constants[k].int_value - (const char *)shader.specialization_constants.ptr();
+						specialization_map_entries[k].size = sizeof(uint32_t);
+					}
+
+					VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
+					specialization_info->dataSize = shader.specialization_constants.size() * sizeof(PipelineSpecializationConstant);
+					specialization_info->pData = shader.specialization_constants.ptr();
+					specialization_info->mapEntryCount = shader.specialization_constants.size();
+					specialization_info->pMapEntries = specialization_map_entries;
+
+					stages[i].pSpecializationInfo = specialization_info;
+				}
+
+				found_shader_stage = true;
+				break;
+			}
+		}
+
+		ERR_FAIL_COND_V(!found_shader_stage, RaytracingPipelineID());
+	}
+
+	uint32_t shader_group_count = p_raygen_shader_indices.size() + p_miss_shader_indices.size() + p_hit_groups.size();
+	VkRayTracingShaderGroupCreateInfoKHR *shader_groups = ALLOCA_ARRAY(VkRayTracingShaderGroupCreateInfoKHR, shader_group_count);
+
+	for (uint32_t i = 0; i < p_raygen_shader_indices.size(); i++) {
+		VkRayTracingShaderGroupCreateInfoKHR &vk_shader_group = shader_groups[i];
+		vk_shader_group = {};
+		vk_shader_group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		vk_shader_group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		vk_shader_group.generalShader = p_raygen_shader_indices[i];
+		vk_shader_group.closestHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.anyHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.intersectionShader = VK_SHADER_UNUSED_KHR;
+	}
+
+	for (uint32_t i = 0; i < p_miss_shader_indices.size(); i++) {
+		VkRayTracingShaderGroupCreateInfoKHR &vk_shader_group = shader_groups[p_raygen_shader_indices.size() + i];
+		vk_shader_group = {};
+		vk_shader_group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		vk_shader_group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		vk_shader_group.generalShader = p_miss_shader_indices[i];
+		vk_shader_group.closestHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.anyHitShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.intersectionShader = VK_SHADER_UNUSED_KHR;
+	}
+
+	for (uint32_t i = 0; i < p_hit_groups.size(); i++) {
+		const HitGroup &hit_group = p_hit_groups[i];
+
+		VkRayTracingShaderGroupCreateInfoKHR &vk_shader_group = shader_groups[p_raygen_shader_indices.size() + p_miss_shader_indices.size() + i];
+		vk_shader_group = {};
+		vk_shader_group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+		vk_shader_group.type = hit_group.intersection_shader_index != UINT32_MAX ? VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR : VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+		vk_shader_group.generalShader = VK_SHADER_UNUSED_KHR;
+		vk_shader_group.closestHitShader = hit_group.closest_hit_shader_index;
+		vk_shader_group.anyHitShader = hit_group.any_hit_shader_index;
+		vk_shader_group.intersectionShader = hit_group.intersection_shader_index;
+	}
+
+	const ShaderInfo *layout_defining_shader_info = (const ShaderInfo *)p_layout_defining_shader.id;
 
 	VkRayTracingPipelineCreateInfoKHR pipeline_create_info = {};
 	pipeline_create_info.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
+	pipeline_create_info.layout = layout_defining_shader_info->vk_pipeline_layout;
+	pipeline_create_info.stageCount = p_shaders.size();
+	pipeline_create_info.pStages = stages;
+	pipeline_create_info.groupCount = shader_group_count;
+	pipeline_create_info.pGroups = shader_groups;
+	pipeline_create_info.maxPipelineRayRecursionDepth = p_max_trace_recursion_depth;
 
-	// Stages.
-	pipeline_create_info.stageCount = shader_info->vk_stages_create_info.size();
-
-	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, pipeline_create_info.stageCount);
-
-	for (uint32_t i = 0; i < pipeline_create_info.stageCount; i++) {
-		vk_pipeline_stages[i] = shader_info->vk_stages_create_info[i];
-
-		if (p_specialization_constants.size()) {
-			VkSpecializationMapEntry *specialization_map_entries = ALLOCA_ARRAY(VkSpecializationMapEntry, p_specialization_constants.size());
-			for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
-				specialization_map_entries[j] = {};
-				specialization_map_entries[j].constantID = p_specialization_constants[j].constant_id;
-				specialization_map_entries[j].offset = (const char *)&p_specialization_constants[j].int_value - (const char *)p_specialization_constants.ptr();
-				specialization_map_entries[j].size = sizeof(uint32_t);
-			}
-
-			VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
-			*specialization_info = {};
-			specialization_info->dataSize = p_specialization_constants.size() * sizeof(PipelineSpecializationConstant);
-			specialization_info->pData = p_specialization_constants.ptr();
-			specialization_info->mapEntryCount = p_specialization_constants.size();
-			specialization_info->pMapEntries = specialization_map_entries;
-
-			vk_pipeline_stages[i].pSpecializationInfo = specialization_info;
-		}
-	}
-
-	// Groups.
-	pipeline_create_info.groupCount = pipeline_create_info.stageCount;
-	VkRayTracingShaderGroupCreateInfoKHR *vk_pipeline_groups = ALLOCA_ARRAY(VkRayTracingShaderGroupCreateInfoKHR, pipeline_create_info.groupCount);
-	for (uint32_t i = 0; i < pipeline_create_info.stageCount; i++) {
-		vk_pipeline_groups[i] = shader_info->vk_groups_create_info[i];
-	}
-
-	// Pipeline.
-	pipeline_create_info.layout = shader_info->vk_pipeline_layout;
-	pipeline_create_info.pStages = vk_pipeline_stages;
-	pipeline_create_info.pGroups = vk_pipeline_groups;
-	pipeline_create_info.maxPipelineRayRecursionDepth = 1;
-
-	RaytracingPipelineInfo *rpi = VersatileResource::allocate<RaytracingPipelineInfo>(resources_allocator);
-
-	VkResult err = vkCreateRayTracingPipelinesKHR(vk_device, VK_NULL_HANDLE, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &rpi->vk_pipeline);
+	VkPipeline vk_pipeline = VK_NULL_HANDLE;
+	VkResult err = vkCreateRayTracingPipelinesKHR(vk_device, VK_NULL_HANDLE, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, RaytracingPipelineID(), "vkCreateRayTracingPipelinesKHR failed with error " + itos(err) + ".");
 
-	RaytracingPipelineID raytracing_pipeline = RaytracingPipelineID(rpi);
-	err = _raytracing_pipeline_stb_create(raytracing_pipeline, p_shader);
-	ERR_FAIL_COND_V_MSG(err, RaytracingPipelineID(), "_raytracing_pipeline_stb_create failed with error " + itos(err) + ".");
-
-	return raytracing_pipeline;
+	return RaytracingPipelineID(vk_pipeline);
 #else
 	return RaytracingPipelineID();
 #endif
 }
 
-VkResult RenderingDeviceDriverVulkan::_raytracing_pipeline_stb_create(RaytracingPipelineID p_pipeline, ShaderID p_shader) {
+void RenderingDeviceDriverVulkan::raytracing_pipeline_free(RaytracingPipelineID p_pipeline) {
 #if VULKAN_RAYTRACING_ENABLED
-	RaytracingPipelineInfo *rpi = (RaytracingPipelineInfo *)p_pipeline.id;
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-
-	// Shader group handles.
-	uint32_t handle_size_aligned = raytracing_capabilities.shader_group_handle_size_aligned;
-	uint32_t base_alignment = raytracing_capabilities.shader_group_base_alignment;
-
-	rpi->regions.raygen.stride = _align_up(handle_size_aligned * shader_info->region_count.raygen_count, base_alignment);
-	rpi->regions.raygen.size = rpi->regions.raygen.stride; // odd but ok.
-
-	rpi->regions.hit.stride = handle_size_aligned;
-	rpi->regions.hit.size = _align_up(handle_size_aligned * shader_info->region_count.hit_count, base_alignment);
-
-	rpi->regions.miss.stride = handle_size_aligned;
-	rpi->regions.miss.size = _align_up(handle_size_aligned * shader_info->region_count.miss_count, base_alignment);
-
-	rpi->regions.call.stride = 0;
-	rpi->regions.call.size = 0;
-
-	// Shader binding table.
-	uint32_t sbt_size = rpi->regions.raygen.size + rpi->regions.hit.size + rpi->regions.miss.size + rpi->regions.call.size;
-	rpi->sbt_buffer = buffer_create(sbt_size, BUFFER_USAGE_TRANSFER_FROM_BIT | BUFFER_USAGE_DEVICE_ADDRESS_BIT | BUFFER_USAGE_SHADER_BINDING_TABLE_BIT, MEMORY_ALLOCATION_TYPE_CPU, UINT64_MAX);
-
-	// Update regions addresses.
-	rpi->regions.raygen.deviceAddress = buffer_get_device_address(rpi->sbt_buffer);
-	rpi->regions.hit.deviceAddress = rpi->regions.raygen.deviceAddress + rpi->regions.raygen.size;
-	rpi->regions.miss.deviceAddress = rpi->regions.hit.deviceAddress + rpi->regions.hit.size;
-	rpi->regions.call.deviceAddress = 0;
-
-	// Update shader binding table buffer.
-	uint32_t handle_size = raytracing_capabilities.shader_group_handle_size;
-	uint32_t handles_size = shader_info->region_count.group_count * handle_size;
-	LocalVector<uint8_t> handles_data;
-	handles_data.resize(handles_size);
-	uint8_t *handles_ptr = handles_data.ptr();
-
-	VkResult err = vkGetRayTracingShaderGroupHandlesKHR(vk_device, rpi->vk_pipeline, 0, shader_info->region_count.group_count, handles_size, handles_ptr);
-	ERR_FAIL_COND_V_MSG(err, err, "vkGetRayTracingShaderGroupHandlesKHR failed with error " + itos(err) + ".");
-
-	uint8_t *sbt_ptr = buffer_map(rpi->sbt_buffer);
-	uint8_t *sbt_data = sbt_ptr;
-	uint32_t handle_index = 0;
-
-	// Raygen.
-	memcpy(sbt_data, handles_ptr + handle_index * handle_size, handle_size);
-	++handle_index;
-
-	// Hit.
-	sbt_data = sbt_ptr + rpi->regions.raygen.size;
-	for (uint32_t i = 0; i < shader_info->region_count.hit_count; ++i) {
-		memcpy(sbt_data, handles_ptr + handle_index * handle_size, handle_size);
-		sbt_data += rpi->regions.hit.stride;
-		++handle_index;
-	}
-
-	// Miss.
-	sbt_data = sbt_ptr + rpi->regions.raygen.size + rpi->regions.hit.size;
-	for (uint32_t i = 0; i < shader_info->region_count.miss_count; ++i) {
-		memcpy(sbt_data, handles_ptr + handle_index * handle_size, handle_size);
-		sbt_data += rpi->regions.miss.stride;
-		++handle_index;
-	}
-
-	buffer_unmap(rpi->sbt_buffer);
-
-	return err;
-#else
-	return VK_ERROR_UNKNOWN;
+	vkDestroyPipeline(vk_device, (VkPipeline)p_pipeline.id, nullptr);
 #endif
 }
 
-void RenderingDeviceDriverVulkan::raytracing_pipeline_free(RaytracingPipelineID p_pipeline) {
-	const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)p_pipeline.id;
-	vkDestroyPipeline(vk_device, rpi->vk_pipeline, nullptr);
-	if (rpi->sbt_buffer) {
-		buffer_free(rpi->sbt_buffer);
+bool RenderingDeviceDriverVulkan::raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data) {
+#if VULKAN_RAYTRACING_ENABLED
+	for (uint32_t i = 0; i < p_group_indices.size(); i++) {
+		VkResult err = vkGetRayTracingShaderGroupHandlesKHR(vk_device, (VkPipeline)p_pipeline.id, p_group_index_offset + p_group_indices[i], 1, raytracing_capabilities.shader_group_handle_size, r_data);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, "vkGetRayTracingShaderGroupHandlesKHR failed with error " + itos(err) + ".");
+		r_data += raytracing_capabilities.shader_group_handle_size;
 	}
-	VersatileResource::free(resources_allocator, rpi);
+	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************/
@@ -7115,8 +7029,7 @@ void RenderingDeviceDriverVulkan::set_object_name(ObjectType p_type, ID p_driver
 			_set_object_name(VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR, (uint64_t)asi->vk_acceleration_structure, p_name);
 		} break;
 		case OBJECT_TYPE_RAYTRACING_PIPELINE: {
-			const RaytracingPipelineInfo *rpi = (const RaytracingPipelineInfo *)p_driver_id.id;
-			_set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)rpi->vk_pipeline, p_name);
+			_set_object_name(VK_OBJECT_TYPE_PIPELINE, (uint64_t)p_driver_id.id, p_name);
 		} break;
 		default: {
 			DEV_ASSERT(false);
@@ -7295,6 +7208,12 @@ uint64_t RenderingDeviceDriverVulkan::api_trait_get(ApiTrait p_trait) {
 			return (uint64_t)SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE;
 		case API_TRAIT_ACCELERATION_STRUCTURE_INSTANCE_SIZE:
 			return sizeof(VkAccelerationStructureInstanceKHR);
+		case API_TRAIT_SHADER_GROUP_HANDLE_SIZE:
+			return raytracing_capabilities.shader_group_handle_size;
+		case API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT:
+			return raytracing_capabilities.shader_group_handle_alignment;
+		case API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT:
+			return raytracing_capabilities.shader_group_base_alignment;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}
