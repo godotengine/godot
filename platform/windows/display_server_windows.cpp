@@ -7470,13 +7470,16 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 	ZeroMemory(&os_ver, sizeof(OSVERSIONINFOW));
 	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
 
-#if defined(ANGLE_ENABLED)
 	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+#if defined(ANGLE_ENABLED)
 	bool is_wine = false;
+#endif
 	if (nt_lib) {
 		WineGetVersionPtr wine_get_version = (WineGetVersionPtr)(void *)GetProcAddress(nt_lib, "wine_get_version"); // Do not read Windows build number under Wine, it can be set to arbitrary value.
 		if (wine_get_version) {
+#if defined(ANGLE_ENABLED)
 			is_wine = true;
+#endif
 		} else {
 			RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)(void *)GetProcAddress(nt_lib, "RtlGetVersion");
 			if (RtlGetVersion) {
@@ -7485,7 +7488,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		}
 		FreeLibrary(nt_lib);
 	}
-#endif
 
 	// Load UXTheme.
 	if (os_ver.dwBuildNumber >= 10240) { // Not available on Wine, use only if real Windows 10/11 detected.
