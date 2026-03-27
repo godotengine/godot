@@ -717,6 +717,66 @@
 				Returns [code]true[/code] if the [param feature] is supported by the GPU.
 			</description>
 		</method>
+		<method name="hit_sbt_create">
+			<return type="RID" />
+			<param index="0" name="raytracing_pipeline" type="RID" />
+			<param index="1" name="initial_hit_group_capacity" type="int" />
+			<description>
+				Creates a new hit shader binding table (SBT). It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param raytracing_pipeline] is freed.
+				The hit SBT resizes itself as needed. [param initial_hit_group_capacity] is used to allocate the initial backing memory.
+			</description>
+		</method>
+		<method name="hit_sbt_range_alloc">
+			<return type="int" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="hit_group_count" type="int" />
+			<description>
+				Allocates a contiguous range of SBT entries from [param hit_sbt].
+				The returned value should be assigned to [member RDAccelerationStructureInstance.hit_sbt_range].
+				During ray traversal, hit group index is computed as:
+					(geometry index in [member RDAccelerationStructureInstance.blas])
+					× (SBT stride used in [code]traceRayEXT[/code])
+					+ (SBT offset used in [code]traceRayEXT[/code])
+					+ (range offset)
+				[param hit_group_count] must be large enough to cover all SBT entries that may be indexed by this equation. This typically corresponds to:
+					(geometry count in [member RDAccelerationStructureInstance.blas])
+					× (SBT stride used in [code]traceRayEXT[/code])
+				The allocated range is uninitialized and must be filled using [method hit_sbt_range_update].
+			</description>
+		</method>
+		<method name="hit_sbt_range_free">
+			<return type="int" enum="Error" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="range" type="int" />
+			<description>
+				Frees a hit SBT range previously allocated with [method hit_sbt_range_alloc].
+				The range must not be in use by any acceleration structure after being freed.
+			</description>
+		</method>
+		<method name="hit_sbt_range_update">
+			<return type="int" enum="Error" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="range" type="int" />
+			<param index="2" name="offset" type="int" />
+			<param index="3" name="hit_group_indices" type="PackedInt32Array" />
+			<description>
+				Updates the contents of a hit SBT range.
+				[param hit_group_indices] specifies indices into the hit group array provided in [method raytracing_pipeline_create].
+				The [param offset] parameter specifies where within the allocated range the writing begins. This allows partial updates of a range. However, the complete range must be fully initialized before it is used in a raytracing dispatch.
+			</description>
+		</method>
+		<method name="hit_sbt_set_pipeline">
+			<return type="int" enum="Error" />
+			<param index="0" name="hit_sbt" type="RID" />
+			<param index="1" name="raytracing_pipeline" type="RID" />
+			<description>
+				Sets a new [param raytracing_pipeline] for [param hit_sbt].
+				The new pipeline must be a superset of the previous one. Existing hit groups must keep the same order and new hit groups should be appended to the end. This preserves existing SBT entries.
+				The previous pipeline must remain valid during the call.
+			</description>
+		</method>
 		<method name="index_array_create">
 			<return type="RID" />
 			<param index="0" name="index_buffer" type="RID" />
@@ -780,6 +840,10 @@
 
 				var instance = RDAccelerationStructureInstance.new()
 				instance.blas = blas
+
+				instance.hit_sbt_range = rd.hit_sbt_range_alloc(hit_sbt, 1)
+				rd.hit_sbt_range_update(hit_sbt, instance.hit_sbt_range, 0, [0])
+
 				rd.tlas_build(tlas, [instance])
 
 				var raylist = rd.raytracing_list_begin()
@@ -791,7 +855,7 @@
 				# Trace rays.
 				var width = get_viewport().size.x
 				var height = get_viewport().size.y
-				rd.raytracing_list_trace_rays(raylist, width, height)
+				rd.raytracing_list_trace_rays(raylist, 0, hit_sbt, width, height, 1)
 
 				rd.raytracing_list_end()
 				[/gdscript]
@@ -833,20 +897,31 @@
 		<method name="raytracing_list_trace_rays">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
-			<param index="1" name="width" type="int" />
-			<param index="2" name="height" type="int" />
+			<param index="1" name="raygen_shader_index" type="int" />
+			<param index="2" name="hit_sbt" type="RID" />
+			<param index="3" name="width" type="int" />
+			<param index="4" name="height" type="int" />
+			<param index="5" name="depth" type="int" />
 			<description>
-				Initializes a ray tracing dispatch for the specified [param raytracing_list] assembling a group of [param width] x [param height] rays.
+				Initializes a raytracing dispatch for [param raytracing_list], launching [param width] × [param height] × [param depth] rays.
+				[param raygen_shader_index] selects the ray generation shader from the pipeline bound with [method raytracing_list_bind_raytracing_pipeline].
+				[param hit_sbt] must use the same pipeline bound to [param raytracing_list].
 			</description>
 		</method>
 		<method name="raytracing_pipeline_create">
 			<return type="RID" />
-			<param index="0" name="shader" type="RID" />
-			<param index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
+			<param index="0" name="raygen_shaders" type="RDPipelineShader[]" />
+			<param index="1" name="miss_shaders" type="RDPipelineShader[]" />
+			<param index="2" name="hit_groups" type="RDHitGroup[]" />
+			<param index="3" name="max_trace_recursion_depth" type="int" />
 			<description>
 				Creates a new raytracing pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-				[b]Note:[/b]: Recursive raytracing is not permitted.
+				Each shader must provide the required stage. All stages must use compatible pipeline layouts. The pipeline selects the required stage from each shader.
+				Input order defines stable indices used by the API:
+				- [param raygen_shaders] is indexed in [method raytracing_list_trace_rays].
+				- [param miss_shaders] is indexed in [code]traceRayEXT[/code].
+				- [param hit_groups] is indexed in [method hit_sbt_range_update].
 			</description>
 		</method>
 		<method name="raytracing_pipeline_is_valid">

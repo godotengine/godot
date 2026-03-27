@@ -708,8 +708,12 @@ private:
 	};
 
 	struct RaytracingListTraceRaysInstruction : RaytracingListInstruction {
+		RDD::ShaderBindingTable raygen_sbt;
+		RDD::ShaderBindingTable miss_sbt;
+		RDD::ShaderBindingTable hit_sbt;
 		uint32_t width = 0;
 		uint32_t height = 0;
+		uint32_t depth = 0;
 	};
 
 	struct RaytracingListUniformSetPrepareForUseInstruction : RaytracingListInstruction {
@@ -897,7 +901,7 @@ public:
 	void add_raytracing_list_bind_pipeline(RDD::RaytracingPipelineID p_pipeline);
 	void add_raytracing_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_raytracing_list_set_push_constant(RDD::ShaderID p_shader, const void *p_data, uint32_t p_data_size);
-	void add_raytracing_list_trace_rays(uint32_t p_width, uint32_t p_height);
+	void add_raytracing_list_trace_rays(const RDD::ShaderBindingTable &p_raygen_sbt, const RDD::ShaderBindingTable &p_miss_sbt, const RDD::ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth);
 	void add_raytracing_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_raytracing_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_raytracing_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);

@@ -813,7 +813,7 @@ void RenderingDeviceGraph::_run_raytracing_list_command(RDD::CommandBufferID p_c
 			} break;
 			case RaytracingListInstruction::TYPE_TRACE_RAYS: {
 				const RaytracingListTraceRaysInstruction *trace_rays_instruction = reinterpret_cast<const RaytracingListTraceRaysInstruction *>(instruction);
-				driver->command_trace_rays(p_command_buffer, trace_rays_instruction->width, trace_rays_instruction->height);
+				driver->command_trace_rays(p_command_buffer, trace_rays_instruction->raygen_sbt, trace_rays_instruction->miss_sbt, trace_rays_instruction->hit_sbt, trace_rays_instruction->width, trace_rays_instruction->height, trace_rays_instruction->depth);
 				instruction_data_cursor += sizeof(RaytracingListTraceRaysInstruction);
 			} break;
 			case RaytracingListInstruction::TYPE_SET_PUSH_CONSTANT: {
@@ -1959,11 +1959,15 @@ void RenderingDeviceGraph::add_raytracing_list_set_push_constant(RDD::ShaderID p
 	memcpy(instruction->data(), p_data, p_data_size);
 }
 
-void RenderingDeviceGraph::add_raytracing_list_trace_rays(uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceGraph::add_raytracing_list_trace_rays(const RDD::ShaderBindingTable &p_raygen_sbt, const RDD::ShaderBindingTable &p_miss_sbt, const RDD::ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	RaytracingListTraceRaysInstruction *instruction = reinterpret_cast<RaytracingListTraceRaysInstruction *>(_allocate_raytracing_list_instruction(sizeof(RaytracingListTraceRaysInstruction)));
 	instruction->type = RaytracingListInstruction::TYPE_TRACE_RAYS;
+	instruction->raygen_sbt = p_raygen_sbt;
+	instruction->miss_sbt = p_miss_sbt;
+	instruction->hit_sbt = p_hit_sbt;
 	instruction->width = p_width;
 	instruction->height = p_height;
+	instruction->depth = p_depth;
 }
 
 void RenderingDeviceGraph::add_raytracing_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
