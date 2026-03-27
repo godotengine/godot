@@ -1304,7 +1304,7 @@ bool DisplayServer::window_is_hdr_output_supported(DisplayServerEnums::WindowID 
 
 void DisplayServer::window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window) {
 	if (p_enable) {
-		WARN_PRINT_ED("HDR output is not supported by this display server.");
+		WARN_PRINT("HDR output requested, but it is not supported by this display server.");
 	}
 }
 
@@ -1317,7 +1317,7 @@ bool DisplayServer::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_
 }
 
 void DisplayServer::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set reference luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const {
@@ -1329,7 +1329,7 @@ float DisplayServer::window_get_hdr_output_current_reference_luminance(DisplaySe
 }
 
 void DisplayServer::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set max luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const {

@@ -1535,15 +1535,34 @@ void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
 
 bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	bool renderer_supports_hdr_output = false;
+#if defined(RD_ENABLED)
+	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		renderer_supports_hdr_output = true;
+	}
+#endif
+	if (!renderer_supports_hdr_output) {
+		return false;
+	}
+
 	const WindowData &wd = windows[p_window_id];
 
 	return wd.color_profile.target_max_luminance > wd.color_profile.reference_luminance;
 }
 
 void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id) {
+	if (p_enabled) {
+		bool renderer_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	ERR_FAIL_COND_MSG(p_enabled && !(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
+		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+			renderer_supports_hdr_output = true;
+		}
 #endif
+		if (!renderer_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+	}
 
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
