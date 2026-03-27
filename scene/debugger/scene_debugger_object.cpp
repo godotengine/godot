@@ -32,6 +32,7 @@
 
 #include "scene_debugger_object.h"
 
+#include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "scene/main/node.h"
@@ -84,7 +85,7 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 		const Variant &m = p_obj->get(E.name);
 
 		if (!m.is_null() && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE && E.usage & PROPERTY_USAGE_EDITOR) {
-			E.hint_string = _parse_type_from_remote_object(m);
+			E.hint_string = DebuggerMarshalls::parse_type_from_variant(m);
 		}
 
 		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)) {
@@ -151,7 +152,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			if (p_instance->get(E, m)) {
 				const String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
 				if (!m.is_null() && m.get_type() == Variant::OBJECT) {
-					PropertyInfo pi(m.get_type(), "Members/" + script_path + E, PROPERTY_HINT_OBJECT_ID, _parse_type_from_remote_object(m));
+					PropertyInfo pi(m.get_type(), "Members/" + script_path + E, PROPERTY_HINT_OBJECT_ID, DebuggerMarshalls::parse_type_from_variant(m));
 					properties.push_back(SceneDebuggerProperty(pi, m));
 				} else {
 					PropertyInfo pi;
@@ -173,7 +174,7 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 		for (const KeyValue<StringName, Variant> &E : sc.value) {
 			const String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
 			if (!E.value.is_null() && E.value.get_type() == Variant::OBJECT) {
-				PropertyInfo pi(E.value.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, _parse_type_from_remote_object(E.value), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
+				PropertyInfo pi(E.value.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, DebuggerMarshalls::parse_type_from_variant(E.value), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
 				properties.push_back(SceneDebuggerProperty(pi, E.value));
 			} else {
 				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
@@ -183,29 +184,6 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 			}
 		}
 	}
-}
-String SceneDebuggerObject::_parse_type_from_remote_object(const Variant &p_variant) {
-	String name;
-
-	if (p_variant.get_type() == Variant::OBJECT) {
-		const Object *obj = p_variant.get_validated_object();
-		if (obj) {
-			const ScriptInstance *script_instance = obj->get_script_instance();
-
-			if (script_instance) {
-				Ref<Script> script = script_instance->get_script();
-				if (script.is_valid()) {
-					name = script->get_global_name();
-				}
-			}
-
-			if (name.is_empty()) {
-				return obj->get_class();
-			}
-		}
-	}
-
-	return name;
 }
 
 void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
