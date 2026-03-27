@@ -353,8 +353,35 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	// Convert from editor pixels to points for the game.
+	float inv_scale = 1.0f / DisplayServer::get_singleton()->screen_get_max_scale();
+	Ref<InputEvent> event = p_event;
+
+	{
+		Ref<InputEventMouse> e = p_event;
+		if (e.is_valid()) {
+			e = e->duplicate();
+			e->set_position(e->get_position() * inv_scale);
+			e->set_global_position(e->get_global_position() * inv_scale);
+			Ref<InputEventMouseMotion> mm = e;
+			if (mm.is_valid()) {
+				mm->set_relative(mm->get_relative() * inv_scale);
+			}
+			event = e;
+		}
+	}
+
+	{
+		Ref<InputEventGesture> e = p_event;
+		if (e.is_valid()) {
+			e = e->duplicate();
+			e->set_position(e->get_position() * inv_scale);
+			event = e;
+		}
+	}
+
 	PackedByteArray data;
-	if (encode_input_event(p_event, data)) {
+	if (encode_input_event(event, data)) {
 		if (script_debugger != nullptr) {
 			script_debugger->send_message("embed:event", { data });
 		}

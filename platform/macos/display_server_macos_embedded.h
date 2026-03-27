@@ -98,6 +98,10 @@ class DisplayServerMacOSEmbedded : public DisplayServerMacOSBase {
 
 	Point2i ime_last_position;
 
+	// Convert source pixel size to render pixel size, accounting for the
+	// difference between display scale and render scale when hiDPI is disabled.
+	Size2i _source_to_render_size(const Size2i &p_source_size) const;
+
 	void _mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) override;
 
 	struct Joy {
