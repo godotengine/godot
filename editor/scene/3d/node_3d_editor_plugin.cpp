@@ -857,8 +857,42 @@ float Node3DEditorViewport::_min_screen_dist_to_aabb(const AABB &p_aabb, const T
 	return Math::sqrt(dx * dx + dy * dy);
 }
 
+static bool _node_is_snap_source(Node *p_node, bool p_use_collision) {
+	if (!p_use_collision) {
+		return Object::cast_to<GeometryInstance3D>(p_node);
+	}
+	if (Object::cast_to<CollisionShape3D>(p_node)) {
+		return true;
+	}
+	Node3D *n3d = Object::cast_to<Node3D>(p_node);
+	if (!n3d) {
+		return false;
+	}
+	for (const Ref<Node3DGizmo> &g : n3d->get_gizmos()) {
+		Ref<EditorNode3DGizmo> seg = g;
+		if (seg.is_valid() && seg->get_collision_meshes_are_snap_source()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool _node_has_snap_target(Node *p_node, bool p_use_collision) {
+	if (_node_is_snap_source(p_node, p_use_collision)) {
+		return true;
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		if (_node_has_snap_target(p_node->get_child(i), p_use_collision)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Node3DEditorViewport::_find_closest_vertex_on_node(const Point2 &p_screen_pos, Node3D *p_node, float &r_closest_screen_dist, Vector3 &r_vertex_world) const {
 	bool found = false;
+	bool use_collision = Node3DEditor::get_singleton()->is_vertex_snap_use_collision();
+	bool walk_collision_segments = use_collision && Object::cast_to<CollisionShape3D>(p_node);
 
 	Transform3D gt = p_node->get_global_transform();
 	Vector<Ref<Node3DGizmo>> gizmos = p_node->get_gizmos();
@@ -869,53 +903,72 @@ bool Node3DEditorViewport::_find_closest_vertex_on_node(const Point2 &p_screen_p
 			continue;
 		}
 
-		const LocalVector<Ref<TriangleMesh>> &meshes = seg->get_collision_meshes();
-		for (const Ref<TriangleMesh> &tm : meshes) {
-			if (tm.is_null() || !tm->is_valid()) {
-				continue;
+		if (walk_collision_segments) {
+			const Vector<Vector3> &segments = seg->get_collision_segments();
+			for (int si = 0; si < segments.size(); si++) {
+				Vector3 world_v = gt.xform(segments[si]);
+				if (camera->is_position_behind(world_v)) {
+					continue;
+				}
+				Vector2 screen_v = camera->unproject_position(world_v);
+				float dist = screen_v.distance_to(p_screen_pos);
+				if (dist < r_closest_screen_dist) {
+					r_closest_screen_dist = dist;
+					r_vertex_world = world_v;
+					found = true;
+				}
 			}
+		}
 
-			const Vector<TriangleMesh::BVH> &bvh = tm->get_bvh();
-			const Vector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
-			const Vector<Vector3> &vertices = tm->get_vertices();
-
-			if (bvh.is_empty()) {
-				continue;
-			}
-
-			// Traverse the TriangleMesh BVH, pruning branches whose screen-space
-			// AABB is farther than the current best.
-			LocalVector<int> stack;
-			stack.push_back(bvh.size() - 1);
-
-			while (!stack.is_empty()) {
-				int node_idx = stack[stack.size() - 1];
-				stack.resize(stack.size() - 1);
-
-				const TriangleMesh::BVH &b = bvh[node_idx];
-
-				if (_min_screen_dist_to_aabb(b.aabb, gt, p_screen_pos) >= r_closest_screen_dist) {
+		if (!use_collision || seg->get_collision_meshes_are_snap_source()) {
+			const LocalVector<Ref<TriangleMesh>> &meshes = seg->get_collision_meshes();
+			for (const Ref<TriangleMesh> &tm : meshes) {
+				if (tm.is_null() || !tm->is_valid()) {
 					continue;
 				}
 
-				if (b.face_index >= 0) {
-					const TriangleMesh::Triangle &tri = triangles[b.face_index];
-					for (int vi = 0; vi < 3; vi++) {
-						Vector3 world_v = gt.xform(vertices[tri.indices[vi]]);
-						if (camera->is_position_behind(world_v)) {
-							continue;
-						}
-						Vector2 screen_v = camera->unproject_position(world_v);
-						float dist = screen_v.distance_to(p_screen_pos);
-						if (dist < r_closest_screen_dist) {
-							r_closest_screen_dist = dist;
-							r_vertex_world = world_v;
-							found = true;
-						}
+				const Vector<TriangleMesh::BVH> &bvh = tm->get_bvh();
+				const Vector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
+				const Vector<Vector3> &vertices = tm->get_vertices();
+
+				if (bvh.is_empty()) {
+					continue;
+				}
+
+				// Traverse the TriangleMesh BVH, pruning branches whose screen-space
+				// AABB is farther than the current best.
+				LocalVector<int> stack;
+				stack.push_back(bvh.size() - 1);
+
+				while (!stack.is_empty()) {
+					int node_idx = stack[stack.size() - 1];
+					stack.resize(stack.size() - 1);
+
+					const TriangleMesh::BVH &b = bvh[node_idx];
+
+					if (_min_screen_dist_to_aabb(b.aabb, gt, p_screen_pos) >= r_closest_screen_dist) {
+						continue;
 					}
-				} else {
-					stack.push_back(b.left);
-					stack.push_back(b.right);
+
+					if (b.face_index >= 0) {
+						const TriangleMesh::Triangle &tri = triangles[b.face_index];
+						for (int vi = 0; vi < 3; vi++) {
+							Vector3 world_v = gt.xform(vertices[tri.indices[vi]]);
+							if (camera->is_position_behind(world_v)) {
+								continue;
+							}
+							Vector2 screen_v = camera->unproject_position(world_v);
+							float dist = screen_v.distance_to(p_screen_pos);
+							if (dist < r_closest_screen_dist) {
+								r_closest_screen_dist = dist;
+								r_vertex_world = world_v;
+								found = true;
+							}
+						}
+					} else {
+						stack.push_back(b.left);
+						stack.push_back(b.right);
+					}
 				}
 			}
 		}
@@ -932,12 +985,14 @@ bool Node3DEditorViewport::_find_closest_vertex_in_scene(const Point2 &p_screen_
 	Point2 max_pos(p_screen_pos.x + p_threshold, p_screen_pos.y + p_threshold);
 	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_frustum_query(_build_screen_frustum(min_pos, max_pos));
 
+	bool use_collision = Node3DEditor::get_singleton()->is_vertex_snap_use_collision();
+
 	for (Node3D *spat : nodes_with_gizmos) {
 		if (!spat) {
 			continue;
 		}
 
-		if (!Object::cast_to<GeometryInstance3D>(spat)) {
+		if (!_node_is_snap_source(spat, use_collision)) {
 			continue;
 		}
 
@@ -1042,18 +1097,6 @@ bool Node3DEditorViewport::_is_vertex_occluded(const Vector3 &p_world_pos, const
 	return false;
 }
 
-static bool _node_has_geometry(Node *p_node) {
-	if (Object::cast_to<GeometryInstance3D>(p_node)) {
-		return true;
-	}
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		if (_node_has_geometry(p_node->get_child(i))) {
-			return true;
-		}
-	}
-	return false;
-}
-
 void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 	if (selection.is_empty()) {
@@ -1068,7 +1111,8 @@ void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos
 	if (spatial_editor->is_vertex_snap_origin_mode()) {
 		found = _find_closest_vertex_in_scene(p_screen_pos, threshold, vw);
 	} else {
-		bool selection_has_geometry = false;
+		bool use_collision = spatial_editor->is_vertex_snap_use_collision();
+		bool selection_has_snap_target = false;
 		for (Node *E : selection) {
 			Node3D *sp = Object::cast_to<Node3D>(E);
 			if (!sp) {
@@ -1080,11 +1124,11 @@ void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos
 			while (!descendants.is_empty()) {
 				Node3D *node = descendants[descendants.size() - 1];
 				descendants.resize(descendants.size() - 1);
-				if (Object::cast_to<GeometryInstance3D>(node)) {
-					selection_has_geometry = true;
-				}
-				if (_find_closest_vertex_on_node(p_screen_pos, node, threshold, vw)) {
-					found = true;
+				if (_node_is_snap_source(node, use_collision)) {
+					selection_has_snap_target = true;
+					if (_find_closest_vertex_on_node(p_screen_pos, node, threshold, vw)) {
+						found = true;
+					}
 				}
 				for (int i = 0; i < node->get_child_count(); i++) {
 					Node3D *child = Object::cast_to<Node3D>(node->get_child(i));
@@ -1095,7 +1139,7 @@ void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos
 			}
 		}
 
-		if (!found && !selection_has_geometry) {
+		if (!found && !selection_has_snap_target) {
 			found = _find_closest_vertex_in_scene(p_screen_pos, threshold, vw);
 		}
 	}
@@ -2023,7 +2067,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	}
 
 	if (k.is_valid()) {
-		if (!vertex_snap_mode && !vertex_snap_dragging && k->is_pressed() && _edit.mode == TRANSFORM_NONE && ED_IS_SHORTCUT("spatial_editor/vertex_snap", p_event)) {
+		Ref<InputEventKey> k_no_shift = k->duplicate();
+		k_no_shift->set_shift_pressed(false);
+		if (!vertex_snap_mode && !vertex_snap_dragging && k->is_pressed() && _edit.mode == TRANSFORM_NONE && ED_IS_SHORTCUT("spatial_editor/vertex_snap", k_no_shift)) {
 			vertex_snap_mode = true;
 			vertex_snap_keycode = k->get_physical_keycode() != Key::NONE ? k->get_physical_keycode() : k->get_keycode();
 			_disable_follow_mode();
@@ -2074,19 +2120,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					bool has_subgizmos = se && se->gizmo.is_valid() && !se->subgizmos.is_empty();
 
 					if (!use_origin_snap) {
-						if (has_subgizmos) {
+						bool has_snap_target = false;
+						for (Node *E : selection) {
+							if (_node_has_snap_target(E, spatial_editor->is_vertex_snap_use_collision())) {
+								has_snap_target = true;
+								break;
+							}
+						}
+						if (!has_snap_target) {
 							use_origin_snap = true;
-						} else {
-							bool has_geometry = false;
-							for (Node *E : selection) {
-								if (_node_has_geometry(E)) {
-									has_geometry = true;
-									break;
-								}
-							}
-							if (!has_geometry) {
-								use_origin_snap = true;
-							}
 						}
 					}
 
@@ -7538,6 +7580,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["viewports"] = vpdata;
 
 	d["vertex_snap_origin_mode"] = vertex_snap_origin_mode;
+	d["vertex_snap_use_collision"] = vertex_snap_use_collision;
 	d["show_grid"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
@@ -7618,6 +7661,14 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
 		transform_menu->get_popup()->set_item_checked(idx_vertex, !vertex_snap_origin_mode);
 		transform_menu->get_popup()->set_item_checked(idx_origin, vertex_snap_origin_mode);
+	}
+
+	if (d.has("vertex_snap_use_collision")) {
+		vertex_snap_use_collision = d["vertex_snap_use_collision"];
+		int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+		int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+		transform_menu->get_popup()->set_item_checked(idx_mesh, !vertex_snap_use_collision);
+		transform_menu->get_popup()->set_item_checked(idx_collision, vertex_snap_use_collision);
 	}
 
 	if (d.has("local_coords")) {
@@ -7802,6 +7853,10 @@ void Node3DEditor::_update_vertex_snap_tooltips() {
 			vformat(TTR("Hold %s to highlight a vertex on the currently selected node,\nthen drag to move the node and snap it to vertices on neighboring nodes.\n\nFor nodes without a vertex-based representation,\nSnap Origin to Vertex is always used instead."), snap_key));
 	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN),
 			vformat(TTR("Hold %s to highlight another node's vertex,\nthen click to teleport the selected node to the highlighted vertex."), snap_key));
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH),
+			TTR("Snap to vertices of visual meshes.\nHold Shift while vertex snapping to temporarily snap to collision shapes instead."));
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION),
+			TTR("Snap to vertices of collision shapes.\nHold Shift while vertex snapping to temporarily snap to mesh vertices instead."));
 }
 
 void Node3DEditor::_xform_dialog_action() {
@@ -7982,6 +8037,20 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
 			transform_menu->get_popup()->set_item_checked(idx_vertex, false);
 			transform_menu->get_popup()->set_item_checked(idx_origin, true);
+		} break;
+		case MENU_VERTEX_SNAP_SOURCE_MESH: {
+			vertex_snap_use_collision = false;
+			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu->get_popup()->set_item_checked(idx_mesh, true);
+			transform_menu->get_popup()->set_item_checked(idx_collision, false);
+		} break;
+		case MENU_VERTEX_SNAP_SOURCE_COLLISION: {
+			vertex_snap_use_collision = true;
+			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu->get_popup()->set_item_checked(idx_mesh, false);
+			transform_menu->get_popup()->set_item_checked(idx_collision, true);
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
@@ -10597,6 +10666,11 @@ Node3DEditor::Node3DEditor() {
 	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
 	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
 	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
+
+	p->add_separator();
+	p->add_radio_check_item(TTRC("Snap to Mesh Vertices"), MENU_VERTEX_SNAP_SOURCE_MESH);
+	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH), true);
+	p->add_radio_check_item(TTRC("Snap to Collision Vertices"), MENU_VERTEX_SNAP_SOURCE_COLLISION);
 	_update_vertex_snap_tooltips();
 
 	p->add_separator();
@@ -11097,6 +11171,10 @@ bool Node3DEditor::is_gizmo_visible() const {
 		return gizmo.visible && selected->is_transform_gizmo_visible();
 	}
 	return gizmo.visible;
+}
+
+bool Node3DEditor::is_vertex_snap_use_collision() const {
+	return vertex_snap_use_collision != Input::get_singleton()->is_key_pressed(Key::SHIFT);
 }
 
 real_t Node3DEditor::get_translate_snap() const {
