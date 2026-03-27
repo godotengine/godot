@@ -3025,7 +3025,6 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						&argidx_arg
 					};
 					for (MethodBind *options_getter : options_getters) {
-
 						Callable::CallError ce;
 						Variant ret = options_getter->call(obj, (const Variant **)get_argument_options_argptr.ptr(), get_argument_options_argptr.size(), ce);
 						if (ce.error == Callable::CallError::CALL_OK) {

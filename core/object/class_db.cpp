@@ -2080,7 +2080,7 @@ void ClassDB::get_argument_options_getters(const StringName &p_class, List<Metho
 		MethodBind **method = ti->method_map.getptr(SNAME("get_argument_options"));
 		ti = ti->inherits_ptr; // do this now so we can do early continues
 		if (method && *method) {
-			// check get_argument_options method is static and takes parameters (Object* instance, const StringName &p_function, int p_idx)
+			// check get_argument_options method is static and takes parameters (const Object* instance, const StringName &p_function, int p_idx)
 			const String error_msg = vformat("method 'get_argument_options' of class '%s' can only be declared with signature (const Object* , StringName, int) -> PackedStringArray.", String(p_class));
 			MethodInfo mi = info_from_bind(*method);
 			ERR_CONTINUE_MSG(mi.return_val.type != Variant::PACKED_STRING_ARRAY, error_msg);

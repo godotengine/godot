@@ -2010,7 +2010,7 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 }
 
 #ifdef TOOLS_ENABLED
-PackedStringArray SceneTree::get_argument_options(const Object *instance, const StringName &p_function, int p_idx) {
+PackedStringArray SceneTree::get_argument_options(const Object *p_instance, const StringName &p_function, int p_idx) {
 	Vector<String> returned_options;
 	bool add_options = false;
 	if (p_idx == 0) {
