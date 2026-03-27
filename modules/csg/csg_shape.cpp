@@ -120,6 +120,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		root_collision_shape.unref();
 	}
 	notify_property_list_changed();
+	update_gizmos();
 }
 
 bool CSGShape3D::is_using_collision() const {

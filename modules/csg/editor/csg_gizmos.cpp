@@ -428,6 +428,10 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	collision_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, collision_array);
 	p_gizmo->add_collision_triangles(collision_mesh->generate_triangle_mesh());
 
+	if (cs->is_using_collision() && cs->is_root_shape()) {
+		p_gizmo->set_collision_meshes_are_snap_source(true);
+	}
+
 	if (p_gizmo->is_selected()) {
 		// Draw a translucent representation of the CSG node
 		Ref<ArrayMesh> mesh = memnew(ArrayMesh);
