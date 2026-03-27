@@ -766,6 +766,52 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	return "";
 }
 
+String ExtendGDScriptParser::get_string_literal_under_position(const LSP::Position &p_position, LSP::Range &r_range) const {
+	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");
+	String line = lines[p_position.line];
+	if (line.is_empty()) {
+		return "";
+	}
+
+	// Convert LSP position (0-based) to Godot position (1-based).
+	const GodotPosition godot_pos = GodotPosition::from_lsp(p_position, lines);
+	for (const Node *node = get_node_list(); node != nullptr; node = node->next) {
+		if (node->type != Node::LITERAL) {
+			continue;
+		}
+
+		const LiteralNode *literal_node = static_cast<const LiteralNode *>(node);
+		if (literal_node->value.get_type() != Variant::STRING) {
+			continue;
+		}
+
+		if (godot_pos.line != literal_node->start_line || godot_pos.column <= literal_node->start_column || godot_pos.column >= literal_node->end_column) {
+			continue;
+		}
+
+		// Determine quote width.
+		LSP::Position lsp_start = GodotPosition(literal_node->start_line, literal_node->start_column).to_lsp(lines);
+		String start_line_text = lines[lsp_start.line];
+		int quote_width = 1;
+		if (lsp_start.character + 2 < start_line_text.length()) {
+			char32_t c = start_line_text[lsp_start.character];
+			if ((c == '"' || c == '\'') &&
+					start_line_text[lsp_start.character + 1] == c &&
+					start_line_text[lsp_start.character + 2] == c) {
+				quote_width = 3;
+			}
+		}
+
+		GodotPosition content_start(literal_node->start_line, literal_node->start_column + quote_width);
+		GodotPosition content_end(literal_node->end_line, literal_node->end_column - quote_width);
+		r_range = GodotRange(content_start, content_end).to_lsp(lines);
+
+		return literal_node->value;
+	}
+
+	return "";
+}
+
 String ExtendGDScriptParser::get_uri() const {
 	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(path);
 }

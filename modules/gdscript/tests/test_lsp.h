@@ -42,6 +42,7 @@
 #include "gdscript_test_runner.h"
 
 #include "core/io/dir_access.h"
+#include "core/io/resource_uid.h"
 #include "editor/file_system/editor_file_system.h"
 #include "tests/test_macros.h"
 
@@ -530,6 +531,203 @@ func f():
 			REQUIRE(cls.documentation.contains("t1"));
 			REQUIRE(cls.documentation.contains("t2"));
 			REQUIRE(cls.documentation.contains("t3"));
+		}
+
+		memdelete(efs);
+		finish_language();
+	}
+
+	TEST_CASE("[workspace][get_string_literal_under_position]") {
+		EditorFileSystem *efs = memnew(EditorFileSystem);
+		GDScriptLanguageProtocol *proto = initialize(root);
+		REQUIRE(proto);
+
+		String path = "res://lsp/resource_paths.gd";
+		ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+		REQUIRE(parser);
+
+		SUBCASE("Returns uid:// string when cursor is inside uid:// literal") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(3, 25), r);
+			CHECK_EQ(result, "uid://a1b2c3");
+		}
+
+		SUBCASE("Returns empty for cursor on non-string token") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(7, 14), r);
+			CHECK(result.is_empty());
+		}
+
+		SUBCASE("Returns empty for cursor on empty line") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(2, 0), r);
+			CHECK(result.is_empty());
+		}
+
+		SUBCASE("Returns plain string when cursor is inside a non-path string") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(5, 24), r);
+			CHECK_EQ(result, "hello world");
+		}
+
+		SUBCASE("Returns string with range excluding quotes") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(2, 20), r);
+			CHECK_EQ(result, "uid://zzz_not_a_real_uid");
+			CHECK_EQ(r.start.line, 2);
+			CHECK_EQ(r.end.line, 2);
+			CHECK_EQ(r.start.character, 19);
+			CHECK_EQ(r.end.character, 43);
+		}
+
+		SUBCASE("Returns middle string when cursor is inside it on a multi-string line") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(8, 25), r);
+			CHECK_EQ(result, "second");
+			CHECK_EQ(r.start.character, 23);
+			CHECK_EQ(r.end.character, 29);
+		}
+
+		SUBCASE("Returns empty when cursor is between strings on a multi-string line") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(8, 20), r);
+			CHECK(result.is_empty());
+		}
+
+		SUBCASE("Returns full content for string with escaped quotes") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(9, 20), r);
+			CHECK_EQ(result, "hello \"world\" bye");
+		}
+
+		SUBCASE("Returns content for single-quoted string") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(10, 25), r);
+			CHECK_EQ(result, "single quotes");
+			CHECK_EQ(r.start.line, 10);
+			CHECK_EQ(r.start.character, 21);
+			CHECK_EQ(r.end.character, 34);
+		}
+
+		SUBCASE("Returns content for double-quoted string containing single quote") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(11, 25), r);
+			CHECK_EQ(result, "it's a test");
+			CHECK_EQ(r.start.character, 20);
+			CHECK_EQ(r.end.character, 31);
+		}
+
+		SUBCASE("Returns content for triple-quoted string") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(12, 30), r);
+			CHECK_EQ(result, "I'm also \"a\" String");
+			CHECK_EQ(r.start.line, 12);
+			CHECK_EQ(r.start.character, 23);
+			CHECK_EQ(r.end.character, 42);
+		}
+
+		SUBCASE("Returns content for triple-quoted string even when cursor is on a double-quoted internal string") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(12, 33), r);
+			CHECK_EQ(result, "I'm also \"a\" String");
+			CHECK_EQ(r.start.line, 12);
+			CHECK_EQ(r.start.character, 23);
+			CHECK_EQ(r.end.character, 42);
+		}
+
+		SUBCASE("Returns string when inside a function call argument") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(13, 27), r);
+			CHECK_EQ(result, "uid://a1b2c3");
+			CHECK_EQ(r.start.line, 13);
+		}
+
+		SUBCASE("Returns empty when cursor is on the opening quote") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(13, 22), r);
+			CHECK(result.is_empty());
+		}
+
+		SUBCASE("Returns empty when cursor is past the closing quote") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(13, 36), r);
+			CHECK(result.is_empty());
+		}
+
+		SUBCASE("Returns string when cursor is at the closing quote") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(13, 35), r);
+			CHECK_EQ(result, "uid://a1b2c3");
+			CHECK_EQ(r.start.line, 13);
+		}
+
+		SUBCASE("Returns empty for cursor inside a comment") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(14, 28), r);
+			CHECK(result.is_empty());
+		}
+
+		SUBCASE("Returns string for tab-indented line") {
+			LSP::Range r;
+			String result = parser->get_string_literal_under_position(pos(20, 14), r);
+			CHECK_EQ(result, "uid://a1b2c3");
+			CHECK_EQ(r.start.line, 20);
+			CHECK_EQ(r.start.character, 11);
+			CHECK_EQ(r.end.character, 23);
+		}
+
+		memdelete(efs);
+		finish_language();
+	}
+
+	TEST_CASE("[workspace][hover_resource_path]") {
+		EditorFileSystem *efs = memnew(EditorFileSystem);
+		GDScriptLanguageProtocol *proto = initialize(root);
+		REQUIRE(proto);
+		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+
+		String path = "res://lsp/resource_paths.gd";
+		String uri = workspace->get_file_uri(path);
+		GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+
+		SUBCASE("Hover on invalid uid:// returns invalid UID message") {
+			Dictionary params;
+			Dictionary text_doc;
+			text_doc["uri"] = uri;
+			params["textDocument"] = text_doc;
+			Dictionary position;
+			position["line"] = 2;
+			position["character"] = 25;
+			params["position"] = position;
+
+			Variant result = GDScriptLanguageProtocol::get_singleton()->get_text_document()->hover(params);
+			REQUIRE(result.get_type() == Variant::DICTIONARY);
+			CHECK(String(Dictionary(Dictionary(result)["contents"])["value"]).contains("Invalid UID"));
+		}
+
+		SUBCASE("Hover on valid uid:// returns resource info") {
+			String target_path = "res://lsp/local_variables.gd";
+			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id("uid://a1b2c3");
+			REQUIRE(uid != ResourceUID::INVALID_ID);
+			ResourceUID::get_singleton()->add_id(uid, target_path);
+
+			Dictionary params;
+			Dictionary text_doc;
+			text_doc["uri"] = uri;
+			params["textDocument"] = text_doc;
+			Dictionary position;
+			position["line"] = 3;
+			position["character"] = 20;
+			params["position"] = position;
+
+			Variant result = GDScriptLanguageProtocol::get_singleton()->get_text_document()->hover(params);
+			REQUIRE(result.get_type() == Variant::DICTIONARY);
+
+			String value = Dictionary(Dictionary(result)["contents"])["value"];
+			CHECK(value.contains("Resource"));
+			CHECK(value.contains("local_variables.gd"));
+
+			ResourceUID::get_singleton()->remove_id(uid);
 		}
 
 		memdelete(efs);
