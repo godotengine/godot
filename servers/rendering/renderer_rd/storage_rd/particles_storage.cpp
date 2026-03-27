@@ -1649,7 +1649,19 @@ void ParticlesStorage::update_particles() {
 				// In local mode, particle positions are calculated locally (relative to the node position)
 				// and they're also drawn locally.
 				// It works as expected, so we just pass an identity transform.
-				RendererRD::MaterialStorage::store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
+				//RendererRD::MaterialStorage::store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
+				copy_push_constant.inv_emission_transform[0] = 1.0;
+				copy_push_constant.inv_emission_transform[1] = 0.0;
+				copy_push_constant.inv_emission_transform[2] = 0.0;
+				copy_push_constant.inv_emission_transform[3] = 0.0;
+				copy_push_constant.inv_emission_transform[4] = 1.0;
+				copy_push_constant.inv_emission_transform[5] = 0.0;
+				copy_push_constant.inv_emission_transform[6] = 0.0;
+				copy_push_constant.inv_emission_transform[7] = 0.0;
+				copy_push_constant.inv_emission_transform[8] = 1.0;
+				copy_push_constant.inv_emission_transform[9] = 0.0;
+				copy_push_constant.inv_emission_transform[10] = 0.0;
+				copy_push_constant.inv_emission_transform[11] = 0.0;
 			} else {
 				// In global mode, particle positions are calculated globally (relative to the canvas origin)
 				// but they're drawn locally.
