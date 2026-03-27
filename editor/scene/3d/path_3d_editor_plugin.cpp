@@ -868,7 +868,7 @@ void Path3DEditorPlugin::_auto_tangent() {
 	Ref<Curve3D> curve = path->get_curve();
 	undo_redo->create_action(TTR("Auto Tangent"));
 
-	// Catmull–Rom smoothing
+	// Smoothing.
 	int point_count = curve->get_point_count();
 	const float smooth_ratio = auto_tangent_torsion->get_value();
 	for (int i = 1; i < point_count - 1; i++) {
