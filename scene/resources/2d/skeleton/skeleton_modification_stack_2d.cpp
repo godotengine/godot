@@ -249,6 +249,9 @@ void SkeletonModificationStack2D::set_skeleton(Skeleton2D *p_skeleton) {
 }
 
 Skeleton2D *SkeletonModificationStack2D::get_skeleton() const {
+	if (!active_state) {
+		return nullptr;
+	}
 	return active_state->skeleton;
 }
 
@@ -261,6 +264,9 @@ const SkeletonModificationStackState2D *SkeletonModificationStack2D::get_active_
 }
 
 bool SkeletonModificationStack2D::get_is_setup() const {
+	if (!active_state) {
+		return false;
+	}
 	return active_state->is_setup;
 }
 
