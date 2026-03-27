@@ -785,6 +785,7 @@ public:
 	RD_SETGET(Transform3D, transform)
 	RD_SETGET(uint32_t, id)
 	RD_SETGET(uint8_t, mask)
+	RD_SETGET(RD::HitShaderBindingTableRange, hit_sbt_range)
 	RD_SETGET(BitField<RD::AccelerationStructureInstanceFlagBits>, flags)
 	RD_SETGET(RID, blas)
 
@@ -793,7 +794,77 @@ protected:
 		RD_BIND(Variant::TRANSFORM3D, RDAccelerationStructureInstance, transform);
 		RD_BIND(Variant::INT, RDAccelerationStructureInstance, id);
 		RD_BIND(Variant::INT, RDAccelerationStructureInstance, mask);
+		RD_BIND(Variant::INT, RDAccelerationStructureInstance, hit_sbt_range);
 		RD_BIND(Variant::INT, RDAccelerationStructureInstance, flags);
 		RD_BIND(Variant::RID, RDAccelerationStructureInstance, blas);
+	}
+};
+
+class RDPipelineShader : public RefCounted {
+	GDCLASS(RDPipelineShader, RefCounted)
+	friend class RenderingDevice;
+	RD::PipelineShader base;
+
+	TypedArray<RDPipelineSpecializationConstant> specialization_constants;
+
+public:
+	RD_SETGET(RID, shader)
+
+	void set_specialization_constants(const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants) {
+		specialization_constants = p_specialization_constants;
+	}
+
+	TypedArray<RDPipelineSpecializationConstant> get_specialization_constants() const {
+		return specialization_constants;
+	}
+
+protected:
+	static void _bind_methods() {
+		RD_BIND(Variant::RID, RDPipelineShader, shader);
+
+		ClassDB::bind_method(D_METHOD("set_specialization_constants", "specialization_constants"), &RDPipelineShader::set_specialization_constants);
+		ClassDB::bind_method(D_METHOD("get_specialization_constants"), &RDPipelineShader::get_specialization_constants);
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "specialization_constants", PROPERTY_HINT_ARRAY_TYPE, "RDPipelineSpecializationConstant"), "set_specialization_constants", "get_specialization_constants");
+	}
+};
+
+class RDHitGroup : public RefCounted {
+	GDCLASS(RDHitGroup, RefCounted)
+	friend class RenderingDevice;
+
+	Ref<RDPipelineShader> closest_hit_shader;
+	Ref<RDPipelineShader> any_hit_shader;
+	Ref<RDPipelineShader> intersection_shader;
+
+public:
+	void set_closest_hit_shader(const Ref<RDPipelineShader> &p_closest_hit_shader) {
+		closest_hit_shader = p_closest_hit_shader;
+	}
+
+	Ref<RDPipelineShader> get_closest_hit_shader() const {
+		return closest_hit_shader;
+	}
+
+	void set_any_hit_shader(const Ref<RDPipelineShader> &p_any_hit_shader) {
+		any_hit_shader = p_any_hit_shader;
+	}
+
+	Ref<RDPipelineShader> get_any_hit_shader() const {
+		return any_hit_shader;
+	}
+
+	void set_intersection_shader(const Ref<RDPipelineShader> &p_intersection_shader) {
+		intersection_shader = p_intersection_shader;
+	}
+
+	Ref<RDPipelineShader> get_intersection_shader() const {
+		return intersection_shader;
+	}
+
+protected:
+	static void _bind_methods() {
+		RD_BIND(Variant::OBJECT, RDHitGroup, closest_hit_shader);
+		RD_BIND(Variant::OBJECT, RDHitGroup, any_hit_shader);
+		RD_BIND(Variant::OBJECT, RDHitGroup, intersection_shader);
 	}
 };
