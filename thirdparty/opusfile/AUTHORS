@@ -1,0 +1,5 @@
+Timothy B. Terriberry <tterribe@xiph.org>
+Ralph Giles <giles@xiph.org>
+Christopher "Monty" Montgomery <xiphmont@xiph.org> (original libvorbisfile)
+Gregory Maxwell <greg@xiph.org> (noise shaping dithering)
+nu774 <honeycomb77@gmail.com> (original winsock support)
