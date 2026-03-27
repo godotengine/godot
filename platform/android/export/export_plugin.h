@@ -271,10 +271,6 @@ public:
 
 	bool _is_clean_build_required(const Ref<EditorExportPreset> &p_preset);
 
-	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-
-	Error save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
-
 	void get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, Vector<uint8_t> &r_command_line_flags);
 
 	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep);
