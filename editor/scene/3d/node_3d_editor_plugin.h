@@ -740,6 +740,8 @@ private:
 		MENU_RULER,
 		MENU_VERTEX_SNAP_BASE_VERTEX,
 		MENU_VERTEX_SNAP_BASE_ORIGIN,
+		MENU_VERTEX_SNAP_SOURCE_MESH,
+		MENU_VERTEX_SNAP_SOURCE_COLLISION,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -758,6 +760,7 @@ private:
 	bool snap_enabled = false;
 	bool snap_key_enabled = false;
 	bool vertex_snap_origin_mode = false;
+	bool vertex_snap_use_collision = false;
 	EditorSpinSlider *snap_translate = nullptr;
 	EditorSpinSlider *snap_rotate = nullptr;
 	EditorSpinSlider *snap_scale = nullptr;
@@ -944,6 +947,7 @@ public:
 	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
+	bool is_vertex_snap_use_collision() const;
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
 	real_t get_scale_snap() const;
