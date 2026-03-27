@@ -2069,6 +2069,29 @@ void ClassDB::get_class_dependencies(const StringName &p_class, List<StringName>
 		r_rependencies->push_back(dep);
 	}
 }
+
+void ClassDB::get_argument_options_getters(const StringName &p_class, List<MethodBind *> *r_methods) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_MSG(ti, vformat("Cannot get class '%s'.", String(p_class)));
+
+	while (ti) {
+		MethodBind **method = ti->method_map.getptr(SNAME("get_argument_options"));
+		ti = ti->inherits_ptr; // do this now so we can do early continues
+		if (method && *method) {
+			// check get_argument_options method is static and takes parameters (Object* instance, const StringName &p_function, int p_idx)
+			const String error_msg = vformat("method 'get_argument_options' of class '%s' can only be declared with signature (const Object* , StringName, int) -> PackedStringArray.", String(p_class));
+			MethodInfo mi = info_from_bind(*method);
+			ERR_CONTINUE_MSG(mi.return_val.type != Variant::PACKED_STRING_ARRAY, error_msg);
+			ERR_CONTINUE_MSG(mi.arguments.size() != 3, error_msg);
+			ERR_CONTINUE_MSG(mi.arguments[0].type != Variant::OBJECT, error_msg);
+			ERR_CONTINUE_MSG(mi.arguments[1].type != Variant::STRING_NAME, error_msg);
+			ERR_CONTINUE_MSG(mi.arguments[2].type != Variant::INT, error_msg);
+			r_methods->push_back(*method);
+		}
+	}
+}
 #endif // TOOLS_ENABLED
 
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {

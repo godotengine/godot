@@ -518,6 +518,8 @@ public:
 #ifdef TOOLS_ENABLED
 	static void add_class_dependency(const StringName &p_class, const StringName &p_dependency);
 	static void get_class_dependencies(const StringName &p_class, List<StringName> *r_rependencies);
+
+	static void get_argument_options_getters(const StringName &p_class, List<MethodBind *> *r_methods);
 #endif
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
