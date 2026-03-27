@@ -2088,13 +2088,7 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 
 String EditorExportPlatformAndroid::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
-		if (p_name == ("apk_expansion/public_key")) {
-			bool apk_expansion = p_preset->get("apk_expansion/enable");
-			String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
-			if (apk_expansion && apk_expansion_pkey.is_empty()) {
-				return TTR("Invalid public key for APK expansion.");
-			}
-		} else if (p_name == "package/unique_name") {
+		if (p_name == "package/unique_name") {
 			String pn = p_preset->get("package/unique_name");
 			String pn_err;
 
@@ -2286,10 +2280,6 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args", PROPERTY_HINT_NONE, "monospace"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "apk_expansion/enable"), false, false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/SALT"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/public_key", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), "", false, true));
-
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "permissions/custom_permissions"), PackedStringArray()));
 
 	const char **perms = ANDROID_PERMS;
@@ -2317,9 +2307,6 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 			p_option == "package/show_in_app_library" ||
 			p_option == "package/show_as_launcher_app" ||
 			p_option == "gesture/swipe_to_dismiss" ||
-			p_option == "apk_expansion/enable" ||
-			p_option == "apk_expansion/SALT" ||
-			p_option == "apk_expansion/public_key" ||
 			p_option == DISABLE_GODOT_SPLASH_OPTION ||
 			p_option == ANDROID_SPLASH_ICON_OPTION ||
 			p_option == ANDROID_SPLASH_BACKGROUND_COLOR_OPTION ||
@@ -3245,20 +3232,6 @@ List<String> EditorExportPlatformAndroid::get_binary_extensions(const Ref<Editor
 	return list;
 }
 
-String EditorExportPlatformAndroid::get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
-	int version_code = p_preset->get("version/code");
-	String package_name = p_preset->get("package/unique_name");
-	String apk_file_name = "main." + itos(version_code) + "." + get_package_name(p_preset, package_name) + ".obb";
-	String fullpath = p_path.get_base_dir().path_join(apk_file_name);
-	return fullpath;
-}
-
-Error EditorExportPlatformAndroid::save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
-	String fullpath = get_apk_expansion_fullpath(p_preset, p_path);
-	Error err = save_pack(p_preset, p_debug, fullpath);
-	return err;
-}
-
 void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, Vector<uint8_t> &r_command_line_flags) {
 	String cmdline = p_preset->get("command_line/extra_args");
 	Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
@@ -3270,18 +3243,6 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	}
 
 	command_line_strings.append_array(gen_export_flags(p_flags));
-
-	bool apk_expansion = p_preset->get("apk_expansion/enable");
-	if (apk_expansion) {
-		String fullpath = get_apk_expansion_fullpath(p_preset, p_path);
-		String apk_expansion_public_key = p_preset->get("apk_expansion/public_key");
-
-		command_line_strings.push_back("--use_apk_expansion");
-		command_line_strings.push_back("--apk_expansion_md5");
-		command_line_strings.push_back(FileAccess::get_md5(fullpath));
-		command_line_strings.push_back("--apk_expansion_key");
-		command_line_strings.push_back(apk_expansion_public_key.strip_edges());
-	}
 
 #ifndef XR_DISABLED
 	int xr_mode_index = p_preset->get("xr_features/xr_mode");
@@ -3753,7 +3714,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	bool use_gradle_build = bool(p_preset->get("gradle_build/use_gradle_build"));
 	String gradle_build_directory = use_gradle_build ? ExportTemplateManager::get_android_build_directory(p_preset) : "";
 	bool p_give_internet = p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT) || p_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG);
-	bool apk_expansion = p_preset->get("apk_expansion/enable");
 	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
 
 	print_verbose("Exporting for Android...");
@@ -3762,7 +3722,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	print_verbose("- export format: " + itos(export_format));
 	print_verbose("- sign build: " + bool_to_string(should_sign));
 	print_verbose("- gradle build enabled: " + bool_to_string(use_gradle_build));
-	print_verbose("- apk expansion enabled: " + bool_to_string(apk_expansion));
 	print_verbose("- enabled abis: " + join_abis(enabled_abis, ",", false));
 	print_verbose("- export filter: " + itos(p_preset->get_export_filter()));
 	print_verbose("- include filter: " + p_preset->get_include_filter());
@@ -3784,10 +3743,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	if (export_format == EXPORT_FORMAT_AAB) {
 		if (!p_path.ends_with(".aab")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid filename! Android App Bundle requires the *.aab extension."));
-			return ERR_UNCONFIGURED;
-		}
-		if (apk_expansion) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("APK Expansion not compatible with Android App Bundle."));
 			return ERR_UNCONFIGURED;
 		}
 	}
@@ -3858,53 +3813,44 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory(p_preset);
 		String gdextension_libs_path = gradle_build_directory.path_join(GDEXTENSION_LIBS_PATH);
 		_remove_copied_libs(gdextension_libs_path);
-		if (!apk_expansion) {
-			print_verbose("Exporting project files...");
-			CustomExportData user_data;
-			user_data.assets_directory = assets_directory;
-			user_data.libs_directory = gradle_build_directory.path_join("libs");
-			user_data.debug = p_debug;
-			if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
-				err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &user_data, copy_gradle_so);
-			} else {
-				user_data.pd.path = "assets.sparsepck";
-				user_data.pd.use_sparse_pck = true;
-				if (p_preset->get_enc_directory()) {
-					RandomPCG rng = RandomPCG(p_preset->get_seed());
-					for (int i = 0; i < 32; i++) {
-						user_data.pd.salt += String::chr(1 + rng.rand() % 254);
-					}
-				}
-				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, nullptr, &user_data, copy_gradle_so);
-
-				Vector<uint8_t> enc_data;
-				err = _generate_sparse_pck_metadata(p_preset, user_data.pd, enc_data);
-				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not generate sparse pck metadata!"));
-					return err;
-				}
-
-				err = store_file_at_path(user_data.assets_directory + "/assets.sparsepck", enc_data);
-				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not write PCK directory!"));
-					return err;
-				}
-			}
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
-				return err;
-			}
-			if (user_data.libs.size() > 0) {
-				Ref<FileAccess> fa = FileAccess::open(gdextension_libs_path, FileAccess::WRITE);
-				fa->store_string(JSON::stringify(user_data.libs, "\t"));
-			}
+		print_verbose("Exporting project files...");
+		CustomExportData user_data;
+		user_data.assets_directory = assets_directory;
+		user_data.libs_directory = gradle_build_directory.path_join("libs");
+		user_data.debug = p_debug;
+		if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
+			err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &user_data, copy_gradle_so);
 		} else {
-			print_verbose("Saving apk expansion file...");
-			err = save_apk_expansion_file(p_preset, p_debug, p_path);
+			user_data.pd.path = "assets.sparsepck";
+			user_data.pd.use_sparse_pck = true;
+			if (p_preset->get_enc_directory()) {
+				RandomPCG rng = RandomPCG(p_preset->get_seed());
+				for (int i = 0; i < 32; i++) {
+					user_data.pd.salt += String::chr(1 + rng.rand() % 254);
+				}
+			}
+			err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, nullptr, &user_data, copy_gradle_so);
+
+			Vector<uint8_t> enc_data;
+			err = _generate_sparse_pck_metadata(p_preset, user_data.pd, enc_data);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not write expansion package file!"));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not generate sparse pck metadata!"));
 				return err;
 			}
+
+			err = store_file_at_path(user_data.assets_directory + "/assets.sparsepck", enc_data);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not write PCK directory!"));
+				return err;
+			}
+		}
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
+			return err;
+		}
+		if (user_data.libs.size() > 0) {
+			Ref<FileAccess> fa = FileAccess::open(gdextension_libs_path, FileAccess::WRITE);
+			fa->store_string(JSON::stringify(user_data.libs, "\t"));
 		}
 
 		print_verbose("Storing command line flags...");
@@ -4201,8 +4147,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	String version_name = p_preset->get_version("version/name");
 	String package_name = p_preset->get("package/unique_name");
 
-	String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
-
 	Vector<ABI> invalid_abis(enabled_abis);
 
 	//To temporarily store icon xml data.
@@ -4386,35 +4330,27 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		ed.apk = unaligned_apk;
 		err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &ed, save_apk_so);
 	} else {
-		if (apk_expansion) {
-			err = save_apk_expansion_file(p_preset, p_debug, p_path);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not write expansion package file!"));
-				return err;
+		APKExportData ed;
+		ed.ep = &ep;
+		ed.apk = unaligned_apk;
+		ed.pd.path = "assets.sparsepck";
+		ed.pd.use_sparse_pck = true;
+		if (p_preset->get_enc_directory()) {
+			RandomPCG rng = RandomPCG(p_preset->get_seed());
+			for (int i = 0; i < 32; i++) {
+				ed.pd.salt += String::chr(1 + rng.rand() % 254);
 			}
-		} else {
-			APKExportData ed;
-			ed.ep = &ep;
-			ed.apk = unaligned_apk;
-			ed.pd.path = "assets.sparsepck";
-			ed.pd.use_sparse_pck = true;
-			if (p_preset->get_enc_directory()) {
-				RandomPCG rng = RandomPCG(p_preset->get_seed());
-				for (int i = 0; i < 32; i++) {
-					ed.pd.salt += String::chr(1 + rng.rand() % 254);
-				}
-			}
-			err = export_project_files(p_preset, p_debug, save_apk_file, nullptr, &ed, save_apk_so);
-
-			Vector<uint8_t> enc_data;
-			err = _generate_sparse_pck_metadata(p_preset, ed.pd, enc_data);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not generate sparse pck metadata!"));
-				return err;
-			}
-
-			store_in_apk(&ed, "assets/assets.sparsepck", enc_data, 0);
 		}
+		err = export_project_files(p_preset, p_debug, save_apk_file, nullptr, &ed, save_apk_so);
+
+		Vector<uint8_t> enc_data;
+		err = _generate_sparse_pck_metadata(p_preset, ed.pd, enc_data);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Could not generate sparse pck metadata!"));
+			return err;
+		}
+
+		store_in_apk(&ed, "assets/assets.sparsepck", enc_data, 0);
 	}
 
 	if (err != OK) {
