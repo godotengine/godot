@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.
  *
- * Also a reference implementation for how to set up and use the [GodotFragment] fragment
+ * This is also a reference implementation for how to set up and use the [GodotFragment] fragment
  * within an Android app.
  */
 abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPictureProvider {
