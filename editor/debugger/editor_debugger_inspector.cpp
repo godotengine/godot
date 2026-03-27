@@ -411,7 +411,7 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 	if (var.var_type == Variant::OBJECT && v) {
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
-		hs = "Object";
+		hs = var.type_hint;
 	}
 	String type;
 	switch (var.type) {
