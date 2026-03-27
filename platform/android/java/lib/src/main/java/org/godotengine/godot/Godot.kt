@@ -920,8 +920,12 @@ class Godot private constructor(val context: Context) {
 	 *
 	 * This must be called after the render thread has started.
 	 */
-	fun runOnRenderThread(action: Runnable) {
-		renderView?.queueOnRenderThread(action)
+	fun runOnRenderThread(action: Runnable): Boolean {
+		if (renderView != null) {
+			renderView?.queueOnRenderThread(action)
+			return true
+		}
+		return false
 	}
 
 	/**
