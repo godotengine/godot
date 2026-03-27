@@ -30,6 +30,7 @@
 
 #include "register_driver_types.h"
 
+#include "core/io/resource_saver.h"
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
 
