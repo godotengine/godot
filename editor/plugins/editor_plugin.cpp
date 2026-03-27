@@ -31,6 +31,7 @@
 #include "editor_plugin.h"
 #include "editor_plugin.compat.inc"
 
+#include "core/io/resource_importer.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"

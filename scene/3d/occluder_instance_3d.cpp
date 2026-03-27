@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
 #include "core/object/callable_mp.h"

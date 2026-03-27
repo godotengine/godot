@@ -34,6 +34,7 @@
 #include "editor_scene_importer_fbx2gltf.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 
 void EditorSceneFormatImporterUFBX::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("fbx");

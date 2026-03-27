@@ -33,6 +33,8 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/delaunay_3d.h"
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"

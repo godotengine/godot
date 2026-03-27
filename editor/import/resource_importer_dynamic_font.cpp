@@ -31,6 +31,7 @@
 #include "resource_importer_dynamic_font.h"
 
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "scene/resources/font.h"

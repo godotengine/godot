@@ -30,6 +30,7 @@
 
 #include "shader_preprocessor.h"
 
+#include "core/io/resource_loader.h"
 #include "core/os/os.h"
 #include "servers/rendering/shader_expression.h"
 

@@ -272,7 +272,7 @@ ResourceLoader::LoadToken::~LoadToken() {
 	clear();
 }
 
-Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
 
@@ -388,8 +388,8 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 	load_task.need_wait = false;
 
-	bool ignoring = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
-	bool replacing = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP;
+	bool ignoring = load_task.cache_mode == CACHE_MODE_IGNORE || load_task.cache_mode == CACHE_MODE_IGNORE_DEEP;
+	bool replacing = load_task.cache_mode == CACHE_MODE_REPLACE || load_task.cache_mode == CACHE_MODE_REPLACE_DEEP;
 	bool unlock_pending = true;
 	if (load_task.resource.is_valid()) {
 		// From now on, no critical section needed as no one will write to the task anymore.
@@ -485,7 +485,7 @@ String ResourceLoader::_validate_local_path(const String &p_path) {
 	}
 }
 
-Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode) {
+Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
 	Ref<ResourceLoader::LoadToken> token = _load_start(p_path, p_type_hint, p_use_sub_threads ? LOAD_THREAD_DISTRIBUTE : LOAD_THREAD_SPAWN_SINGLE, p_cache_mode, true);
 	return token.is_valid() ? OK : FAILED;
 }
@@ -510,7 +510,7 @@ void ResourceLoader::_load_threaded_request_setup_user_token(LoadToken *p_token,
 	print_lt("REQUEST: user load tokens: " + itos(user_load_tokens.size()));
 }
 
-Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
+Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode, Error *r_error) {
 	if (r_error) {
 		*r_error = OK;
 	}
@@ -535,11 +535,11 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 	return res;
 }
 
-Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user) {
+Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, CacheMode p_cache_mode, bool p_for_user) {
 	String local_path = _validate_local_path(p_path);
 	ERR_FAIL_COND_V(local_path.is_empty(), Ref<ResourceLoader::LoadToken>());
 
-	bool ignoring_cache = p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
+	bool ignoring_cache = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
 
 	Ref<LoadToken> load_token;
 	bool must_not_register = false;
@@ -585,7 +585,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			load_task.type_hint = p_type_hint;
 			load_task.cache_mode = p_cache_mode;
 			load_task.use_sub_threads = p_thread_mode == LOAD_THREAD_DISTRIBUTE;
-			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
+			if (p_cache_mode == CACHE_MODE_REUSE) {
 				Ref<Resource> existing = ResourceCache::get_ref(local_path);
 				if (existing.is_valid()) {
 					//referencing is fine
