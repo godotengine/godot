@@ -2679,14 +2679,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(lambda_index < 0 || lambda_index >= _lambdas_count);
 				GDScriptFunction *lambda = _lambdas_ptr[lambda_index];
 
-				Vector<Variant> captures;
+				TightLocalVector<Variant> captures;
 				captures.resize(captures_count);
 				for (int i = 0; i < captures_count; i++) {
 					GET_INSTRUCTION_ARG(arg, i);
-					captures.write[i] = *arg;
+					captures[i] = *arg;
 				}
 
-				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, captures));
+				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, std::move(captures)));
 
 				GET_INSTRUCTION_ARG(result, captures_count);
 				*result = Callable(callable);
@@ -2710,18 +2710,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(lambda_index < 0 || lambda_index >= _lambdas_count);
 				GDScriptFunction *lambda = _lambdas_ptr[lambda_index];
 
-				Vector<Variant> captures;
+				TightLocalVector<Variant> captures;
 				captures.resize(captures_count);
 				for (int i = 0; i < captures_count; i++) {
 					GET_INSTRUCTION_ARG(arg, i);
-					captures.write[i] = *arg;
+					captures[i] = *arg;
 				}
 
 				GDScriptLambdaSelfCallable *callable;
 				if (Object::cast_to<RefCounted>(p_instance->owner)) {
-					callable = memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(Object::cast_to<RefCounted>(p_instance->owner)), lambda, captures));
+					callable = memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(Object::cast_to<RefCounted>(p_instance->owner)), lambda, std::move(captures)));
 				} else {
-					callable = memnew(GDScriptLambdaSelfCallable(p_instance->owner, lambda, captures));
+					callable = memnew(GDScriptLambdaSelfCallable(p_instance->owner, lambda, std::move(captures)));
 				}
 
 				GET_INSTRUCTION_ARG(result, captures_count);
