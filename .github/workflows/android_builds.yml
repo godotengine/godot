@@ -124,24 +124,24 @@ jobs:
           path: picoos
 
       - name: Generate Instrumented test APKs
-        if: matrix.instrumented_tests && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
         run: |
           cd platform/android/java
           ./gradlew :app:assembleAndroidTest :app:assembleInstrumentedDebug -Pperform_signing=true
           cd ../../..
 
       - name: Create credentials file
-        if: matrix.instrumented_tests && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
         uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 
       - name: Set up gcloud CLI
-        if: matrix.instrumented_tests && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
         uses: google-github-actions/setup-gcloud@v3
 
       - name: Run tests on Firebase Test Lab
-        if: matrix.instrumented_tests && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
         run: |
           set +e
           output=$(gcloud firebase test android run \
