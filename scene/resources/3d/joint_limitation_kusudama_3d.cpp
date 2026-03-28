@@ -195,241 +195,44 @@ void JointLimitationKusudama3D::_get_property_list(List<PropertyInfo> *p_list) c
 	}
 }
 
-static Vector3 _log_map_expmap(const Vector3 &r, const Vector3 &p) {
-	real_t rdot = r.dot(p);
-	rdot = CLAMP(rdot, (real_t)-1.0, (real_t)1.0);
-	real_t theta = Math::acos(rdot);
-	Vector3 v = p - r * rdot;
-	real_t len = v.length();
-	if (len < (real_t)1e-8) {
-		return Vector3(0, 0, 0);
-	}
-	return v * (theta / len);
-}
-
-static Vector3 _exp_map(const Vector3 &r, const Vector3 &tangent) {
-	real_t theta = tangent.length();
-	if (theta < (real_t)1e-10) {
-		return r;
-	}
-	real_t inv_theta = (real_t)1.0 / theta;
-	return r * Math::cos(theta) + (tangent * inv_theta) * Math::sin(theta);
-}
-
-static Vector3 _karcher_mean(const Vector3 *p_pts, const real_t *p_weights, int p_count, real_t p_sum_w) {
-	if (p_count <= 0 || p_sum_w < (real_t)1e-20) {
-		return p_pts[0];
-	}
-	Vector3 center = Vector3(0, 0, 0);
-	for (int i = 0; i < p_count; i++) {
-		center += p_pts[i] * (p_weights[i] / p_sum_w);
-	}
-	center = center.normalized();
-	const int karcher_steps = 8;
-	for (int step = 0; step < karcher_steps; step++) {
-		Vector3 tangent = Vector3(0, 0, 0);
-		for (int i = 0; i < p_count; i++) {
-			tangent += _log_map_expmap(center, p_pts[i]) * (p_weights[i] / p_sum_w);
-		}
-		center = _exp_map(center, tangent);
-	}
-	return center;
-}
-
-// Karcher mean (best sum jerk in algorithm search): smooth Voronoi power e=2 weights, then geodesic mean.
-static const real_t KUSUDAMA_BOUNDARY_NEAR = (real_t)0.035;
-static const real_t KUSUDAMA_SCORE_WEIGHT = (real_t)0.1;
-static const real_t KUSUDAMA_REF_ANTIPODAL_COS = (real_t)-0.99;
-static const real_t KUSUDAMA_EPS = (real_t)1e-6;
-static const real_t KUSUDAMA_VORONOI_EPS = (real_t)1e-10;
-static const real_t KUSUDAMA_WEIGHT_SUM_MIN = (real_t)1e-20;
 
 Vector3 JointLimitationKusudama3D::_solve(const Vector3 &p_direction) const {
-	Vector3 result = p_direction.normalized();
-	if (cones.is_empty()) {
-		return result;
+	Vector3 p = p_direction.normalized();
+	uint32_t n = cones.size();
+	if (n == 0) return p;
+	for (uint32_t i = 0; i < n; i++) {
+		if (is_point_in_cone(p, _get_cone_center_normalized(i), cones[i].w)) return p;
+		if (i + 1 < n && is_point_in_tangent_path(p, _get_cone_center_normalized(i), cones[i].w, _get_cone_center_normalized(i + 1), cones[i + 1].w)) return p;
 	}
+	real_t min_d = 1e18f;
+	Vector3 best = p;
 
-	for (uint32_t i = 0; i < cones.size(); i++) {
-		Vector3 center = _get_cone_center_normalized(i);
-		if (is_point_in_cone(result, center, cones[i].w)) {
-			return result;
+	for (uint32_t i = 0; i < n; i++) {
+		Vector3 c = _get_cone_center_normalized(i);
+		real_t r = cones[i].w;
+		Vector3 ortho = (p - p.project(c)).normalized();
+		if (!ortho.is_finite()) {
+			ortho = (Math::abs(c.z) < 0.9f) ? c.cross(Vector3(0, 0, 1)).normalized() : c.cross(Vector3(1, 0, 0)).normalized();
 		}
-	}
+		Vector3 b = c * Math::cos(r) + ortho * Math::sin(r);
+		real_t d = p.distance_squared_to(b);
+		if (d < min_d) {
+			min_d = d;
+			best = b;
+		}
 
-	for (uint32_t i = 0; i < cones.size() - 1; i++) {
-		Vector3 center1 = _get_cone_center_normalized(i);
-		Vector3 center2 = _get_cone_center_normalized(i + 1);
-		if (is_point_in_tangent_path(result, center1, cones[i].w, center2, cones[i + 1].w)) {
-			return result;
-		}
-	}
-
-	// When just outside a cone (input within BOUNDARY_NEAR of its boundary), return that boundary for continuity.
-	for (uint32_t i = 0; i < cones.size(); i++) {
-		Vector3 center = _get_cone_center_normalized(i);
-		real_t radius = cones[i].w;
-		real_t angle_from_center = Math::acos(CLAMP(result.dot(center), (real_t)-1.0, (real_t)1.0));
-		if (angle_from_center < radius - KUSUDAMA_EPS) {
-			continue;
-		}
-		Vector3 proj = result - result.project(center);
-		if (proj.is_zero_approx()) {
-			proj = center.cross(Vector3::UP);
-		}
-		if (proj.is_zero_approx()) {
-			proj = center.cross(Vector3::RIGHT);
-		}
-		proj.normalize();
-		Vector3 boundary_pt = center * Math::cos(radius) + proj * Math::sin(radius);
-		boundary_pt.normalize();
-		if (result.distance_to(boundary_pt) >= KUSUDAMA_BOUNDARY_NEAR) {
-			continue;
-		}
-		return boundary_pt;
-	}
-
-	// Smooth Voronoi power: w_i = 1/(score^2+eps); fallback when input near antipodal to ref: score = dot - k*distance.
-	Vector3 ref = _get_cone_center_normalized(0);
-	const bool use_expmap = ref.dot(result) > KUSUDAMA_REF_ANTIPODAL_COS;
-	Vector3 input_tangent = use_expmap ? _log_map_expmap(ref, result) : Vector3();
-
-	// Region index: cone i -> 2*i, path (i, i+1) -> 2*i+1. Only blend when all candidates are from one contiguous segment (max_region - min_region <= 2) so we never path through the forbidden gap.
-	LocalVector<Vector3> scored_pts;
-	LocalVector<real_t> scored_scores;
-	LocalVector<uint32_t> scored_region;
-	real_t best_score_fallback = -1e9f;
-	Vector3 best_point = result;
-
-	for (uint32_t i = 0; i < cones.size(); i++) {
-		Vector3 center = _get_cone_center_normalized(i);
-		real_t radius = cones[i].w;
-		Vector3 projected = result - result.project(center);
-		if (projected.is_zero_approx()) {
-			projected = center.cross(Vector3::UP);
-		}
-		if (projected.is_zero_approx()) {
-			projected = center.cross(Vector3::RIGHT);
-		}
-		projected.normalize();
-		Vector3 boundary_point = center * Math::cos(radius) + projected * Math::sin(radius);
-		boundary_point.normalize();
-		real_t dist = result.distance_to(boundary_point);
-
-		if (use_expmap) {
-			if (ref.dot(boundary_point) <= KUSUDAMA_REF_ANTIPODAL_COS) {
-				continue;
-			}
-			Vector3 b_tangent = _log_map_expmap(ref, boundary_point);
-			real_t score = input_tangent.distance_squared_to(b_tangent) + KUSUDAMA_SCORE_WEIGHT * dist;
-			scored_pts.push_back(boundary_point);
-			scored_scores.push_back(score);
-			scored_region.push_back(2 * i);
-			continue;
-		}
-		real_t score = boundary_point.dot(result) - KUSUDAMA_SCORE_WEIGHT * dist;
-		if (score <= best_score_fallback + KUSUDAMA_EPS) {
-			continue;
-		}
-		best_score_fallback = score;
-		best_point = boundary_point;
-	}
-
-	for (uint32_t i = 0; i < cones.size() - 1; i++) {
-		Vector3 center1 = _get_cone_center_normalized(i);
-		Vector3 center2 = _get_cone_center_normalized(i + 1);
-		Vector3 path_boundary = get_on_great_tangent_triangle(result, center1, cones[i].w, center2, cones[i + 1].w);
-		if (Math::is_nan(path_boundary.x)) {
-			continue;
-		}
-		real_t dist = result.distance_to(path_boundary);
-
-		if (use_expmap) {
-			if (ref.dot(path_boundary) <= KUSUDAMA_REF_ANTIPODAL_COS) {
-				continue;
-			}
-			Vector3 b_tangent = _log_map_expmap(ref, path_boundary);
-			real_t score = input_tangent.distance_squared_to(b_tangent) + KUSUDAMA_SCORE_WEIGHT * dist;
-			scored_pts.push_back(path_boundary);
-			scored_scores.push_back(score);
-			scored_region.push_back(2 * i + 1);
-			continue;
-		}
-		real_t score = path_boundary.dot(result) - KUSUDAMA_SCORE_WEIGHT * dist;
-		if (score <= best_score_fallback + KUSUDAMA_EPS) {
-			continue;
-		}
-		best_score_fallback = score;
-		best_point = path_boundary;
-	}
-
-	if (!use_expmap) {
-		return best_point;
-	}
-	if (scored_pts.is_empty()) {
-		return result;
-	}
-
-	// Only blend candidates from one contiguous allowed segment (cone i, path i-(i+1), cone i+1) so we never path through the forbidden gap between non-adjacent cones.
-	uint32_t min_r = scored_region[0];
-	uint32_t max_r = scored_region[0];
-	for (uint32_t i = 1; i < scored_region.size(); i++) {
-		if (scored_region[i] < min_r) {
-			min_r = scored_region[i];
-		}
-		if (scored_region[i] > max_r) {
-			max_r = scored_region[i];
-		}
-	}
-	bool blend_ok = (max_r - min_r <= 2);
-
-	if (!blend_ok) {
-		// Non-contiguous (e.g. cone0 and cone2): return single best boundary; do not blend across the gap.
-		uint32_t best_idx = 0;
-		real_t best_s = scored_scores[0];
-		for (uint32_t i = 1; i < scored_pts.size(); i++) {
-			if (scored_scores[i] < best_s) {
-				best_s = scored_scores[i];
-				best_idx = i;
+		if (i + 1 < n) {
+			Vector3 b_path = get_on_great_tangent_triangle(p, c, r, _get_cone_center_normalized(i + 1), cones[i + 1].w);
+			if (!Math::is_nan(b_path.x)) {
+				real_t d_p = p.distance_squared_to(b_path);
+				if (d_p < min_d) {
+					min_d = d_p;
+					best = b_path;
+				}
 			}
 		}
-		return scored_pts[best_idx];
 	}
-
-	// Smooth Voronoi power (e=2) weights; then Karcher mean. Contiguous region only.
-	real_t sum_w = 0.0f;
-	LocalVector<real_t> weights;
-	weights.resize(scored_pts.size());
-	for (uint32_t i = 0; i < scored_pts.size(); i++) {
-		real_t s = scored_scores[i];
-		real_t w = (real_t)1.0 / (s * s + KUSUDAMA_VORONOI_EPS);
-		weights[i] = w;
-		sum_w += w;
-	}
-	if (sum_w < KUSUDAMA_WEIGHT_SUM_MIN) {
-		return scored_pts[0];
-	}
-	Vector3 out = _karcher_mean(scored_pts.ptr(), weights.ptr(), scored_pts.size(), sum_w);
-	// Final safeguard: if blend still fell in the gap (e.g. numerical), return best single.
-	for (uint32_t i = 0; i < cones.size(); i++) {
-		if (is_point_in_cone(out, _get_cone_center_normalized(i), cones[i].w)) {
-			return out;
-		}
-	}
-	for (uint32_t i = 0; i < cones.size() - 1; i++) {
-		if (is_point_in_tangent_path(out, _get_cone_center_normalized(i), cones[i].w, _get_cone_center_normalized(i + 1), cones[i + 1].w)) {
-			return out;
-		}
-	}
-	uint32_t best_idx = 0;
-	real_t best_s = scored_scores[0];
-	for (uint32_t i = 1; i < scored_pts.size(); i++) {
-		if (scored_scores[i] < best_s) {
-			best_s = scored_scores[i];
-			best_idx = i;
-		}
-	}
-	return scored_pts[best_idx];
+	return best;
 }
 
 // Helper functions for kusudama solving
