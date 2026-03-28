@@ -32,10 +32,15 @@
 
 #include "gdscript_language_protocol.h"
 
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/main/node.h"
 
 int GDScriptLanguageServer::port_override = -1;
 
@@ -43,8 +48,62 @@ GDScriptLanguageServer::GDScriptLanguageServer() {
 	set_process_internal(true);
 }
 
+void survey_folder(const String &p_dir, int &r_total, int &r_self, int &r_class) {
+	Error err = OK;
+	Ref<DirAccess> dir = DirAccess::open(p_dir, &err);
+
+	if (err != OK) {
+		return;
+	}
+
+	String path = dir->get_current_dir();
+
+	dir->list_dir_begin();
+	String next = dir->get_next();
+
+	while (!next.is_empty()) {
+		if (dir->current_is_dir()) {
+			if (next == "." || next == "..") {
+				next = dir->get_next();
+				continue;
+			}
+			survey_folder(path.path_join(next), r_total, r_self, r_class);
+		} else if (next.ends_with(".gd")) {
+			Ref<GDScript> script = ResourceLoader::load(ProjectSettings::get_singleton()->localize_path(path.path_join(next)));
+
+			HashMap<StringName, GDScriptFunction *> m_funcs = HashMap<StringName, GDScriptFunction *>(script->get_member_functions());
+			m_funcs["@implicit_new"] = const_cast<GDScriptFunction *>(script->get_implicit_initializer());
+			m_funcs["@implicit_ready"] = const_cast<GDScriptFunction *>(script->get_implicit_ready());
+			m_funcs["@static_initializer"] = const_cast<GDScriptFunction *>(script->get_static_initializer());
+
+			for (auto fn : script->get_member_functions()) {
+				r_total += 1;
+				if (fn.value->_self_used) {
+					r_self += 1;
+				}
+				if (fn.value->_class_used) {
+					r_class += 1;
+				}
+			}
+		}
+		next = dir->get_next();
+	}
+}
+
+static void survey() {
+	int total_fn = 0;
+	int self_used = 0;
+	int class_used = 0;
+	survey_folder("res://", total_fn, self_used, class_used);
+	print_line("total: ", total_fn, " self: ", self_used, " class: ", class_used);
+}
+
 void GDScriptLanguageServer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			EditorCommandPalette::get_singleton()->add_command("GDScript Survey: Stack Use", "gdscript/survey/stack_use", callable_mp_static(&survey));
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			stop();
 		} break;
