@@ -37,8 +37,8 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/mesh.h"
 
-class Timer;
 class EditorNode3DGizmoPlugin;
+class Timer;
 
 class EditorNode3DGizmo : public Node3DGizmo {
 	GDCLASS(EditorNode3DGizmo, Node3DGizmo);

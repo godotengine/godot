@@ -40,10 +40,10 @@
 
 class AudioDriverDummy;
 class AudioSample;
-class AudioStream;
-class AudioStreamWAV;
-class AudioStreamPlayback;
 class AudioSamplePlayback;
+class AudioStream;
+class AudioStreamPlayback;
+class AudioStreamWAV;
 
 class AudioDriver {
 	static AudioDriver *singleton;

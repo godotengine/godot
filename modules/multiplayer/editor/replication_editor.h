@@ -35,14 +35,14 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 
-class ConfirmationDialog;
-class MultiplayerSynchronizer;
 class AcceptDialog;
+class ConfirmationDialog;
 class LineEdit;
-class Tree;
-class TreeItem;
+class MultiplayerSynchronizer;
 class PropertySelector;
 class SceneTreeDialog;
+class Tree;
+class TreeItem;
 
 class ReplicationEditor : public EditorDock {
 	GDCLASS(ReplicationEditor, EditorDock);

@@ -38,8 +38,8 @@
 class Button;
 class EditorFileDialog;
 class PanelContainer;
-class ScrollContainer;
 class RichTextLabel;
+class ScrollContainer;
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);

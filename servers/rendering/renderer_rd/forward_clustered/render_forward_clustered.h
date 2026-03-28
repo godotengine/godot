@@ -474,8 +474,9 @@ private:
 
 	HashMap<Size2i, RID> sdfgi_framebuffer_size_cache;
 
-	struct GeometryInstanceData;
 	class GeometryInstanceForwardClustered;
+
+	struct GeometryInstanceData;
 
 	struct GeometryInstanceLightmapSH {
 		Color sh[9];

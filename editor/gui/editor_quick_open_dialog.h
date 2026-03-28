@@ -39,20 +39,18 @@ class CenterContainer;
 class CheckButton;
 class ConfigFile;
 class EditorFileSystemDirectory;
-class LineEdit;
+class FuzzySearchResult;
 class HFlowContainer;
+class LineEdit;
 class MarginContainer;
 class PanelContainer;
 class PopupMenu;
+class QuickOpenResultItem;
 class ScrollContainer;
 class StringName;
 class Texture2D;
 class TextureRect;
 class VBoxContainer;
-
-class FuzzySearchResult;
-
-class QuickOpenResultItem;
 
 enum class QuickOpenDisplayMode {
 	GRID,

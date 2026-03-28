@@ -36,8 +36,8 @@
 #include "core/templates/rb_set.h"
 #include "editor/export/editor_export_plugin.h"
 
-class ShaderRD;
 class RenderingShaderContainerFormat;
+class ShaderRD;
 
 class ShaderBakerExportPluginPlatform : public RefCounted {
 	GDCLASS(ShaderBakerExportPluginPlatform, RefCounted);

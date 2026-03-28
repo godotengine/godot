@@ -36,9 +36,9 @@
 // SkeletonModificationStack2D
 ///////////////////////////////////////
 
+class Bone2D;
 class Skeleton2D;
 class SkeletonModification2D;
-class Bone2D;
 
 class SkeletonModificationStack2D : public Resource {
 	GDCLASS(SkeletonModificationStack2D, Resource);

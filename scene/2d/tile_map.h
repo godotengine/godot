@@ -35,11 +35,12 @@
 #include "scene/resources/2d/tile_set.h"
 
 class Control;
+class TerrainConstraint;
+class TileMapLayer;
+
 #ifndef NAVIGATION_2D_DISABLED
 class NavigationMeshSourceGeometryData2D;
 #endif // NAVIGATION_2D_DISABLED
-class TileMapLayer;
-class TerrainConstraint;
 
 enum TileMapDataFormat {
 	TILE_MAP_DATA_FORMAT_1 = 0,

@@ -34,9 +34,9 @@
 #include "../action_map/openxr_action_set.h"
 #include "openxr_action_editor.h"
 
-class EditorSpinSlider;
 class BoxContainer;
 class Button;
+class EditorSpinSlider;
 class LineEdit;
 class PanelContainer;
 class TextEdit;

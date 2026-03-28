@@ -43,8 +43,8 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sprite_frames.h"
 
-class OptionButton;
 class EditorFileDialog;
+class OptionButton;
 
 class ClipboardSpriteFrames : public Resource {
 	GDCLASS(ClipboardSpriteFrames, Resource);

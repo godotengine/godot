@@ -42,6 +42,7 @@ using namespace NavigationDefaults2D;
 using namespace NavigationEnums2D;
 
 class NavMap2D;
+
 struct NavMapIteration2D;
 
 class NavMeshQueries2D {

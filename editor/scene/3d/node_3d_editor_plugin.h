@@ -53,6 +53,7 @@ class EditorSpinSlider;
 class HSplitContainer;
 class LineEdit;
 class MenuButton;
+class MeshInstance3D;
 class Node3DEditor;
 class Node3DEditorViewport;
 class OptionButton;
@@ -62,11 +63,10 @@ class RichTextLabel;
 class SplitContainer;
 class SubViewport;
 class SubViewportContainer;
+class ViewportNavigationControl;
 class VSeparator;
 class VSplitContainer;
-class ViewportNavigationControl;
 class WorldEnvironment;
-class MeshInstance3D;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);

@@ -42,9 +42,9 @@
 
 #include <openxr/openxr.h>
 
+class OpenXRActionMap;
 class OpenXRAPI;
 class OpenXRAPIExtension;
-class OpenXRActionMap;
 
 // `OpenXRExtensionWrapper` allows us to implement OpenXR extensions.
 class OpenXRExtensionWrapper : public Object {

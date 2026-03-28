@@ -40,12 +40,12 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/immediate_mesh.h"
 
+class Button;
 class EditorInspectorPluginSkeleton;
 class EditorPropertyVector3;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
-class Button;
 class Tree;
 class TreeItem;
 class VSeparator;

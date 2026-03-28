@@ -34,8 +34,8 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 
-class Node;
 class EditorFileSystemDirectory;
+class Node;
 class PackedScene;
 
 /**

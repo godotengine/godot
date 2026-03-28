@@ -36,8 +36,8 @@
 
 class Font;
 class StyleBox;
-class ThemeOwner;
 class ThemeContext;
+class ThemeOwner;
 
 class Window : public Viewport {
 	GDCLASS(Window, Viewport);

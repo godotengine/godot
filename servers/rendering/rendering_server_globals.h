@@ -40,9 +40,9 @@
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-class RendererCompositor;
 class RendererCanvasCull;
 class RendererCanvasRender;
+class RendererCompositor;
 class RendererViewport;
 class RenderingMethod;
 

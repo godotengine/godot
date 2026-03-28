@@ -34,12 +34,13 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/mesh.h"
 
+class Skin;
+class SkinReference;
+
 #ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
 #endif // NAVIGATION_3D_DISABLED
-class Skin;
-class SkinReference;
 
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);

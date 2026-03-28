@@ -43,10 +43,10 @@
 #include <KdTree2d.h>
 #include <RVOSimulator2d.h>
 
-class NavLink2D;
-class NavRegion2D;
 class NavAgent2D;
+class NavLink2D;
 class NavObstacle2D;
+class NavRegion2D;
 
 class NavMap2D : public NavRid2D {
 	/// To find the polygons edges the vertices are displaced in a grid where

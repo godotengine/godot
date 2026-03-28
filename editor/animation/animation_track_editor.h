@@ -44,11 +44,12 @@
 #include <cfloat> // FLT_MAX
 
 class AnimationMarkerEdit;
-class AnimationTrackEditor;
 class AnimationTrackEdit;
+class AnimationTrackEditor;
 class CheckBox;
 class ColorPickerButton;
 class EditorSpinSlider;
+class EditorValidationPanel;
 class HSlider;
 class OptionButton;
 class PanelContainer;
@@ -56,7 +57,6 @@ class SceneTreeDialog;
 class SpinBox;
 class TextureRect;
 class ViewPanner;
-class EditorValidationPanel;
 
 class AnimationTrackKeyEdit : public Object {
 	GDCLASS(AnimationTrackKeyEdit, Object);
@@ -567,9 +567,9 @@ public:
 	virtual AnimationTrackEdit *create_animation_track_edit(Object *p_object);
 };
 
-class AnimationTrackKeyEdit;
-class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
+class AnimationMultiTrackKeyEdit;
+class AnimationTrackKeyEdit;
 
 class AnimationTrackEditGroup : public Control {
 	friend class AnimationTrackEditor;

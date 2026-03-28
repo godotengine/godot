@@ -32,8 +32,8 @@
 
 #include "scene/gui/container.h"
 
-class TextureRect;
 class SplitContainer;
+class TextureRect;
 
 class SplitContainerMultiDragger : public Control {
 	GDCLASS(SplitContainerMultiDragger, Control);

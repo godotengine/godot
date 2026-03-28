@@ -45,8 +45,8 @@
 
 class JoltArea3D;
 class JoltBody3D;
-class JoltShapedObject3D;
 class JoltShape3D;
+class JoltShapedObject3D;
 class JoltSoftBody3D;
 class JoltSpace3D;
 

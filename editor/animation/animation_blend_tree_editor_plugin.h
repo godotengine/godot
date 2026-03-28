@@ -42,13 +42,13 @@
 
 class AcceptDialog;
 class CheckBox;
-class ProgressBar;
 class EditorFileDialog;
+class EditorInspectorPluginAnimationNodeAnimation;
 class EditorProperty;
 class MenuButton;
 class PanelContainer;
+class ProgressBar;
 class RichTextLabel;
-class EditorInspectorPluginAnimationNodeAnimation;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);

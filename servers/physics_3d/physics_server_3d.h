@@ -36,6 +36,7 @@
 constexpr int MAX_CONTACTS_REPORTED_3D_MAX = 4096;
 
 class PhysicsDirectSpaceState3D;
+
 template <typename T>
 class TypedArray;
 
@@ -118,8 +119,8 @@ public:
 	PhysicsDirectBodyState3D();
 };
 
-class PhysicsRayQueryParameters3D;
 class PhysicsPointQueryParameters3D;
+class PhysicsRayQueryParameters3D;
 class PhysicsShapeQueryParameters3D;
 
 class PhysicsDirectSpaceState3D : public Object {

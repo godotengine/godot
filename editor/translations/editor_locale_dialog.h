@@ -34,10 +34,10 @@
 
 class Button;
 class HBoxContainer;
-class VBoxContainer;
 class LineEdit;
-class Tree;
 class OptionButton;
+class Tree;
+class VBoxContainer;
 
 class EditorLocaleDialog : public ConfirmationDialog {
 	GDCLASS(EditorLocaleDialog, ConfirmationDialog);

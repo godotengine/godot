@@ -37,10 +37,10 @@
 #include "scene/resources/text_line.h"
 #include "servers/display/native_menu.h"
 
-class PanelContainer;
-class VBoxContainer;
 class LineEdit;
+class PanelContainer;
 class Timer;
+class VBoxContainer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);

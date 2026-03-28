@@ -33,11 +33,12 @@
 #include "scene/resources/2d/tile_set.h"
 #include "servers/rendering/rendering_server_enums.h"
 
+class TileMap;
+class TileSetAtlasSource;
+
 #ifndef NAVIGATION_2D_DISABLED
 class NavigationMeshSourceGeometryData2D;
 #endif // NAVIGATION_2D_DISABLED
-class TileSetAtlasSource;
-class TileMap;
 
 enum TileMapLayerDataFormat {
 	TILE_MAP_LAYER_DATA_FORMAT_0 = 0,
@@ -96,11 +97,12 @@ public:
 	TerrainConstraint() {}
 };
 
+class PhysicsQuadrant;
+class RenderingQuadrant;
+
 #ifdef DEBUG_ENABLED
 class DebugQuadrant;
 #endif // DEBUG_ENABLED
-class RenderingQuadrant;
-class PhysicsQuadrant;
 
 struct CellData {
 	Vector2i coords;

@@ -34,11 +34,11 @@
 
 class CheckBox;
 class LineEdit;
+class PopupMenu;
 class SpinBox;
 class Timer;
 class Tree;
 class TreeItem;
-class PopupMenu;
 
 class RunInstancesDialog : public AcceptDialog {
 	GDCLASS(RunInstancesDialog, AcceptDialog);

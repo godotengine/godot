@@ -36,11 +36,11 @@
 #include "core/variant/native_ptr.h"
 #include "core/variant/variant.h"
 
+struct CaretInfo;
+struct Glyph;
+
 template <typename T>
 class TypedArray;
-
-struct Glyph;
-struct CaretInfo;
 
 #define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
 

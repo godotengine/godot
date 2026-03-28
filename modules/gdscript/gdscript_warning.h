@@ -35,6 +35,7 @@
 #include "core/templates/vector.h"
 
 class String;
+
 struct PropertyInfo;
 
 class GDScriptWarning {

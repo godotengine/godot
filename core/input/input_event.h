@@ -42,6 +42,7 @@
 
 class Shortcut;
 class String;
+
 struct Transform2D;
 
 /**

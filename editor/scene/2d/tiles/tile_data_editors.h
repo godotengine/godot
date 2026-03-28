@@ -34,10 +34,10 @@
 #include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
 
+class EditorUndoRedoManager;
 class Label;
 class MenuButton;
 class SpinBox;
-class EditorUndoRedoManager;
 
 class TileDataEditor : public VBoxContainer {
 	GDCLASS(TileDataEditor, VBoxContainer);

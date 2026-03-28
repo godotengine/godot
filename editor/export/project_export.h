@@ -36,11 +36,11 @@
 
 class CheckBox;
 class CheckButton;
-class HSplitContainer;
 class EditorFileDialog;
 class EditorFileSystemDirectory;
 class EditorInspector;
 class EditorPropertyPath;
+class HSplitContainer;
 class ItemList;
 class LinkButton;
 class MenuButton;

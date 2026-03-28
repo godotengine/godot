@@ -35,10 +35,10 @@
 #include "core/templates/self_list.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
-class GodotSpace3D;
 class GodotBody3D;
-class GodotSoftBody3D;
 class GodotConstraint3D;
+class GodotSoftBody3D;
+class GodotSpace3D;
 
 class GodotArea3D : public GodotCollisionObject3D {
 	PhysicsServer3D::AreaSpaceOverrideMode gravity_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;

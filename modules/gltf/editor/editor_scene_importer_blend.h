@@ -34,8 +34,8 @@
 #include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;
-class Node;
 class ConfirmationDialog;
+class Node;
 
 class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 	GDCLASS(EditorSceneFormatImporterBlend, EditorSceneFormatImporter);
@@ -75,10 +75,10 @@ public:
 			const HashMap<StringName, Variant> &p_options) override;
 };
 
-class LineEdit;
 class Button;
 class EditorFileDialog;
 class Label;
+class LineEdit;
 
 class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImportFormatSupportQuery {
 	GDCLASS(EditorFileSystemImportFormatSupportQueryBlend, EditorFileSystemImportFormatSupportQuery);

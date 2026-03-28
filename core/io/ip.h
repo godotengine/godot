@@ -33,10 +33,10 @@
 #include "core/io/ip_address.h"
 #include "core/variant/type_info.h"
 
+struct _IP_ResolverPrivate;
+
 template <typename T>
 class TypedArray;
-
-struct _IP_ResolverPrivate;
 
 class IP : public Object {
 	GDCLASS(IP, Object);

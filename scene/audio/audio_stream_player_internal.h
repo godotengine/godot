@@ -34,9 +34,9 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio/audio_server.h"
 
+class AudioSamplePlayback;
 class AudioStream;
 class AudioStreamPlayback;
-class AudioSamplePlayback;
 class Node;
 
 class AudioStreamPlayerInternal : public Object {

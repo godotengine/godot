@@ -34,10 +34,10 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/resources/gradient.h"
 
-class EditorSpinSlider;
 class ColorPicker;
-class PopupPanel;
+class EditorSpinSlider;
 class GradientTexture1D;
+class PopupPanel;
 
 class GradientEdit : public Control {
 	GDCLASS(GradientEdit, Control);

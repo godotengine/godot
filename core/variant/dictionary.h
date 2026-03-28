@@ -38,6 +38,7 @@
 class Array;
 class StringName;
 class Variant;
+
 struct ContainerType;
 struct ContainerTypeValidate;
 struct DictionaryPrivate;

@@ -57,6 +57,7 @@
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 class GodotNavigationServer2D;
+
 #ifdef CLIPPER2_ENABLED
 class NavMeshGenerator2D;
 #endif // CLIPPER2_ENABLED

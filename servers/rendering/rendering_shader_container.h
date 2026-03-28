@@ -33,8 +33,8 @@
 #include "core/object/ref_counted.h"
 #include "servers/rendering/rendering_device_commons.h"
 
-struct SpvReflectShaderModule;
 struct SpvReflectDescriptorBinding;
+struct SpvReflectShaderModule;
 struct SpvReflectSpecializationConstant;
 
 class RenderingShaderContainer : public RefCounted {

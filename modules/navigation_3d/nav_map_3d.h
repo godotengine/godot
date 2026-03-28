@@ -45,10 +45,10 @@
 #include <RVOSimulator2d.h>
 #include <RVOSimulator3d.h>
 
-class NavLink3D;
-class NavRegion3D;
 class NavAgent3D;
+class NavLink3D;
 class NavObstacle3D;
+class NavRegion3D;
 
 class NavMap3D : public NavRid3D {
 	/// Map Up

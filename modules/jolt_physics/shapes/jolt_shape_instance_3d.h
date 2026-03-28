@@ -36,8 +36,8 @@
 
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 
-class JoltShapedObject3D;
 class JoltShape3D;
+class JoltShapedObject3D;
 
 class JoltShapeInstance3D {
 	// This RAII helper exists solely to avoid needing to maintain move construction/assignment in `JoltShapeInstance3D`.

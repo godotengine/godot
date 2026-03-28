@@ -34,8 +34,9 @@
 #include "scene/3d/voxel_gi.h"
 
 class EditorFileDialog;
-struct EditorProgress;
 class HBoxContainer;
+
+struct EditorProgress;
 
 class VoxelGIEditorPlugin : public EditorPlugin {
 	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);

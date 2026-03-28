@@ -32,8 +32,8 @@
 
 #include "scene/gui/dialogs.h"
 
-class LineEdit;
 class ItemList;
+class LineEdit;
 
 class EditorLayoutsDialog : public ConfirmationDialog {
 	GDCLASS(EditorLayoutsDialog, ConfirmationDialog);

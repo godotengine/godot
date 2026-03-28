@@ -80,8 +80,8 @@ public:
 	struct IfNode;
 	struct LambdaNode;
 	struct LiteralNode;
-	struct MatchNode;
 	struct MatchBranchNode;
+	struct MatchNode;
 	struct ParameterNode;
 	struct PassNode;
 	struct PatternNode;

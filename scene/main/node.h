@@ -46,6 +46,7 @@ class SceneTree;
 class Tween;
 class Viewport;
 class Window;
+
 struct SceneTreeGroup;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES

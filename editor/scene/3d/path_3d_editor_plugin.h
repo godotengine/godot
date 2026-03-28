@@ -35,9 +35,9 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
 
+class ConfirmationDialog;
 class HBoxContainer;
 class MenuButton;
-class ConfirmationDialog;
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);

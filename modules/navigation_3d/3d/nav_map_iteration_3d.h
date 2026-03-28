@@ -40,6 +40,7 @@
 class NavLinkIteration3D;
 class NavRegion3D;
 class NavRegionIteration3D;
+
 struct NavMapIteration3D;
 
 struct NavMapIterationBuild3D {

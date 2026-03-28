@@ -32,13 +32,13 @@
 
 #include "editor/plugins/editor_plugin.h"
 
-class Node2D;
-class HBoxContainer;
 class BaseButton;
 class CheckBox;
-class SpinBox;
+class HBoxContainer;
 class ItemList;
+class Node2D;
 class OptionButton;
+class SpinBox;
 
 class ScenePaint2DEditor : public Control {
 	GDCLASS(ScenePaint2DEditor, Control);

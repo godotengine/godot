@@ -34,9 +34,9 @@
 #include "core/object/worker_thread_pool.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 
-class Node;
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
+class Node;
 
 class NavMeshGenerator3D : public Object {
 	GDSOFTCLASS(NavMeshGenerator3D, Object);

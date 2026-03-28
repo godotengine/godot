@@ -35,8 +35,8 @@
 #include "core/templates/command_queue_mt.h"
 
 class RDShaderFile;
-class RenderingDevice;
 class RenderingContextDriver;
+class RenderingDevice;
 
 enum BetsyFormat {
 	BETSY_FORMAT_BC1,

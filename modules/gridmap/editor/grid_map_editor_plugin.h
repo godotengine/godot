@@ -36,16 +36,16 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
+class BaseButton;
 class Button;
+class ButtonGroup;
 class ConfirmationDialog;
+class EditorZoomWidget;
 class FilterLineEdit;
 class HSlider;
 class ItemList;
 class MenuButton;
 class Node3DEditorPlugin;
-class ButtonGroup;
-class EditorZoomWidget;
-class BaseButton;
 class SpinBox;
 
 class GridMapEditor : public EditorDock {

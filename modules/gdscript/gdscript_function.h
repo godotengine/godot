@@ -40,8 +40,8 @@
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
 
-class GDScriptInstance;
 class GDScript;
+class GDScriptInstance;
 
 class GDScriptDataType {
 public:

@@ -33,8 +33,8 @@
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 
-class ObjectDBProfilerPanel;
 class ObjectDBProfilerDebuggerPlugin;
+class ObjectDBProfilerPanel;
 
 // First, ObjectDBProfilerPlugin is loaded. Then it loads ObjectDBProfilerDebuggerPlugin.
 class ObjectDBProfilerPlugin : public EditorPlugin {

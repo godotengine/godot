@@ -49,14 +49,14 @@ class CreateDialog;
 class DependencyEditor;
 class DependencyEditorOwners;
 class DependencyRemoveDialog;
+class DirectoryCreateDialog;
 class EditorDirDialog;
+class EditorResourceTooltipPlugin;
 class HBoxContainer;
 class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
-class DirectoryCreateDialog;
-class EditorResourceTooltipPlugin;
 class VBoxContainer;
 
 class FileSystemTree : public Tree {

@@ -66,17 +66,17 @@
 class Object;
 class RefCounted;
 
-template <typename T>
-class Ref;
+struct MethodInfo;
+struct PropertyInfo;
+
 template <typename T>
 class BitField;
+template <typename T>
+class Ref;
 template <typename T>
 class TypedArray;
 template <typename K, typename V>
 class TypedDictionary;
-
-struct PropertyInfo;
-struct MethodInfo;
 
 typedef Vector<uint8_t> PackedByteArray;
 typedef Vector<int32_t> PackedInt32Array;

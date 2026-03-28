@@ -34,8 +34,8 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 
-class Object;
 class Dictionary;
+class Object;
 
 template <typename T>
 class TypedArray;

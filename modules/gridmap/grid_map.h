@@ -35,6 +35,7 @@
 
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
+
 #ifndef PHYSICS_3D_DISABLED
 class PhysicsMaterial;
 #endif // PHYSICS_3D_DISABLED

@@ -36,6 +36,7 @@
 #include "core/typedefs.h"
 
 class String;
+
 struct Vector4i;
 
 struct [[nodiscard]] Vector4 {
