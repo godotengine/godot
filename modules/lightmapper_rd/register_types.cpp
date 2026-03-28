@@ -43,6 +43,13 @@ static Ref<Lightmapper> create_lightmapper_rd() {
 #endif
 
 void initialize_lightmapper_rd_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+#ifndef _3D_DISABLED
+		GDREGISTER_CLASS(LightmapperRD);
+#endif
+		return;
+	}
+
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -63,7 +70,6 @@ void initialize_lightmapper_rd_module(ModuleInitializationLevel p_level) {
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lightmapping/denoising/denoiser", PROPERTY_HINT_ENUM, "JNLM,OIDN"), 0);
 #ifndef _3D_DISABLED
-	GDREGISTER_CLASS(LightmapperRD);
 	Lightmapper::create_gpu = create_lightmapper_rd;
 #endif
 }
