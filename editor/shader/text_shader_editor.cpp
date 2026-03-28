@@ -2153,7 +2153,7 @@ TextShaderEditor::TextShaderEditor() {
 	add_child(preview_timer);
 	preview_timer->set_one_shot(true);
 	preview_timer->set_wait_time(0.001);
-	preview_timer->connect("timeout", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines));
+	preview_timer->connect(SceneStringName(timeout), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines));
 
 	_apply_editor_settings();
 	code_editor->show_toggle_files_button(); // TODO: Disabled for now, because it doesn't work properly.

@@ -154,53 +154,53 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 	test_timer->set_physics_process(true);
 
 	SUBCASE("[Timer] Timer process timeout signal must be emitted") {
-		SIGNAL_WATCH(test_timer, SNAME("timeout"));
+		SIGNAL_WATCH(test_timer, SceneStringName(timeout));
 		test_timer->start(0.1);
 
 		SceneTree::get_singleton()->process(0.2);
 
 		Array signal_args = { {} };
-		SIGNAL_CHECK(SNAME("timeout"), signal_args);
+		SIGNAL_CHECK(SceneStringName(timeout), signal_args);
 
-		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
+		SIGNAL_UNWATCH(test_timer, SceneStringName(timeout));
 	}
 
 	SUBCASE("[Timer] Timer process timeout signal must not be emitted") {
-		SIGNAL_WATCH(test_timer, SNAME("timeout"));
+		SIGNAL_WATCH(test_timer, SceneStringName(timeout));
 		test_timer->start(0.1);
 
 		SceneTree::get_singleton()->process(0.05);
 
 		Array signal_args = { {} };
-		SIGNAL_CHECK_FALSE(SNAME("timeout"));
+		SIGNAL_CHECK_FALSE(SceneStringName(timeout));
 
-		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
+		SIGNAL_UNWATCH(test_timer, SceneStringName(timeout));
 	}
 
 	test_timer->set_timer_process_callback(Timer::TimerProcessCallback::TIMER_PROCESS_PHYSICS);
 
 	SUBCASE("[Timer] Timer physics process timeout signal must be emitted") {
-		SIGNAL_WATCH(test_timer, SNAME("timeout"));
+		SIGNAL_WATCH(test_timer, SceneStringName(timeout));
 		test_timer->start(0.1);
 
 		SceneTree::get_singleton()->physics_process(0.2);
 
 		Array signal_args = { {} };
-		SIGNAL_CHECK(SNAME("timeout"), signal_args);
+		SIGNAL_CHECK(SceneStringName(timeout), signal_args);
 
-		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
+		SIGNAL_UNWATCH(test_timer, SceneStringName(timeout));
 	}
 
 	SUBCASE("[Timer] Timer physics process timeout signal must not be emitted") {
-		SIGNAL_WATCH(test_timer, SNAME("timeout"));
+		SIGNAL_WATCH(test_timer, SceneStringName(timeout));
 		test_timer->start(0.1);
 
 		SceneTree::get_singleton()->physics_process(0.05);
 
 		Array signal_args = { {} };
-		SIGNAL_CHECK_FALSE(SNAME("timeout"));
+		SIGNAL_CHECK_FALSE(SceneStringName(timeout));
 
-		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
+		SIGNAL_UNWATCH(test_timer, SceneStringName(timeout));
 	}
 
 	memdelete(test_timer);

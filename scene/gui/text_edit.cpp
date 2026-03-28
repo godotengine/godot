@@ -9377,20 +9377,20 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer, false, INTERNAL_MODE_FRONT);
 	caret_blink_timer->set_wait_time(0.65);
-	caret_blink_timer->connect("timeout", callable_mp(this, &TextEdit::_toggle_draw_caret));
+	caret_blink_timer->connect(SceneStringName(timeout), callable_mp(this, &TextEdit::_toggle_draw_caret));
 	set_caret_blink_enabled(false);
 
 	/* Selection. */
 	click_select_held = memnew(Timer);
 	add_child(click_select_held, false, INTERNAL_MODE_FRONT);
 	click_select_held->set_wait_time(0.05);
-	click_select_held->connect("timeout", callable_mp(this, &TextEdit::_click_selection_held));
+	click_select_held->connect(SceneStringName(timeout), callable_mp(this, &TextEdit::_click_selection_held));
 
 	idle_detect = memnew(Timer);
 	add_child(idle_detect, false, INTERNAL_MODE_FRONT);
 	idle_detect->set_one_shot(true);
 	idle_detect->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/text_edit_idle_detect_sec"));
-	idle_detect->connect("timeout", callable_mp(this, &TextEdit::_push_current_op));
+	idle_detect->connect(SceneStringName(timeout), callable_mp(this, &TextEdit::_push_current_op));
 
 	undo_stack_max_size = GLOBAL_GET_CACHED(int, "gui/common/text_edit_undo_stack_max_size");
 

@@ -1076,7 +1076,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
-	timer->connect("timeout", callable_mp(this, &EditorSettingsDialog::_settings_save));
+	timer->connect(SceneStringName(timeout), callable_mp(this, &EditorSettingsDialog::_settings_save));
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));

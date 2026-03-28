@@ -796,13 +796,13 @@ EditorProfiler::EditorProfiler() {
 	frame_delay->set_wait_time(0.1);
 	frame_delay->set_one_shot(true);
 	add_child(frame_delay);
-	frame_delay->connect("timeout", callable_mp(this, &EditorProfiler::_update_frame));
+	frame_delay->connect(SceneStringName(timeout), callable_mp(this, &EditorProfiler::_update_frame));
 
 	plot_delay = memnew(Timer);
 	plot_delay->set_wait_time(0.1);
 	plot_delay->set_one_shot(true);
 	add_child(plot_delay);
-	plot_delay->connect("timeout", callable_mp(this, &EditorProfiler::_update_plot));
+	plot_delay->connect(SceneStringName(timeout), callable_mp(this, &EditorProfiler::_update_plot));
 
 	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");

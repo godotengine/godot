@@ -1135,7 +1135,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	add_child(index_focus_cooldown_timer);
 	index_focus_cooldown_timer->set_wait_time(1.5);
 	index_focus_cooldown_timer->set_one_shot(true);
-	index_focus_cooldown_timer->connect("timeout", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_index_focus_cooldown_timeout));
+	index_focus_cooldown_timer->connect(SceneStringName(timeout), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_index_focus_cooldown_timeout));
 
 	set_custom_minimum_size(Size2(0, 150 * EDSCALE));
 }

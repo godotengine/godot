@@ -287,7 +287,7 @@ Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 	update_timer = memnew(Timer);
 	update_timer->set_name("JointGizmoUpdateTimer");
 	update_timer->set_wait_time(1.0 / 120.0);
-	update_timer->connect("timeout", callable_mp(this, &Joint3DGizmoPlugin::incremental_update_gizmos));
+	update_timer->connect(SceneStringName(timeout), callable_mp(this, &Joint3DGizmoPlugin::incremental_update_gizmos));
 	update_timer->set_autostart(true);
 	callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(update_timer, false, Node::INTERNAL_MODE_DISABLED);
 }

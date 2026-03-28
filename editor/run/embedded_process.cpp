@@ -450,12 +450,12 @@ EmbeddedProcess::EmbeddedProcess() {
 	timer_embedding->set_wait_time(0.1);
 	timer_embedding->set_one_shot(true);
 	add_child(timer_embedding);
-	timer_embedding->connect("timeout", callable_mp(this, &EmbeddedProcess::_timer_embedding_timeout));
+	timer_embedding->connect(SceneStringName(timeout), callable_mp(this, &EmbeddedProcess::_timer_embedding_timeout));
 
 	timer_update_embedded_process = memnew(Timer);
 	timer_update_embedded_process->set_wait_time(0.1);
 	add_child(timer_update_embedded_process);
-	timer_update_embedded_process->connect("timeout", callable_mp(this, &EmbeddedProcess::_timer_update_embedded_process_timeout));
+	timer_update_embedded_process->connect(SceneStringName(timeout), callable_mp(this, &EmbeddedProcess::_timer_update_embedded_process_timeout));
 }
 
 EmbeddedProcess::~EmbeddedProcess() {

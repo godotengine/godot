@@ -1663,7 +1663,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter_debounce_timer = memnew(Timer);
 	filter_debounce_timer->set_one_shot(true);
 	filter_debounce_timer->set_wait_time(0.25);
-	filter_debounce_timer->connect("timeout", callable_mp(this, &EditorAssetLibrary::_filter_debounce_timer_timeout));
+	filter_debounce_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorAssetLibrary::_filter_debounce_timer_timeout));
 	search_hb->add_child(filter_debounce_timer);
 
 	if (!p_templates_only) {

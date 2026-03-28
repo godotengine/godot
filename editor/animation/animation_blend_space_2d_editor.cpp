@@ -1445,7 +1445,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	add_child(index_focus_cooldown_timer);
 	index_focus_cooldown_timer->set_wait_time(1.5);
 	index_focus_cooldown_timer->set_one_shot(true);
-	index_focus_cooldown_timer->connect("timeout", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_index_focus_cooldown_timeout));
+	index_focus_cooldown_timer->connect(SceneStringName(timeout), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_index_focus_cooldown_timeout));
 
 	selected_point = -1;
 	selected_triangle = -1;
