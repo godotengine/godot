@@ -217,11 +217,11 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 
 static spv::ExecutionModel SHADER_STAGE_REMAP[RDD::SHADER_STAGE_MAX] = {
-	[RDD::SHADER_STAGE_VERTEX] = spv::ExecutionModelVertex,
-	[RDD::SHADER_STAGE_FRAGMENT] = spv::ExecutionModelFragment,
-	[RDD::SHADER_STAGE_TESSELATION_CONTROL] = spv::ExecutionModelTessellationControl,
-	[RDD::SHADER_STAGE_TESSELATION_EVALUATION] = spv::ExecutionModelTessellationEvaluation,
-	[RDD::SHADER_STAGE_COMPUTE] = spv::ExecutionModelGLCompute,
+	spv::ExecutionModelVertex, // RDD::SHADER_STAGE_VERTEX
+	spv::ExecutionModelFragment, // RDD::SHADER_STAGE_FRAGMENT
+	spv::ExecutionModelTessellationControl, // RDD::SHADER_STAGE_TESSELATION_CONTROL
+	spv::ExecutionModelTessellationEvaluation, // RDD::SHADER_STAGE_TESSELATION_EVALUATION
+	spv::ExecutionModelGLCompute, // RDD::SHADER_STAGE_COMPUTE
 };
 
 spv::ExecutionModel get_stage(uint32_t p_stages_mask, RDD::ShaderStage p_stage) {
