@@ -2069,16 +2069,24 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 					bool use_origin_snap = spatial_editor->is_vertex_snap_origin_mode();
 
+					Node3D *selected = spatial_editor->get_single_selected_node();
+					Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
+					bool has_subgizmos = se && se->gizmo.is_valid() && !se->subgizmos.is_empty();
+
 					if (!use_origin_snap) {
-						bool has_geometry = false;
-						for (Node *E : selection) {
-							if (_node_has_geometry(E)) {
-								has_geometry = true;
-								break;
-							}
-						}
-						if (!has_geometry) {
+						if (has_subgizmos) {
 							use_origin_snap = true;
+						} else {
+							bool has_geometry = false;
+							for (Node *E : selection) {
+								if (_node_has_geometry(E)) {
+									has_geometry = true;
+									break;
+								}
+							}
+							if (!has_geometry) {
+								use_origin_snap = true;
+							}
 						}
 					}
 
@@ -2100,17 +2108,35 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							Vector3 cam_normal = camera->get_global_transform().basis.get_column(2);
 							vertex_snap_drag_plane = Plane(cam_normal, vertex_snap_source);
 						} else {
-							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-							undo_redo->create_action(TTR("Vertex Snap"));
-							for (const KeyValue<ObjectID, Vector3> &E2 : vertex_snap_original_positions) {
-								Node3D *node = ObjectDB::get_instance<Node3D>(E2.key);
-								if (node) {
-									node->set_global_position(vertex_snap_source);
-									undo_redo->add_do_method(node, "set_global_position", vertex_snap_source);
-									undo_redo->add_undo_method(node, "set_global_position", E2.value);
+							if (has_subgizmos) {
+								Transform3D gi = selected->get_global_transform().affine_inverse();
+								Vector3 local_target = gi.xform(vertex_snap_source);
+
+								Vector<int> ids;
+								Vector<Transform3D> restores;
+								for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D original_xform = se->gizmo->get_subgizmo_transform(GE.key);
+									ids.push_back(GE.key);
+									restores.push_back(original_xform);
+
+									Transform3D snapped_xform = original_xform;
+									snapped_xform.origin = local_target;
+									se->gizmo->set_subgizmo_transform(GE.key, snapped_xform);
 								}
+								se->gizmo->commit_subgizmos(ids, restores, false);
+							} else {
+								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+								undo_redo->create_action(TTR("Vertex Snap"));
+								for (const KeyValue<ObjectID, Vector3> &E2 : vertex_snap_original_positions) {
+									Node3D *node = ObjectDB::get_instance<Node3D>(E2.key);
+									if (node) {
+										node->set_global_position(vertex_snap_source);
+										undo_redo->add_do_method(node, "set_global_position", vertex_snap_source);
+										undo_redo->add_undo_method(node, "set_global_position", E2.value);
+									}
+								}
+								undo_redo->commit_action(false);
 							}
-							undo_redo->commit_action(false);
 							vertex_snap_original_positions.clear();
 							spatial_editor->update_transform_gizmo();
 							_reset_follow_mode_count();
