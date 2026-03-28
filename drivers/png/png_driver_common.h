@@ -39,5 +39,6 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 
 // Append p_image, as a png, to p_buffer.
 // Contents of p_buffer is unspecified if error returned.
-Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer);
+// p_fast_save uses libpng's PNG_IMAGE_FLAG_FAST to emphasize speed over compression.
+Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer, bool p_fast_save = false);
 } // namespace PNGDriverCommon
