@@ -30,26 +30,36 @@
 
 #pragma once
 
-#include "core/os/thread.h"
+#include "core/templates/rb_set.h"
 #include "editor/docks/editor_dock.h"
-#include "editor/scene/2d/tiles/tile_atlas_view.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/flow_container.h"
-#include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_bar.h"
-#include "scene/gui/tree.h"
+#include "scene/resources/2d/tile_set.h"
 
+class BaseButton;
+class BoxContainer;
+class Button;
+class ButtonGroup;
+class CheckBox;
+class FlowContainer;
+class GridContainer;
+class HBoxContainer;
+class HSeparator;
+class ItemList;
+class MenuButton;
+class OptionButton;
+class PanelContainer;
+class SpinBox;
+class SplitContainer;
+class TabBar;
+class TileAtlasView;
 class TileMapLayer;
 class TileMapLayerEditor;
+class TileMapPattern;
+class TileSet;
 class TileSetSourceItemList;
-class GridContainer;
+class Tree;
+class VBoxContainer;
+class VSeparator;
 
 class SwitchSeparator : public MarginContainer {
 	GDCLASS(SwitchSeparator, MarginContainer);

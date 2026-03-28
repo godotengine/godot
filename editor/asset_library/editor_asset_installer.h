@@ -31,12 +31,14 @@
 #pragma once
 
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/tree.h"
 
 class CheckBox;
 class EditorFileDialog;
 class Label;
 class LinkButton;
+class MarginContainer;
 
 class EditorAssetInstaller : public ConfirmationDialog {
 	GDCLASS(EditorAssetInstaller, ConfirmationDialog);

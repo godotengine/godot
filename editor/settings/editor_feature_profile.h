@@ -31,13 +31,19 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "editor/doc/editor_help.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tree.h"
 
+class Button;
 class EditorFileDialog;
+class EditorHelpBit;
+class HSplitContainer;
+class Label;
+class LineEdit;
+class OptionButton;
+class Timer;
+class Tree;
+class TreeItem;
+class VBoxContainer;
 
 class EditorFeatureProfile : public RefCounted {
 	GDCLASS(EditorFeatureProfile, RefCounted);

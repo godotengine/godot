@@ -31,15 +31,19 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
+class Button;
+class CheckBox;
+class CheckButton;
+class HBoxContainer;
+class HSplitContainer;
 class ImageTexture;
+class OptionButton;
+class SpinBox;
+class TextureRect;
+class Timer;
+class Tree;
+class VBoxContainer;
 
 class EditorProfiler : public VBoxContainer {
 	GDCLASS(EditorProfiler, VBoxContainer);

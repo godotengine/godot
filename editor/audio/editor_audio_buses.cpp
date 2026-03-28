@@ -48,7 +48,17 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/texture_progress_bar.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box_flat.h"
@@ -341,6 +351,10 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 	ur->commit_action();
 
 	updating_bus = false;
+}
+
+void EditorAudioBus::_name_focus_exit() {
+	_name_changed(track_name->get_text());
 }
 
 void EditorAudioBus::_volume_changed(float p_normalized) {

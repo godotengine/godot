@@ -38,6 +38,7 @@
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "servers/display/display_server.h"
@@ -278,6 +279,13 @@ TextEditorBase::EditMenus::EditMenus() {
 
 	// Update immediately for shortcuts.
 	_update_bookmark_list();
+}
+
+void TextEditorBase::_popup_move_item(int p_target_id, PopupMenu *r_popup, bool p_move_after, int p_idx) {
+	int target_idx = r_popup->get_item_index(p_target_id) + p_move_after;
+	if (target_idx >= 0 && target_idx < r_popup->get_item_count()) {
+		r_popup->set_item_index(p_idx, target_idx);
+	}
 }
 
 void TextEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {

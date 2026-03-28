@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector_action_button.h"
 #include "scene/resources/packed_scene.h"
 
 void PackedSceneEditor::_on_open_scene_pressed() {

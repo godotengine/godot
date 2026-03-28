@@ -32,22 +32,21 @@
 
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/button.h"
-#include "scene/gui/control.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/texture_progress_bar.h"
-#include "scene/gui/tree.h"
 
+class Button;
 class EditorAudioBuses;
 class EditorFileDialog;
 class HBoxContainer;
+class LineEdit;
+class MenuButton;
+class OptionButton;
+class Panel;
+class ScrollContainer;
+class TextureProgressBar;
 class Timer;
+class Tree;
+class VSlider;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
@@ -95,7 +94,7 @@ class EditorAudioBus : public PanelContainer {
 	void _bus_popup_pressed(int p_option);
 
 	void _name_changed(const String &p_new_name);
-	void _name_focus_exit() { _name_changed(track_name->get_text()); }
+	void _name_focus_exit();
 	void _volume_changed(float p_normalized);
 	float _normalized_volume_to_scaled_db(float normalized);
 	float _scaled_db_to_normalized_volume(float db);

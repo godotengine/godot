@@ -31,9 +31,11 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/file_system/dependency_editor.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 
 #ifndef DISABLE_DEPRECATED

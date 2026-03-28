@@ -31,9 +31,9 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 
+class Button;
+class HBoxContainer;
 class PhysicalBone3D;
 
 class PhysicalBone3DEditor : public Object {

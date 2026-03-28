@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_inspector.compat.inc                                           */
+/*  editor_inspector_plugin.compat.inc                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,9 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "editor_inspector.h"
+#include "editor_inspector_plugin.h"
 
 #include "core/object/class_db.h"
+#include "scene/gui/control.h"
 
 void EditorInspectorPlugin::_add_property_editor_bind_compat_92322(const String &p_for_property, Control *p_prop, bool p_add_to_end) {
 	add_property_editor(p_for_property, p_prop, p_add_to_end, "");

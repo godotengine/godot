@@ -37,6 +37,8 @@
 #include "editor/gui/directory_create_dialog.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
 #include "scene/gui/tree.h"
 #include "servers/display/display_server.h"
 

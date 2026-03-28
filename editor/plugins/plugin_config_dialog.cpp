@@ -42,7 +42,12 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/text_edit.h"
 
 void PluginConfigDialog::_clear_fields() {
 	name_edit->set_text("");

@@ -36,6 +36,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
 
 void ParticlesEditorPlugin::_notification(int p_what) {

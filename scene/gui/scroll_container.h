@@ -31,10 +31,11 @@
 #pragma once
 
 #include "scene/gui/container.h"
-#include "scene/gui/scroll_bar.h"
 
 class PanelContainer;
+class HScrollBar;
 class TextureRect;
+class VScrollBar;
 
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);

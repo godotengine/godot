@@ -46,11 +46,49 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 #include "servers/display/display_server.h"
+
+void EditorLog::LogFilter::initialize_button(const String &p_name, const String &p_tooltip, Callable p_toggled_callback) {
+	toggle_button = memnew(Button);
+	toggle_button->set_toggle_mode(true);
+	toggle_button->set_pressed(true);
+	toggle_button->set_text(itos(message_count));
+	toggle_button->set_accessibility_name(TTRGET(p_name));
+	toggle_button->set_tooltip_text(TTRGET(p_tooltip));
+	toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	toggle_button->set_theme_type_variation("EditorLogFilterButton");
+	// When toggled call the callback and pass the MessageType this button is for.
+	toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
+}
+
+int EditorLog::LogFilter::get_message_count() {
+	return message_count;
+}
+
+void EditorLog::LogFilter::set_message_count(int p_count) {
+	message_count = p_count;
+	toggle_button->set_text(itos(message_count));
+}
+
+bool EditorLog::LogFilter::is_active() {
+	return active;
+}
+
+void EditorLog::LogFilter::set_active(bool p_active) {
+	toggle_button->set_pressed(p_active);
+	active = p_active;
+}
+
+EditorLog::LogFilter::LogFilter(MessageType p_type) :
+		type(p_type) {
+}
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);

@@ -31,17 +31,19 @@
 #pragma once
 
 #include "editor/docks/editor_dock.h"
-#include "editor/editor_data.h"
-#include "editor/gui/create_dialog.h"
-#include "editor/inspector/editor_inspector.h"
-#include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/tree.h"
+#include "editor/inspector/editor_property_name_processor.h"
 
+class AcceptDialog;
+class Button;
+class ConfirmationDialog;
+class CreateDialog;
+class EditorData;
 class EditorFileDialog;
+class EditorInspector;
 class EditorObjectSelector;
+class LineEdit;
+class MenuButton;
+class Tree;
 
 class InspectorDock : public EditorDock {
 	GDCLASS(InspectorDock, EditorDock);

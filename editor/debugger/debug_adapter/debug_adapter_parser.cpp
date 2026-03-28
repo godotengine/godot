@@ -38,6 +38,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
+#include "scene/gui/button.h"
 
 void DebugAdapterParser::_bind_methods() {
 	// Requests

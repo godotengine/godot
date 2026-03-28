@@ -35,6 +35,10 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector/editor_inspector.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

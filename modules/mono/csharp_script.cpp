@@ -41,7 +41,7 @@
 #ifdef GD_MONO_HOT_RELOAD
 #include "managed_callable.h"
 #include "utils/path_utils.h"
-#endif
+#endif // GD_MONO_HOT_RELOAD
 
 #ifdef DEBUG_ENABLED
 #include "class_db_api_json.h"
@@ -50,7 +50,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_internal_calls.h"
 #include "editor/script_templates/templates.gen.h"
-#endif
+#endif // TOOLS_ENABLED
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -72,8 +72,9 @@
 #ifdef GD_MONO_HOT_RELOAD
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/signals_dock.h"
-#endif
-#endif
+#include "editor/inspector/editor_inspector.h"
+#endif // GD_MONO_HOT_RELOAD
+#endif // TOOLS_ENABLED
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
@@ -1026,9 +1027,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		InspectorDock::get_inspector_singleton()->update_tree();
 		SignalsDock::get_singleton()->update_lists();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
-#endif
+#endif // GD_MONO_HOT_RELOAD
 
 void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("cs");

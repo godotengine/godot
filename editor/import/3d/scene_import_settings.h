@@ -31,25 +31,34 @@
 #pragma once
 
 #include "editor/import/3d/resource_importer_scene.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/tree.h"
-#include "scene/resources/3d/primitive_meshes.h"
-#include "scene/resources/3d/sky_material.h"
+#include "scene/resources/animation.h"
 
+class AnimationPlayer;
+class ArrayMesh;
+class CameraAttributesPractical;
+class DirectionalLight3D;
 class EditorFileDialog;
 class EditorInspector;
+class Environment;
+class HSlider;
+class HSplitContainer;
+class Material;
+class MenuButton;
+class Mesh;
+class MeshInstance3D;
+class OptionButton;
+class PanelContainer;
+class ProceduralSkyMaterial;
 class SceneImportSettingsData;
+class Skeleton3D;
+class Sky;
+class SphereMesh;
+class StandardMaterial3D;
+class TabContainer;
 class Timer;
+class Tree;
+class TreeItem;
 
 class SceneImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(SceneImportSettingsDialog, ConfirmationDialog)

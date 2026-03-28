@@ -30,12 +30,14 @@
 
 #pragma once
 
-#include "editor/translations/editor_locale_dialog.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/box_container.h"
 
+class Button;
+class CheckBox;
 class EditorFileDialog;
+class EditorLocaleDialog;
 class FileSystemDock;
+class Tree;
 
 class LocalizationEditor : public VBoxContainer {
 	GDCLASS(LocalizationEditor, VBoxContainer);

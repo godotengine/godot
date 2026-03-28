@@ -33,12 +33,14 @@
 #include "scene/gui/dialogs.h"
 
 class Button;
+class ButtonGroup;
 class CheckBox;
 class CheckButton;
 class EditorFileDialog;
 class LineEdit;
 class OptionButton;
 class TextureRect;
+class VBoxContainer;
 
 class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);

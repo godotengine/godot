@@ -33,6 +33,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/scroll_container.h"
 
+class ButtonGroup;
 class CheckBox;
 class EditorAbout;
 class EditorAssetLibrary;

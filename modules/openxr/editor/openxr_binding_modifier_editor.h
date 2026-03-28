@@ -33,12 +33,12 @@
 #include "../action_map/openxr_action_map.h"
 #include "../action_map/openxr_binding_modifier.h"
 
-#include "editor/editor_undo_redo_manager.h"
-#include "editor/inspector/editor_inspector.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/label.h"
+#include "editor/inspector/editor_inspector_plugin.h"
+#include "editor/inspector/editor_properties.h"
 #include "scene/gui/panel_container.h"
+
+class EditorInspector;
+class EditorUndoRedoManager;
 
 class EditorPropertyActionSet : public EditorProperty {
 	GDCLASS(EditorPropertyActionSet, EditorProperty);

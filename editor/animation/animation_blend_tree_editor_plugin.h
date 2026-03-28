@@ -30,24 +30,24 @@
 
 #pragma once
 
-#include "core/object/script_language.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
-#include "editor/inspector/editor_inspector.h"
-#include "scene/animation/animation_blend_tree.h"
-#include "scene/gui/button.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/graph_edit.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/tree.h"
 
 class AcceptDialog;
+class AnimationNodeAnimation;
+class Button;
 class CheckBox;
 class ProgressBar;
 class EditorFileDialog;
 class EditorProperty;
+class GraphEdit;
 class MenuButton;
+class OptionButton;
 class PanelContainer;
 class RichTextLabel;
+class Tree;
+class TreeItem;
 class EditorInspectorPluginAnimationNodeAnimation;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {

@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/popup.h"
 #include "scene/main/window.h"
 
+class HBoxContainer;
+class Button;
+class Label;
 class LineEdit;
+class Panel;
+class PopupMenu;
 
 class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);

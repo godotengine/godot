@@ -32,9 +32,12 @@
 
 #include "editor/gui/code_editor.h"
 #include "editor/shader/shader_editor.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/rich_text_label.h"
 #include "servers/rendering/shader_warnings.h"
+
+class Button;
+class ConfirmationDialog;
+class MenuButton;
+class RichTextLabel;
 
 class GDShaderSyntaxHighlighter : public CodeHighlighter {
 	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
