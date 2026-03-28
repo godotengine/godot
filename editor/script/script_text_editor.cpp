@@ -50,12 +50,14 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/script/find_in_files.h"
 #include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
@@ -1861,6 +1863,39 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->get_caret_line(0), tx->get_caret_column(0));
 			}
 		} break;
+		case RENAME_SYMBOL: {
+			String text = tx->get_word_under_caret(0);
+			if (text.is_empty()) {
+				text = tx->get_selected_text(0);
+			}
+			if (text.is_empty()) {
+				break;
+			}
+			Ref<Script> script = edited_res;
+
+			EditorLanguage::LookupResult result;
+			String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(tx->get_caret_line(0), tx->get_caret_column(0));
+			if (script->get_language()->get_editor_language()->lookup_code_for_rename(code_text, text, script->get_path(), result) != OK) {
+				break;
+			}
+
+			if (result.script_path.is_empty()) {
+				// Don't allow renaming native symbols.
+				break;
+			}
+
+			Vector2 pos = tx->get_screen_position();
+			// Set popup at the beginning of the word.
+			const PackedInt32Array words = TS->shaped_text_get_word_breaks(tx->get_line_data(tx->get_caret_line(0))->get_rid());
+			for (int i = 0; i < words.size(); i = i + 2) {
+				if ((words[i] <= tx->get_caret_column(0) && words[i + 1] >= tx->get_caret_column(0)) || (i == words.size() - 2 && tx->get_caret_column(0) == words[i + 1])) {
+					pos += tx->get_rect_at_line_column(tx->get_caret_line(), words[i] + 1).position;
+					break;
+				}
+			}
+			ScriptEditor::get_singleton()->rename_symbol(text, result);
+		} break;
+
 		default: {
 			if (CodeEditorBase::_edit_option(p_op)) {
 				return true;
@@ -2462,9 +2497,11 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 
 		bool foldable = tx->can_fold_line(mouse_line) || tx->is_line_folded(mouse_line);
 		bool open_docs = false;
+		bool allow_rename = false;
 
 		if (ScriptServer::is_global_class(word_at_pos) || word_at_pos.is_resource_file()) {
 			open_docs = true;
+			allow_rename = ScriptServer::is_global_class(word_at_pos);
 		} else {
 			Ref<Script> script = edited_res;
 			Node *base = get_tree()->get_edited_scene_root();
@@ -2474,6 +2511,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			EditorLanguage::LookupResult result;
 			if (script->get_language()->get_editor_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
 				open_docs = true;
+				allow_rename = !result.script_path.is_empty();
 			}
 		}
 
@@ -2501,11 +2539,11 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		_make_ste_context_menu(tx->has_selection(), has_color, foldable, open_docs, local_pos);
+		_make_ste_context_menu(tx->has_selection(), has_color, foldable, open_docs, allow_rename, local_pos);
 	}
 }
 
-void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_position) {
+void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_allow_rename, const Vector2 &p_position) {
 	CodeEditorBase::_make_context_menu(p_selection, p_foldable, p_position, false);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	_popup_move_item(EDIT_UNINDENT, context_menu);
@@ -2521,6 +2559,9 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 		context_menu->add_separator();
 		if (p_open_docs) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
+		}
+		if (p_allow_rename) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/rename_symbol"), RENAME_SYMBOL);
 		}
 		if (p_color) {
 			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
@@ -2604,6 +2645,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_line", "macos", KeyModifierMask::CMD_OR_CTRL | Key::L);
 	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
+	ED_SHORTCUT("script_text_editor/rename_symbol", TTRC("Rename Symbol"), Key::F2);
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
