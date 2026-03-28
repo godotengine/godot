@@ -116,31 +116,49 @@ jobs:
               const requested = String(context.payload.inputs?.run_gpu_lane || "false").toLowerCase();
               runWindowsGpu = requested === "true";
               reason = runWindowsGpu ? "manual-dispatch" : "manual-dispatch-disabled";
-            } else if (context.eventName === "pull_request") {
+            } else if (context.eventName === "pull_request" || context.eventName === "merge_group") {
               const owner = context.repo.owner;
               const repo = context.repo.repo;
-              const pullNumber = context.payload.pull_request.number;
-              const files = await github.paginate(github.rest.pulls.listFiles, {
-                owner,
-                repo,
-                pull_number: pullNumber,
-                per_page: 100,
-              });
-              const changedPaths = files.map((file) => String(file.filename || ""));
               const renderStreamingPrefixes = [
                 "modules/gaussian_splatting/renderer/",
                 "modules/gaussian_splatting/shaders/",
                 "modules/gaussian_splatting/core/gaussian_streaming",
               ];
+
+              let changedPaths = [];
+              if (context.eventName === "pull_request") {
+                const pullNumber = context.payload.pull_request.number;
+                const files = await github.paginate(github.rest.pulls.listFiles, {
+                  owner,
+                  repo,
+                  pull_number: pullNumber,
+                  per_page: 100,
+                });
+                changedPaths = files.map((file) => String(file.filename || ""));
+              } else {
+                // merge_group: compare head against base using the merge group refs
+                const base = context.payload.merge_group.base_sha;
+                const head = context.payload.merge_group.head_sha;
+                const compare = await github.rest.repos.compareCommitsWithBasehead({
+                  owner,
+                  repo,
+                  basehead: `${base}...${head}`,
+                  per_page: 100,
+                });
+                changedPaths = (compare.data.files || []).map((file) => String(file.filename || ""));
+              }
+
               runWindowsGpu = changedPaths.some((path) =>
                 renderStreamingPrefixes.some((prefix) => path.startsWith(prefix))
               );
               reason = runWindowsGpu ? "render-streaming-path-change" : "no-render-streaming-changes";
 
-              const labels = (context.payload.pull_request.labels || []).map((label) => label.name);
-              if (runWindowsGpu && labels.includes(fallbackLabel)) {
-                runWindowsGpu = false;
-                reason = `fallback-label:${fallbackLabel}`;
+              if (context.eventName === "pull_request") {
+                const labels = (context.payload.pull_request.labels || []).map((label) => label.name);
+                if (runWindowsGpu && labels.includes(fallbackLabel)) {
+                  runWindowsGpu = false;
+                  reason = `fallback-label:${fallbackLabel}`;
+                }
               }
             }
 
