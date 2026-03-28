@@ -253,7 +253,7 @@ namespace embree
 #if defined(__64BIT__) || defined(__EMSCRIPTEN__)
   __forceinline   size_t min(size_t   a, size_t   b) { return a<b ? a:b; }
 #endif
-#if defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__) || defined(__OPENBSD__)
   __forceinline   long   min(long     a, long     b) { return a<b ? a:b; }
 #endif
 
@@ -273,7 +273,7 @@ namespace embree
 #if defined(__64BIT__) || defined(__EMSCRIPTEN__)
   __forceinline   size_t max(size_t   a, size_t   b) { return a<b ? b:a; }
 #endif
-#if defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__) || defined(__OPENBSD__)
   __forceinline   long   max(long     a, long     b) { return a<b ? b:a; }
 #endif
 

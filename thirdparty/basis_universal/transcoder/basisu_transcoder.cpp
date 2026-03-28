@@ -22119,7 +22119,7 @@ namespace basist
 
 		static BASISU_FORCE_INLINE basist::half_float fast_float_to_half_no_clamp_neg_nan_or_inf(float f)
 		{
-			assert(!isnan(f) && !isinf(f));
+			assert(!std::isnan(f) && !std::isinf(f));
 			assert((f >= 0.0f) && (f <= basist::MAX_HALF_FLOAT));
 
 			// Sutract 112 from the exponent, to change the bias from 127 to 15.

@@ -38,6 +38,11 @@
 #include "core/string/ustring.h"
 #include "core/variant/variant.h" // IWYU pragma: keep. Needed for print_verbose.
 
+#ifdef __OpenBSD__
+// quick_exit not available
+#define quick_exit _exit
+#endif
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>

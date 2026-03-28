@@ -31,6 +31,13 @@ Patches:
 - License: fontconfig
 
 
+## input-event-codes
+
+- Upstream: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/include/uapi/linux/input-event-codes.h
+- Version: 6.19-rc1 (4bdb6a1659873dfc625ded30a68cb387e328f34e, 2025)
+- License: GPL-2.0-only WITH Linux-syscall-note
+
+
 ## libdecor
 
 - Upstream: https://gitlab.freedesktop.org/libdecor/libdecor/

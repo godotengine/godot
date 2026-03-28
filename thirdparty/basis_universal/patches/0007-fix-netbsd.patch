@@ -1,0 +1,44 @@
+diff --git a/thirdparty/basis_universal/encoder/basisu_enc.h b/thirdparty/basis_universal/encoder/basisu_enc.h
+index 5256d34ad3..949e830f29 100644
+--- a/thirdparty/basis_universal/encoder/basisu_enc.h
++++ b/thirdparty/basis_universal/encoder/basisu_enc.h
+@@ -4261,7 +4261,7 @@ namespace basisu
+ 	// Positive, negative, or denormals. No NaN or Inf. Clamped to MAX_HALF_FLOAT.
+ 	inline basist::half_float fast_float_to_half_trunc_no_nan_or_inf(float f)
+ 	{
+-		assert(!isnan(f) && !isinf(f));
++		assert(!std::isnan(f) && !std::isinf(f));
+ 
+ 		// Sutract 112 from the exponent, to change the bias from 127 to 15.
+ 		static const fu32 g_f_to_h{ 0x7800000 };
+@@ -4275,7 +4275,7 @@ namespace basisu
+ 
+ 	inline basist::half_float fast_float_to_half_trunc_no_clamp_neg_nan_or_inf(float f)
+ 	{
+-		assert(!isnan(f) && !isinf(f));
++		assert(!std::isnan(f) && !std::isinf(f));
+ 		assert((f >= 0.0f) && (f <= basist::MAX_HALF_FLOAT));
+ 		
+ 		// Sutract 112 from the exponent, to change the bias from 127 to 15.
+@@ -4290,7 +4290,7 @@ namespace basisu
+ 		
+ 	inline basist::half_float fast_float_to_half_no_clamp_neg_nan_or_inf(float f)
+ 	{
+-		assert(!isnan(f) && !isinf(f));
++		assert(!std::isnan(f) && !std::isinf(f));
+ 		assert((f >= 0.0f) && (f <= basist::MAX_HALF_FLOAT));
+ 
+ 		// Sutract 112 from the exponent, to change the bias from 127 to 15.
+diff --git a/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp b/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
+index e46d0aefb9..c3f4b10895 100644
+--- a/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
++++ b/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
+@@ -22119,7 +22119,7 @@ namespace basist
+ 
+ 		static BASISU_FORCE_INLINE basist::half_float fast_float_to_half_no_clamp_neg_nan_or_inf(float f)
+ 		{
+-			assert(!isnan(f) && !isinf(f));
++			assert(!std::isnan(f) && !std::isinf(f));
+ 			assert((f >= 0.0f) && (f <= basist::MAX_HALF_FLOAT));
+ 
+ 			// Sutract 112 from the exponent, to change the bias from 127 to 15.
