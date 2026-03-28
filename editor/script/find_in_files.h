@@ -292,5 +292,7 @@ protected:
 public:
 	void open_dialog(const String &p_initial_text, bool p_replace = false);
 
+	FindInFilesContainer *get_dock() const { return container; }
+
 	FindInFiles();
 };
