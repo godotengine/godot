@@ -1,3 +1,5 @@
+#pragma once
+
 #include "test_macros.h"
 #include "../nodes/gaussian_splat_container.h"
 #include "../nodes/gaussian_splat_node_3d.h"
@@ -5,10 +7,10 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
-#ifdef TESTS_ENABLED
+#if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
 
 namespace {
-Ref<GaussianSplatAsset> create_single_splat_asset(const Vector3 &p_position) {
+Ref<GaussianSplatAsset> create_single_splat_asset(const Vector3 &p_position, const String &p_dc_encoding = String()) {
     Ref<GaussianSplatAsset> asset;
     asset.instantiate();
 
@@ -62,29 +64,22 @@ Ref<GaussianSplatAsset> create_single_splat_asset(const Vector3 &p_position) {
     opacity_logits.set(0, 10.0f);
     asset->set_opacity_logits(opacity_logits);
 
+    if (!p_dc_encoding.is_empty()) {
+        Dictionary metadata = asset->get_import_metadata();
+        metadata[StringName("dc_encoding")] = p_dc_encoding;
+        asset->set_import_metadata(metadata);
+    }
+
     return asset;
 }
 } // namespace
 
-TEST_CASE("[GaussianSplatting][Container] Merges child splat nodes into chunked GaussianData") {
+TEST_CASE("[GaussianSplatting][Container][SceneTree] Merges child splat nodes into chunked GaussianData") {
     SceneTree *tree = SceneTree::get_singleton();
-    bool created_tree = false;
-
-    if (!tree) {
-        tree = memnew(SceneTree);
-        tree->initialize();
-        created_tree = true;
-    }
+    REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
 
     Window *root = tree->get_root();
-    CHECK_MESSAGE(root != nullptr, "SceneTree root window must exist for GaussianSplatContainer test");
-    if (root == nullptr) {
-        if (created_tree) {
-            tree->finalize();
-            memdelete(tree);
-        }
-        return;
-    }
+    REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
 
     GaussianSplatContainer *container = memnew(GaussianSplatContainer);
     container->set_chunk_size(5.0f);
@@ -113,10 +108,6 @@ TEST_CASE("[GaussianSplatting][Container] Merges child splat nodes into chunked 
     if (!merged.is_valid()) {
         root->remove_child(container);
         memdelete(container);
-        if (created_tree) {
-            tree->finalize();
-            memdelete(tree);
-        }
         return;
     }
     CHECK_EQ((int)merged->get_count(), splat_node_count);
@@ -138,11 +129,54 @@ TEST_CASE("[GaussianSplatting][Container] Merges child splat nodes into chunked 
 
     root->remove_child(container);
     memdelete(container);
-
-    if (created_tree) {
-        tree->finalize();
-        memdelete(tree);
-    }
 }
 
-#endif // TESTS_ENABLED
+TEST_CASE("[GaussianSplatting][Container][SceneTree] Merged child splats preserve per-source DC encoding metadata") {
+    SceneTree *tree = SceneTree::get_singleton();
+    REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+    Window *root = tree->get_root();
+    REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+    GaussianSplatContainer *container = memnew(GaussianSplatContainer);
+    container->set_chunk_size(5.0f);
+    root->add_child(container);
+
+    GaussianSplatNode3D *linear_node = memnew(GaussianSplatNode3D);
+    GaussianSplatNode3D *legacy_node = memnew(GaussianSplatNode3D);
+    linear_node->set_splat_asset(create_single_splat_asset(Vector3(0, 0, 0), "linear_rgb"));
+    legacy_node->set_splat_asset(create_single_splat_asset(Vector3(1, 0, 0), "legacy_bias"));
+
+    container->add_child(linear_node);
+    container->add_child(legacy_node);
+    tree->process(0.0);
+
+    container->merge_children();
+
+    Ref<GaussianData> merged = container->get_merged_data();
+    CHECK(merged.is_valid());
+    if (merged.is_valid()) {
+        CHECK_EQ((int)merged->get_count(), 2);
+        bool saw_linear = false;
+        bool saw_legacy = false;
+        for (int i = 0; i < merged->get_count(); i++) {
+            const Gaussian g = merged->get_gaussian(i);
+            if (g.position.x == 0.0f) {
+                saw_linear = true;
+                CHECK_EQ(gaussian_get_dc_encoding(g.render_meta), GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+            } else if (g.position.x == 1.0f) {
+                saw_legacy = true;
+                CHECK_EQ(gaussian_get_dc_encoding(g.render_meta), GAUSSIAN_DC_ENCODING_LEGACY_BIAS);
+            } else {
+                CHECK_MESSAGE(false, "Merged data contained an unexpected splat position");
+            }
+        }
+        CHECK(saw_linear);
+        CHECK(saw_legacy);
+    }
+
+    root->remove_child(container);
+    memdelete(container);
+}
+
+#endif // TESTS_ENABLED || TOOLS_ENABLED

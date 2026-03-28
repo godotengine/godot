@@ -138,7 +138,7 @@ static bool compare_debug_projection(const Vector<uint8_t> &p_pixels, int p_widt
 	return r_bad_pixels == 0;
 }
 
-TEST_CASE("[GaussianSplatting] Debug projection output matches golden gradient") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Debug projection output matches golden gradient") {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs == nullptr) {
 		MESSAGE("Skipping test - Rendering server unavailable");

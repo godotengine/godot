@@ -72,7 +72,7 @@ public:
 	GaussianSplatManager *get() const { return manager; }
 };
 
-TEST_CASE("[GaussianSplatting] GPU memory leak detection") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] GPU memory leak detection") {
 	// -- Obtain a RenderingDevice, skip gracefully if unavailable --
 	REQUIRE_GPU_DEVICE();
 
@@ -241,7 +241,7 @@ TEST_CASE("[GaussianSplatting] GPU memory leak detection") {
 	}
 }
 
-TEST_CASE("[GaussianSplatting] Memory validator reset clears all tracked state") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Memory validator reset clears all tracked state") {
 	REQUIRE_GPU_DEVICE();
 
 	ScopedMemoryValidator mem_scope;
@@ -289,7 +289,7 @@ TEST_CASE("[GaussianSplatting] Memory validator initialization rejects null Rend
 	CHECK(validator->get_gpu_tracker() == nullptr);
 }
 
-TEST_CASE("[GaussianSplatting] GPU memory leak detection with renderer lifecycle") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] GPU memory leak detection with renderer lifecycle") {
 	ScopedGaussianManagerMemory manager_scope;
 	GaussianSplatManager *manager = manager_scope.get();
 	if (!manager) {

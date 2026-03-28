@@ -133,7 +133,7 @@ public:
 // NOTE: create_storage_buffer template is defined in test_gpu_sorting.h
 // Do not duplicate it here to avoid ODR violations
 
-TEST_CASE("[GaussianSplatting] Phase 1 Integration - Basic Components") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Phase 1 Integration - Basic Components") {
 	// Get or create rendering device
 	RenderingDevice *rd = nullptr;
 	if (GaussianSplatManager *manager = GaussianSplatManager::get_singleton()) {

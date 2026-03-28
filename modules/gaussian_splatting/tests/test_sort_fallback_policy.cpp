@@ -8,8 +8,8 @@ TEST_CASE("[GaussianSplatting][SortFallback] force_cpu_sort policy stays determi
 	const SortFallbackPolicyDecision instance_policy =
 			build_sort_fallback_policy(SortFallbackScenario::FORCE_CPU_OVERRIDE, true);
 	CHECK(instance_policy.action_count == 3);
-	CHECK(instance_policy.actions[0] == SortFallbackAction::PUBLISH_INSTANCE_IDENTITY);
-	CHECK(instance_policy.actions[1] == SortFallbackAction::REUSE_PREVIOUS_SORT);
+	CHECK(instance_policy.actions[0] == SortFallbackAction::REUSE_PREVIOUS_SORT);
+	CHECK(instance_policy.actions[1] == SortFallbackAction::PUBLISH_INSTANCE_IDENTITY);
 	CHECK(instance_policy.actions[2] == SortFallbackAction::FAIL);
 	CHECK(!instance_policy.cpu_sort_forced);
 
@@ -39,4 +39,23 @@ TEST_CASE("[GaussianSplatting][SortFallback] GPU fallback policy prefers reuse t
 			CHECK(!global_policy.cpu_sort_forced);
 		}
 	}
+}
+
+TEST_CASE("[GaussianSplatting][SortFallback] strict mode suppresses unsorted instance fallback publication") {
+	CHECK(allow_unsorted_fallback_publication(false));
+	CHECK_FALSE(allow_unsorted_fallback_publication(true));
+
+	const SortFallbackPolicyDecision strict_force_cpu_instance_policy =
+			build_sort_fallback_policy(SortFallbackScenario::FORCE_CPU_OVERRIDE, true, true);
+	CHECK(strict_force_cpu_instance_policy.action_count == 2);
+	CHECK(strict_force_cpu_instance_policy.actions[0] == SortFallbackAction::REUSE_PREVIOUS_SORT);
+	CHECK(strict_force_cpu_instance_policy.actions[1] == SortFallbackAction::FAIL);
+	CHECK(!strict_force_cpu_instance_policy.cpu_sort_forced);
+
+	const SortFallbackPolicyDecision strict_gpu_failure_instance_policy =
+			build_sort_fallback_policy(SortFallbackScenario::GPU_SORT_FAILED, true, true);
+	CHECK(strict_gpu_failure_instance_policy.action_count == 2);
+	CHECK(strict_gpu_failure_instance_policy.actions[0] == SortFallbackAction::REUSE_PREVIOUS_SORT);
+	CHECK(strict_gpu_failure_instance_policy.actions[1] == SortFallbackAction::FAIL);
+	CHECK(!strict_gpu_failure_instance_policy.cpu_sort_forced);
 }

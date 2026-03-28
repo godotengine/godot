@@ -19,8 +19,6 @@ namespace TestGaussianSplatting {
 // This function is called when tests are run
 // The actual test cases are defined in the header files using TEST_CASE macros
 void test() {
-        // The doctest framework automatically discovers and runs all TEST_CASE definitions
-        // from the included headers. No explicit registration needed.
         print_line("[GaussianSplatting] Test suite initialized");
 }
 
