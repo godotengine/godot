@@ -655,8 +655,10 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	TreeItem *error = error_tree->create_item(r);
 	if (oe.warning) {
 		error->set_meta("_is_warning", true);
+		error->set_visible(warning_visible);
 	} else {
 		error->set_meta("_is_error", true);
+		error->set_visible(error_visible);
 	}
 	error->set_collapsed(true);
 
@@ -772,8 +774,10 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 
 	if (oe.warning) {
 		warning_count++;
+		warning_filter_button->set_text(itos(warning_count));
 	} else {
 		error_count++;
+		error_filter_button->set_text(itos(error_count));
 	}
 }
 
@@ -1126,6 +1130,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			reason->add_theme_style_override(SNAME("normal"), get_theme_stylebox(SNAME("normal"), SNAME("Label"))); // Empty stylebox.
+
+			error_filter_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
+			warning_filter_button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
 
 			const Ref<Font> source_font = get_theme_font(SNAME("output_source"), EditorStringName(EditorFonts));
 			if (source_font.is_valid()) {
@@ -1841,6 +1848,27 @@ void ScriptEditorDebugger::_collapse_errors_list() {
 	}
 }
 
+void ScriptEditorDebugger::_set_errors_list_filter(bool p_active, bool p_is_error) {
+	bool &filter_flag = p_is_error ? error_visible : warning_visible;
+	filter_flag = p_active;
+
+	TreeItem *root = error_tree->get_root();
+	if (!root) {
+		return;
+	}
+
+	const String meta_key = p_is_error ? "_is_error" : "_is_warning";
+
+	TreeItem *item = root->get_first_child();
+	while (item) {
+		if (item->get_meta(meta_key, false)) {
+			item->set_visible(p_active);
+		}
+
+		item = item->get_next();
+	}
+}
+
 void ScriptEditorDebugger::_vmem_item_activated() {
 	TreeItem *selected = vmem_tree->get_selected();
 	if (!selected) {
@@ -1893,6 +1921,8 @@ void ScriptEditorDebugger::_vmem_item_menu_id_pressed(int p_option) {
 }
 
 void ScriptEditorDebugger::_clear_errors_list() {
+	error_filter_button->set_text(itos(0));
+	warning_filter_button->set_text(itos(0));
 	error_tree->clear();
 	error_count = 0;
 	warning_count = 0;
@@ -2291,9 +2321,31 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		collapse_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
 		error_hbox->add_child(collapse_all_button);
 
-		Control *space = memnew(Control);
-		space->set_h_size_flags(SIZE_EXPAND_FILL);
-		error_hbox->add_child(space);
+		error_hbox->add_child(memnew(VSeparator));
+
+		error_filter_button = memnew(Button);
+		error_filter_button->set_toggle_mode(true);
+		error_filter_button->set_pressed(true);
+		error_filter_button->set_text(itos(0));
+		error_filter_button->set_accessibility_name(TTRC("Errors"));
+		error_filter_button->set_tooltip_text(TTRC("Toggle visibility of errors."));
+		error_filter_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+		error_filter_button->set_theme_type_variation("EditorLogFilterButton");
+		error_filter_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditorDebugger::_set_errors_list_filter).bind(true));
+		error_hbox->add_child(error_filter_button);
+
+		warning_filter_button = memnew(Button);
+		warning_filter_button->set_toggle_mode(true);
+		warning_filter_button->set_pressed(true);
+		warning_filter_button->set_text(itos(0));
+		warning_filter_button->set_accessibility_name(TTRC("Warnings"));
+		warning_filter_button->set_tooltip_text(TTRC("Toggle visibility of warnings."));
+		warning_filter_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+		warning_filter_button->set_theme_type_variation("EditorLogFilterButton");
+		warning_filter_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditorDebugger::_set_errors_list_filter).bind(false));
+		error_hbox->add_child(warning_filter_button);
+
+		error_hbox->add_spacer();
 
 		clear_button = memnew(Button);
 		clear_button->set_text(TTRC("Clear"));
