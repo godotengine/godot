@@ -30,6 +30,7 @@
 
 #include "gdscript_workspace.h"
 
+#include "../editor/gdscript_editor_language.h"
 #include "../gdscript.h"
 #include "../gdscript_parser.h"
 #include "gdscript_language_protocol.h"
@@ -625,7 +626,7 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<S
 		}
 
 		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
+		GDScriptEditorLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
 	}
 }
 

@@ -32,6 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "../editor/gdscript_editor_language.h"
 #include "../gdscript.h"
 #include "gdscript_test_runner.h"
 
@@ -184,7 +185,7 @@ static void test_directory(const String &p_dir) {
 				owner->set_script(scr);
 			}
 
-			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
+			GDScriptEditorLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
 			ERR_PRINT_ON;
 
 			String contains_excluded;

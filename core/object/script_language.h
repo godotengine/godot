@@ -41,6 +41,10 @@ class ScriptLanguage;
 template <typename T>
 class TypedArray;
 
+#ifdef TOOLS_ENABLED
+class EditorLanguage;
+#endif // TOOLS_ENABLED
+
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
 class ScriptServer {
@@ -218,6 +222,11 @@ public:
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
+	virtual EditorLanguage *get_editor_language() = 0;
+#endif // TOOLS_ENABLED
+
 	struct Warning {
 		int start_line = 0;
 		int end_line = 0;
@@ -334,8 +343,6 @@ public:
 	private:
 		TypedArray<int> charac;
 	};
-
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	enum LookupResultType {
 		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.

@@ -36,6 +36,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
+#include "editor/gdscript_editor_language.h"
 #include "editor/script_templates/templates.gen.h"
 #endif
 
@@ -54,6 +55,14 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #endif
+
+#ifdef TOOLS_ENABLED
+GDScriptEditorLanguage *GDScriptEditorLanguage::singleton = nullptr;
+
+EditorLanguage *GDScriptLanguage::get_editor_language() {
+	return GDScriptEditorLanguage::get_singleton();
+}
+#endif // TOOLS_ENABLED
 
 Vector<String> GDScriptLanguage::get_comment_delimiters() const {
 	static const Vector<String> delimiters = { "#" };
@@ -3446,7 +3455,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	r_forced = r_result.size() > 0;
 }
 
-::Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
+::Error GDScriptEditorLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	GDScriptParser parser;
@@ -3633,7 +3642,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 					HashMap<String, ScriptLanguage::CodeCompletionOption> opt;
 					_find_identifiers_in_base(base, false, false, false, opt, 0);
-					for (const KeyValue<String, CodeCompletionOption> &E : opt) {
+					for (const KeyValue<String, ScriptLanguage::CodeCompletionOption> &E : opt) {
 						ScriptLanguage::CodeCompletionOption option(E.value.insert_text.quote(quote_style), E.value.kind, E.value.location);
 						options.insert(option.display, option);
 					}
@@ -3857,13 +3866,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	return OK;
 }
-
-#else // !TOOLS_ENABLED
-
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
-	return OK;
-}
-
 #endif // TOOLS_ENABLED
 
 //////// END COMPLETION //////////
