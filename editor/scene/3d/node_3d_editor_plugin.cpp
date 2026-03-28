@@ -2374,6 +2374,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 								seg->redraw();
 								spatial_editor->update_transform_gizmo();
+								_reset_follow_mode_count();
 								intersected_subgizmo = true;
 								break;
 							}
