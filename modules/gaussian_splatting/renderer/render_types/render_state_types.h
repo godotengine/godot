@@ -66,6 +66,7 @@ struct CullStageOutput {
 struct SortStageSummary {
 	uint32_t sorted_count = 0;
 	float sort_time_ms = 0.0f;
+	bool did_execute = false;
 	IndexDomain input_domain = IndexDomain::UNKNOWN;
 	IndexDomain output_domain = IndexDomain::UNKNOWN;
 };

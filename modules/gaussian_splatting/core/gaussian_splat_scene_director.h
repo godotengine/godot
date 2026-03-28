@@ -5,6 +5,7 @@
 #include "core/object/object_id.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 #include "core/math/transform_3d.h"
@@ -31,23 +32,28 @@ public:
     GaussianSplatSceneDirector();
     ~GaussianSplatSceneDirector();
 
-    void register_instance(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset, const Transform3D &p_transform,
-            float p_opacity, float p_lod_bias, uint32_t p_flags,
-            float p_wind_intensity = 1.0f, uint32_t p_wind_mode = INSTANCE_WIND_INHERIT,
-            const Vector3 &p_wind_direction = Vector3(), float p_wind_frequency = 1.0f);
-    void update_instance_transform(ObjectID p_node_id, const Transform3D &p_transform);
-    void update_instance_params(ObjectID p_node_id, float p_opacity, float p_lod_bias, uint32_t p_flags,
-            float p_wind_intensity = 1.0f, uint32_t p_wind_mode = INSTANCE_WIND_INHERIT,
-            const Vector3 &p_wind_direction = Vector3(), float p_wind_frequency = 1.0f);
-    void unregister_instance(ObjectID p_node_id);
+	void register_instance(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset, const Transform3D &p_transform,
+			float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow = false,
+			float p_wind_intensity = 1.0f, uint32_t p_wind_mode = INSTANCE_WIND_INHERIT,
+			const Vector3 &p_wind_direction = Vector3(), float p_wind_frequency = 1.0f,
+			bool p_visible = true);
+	void update_instance_transform(ObjectID p_node_id, const Transform3D &p_transform);
+	void update_instance_params(ObjectID p_node_id, float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow = false,
+			float p_wind_intensity = 1.0f, uint32_t p_wind_mode = INSTANCE_WIND_INHERIT,
+			const Vector3 &p_wind_direction = Vector3(), float p_wind_frequency = 1.0f,
+			bool p_visible = true);
+	void unregister_instance(ObjectID p_node_id);
     void update_instance_lods(const Vector3 &p_camera_pos, const LODConfig &p_lod_config, float p_hysteresis_zone);
     void update_instance_lods_for_renderer(const GaussianSplatRenderer *p_renderer, const Vector3 &p_camera_pos,
             const LODConfig &p_lod_config, float p_hysteresis_zone);
     void build_instance_buffer(LocalVector<InstanceDataGPU> &out) const;
-    void build_instance_buffer_for_renderer(const GaussianSplatRenderer *p_renderer, LocalVector<InstanceDataGPU> &out) const;
-    uint64_t get_instance_generation_for_renderer(const GaussianSplatRenderer *p_renderer) const;
+	void build_instance_buffer_for_renderer(const GaussianSplatRenderer *p_renderer, LocalVector<InstanceDataGPU> &out,
+			bool p_shadow_casters_only = false) const;
+	uint32_t get_instance_count_for_renderer(const GaussianSplatRenderer *p_renderer) const;
+	uint64_t get_instance_generation_for_renderer(const GaussianSplatRenderer *p_renderer) const;
 
-    void collect_instance_assets_for_renderer(const GaussianSplatRenderer *p_renderer, LocalVector<InstanceAssetRegistration> &out) const;
+	void collect_instance_assets_for_renderer(const GaussianSplatRenderer *p_renderer, LocalVector<InstanceAssetRegistration> &out,
+			bool p_shadow_casters_only = false) const;
 
     Ref<GaussianSplatRenderer> get_shared_renderer(World3D *p_world);
 
@@ -62,13 +68,15 @@ private:
         float lod_bias = 0.0f;
         float wind_intensity = 1.0f;
         uint32_t wind_mode = INSTANCE_WIND_INHERIT;
-        Vector3 wind_direction = Vector3();
-        float wind_frequency = 1.0f;
-        uint32_t asset_id = 0;
-        uint32_t flags = 0;
-        uint32_t last_lod = 0;
-        bool dirty = true;
-    };
+		Vector3 wind_direction = Vector3();
+		float wind_frequency = 1.0f;
+		uint32_t asset_id = 0;
+		uint32_t flags = 0;
+		uint32_t last_lod = 0;
+		bool casts_shadow = false;
+		bool visible = true;
+		bool dirty = true;
+	};
 
     struct SharedWorld {
         RID scenario;

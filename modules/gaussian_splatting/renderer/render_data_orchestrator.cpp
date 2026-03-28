@@ -3,8 +3,106 @@
 #include "gaussian_splat_renderer.h"
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
+#include "../core/gaussian_splat_scene_director.h"
 #include "../interfaces/gpu_sorting_pipeline.h"
 #include "../logger/gs_logger.h"
+
+namespace {
+
+static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::FLOAT) {
+		return int((double)value);
+	}
+	return int(value);
+}
+
+static double _metadata_double(const Dictionary &p_metadata, const StringName &p_key, double p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::INT) {
+		return double(int64_t(value));
+	}
+	return (double)value;
+}
+
+static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
+	if (p_asset.is_null()) {
+		return false;
+	}
+	const Dictionary import_metadata = p_asset->get_import_metadata();
+	const int import_max_splats = _metadata_int(import_metadata, StringName("max_splats"), -1);
+	const double density_multiplier = _metadata_double(import_metadata, StringName("density_multiplier"), 1.0);
+	return import_max_splats == 0 && density_multiplier >= 0.999;
+}
+
+static bool _renderer_requests_conservative_full_fidelity_runtime(const GaussianSplatRenderer *p_renderer,
+		const Ref<GaussianSplatAsset> &p_active_asset) {
+	if (_asset_requests_full_fidelity_runtime(p_active_asset)) {
+		return true;
+	}
+	if (!p_renderer) {
+		return false;
+	}
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	if (!director) {
+		return false;
+	}
+
+	LocalVector<InstanceAssetRegistration> instance_assets;
+	director->collect_instance_assets_for_renderer(p_renderer, instance_assets,
+			p_renderer->is_shadow_instance_filter_enabled());
+	if (instance_assets.is_empty()) {
+		return false;
+	}
+	for (const InstanceAssetRegistration &entry : instance_assets) {
+		if (entry.requests_full_fidelity_runtime) {
+			return true;
+		}
+	}
+	if (p_active_asset.is_null()) {
+		return true;
+	}
+	const Ref<GaussianData> active_data = p_active_asset->get_gaussian_data();
+	if (active_data.is_null()) {
+		return true;
+	}
+	for (const InstanceAssetRegistration &entry : instance_assets) {
+		if (entry.data.is_null()) {
+			continue;
+		}
+		if (entry.data == active_data) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static uint32_t _resolve_runtime_upload_budget(const GaussianSplatRenderer *p_renderer,
+		const GaussianRenderState::SceneState &p_scene_state,
+		const GaussianRenderPerformance::PerformanceSettings *p_performance_settings) {
+	if (!p_scene_state.gaussian_data.is_valid()) {
+		return 0;
+	}
+	const uint32_t real_count = uint32_t(MAX(0, p_scene_state.gaussian_data->get_count()));
+	if (real_count == 0) {
+		return 0;
+	}
+	if (_renderer_requests_conservative_full_fidelity_runtime(p_renderer, p_scene_state.active_asset)) {
+		return real_count;
+	}
+	if (!p_performance_settings || p_performance_settings->max_splats <= 0) {
+		return real_count;
+	}
+	return MIN<uint32_t>(real_count, uint32_t(p_performance_settings->max_splats));
+}
+
+} // namespace
 
 static bool _is_data_orchestrator_log_enabled(const GaussianSplatRenderer::DebugConfig *p_debug_config) {
 	if (!p_debug_config) {
@@ -89,6 +187,7 @@ Error RenderDataOrchestrator::set_gaussian_data(const Ref<::GaussianData> &p_dat
 
 	if (streaming_state.registered_gaussian_buffer.is_valid() &&
 			incoming_data_id != streaming_state.registered_gaussian_data_id) {
+		renderer->forget_resource_owner(streaming_state.registered_gaussian_buffer);
 		GaussianSplatManager *manager = GaussianSplatManager::get_singleton();
 		if (manager) {
 			manager->unregister_gaussian_buffer(streaming_state.registered_gaussian_buffer);
@@ -310,7 +409,7 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 	streaming_state.cached_streamed_indices_valid = false;
 	sorting_state.sorted_splat_count = 0;
 
-	const uint32_t max_streamed = MIN<uint32_t>(real_count, (uint32_t)performance_settings->max_splats);
+	const uint32_t max_streamed = _resolve_runtime_upload_budget(renderer, scene_state, performance_settings);
 	if (max_streamed == 0) {
 		GS_LOG_WARN_DEFAULT("[GPU Streaming] Max splat budget is zero; skipping real data upload");
 		return ERR_PARAMETER_RANGE_ERROR;

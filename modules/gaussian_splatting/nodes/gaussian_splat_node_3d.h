@@ -206,6 +206,7 @@ private:
     Ref<GaussianSplatRenderer> renderer;
     Ref<::GaussianData> renderer_data;
     bool render_state_dirty = true;
+    bool shared_renderer_multi_instance_state = false;
 
     // Editor state
     bool preview_enabled = true;

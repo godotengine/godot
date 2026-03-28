@@ -604,6 +604,7 @@ void GaussianSplatWorld3D::_ensure_gaussian_base() {
     storage->gaussian_set_renderer(gaussian_base, renderer);
 #endif
     storage->gaussian_set_aabb(gaussian_base, world_aabb);
+    storage->gaussian_set_casts_shadow(gaussian_base, cast_shadow);
 }
 
 void GaussianSplatWorld3D::_release_gaussian_base() {
@@ -617,6 +618,7 @@ void GaussianSplatWorld3D::_release_gaussian_base() {
         storage->gaussian_set_renderer(gaussian_base, Ref<GaussianSplatRenderer>());
 #endif
         storage->gaussian_set_aabb(gaussian_base, AABB());
+        storage->gaussian_set_casts_shadow(gaussian_base, false);
         storage->gaussian_free(gaussian_base);
     }
 
@@ -637,6 +639,7 @@ void GaussianSplatWorld3D::_sync_gaussian_storage() {
     storage->gaussian_set_renderer(gaussian_base, renderer);
 #endif
     storage->gaussian_set_aabb(gaussian_base, world_aabb);
+    storage->gaussian_set_casts_shadow(gaussian_base, cast_shadow);
 }
 
 void GaussianSplatWorld3D::_set_instance_base(const RID &p_base) {

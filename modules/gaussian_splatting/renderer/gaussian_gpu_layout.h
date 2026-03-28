@@ -9,6 +9,37 @@
 
 static constexpr uint32_t GS_RENDER_PARAMS_LAYOUT_VERSION = 16; // Keep in sync with shaders/includes/gs_render_params.glsl
 static constexpr uint32_t GS_MAX_ASSET_LODS = 8;
+static constexpr uint32_t GS_SH_METADATA_FIRST_ORDER_MASK = 0x000000FFu;
+static constexpr uint32_t GS_SH_METADATA_HIGH_ORDER_MASK = 0x0000FF00u;
+static constexpr uint32_t GS_SH_METADATA_ENCODED_COUNT_MASK = 0x00FF0000u;
+static constexpr uint32_t GS_SH_METADATA_ENCODING_MASK = 0x7F000000u;
+static constexpr uint32_t GS_SH_METADATA_DC_ENCODING_MASK = 0x80000000u;
+static constexpr uint32_t GS_SH_ENCODING_RGB9E5 = 1u;
+static constexpr uint32_t GS_SH_ENCODING_F16 = 2u;
+
+inline uint32_t gs_pack_sh_metadata(uint32_t p_stored_first, uint32_t p_stored_high, uint32_t p_encoded_total,
+        GaussianDCEncoding p_dc_encoding, uint32_t p_sh_encoding) {
+    p_stored_first = MIN(p_stored_first, 0xFFu);
+    p_stored_high = MIN(p_stored_high, 0xFFu);
+    p_encoded_total = MIN(p_encoded_total, 0xFFu);
+    p_sh_encoding &= 0x7Fu;
+    const uint32_t dc_encoding_bit = p_dc_encoding == GAUSSIAN_DC_ENCODING_LINEAR_RGB ? GS_SH_METADATA_DC_ENCODING_MASK : 0u;
+    return (p_stored_first & GS_SH_METADATA_FIRST_ORDER_MASK) |
+            ((p_stored_high << 8u) & GS_SH_METADATA_HIGH_ORDER_MASK) |
+            ((p_encoded_total << 16u) & GS_SH_METADATA_ENCODED_COUNT_MASK) |
+            ((p_sh_encoding << 24u) & GS_SH_METADATA_ENCODING_MASK) |
+            dc_encoding_bit;
+}
+
+inline uint32_t gs_get_sh_encoding(uint32_t p_metadata) {
+    return (p_metadata & GS_SH_METADATA_ENCODING_MASK) >> 24u;
+}
+
+inline GaussianDCEncoding gs_get_dc_encoding(uint32_t p_metadata) {
+    return (p_metadata & GS_SH_METADATA_DC_ENCODING_MASK) != 0u
+            ? GAUSSIAN_DC_ENCODING_LINEAR_RGB
+            : GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+}
 
 // Instance pipeline only: uses SplatRef indirection and asset-local quantization.
 
@@ -264,6 +295,17 @@ struct alignas(16) PackedGaussian {
 };
 
 static_assert(sizeof(PackedGaussian) == 144, "PackedGaussian must match shader layout (144 bytes)");
+static_assert(offsetof(PackedGaussian, position) == 0, "PackedGaussian.position offset mismatch");
+static_assert(offsetof(PackedGaussian, opacity) == 12, "PackedGaussian.opacity offset mismatch");
+static_assert(offsetof(PackedGaussian, scale) == 16, "PackedGaussian.scale offset mismatch");
+static_assert(offsetof(PackedGaussian, area) == 28, "PackedGaussian.area offset mismatch");
+static_assert(offsetof(PackedGaussian, rotation) == 32, "PackedGaussian.rotation offset mismatch");
+static_assert(offsetof(PackedGaussian, sh) == 48, "PackedGaussian.sh offset mismatch");
+static_assert(offsetof(PackedGaussian, normal) == 112, "PackedGaussian.normal offset mismatch");
+static_assert(offsetof(PackedGaussian, stroke_age) == 124, "PackedGaussian.stroke_age offset mismatch");
+static_assert(offsetof(PackedGaussian, brush_axes) == 128, "PackedGaussian.brush_axes offset mismatch");
+static_assert(offsetof(PackedGaussian, painterly_meta) == 136, "PackedGaussian.painterly_meta offset mismatch");
+static_assert(offsetof(PackedGaussian, sh_metadata) == 140, "PackedGaussian.sh_metadata offset mismatch");
 
 /**
  * @struct PackedGaussianQuantized

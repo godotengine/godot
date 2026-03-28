@@ -239,7 +239,7 @@ static void _gaussian_shadow_dispatch(const RenderDataRD *p_render_data, const L
 			continue;
 		}
 
-		_gaussian_shadow_submit(p_render_data->gaussian_splat_renderers, dispatch);
+		_gaussian_shadow_submit(p_render_data->gaussian_shadow_renderers, dispatch);
 		p_finalize_func(shadow, light_instance, base_light, light_type, dispatch);
 	}
 }
@@ -1735,7 +1735,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	if (render_shadows) {
 		_render_shadow_end();
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
-		if (!p_render_data->gaussian_splat_renderers.is_empty()) {
+		if (!p_render_data->gaussian_shadow_renderers.is_empty()) {
 			if (p_render_data->directional_shadows.size()) {
 				const RID directional_fb = light_storage->direction_shadow_get_fb();
 				if (directional_fb.is_valid()) {

@@ -1,12 +1,169 @@
 #include "render_quality_orchestrator.h"
 
 #include "../logger/gs_logger.h"
+#include "../core/gaussian_splat_scene_director.h"
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "servers/rendering_server.h"
+
+namespace {
+
+struct FidelityOverrideSnapshot {
+	bool lod_enabled = true;
+	bool opacity_aware_culling = true;
+	float visibility_threshold = 0.01f;
+	bool distance_cull_enabled = true;
+	float distance_cull_start = 30.0f;
+	float distance_cull_max_rate = 0.5f;
+	float importance_threshold = 0.0f;
+	float importance_baseline = 0.0f;
+	float tiny_radius = 0.0f;
+	float tiny_baseline = 0.0f;
+	bool valid = false;
+};
+
+static HashMap<uint64_t, FidelityOverrideSnapshot> g_fidelity_override_snapshots;
+
+static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::FLOAT) {
+		return int((double)value);
+	}
+	return int(value);
+}
+
+static double _metadata_double(const Dictionary &p_metadata, const StringName &p_key, double p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::INT) {
+		return double(int64_t(value));
+	}
+	return (double)value;
+}
+
+static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
+	if (p_asset.is_null()) {
+		return false;
+	}
+	const Dictionary import_metadata = p_asset->get_import_metadata();
+	const int import_max_splats = _metadata_int(import_metadata, StringName("max_splats"), -1);
+	const double density_multiplier = _metadata_double(import_metadata, StringName("density_multiplier"), 1.0);
+	return import_max_splats == 0 && density_multiplier >= 0.999;
+}
+
+static bool _renderer_requests_conservative_full_fidelity_runtime(const GaussianSplatRenderer *p_renderer,
+		const Ref<GaussianSplatAsset> &p_active_asset) {
+	if (_asset_requests_full_fidelity_runtime(p_active_asset)) {
+		return true;
+	}
+	if (!p_renderer) {
+		return false;
+	}
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	if (!director) {
+		return false;
+	}
+
+	LocalVector<InstanceAssetRegistration> instance_assets;
+	director->collect_instance_assets_for_renderer(p_renderer, instance_assets,
+			p_renderer->is_shadow_instance_filter_enabled());
+	if (instance_assets.is_empty()) {
+		return false;
+	}
+	for (const InstanceAssetRegistration &entry : instance_assets) {
+		if (entry.requests_full_fidelity_runtime) {
+			return true;
+		}
+	}
+	if (p_active_asset.is_null()) {
+		return true;
+	}
+	const Ref<GaussianData> active_data = p_active_asset->get_gaussian_data();
+	if (active_data.is_null()) {
+		return true;
+	}
+	for (const InstanceAssetRegistration &entry : instance_assets) {
+		if (entry.data.is_null()) {
+			continue;
+		}
+		if (entry.data == active_data) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static void _apply_source_fidelity_overrides(uint64_t p_renderer_key, GPUCuller *p_gpu_culler, bool p_enable) {
+	if (!p_gpu_culler) {
+		return;
+	}
+
+	GPUCuller::CullingConfig &config = p_gpu_culler->get_config();
+	GPUCuller::CullingState &state = p_gpu_culler->get_state();
+
+	if (p_enable) {
+		FidelityOverrideSnapshot *existing = g_fidelity_override_snapshots.getptr(p_renderer_key);
+		if (!existing) {
+			FidelityOverrideSnapshot snapshot;
+			snapshot.lod_enabled = config.lod_enabled;
+			snapshot.opacity_aware_culling = config.opacity_aware_culling;
+			snapshot.visibility_threshold = config.visibility_threshold;
+			snapshot.distance_cull_enabled = config.distance_cull_enabled;
+			snapshot.distance_cull_start = config.distance_cull_start;
+			snapshot.distance_cull_max_rate = config.distance_cull_max_rate;
+			snapshot.importance_threshold = config.importance_cull_threshold;
+			snapshot.importance_baseline = config.importance_cull_baseline;
+			snapshot.tiny_radius = state.tiny_splat_screen_radius_px;
+			snapshot.tiny_baseline = state.tiny_splat_screen_radius_baseline;
+			snapshot.valid = true;
+			g_fidelity_override_snapshots.insert(p_renderer_key, snapshot);
+		}
+
+		config.lod_enabled = false;
+		config.lod_cache_dirty = true;
+		config.importance_cull_threshold = 0.0f;
+		config.importance_cull_baseline = 0.0f;
+		config.opacity_aware_culling = false;
+		config.visibility_threshold = 0.0f;
+		config.distance_cull_enabled = false;
+		config.distance_cull_start = 0.0f;
+		config.distance_cull_max_rate = 0.0f;
+		config.cull_params_dirty = true;
+		state.tiny_splat_screen_radius_px = 0.0f;
+		state.tiny_splat_screen_radius_baseline = 0.0f;
+		return;
+	}
+
+	FidelityOverrideSnapshot *snapshot = g_fidelity_override_snapshots.getptr(p_renderer_key);
+	if (!snapshot || !snapshot->valid) {
+		return;
+	}
+
+	config.lod_enabled = snapshot->lod_enabled;
+	config.lod_cache_dirty = true;
+	config.opacity_aware_culling = snapshot->opacity_aware_culling;
+	config.visibility_threshold = snapshot->visibility_threshold;
+	config.distance_cull_enabled = snapshot->distance_cull_enabled;
+	config.distance_cull_start = snapshot->distance_cull_start;
+	config.distance_cull_max_rate = snapshot->distance_cull_max_rate;
+	config.importance_cull_threshold = snapshot->importance_threshold;
+	config.importance_cull_baseline = snapshot->importance_baseline;
+	config.cull_params_dirty = true;
+	state.tiny_splat_screen_radius_px = snapshot->tiny_radius;
+	state.tiny_splat_screen_radius_baseline = snapshot->tiny_baseline;
+	g_fidelity_override_snapshots.erase(p_renderer_key);
+}
+
+} // namespace
 
 RenderQualityOrchestrator::RenderQualityOrchestrator(const Dependencies &p_dependencies) :
 		renderer(p_dependencies.renderer),
@@ -272,19 +429,44 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 		return output;
 	}
 
+	const bool preserve_source_fidelity = _renderer_requests_conservative_full_fidelity_runtime(renderer, scene_state.active_asset);
+	const uint64_t renderer_key = renderer ? uint64_t(renderer->get_instance_id()) : 0u;
+	_apply_source_fidelity_overrides(renderer_key, gpu_culler, preserve_source_fidelity);
+
 	GPUCuller::CullingInputs inputs;
 	inputs.gaussian_data = scene_state.gaussian_data;
 	inputs.test_positions = &test_data_state->positions;
 	inputs.test_scales = &test_data_state->scales;
-	const int max_splats = performance_settings.max_splats;
+	const int source_splat_count = scene_state.gaussian_data.is_valid() ? scene_state.gaussian_data->get_count() : 0;
+	const int max_splats = preserve_source_fidelity && source_splat_count > 0
+			? source_splat_count
+			: performance_settings.max_splats;
 	inputs.max_splats = max_splats > 0 ? static_cast<uint32_t>(max_splats) : 0;
 	// Runtime sorting path is GPU/cached only; avoid readbacks that were only needed for CPU sort fallback.
 	inputs.readback_distances = false;
 	inputs.readback_importance = false;
 
+	const GaussianSplatRenderer::StreamingState &streaming_state = (renderer->*runtime_ports.get_streaming_state_view)();
+	const bool can_attempt_legacy_gpu_cull =
+			!streaming_state.current_streaming_system.is_valid() &&
+			streaming_state.registered_gaussian_buffer.is_valid();
+	if (can_attempt_legacy_gpu_cull) {
+		RenderingDevice *buffer_device = renderer->get_resource_owner(streaming_state.registered_gaussian_buffer,
+				renderer->get_device_state().rd);
+		if (!buffer_device) {
+			buffer_device = renderer->get_device_state().rd;
+		}
+		if (buffer_device) {
+			inputs.gpu_cull_attempted = true;
+			inputs.gpu_input.gaussian_buffer = streaming_state.registered_gaussian_buffer;
+			inputs.gpu_input.buffer_device = buffer_device;
+			inputs.gpu_input.total_splats = source_splat_count > 0 ? static_cast<uint32_t>(source_splat_count) : 0u;
+		}
+	}
+
 	if (inputs.gpu_cull_attempted && inputs.gpu_input.gaussian_buffer.is_valid() && inputs.gpu_input.buffer_device) {
 		(renderer->*runtime_ports.track_resource_owner)(
-				inputs.gpu_input.gaussian_buffer, inputs.gpu_input.buffer_device, true, nullptr);
+				inputs.gpu_input.gaussian_buffer, inputs.gpu_input.buffer_device, false, "legacy_gpu_cull_gaussian_buffer");
 	}
 
 	GPUCuller::CullingSummary summary =

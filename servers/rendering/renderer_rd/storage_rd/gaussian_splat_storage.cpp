@@ -87,8 +87,19 @@ void GaussianSplatStorage::gaussian_set_aabb(RID p_rid, const AABB &p_aabb) {
 }
 
 AABB GaussianSplatStorage::gaussian_get_aabb(RID p_rid) const {
-        const GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
-        ERR_FAIL_NULL_V(splat, AABB());
-        return splat->aabb;
+	const GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(splat, AABB());
+	return splat->aabb;
 }
 
+void GaussianSplatStorage::gaussian_set_casts_shadow(RID p_rid, bool p_casts_shadow) {
+	GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL(splat);
+	splat->casts_shadow = p_casts_shadow;
+}
+
+bool GaussianSplatStorage::gaussian_get_casts_shadow(RID p_rid) const {
+	const GaussianSplat *splat = gaussian_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(splat, false);
+	return splat->casts_shadow;
+}

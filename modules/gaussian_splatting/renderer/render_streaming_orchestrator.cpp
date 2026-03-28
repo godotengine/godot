@@ -78,6 +78,99 @@ static uint64_t _compute_instance_pipeline_resource_fingerprint(const ResourceSt
 
 constexpr uint32_t kInstanceAssetEmptySyncGraceFrames = 3u;
 
+static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::FLOAT) {
+		return int((double)value);
+	}
+	return int(value);
+}
+
+static double _metadata_double(const Dictionary &p_metadata, const StringName &p_key, double p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::INT) {
+		return double(int64_t(value));
+	}
+	return (double)value;
+}
+
+static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
+	if (p_asset.is_null()) {
+		return false;
+	}
+	const Dictionary import_metadata = p_asset->get_import_metadata();
+	const int import_max_splats = _metadata_int(import_metadata, StringName("max_splats"), -1);
+	const double density_multiplier = _metadata_double(import_metadata, StringName("density_multiplier"), 1.0);
+	return import_max_splats == 0 && density_multiplier >= 0.999;
+}
+
+static bool _renderer_requests_conservative_full_fidelity_runtime(const GaussianSplatRenderer *p_renderer,
+		const Ref<GaussianSplatAsset> &p_active_asset) {
+	if (_asset_requests_full_fidelity_runtime(p_active_asset)) {
+		return true;
+	}
+	if (!p_renderer) {
+		return false;
+	}
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	if (!director) {
+		return false;
+	}
+
+	LocalVector<InstanceAssetRegistration> instance_assets;
+	director->collect_instance_assets_for_renderer(p_renderer, instance_assets,
+			p_renderer->is_shadow_instance_filter_enabled());
+	if (instance_assets.is_empty()) {
+		return false;
+	}
+	for (const InstanceAssetRegistration &entry : instance_assets) {
+		if (entry.requests_full_fidelity_runtime) {
+			return true;
+		}
+	}
+	if (p_active_asset.is_null()) {
+		return true;
+	}
+	const Ref<GaussianData> active_data = p_active_asset->get_gaussian_data();
+	if (active_data.is_null()) {
+		return true;
+	}
+	for (const InstanceAssetRegistration &entry : instance_assets) {
+		if (entry.data.is_null()) {
+			continue;
+		}
+		if (entry.data == active_data) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static uint32_t _resolve_runtime_budget_splats(const GaussianSplatRenderer *p_renderer,
+		const GaussianSplatRenderer::SceneState &p_scene_state,
+		const PerformanceSettings &p_perf_settings) {
+	if (!p_scene_state.gaussian_data.is_valid()) {
+		return 0;
+	}
+	const uint32_t real_count = uint32_t(MAX(0, p_scene_state.gaussian_data->get_count()));
+	if (real_count == 0) {
+		return 0;
+	}
+	if (_renderer_requests_conservative_full_fidelity_runtime(p_renderer, p_scene_state.active_asset)) {
+		return real_count;
+	}
+	if (p_perf_settings.max_splats <= 0) {
+		return real_count;
+	}
+	return MIN<uint32_t>(real_count, uint32_t(p_perf_settings.max_splats));
+}
+
 enum class LayoutHintValidationUsage : uint8_t {
 	IO = 0,
 	PRIMARY = 1,
@@ -548,7 +641,8 @@ const RenderStreamingOrchestrator::VisibleLODSelection &RenderStreamingOrchestra
 	const LODConfig &lod_config = p_streaming_system->get_lod_config();
 	const float hysteresis_zone = p_streaming_system->get_lod_hysteresis_zone();
 	p_director->update_instance_lods_for_renderer(renderer, p_camera_origin, lod_config, hysteresis_zone);
-	p_director->build_instance_buffer_for_renderer(renderer, visible_lod_selection._internal_get_instances());
+	p_director->build_instance_buffer_for_renderer(renderer, visible_lod_selection._internal_get_instances(),
+			renderer->is_shadow_instance_filter_enabled());
 
 	return visible_lod_selection;
 }
@@ -739,7 +833,8 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 		return;
 	}
 	instance_pipeline_assets_cache.clear();
-	director->collect_instance_assets_for_renderer(renderer, instance_pipeline_assets_cache);
+	director->collect_instance_assets_for_renderer(renderer, instance_pipeline_assets_cache,
+			renderer->is_shadow_instance_filter_enabled());
 	if (trace_enabled) {
 		GaussianSplatting::debug_trace_record_event("instance_pipeline",
 				vformat("SyncAssets collected=%d", instance_pipeline_assets_cache.size()),
@@ -1210,6 +1305,63 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		performance_state.metrics.streaming_state = streaming_metrics;
 		return false;
 	}
+	const GaussianSplatRenderer::SceneState &scene_state = state_view.get_scene_state();
+	const PerformanceSettings &perf_settings = renderer->get_performance_settings();
+	const uint32_t desired_runtime_splats = _resolve_runtime_budget_splats(renderer, scene_state, perf_settings);
+	if (desired_runtime_splats > 0 && streaming_state.memory_stream.is_valid()) {
+		const uint32_t current_memory_capacity = streaming_state.memory_stream->get_max_gaussians();
+		const uint32_t current_runtime_capacity = streaming_state.current_streaming_system.is_valid()
+				? streaming_state.current_streaming_system->get_buffer_capacity_splats()
+				: 0u;
+		if (desired_runtime_splats > current_memory_capacity || desired_runtime_splats > current_runtime_capacity) {
+			RenderingDevice *rd = state_view.get_rendering_device();
+			if (!rd) {
+				const StreamingReadinessState readiness_state = StreamingReadinessState::RUNTIME_BOOTSTRAP_PENDING;
+				publish_not_ready_route(readiness_state);
+				Dictionary streaming_metrics = performance_state.metrics.streaming_state;
+				_apply_streaming_render_readiness_diagnostics(streaming_metrics, readiness_state,
+						"rendering_device unavailable for streaming capacity rebuild");
+				performance_state.metrics.streaming_state = streaming_metrics;
+				return false;
+			}
+
+			const bool async_upload_enabled = streaming_state.memory_stream->get_async_upload();
+			streaming_state.current_streaming_system.unref();
+			streaming_state.memory_stream->shutdown();
+			const Error resize_err = streaming_state.memory_stream->initialize(rd, desired_runtime_splats, 64);
+			if (resize_err != OK) {
+				const StreamingReadinessState readiness_state = StreamingReadinessState::RUNTIME_BOOTSTRAP_PENDING;
+				publish_not_ready_route(readiness_state);
+				Dictionary streaming_metrics = performance_state.metrics.streaming_state;
+				_apply_streaming_render_readiness_diagnostics(streaming_metrics, readiness_state,
+						vformat("streaming capacity rebuild failed: %d", resize_err));
+				performance_state.metrics.streaming_state = streaming_metrics;
+				return false;
+			}
+			streaming_state.memory_stream->set_async_upload(async_upload_enabled);
+			streaming_state.current_stream_gpu_buffer = RID();
+			streaming_state.streaming_gpu_splat_count = 0;
+			streaming_state.streaming_gpu_total_capacity = 0;
+			streaming_state.streamed_indices_generation = 0;
+			streaming_state.streamed_indices_are_local = false;
+			streaming_state.cached_streamed_indices_valid = false;
+			streaming_state.cached_streamed_gaussians.clear();
+			streaming_state.cached_streamed_indices.clear();
+			streaming_state.cached_streamed_source_indices.clear();
+			streaming_state.cached_streamed_sh_limits.clear();
+			streaming_state.cached_streamed_index_lookup.clear();
+			(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
+			if (!ensure_instance_streaming_system()) {
+				const StreamingReadinessState readiness_state = StreamingReadinessState::RUNTIME_BOOTSTRAP_PENDING;
+				publish_not_ready_route(readiness_state);
+				Dictionary streaming_metrics = performance_state.metrics.streaming_state;
+				_apply_streaming_render_readiness_diagnostics(streaming_metrics, readiness_state,
+						"streaming system rebuild after capacity resize failed");
+				performance_state.metrics.streaming_state = streaming_metrics;
+				return false;
+			}
+		}
+	}
 	auto log_streaming_reset = [&](const char *p_reason) {
 		const uint64_t system_id = streaming_state.current_streaming_system.is_valid()
 				? uint64_t(reinterpret_cast<uintptr_t>(streaming_state.current_streaming_system.ptr()))
@@ -1402,8 +1554,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			buffers.chunk_meta_buffer = atlas_state.chunk_meta_buffer;
 			buffers.asset_chunk_index_buffer = atlas_state.asset_chunk_index_buffer;
 			static int instance_buffer_diag_counter = 0;
-			if (++instance_buffer_diag_counter <= 20) {
-				print_line(vformat("[Streaming DIAG] instance buffer handoff: chunk_meta_rid=%d asset_meta_rid=%d chunk_index_rid=%d atlas_gen=%d",
+			if (trace_enabled && ++instance_buffer_diag_counter <= 20) {
+				GS_LOG_STREAMING_DEBUG(vformat("[Streaming] instance buffer handoff: chunk_meta_rid=%d asset_meta_rid=%d chunk_index_rid=%d atlas_gen=%d",
 						buffers.chunk_meta_buffer.get_id(),
 						buffers.asset_meta_buffer.get_id(),
 						buffers.asset_chunk_index_buffer.get_id(),
@@ -1419,9 +1571,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		buffers.max_chunk_splats = streaming_system->get_max_chunk_splats();
 		instance_pipeline_max_chunk_splats = buffers.max_chunk_splats;
 
-		const PerformanceSettings &perf_settings = renderer->get_performance_settings();
-		uint64_t max_visible_splats_u64 = perf_settings.max_splats > 0
-				? uint64_t(perf_settings.max_splats)
+		uint64_t max_visible_splats_u64 = desired_runtime_splats > 0
+				? uint64_t(desired_runtime_splats)
 				: uint64_t(atlas_state.atlas_gaussian_count);
 
 		// Recompute the budget every frame from current scene state.

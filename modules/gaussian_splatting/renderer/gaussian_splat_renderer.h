@@ -101,6 +101,7 @@ struct InstanceAssetRegistration {
     uint32_t asset_id = 0;
     Ref<GaussianData> data;
     uint32_t edited_version = 0;
+    bool requests_full_fidelity_runtime = false;
 };
 
 /**
@@ -597,6 +598,7 @@ public:
     Ref<class OutputCompositor> shadow_output_compositor;
     uint64_t shadow_output_device_id = 0;
     ShadowBlitState shadow_blit_state;
+    bool shadow_instance_filter_enabled = false;
 
     bool _ensure_shadow_output_compositor(RenderingDevice *p_device);
     bool _ensure_shadow_blit_resources(RenderingDevice *p_device);
@@ -720,6 +722,8 @@ public:
     void set_manual_viewport_format(RD::DataFormat p_format, const char *p_context) { _set_manual_viewport_format(p_format, p_context); }
     void set_active_viewport_format(RD::DataFormat p_format, const char *p_context) { _set_active_viewport_format(p_format, p_context); }
     void update_pipeline_features(RenderingDevice *p_device);
+    void set_shadow_instance_filter_enabled(bool p_enabled) { shadow_instance_filter_enabled = p_enabled; }
+    bool is_shadow_instance_filter_enabled() const { return shadow_instance_filter_enabled; }
     CullStageOutput cull_for_view(const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Size2i &p_viewport_size) {
         return _cull_for_view(p_world_to_camera_transform, p_projection, p_viewport_size);
     }

@@ -1,12 +1,42 @@
 #include "gaussian_splat_asset.h"
 #include "../io/gaussian_data_loader.h"
+#include "../io/ply_loader.h"
+#include "../io/spz_loader.h"
 #include "../core/gaussian_data.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/math/basis.h"
 #include "core/math/math_funcs.h"
 #include "core/math/quaternion.h"
+#include "core/os/os.h"
 #include "../logger/gs_logger.h"
+
+namespace {
+
+static double _elapsed_msec(uint64_t p_start_usec) {
+	const uint64_t now = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : p_start_usec;
+	return double(now - p_start_usec) / 1000.0;
+}
+
+static Dictionary _build_runtime_load_timing(const String &p_stage,
+		bool p_cache_hit,
+		double p_source_ms,
+		double p_materialize_ms,
+		double p_total_ms,
+		const Dictionary &p_source_stats) {
+	Dictionary timing;
+	timing[StringName("stage")] = p_stage;
+	timing[StringName("cache_hit")] = p_cache_hit;
+	timing[StringName("source_stage_ms")] = p_source_ms;
+	timing[StringName("asset_materialization_ms")] = p_materialize_ms;
+	timing[StringName("total_load_ms")] = p_total_ms;
+	if (!p_source_stats.is_empty()) {
+		timing[StringName("source_stats")] = p_source_stats;
+	}
+	return timing;
+}
+
+} // namespace
 
 uint32_t GaussianSplatAsset::instance_count = 0;
 
@@ -884,42 +914,116 @@ Error GaussianSplatAsset::load_from_file(const String &p_path) {
         return ERR_FILE_NOT_FOUND;
     }
 
-    GaussianDataLoadResult load_result;
-    Error err = load_gaussian_data_from_file(p_path, load_result);
-    if (err != OK) {
-        GS_LOG_ERROR_DEFAULT("Failed to load splat file: " + p_path);
-        return err;
-    }
+	uint64_t total_start_usec = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : 0;
+	uint64_t source_start_usec = total_start_usec;
 
-    if (load_result.used_ply) {
-        if (!load_result.missing_optional.is_empty()) {
-            for (int i = 0; i < load_result.missing_optional.size(); i++) {
-                GS_LOG_STREAMING_DEBUG(vformat("PLY load: missing optional data %s", load_result.missing_optional[i]));
-            }
-        }
+	Ref<::GaussianData> gaussian_data;
+	PackedStringArray missing_required;
+	PackedStringArray missing_optional;
+	Dictionary source_stats;
+	String file_label = p_path.get_extension().to_upper();
+	String source_stage = "raw";
+	bool cache_hit = false;
 
-        if (!load_result.missing_required.is_empty()) {
-            String missing_required_text;
-            for (int i = 0; i < load_result.missing_required.size(); i++) {
-                if (i > 0) {
-                    missing_required_text += ", ";
-                }
-                missing_required_text += load_result.missing_required[i];
-            }
-            GS_LOG_ERROR_DEFAULT(vformat("PLY file missing required properties: %s", missing_required_text));
-            return ERR_FILE_CORRUPT;
-        }
-    }
+	const String extension = p_path.get_extension().to_lower();
+	Error err = OK;
+	if (extension == "ply") {
+		Ref<PLYLoader> ply_loader;
+		ply_loader.instantiate();
 
-    Ref<::GaussianData> gaussian_data = load_result.data;
-    Error populate_err = populate_from_gaussian_data(gaussian_data);
-    if (populate_err != OK) {
-        return populate_err;
-    }
+		err = ply_loader->load_file(p_path);
+		if (err == OK) {
+			ply_loader->get_property_deficiencies(missing_required, missing_optional);
+			source_stats = ply_loader->get_load_statistics();
+			cache_hit = source_stats.get(StringName("cache_hit"), false);
+			source_stage = cache_hit ? "cache" : "raw";
+			gaussian_data = ply_loader->get_gaussian_data();
+			file_label = "PLY";
+		}
+	} else if (extension == "spz") {
+		Ref<SPZLoader> spz_loader;
+		spz_loader.instantiate();
 
-    const String file_label = load_result.used_spz ? "SPZ" : "PLY";
-    GS_LOG_STREAMING_INFO(vformat("Loaded %s file: %d splats from %s", file_label, splat_count, p_path));
-    return OK;
+		err = spz_loader->load_file(p_path);
+		if (err == OK) {
+			source_stats = spz_loader->get_load_statistics();
+			gaussian_data = spz_loader->get_gaussian_data();
+			file_label = "SPZ";
+			source_stage = "raw";
+		}
+	} else {
+		GaussianDataLoadResult load_result;
+		err = load_gaussian_data_from_file(p_path, load_result);
+		if (err == OK) {
+			gaussian_data = load_result.data;
+			missing_required = load_result.missing_required;
+			missing_optional = load_result.missing_optional;
+			file_label = load_result.used_spz ? "SPZ" : "PLY";
+			source_stage = "raw";
+		}
+	}
+
+	if (err != OK) {
+		GS_LOG_ERROR_DEFAULT("Failed to load splat file: " + p_path);
+		return err;
+	}
+
+	if (file_label == "PLY") {
+		if (!missing_optional.is_empty()) {
+			for (int i = 0; i < missing_optional.size(); i++) {
+				GS_LOG_STREAMING_DEBUG(vformat("PLY load: missing optional data %s", missing_optional[i]));
+			}
+		}
+
+		if (!missing_required.is_empty()) {
+			String missing_required_text;
+			for (int i = 0; i < missing_required.size(); i++) {
+				if (i > 0) {
+					missing_required_text += ", ";
+				}
+				missing_required_text += missing_required[i];
+			}
+			GS_LOG_ERROR_DEFAULT(vformat("PLY file missing required properties: %s", missing_required_text));
+			return ERR_FILE_CORRUPT;
+		}
+	}
+
+	if (gaussian_data.is_null() || gaussian_data->get_count() <= 0) {
+		GS_LOG_ERROR_DEFAULT("Loaded splat file produced no Gaussian data: " + p_path);
+		return ERR_FILE_CORRUPT;
+	}
+
+	const double source_stage_ms = _elapsed_msec(source_start_usec);
+
+	uint64_t materialize_start_usec = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : source_start_usec;
+	Error populate_err = populate_from_gaussian_data(gaussian_data);
+	const double materialize_ms = _elapsed_msec(materialize_start_usec);
+	if (populate_err != OK) {
+		return populate_err;
+	}
+
+	// Preserve the authoritative GaussianData loaded from disk so later bootstrap
+	// does not reconstruct it from the asset arrays.
+	gaussian_data_cache = gaussian_data;
+
+	const double total_load_ms = _elapsed_msec(total_start_usec);
+	import_metadata[StringName("runtime_load_timing")] = _build_runtime_load_timing(
+			source_stage, cache_hit, source_stage_ms, materialize_ms, total_load_ms, source_stats);
+	import_metadata[StringName("runtime_load_source")] = source_stage;
+	import_metadata[StringName("runtime_load_cache_hit")] = cache_hit;
+	import_metadata[StringName("runtime_load_source_path")] = p_path;
+
+	GS_LOG_STREAMING_INFO(vformat(
+			"[LoadTiming][GaussianSplatAsset] file=%s path=%s splats=%d source_stage=%s cache_hit=%s source_ms=%.2f materialize_ms=%.2f total_ms=%.2f",
+			file_label,
+			p_path,
+			splat_count,
+			source_stage,
+			cache_hit ? "yes" : "no",
+			source_stage_ms,
+			materialize_ms,
+			total_load_ms));
+	return OK;
 }
 
 Error GaussianSplatAsset::save_to_file(const String &p_path) const {
@@ -939,11 +1043,17 @@ Ref<::GaussianData> GaussianSplatAsset::get_gaussian_data() const {
     }
 
     Ref<::GaussianData> data;
+    uint64_t rebuild_start_usec = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : 0;
     if (!populate_gaussian_data(data)) {
         return Ref<::GaussianData>();
     }
 
     gaussian_data_cache = data;
+    const double rebuild_ms = _elapsed_msec(rebuild_start_usec);
+    GS_LOG_STREAMING_INFO(vformat(
+            "[LoadTiming][GaussianSplatAsset] rebuilt GaussianData from asset arrays: splats=%d rebuild_ms=%.2f",
+            splat_count,
+            rebuild_ms));
     return gaussian_data_cache;
 }
 
@@ -971,6 +1081,18 @@ bool GaussianSplatAsset::populate_gaussian_data(Ref<::GaussianData> &r_data) con
     Dictionary asset_metadata = get_import_metadata();
     if (asset_metadata.has(StringName("gaussian_2d_mode"))) {
         r_data->set_2d_mode((bool)asset_metadata[StringName("gaussian_2d_mode")]);
+    }
+    if (asset_metadata.has(StringName("dc_encoding"))) {
+        const String dc_encoding = String(asset_metadata[StringName("dc_encoding")]).to_lower();
+        GaussianDCEncoding staged_dc_encoding = GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+        if (dc_encoding == "linear_rgb") {
+            staged_dc_encoding = GAUSSIAN_DC_ENCODING_LINEAR_RGB;
+        }
+        for (int i = 0; i < r_data->get_count(); i++) {
+            Gaussian g = r_data->get_gaussian(i);
+            g.render_meta = gaussian_set_dc_encoding(g.render_meta, staged_dc_encoding);
+            r_data->set_gaussian(i, g);
+        }
     }
 
     return true;
@@ -1028,9 +1150,19 @@ Error GaussianSplatAsset::populate_from_gaussian_data(const Ref<::GaussianData> 
     bool bounds_initialized = false;
     Vector3 min_pos;
     Vector3 max_pos;
+    GaussianDCEncoding asset_dc_encoding = GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+    bool asset_dc_encoding_initialized = false;
+    bool mixed_dc_encoding = false;
 
     for (int i = 0; i < count; i++) {
         Gaussian g = p_gaussian_data->get_gaussian(i);
+        GaussianDCEncoding gaussian_dc_encoding = gaussian_get_dc_encoding(g.render_meta);
+        if (!asset_dc_encoding_initialized) {
+            asset_dc_encoding = gaussian_dc_encoding;
+            asset_dc_encoding_initialized = true;
+        } else if (asset_dc_encoding != gaussian_dc_encoding) {
+            mixed_dc_encoding = true;
+        }
         const uint32_t base3 = uint32_t(i) * 3u;
         const uint32_t base4 = uint32_t(i) * 4u;
         const int first_base = i * int(sh_first_order_terms) * 3;
@@ -1146,6 +1278,13 @@ Error GaussianSplatAsset::populate_from_gaussian_data(const Ref<::GaussianData> 
     import_metadata[StringName("sh_first_order_terms")] = (int)sh_first_order_terms;
     import_metadata[StringName("sh_high_order_terms")] = (int)sh_high_order_terms;
     import_metadata[StringName("sh_degree")] = (int)p_gaussian_data->get_sh_degree();
+    if (asset_dc_encoding_initialized && !mixed_dc_encoding) {
+        import_metadata[StringName("dc_encoding")] = asset_dc_encoding == GAUSSIAN_DC_ENCODING_LINEAR_RGB
+                ? String("linear_rgb")
+                : String("legacy_bias");
+    } else {
+        import_metadata.erase(StringName("dc_encoding"));
+    }
     import_metadata[StringName("has_normals")] = normals.size() == splat_count * 3;
     import_metadata[StringName("has_palette_ids")] = palette_ids.size() == splat_count;
     import_metadata[StringName("has_painterly_flags")] = painterly_flags.size() == splat_count;

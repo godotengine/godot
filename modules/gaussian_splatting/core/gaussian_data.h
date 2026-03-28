@@ -127,6 +127,24 @@ struct GaussianData {
  * @note Must remain 16-byte aligned (144 bytes total). Do not reorder fields
  *       without updating the corresponding GLSL struct definition.
  */
+enum GaussianDCEncoding : uint32_t {
+    GAUSSIAN_DC_ENCODING_LEGACY_BIAS = 0u,
+    GAUSSIAN_DC_ENCODING_LINEAR_RGB = 1u,
+};
+
+static constexpr uint32_t GAUSSIAN_RENDER_META_DC_ENCODING_MASK = 0x1u;
+
+constexpr uint32_t gaussian_set_dc_encoding(uint32_t p_render_meta, GaussianDCEncoding p_encoding) {
+    return (p_render_meta & ~GAUSSIAN_RENDER_META_DC_ENCODING_MASK) |
+            (uint32_t(p_encoding) & GAUSSIAN_RENDER_META_DC_ENCODING_MASK);
+}
+
+constexpr GaussianDCEncoding gaussian_get_dc_encoding(uint32_t p_render_meta) {
+    return (p_render_meta & GAUSSIAN_RENDER_META_DC_ENCODING_MASK) != 0u
+            ? GAUSSIAN_DC_ENCODING_LINEAR_RGB
+            : GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+}
+
 struct Gaussian {
     Vector3 position;
     float opacity;
@@ -151,8 +169,9 @@ struct Gaussian {
     Vector2 brush_axes;
     uint32_t painterly_meta; // lower 16 bits: palette id, upper 16 bits: painterly flags / brush override ids
 
-    // Final padding to reach 144 bytes (16-byte aligned)
-    float _padding2[3]; // 12 bytes to reach 144 total
+    // Render metadata and final padding to reach 144 bytes.
+    uint32_t render_meta = 0; // lower bit stores GaussianDCEncoding
+    float _padding2[2] = { 0.0f, 0.0f };
 };
 
 static_assert(sizeof(Gaussian) % 16 == 0, "Gaussian struct must remain 16-byte aligned for GPU uploads");
