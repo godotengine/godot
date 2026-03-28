@@ -4377,7 +4377,7 @@ void Tree::_determine_hovered_item() {
 				drop_mode_over = (section != COLUMN_NOT_FOUND) ? it : nullptr;
 
 				// Check if the drop target is a descendant of any selected item.
-				if (drop_mode_over) {
+				if (drop_mode_over && dragging_within_self) {
 					TreeItem *check = drop_mode_over->get_parent();
 					while (check) {
 						if (check->is_any_column_selected()) {
@@ -4400,19 +4400,23 @@ void Tree::_determine_hovered_item() {
 			}
 
 			drop_mode_unchanged = false;
-			if (drop_mode_over && selected_item) {
-				TreeItem *child = selected_item;
-				TreeItem *parent = selected_item->get_parent();
-				if (drop_mode_over == selected_item) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == -1 && drop_mode_over->get_prev() == child && parent == drop_mode_over->get_parent()) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == 1 && drop_mode_over->get_next() == child && parent == drop_mode_over->get_parent()) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == 0 && drop_mode_over == parent && child == parent->get_last_child()) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == 2 && drop_mode_over == parent && child == parent->get_first_child()) {
-					drop_mode_unchanged = true;
+			if (drop_mode_over && selected_item && dragging_within_self) {
+				if (selected_item == root && drop_mode_over == root) {
+					drop_mode_over = nullptr; // Prevent root from being dragged onto itself.
+				} else {
+					TreeItem *child = selected_item;
+					TreeItem *parent = selected_item->get_parent();
+					if (drop_mode_over == child) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == -1 && drop_mode_over->get_prev() == child && parent == drop_mode_over->get_parent()) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == 1 && drop_mode_over->get_next() == child && parent == drop_mode_over->get_parent()) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == 0 && drop_mode_over == parent && child == parent->get_last_child()) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == 2 && drop_mode_over == parent && child == parent->get_first_child()) {
+						drop_mode_unchanged = true;
+					}
 				}
 			}
 		}
@@ -5106,6 +5110,7 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			drop_mode_flags = 0;
+			dragging_within_self = false;
 			_reset_drop_mode_over();
 			scrolling = false;
 			set_process_internal(false);
@@ -6900,12 +6905,14 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
 
 	if (it) {
-		TreeItem *check = it->get_parent();
-		while (check) {
-			if (check->is_any_column_selected()) {
-				return COLUMN_NOT_FOUND;
+		if (dragging_within_self) {
+			TreeItem *check = it->get_parent();
+			while (check) {
+				if (check->is_any_column_selected()) {
+					return COLUMN_NOT_FOUND;
+				}
+				check = check->get_parent();
 			}
-			check = check->get_parent();
 		}
 		return section;
 	}
@@ -6926,7 +6933,7 @@ Variant Tree::get_drag_data(const Point2 &p_point) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}
-
+	dragging_within_self = true;
 	return Control::get_drag_data(p_point);
 }
 
