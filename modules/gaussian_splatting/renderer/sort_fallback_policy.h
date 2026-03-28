@@ -29,9 +29,13 @@ struct SortFallbackPolicyDecision {
 	bool cpu_sort_forced = false;
 };
 
+static inline bool allow_unsorted_fallback_publication(bool p_strict_global_sort) {
+	return !p_strict_global_sort;
+}
+
 // Keep fallback behavior deterministic across force_cpu and GPU failure paths.
 static inline SortFallbackPolicyDecision build_sort_fallback_policy(
-		SortFallbackScenario p_scenario, bool p_instance_pipeline_active) {
+		SortFallbackScenario p_scenario, bool p_instance_pipeline_active, bool p_strict_global_sort = false) {
 	SortFallbackPolicyDecision decision;
 	auto push_action = [&](SortFallbackAction p_action) {
 		if (decision.action_count < 4) {
@@ -42,8 +46,10 @@ static inline SortFallbackPolicyDecision build_sort_fallback_policy(
 	switch (p_scenario) {
 		case SortFallbackScenario::FORCE_CPU_OVERRIDE: {
 			if (p_instance_pipeline_active) {
-				push_action(SortFallbackAction::PUBLISH_INSTANCE_IDENTITY);
 				push_action(SortFallbackAction::REUSE_PREVIOUS_SORT);
+				if (allow_unsorted_fallback_publication(p_strict_global_sort)) {
+					push_action(SortFallbackAction::PUBLISH_INSTANCE_IDENTITY);
+				}
 				push_action(SortFallbackAction::FAIL);
 			} else {
 				decision.cpu_sort_forced = true;
@@ -55,7 +61,9 @@ static inline SortFallbackPolicyDecision build_sort_fallback_policy(
 		case SortFallbackScenario::GPU_SORT_FAILED: {
 			push_action(SortFallbackAction::REUSE_PREVIOUS_SORT);
 			if (p_instance_pipeline_active) {
-				push_action(SortFallbackAction::PUBLISH_INSTANCE_IDENTITY);
+				if (allow_unsorted_fallback_publication(p_strict_global_sort)) {
+					push_action(SortFallbackAction::PUBLISH_INSTANCE_IDENTITY);
+				}
 			} else {
 				push_action(SortFallbackAction::RUN_CPU_SORT);
 			}

@@ -753,6 +753,18 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
         GS_LOG_WARN_DEFAULT("[GaussianSplatRenderer] Local RenderingDevice unavailable; GPU operations will be deferred until device is available");
     }
 
+    RenderQualityOrchestrator::Dependencies quality_dependencies;
+    quality_dependencies.renderer = this;
+    quality_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
+    quality_dependencies.test_data_state = &get_test_data_state();
+    quality_dependencies.runtime_ports.refresh_gpu_sorter = &GaussianSplatRenderer::refresh_gpu_sorter;
+    quality_dependencies.runtime_ports.track_resource_owner = &GaussianSplatRenderer::track_resource_owner;
+    quality_dependencies.runtime_ports.get_streaming_state_mut =
+            static_cast<StreamingState &(GaussianSplatRenderer::*)()>(&GaussianSplatRenderer::get_streaming_state);
+    quality_dependencies.runtime_ports.get_streaming_state_view =
+            static_cast<const StreamingState &(GaussianSplatRenderer::*)() const>(&GaussianSplatRenderer::get_streaming_state);
+    quality_orchestrator = std::make_unique<RenderQualityOrchestrator>(quality_dependencies);
+
     RenderSortingOrchestrator::Dependencies sorting_dependencies;
     sorting_dependencies.renderer = this;
     sorting_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
@@ -774,17 +786,6 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
         return ensure_rendering_device(p_context);
     };
     sorting_orchestrator = std::make_unique<RenderSortingOrchestrator>(sorting_dependencies);
-    RenderQualityOrchestrator::Dependencies quality_dependencies;
-    quality_dependencies.renderer = this;
-    quality_dependencies.gpu_culler = subsystem_state.gpu_culler.ptr();
-    quality_dependencies.test_data_state = &get_test_data_state();
-    quality_dependencies.runtime_ports.refresh_gpu_sorter = &GaussianSplatRenderer::refresh_gpu_sorter;
-    quality_dependencies.runtime_ports.track_resource_owner = &GaussianSplatRenderer::track_resource_owner;
-    quality_dependencies.runtime_ports.get_streaming_state_mut =
-            static_cast<StreamingState &(GaussianSplatRenderer::*)()>(&GaussianSplatRenderer::get_streaming_state);
-    quality_dependencies.runtime_ports.get_streaming_state_view =
-            static_cast<const StreamingState &(GaussianSplatRenderer::*)() const>(&GaussianSplatRenderer::get_streaming_state);
-    quality_orchestrator = std::make_unique<RenderQualityOrchestrator>(quality_dependencies);
 
     RenderConfigOrchestrator::Dependencies config_dependencies;
     config_dependencies.renderer = this;
@@ -1034,6 +1035,7 @@ void GaussianSplatRenderer::_teardown_resources() {
     // Phase 8: frustum cull resources now managed by GPUCuller interface
 
     if (streaming_state_ref.registered_gaussian_buffer.is_valid()) {
+        forget_resource_owner(streaming_state_ref.registered_gaussian_buffer);
         GaussianSplatManager *manager = GaussianSplatManager::get_singleton();
         if (manager) {
             manager->unregister_gaussian_buffer(streaming_state_ref.registered_gaussian_buffer);
@@ -1165,6 +1167,7 @@ void GaussianSplatRenderer::_notification(int p_what) {
 }
 
 void GaussianSplatRenderer::initialize() {
+    const uint64_t init_start_usec = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : 0;
     bool dispatch_submitted = false;
     if (_dispatch_call_on_render_thread_blocking(
                 callable_mp(this, &GaussianSplatRenderer::_initialize_on_render_thread),
@@ -1181,14 +1184,25 @@ void GaussianSplatRenderer::initialize() {
 
     // Manual initialization called from module
     // Try to initialize GPU resources
+    const uint64_t resources_start_usec = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : init_start_usec;
     _create_gpu_resources_safe();
+    const double resources_ms = double((OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : resources_start_usec) - resources_start_usec) / 1000.0;
 
+    double sorting_ms = 0.0;
     if (get_device_state().rd) {
+        const uint64_t sorting_start_usec = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : init_start_usec;
         initialize_sorting();
+        sorting_ms = double((OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : sorting_start_usec) - sorting_start_usec) / 1000.0;
     }
 
+    double bootstrap_ms = 0.0;
+    const uint32_t gaussian_count = get_scene_state().gaussian_data.is_valid()
+            ? get_scene_state().gaussian_data->get_count()
+            : 0;
     if (get_scene_state().gaussian_data.is_valid()) {
+        const uint64_t bootstrap_start_usec = OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : init_start_usec;
         Error data_err = _update_gpu_buffers_with_real_data();
+        bootstrap_ms = double((OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : bootstrap_start_usec) - bootstrap_start_usec) / 1000.0;
         if (data_err == OK) {
             get_frame_state().visible_splat_count.store(get_scene_state().gaussian_data->get_count(), std::memory_order_release);
         } else {
@@ -1198,6 +1212,15 @@ void GaussianSplatRenderer::initialize() {
     } else {
         get_frame_state().visible_splat_count.store(0, std::memory_order_release);
     }
+
+    const double total_init_ms = double((OS::get_singleton() ? OS::get_singleton()->get_ticks_usec() : init_start_usec) - init_start_usec) / 1000.0;
+    GS_LOG_RENDERER_INFO(vformat(
+            "[LoadTiming][GaussianSplatRenderer] gaussian_count=%d resource_init_ms=%.2f sorting_init_ms=%.2f bootstrap_ms=%.2f total_init_ms=%.2f",
+            gaussian_count,
+            resources_ms,
+            sorting_ms,
+            bootstrap_ms,
+            total_init_ms));
 }
 
 void GaussianSplatRenderer::_initialize_on_render_thread(uint64_t p_request_id) {
@@ -1380,6 +1403,14 @@ bool GaussianSplatRenderer::_blit_shadow_depth(RID p_source_depth, RID p_shadow_
     u_source.append_id(p_source_depth);
 
     RID uniform_set = uniform_set_cache->get_cache(shadow_blit_state.shader, 0, u_source);
+    if (!uniform_set.is_valid()) {
+        static bool warned_invalid_shadow_blit_uniform_set = false;
+        if (!warned_invalid_shadow_blit_uniform_set) {
+            GS_LOG_WARN_DEFAULT("[GS Shadow] Failed to acquire shadow blit uniform set; skipping shadow depth blit.");
+            warned_invalid_shadow_blit_uniform_set = true;
+        }
+        return false;
+    }
     RD::FramebufferFormatID fb_format = rd->framebuffer_get_format(p_shadow_fb);
     RID pipeline = shadow_blit_state.pipeline_cache.get_render_pipeline(RD::INVALID_ID, fb_format);
 
@@ -1466,10 +1497,13 @@ bool GaussianSplatRenderer::render_directional_shadow_map(const Projection &p_li
     }
 
     Ref<OutputCompositor> saved_output_compositor = subsystem_state.output_compositor;
+    const bool saved_shadow_instance_filter = shadow_instance_filter_enabled;
     subsystem_state.output_compositor = shadow_output_compositor;
+    shadow_instance_filter_enabled = true;
 
     render_sorted_splats(nullptr, p_light_transform.affine_inverse(), projection, render_projection, false);
 
+    shadow_instance_filter_enabled = saved_shadow_instance_filter;
     subsystem_state.output_compositor = saved_output_compositor;
 
     if (!subsystem_state.rasterizer.is_valid()) {

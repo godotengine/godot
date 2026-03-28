@@ -74,7 +74,10 @@ GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_or_cre
 			static bool warned_missing_device = false;
 			if (!warned_missing_device) {
 				warned_missing_device = true;
-				GS_LOG_RENDERER_ERROR("[GaussianSplatSceneDirector] Unable to acquire local RenderingDevice for shared renderer");
+				GS_LOG_RENDERER_ERROR(
+						"[GaussianSplatSceneDirector] Unable to acquire primary RenderingDevice for shared renderer (scenario=" +
+						String::num_uint64((uint64_t)scenario.get_id()) +
+						"). Gaussian splat instances in this world will be collected but skipped because no renderer can be attached.");
 			}
 			return entry;
 		}
@@ -248,8 +251,9 @@ void GaussianSplatSceneDirector::_release_asset_record(SharedWorld &p_world, uin
 
 
 void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,
-        const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags,
-        float p_wind_intensity, uint32_t p_wind_mode, const Vector3 &p_wind_direction, float p_wind_frequency) {
+        const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow,
+        float p_wind_intensity, uint32_t p_wind_mode, const Vector3 &p_wind_direction, float p_wind_frequency,
+        bool p_visible) {
 	MutexLock lock(world_mutex);
 	SharedWorld *world = _get_world_for_instance(p_node_id);
 	if (!world) {
@@ -297,6 +301,14 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 		}
 		if (record.flags != p_flags) {
 			record.flags = p_flags;
+			dirty = true;
+		}
+		if (record.casts_shadow != p_casts_shadow) {
+			record.casts_shadow = p_casts_shadow;
+			dirty = true;
+		}
+		if (record.visible != p_visible) {
+			record.visible = p_visible;
 			dirty = true;
 		}
 		if (!Math::is_equal_approx(record.wind_intensity, wind_intensity)) {
@@ -358,6 +370,8 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 	record.asset_id = asset_id;
 	record.flags = p_flags;
 	record.last_lod = 0;
+	record.casts_shadow = p_casts_shadow;
+	record.visible = p_visible;
 	record.dirty = true;
 
 	world->instance_lookup[p_node_id] = world->instances.size();
@@ -393,8 +407,8 @@ void GaussianSplatSceneDirector::update_instance_transform(ObjectID p_node_id, c
 }
 
 void GaussianSplatSceneDirector::update_instance_params(ObjectID p_node_id, float p_opacity, float p_lod_bias,
-		uint32_t p_flags, float p_wind_intensity, uint32_t p_wind_mode,
-		const Vector3 &p_wind_direction, float p_wind_frequency) {
+		uint32_t p_flags, bool p_casts_shadow, float p_wind_intensity, uint32_t p_wind_mode,
+		const Vector3 &p_wind_direction, float p_wind_frequency, bool p_visible) {
 	MutexLock lock(world_mutex);
 	SharedWorld *world = _get_world_for_instance(p_node_id);
 	if (!world) {
@@ -424,6 +438,14 @@ void GaussianSplatSceneDirector::update_instance_params(ObjectID p_node_id, floa
 	}
 	if (record.flags != p_flags) {
 		record.flags = p_flags;
+		dirty = true;
+	}
+	if (record.casts_shadow != p_casts_shadow) {
+		record.casts_shadow = p_casts_shadow;
+		dirty = true;
+	}
+	if (record.visible != p_visible) {
+		record.visible = p_visible;
 		dirty = true;
 	}
 	if (!Math::is_equal_approx(record.wind_intensity, wind_intensity)) {
@@ -506,8 +528,8 @@ void GaussianSplatSceneDirector::update_instance_lods(const Vector3 &p_camera_po
 			}
 			if (desired_lod == static_cast<int>(current_lod)) {
 				if (log_enabled) {
-					GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (no change)",
-							(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
+					GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (no change)",
+							String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
 				}
 				continue;
 			}
@@ -517,8 +539,8 @@ void GaussianSplatSceneDirector::update_instance_lods(const Vector3 &p_camera_po
 				const float zone = use_fallback ? MAX(0.5f, 0.05f * threshold) : p_hysteresis_zone;
 				if (effective_distance < threshold + zone) {
 					if (log_enabled) {
-						GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-up)",
-								(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
+						GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-up)",
+								String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
 					}
 					continue;
 				}
@@ -527,8 +549,8 @@ void GaussianSplatSceneDirector::update_instance_lods(const Vector3 &p_camera_po
 				const float zone = use_fallback ? MAX(0.5f, 0.05f * threshold) : p_hysteresis_zone;
 				if (effective_distance > threshold - zone) {
 					if (log_enabled) {
-						GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-down)",
-								(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
+						GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-down)",
+								String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
 					}
 					continue;
 				}
@@ -538,8 +560,8 @@ void GaussianSplatSceneDirector::update_instance_lods(const Vector3 &p_camera_po
 			record.dirty = true;
 			any_changed = true;
 			if (log_enabled) {
-				GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u -> %u",
-						(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance,
+				GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u -> %u",
+						String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance,
 						current_lod, record.last_lod));
 			}
 		}
@@ -579,8 +601,8 @@ void GaussianSplatSceneDirector::update_instance_lods_for_renderer(const Gaussia
 		}
 		if (desired_lod == static_cast<int>(current_lod)) {
 			if (log_enabled) {
-				GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (no change)",
-						(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
+				GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (no change)",
+						String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
 			}
 			continue;
 		}
@@ -590,8 +612,8 @@ void GaussianSplatSceneDirector::update_instance_lods_for_renderer(const Gaussia
 			const float zone = use_fallback ? MAX(0.5f, 0.05f * threshold) : p_hysteresis_zone;
 			if (effective_distance < threshold + zone) {
 				if (log_enabled) {
-					GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-up)",
-							(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
+					GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-up)",
+							String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
 				}
 				continue;
 			}
@@ -600,8 +622,8 @@ void GaussianSplatSceneDirector::update_instance_lods_for_renderer(const Gaussia
 			const float zone = use_fallback ? MAX(0.5f, 0.05f * threshold) : p_hysteresis_zone;
 			if (effective_distance > threshold - zone) {
 				if (log_enabled) {
-					GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-down)",
-							(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
+					GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u desired=%d (hold-down)",
+							String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance, current_lod, desired_lod));
 				}
 				continue;
 			}
@@ -611,8 +633,8 @@ void GaussianSplatSceneDirector::update_instance_lods_for_renderer(const Gaussia
 		record.dirty = true;
 		any_changed = true;
 		if (log_enabled) {
-			GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%llu asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u -> %u",
-					(uint64_t)record.node_id, record.asset_id, distance, bias, effective_distance,
+			GS_LOG_RENDERER_DEBUG(vformat("[InstanceLOD] node=%s asset=%u dist=%.3f bias=%.3f eff=%.3f lod=%u -> %u",
+					String::num_uint64((uint64_t)record.node_id), record.asset_id, distance, bias, effective_distance,
 					current_lod, record.last_lod));
 		}
 	}
@@ -637,6 +659,9 @@ void GaussianSplatSceneDirector::build_instance_buffer(LocalVector<InstanceDataG
 	for (const KeyValue<RID, SharedWorld> &E : worlds) {
 		const SharedWorld &world = E.value;
 		for (const InstanceRecord &record : world.instances) {
+			if (!record.visible) {
+				continue;
+			}
 			const SharedWorld::AssetRecord *asset_record = world.asset_records.getptr(record.asset_id);
 			if (!asset_record || asset_record->data.is_null()) {
 				continue;
@@ -699,7 +724,7 @@ void GaussianSplatSceneDirector::build_instance_buffer(LocalVector<InstanceDataG
 }
 
 void GaussianSplatSceneDirector::build_instance_buffer_for_renderer(const GaussianSplatRenderer *p_renderer,
-		LocalVector<InstanceDataGPU> &out) const {
+		LocalVector<InstanceDataGPU> &out, bool p_shadow_casters_only) const {
 	MutexLock lock(world_mutex);
 	out.clear();
 
@@ -718,6 +743,12 @@ void GaussianSplatSceneDirector::build_instance_buffer_for_renderer(const Gaussi
 	uint32_t traced_translation_zero = 0;
 	uint32_t traced_fully_identity = 0;
 	for (const InstanceRecord &record : world->instances) {
+		if (!record.visible) {
+			continue;
+		}
+		if (p_shadow_casters_only && !record.casts_shadow) {
+			continue;
+		}
 		const SharedWorld::AssetRecord *asset_record = world->asset_records.getptr(record.asset_id);
 		if (!asset_record || asset_record->data.is_null()) {
 			if (log_enabled) {
@@ -793,9 +824,9 @@ void GaussianSplatSceneDirector::build_instance_buffer_for_renderer(const Gaussi
 			traced_fully_identity += (rotation_identity && scale_identity && translation_zero) ? 1u : 0u;
 		}
 		if (log_enabled) {
-			GS_LOG_RENDERER_DEBUG(vformat("[InstanceBuffer] idx=%d node=%llu asset=%u lod=%u flags=0x%08X pos=(%.3f,%.3f,%.3f) scale=%.3f",
+			GS_LOG_RENDERER_DEBUG(vformat("[InstanceBuffer] idx=%d node=%s asset=%u lod=%u flags=0x%08X pos=(%.3f,%.3f,%.3f) scale=%.3f",
 					out.size() - 1,
-					(uint64_t)record.node_id, record.asset_id, record.last_lod, record.flags,
+					String::num_uint64((uint64_t)record.node_id), record.asset_id, record.last_lod, record.flags,
 					entry.translation_scale[0], entry.translation_scale[1], entry.translation_scale[2], entry.translation_scale[3]));
 		}
 	}
@@ -827,8 +858,53 @@ uint64_t GaussianSplatSceneDirector::get_instance_generation_for_renderer(const 
 	return world->instance_generation;
 }
 
+uint32_t GaussianSplatSceneDirector::get_instance_count_for_renderer(const GaussianSplatRenderer *p_renderer) const {
+	MutexLock lock(world_mutex);
+	const SharedWorld *world = _find_world_for_renderer(p_renderer);
+	if (!world) {
+		return 0;
+	}
+	return world->instances.size();
+}
+
+namespace {
+
+static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::FLOAT) {
+		return int((double)value);
+	}
+	return int(value);
+}
+
+static double _metadata_double(const Dictionary &p_metadata, const StringName &p_key, double p_default) {
+	if (!p_metadata.has(p_key)) {
+		return p_default;
+	}
+	const Variant value = p_metadata[p_key];
+	if (value.get_type() == Variant::INT) {
+		return double(int64_t(value));
+	}
+	return (double)value;
+}
+
+static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
+	if (p_asset.is_null()) {
+		return false;
+	}
+	const Dictionary import_metadata = p_asset->get_import_metadata();
+	const int import_max_splats = _metadata_int(import_metadata, StringName("max_splats"), -1);
+	const double density_multiplier = _metadata_double(import_metadata, StringName("density_multiplier"), 1.0);
+	return import_max_splats == 0 && density_multiplier >= 0.999;
+}
+
+} // namespace
+
 void GaussianSplatSceneDirector::collect_instance_assets_for_renderer(const GaussianSplatRenderer *p_renderer,
-		LocalVector<InstanceAssetRegistration> &out) const {
+		LocalVector<InstanceAssetRegistration> &out, bool p_shadow_casters_only) const {
 	MutexLock lock(world_mutex);
 	out.clear();
 
@@ -837,15 +913,31 @@ void GaussianSplatSceneDirector::collect_instance_assets_for_renderer(const Gaus
 		return;
 	}
 
-	out.reserve(world->asset_records.size());
-	for (const KeyValue<uint32_t, SharedWorld::AssetRecord> &E : world->asset_records) {
-		if (E.key == 0 || E.value.data.is_null()) {
+	HashSet<uint32_t> selected_asset_ids;
+	selected_asset_ids.reserve(world->asset_records.size());
+	for (const InstanceRecord &record : world->instances) {
+		if (!record.visible) {
+			continue;
+		}
+		if (p_shadow_casters_only && !record.casts_shadow) {
+			continue;
+		}
+		if (record.asset_id != 0) {
+			selected_asset_ids.insert(record.asset_id);
+		}
+	}
+
+	out.reserve(selected_asset_ids.size());
+	for (const uint32_t &asset_id : selected_asset_ids) {
+		const SharedWorld::AssetRecord *record = world->asset_records.getptr(asset_id);
+		if (!record || record->data.is_null()) {
 			continue;
 		}
 		InstanceAssetRegistration entry;
-		entry.asset_id = E.key;
-		entry.data = E.value.data;
-		entry.edited_version = E.value.edited_version;
+		entry.asset_id = asset_id;
+		entry.data = record->data;
+		entry.edited_version = record->edited_version;
+		entry.requests_full_fidelity_runtime = _asset_requests_full_fidelity_runtime(record->asset);
 		out.push_back(entry);
 	}
 }

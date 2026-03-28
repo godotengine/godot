@@ -645,10 +645,12 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 				return GaussianRenderState::IndexDomain::UNKNOWN;
 		}
 	};
+	bool sort_executed = false;
 	auto build_summary = [&]() {
 		GaussianRenderState::SortStageSummary summary;
 		summary.sorted_count = sorting_state.sorted_splat_count;
 		summary.sort_time_ms = frame_state_view.sort_time_ms;
+		summary.did_execute = sort_executed;
 		summary.input_domain = p_input_domain;
 		summary.output_domain = resolve_output_domain_for_input(p_input_domain);
 		return summary;
@@ -884,6 +886,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		}
 		if (sorting_pipeline && sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform,
 				_build_sort_frame_context(state_view, state_mut, view_state))) {
+			sort_executed = true;
 			debug_state.sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
 			sorting_state.last_sort_world_to_camera_transform = p_world_to_camera_transform;
 			sorting_state.last_sort_transform_valid = true;
@@ -983,51 +986,47 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		}
 	}
 
-	auto publish_instance_identity_fallback = [&](const String &p_reason) -> bool {
-		if (strict_global_sort) {
-			// Even in strict mode, allow the identity fallback when the sort
-			// buffer is missing/invalid — refusing to render at all is worse
-			// than showing an unsorted frame.
-			if (sorting_pipeline && sorting_pipeline->get_sort_indices_buffer().is_valid()) {
+		auto publish_instance_identity_fallback = [&](const String &p_reason) -> bool {
+			if (strict_global_sort) {
+				// Correctness-first mode must never publish an unsorted identity frame.
 				return false;
 			}
-		}
-		if (!instance_pipeline_active || !sorting_pipeline) {
-			return false;
-		}
-		if (instance_visible_splats == 0) {
-			return false;
-		}
+			if (!instance_pipeline_active || !sorting_pipeline) {
+				return false;
+			}
+			if (instance_visible_splats == 0) {
+				return false;
+			}
 
-		sorting_state.sort_index_bytes.resize(instance_visible_splats * sizeof(uint32_t));
-		uint32_t *indices_ptr = reinterpret_cast<uint32_t *>(sorting_state.sort_index_bytes.ptrw());
-		for (uint32_t i = 0; i < instance_visible_splats; i++) {
-			indices_ptr[i] = i;
-		}
-		_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
-		sorting_pipeline->ensure_sort_buffers(instance_visible_splats);
-		RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
-		if (!sort_indices_buffer.is_valid()) {
-			return false;
-		}
-		RenderingDevice *target_device = renderer->get_resource_owner(sort_indices_buffer, renderer->get_device_state().rd);
-		if (!target_device) {
-			target_device = renderer->get_device_state().rd;
-		}
-		if (!target_device) {
-			return false;
-		}
-		target_device->buffer_update(sort_indices_buffer, 0,
-				sorting_state.sort_index_bytes.size(),
-				sorting_state.sort_index_bytes.ptr());
-		sorting_state.sorted_splat_count = instance_visible_splats;
-		_publish_rendered_splat_count(frame_state, performance_state, instance_visible_splats);
-		debug_state.sort_route_uid = RenderRouteUID::INSTANCE_SORT_IDENTITY_FALLBACK;
-		sorting_state.last_sort_transform_valid = false;
-		set_active_sort_algorithm("GPU (identity fallback)", p_reason);
-		GS_LOG_WARN_DEFAULT(vformat("[GPU Sort] %s; publishing identity order for instance sort domain", p_reason));
-		return true;
-	};
+			sorting_state.sort_index_bytes.resize(instance_visible_splats * sizeof(uint32_t));
+			uint32_t *indices_ptr = reinterpret_cast<uint32_t *>(sorting_state.sort_index_bytes.ptrw());
+			for (uint32_t i = 0; i < instance_visible_splats; i++) {
+				indices_ptr[i] = i;
+			}
+			_bind_sort_pipeline_host_context(sorting_pipeline, renderer);
+			sorting_pipeline->ensure_sort_buffers(instance_visible_splats);
+			RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
+			if (!sort_indices_buffer.is_valid()) {
+				return false;
+			}
+			RenderingDevice *target_device = renderer->get_resource_owner(sort_indices_buffer, renderer->get_device_state().rd);
+			if (!target_device) {
+				target_device = renderer->get_device_state().rd;
+			}
+			if (!target_device) {
+				return false;
+			}
+			target_device->buffer_update(sort_indices_buffer, 0,
+					sorting_state.sort_index_bytes.size(),
+					sorting_state.sort_index_bytes.ptr());
+			sorting_state.sorted_splat_count = instance_visible_splats;
+			_publish_rendered_splat_count(frame_state, performance_state, instance_visible_splats);
+			debug_state.sort_route_uid = RenderRouteUID::INSTANCE_SORT_IDENTITY_FALLBACK;
+			sorting_state.last_sort_transform_valid = false;
+			set_active_sort_algorithm("GPU (identity fallback)", p_reason);
+			GS_LOG_WARN_DEFAULT(vformat("[GPU Sort] %s; publishing identity order for instance sort domain", p_reason));
+			return true;
+		};
 
 	if (!need_sort) {
 		const bool can_reuse_previous_sorted =
@@ -1044,11 +1043,11 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		} else if (publish_instance_identity_fallback("Missing previous sorted buffer on camera-stable frame")) {
 			reset_sort_metrics();
 			return build_summary();
-		} else if ((!strict_global_sort || !sorting_pipeline->get_sort_indices_buffer().is_valid()) && !instance_pipeline_active && !cull_state.culled_indices.is_empty() && sorting_pipeline) {
+		} else if (!strict_global_sort && !instance_pipeline_active && !cull_state.culled_indices.is_empty() && sorting_pipeline) {
 			// Last resort bootstrap: if the previous sorted buffer is unavailable,
 			// keep rendering progress with current cull order instead of showing zero splats.
-			// This fallback is reachable even in strict mode when the cached sort buffer is missing,
-			// since rendering zero splats is worse than rendering with approximate cull order.
+			// Strict mode is excluded above because correctness-first mode must never
+			// publish approximate ordering.
 			const uint32_t copy_count = MIN<uint32_t>(available_splats,
 					static_cast<uint32_t>(cull_state.culled_indices.size()));
 			if (copy_count > 0) {
@@ -1076,7 +1075,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 				// Force a real re-sort on the next frame; this bootstrap order is not depth-sorted.
 				sorting_state.last_sort_transform_valid = false;
 			}
-		} else if (strict_global_sort && sorting_pipeline && available_splats > 0) {
+		} else if (strict_global_sort && available_splats > 0) {
 			// Strict mode cannot publish fallback ordering. If the stable-frame fast path
 			// has no reusable sorted buffer, force a real sort this frame instead of
 			// returning with stale/invalid state.
@@ -1163,8 +1162,9 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		}
 
 		if (strict_global_sort && !positions_ready) {
-			GS_LOG_WARN_DEFAULT(vformat("[CPU Sort] Strict global sort: positions unavailable, rendering unsorted fallback (%s).",
+			GS_LOG_WARN_DEFAULT(vformat("[CPU Sort] Strict global sort: positions unavailable, refusing unsorted fallback (%s).",
 					p_reason));
+			return false;
 		}
 
 		if (positions_ready) {
@@ -1222,6 +1222,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		uint64_t sort_end = OS::get_singleton()->get_ticks_usec();
 		float cpu_time_ms = (sort_end - sort_start) / 1000.0f;
 
+		sort_executed = true;
 		sorting_state.sorted_splat_count = available_splats;
 		_publish_rendered_splat_count(frame_state, performance_state, available_splats);
 		frame_state.sort_time_ms = cpu_time_ms;
@@ -1252,16 +1253,16 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		return true;
 	};
 
-	auto execute_sort_fallback_policy = [&](GaussianSplatting::SortFallbackScenario p_scenario,
-											const String &p_reason,
-											const String &p_failure_log = String()) {
-		const GaussianSplatting::SortFallbackPolicyDecision policy =
-				GaussianSplatting::build_sort_fallback_policy(p_scenario, instance_pipeline_active);
-		const char *reuse_route_uid = instance_pipeline_active
-				? RenderRouteUID::INSTANCE_SORT_CACHED
-				: RenderRouteUID::COMMON_FAIL_SORT_FAILED;
-		for (uint32_t i = 0; i < policy.action_count; i++) {
-			switch (policy.actions[i]) {
+		auto execute_sort_fallback_policy = [&](GaussianSplatting::SortFallbackScenario p_scenario,
+												const String &p_reason,
+												const String &p_failure_log = String()) {
+			const GaussianSplatting::SortFallbackPolicyDecision policy =
+					GaussianSplatting::build_sort_fallback_policy(p_scenario, instance_pipeline_active, strict_global_sort);
+			const char *reuse_route_uid = instance_pipeline_active
+					? RenderRouteUID::INSTANCE_SORT_CACHED
+					: RenderRouteUID::COMMON_FAIL_SORT_FAILED;
+			for (uint32_t i = 0; i < policy.action_count; i++) {
+				switch (policy.actions[i]) {
 				case GaussianSplatting::SortFallbackAction::REUSE_PREVIOUS_SORT:
 					if (reuse_previous_sort(p_reason, reuse_route_uid)) {
 						return;
@@ -1339,6 +1340,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	if (sorting_pipeline &&
 			sorting_pipeline->sort_gaussians_gpu(p_world_to_camera_transform,
 					_build_sort_frame_context(state_view, state_mut, view_state))) {
+		sort_executed = true;
 		debug_state.sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
 		sorting_state.last_sort_world_to_camera_transform = p_world_to_camera_transform;
 		sorting_state.last_sort_transform_valid = true;

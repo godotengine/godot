@@ -36,6 +36,8 @@
 #include "test_synthetic_cloud_generator.h"
 #include "test_synthetic_mandelbrot_generator.h"
 #include "test_synthetic_bml_traffic_generator.h"
+#include "test_node_bootstrap.h"
+#include "test_shadow_instance_subset.h"
 
 namespace TestGaussianSplatting {
 

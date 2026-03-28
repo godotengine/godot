@@ -69,6 +69,7 @@ public:
         const PagedArray<RID> *gaussian_splats = nullptr;
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
 	LocalVector<Ref<GaussianSplatRenderer>> gaussian_splat_renderers;
+	LocalVector<Ref<GaussianSplatRenderer>> gaussian_shadow_renderers;
 #endif
 	RID environment;
 	RID camera_attributes;

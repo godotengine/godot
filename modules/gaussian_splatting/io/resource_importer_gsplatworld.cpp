@@ -3,6 +3,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "../core/gaussian_data.h"
@@ -255,6 +256,9 @@ Error ResourceImporterGSplatWorld::import(ResourceUID::ID p_source_id, const Str
 		const Error final_err = imported_decode_err != OK ? imported_decode_err : ERR_FILE_CORRUPT;
 		GS_LOG_ERROR_DEFAULT(vformat("GaussianSplatWorld importer produced unreadable output %s (error %d)",
 				save_path, final_err));
+		if (FileAccess::exists(save_path)) {
+			DirAccess::remove_absolute(save_path);
+		}
 		return final_err;
 	}
 

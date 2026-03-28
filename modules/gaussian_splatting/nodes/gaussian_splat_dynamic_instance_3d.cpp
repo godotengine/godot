@@ -135,7 +135,7 @@ bool GaussianSplatDynamicInstance3D::_register_instance_registry() {
         return false;
     }
     director->register_instance(get_instance_id(), asset, get_global_transform(),
-            1.0f, 1.0f, _get_instance_flags());
+            1.0f, 1.0f, _get_instance_flags(), false);
     return true;
 }
 

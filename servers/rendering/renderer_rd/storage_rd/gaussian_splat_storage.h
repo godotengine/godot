@@ -42,12 +42,13 @@
 namespace RendererRD {
 
 class GaussianSplatStorage {
-        struct GaussianSplat {
+	struct GaussianSplat {
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
-                Ref<GaussianSplatRenderer> renderer;
+		Ref<GaussianSplatRenderer> renderer;
 #endif
-                AABB aabb;
-        };
+		AABB aabb;
+		bool casts_shadow = false;
+	};
 
         static GaussianSplatStorage *singleton;
         mutable RID_Owner<GaussianSplat> gaussian_owner;
@@ -65,12 +66,13 @@ public:
         bool owns_gaussian(RID p_rid) const;
 
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
-        void gaussian_set_renderer(RID p_rid, const Ref<GaussianSplatRenderer> &p_renderer);
-        Ref<GaussianSplatRenderer> gaussian_get_renderer(RID p_rid) const;
+	void gaussian_set_renderer(RID p_rid, const Ref<GaussianSplatRenderer> &p_renderer);
+	Ref<GaussianSplatRenderer> gaussian_get_renderer(RID p_rid) const;
 #endif
-        void gaussian_set_aabb(RID p_rid, const AABB &p_aabb);
-        AABB gaussian_get_aabb(RID p_rid) const;
+	void gaussian_set_aabb(RID p_rid, const AABB &p_aabb);
+	AABB gaussian_get_aabb(RID p_rid) const;
+	void gaussian_set_casts_shadow(RID p_rid, bool p_casts_shadow);
+	bool gaussian_get_casts_shadow(RID p_rid) const;
 };
 
 } // namespace RendererRD
-

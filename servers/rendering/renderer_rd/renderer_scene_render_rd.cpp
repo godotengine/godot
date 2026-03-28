@@ -87,6 +87,7 @@ void RendererSceneRenderRD::commit_gaussian_splats(RenderDataRD &p_render_data) 
 		renderer->commit_to_render_buffers(&p_render_data);
 	}
 	p_render_data.gaussian_splat_renderers.clear();
+	p_render_data.gaussian_shadow_renderers.clear();
 }
 #endif
 #include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
@@ -1486,6 +1487,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
 		render_data.gaussian_splat_renderers.clear();
+		render_data.gaussian_shadow_renderers.clear();
 		RendererRD::GaussianSplatStorage *gaussian_storage = RendererRD::GaussianSplatStorage::get_singleton();
 
 		if (gaussian_storage != nullptr && render_data.gaussian_splats != nullptr) {
@@ -1493,7 +1495,9 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 				// print_line(vformat("[Forward+] Found %d gaussian splat RIDs to process", render_data.gaussian_splats->size()));
 			}
 			HashSet<ObjectID> seen_renderers;
+			HashSet<ObjectID> seen_shadow_renderers;
 			seen_renderers.reserve(render_data.gaussian_splats->size());
+			seen_shadow_renderers.reserve(render_data.gaussian_splats->size());
 			for (uint64_t i = 0; i < render_data.gaussian_splats->size(); i++) {
 			const RID &gaussian_rid = (*render_data.gaussian_splats)[i];
 				if (!gaussian_rid.is_valid()) {
@@ -1509,6 +1513,11 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 				}
 
 				ObjectID renderer_id = gaussian_renderer->get_instance_id();
+				const bool casts_shadow = gaussian_storage->gaussian_get_casts_shadow(gaussian_rid);
+				if (casts_shadow && !seen_shadow_renderers.has(renderer_id)) {
+					seen_shadow_renderers.insert(renderer_id);
+					render_data.gaussian_shadow_renderers.push_back(gaussian_renderer);
+				}
 				if (seen_renderers.has(renderer_id)) {
 					continue;
 				}

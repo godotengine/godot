@@ -22,6 +22,23 @@ static Quaternion _safe_quaternion_from_asset(const TypedArray<Quaternion> &p_ro
     return Quaternion();
 }
 
+static GaussianDCEncoding _resolve_asset_dc_encoding(const Ref<GaussianSplatAsset> &p_asset) {
+    if (p_asset.is_null()) {
+        return GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+    }
+
+    const Dictionary import_metadata = p_asset->get_import_metadata();
+    if (!import_metadata.has(StringName("dc_encoding"))) {
+        return GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+    }
+
+    const String dc_encoding = String(import_metadata[StringName("dc_encoding")]).to_lower();
+    if (dc_encoding == "linear_rgb") {
+        return GAUSSIAN_DC_ENCODING_LINEAR_RGB;
+    }
+    return GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+}
+
 static void _rebuild_chunk_cache(const Ref<GaussianData> &p_data, float p_chunk_size,
         Vector<GaussianSplatRenderer::StaticChunk> &r_chunks, AABB &r_bounds) {
     r_chunks.clear();
@@ -263,6 +280,7 @@ bool gaussian_splat_merge_sources(const Vector<GaussianSplatMergeSource> &source
         Basis rotation_basis = basis.orthonormalized();
         Quaternion world_rotation = rotation_basis.get_rotation_quaternion();
         Vector3 world_scale = basis.get_scale_abs();
+        const GaussianDCEncoding source_dc_encoding = _resolve_asset_dc_encoding(asset);
 
         for (uint32_t splat = 0; splat < splat_count; splat++) {
             const uint32_t target_index = write_offset + splat;
@@ -306,6 +324,10 @@ bool gaussian_splat_merge_sources(const Vector<GaussianSplatMergeSource> &source
             } else {
                 merged_bounds = merged_bounds.merge(splat_bounds);
             }
+
+            Gaussian g = merged_data->get_gaussian((int)target_index);
+            g.render_meta = gaussian_set_dc_encoding(g.render_meta, source_dc_encoding);
+            merged_data->set_gaussian((int)target_index, g);
         }
 
         if (source.is_2d) {

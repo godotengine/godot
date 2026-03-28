@@ -34,6 +34,14 @@
 // Project settings helpers provided by gs_project_settings.h (gs::settings namespace).
 namespace {
 static bool _is_frame_log_enabled() { return gs::settings::is_frame_log_enabled(); }
+
+static bool _is_multi_instance_shared_renderer_active(const Ref<GaussianSplatRenderer> &p_renderer) {
+    if (!p_renderer.is_valid()) {
+        return false;
+    }
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    return director && director->get_instance_count_for_renderer(p_renderer.ptr()) > 1u;
+}
 } // namespace
 
 void GaussianSplatNode3D::_bind_methods() {
@@ -421,6 +429,13 @@ void GaussianSplatNode3D::_notification(int p_what) {
 }
 
 void GaussianSplatNode3D::_validate_property(PropertyInfo &p_property) const {
+    if (_is_multi_instance_shared_renderer_active(renderer)) {
+        if (p_property.name.begins_with("painterly/") || p_property.name == "rendering/color_grading") {
+            p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+            return;
+        }
+    }
+
     // Hide painterly settings if disabled
     if (!enable_painterly) {
         if (p_property.name.begins_with("painterly/") && p_property.name != "painterly/enabled") {
@@ -795,6 +810,7 @@ void GaussianSplatNode3D::_finalize_manual_splat_setup(int splat_count) {
     _sync_gaussian_storage();
     _register_shared_renderer();
     _mark_render_state_dirty();
+    update_gizmos();
     update_configuration_warnings();
 }
 
@@ -806,6 +822,8 @@ void GaussianSplatNode3D::set_quality_preset(QualityPreset p_preset) {
     quality_preset = p_preset;
     _apply_quality_preset();
     _update_quality_settings();
+    _mark_render_state_dirty();
+    _update_instance_params_in_director();
 
     notify_property_list_changed();
 }
@@ -813,6 +831,7 @@ void GaussianSplatNode3D::set_quality_preset(QualityPreset p_preset) {
 void GaussianSplatNode3D::set_lod_bias(float p_bias) {
     lod_bias = CLAMP(p_bias, 0.1f, 4.0f);
     _update_quality_settings();
+    _mark_render_state_dirty();
     _update_instance_params_in_director();
 }
 
@@ -820,6 +839,7 @@ void GaussianSplatNode3D::set_max_render_distance(float p_distance) {
     max_render_distance = MAX(0.0f, p_distance);
     _update_visibility();
     _update_quality_settings();
+    _mark_render_state_dirty();
 }
 
 void GaussianSplatNode3D::set_max_splat_count(int p_count) {
@@ -828,6 +848,7 @@ void GaussianSplatNode3D::set_max_splat_count(int p_count) {
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
     _update_instance_params_in_director();
 }
 
@@ -842,32 +863,45 @@ void GaussianSplatNode3D::set_enable_painterly(bool p_enabled) {
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
     notify_property_list_changed();
 }
 
 void GaussianSplatNode3D::set_edge_threshold(float p_threshold) {
+    if (_is_multi_instance_shared_renderer_active(renderer)) {
+        return;
+    }
     edge_threshold = CLAMP(p_threshold, 0.0f, 1.0f);
     _apply_painterly_settings();
     _update_quality_settings();
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
 }
 
 void GaussianSplatNode3D::set_stroke_opacity(float p_opacity) {
+    if (_is_multi_instance_shared_renderer_active(renderer)) {
+        return;
+    }
     stroke_opacity = CLAMP(p_opacity, 0.0f, 1.0f);
     _apply_painterly_settings();
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
 }
 
 void GaussianSplatNode3D::set_stroke_width(float p_width) {
+    if (_is_multi_instance_shared_renderer_active(renderer)) {
+        return;
+    }
     stroke_width = CLAMP(p_width, 0.1f, 5.0f);
     _apply_painterly_settings();
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
 }
 
 void GaussianSplatNode3D::set_color_variation(float p_variation) {
@@ -876,18 +910,26 @@ void GaussianSplatNode3D::set_color_variation(float p_variation) {
 }
 
 void GaussianSplatNode3D::set_temporal_blend(float p_blend) {
+    if (_is_multi_instance_shared_renderer_active(renderer)) {
+        return;
+    }
     temporal_blend = CLAMP(p_blend, 0.01f, 1.0f);
     _apply_painterly_settings();
     _update_quality_settings();
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
 }
 
 void GaussianSplatNode3D::set_painterly_seed(uint32_t p_seed) {
+    if (_is_multi_instance_shared_renderer_active(renderer)) {
+        return;
+    }
     painterly_seed = MIN(p_seed, (uint32_t)65535);
     _apply_painterly_settings();
     _update_quality_settings();
+    _mark_render_state_dirty();
 }
 
 void GaussianSplatNode3D::set_update_mode(ViewportUpdateMode p_mode) {
@@ -923,13 +965,17 @@ void GaussianSplatNode3D::set_cast_shadow(bool p_enabled) {
                     cast_shadow ? RS::SHADOW_CASTING_SETTING_ON : RS::SHADOW_CASTING_SETTING_OFF);
         }
     }
+    _sync_gaussian_storage();
+    _update_instance_params_in_director();
 }
 
 void GaussianSplatNode3D::set_use_frustum_culling(bool p_enabled) {
     use_frustum_culling = p_enabled;
+    _update_visibility();
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
 }
 
 void GaussianSplatNode3D::set_use_occlusion_culling(bool p_enabled) {
@@ -942,6 +988,7 @@ void GaussianSplatNode3D::set_opacity(float p_opacity) {
     if (renderer.is_valid()) {
         _apply_renderer_settings();
     }
+    _mark_render_state_dirty();
     _update_instance_params_in_director();
 }
 
@@ -1307,6 +1354,17 @@ void GaussianSplatNode3D::process_gaussian_render() {
 
     _update_visibility();
 
+    if (renderer.is_valid()) {
+        const bool shared_renderer_multi_instance = _is_multi_instance_shared_renderer_active(renderer);
+        if (shared_renderer_multi_instance_state != shared_renderer_multi_instance) {
+            shared_renderer_multi_instance_state = shared_renderer_multi_instance;
+            _apply_renderer_settings();
+            notify_property_list_changed();
+        }
+    } else {
+        shared_renderer_multi_instance_state = false;
+    }
+
     bool should_update = false;
     switch (update_mode) {
         case UPDATE_MODE_ALWAYS:
@@ -1375,6 +1433,7 @@ void GaussianSplatNode3D::_load_asset() {
 
 void GaussianSplatNode3D::_update_asset() {
     asset_helper.update_asset();
+    update_gizmos();
 }
 
 void GaussianSplatNode3D::_clear_asset() {
@@ -1394,70 +1453,70 @@ void GaussianSplatNode3D::_update_bounds() {
 }
 
 void GaussianSplatNode3D::_update_visibility() {
-    if (!is_inside_tree()) {
-        visible_in_viewport = false;
-        return;
-    }
-
-    if (!parent_visible || !is_visible_in_tree()) {
-        visible_in_viewport = false;
-        return;
-    }
+    const bool previous_visibility = visible_in_viewport;
+    bool new_visibility = false;
 
     // In editor, preview_enabled controls actual rendering visibility (not just gizmos).
     // At runtime, preview_enabled is ignored so splats always render when visible.
 #ifdef TOOLS_ENABLED
-    if (Engine::get_singleton()->is_editor_hint() && !preview_enabled) {
-        visible_in_viewport = false;
-        return;
-    }
+    const bool preview_blocked = Engine::get_singleton()->is_editor_hint() && !preview_enabled;
+#else
+    const bool preview_blocked = false;
 #endif
 
-    if (bounds_dirty) {
-        _update_bounds();
-    }
+    if (is_inside_tree() && parent_visible && is_visible_in_tree() && !preview_blocked) {
+        if (bounds_dirty) {
+            _update_bounds();
+        }
 
-    // Use the same viewport as rendering for consistent culling.
-    // In editor, use _find_editor_scene_viewport() to match update_splats() behavior.
-    Viewport *viewport = Engine::get_singleton()->is_editor_hint() ? _find_editor_scene_viewport() : get_viewport();
-    if (!viewport) {
-        viewport = get_viewport(); // Fallback to node's viewport
-    }
-    if (!viewport) {
-        visible_in_viewport = false;
-        return;
-    }
+        // Use the same viewport as rendering for consistent culling.
+        // In editor, use _find_editor_scene_viewport() to match update_splats() behavior.
+        Viewport *viewport = Engine::get_singleton()->is_editor_hint() ? _find_editor_scene_viewport() : get_viewport();
+        if (!viewport) {
+            viewport = get_viewport();
+        }
 
-    Camera3D *camera = viewport->get_camera_3d();
-    if (!camera) {
-        visible_in_viewport = true;
-        return;
-    }
+        if (viewport) {
+            Camera3D *camera = viewport->get_camera_3d();
+            if (!camera) {
+                new_visibility = true;
+            } else {
+                new_visibility = true;
+                const Transform3D camera_to_world_transform = camera->get_camera_transform();
+                const Vector3 camera_position = camera_to_world_transform.origin;
 
-    const Transform3D camera_to_world_transform = camera->get_camera_transform();
-    const Vector3 camera_position = camera_to_world_transform.origin;
+                if (max_render_distance > 0.0f) {
+                    const Vector3 center = world_aabb.get_center();
+                    const float radius = world_aabb.get_longest_axis_size() * 0.5f;
+                    const float distance_to_center = camera_position.distance_to(center);
 
-    if (max_render_distance > 0.0f) {
-        const Vector3 center = world_aabb.get_center();
-        const float radius = world_aabb.get_longest_axis_size() * 0.5f;
-        const float distance_to_center = camera_position.distance_to(center);
+                    if (distance_to_center - radius > max_render_distance) {
+                        new_visibility = false;
+                    }
+                }
 
-        if (distance_to_center - radius > max_render_distance) {
-            visible_in_viewport = false;
-            return;
+                if (new_visibility && use_frustum_culling) {
+                    RendererSceneCull::Frustum frustum(camera->get_frustum());
+                    RendererSceneCull::InstanceBounds bounds(world_aabb);
+                    if (!bounds.in_frustum(frustum)) {
+                        new_visibility = false;
+                    }
+                }
+            }
         }
     }
 
-    if (use_frustum_culling) {
-        RendererSceneCull::Frustum frustum(camera->get_frustum());
-        RendererSceneCull::InstanceBounds bounds(world_aabb);
-        if (!bounds.in_frustum(frustum)) {
-            visible_in_viewport = false;
-            return;
+    visible_in_viewport = new_visibility;
+    if (render_instance.is_valid()) {
+        if (RenderingServer *rs = RS::get_singleton()) {
+            rs->instance_set_visible(render_instance, parent_visible && visible_in_viewport && is_visible_in_tree());
         }
     }
 
-    visible_in_viewport = true;
+    if (previous_visibility != visible_in_viewport) {
+        _update_instance_params_in_director();
+        emit_signal("viewport_visibility_changed", visible_in_viewport);
+    }
 }
 
 void GaussianSplatNode3D::_update_quality_settings() {
@@ -1576,7 +1635,7 @@ void GaussianSplatNode3D::_update_render_instance() {
 
         Transform3D xform = get_global_transform();
         rs->instance_set_transform(render_instance, xform);
-        rs->instance_set_visible(render_instance, parent_visible && is_visible_in_tree());
+        rs->instance_set_visible(render_instance, parent_visible && visible_in_viewport && is_visible_in_tree());
 
         // Instance pipeline uses per-instance transforms; no global instance transform is required.
     }
@@ -1600,13 +1659,14 @@ void GaussianSplatNode3D::_ensure_gaussian_base() {
         return;
     }
 
-    gaussian_base = storage->gaussian_allocate();
-    storage->gaussian_initialize(gaussian_base);
+	gaussian_base = storage->gaussian_allocate();
+	storage->gaussian_initialize(gaussian_base);
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
-    storage->gaussian_set_renderer(gaussian_base, renderer);
+	storage->gaussian_set_renderer(gaussian_base, renderer);
 #endif
-    storage->gaussian_set_aabb(gaussian_base, world_aabb);
-    _set_instance_base(gaussian_base);
+	storage->gaussian_set_aabb(gaussian_base, world_aabb);
+	storage->gaussian_set_casts_shadow(gaussian_base, cast_shadow);
+	_set_instance_base(gaussian_base);
 }
 
 void GaussianSplatNode3D::_release_gaussian_base() {
@@ -1617,13 +1677,14 @@ void GaussianSplatNode3D::_release_gaussian_base() {
     _set_instance_base(RID());
 
     RendererRD::GaussianSplatStorage *storage = RendererRD::GaussianSplatStorage::get_singleton();
-    if (storage) {
+	if (storage) {
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
-        storage->gaussian_set_renderer(gaussian_base, Ref<GaussianSplatRenderer>());
+		storage->gaussian_set_renderer(gaussian_base, Ref<GaussianSplatRenderer>());
 #endif
-        storage->gaussian_set_aabb(gaussian_base, AABB());
-        storage->gaussian_free(gaussian_base);
-    }
+		storage->gaussian_set_aabb(gaussian_base, AABB());
+		storage->gaussian_set_casts_shadow(gaussian_base, false);
+		storage->gaussian_free(gaussian_base);
+	}
 
     gaussian_base = RID();
 }
@@ -1639,9 +1700,10 @@ void GaussianSplatNode3D::_sync_gaussian_storage() {
     }
 
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
-    storage->gaussian_set_renderer(gaussian_base, renderer);
+	storage->gaussian_set_renderer(gaussian_base, renderer);
 #endif
-    storage->gaussian_set_aabb(gaussian_base, world_aabb);
+	storage->gaussian_set_aabb(gaussian_base, world_aabb);
+	storage->gaussian_set_casts_shadow(gaussian_base, cast_shadow);
 }
 
 Viewport *GaussianSplatNode3D::_find_editor_scene_viewport() const {
@@ -1820,9 +1882,10 @@ void GaussianSplatNode3D::_register_instance_in_director() {
         return;
     }
     director->register_instance(get_instance_id(), asset, get_global_transform(),
-            opacity, lod_bias, _get_instance_flags(),
+            opacity, lod_bias, _get_instance_flags(), cast_shadow,
             _get_instance_wind_intensity(), _get_instance_wind_mode(),
-            _get_instance_wind_direction(), _get_instance_wind_frequency());
+            _get_instance_wind_direction(), _get_instance_wind_frequency(),
+            parent_visible && visible_in_viewport && is_visible_in_tree());
 }
 
 void GaussianSplatNode3D::_unregister_instance_in_director() {
@@ -1845,9 +1908,13 @@ void GaussianSplatNode3D::_update_instance_params_in_director() {
         return;
     }
     if (GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton()) {
-        director->update_instance_params(get_instance_id(), opacity, lod_bias, _get_instance_flags(),
+        director->update_instance_params(get_instance_id(), opacity, lod_bias, _get_instance_flags(), cast_shadow,
                 _get_instance_wind_intensity(), _get_instance_wind_mode(),
-                _get_instance_wind_direction(), _get_instance_wind_frequency());
+                _get_instance_wind_direction(), _get_instance_wind_frequency(),
+                parent_visible && visible_in_viewport && is_visible_in_tree());
+    }
+    if (renderer.is_valid()) {
+        renderer->invalidate_cached_render();
     }
 }
 
@@ -1867,6 +1934,40 @@ void GaussianSplatNode3D::_register_shared_renderer() {
         return;
     }
     _register_instance_in_director();
+
+    Ref<GaussianSplatAsset> bootstrap_asset = splat_asset.is_valid() ? splat_asset : runtime_asset;
+
+    // Bootstrap primary gaussian_data on the shared renderer so the resident
+    // fallback path can render while the streaming instance pipeline warms up.
+    // Without this, scene_state.gaussian_data stays null, the streaming warmup
+    // frames return false, and _render_resident_frame sees "no render data".
+    if (renderer.is_valid()) {
+        const auto &scene_state = renderer->get_scene_state();
+        if (scene_state.active_asset.is_null() && bootstrap_asset.is_valid()) {
+            renderer->set_gaussian_asset(bootstrap_asset);
+            if (debug_logs_enabled) {
+                GS_LOG_RENDERER_DEBUG(vformat("[NODE-REG] Bootstrap: set active_asset on renderer (asset_id=%s)",
+                        String::num_uint64((uint64_t)bootstrap_asset->get_instance_id())));
+            }
+        }
+        if (scene_state.gaussian_data.is_null()) {
+            Ref<GaussianData> bootstrap_data;
+            if (splat_asset.is_valid()) {
+                bootstrap_data = splat_asset->get_gaussian_data();
+            } else if (renderer_data.is_valid()) {
+                bootstrap_data = renderer_data;
+            } else if (runtime_asset.is_valid()) {
+                bootstrap_data = runtime_asset->get_gaussian_data();
+            }
+            if (bootstrap_data.is_valid() && bootstrap_data->get_count() > 0) {
+                renderer->set_gaussian_data(bootstrap_data);
+                if (debug_logs_enabled) {
+                    GS_LOG_RENDERER_DEBUG(vformat("[NODE-REG] Bootstrap: set primary gaussian_data on renderer (count=%d)",
+                            bootstrap_data->get_count()));
+                }
+            }
+        }
+    }
 }
 
 void GaussianSplatNode3D::_unregister_shared_renderer() {
@@ -1886,7 +1987,11 @@ void GaussianSplatNode3D::_on_asset_changed() {
 
 void GaussianSplatNode3D::_on_color_grading_changed() {
     if (renderer.is_valid()) {
-        renderer->set_color_grading(color_grading);
+        if (_is_multi_instance_shared_renderer_active(renderer)) {
+            renderer->set_color_grading(Ref<ColorGradingResource>());
+        } else {
+            renderer->set_color_grading(color_grading);
+        }
         renderer->invalidate_cached_render();
     }
 }
@@ -1955,10 +2060,15 @@ void GaussianSplatNode3D::set_color_grading(const Ref<ColorGradingResource> &p_g
     }
 
     if (renderer.is_valid()) {
-        renderer->set_color_grading(color_grading);
+        if (_is_multi_instance_shared_renderer_active(renderer)) {
+            renderer->set_color_grading(Ref<ColorGradingResource>());
+        } else {
+            renderer->set_color_grading(color_grading);
+        }
         renderer->invalidate_cached_render();
     }
 
+    _mark_render_state_dirty();
     notify_property_list_changed();
 }
 
