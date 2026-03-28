@@ -4636,4 +4636,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	return ERR_CANT_RESOLVE;
 }
 
+Error GDScriptEditorLanguage::lookup_code_for_rename(const String &p_code, const String &p_symbol, const String &p_path, LookupResult &r_result) {
+	return lookup_code(p_code, p_symbol, p_path, nullptr, r_result);
+}
+
 #endif // TOOLS_ENABLED

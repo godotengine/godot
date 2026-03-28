@@ -111,6 +111,7 @@ public:
 	 * @param r_result The returned `LookupResult`.
 	 */
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
+	virtual Error lookup_code_for_rename(const String &p_code, const String &p_symbol, const String &p_path, LookupResult &r_result) { return ERR_UNAVAILABLE; }
 
 	/**
 	 * Called by the editor to find a top-level function in the given source code.

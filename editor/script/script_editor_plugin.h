@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/error/error_list.h"
+#include "core/object/editor_language.h"
 #include "core/object/script_language.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/script/script_editor_base.h"
@@ -421,6 +422,8 @@ public:
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
 	Error close_file(const String &p_file);
+
+	void rename_symbol(const String &p_symbol, const String &p_new_name, const EditorLanguage::LookupResult &p_lookup);
 
 	void ensure_select_current();
 
