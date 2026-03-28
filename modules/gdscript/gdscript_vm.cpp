@@ -661,7 +661,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		script = _script;
 	}
 	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
-	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
 
 	String err_text;
 

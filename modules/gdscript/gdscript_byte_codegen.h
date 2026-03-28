@@ -372,7 +372,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 				temporaries.write[p_address.address].bytecode_indices.push_back(opcodes.size());
 				return -1;
 			case Address::NIL:
-				return GDScriptFunction::ADDR_NIL;
+				return -1;
 		}
 		return -1; // Unreachable.
 	}
