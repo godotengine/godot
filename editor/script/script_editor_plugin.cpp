@@ -2641,6 +2641,36 @@ Error ScriptEditor::close_file(const String &p_file) {
 	return ERR_FILE_NOT_FOUND;
 }
 
+void ScriptEditor::rename_symbol(const String &p_symbol, const String &p_new_name, const ScriptLanguage::LookupResult &p_lookup) {
+	FindInFilesPanel *panel = find_in_files->get_panel_for_results(TTR("Rename symbol:") + " " + p_symbol);
+	FindInFiles *f = panel->get_finder();
+
+	HashSet<String> exts;
+	exts.insert(p_lookup.script->get_language()->get_extension());
+
+	f->set_search_text(p_symbol);
+	f->set_match_case(true);
+	f->set_whole_words(true);
+	f->set_folder(String());
+	f->set_filter(exts);
+	f->set_includes(HashSet<String>());
+	f->set_excludes(HashSet<String>());
+
+	panel->set_with_replace(true);
+	panel->set_replace_text(p_new_name);
+	panel->start_search();
+
+	symbol_rename = memnew(ScriptLanguage::LookupResult(p_lookup));
+	find_in_files->make_visible();
+}
+
+void ScriptEditor::clear_symbol_rename() {
+	if (symbol_rename) {
+		memdelete(symbol_rename);
+		symbol_rename = nullptr;
+	}
+}
+
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
 	ERR_FAIL_NULL(p_obj);
 	Ref<Script> scr = p_obj->get_script();

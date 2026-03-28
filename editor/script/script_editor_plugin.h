@@ -227,6 +227,8 @@ class ScriptEditor : public PanelContainer {
 	List<String> previous_scripts;
 	List<int> script_close_queue;
 
+	ScriptLanguage::LookupResult *symbol_rename = nullptr;
+
 	List<String> _get_recognized_extensions();
 
 	void _tab_changed(int p_which);
@@ -414,6 +416,10 @@ public:
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
 	Error close_file(const String &p_file);
+
+	void rename_symbol(const String &p_symbol, const String &p_new_name, const ScriptLanguage::LookupResult &p_lookup);
+	ScriptLanguage::LookupResult *get_symbol_rename() { return symbol_rename; }
+	void clear_symbol_rename();
 
 	void ensure_select_current();
 

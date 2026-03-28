@@ -795,6 +795,7 @@ public:
 	/* Text */
 	// Text properties.
 	RID get_text_canvas_item() const;
+	const Ref<TextParagraph> get_line_data(int p_line) const { return text.get_line_data(p_line); }
 
 	bool has_ime_text() const;
 	void cancel_ime();
