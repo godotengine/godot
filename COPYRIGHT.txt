@@ -310,6 +310,11 @@ Comment: The FreeType Project
 Copyright: 1996-2025, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
+Files: thirdparty/gamemode/*
+Comment: GameMode
+Copyright: 2017-2024, Feral Interactive
+License: BSD-3-clause
+
 Files: thirdparty/gamepadmotionhelpers/*
 Comment: GamepadMotionHelpers
 Copyright: 2020-2023, Julian "Jibb" Smart
