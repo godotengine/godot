@@ -79,7 +79,7 @@ public:
 	void set_cone_radius(int p_index, real_t p_radius);
 	real_t get_cone_radius(int p_index) const;
 
-	static const int MAX_KUSUDAMA_CONES = 10;
+	static const int MAX_KUSUDAMA_CONES = 3;
 
 #ifdef TOOLS_ENABLED
 	int get_cone_sequence_for_shader(PackedVector4Array &r_cone_sequence) const;
