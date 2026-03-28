@@ -98,6 +98,14 @@
 				[b]Note:[/b] [param patches] is an optional override of the set of patches defined in the export preset. When empty the patches defined in the export preset will be used instead.
 			</description>
 		</method>
+		<method name="find_and_replace_key">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Finds and replaces encryption key template in the [param path] with key set in the [param preset].
+			</description>
+		</method>
 		<method name="find_export_template" qualifiers="const">
 			<return type="Dictionary" />
 			<param index="0" name="template_file_name" type="String" />

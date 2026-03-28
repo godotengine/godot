@@ -143,6 +143,9 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
 	if (err == OK) {
+		find_and_replace_key_file(p_preset, p_path);
+	}
+	if (err == OK) {
 		err = modify_template(p_preset, p_debug, p_path, p_flags);
 	}
 	if (err == OK) {
