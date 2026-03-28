@@ -103,6 +103,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
@@ -139,6 +140,106 @@ constexpr real_t MAX_Z = 1000000.0;
 
 constexpr real_t MIN_FOV = 0.01;
 constexpr real_t MAX_FOV = 179;
+
+class Node3DEditorPluginSnap : public ConfirmationDialog {
+	GDCLASS(Node3DEditorPluginSnap, ConfirmationDialog);
+
+	friend class Node3DEditor;
+
+	EditorSpinSlider *grid_step = nullptr;
+	SpinBox *rotation_step = nullptr;
+	SpinBox *scale_step = nullptr;
+
+private:
+	GridContainer *separate(VBoxContainer *container) {
+		container->add_child(memnew(HSeparator));
+
+		GridContainer *child_container = memnew(GridContainer);
+		child_container->set_columns(2);
+		container->add_child(child_container);
+
+		return child_container;
+	}
+
+public:
+	Node3DEditorPluginSnap() {
+		const int SPIN_BOX_ROTATION_RANGE = 360;
+		const real_t SPIN_BOX_GRID_STEP_RANGE = 10.0;
+		const real_t SPIN_BOX_SCALE_MIN = 0.01;
+		const real_t SPIN_BOX_SCALE_MAX = 100;
+
+		Label *label;
+		VBoxContainer *container;
+		GridContainer *child_container;
+
+		set_title(TTRC("Configure Snap"));
+		container = memnew(VBoxContainer);
+		add_child(container);
+		child_container = memnew(GridContainer);
+		child_container->set_columns(2);
+		container->add_child(child_container);
+
+		label = memnew(Label);
+		label->set_text(TTRC("Grid Step:"));
+		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		child_container->add_child(label);
+
+		grid_step = memnew(EditorSpinSlider);
+		grid_step->set_min(0.01);
+		grid_step->set_step(0.001);
+		grid_step->set_max(SPIN_BOX_GRID_STEP_RANGE);
+		grid_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		grid_step->set_suffix("m");
+		grid_step->set_allow_greater(true);
+		grid_step->set_accessibility_name(TTRC("Grid Step"));
+		child_container->add_child(grid_step);
+
+		child_container = separate(container);
+
+		label = memnew(Label);
+		label->set_text(TTRC("Rotation Step:"));
+		child_container->add_child(label);
+		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+		rotation_step = memnew(SpinBox);
+		rotation_step->set_min(-SPIN_BOX_ROTATION_RANGE);
+		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
+		rotation_step->set_suffix(U"°");
+		rotation_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		rotation_step->set_select_all_on_focus(true);
+		rotation_step->set_accessibility_name(TTRC("Rotation Step"));
+		child_container->add_child(rotation_step);
+
+		child_container = separate(container);
+
+		label = memnew(Label);
+		label->set_text(TTRC("Scale Step:"));
+		child_container->add_child(label);
+		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+		scale_step = memnew(SpinBox);
+		scale_step->set_min(SPIN_BOX_SCALE_MIN);
+		scale_step->set_max(SPIN_BOX_SCALE_MAX);
+		scale_step->set_allow_greater(true);
+		scale_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		scale_step->set_step(0.01f);
+		scale_step->set_select_all_on_focus(true);
+		scale_step->set_accessibility_name(TTRC("Scale Step"));
+		child_container->add_child(scale_step);
+	}
+
+	void set_fields(real_t p_grid_step, real_t p_rotation_step, real_t p_scale_step) {
+		grid_step->set_value(p_grid_step);
+		rotation_step->set_value(p_rotation_step);
+		scale_step->set_value(p_scale_step);
+	}
+
+	void get_fields(real_t &p_grid_step, real_t &p_rotation_step, real_t &p_scale_step) {
+		p_grid_step = grid_step->get_value();
+		p_rotation_step = rotation_step->get_value();
+		p_scale_step = scale_step->get_value();
+	}
+};
 
 void ViewportNavigationControl::_notification(int p_what) {
 	switch (p_what) {
@@ -6304,6 +6405,9 @@ void Node3DEditorViewport::_load_viewport_inputs() {
 	register_shortcut_action("spatial_editor/viewport_zoom_modifier_1", TTRC("Viewport Zoom Modifier 1"), Key::CTRL);
 	register_shortcut_action("spatial_editor/viewport_zoom_modifier_2", TTRC("Viewport Zoom Modifier 2"), Key::NONE);
 
+	register_shortcut_action("spatial_editor/multiply_grid_step", TTRC("Multiply grid step by 2"), Key::KP_MULTIPLY);
+	register_shortcut_action("spatial_editor/divide_grid_step", TTRC("Divide grid step by 2"), Key::KP_DIVIDE);
+
 	register_shortcut_action("spatial_editor/freelook_left", TTRC("Freelook Left"), Key::A, true);
 	register_shortcut_action("spatial_editor/freelook_right", TTRC("Freelook Right"), Key::D, true);
 	register_shortcut_action("spatial_editor/freelook_forward", TTRC("Freelook Forward"), Key::W, true);
@@ -7136,9 +7240,10 @@ Dictionary Node3DEditor::get_state() const {
 
 	d["snap_enabled"] = snap_enabled;
 	d["trackball_enabled"] = trackball_enabled;
-	d["translate_snap"] = snap_translate_value;
-	d["rotate_snap"] = snap_rotate_value;
-	d["scale_snap"] = snap_scale_value;
+	d["grid_step"] = grid_step;
+	d["grid_step_multiplier"] = grid_step_multiplier;
+	d["rotate_snap"] = snap_rotate_step;
+	d["scale_snap"] = snap_scale_step;
 
 	d["local_coords"] = tool_option_button[TOOL_OPT_LOCAL_COORDS]->is_pressed();
 	d["preserve_children_transform"] = tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed();
@@ -7224,16 +7329,20 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_pressed(d["trackball_enabled"]);
 	}
 
-	if (d.has("translate_snap")) {
-		snap_translate_value = d["translate_snap"];
+	if (d.has("grid_step")) {
+		grid_step = d["grid_step"];
+	}
+
+	if (d.has("grid_step_multiplier")) {
+		grid_step_multiplier = d["grid_step_multiplier"];
 	}
 
 	if (d.has("rotate_snap")) {
-		snap_rotate_value = d["rotate_snap"];
+		snap_rotate_step = d["rotate_snap"];
 	}
 
 	if (d.has("scale_snap")) {
-		snap_scale_value = d["scale_snap"];
+		snap_scale_step = d["scale_snap"];
 	}
 
 	_snap_update();
@@ -7410,19 +7519,21 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 }
 
 void Node3DEditor::_snap_changed() {
-	snap_translate_value = snap_translate->get_value();
-	snap_rotate_value = snap_rotate->get_value();
-	snap_scale_value = snap_scale->get_value();
+	static_cast<Node3DEditorPluginSnap *>(snap_dialog)->get_fields(grid_step, snap_rotate_step, snap_scale_step);
+	// Reset multiplier; Reconfigured grid must reflect values set by the user.
+	grid_step_multiplier = 0;
 
-	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_translate_value", snap_translate_value);
-	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_rotate_value", snap_rotate_value);
-	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_scale_value", snap_scale_value);
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "grid_step", grid_step);
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "grid_step_multiplier", grid_step_multiplier);
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_rotate_value", snap_rotate_step);
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_scale_value", snap_scale_step);
+
+	update_grid(true);
 }
 
 void Node3DEditor::_snap_update() {
-	snap_translate->set_value(snap_translate_value);
-	snap_rotate->set_value(snap_rotate_value);
-	snap_scale->set_value(snap_scale_value);
+	static_cast<Node3DEditorPluginSnap *>(snap_dialog)->set_fields(grid_step, snap_rotate_step, snap_scale_step);
+	update_grid(true);
 }
 
 void Node3DEditor::_update_vertex_snap_tooltips() {
@@ -7594,7 +7705,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
-			snap_dialog->popup_centered(Size2(200, 180));
+			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
 		} break;
 		case MENU_VERTEX_SNAP_BASE_VERTEX: {
 			vertex_snap_origin_mode = false;
@@ -8590,10 +8701,12 @@ void Node3DEditor::_init_grid() {
 		real_t division_level_floored = Math::floor(clamped_division_level);
 		real_t division_level_decimals = clamped_division_level - division_level_floored;
 
-		real_t small_step_size = Math::pow(primary_grid_steps, division_level_floored);
-		real_t large_step_size = small_step_size * primary_grid_steps;
-		real_t center_a = large_step_size * (int)(camera_position[a] / large_step_size);
-		real_t center_b = large_step_size * (int)(camera_position[b] / large_step_size);
+		// Note - `get_translate_snap` is not used to prevent grid from shrinking when `shift` is pressed.
+		const real_t snap_value = grid_step * (real_t)Math::pow(2.0, grid_step_multiplier);
+		const real_t small_step_size = Math::pow(primary_grid_steps, division_level_floored) * snap_value;
+		const real_t large_step_size = small_step_size * primary_grid_steps;
+		const real_t center_a = large_step_size * (int)(camera_position[a] / large_step_size);
+		const real_t center_b = large_step_size * (int)(camera_position[b] / large_step_size);
 
 		real_t bgn_a = center_a - grid_size * small_step_size;
 		real_t end_a = center_a + grid_size * small_step_size;
@@ -8743,7 +8856,7 @@ void Node3DEditor::update_gizmo_opacity() {
 	}
 }
 
-void Node3DEditor::update_grid() {
+void Node3DEditor::update_grid(bool force) {
 	const Camera3D::ProjectionType current_projection = viewports[0]->camera->get_projection();
 
 	if (current_projection != grid_camera_last_update_perspective) {
@@ -8754,7 +8867,7 @@ void Node3DEditor::update_grid() {
 	// Gets a orthogonal or perspective position correctly (for the grid comparison)
 	const Vector3 camera_position = get_editor_viewport(0)->camera->get_position();
 
-	if (!grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f) {
+	if (force || !grid_init_draw || grid_camera_last_update_position.distance_squared_to(camera_position) >= 100.0f) {
 		_finish_grid();
 		_init_grid();
 		grid_init_draw = true;
@@ -9051,6 +9164,28 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	}
 }
 
+void Node3DEditor::handle_grid_shortcut_input(const Ref<InputEvent> &p_event) {
+	const int GRID_STEP_MAX_MULTIPLIER = 6;
+	const int GRID_STEP_MIN_MULTIPLIER = -4;
+
+	Ref<InputEventKey> k = p_event;
+	if (!k.is_valid()) {
+		return;
+	}
+
+	if (k->is_pressed() && ED_IS_SHORTCUT("spatial_editor/multiply_grid_step", p_event)) {
+		grid_step_multiplier = MIN(grid_step_multiplier + 1, GRID_STEP_MAX_MULTIPLIER);
+	} else if (k->is_pressed() && ED_IS_SHORTCUT("spatial_editor/divide_grid_step", p_event)) {
+		grid_step_multiplier = MAX(grid_step_multiplier - 1, GRID_STEP_MIN_MULTIPLIER);
+	} else {
+		return;
+	}
+
+	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "grid_step_multiplier", grid_step_multiplier);
+
+	update_grid(true);
+}
+
 void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -9059,6 +9194,7 @@ void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	handle_grid_shortcut_input(p_event);
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {
@@ -9151,6 +9287,8 @@ void Node3DEditor::_update_theme() {
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_button_icon(get_editor_theme_icon(SNAME("Trackball")));
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
+
+	transform_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_editor_theme_icon(SNAME("Panels1")));
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_editor_theme_icon(SNAME("Panels2")));
@@ -9645,9 +9783,11 @@ void Node3DEditor::clear() {
 	settings_znear->set_value(EDITOR_GET("editors/3d/default_z_near"));
 	settings_zfar->set_value(EDITOR_GET("editors/3d/default_z_far"));
 
-	snap_translate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_translate_value", 1);
-	snap_rotate_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_rotate_value", 15);
-	snap_scale_value = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_scale_value", 10);
+	grid_step = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "grid_step", 1);
+	grid_step_multiplier = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "grid_step_multiplier", 0);
+	snap_rotate_step = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_rotate_value", 15);
+	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("3d_editor", "snap_scale_value", 10);
+
 	_snap_update();
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
@@ -10142,6 +10282,33 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_accessibility_name(TTRC("Preserve Children Transform"));
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_tooltip_text(TTRC("When enabled, transforming a node will preserve the global transform of its children.\nThis also applies when editing transform properties in the Inspector."));
 
+	PopupMenu *p;
+
+	transform_menu = memnew(MenuButton);
+	transform_menu->set_flat(false);
+	transform_menu->set_theme_type_variation(SceneStringName(FlatMenuButton));
+	transform_menu->set_switch_on_hover(true);
+	transform_menu->set_shortcut_context(this);
+	transform_menu->set_h_size_flags(SIZE_SHRINK_END);
+	transform_menu->set_tooltip_text(TTRC("Snapping Options"));
+	main_menu_hbox->add_child(transform_menu);
+
+	p = transform_menu->get_popup();
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTRC("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTRC("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
+
+	p->add_separator();
+	ED_SHORTCUT("spatial_editor/vertex_snap", TTRC("Vertex Snap"), Key::B);
+	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
+	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
+	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
+	_update_vertex_snap_tooltips();
+
+	p->add_separator();
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
+
+	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
+
 	main_menu_hbox->add_child(memnew(VSeparator));
 	sun_button = memnew(Button);
 	sun_button->set_tooltip_text(TTRC("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
@@ -10206,32 +10373,6 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/increase_fov", TTRC("Increase Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::MINUS);
 	ED_SHORTCUT("spatial_editor/reset_fov", TTRC("Reset Field of View to Default"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_0);
 
-	PopupMenu *p;
-
-	transform_menu = memnew(MenuButton);
-	transform_menu->set_flat(false);
-	transform_menu->set_theme_type_variation("FlatMenuButton");
-	transform_menu->set_text(TTRC("Transform"));
-	transform_menu->set_switch_on_hover(true);
-	transform_menu->set_shortcut_context(this);
-	main_menu_hbox->add_child(transform_menu);
-
-	p = transform_menu->get_popup();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTRC("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTRC("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
-
-	p->add_separator();
-	ED_SHORTCUT("spatial_editor/vertex_snap", TTRC("Vertex Snap"), Key::B);
-	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
-	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
-	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
-	_update_vertex_snap_tooltips();
-
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
-
-	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
-
 	view_layout_menu = memnew(MenuButton);
 	view_layout_menu->set_flat(false);
 	view_layout_menu->set_theme_type_variation("FlatMenuButton");
@@ -10271,7 +10412,7 @@ Node3DEditor::Node3DEditor() {
 
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTRC("View Origin")), MENU_VIEW_ORIGIN);
-	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTRC("View Grid"), Key::NUMBERSIGN), MENU_VIEW_GRID);
+	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTRC("View Grid"), KeyModifierMask::CMD_OR_CTRL + Key::G), MENU_VIEW_GRID);
 
 	p->add_separator();
 	p->add_submenu_node_item(TTRC("Preview Translation"), memnew(EditorTranslationPreviewMenu));
@@ -10313,39 +10454,9 @@ Node3DEditor::Node3DEditor() {
 
 	/* SNAP DIALOG */
 
-	snap_dialog = memnew(ConfirmationDialog);
-	snap_dialog->set_title(TTRC("Snap Settings"));
+	snap_dialog = memnew(Node3DEditorPluginSnap);
 	add_child(snap_dialog);
 	snap_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Node3DEditor::_snap_changed));
-	snap_dialog->get_cancel_button()->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_snap_update));
-
-	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
-	snap_dialog->add_child(snap_dialog_vbc);
-
-	snap_translate = memnew(EditorSpinSlider);
-	snap_translate->set_min(0.0);
-	snap_translate->set_step(0.001);
-	snap_translate->set_max(10.0);
-	snap_translate->set_suffix("m");
-	snap_translate->set_allow_greater(true);
-	snap_translate->set_accessibility_name(TTRC("Translate Snap"));
-	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
-
-	snap_rotate = memnew(EditorSpinSlider);
-	snap_rotate->set_min(0.0);
-	snap_rotate->set_step(0.1);
-	snap_rotate->set_max(360);
-	snap_rotate->set_suffix(U"°");
-	snap_rotate->set_accessibility_name(TTRC("Rotate Snap"));
-	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap:"), snap_rotate);
-
-	snap_scale = memnew(EditorSpinSlider);
-	snap_scale->set_min(0.0);
-	snap_scale->set_step(1.0);
-	snap_scale->set_max(100);
-	snap_scale->set_suffix("%");
-	snap_scale->set_accessibility_name(TTRC("Scale Snap"));
-	snap_dialog_vbc->add_margin_child(TTR("Scale Snap:"), snap_scale);
 
 	/* SETTINGS DIALOG */
 
@@ -10728,7 +10839,7 @@ bool Node3DEditor::is_gizmo_visible() const {
 }
 
 real_t Node3DEditor::get_translate_snap() const {
-	real_t snap_value = snap_translate_value;
+	real_t snap_value = grid_step * (real_t)Math::pow(2.0, grid_step_multiplier);
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		snap_value /= 10.0f;
 	}
@@ -10736,7 +10847,7 @@ real_t Node3DEditor::get_translate_snap() const {
 }
 
 real_t Node3DEditor::get_rotate_snap() const {
-	real_t snap_value = snap_rotate_value;
+	real_t snap_value = snap_rotate_step;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		snap_value /= 3.0f;
 	}
@@ -10744,7 +10855,7 @@ real_t Node3DEditor::get_rotate_snap() const {
 }
 
 real_t Node3DEditor::get_scale_snap() const {
-	real_t snap_value = snap_scale_value;
+	real_t snap_value = snap_scale_step;
 	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		snap_value /= 2.0f;
 	}
