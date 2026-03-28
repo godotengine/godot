@@ -121,6 +121,12 @@ repos:
         entry: python misc/scripts/validate_includes.py
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc)$
 
+      - id: sort-forwards
+        name: sort-forwards
+        language: python
+        entry: python misc/scripts/sort_forwards.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc)$
+
       - id: eslint
         name: eslint
         language: node
