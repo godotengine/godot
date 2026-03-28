@@ -159,10 +159,6 @@ def configure(env: "SConsEnvironment"):
     ## Copy env variables.
     env["ENV"] = os.environ
 
-    # This makes `wasm-ld` treat all warnings as errors.
-    if env["werror"]:
-        env.Append(LINKFLAGS=["-Wl,--fatal-warnings"])
-
     # LTO
     if env["lto"] == "auto":  # Enable LTO for production.
         env["lto"] = "thin"
