@@ -314,7 +314,7 @@ TEST_CASE("[GaussianSplatting] Instanced readiness gate requires quantization bu
             RenderInstancingOrchestrator::InstanceReadinessFailureMode::NONE);
 }
 
-TEST_CASE("[GaussianSplatting] Instanced render skips callbacks when readiness preconditions fail") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Instanced render skips callbacks when readiness preconditions fail") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -391,7 +391,7 @@ TEST_CASE("[GaussianSplatting] Instanced render skips callbacks when readiness p
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] RenderSceneInstance drives GPU streaming + sorting") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance drives GPU streaming + sorting") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -477,7 +477,7 @@ TEST_CASE("[GaussianSplatting] RenderSceneInstance drives GPU streaming + sortin
 	renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffers ready without SceneDirector instances") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] World static chunks keep streaming instance buffers ready without SceneDirector instances") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -578,7 +578,7 @@ TEST_CASE("[GaussianSplatting] World static chunks keep streaming instance buffe
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-aligned diagnostics") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Static layout fallback publishes typed validator-aligned diagnostics") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -705,7 +705,7 @@ TEST_CASE("[GaussianSplatting] Static layout fallback publishes typed validator-
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Streaming indices validate against buffer capacity") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Streaming indices validate against buffer capacity") {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	if (rs == nullptr) {
 		MESSAGE("Skipping test - Rendering server unavailable");
@@ -813,7 +813,7 @@ TEST_CASE("[GaussianSplatting] Streaming indices validate against buffer capacit
 	renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] RenderSceneInstance supports forced CPU sorting") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance supports forced CPU sorting") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -924,7 +924,7 @@ TEST_CASE("[GaussianSplatting] RenderSceneInstance supports forced CPU sorting")
 	renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Production metrics contract and perf gate reporting") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Production metrics contract and perf gate reporting") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1062,7 +1062,7 @@ TEST_CASE("[GaussianSplatting] Production metrics contract and perf gate reporti
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Production metrics validation marks diagnostics-disabled mode") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Production metrics validation marks diagnostics-disabled mode") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1150,7 +1150,7 @@ TEST_CASE("[GaussianSplatting] Production metrics validation marks diagnostics-d
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Stage results report cull/sort skipped when GPU culler unavailable") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report cull/sort skipped when GPU culler unavailable") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1226,7 +1226,7 @@ TEST_CASE("[GaussianSplatting] Stage results report cull/sort skipped when GPU c
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Stage results report raster failure when rasterizer missing") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report raster failure when rasterizer missing") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1302,7 +1302,7 @@ TEST_CASE("[GaussianSplatting] Stage results report raster failure when rasteriz
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Stage results report painterly fallback") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report painterly fallback") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1412,7 +1412,7 @@ static bool create_test_render_buffers(const Vector2i &p_resolution, RID &r_rend
     return r_render_buffers->has_internal_texture();
 }
 
-TEST_CASE("[GaussianSplatting] Raster path eligibility follows viewport output format") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Raster path eligibility follows viewport output format") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1526,7 +1526,7 @@ TEST_CASE("[GaussianSplatting] Raster path eligibility follows viewport output f
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Final output copies between targets") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Final output copies between targets") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1610,7 +1610,7 @@ TEST_CASE("[GaussianSplatting] Final output copies between targets") {
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buffers") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Tile renderer composites into viewport render buffers") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1739,7 +1739,7 @@ TEST_CASE("[GaussianSplatting] Tile renderer composites into viewport render buf
     }
 }
 
-TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when cached depth is missing") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Scene composite keeps strict depth policy when cached depth is missing") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1872,7 +1872,7 @@ TEST_CASE("[GaussianSplatting] Scene composite keeps strict depth policy when ca
     }
 }
 
-TEST_CASE("[GaussianSplatting] Cached render reuse requires cached depth when depth validation is requested") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Cached render reuse requires cached depth when depth validation is requested") {
     REQUIRE_GPU_DEVICE();
 
     RenderingServer *rs = RenderingServer::get_singleton();
@@ -1948,7 +1948,7 @@ TEST_CASE("[GaussianSplatting] Cached render reuse requires cached depth when de
     memdelete(local_rd);
 }
 
-TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch times out when callback never signals completion") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Render-thread blocking dispatch times out when callback never signals completion") {
     RenderingServer *rs = RenderingServer::get_singleton();
     OS *os = OS::get_singleton();
     if (rs == nullptr || os == nullptr) {
@@ -1985,7 +1985,7 @@ TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch times out when ca
     CHECK(elapsed_usec < 2000000);
 }
 
-TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch only advances completion state on success") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Render-thread blocking dispatch only advances completion state on success") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - RenderingServer unavailable");
@@ -2022,7 +2022,7 @@ TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch only advances com
     renderer->test_set_render_thread_dispatch_timeout_usec(original_timeout_usec);
 }
 
-TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch preserves forward progress after timeout escape") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Render-thread blocking dispatch preserves forward progress after timeout escape") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - RenderingServer unavailable");
@@ -2062,7 +2062,7 @@ TEST_CASE("[GaussianSplatting] Render-thread blocking dispatch preserves forward
     }
 }
 
-TEST_CASE("[GaussianSplatting] Render-thread dispatch teardown remains bounded after timeout recovery") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Render-thread dispatch teardown remains bounded after timeout recovery") {
     RenderingServer *rs = RenderingServer::get_singleton();
     OS *os = OS::get_singleton();
     if (rs == nullptr || os == nullptr) {

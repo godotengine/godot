@@ -8,6 +8,7 @@ strict/warn-only policy (strict fails, warn-only skips).
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import re
 import subprocess
@@ -21,26 +22,39 @@ MODULE_SOURCE_DIR = ROOT / "modules" / "gaussian_splatting"
 RENDERER_DIR = MODULE_SOURCE_DIR / "renderer"
 BUILD_METADATA_GUARD_SCRIPT = MODULE_SOURCE_DIR / "tests" / "check_build_metadata_consistency.py"
 SHADER_DEPENDENCY_GUARD_SCRIPT = MODULE_SOURCE_DIR / "tests" / "check_shader_dependency_contract.py"
+GAUSSIAN_LAYOUT_GUARD_SCRIPT = ROOT / "tests" / "ci" / "check_gaussian_layout_sync.py"
 HISTORY_ARTIFACT_AUDIT_SCRIPT = ROOT / "scripts" / "repo" / "history_artifact_audit.py"
 SYNTHETIC_ASSET_PREP_SCRIPT = ROOT / "tests" / "runtime" / "prepare_synthetic_assets.py"
 BENCHMARK_ASSET_GUARD_SCRIPT = ROOT / "tests" / "runtime" / "check_benchmark_asset_paths.py"
 SOURCE_TREES = (ROOT,)
-MODULE_TEST_FILTERS: tuple[tuple[str, str], ...] = (
-    ("GaussianSplatting", "*GaussianSplatting*"),
+MODULE_TEST_FILTERS: tuple[tuple[str, str, str | None], ...] = (
+    # (name, test_case_filter, test_case_exclude_filter)
+    # The headless lane excludes [RequiresGPU]-tagged tests.  Those tests need a
+    # real RenderingDevice which Godot's --test mode does not create (engine
+    # limitation: test_setup() never initialises a display/rendering driver).
+    ("GaussianSplatting", "*GaussianSplatting*", "*RequiresGPU*"),
     # Use stable description fragments instead of tag prefixes, as doctest matching
     # can differ depending on how bracketed prefixes are parsed in test names.
-    ("TileRenderer", "*Shader compilation on local device*"),
-    ("GPU Memory Stream", "*Triple Buffering*"),
-    ("Streaming Pipeline", "*Concurrent LOD and visibility updates*"),
+    ("TileRenderer", "*Shader compilation on local device*", None),
+    ("GPU Memory Stream", "*Triple Buffering*", None),
+    ("Streaming Pipeline", "*Concurrent LOD and visibility updates*", None),
 )
+# Renderer-dependent (requires-RD) doctest lane.  Under Godot's --test mode
+# every test here will skip because no RenderingDevice is available.  This lane
+# exists for future use when a full-engine test harness is added; in the
+# meantime it serves as a catalogue of renderer-dependent tests.
+REQUIRES_RD_TEST_FILTERS: tuple[tuple[str, str, str | None], ...] = (
+    ("GaussianSplatting [requires-RD]", "*GaussianSplatting*RequiresGPU*", None),
+)
+GS_RUN_GPU_TESTS_ENV = "GS_RUN_GPU_TESTS"
 DISALLOWED_TRACKED_ARTIFACT_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("Python cache directory", re.compile(r"(^|/)__pycache__/")),
     ("Python bytecode file", re.compile(r"\.pyc$")),
     ("Root screenshot dump", re.compile(r"^Screenshot [^/]+\.png$")),
     ("Runtime Linux log output", re.compile(r"^tests/runtime/linux_logs/")),
     ("Runtime log output", re.compile(r"^tests/runtime/.*\.log$")),
-    ("Tracked synthetic PLY fixture", re.compile(r"^(tests|templates)/.*\.ply$")),
 )
+TRACKED_SYNTHETIC_PLY_PATTERN = re.compile(r"^(tests|templates)/.*\.ply$")
 REQUIRED_IGNORED_PATH_PROBES: tuple[str, ...] = (
     "tests/runtime/linux_logs/.hygiene_guard_probe.log",
     "tests/runtime/windows_logs/.hygiene_guard_probe.log",
@@ -60,6 +74,7 @@ ALLOW_TESTS_UNAVAILABLE_ENV = "GS_CI_ALLOW_TESTS_UNAVAILABLE"
 HISTORY_ARTIFACT_GUARD_MODE_ENV = "GS_CI_HISTORY_ARTIFACT_GUARD_MODE"
 HISTORY_ARTIFACT_GUARD_MODES = ("off", "warn", "strict")
 HISTORY_ARTIFACT_MATCH_COUNT_RE = re.compile(r"Matched blob entries:\s*(\d+)")
+DOCTEST_SKIP_MARKER_RE = re.compile(r"(?m)^\s*(?:Skipping(?: test)?\s*-\s+.+)$")
 
 SETTING_MUTATION_RE = re.compile(r"->set_setting\s*\(")
 FS_WRITE_RULES = (
@@ -98,6 +113,8 @@ STATIC_FORMAT_GUARDS: tuple[tuple[str, Path, tuple[str, ...]], ...] = (
         ),
     ),
 )
+
+_approved_tracked_synthetic_ply_fixtures_cache: set[str] | None = None
 
 
 def _run_command(args: list[str], cwd: Path = ROOT) -> tuple[int, str, str]:
@@ -263,6 +280,11 @@ def _run_tracked_backup_guard() -> tuple[bool, list[str]]:
 
 
 def _run_tracked_artifact_guard() -> tuple[bool, list[str]]:
+    approved_result = _get_approved_tracked_synthetic_ply_fixtures()
+    if isinstance(approved_result, list):
+        return False, approved_result
+    approved_tracked_synthetic_plys = approved_result
+
     code, out, err = _run_command(["git", "ls-files"])
     if code != 0:
         return False, [f"Failed to enumerate tracked files for artifact guard: {err.strip()}"]
@@ -274,6 +296,38 @@ def _run_tracked_artifact_guard() -> tuple[bool, list[str]]:
             if pattern.search(tracked_path):
                 violations.append(f"  - {tracked_path} ({label})")
                 break
+        else:
+            if TRACKED_SYNTHETIC_PLY_PATTERN.search(tracked_path) and tracked_path not in approved_tracked_synthetic_plys:
+                violations.append(f"  - {tracked_path} (Unexpected tracked synthetic PLY fixture)")
+
+    status_code, status_out, status_err = _run_command(
+        ["git", "status", "--porcelain=1", "--untracked-files=all", "--", "tests", "templates"]
+    )
+    if status_code != 0:
+        return False, [f"Failed to inspect synthetic fixture status for artifact guard: {status_err.strip()}"]
+
+    for raw_line in status_out.splitlines():
+        if not raw_line:
+            continue
+        status = raw_line[:2]
+        path_text = raw_line[3:].strip()
+        if " -> " in path_text:
+            path_text = path_text.split(" -> ", 1)[1].strip()
+        normalized_path = path_text.replace("\\", "/")
+        if not TRACKED_SYNTHETIC_PLY_PATTERN.search(normalized_path):
+            continue
+
+        if normalized_path in approved_tracked_synthetic_plys:
+            if status != "??":
+                violations.append(
+                    f"  - {normalized_path} (Approved tracked synthetic PLY fixture is dirty: git status '{status}')"
+                )
+            continue
+
+        if status == "??":
+            violations.append(f"  - {normalized_path} (Unexpected untracked synthetic PLY artifact)")
+        else:
+            violations.append(f"  - {normalized_path} (Unexpected dirty synthetic PLY artifact: git status '{status}')")
 
     for probe_path in REQUIRED_IGNORED_PATH_PROBES:
         check_code, _, _ = _run_command(["git", "check-ignore", "--quiet", "--no-index", probe_path])
@@ -289,6 +343,55 @@ def _run_tracked_artifact_guard() -> tuple[bool, list[str]]:
     messages.extend(violations)
     messages.append("Remove tracked artifacts and update .gitignore patterns before merging.")
     return False, messages
+
+
+def _get_approved_tracked_synthetic_ply_fixtures() -> set[str] | list[str]:
+    global _approved_tracked_synthetic_ply_fixtures_cache
+    if _approved_tracked_synthetic_ply_fixtures_cache is not None:
+        return _approved_tracked_synthetic_ply_fixtures_cache
+
+    if not SYNTHETIC_ASSET_PREP_SCRIPT.is_file():
+        return [
+            "Tracked artifact hygiene guard failed:",
+            f"  - Missing synthetic asset prep script: {SYNTHETIC_ASSET_PREP_SCRIPT.relative_to(ROOT)}",
+        ]
+
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "tests.runtime.prepare_synthetic_assets", SYNTHETIC_ASSET_PREP_SCRIPT
+        )
+        if spec is None or spec.loader is None:
+            return [
+                "Tracked artifact hygiene guard failed:",
+                f"  - Unable to load synthetic asset definitions from {SYNTHETIC_ASSET_PREP_SCRIPT.relative_to(ROOT)}",
+            ]
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+    except Exception as exc:
+        return [
+            "Tracked artifact hygiene guard failed:",
+            f"  - Failed to import synthetic asset definitions from {SYNTHETIC_ASSET_PREP_SCRIPT.relative_to(ROOT)}: {exc}",
+        ]
+
+    canonical_specs = getattr(module, "CANONICAL_SPECS", None)
+    if canonical_specs is None:
+        return [
+            "Tracked artifact hygiene guard failed:",
+            f"  - Synthetic asset prep script does not expose CANONICAL_SPECS: {SYNTHETIC_ASSET_PREP_SCRIPT.relative_to(ROOT)}",
+        ]
+
+    approved_paths: set[str] = set()
+    for spec_entry in canonical_specs:
+        relative_path = getattr(spec_entry, "relative_path", "")
+        if not relative_path:
+            continue
+        normalized_path = str(relative_path).replace("\\", "/")
+        if normalized_path.endswith(".ply") and TRACKED_SYNTHETIC_PLY_PATTERN.search(normalized_path):
+            approved_paths.add(normalized_path)
+
+    _approved_tracked_synthetic_ply_fixtures_cache = approved_paths
+    return approved_paths
 
 
 def _run_build_metadata_guard() -> tuple[bool, list[str]]:
@@ -323,6 +426,23 @@ def _run_shader_dependency_guard() -> tuple[bool, list[str]]:
     return True, output_lines
 
 
+def _run_gaussian_layout_guard() -> tuple[bool, list[str]]:
+    if not GAUSSIAN_LAYOUT_GUARD_SCRIPT.is_file():
+        return False, [
+            f"Missing Gaussian layout guard script: {GAUSSIAN_LAYOUT_GUARD_SCRIPT.relative_to(ROOT)}"
+        ]
+
+    code, out, err = _run_command([sys.executable, str(GAUSSIAN_LAYOUT_GUARD_SCRIPT)])
+    output_lines = [line for line in (out + err).splitlines() if line.strip()]
+
+    if code != 0:
+        if not output_lines:
+            output_lines = [f"Gaussian layout guard failed with exit code {code}."]
+        return False, output_lines
+
+    return True, output_lines
+
+
 def _tests_unavailable(output: str) -> bool:
     normalized_output = " ".join(output.lower().split())
     markers = (
@@ -340,6 +460,10 @@ def _tests_unavailable(output: str) -> bool:
 
 def _env_truthy(value: str) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _is_ci() -> bool:
+    return _env_truthy(os.environ.get("CI", ""))
 
 
 def _resolve_tests_unavailable_mode(explicit_mode: str | None) -> str:
@@ -486,17 +610,25 @@ def _run_godot(godot: str, args: Iterable[str]) -> tuple[bool, bool, str]:
     return result.returncode == 0, False, output
 
 
-def _parse_doctest_results(output: str) -> tuple[int, int, int, int, bool]:
+def _parse_doctest_results(output: str) -> tuple[int, int, int, int, int, bool]:
     """Parse doctest output and return counts plus whether both summary lines were found."""
     tests_match = re.search(r"test cases:\s*\d+\s*\|\s*(\d+)\s*passed\s*\|\s*(\d+)\s*failed", output)
     asserts_match = re.search(r"assertions:\s*\d+\s*\|\s*(\d+)\s*passed\s*\|\s*(\d+)\s*failed", output)
+    skip_markers = len(DOCTEST_SKIP_MARKER_RE.findall(output))
 
     passed_tests = int(tests_match.group(1)) if tests_match else 0
     failed_tests = int(tests_match.group(2)) if tests_match else 0
     passed_asserts = int(asserts_match.group(1)) if asserts_match else 0
     failed_asserts = int(asserts_match.group(2)) if asserts_match else 0
 
-    return passed_tests, failed_tests, passed_asserts, failed_asserts, tests_match is not None and asserts_match is not None
+    return (
+        passed_tests,
+        failed_tests,
+        passed_asserts,
+        failed_asserts,
+        skip_markers,
+        tests_match is not None and asserts_match is not None,
+    )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -530,14 +662,25 @@ def _parse_args() -> argparse.Namespace:
             f"equivalent to setting {ALLOW_TESTS_UNAVAILABLE_ENV}=1."
         ),
     )
+    parser.add_argument(
+        "--gpu",
+        action="store_true",
+        help=(
+            "Run the renderer-dependent (requires-RD) doctest lane (opt-in). "
+            "Under Godot's --test mode all tests in this lane skip because no "
+            "RenderingDevice is created.  Useful as a smoke-check that the "
+            "tests still compile and skip gracefully. "
+            f"Equivalent to setting {GS_RUN_GPU_TESTS_ENV}=1."
+        ),
+    )
     return parser.parse_args()
 
 
 def main() -> int:
-    args = _parse_args()
-    godot = _normalize_process_arg(args.godot_binary)
-    tests_unavailable_mode = _resolve_tests_unavailable_mode(args.tests_unavailable_mode)
-    allow_tests_unavailable = args.allow_tests_unavailable or _env_truthy(
+    cli_args = _parse_args()
+    godot = _normalize_process_arg(cli_args.godot_binary)
+    tests_unavailable_mode = _resolve_tests_unavailable_mode(cli_args.tests_unavailable_mode)
+    allow_tests_unavailable = cli_args.allow_tests_unavailable or _env_truthy(
         os.environ.get(ALLOW_TESTS_UNAVAILABLE_ENV, "")
     )
     history_guard_mode, history_guard_mode_warning = _resolve_history_artifact_guard_mode()
@@ -572,7 +715,7 @@ def main() -> int:
         print("[module-tests] History artifact guard failed.")
         return history_guard_exit_code
 
-    if not args.skip_build_metadata_guard:
+    if not cli_args.skip_build_metadata_guard:
         build_metadata_ok, build_metadata_messages = _run_build_metadata_guard()
         for message in build_metadata_messages:
             prefix = "[module-tests] " if not message.startswith("[module-tests]") else ""
@@ -593,6 +736,16 @@ def main() -> int:
     if not shader_dependency_messages:
         print("[module-tests] Shader dependency guard passed.")
 
+    gaussian_layout_ok, gaussian_layout_messages = _run_gaussian_layout_guard()
+    for message in gaussian_layout_messages:
+        prefix = "[module-tests] " if not message.startswith("[module-tests]") else ""
+        print(f"{prefix}{message}")
+    if not gaussian_layout_ok:
+        print("[module-tests] Gaussian layout guard failed.")
+        return 1
+    if not gaussian_layout_messages:
+        print("[module-tests] Gaussian layout guard passed.")
+
     benchmark_asset_guard_ok, benchmark_asset_guard_messages = _run_benchmark_asset_guard()
     for message in benchmark_asset_guard_messages:
         prefix = "[module-tests] " if not message.startswith("[module-tests]") else ""
@@ -604,10 +757,10 @@ def main() -> int:
         print("[module-tests] Benchmark asset path guard passed.")
 
     base_ref: str | None = None
-    if not args.skip_render_guards:
-        base_ref = _resolve_guard_base_ref(args.base_ref)
+    if not cli_args.skip_render_guards:
+        base_ref = _resolve_guard_base_ref(cli_args.base_ref)
 
-    if not args.skip_render_guards:
+    if not cli_args.skip_render_guards:
         guard_ok, guard_messages = _check_render_path_guards(base_ref)
         for message in guard_messages:
             prefix = "[module-tests] " if not message.startswith("[module-tests]") else ""
@@ -617,7 +770,7 @@ def main() -> int:
             return 1
         print("[module-tests] Renderer guard checks passed.")
 
-    if not args.skip_static_guards:
+    if not cli_args.skip_static_guards:
         guards_ok, guard_failures = _run_static_format_guards()
         if not guards_ok:
             print("[module-tests] Static format safety guard(s) failed:")
@@ -626,7 +779,7 @@ def main() -> int:
             return 1
         print(f"[module-tests] Static format safety guards passed ({len(STATIC_FORMAT_GUARDS)} checks).")
 
-    if args.guard_only:
+    if cli_args.guard_only:
         print("[module-tests] Guard-only mode complete.")
         return 0
 
@@ -642,10 +795,23 @@ def main() -> int:
         f"{' (explicit override enabled)' if allow_tests_unavailable else ''}."
     )
 
-    test_runs = [
-        (name, ["--headless", "--test", f"--test-case={test_filter}"])
-        for name, test_filter in MODULE_TEST_FILTERS
-    ]
+    test_runs = []
+    for name, test_filter, exclude_filter in MODULE_TEST_FILTERS:
+        run_args = ["--headless", "--test", f"--test-case={test_filter}"]
+        if exclude_filter:
+            run_args.append(f"--test-case-exclude={exclude_filter}")
+        test_runs.append((name, run_args))
+
+    # Opt-in requires-RD lane: activated by GS_RUN_GPU_TESTS=1 env var or --gpu flag.
+    # Under --test mode every test here will skip (no RenderingDevice).  This is
+    # expected — the lane validates that tagged tests compile and skip gracefully.
+    run_gpu = os.environ.get(GS_RUN_GPU_TESTS_ENV, "0") == "1" or cli_args.gpu
+    if run_gpu:
+        for name, test_filter, exclude_filter in REQUIRES_RD_TEST_FILTERS:
+            run_args = ["--headless", "--test", f"--test-case={test_filter}"]
+            if exclude_filter:
+                run_args.append(f"--test-case-exclude={exclude_filter}")
+            test_runs.append((name, run_args))
 
     for name, run_args in test_runs:
         ok, skipped, output = _run_godot(godot, run_args)
@@ -675,7 +841,14 @@ def main() -> int:
                 print(output.strip())
             return 1
 
-        passed_tests, failed_tests, passed_asserts, failed_asserts, summary_found = _parse_doctest_results(output)
+        (
+            passed_tests,
+            failed_tests,
+            passed_asserts,
+            failed_asserts,
+            skipped_markers,
+            summary_found,
+        ) = _parse_doctest_results(output)
         if not summary_found:
             print(f"[module-tests] '{name}' failed: missing doctest summary in output.")
             if output.strip():
@@ -690,6 +863,16 @@ def main() -> int:
             if output.strip():
                 print(output.strip())
             return 1
+
+        if skipped_markers > 0:
+            print(f"[module-tests] '{name}' reported {skipped_markers} skipped test marker(s) in doctest output.")
+            if name == "GaussianSplatting" and _is_ci():
+                print(
+                    f"[module-tests] '{name}' failed: skipped doctest coverage is not allowed in CI."
+                )
+                if output.strip():
+                    print(output.strip())
+                return 1
 
         if passed_tests <= 0 or passed_asserts <= 0:
             # Keep the canonical GaussianSplatting lane strict. Secondary lanes are

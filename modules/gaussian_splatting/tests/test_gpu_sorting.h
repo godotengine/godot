@@ -29,7 +29,7 @@ static RID create_storage_buffer(RenderingDevice *rd, const LocalVector<T> &data
 	return rd->storage_buffer_create(bytes.size(), bytes);
 }
 
-TEST_CASE("[GaussianSplatting] GPU Bitonic Sorting") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] GPU Bitonic Sorting") {
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (!rd) {
 		RenderingServer *rs = RenderingServer::get_singleton();
@@ -195,7 +195,7 @@ TEST_CASE("[GaussianSplatting] GPU Bitonic Sorting") {
 	}
 }
 
-TEST_CASE("[GaussianSplatting] GPU Sorting Performance") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] GPU Sorting Performance") {
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (!rd) {
 		RenderingServer *rs = RenderingServer::get_singleton();

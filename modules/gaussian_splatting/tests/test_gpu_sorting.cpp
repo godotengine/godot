@@ -83,7 +83,7 @@ struct TestData {
 };
 
 // Test basic sorting correctness
-TEST_CASE("[GaussianSplatting][GPU] Bitonic sort correctness - small arrays") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Bitonic sort correctness - small arrays") {
     RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     CHECK(rd != nullptr);
     if (rd == nullptr) {
@@ -166,7 +166,7 @@ TEST_CASE("[GaussianSplatting][GPU] Bitonic sort correctness - small arrays") {
 }
 
 // Test non-power-of-two sizes
-TEST_CASE("[GaussianSplatting][GPU] Bitonic sort - non-power-of-two") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Bitonic sort - non-power-of-two") {
     RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     CHECK(rd != nullptr);
     if (rd == nullptr) {
@@ -221,7 +221,7 @@ TEST_CASE("[GaussianSplatting][GPU] Bitonic sort - non-power-of-two") {
 }
 
 // Performance benchmark
-TEST_CASE("[GaussianSplatting][GPU] Bitonic sort performance") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Bitonic sort performance") {
     RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     CHECK(rd != nullptr);
     if (rd == nullptr) {
@@ -321,7 +321,7 @@ TEST_CASE("[GaussianSplatting][GPU] Bitonic sort performance") {
 }
 
 // Test synchronous sorting
-TEST_CASE("[GaussianSplatting][GPU] Synchronous compute pipeline") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Synchronous compute pipeline") {
     RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     CHECK(rd != nullptr);
     if (rd == nullptr) {
@@ -374,7 +374,7 @@ TEST_CASE("[GaussianSplatting][GPU] Synchronous compute pipeline") {
 }
 
 // Test modular architecture
-TEST_CASE("[GaussianSplatting][GPU] AUTO policy decision matrix") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] AUTO policy decision matrix") {
     SortKeyConfig key_cfg;
     key_cfg.key_bits = 32;
     key_cfg.tile_bits = 16;
@@ -441,7 +441,7 @@ TEST_CASE("[GaussianSplatting][GPU] AUTO policy decision matrix") {
     }
 }
 
-TEST_CASE("[GaussianSplatting][GPU] Fallback reason telemetry") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Fallback reason telemetry") {
     SortingMetricsCollector collector;
     const String auto_reason = "type=auto preferred=onesweep selected=radix failure={algorithm=onesweep reason=unsupported}";
     const String requested_reason = "type=requested preferred=bitonic selected=radix failure={algorithm=bitonic reason=missing_indirect}";
@@ -457,7 +457,7 @@ TEST_CASE("[GaussianSplatting][GPU] Fallback reason telemetry") {
     CHECK(int(metrics.fallback_reason_counts.get(requested_reason, 0)) == 1);
 }
 
-TEST_CASE("[GaussianSplatting][GPU] Modular sorter factory") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Modular sorter factory") {
     RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     CHECK(rd != nullptr);
     if (rd == nullptr) {
@@ -534,7 +534,7 @@ TEST_CASE("[GaussianSplatting][GPU] Modular sorter factory") {
 }
 
 // Stress test with large arrays
-TEST_CASE("[GaussianSplatting][GPU] Large array stress test") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Large array stress test") {
     RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
     CHECK(rd != nullptr);
     if (rd == nullptr) {
