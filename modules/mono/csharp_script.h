@@ -39,6 +39,7 @@
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
 #include "editor/plugins/editor_plugin.h"
 #endif
 
@@ -432,6 +433,7 @@ class CSharpLanguage : public ScriptLanguage {
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;
+	EditorLanguage editor_language;
 
 	static void _editor_init_callback();
 #endif
@@ -497,6 +499,10 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	virtual EditorLanguage *get_editor_language() override { return &editor_language; }
+#endif
+
 	Vector<String> get_reserved_words() const override;
 	bool is_control_flow_keyword(const String &p_keyword) const override;
 	Vector<String> get_comment_delimiters() const override;

@@ -38,6 +38,7 @@
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
@@ -1152,7 +1153,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
-	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
+	Error err = script->get_language()->get_editor_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
