@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "editor/gui/code_editor.h"
 #include "editor/script/script_editor_base.h"
 #include "editor/script/script_editor_plugin.h"
@@ -109,6 +110,7 @@ class ScriptTextEditor : public CodeEditorBase {
 		SHOW_TOOLTIP_AT_CARET,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		RENAME_SYMBOL,
 	};
 
 	class EditMenusScTE : public EditMenusCEB {
@@ -185,7 +187,7 @@ protected:
 
 	void _goto_line(int p_line);
 
-	void _make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_pos);
+	void _make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_allow_rename, const Vector2 &p_pos);
 	Dictionary _get_context_data() const;
 
 	virtual void _text_edit_gui_input(const Ref<InputEvent> &p_ev) override;
