@@ -2789,12 +2789,12 @@ Ref<Image> Image::load_from_file(const String &p_path) {
 	return image;
 }
 
-Error Image::save_png(const String &p_path) const {
+Error Image::save_png(const String &p_path, bool p_fast_save) const {
 	if (save_png_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
-	return save_png_func(p_path, Ref<Image>((Image *)this));
+	return save_png_func(p_path, Ref<Image>((Image *)this), p_fast_save);
 }
 
 Error Image::save_jpg(const String &p_path, float p_quality) const {
@@ -2805,12 +2805,12 @@ Error Image::save_jpg(const String &p_path, float p_quality) const {
 	return save_jpg_func(p_path, Ref<Image>((Image *)this), p_quality);
 }
 
-Vector<uint8_t> Image::save_png_to_buffer() const {
+Vector<uint8_t> Image::save_png_to_buffer(bool p_fast_save) const {
 	if (save_png_buffer_func == nullptr) {
 		return Vector<uint8_t>();
 	}
 
-	return save_png_buffer_func(Ref<Image>((Image *)this));
+	return save_png_buffer_func(Ref<Image>((Image *)this), p_fast_save);
 }
 
 Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {
@@ -3875,8 +3875,8 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_static_method("Image", D_METHOD("load_from_file", "path"), &Image::load_from_file);
-	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
-	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
+	ClassDB::bind_method(D_METHOD("save_png", "path", "fast_save"), &Image::save_png, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_png_to_buffer", "fast_save"), &Image::save_png_to_buffer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_jpg_to_buffer", "quality"), &Image::save_jpg_to_buffer, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale", "color_image", "max_linear_value"), &Image::save_exr, DEFVAL(false), DEFVAL(false), DEFVAL(-1.0));
