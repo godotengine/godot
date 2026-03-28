@@ -51,10 +51,16 @@ on:
         required: false
         default: "3"
         type: string
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
   pull-requests: read
+
+concurrency:
+  group: gaussian-production-gates-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   guards:
@@ -234,15 +240,10 @@ jobs:
         run: |
           python tests/runtime/run_runtime_validation.py `
             --godot-binary "$env:GODOT_BINARY" `
+            --profile headless-ci `
             --gd-mode headless `
             --skip-cpp `
-            --fail-on-skip `
-            --allow-skip-test "Interactive State" `
-            --allow-skip-test "GPU Streaming Stress" `
-            --allow-skip-test "Engine Capability Sanity" `
-            --allow-skip-test "World Streaming Gate" `
-            --allow-skip-test "Data Flow Recent Window" `
-            --allow-skip-test "Pipeline Trace Freshness"
+            --fail-on-skip
 
       - name: Run world-streaming runtime gate (blocking, windows-vulkan)
         env:

@@ -367,7 +367,7 @@ class BaselineQARunner:
                     sys.executable,
                     "tests/runtime/run_runtime_validation.py",
                     "--profile",
-                    "release-ci",
+                    "headless-ci",
                     "--godot-binary",
                     self.godot_binary,
                 ],

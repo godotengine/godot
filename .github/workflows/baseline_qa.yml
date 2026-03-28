@@ -10,6 +10,8 @@ on:
       - '.github/workflows/baseline_qa.yml'
   pull_request:
     branches: [ master, develop ]
+  merge_group:
+    types: [checks_requested]
   schedule:
     # Nightly baseline refresh run at 03:30 UTC.
     - cron: '30 3 * * *'
@@ -37,6 +39,10 @@ permissions:
   contents: read
   issues: write
   pull-requests: write
+
+concurrency:
+  group: baseline-qa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   gpu-tests:

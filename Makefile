@@ -53,7 +53,7 @@ test-module:
 	$(call WITH_GODOT_BINARY,GODOT_BINARY="$$godot_bin" python3 tests/ci/run_module_tests.py --godot-binary "$$godot_bin")
 
 test-runtime:
-	$(call WITH_GODOT_BINARY,GODOT_BINARY="$$godot_bin" python3 tests/runtime/run_runtime_validation.py --godot-binary "$$godot_bin" --gd-mode headless)
+	$(call WITH_GODOT_BINARY,GODOT_BINARY="$$godot_bin" python3 tests/runtime/run_runtime_validation.py --godot-binary "$$godot_bin" --gd-mode headless --profile headless-ci)
 
 test-baseline:
 	$(call WITH_GODOT_BINARY,GODOT_BINARY="$$godot_bin" python3 tests/ci/run_baseline_qa.py --godot "$$godot_bin")
