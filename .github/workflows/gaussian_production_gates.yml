@@ -279,6 +279,7 @@ jobs:
             --gd-script tests/runtime/test_world_streaming_gate.gd
 
       - name: Run large-scene benchmark gate (streaming churn probe)
+        id: large_scene_benchmark
         env:
           GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
         shell: pwsh
@@ -295,6 +296,7 @@ jobs:
             --report-path tests/runtime/large_scene_benchmark_report.json
 
       - name: Run eviction-churn benchmark gate (queue-pressure forward-progress probe)
+        id: eviction_churn_benchmark
         env:
           GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
         shell: pwsh
@@ -312,7 +314,7 @@ jobs:
             --report-path tests/runtime/eviction_churn_benchmark_report.json
 
       - name: Summarize large-scene benchmark metrics
-        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
+        if: ${{ always() && steps.large_scene_benchmark.outcome == 'success' }}
         shell: python
         run: |
           import json
@@ -369,7 +371,7 @@ jobs:
                   handle.write(f"- Scheduler Stall Frames: `{summary['scheduler_stall_frames']}`\n")
 
       - name: Summarize eviction-churn benchmark metrics
-        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
+        if: ${{ always() && steps.eviction_churn_benchmark.outcome == 'success' }}
         shell: python
         run: |
           import json

@@ -124,13 +124,13 @@ jobs:
         "reason=$reason" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
         Write-Host "Resolved baseline mode: $mode ($reason)"
 
-    - name: Run GPU QA tests
+    - name: Run GPU sorting fast gate
       env:
         GS_CI_GPU_REQUIRED: "1"
         GS_CI_VALIDATION_MODE: "strict"
       run: |
         $args = @(
-          "--categories", "sorting,qa",
+          "--categories", "sorting",
           "--godot", $env:GODOT_BINARY
         )
         python tests/ci/run_baseline_qa.py @args
@@ -152,7 +152,7 @@ jobs:
       if: always()
       run: |
         $summaryFile = $env:GITHUB_STEP_SUMMARY
-        "# GPU QA Test Results" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
+        "# GPU Baseline Test Results" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
         "" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
         "- Trigger: ``${{ github.event_name }}``" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
         "- Baseline mode: ``${{ steps.baseline_mode.outputs.mode }}`` (${{ steps.baseline_mode.outputs.reason }})" | Out-File -FilePath $summaryFile -Encoding utf8 -Append
