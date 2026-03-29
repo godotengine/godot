@@ -1482,6 +1482,11 @@ void GDScript::clear() {
 		memdelete(E);
 	}
 	functions_to_clear.clear();
+
+#ifdef TOOLS_ENABLED
+	base_cache = Ref<GDScript>();
+#endif
+	base = Ref<GDScript>();
 }
 
 void GDScript::cancel_pending_functions(bool warn) {
