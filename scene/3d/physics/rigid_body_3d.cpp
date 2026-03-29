@@ -147,9 +147,11 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	set_ignore_transform_notification(true);
-	set_global_transform(p_state->get_transform());
-	set_ignore_transform_notification(false);
+	if (!get_global_transform().is_equal_approx(p_state->get_transform())) {
+		set_ignore_transform_notification(true);
+		set_global_transform(p_state->get_transform());
+		set_ignore_transform_notification(false);
+	}
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
