@@ -282,9 +282,19 @@ bool GDScriptLanguage::coverage_check_threshold() {
 	if (coverage_threshold <= 0.0f) {
 		return true;
 	}
+	// Snapshot under coverage_mutex so we don't race with ongoing recording.
+	HashMap<String, HashMap<int, int>> hits_snap;
+	HashMap<String, HashMap<String, int>> func_hits_snap;
+	HashMap<String, HashMap<int, BranchResult>> branch_hits_snap;
+	{
+		MutexLock lock(coverage_mutex);
+		hits_snap = coverage_hits;
+		func_hits_snap = coverage_func_hits;
+		branch_hits_snap = coverage_branch_hits;
+	}
 	HashMap<String, HashMap<int, int>> coverable = _coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = _coverage_enumerate_func_start_lines();
-	HashMap<String, CoverageFileStats> stats = _gather_file_stats(coverage_hits, coverage_func_hits, coverage_branch_hits, &coverable, &func_starts);
+	HashMap<String, CoverageFileStats> stats = _gather_file_stats(hits_snap, func_hits_snap, branch_hits_snap, &coverable, &func_starts);
 	CoverageFileStats t = _sum_totals(stats);
 	if (t.lines == 0) {
 		return true;
@@ -308,9 +318,19 @@ static String _format_summary_row(const String &p_label, const CoverageFileStats
 String GDScriptLanguage::coverage_summary_string() {
 	static const int COL_FILE = 40;
 
+	// Snapshot under coverage_mutex so we don't race with ongoing recording.
+	HashMap<String, HashMap<int, int>> hits_snap;
+	HashMap<String, HashMap<String, int>> func_hits_snap;
+	HashMap<String, HashMap<int, BranchResult>> branch_hits_snap;
+	{
+		MutexLock lock(coverage_mutex);
+		hits_snap = coverage_hits;
+		func_hits_snap = coverage_func_hits;
+		branch_hits_snap = coverage_branch_hits;
+	}
 	HashMap<String, HashMap<int, int>> coverable = _coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = _coverage_enumerate_func_start_lines();
-	HashMap<String, CoverageFileStats> stats = _gather_file_stats(coverage_hits, coverage_func_hits, coverage_branch_hits, &coverable, &func_starts);
+	HashMap<String, CoverageFileStats> stats = _gather_file_stats(hits_snap, func_hits_snap, branch_hits_snap, &coverable, &func_starts);
 	CoverageFileStats totals = _sum_totals(stats);
 
 	String out = String("File").rpad(COL_FILE) + String("Lines").rpad(9) + String("Funcs").rpad(9) + String("Branches").rpad(9) + "\n";
