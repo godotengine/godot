@@ -50,7 +50,7 @@ static Vector2i _extend_interval(const Vector2i &p_a, const Vector2i &p_b) {
 }
 
 static bool _is_word_boundary(const String &p_str, int p_index) {
-	if (p_index == -1 || p_index == p_str.size()) {
+	if (p_index == -1 || p_index == p_str.length()) {
 		return true;
 	}
 	return boundary_chars.find_char(p_str[p_index]) != -1;
@@ -73,7 +73,7 @@ bool FuzzySearchToken::try_fuzzy_match(FuzzyTokenMatch &p_match, const String &p
 	int run_start = -1;
 	int run_len = 0;
 
-	// Search for the subsequence p_token in p_target starting from p_offset, recording each substring for
+	// Search for the subsequence string in p_target starting from p_offset, recording each substring for
 	// later scoring and display.
 	for (int i = 0; i < string.length(); i++) {
 		int new_offset = p_target.find_char(string[i], p_offset);
@@ -155,14 +155,18 @@ void FuzzySearchResult::score_token_match(FuzzyTokenMatch &p_match, bool p_case_
 	p_match.score = -20 * p_match.get_miss_count() - (p_case_insensitive ? 3 : 0);
 
 	for (const Vector2i &substring : p_match.substrings) {
-		// Score longer substrings higher than short substrings.
+		// Score longer substrings higher than short substrings
 		int substring_score = substring.y * substring.y;
-		// Score matches deeper in path higher than shallower matches
+		// Score matches in the filename higher than those earlier in the path
 		if (substring.x > dir_index) {
 			substring_score *= 2;
 		}
 		// Score matches on a word boundary higher than matches within a word
 		if (_is_word_boundary(target, substring.x - 1) || _is_word_boundary(target, substring.x + substring.y)) {
+			substring_score += 4;
+		}
+		// Score matches on filename start higher than matches later in filename
+		if (substring.x - 1 == dir_index) {
 			substring_score += 4;
 		}
 		// Score exact query matches higher than non-compact subsequence matches
