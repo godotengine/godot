@@ -10,6 +10,12 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs" / "reference" / "compatibility_sources.yaml"
 OUTPUT = ROOT / "docs" / "reference" / "compatibility-matrix.md"
+EVIDENCE_LADDER_FIGURE = [
+    '<figure markdown="1">',
+    "![Diagram of the compatibility evidence ladder with current platform positions](../assets/images/compatibility-evidence-ladder.svg){ .gs-diagram }",
+    "<figcaption>The matrix is a ladder, not a badge wall: each platform only claims the highest evidence state the repository can currently prove.</figcaption>",
+    "</figure>",
+]
 
 
 def load_data() -> dict:
@@ -60,6 +66,8 @@ def build_table(data: dict) -> str:
         "| --- | --- |",
         "| Review current platform status | Read the `Current state`, `Public binaries`, and `Notes` columns in the platform table. |",
         "| Update compatibility evidence | Edit `docs/reference/compatibility_sources.yaml` and regenerate this file. |",
+        "",
+        *EVIDENCE_LADDER_FIGURE,
         "",
         "## Evidence Levels",
         "| Level | Meaning |",
