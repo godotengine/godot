@@ -618,6 +618,15 @@ static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
 		f->store_line("      </methods>");
 	}
 
+	// Build line → branch results index for per-line branch annotation.
+	// p_branches is keyed by VM instruction pointer; br.line maps each to its source line.
+	HashMap<int, Vector<const GDScriptLanguage::BranchResult *>> line_branches;
+	if (p_branches) {
+		for (const KeyValue<int, GDScriptLanguage::BranchResult> &bv : *p_branches) {
+			line_branches[bv.value.line].push_back(&bv.value);
+		}
+	}
+
 	// Emit all coverable lines (hit and not-hit).
 	HashMap<int, int> all_lines;
 	all_lines = p_lines;
@@ -635,7 +644,25 @@ static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
 	}
 	lnums.sort();
 	for (int ln : lnums) {
-		f->store_line(vformat("        <line number=\"%d\" hits=\"%d\" branch=\"false\"/>", ln, *all_lines.getptr(ln)));
+		int hits = *all_lines.getptr(ln);
+		const Vector<const GDScriptLanguage::BranchResult *> *lbrs = line_branches.getptr(ln);
+		if (lbrs && !lbrs->is_empty()) {
+			int total = 0, covered = 0;
+			for (const GDScriptLanguage::BranchResult *br : *lbrs) {
+				total += 2;
+				if (br->taken > 0) {
+					covered++;
+				}
+				if (br->not_taken > 0) {
+					covered++;
+				}
+			}
+			int pct = total > 0 ? 100 * covered / total : 0;
+			f->store_line(vformat("        <line number=\"%d\" hits=\"%d\" branch=\"true\" condition-coverage=\"%d%% (%d/%d)\"/>",
+					ln, hits, pct, covered, total));
+		} else {
+			f->store_line(vformat("        <line number=\"%d\" hits=\"%d\" branch=\"false\"/>", ln, hits));
+		}
 	}
 	f->store_line("      </lines>");
 	f->store_line("    </class>");

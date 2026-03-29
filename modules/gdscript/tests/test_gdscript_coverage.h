@@ -627,6 +627,33 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK_MESSAGE(contents.contains("</coverage>"), "XML must be closed");
 	}
 
+	TEST_CASE("[Modules][GDScript] Coverage: write Cobertura line with branch data shows condition-coverage") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_branch_cobertura.xml");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("cobertura");
+		lang->coverage_record_line("res://cob_branch.gd", 10);
+		// One branch: taken once, not-taken never.
+		lang->coverage_record_branch("res://cob_branch.gd", 10, 77, true);
+		// Line 20 has no branch data.
+		lang->coverage_record_line("res://cob_branch.gd", 20);
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("branch=\"true\""), "Line with branch data must have branch=true");
+		CHECK_MESSAGE(contents.contains("condition-coverage="), "Line with branch data must have condition-coverage");
+		CHECK_MESSAGE(contents.contains("50%"), "One of two arms covered must give 50%");
+		CHECK_MESSAGE(contents.contains("branch=\"false\""), "Line without branch data must have branch=false");
+	}
+
 	TEST_CASE("[Modules][GDScript] Coverage: write JSON format produces valid JSON structure") {
 		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
 		REQUIRE(lang != nullptr);
