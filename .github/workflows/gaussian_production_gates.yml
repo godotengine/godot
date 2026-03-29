@@ -136,7 +136,10 @@ jobs:
                 });
                 changedPaths = files.map((file) => String(file.filename || ""));
               } else {
-                // merge_group: compare head against base using the merge group refs
+                // merge_group: compare head against base using the merge group refs.
+                // Note: compareCommitsWithBasehead caps at 300 files without pagination.
+                // Acceptable for this repo's typical PR size; revisit if merge-queue
+                // batches routinely exceed 300 changed files.
                 const base = context.payload.merge_group.base_sha;
                 const head = context.payload.merge_group.head_sha;
                 const compare = await github.rest.repos.compareCommitsWithBasehead({
@@ -153,12 +156,29 @@ jobs:
               );
               reason = runWindowsGpu ? "render-streaming-path-change" : "no-render-streaming-changes";
 
+              // Honor the fallback label for both pull_request and merge_group events.
+              // merge_group doesn't carry PR labels directly, so look them up via
+              // the head_ref which encodes the PR number (e.g. "gh-readonly-queue/main/pr-123/...").
+              let labels = [];
               if (context.eventName === "pull_request") {
-                const labels = (context.payload.pull_request.labels || []).map((label) => label.name);
-                if (runWindowsGpu && labels.includes(fallbackLabel)) {
-                  runWindowsGpu = false;
-                  reason = `fallback-label:${fallbackLabel}`;
+                labels = (context.payload.pull_request.labels || []).map((label) => label.name);
+              } else if (context.eventName === "merge_group") {
+                const headRef = context.payload.merge_group.head_ref || "";
+                const prMatch = headRef.match(/\/pr-(\d+)\//);
+                if (prMatch) {
+                  try {
+                    const { data: pr } = await github.rest.pulls.get({
+                      owner, repo, pull_number: parseInt(prMatch[1]),
+                    });
+                    labels = (pr.labels || []).map((label) => label.name);
+                  } catch (e) {
+                    core.warning(`Could not fetch PR labels from merge_group head_ref: ${e.message}`);
+                  }
                 }
+              }
+              if (runWindowsGpu && labels.includes(fallbackLabel)) {
+                runWindowsGpu = false;
+                reason = `fallback-label:${fallbackLabel}`;
               }
             }
 
