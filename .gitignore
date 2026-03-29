@@ -440,6 +440,8 @@ tests/examples/godot/test_project/*.gsplatworld.import
 tests/examples/godot/test_project/benchmark_assets_generated/
 tests/examples/godot/test_project/tests/fixtures/test_splats.ply
 tests/examples/godot/test_project/tests/fixtures/test_splats.ply.import
+tests/examples/godot/test_project/tests/fixtures/synthetic_*.ply
+tests/examples/godot/test_project/tests/fixtures/benchmark_asset_manifest.json
 test_data/visual_quality_reference.json
 
 # Node/local package managers

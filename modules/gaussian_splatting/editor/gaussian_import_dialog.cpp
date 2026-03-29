@@ -972,6 +972,7 @@ void GaussianImportDialog::configure_for_file(const String &p_source_path, const
     if (!override_options.is_empty()) {
         _apply_dictionary_override(override_options);
     }
+    _update_customization_flag();
 
     _apply_configuration_to_ui();
     _update_format_specific_controls();

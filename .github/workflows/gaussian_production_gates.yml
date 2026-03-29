@@ -51,10 +51,16 @@ on:
         required: false
         default: "3"
         type: string
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
   pull-requests: read
+
+concurrency:
+  group: gaussian-production-gates-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   guards:
@@ -110,28 +116,66 @@ jobs:
               const requested = String(context.payload.inputs?.run_gpu_lane || "false").toLowerCase();
               runWindowsGpu = requested === "true";
               reason = runWindowsGpu ? "manual-dispatch" : "manual-dispatch-disabled";
-            } else if (context.eventName === "pull_request") {
+            } else if (context.eventName === "pull_request" || context.eventName === "merge_group") {
               const owner = context.repo.owner;
               const repo = context.repo.repo;
-              const pullNumber = context.payload.pull_request.number;
-              const files = await github.paginate(github.rest.pulls.listFiles, {
-                owner,
-                repo,
-                pull_number: pullNumber,
-                per_page: 100,
-              });
-              const changedPaths = files.map((file) => String(file.filename || ""));
               const renderStreamingPrefixes = [
                 "modules/gaussian_splatting/renderer/",
                 "modules/gaussian_splatting/shaders/",
                 "modules/gaussian_splatting/core/gaussian_streaming",
               ];
+
+              let changedPaths = [];
+              if (context.eventName === "pull_request") {
+                const pullNumber = context.payload.pull_request.number;
+                const files = await github.paginate(github.rest.pulls.listFiles, {
+                  owner,
+                  repo,
+                  pull_number: pullNumber,
+                  per_page: 100,
+                });
+                changedPaths = files.map((file) => String(file.filename || ""));
+              } else {
+                // merge_group: compare head against base using the merge group refs.
+                // Note: compareCommitsWithBasehead caps at 300 files without pagination.
+                // Acceptable for this repo's typical PR size; revisit if merge-queue
+                // batches routinely exceed 300 changed files.
+                const base = context.payload.merge_group.base_sha;
+                const head = context.payload.merge_group.head_sha;
+                const compare = await github.rest.repos.compareCommitsWithBasehead({
+                  owner,
+                  repo,
+                  basehead: `${base}...${head}`,
+                  per_page: 100,
+                });
+                changedPaths = (compare.data.files || []).map((file) => String(file.filename || ""));
+              }
+
               runWindowsGpu = changedPaths.some((path) =>
                 renderStreamingPrefixes.some((prefix) => path.startsWith(prefix))
               );
               reason = runWindowsGpu ? "render-streaming-path-change" : "no-render-streaming-changes";
 
-              const labels = (context.payload.pull_request.labels || []).map((label) => label.name);
+              // Honor the fallback label for both pull_request and merge_group events.
+              // merge_group doesn't carry PR labels directly, so look them up via
+              // the head_ref which encodes the PR number (e.g. "gh-readonly-queue/main/pr-123/...").
+              let labels = [];
+              if (context.eventName === "pull_request") {
+                labels = (context.payload.pull_request.labels || []).map((label) => label.name);
+              } else if (context.eventName === "merge_group") {
+                const headRef = context.payload.merge_group.head_ref || "";
+                const prMatch = headRef.match(/\/pr-(\d+)\//);
+                if (prMatch) {
+                  try {
+                    const { data: pr } = await github.rest.pulls.get({
+                      owner, repo, pull_number: parseInt(prMatch[1]),
+                    });
+                    labels = (pr.labels || []).map((label) => label.name);
+                  } catch (e) {
+                    core.warning(`Could not fetch PR labels from merge_group head_ref: ${e.message}`);
+                  }
+                }
+              }
               if (runWindowsGpu && labels.includes(fallbackLabel)) {
                 runWindowsGpu = false;
                 reason = `fallback-label:${fallbackLabel}`;
@@ -234,15 +278,10 @@ jobs:
         run: |
           python tests/runtime/run_runtime_validation.py `
             --godot-binary "$env:GODOT_BINARY" `
+            --profile headless-ci `
             --gd-mode headless `
             --skip-cpp `
-            --fail-on-skip `
-            --allow-skip-test "Interactive State" `
-            --allow-skip-test "GPU Streaming Stress" `
-            --allow-skip-test "Engine Capability Sanity" `
-            --allow-skip-test "World Streaming Gate" `
-            --allow-skip-test "Data Flow Recent Window" `
-            --allow-skip-test "Pipeline Trace Freshness"
+            --fail-on-skip
 
       - name: Run world-streaming runtime gate (blocking, windows-vulkan)
         env:
@@ -260,6 +299,7 @@ jobs:
             --gd-script tests/runtime/test_world_streaming_gate.gd
 
       - name: Run large-scene benchmark gate (streaming churn probe)
+        id: large_scene_benchmark
         env:
           GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
         shell: pwsh
@@ -276,6 +316,7 @@ jobs:
             --report-path tests/runtime/large_scene_benchmark_report.json
 
       - name: Run eviction-churn benchmark gate (queue-pressure forward-progress probe)
+        id: eviction_churn_benchmark
         env:
           GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
         shell: pwsh
@@ -293,7 +334,7 @@ jobs:
             --report-path tests/runtime/eviction_churn_benchmark_report.json
 
       - name: Summarize large-scene benchmark metrics
-        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
+        if: ${{ always() && steps.large_scene_benchmark.outcome == 'success' }}
         shell: python
         run: |
           import json
@@ -350,7 +391,7 @@ jobs:
                   handle.write(f"- Scheduler Stall Frames: `{summary['scheduler_stall_frames']}`\n")
 
       - name: Summarize eviction-churn benchmark metrics
-        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
+        if: ${{ always() && steps.eviction_churn_benchmark.outcome == 'success' }}
         shell: python
         run: |
           import json
