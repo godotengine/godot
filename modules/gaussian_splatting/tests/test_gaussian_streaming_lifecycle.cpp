@@ -95,6 +95,7 @@ TEST_CASE("[Streaming Pipeline] async chunk upload rejects tampered payload chec
         return;
     }
 
+    GaussianStreamingSystem &system_ref = *system.ptr();
     auto &uploads = system->_internal_get_upload_pipeline();
     if (!uploads.async_pack_enabled || !uploads.pack_thread_running.load(std::memory_order_acquire)) {
         MESSAGE("Skipping - Async pack threads unavailable");
@@ -104,7 +105,8 @@ TEST_CASE("[Streaming Pipeline] async chunk upload rejects tampered payload chec
     const uint32_t asset_id = 4242;
     system->register_asset(asset_id, _create_streaming_phase_order_test_data());
 
-    REQUIRE(uploads.queue_chunk_load(*system, asset_id, 0));
+    const bool queued_upload = uploads.queue_chunk_load(system_ref, asset_id, 0);
+    REQUIRE(queued_upload);
 
     StreamingUploadPipeline::PendingChunkUpload *prepared_job = nullptr;
     for (int i = 0; i < 500; i++) {
@@ -128,11 +130,13 @@ TEST_CASE("[Streaming Pipeline] async chunk upload rejects tampered payload chec
         prepared_job = uploads.upload_queue[uploads.upload_queue_read_idx];
         REQUIRE(prepared_job != nullptr);
         REQUIRE(!prepared_job->packed_data.is_empty());
-        uint8_t *payload_bytes = reinterpret_cast<uint8_t *>(&prepared_job->packed_data[0]);
+        PackedGaussian *packed_data = prepared_job->packed_data.ptrw();
+        REQUIRE(packed_data != nullptr);
+        uint8_t *payload_bytes = reinterpret_cast<uint8_t *>(packed_data);
         payload_bytes[0] ^= 0x01;
     }
 
-    uploads.process_upload_queue(*system);
+    uploads.process_upload_queue(system_ref);
     system->begin_frame();
     system->end_frame();
 
