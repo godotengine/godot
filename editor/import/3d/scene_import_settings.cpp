@@ -60,8 +60,7 @@ class SceneImportSettingsData : public Object {
 	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
 	Vector<String> animation_list;
-
-	float animation_length = 0.0f;
+	Ref<Animation> animation;
 
 	bool hide_options = false;
 	String path;
@@ -100,12 +99,13 @@ class SceneImportSettingsData : public Object {
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-        // Expose a read-only "Properties/Animation Duration" value stored on this data object.
 		if (String(p_name) == "properties/animation_length") {
-			r_ret = animation_length;
-			return true;
+			if (animation.is_valid()) {
+				r_ret = animation->get_length();
+				return true;
+			}
+			return false;
 		}
-
 		if (settings) {
 			if (settings->has(p_name)) {
 				r_ret = (*settings)[p_name];
@@ -933,13 +933,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
         scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
 		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
-
-		// Store animation duration for the inspector read-only property.
-		if (ad.animation.is_valid()) {
-			scene_import_settings_data->animation_length = ad.animation->get_length();
-		} else {
-			scene_import_settings_data->animation_length = 0.0f;
-		}
+		scene_import_settings_data->animation = ad.animation;
 
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
@@ -1193,11 +1187,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 }
 
 void SceneImportSettingsDialog::_animation_update_skeleton_visibility() {
-	if (animation_toggle_skeleton_visibility->is_pressed()) {
-		bones_mesh_preview->show();
-	} else {
-		bones_mesh_preview->hide();
-	}
+	bones_mesh_preview->set_visible(animation_toggle_skeleton_visibility->is_pressed());
 }
 
 void SceneImportSettingsDialog::_material_tree_selected() {
