@@ -88,6 +88,8 @@ public:
 	const StringName animation_finished = "animation_finished";
 	const StringName animation_changed = "animation_changed";
 	const StringName animation_started = "animation_started";
+	const StringName animation_state_entered = "animation_state_entered";
+	const StringName animation_state_exited = "animation_state_exited";
 	const StringName RESET = "RESET";
 
 	const StringName pose_updated = "pose_updated";
