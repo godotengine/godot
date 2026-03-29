@@ -2959,23 +2959,7 @@ void GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx)
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
         return;
     }
-    const uint32_t expected_checksum = _packed_gaussian_payload_checksum(chunk_data);
     _log_chunk_load_metrics(chunk_idx, metrics);
-    const uint32_t actual_checksum = _packed_gaussian_payload_checksum(chunk_data);
-    if (actual_checksum != expected_checksum) {
-        diagnostics.invariant_upload_lifecycle_violations++;
-        diagnostics.integrity_mismatch_count++;
-        diagnostics.last_invariant_context = "_load_chunk.payload_checksum";
-        diagnostics.last_invariant_message = vformat(
-                "[Streaming] Sync fallback upload payload checksum mismatch: asset=%d chunk=%d expected=0x%x actual=0x%x.",
-                asset_id, chunk_idx,
-                (unsigned int)expected_checksum,
-                (unsigned int)actual_checksum);
-        diagnostics.last_integrity_mismatch_message = diagnostics.last_invariant_message;
-        WARN_PRINT(diagnostics.last_invariant_message);
-        _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
-        return;
-    }
     if (!_upload_chunk_to_gpu(submission_rd, buffer_offset, chunk_data, asset_id, chunk_idx, buffer_slot, chunk.count)) {
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
         return;
