@@ -610,7 +610,8 @@ static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
 		const HashMap<int, int> &p_lines,
 		const HashMap<String, int> *p_funcs,
 		const HashMap<int, GDScriptLanguage::BranchResult> *p_branches,
-		const HashMap<int, int> *p_coverable) {
+		const HashMap<int, int> *p_coverable,
+		const HashMap<String, int> *p_func_starts = nullptr) {
 	CoverageFileStats fs;
 	_compute_line_stats(p_lines, p_coverable, fs);
 	if (p_funcs) {
@@ -622,20 +623,39 @@ static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
 	float flr = fs.lines > 0 ? (float)fs.hit_lines / fs.lines : 0.0f;
 	float fbr = fs.branches > 0 ? (float)fs.hit_branches / fs.branches : 0.0f;
 
-	f->store_line(vformat("    <class filename=\"%s\" line-rate=\"%.4f\" branch-rate=\"%.4f\">",
-			_xml_escape(_coverage_globalize(p_res_path)), flr, fbr));
+	// DTD requires name= (class identifier) and filename= (relative path).
+	String class_name = _xml_escape(p_res_path.get_file().get_basename());
+	f->store_line(vformat("    <class name=\"%s\" filename=\"%s\" line-rate=\"%.4f\" branch-rate=\"%.4f\">",
+			class_name, _xml_escape(_coverage_globalize(p_res_path)), flr, fbr));
 
-	if (p_funcs) {
-		f->store_line("      <methods>");
-		Vector<String> sorted_methods;
-		for (const KeyValue<String, int> &fv : *p_funcs) {
-			sorted_methods.push_back(fv.key);
+	// Emit <methods>: merge runtime hits with compile-time starts so that
+	// unexecuted functions appear with hits="0", matching the LCOV writer.
+	{
+		HashMap<String, int> all_methods;
+		if (p_funcs) {
+			for (const KeyValue<String, int> &fv : *p_funcs) {
+				all_methods[fv.key] = fv.value;
+			}
 		}
-		sorted_methods.sort();
-		for (const String &fn : sorted_methods) {
-			f->store_line(vformat("        <method name=\"%s\" hits=\"%d\"/>", _xml_escape(fn), *p_funcs->getptr(fn)));
+		if (p_func_starts) {
+			for (const KeyValue<String, int> &sv : *p_func_starts) {
+				if (!all_methods.has(sv.key)) {
+					all_methods[sv.key] = 0;
+				}
+			}
 		}
-		f->store_line("      </methods>");
+		if (!all_methods.is_empty()) {
+			f->store_line("      <methods>");
+			Vector<String> sorted_methods;
+			for (const KeyValue<String, int> &mv : all_methods) {
+				sorted_methods.push_back(mv.key);
+			}
+			sorted_methods.sort();
+			for (const String &fn : sorted_methods) {
+				f->store_line(vformat("        <method name=\"%s\" hits=\"%d\"/>", _xml_escape(fn), *all_methods.getptr(fn)));
+			}
+			f->store_line("      </methods>");
+		}
 	}
 
 	// Build line → branch results index for per-line branch annotation.
@@ -729,7 +749,8 @@ static Error _write_cobertura(const String &p_path,
 		_cobertura_write_class(f, res_path, lines ? *lines : empty_cob_hits,
 				p_func_hits.getptr(res_path),
 				p_branch_hits.getptr(res_path),
-				coverable.getptr(res_path));
+				coverable.getptr(res_path),
+				func_starts.getptr(res_path));
 	}
 
 	f->store_line("  </classes></package></packages>");

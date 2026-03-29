@@ -666,6 +666,7 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK_MESSAGE(contents.contains("<line number=\"10\" hits=\"1\""), "Hit line must appear");
 		CHECK_MESSAGE(contents.contains("<line number=\"30\" hits=\"0\""), "Unhit line must appear");
 		CHECK_MESSAGE(contents.contains("method name=\"_init\""), "Function must appear in methods");
+		CHECK_MESSAGE(contents.contains("name=\"cobertura_test\""), "DTD-required name= attribute must appear on class element");
 		CHECK_MESSAGE(contents.contains("</coverage>"), "XML must be closed");
 	}
 
