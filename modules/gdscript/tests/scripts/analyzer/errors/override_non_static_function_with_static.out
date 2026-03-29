@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 8: The function "my_function" is static, but the parent function of the same name is not static. A non-static function cannot be overridden with a static function.

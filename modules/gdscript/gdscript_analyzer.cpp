@@ -298,6 +298,15 @@ Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::C
 			if (current_class_node->identifier != nullptr) {
 				parent_class_name = current_class_node->identifier->name;
 			}
+			// Provide a more specific error when the conflict involves a static function.
+			if (current_class_node->members_indices.has(p_member_name)) {
+				int index = current_class_node->members_indices[p_member_name];
+				const GDScriptParser::ClassNode::Member &member = current_class_node->members[index];
+				if (member.type == GDScriptParser::ClassNode::Member::FUNCTION && member.function->is_static) {
+					push_error(vformat(R"(The member "%s" already exists in parent class %s as a static function.)", p_member_name, parent_class_name), p_member_node);
+					return ERR_PARSE_ERROR;
+				}
+			}
 			push_error(vformat(R"(The member "%s" already exists in parent class %s.)", p_member_name, parent_class_name), p_member_node);
 			return ERR_PARSE_ERROR;
 		}
@@ -1873,7 +1882,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
 		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
-			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
+			bool is_static_match = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
+			bool valid = is_static_match;
 
 			if (p_function->return_type == nullptr) {
 				p_function->set_datatype(parent_return_type);
@@ -1923,40 +1933,49 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 
 			if (!valid) {
-				// Compute parent signature as a string to show in the error message.
-				String parent_signature = String(function_name) + "(";
-				int j = 0;
-				for (const GDScriptParser::DataType &par_type : parameters_types) {
-					if (j > 0) {
-						parent_signature += ", ";
+				if (!is_static_match) {
+					// The mismatch is due to a static/non-static conflict.
+					if (method_flags.has_flag(METHOD_FLAG_STATIC)) {
+						push_error(vformat(R"(The function "%s" is not static, but the parent function of the same name is static. A static function cannot be overridden with a non-static function.)", function_name), p_function);
+					} else {
+						push_error(vformat(R"(The function "%s" is static, but the parent function of the same name is not static. A non-static function cannot be overridden with a static function.)", function_name), p_function);
 					}
-					String parameter = par_type.to_string();
-					if (parameter == "null") {
-						parameter = "Variant";
-					}
-					parent_signature += parameter;
-					if (j >= parameters_types.size() - default_par_count) {
-						parent_signature += " = <default>";
-					}
-
-					j++;
-				}
-				if (method_flags & METHOD_FLAG_VARARG) {
-					if (!parameters_types.is_empty()) {
-						parent_signature += ", ";
-					}
-					parent_signature += "...";
-				}
-				parent_signature += ") -> ";
-
-				const String return_type = parent_return_type.to_string_strict();
-				if (return_type == "null") {
-					parent_signature += "void";
 				} else {
-					parent_signature += return_type;
-				}
+					// Compute parent signature as a string to show in the error message.
+					String parent_signature = String(function_name) + "(";
+					int j = 0;
+					for (const GDScriptParser::DataType &par_type : parameters_types) {
+						if (j > 0) {
+							parent_signature += ", ";
+						}
+						String parameter = par_type.to_string();
+						if (parameter == "null") {
+							parameter = "Variant";
+						}
+						parent_signature += parameter;
+						if (j >= parameters_types.size() - default_par_count) {
+							parent_signature += " = <default>";
+						}
 
-				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
+						j++;
+					}
+					if (method_flags & METHOD_FLAG_VARARG) {
+						if (!parameters_types.is_empty()) {
+							parent_signature += ", ";
+						}
+						parent_signature += "...";
+					}
+					parent_signature += ") -> ";
+
+					const String return_type = parent_return_type.to_string_strict();
+					if (return_type == "null") {
+						parent_signature += "void";
+					} else {
+						parent_signature += return_type;
+					}
+
+					push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
+				}
 			}
 #ifdef DEBUG_ENABLED
 			if (native_base != StringName()) {
