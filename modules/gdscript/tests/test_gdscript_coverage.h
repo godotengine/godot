@@ -547,6 +547,48 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK_MESSAGE(contents.contains("FNH:2"), "FNH must count hit functions");
 	}
 
+	TEST_CASE("[Modules][GDScript] Coverage: write LCOV emits FN records for functions") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_fn_records.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://fn_test.gd", 3);
+		lang->coverage_record_func_entry("res://fn_test.gd", "_ready");
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		// FN: records must precede FNDA: records so LCOV parsers can correlate them.
+		CHECK_MESSAGE(contents.contains("FN:"), "FN: record must be present");
+		CHECK_MESSAGE(contents.contains("FN:") && contents.contains("_ready"), "FN: record must name the function");
+		int fn_pos = contents.find("FN:");
+		int fnda_pos = contents.find("FNDA:");
+		CHECK_MESSAGE(fn_pos < fnda_pos, "FN: records must appear before FNDA: records");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write returns ERR_CANT_OPEN for unwritable path") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		// Use a path whose parent directory does not exist.
+		lang->coverage_output_path = "/nonexistent_dir_coverage_test/out.lcov";
+		lang->coverage_set_format("lcov");
+		lang->coverage_record_line("res://t.gd", 1);
+
+		Error err = lang->coverage_write();
+
+		CHECK_MESSAGE(err == ERR_CANT_OPEN, "write must return ERR_CANT_OPEN for an unwritable path");
+		CHECK_MESSAGE(!lang->coverage_written, "coverage_written must remain false on write failure");
+	}
+
 	TEST_CASE("[Modules][GDScript] Coverage: write LCOV includes branch records") {
 		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
 		REQUIRE(lang != nullptr);
@@ -687,6 +729,37 @@ TEST_SUITE("[Modules][GDScript]") {
 		// 2 of 3 lines hit → 66.7%
 		CHECK_MESSAGE(contents.contains("\"5\":1"), "Hit line 5 must appear with count 1");
 		CHECK_MESSAGE(contents.contains("\"15\":0"), "Unhit line 15 must appear with count 0");
+	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: write JSON branch keys are sorted by IP") {
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		const String out_path = TestUtils::get_temp_path("coverage_branch_order.json");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("json");
+		lang->coverage_record_line("res://branch_order.gd", 1);
+		// Record branches at three different IPs out of natural order.
+		lang->coverage_record_branch("res://branch_order.gd", 1, 300, true);
+		lang->coverage_record_branch("res://branch_order.gd", 1, 100, true);
+		lang->coverage_record_branch("res://branch_order.gd", 1, 200, true);
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		int pos100 = contents.find("\"100_taken\"");
+		int pos200 = contents.find("\"200_taken\"");
+		int pos300 = contents.find("\"300_taken\"");
+		REQUIRE_MESSAGE(pos100 != -1, "IP 100 branch key must appear");
+		REQUIRE_MESSAGE(pos200 != -1, "IP 200 branch key must appear");
+		REQUIRE_MESSAGE(pos300 != -1, "IP 300 branch key must appear");
+		CHECK_MESSAGE(pos100 < pos200, "IP 100 must appear before IP 200 in JSON output");
+		CHECK_MESSAGE(pos200 < pos300, "IP 200 must appear before IP 300 in JSON output");
 	}
 
 	TEST_CASE("[Modules][GDScript] Coverage: write text format produces summary file") {
