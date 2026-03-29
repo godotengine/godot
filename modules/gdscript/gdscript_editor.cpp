@@ -754,15 +754,31 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 	}
 	arghint += p_info.name + "(";
 
-	int def_args = p_info.arguments.size() - p_info.default_arguments.size();
+	const bool is_vararg = p_info.flags & METHOD_FLAG_VARARG;
+	const int arg_count = p_info.arguments.size();
+	// For annotations, the last declared argument is the vararg parameter itself.
+	const int last_arg_idx = arg_count - 1;
+
+	int def_args = arg_count - p_info.default_arguments.size();
 	int i = 0;
 	for (const PropertyInfo &E : p_info.arguments) {
 		if (i > 0) {
 			arghint += ", ";
 		}
 
-		if (i == p_arg_idx) {
+		bool is_current_arg = (i == p_arg_idx);
+		if (p_is_annotation && is_vararg && i == last_arg_idx) {
+			// For vararg annotations, highlight the last declared argument
+			// for all argument indices >= last_arg_idx.
+			is_current_arg = (p_arg_idx >= last_arg_idx);
+		}
+
+		if (is_current_arg) {
 			arghint += String::chr(0xFFFF);
+		}
+
+		if (p_is_annotation && is_vararg && i == last_arg_idx) {
+			arghint += "...";
 		}
 		arghint += E.name + ": " + _get_visual_datatype(E, true);
 
@@ -770,22 +786,22 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 			arghint += String(" = ") + p_info.default_arguments[i - def_args].get_construct_string();
 		}
 
-		if (i == p_arg_idx) {
+		if (is_current_arg) {
 			arghint += String::chr(0xFFFF);
 		}
 
 		i++;
 	}
 
-	if (p_info.flags & METHOD_FLAG_VARARG) {
-		if (p_info.arguments.size() > 0) {
+	if (is_vararg && !p_is_annotation) {
+		if (arg_count > 0) {
 			arghint += ", ";
 		}
-		if (p_arg_idx >= p_info.arguments.size()) {
+		if (p_arg_idx >= arg_count) {
 			arghint += String::chr(0xFFFF);
 		}
 		arghint += "...args: Array"; // `MethodInfo` does not support the rest parameter name.
-		if (p_arg_idx >= p_info.arguments.size()) {
+		if (p_arg_idx >= arg_count) {
 			arghint += String::chr(0xFFFF);
 		}
 	}
