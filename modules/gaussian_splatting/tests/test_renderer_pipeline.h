@@ -816,7 +816,7 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Dynamic handle warmup publishes expl
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting][RequiresGPU] Missing renderer data stays an explicit no-data skip") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Missing renderer data publishes an explicit streaming-not-ready skip") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -857,14 +857,15 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Missing renderer data stays an expli
     renderer->render_scene_instance(&render_data);
 
     const Dictionary stats = renderer->get_render_stats();
-    CHECK_MESSAGE(stats.get("cull_route_uid", String()) == String(RenderRouteUID::COMMON_SKIP_NO_DATA),
-            "Expected missing renderer data to remain an explicit no-data skip");
-    CHECK_MESSAGE(stats.get("cull_route_reason", String()) == String("missing_source_data"),
-            "Expected missing renderer data to keep the no-data cull_route_reason");
+    const String cull_route_uid = stats.get("cull_route_uid", String());
+    CHECK_MESSAGE(cull_route_uid.begins_with(String(RenderRouteUID::COMMON_SKIP_STREAMING_NOT_READY)),
+            vformat("Expected missing renderer data to publish a typed streaming-not-ready route, got '%s'", cull_route_uid));
+    CHECK_MESSAGE(String(stats.get("cull_route_reason", String())).begins_with(String("streaming_not_ready_")),
+            "Expected missing renderer data to publish a typed streaming-not-ready reason");
     CHECK_MESSAGE(stats.get("stage_cull_status", String()) == String("skipped"),
             "Expected missing renderer data to publish skipped cull stage metrics");
-    CHECK_MESSAGE(String(stats.get("stage_cull_reason", String())).find("no render data") != -1,
-            "Expected missing renderer data to report a no-render-data cull skip reason");
+    CHECK_MESSAGE(String(stats.get("stage_cull_reason", String())).find("streaming path not ready") != -1,
+            "Expected missing renderer data to report a streaming-not-ready cull skip reason");
 
     renderer.unref();
 }

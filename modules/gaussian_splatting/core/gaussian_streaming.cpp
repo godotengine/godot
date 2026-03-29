@@ -30,7 +30,7 @@ static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SLICE = 16;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SECOND = 0;
 static constexpr uint32_t STREAMING_DEFAULT_VRAM_BUDGET_MB = 12288;
 
-uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
+static uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
     const int byte_count = int(p_data.size() * sizeof(PackedGaussian));
     const uint8_t empty_byte = 0;
     const void *payload = byte_count > 0 ? static_cast<const void *>(p_data.ptr()) : static_cast<const void *>(&empty_byte);

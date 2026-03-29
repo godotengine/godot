@@ -99,7 +99,7 @@ uint64_t _ticks_usec_now() {
     return os ? os->get_ticks_usec() : 0;
 }
 
-uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
+static uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
     const int byte_count = int(p_data.size() * sizeof(PackedGaussian));
     const uint8_t empty_byte = 0;
     const void *payload = byte_count > 0 ? static_cast<const void *>(p_data.ptr()) : static_cast<const void *>(&empty_byte);
