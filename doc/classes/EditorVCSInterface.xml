@@ -10,6 +10,12 @@
 		<link title="Version control systems">$DOCS_URL/tutorials/best_practices/version_control_systems.html</link>
 	</tutorials>
 	<methods>
+		<method name="_allow_amends" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				Returns whether or not the plugin allows commit amends.
+			</description>
+		</method>
 		<method name="_checkout_branch" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="branch_name" type="String" />
@@ -17,11 +23,12 @@
 				Checks out a [param branch_name] in the VCS.
 			</description>
 		</method>
-		<method name="_commit" qualifiers="virtual required">
+		<method name="_commit" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="msg" type="String" />
+			<param index="1" name="amend" type="bool" />
 			<description>
-				Commits the currently staged changes and applies the commit [param msg] to the resulting commit.
+				Commits the currently staged changes and applies the commit [param msg] to the resulting commit. If [param amend] is [code]true[/code] the commit will modify the most recent commit instead.
 			</description>
 		</method>
 		<method name="_create_branch" qualifiers="virtual required">
