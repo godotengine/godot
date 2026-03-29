@@ -752,8 +752,8 @@ void StreamingLODManager::reprioritize_async_loads(const LocalVector<uint32_t>& 
         for (uint32_t i = 0; i < desired_levels.size(); i++) {
             for (uint32_t j = 0; j < retained_load_requests.size(); j++) {
                 if (retained_load_requests[j].level == desired_levels[i]) {
-                    reordered_load_queue.push(std::move(retained_load_requests.write[j]));
-                    retained_load_requests.write[j].level = UINT32_MAX;
+                    reordered_load_queue.push(std::move(retained_load_requests[j]));
+                    retained_load_requests[j].level = UINT32_MAX;
                     break;
                 }
             }
@@ -774,8 +774,8 @@ void StreamingLODManager::reprioritize_async_loads(const LocalVector<uint32_t>& 
         for (uint32_t i = 0; i < desired_levels.size(); i++) {
             for (uint32_t j = 0; j < retained_ready_jobs.size(); j++) {
                 if (retained_ready_jobs[j].level == desired_levels[i]) {
-                    reordered_ready_queue.push(std::move(retained_ready_jobs.write[j]));
-                    retained_ready_jobs.write[j].level = UINT32_MAX;
+                    reordered_ready_queue.push(std::move(retained_ready_jobs[j]));
+                    retained_ready_jobs[j].level = UINT32_MAX;
                     break;
                 }
             }
@@ -1074,8 +1074,8 @@ void StreamingLODManager::enqueue_load_request(uint32_t level, const LocalVector
         for (uint32_t i = 0; i < desired_levels.size(); i++) {
             for (uint32_t j = 0; j < retained_load_requests.size(); j++) {
                 if (retained_load_requests[j].level == desired_levels[i]) {
-                    reordered_load_queue.push(std::move(retained_load_requests.write[j]));
-                    retained_load_requests.write[j].level = UINT32_MAX;
+                    reordered_load_queue.push(std::move(retained_load_requests[j]));
+                    retained_load_requests[j].level = UINT32_MAX;
                     break;
                 }
             }
