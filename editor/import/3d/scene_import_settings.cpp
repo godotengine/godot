@@ -930,7 +930,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		mesh_tree->deselect_all();
 		AnimationData &ad = animation_map[p_id];
 
-        scene_import_settings_data->settings = &ad.settings;
+		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
 		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 		scene_import_settings_data->animation = ad.animation;
