@@ -489,7 +489,7 @@ static void _lcov_write_functions(Ref<FileAccess> f, const HashMap<String, int> 
 	sorted_funcs.sort();
 	for (const String &fn : sorted_funcs) {
 		const int *ln = p_starts.getptr(fn);
-		f->store_line("FN:" + itos(ln ? *ln : 1) + "," + fn);
+		f->store_line("FN:" + itos(ln ? *ln : 0) + "," + fn); // 0 = unknown start line (e.g. lambda)
 	}
 	int fnh = 0;
 	for (const String &fn : sorted_funcs) {
