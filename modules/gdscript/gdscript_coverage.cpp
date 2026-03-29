@@ -122,6 +122,7 @@ void GDScriptLanguage::coverage_record_line(const StringName &p_source, int p_li
 	if (!_coverage_path_included(path, coverage_include, coverage_exclude)) {
 		return;
 	}
+	MutexLock lock(coverage_mutex);
 	HashMap<int, int> &lines = coverage_hits[path];
 	if (coverage_mode == COVERAGE_MODE_COUNT) {
 		lines[p_line]++;
@@ -135,6 +136,7 @@ void GDScriptLanguage::coverage_record_func_entry(const StringName &p_source, co
 	if (!_coverage_path_included(path, coverage_include, coverage_exclude)) {
 		return;
 	}
+	MutexLock lock(coverage_mutex);
 	HashMap<String, int> &funcs = coverage_func_hits[path];
 	if (coverage_mode == COVERAGE_MODE_COUNT) {
 		funcs[String(p_func)]++;
@@ -148,6 +150,7 @@ void GDScriptLanguage::coverage_record_branch(const StringName &p_source, int p_
 	if (!_coverage_path_included(path, coverage_include, coverage_exclude)) {
 		return;
 	}
+	MutexLock lock(coverage_mutex);
 	BranchResult &br = coverage_branch_hits[path][p_ip];
 	br.line = p_line; // store for LCOV BRDA output
 	if (p_taken) {
@@ -275,7 +278,7 @@ static CoverageFileStats _sum_totals(const HashMap<String, CoverageFileStats> &p
 
 /*************** Threshold and summary ***************/
 
-bool GDScriptLanguage::coverage_check_threshold() const {
+bool GDScriptLanguage::coverage_check_threshold() {
 	if (coverage_threshold <= 0.0f) {
 		return true;
 	}
@@ -302,7 +305,7 @@ static String _format_summary_row(const String &p_label, const CoverageFileStats
 	return p_label.rpad(p_col_file) + _format_pct_cell(lp, 9) + _format_pct_cell(fp, 9) + _format_pct_cell(bp, 9) + "\n";
 }
 
-String GDScriptLanguage::coverage_summary_string() const {
+String GDScriptLanguage::coverage_summary_string() {
 	static const int COL_FILE = 40;
 
 	HashMap<String, HashMap<int, int>> coverable = _coverage_enumerate_coverable_lines();
@@ -390,8 +393,9 @@ void GDScriptLanguage::_coverage_collect_func_starts(const GDScript *p_script, H
 }
 
 // Build a per-file map of function name → start line from script_list.
-HashMap<String, HashMap<String, int>> GDScriptLanguage::_coverage_enumerate_func_start_lines() const {
+HashMap<String, HashMap<String, int>> GDScriptLanguage::_coverage_enumerate_func_start_lines() {
 	HashMap<String, HashMap<String, int>> result;
+	MutexLock lock(mutex);
 	const SelfList<GDScript> *s = script_list.first();
 	while (s) {
 		const GDScript *scr = s->self();
@@ -404,8 +408,9 @@ HashMap<String, HashMap<String, int>> GDScriptLanguage::_coverage_enumerate_func
 	return result;
 }
 
-HashMap<String, HashMap<int, int>> GDScriptLanguage::_coverage_enumerate_coverable_lines() const {
+HashMap<String, HashMap<int, int>> GDScriptLanguage::_coverage_enumerate_coverable_lines() {
 	HashMap<String, HashMap<int, int>> coverable;
+	MutexLock lock(mutex);
 	const SelfList<GDScript> *s = script_list.first();
 	while (s) {
 		GDScript *scr = s->self();

@@ -681,6 +681,7 @@ public:
 	Vector<String> coverage_include; // empty = include all
 	Vector<String> coverage_exclude;
 
+	mutable Mutex coverage_mutex; // protects coverage_hits, coverage_func_hits, coverage_branch_hits
 	HashMap<String, HashMap<int, int>> coverage_hits; // file -> line -> count
 	HashMap<String, HashMap<String, int>> coverage_func_hits; // file -> func_name -> count
 	HashMap<String, HashMap<int, BranchResult>> coverage_branch_hits; // file -> ip -> BranchResult
@@ -696,15 +697,15 @@ public:
 	void coverage_record_func_entry(const StringName &p_source, const StringName &p_func);
 	void coverage_record_branch(const StringName &p_source, int p_line, int p_ip, bool p_taken);
 	Error coverage_write(); // writes output file, sets coverage_written=true
-	bool coverage_check_threshold() const; // true if line% >= threshold (or threshold == 0)
-	String coverage_summary_string() const; // formatted multi-line summary for terminal/test output
+	bool coverage_check_threshold(); // true if line% >= threshold (or threshold == 0)
+	String coverage_summary_string(); // formatted multi-line summary for terminal/test output
 
 	// Static helpers: must be methods of GDScriptLanguage to access private members of
 	// GDScriptFunction (via friend at gdscript_function.h:344) and script_list (private).
 	static void _coverage_collect_lines(GDScript *p_script, HashMap<int, int> &r_lines);
 	static void _coverage_collect_func_starts(const GDScript *p_script, HashMap<String, int> &r_starts);
-	HashMap<String, HashMap<int, int>> _coverage_enumerate_coverable_lines() const;
-	HashMap<String, HashMap<String, int>> _coverage_enumerate_func_start_lines() const;
+	HashMap<String, HashMap<int, int>> _coverage_enumerate_coverable_lines();
+	HashMap<String, HashMap<String, int>> _coverage_enumerate_func_start_lines();
 #endif // TOOLS_ENABLED
 
 	GDScriptLanguage();
