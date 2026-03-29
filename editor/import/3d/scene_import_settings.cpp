@@ -61,6 +61,8 @@ class SceneImportSettingsData : public Object {
 	List<ResourceImporter::ImportOption> options;
 	Vector<String> animation_list;
 
+	float animation_length = 0.0f;
+
 	bool hide_options = false;
 	String path;
 
@@ -98,6 +100,12 @@ class SceneImportSettingsData : public Object {
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
+        // Expose a read-only "Properties/Animation Duration" value stored on this data object.
+		if (String(p_name) == "properties/animation_length") {
+			r_ret = animation_length;
+			return true;
+		}
+
 		if (settings) {
 			if (settings->has(p_name)) {
 				r_ret = (*settings)[p_name];
@@ -353,12 +361,6 @@ void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animatio
 		ad.animation = p_anim;
 
 		_load_default_subresource_settings(ad.settings, "animations", p_name, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION);
-
-		double anim_length = p_anim->get_length();
-		if (!ad.settings.has("settings/length") && anim_length != 0.0) {
-			ad.settings["settings/length"] = anim_length;
-		}
-
 		Animation::LoopMode loop_mode = p_anim->get_loop_mode();
 		if (!ad.settings.has("settings/loop_mode") && loop_mode != Animation::LoopMode::LOOP_NONE) {
 			// Update the loop mode to match detected mode (from import hints).
@@ -932,6 +934,13 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
 		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 
+		// Store animation duration for the inspector read-only property.
+		if (ad.animation.is_valid()) {
+			scene_import_settings_data->animation_length = ad.animation->get_length();
+		} else {
+			scene_import_settings_data->animation_length = 0.0f;
+		}
+
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
 		node_selected->hide();
@@ -1031,17 +1040,6 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 }
 
 void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name) {
-	if (p_name == "settings/length") {
-		if (!animation_map.has(selected_id)) {
-			return;
-		}
-		HashMap<StringName, Variant> settings(animation_map[selected_id].settings);
-		if (settings.has(p_name)) {
-			animation_length = (double)settings[p_name];
-		} else {
-			animation_length = 0.0;
-		}
-	}
 	if (p_name == "settings/loop_mode") {
 		if (!animation_map.has(selected_id)) {
 			return;
@@ -1132,9 +1130,6 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		if (animation_map.has(p_animation_name)) {
 			const AnimationData &animation_data = animation_map[p_animation_name];
 			HashMap<StringName, Variant> settings(animation_data.settings);
-			if (settings.has("settings/length")) {
-				animation_length = (double)settings["settings/length"];
-			}
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
 			}
