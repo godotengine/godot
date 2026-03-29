@@ -11,9 +11,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
 import shutil
 import struct
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,6 +30,20 @@ class PLYSpec:
     pattern: str
     scale: float
 
+# Files that the C++ [GeneratePLY] test case generates with rich generators
+# (fBm noise, SH coefficients, anisotropy, etc.).  When --godot-binary is
+# given these are produced by the engine binary; otherwise the Python fallback
+# generators below create lightweight versions.
+CPP_GENERATED_FILENAMES: frozenset[str] = frozenset({
+    "test_splats.ply",
+    "synthetic_sphere.ply",
+    "synthetic_cube.ply",
+    "synthetic_plane.ply",
+    "synthetic_torus.ply",
+    "synthetic_mandelbulb.ply",
+    "synthetic_cloud.ply",
+})
+
 CANONICAL_SPECS: tuple[PLYSpec, ...] = (
     PLYSpec("tests/fixtures/test_splats.ply", 1024, 1101, "sphere", 3.0),
     PLYSpec("tests/examples/godot/test_project/tests/fixtures/test_splats.ply", 1024, 1101, "sphere", 3.0),
@@ -40,14 +56,14 @@ CANONICAL_SPECS: tuple[PLYSpec, ...] = (
     PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_plane.ply", 2048, 3301, "plane", 9.0),
     PLYSpec("tests/fixtures/synthetic_torus.ply", 3072, 3401, "torus", 6.5),
     PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_torus.ply", 3072, 3401, "torus", 6.5),
-    PLYSpec("tests/fixtures/synthetic_spiral.ply", 3072, 3501, "spiral", 8.0),
-    PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_spiral.ply", 3072, 3501, "spiral", 8.0),
+    PLYSpec("tests/fixtures/synthetic_spiral.ply", 25000, 3501, "spiral", 8.0),
+    PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_spiral.ply", 25000, 3501, "spiral", 8.0),
     PLYSpec("tests/fixtures/synthetic_mandelbulb.ply", 4096, 3601, "mandelbulb", 1.4),
     PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_mandelbulb.ply", 4096, 3601, "mandelbulb", 1.4),
     PLYSpec("tests/fixtures/synthetic_cloud.ply", 4096, 3701, "cloud", 12.0),
     PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_cloud.ply", 4096, 3701, "cloud", 12.0),
-    PLYSpec("tests/fixtures/synthetic_flower_field.ply", 4096, 3801, "flower_field", 10.0),
-    PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_flower_field.ply", 4096, 3801, "flower_field", 10.0),
+    PLYSpec("tests/fixtures/synthetic_flower_field.ply", 30000, 3801, "flower_field", 10.0),
+    PLYSpec("tests/examples/godot/test_project/tests/fixtures/synthetic_flower_field.ply", 30000, 3801, "flower_field", 10.0),
 )
 
 FORBIDDEN_LEGACY_PLYS: tuple[str, ...] = (
@@ -245,18 +261,24 @@ def _generate_rows(spec: PLYSpec) -> list[tuple[float, ...]]:
 
     def _sample_spiral(index: int) -> tuple[float, float, float, tuple[float, float, float], float, float]:
         t = float(index) / max(1.0, float(spec.count - 1))
-        angle = t * 14.0 * math.pi
-        radius = 1.0 + spec.scale * (0.25 + 0.75 * t)
-        x = radius * math.cos(angle) + rng.uniform(-0.22, 0.22)
-        y = (t - 0.5) * spec.scale * 1.8 + rng.uniform(-0.1, 0.1)
-        z = -4.0 + radius * math.sin(angle) + rng.uniform(-0.22, 0.22)
+        # Double helix with varying pitch
+        arm = index % 2
+        angle = t * 20.0 * math.pi + arm * math.pi
+        pitch_variation = 0.3 * math.sin(t * 6.0 * math.pi)
+        radius = 0.8 + spec.scale * (0.2 + 0.8 * t + 0.1 * math.sin(t * 12.0 * math.pi))
+        jitter = 0.15 + 0.25 * t
+        x = radius * math.cos(angle) + rng.uniform(-jitter, jitter)
+        y = (t - 0.5) * spec.scale * 2.0 + pitch_variation + rng.uniform(-0.08, 0.08)
+        z = -4.0 + radius * math.sin(angle) + rng.uniform(-jitter, jitter)
+        # Color varies by arm and position
+        hue_shift = arm * 2.5
         color = (
-            0.35 + 0.55 * math.sin(angle * 0.2 + 0.4),
-            0.35 + 0.55 * math.sin(angle * 0.23 + 2.0),
-            0.35 + 0.55 * math.sin(angle * 0.27 + 4.0),
+            0.3 + 0.6 * max(0.0, min(1.0, math.sin(angle * 0.15 + hue_shift + 0.4))),
+            0.3 + 0.6 * max(0.0, min(1.0, math.sin(angle * 0.17 + hue_shift + 2.0))),
+            0.3 + 0.6 * max(0.0, min(1.0, math.sin(angle * 0.19 + hue_shift + 4.0))),
         )
-        scale = 0.05 + 0.16 * rng.random()
-        opacity = 0.6 + 0.32 * rng.random()
+        scale = 0.03 + 0.12 * rng.random() * (1.0 - 0.4 * t)
+        opacity = 0.55 + 0.4 * rng.random()
         return x, y, z, color, scale, opacity
 
     def _sample_cloud(index: int) -> tuple[float, float, float, tuple[float, float, float], float, float]:
@@ -283,29 +305,60 @@ def _generate_rows(spec: PLYSpec) -> list[tuple[float, ...]]:
         return x, y + 4.0, z_world, color, scale, opacity
 
     def _sample_flower_field(index: int) -> tuple[float, float, float, tuple[float, float, float], float, float]:
-        petals = 6
-        flower_idx = index // petals
-        petal_idx = index % petals
+        # More parts per flower: center + inner ring + outer ring + stem + leaves
+        parts_per_flower = 12
+        flower_idx = index // parts_per_flower
+        part_idx = index % parts_per_flower
         rng_flower = random.Random(spec.seed + flower_idx * 17)
         cx = rng_flower.uniform(-spec.scale, spec.scale)
         cz = rng_flower.uniform(-spec.scale, spec.scale) - 4.0
-        stem_h = rng_flower.uniform(0.4, 1.4)
-        angle = (petal_idx / float(petals)) * 2.0 * math.pi + rng_flower.uniform(-0.2, 0.2)
-        petal_r = rng_flower.uniform(0.25, 0.6)
-        x = cx + math.cos(angle) * petal_r
-        y = stem_h + rng.uniform(-0.04, 0.05)
-        z = cz + math.sin(angle) * petal_r
-        if petal_idx == 0:
+        stem_h = rng_flower.uniform(0.3, 1.6)
+        flower_hue = rng_flower.random() * 2.0 * math.pi
+
+        if part_idx == 0:
+            # Flower center (pistil)
+            x = cx + rng.uniform(-0.03, 0.03)
+            y = stem_h + rng.uniform(-0.02, 0.02)
+            z = cz + rng.uniform(-0.03, 0.03)
             color = (0.95, 0.85, 0.12)
-            scale = 0.07 + 0.07 * rng.random()
-        else:
+            scale = 0.06 + 0.06 * rng.random()
+            opacity = 0.85 + 0.12 * rng.random()
+        elif part_idx < 7:
+            # Inner petals (6)
+            angle = ((part_idx - 1) / 6.0) * 2.0 * math.pi + rng_flower.uniform(-0.15, 0.15)
+            petal_r = rng_flower.uniform(0.18, 0.4)
+            x = cx + math.cos(angle) * petal_r
+            y = stem_h + rng.uniform(-0.03, 0.04)
+            z = cz + math.sin(angle) * petal_r
             color = (
-                0.5 + 0.45 * math.sin(angle * 1.1 + 0.2),
-                0.4 + 0.5 * math.sin(angle * 1.3 + 2.3),
-                0.4 + 0.5 * math.sin(angle * 1.7 + 4.4),
+                0.5 + 0.45 * max(0.0, min(1.0, math.sin(angle + flower_hue + 0.2))),
+                0.4 + 0.5 * max(0.0, min(1.0, math.sin(angle + flower_hue + 2.3))),
+                0.4 + 0.5 * max(0.0, min(1.0, math.sin(angle + flower_hue + 4.4))),
             )
-            scale = 0.08 + 0.14 * rng.random()
-        opacity = 0.72 + 0.23 * rng.random()
+            scale = 0.06 + 0.12 * rng.random()
+            opacity = 0.72 + 0.23 * rng.random()
+        elif part_idx < 10:
+            # Stem segments (3)
+            seg = part_idx - 7
+            stem_y = stem_h * (seg / 3.0) + rng.uniform(-0.02, 0.02)
+            x = cx + rng.uniform(-0.04, 0.04)
+            y = stem_y
+            z = cz + rng.uniform(-0.04, 0.04)
+            color = (0.18 + 0.1 * rng.random(), 0.45 + 0.2 * rng.random(), 0.12 + 0.08 * rng.random())
+            scale = 0.03 + 0.04 * rng.random()
+            opacity = 0.6 + 0.25 * rng.random()
+        else:
+            # Leaves (2)
+            leaf_h = stem_h * rng.uniform(0.2, 0.5)
+            leaf_angle = rng.uniform(0.0, 2.0 * math.pi)
+            leaf_r = rng.uniform(0.15, 0.35)
+            x = cx + math.cos(leaf_angle) * leaf_r
+            y = leaf_h
+            z = cz + math.sin(leaf_angle) * leaf_r
+            color = (0.15 + 0.12 * rng.random(), 0.5 + 0.3 * rng.random(), 0.1 + 0.1 * rng.random())
+            scale = 0.05 + 0.1 * rng.random()
+            opacity = 0.65 + 0.25 * rng.random()
+
         return x, y, z, color, scale, opacity
 
     def _sample_mandelbulb(_index: int) -> tuple[float, float, float, tuple[float, float, float], float, float]:
@@ -464,11 +517,78 @@ def _check_only(repo_root: Path) -> int:
     return 0
 
 
-def _generate(repo_root: Path, quiet: bool) -> int:
-    removed: list[str] = []
+def _generate_via_godot(godot_binary: Path, output_dir: Path, quiet: bool) -> bool:
+    """Run the Godot [GeneratePLY] test case to produce high-quality fixtures.
 
+    Returns True on success, False on failure (caller should fall back to Python).
+    """
+    env = os.environ.copy()
+    env["SYNTHETIC_PLY_OUTPUT_DIR"] = str(output_dir)
+    cmd = [
+        str(godot_binary),
+        "--headless",
+        "--test",
+        "--test-case=*GeneratePLY*",
+    ]
+    if not quiet:
+        print(f"[prepare_synthetic_assets] running C++ generators via: {' '.join(cmd)}")
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120, env=env)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        print(f"[prepare_synthetic_assets] C++ generation failed: {exc}")
+        return False
+
+    if proc.returncode != 0:
+        print(f"[prepare_synthetic_assets] C++ generation exited with code {proc.returncode}")
+        if proc.stderr:
+            for line in proc.stderr.strip().splitlines()[-5:]:
+                print(f"  {line}")
+        return False
+
+    # Verify all expected files were written.
+    missing = [name for name in sorted(CPP_GENERATED_FILENAMES) if not (output_dir / name).is_file()]
+    if missing:
+        print(f"[prepare_synthetic_assets] C++ generation missing files: {missing}")
+        return False
+
+    if not quiet:
+        for name in sorted(CPP_GENERATED_FILENAMES):
+            size = (output_dir / name).stat().st_size
+            print(f"[prepare_synthetic_assets] C++ generated {name} ({size:,} bytes)")
+    return True
+
+
+def _generate(repo_root: Path, quiet: bool, godot_binary: Path | None = None) -> int:
+    removed: list[str] = []
+    fixtures_dir = repo_root / "tests" / "fixtures"
+
+    # Phase 1: Generate primary fixtures via C++ generators if a binary is available.
+    cpp_generated = False
+    if godot_binary is not None:
+        cpp_generated = _generate_via_godot(godot_binary, fixtures_dir, quiet)
+        if not cpp_generated:
+            print("[prepare_synthetic_assets] falling back to Python generators for all files")
+
+    # Phase 2: Generate remaining files via Python.
     for spec in CANONICAL_SPECS:
         output = repo_root / spec.relative_path
+        filename = Path(spec.relative_path).name
+        is_primary = spec.relative_path.startswith("tests/fixtures/")
+
+        if cpp_generated and is_primary and filename in CPP_GENERATED_FILENAMES:
+            # Already generated by C++; skip Python generation for primary copy.
+            continue
+
+        if cpp_generated and not is_primary and filename in CPP_GENERATED_FILENAMES:
+            # Copy the C++-generated primary to the secondary location.
+            src = fixtures_dir / filename
+            output.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, output)
+            if not quiet:
+                print(f"[prepare_synthetic_assets] copied C++ {filename} -> {spec.relative_path}")
+            continue
+
+        # Python fallback generation.
         rows = _generate_rows(spec)
         _write_ply(output, rows)
         if not quiet:
@@ -520,6 +640,14 @@ def main() -> int:
         action="store_true",
         help="Suppress per-file output during generation.",
     )
+    parser.add_argument(
+        "--godot-binary",
+        default=None,
+        help="Path to a Godot editor binary built with tests=yes.  When given, "
+             "the C++ [GeneratePLY] test case generates high-quality fixtures "
+             "(50K-100K splats with SH, anisotropy, fBm noise) instead of the "
+             "lightweight Python fallback generators.",
+    )
     args = parser.parse_args()
 
     repo_root = _resolve_repo_root(args.repo_root)
@@ -527,9 +655,16 @@ def main() -> int:
         print(f"[prepare_synthetic_assets] invalid repo root: {repo_root}")
         return 1
 
+    godot_binary: Path | None = None
+    if args.godot_binary:
+        godot_binary = Path(args.godot_binary).expanduser().resolve()
+        if not godot_binary.is_file():
+            print(f"[prepare_synthetic_assets] godot binary not found: {godot_binary}")
+            return 1
+
     if args.check:
         return _check_only(repo_root)
-    return _generate(repo_root, args.quiet)
+    return _generate(repo_root, args.quiet, godot_binary)
 
 
 if __name__ == "__main__":

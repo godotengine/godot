@@ -1,0 +1,40 @@
+{
+  "default_asset": "res://tests/fixtures/test_splats.ply",
+  "lane_defaults": {
+    "animation_arena": "res://tests/fixtures/test_splats.ply",
+    "city_flyover": "res://tests/fixtures/test_splats.ply",
+    "instance_pipeline_ab": "res://tests/fixtures/test_splats.ply",
+    "instance_storm": "res://tests/fixtures/test_splats.ply",
+    "integrity_sentinel": "res://tests/fixtures/test_splats.ply",
+    "lighting_stress": "res://tests/fixtures/test_splats.ply",
+    "lod_torture": "res://tests/fixtures/test_splats.ply",
+    "long_soak": "res://tests/fixtures/test_splats.ply",
+    "parity_fidelity": "res://tests/fixtures/test_splats.ply",
+    "small_baseline": "res://tests/fixtures/test_splats.ply",
+    "static_baseline": "res://tests/fixtures/test_splats.ply",
+    "streaming_corridor": "res://tests/fixtures/test_splats.ply",
+    "synthetic_cloud": "res://tests/fixtures/synthetic_cloud.ply",
+    "synthetic_cube": "res://tests/fixtures/synthetic_cube.ply",
+    "synthetic_flower_field": "res://tests/fixtures/synthetic_flower_field.ply",
+    "synthetic_mandelbulb": "res://tests/fixtures/synthetic_mandelbulb.ply",
+    "synthetic_plane": "res://tests/fixtures/synthetic_plane.ply",
+    "synthetic_sphere": "res://tests/fixtures/synthetic_sphere.ply",
+    "synthetic_spiral": "res://tests/fixtures/synthetic_spiral.ply",
+    "synthetic_torus": "res://tests/fixtures/synthetic_torus.ply",
+    "unified_composite": "res://tests/fixtures/test_splats.ply"
+  },
+  "scene_defaults": {
+    "benchmark_small_baseline": "res://tests/fixtures/test_splats.ply",
+    "benchmark_suite_lane": "res://tests/fixtures/test_splats.ply",
+    "benchmark_unified": "res://tests/fixtures/test_splats.ply",
+    "synthetic_cloud": "res://tests/fixtures/synthetic_cloud.ply",
+    "synthetic_cube": "res://tests/fixtures/synthetic_cube.ply",
+    "synthetic_flower_field": "res://tests/fixtures/synthetic_flower_field.ply",
+    "synthetic_mandelbulb": "res://tests/fixtures/synthetic_mandelbulb.ply",
+    "synthetic_plane": "res://tests/fixtures/synthetic_plane.ply",
+    "synthetic_sphere": "res://tests/fixtures/synthetic_sphere.ply",
+    "synthetic_spiral": "res://tests/fixtures/synthetic_spiral.ply",
+    "synthetic_torus": "res://tests/fixtures/synthetic_torus.ply"
+  },
+  "version": "2.0.0"
+}
