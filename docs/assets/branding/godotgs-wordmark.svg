@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" role="img" aria-labelledby="title desc">
+  <title id="title">godotGS wordmark</title>
+  <desc id="desc">godotGS technical documentation wordmark with Gaussian node mark.</desc>
+  <defs>
+    <linearGradient id="panel" x1="12" y1="10" x2="84" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#16395f"/>
+      <stop offset="1" stop-color="#0c1522"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="24" y1="24" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7bd8ff"/>
+      <stop offset="1" stop-color="#6a7dff"/>
+    </linearGradient>
+  </defs>
+  <rect x="14" y="18" width="84" height="84" rx="24" fill="url(#panel)"/>
+  <rect x="15.75" y="19.75" width="80.5" height="80.5" rx="22.25" fill="none" stroke="#35567f" stroke-width="3.5"/>
+  <path d="M34 71 52 52l22 9 10-20" fill="none" stroke="url(#ink)" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+  <circle cx="34" cy="71" r="6.5" fill="#b7f0ff"/>
+  <circle cx="52" cy="52" r="8.5" fill="#7bd8ff"/>
+  <circle cx="74" cy="61" r="6.5" fill="#8db4ff"/>
+  <circle cx="84" cy="41" r="5.5" fill="#6a7dff"/>
+  <text x="126" y="58" fill="#dce9ff" font-family="'Segoe UI Variable Text', 'SF Pro Text', 'Helvetica Neue', sans-serif" font-size="20" font-weight="600" letter-spacing="4">TECHNICAL DOCS</text>
+  <text x="126" y="94" fill="#12253a" font-family="'Segoe UI Variable Text', 'SF Pro Display', 'Helvetica Neue', sans-serif" font-size="50" font-weight="700" letter-spacing="-1">godot<tspan fill="#1a5fa8">GS</tspan></text>
+</svg>

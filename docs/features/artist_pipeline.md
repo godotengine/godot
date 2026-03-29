@@ -2,6 +2,11 @@
 
 _Last verified: 2026-02-13._
 
+!!! info "Scope"
+    For artists and technical artists using inspector tools, hot reload, brush edits, and bake actions inside the editor.
+    This page covers in-editor pipeline details after you already know the overall job.
+    It complements the canonical [Artist Workflow Overview](../user/quickstart.md).
+
 ## Purpose
 
 Use this workflow to import `.ply`/`.spz` assets, iterate with inspector brush tools, and keep node data synchronized with source-file changes.

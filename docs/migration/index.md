@@ -1,4 +1,4 @@
-# Migration Guide and Compatibility Checklist
+# Migration Guide
 
 ## Purpose
 

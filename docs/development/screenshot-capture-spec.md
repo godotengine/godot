@@ -8,6 +8,8 @@ Define a repeatable, human-executed process for capturing documentation screensh
 
 Text-only automation cannot produce authoritative editor UI screenshots. Captures must be taken in a real editor session and reviewed for consistency.
 
+When authoritative editor screenshots are not yet available, use a clearly labeled diagram or benchmark artifact rather than a mock editor frame. Replace those interim visuals when the real capture pass is complete.
+
 ## Capture baseline
 
 Use these defaults unless a page requires an explicit override:
@@ -23,6 +25,13 @@ Use these defaults unless a page requires an explicit override:
 - Store images in `docs/assets/images/`.
 - Naming format: `<topic>-<context>-<state>.webp`.
 - Example: `quickstart-node-inspector-initial.webp`.
+
+## Figure contract
+
+- Every figure must have concise alt text.
+- Every figure must include a caption that explains the action or decision it supports.
+- Leave standard markdown images unwrapped so the docs site can expand them through `glightbox`.
+- Diagrams and benchmark artifacts must identify themselves honestly in captions; do not present them as editor screenshots.
 
 ## Per-shot metadata (required)
 
@@ -53,7 +62,12 @@ For each screenshot, record:
 ## Priority pages for initial capture pass
 
 - `docs/getting-started/quick-start.md`
+- `docs/user/quickstart.md`
 - `docs/workflows/importing.md`
 - `docs/workflows/GSPLATWORLD_BAKE.md`
-- `docs/features/color-grading-quick-start.md`
+- `docs/user/manual/runtime-behavior.md`
+- `docs/user/manual/lighting-behavior.md`
 - `docs/troubleshooting/recurring-issues.md`
+- `docs/architecture/overview.md`
+- `docs/reference/compatibility-matrix.md`
+- `docs/testing/benchmark-suite.md`

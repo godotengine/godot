@@ -1,4 +1,9 @@
-# User Manual: Workflows
+# Workflow Details
+
+!!! info "Scope"
+    For artists and integrators who already know which workflow family they need and want the next detailed page.
+    This page covers secondary workflow groupings and supporting task pages.
+    It complements the canonical [Artist Workflow Overview](../quickstart.md).
 
 ## Import Workflow
 

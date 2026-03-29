@@ -2,6 +2,11 @@
 
 This page is the canonical recurring bug and build/runtime issue reference.
 
+<figure markdown="1">
+![Diagram of the troubleshooting flow from symptom to validation lane, artifacts, and targeted fix](../assets/images/troubleshooting-diagnostics-flow.svg){ .gs-diagram }
+<figcaption>Recurring issues should route into the matching validation lane first so logs, JSON outputs, and capture artifacts point at the real failing layer before any fix attempt.</figcaption>
+</figure>
+
 ## 1) Sorting Regressions and Mis-Ordering
 
 ### Symptoms

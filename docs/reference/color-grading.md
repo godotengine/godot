@@ -1,5 +1,10 @@
 # Color Grading Reference
 
+!!! info "Scope"
+    For developers and technical artists who need field ranges, method contracts, and GPU mapping details.
+    This page covers exact API lookup after you already know the workflow.
+    It complements the canonical [Color Grading Quick Start](../features/color-grading-quick-start.md).
+
 ## Purpose
 Use this reference for the current color grading API on `GaussianSplatNode3D`, including runtime grading and bake/restore workflows.
 

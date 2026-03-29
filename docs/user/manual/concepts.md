@@ -24,7 +24,7 @@ Gaussian splatting renders scenes from splat data (`.ply` / `.spz`) instead of t
 
 ## Related
 
-- Manual index: [README.md](README.md)
+- Manual index: [index.md](index.md)
 - Workflows: [workflows.md](workflows.md)
 - Performance presets: [performance-presets.md](performance-presets.md)
 - FAQ: [faq.md](faq.md)

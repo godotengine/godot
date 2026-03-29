@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Artist workflow overview</title>
+  <desc id="desc">Diagram showing the artist handoff path from first run through import, preset selection, iteration tools, and finishing tasks.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
+    </marker>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Artist Workflow Overview</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">Use this lane when the engine is already running and the goal shifts from setup to repeatable asset iteration.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="72" y="226" width="196" height="160" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="100" y="278" fill="#f3f8ff" font-size="24" font-weight="700">Confirm First Run</text>
+    <text x="100" y="310" fill="#a9c2df" font-size="18">Start from a working</text>
+    <text x="100" y="336" fill="#a9c2df" font-size="18">sample scene.</text>
+
+    <rect x="296" y="226" width="196" height="160" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="324" y="278" fill="#f3f8ff" font-size="24" font-weight="700">Import Real Asset</text>
+    <text x="324" y="310" fill="#a9c2df" font-size="18">Bring in `.ply` or `.spz`</text>
+    <text x="324" y="336" fill="#a9c2df" font-size="18">through the canonical flow.</text>
+
+    <rect x="520" y="226" width="196" height="160" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="548" y="278" fill="#f3f8ff" font-size="24" font-weight="700">Set Preset First</text>
+    <text x="548" y="310" fill="#a9c2df" font-size="18">Use a safe performance</text>
+    <text x="548" y="336" fill="#a9c2df" font-size="18">preset before deep tuning.</text>
+
+    <rect x="744" y="226" width="196" height="160" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="772" y="278" fill="#f3f8ff" font-size="24" font-weight="700">Iterate In Tools</text>
+    <text x="772" y="310" fill="#a9c2df" font-size="18">Use artist pipeline tools,</text>
+    <text x="772" y="336" fill="#a9c2df" font-size="18">hot reload, and checks.</text>
+
+    <rect x="968" y="226" width="136" height="160" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="996" y="278" fill="#f3f8ff" font-size="24" font-weight="700">Finish</text>
+    <text x="996" y="310" fill="#a9c2df" font-size="18">Bake or color</text>
+    <text x="996" y="336" fill="#a9c2df" font-size="18">grade next.</text>
+  </g>
+
+  <line x1="268" y1="306" x2="296" y2="306" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="492" y1="306" x2="520" y2="306" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="716" y1="306" x2="744" y2="306" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="940" y1="306" x2="968" y2="306" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+
+  <rect x="72" y="460" width="536" height="92" rx="24" fill="#101d32" stroke="#2b4c73" stroke-width="2" />
+  <text x="102" y="500" fill="#7ec7ff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">SAFE DEFAULT</text>
+  <text x="102" y="530" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="18">Most artist-facing problems get easier once import correctness and presets are settled first.</text>
+</svg>

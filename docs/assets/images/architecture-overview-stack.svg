@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Architecture overview</title>
+  <desc id="desc">Diagram showing the main subsystems of the Gaussian Splatting module, from editor entrypoints to renderer internals and diagnostics.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="1152" height="672" rx="32" fill="url(#bg)" />
+  <text x="72" y="96" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Architecture Overview</text>
+  <text x="72" y="136" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">Editor entrypoints feed import, runtime, renderer, and diagnostics layers that stay versioned with the module.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="96" y="184" width="1008" height="94" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="118" y="208" width="154" height="28" rx="14" fill="#203a63" />
+    <text x="195" y="228" fill="#7ec7ff" font-size="14" text-anchor="middle" font-weight="700">ENTRYPOINTS</text>
+    <text x="118" y="252" fill="#f3f8ff" font-size="28" font-weight="700">Registration and editor hooks</text>
+    <text x="118" y="286" fill="#a9c2df" font-size="18">Class registration, inspector/editor integration, and node-facing APIs define the public surface.</text>
+
+    <rect x="156" y="324" width="888" height="110" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="182" y="348" width="122" height="28" rx="14" fill="#203a63" />
+    <text x="243" y="368" fill="#7ec7ff" font-size="14" text-anchor="middle" font-weight="700">IO AND ASSETS</text>
+    <text x="182" y="392" fill="#f3f8ff" font-size="28" font-weight="700">Importers, loaders, and canonical asset types</text>
+    <text x="182" y="424" fill="#a9c2df" font-size="18">PLY and SPZ flow into GaussianSplatAsset resources used by scenes, bake scripts, and runtime loads.</text>
+
+    <rect x="216" y="474" width="768" height="110" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="242" y="498" width="140" height="28" rx="14" fill="#203a63" />
+    <text x="312" y="518" fill="#7ec7ff" font-size="14" text-anchor="middle" font-weight="700">RUNTIME CORE</text>
+    <text x="242" y="542" fill="#f3f8ff" font-size="28" font-weight="700">Node state, world state, streaming, and renderer orchestration</text>
+    <text x="242" y="574" fill="#a9c2df" font-size="18">Transforms, chunking, visibility, sorting, raster, lighting, and metrics live here.</text>
+  </g>
+
+  <path d="M600 278 L600 324" fill="none" stroke="url(#accent)" stroke-width="6" />
+  <path d="M600 434 L600 474" fill="none" stroke="url(#accent)" stroke-width="6" />
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="922" y="520" width="138" height="34" rx="17" fill="#203a63" />
+    <text x="991" y="543" fill="#7ec7ff" font-size="14" text-anchor="middle" font-weight="700">QA AND DOCS</text>
+    <text x="840" y="612" fill="#a9c2df" font-size="18">Benchmarks, runtime validation, compatibility evidence,</text>
+    <text x="840" y="638" fill="#a9c2df" font-size="18">and troubleshooting pages reflect the same architecture.</text>
+  </g>
+</svg>

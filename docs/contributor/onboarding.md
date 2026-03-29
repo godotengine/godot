@@ -4,9 +4,8 @@ Goal: get a local build, run canonical checks, and ship a safe first PR.
 
 ## 1) Local Setup
 
-- Build with:
-  - `scons platform=<windows|linuxbsd|macos> target=editor dev_build=yes -j<jobs>`
-- Full command matrix: [../reference/build-test-ci.md](../reference/build-test-ci.md)
+- Build from source: [../BUILDING.md](../BUILDING.md)
+- Test and CI command reference: [../reference/build-test-ci.md](../reference/build-test-ci.md)
 
 ## 2) Run Canonical Validation
 
@@ -23,7 +22,7 @@ Goal: get a local build, run canonical checks, and ship a safe first PR.
 - Architecture overview: [../architecture/overview.md](../architecture/overview.md)
 - Render pipeline details: [../architecture/render-pipeline.md](../architecture/render-pipeline.md)
 - Lighting details: [../architecture/lighting-system.md](../architecture/lighting-system.md)
-- API index: [../api/README.md](../api/README.md)
+- API index: [../api/index.md](../api/index.md)
 
 ## 4) First PR Expectations
 

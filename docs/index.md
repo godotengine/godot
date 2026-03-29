@@ -1,74 +1,85 @@
-# Documentation Index
+---
+hide:
+  - toc
+---
 
-This is the canonical documentation entrypoint for this repository.
+<div class="gs-home-intro" markdown>
 
-## Overview
+<p class="gs-eyebrow">Technical documentation</p>
 
-- [Project overview](../README.md)
-- [Build guide](../BUILDING.md)
-- [Module overview](../modules/gaussian_splatting/README.md)
+# godotGS
 
-## Quickstart
+godotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for importing, rendering, and tuning splat-based scenes in the editor and at runtime.
 
-- [Getting started hub](getting-started/README.md)
-- [Installation](getting-started/installation.md)
-- [Quick start](getting-started/quick-start.md)
+<div class="gs-chip-row" markdown>
+<span class="gs-chip gs-chip--alpha">Alpha</span>
+<span class="gs-chip">Nightly-first releases</span>
+</div>
 
-## Usage
+[Start with First Run](getting-started/quick-start.md){ .md-button .md-button--primary }
+[Check Compatibility](reference/compatibility-matrix.md){ .md-button }
 
-- [Workflows](workflows/importing.md)
-- [Feature guides](features/README.md)
-- [Streaming](features/streaming.md)
-- [Animation](features/animation.md)
-- [Media conventions](features/media.md)
+</div>
 
-## Configuration
+<div class="gs-status-strip" markdown>
 
-- [Project settings reference](reference/project-settings.md)
-- [Compatibility matrix](reference/compatibility-matrix.md)
-- [Engine patch report (generated)](reference/engine-patch.md)
-- [Shader API (generated)](api/shader_reference.md)
+### Project Status
 
-## API
+- Preferred install path: Linux nightly for the fastest evaluation path, or [Build from Source](BUILDING.md) on Windows and macOS.
+- Release reality: public GitHub releases are currently nightly-first.
+- Binary coverage: public binaries currently cover the Linux editor only.
+- Usage fit: evaluation, prototypes, and contributor work.
 
-- [API index](api/README.md)
-- [Node API](api/gaussian_splat_node3d.md)
-- [GaussianData](api/gaussian_data.md)
-- [GaussianSplatAsset](api/gaussian_splat_asset.md)
-- [GaussianSplatWorld3D](api/gaussian_splat_world3d.md)
-- [GaussianSplatContainer](api/gaussian_splat_container.md)
-- [GaussianSplatDynamicInstance3D](api/gaussian_splat_dynamic_instance3d.md)
-- [GaussianSplatManager](api/gaussian_splat_manager.md)
-- [GaussianSplatRenderer](api/gaussian_splat_renderer.md)
-- [Internal classes](api/internal-classes.md)
-- [GDScript API (generated)](api/gdscript_reference.md)
-- [Shader API (generated)](api/shader_reference.md)
+</div>
 
-## Troubleshooting
+<div class="gs-section-shell" markdown>
 
-- [Recurring issues](troubleshooting/recurring-issues.md)
+## Fastest Evaluation Path
 
-## Developer Workflow
+1. [Choose the current install path](getting-started/installation.md): Linux nightly for the fastest evaluation path, or [Build from Source](BUILDING.md) on other platforms.
+2. [Run First Run and reach a first visible splat](getting-started/quick-start.md).
+3. [Check platform status](reference/compatibility-matrix.md), [release-channel reality](development/release-channels.md), and [known recurring issues](troubleshooting/recurring-issues.md).
 
-- [Development index](development/README.md)
-- [Versioned docs site](development/docs-site.md)
-- [Screenshot capture specification](development/screenshot-capture-spec.md)
-- [Testing setup](testing/setup-guide.md)
-- [Benchmark suite runner](testing/benchmark-suite.md)
-- [CI workflows](../.github/workflows/README.md)
-- [Documentation style guide](style/documentation-style-guide.md)
+</div>
 
-## Architecture
+<div class="gs-section-shell" markdown>
 
-- [Architecture index](architecture/README.md)
-- [Module architecture source of truth](../modules/gaussian_splatting/ARCHITECTURE.md)
-- [Memory subsystem and invariants](../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)
+## Choose Your Lane
 
-## Policies
+<div class="grid cards" markdown>
 
-- [Contributing](../CONTRIBUTING.md)
-- [Changelog policy](../CHANGELOG.md)
+- __Start Here__
 
-## Migration
+    ---
 
-- [Migration guide and compatibility checklist](migration/index.md)
+    Evaluate the project quickly, understand the current fit, and reach a first visible result.
+
+    [Open Start Here](getting-started/index.md)
+
+- __User Guide__
+
+    ---
+
+    Import assets, understand runtime behavior, and tune day-to-day quality and performance.
+
+    [Open User Guide](user/index.md)
+
+- __Reference__
+
+    ---
+
+    Look up settings, API surfaces, compatibility details, and migration notes.
+
+    [Open Reference](reference/index.md)
+
+- __Contribute__
+
+    ---
+
+    Build the fork, run validation, understand architecture, and ship safe changes.
+
+    [Open Contribute](contributor/index.md)
+
+</div>
+
+</div>

@@ -4,6 +4,11 @@
 
 Bake many Gaussian splat assets into one `GaussianSplatWorld` resource to remove runtime parsing overhead for source files.
 
+<figure markdown="1">
+![Diagram of the bake workflow joining scene mode and input-list mode into one GaussianSplatWorld output](../assets/images/bake-world-workflow.svg){ .gs-diagram }
+<figcaption>Scene mode preserves node transforms, input-list mode does not, but both bake paths end at the same gsplatworld runtime resource.</figcaption>
+</figure>
+
 ## Usage
 
 | Mode | Required input | Transform behavior | Output | Implementation |

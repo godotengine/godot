@@ -19,35 +19,112 @@ def load_data() -> dict:
         return yaml.safe_load(handle) or {}
 
 
-def build_table(platforms: dict) -> str:
+def _format_cell(value: object) -> str:
+    if value is None:
+        return "-"
+    text = str(value).strip()
+    if not text:
+        return "-"
+    return text.replace("|", "\\|").replace("\n", "<br>")
+
+
+def _format_list(values: object) -> str:
+    if values is None:
+        return "-"
+    if isinstance(values, str):
+        return _format_cell(values)
+    if not isinstance(values, list):
+        return _format_cell(values)
+
+    items = [_format_cell(item) for item in values if _format_cell(item) != "-"]
+    if not items:
+        return "-"
+    return "<br>".join(items)
+
+
+def build_table(data: dict) -> str:
+    status_levels = data.get("status_levels", {})
+    platforms = data.get("platforms", {})
+    tested_configurations = data.get("tested_configurations", [])
+
     rows = [
         "# Compatibility Matrix",
         "",
         f"Last generated: {date.today().isoformat()}",
         "",
         "## Purpose",
-        "Use this matrix to track validated platform compatibility status for Gaussian Splatting.",
+        "Use this matrix to track evidence-backed platform status for godotGS Gaussian Splatting.",
         "",
         "## Usage",
         "| Task | Action |",
         "| --- | --- |",
-        "| Review current platform status | Read the `Status` and `Notes` columns in the matrix. |",
+        "| Review current platform status | Read the `Current state`, `Public binaries`, and `Notes` columns in the platform table. |",
         "| Update compatibility evidence | Edit `docs/reference/compatibility_sources.yaml` and regenerate this file. |",
         "",
-        "## API",
-        "Entries marked `unknown` have no validated test evidence in this repository.",
-        "",
-        "| Platform | Status | GPU | Driver | Notes |",
-        "| --- | --- | --- | --- | --- |",
+        "## Evidence Levels",
+        "| Level | Meaning |",
+        "| --- | --- |",
     ]
+
+    for level, description in status_levels.items():
+        rows.append(f"| `{_format_cell(level)}` | {_format_cell(description)} |")
+
+    rows.extend(
+        [
+            "",
+            "## Platform States",
+            "The state shown for each platform is the strongest evidence level currently documented in this repository.",
+            "",
+            "| Platform | Current state | Public binaries | Evidence | Notes |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+    )
+
     for platform, entry in platforms.items():
-        status = entry.get("status", "unknown")
         rows.append(
-            f"| {platform} | {status} | {entry.get('gpu', '-')} | {entry.get('driver', '-')} | {entry.get('notes', '')} |"
+            "| {platform} | `{state}` | {public_binaries} | {evidence} | {notes} |".format(
+                platform=_format_cell(platform),
+                state=_format_cell(entry.get("state", "unknown")),
+                public_binaries=_format_cell(entry.get("public_binaries", "-")),
+                evidence=_format_list(entry.get("evidence", [])),
+                notes=_format_cell(entry.get("notes", "")),
+            )
         )
 
     rows.extend(
         [
+            "",
+            "## Published Test Environments",
+            "These rows record the concrete hardware/software environments that are currently described in repo-owned automation or published evidence. Missing adapter or driver names mean the lane exists, but those identifiers are not yet published in the docs.",
+            "",
+            "| Platform | State | Hardware | Software | Evidence | Notes |",
+            "| --- | --- | --- | --- | --- | --- |",
+        ]
+    )
+
+    for entry in tested_configurations:
+        rows.append(
+            "| {platform} | `{state}` | {hardware} | {software} | {evidence} | {notes} |".format(
+                platform=_format_cell(entry.get("platform", "")),
+                state=_format_cell(entry.get("state", "unknown")),
+                hardware=_format_cell(entry.get("hardware", "")),
+                software=_format_cell(entry.get("software", "")),
+                evidence=_format_list(entry.get("evidence", [])),
+                notes=_format_cell(entry.get("notes", "")),
+            )
+        )
+
+    if not tested_configurations:
+        rows.append("| - | - | - | - | - | No published hardware/software rows yet. |")
+
+    rows.extend(
+        [
+            "",
+            "## Reading the Matrix",
+            "- `build-supported` means the build system accepts the platform and repo automation can compile it.",
+            "- `smoke-tested` means a minimal runtime or QA lane has passed, but not necessarily an interactive editor lane.",
+            "- `editor-tested` means a non-headless editor/runtime lane has passed.",
+            "- `sample-project-tested` and `production-tested` are reserved for stronger published evidence than this repo currently exposes publicly.",
             "",
             "## Examples",
             "```bash",
@@ -58,7 +135,8 @@ def build_table(platforms: dict) -> str:
             "| Issue | Cause | Fix |",
             "| --- | --- | --- |",
             "| Matrix does not reflect YAML edits | The generator was not rerun. | Run `python3 scripts/update_compatibility_matrix.py`. |",
-            "| A platform is still `unknown` | No validated evidence is documented. | Add evidence to `docs/reference/compatibility_sources.yaml` and regenerate. |",
+            "| A platform only reaches `build-supported` | The repo has no documented runtime or editor evidence for it yet. | Add stronger evidence to `docs/reference/compatibility_sources.yaml` only after the lane or test result exists. |",
+            "| Hardware or driver fields are still generic | The lane exists, but the adapter or driver identifiers are not yet published in repo-owned evidence. | Capture them from the evidence run and replace the placeholder text in `docs/reference/compatibility_sources.yaml`. |",
             "| Missing platform row | Platform key was removed from the YAML source. | Re-add the platform entry in `docs/reference/compatibility_sources.yaml`. |",
         ]
     )
@@ -67,8 +145,7 @@ def build_table(platforms: dict) -> str:
 
 def main() -> None:
     data = load_data()
-    platforms = data.get("platforms", {})
-    OUTPUT.write_text(build_table(platforms) + "\n", encoding="utf-8")
+    OUTPUT.write_text(build_table(data) + "\n", encoding="utf-8")
     print(f"[compatibility] Wrote matrix to {OUTPUT}")
 
 

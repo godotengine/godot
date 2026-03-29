@@ -2,6 +2,11 @@
 
 This page describes what lighting usually looks like on splats and which controls give the safest, fastest results.
 
+<figure markdown="1">
+![Diagram of the recommended lighting-tuning order from direct light through indirect fill and shadow strength](../../assets/images/lighting-behavior-controls.svg){ .gs-diagram }
+<figcaption>Lighting work should move from direct light to indirect fill to shadow strength; if those three do not stabilize the scene, use the troubleshooting and reference pages next.</figcaption>
+</figure>
+
 ## What You Should Expect Visually
 
 - Splats react to direct lights, but shading is not identical to mesh materials.

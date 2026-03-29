@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Import workflow</title>
+  <desc id="desc">Diagram showing PLY and SPZ assets moving through importers or loaders into GaussianSplatAsset resources for editor and runtime use.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
+    </marker>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Import Workflow</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">The canonical import path converts source files into one asset type that both scenes and scripts can reuse.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="84" y="214" width="216" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="114" y="268" fill="#f3f8ff" font-size="26" font-weight="700">Source files</text>
+    <text x="114" y="302" fill="#a9c2df" font-size="18">`.ply` and `.spz` inputs</text>
+    <text x="114" y="328" fill="#a9c2df" font-size="18">arrive from capture or</text>
+    <text x="114" y="354" fill="#a9c2df" font-size="18">conversion pipelines.</text>
+
+    <rect x="346" y="174" width="244" height="110" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="378" y="226" fill="#f3f8ff" font-size="25" font-weight="700">Editor importers</text>
+    <text x="378" y="256" fill="#a9c2df" font-size="18">PLY and SPZ importers</text>
+    <text x="378" y="282" fill="#a9c2df" font-size="18">write `.tres` assets.</text>
+
+    <rect x="346" y="306" width="244" height="110" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="378" y="358" fill="#f3f8ff" font-size="25" font-weight="700">Runtime loader</text>
+    <text x="378" y="388" fill="#a9c2df" font-size="18">`ResourceLoader` returns</text>
+    <text x="378" y="414" fill="#a9c2df" font-size="18">an in-memory asset.</text>
+
+    <rect x="640" y="214" width="236" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="672" y="268" fill="#f3f8ff" font-size="26" font-weight="700">GaussianSplatAsset</text>
+    <text x="672" y="302" fill="#a9c2df" font-size="18">Canonical asset type for</text>
+    <text x="672" y="328" fill="#a9c2df" font-size="18">node assignment, baking,</text>
+    <text x="672" y="354" fill="#a9c2df" font-size="18">and direct loading.</text>
+
+    <rect x="926" y="174" width="190" height="110" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="956" y="226" fill="#f3f8ff" font-size="24" font-weight="700">Editor scene</text>
+    <text x="956" y="256" fill="#a9c2df" font-size="18">Assign the resource to</text>
+    <text x="956" y="282" fill="#a9c2df" font-size="18">scene nodes.</text>
+
+    <rect x="926" y="306" width="190" height="110" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="956" y="358" fill="#f3f8ff" font-size="24" font-weight="700">Bake or runtime</text>
+    <text x="956" y="388" fill="#a9c2df" font-size="18">Use the same asset in</text>
+    <text x="956" y="414" fill="#a9c2df" font-size="18">scripts and worlds.</text>
+  </g>
+
+  <line x1="300" y1="258" x2="346" y2="228" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="300" y1="344" x2="346" y2="360" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="590" y1="228" x2="640" y2="258" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="590" y1="360" x2="640" y2="340" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="876" y1="258" x2="926" y2="228" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="876" y1="340" x2="926" y2="360" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+</svg>
