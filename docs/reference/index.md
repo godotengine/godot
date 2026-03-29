@@ -78,6 +78,7 @@ Look up the stable nouns and knobs: settings, APIs, compatibility notes, and mig
 
 - [Color Grading Reference](color-grading.md)
 - [Migration Guide](../migration/index.md)
+- [Performance Dashboard](../performance/index.md)
 - [Engine Patch Report](engine-patch.md)
 - [Build / Test / CI Reference](build-test-ci.md)
 - [Recurring Issues](../troubleshooting/recurring-issues.md)

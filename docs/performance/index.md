@@ -1,9 +1,29 @@
 # Performance Dashboard
 
-This page displays interactive benchmark results from the latest suite run.
+This page surfaces the current published benchmark snapshot and the suite lanes that are expected to grow it.
 
 !!! note "Data freshness"
     Charts use `assets/data/benchmark_latest.json` generated during docs build. Run `python scripts/export_benchmark_vegalite.py` locally to update from your latest benchmark run.
+    The current public dataset contains one committed result row; the coverage table below shows the user-relevant benchmark lanes already defined in the suite.
+
+## Current Public Snapshot
+
+| Lane | Purpose | Score | Avg FPS | P99 Frame (ms) | GPU Time (ms) |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `static_baseline` | Low-noise raster baseline | 90.7 | 74.0 | 15.62 | 0.0 |
+
+The snapshot above is the current committed public result. It is the reference row used by the charts below until more published scenarios are added.
+
+## Coverage Map
+
+| Lane | Purpose | Status |
+| --- | --- | --- |
+| `static_baseline` | Low-noise raster baseline | Published in `benchmark_latest.json` |
+| `streaming_corridor` | Camera sweep stressing chunk turnover | Defined in the benchmark suite, not yet published |
+| `city_flyover` | High-altitude visibility-change stress | Defined in the benchmark suite, not yet published |
+| `instance_storm` | Many-instance submission pressure | Defined in the benchmark suite, not yet published |
+| `lighting_stress` | Animated light and shading stress | Defined in the benchmark suite, not yet published |
+| `unified_composite` | Integrated all-systems composite lane | Defined in the benchmark suite, not yet published |
 
 ## Lane Scores Overview
 
@@ -57,6 +77,7 @@ This page displays interactive benchmark results from the latest suite run.
 
 1. Run a benchmark: `python tests/runtime/run_benchmark.py --profile everything`
 2. Export data: `python scripts/export_benchmark_vegalite.py`
-3. Build docs: `python scripts/build_docs_site.py --strict`
+3. Update the current snapshot table above when the published lane set changes.
+4. Build docs: `python scripts/build_docs_site.py --strict`
 
 See [Benchmark Suite Runner](../testing/benchmark-suite.md) for full benchmark documentation.

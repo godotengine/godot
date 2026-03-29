@@ -12,6 +12,16 @@ python3 tests/runtime/run_benchmark.py \
 
 `--profile` defaults to `everything`.
 
+## Current Public Snapshot
+
+The current committed public result is a single low-noise raster baseline row:
+
+| Lane | Score | Avg FPS | P99 Frame (ms) | GPU Time (ms) |
+| --- | ---: | ---: | ---: | ---: |
+| `static_baseline` | 90.7 | 74.0 | 15.62 | 0.0 |
+
+That snapshot is what backs the public performance dashboard until more committed lane results are added.
+
 ## Standard Flags
 
 - `--profile` (`everything|quick|performance|synthetic-only|ab-only`)
@@ -49,6 +59,19 @@ Asset generation and mapping are canonicalized through:
 
 The benchmark runner calls synthetic asset preparation automatically before execution.
 
+## Suite Coverage
+
+These are the user-relevant lanes already encoded in the suite and available for publication once committed results exist:
+
+| Lane | Purpose | Current publication status |
+| --- | --- | --- |
+| `static_baseline` | Low-noise raster baseline | Published |
+| `streaming_corridor` | Camera sweep stressing chunk turnover | Suite-only |
+| `city_flyover` | High-altitude visibility-change stress | Suite-only |
+| `instance_storm` | Many-instance submission pressure | Suite-only |
+| `lighting_stress` | Animated light and shading stress | Suite-only |
+| `unified_composite` | Integrated all-systems composite lane | Suite-only |
+
 ## Outputs
 
 Default output directory:
@@ -63,6 +86,8 @@ Generated artifacts:
 - `benchmark_orchestrator_report.json`
 - `<lane_id>.json` per lane
 - optional dashboard artifacts (`benchmark_suite_dashboard.html`, `benchmark_suite_*.svg`)
+
+The public docs surface should prefer the snapshot table above for the current committed result and keep the charts focused on the exported lane data.
 
 <figure markdown="1">
 ![Diagram showing how the benchmark runner produces reports, dashboards, charts, and optional capture outputs](../assets/images/benchmark-artifacts-map.svg){ .gs-diagram }
@@ -96,6 +121,13 @@ Generated artifacts:
   "title": "Benchmark Lane Scores"
 }
 ```
+
+## How to Update
+
+1. Run a benchmark: `python tests/runtime/run_benchmark.py --profile everything`
+2. Export data: `python scripts/export_benchmark_vegalite.py`
+3. Refresh the snapshot and coverage tables in `docs/performance/index.md` when new committed results are available.
+4. Build docs: `python scripts/build_docs_site.py --strict`
 
 ### Average FPS by Lane
 

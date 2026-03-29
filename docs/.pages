@@ -1,6 +1,7 @@
 nav:
   - Start Here:
       - getting-started/index.md
+      - getting-started/try-in-5-minutes.md
       - getting-started/installation.md
       - getting-started/quick-start.md
       - troubleshooting/recurring-issues.md
@@ -18,6 +19,7 @@ nav:
       - reference/index.md
       - reference/project-settings.md
       - reference/compatibility-matrix.md
+      - performance/index.md
       - api/index.md
       - api/gaussian_splat_node3d.md
       - api/gdscript_reference.md
@@ -26,6 +28,7 @@ nav:
       - migration/index.md
   - Contribute:
       - contributor/index.md
+      - contributor/reviewer-fast-path.md
       - contributor/onboarding.md
       - BUILDING.md
       - reference/build-test-ci.md
