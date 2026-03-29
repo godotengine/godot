@@ -2,6 +2,11 @@
 
 This page explains what artists usually observe while navigating a splat scene, and which controls are safest to touch first.
 
+<figure markdown="1">
+![Diagram of the normal runtime progression from warmup through stabilization and safe tuning](../../assets/images/runtime-behavior-checkpoints.svg){ .gs-diagram }
+<figcaption>Most runtime sessions follow a short warmup, stabilize, then show expected streaming or sorting changes before any tuning is needed.</figcaption>
+</figure>
+
 ## What You Should Expect Visually
 
 - First load can take longer while data streams and GPU resources warm up.

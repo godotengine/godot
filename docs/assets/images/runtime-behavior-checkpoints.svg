@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Runtime behavior checkpoints</title>
+  <desc id="desc">Diagram showing the normal progression from startup warmup to stable navigation, expected streaming changes, and safe tuning knobs.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Runtime Behavior Checkpoints</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">This is the normal sequence users should expect before escalating to troubleshooting.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="82" y="220" width="228" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="114" y="272" fill="#f3f8ff" font-size="26" font-weight="700">1. Warmup</text>
+    <text x="114" y="306" fill="#a9c2df" font-size="18">Initial load may stream data</text>
+    <text x="114" y="332" fill="#a9c2df" font-size="18">and allocate GPU resources.</text>
+
+    <rect x="342" y="220" width="228" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="374" y="272" fill="#f3f8ff" font-size="26" font-weight="700">2. Stabilize</text>
+    <text x="374" y="306" fill="#a9c2df" font-size="18">Navigation should settle once</text>
+    <text x="374" y="332" fill="#a9c2df" font-size="18">startup work is complete.</text>
+
+    <rect x="602" y="220" width="228" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="634" y="272" fill="#f3f8ff" font-size="26" font-weight="700">3. Expect updates</text>
+    <text x="634" y="306" fill="#a9c2df" font-size="18">Streaming and sorting can</text>
+    <text x="634" y="332" fill="#a9c2df" font-size="18">cause distant detail shifts.</text>
+
+    <rect x="862" y="220" width="254" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="894" y="272" fill="#f3f8ff" font-size="26" font-weight="700">4. Tweak safe knobs</text>
+    <text x="894" y="306" fill="#a9c2df" font-size="18">Preset, max splat count, and</text>
+    <text x="894" y="332" fill="#a9c2df" font-size="18">render distance come first.</text>
+  </g>
+
+  <rect x="72" y="454" width="720" height="94" rx="24" fill="#101d32" stroke="#2b4c73" stroke-width="2" />
+  <text x="104" y="492" fill="#7ec7ff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">ESCALATE ONLY WHEN PERSISTENT</text>
+  <text x="104" y="524" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="18">Repeated flicker, persistent missing splats, or startup that never settles is when troubleshooting becomes the right next lane.</text>
+
+  <line x1="310" y1="304" x2="342" y2="304" stroke="url(#accent)" stroke-width="6" />
+  <line x1="570" y1="304" x2="602" y2="304" stroke="url(#accent)" stroke-width="6" />
+  <line x1="830" y1="304" x2="862" y2="304" stroke="url(#accent)" stroke-width="6" />
+</svg>

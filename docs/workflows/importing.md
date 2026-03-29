@@ -1,8 +1,17 @@
 # Gaussian Splat Asset Import Workflow
 
+!!! tip "Canonical task page"
+    Use this page as the source of truth for importing `.ply` and `.spz` assets into godotGS.
+    For low-level loader and property details, use [PLY Loader](../features/ply-loader.md) as the technical complement.
+
 ## Purpose
 
 Load `.ply` and `.spz` files into `GaussianSplatAsset` resources for editor use and runtime loading.
+
+<figure markdown="1">
+![Diagram of the canonical import path from PLY or SPZ sources into GaussianSplatAsset resources](../assets/images/import-workflow-lane.svg){ .gs-diagram }
+<figcaption>The import workflow has two entrypoints, but both collapse into the same GaussianSplatAsset type used by scenes, bake scripts, and runtime loads.</figcaption>
+</figure>
 
 ## Usage
 

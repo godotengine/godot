@@ -64,6 +64,11 @@ Generated artifacts:
 - `<lane_id>.json` per lane
 - optional dashboard artifacts (`benchmark_suite_dashboard.html`, `benchmark_suite_*.svg`)
 
+<figure markdown="1">
+![Diagram showing how the benchmark runner produces reports, dashboards, charts, and optional capture outputs](../assets/images/benchmark-artifacts-map.svg){ .gs-diagram }
+<figcaption>The benchmark runner is one orchestrated entrypoint that fans out into JSON, dashboard HTML, SVG charts, and optional capture directories for visual proof.</figcaption>
+</figure>
+
 ## Interactive Performance Charts
 
 !!! info "Data source"

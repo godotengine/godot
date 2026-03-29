@@ -2,8 +2,13 @@
 
 _Last updated: 2026-02-25_
 
+!!! info "Scope"
+    For people who need prerequisite, toolchain, or binary-selection details before following the canonical [First Run](quick-start.md) path.
+    This page covers setup requirements and how to obtain a module-enabled editor.
+    It complements [Build from Source](../BUILDING.md).
+
 ## Purpose
-Build a custom Godot editor with `gaussian_splatting` and verify the sample project boots.
+Prepare a module-enabled Godot editor before you begin the canonical first-run flow.
 
 ## Usage
 | Requirement | Details |
@@ -14,15 +19,27 @@ Build a custom Godot editor with `gaussian_splatting` and verify the sample proj
 | Linux packages | Install the Linux package set listed in [../BUILDING.md](../BUILDING.md) before running `scons` |
 | GPU | Vulkan 1.2 or newer for runtime rendering |
 
-Use [../BUILDING.md](../BUILDING.md) for platform package setup.
+Use [../BUILDING.md](../BUILDING.md) for platform package setup and local build commands.
 
-| Task | Run from | Command |
+| Option | When to use it | Next page |
 | --- | --- | --- |
-| Build editor (Linux) | repository root | `scons platform=linuxbsd target=editor dev_build=yes -j$(nproc)` |
-| Build editor (Windows) | repository root | `scons platform=windows target=editor dev_build=yes -j10` |
-| Build editor (macOS arm64) | repository root | `scons platform=macos target=editor dev_build=yes arch=arm64 -j8` |
-| Launch sample project (Linux dev build) | repository root | `./bin/godot.linuxbsd.editor.dev.x86_64 --path tests/examples/godot/test_project` |
-| Headless boot check (Linux dev build) | repository root | `./bin/godot.linuxbsd.editor.dev.x86_64 --headless --path tests/examples/godot/test_project --quit` |
+| Reuse an existing module-enabled editor | You already have a binary built from this fork and only need to point docs commands at it. | [First Run](quick-start.md) |
+| Build an editor locally | You need a fresh binary from this checkout. | [Build from Source](../BUILDING.md) |
+| Build a test-enabled editor | You plan to run guard, QA, or runtime validation lanes. | [Build / Test / CI Command Reference](../reference/build-test-ci.md) |
+
+## Verification
+
+Once you have a module-enabled editor, confirm it opens the sample project before continuing:
+
+```bash
+$GODOT_BINARY --headless --path tests/examples/godot/test_project --quit
+```
+
+```powershell
+& $env:GODOT_BINARY --headless --path .\tests\examples\godot\test_project --quit
+```
+
+Then continue with [First Run](quick-start.md).
 
 ## API
 | Item | Reference |
@@ -41,6 +58,6 @@ var node := GaussianSplatNode3D.new()
 | Symptom | Action | Source |
 | --- | --- | --- |
 | `GaussianSplatNode3D` is missing in the editor. | Rebuild the editor from repository root, then relaunch the binary from `bin/`. | `modules/gaussian_splatting/register_types.cpp:77` |
-| Linux launch command cannot find executable. | Use the `dev_build=yes` binary name (`godot.linuxbsd.editor.dev.x86_64`). | [docs/getting-started/quick-start.md](quick-start.md) |
-| Linux build logs show `WARNING: wayland-scanner not found`. | Install `libwayland-bin` (and `wayland-protocols`) from [docs/BUILDING.md](../BUILDING.md) and rebuild if you need Wayland backend support. | [docs/BUILDING.md](../BUILDING.md) |
+| Linux launch command cannot find executable. | Use the `dev_build=yes` binary name shown in [Build from Source](../BUILDING.md). | [docs/BUILDING.md](../BUILDING.md) |
+| Linux build logs show `WARNING: wayland-scanner not found`. | Install `libwayland-bin` (and `wayland-protocols`) from [Build from Source](../BUILDING.md) and rebuild if you need Wayland backend support. | [docs/BUILDING.md](../BUILDING.md) |
 | `GaussianData.load_from_file()` is unresolved in scripts. | Use the bound API exactly as declared and bound. | `modules/gaussian_splatting/core/gaussian_data.h:447`, `modules/gaussian_splatting/core/gaussian_data.cpp:174` |

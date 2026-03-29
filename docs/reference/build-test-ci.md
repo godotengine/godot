@@ -1,28 +1,14 @@
-# Build / Test / CI Reference
+# Build / Test / CI Command Reference
 
-This page is the canonical command reference.
+!!! info "Scope"
+    For contributors who already know whether they are building, testing, or validating CI behavior.
+    This page covers test runners, CI entrypoints, and the test-enabled build variant.
+    It complements the canonical [Build from Source](../BUILDING.md) page.
 
 ## Build
 
-Run from repository root:
-
-=== "Linux"
-
-    ```bash
-    scons platform=linuxbsd target=editor dev_build=yes -j$(nproc)
-    ```
-
-=== "Windows"
-
-    ```bash
-    scons platform=windows target=editor dev_build=yes -j10
-    ```
-
-=== "macOS (Apple Silicon)"
-
-    ```bash
-    scons platform=macos target=editor dev_build=yes arch=arm64 -j8
-    ```
+- Base editor builds: use the canonical [Build from Source](../BUILDING.md) page.
+- First visible result after a successful build: use [First Run](../getting-started/quick-start.md).
 
 For test-enabled editor builds:
 

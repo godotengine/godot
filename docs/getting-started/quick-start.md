@@ -1,8 +1,17 @@
-# Quick Start
+# First Run
 
 _Last updated: 2026-03-16_
 
+!!! tip "Canonical task page"
+    Use this page as the source of truth for install and first run.
+    If you need prerequisite details or compiler setup, use [Installation](installation.md) and [Build from Source](../BUILDING.md), then return here.
+
 Purpose: first visible splat with minimal setup.
+
+<figure markdown="1">
+![Diagram of the first-run path from a module-built editor to a visible sample splat](../assets/images/first-run-editor-path.svg){ .gs-diagram }
+<figcaption>The first-run path is a short proof loop: point at the module-built editor, seed the synthetic fixture asset, open the sample project, and confirm a visible splat in the benchmark_unified scene.</figcaption>
+</figure>
 
 Run commands from repository root (`godotgs/`).
 
@@ -18,20 +27,13 @@ export GODOT_BINARY=/absolute/path/to/your/godot-editor
 $env:GODOT_BINARY="C:\absolute\path\to\your\godot-editor.exe"
 ```
 
-Need to build now?
+Need to build one now?
 
-```bash
-# Linux
-scons platform=linuxbsd target=editor dev_build=yes -j$(nproc)
+- Review prerequisites in [Installation](installation.md).
+- Run the platform build commands in [Build from Source](../BUILDING.md).
+- Then return here and set `GODOT_BINARY` to the binary you built.
 
-# Windows (Developer Command Prompt)
-scons platform=windows target=editor dev_build=yes -j10
-
-# macOS (Apple Silicon)
-scons platform=macos target=editor dev_build=yes arch=arm64 -j8
-```
-
-Then:
+After a successful build:
 
 ```bash
 export GODOT_BINARY=./bin/<your-editor-binary>
@@ -85,6 +87,7 @@ You should see:
 
 ## Need Help?
 
-- Artist-specific resources: [../user/quickstart.md](../user/quickstart.md)
+- Artist workflow overview: [../user/quickstart.md](../user/quickstart.md)
 - Installation details: [installation.md](installation.md)
+- Build from source: [../BUILDING.md](../BUILDING.md)
 - Recurring fixes: [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md)

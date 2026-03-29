@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Bake workflow</title>
+  <desc id="desc">Diagram showing scene mode and input-list mode converging into a merged GaussianSplatWorld resource for runtime use.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
+    </marker>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Bake Workflow</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">Both bake modes end at one runtime world resource. The difference is where transforms come from before merge.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="88" y="220" width="248" height="168" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="120" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Scene mode</text>
+    <text x="120" y="306" fill="#a9c2df" font-size="18">Load a scene, find a</text>
+    <text x="120" y="332" fill="#a9c2df" font-size="18">container, and keep child</text>
+    <text x="120" y="358" fill="#a9c2df" font-size="18">global transforms.</text>
+
+    <rect x="88" y="428" width="248" height="120" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="120" y="476" fill="#f3f8ff" font-size="26" font-weight="700">Input list mode</text>
+    <text x="120" y="508" fill="#a9c2df" font-size="18">Load files directly and</text>
+    <text x="120" y="534" fill="#a9c2df" font-size="18">merge with identity transforms.</text>
+
+    <rect x="428" y="270" width="286" height="180" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="462" y="322" fill="#f3f8ff" font-size="26" font-weight="700">Merge and chunk</text>
+    <text x="462" y="356" fill="#a9c2df" font-size="18">Collect assets, apply chunk size,</text>
+    <text x="462" y="382" fill="#a9c2df" font-size="18">and build consolidated world data.</text>
+
+    <rect x="806" y="220" width="290" height="168" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="840" y="272" fill="#f3f8ff" font-size="26" font-weight="700">`.gsplatworld` output</text>
+    <text x="840" y="306" fill="#a9c2df" font-size="18">Serialized merged splats plus</text>
+    <text x="840" y="332" fill="#a9c2df" font-size="18">chunk metadata for fast load.</text>
+
+    <rect x="806" y="428" width="290" height="120" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="840" y="476" fill="#f3f8ff" font-size="26" font-weight="700">Runtime world node</text>
+    <text x="840" y="508" fill="#a9c2df" font-size="18">Apply the baked world with the</text>
+    <text x="840" y="534" fill="#a9c2df" font-size="18">node transform kept at identity.</text>
+  </g>
+
+  <line x1="336" y1="304" x2="428" y2="336" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="336" y1="488" x2="428" y2="390" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="714" y1="360" x2="806" y2="304" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="714" y1="388" x2="806" y2="476" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+</svg>

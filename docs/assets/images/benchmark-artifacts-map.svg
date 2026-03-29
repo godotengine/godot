@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Benchmark artifact map</title>
+  <desc id="desc">Diagram showing the benchmark runner producing JSON reports, logs, charts, and optional capture outputs from a single orchestrated run.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
+    </marker>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Benchmark Artifact Map</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">One benchmark command fans out into reports, dashboards, charts, and optional visual captures.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="82" y="220" width="224" height="180" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="114" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Runner entrypoint</text>
+    <text x="114" y="306" fill="#a9c2df" font-size="18">`run_benchmark.py` launches</text>
+    <text x="114" y="332" fill="#a9c2df" font-size="18">one orchestrated Godot session.</text>
+
+    <rect x="366" y="220" width="252" height="180" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="398" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Lane execution</text>
+    <text x="398" y="306" fill="#a9c2df" font-size="18">Profiles fan into lane JSON,</text>
+    <text x="398" y="332" fill="#a9c2df" font-size="18">summary markdown, and logs.</text>
+
+    <rect x="678" y="174" width="196" height="104" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="710" y="224" fill="#f3f8ff" font-size="24" font-weight="700">JSON reports</text>
+    <text x="710" y="252" fill="#a9c2df" font-size="18">Per-lane and summary data.</text>
+
+    <rect x="678" y="300" width="196" height="104" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="710" y="350" fill="#f3f8ff" font-size="24" font-weight="700">Dashboard and SVG</text>
+    <text x="710" y="378" fill="#a9c2df" font-size="18">HTML and chart artifacts.</text>
+
+    <rect x="678" y="426" width="196" height="104" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="710" y="476" fill="#f3f8ff" font-size="24" font-weight="700">Capture directory</text>
+    <text x="710" y="504" fill="#a9c2df" font-size="18">Optional visual proof.</text>
+
+    <rect x="934" y="252" width="182" height="150" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="966" y="304" fill="#f3f8ff" font-size="24" font-weight="700">Docs surfaces</text>
+    <text x="966" y="338" fill="#a9c2df" font-size="18">Benchmark reference page,</text>
+    <text x="966" y="364" fill="#a9c2df" font-size="18">charts, dashboards, and QA.</text>
+  </g>
+
+  <line x1="306" y1="308" x2="366" y2="308" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="618" y1="308" x2="678" y2="226" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="618" y1="308" x2="678" y2="352" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="618" y1="308" x2="678" y2="478" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="874" y1="226" x2="934" y2="290" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="874" y1="352" x2="934" y2="328" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="874" y1="478" x2="934" y2="364" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+</svg>
