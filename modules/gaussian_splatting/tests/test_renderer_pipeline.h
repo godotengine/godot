@@ -673,16 +673,16 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Upload processing rescues stranded a
     streaming_system->initialize_with_device(data, primary_rd);
 
     StreamingUploadPipeline &upload_pipeline = streaming_system->_internal_get_upload_pipeline();
-    upload_pipeline.stop_pack_threads(*streaming_system);
+    upload_pipeline.stop_pack_threads(*streaming_system.ptr());
     upload_pipeline.async_pack_enabled = true;
 
-    CHECK_MESSAGE(upload_pipeline.queue_chunk_load(*streaming_system, 0, 0),
+    CHECK_MESSAGE(upload_pipeline.queue_chunk_load(*streaming_system.ptr(), 0, 0),
             "Expected chunk load request to enqueue async pack work for the primary asset");
     CHECK(streaming_system->get_pending_pack_jobs() == 1);
     CHECK(streaming_system->get_pending_upload_jobs() == 0);
     CHECK(streaming_system->get_loaded_chunks() == 0);
 
-    upload_pipeline.process_upload_queue(*streaming_system);
+    upload_pipeline.process_upload_queue(*streaming_system.ptr());
 
     CHECK_MESSAGE(streaming_system->get_loaded_chunks() == 1,
             "Expected upload processing to synchronously rescue one stranded pack job into a completed chunk load");

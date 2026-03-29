@@ -2672,8 +2672,6 @@ void GaussianStreamingSystem::_handle_predictive_prefetch(const Vector3 &camera_
         frame_prefetch_budget = MIN(frame_prefetch_budget, sync_prefetch_capacity);
     }
 
-    uint32_t pack_queue_depth = 0;
-    uint32_t upload_queue_depth = 0;
     upload_pipeline.get_pending_queue_depths_cached(pack_queue_depth, upload_queue_depth);
     const bool pack_inflight_saturated = upload_pipeline.max_pack_jobs_in_flight > 0 &&
             upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed) >= upload_pipeline.max_pack_jobs_in_flight;
