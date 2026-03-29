@@ -348,6 +348,8 @@ private:
             bool can_async_pack, bool prioritize_sync_fallback = false);
     bool _enqueue_sync_fallback_chunk_load(uint32_t asset_id, uint32_t chunk_idx, bool prioritize = false);
     uint32_t _drain_sync_fallback_chunk_loads(uint32_t effective_max, uint32_t &evictions_left, bool &eviction_blocked);
+    bool _should_force_sync_fallback_for_async_stall(uint32_t pack_queue_depth, uint32_t upload_queue_depth);
+    bool _can_use_async_pack_path(uint32_t pack_queue_depth, uint32_t upload_queue_depth);
     uint32_t _get_sync_fallback_queue_depth() const;
     void _compact_sync_fallback_queue();
     void _process_upload_queue();
