@@ -3337,6 +3337,10 @@ void GaussianStreamingSystem::end_frame() {
             ? double(tsnap.mutex_wait_total) / (USEC_PER_MS * double(tsnap.mutex_wait_samples))
             : 0.0;
     upload_pipeline.last_pack_mutex_wait_max_ms = double(tsnap.mutex_wait_max) / USEC_PER_MS;
+    upload_pipeline.last_thread_wakes = tsnap.thread_wakes;
+    upload_pipeline.last_thread_dequeues = tsnap.thread_dequeues;
+    upload_pipeline.last_thread_snapshots = tsnap.thread_snapshots;
+    upload_pipeline.last_thread_enqueue_uploads = tsnap.thread_enqueue_uploads;
 
     analytics_snapshot["pack_avg_ms"] = upload_pipeline.last_pack_avg_ms;
     analytics_snapshot["pack_max_ms"] = upload_pipeline.last_pack_max_ms;
@@ -3349,6 +3353,10 @@ void GaussianStreamingSystem::end_frame() {
     analytics_snapshot["upload_queue_latency_max_ms"] = upload_pipeline.last_upload_queue_latency_max_ms;
     analytics_snapshot["pack_mutex_wait_avg_ms"] = upload_pipeline.last_pack_mutex_wait_avg_ms;
     analytics_snapshot["pack_mutex_wait_max_ms"] = upload_pipeline.last_pack_mutex_wait_max_ms;
+    analytics_snapshot["pack_thread_wakes"] = (int)upload_pipeline.last_thread_wakes;
+    analytics_snapshot["pack_thread_dequeues"] = (int)upload_pipeline.last_thread_dequeues;
+    analytics_snapshot["pack_thread_snapshots"] = (int)upload_pipeline.last_thread_snapshots;
+    analytics_snapshot["pack_thread_enqueue_uploads"] = (int)upload_pipeline.last_thread_enqueue_uploads;
     analytics_snapshot["pack_jobs_in_flight"] = (int)upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed);
     analytics_snapshot["avg_chunk_load_time_ms"] = upload_pipeline.last_pack_avg_ms;
     analytics_snapshot["camera_velocity"] = visibility.camera_tracker.velocity.length();
@@ -3449,6 +3457,8 @@ void GaussianStreamingSystem::end_frame() {
     analytics_snapshot["scheduler_sync_fallback_stalled"] = (int)scheduler.last_sync_fallback_stalled_count;
     analytics_snapshot["scheduler_sync_fallback_load_budget"] = (int)scheduler.max_sync_fallback_loads_per_frame;
     analytics_snapshot["scheduler_sync_fallback_cpu_ms"] = scheduler.last_sync_fallback_cpu_ms;
+    analytics_snapshot["sync_promoted_pack_jobs_this_frame"] = (int)upload_pipeline.last_sync_promoted_pack_jobs;
+    analytics_snapshot["sync_promoted_pack_jobs_total"] = static_cast<int64_t>(upload_pipeline.sync_promoted_pack_jobs_total);
     StreamingTelemetryAdapter::QueuePressureSnapshot queue_pressure_snapshot;
     queue_pressure_snapshot.active = upload_pipeline.queue_pressure_active;
     queue_pressure_snapshot.source = upload_pipeline.queue_pressure_source;
@@ -3635,7 +3645,7 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
 
     const bool has_failure = category != "ok";
     const String fingerprint = vformat(
-            "%s|ready=%s|chunks=%d/%d/%d|visible_splats=%d|cand=%d|pack_q=%d|upload_q=%d|sync_q=%d|load_frame=%d|upload_frame=%d|caps=%d/%d/%d|vram=%d/%d|hits=%d%d%d%d%d|qsrc=%s|qwhy=%s|atlas=%d|req=%d|inv=%d/%d/%d",
+            "%s|ready=%s|chunks=%d/%d/%d|visible_splats=%d|cand=%d|pack_q=%d|upload_q=%d|sync_q=%d|load_frame=%d|upload_frame=%d|caps=%d/%d/%d|vram=%d/%d|hits=%d%d%d%d%d|qsrc=%s|qwhy=%s|atlas=%d|req=%d|inv=%d/%d/%d|sync_promo=%d",
             category,
             runtime_ready ? "1" : "0",
             loaded_chunks,
@@ -3664,7 +3674,8 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             static_cast<int64_t>(asset_registry.request_generation),
             static_cast<int64_t>(diagnostics.invariant_slot_ownership_violations),
             static_cast<int64_t>(diagnostics.invariant_upload_lifecycle_violations),
-            static_cast<int64_t>(diagnostics.invariant_generation_violations));
+            static_cast<int64_t>(diagnostics.invariant_generation_violations),
+            static_cast<int64_t>(upload_pipeline.sync_promoted_pack_jobs_total));
 
     if (has_failure) {
         const bool fingerprint_changed = diagnostics.last_logged_fingerprint != fingerprint;
@@ -3745,6 +3756,12 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             scheduler.force_sync_fallback_due_to_async_stall;
     diagnostics_snapshot["chunks_loaded_this_frame"] = static_cast<int64_t>(loaded_this_frame);
     diagnostics_snapshot["chunks_uploaded_this_frame"] = static_cast<int64_t>(upload_chunks_this_frame);
+    diagnostics_snapshot["sync_promoted_pack_jobs_this_frame"] = static_cast<int64_t>(upload_pipeline.last_sync_promoted_pack_jobs);
+    diagnostics_snapshot["sync_promoted_pack_jobs_total"] = static_cast<int64_t>(upload_pipeline.sync_promoted_pack_jobs_total);
+    diagnostics_snapshot["pack_thread_wakes"] = static_cast<int64_t>(upload_pipeline.last_thread_wakes);
+    diagnostics_snapshot["pack_thread_dequeues"] = static_cast<int64_t>(upload_pipeline.last_thread_dequeues);
+    diagnostics_snapshot["pack_thread_snapshots"] = static_cast<int64_t>(upload_pipeline.last_thread_snapshots);
+    diagnostics_snapshot["pack_thread_enqueue_uploads"] = static_cast<int64_t>(upload_pipeline.last_thread_enqueue_uploads);
     diagnostics_snapshot["cap_tier_preset"] = budget.vram_regulator.is_valid()
             ? active_vram_caps.cap_tier_preset
             : upload_pipeline.cap_tier_preset;

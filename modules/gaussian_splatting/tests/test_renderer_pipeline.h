@@ -636,6 +636,61 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance drives GPU strea
 	renderer.unref();
 }
 
+TEST_CASE("[GaussianSplatting][RequiresGPU] Upload processing rescues stranded async pack work") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    LocalVector<Gaussian> gaussians;
+    fill_gaussians(gaussians, GaussianStreamingSystem::CHUNK_SIZE);
+
+    Ref<::GaussianData> data;
+    data.instantiate();
+    data->set_gaussians(gaussians);
+
+    Ref<GaussianStreamingSystem> streaming_system;
+    streaming_system.instantiate();
+    CHECK(streaming_system.is_valid());
+    if (!streaming_system.is_valid()) {
+        return;
+    }
+    streaming_system->initialize_with_device(data, primary_rd);
+
+    StreamingUploadPipeline &upload_pipeline = streaming_system->_internal_get_upload_pipeline();
+    upload_pipeline.stop_pack_threads(*streaming_system);
+    upload_pipeline.async_pack_enabled = true;
+
+    CHECK_MESSAGE(upload_pipeline.queue_chunk_load(*streaming_system, 0, 0),
+            "Expected chunk load request to enqueue async pack work for the primary asset");
+    CHECK(streaming_system->get_pending_pack_jobs() == 1);
+    CHECK(streaming_system->get_pending_upload_jobs() == 0);
+    CHECK(streaming_system->get_loaded_chunks() == 0);
+
+    upload_pipeline.process_upload_queue(*streaming_system);
+
+    CHECK_MESSAGE(streaming_system->get_loaded_chunks() == 1,
+            "Expected upload processing to synchronously rescue one stranded pack job into a completed chunk load");
+    CHECK(streaming_system->get_chunks_loaded_this_frame() == 1);
+    CHECK(streaming_system->get_pending_pack_jobs() == 0);
+    CHECK(streaming_system->get_pending_upload_jobs() == 0);
+}
+
 TEST_CASE("[GaussianSplatting][RequiresGPU] World static chunks keep streaming instance buffers ready without SceneDirector instances") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
