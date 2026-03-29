@@ -74,6 +74,7 @@ if env.editor_build:
     env.add_source_files(env.editor_sources, gen_exporters)
     env.add_source_files(env.editor_sources, translation_targets.keys())
 
+    SConscript("agent/SCsub")
     SConscript("animation/SCsub")
     SConscript("asset_library/SCsub")
     SConscript("audio/SCsub")

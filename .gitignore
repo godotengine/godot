@@ -18,6 +18,12 @@
 # - Visual Studio specific
 # - OS specific
 
+######################
+### Secret files ###
+######################
+
+.env
+
 ###########################
 ### Build configuration ###
 ###########################

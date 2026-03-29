@@ -1138,6 +1138,18 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #endif
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", default_renderer, "forward_plus,mobile,gl_compatibility")
 
+	/* Agent */
+
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "agent/api/provider", "anthropic", "anthropic,openai,local")
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_PASSWORD, "agent/api/anthropic_api_key", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET)
+	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_PASSWORD, "agent/api/openai_api_key", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET)
+	_initial_set("agent/api/local_endpoint", "http://localhost:11434");
+	_initial_set("agent/api/model", "claude-sonnet-4-20250514");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "agent/chat/max_history_messages", 50, "1,500,1")
+	_initial_set("agent/chat/auto_context", true);
+	_initial_set("agent/actions/require_confirmation", true);
+	_initial_set("agent/actions/allow_file_delete", false);
+
 #undef EDITOR_SETTING
 #undef EDITOR_SETTING_BASIC
 #undef EDITOR_SETTING_USAGE
