@@ -2222,8 +2222,11 @@ void GDScriptLanguage::finish() {
 
 #ifdef TOOLS_ENABLED
 	if (coverage_enabled && !coverage_written) {
-		coverage_write();
-		if (!coverage_check_threshold()) {
+		Error err = coverage_write();
+		if (err != OK) {
+			OS::get_singleton()->set_exit_code(1);
+			print_line("GDScript coverage write failed (error " + itos(err) + ").");
+		} else if (!coverage_check_threshold()) {
 			OS::get_singleton()->set_exit_code(1);
 			print_line("GDScript coverage threshold not met.");
 		}
