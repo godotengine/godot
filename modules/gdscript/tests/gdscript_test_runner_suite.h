@@ -75,7 +75,8 @@ TEST_SUITE("[Modules][GDScript]") {
 		int fail_count = runner.run_tests();
 
 		if (coverage_active) {
-			GDScriptLanguage::get_singleton()->coverage_write();
+			Error cov_err = GDScriptLanguage::get_singleton()->coverage_write();
+			REQUIRE_MESSAGE(cov_err == OK, "GDScript coverage write failed.");
 			print_line(GDScriptLanguage::get_singleton()->coverage_summary_string());
 			REQUIRE_MESSAGE(GDScriptLanguage::get_singleton()->coverage_check_threshold(),
 					"GDScript coverage below configured threshold.");
