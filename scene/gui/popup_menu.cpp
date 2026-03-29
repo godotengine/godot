@@ -37,6 +37,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/fuzzy_search.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/line_edit.h"
@@ -1096,34 +1097,37 @@ void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 }
 
 void PopupMenu::_filter_items(const String &p_query) {
+	PackedStringArray search_names;
+	for (int i = 0; i < items.size(); i++) {
+		search_names.append(items[i].text);
+	}
+
+	Vector<FuzzySearchResult> results;
+	FuzzySearch fuzzy;
+	fuzzy.set_query(p_query, false);
+	fuzzy.search_all(search_names, results);
+
 	for (PopupMenu::Item &item : items) {
-		bool all_sub_items_invisible = true;
+		bool submenu_visible = false;
 		if (item.submenu) {
 			item.submenu->_filter_items(p_query);
-			for (const PopupMenu::Item &submenu_item : item.submenu->items) {
+			for (PopupMenu::Item &submenu_item : item.submenu->items) {
 				if (submenu_item.visible) {
-					all_sub_items_invisible = false;
+					submenu_visible = true;
 					break;
 				}
 			}
 		}
 
-		if (p_query.length() > 0) {
-			bool contains = item.text.containsn(p_query);
-			if (item.submenu) {
-				if (contains) {
-					item.visible = true;
-					for (PopupMenu::Item &submenu_item : item.submenu->items) {
-						submenu_item.visible = true;
-					}
-				} else {
-					item.visible = !all_sub_items_invisible;
-				}
-			} else {
-				item.visible = contains;
+		item.visible = p_query.length() == 0 || submenu_visible;
+	}
+
+	for (const FuzzySearchResult &res : results) {
+		items.write[res.original_index].visible = res.score > 0;
+		if (items[res.original_index].visible && items[res.original_index].submenu) {
+			for (PopupMenu::Item &submenu_item : items[res.original_index].submenu->items) {
+				submenu_item.visible = true;
 			}
-		} else {
-			item.visible = true;
 		}
 	}
 }
