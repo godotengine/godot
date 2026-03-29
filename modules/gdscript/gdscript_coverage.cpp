@@ -554,10 +554,16 @@ static Error _write_lcov(const String &p_path,
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = p_lang->_coverage_enumerate_func_start_lines();
 
-	// Sort the union of hit paths and coverable paths for deterministic output.
-	// Files compiled but never executed must appear with DA:line,0 entries.
+	// Union all four sources so a file that only has function or branch events
+	// (but no line hits) is not silently dropped, matching the JSON writer.
 	HashSet<String> path_set;
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
+		path_set.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<String, int>> &kv : p_func_hits) {
+		path_set.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
 		path_set.insert(kv.key);
 	}
 	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
@@ -730,8 +736,16 @@ static Error _write_cobertura(const String &p_path,
 			(int64_t)ts, line_rate, branch_rate, t.hit_lines, t.lines, t.hit_branches, t.branches));
 	f->store_line("  <packages><package name=\"gdscript\"><classes>");
 
+	// Union all four sources to match the JSON writer — a file with only
+	// function or branch events (but no line hits) must not be silently dropped.
 	HashSet<String> cobertura_paths;
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
+		cobertura_paths.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<String, int>> &kv : p_func_hits) {
+		cobertura_paths.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
 		cobertura_paths.insert(kv.key);
 	}
 	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
