@@ -228,7 +228,6 @@ inline Gaussian make_base_gaussian() {
 	gaussian.painterly_meta = gaussian_pack_painterly_meta(0);
 	gaussian._padding2[0] = 0.0f;
 	gaussian._padding2[1] = 0.0f;
-	gaussian._padding2[2] = 0.0f;
 	return gaussian;
 }
 
