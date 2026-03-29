@@ -45,7 +45,7 @@
 void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
 		// If there is already a binding set, let enter or escape confirm/cancel the popup.
-		if (event.is_valid()) {
+		if (event.is_valid() && p_event->get_type() == InputEventType::KEY) {
 			Ref<InputEventKey> current_key = p_event;
 			// Without this is_visible() check, the gui would not open if the already bound
 			// keybind was escape.
