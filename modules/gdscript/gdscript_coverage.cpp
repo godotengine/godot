@@ -482,17 +482,23 @@ static void _lcov_write_functions(Ref<FileAccess> f, const HashMap<String, int> 
 static void _lcov_write_branches(Ref<FileAccess> f,
 		const HashMap<int, GDScriptLanguage::BranchResult> &p_branches,
 		int &r_brf, int &r_brh) {
+	// Sort by IP for deterministic output across runs.
+	Vector<int> sorted_ips;
 	for (const KeyValue<int, GDScriptLanguage::BranchResult> &bv : p_branches) {
-		int ip = bv.key;
-		int ln = bv.value.line;
+		sorted_ips.push_back(bv.key);
+	}
+	sorted_ips.sort();
+	for (int ip : sorted_ips) {
+		const GDScriptLanguage::BranchResult &br = *p_branches.getptr(ip);
+		int ln = br.line;
 		// BRDA format: line, block (ip), branch (0=taken/1=not_taken), count
-		f->store_line("BRDA:" + itos(ln) + "," + itos(ip) + ",0," + itos(bv.value.taken));
-		f->store_line("BRDA:" + itos(ln) + "," + itos(ip) + ",1," + itos(bv.value.not_taken));
+		f->store_line("BRDA:" + itos(ln) + "," + itos(ip) + ",0," + itos(br.taken));
+		f->store_line("BRDA:" + itos(ln) + "," + itos(ip) + ",1," + itos(br.not_taken));
 		r_brf += 2;
-		if (bv.value.taken > 0) {
+		if (br.taken > 0) {
 			r_brh++;
 		}
-		if (bv.value.not_taken > 0) {
+		if (br.not_taken > 0) {
 			r_brh++;
 		}
 	}
@@ -597,8 +603,13 @@ static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
 
 	if (p_funcs) {
 		f->store_line("      <methods>");
+		Vector<String> sorted_methods;
 		for (const KeyValue<String, int> &fv : *p_funcs) {
-			f->store_line(vformat("        <method name=\"%s\" hits=\"%d\"/>", _xml_escape(fv.key), fv.value));
+			sorted_methods.push_back(fv.key);
+		}
+		sorted_methods.sort();
+		for (const String &fn : sorted_methods) {
+			f->store_line(vformat("        <method name=\"%s\" hits=\"%d\"/>", _xml_escape(fn), *p_funcs->getptr(fn)));
 		}
 		f->store_line("      </methods>");
 	}
@@ -708,13 +719,18 @@ static void _json_write_lines(Ref<FileAccess> f, const HashMap<int, int> &p_line
 
 static void _json_write_funcs(Ref<FileAccess> f, const HashMap<String, int> &p_funcs) {
 	f->store_string("      \"functions\": {");
-	bool first = true;
+	Vector<String> sorted_funcs;
 	for (const KeyValue<String, int> &fv : p_funcs) {
+		sorted_funcs.push_back(fv.key);
+	}
+	sorted_funcs.sort();
+	bool first = true;
+	for (const String &fn : sorted_funcs) {
 		if (!first) {
 			f->store_string(",");
 		}
 		first = false;
-		f->store_string("\"" + fv.key.c_escape() + "\":" + itos(fv.value));
+		f->store_string("\"" + fn.c_escape() + "\":" + itos(*p_funcs.getptr(fn)));
 	}
 	f->store_line("},");
 }
