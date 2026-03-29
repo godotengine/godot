@@ -218,7 +218,8 @@ static HashMap<String, CoverageFileStats> _gather_file_stats(
 		const HashMap<String, HashMap<int, int>> &p_hits,
 		const HashMap<String, HashMap<String, int>> &p_func_hits,
 		const HashMap<String, HashMap<int, GDScriptLanguage::BranchResult>> &p_branch_hits,
-		const HashMap<String, HashMap<int, int>> *p_coverable = nullptr) {
+		const HashMap<String, HashMap<int, int>> *p_coverable = nullptr,
+		const HashMap<String, HashMap<String, int>> *p_func_starts = nullptr) {
 	HashMap<String, CoverageFileStats> out;
 	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
 		const HashMap<int, int> *cov = p_coverable ? p_coverable->getptr(kv.key) : nullptr;
@@ -237,6 +238,19 @@ static HashMap<String, CoverageFileStats> _gather_file_stats(
 		for (const KeyValue<String, HashMap<int, int>> &cv : *p_coverable) {
 			if (!out.has(cv.key)) {
 				_compute_line_stats(empty_hits, &cv.value, out[cv.key]);
+			}
+			// Count never-called functions in FNF so func% reflects reality.
+			if (p_func_starts && !p_func_hits.has(cv.key)) {
+				const HashMap<String, int> *fs = p_func_starts->getptr(cv.key);
+				if (fs) {
+					static const HashMap<String, int> zero_hit;
+					// Build zero-hit view: all functions from func_starts with count 0.
+					HashMap<String, int> never_called;
+					for (const KeyValue<String, int> &fv : *fs) {
+						never_called[fv.key] = 0;
+					}
+					_compute_func_stats(never_called, out[cv.key]);
+				}
 			}
 		}
 	}
@@ -263,7 +277,8 @@ bool GDScriptLanguage::coverage_check_threshold() const {
 		return true;
 	}
 	HashMap<String, HashMap<int, int>> coverable = _coverage_enumerate_coverable_lines();
-	HashMap<String, CoverageFileStats> stats = _gather_file_stats(coverage_hits, coverage_func_hits, coverage_branch_hits, &coverable);
+	HashMap<String, HashMap<String, int>> func_starts = _coverage_enumerate_func_start_lines();
+	HashMap<String, CoverageFileStats> stats = _gather_file_stats(coverage_hits, coverage_func_hits, coverage_branch_hits, &coverable, &func_starts);
 	CoverageFileStats t = _sum_totals(stats);
 	if (t.lines == 0) {
 		return true;
@@ -288,7 +303,8 @@ String GDScriptLanguage::coverage_summary_string() const {
 	static const int COL_FILE = 40;
 
 	HashMap<String, HashMap<int, int>> coverable = _coverage_enumerate_coverable_lines();
-	HashMap<String, CoverageFileStats> stats = _gather_file_stats(coverage_hits, coverage_func_hits, coverage_branch_hits, &coverable);
+	HashMap<String, HashMap<String, int>> func_starts = _coverage_enumerate_func_start_lines();
+	HashMap<String, CoverageFileStats> stats = _gather_file_stats(coverage_hits, coverage_func_hits, coverage_branch_hits, &coverable, &func_starts);
 	CoverageFileStats totals = _sum_totals(stats);
 
 	String out = String("File").rpad(COL_FILE) + String("Lines").rpad(9) + String("Funcs").rpad(9) + String("Branches").rpad(9) + "\n";
@@ -425,18 +441,33 @@ static Vector<int> _merge_line_hits(const HashMap<int, int> &p_hits,
 
 static void _lcov_write_functions(Ref<FileAccess> f, const HashMap<String, int> &p_funcs,
 		const HashMap<String, int> &p_starts) {
+	// Merge: start with all compiled functions (p_starts), then overlay recorded hits (p_funcs).
+	// Functions compiled but never called appear with FNDA:0. FN/FNDA are sorted for determinism.
+	HashMap<String, int> all_funcs;
+	for (const KeyValue<String, int> &sv : p_starts) {
+		all_funcs[sv.key] = 0;
+	}
 	for (const KeyValue<String, int> &fv : p_funcs) {
-		const int *ln = p_starts.getptr(fv.key);
-		f->store_line("FN:" + itos(ln ? *ln : 1) + "," + fv.key);
+		all_funcs[fv.key] = fv.value;
+	}
+	Vector<String> sorted_funcs;
+	for (const KeyValue<String, int> &fv : all_funcs) {
+		sorted_funcs.push_back(fv.key);
+	}
+	sorted_funcs.sort();
+	for (const String &fn : sorted_funcs) {
+		const int *ln = p_starts.getptr(fn);
+		f->store_line("FN:" + itos(ln ? *ln : 1) + "," + fn);
 	}
 	int fnh = 0;
-	for (const KeyValue<String, int> &fv : p_funcs) {
-		f->store_line("FNDA:" + itos(fv.value) + "," + fv.key);
-		if (fv.value > 0) {
+	for (const String &fn : sorted_funcs) {
+		int cnt = *all_funcs.getptr(fn);
+		f->store_line("FNDA:" + itos(cnt) + "," + fn);
+		if (cnt > 0) {
 			fnh++;
 		}
 	}
-	f->store_line("FNF:" + itos(p_funcs.size()));
+	f->store_line("FNF:" + itos(all_funcs.size()));
 	f->store_line("FNH:" + itos(fnh));
 }
 
@@ -508,10 +539,10 @@ static Error _write_lcov(const String &p_path,
 		f->store_line("SF:" + _coverage_globalize(res_path));
 
 		const HashMap<String, int> *funcs = p_func_hits.getptr(res_path);
-		if (funcs) {
-			static const HashMap<String, int> empty_starts;
-			const HashMap<String, int> *starts = func_starts.getptr(res_path);
-			_lcov_write_functions(f, *funcs, starts ? *starts : empty_starts);
+		const HashMap<String, int> *starts = func_starts.getptr(res_path);
+		if (funcs || starts) {
+			static const HashMap<String, int> empty_funcs;
+			_lcov_write_functions(f, funcs ? *funcs : empty_funcs, starts ? *starts : empty_funcs);
 		}
 
 		int brf = 0, brh = 0;
@@ -596,7 +627,8 @@ static Error _write_cobertura(const String &p_path,
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open coverage output: " + p_path);
 
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
-	HashMap<String, CoverageFileStats> stats = _gather_file_stats(p_hits, p_func_hits, p_branch_hits, &coverable);
+	HashMap<String, HashMap<String, int>> func_starts = p_lang->_coverage_enumerate_func_start_lines();
+	HashMap<String, CoverageFileStats> stats = _gather_file_stats(p_hits, p_func_hits, p_branch_hits, &coverable, &func_starts);
 	CoverageFileStats t = _sum_totals(stats);
 	float line_rate = t.lines > 0 ? (float)t.hit_lines / t.lines : 0.0f;
 	float branch_rate = t.branches > 0 ? (float)t.hit_branches / t.branches : 0.0f;
@@ -727,6 +759,7 @@ static Error _write_json(const String &p_path,
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open coverage output: " + p_path);
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
+	HashMap<String, HashMap<String, int>> func_starts = p_lang->_coverage_enumerate_func_start_lines();
 
 	// Union of all file paths, including coverable files never executed.
 	HashSet<String> all_files;
@@ -761,7 +794,7 @@ static Error _write_json(const String &p_path,
 	}
 	f->store_line("  },");
 
-	HashMap<String, CoverageFileStats> stats = _gather_file_stats(p_hits, p_func_hits, p_branch_hits, &coverable);
+	HashMap<String, CoverageFileStats> stats = _gather_file_stats(p_hits, p_func_hits, p_branch_hits, &coverable, &func_starts);
 	CoverageFileStats t = _sum_totals(stats);
 	float lp = t.lines > 0 ? 100.0f * t.hit_lines / t.lines : 0.0f;
 	float fp2 = t.funcs > 0 ? 100.0f * t.hit_funcs / t.funcs : 0.0f;
