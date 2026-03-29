@@ -579,7 +579,7 @@ static Error _write_lcov(const String &p_path,
 /*************** Cobertura XML writer ***************/
 
 static String _xml_escape(const String &p_str) {
-	return p_str.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+	return p_str.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");
 }
 
 static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
