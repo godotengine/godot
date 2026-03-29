@@ -380,7 +380,7 @@ bool test_streaming_lod_async_prepare_contract() {
         }
 
         Thread::yield();
-        OS::get_singleton()->delay_msec(1);
+        OS::get_singleton()->delay_usec(1000);
     }
 
     const auto stats = manager.get_stats_snapshot();
