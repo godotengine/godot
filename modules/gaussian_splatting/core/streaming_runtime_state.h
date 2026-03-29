@@ -107,8 +107,10 @@ struct DiagnosticsState {
     uint64_t invariant_slot_ownership_violations = 0;
     uint64_t invariant_upload_lifecycle_violations = 0;
     uint64_t invariant_generation_violations = 0;
+    uint64_t integrity_mismatch_count = 0;
     String last_invariant_context;
     String last_invariant_message;
+    String last_integrity_mismatch_message;
 
     String active_category = "ok";
     String active_reason = "healthy";

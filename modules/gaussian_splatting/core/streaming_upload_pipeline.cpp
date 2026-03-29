@@ -5,6 +5,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
 #include "core/os/os.h"
+#include "core/templates/hashfuncs.h"
 #include "quality_tier_config.h"
 #include "../interfaces/sync_policy.h"
 #include "../renderer/gpu_debug_utils.h"
@@ -96,6 +97,13 @@ void _atomic_saturating_sub(std::atomic<uint32_t> &p_value, uint32_t p_amount) {
 uint64_t _ticks_usec_now() {
     OS *os = OS::get_singleton();
     return os ? os->get_ticks_usec() : 0;
+}
+
+uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
+    const int byte_count = int(p_data.size() * sizeof(PackedGaussian));
+    const uint8_t empty_byte = 0;
+    const void *payload = byte_count > 0 ? static_cast<const void *>(p_data.ptr()) : static_cast<const void *>(&empty_byte);
+    return hash_murmur3_buffer(payload, byte_count);
 }
 
 StreamingQueuePressureController::PressureSummary _summarize_queue_pressure_checked(
@@ -477,6 +485,7 @@ void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, 
             upload->chunk_idx = job.chunk_idx;
             upload->buffer_slot = job.buffer_slot;
             upload->asset_generation = job.asset_generation;
+            upload->payload_checksum = _packed_gaussian_payload_checksum(upload->packed_data);
 
             if (job.chunk_count == 0 || !job.data_ref.is_valid()) {
                 const uint64_t lock_wait_start_usec = _ticks_usec_now();
@@ -541,6 +550,7 @@ void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, 
                 const uint64_t duration = pack_end_usec - pack_start_usec;
                 telemetry.add_pack_time(duration);
             }
+            upload->payload_checksum = _packed_gaussian_payload_checksum(upload->packed_data);
 
             {
                 const uint64_t lock_wait_start_usec = _ticks_usec_now();
@@ -882,6 +892,23 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
 
         const uint64_t total_bytes = uint64_t(job->packed_data.size()) * sizeof(PackedGaussian);
         if (total_bytes == 0) {
+            system._rollback_pending_chunk(job->asset_id, job->chunk_idx, *chunk, true);
+            memdelete(job);
+            continue;
+        }
+
+        const uint32_t actual_checksum = _packed_gaussian_payload_checksum(job->packed_data);
+        if (actual_checksum != job->payload_checksum) {
+            system.diagnostics.invariant_upload_lifecycle_violations++;
+            system.diagnostics.integrity_mismatch_count++;
+            system.diagnostics.last_invariant_context = "process_upload_queue.payload_checksum";
+            system.diagnostics.last_invariant_message = vformat(
+                    "[Streaming] Upload payload checksum mismatch: asset=%d chunk=%d expected=0x%x actual=0x%x.",
+                    job->asset_id, job->chunk_idx,
+                    (unsigned int)job->payload_checksum,
+                    (unsigned int)actual_checksum);
+            system.diagnostics.last_integrity_mismatch_message = system.diagnostics.last_invariant_message;
+            WARN_PRINT(system.diagnostics.last_invariant_message);
             system._rollback_pending_chunk(job->asset_id, job->chunk_idx, *chunk, true);
             memdelete(job);
             continue;

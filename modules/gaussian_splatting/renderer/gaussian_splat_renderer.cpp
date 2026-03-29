@@ -265,6 +265,37 @@ static bool _is_typed_streaming_not_ready_route(const String &p_route_uid) {
     return p_route_uid.begins_with("COMMON.SKIP.STREAMING_NOT_READY.");
 }
 
+static String _streaming_not_ready_reason_code(const String &p_route_uid) {
+    static const String prefix = "COMMON.SKIP.STREAMING_NOT_READY.";
+    if (!p_route_uid.begins_with(prefix)) {
+        return "streaming_not_ready_unknown";
+    }
+    const String suffix = p_route_uid.substr(prefix.length()).to_lower();
+    if (suffix.is_empty()) {
+        return "streaming_not_ready_unknown";
+    }
+    return String("streaming_not_ready_") + suffix;
+}
+
+static bool _has_primary_resident_render_data(const GaussianSplatRenderer &p_renderer) {
+    const GaussianSplatRenderer::SceneState &scene_state = p_renderer.get_scene_state();
+    if (scene_state.gaussian_data.is_valid() && scene_state.gaussian_data->get_count() > 0) {
+        return true;
+    }
+
+    const GaussianSplatRenderer::ResourceState &resource_state = p_renderer.get_resource_state();
+    if (!resource_state.buffer_manager.is_valid() || !resource_state.buffer_manager_initialized) {
+        return false;
+    }
+    return resource_state.buffer_manager->get_gaussian_count() > 0;
+}
+
+static bool _has_streaming_asset_context(const GaussianSplatRenderer &p_renderer) {
+    const GaussianSplatRenderer::SceneState &scene_state = p_renderer.get_scene_state();
+    const GaussianSplatRenderer::StreamingState &streaming_state = p_renderer.get_streaming_state();
+    return scene_state.active_asset.is_valid() || streaming_state.shared_dynamic_asset_handle.is_valid();
+}
+
 static bool _projection_nearly_equal(const Projection &p_a, const Projection &p_b, real_t p_tolerance = 1e-6f) {
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) {
@@ -1704,17 +1735,26 @@ void GaussianSplatRenderer::_reset_legacy_streaming_data_path_state() {
 
 void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
         const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers) {
-    // Fallback to test data if streaming is not active.
+    // Resident/global path only handles real resident data or an explicit no-data skip.
     _reset_legacy_streaming_data_path_state();
 
-    StreamingState &streaming_state = get_streaming_state();
-
-    const bool has_gaussian_dataset = get_scene_state().gaussian_data.is_valid();
-    bool has_buffer_manager_data = get_resource_state().buffer_manager.is_valid() &&
-            get_resource_state().buffer_manager_initialized;
-    if (has_buffer_manager_data) {
-        has_buffer_manager_data = get_resource_state().buffer_manager->get_gaussian_count() > 0;
-    }
+    const bool has_resident_render_data = _has_primary_resident_render_data(*this);
+    auto publish_skip_route = [&](const String &p_route_uid, const String &p_route_reason) {
+        PerformanceMetrics &metrics = get_performance_state().metrics;
+        metrics.visible_after_culling = 0;
+        metrics.culling_candidate_count = 0;
+        metrics.culled_frustum_count = 0;
+        metrics.culled_distance_count = 0;
+        metrics.culled_screen_count = 0;
+        metrics.culled_importance_count = 0;
+        metrics.used_hierarchical_culling = false;
+        metrics.culling_time_ms = 0.0f;
+        metrics.cull_route_uid = p_route_uid;
+        metrics.cull_route_reason = p_route_reason;
+        if (debug_state_orchestrator) {
+            get_debug_state().route_uid = p_route_uid;
+        }
+    };
 
     // Legacy instance transforms removed; use the view transform directly.
     Transform3D effective_view_transform = p_world_to_camera_transform;
@@ -1731,7 +1771,7 @@ void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, 
     }
 #endif
 
-    if (!has_gaussian_dataset && !has_buffer_manager_data) {
+    if (!has_resident_render_data) {
         _run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
                 p_render_buffers, false,
                 "Cull skipped: no render data",
@@ -1739,44 +1779,25 @@ void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, 
                 RenderFallbackReason::DATA_UNAVAILABLE,
                 RenderFallbackReason::DATA_UNAVAILABLE,
                 true, true);
+        publish_skip_route(RenderRouteUID::COMMON_SKIP_NO_DATA, "missing_source_data");
         return;
     }
 
-    const bool has_dynamic_asset_handle = streaming_state.shared_dynamic_asset_handle.is_valid();
-    const bool instanced_path_ready = streaming_state.current_streaming_system.is_valid() &&
-            has_instance_pipeline_buffers();
-
-    if (has_dynamic_asset_handle && instanced_path_ready) {
-        if (debug_state_orchestrator) {
-            get_debug_state().route_uid = RenderRouteUID::INSTANCE_ENTRY_INSTANCED_FAST;
-        }
-        LocalVector<Transform3D> instance_transforms;
-        instance_transforms.push_back(Transform3D());
-        // NOTE: Pass p_world_to_camera_transform (not effective_view_transform) because render_instanced()
-        // will multiply the instance_transform into the view transform internally.
-        // Passing effective_view_transform would apply instance_transform TWICE.
-        render_instanced(p_render_data, streaming_state.shared_dynamic_asset_handle,
-                p_world_to_camera_transform, p_projection, p_render_projection, instance_transforms);
-        return;
-    }
-    if (has_dynamic_asset_handle && !instanced_path_ready) {
-        WARN_PRINT_ONCE("[GaussianSplatRenderer] Resident fallback bypassed instanced path because instance pipeline is not ready.");
-    }
     const bool resident_pipeline_ready = has_instance_pipeline_buffers();
     if (!resident_pipeline_ready) {
-        WARN_PRINT_ONCE("[GaussianSplatRenderer] Resident fallback skipped: instance pipeline buffers unavailable.");
+        WARN_PRINT_ONCE("[GaussianSplatRenderer] Streaming path skipped: instance pipeline buffers unavailable.");
     }
     _run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
             p_render_buffers, resident_pipeline_ready,
-            "Cull skipped: resident fallback instance pipeline unavailable",
-            "Sort skipped: resident fallback instance pipeline unavailable",
+                "Cull skipped: streaming path unavailable",
+                "Sort skipped: streaming path unavailable",
             RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
             RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
             false, false);
 }
 
 void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
-    // Render flow: render_scene_instance -> (streaming ? render_streaming_frame : render_resident_frame)
+    // Render flow: render_scene_instance -> (streaming ? render_streaming_frame : explicit skip)
     // -> RenderPipelineStages::render_sorted_splats_with_context -> raster/composite.
 
     if (debug_state_orchestrator) {
@@ -1869,6 +1890,35 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     if (get_view_state().using_scene_data && p_render_data && p_render_data->scene_data && p_render_data->scene_data->flip_y) {
         render_projection.columns[1][1] = -render_projection.columns[1][1];
     }
+    const bool has_primary_render_data = _has_primary_resident_render_data(*this);
+    const bool has_streaming_context = _has_streaming_asset_context(*this);
+    auto publish_skip_route = [&](const String &p_route_uid, const String &p_route_reason) {
+        PerformanceMetrics &metrics = get_performance_state().metrics;
+        metrics.visible_after_culling = 0;
+        metrics.culling_candidate_count = 0;
+        metrics.culled_frustum_count = 0;
+        metrics.culled_distance_count = 0;
+        metrics.culled_screen_count = 0;
+        metrics.culled_importance_count = 0;
+        metrics.used_hierarchical_culling = false;
+        metrics.culling_time_ms = 0.0f;
+        metrics.cull_route_uid = p_route_uid;
+        metrics.cull_route_reason = p_route_reason;
+        if (debug_state_orchestrator) {
+            get_debug_state().route_uid = p_route_uid;
+        }
+    };
+    auto publish_streaming_not_ready_skip = [&](const String &p_route_uid) {
+        const String route_uid = p_route_uid.is_empty() ? _streaming_not_ready_route_uid("UNKNOWN") : p_route_uid;
+        _run_cull_sort_pipeline_frame(p_render_data, view_transform, cam_projection, render_projection,
+                render_buffers_rd, false,
+                vformat("Cull skipped: streaming path not ready (%s)", route_uid),
+                vformat("Sort skipped: streaming path not ready (%s)", route_uid),
+                RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
+                RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
+                true, false);
+        publish_skip_route(route_uid, _streaming_not_ready_reason_code(route_uid));
+    };
 
 #if defined(DEBUG_ENABLED) || kLogFrameDebug
     // DEBUG: Log camera source at the configured frame-log interval (and frame 0)
@@ -1937,24 +1987,16 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
                 false);
     }
     if (streaming_requested && streaming_ready) {
-        const bool has_primary_gaussian_data =
-                get_scene_state().gaussian_data.is_valid() &&
-                get_scene_state().gaussian_data->get_count() > 0;
-        // Some renderers (for example world/static scenes) can render primary gaussian data
-        // without SceneDirector instances. Allow a synthetic primary instance in those cases
-        // so streaming cull/sort/raster buffers can still initialize.
-        const bool allow_primary_fallback_instance = has_primary_gaussian_data;
         if (debug_state_orchestrator) {
             get_debug_state().route_uid = RenderRouteUID::INSTANCE_STREAMING;
         }
         const bool streaming_frame_rendered = streaming_orchestrator &&
                 streaming_orchestrator->render_streaming_frame(
-                        p_render_data, cam_transform, view_transform, cam_projection, render_projection, render_buffers_rd,
-                        allow_primary_fallback_instance);
+                        p_render_data, cam_transform, view_transform, cam_projection, render_projection, render_buffers_rd);
         if (streaming_frame_rendered) {
             return;
         }
-        String fallback_route_uid;
+        String fallback_route_uid = _streaming_not_ready_route_uid("UNKNOWN");
         if (debug_state_orchestrator) {
             DebugState &debug_state = get_debug_state();
             if (debug_state.route_uid.is_empty() ||
@@ -1964,30 +2006,26 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
             }
             fallback_route_uid = debug_state.route_uid;
         }
-        if (fallback_route_uid.is_empty()) {
-            WARN_PRINT_ONCE("[GaussianSplatRenderer] Streaming resources not ready; falling back to resident render path.");
+        WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming resources not ready (route=%s); publishing not-ready skip.",
+                fallback_route_uid));
+        publish_streaming_not_ready_skip(fallback_route_uid);
+        return;
+    }
+    String fallback_route_uid = _streaming_not_ready_route_uid("MISSING_STREAMING_SYSTEM");
+    if (debug_state_orchestrator) {
+        DebugState &debug_state = get_debug_state();
+        if (debug_state.route_uid.is_empty() ||
+                debug_state.route_uid == RenderRouteUID::COMMON_SKIP_STREAMING_NOT_READY ||
+                !_is_typed_streaming_not_ready_route(debug_state.route_uid)) {
+            debug_state.route_uid = fallback_route_uid;
         } else {
-            WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming resources not ready (route=%s); falling back to resident render path.",
-                    fallback_route_uid));
-        }
-    } else {
-        String fallback_route_uid = _streaming_not_ready_route_uid("MISSING_STREAMING_SYSTEM");
-        if (debug_state_orchestrator) {
-            DebugState &debug_state = get_debug_state();
-            if (debug_state.route_uid.is_empty() ||
-                    debug_state.route_uid == RenderRouteUID::COMMON_SKIP_STREAMING_NOT_READY ||
-                    !_is_typed_streaming_not_ready_route(debug_state.route_uid)) {
-                debug_state.route_uid = fallback_route_uid;
-            } else {
-                fallback_route_uid = debug_state.route_uid;
-            }
-        }
-        if (streaming_requested) {
-            WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming unavailable (route=%s); falling back to resident render path.",
-                    fallback_route_uid));
+            fallback_route_uid = debug_state.route_uid;
         }
     }
-    _render_resident_frame(p_render_data, view_transform, cam_projection, render_projection, render_buffers_rd);
+    WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming unavailable (route=%s); publishing not-ready skip.",
+            fallback_route_uid));
+    publish_streaming_not_ready_skip(fallback_route_uid);
+    return;
 }
 
 void GaussianSplatRenderer::tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection) {
@@ -2394,6 +2432,11 @@ int GaussianSplatRenderer::test_cull_visible_count(const Transform3D &p_world_to
     Transform3D view_transform = p_world_to_camera_transform.affine_inverse();
     CullStageOutput output = _cull_for_view(view_transform, p_projection, p_viewport_size);
     return static_cast<int>(output.visible_count);
+}
+
+GaussianSplatRenderer::SortStageSummary GaussianSplatRenderer::test_sort_for_view(
+        const Transform3D &p_world_to_camera_transform, IndexDomain p_input_domain) {
+    return sort_gaussians_for_view(p_world_to_camera_transform, p_input_domain);
 }
 
 void GaussianSplatRenderer::test_disable_gpu_culler() {

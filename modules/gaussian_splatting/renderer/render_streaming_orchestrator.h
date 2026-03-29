@@ -41,8 +41,7 @@ public:
 	void sync_instance_pipeline_assets(GaussianStreamingSystem *p_streaming_system);
 	bool render_streaming_frame(RenderDataRD *p_render_data, const Transform3D &p_camera_to_world_transform,
 			const Transform3D &p_world_to_camera_transform, const Projection &p_projection,
-			const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers,
-			bool p_allow_runtime_fallback_instance = false);
+			const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers);
 	void tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection);
 	bool should_throttle_streaming_rebuild(uint32_t p_chunks_loaded, uint32_t p_chunks_evicted,
 			uint32_t p_visible_evicted, uint64_t p_current_frame);

@@ -438,6 +438,7 @@ static void _apply_streaming_render_readiness_diagnostics(Dictionary &r_streamin
 	}
 	if (!ready) {
 		r_streaming_metrics["diagnostics_category"] = String("render_not_ready");
+		r_streaming_metrics["diagnostics_reason"] = reason;
 		r_streaming_metrics["diagnostics_fingerprint"] =
 				String("render_not_ready.") + state_token.to_lower();
 		r_streaming_metrics["diagnostics_has_failure"] = true;
@@ -467,18 +468,11 @@ static bool _is_debug_or_test_invariant_hard_fail_enabled() {
 }
 
 static bool _is_impossible_streaming_activation_violation(uint32_t p_instance_count,
-		uint32_t p_registered_assets_with_data,
-		bool p_allow_runtime_fallback_instance,
 		const InvariantViolation &p_violation) {
 	if (!p_violation.has_violation()) {
 		return false;
 	}
 	if (p_instance_count == 0) {
-		return false;
-	}
-	// Runtime fallback can legitimately run with a synthetic primary instance before
-	// atlas-backed streaming assets become fully resident.
-	if (p_allow_runtime_fallback_instance && p_registered_assets_with_data == 0) {
 		return false;
 	}
 	return true;
@@ -765,15 +759,7 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	streaming_system->set_chunk_radius_multiplier(
 			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
 			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
-	const Ref<GaussianData> primary_data = state_view.get_scene_state().gaussian_data;
-	if (primary_data.is_valid() && primary_data->get_count() > 0) {
-		// Recover world/static-only renderers that populated gaussian_data before
-		// the RenderingDevice was available. In that case set_gaussian_data() can
-		// leave scene data valid while streaming bootstrap is missing.
-		streaming_system->initialize_with_device(primary_data, rd);
-	} else {
-		streaming_system->initialize_empty(rd);
-	}
+	streaming_system->initialize_empty(rd);
 	if (streaming_state.memory_stream.is_valid()) {
 		streaming_system->attach_memory_stream(streaming_state.memory_stream);
 	}
@@ -1276,8 +1262,8 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 }
 
 bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_data, const Transform3D &p_camera_to_world_transform,
-			const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Projection &p_render_projection,
-			RenderSceneBuffersRD *p_render_buffers, bool p_allow_runtime_fallback_instance) {
+		const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Projection &p_render_projection,
+		RenderSceneBuffersRD *p_render_buffers) {
 	const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
 	// DEBUG: Track if this function runs every frame
 	static int streaming_frame_counter = 0;
@@ -1449,63 +1435,29 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		return false;
 	}
 	instance_pipeline_instance_cache.clear();
-	if (director && streaming_system) {
-		sync_instance_pipeline_assets(streaming_system);
-		const VisibleLODSelection &selection = produce_visible_lod_selection(
-				director,
-				streaming_system,
-				p_camera_to_world_transform.origin);
-		instance_pipeline_instance_cache = selection.get_instances();
-		consume_visible_lod_selection_for_residency(selection, streaming_system, trace_enabled);
-	}
-	// Some callsites (runtime force-sort, world/static-chunk rendering) can execute
-	// without SceneDirector instances. In those explicit opt-in paths, inject a
-	// synthetic primary instance so cull/sort buffer contracts remain valid.
-	if (p_allow_runtime_fallback_instance &&
-			instance_pipeline_instance_cache.is_empty() &&
-			state_view.get_scene_state().gaussian_data.is_valid() &&
-			state_view.get_scene_state().gaussian_data->get_count() > 0) {
-		InstanceDataGPU fallback_instance = {};
-		fallback_instance.rotation[3] = 1.0f;
-		fallback_instance.inv_rotation[3] = 1.0f;
-		fallback_instance.translation_scale[3] = 1.0f;
-		fallback_instance.params[0] = 1.0f;
-		fallback_instance.params[1] = 1.0f;
-		fallback_instance.params[2] = 1.0f;
-		fallback_instance.params[3] = 0.0f;
-		fallback_instance.ids[0] = 0u;
-		fallback_instance.ids[1] = GS_INSTANCE_FLAG_ROTATION_IDENTITY |
-				GS_INSTANCE_FLAG_SCALE_IDENTITY |
-				GS_INSTANCE_FLAG_TRANSLATION_ZERO;
-		fallback_instance.lod[0] = 0;
-		fallback_instance.lod[1] = 0;
-		fallback_instance.wind_params[0] = 0.0f;
-		fallback_instance.wind_params[1] = 0.0f;
-		fallback_instance.wind_params[2] = 0.0f;
-		fallback_instance.wind_params[3] = 1.0f;
-		instance_pipeline_instance_cache.push_back(fallback_instance);
-		if (trace_enabled) {
-			GaussianSplatting::debug_trace_record_event("instance_pipeline",
-					"Injected primary fallback instance for empty-instance streaming path",
-					false);
+		if (director && streaming_system) {
+			sync_instance_pipeline_assets(streaming_system);
+			const VisibleLODSelection &selection = produce_visible_lod_selection(
+					director,
+					streaming_system,
+					p_camera_to_world_transform.origin);
+			instance_pipeline_instance_cache = selection.get_instances();
+			consume_visible_lod_selection_for_residency(selection, streaming_system, trace_enabled);
 		}
-	}
-	const uint32_t registered_assets_with_data = streaming_system->get_registered_asset_count_with_data();
-	if (!instance_pipeline_instance_cache.is_empty() &&
-			registered_assets_with_data == 0 &&
-			!p_allow_runtime_fallback_instance) {
-		const StreamingReadinessState readiness_state = StreamingReadinessState::REGISTRATION_PENDING;
-		ERR_PRINT("[GaussianSplatRenderer] Streaming bootstrap produced instances but no registered streaming assets with data; resetting streaming system.");
-		finalize_streaming_frame(readiness_state,
-				vformat("instances=%d registered_assets_with_data=%d",
-						instance_pipeline_instance_cache.size(),
-						registered_assets_with_data));
-		publish_not_ready_route(readiness_state);
-		log_streaming_reset("instances_without_registered_assets");
-		streaming_state.current_streaming_system.unref();
-		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
-		return false;
-	}
+		const uint32_t registered_assets_with_data = streaming_system->get_registered_asset_count_with_data();
+		if (registered_assets_with_data == 0) {
+			const StreamingReadinessState readiness_state = StreamingReadinessState::REGISTRATION_PENDING;
+			ERR_PRINT("[GaussianSplatRenderer] Streaming bootstrap found no registered streaming assets with data; resetting streaming system.");
+			finalize_streaming_frame(readiness_state,
+					vformat("instances=%d registered_assets_with_data=%d",
+							instance_pipeline_instance_cache.size(),
+							registered_assets_with_data));
+			publish_not_ready_route(readiness_state);
+			log_streaming_reset("registration_pending");
+			streaming_state.current_streaming_system.unref();
+			(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
+			return false;
+		}
 	(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache);
 
 	streaming_state.current_streaming_system->set_chunk_radius_multiplier(
@@ -1773,8 +1725,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		instance_buffers_raster_ready = raster_ready;
 
 		if (trace_enabled) {
-			GaussianSplatting::debug_trace_record_event("instance_pipeline",
-					vformat("InstanceBufferCheck atlas=%s cull=%s sort=%s raster=%s",
+				GaussianSplatting::debug_trace_record_event("instance_pipeline",
+						vformat("InstanceBufferCheck atlas=%s cull=%s sort=%s raster=%s",
 								atlas_ready ? "YES" : "no",
 								cull_ready ? "YES" : "no",
 								sort_ready ? "YES" : "no",
@@ -1814,8 +1766,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 					true);
 		}
 		if (trace_enabled && !raster_ready) {
-			GaussianSplatting::debug_trace_record_event("instance_pipeline",
-					vformat("InstanceBufferCheck raster atlas=%s instance=%s splat_ref=%s count=%s quant=%s(req=%s)",
+				GaussianSplatting::debug_trace_record_event("instance_pipeline",
+						vformat("InstanceBufferCheck raster atlas=%s instance=%s splat_ref=%s count=%s quant=%s(req=%s)",
 								buffers.atlas_gaussian_buffer.is_valid() ? "Y" : "N",
 								buffers.instance_buffer.is_valid() ? "Y" : "N",
 								buffers.splat_ref_buffer.is_valid() ? "Y" : "N",
@@ -1837,70 +1789,59 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		} else {
 			activation_violation = GaussianSplatting::InstancePipelineContract::evaluate_streaming_activation(
 					buffers, atlas_buffers_required);
-		}
-		set_instance_invariant_status(activation_violation);
-		const bool fallback_warmup_allowed =
-				p_allow_runtime_fallback_instance &&
-				registered_assets_with_data == 0 &&
-				!_is_impossible_streaming_activation_violation(
-						instance_pipeline_instance_count,
-						registered_assets_with_data,
-						p_allow_runtime_fallback_instance,
-						activation_violation);
-
-		const auto emit_invariant_violation_diagnostic = [&](InvariantViolationReason p_reason) {
-			if (p_reason == InvariantViolationReason::NONE) {
-				return;
 			}
-			static bool emitted_reasons[static_cast<int>(InvariantViolationReason::COUNT)] = {};
-			const int reason_index = static_cast<int>(p_reason);
-			bool should_emit_log = true;
-			if (reason_index >= 0 && reason_index < static_cast<int>(InvariantViolationReason::COUNT)) {
-				should_emit_log = !emitted_reasons[reason_index];
-				emitted_reasons[reason_index] = true;
-			}
-			const char *route = GaussianSplatting::InstancePipelineContract::get_violation_route(p_reason);
-			const char *violation_class_name = GaussianSplatting::InstancePipelineContract::get_violation_class_name(
-					GaussianSplatting::InstancePipelineContract::get_violation_class(p_reason));
-			const char *reason_name = GaussianSplatting::InstancePipelineContract::get_violation_reason_name(p_reason);
-			const bool expected_zero_instance_warmup_reason =
-					p_reason == InvariantViolationReason::CULL_INSTANCE_COUNT_ZERO;
-			if (should_emit_log) {
-				if (expected_zero_instance_warmup_reason || fallback_warmup_allowed) {
-					GS_LOG_RENDERER_DEBUG(vformat("[GaussianSplatRenderer] Instance pipeline warmup invariant route=%s class=%s reason=%s inst=%d registered_assets=%d atlas_required=%s",
-							route,
-							violation_class_name,
-							reason_name,
-							instance_pipeline_instance_count,
-							registered_assets_with_data,
-							atlas_buffers_required ? "yes" : "no"));
-				} else {
-					ERR_PRINT(vformat("[GaussianSplatRenderer] Instance pipeline invariant violation route=%s class=%s reason=%s inst=%d registered_assets=%d atlas_required=%s",
-							route,
-							violation_class_name,
-							reason_name,
-							instance_pipeline_instance_count,
-							registered_assets_with_data,
-							atlas_buffers_required ? "yes" : "no"));
+			set_instance_invariant_status(activation_violation);
+			const auto emit_invariant_violation_diagnostic = [&](InvariantViolationReason p_reason) {
+				if (p_reason == InvariantViolationReason::NONE) {
+					return;
 				}
-			}
-			if (trace_enabled) {
-				GaussianSplatting::debug_trace_record_event("instance_pipeline",
-						vformat("InvariantViolation route=%s class=%s reason=%s", route, violation_class_name, reason_name),
-						true);
-			}
-		};
+				static bool emitted_reasons[static_cast<int>(InvariantViolationReason::COUNT)] = {};
+				const int reason_index = static_cast<int>(p_reason);
+				bool should_emit_log = true;
+				if (reason_index >= 0 && reason_index < static_cast<int>(InvariantViolationReason::COUNT)) {
+					should_emit_log = !emitted_reasons[reason_index];
+					emitted_reasons[reason_index] = true;
+				}
+				const char *route = GaussianSplatting::InstancePipelineContract::get_violation_route(p_reason);
+				const char *violation_class_name = GaussianSplatting::InstancePipelineContract::get_violation_class_name(
+						GaussianSplatting::InstancePipelineContract::get_violation_class(p_reason));
+				const char *reason_name = GaussianSplatting::InstancePipelineContract::get_violation_reason_name(p_reason);
+				const bool expected_zero_instance_warmup_reason =
+						p_reason == InvariantViolationReason::CULL_INSTANCE_COUNT_ZERO;
+				if (should_emit_log) {
+					if (expected_zero_instance_warmup_reason) {
+						GS_LOG_RENDERER_DEBUG(vformat("[GaussianSplatRenderer] Instance pipeline not-ready invariant route=%s class=%s reason=%s inst=%d registered_assets=%d atlas_required=%s",
+								route,
+								violation_class_name,
+								reason_name,
+								instance_pipeline_instance_count,
+								registered_assets_with_data,
+								atlas_buffers_required ? "yes" : "no"));
+					} else {
+						ERR_PRINT(vformat("[GaussianSplatRenderer] Instance pipeline invariant violation route=%s class=%s reason=%s inst=%d registered_assets=%d atlas_required=%s",
+								route,
+								violation_class_name,
+								reason_name,
+								instance_pipeline_instance_count,
+								registered_assets_with_data,
+								atlas_buffers_required ? "yes" : "no"));
+					}
+				}
+				if (trace_enabled) {
+					GaussianSplatting::debug_trace_record_event("instance_pipeline",
+							vformat("InvariantViolation route=%s class=%s reason=%s", route, violation_class_name, reason_name),
+							true);
+				}
+			};
 		emit_invariant_violation_diagnostic(atlas_violation_reason);
 		emit_invariant_violation_diagnostic(cull_violation_reason);
 		emit_invariant_violation_diagnostic(sort_violation_reason);
 		emit_invariant_violation_diagnostic(raster_violation_reason);
 
-			if (_is_debug_or_test_invariant_hard_fail_enabled() &&
-					_is_impossible_streaming_activation_violation(
-							instance_pipeline_instance_count,
-							registered_assets_with_data,
-							p_allow_runtime_fallback_instance,
-							activation_violation)) {
+		if (_is_debug_or_test_invariant_hard_fail_enabled() &&
+				_is_impossible_streaming_activation_violation(
+						instance_pipeline_instance_count,
+						activation_violation)) {
 				renderer->instance_pipeline_buffers = buffers;
 				renderer->instance_pipeline_buffers_valid = false;
 				resource_state.instance_pipeline_content_generation = _mix_content_generation(

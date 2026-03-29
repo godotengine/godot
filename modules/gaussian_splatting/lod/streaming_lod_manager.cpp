@@ -65,12 +65,7 @@ StreamingLODManager::StreamingLODManager()
 }
 
 StreamingLODManager::~StreamingLODManager() {
-    // Stop async loading thread
-    should_stop_loading = true;
-    if (loading_thread.joinable()) {
-        load_cv.notify_all();
-        loading_thread.join();
-    }
+    stop_async_loading();
 
     // Release GPU resources
     {
@@ -129,11 +124,46 @@ void StreamingLODManager::_initialize_gpu_streaming(const Vector<GaussianData>& 
     gpu_stream->initialize(rd, max_gaussians);
 }
 
+void StreamingLODManager::start_async_loading() {
+    if (!config.enable_async_loading || loading_thread.joinable()) {
+        return;
+    }
+
+    should_stop_loading = false;
+    loading_thread = std::thread(&StreamingLODManager::async_load_worker, this);
+}
+
+void StreamingLODManager::stop_async_loading() {
+    should_stop_loading = true;
+    load_cv.notify_all();
+    if (loading_thread.joinable()) {
+        loading_thread.join();
+    }
+}
+
+void StreamingLODManager::clear_async_load_queues() {
+    std::lock_guard<std::mutex> lock(load_queue_mutex);
+    while (!load_queue.empty()) {
+        load_queue.pop();
+    }
+    while (!ready_queue.empty()) {
+        ready_queue.pop();
+    }
+    pending_async_loads.clear();
+}
+
 void StreamingLODManager::initialize(
     const Vector<GaussianData>& base_splats,
     const StreamingConfig& p_config) {
 
+    stop_async_loading();
+    clear_async_load_queues();
+
     config = p_config;
+    {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        stats.reset();
+    }
     has_content_bounds = false;
 
     if (!base_splats.is_empty()) {
@@ -192,13 +222,44 @@ void StreamingLODManager::initialize(
 
     // Generate LOD levels
     generate_lod_levels(base_splats);
-
-    // Async loads run synchronously on the main thread via process_async_load_queue().
-    // The background thread is intentionally disabled -- lod_mutex coverage is incomplete
-    // for concurrent lod_data access. Do not re-enable without a full lock audit.
+    if (config.enable_async_loading) {
+        start_async_loading();
+    }
 
     GS_LOG_STREAMING_INFO(vformat("StreamingLODManager initialized with %d LOD levels, %d base splats",
             lod_levels.size(), base_splats.size()));
+}
+
+void StreamingLODManager::set_config(const StreamingConfig& p_config) {
+    const bool was_async = config.enable_async_loading;
+    const bool will_be_async = p_config.enable_async_loading;
+    config = p_config;
+
+    if (was_async && !will_be_async) {
+        stop_async_loading();
+        clear_async_load_queues();
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        for (auto &lod : lod_levels) {
+            if (!lod.is_loaded) {
+                lod.is_loading = false;
+            }
+        }
+    } else if (!was_async && will_be_async) {
+        start_async_loading();
+    }
+
+    if (was_async != will_be_async) {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        stats.async_prepare_jobs_completed = 0;
+        stats.async_apply_jobs_completed = 0;
+        stats.async_prepare_observed_off_main_thread = false;
+        stats.async_apply_observed_on_main_thread = false;
+        stats.async_prepare_main_thread_violations = 0;
+        stats.async_apply_off_main_thread_violations = 0;
+        stats.performance.avg_load_time_ms = 0.0f;
+        stats.performance.avg_async_prepare_time_ms = 0.0f;
+        stats.performance.avg_async_apply_time_ms = 0.0f;
+    }
 }
 
 void StreamingLODManager::generate_lod_levels(const Vector<GaussianData>& base_splats) {
@@ -262,6 +323,12 @@ void StreamingLODManager::generate_single_lod(
 void StreamingLODManager::update(const Camera3D* camera, float delta_time) {
     if (!camera) return;
 
+    struct AsyncCandidate {
+        uint32_t level = UINT32_MAX;
+        float priority = 0.0f;
+        bool needs_enqueue = false;
+    };
+
     last_frame_delta = delta_time;
 
     uint64_t frame_start = OS::get_singleton()->get_ticks_usec();
@@ -284,29 +351,30 @@ void StreamingLODManager::update(const Camera3D* camera, float delta_time) {
     // Update camera history for prediction
     camera_history.update(camera_pos, delta_time);
 
-    // Update LOD priorities
-    update_lod_priorities(camera_pos, camera_frustum);
-
     // Unload distant LODs
     unload_distant_lods(camera_pos, camera_frustum);
 
     // Load nearby LODs
-    LocalVector<uint32_t> async_loads;
+    LocalVector<AsyncCandidate> async_candidates;
     LocalVector<uint32_t> sync_loads;
     uint32_t frustum_rejected_lods = 0;
     {
         std::lock_guard<std::mutex> lock(lod_mutex);
         for (uint32_t i = 0; i < lod_levels.size(); i++) {
             const LODLevel &lod = lod_levels[i];
-            if (!lod.is_loaded && !lod.is_loading) {
+            if (!lod.is_loaded) {
                 if (!content_in_frustum) {
                     frustum_rejected_lods++;
                 } else if (content_distance_valid &&
                         content_distance >= lod.min_distance - config.load_ahead_distance &&
                         content_distance <= lod.max_distance + config.load_ahead_distance) {
                     if (config.enable_async_loading) {
-                        async_loads.push_back(i);
-                    } else {
+                        AsyncCandidate candidate;
+                        candidate.level = i;
+                        candidate.priority = compute_lod_priority(lod, camera_pos, &camera_frustum);
+                        candidate.needs_enqueue = !lod.is_loading;
+                        async_candidates.push_back(candidate);
+                    } else if (!lod.is_loading) {
                         sync_loads.push_back(i);
                     }
                 }
@@ -319,24 +387,93 @@ void StreamingLODManager::update(const Camera3D* camera, float delta_time) {
             }
         }
 
-        stats.load_requests_last_frame = async_loads.size() + sync_loads.size();
         stats.frustum_rejected_lods_last_frame = frustum_rejected_lods;
     }
 
-    for (uint32_t i = 0; i < async_loads.size(); i++) {
-        enqueue_load_request(async_loads[i]);
+    std::sort(
+        async_candidates.ptr(),
+        async_candidates.ptr() + async_candidates.size(),
+        [](const AsyncCandidate& a, const AsyncCandidate& b) {
+            return a.priority > b.priority;
+        });
+
+    LocalVector<uint32_t> desired_async_levels;
+    LocalVector<uint32_t> new_async_requests;
+    HashSet<uint32_t> seen_desired_async_levels;
+    HashSet<uint32_t> seen_new_async_requests;
+    seen_desired_async_levels.reserve(async_candidates.size());
+    seen_new_async_requests.reserve(async_candidates.size());
+
+    for (uint32_t i = 0; i < async_candidates.size(); i++) {
+        const AsyncCandidate &candidate = async_candidates[i];
+        if (!seen_desired_async_levels.has(candidate.level)) {
+            seen_desired_async_levels.insert(candidate.level);
+            desired_async_levels.push_back(candidate.level);
+        }
+        if (candidate.needs_enqueue) {
+            seen_new_async_requests.insert(candidate.level);
+        }
+    }
+
+    LocalVector<uint32_t> predicted_desired_levels;
+    LocalVector<uint32_t> predicted_new_levels;
+    if (config.enable_predictive_loading && content_distance_valid && content_in_frustum) {
+        PredictedMovement prediction = predict_camera_movement(camera_pos, delta_time);
+        collect_predicted_lods(prediction, camera_frustum, predicted_desired_levels, predicted_new_levels);
+    }
+
+    if (config.enable_async_loading) {
+        for (uint32_t i = 0; i < predicted_desired_levels.size(); i++) {
+            const uint32_t level = predicted_desired_levels[i];
+            if (!seen_desired_async_levels.has(level)) {
+                seen_desired_async_levels.insert(level);
+                desired_async_levels.push_back(level);
+            }
+        }
+        for (uint32_t i = 0; i < predicted_new_levels.size(); i++) {
+            const uint32_t level = predicted_new_levels[i];
+            seen_new_async_requests.insert(level);
+        }
+
+        const uint32_t max_loads = config.max_concurrent_loads == 0
+                ? UINT32_MAX
+                : config.max_concurrent_loads;
+        if (desired_async_levels.size() > max_loads) {
+            desired_async_levels.resize(max_loads);
+        }
+
+        new_async_requests.clear();
+        for (uint32_t i = 0; i < desired_async_levels.size(); i++) {
+            const uint32_t level = desired_async_levels[i];
+            if (seen_new_async_requests.has(level)) {
+                new_async_requests.push_back(level);
+            }
+        }
+
+        reprioritize_async_loads(desired_async_levels);
+        for (uint32_t i = 0; i < new_async_requests.size(); i++) {
+            enqueue_load_request(new_async_requests[i], desired_async_levels);
+        }
     }
     for (uint32_t i = 0; i < sync_loads.size(); i++) {
         stream_lod_level(sync_loads[i]);
     }
 
     // Predictive loading
-    if (config.enable_predictive_loading && content_distance_valid && content_in_frustum) {
-        PredictedMovement prediction = predict_camera_movement(camera_pos, delta_time);
-        prefetch_predicted_lods(prediction, camera_frustum);
+    if (!config.enable_async_loading) {
+        for (uint32_t i = 0; i < predicted_new_levels.size(); i++) {
+            stream_lod_level(predicted_new_levels[i]);
+        }
     }
 
-    process_async_load_queue(frame_start);
+    {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        stats.load_requests_last_frame = config.enable_async_loading
+                ? new_async_requests.size()
+                : sync_loads.size() + predicted_new_levels.size();
+    }
+
+    apply_completed_async_loads(frame_start);
 
     // Update adaptive quality
     if (config.enable_adaptive_quality) {
@@ -351,6 +488,7 @@ void StreamingLODManager::update(const Camera3D* camera, float delta_time) {
     {
         std::lock_guard<std::mutex> lock(lod_mutex);
         stats.loaded_lod_levels = 0;
+        stats.loading_lod_levels = 0;
         stats.total_gpu_memory = 0;
         stats.total_cpu_memory = 0;
 
@@ -358,6 +496,9 @@ void StreamingLODManager::update(const Camera3D* camera, float delta_time) {
             if (lod.is_loaded) {
                 stats.loaded_lod_levels++;
                 stats.total_gpu_memory += lod.gpu_memory_bytes;
+            }
+            if (lod.is_loading) {
+                stats.loading_lod_levels++;
             }
             stats.total_cpu_memory += lod.cpu_memory_bytes;
         }
@@ -411,36 +552,83 @@ StreamingLODManager::VisibleSplats StreamingLODManager::get_visible_splats(
 }
 
 void StreamingLODManager::stream_lod_level(uint32_t level) {
-    std::lock_guard<std::mutex> lock(lod_mutex);
-    if (level >= lod_levels.size()) {
-        return;
+    Vector<GaussianData> source_data;
+    {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        if (level >= lod_levels.size()) {
+            return;
+        }
+
+        LODLevel &lod = lod_levels.write[level];
+        if (lod.is_loaded || lod.is_loading) {
+            return;
+        }
+
+        if (level >= lod_data.size() || lod_data[level].is_empty()) {
+            return;
+        }
+
+        lod.is_loading = true;
+        source_data = lod_data[level];
     }
 
-    LODLevel &lod = lod_levels.write[level];
-    if (lod.is_loaded || lod.is_loading) {
-        return;
-    }
-
-    lod.is_loading = true;
     uint64_t start_time = OS::get_singleton()->get_ticks_usec();
+    LocalVector<::Gaussian> gpu_gaussians;
+    prepare_gpu_upload_data(source_data, gpu_gaussians);
 
-    // Upload to GPU
-    if (level < lod_data.size() && !lod_data[level].is_empty()) {
-        upload_to_gpu(lod, lod_data[level]);
+    {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        if (level >= lod_levels.size()) {
+            return;
+        }
+
+        LODLevel &lod = lod_levels.write[level];
+        if (!lod.is_loading) {
+            return;
+        }
+
+        upload_to_gpu(lod, gpu_gaussians, source_data.size());
         if (lod.gpu_buffer.is_valid()) {
             lod.is_loaded = true;
             lod.last_access_time = OS::get_singleton()->get_ticks_msec();
             lod.access_count++;
         }
+        lod.is_loading = false;
     }
 
-    lod.is_loading = false;
-
     float load_time_ms = (OS::get_singleton()->get_ticks_usec() - start_time) / 1000.0f;
-    stats.performance.avg_load_time_ms =
-            stats.performance.avg_load_time_ms * 0.9f + load_time_ms * 0.1f;
+    {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        stats.performance.avg_load_time_ms =
+                stats.performance.avg_load_time_ms * 0.9f + load_time_ms * 0.1f;
+    }
 
     GS_LOG_STREAMING_DEBUG(vformat("Loaded LOD %d in %.2f ms", level, load_time_ms));
+}
+
+void StreamingLODManager::prepare_gpu_upload_data(const Vector<GaussianData>& data, LocalVector<::Gaussian>& gpu_gaussians) const {
+    if (data.is_empty()) {
+        return;
+    }
+
+    gpu_gaussians.resize(data.size());
+
+    for (uint32_t i = 0; i < data.size(); i++) {
+        const GaussianData &src = data[i];
+        ::Gaussian &dst = gpu_gaussians[i];
+        dst = ::Gaussian{};
+
+        dst.position = src.position;
+        dst.opacity = src.color.a;
+        dst.scale = src.scale;
+        dst.area = src.area;
+        dst.rotation = src.rotation;
+        dst.sh_dc = src.color;
+        dst.normal = src.normal;
+        dst.stroke_age = 0.0f;
+        dst.brush_axes = src.painterly.jitter;
+        dst.painterly_meta = gaussian_pack_painterly_meta(0);
+    }
 }
 
 void StreamingLODManager::unload_distant_lods(const Vector3& camera_pos, const Frustum& frustum) {
@@ -507,28 +695,9 @@ void StreamingLODManager::unload_lod_level(uint32_t level) {
     GS_LOG_STREAMING_DEBUG(vformat("Unloaded LOD %d", level));
 }
 
-void StreamingLODManager::upload_to_gpu(LODLevel& lod, const Vector<GaussianData>& data) {
-    if (data.is_empty()) return;
-
-    // Convert the clustered splats to GPU-aligned gaussians.
-    LocalVector<::Gaussian> gpu_gaussians;
-    gpu_gaussians.resize(data.size());
-
-    for (uint32_t i = 0; i < data.size(); i++) {
-        const GaussianData &src = data[i];
-        ::Gaussian &dst = gpu_gaussians[i];
-        dst = ::Gaussian{};
-
-        dst.position = src.position;
-        dst.opacity = src.color.a;
-        dst.scale = src.scale;
-        dst.area = src.area;
-        dst.rotation = src.rotation;
-        dst.sh_dc = src.color;
-        dst.normal = src.normal;
-        dst.stroke_age = 0.0f;
-        dst.brush_axes = src.painterly.jitter;
-        dst.painterly_meta = gaussian_pack_painterly_meta(0);
+void StreamingLODManager::upload_to_gpu(LODLevel& lod, const LocalVector<::Gaussian>& gpu_gaussians, uint32_t splat_count) {
+    if (gpu_gaussians.is_empty()) {
+        return;
     }
 
     Error stream_err = gpu_stream->stream_gaussians_immediate(gpu_gaussians);
@@ -542,7 +711,7 @@ void StreamingLODManager::upload_to_gpu(LODLevel& lod, const Vector<GaussianData
     }
 
     lod.gpu_buffer = gpu_stream->get_current_gpu_buffer();
-    lod.gpu_memory_bytes = data.size() * sizeof(GaussianData);
+    lod.gpu_memory_bytes = splat_count * sizeof(GaussianData);
     lod.buffer_capacity = gpu_stream->get_max_gaussians();
 }
 
@@ -554,51 +723,84 @@ void StreamingLODManager::release_gpu_buffer(LODLevel& lod) {
     lod.buffer_capacity = 0;
 }
 
-void StreamingLODManager::update_lod_priorities(const Vector3& camera_pos, const Frustum& frustum) {
-    // Sort LODs by priority
-    struct LODPriority {
-        uint32_t index;
-        float priority;
-        bool is_loaded;
-        bool is_loading;
-    };
-
-    LocalVector<LODPriority> priorities;
-    {
-        std::lock_guard<std::mutex> lock(lod_mutex);
-        priorities.resize(lod_levels.size());
-        for (uint32_t i = 0; i < lod_levels.size(); i++) {
-            priorities[i].index = i;
-            priorities[i].priority = compute_lod_priority(lod_levels[i], camera_pos, &frustum);
-            priorities[i].is_loaded = lod_levels[i].is_loaded;
-            priorities[i].is_loading = lod_levels[i].is_loading;
-        }
+void StreamingLODManager::reprioritize_async_loads(const LocalVector<uint32_t>& desired_levels) {
+    if (!config.enable_async_loading) {
+        return;
     }
 
-    std::sort(
-        priorities.ptr(),
-        priorities.ptr() + priorities.size(),
-        [](const auto& a, const auto& b) { return a.priority > b.priority; }
-    );
+    HashSet<uint32_t> desired_set;
+    desired_set.reserve(desired_levels.size());
+    for (uint32_t i = 0; i < desired_levels.size(); i++) {
+        desired_set.insert(desired_levels[i]);
+    }
 
-    // Update load queue based on priorities
-    if (config.enable_async_loading) {
+    HashSet<uint32_t> cancelled_levels;
+    {
         std::lock_guard<std::mutex> lock(load_queue_mutex);
 
-        // Clear and rebuild queue
+        LocalVector<AsyncLoadRequest> retained_load_requests;
         while (!load_queue.empty()) {
+            AsyncLoadRequest request = std::move(load_queue.front());
             load_queue.pop();
-        }
-        pending_async_loads.clear();
-
-        for (const auto &p : priorities) {
-            if (p.priority > 0.0f && !p.is_loaded && !p.is_loading) {
-                if (pending_async_loads.has(p.index)) {
-                    continue;
-                }
-                pending_async_loads.insert(p.index);
-                load_queue.push(p.index);
+            if (desired_set.has(request.level)) {
+                retained_load_requests.push_back(std::move(request));
+            } else {
+                cancelled_levels.insert(request.level);
             }
+        }
+        std::queue<AsyncLoadRequest> reordered_load_queue;
+        for (uint32_t i = 0; i < desired_levels.size(); i++) {
+            for (uint32_t j = 0; j < retained_load_requests.size(); j++) {
+                if (retained_load_requests[j].level == desired_levels[i]) {
+                    reordered_load_queue.push(std::move(retained_load_requests.write[j]));
+                    retained_load_requests.write[j].level = UINT32_MAX;
+                    break;
+                }
+            }
+        }
+        load_queue = std::move(reordered_load_queue);
+
+        LocalVector<AsyncLoadJob> retained_ready_jobs;
+        while (!ready_queue.empty()) {
+            AsyncLoadJob job = std::move(ready_queue.front());
+            ready_queue.pop();
+            if (desired_set.has(job.level)) {
+                retained_ready_jobs.push_back(std::move(job));
+            } else {
+                cancelled_levels.insert(job.level);
+            }
+        }
+        std::queue<AsyncLoadJob> reordered_ready_queue;
+        for (uint32_t i = 0; i < desired_levels.size(); i++) {
+            for (uint32_t j = 0; j < retained_ready_jobs.size(); j++) {
+                if (retained_ready_jobs[j].level == desired_levels[i]) {
+                    reordered_ready_queue.push(std::move(retained_ready_jobs.write[j]));
+                    retained_ready_jobs.write[j].level = UINT32_MAX;
+                    break;
+                }
+            }
+        }
+        ready_queue = std::move(reordered_ready_queue);
+
+        HashSet<uint32_t> filtered_pending;
+        for (const uint32_t level : pending_async_loads) {
+            if (desired_set.has(level)) {
+                filtered_pending.insert(level);
+            } else {
+                cancelled_levels.insert(level);
+            }
+        }
+        pending_async_loads = std::move(filtered_pending);
+    }
+
+    if (cancelled_levels.is_empty()) {
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(lod_mutex);
+    for (const uint32_t level : cancelled_levels) {
+        if (level < lod_levels.size() && !lod_levels[level].is_loaded) {
+            lod_levels.write[level].is_loading = false;
         }
     }
 }
@@ -615,7 +817,11 @@ StreamingLODManager::PredictedMovement StreamingLODManager::predict_camera_movem
     return prediction;
 }
 
-void StreamingLODManager::prefetch_predicted_lods(const PredictedMovement& prediction, const Frustum& frustum) {
+void StreamingLODManager::collect_predicted_lods(
+    const PredictedMovement& prediction,
+    const Frustum& frustum,
+    LocalVector<uint32_t>& r_desired_levels,
+    LocalVector<uint32_t>& r_new_levels) {
     if (prediction.confidence < 0.5f) {
         return;  // Low confidence, don't prefetch
     }
@@ -623,31 +829,27 @@ void StreamingLODManager::prefetch_predicted_lods(const PredictedMovement& predi
         return;
     }
 
+    const float predicted_distance = compute_distance_to_content(prediction.predicted_position);
+    if (!_is_valid_content_distance(predicted_distance)) {
+        return;
+    }
+
     // Check which LODs might be needed at predicted position
-    LocalVector<uint32_t> to_prefetch;
     {
         std::lock_guard<std::mutex> lock(lod_mutex);
         for (uint32_t i = 0; i < lod_levels.size(); i++) {
             const LODLevel &lod = lod_levels[i];
 
-            if (!lod.is_loaded && !lod.is_loading) {
-                const float predicted_distance = compute_distance_to_content(prediction.predicted_position);
-                if (!_is_valid_content_distance(predicted_distance)) {
-                    continue;
-                }
-
+            if (!lod.is_loaded) {
                 if (predicted_distance >= lod.min_distance - config.load_ahead_distance * 0.5f &&
                         predicted_distance <= lod.max_distance + config.load_ahead_distance * 0.5f) {
-                    if (config.enable_async_loading) {
-                        to_prefetch.push_back(i);
+                    r_desired_levels.push_back(i);
+                    if (!lod.is_loading) {
+                        r_new_levels.push_back(i);
                     }
                 }
             }
         }
-    }
-
-    for (uint32_t i = 0; i < to_prefetch.size(); i++) {
-        enqueue_load_request(to_prefetch[i]);
     }
 }
 
@@ -769,7 +971,7 @@ float StreamingLODManager::compute_lod_priority(
 
 void StreamingLODManager::async_load_worker() {
     while (!should_stop_loading) {
-        uint32_t level_to_load = UINT32_MAX;
+        AsyncLoadRequest request;
 
         {
             std::unique_lock<std::mutex> lock(load_queue_mutex);
@@ -782,38 +984,110 @@ void StreamingLODManager::async_load_worker() {
             }
 
             if (!load_queue.empty()) {
-                level_to_load = load_queue.front();
+                request = std::move(load_queue.front());
                 load_queue.pop();
-                pending_async_loads.erase(level_to_load);
             }
         }
 
-        if (level_to_load != UINT32_MAX) {
-            stream_lod_level(level_to_load);
+        if (request.level == UINT32_MAX) {
+            continue;
+        }
+
+        AsyncLoadJob job;
+        uint64_t prepare_start_usec = OS::get_singleton()->get_ticks_usec();
+        job.level = request.level;
+        job.splat_count = request.source_data.size();
+        job.enqueue_time_usec = request.enqueue_time_usec;
+        prepare_gpu_upload_data(request.source_data, job.gpu_gaussians);
+        job.prepare_time_ms = (OS::get_singleton()->get_ticks_usec() - prepare_start_usec) / 1000.0f;
+
+        {
+            std::lock_guard<std::mutex> lock(lod_mutex);
+            stats.async_prepare_jobs_completed++;
+            const bool prepare_on_main_thread = Thread::is_main_thread();
+            if (prepare_on_main_thread) {
+                stats.async_prepare_main_thread_violations++;
+            } else {
+                stats.async_prepare_observed_off_main_thread = true;
+            }
+            stats.performance.avg_async_prepare_time_ms =
+                    stats.performance.avg_async_prepare_time_ms * 0.9f + job.prepare_time_ms * 0.1f;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(load_queue_mutex);
+            if (pending_async_loads.has(request.level)) {
+                ready_queue.push(std::move(job));
+            }
         }
     }
 }
 
-void StreamingLODManager::enqueue_load_request(uint32_t level) {
+void StreamingLODManager::enqueue_load_request(uint32_t level, const LocalVector<uint32_t>& desired_levels) {
+    if (!config.enable_async_loading) {
+        return;
+    }
+
+    const uint32_t max_loads = config.max_concurrent_loads == 0
+            ? UINT32_MAX
+            : config.max_concurrent_loads;
+
     {
-        std::lock_guard<std::mutex> lock(lod_mutex);
-        if (level >= lod_levels.size()) {
+        std::lock_guard<std::mutex> lock(load_queue_mutex);
+        if (pending_async_loads.has(level) || pending_async_loads.size() >= max_loads) {
             return;
         }
+    }
+
+    Vector<GaussianData> source_data;
+    {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        if (level >= lod_levels.size() || level >= lod_data.size()) {
+            return;
+        }
+
+        LODLevel &lod = lod_levels.write[level];
+        if (lod.is_loaded || lod.is_loading || lod_data[level].is_empty()) {
+            return;
+        }
+
+        lod.is_loading = true;
+        source_data = lod_data[level];
     }
 
     {
         std::lock_guard<std::mutex> lock(load_queue_mutex);
-        if (pending_async_loads.has(level)) {
-            return;
-        }
         pending_async_loads.insert(level);
-        load_queue.push(level);
+
+        LocalVector<AsyncLoadRequest> retained_load_requests;
+        while (!load_queue.empty()) {
+            retained_load_requests.push_back(std::move(load_queue.front()));
+            load_queue.pop();
+        }
+        retained_load_requests.push_back(AsyncLoadRequest{
+                level,
+                std::move(source_data),
+                OS::get_singleton()->get_ticks_usec(),
+        });
+
+        std::queue<AsyncLoadRequest> reordered_load_queue;
+        for (uint32_t i = 0; i < desired_levels.size(); i++) {
+            for (uint32_t j = 0; j < retained_load_requests.size(); j++) {
+                if (retained_load_requests[j].level == desired_levels[i]) {
+                    reordered_load_queue.push(std::move(retained_load_requests.write[j]));
+                    retained_load_requests.write[j].level = UINT32_MAX;
+                    break;
+                }
+            }
+        }
+        load_queue = std::move(reordered_load_queue);
     }
+
+    start_async_loading();
     load_cv.notify_one();
 }
 
-void StreamingLODManager::process_async_load_queue(uint64_t frame_start_usec) {
+void StreamingLODManager::apply_completed_async_loads(uint64_t frame_start_usec) {
     if (!config.enable_async_loading) {
         return;
     }
@@ -831,22 +1105,65 @@ void StreamingLODManager::process_async_load_queue(uint64_t frame_start_usec) {
             }
         }
 
-        uint32_t level = UINT32_MAX;
+        AsyncLoadJob job;
         {
             std::lock_guard<std::mutex> lock(load_queue_mutex);
-            if (load_queue.empty()) {
+            if (ready_queue.empty()) {
                 break;
             }
-            level = load_queue.front();
-            load_queue.pop();
-            pending_async_loads.erase(level);
+            job = std::move(ready_queue.front());
+            ready_queue.pop();
+            if (!pending_async_loads.has(job.level)) {
+                continue;
+            }
         }
 
-        if (level == UINT32_MAX) {
+        if (job.level == UINT32_MAX) {
             break;
         }
 
-        stream_lod_level(level);
+        const bool apply_on_main_thread = Thread::is_main_thread();
+        uint64_t apply_start_usec = OS::get_singleton()->get_ticks_usec();
+        bool apply_succeeded = false;
+        {
+            std::lock_guard<std::mutex> lock(lod_mutex);
+            if (!apply_on_main_thread) {
+                stats.async_apply_off_main_thread_violations++;
+            } else {
+                stats.async_apply_observed_on_main_thread = true;
+            }
+            if (job.level < lod_levels.size()) {
+                LODLevel &lod = lod_levels.write[job.level];
+                if (lod.is_loading && !lod.is_loaded) {
+                    upload_to_gpu(lod, job.gpu_gaussians, job.splat_count);
+                    if (lod.gpu_buffer.is_valid()) {
+                        lod.is_loaded = true;
+                        lod.last_access_time = OS::get_singleton()->get_ticks_msec();
+                        lod.access_count++;
+                        apply_succeeded = true;
+                    }
+                    lod.is_loading = false;
+                }
+            }
+            if (apply_succeeded) {
+                const uint64_t complete_time_usec = OS::get_singleton()->get_ticks_usec();
+                const float apply_time_ms = (complete_time_usec - apply_start_usec) / 1000.0f;
+                const float end_to_end_load_time_ms = job.enqueue_time_usec == 0
+                        ? (job.prepare_time_ms + apply_time_ms)
+                        : (complete_time_usec - job.enqueue_time_usec) / 1000.0f;
+                stats.async_apply_jobs_completed++;
+                stats.performance.avg_async_apply_time_ms =
+                        stats.performance.avg_async_apply_time_ms * 0.9f + apply_time_ms * 0.1f;
+                stats.performance.avg_load_time_ms =
+                        stats.performance.avg_load_time_ms * 0.9f + end_to_end_load_time_ms * 0.1f;
+            }
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(load_queue_mutex);
+            pending_async_loads.erase(job.level);
+        }
+
         processed++;
     }
 }

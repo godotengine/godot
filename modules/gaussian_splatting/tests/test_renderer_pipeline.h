@@ -17,7 +17,9 @@
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_streaming.h"
 #include "../renderer/gaussian_gpu_layout.h"
+#include "../renderer/gpu_sorting_config.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/render_debug_state_orchestrator.h"
 #include "../renderer/render_instancing_orchestrator.h"
 #include "../renderer/render_pipeline_stages.h"
 #include "../interfaces/output_compositor.h"
@@ -106,6 +108,37 @@ public:
         } else {
             settings->clear(setting_path);
         }
+        settings->emit_signal("settings_changed");
+    }
+};
+
+class ScopedGpuSortingConfigReload {
+public:
+    ~ScopedGpuSortingConfigReload() {
+        g_gpu_sorting_config.load_from_project_settings();
+    }
+};
+
+class ScopedRenderingDeviceLease {
+    RenderingDevice *device = nullptr;
+    bool owns_device = false;
+
+public:
+    RenderingDevice *acquire(RenderingServer *p_rendering_server, GaussianSplatManager *p_manager) {
+        if (p_manager) {
+            device = p_manager->get_primary_rendering_device();
+        }
+        if (!device && p_rendering_server) {
+            device = p_rendering_server->create_local_rendering_device();
+            owns_device = device != nullptr;
+        }
+        return device;
+    }
+
+    ~ScopedRenderingDeviceLease() {
+        if (owns_device && device) {
+            memdelete(device);
+        }
     }
 };
 
@@ -170,6 +203,135 @@ static Vector<GaussianSplatRenderer::StaticChunk> make_overlapping_static_chunks
     chunks.write[0] = make_chunk(0);
     chunks.write[1] = make_chunk(p_chunk_size / 2);
     return chunks;
+}
+
+static Vector<uint32_t> read_renderer_sort_indices(const Ref<GaussianSplatRenderer> &p_renderer, uint32_t p_count) {
+    Vector<uint32_t> indices;
+    indices.resize(p_count);
+    const Vector<uint8_t> &bytes = p_renderer->get_sorting_state().sort_index_bytes;
+    const int required_bytes = int(p_count * sizeof(uint32_t));
+    if (bytes.size() < required_bytes) {
+        indices.resize(0);
+        return indices;
+    }
+
+    memcpy(indices.ptrw(), bytes.ptr(), required_bytes);
+    return indices;
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Global CPU cull telemetry overrides retired legacy disabled route state") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+    renderer->test_release_current_streaming_system();
+
+    Vector<Vector3> positions;
+    positions.push_back(Vector3(0.0f, 0.0f, -2.0f));
+    positions.push_back(Vector3(0.0f, 0.0f, -4.0f));
+    renderer->test_set_test_splats(positions);
+
+    const RID legacy_buffer = RID::from_uint64(0x19u);
+    renderer->track_resource_owner(legacy_buffer, primary_rd, false, "test_legacy_gpu_cull_buffer");
+    GaussianSplatRenderer::StreamingState &streaming_state = renderer->get_streaming_state();
+    streaming_state.registered_gaussian_buffer = legacy_buffer;
+
+    Projection projection;
+    projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+	const int visible = renderer->test_cull_visible_count(Transform3D(), projection, Size2i(1280, 720));
+	CHECK(visible > 0);
+
+	Dictionary stats = renderer->get_render_stats();
+	CHECK_MESSAGE(stats.get("cull_route_uid", String()) == String(RenderRouteUID::GLOBAL_CULL_CPU),
+			"Expected executed global CPU culling to publish the global CPU route");
+	CHECK_MESSAGE(stats.get("cull_route_reason", String()) == String("global_cpu_path"),
+			"Expected executed global CPU culling to publish the global CPU reason");
+	CHECK_MESSAGE(!bool(stats.get("cull_route_uid_missing", true)),
+			"Expected render stats to mark cull_route_uid as present");
+
+	Dictionary snapshot = renderer->get_runtime_diagnostic_snapshot();
+	Dictionary telemetry = snapshot.get("telemetry", Dictionary());
+	CHECK_MESSAGE(telemetry.get("cull_route_uid", String()) == String(RenderRouteUID::GLOBAL_CULL_CPU),
+			"Expected runtime diagnostic telemetry to preserve the executed global CPU route");
+	CHECK_MESSAGE(telemetry.get("cull_route_reason", String()) == String("global_cpu_path"),
+			"Expected runtime diagnostic telemetry to preserve the executed global CPU reason");
+
+	renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Instance cull failures that fall through to global CPU publish global CPU routes") {
+    Ref<GPUCuller> culler;
+    culler.instantiate();
+    CHECK(culler.is_valid());
+    if (!culler.is_valid()) {
+        return;
+    }
+
+    GPUCuller::InstancePipelineInputs instance_inputs;
+    culler->set_instance_pipeline_inputs(instance_inputs);
+
+    LocalVector<Vector3> positions;
+    positions.push_back(Vector3(0.0f, 0.0f, -2.0f));
+
+    GPUCuller::CullingInputs inputs;
+    inputs.test_positions = &positions;
+
+    Projection projection;
+    projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+    GPUCuller::CullingSummary summary =
+            culler->cull_for_view(Transform3D(), projection, Size2i(1280, 720), inputs);
+
+    CHECK(summary.visible_after_culling > 0);
+    CHECK(summary.cull_route_uid == String(RenderRouteUID::GLOBAL_CULL_CPU));
+    CHECK(summary.cull_route_reason == String("global_cpu_path"));
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Instance cull failures without fallback preserve explicit no-data skip routes") {
+    Ref<GPUCuller> culler;
+    culler.instantiate();
+    CHECK(culler.is_valid());
+    if (!culler.is_valid()) {
+        return;
+    }
+
+    GPUCuller::InstancePipelineInputs instance_inputs;
+    culler->set_instance_pipeline_inputs(instance_inputs);
+
+    Projection projection;
+    projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+    GPUCuller::CullingInputs inputs;
+    GPUCuller::CullingSummary summary =
+            culler->cull_for_view(Transform3D(), projection, Size2i(1280, 720), inputs);
+
+    CHECK(summary.visible_after_culling == 0);
+    CHECK(summary.cull_route_uid == String(RenderRouteUID::COMMON_SKIP_NO_DATA));
+    CHECK(summary.cull_route_reason == String("instance_pipeline_failed_no_fallback"));
 }
 
 TEST_CASE("[GaussianSplatting] GPU layout contract invariants remain stable") {
@@ -328,10 +490,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Instanced render skips callbacks whe
         return;
     }
 
-    RenderingDevice *primary_rd = manager->get_primary_rendering_device();
-    if (!primary_rd) {
-        primary_rd = rs->create_local_rendering_device();
-    }
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
     if (primary_rd == nullptr) {
         MESSAGE("Skipping test - Rendering device unavailable");
         return;
@@ -405,10 +565,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance drives GPU strea
         return;
     }
 
-    RenderingDevice *primary_rd = manager->get_primary_rendering_device();
-    if (!primary_rd) {
-        primary_rd = rs->create_local_rendering_device();
-    }
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
     if (primary_rd == nullptr) {
         MESSAGE("Skipping test - Rendering device unavailable");
         return;
@@ -504,10 +662,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] World static chunks keep streaming i
         return;
     }
 
-    RenderingDevice *primary_rd = manager->get_primary_rendering_device();
-    if (!primary_rd) {
-        primary_rd = rs->create_local_rendering_device();
-    }
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
     if (primary_rd == nullptr) {
         MESSAGE("Skipping test - Rendering device unavailable");
         return;
@@ -556,6 +712,18 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] World static chunks keep streaming i
     bool instance_buffers_ready = false;
     for (int i = 0; i < 8; i++) {
         renderer->render_scene_instance(&render_data);
+        const Dictionary frame_stats = renderer->get_render_stats();
+        const String frame_cull_route_uid = frame_stats.get("cull_route_uid", String());
+        CHECK_MESSAGE(frame_cull_route_uid != String(RenderRouteUID::GLOBAL_CULL_CPU),
+                "Expected streaming warmup not to fall through to the resident/global CPU path");
+        CHECK_MESSAGE(frame_cull_route_uid != String(RenderRouteUID::COMMON_SKIP_NO_DATA),
+                "Expected streaming warmup with gaussian data to stay on instance/not-ready telemetry, not no-data");
+        if (frame_cull_route_uid.begins_with("COMMON.SKIP.STREAMING_NOT_READY.")) {
+            CHECK_MESSAGE(String(frame_stats.get("cull_route_reason", String())).begins_with("streaming_not_ready_"),
+                    "Expected typed streaming-not-ready frames to publish a typed cull_route_reason");
+            CHECK_MESSAGE(frame_stats.get("stage_cull_status", String()) == String("skipped"),
+                    "Expected streaming-not-ready warmup frames to publish skipped cull stage metrics");
+        }
         streaming_system_ready = streaming_system_ready || renderer->test_has_current_streaming_system();
         instance_buffers_ready = instance_buffers_ready || renderer->has_instance_pipeline_buffers();
         if (streaming_system_ready && instance_buffers_ready) {
@@ -569,11 +737,134 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] World static chunks keep streaming i
         return;
     }
 
+    Dictionary stats = renderer->get_render_stats();
+    CHECK_MESSAGE(stats.get("cull_route_uid", String()) == String(RenderRouteUID::INSTANCE_CULL_GPU),
+            "Expected cull route UID to report the instance pipeline");
+    CHECK_MESSAGE(stats.get("cull_route_reason", String()) == String("instance_pipeline_active"),
+            "Expected cull route reason to report the instance pipeline");
+
     CHECK_MESSAGE(instance_buffers_ready,
             "Expected instance pipeline buffers to become ready for world/static-chunk streaming without SceneDirector instances");
     const GaussianRenderPipeline::InstancePipelineBuffers &buffers = renderer->get_instance_pipeline_buffers();
     CHECK_MESSAGE(buffers.instance_count > 0, "Expected instance pipeline to synthesize at least one instance for world/static-chunk streaming");
     CHECK_MESSAGE(buffers.max_visible_chunks > 0, "Expected world/static-chunk streaming buffers to expose visible chunk capacity");
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Dynamic handle warmup publishes explicit streaming-not-ready skips") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+    renderer->test_release_current_streaming_system();
+
+    GaussianSplatManager::SharedDynamicAssetHandle handle;
+    handle.asset_rid = RID::from_uint64(0x177u);
+    handle.gaussian_buffer = RID::from_uint64(0x178u);
+    handle.gaussian_count = GaussianStreamingSystem::CHUNK_SIZE;
+    renderer->get_streaming_state().shared_dynamic_asset_handle = handle;
+
+    RenderSceneDataRD scene_data;
+    scene_data.cam_transform = Transform3D(Basis(), Vector3(0.0f, 0.0f, 5.0f));
+    scene_data.cam_projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+    RenderDataRD render_data;
+    render_data.scene_data = &scene_data;
+    render_data.render_buffers = Ref<RenderSceneBuffersRD>();
+
+    renderer->render_scene_instance(&render_data);
+
+    const Dictionary stats = renderer->get_render_stats();
+    const String cull_route_uid = stats.get("cull_route_uid", String());
+    CHECK_MESSAGE(cull_route_uid.begins_with("COMMON.SKIP.STREAMING_NOT_READY."),
+            vformat("Expected dynamic-handle warmup to publish a typed streaming-not-ready route, got '%s'", cull_route_uid));
+    CHECK_MESSAGE(cull_route_uid != String(RenderRouteUID::COMMON_SKIP_NO_DATA),
+            "Expected dynamic-handle warmup not to degrade to a no-data skip");
+    CHECK_MESSAGE(cull_route_uid != String(RenderRouteUID::GLOBAL_CULL_CPU),
+            "Expected dynamic-handle warmup not to fall through to the resident/global CPU path");
+    CHECK_MESSAGE(String(stats.get("cull_route_reason", String())).begins_with("streaming_not_ready_"),
+            "Expected dynamic-handle warmup to publish a typed streaming-not-ready reason");
+    CHECK_MESSAGE(stats.get("stage_cull_status", String()) == String("skipped"),
+            "Expected dynamic-handle warmup to publish skipped cull stage metrics");
+    CHECK_MESSAGE(String(stats.get("stage_cull_reason", String())).find("streaming path not ready") != -1,
+            "Expected dynamic-handle warmup to report a streaming-not-ready cull skip reason");
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Missing renderer data stays an explicit no-data skip") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+    renderer->test_release_current_streaming_system();
+
+    RenderSceneDataRD scene_data;
+    scene_data.cam_transform = Transform3D(Basis(), Vector3(0.0f, 0.0f, 5.0f));
+    scene_data.cam_projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+    RenderDataRD render_data;
+    render_data.scene_data = &scene_data;
+    render_data.render_buffers = Ref<RenderSceneBuffersRD>();
+
+    renderer->render_scene_instance(&render_data);
+
+    const Dictionary stats = renderer->get_render_stats();
+    CHECK_MESSAGE(stats.get("cull_route_uid", String()) == String(RenderRouteUID::COMMON_SKIP_NO_DATA),
+            "Expected missing renderer data to remain an explicit no-data skip");
+    CHECK_MESSAGE(stats.get("cull_route_reason", String()) == String("missing_source_data"),
+            "Expected missing renderer data to keep the no-data cull_route_reason");
+    CHECK_MESSAGE(stats.get("stage_cull_status", String()) == String("skipped"),
+            "Expected missing renderer data to publish skipped cull stage metrics");
+    CHECK_MESSAGE(String(stats.get("stage_cull_reason", String())).find("no render data") != -1,
+            "Expected missing renderer data to report a no-render-data cull skip reason");
 
     renderer.unref();
 }
@@ -605,10 +896,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Static layout fallback publishes typ
         return;
     }
 
-    RenderingDevice *primary_rd = manager->get_primary_rendering_device();
-    if (!primary_rd) {
-        primary_rd = rs->create_local_rendering_device();
-    }
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
     if (primary_rd == nullptr) {
         MESSAGE("Skipping test - Rendering device unavailable");
         return;
@@ -701,6 +990,57 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Static layout fallback publishes typ
             String("non_contiguous"));
     CHECK(streaming_state.get("layout_hint_last_reason", String("none")) == String("hint_overlapping_ranges"));
     CHECK(streaming_state.get("layout_hint_last_reason_category", String("other")) == String("non_contiguous"));
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Global CPU cull telemetry ignores missing registered legacy buffer state") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    Vector<Vector3> positions;
+    positions.push_back(Vector3(0.0f, 0.0f, -2.0f));
+    positions.push_back(Vector3(0.0f, 0.0f, -4.0f));
+    renderer->test_set_test_splats(positions);
+
+    Projection projection;
+    projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+	const int visible = renderer->test_cull_visible_count(Transform3D(), projection, Size2i(1280, 720));
+	CHECK(visible > 0);
+
+	Dictionary stats = renderer->get_render_stats();
+	CHECK_MESSAGE(stats.get("cull_route_uid", String()) == String(RenderRouteUID::GLOBAL_CULL_CPU),
+			"Expected executed global CPU culling to ignore missing legacy buffer state");
+	CHECK_MESSAGE(stats.get("cull_route_reason", String()) == String("global_cpu_path"),
+			"Expected executed global CPU culling to publish the global CPU reason");
+	CHECK_MESSAGE(!bool(stats.get("cull_route_uid_missing", true)),
+			"Expected cull route UID to be normalized and marked present");
 
     renderer.unref();
 }
@@ -837,10 +1177,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance supports forced 
         return;
     }
 
-    RenderingDevice *primary_rd = manager->get_primary_rendering_device();
-    if (!primary_rd) {
-        primary_rd = rs->create_local_rendering_device();
-    }
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
     if (primary_rd == nullptr) {
         MESSAGE("Skipping test - Rendering device unavailable");
         return;
@@ -922,6 +1260,372 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance supports forced 
 	}
 
 	renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Strict global sort forces a real CPU sort when the camera-stable fallback buffer is missing") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    if (project_settings == nullptr) {
+        MESSAGE("Skipping test - ProjectSettings unavailable");
+        return;
+    }
+
+    const String force_cpu_setting = "rendering/gaussian_splatting/sorting/force_cpu_sort";
+    const String strict_sort_setting = "rendering/gaussian_splatting/sorting/strict_global_sort";
+    ScopedGpuSortingConfigReload strict_reload_guard;
+    ScopedProjectSetting force_cpu_guard(project_settings, force_cpu_setting);
+    ScopedProjectSetting strict_guard(project_settings, strict_sort_setting);
+    project_settings->set_setting(force_cpu_setting, true);
+    project_settings->set_setting(strict_sort_setting, true);
+    project_settings->emit_signal("settings_changed");
+    g_gpu_sorting_config.load_from_project_settings();
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    Vector<Vector3> positions;
+    positions.push_back(Vector3(0.0f, 0.0f, -2.0f));
+    positions.push_back(Vector3(0.0f, 0.0f, -8.0f));
+    renderer->test_set_test_splats(positions);
+
+    GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+    cull_state.culled_indices.resize(2);
+    cull_state.culled_indices.write[0] = 1;
+    cull_state.culled_indices.write[1] = 0;
+
+    GaussianSplatRenderer::SortingState &sorting_state = renderer->get_sorting_state();
+    const Transform3D world_to_camera = Transform3D();
+    sorting_state.sorted_splat_count = 2;
+    sorting_state.last_sort_world_to_camera_transform = world_to_camera;
+    sorting_state.last_sort_transform_valid = true;
+    renderer->get_subsystem_state().gpu_culler->get_config().cull_params_dirty = false;
+    renderer->get_subsystem_state().sorting_pipeline->release_sort_buffers();
+
+    GaussianSplatRenderer::SortStageSummary summary =
+            renderer->test_sort_for_view(world_to_camera, GaussianRenderState::IndexDomain::GAUSSIAN_GLOBAL);
+
+    CHECK(summary.did_execute);
+    CHECK(summary.sorted_count == 2);
+    CHECK(renderer->get_debug_state().sort_route_uid == String(RenderRouteUID::INSTANCE_SORT_CPU_FALLBACK));
+    CHECK(renderer->get_debug_state().sort_route_uid != String(RenderRouteUID::COMMON_SKIP_CAMERA_STABLE));
+    CHECK(cull_state.culled_indices[0] == 0);
+    CHECK(cull_state.culled_indices[1] == 1);
+
+    const Vector<uint32_t> sorted_indices = read_renderer_sort_indices(renderer, 2);
+    REQUIRE(sorted_indices.size() == 2);
+    CHECK(sorted_indices[0] == 0);
+    CHECK(sorted_indices[1] == 1);
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Camera-stable global fallback publishes current cull order when strict sort is disabled") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    if (project_settings == nullptr) {
+        MESSAGE("Skipping test - ProjectSettings unavailable");
+        return;
+    }
+
+    const String force_cpu_setting = "rendering/gaussian_splatting/sorting/force_cpu_sort";
+    const String strict_sort_setting = "rendering/gaussian_splatting/sorting/strict_global_sort";
+    ScopedGpuSortingConfigReload strict_reload_guard;
+    ScopedProjectSetting force_cpu_guard(project_settings, force_cpu_setting);
+    ScopedProjectSetting strict_guard(project_settings, strict_sort_setting);
+    project_settings->set_setting(force_cpu_setting, false);
+    project_settings->set_setting(strict_sort_setting, false);
+    project_settings->emit_signal("settings_changed");
+    g_gpu_sorting_config.load_from_project_settings();
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+    cull_state.culled_indices.resize(2);
+    cull_state.culled_indices.write[0] = 1;
+    cull_state.culled_indices.write[1] = 0;
+
+    GaussianSplatRenderer::SortingState &sorting_state = renderer->get_sorting_state();
+    const Transform3D world_to_camera = Transform3D();
+    sorting_state.sorted_splat_count = 2;
+    sorting_state.last_sort_world_to_camera_transform = world_to_camera;
+    sorting_state.last_sort_transform_valid = true;
+    renderer->get_subsystem_state().gpu_culler->get_config().cull_params_dirty = false;
+    renderer->get_subsystem_state().sorting_pipeline->release_sort_buffers();
+
+    GaussianSplatRenderer::SortStageSummary summary =
+            renderer->test_sort_for_view(world_to_camera, GaussianRenderState::IndexDomain::GAUSSIAN_GLOBAL);
+
+    CHECK_FALSE(summary.did_execute);
+    CHECK(summary.sorted_count == 2);
+    CHECK(renderer->get_debug_state().sort_route_uid == String(RenderRouteUID::COMMON_SKIP_CAMERA_STABLE));
+    CHECK_FALSE(renderer->get_sorting_state().last_sort_transform_valid);
+    CHECK(cull_state.culled_indices[0] == 1);
+    CHECK(cull_state.culled_indices[1] == 0);
+
+    const Vector<uint32_t> sorted_indices = read_renderer_sort_indices(renderer, 2);
+    REQUIRE(sorted_indices.size() == 2);
+    CHECK(sorted_indices[0] == 1);
+    CHECK(sorted_indices[1] == 0);
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Strict global sort refuses unsorted CPU fallback when positions are unavailable") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    if (project_settings == nullptr) {
+        MESSAGE("Skipping test - ProjectSettings unavailable");
+        return;
+    }
+
+    const String force_cpu_setting = "rendering/gaussian_splatting/sorting/force_cpu_sort";
+    const String strict_sort_setting = "rendering/gaussian_splatting/sorting/strict_global_sort";
+    ScopedGpuSortingConfigReload strict_reload_guard;
+    ScopedProjectSetting force_cpu_guard(project_settings, force_cpu_setting);
+    ScopedProjectSetting strict_guard(project_settings, strict_sort_setting);
+    project_settings->set_setting(force_cpu_setting, true);
+    project_settings->set_setting(strict_sort_setting, true);
+    project_settings->emit_signal("settings_changed");
+    g_gpu_sorting_config.load_from_project_settings();
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+    cull_state.culled_indices.resize(2);
+    cull_state.culled_indices.write[0] = 1;
+    cull_state.culled_indices.write[1] = 0;
+    renderer->get_subsystem_state().gpu_culler->get_config().cull_params_dirty = false;
+
+    GaussianSplatRenderer::SortStageSummary summary =
+            renderer->test_sort_for_view(Transform3D(), GaussianRenderState::IndexDomain::GAUSSIAN_GLOBAL);
+
+    CHECK_FALSE(summary.did_execute);
+    CHECK(summary.sorted_count == 0);
+    CHECK(renderer->get_debug_state().sort_route_uid == String(RenderRouteUID::COMMON_FAIL_SORT_FAILED));
+    CHECK(renderer->get_visible_splat_count() == 0);
+    CHECK_FALSE(renderer->get_sorting_state().last_sort_transform_valid);
+    CHECK(renderer->get_sorting_state().sort_index_bytes.is_empty());
+    CHECK(cull_state.culled_indices[0] == 1);
+    CHECK(cull_state.culled_indices[1] == 0);
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] CPU fallback publishes unsorted cull order when positions are unavailable and strict sort is disabled") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    if (project_settings == nullptr) {
+        MESSAGE("Skipping test - ProjectSettings unavailable");
+        return;
+    }
+
+    const String force_cpu_setting = "rendering/gaussian_splatting/sorting/force_cpu_sort";
+    const String strict_sort_setting = "rendering/gaussian_splatting/sorting/strict_global_sort";
+    ScopedGpuSortingConfigReload strict_reload_guard;
+    ScopedProjectSetting force_cpu_guard(project_settings, force_cpu_setting);
+    ScopedProjectSetting strict_guard(project_settings, strict_sort_setting);
+    project_settings->set_setting(force_cpu_setting, true);
+    project_settings->set_setting(strict_sort_setting, false);
+    project_settings->emit_signal("settings_changed");
+    g_gpu_sorting_config.load_from_project_settings();
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+    cull_state.culled_indices.resize(2);
+    cull_state.culled_indices.write[0] = 1;
+    cull_state.culled_indices.write[1] = 0;
+    renderer->get_subsystem_state().gpu_culler->get_config().cull_params_dirty = false;
+
+    GaussianSplatRenderer::SortStageSummary summary =
+            renderer->test_sort_for_view(Transform3D(), GaussianRenderState::IndexDomain::GAUSSIAN_GLOBAL);
+
+    CHECK(summary.did_execute);
+    CHECK(summary.sorted_count == 2);
+    CHECK(renderer->get_debug_state().sort_route_uid == String(RenderRouteUID::INSTANCE_SORT_CPU_FALLBACK));
+    CHECK(renderer->get_visible_splat_count() == 2);
+    CHECK(cull_state.culled_indices[0] == 1);
+    CHECK(cull_state.culled_indices[1] == 0);
+
+    const Vector<uint32_t> sorted_indices = read_renderer_sort_indices(renderer, 2);
+    REQUIRE(sorted_indices.size() == 2);
+    CHECK(sorted_indices[0] == 1);
+    CHECK(sorted_indices[1] == 0);
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Camera-stable instance path publishes identity fallback when strict sort is disabled") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    if (project_settings == nullptr) {
+        MESSAGE("Skipping test - ProjectSettings unavailable");
+        return;
+    }
+
+    const String force_cpu_setting = "rendering/gaussian_splatting/sorting/force_cpu_sort";
+    const String strict_sort_setting = "rendering/gaussian_splatting/sorting/strict_global_sort";
+    ScopedGpuSortingConfigReload strict_reload_guard;
+    ScopedProjectSetting force_cpu_guard(project_settings, force_cpu_setting);
+    ScopedProjectSetting strict_guard(project_settings, strict_sort_setting);
+    project_settings->set_setting(force_cpu_setting, false);
+    project_settings->set_setting(strict_sort_setting, false);
+    project_settings->emit_signal("settings_changed");
+    g_gpu_sorting_config.load_from_project_settings();
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    renderer->set_instance_pipeline_buffers(make_ready_instance_pipeline_buffers(false));
+    renderer->get_subsystem_state().sorting_pipeline->test_set_last_instance_visible_splat_count(
+            1, renderer->get_frame_state().frame_counter);
+    renderer->get_subsystem_state().sorting_pipeline->release_sort_buffers();
+
+    GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
+    cull_state.culled_indices.resize(1);
+    cull_state.culled_indices.write[0] = 0;
+
+    GaussianSplatRenderer::SortingState &sorting_state = renderer->get_sorting_state();
+    sorting_state.sorted_splat_count = 0;
+    sorting_state.last_sort_world_to_camera_transform = Transform3D();
+    sorting_state.last_sort_transform_valid = true;
+    renderer->get_subsystem_state().gpu_culler->get_config().cull_params_dirty = false;
+
+    GaussianSplatRenderer::SortStageSummary summary =
+            renderer->test_sort_for_view(Transform3D(), GaussianRenderState::IndexDomain::CHUNK_REF);
+
+    CHECK_FALSE(summary.did_execute);
+    CHECK(summary.sorted_count == 1);
+    CHECK(renderer->get_debug_state().sort_route_uid == String(RenderRouteUID::INSTANCE_SORT_IDENTITY_FALLBACK));
+    CHECK(renderer->get_visible_splat_count() == 1);
+    const Vector<uint32_t> sorted_indices = read_renderer_sort_indices(renderer, 1);
+    REQUIRE(sorted_indices.size() == 1);
+    CHECK(sorted_indices[0] == 0);
+
+    renderer.unref();
 }
 
 TEST_CASE("[GaussianSplatting][RequiresGPU] Production metrics contract and perf gate reporting") {
@@ -1029,6 +1733,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Production metrics contract and perf
     Dictionary production_metrics = stats.get("production_metrics", Dictionary());
     CHECK_MESSAGE(production_metrics.has("frame"), "Expected frame in production_metrics");
     CHECK_MESSAGE(production_metrics.has("cull_ms"), "Expected cull_ms in production_metrics");
+    CHECK_MESSAGE(production_metrics.has("cull_route_uid"), "Expected cull_route_uid in production_metrics");
+    CHECK_MESSAGE(production_metrics.has("cull_route_reason"), "Expected cull_route_reason in production_metrics");
     CHECK_MESSAGE(production_metrics.has("stage_total_ms"), "Expected stage_total_ms in production_metrics");
     CHECK_MESSAGE(stats.has("streaming_effective_upload_cap_mb_per_frame"), "Expected streaming effective upload cap in render stats");
     CHECK_MESSAGE(stats.has("streaming_effective_vram_budget_mb"), "Expected streaming effective VRAM budget in render stats");
@@ -1047,6 +1753,12 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Production metrics contract and perf
 
     Dictionary validation = stats.get("production_metrics_validation", Dictionary());
     CHECK_MESSAGE(bool(validation.get("valid", false)), "Expected production_metrics_validation to be valid");
+    CHECK_MESSAGE(String(production_metrics.get("cull_route_uid", String())).length() > 0,
+            "Expected production_metrics to publish a non-empty cull route UID");
+    CHECK_MESSAGE(String(production_metrics.get("cull_route_reason", String())).length() > 0,
+            "Expected production_metrics to publish a non-empty cull route reason");
+    CHECK_MESSAGE(!bool(stats.get("cull_route_uid_missing", true)),
+            "Expected render stats to mark cull_route_uid as present");
 
     Dictionary perf_gate = stats.get("perf_gate", Dictionary());
     CHECK_MESSAGE(bool(perf_gate.get("enabled", false)), "Expected perf gate enabled");
@@ -1056,6 +1768,12 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Production metrics contract and perf
 
     Dictionary snapshot = renderer->get_runtime_diagnostic_snapshot();
     CHECK_MESSAGE(snapshot.has("production_metrics_contract"), "Expected production_metrics_contract in snapshot");
+    Dictionary snapshot_metrics = snapshot.get("production_metrics", Dictionary());
+    CHECK_MESSAGE(snapshot_metrics.has("cull_route_uid"), "Expected snapshot production_metrics to expose cull_route_uid");
+    CHECK_MESSAGE(snapshot_metrics.has("cull_route_reason"), "Expected snapshot production_metrics to expose cull_route_reason");
+    Dictionary telemetry = snapshot.get("telemetry", Dictionary());
+    CHECK_MESSAGE(telemetry.has("cull_route_uid"), "Expected runtime telemetry snapshot to expose cull_route_uid");
+    CHECK_MESSAGE(telemetry.has("cull_route_reason"), "Expected runtime telemetry snapshot to expose cull_route_reason");
     Array summaries = snapshot.get("production_metrics_summaries", Array());
     CHECK_MESSAGE(summaries.size() >= 1, "Expected at least one production metrics summary");
 
@@ -1210,6 +1928,10 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report cull/sort skipp
 
     Dictionary stats = renderer->get_render_stats();
     CHECK_MESSAGE(stats.get("stage_metrics_valid", false), "Expected stage metrics to be valid");
+    CHECK_MESSAGE(stats.get("cull_route_uid", String()) == String(RenderRouteUID::COMMON_SKIP_GPU_CULLER_UNAVAILABLE),
+            "Expected cull route UID to report the GPU-culler-disabled bypass");
+    CHECK_MESSAGE(stats.get("cull_route_reason", String()) == String("gpu_culler_unavailable"),
+            "Expected cull route reason to report the missing GPU culler");
     const String cull_status = stats.get("stage_cull_status", String());
     CHECK_MESSAGE(cull_status == String("skipped"),
             vformat("Expected cull stage skipped, got '%s'", cull_status));
@@ -1302,7 +2024,7 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report raster failure 
     renderer.unref();
 }
 
-TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report painterly fallback") {
+TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report streaming not-ready instead of painterly fallback") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {
         MESSAGE("Skipping test - Rendering server unavailable");
@@ -1362,13 +2084,23 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Stage results report painterly fallb
     }
 
     Dictionary stats = renderer->get_render_stats();
-    CHECK(stats.get("stage_metrics_valid", false));
+    const String cull_route_uid = stats.get("cull_route_uid", String());
+    CHECK_MESSAGE(cull_route_uid.begins_with(String(RenderRouteUID::COMMON_SKIP_STREAMING_NOT_READY)),
+            vformat("Expected streaming not-ready route, got '%s'", cull_route_uid));
+    const String cull_route_reason = stats.get("cull_route_reason", String());
+    CHECK_MESSAGE(cull_route_reason.begins_with(String("streaming_not_ready_")),
+            vformat("Expected streaming not-ready reason, got '%s'", cull_route_reason));
+    const String cull_status = stats.get("stage_cull_status", String());
+    CHECK_MESSAGE(cull_status == String("skipped"),
+            vformat("Expected cull stage skipped, got '%s'", cull_status));
+    const String sort_status = stats.get("stage_sort_status", String());
+    CHECK_MESSAGE(sort_status == String("skipped"),
+            vformat("Expected sort stage skipped, got '%s'", sort_status));
     const String raster_status = stats.get("stage_raster_status", String());
-    CHECK_MESSAGE(raster_status == String("fallback"),
-            vformat("Expected raster stage fallback, got '%s'", raster_status));
-    const String raster_reason = stats.get("stage_raster_reason", String());
-    CHECK_MESSAGE(raster_reason.find("Painterly") != -1,
-            vformat("Expected painterly fallback reason, got '%s'", raster_reason));
+    CHECK_MESSAGE(raster_status == String("skipped"),
+            vformat("Expected raster stage skipped, got '%s'", raster_status));
+    CHECK_MESSAGE(!bool(stats.get("cull_route_uid_missing", true)),
+            "Expected cull route UID to be present for streaming not-ready skips");
 
     renderer.unref();
 }

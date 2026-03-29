@@ -9,6 +9,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "servers/rendering_server.h"
+#include "render_debug_state_orchestrator.h"
 
 namespace {
 
@@ -424,6 +425,8 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 		metrics.culled_distance_count = 0;
 		metrics.culled_screen_count = 0;
 		metrics.culled_importance_count = 0;
+		metrics.cull_route_uid = RenderRouteUID::COMMON_SKIP_GPU_CULLER_UNAVAILABLE;
+		metrics.cull_route_reason = "gpu_culler_unavailable";
 		metrics.used_hierarchical_culling = false;
 		metrics.culling_time_ms = 0.0f;
 		return output;
@@ -437,6 +440,8 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 	inputs.gaussian_data = scene_state.gaussian_data;
 	inputs.test_positions = &test_data_state->positions;
 	inputs.test_scales = &test_data_state->scales;
+	inputs.cull_route_uid = RenderRouteUID::COMMON_SKIP_NO_DATA;
+	inputs.cull_route_reason = "missing_source_data";
 	const int source_splat_count = scene_state.gaussian_data.is_valid() ? scene_state.gaussian_data->get_count() : 0;
 	const int max_splats = preserve_source_fidelity && source_splat_count > 0
 			? source_splat_count
@@ -445,29 +450,6 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 	// Runtime sorting path is GPU/cached only; avoid readbacks that were only needed for CPU sort fallback.
 	inputs.readback_distances = false;
 	inputs.readback_importance = false;
-
-	const GaussianSplatRenderer::StreamingState &streaming_state = (renderer->*runtime_ports.get_streaming_state_view)();
-	const bool can_attempt_legacy_gpu_cull =
-			!streaming_state.current_streaming_system.is_valid() &&
-			streaming_state.registered_gaussian_buffer.is_valid();
-	if (can_attempt_legacy_gpu_cull) {
-		RenderingDevice *buffer_device = renderer->get_resource_owner(streaming_state.registered_gaussian_buffer,
-				renderer->get_device_state().rd);
-		if (!buffer_device) {
-			buffer_device = renderer->get_device_state().rd;
-		}
-		if (buffer_device) {
-			inputs.gpu_cull_attempted = true;
-			inputs.gpu_input.gaussian_buffer = streaming_state.registered_gaussian_buffer;
-			inputs.gpu_input.buffer_device = buffer_device;
-			inputs.gpu_input.total_splats = source_splat_count > 0 ? static_cast<uint32_t>(source_splat_count) : 0u;
-		}
-	}
-
-	if (inputs.gpu_cull_attempted && inputs.gpu_input.gaussian_buffer.is_valid() && inputs.gpu_input.buffer_device) {
-		(renderer->*runtime_ports.track_resource_owner)(
-				inputs.gpu_input.gaussian_buffer, inputs.gpu_input.buffer_device, false, "legacy_gpu_cull_gaussian_buffer");
-	}
 
 	GPUCuller::CullingSummary summary =
 			gpu_culler->cull_for_view(p_world_to_camera_transform, p_projection, p_viewport_size, inputs);
@@ -485,6 +467,8 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 	metrics.culled_distance_count = summary.culled_distance_count;
 	metrics.culled_screen_count = summary.culled_screen_count;
 	metrics.culled_importance_count = summary.culled_importance_count;
+	metrics.cull_route_uid = summary.cull_route_uid;
+	metrics.cull_route_reason = summary.cull_route_reason;
 	metrics.used_hierarchical_culling = summary.used_hierarchical_culling;
 	metrics.culling_time_ms = summary.culling_time_ms;
 

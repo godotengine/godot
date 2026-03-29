@@ -987,14 +987,9 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 	}
 
 		auto publish_instance_identity_fallback = [&](const String &p_reason) -> bool {
-			if (strict_global_sort) {
+			if (!GaussianSplatting::allow_instance_identity_fallback_in_orchestrator(
+						strict_global_sort, instance_pipeline_active, sorting_pipeline != nullptr, instance_visible_splats)) {
 				// Correctness-first mode must never publish an unsorted identity frame.
-				return false;
-			}
-			if (!instance_pipeline_active || !sorting_pipeline) {
-				return false;
-			}
-			if (instance_visible_splats == 0) {
 				return false;
 			}
 
@@ -1043,7 +1038,8 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 		} else if (publish_instance_identity_fallback("Missing previous sorted buffer on camera-stable frame")) {
 			reset_sort_metrics();
 			return build_summary();
-		} else if (!strict_global_sort && !instance_pipeline_active && !cull_state.culled_indices.is_empty() && sorting_pipeline) {
+		} else if (GaussianSplatting::allow_camera_stable_cull_order_bootstrap_in_orchestrator(
+						   strict_global_sort, instance_pipeline_active, !cull_state.culled_indices.is_empty(), sorting_pipeline != nullptr)) {
 			// Last resort bootstrap: if the previous sorted buffer is unavailable,
 			// keep rendering progress with current cull order instead of showing zero splats.
 			// Strict mode is excluded above because correctness-first mode must never
@@ -1161,7 +1157,7 @@ GaussianRenderState::SortStageSummary RenderSortingOrchestrator::sort_gaussians_
 			entries[i].source_index = i;
 		}
 
-		if (strict_global_sort && !positions_ready) {
+		if (!GaussianSplatting::allow_unsorted_cpu_fallback_in_orchestrator(strict_global_sort, positions_ready)) {
 			GS_LOG_WARN_DEFAULT(vformat("[CPU Sort] Strict global sort: positions unavailable, refusing unsorted fallback (%s).",
 					p_reason));
 			return false;
@@ -1396,12 +1392,11 @@ void RenderSortingOrchestrator::force_sort_for_view(const Transform3D &p_world_t
 					view_transform,
 					projection,
 					projection,
-					nullptr,
-					true);
+					nullptr);
 			if (stream_rendered) {
 				return;
 			}
-			WARN_PRINT_ONCE("[GaussianSplatRenderer] force_sort_for_view streaming path not ready; using resident cull+sort fallback.");
+				WARN_PRINT_ONCE("[GaussianSplatRenderer] force_sort_for_view streaming path not ready; using cull+sort fallback.");
 		}
 	}
 

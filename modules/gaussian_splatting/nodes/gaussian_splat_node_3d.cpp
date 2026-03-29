@@ -1935,39 +1935,6 @@ void GaussianSplatNode3D::_register_shared_renderer() {
     }
     _register_instance_in_director();
 
-    Ref<GaussianSplatAsset> bootstrap_asset = splat_asset.is_valid() ? splat_asset : runtime_asset;
-
-    // Bootstrap primary gaussian_data on the shared renderer so the resident
-    // fallback path can render while the streaming instance pipeline warms up.
-    // Without this, scene_state.gaussian_data stays null, the streaming warmup
-    // frames return false, and _render_resident_frame sees "no render data".
-    if (renderer.is_valid()) {
-        const auto &scene_state = renderer->get_scene_state();
-        if (scene_state.active_asset.is_null() && bootstrap_asset.is_valid()) {
-            renderer->set_gaussian_asset(bootstrap_asset);
-            if (debug_logs_enabled) {
-                GS_LOG_RENDERER_DEBUG(vformat("[NODE-REG] Bootstrap: set active_asset on renderer (asset_id=%s)",
-                        String::num_uint64((uint64_t)bootstrap_asset->get_instance_id())));
-            }
-        }
-        if (scene_state.gaussian_data.is_null()) {
-            Ref<GaussianData> bootstrap_data;
-            if (splat_asset.is_valid()) {
-                bootstrap_data = splat_asset->get_gaussian_data();
-            } else if (renderer_data.is_valid()) {
-                bootstrap_data = renderer_data;
-            } else if (runtime_asset.is_valid()) {
-                bootstrap_data = runtime_asset->get_gaussian_data();
-            }
-            if (bootstrap_data.is_valid() && bootstrap_data->get_count() > 0) {
-                renderer->set_gaussian_data(bootstrap_data);
-                if (debug_logs_enabled) {
-                    GS_LOG_RENDERER_DEBUG(vformat("[NODE-REG] Bootstrap: set primary gaussian_data on renderer (count=%d)",
-                            bootstrap_data->get_count()));
-                }
-            }
-        }
-    }
 }
 
 void GaussianSplatNode3D::_unregister_shared_renderer() {

@@ -35,6 +35,7 @@ public:
         uint32_t asset_generation = 0;
         uint64_t enqueue_usec = 0;
         Vector<PackedGaussian> packed_data;
+        uint32_t payload_checksum = 0;
         SHCompressionMetrics metrics;
         uint32_t bytes_uploaded = 0;
     };

@@ -59,3 +59,21 @@ TEST_CASE("[GaussianSplatting][SortFallback] strict mode suppresses unsorted ins
 	CHECK(strict_gpu_failure_instance_policy.actions[1] == SortFallbackAction::FAIL);
 	CHECK(!strict_gpu_failure_instance_policy.cpu_sort_forced);
 }
+
+TEST_CASE("[GaussianSplatting][SortFallback] orchestrator guards block unsorted strict-mode fallbacks") {
+	CHECK(allow_instance_identity_fallback_in_orchestrator(false, true, true, 1));
+	CHECK_FALSE(allow_instance_identity_fallback_in_orchestrator(true, true, true, 1));
+	CHECK_FALSE(allow_instance_identity_fallback_in_orchestrator(false, false, true, 1));
+	CHECK_FALSE(allow_instance_identity_fallback_in_orchestrator(false, true, false, 1));
+	CHECK_FALSE(allow_instance_identity_fallback_in_orchestrator(false, true, true, 0));
+
+	CHECK(allow_camera_stable_cull_order_bootstrap_in_orchestrator(false, false, true, true));
+	CHECK_FALSE(allow_camera_stable_cull_order_bootstrap_in_orchestrator(true, false, true, true));
+	CHECK_FALSE(allow_camera_stable_cull_order_bootstrap_in_orchestrator(false, true, true, true));
+	CHECK_FALSE(allow_camera_stable_cull_order_bootstrap_in_orchestrator(false, false, false, true));
+	CHECK_FALSE(allow_camera_stable_cull_order_bootstrap_in_orchestrator(false, false, true, false));
+
+	CHECK(allow_unsorted_cpu_fallback_in_orchestrator(false, false));
+	CHECK(allow_unsorted_cpu_fallback_in_orchestrator(true, true));
+	CHECK_FALSE(allow_unsorted_cpu_fallback_in_orchestrator(true, false));
+}

@@ -6,6 +6,7 @@ const FAIL_MARKER := "[RUNTIME_FAIL]"
 const DATASET_SIZE := 5000000
 const SAMPLE_FRAMES := 180
 const WARMUP_FRAMES := 5
+const TAIL_VISIBILITY_CONFIRMATION_FRAMES := 6
 # Keep in sync with GaussianStreamingSystem::DiagnosticsState::STALL_THRESHOLD_FRAMES.
 const SCHEDULER_STALL_FAIL_FRAMES := 30
 const FRAME_P95_SPIKE_MIN_MS := 20.0
@@ -203,6 +204,19 @@ func _run() -> void:
     var sum_evicted := 0
     var sum_visible_evicted := 0
     var sum_upload_mb := 0.0
+    var sum_visible_splats := 0
+    var max_visible_splats := 0
+    var min_visible_splats := -1
+    var visible_splats_positive_frames := 0
+    var visible_splats_zero_frames := 0
+    var first_visible_frame := -1
+    var last_visible_frame := -1
+    var raster_error_frames := 0
+    var composite_error_frames := 0
+    var last_stage_raster_status := "unknown"
+    var last_stage_composite_status := "unknown"
+    var last_stage_raster_reason := ""
+    var last_stage_composite_reason := ""
     var max_pack_q := 0
     var max_upload_q := 0
     var max_sync_fallback_q := 0
@@ -249,6 +263,26 @@ func _run() -> void:
         var stats: Dictionary = renderer.get_render_stats()
         last_stats = stats
         frame_ms_values.append(float(Time.get_ticks_usec() - frame_start_usec) / 1000.0)
+        var visible_splats := _read_int(stats, "visible_splats")
+        sum_visible_splats += visible_splats
+        max_visible_splats = max(max_visible_splats, visible_splats)
+        min_visible_splats = visible_splats if min_visible_splats < 0 else min(min_visible_splats, visible_splats)
+        if visible_splats > 0:
+            visible_splats_positive_frames += 1
+            if first_visible_frame < 0:
+                first_visible_frame = frame_idx
+            last_visible_frame = frame_idx
+        else:
+            visible_splats_zero_frames += 1
+
+        last_stage_raster_status = String(stats.get("stage_raster_status", last_stage_raster_status))
+        last_stage_composite_status = String(stats.get("stage_composite_status", last_stage_composite_status))
+        last_stage_raster_reason = String(stats.get("stage_raster_reason", last_stage_raster_reason))
+        last_stage_composite_reason = String(stats.get("stage_composite_reason", last_stage_composite_reason))
+        if bool(stats.get("stage_raster_is_error", false)):
+            raster_error_frames += 1
+        if bool(stats.get("stage_composite_is_error", false)):
+            composite_error_frames += 1
 
         var stream_state: Variant = stats.get("streaming_state", {})
         if stream_state is Dictionary:
@@ -455,6 +489,94 @@ func _run() -> void:
     ) / float(queue_pressure_high_mutex_wait_samples)
     var fps_avg: float = 1000.0 / maxf(0.001, frame_avg_ms)
     var fps_p95: float = 1000.0 / maxf(0.001, frame_p95_ms)
+    var visible_splats_avg: float = float(sum_visible_splats) / float(max(1, SAMPLE_FRAMES))
+    var last_visible_splats := _read_int(last_stats, "visible_splats")
+    var last_total_splats := int(last_stats.get("total_splats", 0))
+    var tail_visibility_confirmation_frames := 0
+    var tail_visibility_recovered := false
+
+    if last_visible_splats <= 0:
+        var confirmation_transform := _camera_transform(SAMPLE_FRAMES + WARMUP_FRAMES - 1)
+        for i in range(TAIL_VISIBILITY_CONFIRMATION_FRAMES):
+            tail_visibility_confirmation_frames += 1
+            await process_frame
+            renderer.force_sort_for_view(confirmation_transform)
+            last_stats = renderer.get_render_stats()
+            last_visible_splats = _read_int(last_stats, "visible_splats")
+            last_total_splats = int(last_stats.get("total_splats", last_total_splats))
+            last_stage_raster_status = String(last_stats.get("stage_raster_status", last_stage_raster_status))
+            last_stage_composite_status = String(last_stats.get("stage_composite_status", last_stage_composite_status))
+            last_stage_raster_reason = String(last_stats.get("stage_raster_reason", last_stage_raster_reason))
+            last_stage_composite_reason = String(last_stats.get("stage_composite_reason", last_stage_composite_reason))
+            if bool(last_stats.get("stage_raster_is_error", false)):
+                raster_error_frames += 1
+            if bool(last_stats.get("stage_composite_is_error", false)):
+                composite_error_frames += 1
+            if last_visible_splats > 0:
+                tail_visibility_recovered = true
+                break
+        if tail_visibility_recovered and first_visible_frame < 0:
+            first_visible_frame = SAMPLE_FRAMES + WARMUP_FRAMES - 1
+        if tail_visibility_recovered:
+            last_visible_frame = SAMPLE_FRAMES + WARMUP_FRAMES - 1 + tail_visibility_confirmation_frames - 1
+
+    if max_visible_splats <= 0:
+        _record_failure(
+            "Churn probe never rendered visible splats",
+            {
+                "visible_splats_max": max_visible_splats,
+                "visible_splats_avg": visible_splats_avg,
+                "visible_splats_positive_frames": visible_splats_positive_frames,
+                "visible_splats_zero_frames": visible_splats_zero_frames,
+                "first_visible_frame": first_visible_frame,
+                "last_visible_frame": last_visible_frame,
+                "last_visible_splats": last_visible_splats,
+                "last_total_splats": last_total_splats,
+                "sum_chunks_loaded": sum_loaded,
+                "sum_upload_mb": sum_upload_mb,
+                "tail_visibility_confirmation_frames": tail_visibility_confirmation_frames
+            }
+        )
+    elif last_visible_splats <= 0 and not tail_visibility_recovered:
+        _record_failure(
+            "Churn probe ended with sustained zero visible splats",
+            {
+                "visible_splats_max": max_visible_splats,
+                "visible_splats_avg": visible_splats_avg,
+                "visible_splats_positive_frames": visible_splats_positive_frames,
+                "visible_splats_zero_frames": visible_splats_zero_frames,
+                "first_visible_frame": first_visible_frame,
+                "last_visible_frame": last_visible_frame,
+                "last_visible_splats": last_visible_splats,
+                "last_total_splats": last_total_splats,
+                "sum_chunks_loaded": sum_loaded,
+                "sum_upload_mb": sum_upload_mb,
+                "tail_visibility_confirmation_frames": tail_visibility_confirmation_frames
+            }
+        )
+    if visible_splats_zero_frames > visible_splats_positive_frames:
+        _record_failure(
+            "Churn probe spent most sampled frames with zero visible splats",
+            {
+                "visible_splats_positive_frames": visible_splats_positive_frames,
+                "visible_splats_zero_frames": visible_splats_zero_frames,
+                "visible_splats_avg": visible_splats_avg,
+                "visible_splats_max": max_visible_splats,
+                "tail_visibility_recovered": tail_visibility_recovered
+            }
+        )
+    if raster_error_frames > 0 or composite_error_frames > 0:
+        _record_failure(
+            "Raster/composite stage errors occurred during churn probe",
+            {
+                "raster_error_frames": raster_error_frames,
+                "composite_error_frames": composite_error_frames,
+                "last_stage_raster_status": last_stage_raster_status,
+                "last_stage_composite_status": last_stage_composite_status,
+                "last_stage_raster_reason": last_stage_raster_reason,
+                "last_stage_composite_reason": last_stage_composite_reason
+            }
+        )
 
     var stream_last: Variant = last_stats.get("streaming_state", {})
     var scheduler_stalls := 0
@@ -547,6 +669,21 @@ func _run() -> void:
         "frame_max_to_p95_ratio": frame_max_to_p95_ratio,
         "fps_avg": fps_avg,
         "fps_p95": fps_p95,
+        "visible_splats_max": max_visible_splats,
+        "visible_splats_min": min_visible_splats if min_visible_splats >= 0 else 0,
+        "visible_splats_avg": visible_splats_avg,
+        "visible_splats_positive_frames": visible_splats_positive_frames,
+        "visible_splats_zero_frames": visible_splats_zero_frames,
+        "visible_splats_first_visible_frame": first_visible_frame,
+        "visible_splats_last_visible_frame": last_visible_frame,
+        "tail_visibility_confirmation_frames": tail_visibility_confirmation_frames,
+        "tail_visibility_recovered": tail_visibility_recovered,
+        "raster_error_frames": raster_error_frames,
+        "composite_error_frames": composite_error_frames,
+        "last_stage_raster_status": last_stage_raster_status,
+        "last_stage_composite_status": last_stage_composite_status,
+        "last_stage_raster_reason": last_stage_raster_reason,
+        "last_stage_composite_reason": last_stage_composite_reason,
         "sum_chunks_loaded": sum_loaded,
         "sum_chunks_evicted": sum_evicted,
         "sum_visible_chunks_evicted": sum_visible_evicted,
@@ -612,8 +749,8 @@ func _run() -> void:
         "diagnostics_categories": diagnostics_categories,
         "diagnostics_reasons": diagnostics_reasons,
         "last_data_source": String(last_stats.get("data_source", "")),
-        "last_visible_splats": int(last_stats.get("visible_splats", 0)),
-        "last_total_splats": int(last_stats.get("total_splats", 0)),
+        "last_visible_splats": last_visible_splats,
+        "last_total_splats": last_total_splats,
         "last_sort_avg_ms": float(last_stats.get("gpu_sorter_avg_sort_ms", 0.0))
     }
 

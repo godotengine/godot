@@ -683,6 +683,13 @@ def main() -> int:
     allow_tests_unavailable = cli_args.allow_tests_unavailable or _env_truthy(
         os.environ.get(ALLOW_TESTS_UNAVAILABLE_ENV, "")
     )
+    total_lanes = 0
+    total_passed_tests = 0
+    total_passed_asserts = 0
+    total_skipped_markers = 0
+    lanes_with_skip_markers = 0
+    lanes_with_executed_coverage = 0
+    lanes_unavailable = 0
     history_guard_mode, history_guard_mode_warning = _resolve_history_artifact_guard_mode()
     if history_guard_mode_warning:
         print(f"[module-tests] {history_guard_mode_warning}")
@@ -814,6 +821,7 @@ def main() -> int:
             test_runs.append((name, run_args))
 
     for name, run_args in test_runs:
+        total_lanes += 1
         ok, skipped, output = _run_godot(godot, run_args)
         if skipped:
             if tests_unavailable_mode == "strict" and not allow_tests_unavailable:
@@ -833,7 +841,8 @@ def main() -> int:
             print(f"[module-tests] Skipping '{name}' (tests not enabled in binary).")
             if output.strip():
                 print(output.strip())
-            return 0
+            lanes_unavailable += 1
+            continue
 
         if not ok:
             print(f"[module-tests] '{name}' failed.")
@@ -849,6 +858,11 @@ def main() -> int:
             skipped_markers,
             summary_found,
         ) = _parse_doctest_results(output)
+        total_passed_tests += passed_tests
+        total_passed_asserts += passed_asserts
+        total_skipped_markers += skipped_markers
+        if skipped_markers > 0:
+            lanes_with_skip_markers += 1
         if not summary_found:
             print(f"[module-tests] '{name}' failed: missing doctest summary in output.")
             if output.strip():
@@ -858,14 +872,14 @@ def main() -> int:
         if failed_tests > 0 or failed_asserts > 0:
             print(
                 f"[module-tests] '{name}' failed: {failed_tests} failed test(s), "
-                f"{failed_asserts} failed assertion(s)."
+                f"{failed_asserts} failed assertion(s), {skipped_markers} skipped doctest marker(s)."
             )
             if output.strip():
                 print(output.strip())
             return 1
 
         if skipped_markers > 0:
-            print(f"[module-tests] '{name}' reported {skipped_markers} skipped test marker(s) in doctest output.")
+            print(f"[module-tests] '{name}' reported {skipped_markers} skipped doctest marker(s).")
             if name == "GaussianSplatting" and _is_ci():
                 print(
                     f"[module-tests] '{name}' failed: skipped doctest coverage is not allowed in CI."
@@ -878,29 +892,45 @@ def main() -> int:
             # Keep the canonical GaussianSplatting lane strict. Secondary lanes are
             # advisory and may not match on every platform/doctest parser variant.
             if name != "GaussianSplatting":
-                print(
-                    f"[module-tests] '{name}' has no executed coverage "
-                    f"(passed_tests={passed_tests}, passed_assertions={passed_asserts}); "
-                    "treating this lane as advisory and continuing."
-                )
+                if skipped_markers > 0:
+                    print(
+                        f"[module-tests] '{name}' executed only skipped doctest coverage "
+                        f"(passed_tests={passed_tests}, passed_assertions={passed_asserts}, "
+                        f"skipped_markers={skipped_markers}); treating this lane as advisory and continuing."
+                    )
+                else:
+                    print(
+                        f"[module-tests] '{name}' has no executed coverage "
+                        f"(passed_tests={passed_tests}, passed_assertions={passed_asserts}); "
+                        "treating this lane as advisory and continuing."
+                    )
                 if output.strip():
                     print(output.strip())
                 continue
 
             print(
                 f"[module-tests] '{name}' failed: no executed coverage "
-                f"(passed_tests={passed_tests}, passed_assertions={passed_asserts})."
+                f"(passed_tests={passed_tests}, passed_assertions={passed_asserts}, "
+                f"skipped_markers={skipped_markers})."
             )
             if output.strip():
                 print(output.strip())
             return 1
 
+        lanes_with_executed_coverage += 1
         print(
             f"[module-tests] '{name}' passed: {passed_tests} test(s), "
-            f"{passed_asserts} assertion(s)."
+            f"{passed_asserts} assertion(s)"
+            f"{', ' + str(skipped_markers) + ' skipped doctest marker(s)' if skipped_markers > 0 else ''}."
         )
 
-    print("[module-tests] Gaussian splatting module tests passed.")
+    print(
+        f"[module-tests] Gaussian splatting module tests passed "
+        f"(lanes={total_lanes}, lanes_with_coverage={lanes_with_executed_coverage}, "
+        f"lanes_with_skips={lanes_with_skip_markers}, lanes_unavailable={lanes_unavailable}, "
+        f"skipped_markers={total_skipped_markers}, passed_tests={total_passed_tests}, "
+        f"passed_assertions={total_passed_asserts})."
+    )
     return 0
 
 

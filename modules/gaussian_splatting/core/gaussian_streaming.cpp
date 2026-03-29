@@ -8,6 +8,7 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/templates/span.h"
+#include "core/templates/hashfuncs.h"
 #include "gaussian_splat_manager.h"
 #include "../renderer/gaussian_gpu_layout.h"
 #include "../logger/gs_debug_trace.h"
@@ -28,6 +29,13 @@ static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_FRAME = 128;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SLICE = 16;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SECOND = 0;
 static constexpr uint32_t STREAMING_DEFAULT_VRAM_BUDGET_MB = 12288;
+
+uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
+    const int byte_count = int(p_data.size() * sizeof(PackedGaussian));
+    const uint8_t empty_byte = 0;
+    const void *payload = byte_count > 0 ? static_cast<const void *>(p_data.ptr()) : static_cast<const void *>(&empty_byte);
+    return hash_murmur3_buffer(payload, byte_count);
+}
 static constexpr uint32_t STREAMING_DEFAULT_MIN_CHUNKS_IN_VRAM = 4;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_CHUNKS_IN_VRAM = 128;
 
@@ -784,8 +792,8 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     invalid_camera_input_events = 0;
     last_invalid_camera_log_frame = UINT64_MAX;
     visibility.reset_runtime_state();
-    diagnostics.visible_evict_fallback_attempts = 0;
-    diagnostics.visible_evict_fallback_successes = 0;
+    diagnostics = DiagnosticsState();
+    analytics_snapshot.clear();
     scheduler.visible_scan_cursor = 0;
     scheduler.prefetch_scan_cursor = 0;
     scheduler.last_visible_scan_count = 0;
@@ -944,8 +952,8 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
     invalid_camera_input_events = 0;
     last_invalid_camera_log_frame = UINT64_MAX;
     visibility.reset_runtime_state();
-    diagnostics.visible_evict_fallback_attempts = 0;
-    diagnostics.visible_evict_fallback_successes = 0;
+    diagnostics = DiagnosticsState();
+    analytics_snapshot.clear();
     scheduler.visible_scan_cursor = 0;
     scheduler.prefetch_scan_cursor = 0;
     scheduler.last_visible_scan_count = 0;
@@ -2944,7 +2952,23 @@ void GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx)
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
         return;
     }
+    const uint32_t expected_checksum = _packed_gaussian_payload_checksum(chunk_data);
     _log_chunk_load_metrics(chunk_idx, metrics);
+    const uint32_t actual_checksum = _packed_gaussian_payload_checksum(chunk_data);
+    if (actual_checksum != expected_checksum) {
+        diagnostics.invariant_upload_lifecycle_violations++;
+        diagnostics.integrity_mismatch_count++;
+        diagnostics.last_invariant_context = "_load_chunk.payload_checksum";
+        diagnostics.last_invariant_message = vformat(
+                "[Streaming] Sync fallback upload payload checksum mismatch: asset=%d chunk=%d expected=0x%x actual=0x%x.",
+                asset_id, chunk_idx,
+                (unsigned int)expected_checksum,
+                (unsigned int)actual_checksum);
+        diagnostics.last_integrity_mismatch_message = diagnostics.last_invariant_message;
+        WARN_PRINT(diagnostics.last_invariant_message);
+        _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
+        return;
+    }
     if (!_upload_chunk_to_gpu(submission_rd, buffer_offset, chunk_data, asset_id, chunk_idx, buffer_slot, chunk.count)) {
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
         return;
@@ -3441,6 +3465,7 @@ void GaussianStreamingSystem::end_frame() {
             pack_queue_depth, upload_queue_depth, sync_fallback_queue_depth);
     analytics_snapshot["diagnostics"] = streaming_diagnostics;
     analytics_snapshot["diagnostics_category"] = streaming_diagnostics.get("category", "ok");
+    analytics_snapshot["diagnostics_reason"] = streaming_diagnostics.get("reason", "healthy");
     analytics_snapshot["diagnostics_fingerprint"] = streaming_diagnostics.get("fingerprint", "ok");
     analytics_snapshot["diagnostics_has_failure"] = streaming_diagnostics.get("has_failure", false);
 }
@@ -3561,6 +3586,11 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
     if (!runtime_ready) {
         category = "init_invalid";
         reason = runtime_reason;
+    } else if (diagnostics.integrity_mismatch_count > 0) {
+        category = "integrity_mismatch";
+        reason = diagnostics.last_integrity_mismatch_message.is_empty() ?
+                vformat("integrity mismatches detected=%d.", static_cast<int64_t>(diagnostics.integrity_mismatch_count)) :
+                diagnostics.last_integrity_mismatch_message;
     } else if (diagnostics.culling_empty_frames >= DiagnosticsState::STALL_THRESHOLD_FRAMES) {
         category = "culling_empty";
         reason = vformat("visible_chunks=0 for %d frames while total_chunks=%d.",
@@ -3762,8 +3792,11 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             static_cast<int64_t>(diagnostics.invariant_upload_lifecycle_violations);
     diagnostics_snapshot["invariant_generation_violations"] =
             static_cast<int64_t>(diagnostics.invariant_generation_violations);
+    diagnostics_snapshot["integrity_mismatch_count"] =
+            static_cast<int64_t>(diagnostics.integrity_mismatch_count);
     diagnostics_snapshot["last_invariant_context"] = diagnostics.last_invariant_context;
     diagnostics_snapshot["last_invariant_message"] = diagnostics.last_invariant_message;
+    diagnostics_snapshot["last_integrity_mismatch_message"] = diagnostics.last_integrity_mismatch_message;
     diagnostics_snapshot["atlas_generation"] = static_cast<int64_t>(global_atlas_registry.get_atlas_generation());
     diagnostics_snapshot["request_generation"] = static_cast<int64_t>(asset_registry.request_generation);
 
