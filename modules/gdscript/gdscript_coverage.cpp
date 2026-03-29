@@ -738,14 +738,21 @@ static void _json_write_funcs(Ref<FileAccess> f, const HashMap<String, int> &p_f
 static void _json_write_branches(Ref<FileAccess> f,
 		const HashMap<int, GDScriptLanguage::BranchResult> &p_branches) {
 	f->store_string("      \"branches\": {");
-	bool first = true;
+	// Sort by IP for deterministic output, matching the sorted output of _json_write_lines.
+	Vector<int> sorted_ips;
 	for (const KeyValue<int, GDScriptLanguage::BranchResult> &bv : p_branches) {
+		sorted_ips.push_back(bv.key);
+	}
+	sorted_ips.sort();
+	bool first = true;
+	for (int ip : sorted_ips) {
+		const GDScriptLanguage::BranchResult &br = *p_branches.getptr(ip);
 		if (!first) {
 			f->store_string(",");
 		}
 		first = false;
-		f->store_string("\"" + itos(bv.key) + "_taken\":" + itos(bv.value.taken) + ",");
-		f->store_string("\"" + itos(bv.key) + "_not_taken\":" + itos(bv.value.not_taken));
+		f->store_string("\"" + itos(ip) + "_taken\":" + itos(br.taken) + ",");
+		f->store_string("\"" + itos(ip) + "_not_taken\":" + itos(br.not_taken));
 	}
 	f->store_line("}");
 }
