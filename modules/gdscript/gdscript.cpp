@@ -2220,6 +2220,13 @@ void GDScriptLanguage::finish() {
 			// Clear backup for scripts that could slip out of the cyclic reference
 			// check
 			scr->clear();
+
+			// Clear the base script in the rare case it is the last reference and
+			// the next one in the list.
+#ifdef TOOLS_ENABLED
+			scr->base_cache = Ref<GDScript>();
+#endif
+			scr->base = Ref<GDScript>();
 		}
 		s = s->next();
 	}
