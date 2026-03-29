@@ -501,7 +501,7 @@ jobs:
 
       - name: Collect production evidence
         id: evidence
-        if: ${{ always() && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' }}
+        if: ${{ always() && needs.gpu-evidence-requirement.outputs.run_windows_gpu == 'true' && steps.godot_bin.outcome == 'success' }}
         shell: pwsh
         env:
           RUNTIME_LOOPS: ${{ github.event_name == 'workflow_dispatch' && inputs.runtime_loops || '3' }}

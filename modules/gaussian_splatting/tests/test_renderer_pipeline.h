@@ -22,6 +22,7 @@
 #include "../renderer/render_debug_state_orchestrator.h"
 #include "../renderer/render_instancing_orchestrator.h"
 #include "../renderer/render_pipeline_stages.h"
+#include "../interfaces/gpu_sorting_pipeline.h"
 #include "../interfaces/output_compositor.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering_server.h"
@@ -1315,8 +1316,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Strict global sort forces a real CPU
 
     GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
     cull_state.culled_indices.resize(2);
-    cull_state.culled_indices.write[0] = 1;
-    cull_state.culled_indices.write[1] = 0;
+    cull_state.culled_indices[0] = 1;
+    cull_state.culled_indices[1] = 0;
 
     GaussianSplatRenderer::SortingState &sorting_state = renderer->get_sorting_state();
     const Transform3D world_to_camera = Transform3D();
@@ -1391,8 +1392,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Camera-stable global fallback publis
 
     GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
     cull_state.culled_indices.resize(2);
-    cull_state.culled_indices.write[0] = 1;
-    cull_state.culled_indices.write[1] = 0;
+    cull_state.culled_indices[0] = 1;
+    cull_state.culled_indices[1] = 0;
 
     GaussianSplatRenderer::SortingState &sorting_state = renderer->get_sorting_state();
     const Transform3D world_to_camera = Transform3D();
@@ -1467,8 +1468,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Strict global sort refuses unsorted 
 
     GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
     cull_state.culled_indices.resize(2);
-    cull_state.culled_indices.write[0] = 1;
-    cull_state.culled_indices.write[1] = 0;
+    cull_state.culled_indices[0] = 1;
+    cull_state.culled_indices[1] = 0;
     renderer->get_subsystem_state().gpu_culler->get_config().cull_params_dirty = false;
 
     GaussianSplatRenderer::SortStageSummary summary =
@@ -1533,8 +1534,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] CPU fallback publishes unsorted cull
 
     GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
     cull_state.culled_indices.resize(2);
-    cull_state.culled_indices.write[0] = 1;
-    cull_state.culled_indices.write[1] = 0;
+    cull_state.culled_indices[0] = 1;
+    cull_state.culled_indices[1] = 0;
     renderer->get_subsystem_state().gpu_culler->get_config().cull_params_dirty = false;
 
     GaussianSplatRenderer::SortStageSummary summary =
@@ -1607,7 +1608,7 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Camera-stable instance path publishe
 
     GPUCuller::CullingState &cull_state = renderer->get_subsystem_state().gpu_culler->get_state();
     cull_state.culled_indices.resize(1);
-    cull_state.culled_indices.write[0] = 0;
+    cull_state.culled_indices[0] = 0;
 
     GaussianSplatRenderer::SortingState &sorting_state = renderer->get_sorting_state();
     sorting_state.sorted_splat_count = 0;
