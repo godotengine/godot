@@ -844,16 +844,28 @@ Error GDScriptLanguage::coverage_write() {
 		return ERR_UNCONFIGURED;
 	}
 
+	// Snapshot the coverage maps under the mutex so writers don't race with
+	// concurrent recording still happening on other threads.
+	HashMap<String, HashMap<int, int>> hits_snap;
+	HashMap<String, HashMap<String, int>> func_hits_snap;
+	HashMap<String, HashMap<int, BranchResult>> branch_hits_snap;
+	{
+		MutexLock lock(coverage_mutex);
+		hits_snap = coverage_hits;
+		func_hits_snap = coverage_func_hits;
+		branch_hits_snap = coverage_branch_hits;
+	}
+
 	Error err = OK;
 	switch (coverage_format) {
 		case COVERAGE_FORMAT_LCOV:
-			err = _write_lcov(coverage_output_path, coverage_hits, coverage_func_hits, coverage_branch_hits, this);
+			err = _write_lcov(coverage_output_path, hits_snap, func_hits_snap, branch_hits_snap, this);
 			break;
 		case COVERAGE_FORMAT_COBERTURA:
-			err = _write_cobertura(coverage_output_path, coverage_hits, coverage_func_hits, coverage_branch_hits, this);
+			err = _write_cobertura(coverage_output_path, hits_snap, func_hits_snap, branch_hits_snap, this);
 			break;
 		case COVERAGE_FORMAT_JSON:
-			err = _write_json(coverage_output_path, coverage_hits, coverage_func_hits, coverage_branch_hits, this);
+			err = _write_json(coverage_output_path, hits_snap, func_hits_snap, branch_hits_snap, this);
 			break;
 		case COVERAGE_FORMAT_TEXT: {
 			String summary = coverage_summary_string();
