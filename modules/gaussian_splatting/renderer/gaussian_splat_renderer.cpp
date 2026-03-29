@@ -290,12 +290,6 @@ static bool _has_primary_resident_render_data(const GaussianSplatRenderer &p_ren
     return resource_state.buffer_manager->get_gaussian_count() > 0;
 }
 
-static bool _has_streaming_asset_context(const GaussianSplatRenderer &p_renderer) {
-    const GaussianSplatRenderer::SceneState &scene_state = p_renderer.get_scene_state();
-    const GaussianSplatRenderer::StreamingState &streaming_state = p_renderer.get_streaming_state();
-    return scene_state.active_asset.is_valid() || streaming_state.shared_dynamic_asset_handle.is_valid();
-}
-
 static bool _projection_nearly_equal(const Projection &p_a, const Projection &p_b, real_t p_tolerance = 1e-6f) {
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) {
@@ -1890,8 +1884,6 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     if (get_view_state().using_scene_data && p_render_data && p_render_data->scene_data && p_render_data->scene_data->flip_y) {
         render_projection.columns[1][1] = -render_projection.columns[1][1];
     }
-    const bool has_primary_render_data = _has_primary_resident_render_data(*this);
-    const bool has_streaming_context = _has_streaming_asset_context(*this);
     auto publish_skip_route = [&](const String &p_route_uid, const String &p_route_reason) {
         PerformanceMetrics &metrics = get_performance_state().metrics;
         metrics.visible_after_culling = 0;
@@ -1987,12 +1979,16 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
                 false);
     }
     if (streaming_requested && streaming_ready) {
+        const bool allow_primary_fallback_instance =
+                get_scene_state().gaussian_data.is_valid() &&
+                get_scene_state().gaussian_data->get_count() > 0;
         if (debug_state_orchestrator) {
             get_debug_state().route_uid = RenderRouteUID::INSTANCE_STREAMING;
         }
         const bool streaming_frame_rendered = streaming_orchestrator &&
                 streaming_orchestrator->render_streaming_frame(
-                        p_render_data, cam_transform, view_transform, cam_projection, render_projection, render_buffers_rd);
+                        p_render_data, cam_transform, view_transform, cam_projection, render_projection, render_buffers_rd,
+                        allow_primary_fallback_instance);
         if (streaming_frame_rendered) {
             return;
         }

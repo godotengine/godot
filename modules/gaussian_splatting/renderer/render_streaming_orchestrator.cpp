@@ -759,7 +759,15 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	streaming_system->set_chunk_radius_multiplier(
 			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
 			(renderer->*runtime_ports.get_cull_frustum_plane_slack)());
-	streaming_system->initialize_empty(rd);
+	const Ref<GaussianData> primary_data = state_view.get_scene_state().gaussian_data;
+	if (primary_data.is_valid() && primary_data->get_count() > 0) {
+		// World/static callers can populate primary gaussian data before any SceneDirector
+		// registrations exist. Bootstrap the streaming runtime from that data so the
+		// instance pipeline can still come up without resident-path fallback.
+		streaming_system->initialize_with_device(primary_data, rd);
+	} else {
+		streaming_system->initialize_empty(rd);
+	}
 	if (streaming_state.memory_stream.is_valid()) {
 		streaming_system->attach_memory_stream(streaming_state.memory_stream);
 	}
@@ -1263,7 +1271,7 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 
 bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_data, const Transform3D &p_camera_to_world_transform,
 		const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Projection &p_render_projection,
-		RenderSceneBuffersRD *p_render_buffers) {
+		RenderSceneBuffersRD *p_render_buffers, bool p_allow_runtime_fallback_instance) {
 	const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
 	// DEBUG: Track if this function runs every frame
 	static int streaming_frame_counter = 0;
@@ -1435,29 +1443,64 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		return false;
 	}
 	instance_pipeline_instance_cache.clear();
-		if (director && streaming_system) {
-			sync_instance_pipeline_assets(streaming_system);
-			const VisibleLODSelection &selection = produce_visible_lod_selection(
-					director,
-					streaming_system,
-					p_camera_to_world_transform.origin);
-			instance_pipeline_instance_cache = selection.get_instances();
-			consume_visible_lod_selection_for_residency(selection, streaming_system, trace_enabled);
+	if (director && streaming_system) {
+		sync_instance_pipeline_assets(streaming_system);
+		const VisibleLODSelection &selection = produce_visible_lod_selection(
+				director,
+				streaming_system,
+				p_camera_to_world_transform.origin);
+		instance_pipeline_instance_cache = selection.get_instances();
+		consume_visible_lod_selection_for_residency(selection, streaming_system, trace_enabled);
+	}
+	// Some supported callsites (world/static scenes, direct-data renderer tests) can
+	// render primary gaussian data without SceneDirector instances. In those cases we
+	// still need a synthetic instance entry so the instance-pipeline cull/sort/raster
+	// contracts can come up without silently falling back to the resident path.
+	if (p_allow_runtime_fallback_instance &&
+			instance_pipeline_instance_cache.is_empty() &&
+			state_view.get_scene_state().gaussian_data.is_valid() &&
+			state_view.get_scene_state().gaussian_data->get_count() > 0) {
+		InstanceDataGPU fallback_instance = {};
+		fallback_instance.rotation[3] = 1.0f;
+		fallback_instance.inv_rotation[3] = 1.0f;
+		fallback_instance.translation_scale[3] = 1.0f;
+		fallback_instance.params[0] = 1.0f;
+		fallback_instance.params[1] = 1.0f;
+		fallback_instance.params[2] = 1.0f;
+		fallback_instance.params[3] = 0.0f;
+		fallback_instance.ids[0] = 0u;
+		fallback_instance.ids[1] = GS_INSTANCE_FLAG_ROTATION_IDENTITY |
+				GS_INSTANCE_FLAG_SCALE_IDENTITY |
+				GS_INSTANCE_FLAG_TRANSLATION_ZERO;
+		fallback_instance.lod[0] = 0;
+		fallback_instance.lod[1] = 0;
+		fallback_instance.wind_params[0] = 0.0f;
+		fallback_instance.wind_params[1] = 0.0f;
+		fallback_instance.wind_params[2] = 0.0f;
+		fallback_instance.wind_params[3] = 1.0f;
+		instance_pipeline_instance_cache.push_back(fallback_instance);
+		if (trace_enabled) {
+			GaussianSplatting::debug_trace_record_event("instance_pipeline",
+					"Injected primary fallback instance for empty-instance streaming path",
+					false);
 		}
-		const uint32_t registered_assets_with_data = streaming_system->get_registered_asset_count_with_data();
-		if (registered_assets_with_data == 0) {
-			const StreamingReadinessState readiness_state = StreamingReadinessState::REGISTRATION_PENDING;
-			ERR_PRINT("[GaussianSplatRenderer] Streaming bootstrap found no registered streaming assets with data; resetting streaming system.");
-			finalize_streaming_frame(readiness_state,
-					vformat("instances=%d registered_assets_with_data=%d",
-							instance_pipeline_instance_cache.size(),
-							registered_assets_with_data));
-			publish_not_ready_route(readiness_state);
-			log_streaming_reset("registration_pending");
-			streaming_state.current_streaming_system.unref();
-			(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
-			return false;
-		}
+	}
+	const uint32_t registered_assets_with_data = streaming_system->get_registered_asset_count_with_data();
+	if (!instance_pipeline_instance_cache.is_empty() &&
+			registered_assets_with_data == 0 &&
+			!p_allow_runtime_fallback_instance) {
+		const StreamingReadinessState readiness_state = StreamingReadinessState::REGISTRATION_PENDING;
+		ERR_PRINT("[GaussianSplatRenderer] Streaming bootstrap produced instances but no registered streaming assets with data; resetting streaming system.");
+		finalize_streaming_frame(readiness_state,
+				vformat("instances=%d registered_assets_with_data=%d",
+						instance_pipeline_instance_cache.size(),
+						registered_assets_with_data));
+		publish_not_ready_route(readiness_state);
+		log_streaming_reset("instances_without_registered_assets");
+		streaming_state.current_streaming_system.unref();
+		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
+		return false;
+	}
 	(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache);
 
 	streaming_state.current_streaming_system->set_chunk_radius_multiplier(

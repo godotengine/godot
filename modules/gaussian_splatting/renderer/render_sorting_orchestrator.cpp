@@ -1386,17 +1386,21 @@ void RenderSortingOrchestrator::force_sort_for_view(const Transform3D &p_world_t
 			renderer->streaming_orchestrator->ensure_instance_streaming_system()) {
 		auto &streaming_state = renderer->get_streaming_state();
 		if (streaming_state.current_streaming_system.is_valid()) {
+			const bool allow_primary_fallback_instance =
+					renderer->get_scene_state().gaussian_data.is_valid() &&
+					renderer->get_scene_state().gaussian_data->get_count() > 0;
 			const bool stream_rendered = renderer->streaming_orchestrator->render_streaming_frame(
 					nullptr,
 					p_world_to_camera_transform,
 					view_transform,
 					projection,
 					projection,
-					nullptr);
+					nullptr,
+					allow_primary_fallback_instance);
 			if (stream_rendered) {
 				return;
 			}
-				WARN_PRINT_ONCE("[GaussianSplatRenderer] force_sort_for_view streaming path not ready; using cull+sort fallback.");
+			WARN_PRINT_ONCE("[GaussianSplatRenderer] force_sort_for_view streaming path not ready; using cull+sort fallback.");
 		}
 	}
 
