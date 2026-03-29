@@ -1287,6 +1287,16 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 		return Variant();
 	}
 
+	// Only allow dragging from the property label area, not from child controls
+	// like mesh/material previews.
+	if (bottom_child_rect.has_point(p_point)) {
+		return Variant();
+	}
+	real_t label_x = is_layout_rtl() ? get_size().x - p_point.x : p_point.x;
+	if (label_x > text_size) {
+		return Variant();
+	}
+
 	Dictionary dp;
 	dp["type"] = "obj_property";
 	dp["object"] = object;
