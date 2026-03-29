@@ -393,6 +393,8 @@ void GDScriptLanguage::_coverage_collect_func_starts(const GDScript *p_script, H
 }
 
 // Build a per-file map of function name → start line from script_list.
+// Applies the same include/exclude filter as _coverage_enumerate_coverable_lines
+// so callers receive a consistent view of which files are in scope.
 HashMap<String, HashMap<String, int>> GDScriptLanguage::_coverage_enumerate_func_start_lines() {
 	HashMap<String, HashMap<String, int>> result;
 	MutexLock lock(mutex);
@@ -401,7 +403,9 @@ HashMap<String, HashMap<String, int>> GDScriptLanguage::_coverage_enumerate_func
 		const GDScript *scr = s->self();
 		if (scr) {
 			String res_path = scr->get_script_path();
-			_coverage_collect_func_starts(scr, result[res_path]);
+			if (_coverage_path_included(res_path, coverage_include, coverage_exclude)) {
+				_coverage_collect_func_starts(scr, result[res_path]);
+			}
 		}
 		s = s->next();
 	}
