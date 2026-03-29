@@ -239,17 +239,20 @@ static HashMap<String, CoverageFileStats> _gather_file_stats(
 			if (!out.has(cv.key)) {
 				_compute_line_stats(empty_hits, &cv.value, out[cv.key]);
 			}
-			// Count never-called functions in FNF so func% reflects reality.
-			if (p_func_starts && !p_func_hits.has(cv.key)) {
-				const HashMap<String, int> *fs = p_func_starts->getptr(cv.key);
-				if (fs) {
-					static const HashMap<String, int> zero_hit;
-					// Build zero-hit view: all functions from func_starts with count 0.
-					HashMap<String, int> never_called;
-					for (const KeyValue<String, int> &fv : *fs) {
-						never_called[fv.key] = 0;
-					}
-					_compute_func_stats(never_called, out[cv.key]);
+		}
+	}
+	// Count compiled functions absent from p_func_hits (never called, or missing
+	// from a partial hit entry) so FNF reflects all compiled functions. Only
+	// consider files that passed the include/exclude filter (present in p_coverable).
+	if (p_func_starts) {
+		for (const KeyValue<String, HashMap<String, int>> &sv : *p_func_starts) {
+			if (p_coverable && !p_coverable->has(sv.key)) {
+				continue;
+			}
+			const HashMap<String, int> *fh = p_func_hits.getptr(sv.key);
+			for (const KeyValue<String, int> &fv : sv.value) {
+				if (!fh || !fh->has(fv.key)) {
+					out[sv.key].funcs++;
 				}
 			}
 		}
