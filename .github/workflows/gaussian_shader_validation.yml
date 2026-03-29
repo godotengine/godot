@@ -26,9 +26,15 @@ on:
       - "modules/gaussian_splatting/interfaces/cluster_culler.cpp"
       - ".github/workflows/gaussian_shader_validation.yml"
   workflow_dispatch:
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
+
+concurrency:
+  group: gaussian-shader-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   shader-validation:

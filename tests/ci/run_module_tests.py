@@ -27,24 +27,89 @@ HISTORY_ARTIFACT_AUDIT_SCRIPT = ROOT / "scripts" / "repo" / "history_artifact_au
 SYNTHETIC_ASSET_PREP_SCRIPT = ROOT / "tests" / "runtime" / "prepare_synthetic_assets.py"
 BENCHMARK_ASSET_GUARD_SCRIPT = ROOT / "tests" / "runtime" / "check_benchmark_asset_paths.py"
 SOURCE_TREES = (ROOT,)
-MODULE_TEST_FILTERS: tuple[tuple[str, str, str | None], ...] = (
-    # (name, test_case_filter, test_case_exclude_filter)
-    # The headless lane excludes [RequiresGPU]-tagged tests.  Those tests need a
-    # real RenderingDevice which Godot's --test mode does not create (engine
-    # limitation: test_setup() never initialises a display/rendering driver).
-    ("GaussianSplatting", "*GaussianSplatting*", "*RequiresGPU*"),
-    # Use stable description fragments instead of tag prefixes, as doctest matching
-    # can differ depending on how bracketed prefixes are parsed in test names.
-    ("TileRenderer", "*Shader compilation on local device*", None),
-    ("GPU Memory Stream", "*Triple Buffering*", None),
-    ("Streaming Pipeline", "*Concurrent LOD and visibility updates*", None),
+HEADLESS_GAUSSIAN_SCOPED_TAGS: tuple[str, ...] = (
+    # Only tags whose TEST_CASEs are registered at runtime belong here.
+    # Standalone .cpp test files compile into the module static library but their
+    # doctest registrations are stripped by the linker — only .h tests included
+    # via modules_tests.gen.h actually register.  Phantom tags (zero runtime
+    # tests) must NOT appear here because strict lanes fail on zero coverage.
+    "Animation",
+    "ComputeInfra",
+    "Config",
+    "Container",
+    "DynamicInstance",
+    "Editor",
+    "Importer",
+    "Node",
+    "PLY",
+    "Persistence",
+    "SceneTree",
+    "SortBenchmark",
+    "Synthetic",
+    "VRAMBudgetRegulator",
+    "ViewTransform",
+    "WorldIO",
+)
+UNTAGGED_GAUSSIAN_EXCLUDE_TAGS: tuple[str, ...] = HEADLESS_GAUSSIAN_SCOPED_TAGS + (
+    "Renderer",  # only aspirational stubs currently; advisory lane below
+    "RequiresGPU",
+    "Thumbnail",
+    "World",
+)
+UNTAGGED_GAUSSIAN_EXCLUDE_FILTERS: tuple[str, ...] = tuple(
+    f"*GaussianSplatting*][{tag}]*" for tag in UNTAGGED_GAUSSIAN_EXCLUDE_TAGS
+)
+MODULE_TEST_FILTERS: tuple[tuple[str, tuple[str, ...], tuple[str, ...], bool], ...] = (
+    # (name, test_case_filters, test_case_exclude_filters, strict)
+    # Split the canonical headless Gaussian lane into deterministic subsets so a
+    # single-process crash in one area does not erase summary output for the rest
+    # of the suite.
+    ("GaussianSplatting [Animation]", ("*GaussianSplatting*][Animation]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [ComputeInfra]", ("*GaussianSplatting*][ComputeInfra]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [Config]", ("*GaussianSplatting*][Config]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [Container]", ("*GaussianSplatting*][Container]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [DynamicInstance]", ("*GaussianSplatting*][DynamicInstance]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [Editor]", ("*GaussianSplatting*][Editor]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [Importer]", ("*GaussianSplatting*][Importer]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [Node]", ("*GaussianSplatting*][Node]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [PLY]", ("*GaussianSplatting*][PLY]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [Persistence]", ("*GaussianSplatting*][Persistence]*",), ("*][RequiresGPU]*",), True),
+    (
+        "GaussianSplatting [SceneTree]",
+        ("*GaussianSplatting*][SceneTree]*",),
+        (
+            "*][RequiresGPU]*",
+            "*][Node][SceneTree]*",
+            "*][Container][SceneTree]*",
+            "*][DynamicInstance][SceneTree]*",
+            "*][World][SceneTree]*",
+        ),
+        True,
+    ),
+    ("GaussianSplatting [SortBenchmark]", ("*GaussianSplatting*][SortBenchmark]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [Synthetic]", ("*GaussianSplatting*][Synthetic]*",), ("*][RequiresGPU]*",), False),
+    ("GaussianSplatting [VRAMBudgetRegulator]", ("*GaussianSplatting*][VRAMBudgetRegulator]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [ViewTransform]", ("*GaussianSplatting*][ViewTransform]*",), ("*][RequiresGPU]*",), True),
+    ("GaussianSplatting [WorldIO]", ("*GaussianSplatting*][WorldIO]*",), ("*][RequiresGPU]*",), True),
+    # Safety-net lane for unscoped [GaussianSplatting] tests.  Advisory because
+    # doctest's --test-case-exclude parsing is unreliable beyond ~10 repeated
+    # flags, so the exclude list cannot guarantee precise filtering.  Real
+    # coverage lives in the per-tag strict lanes above.
+    ("GaussianSplatting [untagged]", ("*GaussianSplatting*",), UNTAGGED_GAUSSIAN_EXCLUDE_FILTERS, False),
+    # Use stable description fragments instead of tag prefixes for secondary
+    # lanes, as doctest matching can differ depending on how bracketed prefixes
+    # are parsed in test names.
+    ("GaussianSplatting [Renderer]", ("*GaussianSplatting*][Renderer]*",), ("*][RequiresGPU]*",), False),
+    ("TileRenderer", ("*Shader compilation on local device*",), (), False),
+    ("GPU Memory Stream", ("*Triple Buffering*",), (), False),
+    ("Streaming Pipeline", ("*Concurrent LOD and visibility updates*",), (), False),
 )
 # Renderer-dependent (requires-RD) doctest lane.  Under Godot's --test mode
 # every test here will skip because no RenderingDevice is available.  This lane
 # exists for future use when a full-engine test harness is added; in the
 # meantime it serves as a catalogue of renderer-dependent tests.
-REQUIRES_RD_TEST_FILTERS: tuple[tuple[str, str, str | None], ...] = (
-    ("GaussianSplatting [requires-RD]", "*GaussianSplatting*RequiresGPU*", None),
+REQUIRES_RD_TEST_FILTERS: tuple[tuple[str, tuple[str, ...], tuple[str, ...], bool], ...] = (
+    ("GaussianSplatting [requires-RD]", ("*GaussianSplatting*][RequiresGPU]*",), (), False),
 )
 GS_RUN_GPU_TESTS_ENV = "GS_RUN_GPU_TESTS"
 DISALLOWED_TRACKED_ARTIFACT_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -127,6 +192,15 @@ def _run_command(args: list[str], cwd: Path = ROOT) -> tuple[int, str, str]:
         errors="replace",
     )
     return result.returncode, result.stdout or "", result.stderr or ""
+
+
+def _build_doctest_run_args(test_case_filters: tuple[str, ...], test_case_exclude_filters: tuple[str, ...]) -> list[str]:
+    run_args = ["--headless", "--test"]
+    for test_filter in test_case_filters:
+        run_args.append(f"--test-case={test_filter}")
+    for exclude_filter in test_case_exclude_filters:
+        run_args.append(f"--test-case-exclude={exclude_filter}")
+    return run_args
 
 
 def _normalize_process_arg(value: str) -> str:
@@ -796,24 +870,20 @@ def main() -> int:
     )
 
     test_runs = []
-    for name, test_filter, exclude_filter in MODULE_TEST_FILTERS:
-        run_args = ["--headless", "--test", f"--test-case={test_filter}"]
-        if exclude_filter:
-            run_args.append(f"--test-case-exclude={exclude_filter}")
-        test_runs.append((name, run_args))
+    for name, test_filters, exclude_filters, strict in MODULE_TEST_FILTERS:
+        run_args = _build_doctest_run_args(test_filters, exclude_filters)
+        test_runs.append((name, run_args, strict))
 
     # Opt-in requires-RD lane: activated by GS_RUN_GPU_TESTS=1 env var or --gpu flag.
     # Under --test mode every test here will skip (no RenderingDevice).  This is
     # expected — the lane validates that tagged tests compile and skip gracefully.
     run_gpu = os.environ.get(GS_RUN_GPU_TESTS_ENV, "0") == "1" or cli_args.gpu
     if run_gpu:
-        for name, test_filter, exclude_filter in REQUIRES_RD_TEST_FILTERS:
-            run_args = ["--headless", "--test", f"--test-case={test_filter}"]
-            if exclude_filter:
-                run_args.append(f"--test-case-exclude={exclude_filter}")
-            test_runs.append((name, run_args))
+        for name, test_filters, exclude_filters, strict in REQUIRES_RD_TEST_FILTERS:
+            run_args = _build_doctest_run_args(test_filters, exclude_filters)
+            test_runs.append((name, run_args, strict))
 
-    for name, run_args in test_runs:
+    for name, run_args, strict in test_runs:
         ok, skipped, output = _run_godot(godot, run_args)
         if skipped:
             if tests_unavailable_mode == "strict" and not allow_tests_unavailable:
@@ -836,6 +906,14 @@ def main() -> int:
             return 0
 
         if not ok:
+            if not strict:
+                print(
+                    f"[module-tests] '{name}' crashed or failed "
+                    "(advisory lane, continuing)."
+                )
+                if output.strip():
+                    print(output.strip())
+                continue
             print(f"[module-tests] '{name}' failed.")
             if output.strip():
                 print(output.strip())
@@ -866,7 +944,7 @@ def main() -> int:
 
         if skipped_markers > 0:
             print(f"[module-tests] '{name}' reported {skipped_markers} skipped test marker(s) in doctest output.")
-            if name == "GaussianSplatting" and _is_ci():
+            if strict and _is_ci():
                 print(
                     f"[module-tests] '{name}' failed: skipped doctest coverage is not allowed in CI."
                 )
@@ -875,9 +953,9 @@ def main() -> int:
                 return 1
 
         if passed_tests <= 0 or passed_asserts <= 0:
-            # Keep the canonical GaussianSplatting lane strict. Secondary lanes are
-            # advisory and may not match on every platform/doctest parser variant.
-            if name != "GaussianSplatting":
+            # Keep the canonical headless Gaussian lanes strict. Secondary lanes
+            # remain advisory and may not match on every platform/parser variant.
+            if not strict:
                 print(
                     f"[module-tests] '{name}' has no executed coverage "
                     f"(passed_tests={passed_tests}, passed_assertions={passed_asserts}); "

@@ -10,7 +10,8 @@ Runtime scenarios are defined declaratively in:
 
 - `tests/runtime/runtime_scenarios.json`
 
-The canonical release profile is `release-ci` (default).  
+The canonical headless CI profile is `headless-ci`.  
+The canonical release-ready profile remains `release-ci` (default for explicit runtime validation).  
 List profiles:
 
 ```bash
@@ -74,11 +75,17 @@ This makes report-shape regressions fail in CI instead of silently passing.
 
 ## CI Integration
 
-`tests/ci/run_baseline_qa.py` executes the runtime gate with:
+Headless CI entrypoints (`make test-runtime`, `tests/ci/run_baseline_qa.py`, and the
+headless structural gate in GitHub Actions) execute:
+
+- `--profile headless-ci`
+
+The full release-ready runtime gate uses:
 
 - `--profile release-ci`
 
-That keeps CI pinned to the canonical, declarative release-ready scenario set.
+This keeps headless CI honest about what can actually execute while preserving the
+broader release-ready profile for non-headless lanes.
 
 ## Synthetic Asset Prep
 

@@ -487,22 +487,11 @@ TEST_CASE("[GaussianSplatting][Node] Asset buffers populate GaussianData with pa
 
     Ref<::GaussianData> data;
     data.instantiate();
-    data->resize(splat_count);
-
-    data->set_positions(asset->get_position_vectors());
-    data->set_scales(asset->get_scale_vectors());
-    data->set_rotations(asset->get_rotation_quaternions());
-    data->set_spherical_harmonics(asset->get_spherical_harmonics_buffer());
-    data->set_opacities(asset->get_opacities());
-    data->set_palette_ids(asset->get_palette_ids_buffer());
-    data->set_brush_override_ids(asset->get_brush_override_ids_buffer());
-    data->set_normals(asset->get_normal_vectors());
-    data->set_brush_axes(asset->get_brush_axes_vector2());
-    data->set_stroke_ages(asset->get_stroke_ages_buffer());
+    CHECK_EQ(data->populate_from_asset(asset), OK);
 
     CHECK(data->get_2d_mode());
-    CHECK_EQ(data->get_sh_first_order_count(), 2u);
-    CHECK_EQ(data->get_sh_high_order_count(), 1u);
+    CHECK_EQ(data->get_sh_first_order_count(), 3u);
+    CHECK_EQ(data->get_sh_high_order_count(), 0u);
 
     Gaussian g0 = data->get_gaussian(0);
     CHECK(g0.position.is_equal_approx(Vector3(1.0f, 2.0f, 3.0f)));
@@ -512,6 +501,7 @@ TEST_CASE("[GaussianSplatting][Node] Asset buffers populate GaussianData with pa
     CHECK(g0.sh_dc.is_equal_approx(Color(0.8f, 0.1f, 0.2f, 1.0f)));
     CHECK(g0.sh_1[0].is_equal_approx(Vector3(0.01f, 0.02f, 0.03f)));
     CHECK(g0.sh_1[1].is_equal_approx(Vector3(0.04f, 0.05f, 0.06f)));
+    CHECK(g0.sh_1[2].is_equal_approx(Vector3(0.2f, 0.3f, 0.4f)));
     CHECK(g0.normal.is_equal_approx(Vector3(0.0f, 1.0f, 0.0f)));
     CHECK(g0.brush_axes.is_equal_approx(Vector2(1.0f, 0.5f)));
     CHECK(Math::is_equal_approx(g0.stroke_age, 3.0f));
@@ -527,6 +517,7 @@ TEST_CASE("[GaussianSplatting][Node] Asset buffers populate GaussianData with pa
     CHECK(g1.sh_dc.is_equal_approx(Color(0.3f, 0.4f, 0.5f, 1.0f)));
     CHECK(g1.sh_1[0].is_equal_approx(Vector3(0.11f, 0.12f, 0.13f)));
     CHECK(g1.sh_1[1].is_equal_approx(Vector3(0.14f, 0.15f, 0.16f)));
+    CHECK(g1.sh_1[2].is_equal_approx(Vector3(0.5f, 0.6f, 0.7f)));
     CHECK(g1.normal.is_equal_approx(Vector3(0.0f, 0.0f, 1.0f)));
     CHECK(g1.brush_axes.is_equal_approx(Vector2(0.75f, 1.25f)));
     CHECK(Math::is_equal_approx(g1.stroke_age, 7.5f));
@@ -542,12 +533,7 @@ TEST_CASE("[GaussianSplatting][Node] Asset buffers populate GaussianData with pa
     CHECK_EQ(roundtrip_asset->get_painterly_flags_buffer()[1], 255);
 
     const Vector3 *high_ptr = data->get_sh_high_order_coefficients_ptr();
-    CHECK(high_ptr != nullptr);
-    if (high_ptr == nullptr) {
-        return;
-    }
-    CHECK(high_ptr[0].is_equal_approx(Vector3(0.2f, 0.3f, 0.4f)));
-    CHECK(high_ptr[1].is_equal_approx(Vector3(0.5f, 0.6f, 0.7f)));
+    CHECK(high_ptr == nullptr);
 }
 
 TEST_CASE("[GaussianSplatting][Node] Cached bounds stay coherent after position/scale/rotation mutations") {

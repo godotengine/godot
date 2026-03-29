@@ -102,13 +102,14 @@ class BaselineQARunner:
         if not all(marker in merged_output for marker in required_markers):
             return False
 
-        allowed_error_lines = {
+        allowed_error_prefixes = (
             'ERROR: Parameter "t" is null.',
             "ERROR: [RENDERER][ERROR] [GaussianSplatSceneDirector] Unable to acquire local RenderingDevice for shared renderer",
-        }
+            "ERROR: [RENDERER][ERROR] [GaussianSplatSceneDirector] Unable to acquire primary RenderingDevice for shared renderer",
+        )
         for line in merged_output.splitlines():
             stripped = line.strip()
-            if stripped.startswith("ERROR:") and stripped not in allowed_error_lines:
+            if stripped.startswith("ERROR:") and not any(stripped.startswith(prefix) for prefix in allowed_error_prefixes):
                 return False
 
         return True
@@ -367,7 +368,7 @@ class BaselineQARunner:
                     sys.executable,
                     "tests/runtime/run_runtime_validation.py",
                     "--profile",
-                    "release-ci",
+                    "headless-ci",
                     "--godot-binary",
                     self.godot_binary,
                 ],

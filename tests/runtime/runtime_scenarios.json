@@ -2,6 +2,19 @@
   "version": 1,
   "default_profile": "release-ci",
   "profiles": {
+    "headless-ci": {
+      "description": "Headless-safe CI lane: only checks that can execute without a local RenderingDevice.",
+      "cpp_tests": [
+        "Runtime Modifications",
+        "Animation Persistence"
+      ],
+      "gd_tests": [
+        "Streaming Residency API",
+        "Monitor Lifecycle Hardening"
+      ],
+      "godot_args": [],
+      "fail_on_skip": true
+    },
     "release-ci": {
       "description": "Canonical release-ready runtime validation lane used by baseline QA CI.",
       "cpp_tests": [

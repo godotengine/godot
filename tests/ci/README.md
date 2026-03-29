@@ -28,7 +28,7 @@ python3 tests/ci/validate_automation.py --contracts-only
 ## Runtime Gate
 
 ```bash
-python3 tests/runtime/run_runtime_validation.py --godot-binary "$GODOT_BINARY" --gd-mode headless --profile release-ci
+python3 tests/runtime/run_runtime_validation.py --godot-binary "$GODOT_BINARY" --gd-mode headless --profile headless-ci
 ```
 
 ## Production Workflow
