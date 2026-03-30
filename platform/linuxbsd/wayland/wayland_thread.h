@@ -709,6 +709,8 @@ private:
 	struct libdecor *libdecor_context = nullptr;
 #endif // LIBDECOR_ENABLED
 
+	static void _clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd);
+
 	// Main polling method.
 	static void _poll_events_thread(void *p_data);
 
