@@ -39,11 +39,11 @@ bool write_gaussian_ply(const String &p_path, const LocalVector<Gaussian> &p_spl
 	header += "property float f_dc_1\n";
 	header += "property float f_dc_2\n";
 	if (p_write_sh1) {
-		// First-order SH: 9 f_rest coefficients (3 per channel, channel-major).
-		// f_rest_0..2 = R channel, f_rest_3..5 = G channel, f_rest_6..8 = B channel.
-		// Note: standard 3DGS PLY uses f_rest_0..44 for full SH with channel-major
-		// layout across all 45 coefficients. We write only the first 9 (band 1).
-		for (int i = 0; i < 9; i++) {
+		// Standard 3DGS PLY uses f_rest_0..44 with channel-major layout:
+		// R: indices 0..14, G: indices 15..29, B: indices 30..44.
+		// We only populate band-1 (3 coefficients per channel) but must
+		// declare all 45 slots so the loader finds G/B at the right indices.
+		for (int i = 0; i < 45; i++) {
 			header += vformat("property float f_rest_%d\n", i);
 		}
 	}
@@ -79,15 +79,17 @@ bool write_gaussian_ply(const String &p_path, const LocalVector<Gaussian> &p_spl
 		f->store_float(g.sh_dc.b / SH_C0);
 
 		if (p_write_sh1) {
-			// Channel-major order: R coefficients, then G, then B.
-			// sh_1[0..2] stores coefficient-major RGB triplets, so:
-			//   f_rest_0/1/2 = sh_1[0/1/2].x (R channel)
-			//   f_rest_3/4/5 = sh_1[0/1/2].y (G channel)
-			//   f_rest_6/7/8 = sh_1[0/1/2].z (B channel)
-			for (int ch = 0; ch < 3; ch++) {
-				for (int coeff = 0; coeff < 3; coeff++) {
-					f->store_float(g.sh_1[coeff][ch]);
-				}
+			// Write all 45 f_rest slots in channel-major order:
+			// R band-1 at indices 0-2, G band-1 at indices 15-17,
+			// B band-1 at indices 30-32.  All other slots are zero.
+			float sh_rest[45] = {};
+			for (int coeff = 0; coeff < 3; coeff++) {
+				sh_rest[coeff] = g.sh_1[coeff][0]; // R
+				sh_rest[coeff + 15] = g.sh_1[coeff][1]; // G
+				sh_rest[coeff + 30] = g.sh_1[coeff][2]; // B
+			}
+			for (int j = 0; j < 45; j++) {
+				f->store_float(sh_rest[j]);
 			}
 		}
 
