@@ -969,7 +969,6 @@ StreamingUploadPipeline::PendingChunkUpload *StreamingUploadPipeline::build_pend
     upload->chunk_idx = p_job.chunk_idx;
     upload->buffer_slot = p_job.buffer_slot;
     upload->asset_generation = p_job.asset_generation;
-    upload->payload_checksum = _packed_gaussian_payload_checksum(upload->packed_data);
 
     if (p_job.chunk_count == 0 || !p_job.data_ref.is_valid()) {
         return upload;
@@ -1039,6 +1038,10 @@ uint32_t StreamingUploadPipeline::promote_pack_jobs_sync(uint32_t p_max_jobs) {
         if (!pop_pack_job(job)) {
             break;
         }
+        // Consume the semaphore token that queue_chunk_load() posted for this job.
+        // Without this, the pack thread would get a spurious wake for a job that
+        // has already been promoted synchronously.
+        pack_semaphore.try_wait();
         PendingChunkUpload *upload = build_pending_upload_from_pack_job(job);
         enqueue_upload_job(upload);
         _atomic_saturating_sub(pack_jobs_in_flight, 1);
