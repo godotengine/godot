@@ -72,6 +72,7 @@ class EditorProperty : public Container {
 
 	friend class EditorInspector;
 
+protected:
 	struct ThemeCache {
 		Ref<Font> font;
 
@@ -197,7 +198,8 @@ private:
 	int selected_focusable;
 	bool deferred_drag_mode = false;
 
-	float split_ratio;
+	float split_ratio = 0.5;
+	float name_fixed_size = 0.0;
 
 	Vector<Control *> focusables;
 	Control *label_reference = nullptr;
@@ -317,6 +319,7 @@ public:
 
 	void set_name_split_ratio(float p_ratio);
 	float get_name_split_ratio() const;
+	void set_name_fixed_size(float p_size);
 
 	void set_favoritable(bool p_favoritable);
 	bool is_favoritable() const;
