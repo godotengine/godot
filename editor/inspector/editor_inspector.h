@@ -415,6 +415,8 @@ class EditorInspectorCategory : public Control {
 	bool is_favorite = false;
 	bool menu_icon_dirty = true;
 
+	LocalVector<EditorProperty *> category_properties;
+
 	void _collect_properties(const Object *p_object, LocalVector<String> &r_properties) const;
 	void _handle_menu_option(int p_option);
 	void _popup_context_menu(const Point2i &p_position);
@@ -433,6 +435,8 @@ public:
 	void set_as_favorite();
 	void set_property_info(const PropertyInfo &p_info);
 	void set_doc_class_name(const String &p_name);
+
+	void register_property(EditorProperty *p_property) { category_properties.push_back(p_property); }
 
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
@@ -480,6 +484,8 @@ class EditorInspectorSection : public Container {
 
 	HashSet<StringName> revertable_properties;
 	bool can_revert = false;
+
+	LocalVector<EditorProperty *> section_properties;
 
 	void _test_unfold();
 	int _get_header_height();
@@ -562,6 +568,8 @@ public:
 	void _update_popup();
 	void _collect_properties(LocalVector<String> &r_properties) const;
 	void menu_option(int p_option) const;
+
+	void register_property(EditorProperty *p_property) { section_properties.push_back(p_property); }
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
