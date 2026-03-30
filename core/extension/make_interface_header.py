@@ -91,14 +91,14 @@ extern "C" {
                 check_allowed_keys(type, ["name", "kind", "members"], ["description", "deprecated"])
                 write_struct_type(file, type)
             else:
-                raise Exception(f"Unknown kind of type: {kind}")
+                raise RuntimeError(f"Unknown kind of type: {kind}")
 
         for type_name, replace_with in type_replacements:
             if replace_with not in valid_data_types:
-                raise Exception(f"Unknown type '{replace_with}' used as replacement for '{type_name}'")
+                raise RuntimeError(f"Unknown type '{replace_with}' used as replacement for '{type_name}'")
             replacement = valid_data_types[replace_with]
             if isinstance(replacement, dict) and "deprecated" in replacement:
-                raise Exception(
+                raise RuntimeError(
                     f"Cannot use '{replace_with}' as replacement for '{type_name}' because it's deprecated too"
                 )
 
@@ -120,12 +120,12 @@ extern "C" {
 
         for function_name, replace_with in interface_replacements:
             if replace_with not in valid_interfaces:
-                raise Exception(
+                raise RuntimeError(
                     f"Unknown interface function '{replace_with}' used as replacement for '{function_name}'"
                 )
             replacement = valid_interfaces[replace_with]
             if "deprecated" in replacement:
-                raise Exception(
+                raise RuntimeError(
                     f"Cannot use '{replace_with}' as replacement for '{function_name}' because it's deprecated too"
                 )
 
@@ -155,18 +155,20 @@ def check_formatting(buffer, data, filename):
     if len(diff) > 0:
         print(" *** Apply this patch to fix: ***\n")
         print("\n".join(diff))
-        raise Exception(f"Formatting issues in {filename}")
+        raise SyntaxError(f"Formatting issues in {filename}")
 
 
-def check_allowed_keys(data, required, optional=[]):
+def check_allowed_keys(data, required, optional=None):
+    if optional is None:
+        optional = []
     keys = data.keys()
     allowed = required + optional
     for k in keys:
         if k not in allowed:
-            raise Exception(f"Found unknown key '{k}'")
+            raise RuntimeError(f"Found unknown key '{k}'")
     for r in required:
         if r not in keys:
-            raise Exception(f"Missing required key '{r}'")
+            raise RuntimeError(f"Missing required key '{r}'")
 
 
 class UnknownTypeError(Exception):
@@ -181,11 +183,7 @@ class UnknownTypeError(Exception):
 
 
 def base_type_name(type_name):
-    if type_name.startswith("const "):
-        type_name = type_name[6:]
-    if type_name.endswith("*"):
-        type_name = type_name[:-1]
-    return type_name
+    return type_name.removeprefix("const ").removesuffix("*")
 
 
 def format_type_and_name(type, name=None):
@@ -219,9 +217,8 @@ def check_type(kind, type, valid_data_types):
         for arg in type["arguments"]:
             if not is_valid_type(arg["type"], valid_data_types):
                 raise UnknownTypeError(arg["type"], type["name"], arg.get("name"))
-        if "return_value" in type:
-            if not is_valid_type(type["return_value"]["type"], valid_data_types):
-                raise UnknownTypeError(type["return_value"]["type"], type["name"])
+        if "return_value" in type and not is_valid_type(type["return_value"]["type"], valid_data_types):
+            raise UnknownTypeError(type["return_value"]["type"], type["name"])
 
 
 def write_doc(file, doc, indent=""):
@@ -246,7 +243,7 @@ def write_doc(file, doc, indent=""):
 def make_deprecated_message(data):
     parts = [
         f"Deprecated in Godot {data['since']}.",
-        data["message"] if "message" in data else "",
+        data.get("message", ""),
         f"Use `{data['replace_with']}` instead." if "replace_with" in data else "",
     ]
     return " ".join([x for x in parts if x.strip() != ""])
@@ -320,13 +317,13 @@ def write_interface(file, interface):
         doc.append("")
         for arg in interface["arguments"]:
             if "description" not in arg:
-                raise Exception(f"Interface function {interface['name']} is missing docs for {arg['name']} argument")
+                raise RuntimeError(f"Interface function {interface['name']} is missing docs for {arg['name']} argument")
             arg_doc = " ".join(arg["description"])
             doc.append(f"@param {arg['name']} {arg_doc}")
 
     if "return_value" in interface:
         if "description" not in interface["return_value"]:
-            raise Exception(f"Interface function {interface['name']} is missing docs for return value")
+            raise RuntimeError(f"Interface function {interface['name']} is missing docs for return value")
         ret_doc = " ".join(interface["return_value"]["description"])
         doc.append("")
         doc.append(f"@return {ret_doc}")

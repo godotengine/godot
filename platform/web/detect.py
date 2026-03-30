@@ -113,7 +113,7 @@ def configure(env: "SConsEnvironment"):
 
     # Minimum emscripten requirements.
     if cc_semver < (4, 0, 0):
-        print_error("The minimum Emscripten version to build Godot is 4.0.0, detected: %s.%s.%s" % cc_semver)
+        print_error("The minimum Emscripten version to build Godot is 4.0.0, detected: {}.{}.{}".format(*cc_semver))
         sys.exit(255)
 
     env.Append(LIBEMITTER=[library_emitter])
@@ -127,7 +127,7 @@ def configure(env: "SConsEnvironment"):
 
     try:
         env["initial_memory"] = int(env["initial_memory"])
-    except Exception:
+    except ValueError:
         print_error("Initial memory must be a valid integer")
         sys.exit(255)
 
@@ -154,7 +154,7 @@ def configure(env: "SConsEnvironment"):
         print_info("Forcing `initial_memory=64` as it is required for the web editor.")
         env["initial_memory"] = 64
 
-    env.Append(LINKFLAGS=["-sINITIAL_MEMORY=%sMB" % env["initial_memory"]])
+    env.Append(LINKFLAGS=[f"-sINITIAL_MEMORY={env['initial_memory']}MB"])
 
     ## Copy env variables.
     env["ENV"] = os.environ
@@ -169,7 +169,9 @@ def configure(env: "SConsEnvironment"):
 
     if env["lto"] == "thin" and cc_semver < (4, 0, 9):
         print_warning(
-            '"lto=thin" support requires Emscripten 4.0.9 (detected %s.%s.%s), using "lto=full" instead.' % cc_semver
+            '"lto=thin" support requires Emscripten 4.0.9 (detected {}.{}.{}), using "lto=full" instead.'.format(
+                *cc_semver
+            )
         )
         env["lto"] = "full"
 
@@ -200,8 +202,9 @@ def configure(env: "SConsEnvironment"):
     # Closure compiler
     if env["use_closure_compiler"] and cc_semver < (4, 0, 11):
         print_warning(
-            '"use_closure_compiler=yes" support requires Emscripten 4.0.11 (detected %s.%s.%s), using "use_closure_compiler=no" instead.'
-            % cc_semver
+            '"use_closure_compiler=yes" support requires Emscripten 4.0.11 (detected {}.{}.{}), using "use_closure_compiler=no" instead.'.format(
+                *cc_semver
+            )
         )
         env["use_closure_compiler"] = False
 
@@ -263,14 +266,14 @@ def configure(env: "SConsEnvironment"):
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
-    env.Append(LINKFLAGS=["-s%s=%sKB" % ("STACK_SIZE", env["stack_size"])])
+    env.Append(LINKFLAGS=[f"-sSTACK_SIZE={env['stack_size']}KB"])
 
     if env["threads"]:
         # Thread support (via SharedArrayBuffer).
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
+        env.Append(LINKFLAGS=[f"-sDEFAULT_PTHREAD_STACK_SIZE={env['default_pthread_stack_size']}KB"])
         env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=\"Module['emscriptenPoolSize']||8\""])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:

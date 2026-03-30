@@ -157,7 +157,7 @@ class ClassStatusProgress:
 
     def to_colored_string(self, format: str = "{has}/{total}", pad_format: str = "{pad_described}{s}{pad_total}"):
         ratio = float(self.described) / float(self.total) if self.total != 0 else 1
-        percent = int(round(100 * ratio))
+        percent = round(100 * ratio)
         s = format.format(has=str(self.described), total=str(self.total), percent=str(percent))
         if self.described >= self.total:
             s = color("part_good", s)
@@ -246,7 +246,7 @@ class ClassStatus:
                 output["comment"] = color("part_good", "ALL OK")
         else:
             output["url"] = color(
-                "url", "https://docs.godotengine.org/en/latest/classes/class_{name}.html".format(name=self.name.lower())
+                "url", f"https://docs.godotengine.org/en/latest/classes/class_{self.name.lower()}.html"
             )
 
             if flags["s"] and not flags["g"] and self.is_ok():
@@ -442,7 +442,7 @@ if len(table) == 1 and flags["a"]:
     sys.exit(0)
 
 if len(table) > 2 or not flags["a"]:
-    total_status.name = "Total = {0}".format(len(table) - 1)
+    total_status.name = f"Total = {len(table) - 1}"
     out = total_status.make_output()
     row = []
     for column in table_columns:
@@ -479,9 +479,9 @@ for row_i, row in enumerate(table):
             row_string += table_row_chars[3] + cell + table_row_chars[3] * (padding_needed - 1)
         else:
             row_string += (
-                table_row_chars[3] * int(math.floor(float(padding_needed) / 2))
+                table_row_chars[3] * math.floor(float(padding_needed) / 2)
                 + cell
-                + table_row_chars[3] * int(math.ceil(float(padding_needed) / 2))
+                + table_row_chars[3] * math.ceil(float(padding_needed) / 2)
             )
         row_string += table_column_chars
 

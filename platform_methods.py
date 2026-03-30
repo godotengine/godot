@@ -38,7 +38,7 @@ def detect_arch():
     host_machine = platform.machine().lower()
     if host_machine in architectures:
         return host_machine
-    elif host_machine in architecture_aliases.keys():
+    elif host_machine in architecture_aliases:
         return architecture_aliases[host_machine]
     elif "86" in host_machine:
         # Catches x86, i386, i486, i586, i686, etc.
@@ -51,8 +51,7 @@ def detect_arch():
 def validate_arch(arch, platform_name, supported_arches):
     if arch not in supported_arches:
         methods.print_error(
-            'Unsupported CPU architecture "%s" for %s. Supported architectures are: %s.'
-            % (arch, platform_name, ", ".join(supported_arches))
+            f'Unsupported CPU architecture "{arch}" for {platform_name}. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit(255)
 
@@ -63,14 +62,14 @@ def get_build_version(short):
     name = "custom_build"
     if os.getenv("BUILD_NAME") is not None:
         name = os.getenv("BUILD_NAME")
-    v = "%d.%d" % (version.major, version.minor)
+    v = f"{version.major}.{version.minor}"
     if version.patch > 0:
-        v += ".%d" % version.patch
+        v += f".{version.patch}"
     status = version.status
     if not short:
         if os.getenv("GODOT_VERSION_STATUS") is not None:
             status = str(os.getenv("GODOT_VERSION_STATUS"))
-        v += ".%s.%s" % (status, name)
+        v += f".{status}.{name}"
     return v
 
 
@@ -91,7 +90,7 @@ def lipo(prefix, suffix):
     if arch_found > 1:
         target_bin = prefix + ".fat" + suffix
         lipo_command += ["-output", target_bin]
-        subprocess.run(lipo_command)
+        subprocess.run(lipo_command, check=False)
 
     return target_bin
 
@@ -228,7 +227,7 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
 
     # Remove other platform xcframeworks
     for entry in os.listdir(app_dir):
-        if (entry.startswith("libgodot.") or entry.startswith("libgodot_")) and entry.endswith(".xcframework"):
+        if (entry.startswith(("libgodot.", "libgodot_"))) and entry.endswith(".xcframework"):
             parts = entry.split(".")
             if len(parts) >= 3 and parts[1] != platform:
                 full_path = os.path.join(app_dir, entry)
@@ -268,7 +267,7 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         target_suffix = "xros26.0-simulator"
 
     else:
-        raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
+        raise ValueError("Invalid platform argument passed to detect_darwin_sdk_path")
 
     swiftc_target = env["arch"] + "-apple-" + target_suffix
 
@@ -282,7 +281,7 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         frontend_path = None
 
     if frontend_path is None:
-        raise Exception("Swift frontend path is not set. Please set SWIFT_FRONTEND.")
+        raise RuntimeError("Swift frontend path is not set. Please set SWIFT_FRONTEND.")
 
     bridging_header_path = current_path + "/" + bridging_header_filename
     env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler

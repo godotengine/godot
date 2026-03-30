@@ -40,8 +40,8 @@ def get_opts():
             caller_frame = inspect.stack()[1]
             caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
             deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
-        except Exception:  # Give up.
-            deps_folder = ""
+        except Exception:  # noqa: BLE001 # TODO: Catch specific exception.
+            deps_folder = ""  # Give up.
 
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
@@ -305,7 +305,7 @@ def configure(env: "SConsEnvironment"):
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 
     if env["metal"] and env["arch"] != "arm64":
-        print_warning("Target architecture '{}' does not support the Metal rendering driver".format(env["arch"]))
+        print_warning(f'Target architecture "{env["arch"]}" does not support the Metal rendering driver')
         env["metal"] = False
 
     if env["metal"]:

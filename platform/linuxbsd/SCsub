@@ -32,13 +32,11 @@ if env["speechd"]:
     if env["use_sowrap"]:
         common_linuxbsd.append("speechd-so_wrap.c")
 
-if env["fontconfig"]:
-    if env["use_sowrap"]:
-        common_linuxbsd.append("fontconfig-so_wrap.c")
+if env["fontconfig"] and env["use_sowrap"]:
+    common_linuxbsd.append("fontconfig-so_wrap.c")
 
-if env["dbus"]:
-    if env["use_sowrap"]:
-        common_linuxbsd.append("dbus-so_wrap.c")
+if env["dbus"] and env["use_sowrap"]:
+    common_linuxbsd.append("dbus-so_wrap.c")
 
 if env["library_type"] == "static_library":
     prog = env.add_library("#bin/godot", common_linuxbsd)

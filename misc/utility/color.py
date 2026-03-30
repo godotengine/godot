@@ -87,7 +87,7 @@ def color_print(*values: object, sep: str | None = " ", end: str | None = "\n", 
     if is_stdout_color():
         print(*values, sep=sep, end=f"{Ansi.RESET}{end}", flush=flush)
     else:
-        print(RE_ANSI.sub("", (sep or " ").join(map(str, values))), sep="", end=end, flush=flush)
+        print(RE_ANSI.sub("", (sep or " ").join(map(str, values))), end=end, flush=flush)
 
 
 def color_printerr(*values: object, sep: str | None = " ", end: str | None = "\n", flush: bool = False) -> None:
@@ -95,7 +95,7 @@ def color_printerr(*values: object, sep: str | None = " ", end: str | None = "\n
     if is_stderr_color():
         print(*values, sep=sep, end=f"{Ansi.RESET}{end}", flush=flush, file=sys.stderr)
     else:
-        print(RE_ANSI.sub("", (sep or " ").join(map(str, values))), sep="", end=end, flush=flush, file=sys.stderr)
+        print(RE_ANSI.sub("", (sep or " ").join(map(str, values))), end=end, flush=flush, file=sys.stderr)
 
 
 def print_info(*values: object) -> None:

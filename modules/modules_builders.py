@@ -20,14 +20,14 @@ def register_module_types_builder(target, source, env):
 #ifdef MODULE_{key.upper()}_ENABLED
 	initialize_{key}_module(p_level);
 #endif"""
-        for key in modules.keys()
+        for key in modules
     ])
     mod_uninit = "\n".join([
         f"""\
 #ifdef MODULE_{key.upper()}_ENABLED
 	uninitialize_{key}_module(p_level);
 #endif"""
-        for key in modules.keys()
+        for key in modules
     ])
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
