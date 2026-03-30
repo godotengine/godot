@@ -74,7 +74,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
             print_error(f'SCU: "{output_folder}" could not be created.')
             return
         if _verbose:
-            print("SCU: Creating folder: %s" % output_folder)
+            print(f"SCU: Creating folder: {output_folder}")
 
     file_text = ""
 
@@ -94,7 +94,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
 
     if not output_path.exists() or output_path.read_text() != file_text:
         if _verbose:
-            print("SCU: Generating: %s" % short_filename)
+            print(f"SCU: Generating: {short_filename}")
         output_path.write_text(file_text, encoding="utf8")
     elif _verbose:
         print("SCU: Generation not needed for: " + short_filename)
@@ -171,7 +171,9 @@ def find_section_name(sub_folder):
 
 
 # "extension" will usually be cpp, but can also be set to c (for e.g. third party libraries that use c)
-def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension="cpp"):
+def process_folder(folders, sought_exceptions=None, includes_per_scu=0, extension="cpp"):
+    if sought_exceptions is None:
+        sought_exceptions = []
     if len(folders) == 0:
         return
 
@@ -187,7 +189,6 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
     # Keep a record of all folders that have been processed for SCU,
     # this enables deciding what to do when we call "add_source_files()"
-    global _scu_folders
     _scu_folders.add(main_folder)
 
     # main folder (first)
@@ -212,8 +213,7 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
     if includes_per_scu == 0:
         includes_per_scu = _max_includes_per_scu
     else:
-        if includes_per_scu > _max_includes_per_scu:
-            includes_per_scu = _max_includes_per_scu
+        includes_per_scu = min(includes_per_scu, _max_includes_per_scu)
 
     num_output_files = max(math.ceil(total_lines / float(includes_per_scu)), 1)
 
@@ -228,7 +228,7 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
     fresh_files = set()
 
-    for file_count in range(0, num_output_files):
+    for file_count in range(num_output_files):
         end_line = start_line + lines_per_file
 
         # special case to cover rounding error in final file
@@ -262,7 +262,7 @@ def generate_scu_files(max_includes_per_scu):
     global _max_includes_per_scu
     _max_includes_per_scu = max_includes_per_scu
 
-    print("SCU: Generating build files... (max includes per SCU: %d)" % _max_includes_per_scu)
+    print(f"SCU: Generating build files... (max includes per SCU: {_max_includes_per_scu})")
 
     curr_folder = os.path.abspath("./")
 
@@ -443,6 +443,6 @@ def generate_scu_files(max_includes_per_scu):
     os.chdir(curr_folder)
 
     if _verbose:
-        print("SCU: Processed folders: %s" % sorted(_scu_folders))
+        print(f"SCU: Processed folders: {sorted(_scu_folders)}")
 
     return _scu_folders

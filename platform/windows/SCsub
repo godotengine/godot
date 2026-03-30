@@ -162,10 +162,9 @@ if env["d3d12"]:
             Copy("$TARGET", "$SOURCE"),
         )
 
-if not env.msvc:
-    if env["debug_symbols"]:
-        env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
-        if env["windows_subsystem"] == "gui":
-            env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
+if not env.msvc and env["debug_symbols"]:
+    env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
+    if env["windows_subsystem"] == "gui":
+        env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
 
 env.platform_sources += sources

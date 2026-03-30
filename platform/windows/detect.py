@@ -29,18 +29,10 @@ def try_cmd(test, prefix, arch, check_clang=False):
 
     for a in archs:
         try:
-            out = subprocess.Popen(
-                get_mingw_bin_prefix(prefix, a) + test,
-                shell=True,
-                stderr=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-            )
-            outs, errs = out.communicate()
+            out = subprocess.run(get_mingw_bin_prefix(prefix, a) + test, shell=True, capture_output=True, check=True)
             if out.returncode == 0:
-                if check_clang and not outs.startswith(b"clang"):
-                    return False
-                return True
-        except Exception:
+                return not (check_clang and not out.stdout.startswith(b"clang"))
+        except subprocess.CalledProcessError:
             pass
 
     return False
@@ -98,12 +90,12 @@ def detect_build_env_arch():
     if os.getenv("VCINSTALLDIR") or os.getenv("VCTOOLSINSTALLDIR"):
         if os.getenv("Platform"):
             msvc_arch = os.getenv("Platform").lower()
-            if msvc_arch in msvc_target_aliases.keys():
+            if msvc_arch in msvc_target_aliases:
                 return msvc_target_aliases[msvc_arch]
 
         if os.getenv("VSCMD_ARG_TGT_ARCH"):
             msvc_arch = os.getenv("VSCMD_ARG_TGT_ARCH").lower()
-            if msvc_arch in msvc_target_aliases.keys():
+            if msvc_arch in msvc_target_aliases:
                 return msvc_target_aliases[msvc_arch]
 
         # Pre VS 2017 checks.
@@ -130,7 +122,7 @@ def detect_build_env_arch():
             host_path_index = os.getenv("PATH").upper().find(os.getenv("VCTOOLSINSTALLDIR").upper() + "BIN\\HOST")
             if host_path_index > -1:
                 first_path_arch = os.getenv("PATH")[host_path_index:].split(";")[0].rsplit("\\", 1)[-1].lower()
-                if first_path_arch in msvc_target_aliases.keys():
+                if first_path_arch in msvc_target_aliases:
                     return msvc_target_aliases[first_path_arch]
 
     msys_target_aliases = {
@@ -143,7 +135,7 @@ def detect_build_env_arch():
     }
     if os.getenv("MSYSTEM"):
         msys_arch = os.getenv("MSYSTEM").lower()
-        if msys_arch in msys_target_aliases.keys():
+        if msys_arch in msys_target_aliases:
             return msys_target_aliases[msys_arch]
 
     return ""
@@ -179,8 +171,8 @@ def get_opts():
             caller_frame = inspect.stack()[1]
             caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
             deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
-        except Exception:  # Give up.
-            deps_folder = ""
+        except Exception:  # noqa: BLE001 # TODO: Catch specific exception.
+            deps_folder = ""  # Give up.
 
     return [
         ("mingw_prefix", "MinGW prefix", mingw),

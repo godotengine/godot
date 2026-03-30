@@ -93,9 +93,9 @@ if os.path.exists(dir_name):
 if os.path.exists("embree-tmp"):
     shutil.rmtree("embree-tmp")
 
-subprocess.run(["git", "clone", "https://github.com/embree/embree.git", "embree-tmp"])
+subprocess.run(["git", "clone", "https://github.com/embree/embree.git", "embree-tmp"], check=False)
 os.chdir("embree-tmp")
-subprocess.run(["git", "checkout", git_tag])
+subprocess.run(["git", "checkout", git_tag], check=False)
 
 commit_hash = str(subprocess.check_output(["git", "rev-parse", "HEAD"], universal_newlines=True)).strip()
 
@@ -177,7 +177,7 @@ with open(
 os.chdir("..")
 shutil.rmtree("embree-tmp")
 
-subprocess.run(["git", "restore", "embree/patches"])
+subprocess.run(["git", "restore", "embree/patches"], check=False)
 
 for patch in os.listdir("embree/patches"):
-    subprocess.run(["git", "apply", f"embree/patches/{patch}"])
+    subprocess.run(["git", "apply", f"embree/patches/{patch}"], check=False)

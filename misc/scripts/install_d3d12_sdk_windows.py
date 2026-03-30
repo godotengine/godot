@@ -109,15 +109,37 @@ if has_mingw:
     print("Adapting WinPixEventRuntime to also support MinGW alongside MSVC.")
     cwd = os.getcwd()
     os.chdir(pix_folder)
-    subprocess.run([gendef, "./bin/x64/WinPixEventRuntime.dll"])
+    subprocess.run([gendef, "./bin/x64/WinPixEventRuntime.dll"], check=False)
     subprocess.run(
-        [dlltool]
-        + "--machine i386:x86-64 --no-leading-underscore -d WinPixEventRuntime.def -D WinPixEventRuntime.dll -l ./bin/x64/libWinPixEventRuntime.a".split()
+        [
+            dlltool,
+            "--machine",
+            "i386:x86-64",
+            "--no-leading-underscore",
+            "-d",
+            "WinPixEventRuntime.def",
+            "-D",
+            "WinPixEventRuntime.dll",
+            "-l",
+            "./bin/x64/libWinPixEventRuntime.a",
+        ],
+        check=False,
     )
-    subprocess.run([gendef, "./bin/ARM64/WinPixEventRuntime.dll"])
+    subprocess.run([gendef, "./bin/ARM64/WinPixEventRuntime.dll"], check=False)
     subprocess.run(
-        [dlltool]
-        + "--machine arm64 --no-leading-underscore -d WinPixEventRuntime.def -D WinPixEventRuntime.dll -l ./bin/ARM64/libWinPixEventRuntime.a".split()
+        [
+            dlltool,
+            "--machine",
+            "arm64",
+            "--no-leading-underscore",
+            "-d",
+            "WinPixEventRuntime.def",
+            "-D",
+            "WinPixEventRuntime.dll",
+            "-l",
+            "./bin/ARM64/libWinPixEventRuntime.a",
+        ],
+        check=False,
     )
     os.chdir(cwd)
 else:

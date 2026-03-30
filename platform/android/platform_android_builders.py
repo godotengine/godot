@@ -28,7 +28,4 @@ def generate_android_binaries(target, source, env):
     if env["debug_symbols"] and not env["separate_debug_symbols"]:
         gradle_process += ["-PdoNotStrip=true"]
 
-    subprocess.run(
-        gradle_process,
-        cwd="platform/android/java",
-    )
+    subprocess.run(gradle_process, cwd="platform/android/java", check=False)

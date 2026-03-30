@@ -37,10 +37,9 @@ if (
 # so searching for 5 element - "#4 0x" - should correctly detect the vast
 # majority of memory leaks
 
-if file_contents.find("ERROR: LeakSanitizer:") != -1:
-    if file_contents.find("#4 0x") != -1:
-        print("ERROR: Memory leak was found")
-        sys.exit(53)
+if file_contents.find("ERROR: LeakSanitizer:") != -1 and file_contents.find("#4 0x") != -1:
+    print("ERROR: Memory leak was found")
+    sys.exit(53)
 
 # It may happen that Godot detects leaking nodes/resources and removes them, so
 # this possibility should also be handled as a potential error, even if
@@ -61,11 +60,11 @@ if file_contents.find("Assertion failed") != -1:
     print("ERROR: Assertion failed in project, check execution log for more info")
     sys.exit(55)
 
-if os.environ.get("GODOT_CHECK_CI_LOG_ALL_ERRORS"):
-    # If any occurrence of "ERROR:" is found in the log, we consider it a failure.
-    if file_contents.find("ERROR:") != -1:
-        print("ERROR: 'ERROR:' found in log and GODOT_CHECK_CI_LOG_ALL_ERRORS is set.")
-        sys.exit(56)
+# If any occurrence of "ERROR:" is found in the log, we consider it a failure.
+
+if os.environ.get("GODOT_CHECK_CI_LOG_ALL_ERRORS") and file_contents.find("ERROR:") != -1:
+    print("ERROR: 'ERROR:' found in log and GODOT_CHECK_CI_LOG_ALL_ERRORS is set.")
+    sys.exit(56)
 
 # For now Godot leaks a lot of rendering stuff so for now we just show info
 # about it and this needs to be re-enabled after fixing this memory leaks.

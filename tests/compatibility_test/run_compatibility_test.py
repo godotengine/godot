@@ -6,6 +6,7 @@ import json
 import os
 import pathlib
 import subprocess
+import sys
 import urllib.request
 from typing import Any
 
@@ -153,4 +154,4 @@ if __name__ == "__main__":
         remove_test_data_files()
 
     if not is_success:
-        exit(1)
+        sys.exit(1)

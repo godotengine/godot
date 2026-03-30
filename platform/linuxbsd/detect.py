@@ -42,8 +42,8 @@ def get_opts():
             caller_frame = inspect.stack()[1]
             caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
             deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
-        except Exception:  # Give up.
-            deps_folder = ""
+        except Exception:  # noqa: BLE001 # TODO: Catch specific exception.
+            deps_folder = ""  # Give up.
 
     return [
         EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
@@ -158,7 +158,7 @@ def configure(env: "SConsEnvironment"):
             else:
                 env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
-            env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
+            env.Append(LINKFLAGS=[f"-fuse-ld={env['linker']}"])
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
@@ -241,10 +241,9 @@ def configure(env: "SConsEnvironment"):
     if env["use_sowrap"]:
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
 
-    if env["wayland"]:
-        if os.system("wayland-scanner -v 2>/dev/null") != 0:
-            print_warning("wayland-scanner not found. Disabling Wayland support.")
-            env["wayland"] = False
+    if env["wayland"] and os.system("wayland-scanner -v 2>/dev/null") != 0:
+        print_warning("wayland-scanner not found. Disabling Wayland support.")
+        env["wayland"] = False
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])

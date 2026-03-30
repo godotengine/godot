@@ -36,9 +36,8 @@ def glob_to_regex(glob: str) -> re.Pattern[str]:
     else:
         # Check for single-segment pattern, which matches relative to any descendent path.
         #  This is equivalent to a leading `**/`.
-        if len(segments) == 1 or (len(segments) == 2 and not segments[1]):
-            if segments[0] != "**":
-                segments.insert(0, "**")
+        if (len(segments) == 1 or (len(segments) == 2 and not segments[1])) and segments[0] != "**":
+            segments.insert(0, "**")
 
     if len(segments) > 1 and not segments[-1]:
         # A trailing slash is equivalent to `/**`.
@@ -118,7 +117,7 @@ def main() -> int:
 
     files: list[str] = args.files
     if not files:
-        files = subprocess.run(["git", "ls-files"], text=True, capture_output=True).stdout.splitlines()
+        files = subprocess.run(["git", "ls-files"], text=True, capture_output=True, check=False).stdout.splitlines()
 
     ret = 0
     codeowners = parse_codeowners()

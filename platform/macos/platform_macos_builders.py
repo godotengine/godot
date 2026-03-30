@@ -46,14 +46,16 @@ def generate_bundle(target, source, env):
         if "mono" in env.module_version_string:
             shutil.copytree(env.Dir("#bin/GodotSharp").abspath, app_dir + "/Contents/Resources/GodotSharp")
         version = get_version_info("", True)
-        with open(env.Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
-            with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
-                for line in fin:
-                    line = line.replace("$version", "{major}.{minor}.{patch}.{status}.{build}".format(**version))
-                    line = line.replace("$short_version", "{major}.{minor}.{patch}".format(**version))
-                    if version["build"] != "official" and version["build"] != "steam":
-                        line = line.replace("org.godotengine.godot", "org.godotengine.godot." + version["build"])
-                    fout.write(line)
+        with (
+            open(env.Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin,
+            open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout,
+        ):
+            for line in fin:
+                line = line.replace("$version", "{major}.{minor}.{patch}.{status}.{build}".format(**version))
+                line = line.replace("$short_version", "{major}.{minor}.{patch}".format(**version))
+                if version["build"] != "official" and version["build"] != "steam":
+                    line = line.replace("org.godotengine.godot", "org.godotengine.godot." + version["build"])
+                fout.write(line)
 
         # Sign .app bundle.
         if env["bundle_sign_identity"] != "":
@@ -71,7 +73,7 @@ def generate_bundle(target, source, env):
             else:
                 sign_command += [env.Dir("#misc/dist/macos").abspath + "/editor.entitlements"]
             sign_command += [app_dir]
-            subprocess.run(sign_command)
+            subprocess.run(sign_command, check=False)
 
     else:
         # Template bundle.
@@ -117,7 +119,7 @@ def make_debug_macos(target, source, env):
     if env["macports_clang"] != "no":
         mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
         mpclangver = env["macports_clang"]
-        os.system(mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-dsymutil {0} -o {0}.dSYM".format(dst))
+        os.system(mpprefix + "/libexec/llvm-" + mpclangver + f"/bin/llvm-dsymutil {dst} -o {dst}.dSYM")
     else:
-        os.system("dsymutil {0} -o {0}.dSYM".format(dst))
-    os.system("strip -u -r {0}".format(dst))
+        os.system(f"dsymutil {dst} -o {dst}.dSYM")
+    os.system(f"strip -u -r {dst}")

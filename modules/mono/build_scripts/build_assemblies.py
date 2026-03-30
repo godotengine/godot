@@ -7,6 +7,7 @@ import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
+from shutil import copy
 
 
 def find_dotnet_cli():
@@ -112,7 +113,7 @@ def find_msbuild_tools_path_reg():
         print("Error reading output from vswhere: " + str(e))
     except OSError:
         pass  # Fine, vswhere not found
-    except (subprocess.CalledProcessError, OSError):
+    except subprocess.CalledProcessError:
         pass
 
 
@@ -236,10 +237,8 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
             assert not os.path.isfile(editor_api_dir)
             os.makedirs(editor_api_dir)
 
-        def copy_target(target_path):
-            from shutil import copy
-
-            filename = os.path.basename(target_path)
+        for scons_target in targets:
+            filename = os.path.basename(scons_target)
 
             src_path = os.path.join(core_src_dir, filename)
             if not os.path.isfile(src_path):
@@ -247,11 +246,8 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
             if not os.path.isfile(src_path):
                 src_path = os.path.join(plugins_src_dir, filename)
 
-            print(f"Copying assembly to {target_path}...")
-            copy(src_path, target_path)
-
-        for scons_target in targets:
-            copy_target(scons_target)
+            print(f"Copying assembly to {scons_target}...")
+            copy(src_path, scons_target)
 
     return 0
 
@@ -295,8 +291,8 @@ def generate_sdk_package_versions():
             f"GODOT{version.major}_{version.minor}_{version.patch}",
         ]
         + [f"GODOT{v}_OR_GREATER" for v in range(4, version.major + 1)]
-        + [f"GODOT{version.major}_{v}_OR_GREATER" for v in range(0, version.minor + 1)]
-        + [f"GODOT{version.major}_{version.minor}_{v}_OR_GREATER" for v in range(0, version.patch + 1)]
+        + [f"GODOT{version.major}_{v}_OR_GREATER" for v in range(version.minor + 1)]
+        + [f"GODOT{version.major}_{version.minor}_{v}_OR_GREATER" for v in range(version.patch + 1)]
     )
 
     props = """<Project>

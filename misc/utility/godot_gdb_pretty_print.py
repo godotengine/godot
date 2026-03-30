@@ -92,7 +92,7 @@ class GodotVectorPrinter:
             yield str(i), (ptr + i).dereference()
 
     def to_string(self):
-        return "%s [%d]" % (self.value.type.name, self.get_size())
+        return f"{self.value.type.name} [{self.get_size()}]"
 
     # Hint that the object is array-like.
     def display_hint(self):

@@ -11,9 +11,10 @@ import sys
 import textwrap
 import zlib
 from collections import OrderedDict
+from collections.abc import Generator
 from io import StringIO
 from pathlib import Path
-from typing import Generator, TextIO, cast
+from typing import TextIO, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
@@ -47,7 +48,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
     for file in files:
         obj = self.Object(file)
         if obj in sources:
-            print_warning('Object "{}" already included in environment sources.'.format(obj))
+            print_warning(f'Object "{obj}" already included in environment sources.')
             continue
         sources.append(obj)
 
@@ -65,8 +66,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
         section_name = section_name.replace("\\", "/")  # win32
         # if the section name is in the hash table?
         # i.e. is it part of the SCU build?
-        global _scu_folders
-        if section_name not in (_scu_folders):
+        if section_name not in _scu_folders:
             return False
 
         # Add all the gen.cpp files in the SCU directory
@@ -196,14 +196,15 @@ def get_git_info():
             elif os.path.isfile(packedrefs):
                 # Git may pack refs into a single file. This code searches .git/packed-refs file for the current ref's hash.
                 # https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-pack-refs.html
-                for line in open(packedrefs, "r", encoding="utf-8").read().splitlines():
-                    if line.startswith("#"):
-                        continue
-                    (line_hash, line_ref) = line.split(" ")
-                    if ref == line_ref:
-                        git_hash = line_hash
-                        break
-        else:
+                with open(packedrefs, "r", encoding="utf-8") as ref_file:
+                    for line in ref_file:
+                        if line.startswith("#"):
+                            continue
+                        line_hash, line_ref = line.split(" ")
+                        if ref == line_ref:
+                            git_hash = line_hash
+                            break
+
             git_hash = head
 
     # Get the UNIX timestamp of the build commit.
@@ -345,16 +346,14 @@ def module_check_dependencies(self, module):
     missing_deps = set()
     required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
     for dep in required_deps:
-        opt = "module_{}_enabled".format(dep)
+        opt = f"module_{dep}_enabled"
         if opt not in self or not self[opt] or not module_check_dependencies(self, dep):
             missing_deps.add(dep)
 
     if missing_deps:
         if module not in self.disabled_modules:
             print_warning(
-                "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
-                    module, ", ".join(missing_deps)
-                )
+                f'Disabling "{module}" module as the following dependencies are not satisfied: {", ".join(missing_deps)}'
             )
             self.disabled_modules.add(module)
         return False
@@ -369,8 +368,8 @@ def sort_module_list(env):
     explored = []
     while len(frontier):
         cur = frontier.pop()
-        deps_list = deps[cur] if cur in deps else []
-        if len(deps_list) and any([d not in explored for d in deps_list]):
+        deps_list = deps.get(cur, [])
+        if len(deps_list) and any(d not in explored for d in deps_list):
             # Will explore later, after its dependencies
             frontier.insert(0, cur)
             continue
@@ -560,8 +559,7 @@ def generate_cpp_hint_file(filename):
                             if "R" in suffix:
                                 fd.write("m_ret, ")
                             fd.write("m_name")
-                            for idx in range(1, count + 1):
-                                fd.write(f", type{idx}")
+                            fd.writelines(f", type{idx}" for idx in range(1, count + 1))
                             fd.write(")\n")
 
         except OSError:
@@ -652,7 +650,7 @@ def detect_darwin_sdk_path(platform, env):
         var_name = "APPLE_SDK_PATH"
 
     else:
-        raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
+        raise ValueError("Invalid platform argument passed to detect_darwin_sdk_path")
 
     if not env[var_name]:
         try:
@@ -660,7 +658,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
+            print_error(f"Failed to find SDK path while running 'xcrun --sdk {sdk_name} --show-sdk-path'.")
             raise
 
 
@@ -693,7 +691,6 @@ def get_compiler_version(env):
     - date: Date of the build
     """
 
-    global compiler_version_cache
     if compiler_version_cache is not None:
         return compiler_version_cache
 
@@ -1145,7 +1142,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                     if host_arch == a["architecture"]:
                         host_arch = a["platform"]
                         break
-        except Exception:
+        except AttributeError:
             pass
 
         sys.path.remove(tmppath)
@@ -1202,12 +1199,12 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         filters = ""
 
-        for d in headers_dirs:
-            filters += f'<Filter Include="Header Files\\{d}"><UniqueIdentifier>{{{str(uuid.uuid4())}}}</UniqueIdentifier></Filter>\n'
-        for d in sources_dirs:
-            filters += f'<Filter Include="Source Files\\{d}"><UniqueIdentifier>{{{str(uuid.uuid4())}}}</UniqueIdentifier></Filter>\n'
-        for d in others_dirs:
-            filters += f'<Filter Include="Other Files\\{d}"><UniqueIdentifier>{{{str(uuid.uuid4())}}}</UniqueIdentifier></Filter>\n'
+        for dir in headers_dirs:
+            filters += f'<Filter Include="Header Files\\{dir}"><UniqueIdentifier>{{{uuid.uuid4()}}}</UniqueIdentifier></Filter>\n'
+        for dir in sources_dirs:
+            filters += f'<Filter Include="Source Files\\{dir}"><UniqueIdentifier>{{{uuid.uuid4()}}}</UniqueIdentifier></Filter>\n'
+        for dir in others_dirs:
+            filters += f'<Filter Include="Other Files\\{dir}"><UniqueIdentifier>{{{uuid.uuid4()}}}</UniqueIdentifier></Filter>\n'
 
         filters_template = filters_template.replace("%%FILTERS%%", filters)
 
@@ -1298,10 +1295,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
             else:
                 itemlist[key] += [item]
 
-        for x in itemlist.keys():
-            properties.append(
-                "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
-            )
+        for key, value in itemlist.items():
+            properties.append(f"<ActiveProjectItemList_{key}>;{';'.join(value)};</ActiveProjectItemList_{key}>")
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
         # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
@@ -1382,17 +1377,18 @@ def generate_vs_project(env, original_args, project_name="godot"):
     sln_uuid = str(uuid.uuid4())
 
     if os.path.exists(f"{project_name}.sln"):
-        for line in open(f"{project_name}.sln", "r", encoding="utf-8").read().splitlines():
-            if line.startswith('Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}")'):
-                proj_uuid = re.search(
-                    r"\"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}\"$",
-                    line,
-                ).group(1)
-            elif line.strip().startswith("SolutionGuid ="):
-                sln_uuid = re.search(
-                    r"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}", line
-                ).group(1)
-                break
+        with open(f"{project_name}.sln", encoding="utf-8") as sln_file:
+            for line in sln_file:
+                if line.startswith('Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}")'):
+                    proj_uuid = re.search(
+                        r"\"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}\"$",
+                        line,
+                    ).group(1)
+                elif line.strip().startswith("SolutionGuid ="):
+                    sln_uuid = re.search(
+                        r"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}", line
+                    ).group(1)
+                    break
 
     configurations = []
     imports = []
@@ -1622,7 +1618,7 @@ C_ESCAPABLES = [
     # ("'", "\\'"),  # Skip, as we're only dealing with full strings.
     ('"', '\\"'),
 ]
-C_ESCAPE_TABLE = str.maketrans(dict((x, y) for x, y in C_ESCAPABLES))
+C_ESCAPE_TABLE = str.maketrans({x: y for x, y in C_ESCAPABLES})
 
 
 def to_escaped_cstring(value: str) -> str:
@@ -1651,7 +1647,7 @@ def to_raw_cstring(value: str | list[str]) -> str:
             # If none found, ensure we end with valid utf8.
             # https://github.com/halloleo/unicut/blob/master/truncate.py
             elif segment[-1] & 0b10000000:
-                last_11xxxxxx_index = [i for i in range(-1, -5, -1) if segment[i] & 0b11000000 == 0b11000000][0]
+                last_11xxxxxx_index = next(i for i in range(-1, -5, -1) if segment[i] & 0b11000000 == 0b11000000)
                 last_11xxxxxx = segment[last_11xxxxxx_index]
                 if not last_11xxxxxx & 0b00100000:
                     last_char_length = 2
@@ -1679,7 +1675,7 @@ def get_default_include_paths(env):
     compiler = env.subst("$CXX")
     target = os.path.join(env.Dir("#main").abspath, "main.cpp")
     args = [compiler, target, "-x", "c++", "-v"]
-    ret = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    ret = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False, text=True)
     output = ret.stdout
     match = re.search(r"#include <\.\.\.> search starts here:([\S\s]*)End of search list.", output)
     if not match:

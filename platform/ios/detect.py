@@ -122,21 +122,40 @@ def configure(env: "SConsEnvironment"):
 
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
         env.Append(
-            CCFLAGS=(
-                "-fobjc-arc -arch x86_64"
-                " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
-                " -fasm-blocks -isysroot $APPLE_SDK_PATH"
-            ).split()
+            CCFLAGS=[
+                "-fobjc-arc",
+                "-arch",
+                "x86_64",
+                "-fobjc-abi-version=2",
+                "-fobjc-legacy-dispatch",
+                "-fmessage-length=0",
+                "-fpascal-strings",
+                "-fblocks",
+                "-fasm-blocks",
+                "-isysroot",
+                "$APPLE_SDK_PATH",
+            ]
         )
         env.Append(ASFLAGS=["-arch", "x86_64"])
     elif env["arch"] == "arm64":
         env.Append(
-            CCFLAGS=(
-                "-fobjc-arc -arch arm64 -fmessage-length=0"
-                " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
-                " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
-                " -isysroot $APPLE_SDK_PATH".split()
-            )
+            CCFLAGS=([
+                "-fobjc-arc",
+                "-arch",
+                "arm64",
+                "-fmessage-length=0",
+                "-fdiagnostics-print-source-range-info",
+                "-fdiagnostics-show-category=id",
+                "-fdiagnostics-parseable-fixits",
+                "-fpascal-strings",
+                "-fblocks",
+                "-fvisibility=hidden",
+                "-MMD",
+                "-MT",
+                "dependencies",
+                "-isysroot",
+                "$APPLE_SDK_PATH",
+            ])
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
 

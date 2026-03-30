@@ -118,12 +118,23 @@ def configure(env: "SConsEnvironment"):
 
     if env["arch"] == "arm64":
         env.Append(
-            CCFLAGS=(
-                "-fobjc-arc -arch arm64 -fmessage-length=0"
-                " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
-                " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
-                " -isysroot $APPLE_SDK_PATH".split()
-            )
+            CCFLAGS=([
+                "-fobjc-arc",
+                "-arch",
+                "arm64",
+                "-fmessage-length=0",
+                "-fdiagnostics-print-source-range-info",
+                "-fdiagnostics-show-category=id",
+                "-fdiagnostics-parseable-fixits",
+                "-fpascal-strings",
+                "-fblocks",
+                "-fvisibility=hidden",
+                "-MMD",
+                "-MT",
+                "dependencies",
+                "-isysroot",
+                "$APPLE_SDK_PATH",
+            ])
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
 

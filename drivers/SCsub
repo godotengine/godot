@@ -21,7 +21,7 @@ if env["platform"] == "windows":
         SConscript("backtrace/SCsub")
 if env["xaudio2"]:
     if "xaudio2" not in supported:
-        print_error("Target platform '{}' does not support the XAudio2 audio driver".format(env["platform"]))
+        print_error(f"Target platform '{env['platform']}' does not support the XAudio2 audio driver")
         Exit(255)
     SConscript("xaudio2/SCsub")
 
@@ -47,7 +47,7 @@ if env["vulkan"]:
     SConscript("vulkan/SCsub")
 if env["d3d12"]:
     if "d3d12" not in supported:
-        print_error("Target platform '{}' does not support the D3D12 rendering driver".format(env["platform"]))
+        print_error(f"Target platform '{env['platform']}' does not support the D3D12 rendering driver")
         Exit(255)
     SConscript("d3d12/SCsub")
 if env["opengl3"]:
@@ -56,7 +56,7 @@ if env["opengl3"]:
     SConscript("egl/SCsub")
 if env["metal"]:
     if "metal" not in supported:
-        print_error("Target platform '{}' does not support the Metal rendering driver".format(env["platform"]))
+        print_error(f"Target platform '{env['platform']}' does not support the Metal rendering driver")
         Exit(255)
     SConscript("metal/SCsub")
 
