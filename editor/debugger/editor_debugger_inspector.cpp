@@ -104,7 +104,13 @@ void EditorDebuggerRemoteObjects::set_property_field(const StringName &p_propert
 String EditorDebuggerRemoteObjects::get_title() {
 	if (!remote_object_ids.is_empty() && ObjectID(remote_object_ids[0].operator uint64_t()).is_valid()) {
 		const int size = remote_object_ids.size();
-		return size == 1 ? vformat(TTR("Remote %s: %d"), type_name, remote_object_ids[0]) : vformat(TTR("Remote %s (%d Selected)"), type_name, size);
+		if (size == 1) {
+			if (node_name.is_empty() || node_name == type_name) {
+				return vformat(TTR("Remote %s: %d"), type_name, remote_object_ids[0]);
+			}
+			return vformat(TTR("Remote %s (%s): %d"), type_name, node_name, remote_object_ids[0]);
+		}
+		return vformat(TTR("Remote %s (%d Selected)"), type_name, size);
 	}
 
 	return "<null>";
@@ -347,6 +353,15 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		}
 	}
 	remote_objects->type_name = class_name;
+	remote_objects->node_name = "";
+	if (objects.size() == 1) {
+		for (const SceneDebuggerObject::SceneDebuggerProperty &prop : objects[0].properties) {
+			if (prop.first.name == "name") {
+				remote_objects->node_name = prop.second;
+				break;
+			}
+		}
+	}
 
 	if (old_prop_size == remote_objects->prop_list.size() && new_props_added == 0) {
 		// Only some may have changed, if so, then update those, if they exist.
