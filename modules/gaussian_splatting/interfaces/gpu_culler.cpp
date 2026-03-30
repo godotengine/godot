@@ -1794,16 +1794,16 @@ GPUCuller::CullingSummary GPUCuller::cull_for_view(const Transform3D &p_cam_tran
         }
     }
 
-	summary.visible_after_culling = static_cast<uint32_t>(culling_state.culled_indices.size());
-	summary.culling_candidate_count = candidate_count;
-	summary.culled_frustum_count = culling_state.culled_by_frustum;
-	summary.culled_distance_count = culling_state.culled_by_distance;
-	summary.culled_screen_count = culling_state.culled_by_screen;
-	summary.culled_importance_count = culling_state.culled_by_importance;
-	summary.cull_route_uid = RenderRouteUID::GLOBAL_CULL_CPU;
-	summary.cull_route_reason = "global_cpu_path";
-	summary.used_hierarchical_culling = used_hierarchical;
-	summary.culling_time_ms = culling_state.cull_time_ms = (OS::get_singleton()->get_ticks_usec() - start_time) / 1000.0f;
+    summary.visible_after_culling = static_cast<uint32_t>(culling_state.culled_indices.size());
+    summary.culling_candidate_count = candidate_count;
+    summary.culled_frustum_count = culling_state.culled_by_frustum;
+    summary.culled_distance_count = culling_state.culled_by_distance;
+    summary.culled_screen_count = culling_state.culled_by_screen;
+    summary.culled_importance_count = culling_state.culled_by_importance;
+    summary.cull_route_uid = RenderRouteUID::GLOBAL_CULL_CPU;
+    summary.cull_route_reason = "global_cpu_path";
+    summary.used_hierarchical_culling = used_hierarchical;
+    summary.culling_time_ms = culling_state.cull_time_ms = (OS::get_singleton()->get_ticks_usec() - start_time) / 1000.0f;
 
     return summary;
 }
