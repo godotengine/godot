@@ -251,7 +251,7 @@ void NavRegion3D::_build_iteration() {
 	iteration_build.reset();
 
 	if (navmesh.is_valid()) {
-		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons);
+		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta);
 	}
 
 	iteration_build.map_cell_size = map->get_merge_rasterizer_cell_size();

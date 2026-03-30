@@ -57,9 +57,9 @@ class NavRegion3D : public NavBase3D {
 
 	SelfList<NavRegion3D> sync_dirty_request_list_element;
 	mutable RWLock iteration_rwlock;
-	Ref<NavRegionIteration3D> iteration;
+	Ref<NavRegionIteration3D> iteration; // Snapshot of `iteration_build.region`_iteration. See `NavRegion3D::_sync_iteration()`.
 
-	NavRegionIterationBuild3D iteration_build;
+	NavRegionIterationBuild3D iteration_build; // Gets cleared after flushing to `iteration`. See `NavRegion3D::_sync_iteration()`.
 	bool use_async_iterations = true;
 	SelfList<NavRegion3D> async_list_element;
 	WorkerThreadPool::TaskID iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;

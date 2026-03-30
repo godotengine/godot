@@ -40,6 +40,7 @@ class NavigationMesh : public Resource {
 
 	Vector<Vector3> vertices;
 	Vector<Vector<int>> polygons;
+	Vector<uint32_t> polygons_meta;
 	Ref<ArrayMesh> debug_mesh;
 
 protected:
@@ -53,6 +54,9 @@ protected:
 
 	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;
+
+	void _set_polygons_meta(const Array &p_polygons_meta);
+	Array _get_polygons_meta() const;
 
 public:
 	enum SamplePartitionType {
@@ -197,7 +201,8 @@ public:
 	void clear();
 
 	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons);
-	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons);
+	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta);
+	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta);
 
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();

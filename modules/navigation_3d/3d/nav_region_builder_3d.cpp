@@ -55,8 +55,10 @@ void NavRegionBuilder3D::build_iteration(NavRegionIterationBuild3D &r_build) {
 }
 
 void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuild3D &r_build) {
+	// Reading pending data:
 	Vector<Vector3> _navmesh_vertices = r_build.navmesh_data.vertices;
 	Vector<Vector<int>> _navmesh_polygons = r_build.navmesh_data.polygons;
+	Vector<uint32_t> _navmesh_polygons_meta = r_build.navmesh_data.polygons_meta;
 
 	if (_navmesh_vertices.is_empty() || _navmesh_polygons.is_empty()) {
 		return;
@@ -65,6 +67,7 @@ void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuil
 	PerformanceData &performance_data = r_build.performance_data;
 	Ref<NavRegionIteration3D> region_iteration = r_build.region_iteration;
 
+	const uint32_t navigation_layers = region_iteration->navigation_layers;
 	const Transform3D &region_transform = region_iteration->transform;
 	LocalVector<Nav3D::Polygon> &navmesh_polygons = region_iteration->navmesh_polygons;
 
@@ -79,12 +82,18 @@ void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuil
 	AABB _new_region_bounds;
 
 	bool first_vertex = true;
+	bool use_polygon_meta = _navmesh_polygons_meta.size() > 0 && navmesh_polygons.size() == _navmesh_polygons_meta.size();
 
 	for (uint32_t i = 0; i < navmesh_polygons.size(); i++) {
 		Polygon &polygon = navmesh_polygons[i];
 		polygon.id = i;
 		polygon.owner = region_iteration.ptr();
 		polygon.surface_area = 0.0;
+		polygon.navigation_layers = navigation_layers;
+		if (use_polygon_meta) {
+			// Setting the layer as defined in the affecting NavigationArea:
+			polygon.navigation_layers = _navmesh_polygons_meta[i];
+		}
 
 		Vector<int> polygon_indices = polygons_ptr[i];
 
@@ -135,6 +144,7 @@ void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuil
 
 		if (!polygon_valid) {
 			polygon.surface_area = 0.0;
+			polygon.navigation_layers = 0;
 			polygon.vertices.clear();
 			ERR_FAIL_COND_MSG(!polygon_valid, "Corrupted navigation mesh set on region. The indices of a polygon are out of range.");
 		}

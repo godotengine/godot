@@ -33,6 +33,7 @@
 #include "core/templates/rid_owner.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
+#include "servers/navigation_3d/navigation_layers_cost_map_3d.h"
 #include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
 #include "servers/navigation_3d/navigation_path_query_result_3d.h"
 
@@ -275,6 +276,14 @@ public:
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) = 0;
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const = 0;
 
+	/* Area API */
+	enum AreaShapeType3D {
+		AREA_SHAPE_NONE = 0,
+		AREA_SHAPE_BOX,
+		AREA_SHAPE_CYLINDER,
+		AREA_SHAPE_POLYGON
+	};
+
 	/* QUERY API */
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result, const Callable &p_callback = Callable()) = 0;
@@ -378,6 +387,10 @@ private:
 	Color debug_navigation_avoidance_static_obstacle_pushin_edge_color = Color(1.0, 0.0, 0.0, 1.0);
 	Color debug_navigation_avoidance_static_obstacle_pushout_edge_color = Color(1.0, 1.0, 0.0, 1.0);
 
+	Color debug_area_edge_color = Color(0.8, 0.6, 0.4, 1.0);
+	Color debug_area_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
+	Color debug_area_edge_invalid_color = Color(1.0, 0.0, 0.0, 1.0);
+
 	bool debug_navigation_enable_edge_connections = true;
 	bool debug_navigation_enable_edge_connections_xray = true;
 	bool debug_navigation_enable_edge_lines = true;
@@ -409,6 +422,10 @@ private:
 
 	Ref<StandardMaterial3D> debug_navigation_agent_path_line_material;
 	Ref<StandardMaterial3D> debug_navigation_agent_path_point_material;
+
+	Ref<StandardMaterial3D> debug_area_edge_material;
+	Ref<StandardMaterial3D> debug_area_edge_disabled_material;
+	Ref<StandardMaterial3D> debug_area_edge_invalid_material;
 
 public:
 	void set_debug_navigation_enabled(bool p_enabled);
@@ -516,6 +533,10 @@ public:
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_face_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
+
+	Ref<StandardMaterial3D> get_debug_area_edge_material();
+	Ref<StandardMaterial3D> get_debug_area_edge_disabled_material();
+	Ref<StandardMaterial3D> get_debug_area_edge_invalid_material();
 #endif // DEBUG_ENABLED
 };
 
@@ -578,4 +599,5 @@ public:
 	static NavigationServer3D *create_dummy_server_callback();
 };
 
+VARIANT_ENUM_CAST(NavigationServer3D::AreaShapeType3D);
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);
