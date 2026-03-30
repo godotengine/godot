@@ -6,18 +6,24 @@ Import("env_modules")
 
 env_camera = env_modules.Clone()
 
-if env["platform"] in ["windows", "macos", "linuxbsd", "android"]:
+if env["platform"] in ["windows", "macos", "linuxbsd", "android", "ios", "visionos"]:
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
 
 if env["platform"] == "windows":
     env_camera.add_source_files(env.modules_sources, "camera_win.cpp")
 
 elif env["platform"] == "macos":
-    env_camera.add_source_files(env.modules_sources, "camera_macos.mm")
+    env_camera.add_source_files(env.modules_sources, "camera_apple.mm")
 
 elif env["platform"] == "android":
     env_camera.add_source_files(env.modules_sources, "camera_android.cpp")
     env.Append(LIBS=["camera2ndk", "mediandk"])
+
+elif env["platform"] in ["ios", "visionos"]:
+    ext_module_source = ["camera_apple.mm"]
+    ext_camera_lib = env_camera.add_library("#bin/libgodot_camera", ext_module_source)
+    env.Append(LIBS_EXTERNAL=[ext_camera_lib])
+    env.Append(MODULES_EXTERNAL=["_camera"])
 
 elif env["platform"] == "linuxbsd":
     env_camera.add_source_files(env.modules_sources, "camera_linux.cpp")

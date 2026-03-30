@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  camera_macos.mm                                                       */
+/*  camera_apple.mm                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,11 +31,14 @@
 ///@TODO this is a near duplicate of CameraIOS, we should find a way to combine those to minimize code duplication!!!!
 // If you fix something here, make sure you fix it there as well!
 
-#import "camera_macos.h"
+#import "camera_apple.h"
 
 #include "servers/camera/camera_feed.h"
 
 #import <AVFoundation/AVFoundation.h>
+#ifdef IOS_ENABLED
+#import <UIKit/UIKit.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // MyCaptureSession - This is a little helper class so we can capture our frames
@@ -63,23 +66,30 @@
 		width[1] = 0;
 		height[1] = 0;
 
-#ifdef APPLE_EMBEDDED_ENABLED
-		[p_device lockForConfiguration:&error];
+#ifdef IOS_ENABLED
+		if ([p_device lockForConfiguration:&error]) {
+			if ([p_device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
+				[p_device setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
+			}
+			if ([p_device isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure]) {
+				[p_device setExposureMode:AVCaptureExposureModeContinuousAutoExposure];
+			}
+			if ([p_device isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance]) {
+				[p_device setWhiteBalanceMode:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance];
+			}
 
-		[p_device setFocusMode:AVCaptureFocusModeLocked];
-		[p_device setExposureMode:AVCaptureExposureModeLocked];
-		[p_device setWhiteBalanceMode:AVCaptureWhiteBalanceModeLocked];
-
-		[p_device unlockForConfiguration];
-#endif // APPLE_EMBEDDED_ENABLED
+			[p_device unlockForConfiguration];
+		}
+#endif // IOS_ENABLED
 
 		[self beginConfiguration];
 
-#ifdef APPLE_EMBEDDED_ENABLED
+#ifdef IOS_ENABLED
 		self.sessionPreset = AVCaptureSessionPreset1280x720;
-#endif // APPLE_EMBEDDED_ENABLED
+#endif // IOS_ENABLED
 
-		input = [AVCaptureDeviceInput deviceInputWithDevice:p_device error:&error];
+		input = [[AVCaptureDeviceInput alloc] initWithDevice:p_device error:&error];
+
 		if (!input) {
 			print_line("Couldn't get input device for camera");
 			[self commitConfiguration];
@@ -219,6 +229,28 @@
 	// set our texture...
 	feed->set_ycbcr_images(img[0], img[1]);
 
+#ifdef IOS_ENABLED
+	UIInterfaceOrientation orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
+
+	Transform2D display_transform;
+	switch (orientation) {
+		case UIInterfaceOrientationPortrait: {
+			display_transform = Transform2D(0.0, -1.0, -1.0, 0.0, 1.0, 1.0);
+		} break;
+		case UIInterfaceOrientationLandscapeRight: {
+			display_transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
+		} break;
+		case UIInterfaceOrientationLandscapeLeft: {
+			display_transform = Transform2D(-1.0, 0.0, 0.0, 1.0, 1.0, 0.0);
+		} break;
+		default: {
+			display_transform = Transform2D(0.0, 1.0, 1.0, 0.0, 0.0, 0.0);
+		} break;
+	}
+
+	feed->set_transform(display_transform);
+#endif // IOS_ENABLED
+
 	// and unlock
 	CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 }
@@ -226,10 +258,10 @@
 @end
 
 //////////////////////////////////////////////////////////////////////////
-// CameraFeedMacOS - Subclass for camera feeds in macOS
+// CameraFeedApple - Subclass for camera feeds in macOS
 
-class CameraFeedMacOS : public CameraFeed {
-	GDSOFTCLASS(CameraFeedMacOS, CameraFeed);
+class CameraFeedApple : public CameraFeed {
+	GDSOFTCLASS(CameraFeedApple, CameraFeed);
 
 private:
 	AVCaptureDevice *device;
@@ -238,8 +270,8 @@ private:
 public:
 	AVCaptureDevice *get_device() const;
 
-	CameraFeedMacOS();
-	~CameraFeedMacOS();
+	CameraFeedApple();
+	~CameraFeedApple();
 
 	void set_device(AVCaptureDevice *p_device);
 
@@ -247,22 +279,23 @@ public:
 	void deactivate_feed() override;
 };
 
-AVCaptureDevice *CameraFeedMacOS::get_device() const {
+AVCaptureDevice *CameraFeedApple::get_device() const {
 	return device;
 }
 
-CameraFeedMacOS::CameraFeedMacOS() {
+CameraFeedApple::CameraFeedApple() {
 	device = nullptr;
 	capture_session = nullptr;
+	transform = Transform2D(1.0, 0.0, 0.0, 1.0, 0.0, 0.0); /* should re-orientate this based on device orientation */
 }
 
-CameraFeedMacOS::~CameraFeedMacOS() {
+CameraFeedApple::~CameraFeedApple() {
 	if (is_active()) {
 		deactivate_feed();
 	}
 }
 
-void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
+void CameraFeedApple::set_device(AVCaptureDevice *p_device) {
 	device = p_device;
 
 	// get some info
@@ -276,14 +309,14 @@ void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
 	};
 }
 
-bool CameraFeedMacOS::activate_feed() {
+bool CameraFeedApple::activate_feed() {
 	if (capture_session) {
 		// Already recording.
 		return true;
 	}
 
 	// Start camera capture, check permission.
-	if (@available(macOS 10.14, *)) {
+	if (@available(macOS 10.14, iOS 14.0, visionOS 1.0, *)) {
 		AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
 		if (status == AVAuthorizationStatusAuthorized) {
 			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
@@ -311,7 +344,7 @@ bool CameraFeedMacOS::activate_feed() {
 	}
 }
 
-void CameraFeedMacOS::deactivate_feed() {
+void CameraFeedApple::deactivate_feed() {
 	// end camera capture if we have one
 	if (capture_session) {
 		[capture_session cleanup];
@@ -324,7 +357,7 @@ void CameraFeedMacOS::deactivate_feed() {
 // when devices are connected/disconnected
 
 @interface MyDeviceNotifications : NSObject {
-	CameraMacOS *camera_server;
+	CameraApple *camera_server;
 }
 
 @end
@@ -335,7 +368,7 @@ void CameraFeedMacOS::deactivate_feed() {
 	camera_server->update_feeds();
 }
 
-- (id)initForServer:(CameraMacOS *)p_server {
+- (id)initForServer:(CameraApple *)p_server {
 	if (self = [super init]) {
 		camera_server = p_server;
 
@@ -356,13 +389,31 @@ void CameraFeedMacOS::deactivate_feed() {
 MyDeviceNotifications *device_notifications = nil;
 
 //////////////////////////////////////////////////////////////////////////
-// CameraMacOS - Subclass for our camera server on macOS
+// CameraApple - Subclass for our camera server on macOS
 
-void CameraMacOS::update_feeds() {
+void CameraApple::update_feeds() {
 	NSArray<AVCaptureDevice *> *devices = nullptr;
+#ifdef APPLE_EMBEDDED_ENABLED
+	{
+		NSMutableArray *deviceTypes = [NSMutableArray array];
+		if (@available(iOS 14.0, visionOS 2.1, *)) {
+			[deviceTypes addObject:AVCaptureDeviceTypeBuiltInWideAngleCamera];
+		}
+#ifdef IOS_ENABLED
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInTelephotoCamera];
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInDualCamera];
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInTrueDepthCamera];
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInUltraWideCamera];
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInDualWideCamera];
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInTripleCamera];
+#endif // IOS_ENABLED
+		AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:deviceTypes mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+		devices = session.devices;
+	}
+#else // APPLE_EMBEDDED_ENABLED
 #if defined(__x86_64__)
 	if (@available(macOS 10.15, *)) {
-#endif
+#endif // __x86_64__
 		AVCaptureDeviceDiscoverySession *session;
 		if (@available(macOS 14.0, *)) {
 			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeContinuityCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
@@ -374,11 +425,12 @@ void CameraMacOS::update_feeds() {
 	} else {
 		devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
 	}
-#endif
+#endif // __x86_64__
+#endif // APPLE_EMBEDDED_ENABLED
 
 	// Deactivate feeds that are gone before removing them.
 	for (int i = feeds.size() - 1; i >= 0; i--) {
-		Ref<CameraFeedMacOS> feed = (Ref<CameraFeedMacOS>)feeds[i];
+		Ref<CameraFeedApple> feed = (Ref<CameraFeedApple>)feeds[i];
 		if (feed.is_null()) {
 			continue;
 		}
@@ -394,7 +446,7 @@ void CameraMacOS::update_feeds() {
 	for (AVCaptureDevice *device in devices) {
 		bool found = false;
 		for (int i = 0; i < feeds.size() && !found; i++) {
-			Ref<CameraFeedMacOS> feed = (Ref<CameraFeedMacOS>)feeds[i];
+			Ref<CameraFeedApple> feed = (Ref<CameraFeedApple>)feeds[i];
 			if (feed.is_null()) {
 				continue;
 			}
@@ -404,7 +456,7 @@ void CameraMacOS::update_feeds() {
 		};
 
 		if (!found) {
-			Ref<CameraFeedMacOS> newfeed;
+			Ref<CameraFeedApple> newfeed;
 			newfeed.instantiate();
 			newfeed->set_device(device);
 
@@ -414,7 +466,7 @@ void CameraMacOS::update_feeds() {
 	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
-void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
+void CameraApple::set_monitoring_feeds(bool p_monitoring_feeds) {
 	if (p_monitoring_feeds == monitoring_feeds) {
 		return;
 	}
@@ -431,3 +483,14 @@ void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
 		device_notifications = nil;
 	}
 }
+
+#ifdef APPLE_EMBEDDED_ENABLED
+
+void register_camera_external_module() {
+	CameraServer::make_default<CameraApple>();
+}
+
+void unregister_camera_external_module() {
+}
+
+#endif // APPLE_EMBEDDED_ENABLED
