@@ -105,6 +105,11 @@ TEST_CASE("[Face3] Area calculation") {
 			scaled.get_area() == doctest::Approx(2.0),
 			"Triangle with side length 2 should have area 2.0.");
 
+	Face3 equilateral(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0.5, Math::sqrt(3.0) / 2.0, 0));
+	CHECK_MESSAGE(
+			equilateral.get_area() == doctest::Approx(Math::sqrt(3.0) / 4.0),
+			"Equilateral triangle with side 1 should have area sqrt(3)/4.");
+
 	Face3 degenerate(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(2, 0, 0));
 	CHECK_MESSAGE(
 			degenerate.get_area() == doctest::Approx(0.0),
