@@ -1147,6 +1147,16 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
+    # Restrict capture lanes to those that will actually execute under the
+    # current profile.  Without this, default capture lanes that lack a
+    # duration entry for the active profile are selected but then skipped in
+    # the execution loop, silently disabling visual validation.
+    if not args.lane:
+        executable_lane_ids = {
+            lane.lane_id for lane in selected_lanes if args.profile in lane.durations
+        }
+        capture_lane_ids &= executable_lane_ids
+
     try:
         asset_manifest = _load_asset_manifest(args.asset_manifest)
     except ValueError as exc:
