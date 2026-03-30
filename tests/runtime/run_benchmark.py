@@ -408,6 +408,55 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Disable benchmark dashboard/chart generation.",
     )
+    parser.add_argument(
+        "--duration-scale",
+        type=float,
+        default=1.0,
+        help="Multiplier for lane durations (e.g., 0.3 for quick runs).",
+    )
+    parser.add_argument(
+        "--asset-manifest",
+        default="",
+        help="Path to benchmark asset manifest JSON.",
+    )
+    parser.add_argument(
+        "--generate-dummy-assets",
+        action="store_true",
+        help="Generate placeholder PLY assets for lanes that need them.",
+    )
+    parser.add_argument(
+        "--dummy-asset-dir",
+        default="benchmark_assets_generated",
+        help="Subdirectory name for generated dummy assets within the project.",
+    )
+    parser.add_argument(
+        "--benchmark-instancing-mode",
+        default="auto",
+        choices=["auto", "serial", "single_pass"],
+        help="Instancing execution mode for benchmark lanes.",
+    )
+    parser.add_argument(
+        "--require-gpu-timestamps",
+        action="store_true",
+        help="Require GPU timestamp availability for all lanes.",
+    )
+    parser.add_argument(
+        "--no-headless-summary",
+        action="store_true",
+        help="Disable headless summary pass to Godot.",
+    )
+    parser.add_argument(
+        "--timeout-scale",
+        type=float,
+        default=None,
+        help="Multiplier for lane timeout values.",
+    )
+    parser.add_argument(
+        "--timeout-grace",
+        type=int,
+        default=None,
+        help="Additional grace seconds added to lane timeouts.",
+    )
     return parser.parse_args()
 
 
