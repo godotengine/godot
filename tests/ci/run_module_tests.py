@@ -51,6 +51,7 @@ HEADLESS_GAUSSIAN_SCOPED_TAGS: tuple[str, ...] = (
     "WorldIO",
 )
 UNTAGGED_GAUSSIAN_EXCLUDE_TAGS: tuple[str, ...] = HEADLESS_GAUSSIAN_SCOPED_TAGS + (
+    "GeneratePLY",  # fixture generator with disk side effects; invoked explicitly by prepare_synthetic_assets.py
     "Renderer",  # only aspirational stubs currently; advisory lane below
     "RequiresGPU",
     "Thumbnail",

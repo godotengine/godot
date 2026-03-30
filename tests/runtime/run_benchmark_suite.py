@@ -110,6 +110,66 @@ LANES: list[LaneDefinition] = [
         durations={"quick": 12.0, "performance": 35.0, "showcase": 45.0, "parity": 35.0},
         weights={"quick": 8.0, "performance": 12.0, "showcase": 12.0, "parity": 20.0},
     ),
+    # ── Synthetic geometry lanes ──────────────────────────────────────────
+    # These use deterministic procedural PLY assets and run under the
+    # "synthetic" and "showcase" profiles.  They are skipped by "quick"
+    # and "performance" unless explicitly selected with --lane.
+    LaneDefinition(
+        lane_id="synthetic_mandelbulb",
+        scene="res://scenes/synthetic_mandelbulb.tscn",
+        description="Mandelbulb fractal tunnel fly-through",
+        durations={"synthetic": 15.0, "showcase": 25.0},
+        weights={"synthetic": 10.0, "showcase": 6.0},
+    ),
+    LaneDefinition(
+        lane_id="synthetic_flower_field",
+        scene="res://scenes/synthetic_flower_field.tscn",
+        description="Flower-field orbit with wind simulation",
+        durations={"synthetic": 15.0, "showcase": 25.0},
+        weights={"synthetic": 10.0, "showcase": 6.0},
+    ),
+    LaneDefinition(
+        lane_id="synthetic_cloud",
+        scene="res://scenes/synthetic_cloud.tscn",
+        description="Volumetric cloud fly-through",
+        durations={"synthetic": 15.0, "showcase": 25.0},
+        weights={"synthetic": 10.0, "showcase": 6.0},
+    ),
+    LaneDefinition(
+        lane_id="synthetic_torus",
+        scene="res://scenes/synthetic_torus.tscn",
+        description="Torus orbit baseline",
+        durations={"synthetic": 12.0, "showcase": 20.0},
+        weights={"synthetic": 8.0, "showcase": 4.0},
+    ),
+    LaneDefinition(
+        lane_id="synthetic_sphere",
+        scene="res://scenes/synthetic_sphere.tscn",
+        description="Sphere orbit baseline",
+        durations={"synthetic": 12.0, "showcase": 20.0},
+        weights={"synthetic": 8.0, "showcase": 4.0},
+    ),
+    LaneDefinition(
+        lane_id="synthetic_cube",
+        scene="res://scenes/synthetic_cube.tscn",
+        description="Cube orbit baseline",
+        durations={"synthetic": 12.0, "showcase": 20.0},
+        weights={"synthetic": 8.0, "showcase": 4.0},
+    ),
+    LaneDefinition(
+        lane_id="synthetic_spiral",
+        scene="res://scenes/synthetic_spiral.tscn",
+        description="Spiral orbit baseline",
+        durations={"synthetic": 12.0, "showcase": 20.0},
+        weights={"synthetic": 8.0, "showcase": 4.0},
+    ),
+    LaneDefinition(
+        lane_id="synthetic_plane",
+        scene="res://scenes/synthetic_plane.tscn",
+        description="Plane sweep baseline",
+        durations={"synthetic": 12.0, "showcase": 20.0},
+        weights={"synthetic": 8.0, "showcase": 4.0},
+    ),
 ]
 
 LANE_INDEX_BY_ID = {lane.lane_id: idx for idx, lane in enumerate(LANES)}
@@ -122,6 +182,7 @@ PROFILE_WARMUP_SECONDS: dict[str, float] = {
     "performance": 5.0,
     "showcase": 8.0,
     "parity": 5.0,
+    "synthetic": 3.0,
 }
 DEFAULT_CAPTURE_LANES: tuple[str, ...] = ("integrity_sentinel", "parity_fidelity")
 TEXT_DEPENDENCY_SUFFIXES: tuple[str, ...] = (".tscn", ".gd", ".tres", ".tscn")
@@ -217,7 +278,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--profile",
-        choices=["quick", "performance", "showcase", "parity"],
+        choices=["quick", "performance", "showcase", "parity", "synthetic"],
         default="quick",
         help="Suite profile controls lane durations and aggregate weights.",
     )
@@ -1086,6 +1147,16 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
+    # Restrict capture lanes to those that will actually execute under the
+    # current profile.  Without this, default capture lanes that lack a
+    # duration entry for the active profile are selected but then skipped in
+    # the execution loop, silently disabling visual validation.
+    if not args.lane:
+        executable_lane_ids = {
+            lane.lane_id for lane in selected_lanes if args.profile in lane.durations
+        }
+        capture_lane_ids &= executable_lane_ids
+
     try:
         asset_manifest = _load_asset_manifest(args.asset_manifest)
     except ValueError as exc:
@@ -1127,6 +1198,9 @@ def main() -> int:
         )
         return 2
     for lane in selected_lanes:
+        if args.profile not in lane.durations and not args.lane:
+            # Lane has no duration for this profile and wasn't explicitly requested.
+            continue
         asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
         lane_base_duration = lane.durations.get(args.profile, lane.durations.get("performance", 20.0))
         lane_duration = max(5.0, lane_base_duration * duration_scale)
