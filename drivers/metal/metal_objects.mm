@@ -2031,11 +2031,11 @@ id<MTLDepthStencilState> MDResourceCache::get_depth_stencil_state(bool p_use_dep
 }
 
 static const char *SHADER_STAGE_NAMES[] = {
-	[RD::SHADER_STAGE_VERTEX] = "vert",
-	[RD::SHADER_STAGE_FRAGMENT] = "frag",
-	[RD::SHADER_STAGE_TESSELATION_CONTROL] = "tess_ctrl",
-	[RD::SHADER_STAGE_TESSELATION_EVALUATION] = "tess_eval",
-	[RD::SHADER_STAGE_COMPUTE] = "comp",
+	"vert", // [RD::SHADER_STAGE_VERTEX]
+	"frag", // [RD::SHADER_STAGE_FRAGMENT]
+	"tess_ctrl", // [RD::SHADER_STAGE_TESSELATION_CONTROL]
+	"tess_eval", // [RD::SHADER_STAGE_TESSELATION_EVALUATION]
+	"comp", // [RD::SHADER_STAGE_COMPUTE]
 };
 
 void ShaderCacheEntry::notify_free() const {
