@@ -20,6 +20,7 @@ bool write_gaussian_ply(const String &p_path, const LocalVector<Gaussian> &p_spl
 	if (!f.is_valid()) {
 		return false;
 	}
+	f->set_big_endian(false);
 
 	const uint32_t count = p_splats.size();
 
