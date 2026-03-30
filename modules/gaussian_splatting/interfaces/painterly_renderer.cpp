@@ -1636,11 +1636,25 @@ Error PainterlyRenderer::populate_painterly_gbuffer(GaussianSplatRenderer *p_ren
 
     RID instance_gaussian_buffer;
     RID instance_sorted_indices;
+    RID instance_buffer_rid;
+    RID instance_splat_ref_buffer;
+    RID instance_chunk_meta_buffer;
+    RID instance_quantization_buffer;
+    RID instance_indirect_count_buffer;
+    RID instance_indirect_dispatch_buffer;
+    uint32_t instance_max_visible_splats = 0;
     uint32_t instance_total_gaussians = 0;
     bool has_instance_data = false;
     if (p_renderer->has_instance_pipeline_buffers()) {
         const auto &instance_buffers = p_renderer->get_instance_pipeline_buffers();
         instance_gaussian_buffer = instance_buffers.atlas_gaussian_buffer;
+        instance_buffer_rid = instance_buffers.instance_buffer;
+        instance_splat_ref_buffer = instance_buffers.splat_ref_buffer;
+        instance_chunk_meta_buffer = instance_buffers.chunk_meta_buffer;
+        instance_quantization_buffer = instance_buffers.quantization_required ? instance_buffers.quantization_buffer : RID();
+        instance_indirect_count_buffer = instance_buffers.instance_count_buffer;
+        instance_indirect_dispatch_buffer = instance_buffers.indirect_count_buffer;
+        instance_max_visible_splats = instance_buffers.max_visible_splats;
         if (subsystem_state.sorting_pipeline.is_valid()) {
             instance_sorted_indices = subsystem_state.sorting_pipeline->get_sort_indices_buffer();
         }
@@ -1717,15 +1731,24 @@ Error PainterlyRenderer::populate_painterly_gbuffer(GaussianSplatRenderer *p_ren
         GS_LOG_ERROR_DEFAULT("[Painterly] total_gaussians must be set when splat_count > 0");
         return ERR_INVALID_DATA;
     }
-	render_params.viewport_size = Vector2i(width, height);
-	render_params.world_to_camera_transform = p_world_to_camera_transform;
-	render_params.projection = p_projection;
-	render_params.render_projection = p_render_projection;
-	render_params.tile_size = TileRenderer::DEFAULT_TILE_SIZE;
+    if (has_instance_data) {
+        render_params.instance_buffer = instance_buffer_rid;
+        render_params.splat_ref_buffer = instance_splat_ref_buffer;
+        render_params.chunk_meta_buffer = instance_chunk_meta_buffer;
+        render_params.quantization_buffer = instance_quantization_buffer;
+        render_params.instance_indirect_count_buffer = instance_indirect_count_buffer;
+        render_params.instance_indirect_dispatch_buffer = instance_indirect_dispatch_buffer;
+        render_params.max_visible_splats = instance_max_visible_splats;
+    }
+    render_params.viewport_size = Vector2i(width, height);
+    render_params.world_to_camera_transform = p_world_to_camera_transform;
+    render_params.projection = p_projection;
+    render_params.render_projection = p_render_projection;
+    render_params.tile_size = TileRenderer::DEFAULT_TILE_SIZE;
     render_params.opacity_multiplier = state_view.get_render_config_view().opacity_multiplier;
 
-	// Read debug options from interface subsystem (Phase 8 migration)
-	p_renderer->apply_debug_options_to_render_params(render_params);
+    // Read debug options from interface subsystem (Phase 8 migration)
+    p_renderer->apply_debug_options_to_render_params(render_params);
     render_params.output_is_premultiplied = true;
     render_params.alpha_floor = culling_config.solid_coverage_enabled ? culling_config.solid_coverage_alpha_floor : 0.0f;
     render_params.force_solid_coverage = culling_config.solid_coverage_enabled;

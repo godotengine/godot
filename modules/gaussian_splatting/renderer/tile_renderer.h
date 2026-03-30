@@ -373,6 +373,7 @@ private:
     struct InstancePipelineBindings {
         RID instance_buffer;
         RID splat_ref_buffer;
+        RID chunk_meta_buffer;
         RID quantization_buffer;
         RID indirect_count_buffer;
         RID indirect_dispatch_buffer;
