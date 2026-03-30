@@ -343,6 +343,7 @@ private:
 
 		renderer.instance_pipeline_buffers.instance_buffer = params.instance_buffer;
 		renderer.instance_pipeline_buffers.splat_ref_buffer = params.splat_ref_buffer;
+		renderer.instance_pipeline_buffers.chunk_meta_buffer = params.chunk_meta_buffer;
 		renderer.instance_pipeline_buffers.quantization_buffer = params.quantization_buffer;
 		renderer.instance_pipeline_buffers.indirect_count_buffer = params.instance_indirect_count_buffer;
 		renderer.instance_pipeline_buffers.indirect_dispatch_buffer = params.instance_indirect_dispatch_buffer;
@@ -355,7 +356,8 @@ private:
 						renderer.instance_pipeline_buffers.indirect_count_buffer,
 						renderer.instance_pipeline_buffers.indirect_dispatch_buffer,
 						quantization_required,
-						renderer.instance_pipeline_buffers.quantization_buffer);
+						renderer.instance_pipeline_buffers.quantization_buffer,
+						renderer.instance_pipeline_buffers.chunk_meta_buffer);
 		if (invariant_reason != GaussianSplatting::InstancePipelineContract::InvariantViolationReason::NONE) {
 			const char *route = GaussianSplatting::InstancePipelineContract::get_violation_route(invariant_reason);
 			const char *violation_class_name = GaussianSplatting::InstancePipelineContract::get_violation_class_name(

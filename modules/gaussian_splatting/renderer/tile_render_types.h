@@ -282,6 +282,7 @@ struct TileRenderParams {
 	RID sorted_indices;
 	RID instance_buffer;
 	RID splat_ref_buffer;
+	RID chunk_meta_buffer;
 	RID quantization_buffer;
 	RID instance_indirect_count_buffer;
 	RID instance_indirect_dispatch_buffer;

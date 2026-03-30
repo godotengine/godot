@@ -61,6 +61,7 @@ enum class InvariantViolationReason : uint8_t {
 	TILE_INDIRECT_COUNT_BUFFER_MISSING,
 	TILE_INDIRECT_DISPATCH_BUFFER_MISSING,
 	TILE_QUANTIZATION_BUFFER_MISSING,
+	TILE_CHUNK_META_BUFFER_MISSING,
 
 	COUNT
 };
@@ -125,6 +126,7 @@ inline InvariantViolationClass get_violation_class(InvariantViolationReason p_re
 		case InvariantViolationReason::TILE_INDIRECT_COUNT_BUFFER_MISSING:
 		case InvariantViolationReason::TILE_INDIRECT_DISPATCH_BUFFER_MISSING:
 		case InvariantViolationReason::TILE_QUANTIZATION_BUFFER_MISSING:
+		case InvariantViolationReason::TILE_CHUNK_META_BUFFER_MISSING:
 			return InvariantViolationClass::TILE_RUNTIME;
 
 		case InvariantViolationReason::COUNT:
@@ -231,6 +233,8 @@ inline const char *get_violation_reason_name(InvariantViolationReason p_reason) 
 			return "tile_indirect_dispatch_buffer_missing";
 		case InvariantViolationReason::TILE_QUANTIZATION_BUFFER_MISSING:
 			return "tile_quantization_buffer_missing";
+		case InvariantViolationReason::TILE_CHUNK_META_BUFFER_MISSING:
+			return "tile_chunk_meta_buffer_missing";
 		case InvariantViolationReason::COUNT:
 			return "count";
 	}
@@ -406,7 +410,8 @@ inline InvariantViolation evaluate_streaming_activation(const GaussianSplatRende
 
 inline InvariantViolationReason first_tile_runtime_violation(const RID &p_instance_buffer, const RID &p_splat_ref_buffer,
 		const RID &p_indirect_count_buffer, const RID &p_indirect_dispatch_buffer,
-		bool p_quantization_required, const RID &p_quantization_buffer) {
+		bool p_quantization_required, const RID &p_quantization_buffer,
+		const RID &p_chunk_meta_buffer = RID()) {
 	if (!p_instance_buffer.is_valid()) {
 		return InvariantViolationReason::TILE_INSTANCE_BUFFER_MISSING;
 	}
@@ -421,6 +426,9 @@ inline InvariantViolationReason first_tile_runtime_violation(const RID &p_instan
 	}
 	if (p_quantization_required && !p_quantization_buffer.is_valid()) {
 		return InvariantViolationReason::TILE_QUANTIZATION_BUFFER_MISSING;
+	}
+	if (p_quantization_required && !p_chunk_meta_buffer.is_valid()) {
+		return InvariantViolationReason::TILE_CHUNK_META_BUFFER_MISSING;
 	}
 	return InvariantViolationReason::NONE;
 }

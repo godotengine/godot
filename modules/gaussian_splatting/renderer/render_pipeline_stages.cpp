@@ -1749,6 +1749,7 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 	if (instance_buffers_ready) {
 		render_params.instance_buffer = instance_buffers.instance_buffer;
 		render_params.splat_ref_buffer = instance_buffers.splat_ref_buffer;
+		render_params.chunk_meta_buffer = instance_buffers.chunk_meta_buffer;
 		render_params.quantization_buffer = instance_buffers.quantization_required ? instance_buffers.quantization_buffer : RID();
 		render_params.instance_indirect_count_buffer = instance_buffers.instance_count_buffer;
 		render_params.instance_indirect_dispatch_buffer = instance_buffers.indirect_count_buffer;
@@ -1759,6 +1760,7 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 		// as valid indirect dispatch/count buffers by tile stages.
 		render_params.instance_buffer = RID();
 		render_params.splat_ref_buffer = RID();
+		render_params.chunk_meta_buffer = RID();
 		render_params.quantization_buffer = RID();
 		render_params.instance_indirect_count_buffer = RID();
 		render_params.instance_indirect_dispatch_buffer = RID();
@@ -1844,6 +1846,8 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 	if (subsystem_state.gpu_culler.is_valid()) {
 		const GPUCuller::CullingConfig &cull_config = subsystem_state.gpu_culler->get_config();
 		const GPUCuller::CullingState &cull_state = subsystem_state.gpu_culler->get_state();
+		render_params.opacity_aware_culling = cull_config.opacity_aware_culling;
+		render_params.visibility_threshold = cull_config.visibility_threshold;
 		render_params.distance_cull_enabled = cull_config.distance_cull_enabled;
 		render_params.distance_cull_start = cull_config.distance_cull_start;
 		render_params.distance_cull_max_rate = cull_config.distance_cull_max_rate;

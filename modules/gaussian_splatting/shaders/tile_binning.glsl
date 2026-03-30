@@ -103,6 +103,10 @@ layout(set = 0, binding = 13, std430) readonly buffer InstanceBuffer {
 layout(set = 0, binding = 14, std430) readonly buffer QuantizationChunkBuffer {
     ChunkQuantization chunks[];
 } quantization_buffer;
+
+layout(set = 0, binding = 18, std430) readonly buffer ChunkMetaBuffer {
+    ChunkMetaGPU chunk_meta[];
+} chunk_meta_buffer;
 #endif
 
 layout(set = 0, binding = 15, std430) readonly buffer InstanceIndirectDispatch {
@@ -279,6 +283,60 @@ uvec2 gs_pack_sort_key(uint tile_idx, float linear_depth) {
 }
 #endif
 #endif
+
+float gs_conic_quadratic(vec2 d, vec3 conic) {
+    return conic.x * d.x * d.x + 2.0 * conic.y * d.x * d.y + conic.z * d.y * d.y;
+}
+
+// Exact convex-quadratic minimum test against a tile rectangle.
+// Returns true if the projected ellipse intersects the tile.
+bool gs_tile_intersects_projected_ellipse(vec2 center, vec3 conic, float sigma2, int tx, int ty) {
+    float a = conic.x;
+    float b = conic.y;
+    float c = conic.z;
+    float det = a * c - b * b;
+    if (a <= 0.0 || c <= 0.0 || det <= 0.0) {
+        // Keep conservative behavior for numerically unstable conics.
+        return true;
+    }
+
+    vec2 tile_min = vec2(float(tx * TILE_SIZE), float(ty * TILE_SIZE));
+    vec2 tile_max = tile_min + vec2(float(TILE_SIZE));
+
+    float x0 = tile_min.x - center.x;
+    float x1 = tile_max.x - center.x;
+    float y0 = tile_min.y - center.y;
+    float y1 = tile_max.y - center.y;
+
+    // If center is inside the tile, the minimum is zero.
+    if (x0 <= 0.0 && x1 >= 0.0 && y0 <= 0.0 && y1 >= 0.0) {
+        return true;
+    }
+
+    float min_q = 3.402823e38;
+
+    // Corners.
+    min_q = min(min_q, gs_conic_quadratic(vec2(x0, y0), conic));
+    min_q = min(min_q, gs_conic_quadratic(vec2(x0, y1), conic));
+    min_q = min(min_q, gs_conic_quadratic(vec2(x1, y0), conic));
+    min_q = min(min_q, gs_conic_quadratic(vec2(x1, y1), conic));
+
+    // Vertical edges x = x0/x1.
+    float inv_c = 1.0 / max(c, 1e-8);
+    float dy_x0 = clamp((-b * x0) * inv_c, y0, y1);
+    float dy_x1 = clamp((-b * x1) * inv_c, y0, y1);
+    min_q = min(min_q, gs_conic_quadratic(vec2(x0, dy_x0), conic));
+    min_q = min(min_q, gs_conic_quadratic(vec2(x1, dy_x1), conic));
+
+    // Horizontal edges y = y0/y1.
+    float inv_a = 1.0 / max(a, 1e-8);
+    float dx_y0 = clamp((-b * y0) * inv_a, x0, x1);
+    float dx_y1 = clamp((-b * y1) * inv_a, x0, x1);
+    min_q = min(min_q, gs_conic_quadratic(vec2(dx_y0, y0), conic));
+    min_q = min(min_q, gs_conic_quadratic(vec2(dx_y1, y1), conic));
+
+    return min_q <= sigma2;
+}
 
 // ============================================================================
 // Debug counter macros - can be disabled for production builds
@@ -563,11 +621,13 @@ void main() {
         return;
     }
     InstanceDataGPU instance = instance_buffer.instances[splat_ref.instance_id];
+    uint chunk_sh_limit = 3u;
 
 #if defined(USE_QUANTIZED_GAUSSIANS)
     GaussianQuantized src = atlas_gaussian_buffer.gaussians[gaussian_idx];
     uint quant_id = extract_chunk_id(src.position_chunk);
     ChunkQuantization quant = quantization_buffer.chunks[quant_id];
+    chunk_sh_limit = min(chunk_meta_buffer.chunk_meta[quant_id].sh_limit, 3u);
     vec3 local_position = dequantize_position(extract_quantized_position(src.position_chunk), quant);
     vec3 local_scale = LOAD_SCALE_QUANTIZED(src, quant);
     vec4 local_rotation = extract_rotation(src.rotation_lo, src.rotation_hi);
@@ -948,13 +1008,15 @@ void main() {
         return;
     }
 
-    uint tiles_covered_x = uint(max_tile_x - min_tile_x + 1);
-    uint tiles_covered_y = uint(max_tile_y - min_tile_y + 1);
+    float ellipse_sigma2 = effective_sigma * effective_sigma;
 
 #ifdef GS_TILE_GLOBAL_SORT_COUNT_PASS
     // Pass 1: count overlaps per tile (no keys/values emitted).
     for (int ty = min_tile_y; ty <= max_tile_y; ++ty) {
         for (int tx = min_tile_x; tx <= max_tile_x; ++tx) {
+            if (!gs_tile_intersects_projected_ellipse(screen_pos, conic, ellipse_sigma2, tx, ty)) {
+                continue;
+            }
             uint tile_idx = uint(ty) * uint(params.tile_count.x) + uint(tx);
             if (!gs_keep_overlap_record(gaussian_idx, splat_ref.instance_id, tile_idx)) {
                 continue;
@@ -974,6 +1036,7 @@ void main() {
             ? view_dir
             : gs_quat_rotate(instance.inv_rotation, view_dir);
     uint sh_band_level = gs_get_sh_band_level();
+    sh_band_level = min(sh_band_level, chunk_sh_limit);
 #if defined(GS_SH_AMORTIZATION) && defined(GS_TILE_GLOBAL_SORT_EMIT_PASS)
     uint sh_divisor = gs_get_sh_amortization_divisor();
     uint sh_phase = gs_get_sh_amortization_phase();
@@ -1142,14 +1205,19 @@ void main() {
 
 #ifdef GS_TILE_GLOBAL_SORT_EMIT_PASS
     projection_buffer.projected_gaussians[global_idx] = payload;
+    uint emitted_overlap_count = 0u;
 
     // Pass 2: emit one overlap record per covered tile into the global key/value arrays.
     for (int ty = min_tile_y; ty <= max_tile_y; ++ty) {
         for (int tx = min_tile_x; tx <= max_tile_x; ++tx) {
+            if (!gs_tile_intersects_projected_ellipse(screen_pos, conic, ellipse_sigma2, tx, ty)) {
+                continue;
+            }
             uint tile_idx = uint(ty) * uint(params.tile_count.x) + uint(tx);
             if (!gs_keep_overlap_record(gaussian_idx, splat_ref.instance_id, tile_idx)) {
                 continue;
             }
+            emitted_overlap_count += 1u;
             uvec2 range = tile_ranges.ranges[tile_idx];
             uint local_offset = atomicAdd(tile_counts.counts[tile_idx], 1u);
             if (local_offset >= range.y) {
@@ -1170,7 +1238,7 @@ void main() {
         }
     }
 
-    atomicAdd(overflow_stats.overflow_splats_aggregated, tiles_covered_x * tiles_covered_y);
+    atomicAdd(overflow_stats.overflow_splats_aggregated, emitted_overlap_count);
     GS_DEBUG_INCREMENT(success_count);
     return;
 #endif
