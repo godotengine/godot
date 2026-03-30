@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  navigation_layers_cost_map_3d.h                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,64 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "3d/godot_navigation_server_3d.h"
+#include "core/io/resource.h"
 
-#ifndef DISABLE_DEPRECATED
-#include "3d/navigation_mesh_generator.h"
-#endif // DISABLE_DEPRECATED
+class NavigationLayersCostMap3D : public Resource {
+	GDCLASS(NavigationLayersCostMap3D, Resource);
 
-#ifdef TOOLS_ENABLED
-#include "editor/navigation_link_3d_editor_plugin.h"
-#include "editor/navigation_mesh_area_3d_editor_plugin.h"
-#include "editor/navigation_obstacle_3d_editor_plugin.h"
-#include "editor/navigation_region_3d_editor_plugin.h"
-#endif
+	LocalVector<float> navigation_layers_cost_map;
 
-#include "core/config/engine.h"
-#include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
-#include "servers/navigation_3d/navigation_server_3d.h"
+protected:
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _validate_property(PropertyInfo &p_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-NavigationMeshGenerator *_nav_mesh_generator = nullptr;
-#endif // DISABLE_DEPRECATED
+public:
+	void set_navigation_layer_cost(uint32_t p_layer_number, float p_cost);
+	float get_navigation_layer_cost(uint32_t p_layer_number) const;
 
-static NavigationServer3D *_createGodotNavigation3DCallback() {
-	return memnew(GodotNavigationServer3D);
-}
+	const LocalVector<float> &get_navigation_layers_cost_map() { return navigation_layers_cost_map; }
 
-void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::get_singleton()->register_server("GodotNavigation3D", callable_mp_static(_createGodotNavigation3DCallback));
-		NavigationServer3DManager::get_singleton()->set_default_server("GodotNavigation3D");
-
-#ifndef DISABLE_DEPRECATED
-		_nav_mesh_generator = memnew(NavigationMeshGenerator);
-		GDREGISTER_CLASS(NavigationMeshGenerator);
-		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
-#endif // DISABLE_DEPRECATED
-	}
-
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationLink3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationMeshArea3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationRegion3DEditorPlugin>();
-	}
-#endif
-}
-
-void uninitialize_navigation_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
-
-#ifndef DISABLE_DEPRECATED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
-#endif // DISABLE_DEPRECATED
-}
+	NavigationLayersCostMap3D();
+	~NavigationLayersCostMap3D();
+};

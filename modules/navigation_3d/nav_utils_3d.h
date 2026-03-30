@@ -97,6 +97,7 @@ struct Connection {
 
 struct Polygon {
 	uint32_t id = UINT32_MAX;
+	uint32_t navigation_layers = 1; // TODO: duplicate of `navigation_layers` in NavBaseIteration3D?
 
 	/// Navigation region or link that contains this polygon.
 	const NavBaseIteration3D *owner = nullptr;

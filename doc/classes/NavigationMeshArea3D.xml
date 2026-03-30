@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationMeshArea3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An area shape to affect navigation mesh geometry and properties (when baked).
+	</brief_description>
+	<description>
+		An area shape to affect navigation mesh geometry and properties (when baked).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bounds">
+			<return type="AABB" />
+			<description>
+				Returns the axis-aligned bounding box for the area's transformed shape.
+			</description>
+		</method>
+		<method name="get_navigation_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			Determines if the [NavigationMeshArea3D] is enabled or disabled. Requires a navigation mesh rebake to take any real effect.
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
+			Sets how much the projected area shape is extruded along the positive y-axis starting from its global position.
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			A bitfield determining all navigation layers the area applies to its affecting polygons. If multiple areas overlap for the same polygons the area with the highest [member priority] wins. These navigation layers can be checked upon when doing path queries with [method NavigationServer3D.query_path] using a [NavigationPathQueryParameters3D] object.
+		</member>
+		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
+			The priority of the area. If multiple areas overlap for the same polygons the area with the highest [member priority] wins.
+		</member>
+	</members>
+</class>

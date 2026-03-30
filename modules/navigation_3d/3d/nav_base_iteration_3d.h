@@ -40,7 +40,7 @@ class NavBaseIteration3D : public RefCounted {
 
 public:
 	bool enabled = true;
-	uint32_t navigation_layers = 1;
+	uint32_t navigation_layers = 1; // NOTE: Each Polygon can have their own `navigation_layers` due to NavigationMeshArea.
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 	NavigationEnums3D::PathSegmentType owner_type;

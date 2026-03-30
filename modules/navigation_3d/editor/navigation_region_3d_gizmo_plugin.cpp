@@ -96,6 +96,8 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
+	// TODO: navigationmesh->get_polygon_meta();??
+
 	HashMap<_EdgeKey, bool, _EdgeKey> edge_map;
 	Vector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size() * 3);

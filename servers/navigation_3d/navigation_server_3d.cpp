@@ -224,6 +224,11 @@ void NavigationServer3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
 	ADD_SIGNAL(MethodInfo("avoidance_debug_changed"));
 
+	BIND_ENUM_CONSTANT(AREA_SHAPE_NONE);
+	BIND_ENUM_CONSTANT(AREA_SHAPE_BOX);
+	BIND_ENUM_CONSTANT(AREA_SHAPE_CYLINDER);
+	BIND_ENUM_CONSTANT(AREA_SHAPE_POLYGON);
+
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &NavigationServer3D::get_process_info);
 
 	BIND_ENUM_CONSTANT(INFO_ACTIVE_MAPS);
@@ -707,6 +712,51 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_avoidance_stati
 
 	debug_navigation_avoidance_static_obstacle_pushout_edge_material = material;
 	return debug_navigation_avoidance_static_obstacle_pushout_edge_material;
+}
+
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_material() {
+	if (debug_area_edge_material.is_valid()) {
+		return debug_area_edge_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	material->set_albedo(debug_area_edge_color);
+	//material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+
+	debug_area_edge_material = material;
+	return debug_area_edge_material;
+}
+
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_disabled_material() {
+	if (debug_area_edge_disabled_material.is_valid()) {
+		return debug_area_edge_disabled_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	material->set_albedo(debug_area_edge_disabled_color);
+	//material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+
+	debug_area_edge_disabled_material = material;
+	return debug_area_edge_disabled_material;
+}
+
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_invalid_material() {
+	if (debug_area_edge_invalid_material.is_valid()) {
+		return debug_area_edge_invalid_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	material->set_albedo(debug_area_edge_invalid_color);
+	//material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+
+	debug_area_edge_invalid_material = material;
+	return debug_area_edge_invalid_material;
 }
 
 void NavigationServer3D::set_debug_navigation_edge_connection_color(const Color &p_color) {
