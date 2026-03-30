@@ -302,8 +302,8 @@ static const String NULL_AUDIO_DRIVER("Dummy");
 
 // The length of the longest column in the command-line help we should align to
 // (excluding the 2-space left and right margins).
-// Currently, this is `--export-release <preset> <path>`.
-static const int OPTION_COLUMN_LENGTH = 32;
+// Currently, this is `--dump-gdextension-interface-json`.
+static const int OPTION_COLUMN_LENGTH = 33;
 
 /* Helper methods */
 
