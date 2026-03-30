@@ -1214,6 +1214,15 @@ void LineEdit::_accessibility_action_menu(const Variant &p_data) {
 	menu->grab_focus();
 }
 
+String LineEdit::_get_accessibility_name() const {
+	const String &ac_name = Control::_get_accessibility_name();
+	if (!placeholder.is_empty() && ac_name.is_empty()) {
+		return atr(placeholder);
+	} else {
+		return ac_name;
+	}
+}
+
 void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
@@ -1241,9 +1250,6 @@ void LineEdit::_notification(int p_what) {
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			if (using_placeholder && !placeholder.is_empty()) {
 				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder));
-			}
-			if (!placeholder.is_empty() && get_accessibility_name().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder));
 			}
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 
@@ -2269,6 +2275,7 @@ void LineEdit::set_placeholder(String p_text) {
 	placeholder_translated = atr(placeholder);
 	_shape();
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 String LineEdit::get_placeholder() const {

@@ -263,21 +263,32 @@ PackedStringArray Control::get_configuration_warnings() const {
 	return warnings;
 }
 
+String Control::_get_accessibility_name() const {
+	if (get_parent_control()) {
+		String container_info = get_parent_control()->get_accessibility_container_name(this);
+		return container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info;
+	} else {
+		return get_accessibility_name();
+	}
+}
+
 PackedStringArray Control::get_accessibility_configuration_warnings() const {
 	ERR_READ_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
 
-	String ac_name = get_accessibility_name().strip_edges();
-	if (ac_name.is_empty()) {
-		warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
-	}
-	if (ac_name.contains(get_class_name())) {
-		warnings.push_back(RTR("Accessibility Name must not include Node class name."));
-	}
-	for (int i = 0; i < ac_name.length(); i++) {
-		if (is_control(ac_name[i])) {
-			warnings.push_back(RTR("Accessibility Name must not include control character."));
-			break;
+	if (get_focus_mode_with_override() != FOCUS_NONE) {
+		String ac_name = _get_accessibility_name().strip_edges();
+		if (ac_name.is_empty()) {
+			warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
+		}
+		if (ac_name.contains(get_class_name())) {
+			warnings.push_back(RTR("Accessibility Name must not include Node class name."));
+		}
+		for (int i = 0; i < ac_name.length(); i++) {
+			if (is_control(ac_name[i])) {
+				warnings.push_back(RTR("Accessibility Name must not include control character."));
+				break;
+			}
 		}
 	}
 
@@ -4053,12 +4064,7 @@ void Control::_notification(int p_notification) {
 			ERR_FAIL_COND(ae.is_null());
 
 			// Base info.
-			if (get_parent_control()) {
-				String container_info = get_parent_control()->get_accessibility_container_name(this);
-				AccessibilityServer::get_singleton()->update_set_name(ae, container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info);
-			} else {
-				AccessibilityServer::get_singleton()->update_set_name(ae, get_accessibility_name());
-			}
+			AccessibilityServer::get_singleton()->update_set_name(ae, _get_accessibility_name());
 			AccessibilityServer::get_singleton()->update_set_description(ae, get_accessibility_description());
 			AccessibilityServer::get_singleton()->update_set_live(ae, get_accessibility_live());
 

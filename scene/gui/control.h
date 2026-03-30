@@ -684,6 +684,8 @@ public:
 	void set_accessibility_name(const String &p_name);
 	String get_accessibility_name() const;
 
+	virtual String _get_accessibility_name() const;
+
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
 

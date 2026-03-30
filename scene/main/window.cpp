@@ -1514,6 +1514,35 @@ RID Window::get_focused_accessibility_element() const {
 	return Node::get_focused_accessibility_element();
 }
 
+String Window::_get_accessibility_name() const {
+	if (accessibility_name.is_empty()) {
+		return displayed_title;
+	} else {
+		return accessibility_name;
+	}
+}
+
+PackedStringArray Window::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = _get_accessibility_name().strip_edges();
+	if (ac_name.is_empty()) {
+		warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
+	}
+	if (ac_name.contains(get_class_name())) {
+		warnings.push_back(RTR("Accessibility Name must not include Node class name."));
+	}
+	for (int i = 0; i < ac_name.length(); i++) {
+		if (is_control(ac_name[i])) {
+			warnings.push_back(RTR("Accessibility Name must not include control character."));
+			break;
+		}
+	}
+
+	return warnings;
+}
+
 void Window::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
@@ -1533,11 +1562,7 @@ void Window::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_WINDOW);
-			if (accessibility_name.is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, displayed_title);
-			} else {
-				AccessibilityServer::get_singleton()->update_set_name(ae, accessibility_name);
-			}
+			AccessibilityServer::get_singleton()->update_set_name(ae, _get_accessibility_name());
 			AccessibilityServer::get_singleton()->update_set_description(ae, accessibility_description);
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MODAL, exclusive);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Window::_accessibility_action_grab_focus));
@@ -3319,6 +3344,7 @@ void Window::_update_displayed_title() {
 	}
 #endif
 
+	update_configuration_warnings();
 	queue_accessibility_update();
 }
 
