@@ -58,7 +58,8 @@ bool write_gaussian_ply(const String &p_path, const LocalVector<Gaussian> &p_spl
 	header += "property float rot_3\n";
 	header += "end_header\n";
 
-	f->store_buffer((const uint8_t *)header.utf8().get_data(), header.utf8().length());
+	const CharString header_utf8 = header.utf8();
+	f->store_buffer((const uint8_t *)header_utf8.get_data(), header_utf8.length());
 
 	// Write binary vertex data.
 	for (uint32_t i = 0; i < count; i++) {
