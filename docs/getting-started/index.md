@@ -20,6 +20,14 @@ Reach a first visible splat quickly and decide whether godotGS is the right eval
 
 <div class="grid cards" markdown>
 
+- __Try in 5 minutes__
+
+    ---
+
+    Use the Linux nightly editor path when you want the shortest honest evaluation loop.
+
+    [Open try in 5 minutes](try-in-5-minutes.md)
+
 - __Install the toolchain__
 
     ---
@@ -76,6 +84,7 @@ Reach a first visible splat quickly and decide whether godotGS is the right eval
 
 ## Related References
 
+- [Try in 5 Minutes](try-in-5-minutes.md)
 - [Migration Guide](../migration/index.md)
 - [Project Settings Reference](../reference/project-settings.md)
 - [API Reference](../api/index.md)

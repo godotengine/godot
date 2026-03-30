@@ -20,6 +20,14 @@ Build, validate, and improve godotGS without having to reconstruct the contribut
 
 <div class="grid cards" markdown>
 
+- __Review the fork fast__
+
+    ---
+
+    Understand the upstream delta, key validation commands, and the platform truth before you inspect changes.
+
+    [Open reviewer fast path](reviewer-fast-path.md)
+
 - __Start with onboarding__
 
     ---
@@ -76,6 +84,7 @@ Build, validate, and improve godotGS without having to reconstruct the contribut
 
 ## Related References
 
+- [Reviewer Fast Path](reviewer-fast-path.md)
 - [Build / Test / CI Command Reference](../reference/build-test-ci.md)
 - [Contribution Standards](../governance/contribution-standards.md)
 - [Documentation Style Guide](../style/documentation-style-guide.md)

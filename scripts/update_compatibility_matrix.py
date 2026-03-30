@@ -103,27 +103,31 @@ def build_table(data: dict) -> str:
         [
             "",
             "## Published Test Environments",
-            "These rows record the concrete hardware/software environments that are currently described in repo-owned automation or published evidence. Missing adapter or driver names mean the lane exists, but those identifiers are not yet published in the docs.",
+            "These rows record the most concrete public environment details currently available from repo-owned automation or published artifacts. Unknown OS, adapter, or driver values are called out explicitly instead of being inferred.",
             "",
-            "| Platform | State | Hardware | Software | Evidence | Notes |",
-            "| --- | --- | --- | --- | --- | --- |",
+            "| Platform | State | OS / image | GPU / adapter | Driver / runtime | Evidence | Notes |",
+            "| --- | --- | --- | --- | --- | --- | --- |",
         ]
     )
 
     for entry in tested_configurations:
+        os_version = entry.get("os_version", entry.get("hardware", ""))
+        gpu = entry.get("gpu", "-")
+        driver_runtime = entry.get("driver_runtime", entry.get("driver_version", entry.get("software", "")))
         rows.append(
-            "| {platform} | `{state}` | {hardware} | {software} | {evidence} | {notes} |".format(
+            "| {platform} | `{state}` | {os_version} | {gpu} | {driver_runtime} | {evidence} | {notes} |".format(
                 platform=_format_cell(entry.get("platform", "")),
                 state=_format_cell(entry.get("state", "unknown")),
-                hardware=_format_cell(entry.get("hardware", "")),
-                software=_format_cell(entry.get("software", "")),
+                os_version=_format_cell(os_version),
+                gpu=_format_cell(gpu),
+                driver_runtime=_format_cell(driver_runtime),
                 evidence=_format_list(entry.get("evidence", [])),
                 notes=_format_cell(entry.get("notes", "")),
             )
         )
 
     if not tested_configurations:
-        rows.append("| - | - | - | - | - | No published hardware/software rows yet. |")
+        rows.append("| - | - | - | - | - | - | No published environment rows yet. |")
 
     rows.extend(
         [
@@ -144,7 +148,7 @@ def build_table(data: dict) -> str:
             "| --- | --- | --- |",
             "| Matrix does not reflect YAML edits | The generator was not rerun. | Run `python3 scripts/update_compatibility_matrix.py`. |",
             "| A platform only reaches `build-supported` | The repo has no documented runtime or editor evidence for it yet. | Add stronger evidence to `docs/reference/compatibility_sources.yaml` only after the lane or test result exists. |",
-            "| Hardware or driver fields are still generic | The lane exists, but the adapter or driver identifiers are not yet published in repo-owned evidence. | Capture them from the evidence run and replace the placeholder text in `docs/reference/compatibility_sources.yaml`. |",
+            "| OS, adapter, or driver fields are still generic | The lane exists, but those identifiers are not yet published in repo-owned evidence. | Capture them from the evidence run and replace the placeholder text in `docs/reference/compatibility_sources.yaml`. |",
             "| Missing platform row | Platform key was removed from the YAML source. | Re-add the platform entry in `docs/reference/compatibility_sources.yaml`. |",
         ]
     )
