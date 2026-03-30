@@ -22,12 +22,12 @@ This page is the canonical high-level architecture entrypoint.
 
 ## Detailed Architecture Docs
 
-- Render pipeline details: [render-pipeline.md](render-pipeline.md)
-- Lighting and shadows details: [lighting-system.md](lighting-system.md)
-- Refactor phase runner: [refactor-phase-runner.md](refactor-phase-runner.md)
-- Renderer refactor memory journal: [gaussian-renderer-refactor-memory.md](gaussian-renderer-refactor-memory.md)
-- Module-wide architecture map: [../../modules/gaussian_splatting/ARCHITECTURE.md](../../modules/gaussian_splatting/ARCHITECTURE.md)
-- Memory and residency invariants: [../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md](../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)
+- [Render pipeline details](render-pipeline.md)
+- [Lighting and shadows details](lighting-system.md)
+- [Refactor phase runner](refactor-phase-runner.md)
+- [Renderer refactor memory journal](gaussian-renderer-refactor-memory.md)
+- [Module-wide architecture map](../../modules/gaussian_splatting/ARCHITECTURE.md)
+- [Memory and residency invariants](../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)
 
 ## Data Flow (High Level)
 
@@ -38,5 +38,5 @@ This page is the canonical high-level architecture entrypoint.
 
 ## Debugging and Performance
 
-- Timing monitor semantics: [../timing_metrics_reference.md](../timing_metrics_reference.md)
-- Recurring render/build issues: [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md)
+- [Timing metrics reference](../timing_metrics_reference.md)
+- [Recurring issues](../troubleshooting/recurring-issues.md)

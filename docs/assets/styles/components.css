@@ -9,13 +9,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.24rem 0.48rem;
-  border: 1px solid var(--gs-border);
-  border-radius: 999px;
-  background: var(--gs-surface-raised);
+  padding: 0.18rem 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--gs-muted);
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
 }
@@ -25,14 +25,11 @@
 }
 
 .gs-chip--alpha {
-  border-color: rgba(184, 94, 31, 0.22);
-  background: rgba(184, 94, 31, 0.1);
-  color: #b85e1f;
+  color: var(--gs-primary);
 }
 
 [data-md-color-scheme="slate"] .gs-chip--alpha {
-  color: #ffbb78;
-  background: rgba(255, 187, 120, 0.12);
+  color: var(--gs-primary);
 }
 
 .gs-section-shell,
@@ -40,34 +37,33 @@
 .gs-landing-header,
 .gs-home-intro,
 .gs-status-strip {
-  border: 1px solid var(--gs-border);
-  border-radius: var(--gs-radius-lg);
-  background: var(--gs-surface);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 
 .gs-section-shell {
-  padding: 1.1rem 1.15rem;
-  margin: 1rem 0 0;
+  padding: 0;
+  margin: 1.4rem 0 0;
 }
 
 .gs-section-shell--compact {
-  padding-top: 0.9rem;
-  padding-bottom: 0.9rem;
+  margin-top: 1rem;
 }
 
 .gs-landing-header {
-  padding: 1rem 1.1rem;
+  padding: 0;
   margin-bottom: 1rem;
 }
 
 .gs-home-intro,
 .gs-status-strip {
-  padding: 1rem 1.15rem;
+  padding: 0;
 }
 
 .gs-status-strip {
-  margin-top: 1rem;
+  margin-top: 0.9rem;
 }
 
 .gs-meta {
@@ -82,16 +78,17 @@
 
 .md-typeset .grid.cards > ul > li,
 .md-typeset .grid > .card {
-  border-radius: var(--gs-radius-md);
-  border: 1px solid var(--gs-border);
-  background: var(--gs-surface);
+  border-radius: var(--gs-radius-sm);
+  border: 1px solid color-mix(in srgb, var(--gs-border) 85%, transparent);
+  background: transparent;
   box-shadow: none;
-  transition: border-color 140ms ease;
+  transition: border-color 140ms ease, background-color 140ms ease;
 }
 
 .md-typeset .grid.cards > ul > li:hover,
 .md-typeset .grid > .card:hover {
   border-color: var(--gs-border-strong);
+  background: color-mix(in srgb, var(--gs-accent-soft) 35%, transparent);
 }
 
 .md-typeset .grid.cards > ul > li > hr {
@@ -104,13 +101,13 @@
 
 .md-typeset .admonition,
 .md-typeset details {
-  border-radius: var(--gs-radius-md);
+  border-radius: var(--gs-radius-sm);
   border: 1px solid var(--gs-border);
   box-shadow: none;
 }
 
 .md-typeset table:not([class]) {
-  border-radius: var(--gs-radius-md);
+  border-radius: var(--gs-radius-sm);
   overflow: hidden;
   border: 1px solid var(--gs-border);
   box-shadow: none;
@@ -132,7 +129,7 @@
 .md-typeset pre,
 .md-typeset .highlight {
   border: 1px solid var(--gs-border);
-  border-radius: var(--gs-radius-md);
+  border-radius: var(--gs-radius-sm);
   box-shadow: none;
   background: var(--gs-code-bg);
 }
@@ -185,11 +182,10 @@
 
 .md-typeset figure {
   margin: 1.5rem 0;
-  padding: 0.8rem;
-  border: 1px solid var(--gs-border);
-  border-radius: var(--gs-radius-md);
-  background: var(--gs-surface);
-  box-shadow: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .md-typeset figure img,
@@ -216,7 +212,7 @@
 
 .md-typeset .mermaid {
   border: 1px solid var(--gs-border);
-  border-radius: var(--gs-radius-md);
+  border-radius: var(--gs-radius-sm);
   background: var(--gs-surface);
   box-shadow: none;
   padding: 1rem;

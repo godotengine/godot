@@ -1,43 +1,40 @@
 # Workflow Details
 
-!!! info "Scope"
-    For artists and integrators who already know which workflow family they need and want the next detailed page.
-    This page covers secondary workflow groupings and supporting task pages.
-    It complements the canonical [Artist Workflow Overview](../quickstart.md).
+Use this page after [Artist Workflow Overview](../quickstart.md) when you already know the job and need the next supporting page.
 
 ## Import Workflow
 
-- Put source files under project `res://`.
-- Assign file to `GaussianSplatNode3D`.
-- Verify first render before tuning.
+- Put source files inside the project.
+- Assign the imported asset to `GaussianSplatNode3D`.
+- Verify a first render before you tune quality or lighting.
 
-References:
-- [../../workflows/importing.md](../../workflows/importing.md)
-- [../../features/ply-loader.md](../../features/ply-loader.md)
+Related pages:
+- [Import workflow](../../workflows/importing.md)
+- [PLY loader reference](../../features/ply-loader.md)
 
 ## Tuning Workflow
 
-- Start with balanced preset.
-- Adjust render distance and max splat count.
-- Validate visual quality and frame stability.
+- Start with `Balanced`.
+- Adjust render distance and max splat count only after the scene is visible.
+- Validate image quality and frame stability before going deeper.
 
-References:
-- [../../features/artist_pipeline.md](../../features/artist_pipeline.md)
-- [performance-presets.md](performance-presets.md)
+Related pages:
+- [Artist pipeline reference](../../features/artist_pipeline.md)
+- [Performance presets](performance-presets.md)
 
-## Runtime and Lighting Check Workflow
+## Runtime and Lighting Checks
 
-1. Confirm base runtime stability first (camera movement and visibility).
-2. Tune global lighting controls for scene readability.
-3. Only then investigate advanced artifacts.
+1. Confirm base runtime stability first.
+2. Tune the lighting controls that change readability the most.
+3. Use troubleshooting only after the normal controls fail.
 
-References:
-- [runtime-behavior.md](runtime-behavior.md)
-- [lighting-behavior.md](lighting-behavior.md)
-- [../../troubleshooting/recurring-issues.md](../../troubleshooting/recurring-issues.md)
+Related pages:
+- [Runtime behavior](runtime-behavior.md)
+- [Lighting behavior](lighting-behavior.md)
+- [Recurring issues](../../troubleshooting/recurring-issues.md)
 
-## Bake / World Workflow
+## Bake and World Workflows
 
-For merged world resources and bake operations:
+Use the bake workflow when you want one merged runtime world resource instead of several source assets.
 
-- [../../workflows/GSPLATWORLD_BAKE.md](../../workflows/GSPLATWORLD_BAKE.md)
+- [Gaussian Splat World Bake Workflow](../../workflows/GSPLATWORLD_BAKE.md)

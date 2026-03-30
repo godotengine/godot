@@ -1,6 +1,5 @@
 # Gaussian Renderer Refactor Memory
 
-Last updated: 2026-03-24 (Europe/Berlin)
 Owner role: Rendering architecture lead / refactor orchestrator  
 Branch context: `/mnt/c/projects/godotgs-clean-refactor` (`refactor/gs-renderer-architecture`, dirty worktree)
 

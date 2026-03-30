@@ -1,11 +1,5 @@
 # Build from Source
 
-!!! tip "Canonical task page"
-    Use this page as the source of truth for building a module-enabled editor from this fork.
-    For the first visible result after a successful build, continue with [First Run](getting-started/quick-start.md).
-
-## Purpose
-
 Build a Godot editor that includes `modules/gaussian_splatting` from this repository checkout.
 
 ## Before you build
@@ -15,7 +9,7 @@ Build a Godot editor that includes `modules/gaussian_splatting` from this reposi
 | Python | 3.10 or newer |
 | SCons | 4.5 or newer |
 | Compiler | Platform C++ toolchain compatible with Godot 4.5 |
-| Engine-level platform packages | Follow the repository-root [../BUILDING.md](../BUILDING.md) notes for platform package and compiler setup |
+| Engine-level platform packages | Follow the repository-root [engine build notes](../BUILDING.md) for platform package and compiler setup |
 
 Run all build commands from repository root.
 

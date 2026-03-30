@@ -1,7 +1,5 @@
 # Streaming
 
-Last updated: 2026-03-20
-
 ## Purpose
 
 Load and evict Gaussian splat chunks on demand so that datasets larger than available VRAM can be rendered without running out of memory. `GaussianStreamingSystem` manages a ring buffer of GPU chunks, performing frustum culling, predictive prefetch, and distance-based LOD to keep the visible portion of a scene resident.

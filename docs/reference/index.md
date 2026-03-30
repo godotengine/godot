@@ -1,4 +1,5 @@
 ---
+title: Reference
 hide:
   - toc
 ---
@@ -7,10 +8,7 @@ hide:
 
 # Reference
 
-Look up the stable nouns and knobs: settings, APIs, compatibility notes, and migration guidance for godotGS.
-
-<p class="gs-meta"><strong>Audience:</strong> programmers, technical artists, integrators, and maintainers who need exact references instead of walkthroughs.</p>
-<p class="gs-meta"><strong>Scope:</strong> stable settings, APIs, compatibility notes, and migration contracts.</p>
+Use this section when you need exact names, settings, compatibility evidence, or migration guidance for godotGS.
 
 </div>
 
@@ -76,11 +74,12 @@ Look up the stable nouns and knobs: settings, APIs, compatibility notes, and mig
 
 ## Related References
 
-- [Color Grading Reference](color-grading.md)
-- [Migration Guide](../migration/index.md)
-- [Performance Dashboard](../performance/index.md)
-- [Engine Patch Report](engine-patch.md)
-- [Build / Test / CI Reference](build-test-ci.md)
-- [Recurring Issues](../troubleshooting/recurring-issues.md)
+- [Color grading reference](color-grading.md)
+- [Migration guide](../migration/index.md)
+- [Performance dashboard](../performance/index.md)
+- [Timing metrics reference](../timing_metrics_reference.md)
+- [Engine patch report](engine-patch.md)
+- [Build / Test / CI reference](build-test-ci.md)
+- [Recurring issues](../troubleshooting/recurring-issues.md)
 
 </div>

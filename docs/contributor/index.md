@@ -1,4 +1,5 @@
 ---
+title: Contribute
 hide:
   - toc
 ---
@@ -8,9 +9,6 @@ hide:
 # Contribute
 
 Build, validate, and improve godotGS without having to reconstruct the contributor workflow from the repository layout.
-
-<p class="gs-meta"><strong>Audience:</strong> engineers, docs maintainers, testers, and release owners working in this repository.</p>
-<p class="gs-meta"><strong>Scope:</strong> source builds, validation, architecture orientation, and docs maintenance.</p>
 
 </div>
 
@@ -40,7 +38,7 @@ Build, validate, and improve godotGS without having to reconstruct the contribut
 
     ---
 
-    Start here when you need a module-enabled editor from this checkout.
+    Start here when you need an editor built from this checkout.
 
     [Open build from source](../BUILDING.md)
 
@@ -84,11 +82,12 @@ Build, validate, and improve godotGS without having to reconstruct the contribut
 
 ## Related References
 
-- [Reviewer Fast Path](reviewer-fast-path.md)
-- [Build / Test / CI Command Reference](../reference/build-test-ci.md)
-- [Contribution Standards](../governance/contribution-standards.md)
-- [Documentation Style Guide](../style/documentation-style-guide.md)
-- [Performance Dashboard](../performance/index.md)
+- [Reviewer fast path](reviewer-fast-path.md)
+- [Renderer refactor memory](../architecture/gaussian-renderer-refactor-memory.md)
+- [Build / Test / CI command reference](../reference/build-test-ci.md)
+- [Contribution standards](../governance/contribution-standards.md)
+- [Documentation style guide](../style/documentation-style-guide.md)
+- [Performance dashboard](../performance/index.md)
 - [Reports](../reports/index.md)
 
 </div>

@@ -158,7 +158,7 @@ Refactor note:
 
 ## Related Docs
 
-- Architecture overview: [overview.md](overview.md)
-- Render pipeline details: [render-pipeline.md](render-pipeline.md)
-- Module architecture map: [../../modules/gaussian_splatting/ARCHITECTURE.md](../../modules/gaussian_splatting/ARCHITECTURE.md)
-- Memory and residency invariants: [../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md](../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)
+- [Architecture overview](overview.md)
+- [Render pipeline details](render-pipeline.md)
+- [Module architecture map](../../modules/gaussian_splatting/ARCHITECTURE.md)
+- [Memory and residency invariants](../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)

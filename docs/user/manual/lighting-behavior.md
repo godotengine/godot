@@ -29,7 +29,7 @@ This page describes what lighting usually looks like on splats and which control
 4. Keep bias controls for later fine-tuning
 
 Reference:
-- [../../reference/project-settings.md](../../reference/project-settings.md)
+- [Project settings reference](../../reference/project-settings.md)
 
 ## When to Use Troubleshooting Docs
 
@@ -40,10 +40,10 @@ Use troubleshooting docs when lighting remains broken after initial adjustments:
 - startup/runtime shader errors affecting light or shadow output
 
 Start here:
-- [../../troubleshooting/recurring-issues.md](../../troubleshooting/recurring-issues.md)
+- [Recurring issues](../../troubleshooting/recurring-issues.md)
 
 ## Deeper Architecture (Engineers)
 
 For shader/path internals and constraints:
-- [../../architecture/lighting-system.md](../../architecture/lighting-system.md)
-- [../../architecture/render-pipeline.md](../../architecture/render-pipeline.md)
+- [Lighting system architecture](../../architecture/lighting-system.md)
+- [Render pipeline architecture](../../architecture/render-pipeline.md)

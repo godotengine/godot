@@ -2,9 +2,8 @@
 
 This page surfaces the current published benchmark snapshot and the suite lanes that are expected to grow it.
 
-!!! note "Data freshness"
-    Charts use `assets/data/benchmark_latest.json` generated during docs build. Run `python scripts/export_benchmark_vegalite.py` locally to update from your latest benchmark run.
-    The current public dataset contains one committed result row; the coverage table below shows the user-relevant benchmark lanes already defined in the suite.
+Charts use `assets/data/benchmark_latest.json` generated during docs build.
+The current public dataset contains one committed result row, and the coverage table below shows the user-relevant benchmark lanes already defined in the suite.
 
 ## Current Public Snapshot
 
@@ -35,7 +34,7 @@ The snapshot above is the current committed public result. It is the reference r
   "encoding": {
     "y": {"field": "lane_id", "type": "nominal", "sort": "-x", "title": "Lane"},
     "x": {"field": "score", "type": "quantitative", "title": "Score"},
-    "color": {"field": "score", "type": "quantitative", "scale": {"scheme": "viridis"}, "legend": null},
+    "color": {"value": "#355caa"},
     "tooltip": [
       {"field": "lane_id", "title": "Lane"},
       {"field": "lane_name", "title": "Description"},

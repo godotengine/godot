@@ -1,6 +1,5 @@
 # Coordinator Memory
 
-Last updated: 2026-03-19
 Coordinator branch: `fix/windows-editor-tests`
 Baseline commit: `6dde6a82c3b`
 Integration branch: `integration/all-issues`

@@ -1,23 +1,12 @@
 # First Run
 
-_Last updated: 2026-03-16_
+Use this page after [Installation](installation.md) when you want the shortest path to a visible splat.
 
-!!! tip "Canonical task page"
-    Use this page as the source of truth for install and first run.
-    If you need prerequisite details or compiler setup, use [Installation](installation.md) and [Build from Source](../BUILDING.md), then return here.
+Real editor screenshots for this flow are still pending, so this page stays text-first for now and keeps the diagram as a technical reference at the end.
 
-Purpose: first visible splat with minimal setup.
+## 1. Point at Your Editor
 
-<figure markdown="1">
-![Diagram of the first-run path from a module-built editor to a visible sample splat](../assets/images/first-run-editor-path.svg){ .gs-diagram }
-<figcaption>The first-run path is a short proof loop: point at the module-built editor, seed the synthetic fixture asset, open the sample project, and confirm a visible splat in the benchmark_unified scene.</figcaption>
-</figure>
-
-Run commands from repository root (`godotgs/`).
-
-## 1) Get a Module-Built Editor
-
-Already built one? Set it directly:
+If you already have an editor built from this fork, set it directly:
 
 ```bash
 export GODOT_BINARY=/absolute/path/to/your/godot-editor
@@ -27,13 +16,9 @@ export GODOT_BINARY=/absolute/path/to/your/godot-editor
 $env:GODOT_BINARY="C:\absolute\path\to\your\godot-editor.exe"
 ```
 
-Need to build one now?
+Need to build one first? Use [Build from Source](../BUILDING.md), then come back here and set `GODOT_BINARY` to the binary you built.
 
-- Review prerequisites in [Installation](installation.md).
-- Run the platform build commands in [Build from Source](../BUILDING.md).
-- Then return here and set `GODOT_BINARY` to the binary you built.
-
-After a successful build:
+After a successful build, point `GODOT_BINARY` at the editor in `bin/`:
 
 ```bash
 export GODOT_BINARY=./bin/<your-editor-binary>
@@ -43,11 +28,9 @@ export GODOT_BINARY=./bin/<your-editor-binary>
 $env:GODOT_BINARY=".\bin\<your-editor-binary>.exe"
 ```
 
-You should see:
-- an editor binary in `bin/`
-- the binary was built from this fork root and includes `modules/gaussian_splatting`
+You should see an editor binary in `bin/`.
 
-## 2) Generate Synthetic Starter Assets
+## 2. Generate Synthetic Starter Assets
 
 ```bash
 python3 tests/runtime/prepare_synthetic_assets.py --quiet
@@ -58,36 +41,40 @@ python .\tests\runtime\prepare_synthetic_assets.py --quiet
 ```
 
 You should see:
-- `tests/examples/godot/test_project/tests/fixtures/test_splats.ply` in the project
+- the synthetic starter asset in the sample project fixture set
 
-## 3) Open the Sample Project
+## 3. Open the Sample Project
 
 ```bash
-# Bash (Linux/macOS)
 $GODOT_BINARY --path tests/examples/godot/test_project
 ```
 
 ```powershell
-# PowerShell (Windows)
 & $env:GODOT_BINARY --path .\tests\examples\godot\test_project
 ```
 
-You should see:
-- Godot editor running with `tests/examples/godot/test_project`
+You should see the sample project open in the editor.
 
-## 4) Render Your First Splat
+## 4. Render Your First Splat
 
 1. Open `res://scenes/benchmark_unified.tscn`.
-2. If needed, add `GaussianSplatNode3D`.
+2. If needed, add the splat node the sample scene expects.
 3. Set `PLY File Path` to `res://tests/fixtures/test_splats.ply`.
-4. Press `F6` (Play Scene).
+4. Press `F6` to play the scene.
 
 You should see:
 - a visible splat in the viewport
 
-## Need Help?
+## If It Fails
 
-- Artist workflow overview: [../user/quickstart.md](../user/quickstart.md)
-- Installation details: [installation.md](installation.md)
-- Build from source: [../BUILDING.md](../BUILDING.md)
-- Recurring fixes: [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md)
+- [Artist workflow overview](../user/quickstart.md)
+- [Installation](installation.md)
+- [Build from Source](../BUILDING.md)
+- [Recurring issues](../troubleshooting/recurring-issues.md)
+
+## Flow Reference
+
+<figure markdown="1">
+![Diagram of the first-run path from a fork-built editor to a visible sample splat](../assets/images/first-run-editor-path.svg){ .gs-diagram }
+<figcaption>The first-run path is a short proof loop: point at your editor, seed the synthetic fixture asset, open the sample project, and confirm a visible splat in the benchmark_unified scene.</figcaption>
+</figure>

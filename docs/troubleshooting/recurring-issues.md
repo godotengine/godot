@@ -2,10 +2,7 @@
 
 This page is the canonical recurring bug and build/runtime issue reference.
 
-<figure markdown="1">
-![Diagram of the troubleshooting flow from symptom to validation lane, artifacts, and targeted fix](../assets/images/troubleshooting-diagnostics-flow.svg){ .gs-diagram }
-<figcaption>Recurring issues should route into the matching validation lane first so logs, JSON outputs, and capture artifacts point at the real failing layer before any fix attempt.</figcaption>
-</figure>
+Real troubleshooting screenshots are still pending, so this page stays text-first and uses a reference diagram only at the end.
 
 ## 1) Sorting Regressions and Mis-Ordering
 
@@ -72,7 +69,7 @@ This page is the canonical recurring bug and build/runtime issue reference.
 - confirm test runner points at module-built binary (`--godot` / `--godot-binary`)
 
 ### Typical Fixes
-- rebuild with canonical command surface from [../reference/build-test-ci.md](../reference/build-test-ci.md)
+- rebuild with the canonical [Build / Test / CI Command Reference](../reference/build-test-ci.md)
 - rerun with explicit binary path:
   - `python3 tests/ci/run_baseline_qa.py --godot <path-to-module-built-editor>`
 
@@ -81,3 +78,10 @@ This page is the canonical recurring bug and build/runtime issue reference.
 - include exact command, platform, GPU, and driver version
 - attach failing log excerpts and produced JSON artifacts
 - include whether the binary came from this fork's `bin/` output or a stock Godot build
+
+## Troubleshooting Flow Reference
+
+<figure markdown="1">
+![Diagram of the troubleshooting flow from symptom to validation lane, artifacts, and targeted fix](../assets/images/troubleshooting-diagnostics-flow.svg){ .gs-diagram }
+<figcaption>Recurring issues should route into the matching validation lane first so logs, JSON outputs, and capture artifacts point at the real failing layer before any fix attempt.</figcaption>
+</figure>

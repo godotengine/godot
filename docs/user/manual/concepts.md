@@ -19,13 +19,13 @@ Gaussian splatting renders scenes from splat data (`.ply` / `.spz`) instead of t
 
 ## Behavior Guides
 
-- Runtime expectations and first-safe knobs: [runtime-behavior.md](runtime-behavior.md)
-- Lighting expectations and first-safe knobs: [lighting-behavior.md](lighting-behavior.md)
+- [Runtime behavior](runtime-behavior.md) for expected behavior and the first safe controls.
+- [Lighting behavior](lighting-behavior.md) for the lighting controls that matter first.
 
 ## Related
 
-- Manual index: [index.md](index.md)
-- Workflows: [workflows.md](workflows.md)
-- Performance presets: [performance-presets.md](performance-presets.md)
-- FAQ: [faq.md](faq.md)
-- Architecture (engineers): [../../architecture/overview.md](../../architecture/overview.md)
+- [User manual home](index.md)
+- [Workflow details](workflows.md)
+- [Performance presets](performance-presets.md)
+- [FAQ](faq.md)
+- [Architecture overview](../../architecture/overview.md) if you need the engine-level model.

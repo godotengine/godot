@@ -1,4 +1,5 @@
 ---
+title: Start Here
 hide:
   - toc
 ---
@@ -9,8 +10,9 @@ hide:
 
 Reach a first visible splat quickly and decide whether godotGS is the right evaluation target for your project.
 
-<p class="gs-meta"><strong>Audience:</strong> first-time evaluators, technical artists, project leads, and contributors who need a fast orientation.</p>
-<p class="gs-meta"><strong>Status:</strong> Alpha. Fastest path is Linux nightly; Windows and macOS currently mean source builds.</p>
+Alpha today. Linux nightly is the fastest evaluation path, while Windows and macOS still mean building from source.
+
+Visual captures for the user journey are still pending, so the linked workflow pages stay text-first until real editor screenshots are available.
 
 </div>
 

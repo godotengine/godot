@@ -1,15 +1,8 @@
 # Artist Workflow Overview
 
-!!! tip "Canonical task page"
-    Use this page as the source of truth for the artist workflow.
-    It assumes you already completed [First Run](../getting-started/quick-start.md) and now need the shortest path into real project work.
-
 For artists, technical artists, and non-programmers, this page is the handoff from the sample scene into real asset iteration.
 
-<figure markdown="1">
-![Diagram of the artist workflow handoff from first run to import, presets, iteration tools, and finishing tasks](../assets/images/artist-workflow-lane.svg){ .gs-diagram }
-<figcaption>The artist lane starts only after First Run is already working, then moves through import, safe preset selection, iteration tools, and finishing tasks like bake or color grading.</figcaption>
-</figure>
+Visual captures for the artist lane are still pending, so this page keeps the workflow text-first for now.
 
 ## Recommended Order
 
@@ -27,3 +20,10 @@ For artists, technical artists, and non-programmers, this page is the handoff fr
 - [Gaussian Splat Artist Pipeline](../features/artist_pipeline.md) for inspector tools, hot reload, and bake-oriented editing.
 - [Performance Presets](manual/performance-presets.md) for the first safe quality/speed decision.
 - [Recurring Issues](../troubleshooting/recurring-issues.md) when import or viewport behavior is off.
+
+## Technical Flow Reference
+
+<figure markdown="1">
+![Diagram of the artist workflow handoff from first run to import, presets, iteration tools, and finishing tasks](../assets/images/artist-workflow-lane.svg){ .gs-diagram }
+<figcaption>The artist lane starts only after First Run is already working, then moves through import, safe preset selection, iteration tools, and finishing tasks like bake or color grading.</figcaption>
+</figure>

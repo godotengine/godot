@@ -1,9 +1,7 @@
 # Build / Test / CI Command Reference
 
-!!! info "Scope"
-    For contributors who already know whether they are building, testing, or validating CI behavior.
-    This page covers test runners, CI entrypoints, and the test-enabled build variant.
-    It complements the canonical [Build from Source](../BUILDING.md) page.
+Use this page when you already know you need a build, test, or CI command.
+For the main build walkthrough, start with [Build from Source](../BUILDING.md).
 
 ## Build
 
@@ -34,8 +32,8 @@ scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>
 
 ## CI Source of Truth
 
-- Workflow overview: [../../.github/workflows/README.md](../../.github/workflows/README.md)
-- Production gate workflow: [../../.github/workflows/gaussian_production_gates.yml](../../.github/workflows/gaussian_production_gates.yml)
+- [Workflow overview](../../.github/workflows/README.md)
+- [Production gate workflow](../../.github/workflows/gaussian_production_gates.yml)
 
 ## Common Failure Modes
 
@@ -45,4 +43,4 @@ scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>
 
 Use recurring fixes:
 
-- [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md)
+- [Recurring issues](../troubleshooting/recurring-issues.md)

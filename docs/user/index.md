@@ -1,4 +1,5 @@
 ---
+title: User Guide
 hide:
   - toc
 ---
@@ -8,9 +9,6 @@ hide:
 # User Guide
 
 Use godotGS day to day: import splat content, understand behavior, and tune quality, lighting, and performance without digging through maintainer docs first.
-
-<p class="gs-meta"><strong>Audience:</strong> artists, technical artists, designers, and integrators operating the module in projects.</p>
-<p class="gs-meta"><strong>Scope:</strong> day-to-day usage, import, runtime behavior, and quality tuning.</p>
 
 </div>
 
@@ -76,10 +74,10 @@ Use godotGS day to day: import splat content, understand behavior, and tune qual
 
 ## Related References
 
-- [Workflow Details](manual/workflows.md)
-- [Lighting Behavior](manual/lighting-behavior.md)
-- [Project Settings Reference](../reference/project-settings.md)
-- [Compatibility Matrix](../reference/compatibility-matrix.md)
-- [Recurring Issues](../troubleshooting/recurring-issues.md)
+- [Workflow guide](manual/workflows.md)
+- [Lighting behavior](manual/lighting-behavior.md)
+- [Project settings reference](../reference/project-settings.md)
+- [Compatibility matrix](../reference/compatibility-matrix.md)
+- [Recurring issues](../troubleshooting/recurring-issues.md)
 
 </div>
