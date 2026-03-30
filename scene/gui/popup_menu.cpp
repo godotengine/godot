@@ -395,8 +395,8 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	Rect2i screen_rect = is_embedded() ? Rect2i(get_embedder()->get_visible_rect()) : get_parent_rect();
 	active_submenu_target_line.clear();
 
-	scroll_container_offset_start = Point2(scroll_container->get_offset(SIDE_LEFT), scroll_container->get_offset(SIDE_TOP)) * win_scale;
-	const Point2 scroll_container_offset_end = Point2(-scroll_container->get_offset(SIDE_RIGHT), -scroll_container->get_offset(SIDE_BOTTOM)) * win_scale;
+	panel_offset_start = Point2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * win_scale;
+	const Point2 panel_offset_end = Point2(-panel->get_offset(SIDE_RIGHT), -panel->get_offset(SIDE_BOTTOM)) * win_scale;
 	const Vector2 scaled_this_size = this_rect.size * win_scale;
 	const float scaled_theme_v_separation = theme_cache.v_separation * win_scale;
 	const float scroll_offset = control->get_position().y;
@@ -405,17 +405,17 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 
 	if (is_layout_rtl()) {
 		is_active_submenu_left = true;
-		submenu_pos += this_pos + Point2(-submenu_size.width + scroll_container_offset_end.x, scaled_ofs_cache + scroll_offset - int(scaled_theme_v_separation * 0.5) + scroll_container_offset_start.y);
+		submenu_pos += this_pos + Point2(-submenu_size.width + panel_offset_end.x, scaled_ofs_cache + scroll_offset - int(scaled_theme_v_separation * 0.5) + panel_offset_start.y);
 		if (submenu_pos.x < screen_rect.position.x) {
-			submenu_pos.x = this_pos.x + this_rect.size.width - scroll_container_offset_start.x;
+			submenu_pos.x = this_pos.x + this_rect.size.width - panel_offset_start.x;
 			is_active_submenu_left = false;
 		}
 
 	} else {
 		is_active_submenu_left = false;
-		submenu_pos += this_pos + Point2(scaled_this_size.x + scroll_container_offset_start.x, scaled_ofs_cache + scroll_offset - int(scaled_theme_v_separation * 0.5) + scroll_container_offset_start.y);
+		submenu_pos += this_pos + Point2(scaled_this_size.x + panel_offset_start.x, scaled_ofs_cache + scroll_offset - int(scaled_theme_v_separation * 0.5) + panel_offset_start.y);
 		if (submenu_pos.x + submenu_size.width > screen_rect.position.x + screen_rect.size.width) {
-			submenu_pos.x = this_pos.x - submenu_size.width + scroll_container_offset_end.x;
+			submenu_pos.x = this_pos.x - submenu_size.width + panel_offset_end.x;
 			is_active_submenu_left = true;
 		}
 	}
@@ -744,7 +744,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		if (this_submenu_index != -1) { // Is a submenu.
 			PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
 			ERR_FAIL_NULL(parent_popup);
-			Point2 areas_mouse_pos = get_mouse_position() - parent_popup->scroll_container_offset_start;
+			Point2 areas_mouse_pos = get_mouse_position() - parent_popup->panel_offset_start;
 			for (const Rect2 &E : autohide_areas) {
 				if (!scroll_container->get_global_rect().has_point(m->get_position()) && E.has_point(areas_mouse_pos)) {
 					_close_or_suspend();
@@ -1570,7 +1570,7 @@ void PopupMenu::_notification(int p_what) {
 				ERR_FAIL_NULL(parent_popup);
 				const float win_scale = get_content_scale_factor();
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - get_position();
-				Point2 areas_mouse_pos = mouse_pos - parent_popup->scroll_container_offset_start;
+				Point2 areas_mouse_pos = mouse_pos - parent_popup->panel_offset_start;
 				for (const Rect2 &E : autohide_areas) {
 					if (!Rect2(Point2(), control->get_size() * win_scale).has_point(areas_mouse_pos) && E.has_point(areas_mouse_pos)) {
 						_close_or_suspend();

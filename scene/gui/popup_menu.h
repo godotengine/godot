@@ -140,7 +140,7 @@ class PopupMenu : public Popup {
 	Point2 last_submenu_mouse_position;
 	int submenu_mouse_exited_ticks_msec = -1;
 	bool mouse_movement_was_tested = false;
-	Point2 scroll_container_offset_start;
+	Point2 panel_offset_start;
 	float submenu_timer_popup_delay = 0.2;
 	const float CLOSE_SUSPENDED_TIMER_DELAY = 0.5;
 	String _get_accel_text(const Item &p_item) const;
