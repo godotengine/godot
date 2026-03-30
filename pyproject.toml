@@ -22,19 +22,13 @@ fix = true
 
 [tool.ruff.lint]
 extend-select = [
-	"I",     # isort
-	"UP006", # Use {to} instead of {from} for type annotation
-	"UP007", # Use `X | Y` for type annotations
-	"UP037", # Remove quotes from type annotation
-	"FA",    # Future annotations
+	"I", # isort.
 ]
-extend-safe-fixes = ["UP006", "UP007", "FA"]
+extend-safe-fixes = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "{SConstruct,SCsub}" = [
-	"E402", # Module level import not at top of file
-	"F403", # Undefined local with import star
-	"F405", # Undefined local with import star usage
+	"EXE001", # Shebang is present but file is not executable.
 ]
 
 [tool.ruff.lint.isort]
