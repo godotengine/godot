@@ -170,7 +170,7 @@ ClusterBuildResult ClusterBuilder::build_clusters(
         cluster.bounds = compute_cluster_bounds(p_gaussians, result.sorted_splat_order, splat_offset, count, max_radius);
         cluster.max_splat_radius = max_radius;
         cluster.center = cluster.bounds.get_center();
-        cluster.radius = cluster.bounds.get_longest_axis_size() * 0.5f;
+        cluster.radius = (cluster.bounds.size * 0.5f).length();
 
         // Compute importance sum
         if (p_params.compute_importance) {
@@ -266,7 +266,7 @@ ClusterBuildResult ClusterBuilder::update_clusters_incremental(
         );
         cluster.max_splat_radius = max_radius;
         cluster.center = cluster.bounds.get_center();
-        cluster.radius = cluster.bounds.get_longest_axis_size() * 0.5f;
+        cluster.radius = (cluster.bounds.size * 0.5f).length();
 
         // Recompute importance
         cluster.importance_sum = 0.0f;
