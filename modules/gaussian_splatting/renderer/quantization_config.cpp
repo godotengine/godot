@@ -63,13 +63,13 @@ void QuantizationConfig::save_to_project_settings() const {
         return;
     }
 
-    ps->set_setting(PER_CHUNK_QUANTIZATION_PATH, per_chunk_quantization ? 1 : 0);
-    ps->set_setting(POSITION_BITS_PATH, (int)position_bits);
-    ps->set_setting(SCALE_BITS_PATH, (int)scale_bits);
-    ps->set_setting(QUANTIZE_SCALES_PATH, quantize_scales);
-    ps->set_setting(MIN_CHUNK_SIZE_PATH, (int)min_chunk_size);
-    ps->set_setting(MAX_CHUNK_SIZE_PATH, (int)max_chunk_size);
-    ps->set_setting(ADAPTIVE_CHUNK_SIZE_PATH, adaptive_chunk_size);
+    ps->set_setting(PER_CHUNK_QUANTIZATION_PATH, per_chunk_quantization ? 1 : 0); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(POSITION_BITS_PATH, (int)position_bits); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(SCALE_BITS_PATH, (int)scale_bits); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(QUANTIZE_SCALES_PATH, quantize_scales); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(MIN_CHUNK_SIZE_PATH, (int)min_chunk_size); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(MAX_CHUNK_SIZE_PATH, (int)max_chunk_size); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
+    ps->set_setting(ADAPTIVE_CHUNK_SIZE_PATH, adaptive_chunk_size); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
 
     ps->save();
 
@@ -231,7 +231,7 @@ void register_quantization_project_settings() {
 
     // Per-chunk quantization enable (sentinel -1 = auto from tier, 0 = off, 1 = on)
     if (!ps->has_setting(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH)) {
-        ps->set_setting(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH, -1);
+        ps->set_setting(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH, -1); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
     }
     ps->set_initial_value(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH, -1);
     ps->set_custom_property_info(PropertyInfo(

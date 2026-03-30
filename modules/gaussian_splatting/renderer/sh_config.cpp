@@ -133,7 +133,7 @@ void initialize_sh_config() {
     // Default is -1 (sentinel): "use tier recommendation or code-default SH3".
     // Values 0-3 mean the user explicitly chose a band level.
     if (!ps->has_setting(SHConfig::BANDS_PATH)) {
-        ps->set_setting(SHConfig::BANDS_PATH, -1);
+        ps->set_setting(SHConfig::BANDS_PATH, -1); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
     }
     ps->set_initial_value(SHConfig::BANDS_PATH, -1);
     ps->set_custom_property_info(PropertyInfo(
