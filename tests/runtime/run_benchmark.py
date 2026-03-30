@@ -422,7 +422,6 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--generate-dummy-assets",
         action="store_true",
-        default=True,
         help="Generate placeholder PLY assets for lanes that need them.",
     )
     parser.add_argument(
