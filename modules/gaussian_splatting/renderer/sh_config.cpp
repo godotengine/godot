@@ -1,6 +1,8 @@
 #include "sh_config.h"
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "../core/gs_project_settings.h"
+#include "../core/quality_tier_config.h"
 #include "../logger/gs_logger.h"
 
 // Project settings paths
@@ -17,8 +19,18 @@ void SHConfig::load_from_project_settings() {
         return;
     }
 
-    // Load SH band level (clamped to valid range)
-    int band_value = ps->get_setting(BANDS_PATH, static_cast<int>(SH_BAND_3));
+    // Load SH band level with sentinel-based tier seeding.
+    // -1 means "not explicitly set by user" -- check active tier for a recommendation.
+    int band_value = gs::settings::get_int(ps, BANDS_PATH, -1);
+    if (band_value < 0) {
+        // Sentinel: user never set this. Check tier.
+        band_value = static_cast<int>(SH_BAND_3); // Code default.
+        const String tier_preset = ps->get_setting("rendering/gaussian_splatting/quality/tier_preset", "custom");
+        QualityTierConfig tier_config;
+        if (get_quality_tier_config(tier_preset, tier_config) && tier_config.sh_bands >= 0) {
+            band_value = tier_config.sh_bands;
+        }
+    }
     sh_bands = static_cast<SHBandLevel>(CLAMP(band_value, 0, static_cast<int>(SH_BAND_MAX)));
 
     // Load progressive loading setting
@@ -117,16 +129,18 @@ void initialize_sh_config() {
         return;
     }
 
-    // SH bands setting with enum hint
+    // SH bands setting with enum hint.
+    // Default is -1 (sentinel): "use tier recommendation or code-default SH3".
+    // Values 0-3 mean the user explicitly chose a band level.
     if (!ps->has_setting(SHConfig::BANDS_PATH)) {
-        ps->set_setting(SHConfig::BANDS_PATH, static_cast<int>(SH_BAND_3));
+        ps->set_setting(SHConfig::BANDS_PATH, -1);
     }
-    ps->set_initial_value(SHConfig::BANDS_PATH, static_cast<int>(SH_BAND_3));
+    ps->set_initial_value(SHConfig::BANDS_PATH, -1);
     ps->set_custom_property_info(PropertyInfo(
         Variant::INT,
         SHConfig::BANDS_PATH,
         PROPERTY_HINT_ENUM,
-        "SH0 (DC Only):0,SH1 (1st Order):1,SH2 (2nd Order):2,SH3 (3rd Order):3"
+        "Auto (Tier Default):-1,SH0 (DC Only):0,SH1 (1st Order):1,SH2 (2nd Order):2,SH3 (3rd Order):3"
     ));
 
     // DC logit decode toggle

@@ -1,6 +1,8 @@
 #include "quantization_config.h"
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "../core/gs_project_settings.h"
+#include "../core/quality_tier_config.h"
 #include "../logger/gs_logger.h"
 
 // Project settings paths
@@ -22,7 +24,21 @@ void QuantizationConfig::load_from_project_settings() {
         return;
     }
 
-    per_chunk_quantization = ps->get_setting(PER_CHUNK_QUANTIZATION_PATH, false);
+    // Sentinel-based tier seeding for per_chunk_quantization.
+    // -1 means "not explicitly set by user" -- check active tier.
+    int raw_quantization = gs::settings::get_int(ps, PER_CHUNK_QUANTIZATION_PATH, -1);
+    if (raw_quantization < 0) {
+        // Sentinel: user never set this.
+        per_chunk_quantization = false; // Code default.
+        const String tier_preset = ps->get_setting("rendering/gaussian_splatting/quality/tier_preset", "custom");
+        QualityTierConfig tier_config;
+        if (get_quality_tier_config(tier_preset, tier_config) && tier_config.quantization_enabled >= 0) {
+            per_chunk_quantization = (tier_config.quantization_enabled != 0);
+        }
+    } else {
+        per_chunk_quantization = (raw_quantization != 0);
+    }
+
     position_bits = ps->get_setting(POSITION_BITS_PATH, 16);
     scale_bits = ps->get_setting(SCALE_BITS_PATH, 12);
     quantize_scales = ps->get_setting(QUANTIZE_SCALES_PATH, false);
@@ -47,7 +63,7 @@ void QuantizationConfig::save_to_project_settings() const {
         return;
     }
 
-    ps->set_setting(PER_CHUNK_QUANTIZATION_PATH, per_chunk_quantization);
+    ps->set_setting(PER_CHUNK_QUANTIZATION_PATH, per_chunk_quantization ? 1 : 0);
     ps->set_setting(POSITION_BITS_PATH, (int)position_bits);
     ps->set_setting(SCALE_BITS_PATH, (int)scale_bits);
     ps->set_setting(QUANTIZE_SCALES_PATH, quantize_scales);
@@ -213,16 +229,16 @@ void register_quantization_project_settings() {
         return;
     }
 
-    // Per-chunk quantization enable
+    // Per-chunk quantization enable (sentinel -1 = auto from tier, 0 = off, 1 = on)
     if (!ps->has_setting(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH)) {
-        ps->set_setting(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH, false);
+        ps->set_setting(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH, -1);
     }
-    ps->set_initial_value(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH, false);
+    ps->set_initial_value(QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH, -1);
     ps->set_custom_property_info(PropertyInfo(
-        Variant::BOOL,
+        Variant::INT,
         QuantizationConfig::PER_CHUNK_QUANTIZATION_PATH,
-        PROPERTY_HINT_NONE,
-        ""
+        PROPERTY_HINT_ENUM,
+        "Auto (Tier Default):-1,Disabled:0,Enabled:1"
     ));
 
     // Position bits

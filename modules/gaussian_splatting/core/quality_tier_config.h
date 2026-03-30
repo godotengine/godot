@@ -24,6 +24,13 @@ struct QualityTierConfig {
 	bool enable_sh_amortization = false;
 	int sh_amortization_divisor = 1;
 	bool enable_fast_raster = false;
+
+	// Render quality overrides (-1 = no opinion, let user/code-default decide).
+	int sh_bands = -1;
+	float lod_max_distance = -1.0f;
+	float lod_base_threshold = -1.0f;
+	int quantization_enabled = -1;
+	int route_policy = -1;
 };
 
 bool get_quality_tier_config(const String &p_preset, QualityTierConfig &r_out);
