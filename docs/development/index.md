@@ -1,24 +1,22 @@
 # Development Documentation
 
-_Last updated: 2026-02-20_
-
 ## Purpose
 
 Find build, test, architecture, and contributor workflow references.
 
 ## Usage
 
-| Need | Path |
+| Need | Guide |
 | --- | --- |
-| Build command and platform prerequisites | `../BUILDING.md` |
-| Build failure diagnosis | `../troubleshooting/recurring-issues.md` |
-| Test environment setup | `../testing/setup-guide.md` |
-| Versioned docs site build/deploy | `docs-site.md` |
-| Screenshot capture process | `screenshot-capture-spec.md` |
-| Contribution policy | `../../CONTRIBUTING.md` |
-| Module architecture overview | `../../modules/gaussian_splatting/README.md` |
-| Documentation style policy | `../style/documentation-style-guide.md` |
-| CI workflow overview | `../../.github/workflows/README.md` |
+| Build command and platform prerequisites | [Build from Source](../BUILDING.md) |
+| Build failure diagnosis | [Recurring issues](../troubleshooting/recurring-issues.md) |
+| Test environment setup | [Testing setup guide](../testing/setup-guide.md) |
+| Versioned docs site build and deploy | [Docs site maintenance guide](docs-site.md) |
+| Screenshot capture process | [Screenshot capture spec](screenshot-capture-spec.md) |
+| Contribution policy | [Contribution guide](../../CONTRIBUTING.md) |
+| Module architecture overview | [Module README](../../modules/gaussian_splatting/README.md) |
+| Documentation style policy | [Documentation style guide](../style/documentation-style-guide.md) |
+| CI workflow overview | [Workflow overview](../../.github/workflows/README.md) |
 
 ## Examples
 

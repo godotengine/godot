@@ -1,11 +1,12 @@
 ---
+title: godotGS Docs
 hide:
   - toc
 ---
 
 <div class="gs-home-intro" markdown>
 
-<p class="gs-eyebrow">Technical documentation</p>
+<p class="gs-eyebrow">Documentation</p>
 
 # godotGS
 
@@ -13,7 +14,6 @@ godotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for import
 
 <div class="gs-chip-row" markdown>
 <span class="gs-chip gs-chip--alpha">Alpha</span>
-<span class="gs-chip">Nightly-first releases</span>
 </div>
 
 [Start with First Run](getting-started/quick-start.md){ .md-button .md-button--primary }
@@ -23,7 +23,7 @@ godotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for import
 
 <div class="gs-status-strip" markdown>
 
-### Project Status
+### Current Status
 
 - Preferred install path: Linux nightly for the fastest evaluation path, or [Build from Source](BUILDING.md) on Windows and macOS.
 - Release reality: public GitHub releases are currently nightly-first.
@@ -34,7 +34,7 @@ godotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for import
 
 <div class="gs-section-shell" markdown>
 
-## Fastest Evaluation Path
+## Start Here
 
 1. [Choose the current install path](getting-started/installation.md): Linux nightly for the fastest evaluation path, or [Build from Source](BUILDING.md) on other platforms.
 2. [Run First Run and reach a first visible splat](getting-started/quick-start.md).
@@ -44,42 +44,11 @@ godotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for import
 
 <div class="gs-section-shell" markdown>
 
-## Choose Your Lane
+## Choose a Section
 
-<div class="grid cards" markdown>
-
-- __Start Here__
-
-    ---
-
-    Evaluate the project quickly, understand the current fit, and reach a first visible result.
-
-    [Open Start Here](getting-started/index.md)
-
-- __User Guide__
-
-    ---
-
-    Import assets, understand runtime behavior, and tune day-to-day quality and performance.
-
-    [Open User Guide](user/index.md)
-
-- __Reference__
-
-    ---
-
-    Look up settings, API surfaces, compatibility details, and migration notes.
-
-    [Open Reference](reference/index.md)
-
-- __Contribute__
-
-    ---
-
-    Build the fork, run validation, understand architecture, and ship safe changes.
-
-    [Open Contribute](contributor/index.md)
-
-</div>
+- [Start Here](getting-started/index.md): evaluate the project quickly, understand the current fit, and reach a first visible result.
+- [User Guide](user/index.md): import assets, understand runtime behavior, and tune day-to-day quality and performance.
+- [Reference](reference/index.md): look up settings, API surfaces, compatibility details, and migration notes.
+- [Contribute](contributor/index.md): build the fork, run validation, understand architecture, and ship safe changes.
 
 </div>

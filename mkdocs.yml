@@ -61,7 +61,7 @@ plugins:
   - glightbox
   - git-revision-date-localized:
       enabled: !ENV [ENABLE_GIT_DATES, true]
-      enable_creation_date: true
+      enable_creation_date: false
       fallback_to_build_date: true
       enable_git_follow: false
   - redirects:

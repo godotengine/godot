@@ -5,19 +5,12 @@
 }
 
 .gs-home-intro {
-  margin: 0 0 1rem;
+  margin: 0 0 1.15rem;
 }
 
 .gs-hero__content,
 .gs-hero__aside {
-  padding: 1.1rem 1.15rem;
-}
-
-.gs-hero__content {
-  border: 1px solid var(--gs-border);
-  border-radius: var(--gs-radius-lg);
-  background: var(--gs-surface);
-  box-shadow: none;
+  padding: 0;
 }
 
 .gs-hero__content > .md-button {
@@ -54,7 +47,7 @@
 }
 
 .gs-status-strip li + li {
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
 }
 
 .gs-hero__aside h3 {
@@ -81,7 +74,7 @@
 
 @media screen and (min-width: 76.25em) {
   .gs-hero {
-    grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.95fr);
+    grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.85fr);
     align-items: start;
   }
 }

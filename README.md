@@ -10,8 +10,8 @@ GodotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for import
 | Fastest public evaluation path | Linux nightly editor |
 | Windows / macOS | Source build first |
 | Public binaries | Linux editor only |
-| Compatibility truth | [docs/reference/compatibility-matrix.md](docs/reference/compatibility-matrix.md) |
-| Performance truth | [docs/performance/index.md](docs/performance/index.md) |
+| Compatibility truth | [Compatibility Matrix](docs/reference/compatibility-matrix.md) |
+| Performance truth | [Performance Dashboard](docs/performance/index.md) |
 
 No named non-nightly release is published yet. If you want the fastest way to evaluate the project, use the Linux nightly path first.
 
@@ -32,7 +32,7 @@ No named non-nightly release is published yet. If you want the fastest way to ev
 
 - Compatibility snapshot: Windows is `editor-tested` on the self-hosted Vulkan Forward+ lane with `NVIDIA GeForce RTX 3090`; Linux is `sample-project-tested` on `ubuntu-24.04` with `xvfb` and `mesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.1`; macOS is currently `build-supported`.
 - Benchmark snapshot: the public dashboard currently contains one committed `static_baseline` row at 74.0 average FPS and 15.62 ms P99 frame time.
-- Visual proof: real editor screenshots are still in progress; the docs currently use truthful diagrams where capture proof is not yet published.
+- Visual proof: real editor screenshots and short workflow clips are still pending. The current figures are technical diagrams, not product captures.
 
 ## For Reviewers
 
@@ -43,19 +43,19 @@ No named non-nightly release is published yet. If you want the fastest way to ev
 
 ## Documentation
 
-- [Canonical docs index](docs/index.md)
+- [Documentation home](docs/index.md)
 - [Public roadmap](https://github.com/klausi3D/godotGS/issues/186)
-- [Versioned docs site pipeline](docs/development/docs-site.md)
+- [Docs site maintenance guide](docs/development/docs-site.md)
 - [Contribute](docs/contributor/index.md)
 - [User Guide](docs/user/index.md)
 - [Reference](docs/reference/index.md)
 
 ## Repository Layout
 
-- Root engine directories such as [`core/`](core/), [`editor/`](editor/), [`scene/`](scene/), [`servers/`](servers/), and [`thirdparty/`](thirdparty/): upstream Godot now lives at repository root.
-- [modules/gaussian_splatting/](modules/gaussian_splatting/): module implementation.
-- [tests/](tests/): CI and runtime validation harnesses.
-- [docs/](docs/): user, contributor, architecture, and reference docs.
+- [Engine root](./): upstream Godot now lives at repository root.
+- [Gaussian Splatting module](modules/gaussian_splatting/): module implementation.
+- [Test harnesses](tests/): CI and runtime validation tooling.
+- [Documentation](docs/): user, contributor, architecture, and reference docs.
 
 ## License
 
