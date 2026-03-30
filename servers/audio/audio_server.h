@@ -349,6 +349,8 @@ private:
 
 	LocalVector<Ref<AudioSamplePlayback>> sample_playback_list;
 
+	float speed_of_sound = 343.0;
+
 protected:
 	static void _bind_methods();
 
@@ -519,6 +521,9 @@ public:
 	bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback);
 	double get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback);
 	void update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale = 0.0f);
+
+	void set_speed_of_sound(float p_speed);
+	float get_speed_of_sound() const;
 
 	AudioServer();
 	virtual ~AudioServer();
