@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -46,7 +47,6 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
-#include "servers/rendering/rendering_server.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #include <cfloat> // FLT_EPSILON
