@@ -546,21 +546,21 @@ void NavigationMeshAreaCylinder3D::_update_debug() {
 		real_t x = Math::cos(r) * c_radius;
 		real_t y = Math::sqrt(c_radius_squared - (x * x));
 
-#define PUSH_OCTANT(_position, a, b)                          \
-	lines_ptrw[index++] = _position + Vector3(a.x, b, a.y);   \
-	lines_ptrw[index++] = _position + Vector3(x, b, y);       \
-	lines_ptrw[index++] = _position + Vector3(-a.x, b, a.y);  \
-	lines_ptrw[index++] = _position + Vector3(-x, b, y);      \
-	lines_ptrw[index++] = _position + Vector3(a.x, b, -a.y);  \
-	lines_ptrw[index++] = _position + Vector3(x, b, -y);      \
+#define PUSH_OCTANT(_position, a, b) \
+	lines_ptrw[index++] = _position + Vector3(a.x, b, a.y); \
+	lines_ptrw[index++] = _position + Vector3(x, b, y); \
+	lines_ptrw[index++] = _position + Vector3(-a.x, b, a.y); \
+	lines_ptrw[index++] = _position + Vector3(-x, b, y); \
+	lines_ptrw[index++] = _position + Vector3(a.x, b, -a.y); \
+	lines_ptrw[index++] = _position + Vector3(x, b, -y); \
 	lines_ptrw[index++] = _position + Vector3(-a.x, b, -a.y); \
-	lines_ptrw[index++] = _position + Vector3(-x, b, -y);     \
-	lines_ptrw[index++] = _position + Vector3(a.y, b, a.x);   \
-	lines_ptrw[index++] = _position + Vector3(y, b, x);       \
-	lines_ptrw[index++] = _position + Vector3(-a.y, b, a.x);  \
-	lines_ptrw[index++] = _position + Vector3(-y, b, x);      \
-	lines_ptrw[index++] = _position + Vector3(a.y, b, -a.x);  \
-	lines_ptrw[index++] = _position + Vector3(y, b, -x);      \
+	lines_ptrw[index++] = _position + Vector3(-x, b, -y); \
+	lines_ptrw[index++] = _position + Vector3(a.y, b, a.x); \
+	lines_ptrw[index++] = _position + Vector3(y, b, x); \
+	lines_ptrw[index++] = _position + Vector3(-a.y, b, a.x); \
+	lines_ptrw[index++] = _position + Vector3(-y, b, x); \
+	lines_ptrw[index++] = _position + Vector3(a.y, b, -a.x); \
+	lines_ptrw[index++] = _position + Vector3(y, b, -x); \
 	lines_ptrw[index++] = _position + Vector3(-a.y, b, -a.x); \
 	lines_ptrw[index++] = _position + Vector3(-y, b, -x);
 
