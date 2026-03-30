@@ -1014,8 +1014,7 @@ void EditorBuildProfileManager::_detect_from_project() {
 	ClassDB::get_class_list(all_classes);
 
 	for (const StringName &class_name : all_classes) {
-		ClassDB::APIType class_api = ClassDB::get_api_type(class_name);
-		if (class_api == ClassDB::API_EDITOR || class_api != ClassDB::API_CORE) {
+		if (ClassDB::get_api_type(class_name) != ClassDB::API_CORE) {
 			continue; // This class is editor-only or not from Godot itself.
 		}
 
@@ -1189,8 +1188,7 @@ void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const Str
 	child_classes.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &name : child_classes) {
-		ClassDB::APIType class_api = ClassDB::get_api_type(name);
-		if (class_api != ClassDB::API_EDITOR && class_api == ClassDB::API_CORE) {
+		if (ClassDB::get_api_type(name) == ClassDB::API_CORE) {
 			_fill_classes_from(class_item, name, p_selected);
 		}
 	}
