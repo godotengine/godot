@@ -592,6 +592,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/accessibility/accessibility_support", 0, "Auto (When Screen Reader is Running),Always Active,Disabled")
 	set_restart_if_changed("interface/accessibility/accessibility_support", true);
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/accessibility/property_descriptions", true, "")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_mode", (int32_t)ColorPicker::MODE_RGB, "RGB,HSV,RAW,OKHSL")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,OK HS Rectangle:5,OK HL Rectangle") // `SHAPE_NONE` is 4.
