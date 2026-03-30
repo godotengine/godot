@@ -21,8 +21,7 @@ void SHConfig::load_from_project_settings() {
 
     // Load SH band level with sentinel-based tier seeding.
     // -1 means "not explicitly set by user" -- check active tier for a recommendation.
-    int raw_band_value = gs::settings::get_int(ps, BANDS_PATH, -1);
-    int band_value = raw_band_value;
+    int band_value = gs::settings::get_int(ps, BANDS_PATH, -1);
     if (band_value < 0) {
         // Sentinel: user never set this. Check tier.
         band_value = static_cast<int>(SH_BAND_3); // Code default.
@@ -33,12 +32,6 @@ void SHConfig::load_from_project_settings() {
         }
     }
     sh_bands = static_cast<SHBandLevel>(CLAMP(band_value, 0, static_cast<int>(SH_BAND_MAX)));
-
-    // Write resolved value back so any consumer reading ProjectSettings
-    // directly never sees the sentinel -1.
-    if (raw_band_value < 0) {
-        ps->set_setting(BANDS_PATH, static_cast<int>(sh_bands));
-    }
 
     // Load progressive loading setting
     progressive_load = ps->get_setting(PROGRESSIVE_PATH, false);

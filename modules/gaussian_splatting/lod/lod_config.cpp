@@ -88,16 +88,6 @@ void LODConfig::load_from_project_settings() {
         base_threshold = raw_base_threshold;
     }
 
-    // Write resolved values back so consumers that read ProjectSettings
-    // directly (e.g. GPUCuller::update_culling_settings) never see the
-    // sentinel -1.0f.
-    if (raw_max_distance < 0.0f) {
-        ps->set_setting(LOD_CONFIG_MAX_DISTANCE_PATH, max_distance);
-    }
-    if (raw_base_threshold < 0.0f) {
-        ps->set_setting(LOD_CONFIG_BASE_THRESHOLD_PATH, base_threshold);
-    }
-
     splat_skip_enabled = get_bool(LOD_CONFIG_SPLAT_SKIP_ENABLED_PATH, splat_skip_enabled);
     sh_reduction_enabled = get_bool(LOD_CONFIG_SH_REDUCTION_ENABLED_PATH, sh_reduction_enabled);
     opacity_fade_enabled = get_bool(LOD_CONFIG_OPACITY_FADE_ENABLED_PATH, opacity_fade_enabled);

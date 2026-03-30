@@ -39,12 +39,6 @@ void QuantizationConfig::load_from_project_settings() {
         per_chunk_quantization = (raw_quantization != 0);
     }
 
-    // Write resolved value back so any consumer reading ProjectSettings
-    // directly never sees the sentinel -1.
-    if (raw_quantization < 0) {
-        ps->set_setting(PER_CHUNK_QUANTIZATION_PATH, per_chunk_quantization ? 1 : 0);
-    }
-
     position_bits = ps->get_setting(POSITION_BITS_PATH, 16);
     scale_bits = ps->get_setting(SCALE_BITS_PATH, 12);
     quantize_scales = ps->get_setting(QUANTIZE_SCALES_PATH, false);
