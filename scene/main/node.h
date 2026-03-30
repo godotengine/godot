@@ -512,7 +512,7 @@ public:
 	/* NODE/TREE */
 
 	StringName get_name() const;
-	String get_description() const;
+	String get_description(bool p_show_not_in_tree = false) const;
 	void set_name(const StringName &p_name);
 
 	InternalMode get_internal_mode() const;
