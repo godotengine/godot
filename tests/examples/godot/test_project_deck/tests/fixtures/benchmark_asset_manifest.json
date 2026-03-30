@@ -1,0 +1,12 @@
+{
+  "default_asset": "res://tests/fixtures/synthetic_sphere.ply",
+  "lane_defaults": {
+    "deck_static_baseline": "res://tests/fixtures/synthetic_sphere.ply",
+    "deck_streaming_baseline": "res://tests/fixtures/synthetic_sphere.ply"
+  },
+  "scene_defaults": {
+    "deck_static_baseline": "res://tests/fixtures/synthetic_sphere.ply",
+    "deck_streaming_baseline": "res://tests/fixtures/synthetic_sphere.ply"
+  },
+  "version": "2.0.0"
+}

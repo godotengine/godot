@@ -170,6 +170,22 @@ LANES: list[LaneDefinition] = [
         durations={"synthetic": 12.0, "showcase": 20.0},
         weights={"synthetic": 8.0, "showcase": 4.0},
     ),
+    # ── Steam Deck / handheld lanes ───────────────────────────────────────
+    # Run against test_project_deck (800p, steam_deck tier, resident route).
+    LaneDefinition(
+        lane_id="deck_static_baseline",
+        scene="res://scenes/deck_static_baseline.tscn",
+        description="Deck 800p resident-path baseline (route_policy=0)",
+        durations={"steam-deck": 15.0},
+        weights={"steam-deck": 15.0},
+    ),
+    LaneDefinition(
+        lane_id="deck_streaming_baseline",
+        scene="res://scenes/deck_streaming_baseline.tscn",
+        description="Deck 800p streaming-path baseline (route_policy=1)",
+        durations={"steam-deck": 15.0},
+        weights={"steam-deck": 15.0},
+    ),
 ]
 
 LANE_INDEX_BY_ID = {lane.lane_id: idx for idx, lane in enumerate(LANES)}
@@ -183,6 +199,7 @@ PROFILE_WARMUP_SECONDS: dict[str, float] = {
     "showcase": 8.0,
     "parity": 5.0,
     "synthetic": 3.0,
+    "steam-deck": 3.0,
 }
 DEFAULT_CAPTURE_LANES: tuple[str, ...] = ("integrity_sentinel", "parity_fidelity")
 TEXT_DEPENDENCY_SUFFIXES: tuple[str, ...] = (".tscn", ".gd", ".tres", ".tscn")
@@ -278,7 +295,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--profile",
-        choices=["quick", "performance", "showcase", "parity", "synthetic"],
+        choices=["quick", "performance", "showcase", "parity", "synthetic", "steam-deck"],
         default="quick",
         help="Suite profile controls lane durations and aggregate weights.",
     )
@@ -1136,6 +1153,19 @@ def main() -> int:
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
+
+    # When no explicit --lane is given, restrict to lanes that have a duration
+    # entry for the active profile.  This prevents preflight from validating
+    # scenes that don't exist in the current project (e.g. non-Deck lanes when
+    # running --profile steam-deck against the Deck project).
+    if not args.lane:
+        selected_lanes = [
+            lane for lane in selected_lanes if args.profile in lane.durations
+        ]
+        if not selected_lanes:
+            print(f"ERROR: no lanes defined for profile '{args.profile}'", file=sys.stderr)
+            return 2
+
     try:
         capture_lane_ids = _select_capture_lanes(
             selected_lanes,
@@ -1146,16 +1176,6 @@ def main() -> int:
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
-
-    # Restrict capture lanes to those that will actually execute under the
-    # current profile.  Without this, default capture lanes that lack a
-    # duration entry for the active profile are selected but then skipped in
-    # the execution loop, silently disabling visual validation.
-    if not args.lane:
-        executable_lane_ids = {
-            lane.lane_id for lane in selected_lanes if args.profile in lane.durations
-        }
-        capture_lane_ids &= executable_lane_ids
 
     try:
         asset_manifest = _load_asset_manifest(args.asset_manifest)
@@ -1198,9 +1218,6 @@ def main() -> int:
         )
         return 2
     for lane in selected_lanes:
-        if args.profile not in lane.durations and not args.lane:
-            # Lane has no duration for this profile and wasn't explicitly requested.
-            continue
         asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
         lane_base_duration = lane.durations.get(args.profile, lane.durations.get("performance", 20.0))
         lane_duration = max(5.0, lane_base_duration * duration_scale)

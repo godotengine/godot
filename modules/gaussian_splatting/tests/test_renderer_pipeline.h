@@ -16,6 +16,7 @@
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_streaming.h"
+#include "../core/gs_project_settings.h"
 #include "../renderer/gaussian_gpu_layout.h"
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../renderer/render_instancing_orchestrator.h"
@@ -2101,6 +2102,67 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Render-thread dispatch teardown rema
 
     // Characterization guard: teardown after a dispatch cycle should remain bounded and not hang.
     CHECK(elapsed_usec < 5000000);
+}
+
+TEST_CASE("[GaussianSplatting] get_streaming_route_policy returns RESIDENT when route_policy=0") {
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	if (project_settings == nullptr) {
+		MESSAGE("Skipping test - ProjectSettings unavailable");
+		return;
+	}
+
+	const String route_policy_setting = "rendering/gaussian_splatting/streaming/route_policy";
+	const String streaming_enabled_setting = "rendering/gaussian_splatting/streaming/enabled";
+	ScopedProjectSetting route_guard(project_settings, route_policy_setting);
+	ScopedProjectSetting enabled_guard(project_settings, streaming_enabled_setting);
+
+	// Ensure streaming/enabled=true so it doesn't mask route_policy.
+	project_settings->set_setting(streaming_enabled_setting, true);
+	project_settings->set_setting(route_policy_setting, 0);
+	CHECK(gs::settings::get_streaming_route_policy(project_settings) == gs::settings::GS_ROUTE_RESIDENT);
+
+	project_settings->set_setting(route_policy_setting, 1);
+	CHECK(gs::settings::get_streaming_route_policy(project_settings) == gs::settings::GS_ROUTE_STREAMING);
+}
+
+TEST_CASE("[GaussianSplatting] streaming/enabled=false forces RESIDENT regardless of route_policy") {
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	if (project_settings == nullptr) {
+		MESSAGE("Skipping test - ProjectSettings unavailable");
+		return;
+	}
+
+	const String route_policy_setting = "rendering/gaussian_splatting/streaming/route_policy";
+	const String streaming_enabled_setting = "rendering/gaussian_splatting/streaming/enabled";
+	ScopedProjectSetting route_guard(project_settings, route_policy_setting);
+	ScopedProjectSetting enabled_guard(project_settings, streaming_enabled_setting);
+
+	// Even with route_policy=1 (streaming), enabled=false must force resident.
+	project_settings->set_setting(streaming_enabled_setting, false);
+	project_settings->set_setting(route_policy_setting, 1);
+	CHECK(gs::settings::get_streaming_route_policy(project_settings) == gs::settings::GS_ROUTE_RESIDENT);
+
+	// Also verify route_policy=0 + enabled=false still gives resident.
+	project_settings->set_setting(route_policy_setting, 0);
+	CHECK(gs::settings::get_streaming_route_policy(project_settings) == gs::settings::GS_ROUTE_RESIDENT);
+}
+
+TEST_CASE("[GaussianSplatting] get_streaming_route_policy defaults to STREAMING when unset") {
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	if (project_settings == nullptr) {
+		MESSAGE("Skipping test - ProjectSettings unavailable");
+		return;
+	}
+
+	const String route_policy_setting = "rendering/gaussian_splatting/streaming/route_policy";
+	const String streaming_enabled_setting = "rendering/gaussian_splatting/streaming/enabled";
+	ScopedProjectSetting route_guard(project_settings, route_policy_setting);
+	ScopedProjectSetting enabled_guard(project_settings, streaming_enabled_setting);
+
+	// Clear route_policy so it falls through to default.
+	project_settings->clear(route_policy_setting);
+	project_settings->set_setting(streaming_enabled_setting, true);
+	CHECK(gs::settings::get_streaming_route_policy(project_settings) == gs::settings::GS_ROUTE_STREAMING);
 }
 
 } // namespace TestGaussianSplatting
