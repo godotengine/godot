@@ -579,7 +579,7 @@ void PixelFormats::initDataFormatCapabilities() {
 
 void PixelFormats::addMTLPixelFormatDescImpl(MTLPixelFormat p_pix_fmt, MTLPixelFormat p_pix_fmt_linear,
 		MTLViewClass p_view_class, MTLFmtCaps p_fmt_caps, const char *p_name) {
-	_mtl_pixel_format_descs[p_pix_fmt] = { .mtlPixelFormat = p_pix_fmt, DataFormat::DATA_FORMAT_MAX, p_fmt_caps, p_view_class, p_pix_fmt_linear, p_name };
+	_mtl_pixel_format_descs[p_pix_fmt] = { .mtlPixelFormat = p_pix_fmt, .dataFormat = DataFormat::DATA_FORMAT_MAX, .mtlFmtCaps = p_fmt_caps, .mtlViewClass = p_view_class, .mtlPixelFormatLinear = p_pix_fmt_linear, .name = p_name };
 }
 
 #define addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, appleGPUCaps)                             \
@@ -783,7 +783,7 @@ void PixelFormats::addMTLVertexFormatDescImpl(MTLVertexFormat mtlVtxFmt, MTLFmtC
 	if (mtlVtxFmt >= _mtl_vertex_format_descs.size()) {
 		_mtl_vertex_format_descs.resize(mtlVtxFmt + 1);
 	}
-	_mtl_vertex_format_descs[mtlVtxFmt] = { .mtlVertexFormat = mtlVtxFmt, RD::DATA_FORMAT_MAX, vtxCap, MTLViewClass::None, MTLPixelFormatInvalid, name };
+	_mtl_vertex_format_descs[mtlVtxFmt] = { .mtlVertexFormat = mtlVtxFmt, .dataFormat = RD::DATA_FORMAT_MAX, .mtlFmtCaps = vtxCap, .mtlViewClass = MTLViewClass::None, .mtlPixelFormatLinear = MTLPixelFormatInvalid, .name = name };
 }
 
 // Check mtlVtx exists on platform, to avoid overwriting the MTLVertexFormatInvalid entry.
