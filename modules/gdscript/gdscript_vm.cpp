@@ -660,7 +660,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		memnew_placement(&stack[ADDR_STACK_SELF], Variant);
 		script = _script;
 	}
-	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
+
+	// We must call a `Variant` constructor here, as accessing an object without doing so is undefined behavior.
+	memnew_placement(&stack[ADDR_STACK_CLASS], Variant);
+	VariantInternal::object_assign_without_ref_unsafe(&stack[ADDR_STACK_CLASS], script);
+
 	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
 
 	String err_text;
@@ -4009,7 +4013,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->exit_function();
 	}
 
-	for (int i = 0; i < _stack_size; i++) {
+	// We deliberately avoid calling the destructor for `ADDR_STACK_CLASS`, since we initialized it
+	// without incrementing any reference count that it might have.
+	stack[ADDR_STACK_SELF].~Variant();
+	stack[ADDR_STACK_NIL].~Variant();
+
+	for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 		stack[i].~Variant();
 	}
 
