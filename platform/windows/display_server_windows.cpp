@@ -565,13 +565,13 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			ds->file_dialog_wnd[hwnd_dialog] = fd;
 		}
 
-		HICON mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_SMALL, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+		HICON w_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_SMALL, 0);
+		if (w_icon) {
+			SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)w_icon);
 		}
-		mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_BIG, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+		w_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_BIG, 0);
+		if (w_icon) {
+			SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)w_icon);
 		}
 		IPropertyStore *prop_store;
 		HRESULT hr = SHGetPropertyStoreForWindow(hwnd_dialog, IID_IPropertyStore, (void **)&prop_store);
@@ -2125,7 +2125,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Displa
 			size.y = MAX(size.y, rect.bottom - rect.top);
 		}
 	}
-	if (icon_big) {
+	if (wd.icon_big || wd.icon_small) {
 		size.x += 32;
 	} else {
 		size.x += 16;
@@ -2587,15 +2587,26 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	if (icon_big && !icon_small) {
-		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
-		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
-	} else {
-		if (icon_big) {
-			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	if (wd.icon_set) {
+		if (wd.icon_big && !wd.icon_small) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
+		} else {
+			if (wd.icon_big) {
+				SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+			}
+			if (wd.icon_small) {
+				SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_small);
+			}
 		}
-		if (icon_small) {
-			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+	} else if (p_window != DisplayServerEnums::MAIN_WINDOW_ID) {
+		HICON mainwindow_icon = (HICON)SendMessage(windows[DisplayServerEnums::MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
+		if (mainwindow_icon) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+		}
+		mainwindow_icon = (HICON)SendMessage(windows[DisplayServerEnums::MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
+		if (mainwindow_icon) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
 		}
 	}
 
@@ -4225,17 +4236,29 @@ void DisplayServerWindows::swap_buffers() {
 }
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+			continue;
+		}
+		_window_set_native_icon(p_filename, E.key);
+	}
+}
+
+void DisplayServerWindows::_window_set_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	if (icon_big) {
-		DestroyIcon(icon_big);
-		icon_buffer_big.clear();
-		icon_big = nullptr;
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.icon_big) {
+		DestroyIcon(wd.icon_big);
+		wd.icon_buffer_big.clear();
+		wd.icon_big = nullptr;
 	}
-	if (icon_small) {
-		DestroyIcon(icon_small);
-		icon_buffer_small.clear();
-		icon_small = nullptr;
+	if (wd.icon_small) {
+		DestroyIcon(wd.icon_small);
+		wd.icon_buffer_small.clear();
+		wd.icon_small = nullptr;
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
@@ -4295,45 +4318,65 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 
 	// Read the big icon.
 	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
-	icon_buffer_big.resize(bytecount_big);
+	wd.icon_buffer_big.resize(bytecount_big);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&icon_buffer_big.write[0], bytecount_big);
-	icon_big = CreateIconFromResourceEx((PBYTE)&icon_buffer_big.write[0], bytecount_big, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
-	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	f->get_buffer((uint8_t *)&wd.icon_buffer_big.write[0], bytecount_big);
+	wd.icon_big = CreateIconFromResourceEx((PBYTE)&wd.icon_buffer_big.write[0], bytecount_big, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+	ERR_FAIL_NULL_MSG(wd.icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
 	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
-	icon_buffer_small.resize(bytecount_small);
+	wd.icon_buffer_small.resize(bytecount_small);
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&icon_buffer_small.write[0], bytecount_small);
-	icon_small = CreateIconFromResourceEx((PBYTE)&icon_buffer_small.write[0], bytecount_small, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
-	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	f->get_buffer((uint8_t *)&wd.icon_buffer_small.write[0], bytecount_small);
+	wd.icon_small = CreateIconFromResourceEx((PBYTE)&wd.icon_buffer_small.write[0], bytecount_small, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+	ERR_FAIL_NULL_MSG(wd.icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
 	int err = 0;
 	SetLastError(err);
 
-	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-		SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
-		SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	wd.icon_set = true;
+	SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_small);
+	SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+	if (p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+			if (!E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+				SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_small);
+				SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+			}
+		}
 	}
+
 	memdelete(icon_dir);
 }
 
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+			continue;
+		}
+		window_set_icon(p_icon, E.key);
+	}
+}
+
+void DisplayServerWindows::window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	if (icon_big) {
-		DestroyIcon(icon_big);
-		icon_buffer_big.clear();
-		icon_big = nullptr;
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.icon_big) {
+		DestroyIcon(wd.icon_big);
+		wd.icon_buffer_big.clear();
+		wd.icon_big = nullptr;
 	}
-	if (icon_small) {
-		DestroyIcon(icon_small);
-		icon_buffer_small.clear();
-		icon_small = nullptr;
+	if (wd.icon_small) {
+		DestroyIcon(wd.icon_small);
+		wd.icon_buffer_small.clear();
+		wd.icon_small = nullptr;
 	}
 
 	if (p_icon.is_valid()) {
@@ -4347,8 +4390,8 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		icon_buffer_big.resize(icon_len);
-		BYTE *icon_bmp = icon_buffer_big.ptrw();
+		wd.icon_buffer_big.resize(icon_len);
+		BYTE *icon_bmp = wd.icon_buffer_big.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4375,17 +4418,32 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 				wpx[3] = rpx[3];
 			}
 		}
-		icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
-		ERR_FAIL_NULL(icon_big);
+		wd.icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+		ERR_FAIL_NULL(wd.icon_big);
 
-		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		wd.icon_set = true;
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+
+		if (p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+			for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+				if (!E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+				}
+			}
 		}
 	} else {
-		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, 0);
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, 0);
+		wd.icon_set = false;
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, 0);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, 0);
+		if (p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+			for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+				if (!E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, 0);
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, 0);
+				}
+			}
 		}
 	}
 }
@@ -7126,6 +7184,17 @@ void DisplayServerWindows::_destroy_window(DisplayServerEnums::WindowID p_window
 		wd.drop_target->Release();
 	}
 
+	if (wd.icon_big) {
+		DestroyIcon(wd.icon_big);
+		wd.icon_buffer_big.clear();
+		wd.icon_big = nullptr;
+	}
+	if (wd.icon_small) {
+		DestroyIcon(wd.icon_small);
+		wd.icon_buffer_small.clear();
+		wd.icon_small = nullptr;
+	}
+
 	DestroyWindow(wd.hWnd);
 	windows.erase(p_window_id);
 }
@@ -8199,17 +8268,6 @@ DisplayServerWindows::~DisplayServerWindows() {
 		rendering_context = nullptr;
 	}
 #endif
-
-	if (icon_big) {
-		DestroyIcon(icon_big);
-		icon_buffer_big.clear();
-		icon_big = nullptr;
-	}
-	if (icon_small) {
-		DestroyIcon(icon_small);
-		icon_buffer_small.clear();
-		icon_small = nullptr;
-	}
 
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
