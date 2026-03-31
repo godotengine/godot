@@ -97,6 +97,7 @@ public:
 	void set_query_and_update(const String &p_query);
 	void update_results();
 
+	void set_assigned_resource_id(ResourceUID::ID p_id);
 	bool has_nothing_selected() const;
 	ResourceUID::ID get_selected() const;
 	String get_selected_path() const;
@@ -117,7 +118,7 @@ private:
 	static constexpr int MAX_HISTORY_SIZE = 20;
 
 	Vector<FuzzySearchResult> search_results;
-	Vector<StringName> base_types;
+	Vector<StringName> actual_types;
 	LocalVector<ResourceUID::ID> ids;
 	AHashMap<ResourceUID::ID, StringName> filetypes;
 	Vector<QuickOpenResultCandidate> candidates;
@@ -128,11 +129,13 @@ private:
 	HashSet<ResourceUID::ID> history_set;
 
 	String query;
+	ResourceUID::ID assigned_resource_id;
 	int selection_index = -1;
 	int num_visible_results = 0;
 	int max_total_results = 0;
 
 	bool never_opened = true;
+	bool reset_preview = false;
 	Ref<ConfigFile> history_file;
 
 	QuickOpenDisplayMode content_display_mode = QuickOpenDisplayMode::LIST;
@@ -162,15 +165,17 @@ private:
 	void _create_initial_results();
 	void _find_ids_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
 
+	void _resolve_actual_type(const Vector<StringName> &p_base_types);
 	void _update_history();
 	void _add_candidate(QuickOpenResultCandidate &p_candidate);
 	void _update_fuzzy_search_results();
 	void _use_default_candidates();
 	void _score_and_sort_candidates();
-	void _update_result_items(int p_new_visible_results_count, int p_new_selection_index);
+	void _update_result_items(int p_new_visible_results_count);
 
 	void _move_selection_index(Key p_key);
-	void _select_item(int p_index);
+	void _select_item(int p_index, bool p_center_on_scroll = false);
+	void _scroll_to_center(QuickOpenResultItem *p_item) const;
 
 	void _item_input(const Ref<InputEvent> &p_ev, int p_index);
 
@@ -271,10 +276,10 @@ protected:
 	virtual void ok_pressed() override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void item_pressed(bool p_double_click);
-	void selection_changed();
+	void selection_changed() const;
 
 private:
-	static String get_dialog_title(const Vector<StringName> &p_base_types);
+	String get_dialog_title() const;
 
 	LineEdit *search_box = nullptr;
 	QuickOpenResultContainer *container = nullptr;
@@ -284,13 +289,12 @@ private:
 	Object *property_object = nullptr;
 	StringName property_path;
 	Variant initial_property_value;
-	bool initial_selection_performed = false;
 	bool allow_type_switching = false;
 	bool is_cycling_items = false;
 	bool _is_instant_preview_active() const;
 	void _search_box_text_changed(const String &p_query);
 	void _finish_dialog_setup(const Vector<StringName> &p_base_types);
 
-	void preview_property();
+	void preview_property() const;
 	void update_property() const;
 };
