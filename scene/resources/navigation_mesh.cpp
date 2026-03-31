@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 
 #ifdef DEBUG_ENABLED
+#include "core/math/random_pcg.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
@@ -372,6 +373,12 @@ void NavigationMesh::clear_polygons() {
 	polygons_meta.clear();
 }
 
+uint32_t NavigationMesh::get_polygon_meta(int p_idx) {
+	RWLockRead read_lock(rwlock);
+	ERR_FAIL_INDEX_V(p_idx, polygons_meta.size(), uint32_t(0));
+	return polygons_meta[p_idx];
+}
+
 void NavigationMesh::_set_polygons_meta(const Array &p_polygons_meta) {
 	RWLockWrite write_lock(rwlock);
 
@@ -464,8 +471,11 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 
 	// if enabled add vertex colors to colorize each face individually
+	// NOTE: Cannot color faces that were generated because of area meshes differently using vertex colors - no access to region's navigation layers.
+	print_line("area coloring not supported");
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {
+		RandomPCG rand;
 		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
 		Color polygon_color = debug_navigation_geometry_face_color;
 
@@ -473,7 +483,8 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		face_color_array.resize(polygon_count * 3);
 
 		for (int i = 0; i < polygon_count; i++) {
-			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_navigation_geometry_face_color.a;
 
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);

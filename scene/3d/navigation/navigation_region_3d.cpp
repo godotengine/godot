@@ -522,7 +522,6 @@ void NavigationRegion3D::_update_debug_mesh() {
 		return;
 	}
 
-	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
 
 	int vertex_count = 0;
@@ -542,19 +541,20 @@ void NavigationRegion3D::_update_debug_mesh() {
 	face_vertex_array.resize(vertex_count);
 
 	Vector<Color> face_color_array;
-	if (enabled_geometry_face_random_color) {
-		face_color_array.resize(vertex_count);
-	}
+	face_color_array.resize(vertex_count);
 
 	Vector<Vector3> line_vertex_array;
 	if (enabled_edge_lines) {
 		line_vertex_array.resize(line_count);
 	}
 
+	// Face coloring.
 	Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+	Color debug_navigation_geometry_face_area_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_area_color();
+	Color polygon_color = debug_navigation_geometry_face_color;
 
 	RandomPCG rand;
-	Color polygon_color = debug_navigation_geometry_face_color;
+	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 
 	int face_vertex_index = 0;
 	int line_vertex_index = 0;
@@ -570,21 +570,28 @@ void NavigationRegion3D::_update_debug_mesh() {
 			continue;
 		}
 
-		if (enabled_geometry_face_random_color) {
+		if (navigation_mesh->get_polygon_meta(polygon_index) != navigation_layers) {
+			// Color faces that were generated because of area meshes differently using vertex colors.
+			// FIXME: does not work if !enabled_geometry_face_random_color.
+			polygon_color = debug_navigation_geometry_face_area_color;
+		} else if (enabled_geometry_face_random_color) {
 			// Generate the polygon color, slightly randomly modified from the settings one.
 			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
 			polygon_color.a = debug_navigation_geometry_face_color.a;
+		} else {
+			// Reset.
+			polygon_color = debug_navigation_geometry_face_color;
 		}
 
 		for (int polygon_indices_index = 0; polygon_indices_index < polygon_indices_size - 2; polygon_indices_index++) {
 			face_vertex_array_ptrw[face_vertex_index] = vertices[polygon_indices[0]];
 			face_vertex_array_ptrw[face_vertex_index + 1] = vertices[polygon_indices[polygon_indices_index + 1]];
 			face_vertex_array_ptrw[face_vertex_index + 2] = vertices[polygon_indices[polygon_indices_index + 2]];
-			if (enabled_geometry_face_random_color) {
-				face_color_array_ptrw[face_vertex_index] = polygon_color;
-				face_color_array_ptrw[face_vertex_index + 1] = polygon_color;
-				face_color_array_ptrw[face_vertex_index + 2] = polygon_color;
-			}
+
+			face_color_array_ptrw[face_vertex_index] = polygon_color;
+			face_color_array_ptrw[face_vertex_index + 1] = polygon_color;
+			face_color_array_ptrw[face_vertex_index + 2] = polygon_color;
+
 			face_vertex_index += 3;
 		}
 
@@ -608,9 +615,8 @@ void NavigationRegion3D::_update_debug_mesh() {
 	Array face_mesh_array;
 	face_mesh_array.resize(Mesh::ARRAY_MAX);
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
-	if (enabled_geometry_face_random_color) {
-		face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
-	}
+	face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
 	debug_mesh->surface_set_material(0, face_material);
 
