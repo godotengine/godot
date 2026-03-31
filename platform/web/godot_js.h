@@ -43,7 +43,8 @@ extern char *godot_js_emscripten_get_version();
 
 // Config
 extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
-extern void godot_js_config_canvas_id_get(char *p_ptr, int p_ptr_max);
+extern const char *godot_js_config_canvas_id_allocate();
+extern void godot_js_config_canvas_id_free();
 
 // OS
 extern void godot_js_os_finish_async(void (*p_callback)());
@@ -95,6 +96,7 @@ extern void godot_js_display_alert(const char *p_text);
 extern int godot_js_display_touchscreen_is_available();
 extern int godot_js_display_is_swap_ok_cancel();
 extern void godot_js_display_setup_canvas(int p_width, int p_height, int p_fullscreen, int p_hidpi);
+extern int godot_js_display_check_canvas();
 
 // Display canvas
 extern void godot_js_display_canvas_focus();

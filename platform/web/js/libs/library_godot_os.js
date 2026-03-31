@@ -57,6 +57,7 @@ const GodotConfig = {
 	$GodotConfig__deps: ['$GodotRuntime'],
 	$GodotConfig: {
 		canvas: null,
+		canvas_id_ptr: null,
 		locale: 'en',
 		canvas_resize_policy: 2, // Adaptive
 		virtual_keyboard: false,
@@ -93,10 +94,22 @@ const GodotConfig = {
 		},
 	},
 
-	godot_js_config_canvas_id_get__proxy: 'sync',
-	godot_js_config_canvas_id_get__sig: 'vii',
-	godot_js_config_canvas_id_get: function (p_ptr, p_ptr_max) {
-		GodotRuntime.stringToHeap(`#${GodotConfig.canvas.id}`, p_ptr, p_ptr_max);
+	godot_js_config_canvas_id_allocate__proxy: 'sync',
+	godot_js_config_canvas_id_allocate__sig: 'p',
+	godot_js_config_canvas_id_allocate: function () {
+		if (!GodotConfig.canvas_id_ptr) {
+			GodotConfig.canvas_id_ptr = GodotRuntime.allocString(`#${GodotConfig.canvas.id}`);
+		}
+		return GodotConfig.canvas_id_ptr;
+	},
+
+	godot_js_config_canvas_id_free__proxy: 'sync',
+	godot_js_config_canvas_id_free__sig: 'v',
+	godot_js_config_canvas_id_free: function () {
+		if (GodotConfig.canvas_id_ptr) {
+			GodotRuntime.free(GodotConfig.canvas_id_ptr);
+			GodotConfig.canvas_id_ptr = null;
+		}
 	},
 
 	godot_js_config_locale_get__proxy: 'sync',

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_webgl2.h                                                        */
+/*  set_offscreen_canvas_size.js                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
-#include <GLES3/gl3.h>
-#include <webgl/webgl2.h>
-
-#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR 0x9630
-#define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR 0x9632
-#define GL_MAX_VIEWS_OVR 0x9631
-#define GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR 0x9633
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void godot_webgl2_glFramebufferTextureMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
-void godot_webgl2_glFramebufferTextureMultisampleMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews);
-void godot_webgl2_wrapper_glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
-
-void godot_webgl2_glFramebufferTextureMultiviewOVRDirect(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
-void godot_webgl2_glFramebufferTextureMultisampleMultiviewOVRDirect(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews);
-void godot_webgl2_glGetBufferSubDataDirect(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
-
-#define glFramebufferTextureMultiviewOVR godot_webgl2_glFramebufferTextureMultiviewOVRDirect
-#define glFramebufferTextureMultisampleMultiviewOVR godot_webgl2_glFramebufferTextureMultisampleMultiviewOVRDirect
-#define godot_webgl2_glGetBufferSubData godot_webgl2_glGetBufferSubDataDirect
-
-#ifdef __cplusplus
-}
-#endif
+// This is only needed if the offscreen canvas is being used on the main thread.
+// We are only calling it from JS, so it's fine that wasm is already imported the old version.
+// https://github.com/emscripten-core/emscripten/issues/26394
+const original_emscripten_set_canvas_element_size = _emscripten_set_canvas_element_size;
+_emscripten_set_canvas_element_size = (target, width, height) => {
+	const result = original_emscripten_set_canvas_element_size(target, width, height);
+	const canvasRecord = GL.offscreenCanvases[GodotRuntime.parseString(target).slice(1)];
+	if (canvasRecord && canvasRecord.canvas) {
+		const canvas = canvasRecord.canvas;
+		canvas.width = width;
+		canvas.height = height;
+		if (canvas.GLctxObject) {
+			GL.resizeOffscreenFramebuffer(canvas.GLctxObject);
+		}
+	}
+	return result;
+};

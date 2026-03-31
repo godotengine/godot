@@ -23,6 +23,7 @@ if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
 web_files = [
     "audio_driver_web.cpp",
     "webmidi_driver.cpp",
+    "godot_webgl2.cpp",
     "display_server_web.cpp",
     "http_client_web.cpp",
     "javascript_bridge_singleton.cpp",
@@ -55,6 +56,12 @@ sys_env.AddJSPost([
 
 if env["javascript_eval"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
+
+if env["use_offscreen_canvas"] == "yes" and not env["proxy_to_pthread"]:
+    # Workaround https://github.com/emscripten-core/emscripten/issues/26394.
+    sys_env.AddJSPost([
+        "js/patches/set_offscreen_canvas_size.js",
+    ])
 
 for lib in sys_env["JS_LIBS"]:
     sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
