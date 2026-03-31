@@ -50,6 +50,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/view_3d_controller.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
@@ -104,6 +105,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			}
 			edit_axis = Vector3::Axis(new_axis);
 			update_grid();
+			_update_cell_origin_scale();
 
 		} break;
 
@@ -141,6 +143,9 @@ void GridMapEditor::_menu_option(int p_option) {
 					undo_redo->add_do_method(node, "set_cell_item", cell, node->get_cell_item(cell), node->get_orthogonal_index_from_basis(r));
 					undo_redo->add_undo_method(node, "set_cell_item", cell, node->get_cell_item(cell), node->get_cell_item_orientation(cell));
 				}
+
+				undo_redo->add_do_method(this, "_update_cell_origins");
+				undo_redo->add_undo_method(this, "_update_cell_origins");
 
 				undo_redo->commit_action();
 
@@ -321,6 +326,7 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 		_update_selection_transform();
 
 		if (was_active != selection.active || begin_old != selection.begin || end_old != selection.end) {
+			_update_cell_origins();
 			emit_signal(SNAME("overlay_update_requested"));
 		}
 	}
@@ -453,6 +459,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		}
 
 		_update_cursor_transform();
+		_update_cell_origins();
 	}
 
 	if (input_action == INPUT_NONE) {
@@ -797,6 +804,9 @@ void GridMapEditor::_do_paste() {
 		}
 		undo_redo->add_do_method(this, "_set_selection", true, temp_begin, temp_end);
 		undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+	} else {
+		undo_redo->add_do_method(this, "_update_cell_origins");
+		undo_redo->add_undo_method(this, "_update_cell_origins");
 	}
 
 	undo_redo->commit_action();
@@ -962,6 +972,9 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 						const SetItem &si = set_items[i - 1];
 						undo_redo->add_undo_method(node, "set_cell_item", si.position, si.old_value, si.old_orientation);
 					}
+
+					undo_redo->add_do_method(this, "_update_cell_origins");
+					undo_redo->add_undo_method(this, "_update_cell_origins");
 
 					undo_redo->commit_action();
 				}
@@ -1204,6 +1217,8 @@ void GridMapEditor::_update_mesh_library() {
 void GridMapEditor::edit(GridMap *p_gridmap) {
 	if (node) {
 		node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
+		node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_update_cell_origin_scale));
+		node->disconnect(SNAME("cell_center_changed"), callable_mp(this, &GridMapEditor::_update_cell_origins));
 		node->disconnect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 		if (mesh_library.is_valid()) {
 			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::update_palette));
@@ -1237,6 +1252,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	update_palette();
 	_update_cursor_instance();
+	_update_cell_origin_scale();
 
 	set_process(true);
 
@@ -1244,6 +1260,8 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	update_grid();
 
 	node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
+	node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_update_cell_origin_scale).unbind(1));
+	node->connect(SNAME("cell_center_changed"), callable_mp(this, &GridMapEditor::_update_cell_origins));
 	node->connect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 	_update_mesh_library();
 }
@@ -1334,6 +1352,11 @@ void GridMapEditor::_update_theme() {
 	mode_thumbnail->set_button_icon(get_theme_icon(SNAME("FileThumbnail"), EditorStringName(EditorIcons)));
 	mode_list->set_button_icon(get_theme_icon(SNAME("FileList"), EditorStringName(EditorIcons)));
 	options->set_button_icon(get_theme_icon(SNAME("Tools"), EditorStringName(EditorIcons)));
+
+	Ref<Texture2D> cell_origin_icon = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GridMapOrigin"), EditorStringName(EditorIcons));
+	for (int i = 0; i < ORIGIN_COUNT; i++) {
+		cell_origin_mat[i]->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, cell_origin_icon);
+	}
 }
 
 void GridMapEditor::_notification(int p_what) {
@@ -1374,6 +1397,11 @@ void GridMapEditor::_notification(int p_what) {
 				RenderingServer::get_singleton()->free_rid(selection_level_instance[i]);
 			}
 
+			for (unsigned int i = 0; i < cell_origin_instance.size(); i++) {
+				RS::get_singleton()->free_rid(cell_origin_instance[i]);
+			}
+			cell_origin_instance.clear();
+
 			RenderingServer::get_singleton()->free_rid(cursor_instance);
 			RenderingServer::get_singleton()->free_rid(selection_instance);
 			RenderingServer::get_singleton()->free_rid(paste_instance);
@@ -1397,6 +1425,7 @@ void GridMapEditor::_notification(int p_what) {
 				grid_xform = xf;
 				_update_cursor_transform();
 				_update_selection_transform();
+				_update_cell_origins();
 			}
 		} break;
 
@@ -1424,8 +1453,14 @@ void GridMapEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
 
-			// Take Preview Size changes into account.
-			update_palette();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/grid_map")) {
+				update_palette(); // Take Preview Size changes into account.
+				_update_cell_origin_scale();
+
+				settings_show_cell_origins->set_pressed_no_signal(EDITOR_GET("editors/grid_map/show_cell_origins"));
+				settings_cell_origin_area->set_value_no_signal(EDITOR_GET("editors/grid_map/cell_origin_cursor_area"));
+				settings_pick_distance->set_value_no_signal(EDITOR_GET("editors/grid_map/pick_distance"));
+			}
 		} break;
 	}
 }
@@ -1482,9 +1517,141 @@ void GridMapEditor::_update_cursor_instance() {
 	_update_cursor_transform();
 }
 
+void GridMapEditor::_update_cell_origin_scale() {
+	float mult_by = 0;
+	Vector3 cell_size = node->get_cell_size();
+	for (int i = 0; i < Vector3::AXIS_COUNT; i++) {
+		if (i != edit_axis) {
+			mult_by = mult_by == 0 ? cell_size[i] : MIN(mult_by, cell_size[i]);
+		}
+	}
+
+	float base_scale = EDITOR_GET("editors/grid_map/cell_origin_base_scale");
+	float scale = MAX(0.01, 0.1 * mult_by * base_scale);
+	if (Math::is_equal_approx(scale, cell_origin_scale)) {
+		return;
+	}
+
+	cell_origin_scale = scale;
+
+	Vector<Vector3> vs = {
+		Vector3(-scale, scale, 0),
+		Vector3(scale, scale, 0),
+		Vector3(scale, -scale, 0),
+		Vector3(-scale, -scale, 0)
+	};
+
+	Vector<Vector2> uv = {
+		Vector2(0, 0),
+		Vector2(1, 0),
+		Vector2(1, 1),
+		Vector2(0, 1)
+	};
+
+	Vector<int> indices = { 0, 1, 2, 0, 2, 3 };
+
+	Array a;
+	a.resize(Mesh::ARRAY_MAX);
+	a[Mesh::ARRAY_VERTEX] = vs;
+	a[Mesh::ARRAY_TEX_UV] = uv;
+	a[Mesh::ARRAY_INDEX] = indices;
+
+	if (RS::get_singleton()->mesh_get_surface_count(cell_origin_mesh) != 0) {
+		RS::get_singleton()->mesh_surface_remove(cell_origin_mesh, 0);
+	}
+	RS::get_singleton()->mesh_add_surface_from_arrays(cell_origin_mesh, RSE::PRIMITIVE_TRIANGLES, a);
+	RS::get_singleton()->mesh_set_custom_aabb(cell_origin_mesh, AABB(Vector3(-scale, -scale, -scale) * 100.0f, Vector3(scale, scale, scale) * 200.0f));
+
+	_update_cell_origins();
+}
+
+void GridMapEditor::_update_cell_origins() {
+	int idx = 0;
+
+	bool show_origins = EDITOR_GET("editors/grid_map/show_cell_origins");
+	int expand_by = EDITOR_GET("editors/grid_map/cell_origin_cursor_area");
+	if (show_origins) {
+		Vector<AABB> ignore_areas;
+		if (cursor_visible) {
+			AABB cursor_center(cursor_gridpos, Vector3());
+			idx = _fill_area_with_origins(cursor_center, ORIGIN_CURSOR);
+			ignore_areas.append(cursor_center);
+		}
+
+		AABB select = _get_selection();
+		if (select.size != Vector3i()) {
+			idx = _fill_area_with_origins(select, ORIGIN_SELECTED, ignore_areas, idx);
+			ignore_areas.append(select);
+		}
+
+		if (cursor_visible) {
+			Vector3i expansion(expand_by, expand_by, expand_by);
+			expansion[edit_axis] = 0;
+			AABB cursor_area = AABB(cursor_gridpos - expansion, expansion * 2);
+			idx = _fill_area_with_origins(cursor_area, ORIGIN_NEAR_CURSOR, ignore_areas, idx);
+		}
+	}
+
+	// Free unused instances.
+	for (int i = idx; i < cell_origin_instance.size(); i++) {
+		RS::get_singleton()->free_rid(cell_origin_instance[i]);
+	}
+	cell_origin_instance.resize(idx);
+}
+
+int GridMapEditor::_fill_area_with_origins(AABB p_area, CellOriginMaterial p_material, const Vector<AABB> &p_ignore_areas, int p_from) {
+	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+	int idx = p_from;
+	p_area.size += Vector3i(1, 1, 1);
+
+	for (int i = 0; i < p_area.size.x; i++) {
+		for (int j = 0; j < p_area.size.y; j++) {
+			for (int k = 0; k < p_area.size.z; k++) {
+				Vector3i pos(p_area.position.x + i, p_area.position.y + j, p_area.position.z + k);
+				bool has_cell = node->get_cell_item(pos) != GridMap::INVALID_CELL_ITEM;
+				if (!has_cell) {
+					continue;
+				}
+
+				bool skip = false;
+				for (const AABB &area : p_ignore_areas) {
+					if (area.has_point(pos)) {
+						skip = true;
+						break;
+					}
+				}
+				if (skip) {
+					continue;
+				}
+
+				Transform3D xf;
+				xf.origin = node->to_global(node->map_to_local(pos));
+
+				if (idx >= cell_origin_instance.size()) {
+					cell_origin_instance.append(RS::get_singleton()->instance_create2(cell_origin_mesh, scenario));
+					RS::get_singleton()->instance_set_layer_mask(cell_origin_instance[idx], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
+				}
+
+				RS::get_singleton()->instance_set_surface_override_material(cell_origin_instance[idx], 0, cell_origin_mat[p_material]->get_rid());
+				RS::get_singleton()->instance_set_transform(cell_origin_instance[idx], xf);
+
+				idx++;
+			}
+		}
+	}
+
+	return idx;
+}
+
 void GridMapEditor::_on_tool_mode_changed() {
 	_show_viewports_transform_gizmo(mode_buttons_group->get_pressed_button() == transform_mode_button);
 	_update_cursor_instance();
+}
+
+void GridMapEditor::_settings_changed() {
+	EditorSettings::get_singleton()->set_setting("editors/grid_map/show_cell_origins", settings_show_cell_origins->is_pressed());
+	EditorSettings::get_singleton()->set_setting("editors/grid_map/cell_origin_cursor_area", settings_cell_origin_area->get_value());
+	EditorSettings::get_singleton()->set_setting("editors/grid_map/pick_distance", settings_pick_distance->get_value());
 }
 
 void GridMapEditor::_item_selected_cbk(int idx) {
@@ -1511,6 +1678,7 @@ void GridMapEditor::_floor_mouse_exited() {
 void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
+	ClassDB::bind_method("_update_cell_origins", &GridMapEditor::_update_cell_origins);
 
 	ADD_SIGNAL(MethodInfo("overlay_update_requested"));
 }
@@ -1555,13 +1723,35 @@ GridMapEditor::GridMapEditor() {
 	settings_vbc->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	settings_dialog->add_child(settings_vbc);
 
+	settings_show_cell_origins = memnew(CheckButton);
+	settings_show_cell_origins->set_text("Show Cell Origins");
+	settings_show_cell_origins->set_pressed_no_signal(EDITOR_GET("editors/grid_map/show_cell_origins"));
+	settings_show_cell_origins->set_accessibility_name(TTRC("Show Cell Origins"));
+	settings_vbc->add_child(settings_show_cell_origins);
+	settings_show_cell_origins->connect(SceneStringName(toggled), callable_mp(this, &GridMapEditor::_settings_changed).unbind(1));
+
+	settings_vbc->add_child(memnew(Label(TTRC("Cell Origin Area Near the Cursor:"))));
+
+	settings_cell_origin_area = memnew(SpinBox);
+	settings_cell_origin_area->set_max(12);
+	settings_cell_origin_area->set_allow_greater(true);
+	settings_cell_origin_area->set_min(0);
+	settings_cell_origin_area->set_value_no_signal(EDITOR_GET("editors/grid_map/cell_origin_cursor_area"));
+	settings_cell_origin_area->set_accessibility_name(TTRC("Cell Origin Area Near the Cursor:"));
+	settings_vbc->add_child(settings_cell_origin_area);
+	settings_cell_origin_area->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_settings_changed).unbind(1));
+
+	settings_vbc->add_child(memnew(HSeparator));
+
+	settings_vbc->add_child(memnew(Label(TTRC("Pick Distance:"))));
+
 	settings_pick_distance = memnew(SpinBox);
-	settings_pick_distance->set_max(10000.0f);
-	settings_pick_distance->set_min(500.0f);
-	settings_pick_distance->set_step(1.0f);
-	settings_pick_distance->set_value(EDITOR_GET("editors/grid_map/pick_distance"));
+	settings_pick_distance->set_max(10000);
+	settings_pick_distance->set_min(500);
+	settings_pick_distance->set_value_no_signal(EDITOR_GET("editors/grid_map/pick_distance"));
 	settings_pick_distance->set_accessibility_name(TTRC("Pick Distance:"));
-	settings_vbc->add_margin_child(TTRC("Pick Distance:"), settings_pick_distance);
+	settings_vbc->add_child(settings_pick_distance);
+	settings_pick_distance->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_settings_changed).unbind(1));
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GridMapEditor::_menu_option));
 
@@ -1804,7 +1994,7 @@ GridMapEditor::GridMapEditor() {
 	paste_mesh = RenderingServer::get_singleton()->mesh_create();
 
 	{
-		// Selection mesh create.
+		// Selection mesh creation.
 
 		Vector<Vector3> lines;
 		Vector<Vector3> triangles;
@@ -1952,6 +2142,37 @@ GridMapEditor::GridMapEditor() {
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+
+	cell_origin_mesh = RS::get_singleton()->mesh_create();
+
+	for (int i = 0; i < ORIGIN_COUNT; i++) {
+		cell_origin_mat[i].instantiate();
+		cell_origin_mat[i]->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		cell_origin_mat[i]->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		cell_origin_mat[i]->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		cell_origin_mat[i]->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+		cell_origin_mat[i]->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
+		cell_origin_mat[i]->set_alpha_scissor_threshold(0.1);
+		cell_origin_mat[i]->set_render_priority(1);
+		cell_origin_mat[i]->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+		cell_origin_mat[i]->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+
+		Color color;
+		switch (i) {
+			case ORIGIN_CURSOR: {
+				color = Color(1, 1, 1);
+			} break;
+
+			case ORIGIN_NEAR_CURSOR: {
+				color = Color(1, 0.79, 0.37);
+			} break;
+
+			case ORIGIN_SELECTED: {
+				color = Color(0, 0.56, 1);
+			} break;
+		}
+		cell_origin_mat[i]->set_albedo(color);
+	}
 }
 
 GridMapEditor::~GridMapEditor() {
@@ -1987,6 +2208,8 @@ GridMapEditor::~GridMapEditor() {
 	if (paste_instance.is_valid()) {
 		RenderingServer::get_singleton()->free_rid(paste_instance);
 	}
+
+	RenderingServer::get_singleton()->free_rid(cell_origin_mesh);
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {

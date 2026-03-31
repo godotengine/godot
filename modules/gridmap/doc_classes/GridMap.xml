@@ -227,6 +227,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="cell_center_changed">
+			<description>
+				Emitted when [member cell_center_x], [member cell_center_y], or [member cell_center_z] changes.
+			</description>
+		</signal>
 		<signal name="cell_size_changed">
 			<param index="0" name="cell_size" type="Vector3" />
 			<description>
