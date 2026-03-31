@@ -200,10 +200,17 @@ def get_opts():
             "Path to the AccessKit C SDK",
             os.path.join(deps_folder, "accesskit"),
         ),
+        # OpenGL over Direct3D 11.
         (
             "angle_libs",
             "Path to the ANGLE static libraries",
             os.path.join(deps_folder, "angle"),
+        ),
+        # WinRT.
+        (
+            "winrt_path",
+            "Path to the WinRT headers",
+            os.path.join(deps_folder, "winrt_mingw"),
         ),
         # Direct3D 12 support.
         (
@@ -418,6 +425,7 @@ def configure_msvc(env: "SConsEnvironment"):
         "wbemuuid",
         "ntdll",
         "hid",
+        "mincore",
     ]
 
     if env.debug_features:
@@ -811,6 +819,7 @@ def configure_mingw(env: "SConsEnvironment"):
             "wbemuuid",
             "ntdll",
             "hid",
+            "mincore",
         ]
     )
 

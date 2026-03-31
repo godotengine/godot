@@ -93,6 +93,11 @@ jobs:
             echo "ANGLE_ENABLED=no" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Download WinRT components
+        shell: sh
+        run: python ./misc/scripts/install_winrt.py
+        continue-on-error: true
+
       - name: Download pre-built AccessKit
         shell: sh
         id: accesskit-sdk
