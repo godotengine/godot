@@ -41,6 +41,7 @@ class TextureRect;
 class ShaderMaterial;
 class ColorChannelSelector;
 class SpinBox;
+class ViewPanner;
 
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);
@@ -50,14 +51,34 @@ private:
 		Color outline_color;
 	} theme_cache;
 
-	TextureRect *texture_display = nullptr;
+	Ref<Texture2D> preview_texture;
+	PanelContainer *texture_display = nullptr;
 
-	MarginContainer *margin_container = nullptr;
-	Control *outline_overlay = nullptr;
-	AspectRatioContainer *centering_container = nullptr;
-	ColorRect *bg_rect = nullptr;
-	TextureRect *checkerboard = nullptr;
+	//MarginContainer *margin_container = nullptr;
+	//Control *outline_overlay = nullptr;
+	//AspectRatioContainer *centering_container = nullptr;
+	//ColorRect *bg_rect = nullptr;
+	//TextureRect *checkerboard = nullptr;
+
 	Label *metadata_label = nullptr;
+	HBoxContainer *left_upper_corner_container = nullptr;
+	HBoxContainer *right_upper_corner_container = nullptr;
+	Button *zoom_out_button = nullptr;
+	Button *zoom_reset_button = nullptr;
+	Button *zoom_in_button = nullptr;
+	Button *popout_button = nullptr;
+	Vector2 drag_start;
+	Vector2 pan;
+	bool panning = false;
+
+	VScrollBar *vscroll = nullptr;
+	HScrollBar *hscroll = nullptr;
+
+	Vector2 draw_ofs;
+	float draw_zoom = 1.0;
+	float min_draw_zoom = 1.0;
+	float max_draw_zoom = 1.0;
+	bool updating_scroll = false;
 
 	static inline Ref<ShaderMaterial> texture_material;
 
@@ -66,19 +87,45 @@ private:
 
 	void _draw_outline();
 	void _update_metadata_label_text();
+	void _update_pan();
+
+	Ref<ViewPanner> panner;
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+	void _scroll_changed(float);
+	Transform2D _get_offset_transform() const;
+
+	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
+	void _zoom_in();
+	void _zoom_out();
+	void _fit_to_view();
+	void _update_scrollbars();
 
 protected:
+	virtual void _texture_display_gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	void _update_texture_display_ratio();
 	void on_selected_channels_changed();
 	void on_selected_mipmap_changed(double p_value);
+	void on_popout_pressed();
+	void on_popout_closed(AcceptDialog *p_dialog);
+
+	void _texture_display_draw();
+
+	//void on_zoom_out_pressed();
+	//void on_zoom_reset_pressed();
+	//void on_zoom_in_pressed();
+	//void _zoom_level_changed();
+
+	//float zoom_level = 1.0;
 
 public:
 	static void init_shaders();
 	static void finish_shaders();
+	//virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
-	TextureRect *get_texture_display();
-	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata);
+	//TextureRect *get_texture_display();
+	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata, bool p_popout = false);
 };
 
 class EditorInspectorPluginTexture : public EditorInspectorPlugin {
