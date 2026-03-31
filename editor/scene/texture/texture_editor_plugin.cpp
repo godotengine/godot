@@ -33,12 +33,16 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/compressed_texture.h"
@@ -56,6 +60,8 @@ render_mode blend_mix;
 
 instance uniform vec4 u_channel_factors = vec4(1.0);
 instance uniform float lod = 0.0;
+instance uniform float u_zoom = 1.0;
+instance uniform vec2 u_pan = vec2(0.0);
 
 vec4 filter_preview_colors(vec4 input_color, vec4 factors) {
 	// Filter RGB.
@@ -76,7 +82,8 @@ vec4 filter_preview_colors(vec4 input_color, vec4 factors) {
 }
 
 void fragment() {
-	COLOR = filter_preview_colors(textureLod(TEXTURE, UV, lod), u_channel_factors);
+	vec2 zoom_uv = (UV - 0.5) / u_zoom + 0.5 + u_pan;
+	COLOR = filter_preview_colors(textureLod(TEXTURE, zoom_uv, lod), u_channel_factors);
 }
 )";
 
@@ -98,6 +105,39 @@ TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;
 }
 
+void TexturePreview::_texture_display_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
+			if (mb->is_pressed()) {
+				on_zoom_in_pressed();
+			}
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+			if (mb->is_pressed()) {
+				on_zoom_out_pressed();
+			}
+		}
+
+		if (mb->get_button_index() == MouseButton::LEFT && zoom_level != 1.0) {
+			if (mb->is_pressed()) {
+				panning = true;
+				drag_start = pan + mb->get_position();
+			} else {
+				panning = false;
+			}
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		// Mouse movement
+		if (panning) {
+			pan = drag_start - mm->get_position();
+			_update_pan();
+		}
+	}
+}
+
 void TexturePreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -117,14 +157,35 @@ void TexturePreview::_notification(int p_what) {
 			bg_rect->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
 			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
+
+			zoom_out_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			if (popout_button) {
+				popout_button->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+			}
 		} break;
 	}
+}
+
+Control::CursorShape TexturePreview::get_cursor_shape(const Point2 &p_pos) const {
+	if (!Math::is_equal_approx(zoom_level, 1) && texture_display->get_rect().has_point(p_pos)) {
+		return CursorShape::CURSOR_MOVE;
+	}
+	return CursorShape::CURSOR_ARROW;
 }
 
 void TexturePreview::_draw_outline() {
 	const float outline_width = Math::round(EDSCALE);
 	const Rect2 outline_rect = Rect2(Vector2(), outline_overlay->get_size()).grow(outline_width * 0.5);
 	outline_overlay->draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
+}
+
+void TexturePreview::_update_pan() {
+	float zoom_clamp = (0.5 - 0.5 / zoom_level) * texture_display->get_size().height;
+	pan.x = CLAMP(pan.x, -zoom_clamp, zoom_clamp);
+	pan.y = CLAMP(pan.y, -zoom_clamp, zoom_clamp);
+	texture_display->set_instance_shader_parameter("u_pan", pan / texture_display->get_size().height);
 }
 
 void TexturePreview::_update_texture_display_ratio() {
@@ -243,7 +304,59 @@ void TexturePreview::on_selected_mipmap_changed(double p_value) {
 	texture_display->set_instance_shader_parameter("lod", mipmap_spinbox->get_value());
 }
 
-TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
+void TexturePreview::on_popout_pressed() {
+	AcceptDialog *popout_dialog = memnew(AcceptDialog);
+	popout_dialog->set_title("Texture Preview");
+
+	Vector2 popout_size = get_tree()->get_root()->get_size();
+	popout_size = MAX(Vector2(400, 300), popout_size * 0.5);
+	Vector2 popout_position = Vector2();
+	if (EditorSettings::get_singleton()->has_setting("interface/editor/thumnail_window_size")) {
+		popout_size = EditorSettings::get_singleton()->get_setting("interface/editor/thumnail_window_size");
+	}
+	if (EditorSettings::get_singleton()->has_setting("interface/editor/thumnail_window_position")) {
+		popout_position = EditorSettings::get_singleton()->get_setting("interface/editor/thumnail_window_position");
+	}
+
+	add_child(popout_dialog);
+	TexturePreview *texture_preview_copy = memnew(TexturePreview(texture_display->get_texture(), true, true));
+	popout_dialog->add_child(texture_preview_copy);
+
+	popout_dialog->connect("canceled", callable_mp(this, &TexturePreview::on_popout_closed).bind(popout_dialog));
+	popout_dialog->connect("confirmed", callable_mp(this, &TexturePreview::on_popout_closed).bind(popout_dialog));
+	popout_dialog->popup_centered(popout_size);
+	if (popout_position != Vector2()) {
+		popout_dialog->set_position(popout_position);
+	}
+}
+
+void TexturePreview::on_popout_closed(AcceptDialog *p_dialog) {
+	if (p_dialog) {
+		EditorSettings::get_singleton()->set_setting("interface/editor/thumnail_window_size", p_dialog->get_size());
+		EditorSettings::get_singleton()->set_setting("interface/editor/thumnail_window_position", p_dialog->get_position());
+		EditorSettings::get_singleton()->save();
+		p_dialog->queue_free();
+	}
+}
+
+void TexturePreview::on_zoom_out_pressed() {
+	zoom_level = CLAMP(zoom_level - 0.25, 1, 8);
+	_update_pan();
+	texture_display->set_instance_shader_parameter("u_zoom", zoom_level);
+}
+
+void TexturePreview::on_zoom_reset_pressed() {
+	zoom_level = 1;
+	_update_pan();
+	texture_display->set_instance_shader_parameter("u_zoom", zoom_level);
+}
+
+void TexturePreview::on_zoom_in_pressed() {
+	zoom_level = CLAMP(zoom_level + 0.25, 1, 8);
+	texture_display->set_instance_shader_parameter("u_zoom", zoom_level);
+}
+
+TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata, bool p_popout) {
 	set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
 
 	bg_rect = memnew(ColorRect);
@@ -273,10 +386,12 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	texture_display->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	texture_display->set_material(texture_material);
 	texture_display->set_instance_shader_parameter("u_channel_factors", Vector4(1, 1, 1, 1));
+	texture_display->connect("gui_input", callable_mp(this, &TexturePreview::_texture_display_gui_input));
 	centering_container->add_child(texture_display);
 
 	// Creating a separate control so it is not affected by the filtering shader.
 	outline_overlay = memnew(Control);
+	outline_overlay->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	centering_container->add_child(outline_overlay);
 
 	outline_overlay->connect(SceneStringName(draw), callable_mp(this, &TexturePreview::_draw_outline));
@@ -290,20 +405,10 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	const Image::Format format = p_texture.is_valid() ? get_texture_2d_format(p_texture.ptr()) : Image::FORMAT_MAX;
 	const uint32_t components_mask = format != Image::FORMAT_MAX ? Image::get_format_component_mask(format) : 0xf;
 
-	// Setup Mipmap selector.
-	const int mipmaps = get_texture_mipmaps_count(p_texture);
-	if (mipmaps > 0) {
-		mipmap_spinbox = memnew(SpinBox);
-		mipmap_spinbox->set_tooltip_text(TTRC("Mipmap level index selector."));
-		mipmap_spinbox->set_max(mipmaps);
-		mipmap_spinbox->set_modulate(Color(1, 1, 1, 0.8));
-		mipmap_spinbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-		mipmap_spinbox->set_h_size_flags(Control::SIZE_SHRINK_END);
-		mipmap_spinbox->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
-		mipmap_spinbox->set_anchors_preset(Control::PRESET_TOP_RIGHT);
-		mipmap_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TexturePreview::on_selected_mipmap_changed));
-		add_child(mipmap_spinbox);
-	}
+	left_upper_corner_container = memnew(HBoxContainer);
+	left_upper_corner_container->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+	left_upper_corner_container->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	add_child(left_upper_corner_container);
 
 	// Add color channel selector at the bottom left if more than 1 channel is available.
 	if (p_show_metadata && !Math::is_power_of_2(components_mask)) {
@@ -312,7 +417,50 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		channel_selector->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 		channel_selector->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 		channel_selector->set_available_channels_mask(components_mask);
-		add_child(channel_selector);
+		left_upper_corner_container->add_child(channel_selector);
+	}
+
+	// Setup Mipmap selector.
+	const int mipmaps = get_texture_mipmaps_count(p_texture);
+	if (mipmaps > 0) {
+		mipmap_spinbox = memnew(SpinBox);
+		mipmap_spinbox->set_tooltip_text(TTRC("Mipmap level index selector."));
+		mipmap_spinbox->set_max(mipmaps);
+		mipmap_spinbox->set_modulate(Color(1, 1, 1, 0.8));
+		mipmap_spinbox->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+		mipmap_spinbox->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		mipmap_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TexturePreview::on_selected_mipmap_changed));
+		mipmap_spinbox->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
+		left_upper_corner_container->add_child(mipmap_spinbox);
+	}
+
+	// Add right upper buttons
+	right_upper_corner_container = memnew(HBoxContainer);
+	right_upper_corner_container->set_h_size_flags(Control::SIZE_SHRINK_END);
+	right_upper_corner_container->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	add_child(right_upper_corner_container);
+	zoom_out_button = memnew(Button);
+	zoom_out_button->connect("pressed", callable_mp(this, &TexturePreview::on_zoom_out_pressed));
+	zoom_out_button->set_flat(true);
+	zoom_reset_button = memnew(Button);
+	zoom_reset_button->connect("pressed", callable_mp(this, &TexturePreview::on_zoom_reset_pressed));
+	zoom_reset_button->set_flat(true);
+	zoom_in_button = memnew(Button);
+	zoom_in_button->connect("pressed", callable_mp(this, &TexturePreview::on_zoom_in_pressed));
+	zoom_in_button->set_flat(true);
+	right_upper_corner_container->add_child(zoom_out_button);
+	right_upper_corner_container->add_child(zoom_reset_button);
+	right_upper_corner_container->add_child(zoom_in_button);
+
+	// Add a button to the upper right corner that opens a popup window with a copy of the preview.
+	if (!p_popout) {
+		popout_button = memnew(Button);
+		popout_button->connect("pressed", callable_mp(this, &TexturePreview::on_popout_pressed));
+		popout_button->set_tooltip_text(TTRC("Open the preview in a separate window."));
+		popout_button->set_flat(true);
+		popout_button->set_h_size_flags(Control::SIZE_SHRINK_END);
+		popout_button->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		right_upper_corner_container->add_child(popout_button);
 	}
 
 	if (p_show_metadata) {
