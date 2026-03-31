@@ -1635,6 +1635,11 @@ void CodeTextEditor::_update_text_editor_theme() {
 	}
 
 	_update_font_ligatures();
+
+	update_editor_settings();
+	if (text_editor->get_code_completion_selected_index() != -1) {
+		_complete_request();
+	}
 }
 
 void CodeTextEditor::_update_font_ligatures() {

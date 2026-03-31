@@ -4066,7 +4066,10 @@ void EditorNode::_check_system_theme_changed() {
 	}
 
 	if (system_theme_changed) {
+		class_icon_cache.clear();
 		_update_theme();
+		_build_icon_type_cache();
+		recent_scenes->reset_size();
 	} else if (menu_type == MENU_TYPE_GLOBAL && display_server->is_dark_mode_supported() && display_server->is_dark_mode() != last_dark_mode_state) {
 		last_dark_mode_state = display_server->is_dark_mode();
 
