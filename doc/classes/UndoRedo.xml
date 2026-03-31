@@ -88,6 +88,64 @@
 		_undo_redo.CommitAction();
 		[/csharp]
 		[/codeblocks]
+		Actions count up starting from 0.
+		Here is a simplified toy example that doesn't use [code]add_do*[/code] or [code]add_undo*[/code]. This is for example only, in practice you would always want at least one [code]add_do*[/code] or [code]add_undo*[/code].
+		[codeblocks]
+		[gdscript]
+		undo_redo.create_action("action A")
+		undo_redo.commit_action()
+		# Prints 0.
+		print(undo_redo.get_current_action_index())
+
+		undo_redo.create_action("action B")
+		undo_redo.commit_action()
+		# Prints 1.
+		print(undo_redo.get_current_action_index())
+
+		undo_redo.create_action("action C")
+		undo_redo.commit_action()
+		# Prints 2.
+		print(undo_redo.get_current_action_index())
+
+		undo_redo.undo()
+		undo_redo.undo()
+		# Prints 0.
+		print(undo_redo.get_current_action_index())
+		# This still prints 3 though.
+		print(undo_redo.get_history_count())
+		# Removes the actions that were undone by the two calls to "undo_redo.undo()" above.
+		undo_redo.discard_redo()
+		# Now this prints 1.
+		print(undo_redo.get_history_count())
+		[/gdscript]
+		[csharp]
+		_undo_redo.CreateAction("action A");
+		_undo_redo.CommitAction();
+		// Prints 0.
+		GD.Print(_undo_redo.GetCurrentActionIndex());
+
+		_undo_redo.CreateAction("action B");
+		_undo_redo.CommitAction();
+		// Prints 1.
+		GD.Print(_undo_redo.GetCurrentActionIndex());
+
+		_undo_redo.CreateAction("action C");
+		_undo_redo.CommitAction();
+		// Prints 2.
+		GD.Print(_undo_redo.GetCurrentActionIndex());
+
+		_undo_redo.Undo();
+		_undo_redo.Undo();
+		// Prints 0.
+		GD.Print(_undo_redo.GetCurrentActionIndex());
+		// This still prints 3 though.
+		GD.Print(_undo_redo.GetHistoryCount());
+		// Removes the actions that were undone by the two calls to "_undo_redo.Undo()" above.
+		_undo_redo.DiscardRedo();
+		// Now this prints 1.
+		GD.Print(_undo_redo.GetHistoryCount());
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -182,10 +240,22 @@
 				The way undo operation are ordered in actions is dictated by [param backward_undo_ops]. When [param backward_undo_ops] is [code]false[/code] undo option are ordered in the same order they were added. Which means the first operation to be added will be the first to be undone.
 			</description>
 		</method>
+		<method name="discard_redo">
+			<return type="void" />
+			<description>
+				Removes all actions that come after the current action. Calling this only has an effect when [method undo] has been called, to erase the undone actions from the action list.
+			</description>
+		</method>
 		<method name="end_force_keep_in_merge_ends">
 			<return type="void" />
 			<description>
 				Stops marking operations as to be processed even if the action gets merged with another in the [constant MERGE_ENDS] mode. See [method start_force_keep_in_merge_ends].
+			</description>
+		</method>
+		<method name="get_action_count">
+			<return type="int" />
+			<description>
+				Returns how many elements are in the history (same value as [method get_history_count]).
 			</description>
 		</method>
 		<method name="get_action_name">
@@ -193,12 +263,31 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Gets the action name from its index.
+				Negative indices can also be used.
+				To make index [code]-1[/code] be the index where the [method get_current_action_index] is, use [method discard_redo].
+				Same as [method get_action_name_at_index].
+			</description>
+		</method>
+		<method name="get_action_name_at_index">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Gets the index of the current action (same as [method get_current_action]).
+				Negative indices can also be used.
+				To make index [code]-1[/code] be the index where the [method get_current_action_index] is, use [method discard_redo].
+				Same as [method get_action_name].
 			</description>
 		</method>
 		<method name="get_current_action">
 			<return type="int" />
 			<description>
-				Gets the index of the current action.
+				Gets the index of the current action (same as [method get_current_action_index]).
+			</description>
+		</method>
+		<method name="get_current_action_index">
+			<return type="int" />
+			<description>
+				Gets the index of the current action (same as [method get_current_action]).
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
@@ -210,7 +299,7 @@
 		<method name="get_history_count">
 			<return type="int" />
 			<description>
-				Returns how many elements are in the history.
+				Returns how many elements are in the history (same value as [method get_action_count]).
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">
@@ -254,6 +343,7 @@
 			<return type="bool" />
 			<description>
 				Undo the last action.
+				[b]Note:[/b] Use [method discard_redo] after calling [method undo] to make the current action index be at the end of the action list.
 			</description>
 		</method>
 	</methods>

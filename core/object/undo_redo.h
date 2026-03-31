@@ -115,6 +115,7 @@ public:
 
 	void start_force_keep_in_merge_ends();
 	void end_force_keep_in_merge_ends();
+	void set_index_in_history(int p_new_state_index);
 
 	bool is_committing_action() const;
 	void commit_action(bool p_execute = true);
@@ -125,8 +126,11 @@ public:
 	int get_action_level() const;
 
 	int get_history_count();
+	int get_action_count();
 	int get_current_action();
+	int get_current_action_index();
 	String get_action_name(int p_id);
+	String get_action_name_at_index(int p_index);
 	void clear_history(bool p_increase_version = true);
 	void discard_redo();
 
