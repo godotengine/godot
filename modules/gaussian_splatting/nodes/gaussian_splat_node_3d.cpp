@@ -23,7 +23,6 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/3d/world_3d.h"
-#include "servers/rendering/renderer_scene_cull.h"
 #include "servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering_server.h"
@@ -1295,16 +1294,10 @@ void GaussianSplatNode3D::_update_viewport_render_state(RenderingServer *rs, int
     }
 #endif
 
-    if (viewport_texture_state != ViewportTextureState::READY || !cached_viewport_render_target.is_valid()) {
-#ifndef GS_SILENCE_LOGS
-        if (_is_frame_log_enabled() && update_call_count <= 10) {
-            GS_LOG_RENDERER_DEBUG("[update_splats] Queueing viewport bootstrap...");
-        }
-#endif
-        _queue_viewport_bootstrap();
-        return;
-    }
-
+    // Always update the renderer's camera even when the viewport texture
+    // is not ready yet.  Without this, viewport size changes or bootstrap
+    // delays leave the renderer with stale camera data, causing the GPU
+    // culler to use an outdated frustum and cull all splats.
     Camera3D *camera = viewport->get_camera_3d();
     Transform3D camera_to_world_transform = camera ? camera->get_camera_transform() : get_global_transform();
     Projection camera_projection;
@@ -1318,6 +1311,17 @@ void GaussianSplatNode3D::_update_viewport_render_state(RenderingServer *rs, int
 
     renderer->set_camera_transform(camera_to_world_transform);
     renderer->set_camera_projection(camera_projection);
+
+    if (viewport_texture_state != ViewportTextureState::READY || !cached_viewport_render_target.is_valid()) {
+#ifndef GS_SILENCE_LOGS
+        if (_is_frame_log_enabled() && update_call_count <= 10) {
+            GS_LOG_RENDERER_DEBUG("[update_splats] Queueing viewport bootstrap...");
+        }
+#endif
+        _queue_viewport_bootstrap();
+        return;
+    }
+
     if (OS::get_singleton()->has_feature("headless")) {
         renderer->tick_streaming_only(camera_to_world_transform, camera_projection);
     }
@@ -1469,46 +1473,15 @@ void GaussianSplatNode3D::_update_visibility() {
             _update_bounds();
         }
 
-        // Use the same viewport as rendering for consistent culling.
-        // In editor, use _find_editor_scene_viewport() to match update_splats() behavior.
-        Viewport *viewport = Engine::get_singleton()->is_editor_hint() ? _find_editor_scene_viewport() : get_viewport();
-        if (!viewport) {
-            viewport = get_viewport();
-        }
-
-        if (viewport) {
-            Camera3D *camera = viewport->get_camera_3d();
-            if (!camera) {
-                new_visibility = true;
-            } else {
-                new_visibility = true;
-                // In editor, viewport->get_camera_3d() returns a scene
-                // Camera3D node rather than the editor navigation camera,
-                // so CPU-side distance and frustum culling would use the
-                // wrong position.  Skip both checks in editor; the GPU
-                // cull shader uses the correct camera.
-                const bool is_editor = Engine::get_singleton()->is_editor_hint();
-                if (!is_editor && max_render_distance > 0.0f) {
-                    const Transform3D camera_to_world_transform = camera->get_camera_transform();
-                    const Vector3 camera_position = camera_to_world_transform.origin;
-                    const Vector3 center = world_aabb.get_center();
-                    const float radius = world_aabb.get_longest_axis_size() * 0.5f;
-                    const float distance_to_center = camera_position.distance_to(center);
-
-                    if (distance_to_center - radius > max_render_distance) {
-                        new_visibility = false;
-                    }
-                }
-
-                if (new_visibility && use_frustum_culling && !is_editor) {
-                    RendererSceneCull::Frustum frustum(camera->get_frustum());
-                    RendererSceneCull::InstanceBounds bounds(world_aabb);
-                    if (!bounds.in_frustum(frustum)) {
-                        new_visibility = false;
-                    }
-                }
-            }
-        }
+        // CPU-side distance and frustum culling is intentionally disabled.
+        // viewport->get_camera_3d() can return a camera that doesn't match
+        // the rendering pipeline's actual camera (wrong in editor, potentially
+        // stale at runtime), causing splats to be incorrectly hidden.  When
+        // visible_in_viewport is false the render instance is hidden and the
+        // GPU cull shader never runs, so it cannot correct the mistake.
+        // The GPU cull shader already handles frustum culling with the
+        // correct camera from the rendering pipeline.
+        new_visibility = true;
     }
 
     visible_in_viewport = new_visibility;
