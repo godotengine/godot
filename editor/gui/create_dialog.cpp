@@ -400,7 +400,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	}
 
 	if (!p_match_keyword.is_empty()) {
-		text += "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_match_keyword));
+		text += "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_match_keyword);
 	}
 	r_item->set_text(0, text);
 
