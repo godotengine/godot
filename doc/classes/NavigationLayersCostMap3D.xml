@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationLayersCostMap3D" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Mapping used in path queries to override default costs ([code]1.0[code]) of navigation layers.
+		Mapping used in path queries to override default costs ([code]1.0[/code]) of navigation layers.
 	</brief_description>
 	<description>
 		Mapping of layer to travel cost used in path queries [NavigationPathQueryParameters3D]. Can optionally be assigned to agents ([member NavigationAgent3D.navigation_layers_cost_map]).
