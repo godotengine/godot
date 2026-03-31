@@ -225,13 +225,21 @@ void TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_cha
 }
 
 void TileSetScenesCollectionSourceEditor::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_idx) {
-	if (p_idx >= 0 && p_idx < scene_tiles_list->get_item_count()) {
-		scene_tiles_list->set_item_icon(p_idx, p_preview);
+	if (p_idx < 0 || p_idx >= scene_tiles_list->get_item_count()) {
+		return;
 	}
+
+	Dictionary custom_metadata = scene_tiles_list->get_item_metadata(p_idx);
+	if (unlikely(custom_metadata.get("path", String()) != p_path)) {
+		return;
+	}
+
+	scene_tiles_list->set_item_icon(p_idx, p_preview);
 }
 
 void TileSetScenesCollectionSourceEditor::_scenes_list_item_activated(int p_index) {
-	Ref<PackedScene> packed_scene = tile_set_scenes_collection_source->get_scene_tile_scene(scene_tiles_list->get_item_metadata(p_index));
+	Dictionary custom_metadata = scene_tiles_list->get_item_metadata(p_index);
+	Ref<PackedScene> packed_scene = tile_set_scenes_collection_source->get_scene_tile_scene(custom_metadata["scene_id"]);
 	if (packed_scene.is_valid()) {
 		EditorNode::get_singleton()->load_scene(packed_scene->get_path());
 	}
@@ -267,7 +275,8 @@ void TileSetScenesCollectionSourceEditor::_scene_file_selected(const String &p_p
 void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
 	Vector<int> selected_indices = scene_tiles_list->get_selected_items();
 	ERR_FAIL_COND(selected_indices.is_empty());
-	int scene_id = scene_tiles_list->get_item_metadata(selected_indices[0]);
+	Dictionary custom_metadata = scene_tiles_list->get_item_metadata(selected_indices[0]);
+	int scene_id = custom_metadata["scene_id"];
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove a Scene Tile"));
@@ -289,7 +298,8 @@ void TileSetScenesCollectionSourceEditor::_update_tile_inspector() {
 
 	// Update the proxy object.
 	if (has_atlas_tile_selected) {
-		int scene_id = scene_tiles_list->get_item_metadata(selected_indices[0]);
+		Dictionary custom_metadata = scene_tiles_list->get_item_metadata(selected_indices[0]);
+		int scene_id = custom_metadata["scene_id"];
 		tile_proxy_object->edit(*tile_set_scenes_collection_source, scene_id);
 	}
 
@@ -316,7 +326,11 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 
 	// Get the previously selected id.
 	Vector<int> selected_indices = scene_tiles_list->get_selected_items();
-	int old_selected_scene_id = (selected_indices.size() > 0) ? int(scene_tiles_list->get_item_metadata(selected_indices[0])) : -1;
+	int old_selected_scene_id = -1;
+	if (selected_indices.size() > 0) {
+		Dictionary custom_metadata = scene_tiles_list->get_item_metadata(selected_indices[0]);
+		old_selected_scene_id = custom_metadata["scene_id"];
+	}
 
 	// Clear the list.
 	scene_tiles_list->clear();
@@ -328,14 +342,18 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 
 		Ref<PackedScene> scene = tile_set_scenes_collection_source->get_scene_tile_scene(scene_id);
 
+		Dictionary custom_metadata;
+		custom_metadata["scene_id"] = scene_id;
+
 		int item_index = 0;
 		if (scene.is_valid()) {
+			custom_metadata["path"] = "ID:" + itos(scene->get_instance_id());
 			item_index = scene_tiles_list->add_item(vformat("%s (path:%s id:%d)", scene->get_path().get_file().get_basename(), scene->get_path(), scene_id));
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, callable_mp(this, &TileSetScenesCollectionSourceEditor::_scene_thumbnail_done).bind(i));
 		} else {
 			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), get_editor_theme_icon(SNAME("PackedScene")));
 		}
-		scene_tiles_list->set_item_metadata(item_index, scene_id);
+		scene_tiles_list->set_item_metadata(item_index, custom_metadata);
 
 		if (old_selected_scene_id >= 0 && scene_id == old_selected_scene_id) {
 			to_reselect = i;
