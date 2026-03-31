@@ -122,5 +122,5 @@ void GDType::add_signal(MethodInfo p_signal) {
 	const MethodInfo *ptr = memnew(MethodInfo(std::move(p_signal)));
 
 	signal_map[signal_name] = ptr;
-	self_signal_map[std::move(signal_name)] = ptr;
+	self_signal_map[signal_name] = ptr;
 }
