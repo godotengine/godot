@@ -2478,6 +2478,12 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
         return false;
     }
     compute_rd->compute_list_bind_compute_pipeline(compute_list, depth_compute_pipeline);
+    if (!depth_uniform_set.is_valid()) {
+        compute_rd->compute_list_end();
+        last_compute_error = "[GPU Sort] depth_uniform_set invalid at bind time";
+        GS_LOG_WARN_DEFAULT(last_compute_error);
+        return false;
+    }
     compute_rd->compute_list_bind_uniform_set(compute_list, depth_uniform_set, 0);
     compute_rd->compute_list_dispatch_indirect(compute_list, inputs.chunk_dispatch_buffer, 0);
     compute_rd->compute_list_add_barrier(compute_list);
@@ -2505,6 +2511,12 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
         return false;
     }
     compute_rd->compute_list_bind_compute_pipeline(compute_list, instance_count_clamp_pipeline);
+    if (!instance_count_uniform_set.is_valid()) {
+        compute_rd->compute_list_end();
+        last_compute_error = "[GPU Sort] instance_count_uniform_set invalid at bind time";
+        GS_LOG_WARN_DEFAULT(last_compute_error);
+        return false;
+    }
     compute_rd->compute_list_bind_uniform_set(compute_list, instance_count_uniform_set, 0);
     compute_rd->compute_list_dispatch(compute_list, 1, 1, 1);
     compute_rd->compute_list_add_barrier(compute_list);
