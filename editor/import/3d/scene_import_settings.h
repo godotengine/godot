@@ -97,6 +97,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	DirectionalLight3D *light2 = nullptr;
 	Ref<ArrayMesh> selection_mesh;
 	MeshInstance3D *node_selected = nullptr;
+	Vector<MeshInstance3D *> multi_selection_nodes;
 
 	MeshInstance3D *mesh_preview = nullptr;
 	Ref<SphereMesh> material_preview;
@@ -177,11 +178,18 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	String selected_type;
 	String selected_id;
 
+	Vector<Pair<String, String>> multi_selected_items; // (type, import_id) pairs.
+	Tree *active_tree = nullptr;
+
 	bool selecting = false;
 
 	void _update_view_gizmos();
 	void _update_camera();
 	void _select(Tree *p_from, const String &p_type, const String &p_id);
+	void _gather_multi_selection(Tree *p_tree);
+	void _update_multi_selection_outlines();
+	HashMap<StringName, Variant> *_get_settings_for_import_id(const String &p_type, const String &p_id);
+	bool _is_id_multi_selected(const String &p_id) const;
 	void _inspector_property_edited(const String &p_name);
 	void _reset_bone_transforms();
 	void _play_animation();
@@ -251,6 +259,7 @@ public:
 	void open_settings(const String &p_path, const String &p_scene_import_type = "PackedScene");
 	static SceneImportSettingsDialog *get_singleton();
 	Node *get_selected_node();
+	void apply_property_to_multi_selected(const StringName &p_name, const Variant &p_value);
 	SceneImportSettingsDialog();
 	~SceneImportSettingsDialog();
 };

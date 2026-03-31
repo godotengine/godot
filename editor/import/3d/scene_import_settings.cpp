@@ -72,6 +72,9 @@ class SceneImportSettingsData : public Object {
 
 			current[p_name] = p_value;
 
+			// Apply the property change to all multi-selected items.
+			SceneImportSettingsDialog::get_singleton()->apply_property_to_multi_selected(p_name, p_value);
+
 			// SceneImportSettings must decide if a new collider should be generated or not.
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE) {
 				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
@@ -595,7 +598,7 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 		// Regenerate the physics collider for this MeshInstance3D if either:
 		// - A regeneration is requested for the selected import node.
 		// - The collider is being made visible.
-		if ((generate_collider && e.key == selected_id) || (show_collider_view && !collider_view->is_visible())) {
+		if ((generate_collider && (e.key == selected_id || _is_id_multi_selected(e.key))) || (show_collider_view && !collider_view->is_visible())) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 			Ref<ImporterMesh> mesh;
 			mesh.instantiate();
@@ -772,6 +775,8 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 
 	selected_id = "";
 	selected_type = "";
+	multi_selected_items.clear();
+	active_tree = nullptr;
 
 	cam_rot_x = -Math::PI / 4;
 	cam_rot_y = -Math::PI / 4;
@@ -850,6 +855,12 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 
 void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {
 	selecting = true;
+
+	// Hide multi-selection outlines.
+	for (MeshInstance3D *m : multi_selection_nodes) {
+		m->hide();
+	}
+
 	scene_import_settings_data->hide_options = false;
 	// Only AnimationLibrary and actual scenes can make use of the animation and skeleton options.
 	const bool hide_anim_and_skel_options = _resource_importer_scene->get_scene_import_type() != "PackedScene" && _resource_importer_scene->get_scene_import_type() != "AnimationLibrary";
@@ -930,11 +941,13 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		MeshData &md = mesh_map[p_id];
 		if (md.mesh_node != nullptr) {
 			if (p_from != mesh_tree) {
+				mesh_tree->deselect_all();
 				md.mesh_node->uncollapse_tree();
 				md.mesh_node->select(0);
 				mesh_tree->ensure_cursor_is_visible();
 			}
 			if (p_from != scene_tree) {
+				scene_tree->deselect_all();
 				md.scene_node->uncollapse_tree();
 				md.scene_node->select(0);
 				scene_tree->ensure_cursor_is_visible();
@@ -964,16 +977,19 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		mesh_preview->set_mesh(material_preview);
 
 		if (p_from != mesh_tree) {
+			mesh_tree->deselect_all();
 			md.mesh_node->uncollapse_tree();
 			md.mesh_node->select(0);
 			mesh_tree->ensure_cursor_is_visible();
 		}
 		if (p_from != scene_tree) {
+			scene_tree->deselect_all();
 			md.scene_node->uncollapse_tree();
 			md.scene_node->select(0);
 			scene_tree->ensure_cursor_is_visible();
 		}
 		if (p_from != material_tree) {
+			material_tree->deselect_all();
 			md.material_node->uncollapse_tree();
 			md.material_node->select(0);
 			material_tree->ensure_cursor_is_visible();
@@ -1186,7 +1202,10 @@ void SceneImportSettingsDialog::_material_tree_selected() {
 	String type = item->get_meta("type");
 	String import_id = item->get_meta("import_id");
 
+	active_tree = material_tree;
 	_select(material_tree, type, import_id);
+	_gather_multi_selection(material_tree);
+	_update_multi_selection_outlines();
 }
 
 void SceneImportSettingsDialog::_mesh_tree_selected() {
@@ -1198,7 +1217,10 @@ void SceneImportSettingsDialog::_mesh_tree_selected() {
 	String type = item->get_meta("type");
 	String import_id = item->get_meta("import_id");
 
+	active_tree = mesh_tree;
 	_select(mesh_tree, type, import_id);
+	_gather_multi_selection(mesh_tree);
+	_update_multi_selection_outlines();
 }
 
 void SceneImportSettingsDialog::_scene_tree_selected() {
@@ -1209,16 +1231,142 @@ void SceneImportSettingsDialog::_scene_tree_selected() {
 	String type = item->get_meta("type");
 	String import_id = item->get_meta("import_id");
 
+	active_tree = scene_tree;
 	_select(scene_tree, type, import_id);
+	_gather_multi_selection(scene_tree);
+	_update_multi_selection_outlines();
 }
 
 void SceneImportSettingsDialog::_cleanup() {
+	multi_selected_items.clear();
+	active_tree = nullptr;
+	for (MeshInstance3D *m : multi_selection_nodes) {
+		m->hide();
+	}
 	skeletons.clear();
 	if (animation_player != nullptr) {
 		animation_player->disconnect(SceneStringName(animation_finished), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 		animation_player = nullptr;
 	}
 	set_process(false);
+}
+
+void SceneImportSettingsDialog::_gather_multi_selection(Tree *p_tree) {
+	multi_selected_items.clear();
+
+	TreeItem *item = p_tree->get_next_selected(nullptr);
+	while (item) {
+		String type = item->get_meta("type");
+		String import_id = item->get_meta("import_id");
+		multi_selected_items.push_back({ type, import_id });
+		item = p_tree->get_next_selected(item);
+	}
+}
+
+void SceneImportSettingsDialog::_update_multi_selection_outlines() {
+	// Hide all existing multi-selection outlines.
+	for (MeshInstance3D *m : multi_selection_nodes) {
+		m->hide();
+	}
+
+	if (multi_selected_items.size() <= 1) {
+		return;
+	}
+
+	int idx = 0;
+	for (const Pair<String, String> &item : multi_selected_items) {
+		if (item.first == selected_type && item.second == selected_id) {
+			continue; // Primary selection already highlighted via node_selected.
+		}
+
+		// Outlines are only applicable for scene-tree Node items that have a MeshInstance3D.
+		if (item.first != "Node" || !node_map.has(item.second)) {
+			continue;
+		}
+		NodeData &nd = node_map[item.second];
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(nd.node);
+		if (!mi) {
+			continue;
+		}
+		Ref<Mesh> base_mesh = mi->get_mesh();
+		if (!base_mesh.is_valid()) {
+			continue;
+		}
+
+		// Ensure we have enough mesh instances for the selection outlines.
+		if (idx >= (int)multi_selection_nodes.size()) {
+			MeshInstance3D *ms = memnew(MeshInstance3D);
+			ms->set_mesh(selection_mesh);
+			ms->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+			base_viewport->add_child(ms);
+			multi_selection_nodes.push_back(ms);
+		}
+
+		AABB aabb = base_mesh->get_aabb();
+		Transform3D aabb_xf;
+		aabb_xf.basis.scale(aabb.size);
+		aabb_xf.origin = aabb.position;
+		aabb_xf = mi->get_global_transform() * aabb_xf;
+
+		multi_selection_nodes[idx]->set_transform(aabb_xf);
+		multi_selection_nodes[idx]->show();
+		idx++;
+	}
+}
+
+HashMap<StringName, Variant> *SceneImportSettingsDialog::_get_settings_for_import_id(const String &p_type, const String &p_id) {
+	if (p_type == "Node" && node_map.has(p_id)) {
+		return &node_map[p_id].settings;
+	} else if (p_type == "Mesh" && mesh_map.has(p_id)) {
+		return &mesh_map[p_id].settings;
+	} else if (p_type == "Material" && material_map.has(p_id)) {
+		return &material_map[p_id].settings;
+	} else if (p_type == "Animation" && animation_map.has(p_id)) {
+		return &animation_map[p_id].settings;
+	}
+	return nullptr;
+}
+
+bool SceneImportSettingsDialog::_is_id_multi_selected(const String &p_id) const {
+	for (const Pair<String, String> &item : multi_selected_items) {
+		if (item.second == p_id) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void SceneImportSettingsDialog::apply_property_to_multi_selected(const StringName &p_name, const Variant &p_value) {
+	// Re-gather selection from the active tree to ensure fresh state.
+	if (active_tree) {
+		_gather_multi_selection(active_tree);
+	}
+
+	if (multi_selected_items.size() <= 1) {
+		return;
+	}
+
+	for (const Pair<String, String> &item : multi_selected_items) {
+		if (item.second == selected_id && item.first == selected_type) {
+			continue; // Already handled by the primary _set().
+		}
+
+		// Only apply to items of the same type as the primary selection.
+		if (item.first != selected_type) {
+			continue;
+		}
+
+		HashMap<StringName, Variant> *target_settings = _get_settings_for_import_id(item.first, item.second);
+
+		if (target_settings) {
+			if (scene_import_settings_data->defaults.has(p_name) &&
+					scene_import_settings_data->defaults[p_name] == p_value) {
+				target_settings->erase(p_name);
+			} else {
+				(*target_settings)[p_name] = p_value;
+			}
+		}
+	}
 }
 
 void SceneImportSettingsDialog::_on_light_1_switch_pressed() {
@@ -1725,6 +1873,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	scene_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(scene_tree);
 	scene_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_scene_tree_selected));
+	scene_tree->set_select_mode(Tree::SELECT_MULTI);
 
 	mesh_tree = memnew(Tree);
 	mesh_tree->set_name(TTR("Meshes"));
@@ -1732,12 +1881,14 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	data_mode->add_child(mesh_tree);
 	mesh_tree->set_hide_root(true);
 	mesh_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_mesh_tree_selected));
+	mesh_tree->set_select_mode(Tree::SELECT_MULTI);
 
 	material_tree = memnew(Tree);
 	material_tree->set_name(TTR("Materials"));
 	material_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(material_tree);
 	material_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_material_tree_selected));
+	material_tree->set_select_mode(Tree::SELECT_MULTI);
 
 	material_tree->set_hide_root(true);
 
