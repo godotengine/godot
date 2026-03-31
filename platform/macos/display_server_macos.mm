@@ -658,13 +658,18 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 	}
 }
 
-void DisplayServerMacOS::send_window_event(const WindowData &wd, DisplayServerEnums::WindowEvent p_event) {
+void DisplayServerMacOS::send_window_event(const WindowData &wd, DisplayServerEnums::WindowEvent p_event) const {
 	_THREAD_SAFE_METHOD_
 
 	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
 		wd.event_callback.call(event);
 	}
+}
+
+void DisplayServerMacOS::send_window_event_by_id(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id) const {
+	const WindowData &wd = windows[p_id];
+	send_window_event(wd, p_event);
 }
 
 void DisplayServerMacOS::release_pressed_events() {
