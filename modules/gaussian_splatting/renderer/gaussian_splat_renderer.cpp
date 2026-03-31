@@ -1893,34 +1893,6 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     if (get_view_state().using_scene_data && p_render_data && p_render_data->scene_data && p_render_data->scene_data->flip_y) {
         render_projection.columns[1][1] = -render_projection.columns[1][1];
     }
-    auto publish_skip_route = [&](const String &p_route_uid, const String &p_route_reason) {
-        PerformanceMetrics &metrics = get_performance_state().metrics;
-        metrics.visible_after_culling = 0;
-        metrics.culling_candidate_count = 0;
-        metrics.culled_frustum_count = 0;
-        metrics.culled_distance_count = 0;
-        metrics.culled_screen_count = 0;
-        metrics.culled_importance_count = 0;
-        metrics.used_hierarchical_culling = false;
-        metrics.culling_time_ms = 0.0f;
-        metrics.cull_route_uid = p_route_uid;
-        metrics.cull_route_reason = p_route_reason;
-        if (debug_state_orchestrator) {
-            get_debug_state().route_uid = p_route_uid;
-        }
-    };
-    auto publish_streaming_not_ready_skip = [&](const String &p_route_uid) {
-        const String route_uid = p_route_uid.is_empty() ? _streaming_not_ready_route_uid("UNKNOWN") : p_route_uid;
-        _run_cull_sort_pipeline_frame(p_render_data, view_transform, cam_projection, render_projection,
-                render_buffers_rd, false,
-                vformat("Cull skipped: streaming path not ready (%s)", route_uid),
-                vformat("Sort skipped: streaming path not ready (%s)", route_uid),
-                RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
-                RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
-                true, false);
-        publish_skip_route(route_uid, _streaming_not_ready_reason_code(route_uid));
-    };
-
 #if defined(DEBUG_ENABLED) || kLogFrameDebug
     // DEBUG: Log camera source at the configured frame-log interval (and frame 0)
     if (should_log_frame) {
