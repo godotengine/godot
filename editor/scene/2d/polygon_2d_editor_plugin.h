@@ -115,7 +115,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	ScrollContainer *bone_scroll = nullptr;
 	VBoxContainer *bone_scroll_vb = nullptr;
 	Button *sync_bones = nullptr;
-	HSlider *bone_paint_strength = nullptr;
+	HSlider *paint_strength = nullptr;
 	SpinBox *paint_radius = nullptr;
 	Label *paint_radius_label = nullptr;
 	bool bone_painting = false;

@@ -263,7 +263,7 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 		action_buttons[i]->hide();
 	}
 	bone_scroll_main_vb->hide();
-	bone_paint_strength->hide();
+	paint_strength->hide();
 	paint_radius->hide();
 	paint_radius_label->hide();
 	vcolor_colorpicker->hide();
@@ -305,18 +305,17 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 			_set_action(ACTION_PAINT_WEIGHT);
 
 			bone_scroll_main_vb->show();
-			bone_paint_strength->show();
+			paint_strength->show();
 			paint_radius->show();
 			paint_radius_label->show();
 			_update_bone_list(node);
 			paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
 		} break;
 		case MODE_VCOLOR: {
-			//PLACEHOLDER CONTROLS TIL WE MAKE NEW ONES
-			//JUST TESTING SHIT
 			action_buttons[ACTION_PAINT_VERTEXCOLOR]->show();
 			_set_action(ACTION_PAINT_VERTEXCOLOR);
 
+			paint_strength->show();
 			paint_radius->show();
 			paint_radius_label->show();
 			vcolor_colorpicker->show();
@@ -950,7 +949,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 				{
 					int pc = painted_weights.size();
-					real_t amount = bone_paint_strength->get_value();
+					real_t amount = paint_strength->get_value();
 					real_t radius = paint_radius->get_value() * EDSCALE;
 
 					if (selected_action == ACTION_CLEAR_WEIGHT) {
@@ -971,13 +970,15 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				node->set_bone_weights(bone_painting_bone, painted_weights);
 			}
 			if (vcolor_painting) {
+				real_t strength = paint_strength->get_value();
 				real_t radius = paint_radius->get_value() * EDSCALE;
 				const Vector2 *rv = editing_points.ptr();
-				Color newColor = vcolor_colorpicker->get_pick_color();
+				Color pickedColor = vcolor_colorpicker->get_pick_color();
 
 				for (int i = 0; i < editing_points.size(); i++) {
 					if (mtx.xform(rv[i]).distance_to(paint_pos) < radius) {
 						Vector<Color> newColors = node->get_vertex_colors();
+						Color newColor = newColors[i].lerp(pickedColor, strength);
 						newColors.set(i, newColor);
 						node->set_vertex_colors(newColors);
 					}
@@ -1455,15 +1456,15 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_CLEAR_WEIGHT]->set_accessibility_name(TTRC("Unpaint weights with specified intensity."));
 	action_buttons[ACTION_PAINT_VERTEXCOLOR]->set_accessibility_name(TTRC("Paint vertices with specified color."));
 
-	bone_paint_strength = memnew(HSlider);
-	toolbar->add_child(bone_paint_strength);
-	bone_paint_strength->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
-	bone_paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
-	bone_paint_strength->set_min(0);
-	bone_paint_strength->set_max(1);
-	bone_paint_strength->set_step(0.01);
-	bone_paint_strength->set_value(0.5);
-	bone_paint_strength->set_accessibility_name(TTRC("Strength"));
+	paint_strength = memnew(HSlider);
+	toolbar->add_child(paint_strength);
+	paint_strength->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
+	paint_strength->set_v_size_flags(SIZE_SHRINK_CENTER);
+	paint_strength->set_min(0);
+	paint_strength->set_max(1);
+	paint_strength->set_step(0.01);
+	paint_strength->set_value(0.5);
+	paint_strength->set_accessibility_name(TTRC("Strength"));
 
 	paint_radius_label = memnew(Label(TTR("Radius:")));
 	toolbar->add_child(paint_radius_label);
