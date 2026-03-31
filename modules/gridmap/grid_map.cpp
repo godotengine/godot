@@ -338,6 +338,7 @@ int GridMap::get_octant_size() const {
 void GridMap::set_center_x(bool p_enable) {
 	center_x = p_enable;
 	_recreate_octant_data();
+	emit_signal(SNAME("cell_center_changed"));
 }
 
 bool GridMap::get_center_x() const {
@@ -347,6 +348,7 @@ bool GridMap::get_center_x() const {
 void GridMap::set_center_y(bool p_enable) {
 	center_y = p_enable;
 	_recreate_octant_data();
+	emit_signal(SNAME("cell_center_changed"));
 }
 
 bool GridMap::get_center_y() const {
@@ -356,6 +358,7 @@ bool GridMap::get_center_y() const {
 void GridMap::set_center_z(bool p_enable) {
 	center_z = p_enable;
 	_recreate_octant_data();
+	emit_signal(SNAME("cell_center_changed"));
 }
 
 bool GridMap::get_center_z() const {
@@ -1308,6 +1311,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("cell_center_changed"));
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 
 	BIND_ENUM_CONSTANT(DEBUG_VISIBILITY_MODE_DEFAULT);

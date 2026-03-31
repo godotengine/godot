@@ -661,11 +661,20 @@
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
 		</member>
+		<member name="editors/grid_map/cell_origin_base_scale" type="float" setter="" getter="">
+			The base scale of the origin indicators, which is then multiplied by the shortest non-edited axis in [member GridMap.cell_size].
+		</member>
+		<member name="editors/grid_map/cell_origin_cursor_area" type="int" setter="" getter="">
+			The number of cells around the cursor where non-selected occupied cells will show their origin.
+		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
 		</member>
 		<member name="editors/grid_map/preview_size" type="int" setter="" getter="">
 			Texture size of mesh previews generated for GridMap's MeshLibrary.
+		</member>
+		<member name="editors/grid_map/show_cell_origins" type="bool" setter="" getter="">
+			If enabled, shows origin indicators of occupied cells, both selected and around the cursor.
 		</member>
 		<member name="editors/panning/2d_editor_pan_speed" type="int" setter="" getter="">
 			The panning speed when using the mouse wheel or touchscreen events in the 2D editor. This setting does not apply to panning by holding down the middle or right mouse buttons.
