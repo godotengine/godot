@@ -461,6 +461,7 @@ Transform3D GodotNavigationServer3D::region_get_transform(RID p_region) const {
 	return region->get_transform();
 }
 
+#ifndef DISABLE_DEPRECATED
 COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
@@ -490,6 +491,7 @@ real_t GodotNavigationServer3D::region_get_travel_cost(RID p_region) const {
 
 	return region->get_travel_cost();
 }
+#endif // DISABLE_DEPRECATED
 
 COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
@@ -722,6 +724,7 @@ Vector3 GodotNavigationServer3D::link_get_end_position(RID p_link) const {
 	return link->get_end_position();
 }
 
+#ifndef DISABLE_DEPRECATED
 COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost) {
 	NavLink3D *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_NULL(link);
@@ -749,6 +752,7 @@ real_t GodotNavigationServer3D::link_get_travel_cost(const RID p_link) const {
 
 	return link->get_travel_cost();
 }
+#endif // DISABLE_DEPRECATED
 
 COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id) {
 	NavLink3D *link = link_owner.get_or_null(p_link);

@@ -44,8 +44,10 @@ class NavigationLink3D : public Node3D {
 	uint32_t navigation_layers = 1;
 	Vector3 end_position;
 	Vector3 start_position;
+#ifndef DISABLE_DEPRECATED
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
+#endif // DISABLE_DEPRECATED
 
 	Transform3D current_global_transform;
 
@@ -98,11 +100,13 @@ public:
 	void set_global_end_position(Vector3 p_position);
 	Vector3 get_global_end_position() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_enter_cost(real_t p_enter_cost);
 	real_t get_enter_cost() const { return enter_cost; }
 
 	void set_travel_cost(real_t p_travel_cost);
 	real_t get_travel_cost() const { return travel_cost; }
+#endif // DISABLE_DEPRECATED
 
 	PackedStringArray get_configuration_warnings() const override;
 

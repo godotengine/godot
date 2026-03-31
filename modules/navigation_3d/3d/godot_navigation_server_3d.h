@@ -158,10 +158,12 @@ public:
 	COMMAND_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled);
 	virtual bool region_get_use_edge_connections(RID p_region) const override;
 
+#ifndef DISABLE_DEPRECATED
 	COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost);
 	virtual real_t region_get_enter_cost(RID p_region) const override;
 	COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost);
 	virtual real_t region_get_travel_cost(RID p_region) const override;
+#endif // DISABLE_DEPRECATED
 
 	COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id);
 	virtual ObjectID region_get_owner_id(RID p_region) const override;
@@ -201,10 +203,12 @@ public:
 	virtual Vector3 link_get_start_position(RID p_link) const override;
 	COMMAND_2(link_set_end_position, RID, p_link, Vector3, p_position);
 	virtual Vector3 link_get_end_position(RID p_link) const override;
+#ifndef DISABLE_DEPRECATED
 	COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost);
 	virtual real_t link_get_enter_cost(RID p_link) const override;
 	COMMAND_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost);
 	virtual real_t link_get_travel_cost(RID p_link) const override;
+#endif // DISABLE_DEPRECATED
 	COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id);
 	virtual ObjectID link_get_owner_id(RID p_link) const override;
 

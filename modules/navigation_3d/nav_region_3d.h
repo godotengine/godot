@@ -111,8 +111,10 @@ public:
 
 	// NavBase properties.
 	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
+#ifndef DISABLE_DEPRECATED
 	virtual void set_enter_cost(real_t p_enter_cost) override;
 	virtual void set_travel_cost(real_t p_travel_cost) override;
+#endif // DISABLE_DEPRECATED
 	virtual void set_owner_id(ObjectID p_owner_id) override;
 
 	bool sync();

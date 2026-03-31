@@ -42,8 +42,10 @@ class NavigationRegion3D : public Node3D {
 	RID region;
 	RID map_override;
 	uint32_t navigation_layers = 1;
+#ifndef DISABLE_DEPRECATED
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
+#endif // DISABLE_DEPRECATED
 	Ref<NavigationMesh> navigation_mesh;
 
 	Transform3D current_global_transform;
@@ -94,11 +96,13 @@ public:
 
 	RID get_region_rid() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_enter_cost(real_t p_enter_cost);
 	real_t get_enter_cost() const;
 
 	void set_travel_cost(real_t p_travel_cost);
 	real_t get_travel_cost() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_navigation_mesh(const Ref<NavigationMesh> &p_navigation_mesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
