@@ -928,6 +928,7 @@ void NavigationAgent3D::_advance_waypoints(const Vector3 &p_origin) {
 }
 
 void NavigationAgent3D::_request_repath() {
+	// Clears the path. This will set `reload_path` in _update_navigation() to `true` in its next run.
 	navigation_result->reset();
 	target_reached = false;
 	navigation_finished = false;

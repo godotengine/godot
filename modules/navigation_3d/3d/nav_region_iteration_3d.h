@@ -78,7 +78,7 @@ public:
 	Transform3D transform;
 	real_t surface_area = 0.0;
 	AABB bounds;
-	LocalVector<Nav3D::ConnectableEdge> external_edges;
+	LocalVector<Nav3D::ConnectableEdge> external_edges; // Not connected to any other edge, yet!
 
 	const Transform3D &get_transform() const { return transform; }
 	real_t get_surface_area() const { return surface_area; }

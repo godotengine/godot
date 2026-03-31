@@ -184,9 +184,9 @@ void NavRegionBuilder3D::_build_step_find_edge_connection_pairs(NavRegionIterati
 	HashMap<EdgeKey, EdgeConnectionPair, EdgeKey> &connection_pairs_map = r_build.iter_connection_pairs_map;
 	connection_pairs_map.clear();
 
+	// Fill-in in a later step based on the for-loop result below, see _build_step_merge_edge_connection_pairs().
 	region_iteration->internal_connections.clear();
 	region_iteration->internal_connections.resize(navmesh_polygons.size());
-
 	region_iteration->external_edges.clear();
 
 	int free_edges_count = 0;
@@ -242,7 +242,7 @@ void NavRegionBuilder3D::_build_step_merge_edge_connection_pairs(NavRegionIterat
 	for (const KeyValue<EdgeKey, EdgeConnectionPair> &pair_it : connection_pairs_map) {
 		const EdgeConnectionPair &pair = pair_it.value;
 		if (pair.size == 2) {
-			// Connect edge that are shared in different polygons.
+			// Connect edge that are shared in different polygons in the same region (navmesh).
 			const Connection &c1 = pair.connections[0];
 			const Connection &c2 = pair.connections[1];
 			region_iteration->internal_connections[c1.polygon->id].push_back(c2);
@@ -260,7 +260,7 @@ void NavRegionBuilder3D::_build_step_merge_edge_connection_pairs(NavRegionIterat
 			ce.edge = connection.edge;
 			ce.pathway_start = connection.pathway_start;
 			ce.pathway_end = connection.pathway_end;
-
+			// Maybe we'll find so. for you, in NavMapBuilder3D::_build_step_find_edge_connection_pairs().
 			region_iteration->external_edges.push_back(ce);
 		}
 	}

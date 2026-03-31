@@ -231,6 +231,7 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
 	source_geometry_data.instantiate();
 
+	// Parse the SceneTree for nodes (as configured) that should contribute to the navigation mesh baking and write the result to `source_geometry_data`.
 	NavigationServer3D::get_singleton()->parse_source_geometry_data(navigation_mesh, source_geometry_data, this);
 
 	if (p_on_thread) {

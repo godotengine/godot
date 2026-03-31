@@ -298,6 +298,9 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 }
 
 void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const Connection &p_connection, uint32_t p_least_cost_id, const NavigationPoly &p_least_cost_poly, const Vector3 &p_end_point) {
+	// Check the neighbor polygon (p_connection.polygon) of this polygon (p_least_cost_poly.poly; could be a NavivationLink).
+	// Add suitable polys to `p_query_task.path_query_slot->traversable_polys` and update traveled_distance as well as distance_to_destination in correspondence with traversal costs.
+
 	const NavBaseIteration3D *connection_owner = p_connection.polygon->owner;
 	ERR_FAIL_NULL(connection_owner);
 	const bool owner_is_usable = _query_task_is_connection_owner_usable(p_query_task, connection_owner);
@@ -387,7 +390,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	while (true) {
 		const NavigationPoly &least_cost_poly = navigation_polys[least_cost_id];
 
-		const NavBaseIteration3D *least_cost_navbase = least_cost_poly.poly->owner;
+		const NavBaseIteration3D *least_cost_navbase = least_cost_poly.poly->owner; // Navigation region or link.
 
 		processed_polygon_count += 1;
 
@@ -397,6 +400,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 		if (navbase_polygons_to_connections.size() > 0) {
 			const LocalVector<Connection> &polygon_connections = navbase_polygons_to_connections[navbase_local_polygon_id];
 
+			// Search polygon connections (i.e. that share the same edge) within the same region (navmesh).
 			for (const Connection &connection : polygon_connections) {
 				_query_task_search_polygon_connections(p_query_task, connection, least_cost_id, least_cost_poly, end_point);
 			}
@@ -1296,7 +1300,7 @@ void NavMeshQueries3D::_query_task_clip_path(NavMeshPathQueryTask3D &p_query_tas
 bool NavMeshQueries3D::_query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner) {
 	ERR_FAIL_NULL_V(p_owner, false);
 
-	bool owner_usable = true;
+	bool owner_usable = true; // Check if navigation region or link is usable.
 
 	if (!p_owner->get_enabled()) {
 		owner_usable = false;

@@ -72,6 +72,7 @@ public:
 		bool carve = false;
 	};
 
+	// ProjectedArea is the source geometry for overwriting navigation layers in polygons. Affects baked polygon result.
 	struct ProjectedArea {
 		static inline uint32_t VERSION = 1; // Increase on format changes.
 

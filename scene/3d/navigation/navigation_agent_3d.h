@@ -48,12 +48,15 @@ class NavigationAgent3D : public Node {
 	RID agent;
 	RID map_override;
 
+	// Avoidance:
 	bool avoidance_enabled = false;
 	bool use_3d_avoidance = false;
 	uint32_t avoidance_layers = 1;
 	uint32_t avoidance_mask = 1;
 	real_t avoidance_priority = 1.0;
-	uint32_t navigation_layers = 1;
+
+	// Path Query:
+	uint32_t navigation_layers = 1; // The layers this agent can trespass on: They exclude navmesh polygons or links from a query.
 	NavigationPathQueryParameters3D::PathfindingAlgorithm pathfinding_algorithm = NavigationPathQueryParameters3D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
 	NavigationPathQueryParameters3D::PathPostProcessing path_postprocessing = NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
 	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;

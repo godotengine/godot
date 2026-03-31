@@ -38,6 +38,7 @@
 #include "core/os/rw_lock.h"
 #include "scene/resources/navigation_mesh.h"
 
+// Handles iterations and syncs of NavigationRegion3D in case something changed - does not cover baking a navmesh.
 class NavRegion3D : public NavBase3D {
 	RWLock region_rwlock;
 

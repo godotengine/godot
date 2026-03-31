@@ -48,7 +48,7 @@ public:
 	RID owner_rid;
 	bool owner_use_edge_connections = false;
 	LocalVector<Nav3D::Polygon> navmesh_polygons;
-	LocalVector<LocalVector<Nav3D::Connection>> internal_connections;
+	LocalVector<LocalVector<Nav3D::Connection>> internal_connections; // Edges that are shared in different polygons within the same region (navmesh).
 
 	bool get_enabled() const { return enabled; }
 	NavigationEnums3D::PathSegmentType get_type() const { return owner_type; }
