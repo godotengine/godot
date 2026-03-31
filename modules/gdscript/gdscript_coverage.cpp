@@ -170,12 +170,18 @@ void GDScriptLanguage::coverage_record_branch(const StringName &p_source, int p_
 
 /*************** Per-file stats aggregate ***************/
 
+// Aggregate coverage counts for a single source file.
+// Used by _gather_file_stats to accumulate line/function/branch totals that
+// are then consumed by the format writers and the threshold/summary logic.
 struct CoverageFileStats {
 	int lines = 0, hit_lines = 0;
 	int funcs = 0, hit_funcs = 0;
 	int branches = 0, hit_branches = 0;
 };
 
+// Accumulate line coverage counts into r_fs.
+// p_hits contains recorded hit counts; p_coverable (optional) adds lines that
+// were compiled but never reached so they appear as not-hit rather than absent.
 static void _compute_line_stats(const HashMap<int, int> &p_hits,
 		const HashMap<int, int> *p_coverable, CoverageFileStats &r_fs) {
 	HashSet<int> counted;
@@ -196,6 +202,7 @@ static void _compute_line_stats(const HashMap<int, int> &p_hits,
 	}
 }
 
+// Accumulate function coverage counts from recorded hits into r_fs.
 static void _compute_func_stats(const HashMap<String, int> &p_funcs, CoverageFileStats &r_fs) {
 	for (const KeyValue<String, int> &fv : p_funcs) {
 		r_fs.funcs++;
@@ -205,6 +212,8 @@ static void _compute_func_stats(const HashMap<String, int> &p_funcs, CoverageFil
 	}
 }
 
+// Accumulate branch coverage counts from recorded results into r_fs.
+// Each IP contributes two branches (taken + not_taken); each counts as hit if > 0.
 static void _compute_branch_stats(const HashMap<int, GDScriptLanguage::BranchResult> &p_branches, CoverageFileStats &r_fs) {
 	for (const KeyValue<int, GDScriptLanguage::BranchResult> &bv : p_branches) {
 		r_fs.branches += 2;
@@ -250,6 +259,11 @@ static void _add_uncalled_func_stats(
 	}
 }
 
+// Build per-file coverage stats from the three recorded hit maps.
+// When p_coverable is provided, files that were compiled but never executed are
+// included as 0%-covered rather than absent. When p_func_starts is provided,
+// compiled functions that were never called are counted toward FNF so that the
+// reported total matches the number of functions in the bytecode.
 static HashMap<String, CoverageFileStats> _gather_file_stats(
 		const HashMap<String, HashMap<int, int>> &p_hits,
 		const HashMap<String, HashMap<String, int>> &p_func_hits,
@@ -276,6 +290,7 @@ static HashMap<String, CoverageFileStats> _gather_file_stats(
 	return out;
 }
 
+// Sum per-file stats into a single aggregate for threshold checking and summary output.
 static CoverageFileStats _sum_totals(const HashMap<String, CoverageFileStats> &p_stats) {
 	CoverageFileStats t;
 	for (const KeyValue<String, CoverageFileStats> &kv : p_stats) {
