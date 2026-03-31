@@ -51,8 +51,8 @@ var test_var_hard_dictionary_my_class: Dictionary[MyClass, MyClass]
 
 static func test_static_func(): pass
 
-func test_func_implicit_void(): pass
-func test_func_explicit_void() -> void: pass
+func test_func_untyped(): pass
+func test_func_void() -> void: pass
 func test_func_weak_null(): return null
 func test_func_weak_int(): return 1
 func test_func_hard_variant() -> Variant: return null
