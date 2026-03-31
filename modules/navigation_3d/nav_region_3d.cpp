@@ -251,6 +251,7 @@ void NavRegion3D::_build_iteration() {
 	iteration_build.reset();
 
 	if (navmesh.is_valid()) {
+		// Read data from latest bake result.
 		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta);
 	}
 
@@ -259,6 +260,7 @@ void NavRegion3D::_build_iteration() {
 	Ref<NavRegionIteration3D> new_iteration;
 	new_iteration.instantiate();
 
+	// Apply potential changes.
 	new_iteration->navigation_layers = get_navigation_layers();
 	new_iteration->enter_cost = get_enter_cost();
 	new_iteration->travel_cost = get_travel_cost();

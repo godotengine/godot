@@ -74,7 +74,7 @@ private:
 	LocalVector<RID> _excluded_regions;
 	LocalVector<RID> _included_regions;
 
-	Ref<NavigationLayersCostMap3D> navigation_layers_cost_map;
+	Ref<NavigationLayersCostMap3D> navigation_layers_cost_map; // Default cost is `1.0`.
 
 	float path_return_max_length = 0.0;
 	float path_return_max_radius = 0.0;

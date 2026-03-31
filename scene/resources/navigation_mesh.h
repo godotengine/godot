@@ -40,7 +40,7 @@ class NavigationMesh : public Resource {
 
 	Vector<Vector3> vertices;
 	Vector<Vector<int>> polygons;
-	Vector<uint32_t> polygons_meta;
+	Vector<uint32_t> polygons_meta; // The navigation layer bitmask per polygon. See `NavMeshGenerator3D::generator_bake_from_source_geometry_data`.
 	Ref<ArrayMesh> debug_mesh;
 
 protected:

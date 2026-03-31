@@ -97,7 +97,7 @@ struct Connection {
 
 struct Polygon {
 	uint32_t id = UINT32_MAX;
-	uint32_t navigation_layers = 1; // TODO: duplicate of `navigation_layers` in NavBaseIteration3D?
+	uint32_t navigation_layers = 1; // Used in cost calculation.
 
 	/// Navigation region or link that contains this polygon.
 	const NavBaseIteration3D *owner = nullptr;
@@ -107,6 +107,7 @@ struct Polygon {
 	real_t surface_area = 0.0;
 };
 
+// NavigationPoly is used for path query: collects suitable polys according to smallest cost.
 struct NavigationPoly {
 	/// This poly.
 	const Polygon *poly = nullptr;

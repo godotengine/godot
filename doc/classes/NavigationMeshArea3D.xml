@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMeshArea3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An area shape to affect navigation mesh geometry and properties (when baked).
+		An area shape to affect navigation mesh geometry and traversal cost (when baked).
 	</brief_description>
 	<description>
-		An area shape to affect navigation mesh geometry and properties (when baked).
+		An area shape to affect navigation mesh geometry and traversal cost (when baked).
+		[NavigationMeshArea3D] is a base for other resources. It cannot be used directly.
 	</description>
 	<tutorials>
 	</tutorials>

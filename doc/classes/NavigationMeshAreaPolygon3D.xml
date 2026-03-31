@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMeshAreaPolygon3D" inherits="NavigationMeshArea3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An axis-aligned area with a projected shape of a closed polygon to affect navigation mesh geometry and properties (when baked).
+		An axis-aligned area with a projected shape of a closed polygon to affect navigation mesh geometry and traversal cost (when baked).
 	</brief_description>
 	<description>
 	</description>

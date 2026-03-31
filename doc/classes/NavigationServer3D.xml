@@ -997,7 +997,7 @@
 				Returns [code]true[/code] if the specified [param region] is enabled.
 			</description>
 		</method>
-		<method name="region_get_enter_cost" qualifiers="const">
+		<method name="region_get_enter_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
@@ -1051,7 +1051,7 @@
 				Returns the global transformation of this [param region].
 			</description>
 		</method>
-		<method name="region_get_travel_cost" qualifiers="const">
+		<method name="region_get_travel_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>

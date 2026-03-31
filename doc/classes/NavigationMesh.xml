@@ -4,7 +4,7 @@
 		A navigation mesh that defines traversable areas and obstacles.
 	</brief_description>
 	<description>
-		A navigation mesh is a collection of polygons that define which areas of an environment are traversable to aid agents in pathfinding through complicated spaces.
+		A navigation mesh acts as a blueprint for creating a traversable environment, used by agents for pathfinding through complicated spaces. The blueprint needs to be baked, see [method NavigationRegion3D.bake_navigation_mesh] and [method NavigationServer3D.bake_from_source_geometry_data]. Once the navmesh is baked, a collection of polygons is available for said pathfinding.
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
@@ -21,13 +21,13 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the internal arrays for vertices and polygon indices.
+				Clears the internal arrays for vertices and polygon indices, as well as mesh areas (NavigationMeshArea3D).
 			</description>
 		</method>
 		<method name="clear_polygons">
 			<return type="void" />
 			<description>
-				Clears the array of polygons, but it doesn't clear the array of vertices.
+				Clears the array of polygons and mesh areas (NavigationMeshArea3D), but it doesn't clear the array of vertices.
 			</description>
 		</method>
 		<method name="create_from_mesh">
