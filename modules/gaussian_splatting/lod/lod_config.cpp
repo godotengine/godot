@@ -1,5 +1,6 @@
 #include "lod_config.h"
 #include "../core/gs_project_settings.h"
+#include "../core/quality_tier_config.h"
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
 #include "core/os/os.h"
@@ -64,8 +65,29 @@ void LODConfig::load_from_project_settings() {
 
     enabled = get_bool(LOD_CONFIG_ENABLED_PATH, enabled);
     num_levels = get_int(LOD_CONFIG_NUM_LEVELS_PATH, num_levels);
-    max_distance = get_float(LOD_CONFIG_MAX_DISTANCE_PATH, max_distance);
-    base_threshold = get_float(LOD_CONFIG_BASE_THRESHOLD_PATH, base_threshold);
+
+    // Sentinel-based tier seeding for max_distance and base_threshold.
+    // -1.0f means "not explicitly set by user" -- check active tier.
+    float raw_max_distance = get_float(LOD_CONFIG_MAX_DISTANCE_PATH, -1.0f);
+    float raw_base_threshold = get_float(LOD_CONFIG_BASE_THRESHOLD_PATH, -1.0f);
+
+    // Resolve sentinels via tier config.
+    const String tier_preset = ps->get_setting("rendering/gaussian_splatting/quality/tier_preset", "custom");
+    QualityTierConfig tier_config;
+    bool has_tier = get_quality_tier_config(tier_preset, tier_config);
+
+    if (raw_max_distance < 0.0f) {
+        max_distance = (has_tier && tier_config.lod_max_distance > 0.0f) ? tier_config.lod_max_distance : 100.0f;
+    } else {
+        max_distance = raw_max_distance;
+    }
+
+    if (raw_base_threshold < 0.0f) {
+        base_threshold = (has_tier && tier_config.lod_base_threshold > 0.0f) ? tier_config.lod_base_threshold : 10.0f;
+    } else {
+        base_threshold = raw_base_threshold;
+    }
+
     splat_skip_enabled = get_bool(LOD_CONFIG_SPLAT_SKIP_ENABLED_PATH, splat_skip_enabled);
     sh_reduction_enabled = get_bool(LOD_CONFIG_SH_REDUCTION_ENABLED_PATH, sh_reduction_enabled);
     opacity_fade_enabled = get_bool(LOD_CONFIG_OPACITY_FADE_ENABLED_PATH, opacity_fade_enabled);
@@ -319,8 +341,8 @@ void register_lod_project_settings() {
     // LOD-related project settings with default values
     GLOBAL_DEF(LOD_CONFIG_ENABLED_PATH, true);
     GLOBAL_DEF(LOD_CONFIG_NUM_LEVELS_PATH, 4);
-    GLOBAL_DEF(LOD_CONFIG_MAX_DISTANCE_PATH, 100.0f);
-    GLOBAL_DEF(LOD_CONFIG_BASE_THRESHOLD_PATH, 10.0f);
+    GLOBAL_DEF(LOD_CONFIG_MAX_DISTANCE_PATH, -1.0f);
+    GLOBAL_DEF(LOD_CONFIG_BASE_THRESHOLD_PATH, -1.0f);
     GLOBAL_DEF(LOD_CONFIG_SPLAT_SKIP_ENABLED_PATH, true);
     GLOBAL_DEF(LOD_CONFIG_SH_REDUCTION_ENABLED_PATH, true);
     GLOBAL_DEF(LOD_CONFIG_OPACITY_FADE_ENABLED_PATH, true);

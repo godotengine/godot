@@ -170,6 +170,11 @@ static bool _fill_quality_tier_config(const String &p_preset, QualityTierConfig 
 		r_out.enable_sh_amortization = true;
 		r_out.sh_amortization_divisor = 8;
 		r_out.enable_fast_raster = false;
+		r_out.sh_bands = 1;           // SH1 for handheld
+		r_out.lod_max_distance = 60.0f;
+		r_out.lod_base_threshold = 5.0f;
+		r_out.quantization_enabled = 1;  // Enable quantization for memory savings
+		r_out.route_policy = -1;         // No opinion on route policy
 		return true;
 	}
 

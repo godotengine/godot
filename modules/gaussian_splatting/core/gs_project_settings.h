@@ -96,6 +96,29 @@ static inline float get_float(ProjectSettings *p_ps, const StringName &p_name, f
 }
 
 /**
+ * @brief Read a signed integer from ProjectSettings with type coercion.
+ *
+ * Unlike get_uint, preserves negative values (needed for sentinel defaults).
+ * Handles INT, FLOAT, and BOOL (for backward-compatible bool-to-int migration).
+ */
+static inline int get_int(ProjectSettings *p_ps, const StringName &p_name, int p_fallback) {
+	if (!p_ps || !p_ps->has_setting(p_name)) {
+		return p_fallback;
+	}
+	Variant value = p_ps->get_setting_with_override(p_name);
+	if (value.get_type() == Variant::INT) {
+		return static_cast<int>(value.operator int64_t());
+	}
+	if (value.get_type() == Variant::FLOAT) {
+		return static_cast<int>(Math::round(value.operator double()));
+	}
+	if (value.get_type() == Variant::BOOL) {
+		return value.operator bool() ? 1 : 0;
+	}
+	return p_fallback;
+}
+
+/**
  * @brief Convenience: check whether "all debug" is enabled for the GS module.
  */
 static inline bool is_all_debug_enabled(ProjectSettings *p_ps) {

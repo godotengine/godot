@@ -1,5 +1,6 @@
 #include "gpu_culler.h"
 #include "../core/gs_project_settings.h"
+#include "../lod/lod_config.h"
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
@@ -214,7 +215,9 @@ void GPUCuller::update_culling_settings() {
         culling_state.culling_min_gaussians = (uint32_t)min_gaussians;
 
         min_screen_setting = _get_float_setting(ps, "rendering/gaussian_splatting/lod/min_screen_size_pixels", min_screen_setting);
-        max_distance_setting = _get_float_setting(ps, "rendering/gaussian_splatting/lod/max_distance", max_distance_setting);
+        // Read from g_lod_config which resolves sentinel defaults via tier config,
+        // instead of ProjectSettings directly where the sentinel -1.0f would be clamped to 0.
+        max_distance_setting = g_lod_config.max_distance;
         project_bias_setting = _get_float_setting(ps, "rendering/gaussian_splatting/lod/bias", project_bias_setting);
         importance_setting = _get_float_setting(ps, "rendering/gaussian_splatting/lod/importance_threshold", importance_setting);
         frustum_slack_setting = _get_float_setting(ps, "rendering/gaussian_splatting/cull/frustum_plane_slack", frustum_slack_setting);
