@@ -438,6 +438,7 @@ void Polygon2D::_notification(int p_what) {
 void Polygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	rect_cache_dirty = true;
+	vertex_colors.resize(p_polygon.size());
 	queue_redraw();
 }
 
