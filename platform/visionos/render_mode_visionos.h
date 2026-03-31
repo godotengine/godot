@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  render_mode_visionos.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,43 +30,16 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
+class RenderModeVisionOS {
+public:
+	enum Mode {
+		WINDOWED = 0,
+		COMPOSITOR_SERVICES = 1
+	};
 
-class String;
+	static Mode get_mode();
+	static void *get_compositor_services_device();
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
-
-@protocol GDTViewDelegate
-
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
-
-@end
-
-@interface GDTView : UIView
-
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) float preferredFrameRate;
-
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
-
-@end
-
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();
+private:
+	RenderModeVisionOS() = delete;
+};

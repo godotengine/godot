@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  godot_app_delegate_visionos.mm                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,45 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "godot_app_delegate_service_visionos.h"
 
-#import <UIKit/UIKit.h>
+static GDTRenderMode _renderMode = GDTRenderModeWindowed;
+static __weak cp_layer_renderer_t _layerRenderer = nil;
+static __strong cp_layer_renderer_capabilities_t _layerRendererCapabilities = nil;
 
-class String;
+@implementation GDTAppDelegateServiceVisionOS
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
++ (GDTRenderMode)renderMode {
+	return _renderMode;
+}
 
-@protocol GDTViewDelegate
++ (void)setRenderMode:(GDTRenderMode)renderMode {
+	_renderMode = renderMode;
+}
 
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
++ (cp_layer_renderer_t)layerRenderer {
+	if (_renderMode != GDTRenderModeCompositorServices) {
+		NSLog(@"GDTAppDelegate error, layerRenderer only supported in Compositor Services mode");
+		return nil;
+	}
+	return _layerRenderer;
+}
+
++ (void)setLayerRenderer:(cp_layer_renderer_t)layerRenderer {
+	if (_renderMode != GDTRenderModeCompositorServices) {
+		NSLog(@"GDTAppDelegate error, layerRenderer only supported in Compositor Services mode");
+		return;
+	}
+	_layerRenderer = layerRenderer;
+}
+
++ (cp_layer_renderer_capabilities_t)layerRendererCapabilities {
+	if (_renderMode != GDTRenderModeCompositorServices) {
+		NSLog(@"GDTAppDelegate error, layerRenderer only supported in Compositor Services mode");
+		return nil;
+	}
+	return _layerRendererCapabilities;
+}
+
++ (void)setLayerRendererCapabilities:(cp_layer_renderer_capabilities_t)layerRendererCapabilities {
+	if (_renderMode != GDTRenderModeCompositorServices) {
+		NSLog(@"GDTAppDelegate error, layerRenderer only supported in Compositor Services mode");
+		return;
+	}
+	_layerRendererCapabilities = layerRendererCapabilities;
+}
 
 @end
-
-@interface GDTView : UIView
-
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) float preferredFrameRate;
-
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
-
-@end
-
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();

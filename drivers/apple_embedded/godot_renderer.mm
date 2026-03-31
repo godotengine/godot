@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  godot_renderer.mm                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,45 +28,80 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "godot_renderer.h"
 
-#import <UIKit/UIKit.h>
+#include "core/config/project_settings.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/os_apple_embedded.h"
+#include "main/main.h"
 
-class String;
+@interface GDTRenderer ()
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
-
-@protocol GDTViewDelegate
-
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
-
-@end
-
-@interface GDTView : UIView
-
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) float preferredFrameRate;
-
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
+@property(assign, nonatomic) BOOL hasCalledProjectDataSetUp;
+@property(assign, nonatomic) BOOL hasStartedMain;
+@property(assign, nonatomic) BOOL hasFinishedSetUp;
 
 @end
 
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();
+@implementation GDTRenderer
+
+- (BOOL)setUp {
+	if (self.hasFinishedSetUp) {
+		return NO;
+	}
+
+	if (!OS::get_singleton()) {
+		exit(0);
+	}
+
+	if (!self.hasCalledProjectDataSetUp) {
+		[self setUpProjectData];
+	}
+
+	if (!self.hasStartedMain) {
+		[self startMain];
+	}
+
+	self.hasFinishedSetUp = YES;
+
+	return NO;
+}
+
+- (void)setUpProjectData {
+	self.hasCalledProjectDataSetUp = YES;
+	safeDispatchSyncToMain(^{
+		Main::setup2();
+
+		// this might be necessary before here
+		NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
+		for (NSString *key in dict) {
+			NSObject *value = [dict objectForKey:key];
+			String ukey = String::utf8([key UTF8String]);
+
+			// we need a NSObject to Variant conversor
+
+			if ([value isKindOfClass:[NSString class]]) {
+				NSString *str = (NSString *)value;
+				String uval = String::utf8([str UTF8String]);
+
+				ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
+
+			} else if ([value isKindOfClass:[NSNumber class]]) {
+				NSNumber *n = (NSNumber *)value;
+				double dval = [n doubleValue];
+
+				ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
+			}
+			// do stuff
+		}
+	});
+}
+
+- (void)startMain {
+	self.hasStartedMain = YES;
+	safeDispatchSyncToMain(^{
+		OS_AppleEmbedded::get_singleton()->start();
+	});
+}
+
+@end

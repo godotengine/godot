@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app_delegate_service.h                                                */
+/*  render_mode_visionos.mm                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,14 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "render_mode_visionos.h"
 
-#import <UIKit/UIKit.h>
+#import "godot_app_delegate_service_visionos.h"
 
-@class GDTViewController;
+#import <CompositorServices/CompositorServices.h>
+#import <Metal/Metal.h>
 
-@interface GDTAppDelegateService : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+RenderModeVisionOS::Mode RenderModeVisionOS::get_mode() {
+	return static_cast<Mode>(GDTAppDelegateServiceVisionOS.renderMode);
+}
 
-@property(strong, class, nonatomic) GDTViewController *viewController;
-
-@end
+void *RenderModeVisionOS::get_compositor_services_device() {
+	return (__bridge void *)cp_layer_renderer_get_device(GDTAppDelegateServiceVisionOS.layerRenderer);
+}
