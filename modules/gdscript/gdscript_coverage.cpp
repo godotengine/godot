@@ -315,9 +315,37 @@ static String _format_summary_row(const String &p_label, const CoverageFileStats
 	return p_label.rpad(p_col_file) + _format_pct_cell(lp, 9) + _format_pct_cell(fp, 9) + _format_pct_cell(bp, 9) + "\n";
 }
 
-String GDScriptLanguage::coverage_summary_string() {
+// Build the human-readable summary string from pre-computed per-file stats.
+// Separated from coverage_summary_string() so coverage_write() can pass the
+// already-snapshotted maps for consistency instead of taking a second snapshot.
+static String _format_coverage_summary(const HashMap<String, CoverageFileStats> &p_stats, float p_threshold) {
 	static const int COL_FILE = 40;
+	CoverageFileStats totals = _sum_totals(p_stats);
 
+	String out = String("File").rpad(COL_FILE) + String("Lines").rpad(9) + String("Funcs").rpad(9) + String("Branches").rpad(9) + "\n";
+
+	Vector<String> files;
+	for (const KeyValue<String, CoverageFileStats> &kv : p_stats) {
+		files.push_back(kv.key);
+	}
+	files.sort();
+	for (const String &path : files) {
+		out += _format_summary_row(path, *p_stats.getptr(path), COL_FILE);
+	}
+
+	String sep(U"────────────────────────────────────────────────────────────");
+	out += sep + "\n";
+	out += _format_summary_row("Total", totals, COL_FILE);
+
+	if (p_threshold > 0.0f) {
+		float pct = totals.lines > 0 ? 100.0f * totals.hit_lines / totals.lines : 0.0f;
+		bool pass = pct >= p_threshold;
+		out += "Threshold: " + String::num(p_threshold, 1) + "% " + (pass ? U"✓" : U"✗") + "\n";
+	}
+	return out;
+}
+
+String GDScriptLanguage::coverage_summary_string() {
 	// Snapshot under coverage_mutex so we don't race with ongoing recording.
 	HashMap<String, HashMap<int, int>> hits_snap;
 	HashMap<String, HashMap<String, int>> func_hits_snap;
@@ -331,29 +359,7 @@ String GDScriptLanguage::coverage_summary_string() {
 	HashMap<String, HashMap<int, int>> coverable = _coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = _coverage_enumerate_func_start_lines();
 	HashMap<String, CoverageFileStats> stats = _gather_file_stats(hits_snap, func_hits_snap, branch_hits_snap, &coverable, &func_starts);
-	CoverageFileStats totals = _sum_totals(stats);
-
-	String out = String("File").rpad(COL_FILE) + String("Lines").rpad(9) + String("Funcs").rpad(9) + String("Branches").rpad(9) + "\n";
-
-	Vector<String> files;
-	for (const KeyValue<String, CoverageFileStats> &kv : stats) {
-		files.push_back(kv.key);
-	}
-	files.sort();
-	for (const String &path : files) {
-		out += _format_summary_row(path, stats[path], COL_FILE);
-	}
-
-	String sep(U"────────────────────────────────────────────────────────────");
-	out += sep + "\n";
-	out += _format_summary_row("Total", totals, COL_FILE);
-
-	if (coverage_threshold > 0.0f) {
-		float pct = totals.lines > 0 ? 100.0f * totals.hit_lines / totals.lines : 0.0f;
-		bool pass = pct >= coverage_threshold;
-		out += "Threshold: " + String::num(coverage_threshold, 1) + "% " + (pass ? U"✓" : U"✗") + "\n";
-	}
-	return out;
+	return _format_coverage_summary(stats, coverage_threshold);
 }
 
 /*************** Bytecode enumeration ***************/
@@ -961,7 +967,10 @@ Error GDScriptLanguage::coverage_write() {
 			err = _write_json(coverage_output_path, hits_snap, func_hits_snap, branch_hits_snap, this);
 			break;
 		case COVERAGE_FORMAT_TEXT: {
-			String summary = coverage_summary_string();
+			HashMap<String, HashMap<int, int>> coverable = _coverage_enumerate_coverable_lines();
+			HashMap<String, HashMap<String, int>> func_starts = _coverage_enumerate_func_start_lines();
+			HashMap<String, CoverageFileStats> stats = _gather_file_stats(hits_snap, func_hits_snap, branch_hits_snap, &coverable, &func_starts);
+			String summary = _format_coverage_summary(stats, coverage_threshold);
 			print_line(summary);
 			err = _write_text(coverage_output_path, summary);
 		} break;
