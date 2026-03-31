@@ -266,7 +266,8 @@ public:
 	void set_menu_delegate(NSMenu *p_menu);
 
 	void send_event(NSEvent *p_event);
-	void send_window_event(const WindowData &p_wd, DisplayServerEnums::WindowEvent p_event);
+	void send_window_event(const WindowData &p_wd, DisplayServerEnums::WindowEvent p_event) const;
+	virtual void send_window_event_by_id(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 	void release_pressed_events();
 	void sync_mouse_state();
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
