@@ -187,7 +187,8 @@
 			A bitfield determining which navigation layers of navigation regions this agent will use to calculate a path. Changing it during runtime will clear the current navigation path and generate a new one, according to the new navigation layers.
 		</member>
 		<member name="navigation_layers_cost_map" type="NavigationLayersCostMap3D" setter="set_navigation_layers_cost_map" getter="get_navigation_layers_cost_map">
-			The optional [NavigationLayersCostMap3D] resource used in path queries to override default costs of navigation layers.
+			The optional [NavigationLayersCostMap3D] resource used in path queries to override default costs ([code]1.0[code]) of navigation layers. Changing it during runtime will clear the current navigation path and generate a new one, according to the new navigation layers.
+			[b]Note:[/b] This will not affect the navigation layers this agent will use to calculate a path.
 		</member>
 		<member name="neighbor_distance" type="float" setter="set_neighbor_distance" getter="get_neighbor_distance" default="50.0">
 			The distance to search for other agents.
