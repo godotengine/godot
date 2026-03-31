@@ -161,6 +161,31 @@ static inline bool is_frame_log_enabled() {
 #endif
 }
 
+// Streaming route policy constants.
+enum GSStreamingRoutePolicy {
+	GS_ROUTE_RESIDENT = 0,
+	GS_ROUTE_STREAMING = 1,
+};
+
+/**
+ * @brief Resolve the effective streaming route policy.
+ *
+ * Checks both the new route_policy setting and the legacy streaming/enabled
+ * toggle.  If streaming/enabled is false, the result is always RESIDENT
+ * regardless of route_policy (backward compatibility).
+ */
+static inline int get_streaming_route_policy(ProjectSettings *p_ps) {
+	if (!p_ps) {
+		return GS_ROUTE_STREAMING; // safe fallback: preserve existing behavior
+	}
+	// Legacy compatibility: streaming/enabled=false forces resident.
+	if (!get_bool(p_ps, "rendering/gaussian_splatting/streaming/enabled", true)) {
+		return GS_ROUTE_RESIDENT;
+	}
+	return (int)get_uint(p_ps, "rendering/gaussian_splatting/streaming/route_policy",
+			(uint32_t)GS_ROUTE_STREAMING);
+}
+
 } // namespace settings
 } // namespace gs
 

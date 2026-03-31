@@ -1,0 +1,60 @@
+; Engine configuration file.
+; Steam Deck / handheld benchmark project.
+; Uses resident rendering path, reduced quality defaults, and 800p viewport.
+
+config_version=5
+
+[application]
+
+config/name="GaussianSplattingDeckBenchmark"
+run/main_scene="res://scenes/deck_static_baseline.tscn"
+config/features=PackedStringArray("4.5")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=800
+window/vsync/vsync_mode=0
+
+[rendering]
+
+; --- Core renderer (pinned for reproducible Deck baselines) ---
+renderer/rendering_method="forward_plus"
+anti_aliasing/quality/msaa_3d=0
+scaling_3d/mode=0
+scaling_3d/scale=1.0
+
+; --- Deck quality tier and route policy ---
+gaussian_splatting/quality/tier_preset="steam_deck"
+gaussian_splatting/quality/tier_apply_pipeline_toggles=true
+gaussian_splatting/quality/tier_apply_streaming_budgets=true
+gaussian_splatting/streaming/route_policy=0
+
+; --- GPU sorting (conservative for 8-CU RDNA2) ---
+gaussian_splatting/gpu_sorting/key_bits=32
+gaussian_splatting/gpu_sorting/tile_bits=16
+gaussian_splatting/gpu_sorting/depth_bits=16
+gaussian_splatting/gpu_sorting/enable_compute_raster=true
+
+; --- LOD (tighter for 800p) ---
+gaussian_splatting/lod/max_distance=60.0
+gaussian_splatting/lod/base_threshold=5.0
+
+; --- Streaming (low budgets; only used if route_policy switched to 1) ---
+gaussian_splatting/streaming/vram_budget_mb=512
+gaussian_splatting/streaming/pack_worker_threads=1
+gaussian_splatting/streaming/max_visible_chunk_scan_per_frame=256
+gaussian_splatting/streaming/max_prefetch_chunk_scan_per_frame=128
+gaussian_splatting/streaming/auto_regulate_enabled=true
+
+; --- Disable expensive features ---
+gaussian_splatting/animation/wind_enabled=false
+gaussian_splatting/effects/max_effectors=0
+
+; --- Debug (benchmarking) ---
+gaussian_splatting/debug/enable_frame_logging=true
+gaussian_splatting/debug/frame_log_frequency=60
+
+; --- Pipeline ---
+gaussian_splatting/pipeline/enable_tighter_bounds=true
+gaussian_splatting/instance_pipeline/enabled=true

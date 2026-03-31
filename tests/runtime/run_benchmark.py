@@ -187,6 +187,23 @@ LANES: list[LaneDefinition] = [
         durations={"quick": 20.0, "performance": 35.0, "everything": 35.0, "ab-only": 35.0},
         weights={"quick": 4.0, "performance": 6.0, "everything": 6.0, "ab-only": 10.0},
     ),
+    # ── Steam Deck / handheld lanes ───────────────────────────────────────
+    # These run against the test_project_deck project (800p, steam_deck tier,
+    # resident route policy).  Use --project-path to point at the Deck project.
+    LaneDefinition(
+        lane_id="deck_static_baseline",
+        scene="res://scenes/deck_static_baseline.tscn",
+        description="Deck 800p resident-path baseline (route_policy=0)",
+        durations={"steam-deck": 15.0},
+        weights={"steam-deck": 15.0},
+    ),
+    LaneDefinition(
+        lane_id="deck_streaming_baseline",
+        scene="res://scenes/deck_streaming_baseline.tscn",
+        description="Deck 800p streaming-path baseline (route_policy=1)",
+        durations={"steam-deck": 15.0},
+        weights={"steam-deck": 15.0},
+    ),
 ]
 
 LANE_INDEX_BY_ID = {lane.lane_id: idx for idx, lane in enumerate(LANES)}
@@ -252,6 +269,10 @@ PROFILE_DEFAULT_LANE_IDS: dict[str, tuple[str, ...]] = {
         "instance_pipeline_ab_serial",
         "instance_pipeline_ab_single_pass",
     ),
+    "steam-deck": (
+        "deck_static_baseline",
+        "deck_streaming_baseline",
+    ),
 }
 LANE_TIMEOUT_MIN_SECONDS = 90
 LANE_TIMEOUT_GRACE_SECONDS = 45
@@ -265,6 +286,7 @@ PROFILE_WARMUP_SECONDS: dict[str, float] = {
     "ab-only": 5.0,
     "showcase": 8.0,
     "parity": 5.0,
+    "steam-deck": 3.0,
 }
 DEFAULT_CAPTURE_LANES: tuple[str, ...] = ("integrity_sentinel", "parity_fidelity")
 TEXT_DEPENDENCY_SUFFIXES: tuple[str, ...] = (".tscn", ".gd", ".tres", ".tscn")
@@ -361,7 +383,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--profile",
-        choices=["everything", "quick", "performance", "synthetic-only", "ab-only"],
+        choices=["everything", "quick", "performance", "synthetic-only", "ab-only", "steam-deck"],
         default="everything",
         help="Suite profile controls lane durations and aggregate weights.",
     )
@@ -1220,6 +1242,19 @@ def main() -> int:
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
+
+    # When no explicit --lane is given, restrict to lanes that have a duration
+    # entry for the active profile.  This prevents preflight from validating
+    # scenes that don't exist in the current project (e.g. non-Deck lanes when
+    # running --profile steam-deck against the Deck project).
+    if not args.lane:
+        selected_lanes = [
+            lane for lane in selected_lanes if args.profile in lane.durations
+        ]
+        if not selected_lanes:
+            print(f"ERROR: no lanes defined for profile '{args.profile}'", file=sys.stderr)
+            return 2
+
     try:
         capture_lane_ids = _select_capture_lanes(
             selected_lanes,

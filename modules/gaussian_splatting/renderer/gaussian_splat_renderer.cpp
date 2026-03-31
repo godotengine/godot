@@ -1904,7 +1904,8 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     }
 
     // Update streaming system if active.
-    const bool streaming_requested = true;
+    const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
+    const bool streaming_requested = (route_policy == gs::settings::GS_ROUTE_STREAMING);
     bool streaming_ready = get_streaming_state().current_streaming_system.is_valid();
     static uint64_t render_debug_count = 0;
     const auto &debug_config = get_debug_config();
@@ -1970,7 +1971,14 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
             WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming resources not ready (route=%s); falling back to resident render path.",
                     fallback_route_uid));
         }
+    } else if (!streaming_requested) {
+        // Resident path intentionally selected via route_policy — not a failure.
+        if (debug_state_orchestrator) {
+            DebugState &debug_state = get_debug_state();
+            debug_state.route_uid = RenderRouteUID::RESIDENT_SELECTED;
+        }
     } else {
+        // Streaming was requested but the system failed to initialize.
         String fallback_route_uid = _streaming_not_ready_route_uid("MISSING_STREAMING_SYSTEM");
         if (debug_state_orchestrator) {
             DebugState &debug_state = get_debug_state();
@@ -1982,15 +1990,20 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
                 fallback_route_uid = debug_state.route_uid;
             }
         }
-        if (streaming_requested) {
-            WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming unavailable (route=%s); falling back to resident render path.",
-                    fallback_route_uid));
-        }
+        WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming unavailable (route=%s); falling back to resident render path.",
+                fallback_route_uid));
     }
     _render_resident_frame(p_render_data, view_transform, cam_projection, render_projection, render_buffers_rd);
 }
 
 void GaussianSplatRenderer::tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection) {
+    // When route policy is resident, skip streaming tick entirely — don't create
+    // or update the streaming system.  This eliminates all per-frame streaming
+    // overhead (visibility scan, prefetch, eviction, worker threads).
+    const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
+    if (route_policy == gs::settings::GS_ROUTE_RESIDENT) {
+        return;
+    }
     if (!streaming_orchestrator) {
         return;
     }

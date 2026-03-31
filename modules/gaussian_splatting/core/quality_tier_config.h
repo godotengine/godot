@@ -30,7 +30,7 @@ struct QualityTierConfig {
 	float lod_max_distance = -1.0f;
 	float lod_base_threshold = -1.0f;
 	int quantization_enabled = -1;
-	int route_policy = -1;
+	int route_policy = -1; // Advisory only (not auto-seeded). 0 = resident, 1 = streaming.
 };
 
 bool get_quality_tier_config(const String &p_preset, QualityTierConfig &r_out);
