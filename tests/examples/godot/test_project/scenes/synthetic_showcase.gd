@@ -65,7 +65,7 @@ func _ready() -> void:
 		_finish_with_error("No ply_path set")
 		return
 
-	var splat_node = GaussianSplatNode3D.new()
+	var splat_node: GaussianSplatNode3D = GaussianSplatNode3D.new()
 	splat_node.name = "SplatNode"
 	splat_node.set_ply_file_path(ply_path)
 	splat_node.set_auto_load(true)
@@ -131,9 +131,9 @@ func _process(delta: float) -> void:
 	_frame_count += 1
 	if delta > 0:
 		_fps_samples.append(1.0 / delta)
-	var t = _elapsed / duration  # 0..1 progress.
+	var t: float = _elapsed / duration  # 0..1 progress.
 
-	var cam = get_node_or_null("Camera3D")
+	var cam: Camera3D = get_node_or_null("Camera3D") as Camera3D
 	if not cam:
 		return
 
@@ -273,31 +273,31 @@ func _array_mean(arr: Array[float]) -> float:
 	return total / max(arr.size(), 1)
 
 func _camera_orbit(cam: Camera3D, _t: float) -> void:
-	var angle = _elapsed * orbit_speed
+	var angle: float = _elapsed * orbit_speed
 	cam.position = Vector3(sin(angle) * orbit_radius, orbit_height, cos(angle) * orbit_radius)
 	cam.look_at(look_at_offset, Vector3.UP)
 
 func _camera_flythrough(cam: Camera3D, t: float) -> void:
 	# Fly from start to end with gentle spiral.
-	var progress = clamp(t * fly_speed_scale, 0.0, 1.0)
-	var pos = fly_start.lerp(fly_end, progress)
+	var progress: float = clamp(t * fly_speed_scale, 0.0, 1.0)
+	var pos: Vector3 = fly_start.lerp(fly_end, progress)
 	# Add gentle spiral offset for visual interest.
-	var spiral_r = 0.5 * (1.0 - abs(progress - 0.5) * 2.0)  # Widest at middle.
-	var spiral_angle = progress * 6.0 * PI
+	var spiral_r: float = 0.5 * (1.0 - abs(progress - 0.5) * 2.0)  # Widest at middle.
+	var spiral_angle: float = progress * 6.0 * PI
 	pos.x += cos(spiral_angle) * spiral_r
 	pos.y += sin(spiral_angle) * spiral_r
 	cam.position = pos
 	# Look ahead along the tunnel.
-	var ahead_t = min(progress + fly_look_ahead / max(fly_start.distance_to(fly_end), 0.01), 0.999)
-	var look_target = fly_start.lerp(fly_end, ahead_t)
+	var ahead_t: float = min(progress + fly_look_ahead / max(fly_start.distance_to(fly_end), 0.01), 0.999)
+	var look_target: Vector3 = fly_start.lerp(fly_end, ahead_t)
 	if pos.distance_to(look_target) > 0.01:
 		cam.look_at(look_target, Vector3.UP)
 
 func _camera_sweep(cam: Camera3D, t: float) -> void:
 	# Diagonal sweep across a flat grid.
-	var progress = clamp(t, 0.0, 1.0)
-	var sweep_angle = progress * PI * 0.4 - PI * 0.2  # -36° to +36°.
-	var x = sin(sweep_angle) * sweep_extent
-	var z = cos(sweep_angle) * sweep_extent * 0.5
+	var progress: float = clamp(t, 0.0, 1.0)
+	var sweep_angle: float = progress * PI * 0.4 - PI * 0.2  # -36° to +36°.
+	var x: float = sin(sweep_angle) * sweep_extent
+	var z: float = cos(sweep_angle) * sweep_extent * 0.5
 	cam.position = Vector3(x, sweep_height, z)
 	cam.look_at(Vector3(x * 0.3, 0, z * 0.3), Vector3.UP)
