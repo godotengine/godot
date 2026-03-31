@@ -217,6 +217,39 @@ static void _compute_branch_stats(const HashMap<int, GDScriptLanguage::BranchRes
 	}
 }
 
+// Add stats for files compiled and filtered in but never executed at all.
+static void _add_unexecuted_file_stats(
+		HashMap<String, CoverageFileStats> &r_out,
+		const HashMap<String, HashMap<int, int>> &p_coverable) {
+	static const HashMap<int, int> empty_hits;
+	for (const KeyValue<String, HashMap<int, int>> &cv : p_coverable) {
+		if (!r_out.has(cv.key)) {
+			_compute_line_stats(empty_hits, &cv.value, r_out[cv.key]);
+		}
+	}
+}
+
+// Count compiled functions absent from p_func_hits so FNF reflects all compiled
+// functions, not just those called at least once. Only processes files present in
+// p_coverable (i.e. that passed the include/exclude filter).
+static void _add_uncalled_func_stats(
+		HashMap<String, CoverageFileStats> &r_out,
+		const HashMap<String, HashMap<String, int>> &p_func_hits,
+		const HashMap<String, HashMap<String, int>> &p_func_starts,
+		const HashMap<String, HashMap<int, int>> *p_coverable) {
+	for (const KeyValue<String, HashMap<String, int>> &sv : p_func_starts) {
+		if (p_coverable && !p_coverable->has(sv.key)) {
+			continue;
+		}
+		const HashMap<String, int> *fh = p_func_hits.getptr(sv.key);
+		for (const KeyValue<String, int> &fv : sv.value) {
+			if (!fh || !fh->has(fv.key)) {
+				r_out[sv.key].funcs++;
+			}
+		}
+	}
+}
+
 static HashMap<String, CoverageFileStats> _gather_file_stats(
 		const HashMap<String, HashMap<int, int>> &p_hits,
 		const HashMap<String, HashMap<String, int>> &p_func_hits,
@@ -234,31 +267,11 @@ static HashMap<String, CoverageFileStats> _gather_file_stats(
 	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
 		_compute_branch_stats(kv.value, out[kv.key]);
 	}
-	// Files that were compiled and filtered-in but never executed at all must
-	// appear in stats as 0% covered rather than being invisible.
 	if (p_coverable) {
-		static const HashMap<int, int> empty_hits;
-		for (const KeyValue<String, HashMap<int, int>> &cv : *p_coverable) {
-			if (!out.has(cv.key)) {
-				_compute_line_stats(empty_hits, &cv.value, out[cv.key]);
-			}
-		}
+		_add_unexecuted_file_stats(out, *p_coverable);
 	}
-	// Count compiled functions absent from p_func_hits (never called, or missing
-	// from a partial hit entry) so FNF reflects all compiled functions. Only
-	// consider files that passed the include/exclude filter (present in p_coverable).
 	if (p_func_starts) {
-		for (const KeyValue<String, HashMap<String, int>> &sv : *p_func_starts) {
-			if (p_coverable && !p_coverable->has(sv.key)) {
-				continue;
-			}
-			const HashMap<String, int> *fh = p_func_hits.getptr(sv.key);
-			for (const KeyValue<String, int> &fv : sv.value) {
-				if (!fh || !fh->has(fv.key)) {
-					out[sv.key].funcs++;
-				}
-			}
-		}
+		_add_uncalled_func_stats(out, p_func_hits, *p_func_starts, p_coverable);
 	}
 	return out;
 }
@@ -475,6 +488,35 @@ static Vector<int> _merge_line_hits(const HashMap<int, int> &p_hits,
 	return sorted_lines;
 }
 
+// Build a sorted list of all file paths appearing in any of the four coverage maps.
+// Used by all format writers to ensure files with only function or branch events
+// (but no line hits) are not silently dropped from the output.
+static Vector<String> _build_sorted_path_union(
+		const HashMap<String, HashMap<int, int>> &p_hits,
+		const HashMap<String, HashMap<String, int>> &p_func_hits,
+		const HashMap<String, HashMap<int, GDScriptLanguage::BranchResult>> &p_branch_hits,
+		const HashMap<String, HashMap<int, int>> &p_coverable) {
+	HashSet<String> s;
+	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
+		s.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<String, int>> &kv : p_func_hits) {
+		s.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
+		s.insert(kv.key);
+	}
+	for (const KeyValue<String, HashMap<int, int>> &cv : p_coverable) {
+		s.insert(cv.key);
+	}
+	Vector<String> result;
+	for (const String &path : s) {
+		result.push_back(path);
+	}
+	result.sort();
+	return result;
+}
+
 /*************** LCOV writer ***************/
 
 static void _lcov_write_functions(Ref<FileAccess> f, const HashMap<String, int> &p_funcs,
@@ -549,6 +591,38 @@ static void _lcov_write_lines(Ref<FileAccess> f, const Vector<int> &p_sorted_lin
 	f->store_line("LH:" + itos(lh));
 }
 
+static void _lcov_write_file_record(Ref<FileAccess> f, const String &p_res_path,
+		const HashMap<String, HashMap<int, int>> &p_hits,
+		const HashMap<String, HashMap<String, int>> &p_func_hits,
+		const HashMap<String, HashMap<int, GDScriptLanguage::BranchResult>> &p_branch_hits,
+		const HashMap<String, HashMap<int, int>> &p_coverable,
+		const HashMap<String, HashMap<String, int>> &p_func_starts) {
+	static const HashMap<int, int> empty_hits;
+	static const HashMap<String, int> empty_funcs;
+	const HashMap<int, int> *hits_ptr = p_hits.getptr(p_res_path);
+	f->store_line("TN:");
+	f->store_line("SF:" + _coverage_globalize(p_res_path));
+
+	const HashMap<String, int> *funcs = p_func_hits.getptr(p_res_path);
+	const HashMap<String, int> *starts = p_func_starts.getptr(p_res_path);
+	if (funcs || starts) {
+		_lcov_write_functions(f, funcs ? *funcs : empty_funcs, starts ? *starts : empty_funcs);
+	}
+
+	int brf = 0, brh = 0;
+	const HashMap<int, GDScriptLanguage::BranchResult> *branches = p_branch_hits.getptr(p_res_path);
+	if (branches) {
+		_lcov_write_branches(f, *branches, brf, brh);
+		f->store_line("BRF:" + itos(brf));
+		f->store_line("BRH:" + itos(brh));
+	}
+
+	HashMap<int, int> all_lines;
+	Vector<int> sorted = _merge_line_hits(hits_ptr ? *hits_ptr : empty_hits, p_coverable, p_res_path, all_lines);
+	_lcov_write_lines(f, sorted, all_lines);
+	f->store_line("end_of_record");
+}
+
 static Error _write_lcov(const String &p_path,
 		const HashMap<String, HashMap<int, int>> &p_hits,
 		const HashMap<String, HashMap<String, int>> &p_func_hits,
@@ -559,55 +633,9 @@ static Error _write_lcov(const String &p_path,
 
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = p_lang->_coverage_enumerate_func_start_lines();
-
-	// Union all four sources so a file that only has function or branch events
-	// (but no line hits) is not silently dropped, matching the JSON writer.
-	HashSet<String> path_set;
-	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
-		path_set.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<String, int>> &kv : p_func_hits) {
-		path_set.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
-		path_set.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
-		path_set.insert(cv.key);
-	}
-	Vector<String> sorted_paths;
-	for (const String &s : path_set) {
-		sorted_paths.push_back(s);
-	}
-	sorted_paths.sort();
-
-	static const HashMap<int, int> empty_hits;
+	Vector<String> sorted_paths = _build_sorted_path_union(p_hits, p_func_hits, p_branch_hits, coverable);
 	for (const String &res_path : sorted_paths) {
-		const HashMap<int, int> *hits_ptr = p_hits.getptr(res_path);
-		const HashMap<int, int> &lines_for_path = hits_ptr ? *hits_ptr : empty_hits;
-		f->store_line("TN:");
-		f->store_line("SF:" + _coverage_globalize(res_path));
-
-		const HashMap<String, int> *funcs = p_func_hits.getptr(res_path);
-		const HashMap<String, int> *starts = func_starts.getptr(res_path);
-		if (funcs || starts) {
-			static const HashMap<String, int> empty_funcs;
-			_lcov_write_functions(f, funcs ? *funcs : empty_funcs, starts ? *starts : empty_funcs);
-		}
-
-		int brf = 0, brh = 0;
-		const HashMap<int, GDScriptLanguage::BranchResult> *branches = p_branch_hits.getptr(res_path);
-		if (branches) {
-			_lcov_write_branches(f, *branches, brf, brh);
-			f->store_line("BRF:" + itos(brf));
-			f->store_line("BRH:" + itos(brh));
-		}
-
-		HashMap<int, int> all_lines;
-		Vector<int> sorted = _merge_line_hits(lines_for_path, coverable, res_path, all_lines);
-		_lcov_write_lines(f, sorted, all_lines);
-
-		f->store_line("end_of_record");
+		_lcov_write_file_record(f, res_path, p_hits, p_func_hits, p_branch_hits, coverable, func_starts);
 	}
 	return OK;
 }
@@ -616,6 +644,104 @@ static Error _write_lcov(const String &p_path,
 
 static String _xml_escape(const String &p_str) {
 	return p_str.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");
+}
+
+// Build the merged all_methods map: runtime hits from p_funcs, compile-time entries
+// from p_func_starts for functions never called (hits = 0).
+static HashMap<String, int> _cobertura_build_all_methods(
+		const HashMap<String, int> *p_funcs,
+		const HashMap<String, int> *p_func_starts) {
+	HashMap<String, int> all;
+	if (p_funcs) {
+		for (const KeyValue<String, int> &fv : *p_funcs) {
+			all[fv.key] = fv.value;
+		}
+	}
+	if (p_func_starts) {
+		for (const KeyValue<String, int> &sv : *p_func_starts) {
+			if (!all.has(sv.key)) {
+				all[sv.key] = 0;
+			}
+		}
+	}
+	return all;
+}
+
+// Emit the <methods> XML block from a merged method→hits map. No-ops if empty.
+static void _cobertura_emit_methods(Ref<FileAccess> f, const HashMap<String, int> &p_all_methods) {
+	if (p_all_methods.is_empty()) {
+		return;
+	}
+	Vector<String> sorted;
+	for (const KeyValue<String, int> &mv : p_all_methods) {
+		sorted.push_back(mv.key);
+	}
+	sorted.sort();
+	f->store_line("      <methods>");
+	for (const String &fn : sorted) {
+		f->store_line(vformat("        <method name=\"%s\" hits=\"%d\"/>", _xml_escape(fn), *p_all_methods.getptr(fn)));
+	}
+	f->store_line("      </methods>");
+}
+
+// Index branch results by source line number.
+// p_branches is keyed by VM instruction pointer; br.line maps each to its source line.
+static HashMap<int, Vector<const GDScriptLanguage::BranchResult *>> _cobertura_build_line_branch_index(
+		const HashMap<int, GDScriptLanguage::BranchResult> *p_branches) {
+	HashMap<int, Vector<const GDScriptLanguage::BranchResult *>> index;
+	if (p_branches) {
+		for (const KeyValue<int, GDScriptLanguage::BranchResult> &bv : *p_branches) {
+			index[bv.value.line].push_back(&bv.value);
+		}
+	}
+	return index;
+}
+
+// Emit one <line> element with branch annotation when branch data is present.
+static void _cobertura_write_line_element(Ref<FileAccess> f, int p_ln, int p_hits,
+		const Vector<const GDScriptLanguage::BranchResult *> *p_lbrs) {
+	if (!p_lbrs || p_lbrs->is_empty()) {
+		f->store_line(vformat("        <line number=\"%d\" hits=\"%d\" branch=\"false\"/>", p_ln, p_hits));
+		return;
+	}
+	int total = 0, covered = 0;
+	for (const GDScriptLanguage::BranchResult *br : *p_lbrs) {
+		total += 2;
+		if (br->taken > 0) {
+			covered++;
+		}
+		if (br->not_taken > 0) {
+			covered++;
+		}
+	}
+	int pct = total > 0 ? 100 * covered / total : 0;
+	f->store_line(vformat("        <line number=\"%d\" hits=\"%d\" branch=\"true\" condition-coverage=\"%d%% (%d/%d)\"/>",
+			p_ln, p_hits, pct, covered, total));
+}
+
+// Emit the <lines> block for all coverable lines (hit and not-hit).
+static void _cobertura_write_lines_block(Ref<FileAccess> f,
+		const HashMap<int, int> &p_lines,
+		const HashMap<int, int> *p_coverable,
+		const HashMap<int, Vector<const GDScriptLanguage::BranchResult *>> &p_line_branches) {
+	HashMap<int, int> all_lines = p_lines;
+	if (p_coverable) {
+		for (const KeyValue<int, int> &cv : *p_coverable) {
+			if (!all_lines.has(cv.key)) {
+				all_lines[cv.key] = 0;
+			}
+		}
+	}
+	Vector<int> lnums;
+	for (const KeyValue<int, int> &lv : all_lines) {
+		lnums.push_back(lv.key);
+	}
+	lnums.sort();
+	f->store_line("      <lines>");
+	for (int ln : lnums) {
+		_cobertura_write_line_element(f, ln, *all_lines.getptr(ln), p_line_branches.getptr(ln));
+	}
+	f->store_line("      </lines>");
 }
 
 static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
@@ -640,83 +766,12 @@ static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
 	f->store_line(vformat("    <class name=\"%s\" filename=\"%s\" line-rate=\"%.4f\" branch-rate=\"%.4f\">",
 			class_name, _xml_escape(_coverage_globalize(p_res_path)), flr, fbr));
 
-	// Emit <methods>: merge runtime hits with compile-time starts so that
-	// unexecuted functions appear with hits="0", matching the LCOV writer.
-	{
-		HashMap<String, int> all_methods;
-		if (p_funcs) {
-			for (const KeyValue<String, int> &fv : *p_funcs) {
-				all_methods[fv.key] = fv.value;
-			}
-		}
-		if (p_func_starts) {
-			for (const KeyValue<String, int> &sv : *p_func_starts) {
-				if (!all_methods.has(sv.key)) {
-					all_methods[sv.key] = 0;
-				}
-			}
-		}
-		if (!all_methods.is_empty()) {
-			f->store_line("      <methods>");
-			Vector<String> sorted_methods;
-			for (const KeyValue<String, int> &mv : all_methods) {
-				sorted_methods.push_back(mv.key);
-			}
-			sorted_methods.sort();
-			for (const String &fn : sorted_methods) {
-				f->store_line(vformat("        <method name=\"%s\" hits=\"%d\"/>", _xml_escape(fn), *all_methods.getptr(fn)));
-			}
-			f->store_line("      </methods>");
-		}
-	}
+	HashMap<String, int> all_methods = _cobertura_build_all_methods(p_funcs, p_func_starts);
+	_cobertura_emit_methods(f, all_methods);
 
-	// Build line → branch results index for per-line branch annotation.
-	// p_branches is keyed by VM instruction pointer; br.line maps each to its source line.
-	HashMap<int, Vector<const GDScriptLanguage::BranchResult *>> line_branches;
-	if (p_branches) {
-		for (const KeyValue<int, GDScriptLanguage::BranchResult> &bv : *p_branches) {
-			line_branches[bv.value.line].push_back(&bv.value);
-		}
-	}
+	HashMap<int, Vector<const GDScriptLanguage::BranchResult *>> line_branches = _cobertura_build_line_branch_index(p_branches);
+	_cobertura_write_lines_block(f, p_lines, p_coverable, line_branches);
 
-	// Emit all coverable lines (hit and not-hit).
-	HashMap<int, int> all_lines;
-	all_lines = p_lines;
-	if (p_coverable) {
-		for (const KeyValue<int, int> &cv : *p_coverable) {
-			if (!all_lines.has(cv.key)) {
-				all_lines[cv.key] = 0;
-			}
-		}
-	}
-	f->store_line("      <lines>");
-	Vector<int> lnums;
-	for (const KeyValue<int, int> &lv : all_lines) {
-		lnums.push_back(lv.key);
-	}
-	lnums.sort();
-	for (int ln : lnums) {
-		int hits = *all_lines.getptr(ln);
-		const Vector<const GDScriptLanguage::BranchResult *> *lbrs = line_branches.getptr(ln);
-		if (lbrs && !lbrs->is_empty()) {
-			int total = 0, covered = 0;
-			for (const GDScriptLanguage::BranchResult *br : *lbrs) {
-				total += 2;
-				if (br->taken > 0) {
-					covered++;
-				}
-				if (br->not_taken > 0) {
-					covered++;
-				}
-			}
-			int pct = total > 0 ? 100 * covered / total : 0;
-			f->store_line(vformat("        <line number=\"%d\" hits=\"%d\" branch=\"true\" condition-coverage=\"%d%% (%d/%d)\"/>",
-					ln, hits, pct, covered, total));
-		} else {
-			f->store_line(vformat("        <line number=\"%d\" hits=\"%d\" branch=\"false\"/>", ln, hits));
-		}
-	}
-	f->store_line("      </lines>");
 	f->store_line("    </class>");
 }
 
@@ -742,27 +797,7 @@ static Error _write_cobertura(const String &p_path,
 			(int64_t)ts, line_rate, branch_rate, t.hit_lines, t.lines, t.hit_branches, t.branches));
 	f->store_line("  <packages><package name=\"gdscript\"><classes>");
 
-	// Union all four sources to match the JSON writer — a file with only
-	// function or branch events (but no line hits) must not be silently dropped.
-	HashSet<String> cobertura_paths;
-	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
-		cobertura_paths.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<String, int>> &kv : p_func_hits) {
-		cobertura_paths.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
-		cobertura_paths.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
-		cobertura_paths.insert(cv.key);
-	}
-	Vector<String> sorted_cobertura;
-	for (const String &s : cobertura_paths) {
-		sorted_cobertura.push_back(s);
-	}
-	sorted_cobertura.sort();
-
+	Vector<String> sorted_cobertura = _build_sorted_path_union(p_hits, p_func_hits, p_branch_hits, coverable);
 	static const HashMap<int, int> empty_cob_hits;
 	for (const String &res_path : sorted_cobertura) {
 		const HashMap<int, int> *lines = p_hits.getptr(res_path);
@@ -884,25 +919,7 @@ static Error _write_json(const String &p_path,
 	HashMap<String, HashMap<int, int>> coverable = p_lang->_coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> func_starts = p_lang->_coverage_enumerate_func_start_lines();
 
-	// Union of all file paths, including coverable files never executed.
-	HashSet<String> all_files;
-	for (const KeyValue<String, HashMap<int, int>> &kv : p_hits) {
-		all_files.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<String, int>> &kv : p_func_hits) {
-		all_files.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<int, GDScriptLanguage::BranchResult>> &kv : p_branch_hits) {
-		all_files.insert(kv.key);
-	}
-	for (const KeyValue<String, HashMap<int, int>> &cv : coverable) {
-		all_files.insert(cv.key);
-	}
-	Vector<String> file_list;
-	for (const String &s : all_files) {
-		file_list.push_back(s);
-	}
-	file_list.sort();
+	Vector<String> file_list = _build_sorted_path_union(p_hits, p_func_hits, p_branch_hits, coverable);
 
 	f->store_line("{");
 	f->store_line("  \"files\": {");
