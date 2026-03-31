@@ -313,7 +313,6 @@ void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTa
 	LocalVector<NavigationPoly> &navigation_polys = p_query_task.path_query_slot->path_corridor;
 
 	real_t poly_travel_cost = _get_polygon_travel_cost(p_least_cost_poly.poly, p_query_task.navigation_layers, p_query_task.navigation_layers_cost_map);
-
 	Vector3 new_entry = Geometry3D::get_closest_point_to_segment(p_least_cost_poly.entry, p_connection.pathway_start, p_connection.pathway_end);
 	const real_t new_traveled_distance = p_least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + p_least_cost_poly.traveled_distance;
 
@@ -326,10 +325,8 @@ void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTa
 		neighbor_poly.back_navigation_edge_pathway_start = p_connection.pathway_start;
 		neighbor_poly.back_navigation_edge_pathway_end = p_connection.pathway_end;
 		neighbor_poly.traveled_distance = new_traveled_distance;
-		// TODO: Or should `_get_polygon_travel_cost` be used again instead of `get_travel_cost`?
-		neighbor_poly.distance_to_destination =
-				new_entry.distance_to(p_end_point) *
-				connection_owner->get_travel_cost();
+		real_t poly_destination_cost = _get_polygon_travel_cost(p_connection.polygon, p_query_task.navigation_layers, p_query_task.navigation_layers_cost_map);
+		neighbor_poly.distance_to_destination = new_entry.distance_to(p_end_point) * poly_destination_cost;
 		neighbor_poly.entry = new_entry;
 
 		if (neighbor_poly.traversable_poly_index != traversable_polys.INVALID_INDEX) {
