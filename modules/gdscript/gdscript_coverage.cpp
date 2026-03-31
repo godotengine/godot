@@ -591,6 +591,7 @@ static void _lcov_write_branches(Ref<FileAccess> f,
 	}
 }
 
+// Emit DA (line hit) records for all lines in p_sorted_lines, followed by LF/LH totals.
 static void _lcov_write_lines(Ref<FileAccess> f, const Vector<int> &p_sorted_lines,
 		const HashMap<int, int> &p_all_lines) {
 	int lf = 0, lh = 0;
@@ -606,6 +607,9 @@ static void _lcov_write_lines(Ref<FileAccess> f, const Vector<int> &p_sorted_lin
 	f->store_line("LH:" + itos(lh));
 }
 
+// Write one complete LCOV record (TN/SF/FN*/FNDA*/FNF/FNH/BRDA*/BRF/BRH/DA*/LF/LH/end_of_record)
+// for a single source file. Merges runtime hits with compile-time coverable data so that
+// unexecuted lines and functions appear with count 0 rather than being omitted.
 static void _lcov_write_file_record(Ref<FileAccess> f, const String &p_res_path,
 		const HashMap<String, HashMap<int, int>> &p_hits,
 		const HashMap<String, HashMap<String, int>> &p_func_hits,
