@@ -93,6 +93,24 @@ int Math::range_step_decimals(double p_step) {
 	return step_decimals(p_step);
 }
 
+int Math::count_decimals(double p_value) {
+	int maxn = 5;
+	double abs_value = Math::abs(p_value);
+	int64_t integer = (int64_t)abs_value;
+	double frac = (abs_value - integer);
+	// Sliding window to the left to avoid evaluating float rounding noise.
+	maxn -= (int)(Math::log(integer * 10 + 0.5) / Math::log(10.0));
+	int64_t exponent = Math::pow(10.0, maxn + 1.0) + 0.5;
+	int64_t shifted = (frac * exponent) + 0.5;
+	for (int i = maxn; i >= 0; i--) {
+		if (shifted % 10) {
+			return i + 1;
+		}
+		shifted /= 10;
+	}
+	return 0;
+}
+
 double Math::ease(double p_x, double p_c) {
 	if (p_x < 0) {
 		p_x = 0;
