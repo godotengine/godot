@@ -73,6 +73,8 @@ struct PerformanceMetrics {
 	uint32_t culled_importance_count = 0;
 	uint32_t culling_candidate_count = 0;
 	uint32_t visible_after_culling = 0;
+	String cull_route_uid;
+	String cull_route_reason;
 	bool used_hierarchical_culling = false;
 	Dictionary streaming_state;
 	uint64_t sort_cache_hits = 0;

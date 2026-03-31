@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 from pathlib import Path
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from SCons.Errors import StopError
 
 Import("env")
 Import("env_modules")
@@ -103,6 +109,67 @@ env_gaussian_splatting.Append(CPPDEFINES=[
     "GS_AVX2_ENABLED=1" if gs_avx2_enabled else "GS_AVX2_ENABLED=0",
 ])
 
+
+def _is_truthy(value):
+    return str(value).lower() in ("1", "yes", "true", "on")
+
+
+# Optional: build-time shader validation.
+# Usage: scons gs_validate_shaders=yes ...
+gs_validate_shaders_value = env.get("gs_validate_shaders", ARGUMENTS.get("gs_validate_shaders", ""))
+gs_validate_shaders = _is_truthy(gs_validate_shaders_value)
+
+
+def _validate_shaders(target, source, _build_env):
+    validation_script = module_root / "shaders" / "compile_shaders.py"
+    stamp_path = Path(target[0].abspath)
+    stamp_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not validation_script.is_file():
+        raise StopError("GaussianSplatting shader validation failed: compile_shaders.py not found.")
+
+    compiler = shutil.which("glslc") or shutil.which("glslangValidator")
+    try:
+        with tempfile.TemporaryDirectory(prefix="gs_shader_validation_") as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            if compiler:
+                print(f"GaussianSplatting: validating shaders with {os.path.basename(compiler)}.")
+                command = [
+                    sys.executable,
+                    str(validation_script),
+                    "--output-dir",
+                    str(tmp_path / "spv"),
+                    "--summary-json",
+                    str(tmp_path / "summary.json"),
+                    "--clean-output",
+                ]
+            else:
+                print(
+                    "GaussianSplatting: no shader compiler found; running contract-only validation "
+                    "(glslc/glslangValidator unavailable)."
+                )
+                command = [
+                    sys.executable,
+                    str(validation_script),
+                    "--contracts-only",
+                    "--summary-json",
+                    str(tmp_path / "summary.json"),
+                ]
+
+            proc = subprocess.run(command, cwd=module_root.parent, capture_output=True, text=True)
+    except OSError as exc:
+        raise StopError(f"GaussianSplatting shader validation failed: could not launch validator ({exc}).")
+
+    if proc.stdout:
+        print(proc.stdout, end="" if proc.stdout.endswith("\n") else "\n")
+    if proc.returncode != 0:
+        if proc.stderr:
+            print(proc.stderr, end="" if proc.stderr.endswith("\n") else "\n")
+        raise StopError("GaussianSplatting shader validation failed.")
+
+    stamp_path.write_text("ok\n", encoding="utf-8")
+    return 0
+
 # Authoritative C++ source directory list for module compilation.
 # Keep this list aligned with modules/gaussian_splatting/CMakeLists.txt;
 # modules/gaussian_splatting/tests/check_build_metadata_consistency.py enforces it.
@@ -168,6 +235,15 @@ env_gaussian_splatting.add_source_files(module_sources, "register_types.cpp")
 
 if generated_shader_headers:
     env_gaussian_splatting.Depends(module_sources, generated_shader_headers)
+
+if gs_validate_shaders:
+    shader_validation = env_gaussian_splatting.CommandNoCache(
+        "#modules/gaussian_splatting/.shader_validation.stamp",
+        env.Value("gs_validate_shaders"),
+        env.Run(_validate_shaders),
+    )
+    env_gaussian_splatting.AlwaysBuild(shader_validation)
+    env_gaussian_splatting.Depends(module_sources, shader_validation)
 
 # Optimization flags for high performance configurations
 if env["optimize"] == "speed":

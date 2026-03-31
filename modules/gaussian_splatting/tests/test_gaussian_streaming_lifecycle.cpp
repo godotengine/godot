@@ -2,6 +2,7 @@
 
 #include "test_macros.h"
 
+#include "core/os/os.h"
 #include "servers/rendering_server.h"
 
 namespace {
@@ -76,6 +77,97 @@ TEST_CASE("[Streaming Pipeline] stop_pack_threads clears partial lifecycle state
     CHECK(uploads.pack_thread_contexts.is_empty());
     CHECK_FALSE(uploads.pack_thread_running.load(std::memory_order_acquire));
     CHECK_FALSE(uploads.pack_thread_exit.load(std::memory_order_acquire));
+}
+
+TEST_CASE("[Streaming Pipeline] async chunk upload rejects tampered payload checksums") {
+    const TestRenderingDeviceHandle rd_handle = _get_test_rendering_device();
+    RenderingDevice *rd = rd_handle.rd;
+    if (!rd) {
+        MESSAGE("Skipping - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianStreamingSystem> system;
+    system.instantiate();
+    system->initialize_empty(rd);
+    if (!system->is_runtime_ready()) {
+        MESSAGE("Skipping - Streaming runtime not ready");
+        return;
+    }
+
+    GaussianStreamingSystem &system_ref = *system.ptr();
+    auto &uploads = system->_internal_get_upload_pipeline();
+    if (!uploads.async_pack_enabled || !uploads.pack_thread_running.load(std::memory_order_acquire)) {
+        MESSAGE("Skipping - Async pack threads unavailable");
+        return;
+    }
+
+    const uint32_t asset_id = 4242;
+    system->register_asset(asset_id, _create_streaming_phase_order_test_data());
+
+    const bool queued_upload = uploads.queue_chunk_load(system_ref, asset_id, 0);
+    REQUIRE(queued_upload);
+
+    StreamingUploadPipeline::PendingChunkUpload *prepared_job = nullptr;
+    for (int i = 0; i < 500; i++) {
+        {
+            MutexLock lock(uploads.pack_mutex);
+            if (uploads.upload_queue_read_idx < uploads.upload_queue.size()) {
+                prepared_job = uploads.upload_queue[uploads.upload_queue_read_idx];
+                if (prepared_job && !prepared_job->packed_data.is_empty()) {
+                    break;
+                }
+                prepared_job = nullptr;
+            }
+        }
+        OS::get_singleton()->delay_usec(1000);
+    }
+
+    REQUIRE(prepared_job != nullptr);
+
+    {
+        MutexLock lock(uploads.pack_mutex);
+        prepared_job = uploads.upload_queue[uploads.upload_queue_read_idx];
+        REQUIRE(prepared_job != nullptr);
+        REQUIRE(!prepared_job->packed_data.is_empty());
+        PackedGaussian *packed_data = prepared_job->packed_data.ptrw();
+        REQUIRE(packed_data != nullptr);
+        uint8_t *payload_bytes = reinterpret_cast<uint8_t *>(packed_data);
+        payload_bytes[0] ^= 0x01;
+    }
+
+    uploads.process_upload_queue(system_ref);
+    system->begin_frame();
+    system->end_frame();
+
+    CHECK(system->get_pending_pack_jobs() == 0);
+    CHECK(system->get_pending_upload_jobs() == 0);
+    CHECK(system->get_loaded_chunks() == 0);
+
+    Dictionary analytics = system->get_streaming_analytics();
+    Dictionary diagnostics = analytics.get("diagnostics", Dictionary());
+    CHECK(String(analytics.get("diagnostics_category", String())) == "integrity_mismatch");
+    CHECK(String(analytics.get("diagnostics_reason", String())).contains("checksum mismatch"));
+    CHECK(bool(analytics.get("diagnostics_has_failure", false)));
+    CHECK(String(diagnostics.get("category", String())) == "integrity_mismatch");
+    CHECK(String(diagnostics.get("reason", String())).contains("checksum mismatch"));
+    CHECK(int64_t(diagnostics.get("invariant_upload_lifecycle_violations", int64_t(0))) == 1);
+    CHECK(String(diagnostics.get("last_invariant_context", String())) == "process_upload_queue.payload_checksum");
+    CHECK(String(diagnostics.get("last_invariant_message", String())).contains("checksum mismatch"));
+    CHECK(int64_t(diagnostics.get("integrity_mismatch_count", int64_t(0))) == 1);
+    CHECK(String(diagnostics.get("last_integrity_mismatch_message", String())).contains("checksum mismatch"));
+
+    system->initialize_empty(rd);
+    system->begin_frame();
+    system->end_frame();
+
+    Dictionary reset_analytics = system->get_streaming_analytics();
+    Dictionary reset_diagnostics = reset_analytics.get("diagnostics", Dictionary());
+    CHECK(String(reset_analytics.get("diagnostics_category", String("ok"))) == "ok");
+    CHECK(String(reset_analytics.get("diagnostics_reason", String("healthy"))) == "healthy");
+    CHECK_FALSE(bool(reset_analytics.get("diagnostics_has_failure", true)));
+    CHECK(int64_t(reset_diagnostics.get("integrity_mismatch_count", int64_t(-1))) == 0);
+    CHECK(String(reset_diagnostics.get("last_integrity_mismatch_message", String())).is_empty());
 }
 
 TEST_CASE("[Streaming Pipeline] update_streaming publishes phase timings before atlas sync and keeps atlas generation stable when idle") {

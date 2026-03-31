@@ -5,6 +5,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
 #include "core/os/os.h"
+#include "core/templates/hashfuncs.h"
 #include "quality_tier_config.h"
 #include "../interfaces/sync_policy.h"
 #include "../renderer/gpu_debug_utils.h"
@@ -96,6 +97,13 @@ void _atomic_saturating_sub(std::atomic<uint32_t> &p_value, uint32_t p_amount) {
 uint64_t _ticks_usec_now() {
     OS *os = OS::get_singleton();
     return os ? os->get_ticks_usec() : 0;
+}
+
+static uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
+    const int byte_count = int(p_data.size() * sizeof(PackedGaussian));
+    const uint8_t empty_byte = 0;
+    const void *payload = byte_count > 0 ? static_cast<const void *>(p_data.ptr()) : static_cast<const void *>(&empty_byte);
+    return hash_murmur3_buffer(payload, byte_count);
 }
 
 StreamingQueuePressureController::PressureSummary _summarize_queue_pressure_checked(
@@ -191,6 +199,14 @@ StreamingUploadPipeline::PackTelemetry::exchange_and_reset() {
     pack_mutex_wait_usec_max.set(0);
     s.mutex_wait_samples = pack_mutex_wait_samples.get();
     pack_mutex_wait_samples.set(0);
+    s.thread_wakes = pack_thread_wake_count.get();
+    pack_thread_wake_count.set(0);
+    s.thread_dequeues = pack_thread_dequeue_count.get();
+    pack_thread_dequeue_count.set(0);
+    s.thread_snapshots = pack_thread_snapshot_count.get();
+    pack_thread_snapshot_count.set(0);
+    s.thread_enqueue_uploads = pack_thread_enqueue_upload_count.get();
+    pack_thread_enqueue_upload_count.set(0);
     return s;
 }
 
@@ -211,6 +227,10 @@ StreamingUploadPipeline::PackTelemetry::read_current() const {
     s.mutex_wait_total = pack_mutex_wait_usec_total.get();
     s.mutex_wait_max = pack_mutex_wait_usec_max.get();
     s.mutex_wait_samples = pack_mutex_wait_samples.get();
+    s.thread_wakes = pack_thread_wake_count.get();
+    s.thread_dequeues = pack_thread_dequeue_count.get();
+    s.thread_snapshots = pack_thread_snapshot_count.get();
+    s.thread_enqueue_uploads = pack_thread_enqueue_upload_count.get();
     return s;
 }
 
@@ -424,6 +444,7 @@ void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, 
         if (pack_thread_exit.load()) {
             break;
         }
+        telemetry.record_pack_thread_wake();
 
         PackJob jobs[PACK_DEQUEUE_BATCH];
         uint32_t job_count = 0;
@@ -469,88 +490,13 @@ void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, 
         if (job_count == 0) {
             continue;
         }
+        telemetry.record_pack_thread_dequeue(job_count);
 
         for (uint32_t job_idx = 0; job_idx < job_count; job_idx++) {
-            const PackJob &job = jobs[job_idx];
-            PendingChunkUpload *upload = memnew(PendingChunkUpload);
-            upload->asset_id = job.asset_id;
-            upload->chunk_idx = job.chunk_idx;
-            upload->buffer_slot = job.buffer_slot;
-            upload->asset_generation = job.asset_generation;
-
-            if (job.chunk_count == 0 || !job.data_ref.is_valid()) {
-                const uint64_t lock_wait_start_usec = _ticks_usec_now();
-                MutexLock lock(pack_mutex);
-                record_pack_mutex_wait(lock_wait_start_usec);
-                upload->enqueue_usec = _ticks_usec_now();
-                upload_queue.push_back(upload);
-                sync_cached_queue_depths_locked();
-                _atomic_saturating_sub(pack_jobs_in_flight, 1);
-                continue;
-            }
-
-            LocalVector<Gaussian> gaussian_snapshot;
-            LocalVector<Vector3> sh_high_order_snapshot;
-            uint32_t sh_first_order = 0;
-            uint32_t sh_high_order = 0;
-            bool snapshot_ok = false;
-            if (job.uses_explicit_source_indices) {
-                snapshot_ok = job.chunk_count == static_cast<uint32_t>(job.source_indices.size()) &&
-                        job.data_ref->capture_indexed_chunk_snapshot(job.source_indices.ptr(), job.chunk_count,
-                                gaussian_snapshot,
-                                sh_high_order_snapshot,
-                                sh_first_order,
-                                sh_high_order);
-            } else {
-                snapshot_ok = job.data_ref->capture_chunk_snapshot(job.chunk_start, job.chunk_count,
-                        gaussian_snapshot,
-                        sh_high_order_snapshot,
-                        sh_first_order,
-                        sh_high_order);
-            }
-            if (!snapshot_ok || job.chunk_count > static_cast<uint32_t>(gaussian_snapshot.size())) {
-                const uint64_t lock_wait_start_usec = _ticks_usec_now();
-                MutexLock lock(pack_mutex);
-                record_pack_mutex_wait(lock_wait_start_usec);
-                upload->enqueue_usec = _ticks_usec_now();
-                upload_queue.push_back(upload);
-                sync_cached_queue_depths_locked();
-                _atomic_saturating_sub(pack_jobs_in_flight, 1);
-                continue;
-            }
-
-            const Vector3 *sh_coeffs = sh_high_order_snapshot.is_empty()
-                    ? nullptr
-                    : sh_high_order_snapshot.ptr();
-
-            const bool telemetry_on = telemetry.is_enabled();
-            uint64_t pack_start_usec = 0;
-            if (telemetry_on) {
-                pack_start_usec = OS::get_singleton()->get_ticks_usec();
-            }
-            pack_gaussians_range(gaussian_snapshot,
-                    0,
-                    job.chunk_count,
-                    upload->packed_data,
-                    upload->metrics,
-                    sh_coeffs,
-                    sh_first_order,
-                    sh_high_order);
-            if (telemetry_on) {
-                const uint64_t pack_end_usec = OS::get_singleton()->get_ticks_usec();
-                const uint64_t duration = pack_end_usec - pack_start_usec;
-                telemetry.add_pack_time(duration);
-            }
-
-            {
-                const uint64_t lock_wait_start_usec = _ticks_usec_now();
-                MutexLock lock(pack_mutex);
-                record_pack_mutex_wait(lock_wait_start_usec);
-                upload->enqueue_usec = _ticks_usec_now();
-                upload_queue.push_back(upload);
-                sync_cached_queue_depths_locked();
-            }
-
+            telemetry.record_pack_thread_snapshot();
+            PendingChunkUpload *upload = build_pending_upload_from_pack_job(jobs[job_idx]);
+            enqueue_upload_job(upload);
+            telemetry.record_pack_thread_enqueue_upload();
             _atomic_saturating_sub(pack_jobs_in_flight, 1);
         }
     }
@@ -858,8 +804,20 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
     const uint64_t frame_budget_limit = max_upload_bytes_per_frame == 0 ? UINT64_MAX : max_upload_bytes_per_frame;
     const uint64_t bandwidth_budget_limit = max_upload_bytes_per_second == 0 ? UINT64_MAX : upload_budget_tokens;
     bool submitted = false;
+    uint32_t sync_promoted_pack_jobs = 0;
 
     while (upload_budget_state.upload_budget > 0 && upload_budget_state.completed_chunks < upload_budget_state.chunk_limit) {
+        // Preserve forward progress when async workers are alive but have not yet
+        // produced any uploads. This keeps direct-renderer streaming from
+        // stalling indefinitely at pack_q>0 / upload_q=0.
+        if (sync_promoted_pack_jobs == 0 &&
+                get_upload_queue_depth_cached() == 0 &&
+                get_pack_queue_depth_cached() > 0) {
+            const uint32_t promoted = promote_pack_jobs_sync(1);
+            sync_promoted_pack_jobs += promoted;
+            sync_promoted_pack_jobs_total += promoted;
+        }
+
         PendingChunkUpload *job = nullptr;
         if (!pop_upload_job(job) || !job) {
             break;
@@ -882,6 +840,23 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
 
         const uint64_t total_bytes = uint64_t(job->packed_data.size()) * sizeof(PackedGaussian);
         if (total_bytes == 0) {
+            system._rollback_pending_chunk(job->asset_id, job->chunk_idx, *chunk, true);
+            memdelete(job);
+            continue;
+        }
+
+        const uint32_t actual_checksum = _packed_gaussian_payload_checksum(job->packed_data);
+        if (actual_checksum != job->payload_checksum) {
+            system.diagnostics.invariant_upload_lifecycle_violations++;
+            system.diagnostics.integrity_mismatch_count++;
+            system.diagnostics.last_invariant_context = "process_upload_queue.payload_checksum";
+            system.diagnostics.last_invariant_message = vformat(
+                    "[Streaming] Upload payload checksum mismatch: asset=%d chunk=%d expected=0x%x actual=0x%x.",
+                    job->asset_id, job->chunk_idx,
+                    (unsigned int)job->payload_checksum,
+                    (unsigned int)actual_checksum);
+            system.diagnostics.last_integrity_mismatch_message = system.diagnostics.last_invariant_message;
+            WARN_PRINT(system.diagnostics.last_invariant_message);
             system._rollback_pending_chunk(job->asset_id, job->chunk_idx, *chunk, true);
             memdelete(job);
             continue;
@@ -957,6 +932,8 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
             queue_pressure_active, queue_pressure_source, queue_pressure_reason,
             "StreamingUploadPipeline::process_upload_queue.latch");
 
+    last_sync_promoted_pack_jobs = sync_promoted_pack_jobs;
+
     if (max_upload_bytes_per_second > 0 && upload_budget_start != UINT64_MAX) {
         const uint64_t consumed = upload_budget_start > upload_budget_state.upload_budget
                 ? (upload_budget_start - upload_budget_state.upload_budget)
@@ -968,6 +945,111 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
         }
     }
 }
+
+bool StreamingUploadPipeline::pop_pack_job(PackJob &r_job) {
+    const uint64_t lock_wait_start_usec = _ticks_usec_now();
+    MutexLock lock(pack_mutex);
+    record_pack_mutex_wait(lock_wait_start_usec);
+    if (pack_queue_read_idx >= pack_queue.size()) {
+        return false;
+    }
+
+    const uint64_t dequeue_usec = _ticks_usec_now();
+    r_job = std::move(pack_queue[pack_queue_read_idx++]);
+    if (dequeue_usec > 0 && r_job.enqueue_usec > 0 && dequeue_usec >= r_job.enqueue_usec) {
+        telemetry.add_pack_queue_latency(dequeue_usec - r_job.enqueue_usec);
+    }
+    compact_queues_locked();
+    return true;
+}
+
+StreamingUploadPipeline::PendingChunkUpload *StreamingUploadPipeline::build_pending_upload_from_pack_job(const PackJob &p_job) {
+    PendingChunkUpload *upload = memnew(PendingChunkUpload);
+    upload->asset_id = p_job.asset_id;
+    upload->chunk_idx = p_job.chunk_idx;
+    upload->buffer_slot = p_job.buffer_slot;
+    upload->asset_generation = p_job.asset_generation;
+
+    if (p_job.chunk_count == 0 || !p_job.data_ref.is_valid()) {
+        return upload;
+    }
+
+    LocalVector<Gaussian> gaussian_snapshot;
+    LocalVector<Vector3> sh_high_order_snapshot;
+    uint32_t sh_first_order = 0;
+    uint32_t sh_high_order = 0;
+    bool snapshot_ok = false;
+    if (p_job.uses_explicit_source_indices) {
+        snapshot_ok = p_job.chunk_count == static_cast<uint32_t>(p_job.source_indices.size()) &&
+                p_job.data_ref->capture_indexed_chunk_snapshot(p_job.source_indices.ptr(), p_job.chunk_count,
+                        gaussian_snapshot,
+                        sh_high_order_snapshot,
+                        sh_first_order,
+                        sh_high_order);
+    } else {
+        snapshot_ok = p_job.data_ref->capture_chunk_snapshot(p_job.chunk_start, p_job.chunk_count,
+                gaussian_snapshot,
+                sh_high_order_snapshot,
+                sh_first_order,
+                sh_high_order);
+    }
+    if (!snapshot_ok || p_job.chunk_count > static_cast<uint32_t>(gaussian_snapshot.size())) {
+        return upload;
+    }
+
+    const Vector3 *sh_coeffs = sh_high_order_snapshot.is_empty() ? nullptr : sh_high_order_snapshot.ptr();
+    const bool telemetry_on = telemetry.is_enabled();
+    uint64_t pack_start_usec = 0;
+    if (telemetry_on) {
+        pack_start_usec = _ticks_usec_now();
+    }
+    pack_gaussians_range(gaussian_snapshot,
+            0,
+            p_job.chunk_count,
+            upload->packed_data,
+            upload->metrics,
+            sh_coeffs,
+            sh_first_order,
+            sh_high_order);
+    if (telemetry_on) {
+        const uint64_t pack_end_usec = _ticks_usec_now();
+        const uint64_t duration = pack_end_usec >= pack_start_usec ? (pack_end_usec - pack_start_usec) : 0;
+        telemetry.add_pack_time(duration);
+    }
+    upload->payload_checksum = _packed_gaussian_payload_checksum(upload->packed_data);
+    return upload;
+}
+
+void StreamingUploadPipeline::enqueue_upload_job(PendingChunkUpload *p_job) {
+    const uint64_t lock_wait_start_usec = _ticks_usec_now();
+    MutexLock lock(pack_mutex);
+    record_pack_mutex_wait(lock_wait_start_usec);
+    if (p_job) {
+        p_job->enqueue_usec = _ticks_usec_now();
+    }
+    upload_queue.push_back(p_job);
+    sync_cached_queue_depths_locked();
+}
+
+uint32_t StreamingUploadPipeline::promote_pack_jobs_sync(uint32_t p_max_jobs) {
+    uint32_t promoted = 0;
+    while (promoted < p_max_jobs) {
+        PackJob job;
+        if (!pop_pack_job(job)) {
+            break;
+        }
+        // Consume the semaphore token that queue_chunk_load() posted for this job.
+        // Without this, the pack thread would get a spurious wake for a job that
+        // has already been promoted synchronously.
+        pack_semaphore.try_wait();
+        PendingChunkUpload *upload = build_pending_upload_from_pack_job(job);
+        enqueue_upload_job(upload);
+        _atomic_saturating_sub(pack_jobs_in_flight, 1);
+        promoted++;
+    }
+    return promoted;
+}
+
 uint32_t StreamingUploadPipeline::get_pack_queue_depth_unsafe() const {
     return pack_queue_read_idx < pack_queue.size() ? (pack_queue.size() - pack_queue_read_idx) : 0;
 }

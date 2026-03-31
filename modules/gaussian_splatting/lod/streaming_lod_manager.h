@@ -7,6 +7,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/hash_set.h"
 #include "servers/rendering_server.h"
+#include "core/os/thread.h"
 #include "../core/gaussian_data.h"
 #include "../core/painterly_manager.h"
 #include "../renderer/gpu_memory_stream.h"
@@ -86,10 +87,18 @@ public:
         uint32_t frustum_rejected_lods_last_frame;
         bool content_visible_last_frame;
         bool content_distance_valid_last_frame;
+        uint32_t async_prepare_jobs_completed;
+        uint32_t async_apply_jobs_completed;
+        bool async_prepare_observed_off_main_thread;
+        bool async_apply_observed_on_main_thread;
+        uint32_t async_prepare_main_thread_violations;
+        uint32_t async_apply_off_main_thread_violations;
 
         struct PerformanceMetrics {
             float avg_load_time_ms;
             float avg_unload_time_ms;
+            float avg_async_prepare_time_ms;
+            float avg_async_apply_time_ms;
             uint32_t cache_hits;
             uint32_t cache_misses;
             float prediction_accuracy;
@@ -105,6 +114,12 @@ public:
             frustum_rejected_lods_last_frame = 0;
             content_visible_last_frame = false;
             content_distance_valid_last_frame = false;
+            async_prepare_jobs_completed = 0;
+            async_apply_jobs_completed = 0;
+            async_prepare_observed_off_main_thread = false;
+            async_apply_observed_on_main_thread = false;
+            async_prepare_main_thread_violations = 0;
+            async_apply_off_main_thread_violations = 0;
             performance = {};
         }
     };
@@ -159,14 +174,21 @@ public:
     uint64_t get_memory_usage() const;
 
     // Statistics
-    const StreamingStats& get_stats() const { return stats; }
+    StreamingStats get_stats() const {
+        std::lock_guard<std::mutex> lock(lod_mutex);
+        return stats;
+    }
+    StreamingStats get_stats_snapshot() const { return get_stats(); }
 
     // Configuration
-    void set_config(const StreamingConfig& p_config) { this->config = p_config; }
+    void set_config(const StreamingConfig& p_config);
     const StreamingConfig& get_config() const { return config; }
 
 private:
     void _initialize_gpu_streaming(const Vector<GaussianData>& base_splats);
+    void start_async_loading();
+    void stop_async_loading();
+    void clear_async_load_queues();
 
     // LOD generation
     void generate_lod_levels(const Vector<GaussianData>& base_splats);
@@ -178,27 +200,32 @@ private:
     // Streaming operations
     void stream_lod_level(uint32_t level);
     void unload_distant_lods(const Vector3& camera_pos, const Frustum& frustum);
-    void update_lod_priorities(const Vector3& camera_pos, const Frustum& frustum);
+    void reprioritize_async_loads(const LocalVector<uint32_t>& desired_levels);
 
     // Predictive loading
     PredictedMovement predict_camera_movement(
         const Vector3& current_pos,
         float delta_time
     );
-    void prefetch_predicted_lods(const PredictedMovement& prediction, const Frustum& frustum);
+    void collect_predicted_lods(
+        const PredictedMovement& prediction,
+        const Frustum& frustum,
+        LocalVector<uint32_t>& r_desired_levels,
+        LocalVector<uint32_t>& r_new_levels);
 
     // Memory management
     void enforce_memory_limits();
     uint32_t select_lod_to_unload();
 
     // GPU operations
-    void upload_to_gpu(LODLevel& lod, const Vector<GaussianData>& data);
+    void prepare_gpu_upload_data(const Vector<GaussianData>& data, LocalVector<::Gaussian>& gpu_gaussians) const;
+    void upload_to_gpu(LODLevel& lod, const LocalVector<::Gaussian>& gpu_gaussians, uint32_t splat_count);
     void release_gpu_buffer(LODLevel& lod);
 
     // Async loading
     void async_load_worker();
-    void enqueue_load_request(uint32_t level);
-    void process_async_load_queue(uint64_t frame_start_usec);
+    void enqueue_load_request(uint32_t level, const LocalVector<uint32_t>& desired_levels);
+    void apply_completed_async_loads(uint64_t frame_start_usec);
 
     // Visibility determination
     bool is_lod_visible(
@@ -254,7 +281,20 @@ private:
     // Async loading
     std::thread loading_thread;
     std::atomic<bool> should_stop_loading;
-    std::queue<uint32_t> load_queue;
+    struct AsyncLoadRequest {
+        uint32_t level = UINT32_MAX;
+        Vector<GaussianData> source_data;
+        uint64_t enqueue_time_usec = 0;
+    };
+    struct AsyncLoadJob {
+        uint32_t level = UINT32_MAX;
+        LocalVector<::Gaussian> gpu_gaussians;
+        uint32_t splat_count = 0;
+        float prepare_time_ms = 0.0f;
+        uint64_t enqueue_time_usec = 0;
+    };
+    std::queue<AsyncLoadRequest> load_queue;
+    std::queue<AsyncLoadJob> ready_queue;
     std::mutex load_queue_mutex;
     std::condition_variable load_cv;
     HashSet<uint32_t> pending_async_loads;

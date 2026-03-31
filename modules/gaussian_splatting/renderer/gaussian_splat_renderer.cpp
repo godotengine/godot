@@ -265,6 +265,31 @@ static bool _is_typed_streaming_not_ready_route(const String &p_route_uid) {
     return p_route_uid.begins_with("COMMON.SKIP.STREAMING_NOT_READY.");
 }
 
+static String _streaming_not_ready_reason_code(const String &p_route_uid) {
+    static const String prefix = "COMMON.SKIP.STREAMING_NOT_READY.";
+    if (!p_route_uid.begins_with(prefix)) {
+        return "streaming_not_ready_unknown";
+    }
+    const String suffix = p_route_uid.substr(prefix.length()).to_lower();
+    if (suffix.is_empty()) {
+        return "streaming_not_ready_unknown";
+    }
+    return String("streaming_not_ready_") + suffix;
+}
+
+static bool _has_primary_resident_render_data(const GaussianSplatRenderer &p_renderer) {
+    const GaussianSplatRenderer::SceneState &scene_state = p_renderer.get_scene_state();
+    if (scene_state.gaussian_data.is_valid() && scene_state.gaussian_data->get_count() > 0) {
+        return true;
+    }
+
+    const GaussianSplatRenderer::ResourceState &resource_state = p_renderer.get_resource_state();
+    if (!resource_state.buffer_manager.is_valid() || !resource_state.buffer_manager_initialized) {
+        return false;
+    }
+    return resource_state.buffer_manager->get_gaussian_count() > 0;
+}
+
 static bool _projection_nearly_equal(const Projection &p_a, const Projection &p_b, real_t p_tolerance = 1e-6f) {
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) {
@@ -1701,7 +1726,6 @@ void GaussianSplatRenderer::_reset_legacy_streaming_data_path_state() {
     streaming_state.cached_streamed_indices_valid = false;
 }
 
-
 void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
         const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers) {
     // Fallback to test data if streaming is not active.
@@ -1869,7 +1893,6 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     if (get_view_state().using_scene_data && p_render_data && p_render_data->scene_data && p_render_data->scene_data->flip_y) {
         render_projection.columns[1][1] = -render_projection.columns[1][1];
     }
-
 #if defined(DEBUG_ENABLED) || kLogFrameDebug
     // DEBUG: Log camera source at the configured frame-log interval (and frame 0)
     if (should_log_frame) {
@@ -1941,9 +1964,6 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
         const bool has_primary_gaussian_data =
                 get_scene_state().gaussian_data.is_valid() &&
                 get_scene_state().gaussian_data->get_count() > 0;
-        // Some renderers (for example world/static scenes) can render primary gaussian data
-        // without SceneDirector instances. Allow a synthetic primary instance in those cases
-        // so streaming cull/sort/raster buffers can still initialize.
         const bool allow_primary_fallback_instance = has_primary_gaussian_data;
         if (debug_state_orchestrator) {
             get_debug_state().route_uid = RenderRouteUID::INSTANCE_STREAMING;
@@ -2407,6 +2427,11 @@ int GaussianSplatRenderer::test_cull_visible_count(const Transform3D &p_world_to
     Transform3D view_transform = p_world_to_camera_transform.affine_inverse();
     CullStageOutput output = _cull_for_view(view_transform, p_projection, p_viewport_size);
     return static_cast<int>(output.visible_count);
+}
+
+GaussianSplatRenderer::SortStageSummary GaussianSplatRenderer::test_sort_for_view(
+        const Transform3D &p_world_to_camera_transform, IndexDomain p_input_domain) {
+    return sort_gaussians_for_view(p_world_to_camera_transform, p_input_domain);
 }
 
 void GaussianSplatRenderer::test_disable_gpu_culler() {

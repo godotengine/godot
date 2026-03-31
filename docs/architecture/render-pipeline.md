@@ -14,7 +14,7 @@ This document describes the runtime render pipeline in detail: frame entry, rout
 ## Frame Execution Flow
 
 1. `GaussianSplatRenderer::render_scene_instance` initializes per-frame state and camera/view context.
-2. Renderer decides route: streaming route via `RenderStreamingOrchestrator` when streaming buffers/readiness are valid, otherwise resident fallback route.
+2. Renderer decides route: streaming route via `RenderStreamingOrchestrator` when streaming buffers/readiness are valid, otherwise it records explicit not-ready/readiness state and skips the frame.
 3. `RenderPipelineStages` runs stage sequence: cull (`execute_cull_stage`), sort (`execute_sort_stage`), then raster/composite (`render_sorted_splats_with_context`).
 4. Output and diagnostics are finalized.
 
@@ -22,9 +22,8 @@ This document describes the runtime render pipeline in detail: frame entry, rout
 flowchart LR
     Entry[render_scene_instance] --> Route{Streaming<br/>ready?}
     Route -- Yes --> Stream[RenderStreamingOrchestrator]
-    Route -- No --> Resident[Resident Fallback]
+    Route -- No --> NotReady[Publish not-ready state]
     Stream --> Cull[Cull Stage]
-    Resident --> Cull
     Cull --> Sort[Sort Stage]
     Sort --> Raster[Raster / Composite]
     Raster --> Output[Final Output]
@@ -70,7 +69,7 @@ Related sources:
 
 ## Fallback and Failure Semantics
 
-When prerequisites are missing (device, buffers, or readiness invariants), the renderer records route/fallback information and avoids publishing invalid stage results.
+When prerequisites are missing (device, buffers, or readiness invariants), the renderer records explicit readiness state and avoids publishing invalid stage results.
 
 Relevant code:
 

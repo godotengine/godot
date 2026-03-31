@@ -1530,6 +1530,8 @@ public:
             bool p_defer_commit, bool p_painterly_active, const RID &p_cached_depth);
     void test_set_test_splats(const Vector<Vector3> &p_positions, const Vector<Vector3> &p_scales = Vector<Vector3>());
     int test_cull_visible_count(const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Size2i &p_viewport_size);
+    SortStageSummary test_sort_for_view(const Transform3D &p_world_to_camera_transform,
+            IndexDomain p_input_domain = IndexDomain::GAUSSIAN_GLOBAL);
     void test_set_render_thread_dispatch_timeout_usec(uint64_t p_timeout_usec);
     uint64_t test_get_render_thread_dispatch_timeout_usec() const;
     bool test_dispatch_call_on_render_thread_blocking_without_completion();

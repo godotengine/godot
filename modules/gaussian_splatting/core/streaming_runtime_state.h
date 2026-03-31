@@ -73,6 +73,7 @@ struct SchedulerState {
     uint32_t prefetch_scan_budget_remaining_this_frame = 0;
     bool queue_pressure_candidate_scan_throttle_active = false;
     uint32_t queue_pressure_candidate_scan_throttle_queue_depth = 0;
+    bool force_sync_fallback_due_to_async_stall = false;
     LocalVector<uint64_t> sync_fallback_chunk_load_queue;
     HashSet<uint64_t> sync_fallback_chunk_load_set;
     uint32_t sync_fallback_chunk_load_queue_read_idx = 0;
@@ -107,8 +108,10 @@ struct DiagnosticsState {
     uint64_t invariant_slot_ownership_violations = 0;
     uint64_t invariant_upload_lifecycle_violations = 0;
     uint64_t invariant_generation_violations = 0;
+    uint64_t integrity_mismatch_count = 0;
     String last_invariant_context;
     String last_invariant_message;
+    String last_integrity_mismatch_message;
 
     String active_category = "ok";
     String active_reason = "healthy";

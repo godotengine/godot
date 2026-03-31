@@ -35,6 +35,7 @@ public:
         uint32_t asset_generation = 0;
         uint64_t enqueue_usec = 0;
         Vector<PackedGaussian> packed_data;
+        uint32_t payload_checksum = 0;
         SHCompressionMetrics metrics;
         uint32_t bytes_uploaded = 0;
     };
@@ -61,6 +62,10 @@ public:
         SafeNumeric<uint64_t> pack_mutex_wait_usec_total;
         SafeNumeric<uint64_t> pack_mutex_wait_usec_max;
         SafeNumeric<uint32_t> pack_mutex_wait_samples;
+        SafeNumeric<uint32_t> pack_thread_wake_count;
+        SafeNumeric<uint32_t> pack_thread_dequeue_count;
+        SafeNumeric<uint32_t> pack_thread_snapshot_count;
+        SafeNumeric<uint32_t> pack_thread_enqueue_upload_count;
 
         _ALWAYS_INLINE_ bool is_enabled() const { return enabled.is_set(); }
         _ALWAYS_INLINE_ void set_enabled(bool p_on) { enabled.set_to(p_on); }
@@ -99,6 +104,22 @@ public:
             }
         }
 
+        _ALWAYS_INLINE_ void record_pack_thread_wake() {
+            pack_thread_wake_count.increment();
+        }
+
+        _ALWAYS_INLINE_ void record_pack_thread_dequeue(uint32_t p_count) {
+            pack_thread_dequeue_count.add(p_count);
+        }
+
+        _ALWAYS_INLINE_ void record_pack_thread_snapshot() {
+            pack_thread_snapshot_count.increment();
+        }
+
+        _ALWAYS_INLINE_ void record_pack_thread_enqueue_upload() {
+            pack_thread_enqueue_upload_count.increment();
+        }
+
         struct Snapshot {
             uint64_t pack_time_total = 0;
             uint64_t pack_time_max = 0;
@@ -114,6 +135,10 @@ public:
             uint64_t mutex_wait_total = 0;
             uint64_t mutex_wait_max = 0;
             uint32_t mutex_wait_samples = 0;
+            uint32_t thread_wakes = 0;
+            uint32_t thread_dequeues = 0;
+            uint32_t thread_snapshots = 0;
+            uint32_t thread_enqueue_uploads = 0;
         };
 
         Snapshot exchange_and_reset();
@@ -127,6 +152,10 @@ public:
         _ALWAYS_INLINE_ void add_pack_queue_latency(uint64_t) {}
         _ALWAYS_INLINE_ void add_upload_queue_latency(uint64_t) {}
         _ALWAYS_INLINE_ void add_mutex_wait(uint64_t) {}
+        _ALWAYS_INLINE_ void record_pack_thread_wake() {}
+        _ALWAYS_INLINE_ void record_pack_thread_dequeue(uint32_t) {}
+        _ALWAYS_INLINE_ void record_pack_thread_snapshot() {}
+        _ALWAYS_INLINE_ void record_pack_thread_enqueue_upload() {}
 
         struct Snapshot {
             uint64_t pack_time_total = 0;
@@ -143,6 +172,10 @@ public:
             uint64_t mutex_wait_total = 0;
             uint64_t mutex_wait_max = 0;
             uint32_t mutex_wait_samples = 0;
+            uint32_t thread_wakes = 0;
+            uint32_t thread_dequeues = 0;
+            uint32_t thread_snapshots = 0;
+            uint32_t thread_enqueue_uploads = 0;
         };
 
         _ALWAYS_INLINE_ Snapshot exchange_and_reset() { return {}; }
@@ -198,6 +231,12 @@ public:
     double last_upload_queue_latency_max_ms = 0.0;
     double last_pack_mutex_wait_avg_ms = 0.0;
     double last_pack_mutex_wait_max_ms = 0.0;
+    uint64_t sync_promoted_pack_jobs_total = 0;
+    uint32_t last_sync_promoted_pack_jobs = 0;
+    uint32_t last_thread_wakes = 0;
+    uint32_t last_thread_dequeues = 0;
+    uint32_t last_thread_snapshots = 0;
+    uint32_t last_thread_enqueue_uploads = 0;
 
     Mutex pack_mutex;
     Semaphore pack_semaphore;
@@ -228,6 +267,10 @@ public:
     void get_pending_queue_depths_cached(uint32_t &r_pack_queue_depth, uint32_t &r_upload_queue_depth) const;
 
 private:
+    bool pop_pack_job(PackJob &r_job);
+    PendingChunkUpload *build_pending_upload_from_pack_job(const PackJob &p_job);
+    void enqueue_upload_job(PendingChunkUpload *p_job);
+    uint32_t promote_pack_jobs_sync(uint32_t p_max_jobs);
     bool pop_upload_job(PendingChunkUpload *&job);
     UploadBudgetState prepare_upload_budget_state();
     uint32_t get_pack_queue_depth_unsafe() const;

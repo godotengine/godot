@@ -12,6 +12,7 @@ struct RenderRouteUID {
 	static constexpr const char *COMMON_SKIP_NO_VISIBLE = "COMMON.SKIP.NO_VISIBLE";
 	static constexpr const char *COMMON_SKIP_CAMERA_STABLE = "COMMON.SKIP.CAMERA_STABLE";
 	static constexpr const char *COMMON_SKIP_STREAMING_NOT_READY = "COMMON.SKIP.STREAMING_NOT_READY";
+	static constexpr const char *COMMON_SKIP_GPU_CULLER_UNAVAILABLE = "COMMON.SKIP.GPU_CULLER_UNAVAILABLE";
 	static constexpr const char *COMMON_FAIL_NO_DEVICE = "COMMON.FAIL.NO_DEVICE";
 	static constexpr const char *COMMON_FAIL_SORT_FAILED = "COMMON.FAIL.SORT_FAILED";
 	static constexpr const char *COMMON_FAIL_NO_OUTPUT = "COMMON.FAIL.NO_OUTPUT";
@@ -21,6 +22,11 @@ struct RenderRouteUID {
 	static constexpr const char *INSTANCE_ENTRY_INSTANCED_FAST = "INSTANCE.ENTRY.INSTANCED_FAST";
 	static constexpr const char *INSTANCE_STREAMING = "INSTANCE.STREAMING";
 	static constexpr const char *INSTANCE_CULL_GPU = "INSTANCE.CULL.GPU";
+	static constexpr const char *INSTANCE_CULL_CPU_FALLBACK = "INSTANCE.CULL.CPU_FALLBACK";
+	static constexpr const char *GLOBAL_CULL_CPU = "GLOBAL.CULL.CPU";
+	static constexpr const char *COMMON_SKIP_LEGACY_GPU_DISABLED = "COMMON.SKIP.LEGACY_GPU_DISABLED";
+	static constexpr const char *COMMON_SKIP_LEGACY_GPU_STREAMING_ACTIVE = "COMMON.SKIP.LEGACY_GPU_STREAMING_ACTIVE";
+	static constexpr const char *COMMON_SKIP_LEGACY_GPU_BUFFER_MISSING = "COMMON.SKIP.LEGACY_GPU_BUFFER_MISSING";
 	static constexpr const char *INSTANCE_SORT_GPU = "INSTANCE.SORT.GPU";
 	static constexpr const char *INSTANCE_SORT_CPU_FALLBACK = "INSTANCE.SORT.CPU_FALLBACK";
 	static constexpr const char *INSTANCE_SORT_CACHED = "INSTANCE.SORT.CACHED";

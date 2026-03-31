@@ -67,6 +67,15 @@ public:
     void set_instance_pipeline_inputs(const InstancePipelineInputs &p_inputs);
     void clear_instance_pipeline_inputs();
     uint32_t get_last_instance_visible_splat_count() const { return last_instance_visible_splat_count; }
+    void test_set_last_instance_visible_splat_count(uint32_t p_count, uint32_t p_frame_counter = 0) {
+        instance_count_readback_state.pending = false;
+        instance_count_readback_state.generation++;
+        instance_count_readback_state.pending_frame_counter = 0;
+        instance_count_readback_state.bootstrap_sync_attempted = true;
+        last_instance_visible_splat_count = p_count;
+        last_instance_visible_splat_count_valid = true;
+        last_instance_visible_splat_count_frame = p_frame_counter;
+    }
     String get_last_compute_error() const { return last_compute_error; }
 
     // IGPUSortingPipeline interface - Depth compute resources

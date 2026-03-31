@@ -48,6 +48,13 @@ static String _normalize_sort_route_uid_for_stats(const String &p_sort_route_uid
 	return p_sort_route_uid;
 }
 
+static String _normalize_cull_route_uid_for_stats(const String &p_cull_route_uid) {
+	if (p_cull_route_uid.is_empty()) {
+		return RenderRouteUID::COMMON_UNKNOWN_ROUTE;
+	}
+	return p_cull_route_uid;
+}
+
 struct ProductionMetricsConfig {
 	bool validate_metrics = true;
 	uint32_t summary_interval_frames = 600;
@@ -137,6 +144,8 @@ static Array _production_metrics_contract() {
 	keys.push_back("stage_composite_status");
 	keys.push_back("route_uid");
 	keys.push_back("sort_route_uid");
+	keys.push_back("cull_route_uid");
+	keys.push_back("cull_route_reason");
 	return keys;
 }
 
@@ -211,6 +220,8 @@ static Dictionary _build_production_metrics_snapshot(GaussianSplatRenderer &p_re
 	metrics["stage_composite_status"] = p_stage_valid ? _stage_status_to_string(p_stage_metrics.composite_result.status) : String("unknown");
 	metrics["route_uid"] = debug_state.route_uid;
 	metrics["sort_route_uid"] = debug_state.sort_route_uid;
+	metrics["cull_route_uid"] = _normalize_cull_route_uid_for_stats(perf.cull_route_uid);
+	metrics["cull_route_reason"] = perf.cull_route_reason;
 
 	return metrics;
 }
@@ -238,6 +249,8 @@ static void _append_telemetry_extras(const GaussianSplatRenderer &p_renderer,
 	r_metrics["cull_projection_contract_mismatches"] = static_cast<int64_t>(perf.cull_projection_contract_mismatch_count);
 	r_metrics["buffer_upload_time_ms"] = perf.buffer_upload_time_ms;
 	r_metrics["culling_time_ms"] = perf.culling_time_ms;
+	r_metrics["cull_route_uid"] = _normalize_cull_route_uid_for_stats(perf.cull_route_uid);
+	r_metrics["cull_route_reason"] = perf.cull_route_reason;
 	r_metrics["gpu_memory_usage_mb"] = perf.gpu_memory_usage_mb;
 	r_metrics["uploaded_splat_count"] = static_cast<int64_t>(perf.uploaded_splat_count);
 	r_metrics["rendered_splat_count"] = static_cast<int64_t>(perf.rendered_splat_count);
@@ -329,6 +342,7 @@ static void _append_telemetry_extras(const GaussianSplatRenderer &p_renderer,
 			r_metrics["streaming_diagnostics"] = streaming_diagnostics;
 		}
 		r_metrics["streaming_diagnostics_category"] = streaming_state.get("diagnostics_category", String("ok"));
+		r_metrics["streaming_diagnostics_reason"] = streaming_state.get("diagnostics_reason", String("healthy"));
 		r_metrics["streaming_diagnostics_fingerprint"] = streaming_state.get("diagnostics_fingerprint", String("ok"));
 		r_metrics["streaming_diagnostics_has_failure"] = streaming_state.get("diagnostics_has_failure", false);
 		r_metrics["streaming_cap_tier_preset"] = streaming_state.get("cap_tier_preset", String("custom"));
@@ -355,6 +369,7 @@ static void _append_telemetry_extras(const GaussianSplatRenderer &p_renderer,
 		r_metrics["streaming_vram_cap_hit_frames"] = streaming_diagnostics.get("vram_cap_hit_frames", int64_t(0));
 	} else {
 		r_metrics["streaming_diagnostics_category"] = String("unknown");
+		r_metrics["streaming_diagnostics_reason"] = String("unavailable");
 		r_metrics["streaming_diagnostics_fingerprint"] = String("unavailable");
 		r_metrics["streaming_diagnostics_has_failure"] = false;
 		r_metrics["streaming_cap_tier_preset"] = String("custom");
@@ -494,6 +509,8 @@ static Dictionary _validate_production_metrics(const Dictionary &p_metrics) {
 	}
 	const String route_uid = p_metrics.get("route_uid", String());
 	const String sort_route_uid = p_metrics.get("sort_route_uid", String());
+	const String cull_route_uid = p_metrics.get("cull_route_uid", String());
+	const String cull_route_reason = p_metrics.get("cull_route_reason", String());
 	const bool route_no_device = route_uid == String(RenderRouteUID::COMMON_FAIL_NO_DEVICE);
 	if (stage_valid && route_uid.is_empty()) {
 		issues.push_back("route_uid_empty");
@@ -501,6 +518,15 @@ static Dictionary _validate_production_metrics(const Dictionary &p_metrics) {
 	// No-device fallback can legitimately skip sort-route assignment.
 	if (stage_valid && !route_no_device && sort_route_uid.is_empty()) {
 		issues.push_back("sort_route_uid_empty");
+	}
+	if (stage_valid && cull_route_uid.is_empty()) {
+		issues.push_back("cull_route_uid_empty");
+	}
+	if (stage_valid && RenderRouteUID::is_route_uid_missing(cull_route_uid)) {
+		issues.push_back("cull_route_uid_missing");
+	}
+	if (stage_valid && cull_route_reason.is_empty()) {
+		issues.push_back("cull_route_reason_empty");
 	}
 	const String stage_cull_status = p_metrics.get("stage_cull_status", String("unknown"));
 	const String stage_sort_status = p_metrics.get("stage_sort_status", String("unknown"));
@@ -887,6 +913,7 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	GaussianSplatRenderer::FrameStateProvider state_provider(const_renderer);
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	const auto &frame_state = state_view.get_frame_state_view();
+	const auto &perf = state_view.get_performance_state_view().metrics;
 	const auto &debug_state = state_view.get_debug_state_view();
 	const auto &scene_state = state_view.get_scene_state();
 	const auto &render_config = state_view.get_render_config_view();
@@ -1053,10 +1080,15 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	stats["debug_show_residency_hud"] = overlay_system ? overlay_options.show_residency_hud : debug_state.show_residency_hud;
 	const String normalized_route_uid = _normalize_route_uid_for_stats(debug_state.route_uid);
 	const String normalized_sort_route_uid = _normalize_sort_route_uid_for_stats(debug_state.sort_route_uid);
+	const String normalized_cull_route_uid = _normalize_cull_route_uid_for_stats(perf.cull_route_uid);
 	stats["route_uid"] = normalized_route_uid;
 	stats["sort_route_uid"] = normalized_sort_route_uid;
+	stats["cull_route_uid"] = normalized_cull_route_uid;
+	stats["cull_route_reason"] = perf.cull_route_reason;
 	stats["route_uid_missing"] = RenderRouteUID::is_route_uid_missing(normalized_route_uid);
 	stats["sort_route_uid_missing"] = RenderRouteUID::is_sort_route_uid_missing(normalized_sort_route_uid);
+	stats["cull_route_uid_missing"] = RenderRouteUID::is_route_uid_missing(normalized_cull_route_uid);
+	stats["cull_route_reason_missing"] = perf.cull_route_reason.is_empty();
 	stats["instance_pipeline_content_generation"] =
 			static_cast<int64_t>(resource_state.instance_pipeline_content_generation);
 	stats["cached_render_reuse_enabled"] = renderer->is_cached_render_reuse_enabled();

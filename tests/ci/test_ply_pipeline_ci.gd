@@ -169,9 +169,11 @@ func test_gaussian_splat_asset_loading() -> Dictionary:
 			result.details += ". All array sizes valid."
 
 	elif load_result == ERR_FILE_NOT_FOUND:
-		# File not found is acceptable in CI - create test data and validate asset functionality
-		result.success = true
-		result.details = "Test PLY file not found (expected in CI), validated asset creation"
+		# Missing fixture should not be treated as a pass. Skip the coverage claim
+		# and surface the reason so CI output stays truthful.
+		result.skipped = true
+		result.error = "Fixture missing: %s" % ply_path
+		result.details = "Skipped fixture-backed PLY load validation because the fixture file was not present."
 	else:
 		result.error = "Failed to load PLY file: Error code " + str(load_result)
 

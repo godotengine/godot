@@ -8,6 +8,7 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/os/os.h"
 #include "core/templates/span.h"
+#include "core/templates/hashfuncs.h"
 #include "gaussian_splat_manager.h"
 #include "../renderer/gaussian_gpu_layout.h"
 #include "../logger/gs_debug_trace.h"
@@ -28,6 +29,13 @@ static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_FRAME = 128;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SLICE = 16;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_UPLOAD_MB_PER_SECOND = 0;
 static constexpr uint32_t STREAMING_DEFAULT_VRAM_BUDGET_MB = 12288;
+
+static uint32_t _packed_gaussian_payload_checksum(const Vector<PackedGaussian> &p_data) {
+    const int byte_count = int(p_data.size() * sizeof(PackedGaussian));
+    const uint8_t empty_byte = 0;
+    const void *payload = byte_count > 0 ? static_cast<const void *>(p_data.ptr()) : static_cast<const void *>(&empty_byte);
+    return hash_murmur3_buffer(payload, byte_count);
+}
 static constexpr uint32_t STREAMING_DEFAULT_MIN_CHUNKS_IN_VRAM = 4;
 static constexpr uint32_t STREAMING_DEFAULT_MAX_CHUNKS_IN_VRAM = 128;
 
@@ -784,8 +792,8 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     invalid_camera_input_events = 0;
     last_invalid_camera_log_frame = UINT64_MAX;
     visibility.reset_runtime_state();
-    diagnostics.visible_evict_fallback_attempts = 0;
-    diagnostics.visible_evict_fallback_successes = 0;
+    diagnostics = DiagnosticsState();
+    analytics_snapshot.clear();
     scheduler.visible_scan_cursor = 0;
     scheduler.prefetch_scan_cursor = 0;
     scheduler.last_visible_scan_count = 0;
@@ -805,6 +813,7 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     scheduler.last_sync_fallback_stalled_count = 0;
     scheduler.queue_pressure_candidate_scan_throttle_active = false;
     scheduler.queue_pressure_candidate_scan_throttle_queue_depth = 0;
+    scheduler.force_sync_fallback_due_to_async_stall = false;
     scheduler.sync_fallback_chunk_load_queue.clear();
     scheduler.sync_fallback_chunk_load_set.clear();
     scheduler.sync_fallback_chunk_load_queue_read_idx = 0;
@@ -944,8 +953,8 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
     invalid_camera_input_events = 0;
     last_invalid_camera_log_frame = UINT64_MAX;
     visibility.reset_runtime_state();
-    diagnostics.visible_evict_fallback_attempts = 0;
-    diagnostics.visible_evict_fallback_successes = 0;
+    diagnostics = DiagnosticsState();
+    analytics_snapshot.clear();
     scheduler.visible_scan_cursor = 0;
     scheduler.prefetch_scan_cursor = 0;
     scheduler.last_visible_scan_count = 0;
@@ -965,6 +974,7 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
     scheduler.last_sync_fallback_stalled_count = 0;
     scheduler.queue_pressure_candidate_scan_throttle_active = false;
     scheduler.queue_pressure_candidate_scan_throttle_queue_depth = 0;
+    scheduler.force_sync_fallback_due_to_async_stall = false;
     scheduler.sync_fallback_chunk_load_queue.clear();
     scheduler.sync_fallback_chunk_load_set.clear();
     scheduler.sync_fallback_chunk_load_queue_read_idx = 0;
@@ -1111,6 +1121,7 @@ void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_da
     scheduler.sync_fallback_chunk_load_set.clear();
     scheduler.sync_fallback_chunk_load_queue_read_idx = 0;
     scheduler.last_sync_fallback_queue_depth = 0;
+    scheduler.force_sync_fallback_due_to_async_stall = false;
     frame_data[current_frame_idx].visible_chunks.clear();
 
     if (per_chunk_quantization_enabled) {
@@ -2193,7 +2204,10 @@ void GaussianStreamingSystem::_run_streaming_frame_pipeline(const Transform3D &c
     bool eviction_blocked = false;
     phase_start_usec = os ? os->get_ticks_usec() : 0;
     _evict_for_vram_budget(evictions_left, eviction_blocked);
-    const bool can_async_pack = upload_pipeline.async_pack_enabled && upload_pipeline.pack_thread_running.load();
+    uint32_t pack_queue_depth = 0;
+    uint32_t upload_queue_depth = 0;
+    upload_pipeline.get_pending_queue_depths_cached(pack_queue_depth, upload_queue_depth);
+    const bool can_async_pack = _can_use_async_pack_path(pack_queue_depth, upload_queue_depth);
     if (can_async_pack && _get_sync_fallback_queue_depth() > 0) {
         scheduler.sync_fallback_chunk_load_queue.clear();
         scheduler.sync_fallback_chunk_load_set.clear();
@@ -2474,7 +2488,7 @@ void GaussianStreamingSystem::_load_visible_chunks(uint32_t effective_max, uint3
     const uint32_t sync_fallback_queue_depth = _get_sync_fallback_queue_depth();
     const uint32_t observed_throttle_queue_depth =
             MAX(sync_fallback_queue_depth, MAX(pack_queue_depth, upload_queue_depth));
-    const bool can_async_pack = upload_pipeline.async_pack_enabled && upload_pipeline.pack_thread_running.load();
+    const bool can_async_pack = _can_use_async_pack_path(pack_queue_depth, upload_queue_depth);
     const bool prioritize_sync_visible_enqueue = !can_async_pack && sync_fallback_queue_depth > 0;
     uint32_t enqueue_headroom = UINT32_MAX;
     if (can_async_pack) {
@@ -2635,7 +2649,10 @@ void GaussianStreamingSystem::_handle_predictive_prefetch(const Vector3 &camera_
         return;
     }
 
-    const bool can_async_pack = upload_pipeline.async_pack_enabled && upload_pipeline.pack_thread_running.load();
+    uint32_t pack_queue_depth = 0;
+    uint32_t upload_queue_depth = 0;
+    upload_pipeline.get_pending_queue_depths_cached(pack_queue_depth, upload_queue_depth);
+    const bool can_async_pack = _can_use_async_pack_path(pack_queue_depth, upload_queue_depth);
     uint32_t frame_prefetch_budget = scheduler.prefetch_loads_remaining_this_frame;
     if (upload_pipeline.max_chunk_loads_per_frame > 0) {
         const uint32_t frame_loads_used = can_async_pack
@@ -2655,8 +2672,6 @@ void GaussianStreamingSystem::_handle_predictive_prefetch(const Vector3 &camera_
         frame_prefetch_budget = MIN(frame_prefetch_budget, sync_prefetch_capacity);
     }
 
-    uint32_t pack_queue_depth = 0;
-    uint32_t upload_queue_depth = 0;
     upload_pipeline.get_pending_queue_depths_cached(pack_queue_depth, upload_queue_depth);
     const bool pack_inflight_saturated = upload_pipeline.max_pack_jobs_in_flight > 0 &&
             upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed) >= upload_pipeline.max_pack_jobs_in_flight;
@@ -3304,6 +3319,10 @@ void GaussianStreamingSystem::end_frame() {
             ? double(tsnap.mutex_wait_total) / (USEC_PER_MS * double(tsnap.mutex_wait_samples))
             : 0.0;
     upload_pipeline.last_pack_mutex_wait_max_ms = double(tsnap.mutex_wait_max) / USEC_PER_MS;
+    upload_pipeline.last_thread_wakes = tsnap.thread_wakes;
+    upload_pipeline.last_thread_dequeues = tsnap.thread_dequeues;
+    upload_pipeline.last_thread_snapshots = tsnap.thread_snapshots;
+    upload_pipeline.last_thread_enqueue_uploads = tsnap.thread_enqueue_uploads;
 
     analytics_snapshot["pack_avg_ms"] = upload_pipeline.last_pack_avg_ms;
     analytics_snapshot["pack_max_ms"] = upload_pipeline.last_pack_max_ms;
@@ -3316,6 +3335,10 @@ void GaussianStreamingSystem::end_frame() {
     analytics_snapshot["upload_queue_latency_max_ms"] = upload_pipeline.last_upload_queue_latency_max_ms;
     analytics_snapshot["pack_mutex_wait_avg_ms"] = upload_pipeline.last_pack_mutex_wait_avg_ms;
     analytics_snapshot["pack_mutex_wait_max_ms"] = upload_pipeline.last_pack_mutex_wait_max_ms;
+    analytics_snapshot["pack_thread_wakes"] = (int)upload_pipeline.last_thread_wakes;
+    analytics_snapshot["pack_thread_dequeues"] = (int)upload_pipeline.last_thread_dequeues;
+    analytics_snapshot["pack_thread_snapshots"] = (int)upload_pipeline.last_thread_snapshots;
+    analytics_snapshot["pack_thread_enqueue_uploads"] = (int)upload_pipeline.last_thread_enqueue_uploads;
     analytics_snapshot["pack_jobs_in_flight"] = (int)upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed);
     analytics_snapshot["avg_chunk_load_time_ms"] = upload_pipeline.last_pack_avg_ms;
     analytics_snapshot["camera_velocity"] = visibility.camera_tracker.velocity.length();
@@ -3407,6 +3430,8 @@ void GaussianStreamingSystem::end_frame() {
             static_cast<int64_t>(scheduler.queue_pressure_candidate_scan_throttle_queue_depth);
     analytics_snapshot["scheduler_queue_pressure_scan_throttle_enabled"] =
             scheduler.queue_pressure_candidate_scan_throttle_enabled;
+    analytics_snapshot["scheduler_force_sync_fallback_due_to_async_stall"] =
+            scheduler.force_sync_fallback_due_to_async_stall;
     analytics_snapshot["scheduler_sync_fallback_queue_depth"] = (int)sync_fallback_queue_depth;
     analytics_snapshot["scheduler_sync_fallback_enqueued"] = (int)scheduler.last_sync_fallback_enqueued_count;
     analytics_snapshot["scheduler_sync_fallback_drained"] = (int)scheduler.last_sync_fallback_drained_count;
@@ -3414,6 +3439,8 @@ void GaussianStreamingSystem::end_frame() {
     analytics_snapshot["scheduler_sync_fallback_stalled"] = (int)scheduler.last_sync_fallback_stalled_count;
     analytics_snapshot["scheduler_sync_fallback_load_budget"] = (int)scheduler.max_sync_fallback_loads_per_frame;
     analytics_snapshot["scheduler_sync_fallback_cpu_ms"] = scheduler.last_sync_fallback_cpu_ms;
+    analytics_snapshot["sync_promoted_pack_jobs_this_frame"] = (int)upload_pipeline.last_sync_promoted_pack_jobs;
+    analytics_snapshot["sync_promoted_pack_jobs_total"] = static_cast<int64_t>(upload_pipeline.sync_promoted_pack_jobs_total);
     StreamingTelemetryAdapter::QueuePressureSnapshot queue_pressure_snapshot;
     queue_pressure_snapshot.active = upload_pipeline.queue_pressure_active;
     queue_pressure_snapshot.source = upload_pipeline.queue_pressure_source;
@@ -3441,6 +3468,7 @@ void GaussianStreamingSystem::end_frame() {
             pack_queue_depth, upload_queue_depth, sync_fallback_queue_depth);
     analytics_snapshot["diagnostics"] = streaming_diagnostics;
     analytics_snapshot["diagnostics_category"] = streaming_diagnostics.get("category", "ok");
+    analytics_snapshot["diagnostics_reason"] = streaming_diagnostics.get("reason", "healthy");
     analytics_snapshot["diagnostics_fingerprint"] = streaming_diagnostics.get("fingerprint", "ok");
     analytics_snapshot["diagnostics_has_failure"] = streaming_diagnostics.get("has_failure", false);
 }
@@ -3561,6 +3589,11 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
     if (!runtime_ready) {
         category = "init_invalid";
         reason = runtime_reason;
+    } else if (diagnostics.integrity_mismatch_count > 0) {
+        category = "integrity_mismatch";
+        reason = diagnostics.last_integrity_mismatch_message.is_empty() ?
+                vformat("integrity mismatches detected=%d.", static_cast<int64_t>(diagnostics.integrity_mismatch_count)) :
+                diagnostics.last_integrity_mismatch_message;
     } else if (diagnostics.culling_empty_frames >= DiagnosticsState::STALL_THRESHOLD_FRAMES) {
         category = "culling_empty";
         reason = vformat("visible_chunks=0 for %d frames while total_chunks=%d.",
@@ -3594,7 +3627,7 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
 
     const bool has_failure = category != "ok";
     const String fingerprint = vformat(
-            "%s|ready=%s|chunks=%d/%d/%d|visible_splats=%d|cand=%d|pack_q=%d|upload_q=%d|sync_q=%d|load_frame=%d|upload_frame=%d|caps=%d/%d/%d|vram=%d/%d|hits=%d%d%d%d%d|qsrc=%s|qwhy=%s|atlas=%d|req=%d|inv=%d/%d/%d",
+            "%s|ready=%s|chunks=%d/%d/%d|visible_splats=%d|cand=%d|pack_q=%d|upload_q=%d|sync_q=%d|load_frame=%d|upload_frame=%d|caps=%d/%d/%d|vram=%d/%d|hits=%d%d%d%d%d|qsrc=%s|qwhy=%s|atlas=%d|req=%d|inv=%d/%d/%d|sync_promo=%d",
             category,
             runtime_ready ? "1" : "0",
             loaded_chunks,
@@ -3623,7 +3656,8 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             static_cast<int64_t>(asset_registry.request_generation),
             static_cast<int64_t>(diagnostics.invariant_slot_ownership_violations),
             static_cast<int64_t>(diagnostics.invariant_upload_lifecycle_violations),
-            static_cast<int64_t>(diagnostics.invariant_generation_violations));
+            static_cast<int64_t>(diagnostics.invariant_generation_violations),
+            static_cast<int64_t>(upload_pipeline.sync_promoted_pack_jobs_total));
 
     if (has_failure) {
         const bool fingerprint_changed = diagnostics.last_logged_fingerprint != fingerprint;
@@ -3700,8 +3734,16 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             static_cast<int64_t>(scheduler.queue_pressure_candidate_scan_throttle_queue_depth);
     diagnostics_snapshot["scheduler_queue_pressure_scan_throttle_enabled"] =
             scheduler.queue_pressure_candidate_scan_throttle_enabled;
+    diagnostics_snapshot["scheduler_force_sync_fallback_due_to_async_stall"] =
+            scheduler.force_sync_fallback_due_to_async_stall;
     diagnostics_snapshot["chunks_loaded_this_frame"] = static_cast<int64_t>(loaded_this_frame);
     diagnostics_snapshot["chunks_uploaded_this_frame"] = static_cast<int64_t>(upload_chunks_this_frame);
+    diagnostics_snapshot["sync_promoted_pack_jobs_this_frame"] = static_cast<int64_t>(upload_pipeline.last_sync_promoted_pack_jobs);
+    diagnostics_snapshot["sync_promoted_pack_jobs_total"] = static_cast<int64_t>(upload_pipeline.sync_promoted_pack_jobs_total);
+    diagnostics_snapshot["pack_thread_wakes"] = static_cast<int64_t>(upload_pipeline.last_thread_wakes);
+    diagnostics_snapshot["pack_thread_dequeues"] = static_cast<int64_t>(upload_pipeline.last_thread_dequeues);
+    diagnostics_snapshot["pack_thread_snapshots"] = static_cast<int64_t>(upload_pipeline.last_thread_snapshots);
+    diagnostics_snapshot["pack_thread_enqueue_uploads"] = static_cast<int64_t>(upload_pipeline.last_thread_enqueue_uploads);
     diagnostics_snapshot["cap_tier_preset"] = budget.vram_regulator.is_valid()
             ? active_vram_caps.cap_tier_preset
             : upload_pipeline.cap_tier_preset;
@@ -3762,8 +3804,11 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             static_cast<int64_t>(diagnostics.invariant_upload_lifecycle_violations);
     diagnostics_snapshot["invariant_generation_violations"] =
             static_cast<int64_t>(diagnostics.invariant_generation_violations);
+    diagnostics_snapshot["integrity_mismatch_count"] =
+            static_cast<int64_t>(diagnostics.integrity_mismatch_count);
     diagnostics_snapshot["last_invariant_context"] = diagnostics.last_invariant_context;
     diagnostics_snapshot["last_invariant_message"] = diagnostics.last_invariant_message;
+    diagnostics_snapshot["last_integrity_mismatch_message"] = diagnostics.last_integrity_mismatch_message;
     diagnostics_snapshot["atlas_generation"] = static_cast<int64_t>(global_atlas_registry.get_atlas_generation());
     diagnostics_snapshot["request_generation"] = static_cast<int64_t>(asset_registry.request_generation);
 
@@ -3966,6 +4011,42 @@ bool GaussianStreamingSystem::_enqueue_chunk_load_request(
         return _queue_chunk_load(asset_id, chunk_idx);
     }
     return _enqueue_sync_fallback_chunk_load(asset_id, chunk_idx, prioritize_sync_fallback);
+}
+
+bool GaussianStreamingSystem::_should_force_sync_fallback_for_async_stall(
+        uint32_t pack_queue_depth, uint32_t upload_queue_depth) {
+    const bool async_threads_available =
+            upload_pipeline.async_pack_enabled && upload_pipeline.pack_thread_running.load();
+    if (!async_threads_available) {
+        return false;
+    }
+
+    const uint32_t sync_fallback_queue_depth = _get_sync_fallback_queue_depth();
+    if (scheduler.force_sync_fallback_due_to_async_stall &&
+            pack_queue_depth == 0 &&
+            upload_queue_depth == 0 &&
+            sync_fallback_queue_depth == 0) {
+        scheduler.force_sync_fallback_due_to_async_stall = false;
+    }
+
+    if (!scheduler.force_sync_fallback_due_to_async_stall &&
+            diagnostics.upload_stall_frames >= DiagnosticsState::STALL_THRESHOLD_FRAMES &&
+            pack_queue_depth > 0 &&
+            upload_queue_depth == 0) {
+        scheduler.force_sync_fallback_due_to_async_stall = true;
+    }
+
+    return scheduler.force_sync_fallback_due_to_async_stall;
+}
+
+bool GaussianStreamingSystem::_can_use_async_pack_path(
+        uint32_t pack_queue_depth, uint32_t upload_queue_depth) {
+    const bool async_threads_available =
+            upload_pipeline.async_pack_enabled && upload_pipeline.pack_thread_running.load();
+    if (!async_threads_available) {
+        return false;
+    }
+    return !_should_force_sync_fallback_for_async_stall(pack_queue_depth, upload_queue_depth);
 }
 
 uint32_t GaussianStreamingSystem::_get_sync_fallback_queue_depth() const {

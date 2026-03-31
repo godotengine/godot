@@ -17,6 +17,7 @@
 #include "../compute/frustum_cull.glsl.gen.h"
 #include "../logger/gs_logger.h"
 #include "../logger/gs_debug_trace.h"
+#include "../renderer/render_debug_state_orchestrator.h"
 #include <cstdint>
 #include <cstring>
 
@@ -1297,33 +1298,6 @@ CullResult GPUCuller::cull(const CullParams &p_params, const CullInputBuffers &p
     return result;
 }
 
-// PERF (#659): Pass pre-computed inverse to avoid redundant affine_inverse() calls
-bool GPUCuller::_gpu_frustum_cull(const Transform3D &p_cam_transform, const Transform3D &p_cam_to_world,
-        const Projection &p_projection, const Size2i &p_viewport_size,
-        const Vector<Plane> &p_planes, float p_pixel_scale_y, bool p_orthographic, uint64_t p_start_time_usec,
-        const GpuCullInput &p_input, uint32_t p_max_splats, bool p_readback_indices, bool p_readback_distances,
-        bool p_readback_importance) {
-    (void)p_cam_transform;
-    (void)p_cam_to_world;
-    (void)p_projection;
-    (void)p_viewport_size;
-    (void)p_planes;
-    (void)p_pixel_scale_y;
-    (void)p_orthographic;
-    (void)p_start_time_usec;
-    (void)p_input;
-    (void)p_max_splats;
-    (void)p_readback_indices;
-    (void)p_readback_distances;
-    (void)p_readback_importance;
-    if (!culling_config.gpu_culling_enabled || !culling_config.gpu_culling_readback_enabled) {
-        return false;
-    }
-    // Legacy GPU cull shader path was retired with the instance-only compute shaders.
-    return false;
-}
-
-
 bool GPUCuller::_gpu_frustum_cull_instance(const CullParams &p_params, const InstancePipelineInputs &p_inputs,
         uint64_t p_start_time_usec, CullingSummary &r_summary) {
     if (!p_inputs.device || !p_inputs.instance_buffer.is_valid() || !p_inputs.asset_meta_buffer.is_valid() ||
@@ -1484,7 +1458,10 @@ bool GPUCuller::_gpu_frustum_cull_instance(const CullParams &p_params, const Ins
 GPUCuller::CullingSummary GPUCuller::cull_for_view(const Transform3D &p_cam_transform, const Projection &p_projection,
         const Size2i &p_viewport_size, const CullingInputs &p_inputs) {
     CullingSummary summary;
+    summary.cull_route_uid = p_inputs.cull_route_uid;
+    summary.cull_route_reason = p_inputs.cull_route_reason;
     uint64_t start_time = OS::get_singleton()->get_ticks_usec();
+    bool instance_cull_failed = false;
 
     update_culling_settings();
     update_lod_cache();
@@ -1544,14 +1521,23 @@ GPUCuller::CullingSummary GPUCuller::cull_for_view(const Transform3D &p_cam_tran
                     false);
         }
         if (_gpu_frustum_cull_instance(instance_params, instance_inputs, start_time, summary)) {
+            summary.cull_route_uid = RenderRouteUID::INSTANCE_CULL_GPU;
+            summary.cull_route_reason = "instance_pipeline_active";
             summary.used_hierarchical_culling = false;
             return summary;
         }
+        instance_cull_failed = true;
+        summary.cull_route_uid = RenderRouteUID::INSTANCE_CULL_CPU_FALLBACK;
+        summary.cull_route_reason = "instance_pipeline_failed";
     }
 
     // Legacy path: requires gaussian_data or test positions
     if (!p_inputs.gaussian_data.is_valid() &&
             (!p_inputs.test_positions || p_inputs.test_positions->is_empty())) {
+        if (instance_cull_failed) {
+            summary.cull_route_uid = RenderRouteUID::COMMON_SKIP_NO_DATA;
+            summary.cull_route_reason = "instance_pipeline_failed_no_fallback";
+        }
         summary.culling_time_ms = (OS::get_singleton()->get_ticks_usec() - start_time) / 1000.0f;
         culling_state.cull_time_ms = summary.culling_time_ms;
         return summary;
@@ -1566,29 +1552,6 @@ GPUCuller::CullingSummary GPUCuller::cull_for_view(const Transform3D &p_cam_tran
         vertical_scale = 1.0f;
     }
     float pixel_scale_y = vertical_scale * (viewport_height * 0.5f);
-
-    bool gpu_cull_result = false;
-    if (p_inputs.gpu_cull_attempted) {
-        // PERF (#659): Pass pre-computed inverse to avoid redundant affine_inverse() call
-        gpu_cull_result = _gpu_frustum_cull(view_transform, camera_transform, p_projection, p_viewport_size, planes, pixel_scale_y, orthographic,
-                start_time, p_inputs.gpu_input, p_inputs.max_splats, p_inputs.readback_indices, p_inputs.readback_distances,
-                p_inputs.readback_importance);
-    }
-    if (p_inputs.gpu_cull_attempted && gpu_cull_result) {
-        uint32_t visible_after = static_cast<uint32_t>(culling_state.culled_indices.size());
-        if (visible_after == 0 && culling_state.gpu_visible_indices_count > 0) {
-            visible_after = culling_state.gpu_visible_indices_count;
-        }
-        summary.visible_after_culling = visible_after;
-        summary.culling_candidate_count = culling_state.total_splats_pre_cull;
-        summary.culled_frustum_count = culling_state.culled_by_frustum;
-        summary.culled_distance_count = culling_state.culled_by_distance;
-        summary.culled_screen_count = culling_state.culled_by_screen;
-        summary.culled_importance_count = culling_state.culled_by_importance;
-        summary.used_hierarchical_culling = false;
-        summary.culling_time_ms = culling_state.cull_time_ms;
-        return summary;
-    }
 
     auto sphere_intersects_planes = [](const Vector3 &p_center, float p_radius, const Vector<Plane> &p_planes) {
         if (p_planes.is_empty()) {
@@ -1840,6 +1803,8 @@ GPUCuller::CullingSummary GPUCuller::cull_for_view(const Transform3D &p_cam_tran
     summary.culled_distance_count = culling_state.culled_by_distance;
     summary.culled_screen_count = culling_state.culled_by_screen;
     summary.culled_importance_count = culling_state.culled_by_importance;
+    summary.cull_route_uid = RenderRouteUID::GLOBAL_CULL_CPU;
+    summary.cull_route_reason = "global_cpu_path";
     summary.used_hierarchical_culling = used_hierarchical;
     summary.culling_time_ms = culling_state.cull_time_ms = (OS::get_singleton()->get_ticks_usec() - start_time) / 1000.0f;
 

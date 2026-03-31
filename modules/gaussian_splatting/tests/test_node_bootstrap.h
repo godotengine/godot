@@ -1,8 +1,8 @@
 /**
  * @file test_node_bootstrap.h
- * @brief Regression test: GaussianSplatNode3D must bootstrap primary
- *        gaussian_data on the shared renderer so the resident fallback
- *        path can render during streaming warmup.
+ * @brief Regression test: GaussianSplatNode3D must register with the
+ *        shared renderer without force-populating primary gaussian_data
+ *        for removed resident/bootstrap fallback behavior.
  */
 
 #pragma once
@@ -19,7 +19,7 @@
 
 namespace {
 
-/// Minimal single-splat asset used only by the bootstrap regression test.
+/// Minimal single-splat asset used only by the node registration regression test.
 static Ref<GaussianSplatAsset> _make_bootstrap_test_asset() {
 	Ref<GaussianSplatAsset> asset;
 	asset.instantiate();
@@ -77,11 +77,10 @@ static Ref<GaussianSplatAsset> _make_bootstrap_test_asset() {
 } // anonymous namespace
 
 // [SceneTree] tag ensures the test harness creates a SceneTree before running.
-TEST_CASE("[GaussianSplatting][SceneTree] Asset-based node bootstraps primary gaussian_data on renderer") {
-	// Regression test for invisible-PLY-on-drag-drop bug:
-	// GaussianSplatNode3D must populate scene_state.gaussian_data on the
-	// shared renderer so the resident fallback path can render while the
-	// streaming instance pipeline warms up.
+TEST_CASE("[GaussianSplatting][SceneTree] Asset-based node registers without bootstrapping renderer gaussian_data") {
+	// After #177, node registration should still populate SceneDirector
+	// instance data, but it should not seed renderer scene_state.gaussian_data
+	// just to keep a resident/bootstrap fallback path alive.
 
 	SceneTree *tree = SceneTree::get_singleton();
 	REQUIRE_MESSAGE(tree != nullptr, "SceneTree must exist (provided by [SceneTree] tag)");
@@ -101,21 +100,18 @@ TEST_CASE("[GaussianSplatting][SceneTree] Asset-based node bootstraps primary ga
 
 	Ref<GaussianSplatRenderer> renderer = node->get_renderer();
 
-	// In headless mode (no RenderingServer), the renderer won't be created.
-	// The full bootstrap path is only exercisable with a GPU device.
-	if (!renderer.is_valid()) {
-		MESSAGE("Renderer unavailable (headless mode) — skipping renderer state checks");
-	}
-	if (renderer.is_valid()) {
-		const auto &scene_state = renderer->get_scene_state();
-		CHECK_MESSAGE(scene_state.gaussian_data.is_valid(),
-				"Renderer scene_state.gaussian_data must be set by GaussianSplatNode3D bootstrap");
-		if (scene_state.gaussian_data.is_valid()) {
-			CHECK(scene_state.gaussian_data->get_count() > 0);
+		// In headless mode (no RenderingServer), the renderer won't be created.
+		// The registration contract is only exercisable with a GPU device.
+		if (!renderer.is_valid()) {
+			MESSAGE("Renderer unavailable (headless mode) — skipping renderer state checks");
 		}
+		if (renderer.is_valid()) {
+			const auto &scene_state = renderer->get_scene_state();
+			CHECK_MESSAGE(scene_state.gaussian_data.is_null(),
+					"Renderer scene_state.gaussian_data should remain unset after node registration without bootstrap fallback");
 
-		GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
-		if (director) {
+			GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+			if (director) {
 			LocalVector<InstanceDataGPU> instance_buffer;
 			director->build_instance_buffer_for_renderer(renderer.ptr(), instance_buffer);
 			CHECK(instance_buffer.size() >= 1);

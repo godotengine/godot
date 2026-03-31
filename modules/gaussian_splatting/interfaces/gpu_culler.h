@@ -6,6 +6,7 @@
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
 #include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 #include "servers/rendering/rendering_device.h"
@@ -130,12 +131,6 @@ public:
         bool static_sort_cache_enabled = false;
     };
 
-    struct GpuCullInput {
-        RID gaussian_buffer;
-        RenderingDevice *buffer_device = nullptr;
-        uint32_t total_splats = 0;
-    };
-
     struct CullingInputs {
         Ref<GaussianData> gaussian_data;
         const LocalVector<Vector3> *test_positions = nullptr;
@@ -143,8 +138,8 @@ public:
         const LocalVector<uint32_t> *preculled_indices = nullptr;
         uint64_t preculled_generation = 0;
         uint32_t preculled_total_splats = 0;
-        bool gpu_cull_attempted = false;
-        GpuCullInput gpu_input;
+        String cull_route_uid;
+        String cull_route_reason;
         uint32_t max_splats = 0;
         bool readback_indices = true;
         bool readback_distances = true;
@@ -171,6 +166,8 @@ public:
         uint32_t culled_distance_count = 0;
         uint32_t culled_screen_count = 0;
         uint32_t culled_importance_count = 0;
+        String cull_route_uid;
+        String cull_route_reason;
         bool used_instance_pipeline = false;
         bool used_hierarchical_culling = false;
         float culling_time_ms = 0.0f;
@@ -337,12 +334,6 @@ private:
     void _on_instance_counter_readback(const Vector<uint8_t> &p_data, int64_t p_generation,
             int64_t p_max_visible_chunks, int64_t p_request_id);
     void _reset_async_readback_state();
-    // PERF (#659): Pass pre-computed inverse to avoid redundant affine_inverse() calls
-    bool _gpu_frustum_cull(const Transform3D &p_cam_transform, const Transform3D &p_cam_to_world,
-            const Projection &p_projection, const Size2i &p_viewport_size,
-            const Vector<Plane> &p_planes, float p_pixel_scale_y, bool p_orthographic, uint64_t p_start_time_usec,
-            const GpuCullInput &p_input, uint32_t p_max_splats, bool p_readback_indices, bool p_readback_distances,
-            bool p_readback_importance);
     bool _gpu_frustum_cull_instance(const CullParams &p_params, const InstancePipelineInputs &p_inputs,
             uint64_t p_start_time_usec, CullingSummary &r_summary);
 };

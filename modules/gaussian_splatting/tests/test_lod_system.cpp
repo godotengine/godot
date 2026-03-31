@@ -8,6 +8,7 @@
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../core/gaussian_splat_manager.h"
 #include "core/os/os.h"
+#include "core/os/thread.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/projection.h"
 #include "core/templates/hash_map.h"
@@ -341,6 +342,88 @@ bool test_streaming_lod() {
             ERR_PRINT("Failed: No visible splats");
             success = false;
         }
+    }
+
+    memdelete(camera);
+    return success;
+}
+
+bool test_streaming_lod_async_prepare_contract() {
+    print_line("Testing: Streaming LOD Async Prepare Contract");
+
+    LODSystemTest test;
+    auto splats = test.generate_test_splats(40000);
+    auto camera = test.create_test_camera(Vector3(0, 0, 20));
+
+    StreamingLODManager manager;
+    StreamingLODManager::StreamingConfig config;
+    config.num_lod_levels = 4;
+    config.max_gpu_memory = 512 * 1024 * 1024;
+    config.max_concurrent_loads = 1;
+    config.stream_budget_ms = 8;
+    config.enable_async_loading = true;
+    config.enable_predictive_loading = false;
+    config.enable_painterly_mode = false;
+
+    manager.initialize(splats, config);
+
+    bool success = true;
+
+    for (int i = 0; i < 240; i++) {
+        manager.update(camera, 0.016f);
+
+        const auto stats = manager.get_stats_snapshot();
+        if (stats.async_prepare_jobs_completed > 0 &&
+                stats.async_apply_jobs_completed > 0 &&
+                stats.loaded_lod_levels > 0) {
+            break;
+        }
+
+        Thread::yield();
+        OS::get_singleton()->delay_usec(1000);
+    }
+
+    const auto stats = manager.get_stats_snapshot();
+
+    if (stats.async_prepare_jobs_completed == 0) {
+        ERR_PRINT("Failed: Async prepare job never completed.");
+        success = false;
+    }
+    if (stats.async_apply_jobs_completed == 0) {
+        ERR_PRINT("Failed: Async apply stage never ran.");
+        success = false;
+    }
+    if (stats.loaded_lod_levels == 0) {
+        ERR_PRINT("Failed: Async apply path never produced a loaded LOD.");
+        success = false;
+    }
+    if (!stats.async_prepare_observed_off_main_thread) {
+        ERR_PRINT("Failed: Async prepare path executed on the main thread.");
+        success = false;
+    }
+    if (!stats.async_apply_observed_on_main_thread) {
+        ERR_PRINT("Failed: Async apply path did not run on the main thread.");
+        success = false;
+    }
+    if (stats.async_prepare_main_thread_violations != 0) {
+        ERR_PRINT("Failed: Async prepare path observed main-thread violations.");
+        success = false;
+    }
+    if (stats.async_apply_off_main_thread_violations != 0) {
+        ERR_PRINT("Failed: Async apply path observed off-main-thread violations.");
+        success = false;
+    }
+    if (stats.performance.avg_async_prepare_time_ms <= 0.0f) {
+        ERR_PRINT("Failed: Async prepare timing metric was not recorded.");
+        success = false;
+    }
+    if (stats.performance.avg_async_apply_time_ms <= 0.0f) {
+        ERR_PRINT("Failed: Async apply timing metric was not recorded.");
+        success = false;
+    }
+    if (stats.performance.avg_load_time_ms <= 0.0f) {
+        ERR_PRINT("Failed: Combined load timing metric regressed in async mode.");
+        success = false;
     }
 
     memdelete(camera);
@@ -687,6 +770,7 @@ void run_lod_system_tests() {
         {"Adaptive LOD Selection", test_adaptive_lod},
         {"Splat Clustering", test_splat_clustering},
         {"Streaming LOD Manager", test_streaming_lod},
+        {"Streaming LOD Async Prepare Contract", test_streaming_lod_async_prepare_contract},
         {"LOD Transitions", test_lod_transitions},
         {"Painterly Temporal Stability", test_painterly_temporal_stability},
         {"Node Quality Presets", test_node_quality_presets},

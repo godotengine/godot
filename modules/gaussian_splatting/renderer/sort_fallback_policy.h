@@ -33,6 +33,20 @@ static inline bool allow_unsorted_fallback_publication(bool p_strict_global_sort
 	return !p_strict_global_sort;
 }
 
+static inline bool allow_instance_identity_fallback_in_orchestrator(
+		bool p_strict_global_sort, bool p_instance_pipeline_active, bool p_has_sorting_pipeline, uint32_t p_instance_visible_splats) {
+	return !p_strict_global_sort && p_instance_pipeline_active && p_has_sorting_pipeline && p_instance_visible_splats > 0;
+}
+
+static inline bool allow_camera_stable_cull_order_bootstrap_in_orchestrator(
+		bool p_strict_global_sort, bool p_instance_pipeline_active, bool p_has_culled_indices, bool p_has_sorting_pipeline) {
+	return !p_strict_global_sort && !p_instance_pipeline_active && p_has_culled_indices && p_has_sorting_pipeline;
+}
+
+static inline bool allow_unsorted_cpu_fallback_in_orchestrator(bool p_strict_global_sort, bool p_positions_ready) {
+	return p_positions_ready || !p_strict_global_sort;
+}
+
 // Keep fallback behavior deterministic across force_cpu and GPU failure paths.
 static inline SortFallbackPolicyDecision build_sort_fallback_policy(
 		SortFallbackScenario p_scenario, bool p_instance_pipeline_active, bool p_strict_global_sort = false) {
