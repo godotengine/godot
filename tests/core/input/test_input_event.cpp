@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_input_event)
 
+#include "core/config/project_settings.h"
 #include "core/input/input_event.h"
 #include "core/input/input_map.h"
 #include "core/math/rect2.h"
@@ -95,6 +96,38 @@ TEST_CASE("[InputEvent][SceneTree] Test methods that interact with the InputMap"
 	CHECK(iejm->is_action_pressed(mock_action));
 
 	InputMap::get_singleton()->erase_action(mock_action);
+}
+
+TEST_CASE("[InputEvent][SceneTree][Compatibility] InputMap legacy keyboard/mouse device IDs") {
+	const String action = "compat_device_ids_action";
+	const String setting = "input_devices/compatibility/legacy_keyboard_mouse_device_ids";
+
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	InputMap *im = InputMap::get_singleton();
+	const bool had_setting = ps->has_setting(setting);
+	const Variant prev_value = had_setting ? ps->get_setting(setting) : Variant();
+
+	Ref<InputEventKey> key;
+	key.instantiate();
+
+	ps->set_setting(setting, true);
+	im->add_action(action, 0.5);
+	im->action_add_event(action, key);
+	CHECK(key->get_device() == 0);
+	im->erase_action(action);
+
+	ps->set_setting(setting, false);
+	im->add_action(action, 0.5);
+	key->set_device(0);
+	im->action_add_event(action, key);
+	CHECK(key->get_device() == InputEvent::DEVICE_ID_KEYBOARD);
+	im->erase_action(action);
+
+	if (had_setting) {
+		ps->set_setting(setting, prev_value);
+	} else {
+		ps->clear(setting);
+	}
 }
 
 TEST_CASE("[InputEvent] Test xformed_by") {

@@ -1018,6 +1018,10 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 					// Enable MeshInstance3D compat for projects created before 4.6.
 					set_setting("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", true);
 				}
+				if (major_version == 4 && minor_version < 7 && !has_setting("input_devices/compatibility/legacy_keyboard_mouse_device_ids")) {
+					// Keep legacy keyboard/mouse device IDs (device=0) for projects created before 4.7.
+					set_setting("input_devices/compatibility/legacy_keyboard_mouse_device_ids", true);
+				}
 				break;
 			}
 		}
