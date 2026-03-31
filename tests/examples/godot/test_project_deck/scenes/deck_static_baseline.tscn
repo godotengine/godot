@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/synthetic_showcase.gd" id="script"]
+
+[node name="deck_static_baseline" type="Node3D"]
+script = ExtResource("script")
+route_policy_override = 0
+duration = 15.0
+camera_mode = "orbit"
+orbit_radius = 10.0
+orbit_height = 4.0
+orbit_speed = 0.25
+look_at_offset = Vector3(0, 0, 0)

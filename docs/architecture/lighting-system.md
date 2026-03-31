@@ -89,7 +89,7 @@ Source: [../../modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp](
 
 ## Related Docs
 
-- Architecture overview: [overview.md](overview.md)
-- Render pipeline architecture: [render-pipeline.md](render-pipeline.md)
-- Project settings reference: [../reference/project-settings.md](../reference/project-settings.md)
-- Generated shader inventory: [../api/shader_reference.md](../api/shader_reference.md)
+- [Architecture overview](overview.md)
+- [Render pipeline architecture](render-pipeline.md)
+- [Project settings reference](../reference/project-settings.md)
+- [Generated shader inventory](../api/shader_reference.md)

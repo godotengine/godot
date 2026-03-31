@@ -226,6 +226,7 @@ RID TileRenderer::TileBinningStage::acquire_binning_buffer_uniform_set(Rendering
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.indirect_count_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.indirect_dispatch_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(quantization_required && !owner.instance_pipeline_buffers.quantization_buffer.is_valid(), RID());
+	ERR_FAIL_COND_V(quantization_required && !owner.instance_pipeline_buffers.chunk_meta_buffer.is_valid(), RID());
 
 	RID tile_counts_buffer = owner.global_sort_resources.get_tile_counts_buffer();
 	const bool cache_deps_match = cached_generation == owner.descriptor_generation &&
@@ -289,6 +290,12 @@ RID TileRenderer::TileBinningStage::acquire_binning_buffer_uniform_set(Rendering
 		quant_uniform.binding = 14;
 		quant_uniform.append_id(owner.instance_pipeline_buffers.quantization_buffer);
 		uniforms.push_back(quant_uniform);
+
+		RD::Uniform chunk_meta_uniform;
+		chunk_meta_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		chunk_meta_uniform.binding = 18;
+		chunk_meta_uniform.append_id(owner.instance_pipeline_buffers.chunk_meta_buffer);
+		uniforms.push_back(chunk_meta_uniform);
 	}
 
 	RD::Uniform indirect_uniform;
@@ -423,6 +430,7 @@ RID TileRenderer::TileBinningStage::acquire_binning_count_uniform_set(RenderingD
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.indirect_count_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.indirect_dispatch_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(quantization_required && !owner.instance_pipeline_buffers.quantization_buffer.is_valid(), RID());
+	ERR_FAIL_COND_V(quantization_required && !owner.instance_pipeline_buffers.chunk_meta_buffer.is_valid(), RID());
 
 	RID tile_counts_buffer = owner.global_sort_resources.get_tile_counts_buffer();
 	const bool cache_deps_match = cached_generation == owner.descriptor_generation &&
@@ -486,6 +494,12 @@ RID TileRenderer::TileBinningStage::acquire_binning_count_uniform_set(RenderingD
 		quant_uniform.binding = 14;
 		quant_uniform.append_id(owner.instance_pipeline_buffers.quantization_buffer);
 		uniforms.push_back(quant_uniform);
+
+		RD::Uniform chunk_meta_uniform;
+		chunk_meta_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		chunk_meta_uniform.binding = 18;
+		chunk_meta_uniform.append_id(owner.instance_pipeline_buffers.chunk_meta_buffer);
+		uniforms.push_back(chunk_meta_uniform);
 	}
 
 	RD::Uniform indirect_uniform;

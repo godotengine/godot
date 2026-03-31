@@ -2,6 +2,11 @@
 
 This page explains what artists usually observe while navigating a splat scene, and which controls are safest to touch first.
 
+<figure markdown="1">
+![Diagram of the normal runtime progression from warmup through stabilization and safe tuning](../../assets/images/runtime-behavior-checkpoints.svg){ .gs-diagram }
+<figcaption>Most runtime sessions follow a short warmup, stabilize, then show expected streaming or sorting changes before any tuning is needed.</figcaption>
+</figure>
+
 ## What You Should Expect Visually
 
 - First load can take longer while data streams and GPU resources warm up.
@@ -24,8 +29,8 @@ This page explains what artists usually observe while navigating a splat scene, 
 4. Only then advanced streaming/sorting options
 
 Quick references:
-- Presets: [performance-presets.md](performance-presets.md)
-- Workflows: [workflows.md](workflows.md)
+- [Performance presets](performance-presets.md)
+- [Workflow details](workflows.md)
 
 ## When to Use Troubleshooting Docs
 
@@ -36,10 +41,10 @@ Use troubleshooting pages when behavior is persistent, not a one-time warmup:
 - shader/pipeline errors, or runtime starts with no visible result
 
 Start here:
-- [../../troubleshooting/recurring-issues.md](../../troubleshooting/recurring-issues.md)
+- [Recurring issues](../../troubleshooting/recurring-issues.md)
 
 ## Deeper Architecture (Engineers)
 
 For internals and stage-level details:
-- [../../architecture/render-pipeline.md](../../architecture/render-pipeline.md)
-- [../../architecture/overview.md](../../architecture/overview.md)
+- [Render pipeline architecture](../../architecture/render-pipeline.md)
+- [Architecture overview](../../architecture/overview.md)

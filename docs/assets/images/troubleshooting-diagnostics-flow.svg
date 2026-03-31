@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Troubleshooting diagnostics flow</title>
+  <desc id="desc">Diagram showing how recurring issues map to the right validation lane, artifacts, and fix paths.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
+    </marker>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Troubleshooting Diagnostics Flow</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">Pick the right lane first, inspect the generated artifacts, then change only the part of the stack that actually failed.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="72" y="220" width="216" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="104" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Symptom</text>
+    <text x="104" y="306" fill="#a9c2df" font-size="18">Sorting, tile artifacts, shader</text>
+    <text x="104" y="332" fill="#a9c2df" font-size="18">failures, or wrong binary path.</text>
+
+    <rect x="332" y="220" width="256" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="364" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Validation lane</text>
+    <text x="364" y="306" fill="#a9c2df" font-size="18">Run the matching baseline QA,</text>
+    <text x="364" y="332" fill="#a9c2df" font-size="18">runtime validation, or guards.</text>
+
+    <rect x="632" y="220" width="236" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="664" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Artifacts</text>
+    <text x="664" y="306" fill="#a9c2df" font-size="18">Use logs, JSON outputs, and</text>
+    <text x="664" y="332" fill="#a9c2df" font-size="18">capture dirs as proof points.</text>
+
+    <rect x="912" y="220" width="204" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="944" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Targeted fix</text>
+    <text x="944" y="306" fill="#a9c2df" font-size="18">Only then change shader,</text>
+    <text x="944" y="332" fill="#a9c2df" font-size="18">config, or build surface.</text>
+  </g>
+
+  <line x1="288" y1="304" x2="332" y2="304" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="588" y1="304" x2="632" y2="304" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="868" y1="304" x2="912" y2="304" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+
+  <rect x="72" y="458" width="688" height="90" rx="24" fill="#101d32" stroke="#2b4c73" stroke-width="2" />
+  <text x="104" y="494" fill="#7ec7ff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">ISSUE REPORT CONTENT</text>
+  <text x="104" y="524" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="18">Always attach the command, platform, GPU or driver details, failing logs, and whether the binary came from this fork's `bin/` output.</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Compatibility evidence ladder</title>
+  <desc id="desc">Diagram showing the compatibility evidence levels from unsupported through production-tested, with the current platform states positioned on the ladder.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="1152" height="672" rx="32" fill="url(#bg)" />
+  <text x="72" y="96" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Compatibility Evidence Ladder</text>
+  <text x="72" y="136" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">Each platform inherits the highest evidence state the repository can currently prove.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="120" y="202" width="404" height="70" rx="22" fill="#101d32" stroke="#8c3d3d" stroke-width="2" />
+    <text x="156" y="246" fill="#f3f8ff" font-size="24" font-weight="700">unsupported</text>
+    <rect x="120" y="286" width="404" height="70" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="156" y="330" fill="#f3f8ff" font-size="24" font-weight="700">build-supported</text>
+    <rect x="120" y="370" width="404" height="70" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="156" y="414" fill="#f3f8ff" font-size="24" font-weight="700">smoke-tested</text>
+    <rect x="120" y="454" width="404" height="70" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="156" y="498" fill="#f3f8ff" font-size="24" font-weight="700">editor-tested</text>
+    <rect x="120" y="538" width="404" height="70" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="156" y="582" fill="#f3f8ff" font-size="24" font-weight="700">sample-project-tested</text>
+
+    <rect x="648" y="274" width="412" height="86" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="684" y="326" fill="#f3f8ff" font-size="24" font-weight="700">macOS</text>
+    <text x="840" y="326" fill="#a9c2df" font-size="18">currently build-supported</text>
+
+    <rect x="648" y="358" width="412" height="86" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="684" y="410" fill="#f3f8ff" font-size="24" font-weight="700">Linux</text>
+    <text x="840" y="410" fill="#a9c2df" font-size="18">currently smoke-tested</text>
+
+    <rect x="648" y="442" width="412" height="86" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="684" y="494" fill="#f3f8ff" font-size="24" font-weight="700">Windows</text>
+    <text x="840" y="494" fill="#a9c2df" font-size="18">currently editor-tested</text>
+
+    <rect x="648" y="526" width="412" height="86" rx="24" fill="#101d32" stroke="#8c3d3d" stroke-width="2" />
+    <text x="684" y="578" fill="#f3f8ff" font-size="24" font-weight="700">Android and iOS</text>
+    <text x="840" y="578" fill="#a9c2df" font-size="18">currently unsupported</text>
+  </g>
+</svg>

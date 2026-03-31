@@ -1482,10 +1482,15 @@ void GaussianSplatNode3D::_update_visibility() {
                 new_visibility = true;
             } else {
                 new_visibility = true;
-                const Transform3D camera_to_world_transform = camera->get_camera_transform();
-                const Vector3 camera_position = camera_to_world_transform.origin;
-
-                if (max_render_distance > 0.0f) {
+                // In editor, viewport->get_camera_3d() returns a scene
+                // Camera3D node rather than the editor navigation camera,
+                // so CPU-side distance and frustum culling would use the
+                // wrong position.  Skip both checks in editor; the GPU
+                // cull shader uses the correct camera.
+                const bool is_editor = Engine::get_singleton()->is_editor_hint();
+                if (!is_editor && max_render_distance > 0.0f) {
+                    const Transform3D camera_to_world_transform = camera->get_camera_transform();
+                    const Vector3 camera_position = camera_to_world_transform.origin;
                     const Vector3 center = world_aabb.get_center();
                     const float radius = world_aabb.get_longest_axis_size() * 0.5f;
                     const float distance_to_center = camera_position.distance_to(center);
@@ -1495,7 +1500,7 @@ void GaussianSplatNode3D::_update_visibility() {
                     }
                 }
 
-                if (new_visibility && use_frustum_culling) {
+                if (new_visibility && use_frustum_culling && !is_editor) {
                     RendererSceneCull::Frustum frustum(camera->get_frustum());
                     RendererSceneCull::InstanceBounds bounds(world_aabb);
                     if (!bounds.in_frustum(frustum)) {
@@ -1507,6 +1512,7 @@ void GaussianSplatNode3D::_update_visibility() {
     }
 
     visible_in_viewport = new_visibility;
+
     if (render_instance.is_valid()) {
         if (RenderingServer *rs = RS::get_singleton()) {
             rs->instance_set_visible(render_instance, parent_visible && visible_in_viewport && is_visible_in_tree());

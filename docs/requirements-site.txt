@@ -1,9 +1,10 @@
 mkdocs>=1.6
-mkdocs-material>=9.6
+mkdocs-material>=9.7
 mike>=2.1
-pymdown-extensions>=10.8
+pymdown-extensions>=10.16.1
 mkdocs-glightbox>=0.4
 mkdocs-git-revision-date-localized-plugin>=1.2
 mkdocs-awesome-nav>=2.9
 mkdocs-redirects>=1.2
 mkdocs-charts-plugin>=0.0.10
+pillow>=10.2

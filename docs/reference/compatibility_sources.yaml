@@ -1,26 +1,64 @@
+status_levels:
+  unsupported: "The build system rejects the platform."
+  build-supported: "The build system accepts the platform and the repository can compile it."
+  smoke-tested: "A minimal runtime, import, or QA lane passes, but not necessarily a non-headless editor lane."
+  editor-tested: "A non-headless editor or runtime validation lane passes in repo-owned automation."
+  sample-project-tested: "A published example-project or QA-scene lane passes on the platform."
+  production-tested: "Published release-signoff or field evidence exists for the platform."
+
 platforms:
   Windows:
-    status: supported
-    gpu: "-"
-    driver: "-"
-    notes: "Primary development platform; listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py. RenderDoc compatibility fallback uses main RenderingDevice only (modules/gaussian_splatting/core/gaussian_splat_manager.cpp:236)."
+    state: editor-tested
+    public_binaries: "No public Windows binaries at present; build from source."
+    evidence:
+      - "SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts windows."
+      - "Gaussian Production Gates builds a Windows editor and runs windows-vulkan runtime validation in .github/workflows/gaussian_production_gates.yml."
+      - "The production evidence route in tests/ci/collect_production_evidence.ps1 exercises non-headless Vulkan runtime scripts on Windows."
+    notes: "Windows is the strongest in-repo validation lane currently, but the public binary surface is still narrower than the source-support story."
   Linux:
-    status: supported
-    gpu: "-"
-    driver: "-"
-    notes: "Listed in SUPPORTED_PLATFORMS (as 'linuxbsd') in modules/gaussian_splatting/config.py."
+    state: sample-project-tested
+    public_binaries: "Primary public binary lane: Linux editor CI artifacts and nightly prereleases."
+    evidence:
+      - "SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts linuxbsd."
+      - "Release Builds compiles and publishes the Linux editor in .github/workflows/release_builds.yml."
+      - "Baseline QA builds a Linux editor, imports the project, and runs baseline QA under xvfb in .github/workflows/baseline_qa.yml."
+    notes: "Linux is currently the only platform with public binaries. The documented validation includes a sample-project QA lane under xvfb, but it is still not an interactive editor validation row."
   macOS:
-    status: supported
-    gpu: "-"
-    driver: "-"
-    notes: "Listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py."
+    state: build-supported
+    public_binaries: "No public macOS binaries at present; build from source."
+    evidence:
+      - "SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts macos."
+    notes: "The repo allows macOS builds, but no published smoke, editor, or sample-project evidence is checked in yet."
   Android:
-    status: unsupported
-    gpu: "-"
-    driver: "-"
-    notes: "Not listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py; build system rejects this platform."
+    state: unsupported
+    public_binaries: "None."
+    evidence:
+      - "Android is not listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py."
+    notes: "The build system rejects this platform."
   iOS:
-    status: unsupported
-    gpu: "-"
-    driver: "-"
-    notes: "Not listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py; build system rejects this platform."
+    state: unsupported
+    public_binaries: "None."
+    evidence:
+      - "iOS is not listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py."
+    notes: "The build system rejects this platform."
+
+tested_configurations:
+  - platform: "Windows"
+    state: "editor-tested"
+    os_version: "Self-hosted Windows runner (OS version not yet published)"
+    gpu: "NVIDIA GeForce RTX 3090"
+    driver_runtime: "Vulkan 1.4.312 + Forward+ + safe render thread; NVIDIA driver version not yet published"
+    evidence:
+      - ".github/workflows/gaussian_production_gates.yml module-validation lane"
+      - "tests/runtime/run_runtime_validation.py --gd-mode windows-vulkan"
+      - "tests/ci/collect_production_evidence.ps1"
+    notes: "The published GPU QA artifact proves the adapter and render route. Windows OS version and NVIDIA driver version are still not printed in repo-owned evidence."
+  - platform: "Linux"
+    state: "sample-project-tested"
+    os_version: "Ubuntu 24.04.4 LTS (image ubuntu-24.04 20260323.65.1)"
+    gpu: "No discrete GPU exposed in the published artifact (xvfb / headless CPU-only lane)"
+    driver_runtime: "mesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.1 + xvfb headless import lane"
+    evidence:
+      - ".github/workflows/baseline_qa.yml CPU-only lane"
+      - ".github/workflows/release_builds.yml Linux editor build lane"
+    notes: "The scheduled baseline QA artifact proves a real sample-project environment on ubuntu-24.04, but it is still a headless xvfb lane rather than an interactive editor or hardware-GPU validation row."

@@ -32,7 +32,12 @@ def collect_media_files(root: Path, patterns: list[str]) -> list[MediaFile]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check docs media size budget.")
     parser.add_argument("--root", default="docs", help="Root directory to scan.")
-    parser.add_argument("--glob", action="append", default=["*.mp4", "*.webm"], help="Media filename glob pattern.")
+    parser.add_argument(
+        "--glob",
+        action="append",
+        default=["*.svg", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.mp4", "*.webm"],
+        help="Media filename glob pattern.",
+    )
     parser.add_argument("--max-file-mb", type=float, default=25.0, help="Maximum allowed single media file size (MiB).")
     parser.add_argument("--max-total-mb", type=float, default=250.0, help="Maximum allowed total media size (MiB).")
     return parser.parse_args()

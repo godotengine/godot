@@ -1,0 +1,80 @@
+.gs-hero {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1rem;
+}
+
+.gs-home-intro {
+  margin: 0 0 1.15rem;
+}
+
+.gs-hero__content,
+.gs-hero__aside {
+  padding: 0;
+}
+
+.gs-hero__content > .md-button {
+  margin-top: 0.9rem;
+  margin-right: 0.45rem;
+}
+
+.gs-hero__aside {
+  align-self: start;
+}
+
+.gs-wordmark {
+  display: block;
+  width: min(100%, 25rem);
+  margin-bottom: 0.4rem;
+}
+
+.gs-eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--gs-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.gs-home-intro .md-button {
+  margin-top: 0.85rem;
+  margin-right: 0.45rem;
+}
+
+.gs-status-strip ul {
+  margin: 0;
+}
+
+.gs-status-strip li + li {
+  margin-top: 0.15rem;
+}
+
+.gs-hero__aside h3 {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+}
+
+.gs-hero__aside ul {
+  margin: 0;
+}
+
+.gs-landing-header p:last-child,
+.gs-section-shell p:last-child {
+  margin-bottom: 0;
+}
+
+.md-typeset .gs-section-shell .grid.cards {
+  margin-top: 0.7rem;
+}
+
+.md-typeset .gs-section-shell ul {
+  margin-top: 0.55rem;
+}
+
+@media screen and (min-width: 76.25em) {
+  .gs-hero {
+    grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.85fr);
+    align-items: start;
+  }
+}

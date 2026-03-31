@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">Lighting behavior controls</title>
+  <desc id="desc">Diagram showing the recommended order for tuning direct light, indirect light, and shadow strength before deeper bias changes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
+    </marker>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Lighting Behavior Controls</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">Tune large scene-shaping controls first, then move into bias or deeper shader troubleshooting only if needed.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="84" y="220" width="228" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="116" y="272" fill="#f3f8ff" font-size="26" font-weight="700">1. Direct light scale</text>
+    <text x="116" y="306" fill="#a9c2df" font-size="18">Establish the main scene</text>
+    <text x="116" y="332" fill="#a9c2df" font-size="18">direction and readability.</text>
+
+    <rect x="344" y="220" width="228" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="376" y="272" fill="#f3f8ff" font-size="26" font-weight="700">2. Indirect SH scale</text>
+    <text x="376" y="306" fill="#a9c2df" font-size="18">Add ambient fill without</text>
+    <text x="376" y="332" fill="#a9c2df" font-size="18">flattening the scene.</text>
+
+    <rect x="604" y="220" width="228" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="636" y="272" fill="#f3f8ff" font-size="26" font-weight="700">3. Shadow strength</text>
+    <text x="636" y="306" fill="#a9c2df" font-size="18">Set how heavy shadows read</text>
+    <text x="636" y="332" fill="#a9c2df" font-size="18">before touching bias knobs.</text>
+
+    <rect x="864" y="220" width="252" height="170" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="896" y="272" fill="#f3f8ff" font-size="26" font-weight="700">Resulting scene check</text>
+    <text x="896" y="306" fill="#a9c2df" font-size="18">Look for readable form, clear</text>
+    <text x="896" y="332" fill="#a9c2df" font-size="18">shadows, and stable lighting.</text>
+  </g>
+
+  <line x1="312" y1="304" x2="344" y2="304" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="572" y1="304" x2="604" y2="304" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="832" y1="304" x2="864" y2="304" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+
+  <rect x="72" y="454" width="666" height="94" rx="24" fill="#101d32" stroke="#2b4c73" stroke-width="2" />
+  <text x="104" y="492" fill="#7ec7ff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">WHEN TO ESCALATE</text>
+  <text x="104" y="524" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="18">If lighting is still broken after these three controls, move into project settings or troubleshooting rather than random trial and error.</text>
+</svg>

@@ -1,7 +1,5 @@
 # Animation
 
-Last updated: 2026-03-20
-
 ## Purpose
 
 Animate per-splat properties (position, color, opacity, scale, rotation) over time using `GaussianAnimationStateMachine`. The animation system provides clip-based playback, keyframe interpolation with multiple curve types, and weighted blending between clips.

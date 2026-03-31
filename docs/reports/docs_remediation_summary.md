@@ -6,6 +6,13 @@
 
 ---
 
+!!! info "Historical snapshot"
+    This summary captures the remediation pass as of 2026-03-20. Some items referenced here were later reworked as the docs IA and landing pages changed.
+
+    See the [baseline assessment](docs_assessment_2026-03-19.md).
+
+    See the [latest assessment](latest-assessment.md).
+
 ## Finding Resolution Status
 
 | ID | Priority | Title | Status | Files Changed | Notes |

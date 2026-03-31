@@ -8,7 +8,7 @@ Run Gaussian Splatting test lanes through maintained runners in `tests/ci/` and 
 
 | Task | Command | Reference |
 | --- | --- | --- |
-| Build a test-enabled Godot binary | `scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>` | [../../README.md](../../README.md), [../../BUILDING.md](../../BUILDING.md), `modules/gaussian_splatting/SCsub:69` |
+| Build a test-enabled Godot binary | `scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>` | [Repository README](../../README.md), [root build notes](../../BUILDING.md), `modules/gaussian_splatting/SCsub:69` |
 | Set default Godot binary for Python runners | `export GODOT_BINARY=/path/to/godot` | `tests/ci/run_baseline_qa.py:763`, `tests/ci/run_module_tests.py:350`, `tests/runtime/run_runtime_validation.py:98` |
 | Run quick baseline subset | `python3 tests/ci/run_baseline_qa.py --quick` | `tests/ci/run_baseline_qa.py:725`, `tests/ci/run_baseline_qa.py:284` |
 | Run one baseline category | `python3 tests/ci/run_baseline_qa.py --category <ply|pipeline|sorting|runtime|module|qa>` | `tests/ci/run_baseline_qa.py:730`, `tests/ci/run_baseline_qa.py:281` |

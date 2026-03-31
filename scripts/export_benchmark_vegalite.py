@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export benchmark suite data to Vega-Lite JSON and CSV formats."""
+"""Export benchmark suite data to Vega-Lite JSON and CSV formats for the public performance dashboard."""
 from __future__ import annotations
 
 import argparse
@@ -65,6 +65,7 @@ def extract_lanes(report: dict[str, Any]) -> list[dict[str, Any]]:
 
 def write_json(lanes: list[dict[str, Any]], output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the public snapshot a direct reflection of the benchmark report rows.
     output.write_text(json.dumps(lanes, indent=2) + "\n", encoding="utf-8")
     print(f"[benchmark-export] Wrote {len(lanes)} lanes to {output}")
 

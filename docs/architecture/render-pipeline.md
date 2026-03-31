@@ -79,6 +79,6 @@ Relevant code:
 
 ## Related Docs
 
-- High-level architecture: [overview.md](overview.md)
-- Lighting details: [lighting-system.md](lighting-system.md)
-- Memory/residency design: [../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md](../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)
+- [Architecture overview](overview.md)
+- [Lighting details](lighting-system.md)
+- [Memory and residency design](../../modules/gaussian_splatting/MEMORY_SUBSYSTEM.md)

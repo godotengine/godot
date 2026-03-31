@@ -1,6 +1,9 @@
 # PLY Loader
 
-Last updated: 2026-02-13
+!!! info "Scope"
+    For programmers and technical users who need loader behavior, property validation, or runtime save/load details.
+    This page covers the technical loader layer, not the end-user import flow.
+    It complements the canonical [Gaussian Splat Asset Import Workflow](../workflows/importing.md).
 
 ## Purpose
 

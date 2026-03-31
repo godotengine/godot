@@ -1,0 +1,224 @@
+.gs-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+}
+
+.gs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.18rem 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--gs-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-md-color-scheme="slate"] .gs-chip {
+  color: var(--gs-text);
+}
+
+.gs-chip--alpha {
+  color: var(--gs-primary);
+}
+
+[data-md-color-scheme="slate"] .gs-chip--alpha {
+  color: var(--gs-primary);
+}
+
+.gs-section-shell,
+.gs-hero__aside,
+.gs-landing-header,
+.gs-home-intro,
+.gs-status-strip {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.gs-section-shell {
+  padding: 0;
+  margin: 1.4rem 0 0;
+}
+
+.gs-section-shell--compact {
+  margin-top: 1rem;
+}
+
+.gs-landing-header {
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.gs-home-intro,
+.gs-status-strip {
+  padding: 0;
+}
+
+.gs-status-strip {
+  margin-top: 0.9rem;
+}
+
+.gs-meta {
+  margin: 0.35rem 0 0;
+  color: var(--gs-muted);
+  font-size: 0.9rem;
+}
+
+.gs-meta strong {
+  color: var(--gs-text);
+}
+
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid > .card {
+  border-radius: var(--gs-radius-sm);
+  border: 1px solid color-mix(in srgb, var(--gs-border) 85%, transparent);
+  background: transparent;
+  box-shadow: none;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid > .card:hover {
+  border-color: var(--gs-border-strong);
+  background: color-mix(in srgb, var(--gs-accent-soft) 35%, transparent);
+}
+
+.md-typeset .grid.cards > ul > li > hr {
+  border-bottom-color: var(--gs-border);
+}
+
+.md-typeset .grid.cards strong {
+  color: var(--gs-text);
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: var(--gs-radius-sm);
+  border: 1px solid var(--gs-border);
+  box-shadow: none;
+}
+
+.md-typeset table:not([class]) {
+  border-radius: var(--gs-radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--gs-border);
+  box-shadow: none;
+  background: var(--gs-surface);
+}
+
+.md-typeset table:not([class]) th {
+  background: var(--gs-surface-raised);
+  color: var(--gs-text);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background: color-mix(in srgb, var(--gs-accent-soft) 50%, var(--gs-surface));
+}
+
+.md-typeset pre,
+.md-typeset .highlight {
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius-sm);
+  box-shadow: none;
+  background: var(--gs-code-bg);
+}
+
+.md-typeset pre > code {
+  border-radius: inherit;
+}
+
+.md-typeset .tabbed-set {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  align-items: end;
+  column-gap: 1rem;
+  row-gap: 0.4rem;
+  margin: 1rem 0;
+}
+
+.md-typeset .tabbed-set > input {
+  position: absolute;
+  opacity: 0;
+}
+
+.md-typeset .tabbed-set > label {
+  grid-row: 1;
+  width: max-content;
+  margin: 0;
+  padding: 0.15rem 0 0.45rem;
+  border-bottom: 2px solid transparent;
+  color: var(--gs-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.md-typeset .tabbed-set > .tabbed-content {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: none;
+}
+
+.md-typeset .tabbed-set > input:checked + label {
+  border-bottom-color: var(--gs-primary);
+  color: var(--gs-text);
+}
+
+.md-typeset .tabbed-set > input:checked + label + .tabbed-content {
+  display: block;
+}
+
+.md-typeset figure {
+  margin: 1.5rem 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.md-typeset figure img,
+.md-typeset figure video,
+.md-typeset img.gs-shot,
+.md-typeset video.gs-shot,
+.md-typeset img.gs-diagram {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius-sm);
+  background: var(--gs-surface-raised);
+  box-shadow: none;
+}
+
+.md-typeset figure figcaption {
+  margin-top: 0.65rem;
+  color: var(--gs-muted);
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.md-typeset .mermaid {
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius-sm);
+  background: var(--gs-surface);
+  box-shadow: none;
+  padding: 1rem;
+}
+
+.md-footer-meta,
+.md-footer {
+  background: transparent;
+}

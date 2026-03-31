@@ -1,4 +1,4 @@
-# Migration Guide and Compatibility Checklist
+# Migration Guide
 
 ## Purpose
 
@@ -23,16 +23,16 @@ For each release, fill these sections:
 
 ## Upgrade checklist
 
-- [ ] Build commands validated against [../reference/build-test-ci.md](../reference/build-test-ci.md).
-- [ ] Project settings diff reviewed against [../reference/project-settings.md](../reference/project-settings.md).
+- [ ] Build commands validated against [Build / Test / CI Command Reference](../reference/build-test-ci.md).
+- [ ] Project settings diff reviewed against [Project settings reference](../reference/project-settings.md).
 - [ ] Import and bake workflows revalidated:
-  - [../workflows/importing.md](../workflows/importing.md)
-  - [../workflows/GSPLATWORLD_BAKE.md](../workflows/GSPLATWORLD_BAKE.md)
-- [ ] Runtime smoke run completed from [../getting-started/quick-start.md](../getting-started/quick-start.md).
-- [ ] Troubleshooting updates added to [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md) for newly observed regressions.
+  - [Import workflow](../workflows/importing.md)
+  - [Gaussian Splat World Bake Workflow](../workflows/GSPLATWORLD_BAKE.md)
+- [ ] Runtime smoke run completed from [First Run](../getting-started/quick-start.md).
+- [ ] Troubleshooting updates added to [Recurring issues](../troubleshooting/recurring-issues.md) for newly observed regressions.
 - [ ] Compatibility evidence updated in:
-  - [../reference/compatibility_sources.yaml](../reference/compatibility_sources.yaml)
-  - [../reference/compatibility-matrix.md](../reference/compatibility-matrix.md)
+  - `compatibility_sources.yaml`
+  - [Compatibility Matrix](../reference/compatibility-matrix.md)
 
 ## Release entry template
 

@@ -1,28 +1,12 @@
-# Build / Test / CI Reference
+# Build / Test / CI Command Reference
 
-This page is the canonical command reference.
+Use this page when you already know you need a build, test, or CI command.
+For the main build walkthrough, start with [Build from Source](../BUILDING.md).
 
 ## Build
 
-Run from repository root:
-
-=== "Linux"
-
-    ```bash
-    scons platform=linuxbsd target=editor dev_build=yes -j$(nproc)
-    ```
-
-=== "Windows"
-
-    ```bash
-    scons platform=windows target=editor dev_build=yes -j10
-    ```
-
-=== "macOS (Apple Silicon)"
-
-    ```bash
-    scons platform=macos target=editor dev_build=yes arch=arm64 -j8
-    ```
+- Base editor builds: use the canonical [Build from Source](../BUILDING.md) page.
+- First visible result after a successful build: use [First Run](../getting-started/quick-start.md).
 
 For test-enabled editor builds:
 
@@ -48,8 +32,8 @@ scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>
 
 ## CI Source of Truth
 
-- Workflow overview: [../../.github/workflows/README.md](../../.github/workflows/README.md)
-- Production gate workflow: [../../.github/workflows/gaussian_production_gates.yml](../../.github/workflows/gaussian_production_gates.yml)
+- [Workflow overview](../../.github/workflows/README.md)
+- [Production gate workflow](../../.github/workflows/gaussian_production_gates.yml)
 
 ## Common Failure Modes
 
@@ -59,4 +43,4 @@ scons platform=<platform> target=editor dev_build=yes tests=yes -j<jobs>
 
 Use recurring fixes:
 
-- [../troubleshooting/recurring-issues.md](../troubleshooting/recurring-issues.md)
+- [Recurring issues](../troubleshooting/recurring-issues.md)

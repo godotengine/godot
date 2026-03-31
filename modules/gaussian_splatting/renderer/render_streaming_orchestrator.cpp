@@ -13,6 +13,9 @@
 #include "../logger/gs_debug_trace.h"
 #include "../logger/gs_logger.h"
 
+#include "../core/gs_project_settings.h"
+#include "core/config/project_settings.h"
+
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
@@ -724,6 +727,13 @@ bool RenderStreamingOrchestrator::should_throttle_streaming_rebuild(uint32_t p_c
 }
 
 bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
+	// Route-policy gate: when resident is selected, never create the streaming system.
+	// This is the single chokepoint — all 4 callers funnel through here.
+	const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
+	if (route_policy == gs::settings::GS_ROUTE_RESIDENT) {
+		return false;
+	}
+
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;

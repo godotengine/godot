@@ -7,6 +7,7 @@
 #include "core/variant/variant.h"
 #include "gaussian_data.h"
 #include "gs_project_settings.h"
+#include "quality_tier_config.h"
 #include "../nodes/gaussian_splat_node_3d.h"
 #include "../logger/gs_logger.h"
 #include "../interfaces/sync_policy.h"
@@ -972,6 +973,9 @@ void GaussianSplatManager::initialize_module() {
     // Scene composite depth policy: 0=strict (skip frame if depth contract is missing), 1=relaxed (allow no-depth blend fallback).
     GLOBAL_DEF("rendering/gaussian_splatting/composite/scene_depth_policy", 0);
     GLOBAL_DEF("rendering/gaussian_splatting/streaming/enabled", true);
+    // Streaming route policy: 0=resident (no streaming overhead), 1=streaming (current default).
+    // streaming/enabled=false is treated as route_policy=0 for backward compatibility.
+    GLOBAL_DEF("rendering/gaussian_splatting/streaming/route_policy", 1);
     // Chunk-level frustum culling for streaming (FlashGS/LiteGS/H3DGS technique)
     // Culls entire chunks before loading, reducing GPU resource waste on off-screen chunks
     GLOBAL_DEF("rendering/gaussian_splatting/streaming/chunk_frustum_culling_enabled", true);
@@ -1064,6 +1068,11 @@ void GaussianSplatManager::initialize_module() {
 	GLOBAL_DEF("rendering/gaussian_splatting/quality/tier_preset", "custom");
 	GLOBAL_DEF("rendering/gaussian_splatting/quality/tier_apply_pipeline_toggles", true);
 	GLOBAL_DEF("rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true);
+	// NOTE: Render-quality seeding (SH bands, LOD distances, quantization) is
+	// handled by sentinel-based logic in each config's load_from_project_settings().
+	// route_policy is intentionally NOT auto-seeded: its code default (1=streaming)
+	// is a valid deliberate choice, so projects wanting resident should pin
+	// route_policy=0 in project.godot (the Deck benchmark project already does this).
 
     // Pipeline feature + GPU sorting settings now register in their owning config managers.
 

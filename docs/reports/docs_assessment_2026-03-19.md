@@ -7,6 +7,13 @@
 
 ---
 
+!!! info "Historical snapshot"
+    This report captures the docs state on 2026-03-19 and should not be read as the current public status page.
+
+    See the [remediation summary](docs_remediation_summary.md).
+
+    See the [latest assessment](latest-assessment.md).
+
 ## 1. Executive Summary
 
 **Overall weighted score: 2.48 / 5.00** — below Godot-docs parity.

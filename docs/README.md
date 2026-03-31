@@ -1,6 +1,6 @@
 # Documentation
 
-Use [index.md](index.md) as the canonical docs homepage.
+Use [Documentation home](index.md) as the canonical docs homepage.
 
-- Main index: [index.md](index.md)
-- Versioned site pipeline: [development/docs-site.md](development/docs-site.md)
+- [Documentation home](index.md)
+- [Docs site maintenance guide](development/docs-site.md)

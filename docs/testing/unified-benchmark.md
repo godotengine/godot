@@ -96,7 +96,7 @@ For multi-lane benchmark runs (scene set + aggregate report), use:
 python3 tests/runtime/run_benchmark_suite.py --profile quick --generate-dummy-assets
 ```
 
-See [docs/testing/benchmark-suite.md](benchmark-suite.md) for profiles, lane list, and asset override workflow.
+See [Benchmark Suite Runner](benchmark-suite.md) for profiles, lane list, and asset override workflow.
 
 ## Controls
 

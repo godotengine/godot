@@ -170,6 +170,12 @@ static bool _fill_quality_tier_config(const String &p_preset, QualityTierConfig 
 		r_out.enable_sh_amortization = true;
 		r_out.sh_amortization_divisor = 8;
 		r_out.enable_fast_raster = false;
+		// Render quality: conservative for 8-CU RDNA 2 APU at 800p.
+		r_out.sh_bands = 1;              // SH1 — 4 coefficients instead of 16, large ALU savings.
+		r_out.lod_max_distance = 60.0f;
+		r_out.lod_base_threshold = 5.0f;
+		r_out.quantization_enabled = 1;  // Per-chunk quantization reduces VRAM pressure.
+		r_out.route_policy = -1;         // Advisory only — not auto-seeded; pin in project.godot.
 		return true;
 	}
 

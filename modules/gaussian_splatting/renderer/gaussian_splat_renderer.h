@@ -578,6 +578,8 @@ public:
             RenderFallbackReason p_cull_skip_reason_code, RenderFallbackReason p_sort_skip_reason_code,
             bool p_set_skip_metrics, bool p_clear_cull_state_on_skip);
     void _reset_legacy_streaming_data_path_state();
+    void _render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
+            const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers);
     const Gaussian *_get_streamed_gaussian(uint32_t p_index) const;
     SortStageSummary sort_gaussians_for_view(const Transform3D &p_world_to_camera_transform,
             IndexDomain p_input_domain = IndexDomain::UNKNOWN);

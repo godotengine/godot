@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">First run path</title>
+  <desc id="desc">Diagram showing the shortest first-run path: get a module-built editor, prepare synthetic assets, open the sample project, and render a visible splat.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
+    </marker>
+  </defs>
+  <rect x="24" y="24" width="1152" height="592" rx="32" fill="url(#bg)" />
+  <text x="72" y="94" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">First Run: Fastest Evaluation Path</text>
+  <text x="72" y="132" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">This is the shortest path that proves the module is wired correctly and rendering a real splat scene.</text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="72" y="220" width="232" height="180" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="102" y="272" fill="#f3f8ff" font-size="26" font-weight="700">1. Module-built editor</text>
+    <text x="102" y="306" fill="#a9c2df" font-size="18">Point `GODOT_BINARY` at the</text>
+    <text x="102" y="332" fill="#a9c2df" font-size="18">editor built from this fork.</text>
+
+    <rect x="356" y="220" width="232" height="180" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="386" y="272" fill="#f3f8ff" font-size="26" font-weight="700">2. Seed fixture assets</text>
+    <text x="386" y="306" fill="#a9c2df" font-size="18">Run the synthetic asset prep</text>
+    <text x="386" y="332" fill="#a9c2df" font-size="18">so the sample project has data.</text>
+
+    <rect x="640" y="220" width="232" height="180" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="670" y="272" fill="#f3f8ff" font-size="26" font-weight="700">3. Open the project</text>
+    <text x="670" y="306" fill="#a9c2df" font-size="18">Launch the test project in the</text>
+    <text x="670" y="332" fill="#a9c2df" font-size="18">module-enabled editor.</text>
+
+    <rect x="924" y="220" width="232" height="180" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <text x="954" y="272" fill="#f3f8ff" font-size="26" font-weight="700">4. Play the scene</text>
+    <text x="954" y="306" fill="#a9c2df" font-size="18">Open `benchmark_unified`, assign</text>
+    <text x="954" y="332" fill="#a9c2df" font-size="18">the PLY path, and confirm output.</text>
+  </g>
+
+  <line x1="304" y1="308" x2="356" y2="308" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="588" y1="308" x2="640" y2="308" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="872" y1="308" x2="924" y2="308" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+
+  <rect x="72" y="456" width="540" height="96" rx="24" fill="#101d32" stroke="#2b4c73" stroke-width="2" />
+  <text x="102" y="494" fill="#7ec7ff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">VISIBLE PROOF</text>
+  <text x="102" y="526" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="18">A correct first run ends with a visible splat in the viewport, not just a successful launch.</text>
+</svg>

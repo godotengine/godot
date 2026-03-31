@@ -1,19 +1,45 @@
 site_name: Godot Gaussian Splatting Docs
 site_description: Versioned documentation for the Godot Gaussian Splatting module.
+site_url: !ENV [DOCS_SITE_URL, "https://klausi3d.github.io/godotGS/"]
 repo_url: !ENV [DOCS_REPO_URL, "https://github.com/OWNER/REPO"]
 edit_uri: !ENV [DOCS_EDIT_URI, "edit/master/docs/"]
 docs_dir: .site/public-docs
 site_dir: .site/site
 use_directory_urls: true
-exclude_docs: README.md
+exclude_docs: /README.md
 
 theme:
   name: material
+  logo: assets/branding/godotgs-mark.png
+  favicon: assets/branding/godotgs-mark.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font: false
+  icon:
+    repo: fontawesome/brands/github
   features:
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.instant
     - navigation.tracking
     - navigation.sections
+    - navigation.indexes
+    - navigation.path
     - navigation.top
+    - navigation.footer
     - content.code.copy
     - content.code.annotate
     - search.highlight
@@ -21,23 +47,36 @@ theme:
 
 plugins:
   - search
+  - social:
+      enabled: !ENV [ENABLE_SOCIAL_CARDS, false]
+      cards_layout_options:
+        background_color: "#0d1728"
+        color: "#f3f9ff"
+        font_family: IBM Plex Sans
   - mike:
       version_selector: true
       canonical_version: latest
-  - awesome-nav
+  - awesome-nav:
+      filename: .pages
   - glightbox
   - git-revision-date-localized:
       enabled: !ENV [ENABLE_GIT_DATES, true]
-      enable_creation_date: true
+      enable_creation_date: false
       fallback_to_build_date: true
       enable_git_follow: false
   - redirects:
+      # README.md -> index.md normalization keeps the same published section URLs.
       redirect_maps: {}
   - charts
 
 extra:
   version:
     provider: mike
+
+extra_css:
+  - assets/styles/brand.css
+  - assets/styles/components.css
+  - assets/styles/landing.css
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/vega@5
@@ -52,6 +91,7 @@ markdown_extensions:
   - toc:
       permalink: true
   - pymdownx.details
+  - pymdownx.blocks.caption
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -61,4 +101,4 @@ markdown_extensions:
           class: vegalite
           format: !!python/name:mkdocs_charts_plugin.fences.fence_vegalite
   - pymdownx.tabbed:
-      alternate_style: true
+      alternate_style: false

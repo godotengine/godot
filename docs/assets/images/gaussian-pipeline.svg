@@ -1,36 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
-  <title id="title">Gaussian Splatting Pipeline</title>
-  <desc id="desc">Diagram showing import, processing, and rendering stages.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Render and data flow</title>
+  <desc id="desc">Diagram showing source assets moving through import, node state, renderer stages, and final viewport output.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0e1a24" />
-      <stop offset="100%" stop-color="#1c3242" />
+      <stop offset="0%" stop-color="#0c1628" />
+      <stop offset="100%" stop-color="#162840" />
     </linearGradient>
-    <linearGradient id="node" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#1f8f6b" />
-      <stop offset="100%" stop-color="#32b38a" />
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13223a" />
+      <stop offset="100%" stop-color="#173055" />
     </linearGradient>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
-      <polygon points="0,0 10,5 0,10" fill="#9dd7c2" />
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#54a9ff" />
+      <stop offset="100%" stop-color="#2ed9c3" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <polygon points="0,0 14,7 0,14" fill="#7ec7ff" />
     </marker>
   </defs>
-  <rect x="0" y="0" width="960" height="540" fill="url(#bg)" />
-  <text x="480" y="72" fill="#eff8ff" font-family="Segoe UI, Arial, sans-serif" font-size="34" text-anchor="middle">
-    Gaussian Splatting Docs Pipeline
-  </text>
-  <g font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#0f1a22">
-    <rect x="90" y="180" rx="14" ry="14" width="220" height="92" fill="url(#node)" />
-    <text x="200" y="235" text-anchor="middle" fill="#06291e">Scene Import</text>
+  <rect x="24" y="24" width="1152" height="672" rx="32" fill="url(#bg)" />
+  <text x="72" y="98" fill="#f3f8ff" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Render And Data Flow</text>
+  <text x="72" y="138" fill="#a9c2df" font-family="Segoe UI, Arial, sans-serif" font-size="20">Canonical path from source file to viewport output and diagnostics.</text>
 
-    <rect x="370" y="180" rx="14" ry="14" width="220" height="92" fill="url(#node)" />
-    <text x="480" y="235" text-anchor="middle" fill="#06291e">Splat Processing</text>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="72" y="212" width="174" height="132" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="86" y="226" width="86" height="24" rx="12" fill="#203a63" />
+    <text x="129" y="243" fill="#7ec7ff" font-size="13" text-anchor="middle" font-weight="700">INPUT</text>
+    <text x="96" y="284" fill="#f3f8ff" font-size="24" font-weight="700">Source Asset</text>
+    <text x="96" y="314" fill="#a9c2df" font-size="18">PLY, SPZ, or baked</text>
+    <text x="96" y="340" fill="#a9c2df" font-size="18">world resource.</text>
 
-    <rect x="650" y="180" rx="14" ry="14" width="220" height="92" fill="url(#node)" />
-    <text x="760" y="235" text-anchor="middle" fill="#06291e">Render Output</text>
+    <rect x="286" y="212" width="174" height="132" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="300" y="226" width="114" height="24" rx="12" fill="#203a63" />
+    <text x="357" y="243" fill="#7ec7ff" font-size="13" text-anchor="middle" font-weight="700">IMPORT OR LOAD</text>
+    <text x="310" y="284" fill="#f3f8ff" font-size="24" font-weight="700">GaussianSplatAsset</text>
+    <text x="310" y="314" fill="#a9c2df" font-size="18">Importer writes `.tres`</text>
+    <text x="310" y="340" fill="#a9c2df" font-size="18">or loader builds in memory.</text>
+
+    <rect x="500" y="212" width="174" height="132" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="514" y="226" width="98" height="24" rx="12" fill="#203a63" />
+    <text x="563" y="243" fill="#7ec7ff" font-size="13" text-anchor="middle" font-weight="700">SCENE STATE</text>
+    <text x="524" y="284" fill="#f3f8ff" font-size="24" font-weight="700">Nodes And Worlds</text>
+    <text x="524" y="314" fill="#a9c2df" font-size="18">Container, transforms,</text>
+    <text x="524" y="340" fill="#a9c2df" font-size="18">presets, and lighting.</text>
+
+    <rect x="714" y="212" width="174" height="132" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="728" y="226" width="130" height="24" rx="12" fill="#203a63" />
+    <text x="793" y="243" fill="#7ec7ff" font-size="13" text-anchor="middle" font-weight="700">VISIBILITY AND SORT</text>
+    <text x="738" y="284" fill="#f3f8ff" font-size="24" font-weight="700">Renderer Staging</text>
+    <text x="738" y="314" fill="#a9c2df" font-size="18">Streaming, culling,</text>
+    <text x="738" y="340" fill="#a9c2df" font-size="18">sorting, tile prep.</text>
+
+    <rect x="928" y="212" width="174" height="132" rx="22" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
+    <rect x="942" y="226" width="122" height="24" rx="12" fill="#203a63" />
+    <text x="1003" y="243" fill="#7ec7ff" font-size="13" text-anchor="middle" font-weight="700">OUTPUT AND QA</text>
+    <text x="952" y="284" fill="#f3f8ff" font-size="24" font-weight="700">Viewport Result</text>
+    <text x="952" y="314" fill="#a9c2df" font-size="18">Raster, composite,</text>
+    <text x="952" y="340" fill="#a9c2df" font-size="18">metrics, captures.</text>
   </g>
-  <line x1="310" y1="226" x2="370" y2="226" stroke="#9dd7c2" stroke-width="7" marker-end="url(#arrow)" />
-  <line x1="590" y1="226" x2="650" y2="226" stroke="#9dd7c2" stroke-width="7" marker-end="url(#arrow)" />
-  <text x="480" y="470" fill="#cce8f8" font-family="Segoe UI, Arial, sans-serif" font-size="21" text-anchor="middle">
-    Versioned with docs content under docs/assets/
-  </text>
+
+  <line x1="246" y1="278" x2="286" y2="278" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="460" y1="278" x2="500" y2="278" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="674" y1="278" x2="714" y2="278" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+  <line x1="888" y1="278" x2="928" y2="278" stroke="url(#accent)" stroke-width="6" marker-end="url(#arrow)" />
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="72" y="418" width="1030" height="198" rx="26" fill="#101d32" stroke="#2b4c73" stroke-width="2" />
+    <text x="104" y="464" fill="#f3f8ff" font-size="28" font-weight="700">Operational checkpoints</text>
+    <text x="104" y="504" fill="#a9c2df" font-size="20">Import correctness</text>
+    <text x="104" y="534" fill="#a9c2df" font-size="18">Validate file schema, required properties, and asset generation.</text>
+    <text x="404" y="504" fill="#a9c2df" font-size="20">Runtime readiness</text>
+    <text x="404" y="534" fill="#a9c2df" font-size="18">Confirm module-built editor, scene setup, and safe preset selection.</text>
+    <text x="744" y="504" fill="#a9c2df" font-size="20">Diagnostics</text>
+    <text x="744" y="534" fill="#a9c2df" font-size="18">Use QA, runtime validation, and benchmark outputs when behavior drifts.</text>
+    <line x1="364" y1="478" x2="364" y2="574" stroke="#284463" stroke-width="2" />
+    <line x1="704" y1="478" x2="704" y2="574" stroke="#284463" stroke-width="2" />
+    <rect x="932" y="456" width="140" height="34" rx="17" fill="#203a63" />
+    <text x="1002" y="479" fill="#7ec7ff" font-size="14" text-anchor="middle" font-weight="700">VIEWPORT PROOF</text>
+  </g>
 </svg>

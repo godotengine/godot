@@ -1,6 +1,8 @@
-# Quick Start: Color Grading
+# Color Grading Quick Start
 
-Last updated: 2026-02-13
+!!! tip "Canonical task page"
+    Use this page as the source of truth for applying, tuning, baking, and restoring color grading in a scene workflow.
+    For exact fields and API lookup, use [Color Grading Reference](../reference/color-grading.md) as the technical complement.
 
 ## Purpose
 
