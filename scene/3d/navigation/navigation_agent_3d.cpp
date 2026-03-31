@@ -568,6 +568,10 @@ float NavigationAgent3D::get_path_length() const {
 
 void NavigationAgent3D::_navigation_layers_cost_map_changed() {
 	navigation_query->set_navigation_layers_cost_map(navigation_layers_cost_map);
+	if (target_position_submitted) {
+		// Changing the cost map should query a new path.
+		_request_repath();
+	}
 }
 
 void NavigationAgent3D::set_navigation_layers_cost_map(const Ref<NavigationLayersCostMap3D> &p_costs_map) {
@@ -579,9 +583,8 @@ void NavigationAgent3D::set_navigation_layers_cost_map(const Ref<NavigationLayer
 
 	if (navigation_layers_cost_map.is_valid()) {
 		navigation_layers_cost_map->connect_changed(callable_mp(this, &NavigationAgent3D::_navigation_layers_cost_map_changed));
+		_navigation_layers_cost_map_changed();
 	}
-
-	navigation_query->set_navigation_layers_cost_map(navigation_layers_cost_map);
 }
 
 Ref<NavigationLayersCostMap3D> NavigationAgent3D::get_navigation_layers_cost_map() const {
