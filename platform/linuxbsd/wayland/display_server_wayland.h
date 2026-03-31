@@ -92,6 +92,9 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_egl_window *wl_egl_window = nullptr;
 #endif
 
+		// Whether a `WaylandThread` equivalent exists or not.
+		bool created = false;
+
 		// Flags whether we have allocated a buffer through the video drivers.
 		bool visible = false;
 
@@ -181,6 +184,7 @@ class DisplayServerWayland : public DisplayServer {
 	static void dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
+	void _delete_window(WindowID p_window_id = MAIN_WINDOW_ID);
 	void _update_window_rect(const Rect2i &p_rect, WindowID p_window_id = MAIN_WINDOW_ID);
 
 	void try_suspend();
