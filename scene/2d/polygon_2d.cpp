@@ -34,6 +34,8 @@
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
+#include "core/variant/variant.h"
 #include "scene/2d/skeleton_2d.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -311,7 +313,7 @@ void Polygon2D::_notification(int p_what) {
 			Vector<Color> colors;
 			colors.resize(len);
 
-			if (vertex_colors.size() == points.size()) {
+			if (vertex_colors.size() == points.size() && use_vertex_colors) {
 				const Color *color_r = vertex_colors.ptr();
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color_r[i];
@@ -479,6 +481,15 @@ void Polygon2D::set_color(const Color &p_color) {
 
 Color Polygon2D::get_color() const {
 	return color;
+}
+
+void Polygon2D::set_use_vertex_colors(bool p_vcol_enabled) {
+	use_vertex_colors = p_vcol_enabled;
+	queue_redraw();
+}
+
+bool Polygon2D::get_use_vertex_colors() const {
+	return use_vertex_colors;
 }
 
 void Polygon2D::set_vertex_colors(const Vector<Color> &p_colors) {
@@ -685,6 +696,9 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertex_colors", "vertex_colors"), &Polygon2D::set_vertex_colors);
 	ClassDB::bind_method(D_METHOD("get_vertex_colors"), &Polygon2D::get_vertex_colors);
 
+	ClassDB::bind_method(D_METHOD("set_use_vertex_colors", "use_vertex_colors"), &Polygon2D::set_use_vertex_colors);
+	ClassDB::bind_method(D_METHOD("get_use_vertex_colors"), &Polygon2D::get_use_vertex_colors);
+
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Polygon2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Polygon2D::get_texture);
 
@@ -728,6 +742,7 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_bones"), &Polygon2D::_get_bones);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_vertex_colors"), "set_use_vertex_colors", "get_use_vertex_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
 
