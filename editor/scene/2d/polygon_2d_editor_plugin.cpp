@@ -267,7 +267,7 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 	paint_radius->hide();
 	paint_radius_label->hide();
 	vcolor_colorpicker->hide();
-	
+
 	switch (current_mode) {
 		case MODE_POINTS: {
 			action_buttons[ACTION_CREATE]->show();
@@ -758,8 +758,8 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						bone_painting_bone = bone_selected;
 					}
 				}
-				if (current_action == ACTION_PAINT_VERTEXCOLOR)
-				{
+				if (current_action == ACTION_PAINT_VERTEXCOLOR) {
+					previous_colors = node->get_vertex_colors();
 					vcolor_painting = true;
 				}
 			} else {
@@ -795,9 +795,11 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					undo_redo->commit_action();
 					bone_painting = false;
 				}
-				if (vcolor_painting)
-				{
-					//TODO: some things to handle undo/redoing 
+				if (vcolor_painting) {
+					undo_redo->create_action(TTR("Paint Vertex Color"));
+					undo_redo->add_do_method(node, "set_vertex_colors", node->get_vertex_colors());
+					undo_redo->add_undo_method(node, "set_vertex_colors", previous_colors);
+					undo_redo->commit_action();
 					vcolor_painting = false;
 				}
 			}
@@ -968,14 +970,13 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 				node->set_bone_weights(bone_painting_bone, painted_weights);
 			}
-			if (vcolor_painting)
-			{
+			if (vcolor_painting) {
 				real_t radius = paint_radius->get_value() * EDSCALE;
 				const Vector2 *rv = editing_points.ptr();
 				Color newColor = vcolor_colorpicker->get_pick_color();
 
-				for (int i = 0; i < editing_points.size(); i++){
-					if(mtx.xform(rv[i]).distance_to(paint_pos) < radius){
+				for (int i = 0; i < editing_points.size(); i++) {
+					if (mtx.xform(rv[i]).distance_to(paint_pos) < radius) {
 						Vector<Color> newColors = node->get_vertex_colors();
 						newColors.set(i, newColor);
 						node->set_vertex_colors(newColors);
@@ -1355,8 +1356,7 @@ void Polygon2DEditor::_canvas_draw() {
 		//draw paint circle
 		canvas->draw_circle(paint_pos, paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
-	if (selected_action == ACTION_PAINT_VERTEXCOLOR)
-	{
+	if (selected_action == ACTION_PAINT_VERTEXCOLOR) {
 		canvas->draw_circle(paint_pos, paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 }
@@ -1480,7 +1480,6 @@ Polygon2DEditor::Polygon2DEditor() {
 	toolbar->add_child(vcolor_colorpicker);
 	vcolor_colorpicker->set_accessibility_name(TTRC("Set Brush Color"));
 	vcolor_colorpicker->set_text(TTRC("Brush Color"));
-	
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
 	edit_vbox->add_child(uv_main_hsc);
