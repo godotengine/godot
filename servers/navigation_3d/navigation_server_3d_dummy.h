@@ -77,10 +77,12 @@ public:
 	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
 	bool region_get_use_edge_connections(RID p_region) const override { return false; }
+#ifndef DISABLE_DEPRECATED
 	void region_set_enter_cost(RID p_region, real_t p_enter_cost) override {}
 	real_t region_get_enter_cost(RID p_region) const override { return 0; }
 	void region_set_travel_cost(RID p_region, real_t p_travel_cost) override {}
 	real_t region_get_travel_cost(RID p_region) const override { return 0; }
+#endif // DISABLE_DEPRECATED
 	void region_set_owner_id(RID p_region, ObjectID p_owner_id) override {}
 	ObjectID region_get_owner_id(RID p_region) const override { return ObjectID(); }
 	bool region_owns_point(RID p_region, const Vector3 &p_point) const override { return false; }
@@ -117,10 +119,12 @@ public:
 	Vector3 link_get_start_position(RID p_link) const override { return Vector3(); }
 	void link_set_end_position(RID p_link, Vector3 p_position) override {}
 	Vector3 link_get_end_position(RID p_link) const override { return Vector3(); }
+#ifndef DISABLE_DEPRECATED
 	void link_set_enter_cost(RID p_link, real_t p_enter_cost) override {}
 	real_t link_get_enter_cost(RID p_link) const override { return 0; }
 	void link_set_travel_cost(RID p_link, real_t p_travel_cost) override {}
 	real_t link_get_travel_cost(RID p_link) const override { return 0; }
+#endif // DISABLE_DEPRECATED
 	void link_set_owner_id(RID p_link, ObjectID p_owner_id) override {}
 	ObjectID link_get_owner_id(RID p_link) const override { return ObjectID(); }
 

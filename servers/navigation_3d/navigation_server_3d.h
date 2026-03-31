@@ -118,11 +118,13 @@ public:
 	virtual void region_set_use_edge_connections(RID p_region, bool p_enabled) = 0;
 	virtual bool region_get_use_edge_connections(RID p_region) const = 0;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) = 0;
 	virtual real_t region_get_enter_cost(RID p_region) const = 0;
 
 	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) = 0;
 	virtual real_t region_get_travel_cost(RID p_region) const = 0;
+#endif // DISABLE_DEPRECATED
 
 	virtual void region_set_owner_id(RID p_region, ObjectID p_owner_id) = 0;
 	virtual ObjectID region_get_owner_id(RID p_region) const = 0;
@@ -178,11 +180,13 @@ public:
 	virtual void link_set_end_position(RID p_link, Vector3 p_position) = 0;
 	virtual Vector3 link_get_end_position(RID p_link) const = 0;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void link_set_enter_cost(RID p_link, real_t p_enter_cost) = 0;
 	virtual real_t link_get_enter_cost(RID p_link) const = 0;
 
 	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) = 0;
 	virtual real_t link_get_travel_cost(RID p_link) const = 0;
+#endif // DISABLE_DEPRECATED
 
 	virtual void link_set_owner_id(RID p_link, ObjectID p_owner_id) = 0;
 	virtual ObjectID link_get_owner_id(RID p_link) const = 0;

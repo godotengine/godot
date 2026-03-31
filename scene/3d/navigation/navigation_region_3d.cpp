@@ -132,6 +132,7 @@ bool NavigationRegion3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
+#ifndef DISABLE_DEPRECATED
 void NavigationRegion3D::set_enter_cost(real_t p_enter_cost) {
 	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
 	if (Math::is_equal_approx(enter_cost, p_enter_cost)) {
@@ -161,6 +162,7 @@ void NavigationRegion3D::set_travel_cost(real_t p_travel_cost) {
 real_t NavigationRegion3D::get_travel_cost() const {
 	return travel_cost;
 }
+#endif // DISABLE_DEPRECATED
 
 RID NavigationRegion3D::get_region_rid() const {
 	return get_rid();
@@ -289,11 +291,13 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationRegion3D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationRegion3D::get_enter_cost);
 
 	ClassDB::bind_method(D_METHOD("set_travel_cost", "travel_cost"), &NavigationRegion3D::set_travel_cost);
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion3D::get_travel_cost);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh", "on_thread"), &NavigationRegion3D::bake_navigation_mesh, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_baking"), &NavigationRegion3D::is_baking);
@@ -304,8 +308,10 @@ void NavigationRegion3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_travel_cost", "get_travel_cost");
+#endif // DISABLE_DEPRECATED
 
 	ADD_SIGNAL(MethodInfo("navigation_mesh_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));
@@ -433,8 +439,10 @@ NavigationRegion3D::NavigationRegion3D() {
 
 	region = NavigationServer3D::get_singleton()->region_create();
 	NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
+#ifndef DISABLE_DEPRECATED
 	NavigationServer3D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer3D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
+#endif // DISABLE_DEPRECATED
 	NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 	NavigationServer3D::get_singleton()->region_set_use_edge_connections(region, use_edge_connections);
 	NavigationServer3D::get_singleton()->region_set_enabled(region, enabled);

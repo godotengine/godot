@@ -369,7 +369,7 @@
 				Returns the ending position of this [param link].
 			</description>
 		</method>
-		<method name="link_get_enter_cost" qualifiers="const">
+		<method name="link_get_enter_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
@@ -412,7 +412,7 @@
 				Returns the starting position of this [param link].
 			</description>
 		</method>
-		<method name="link_get_travel_cost" qualifiers="const">
+		<method name="link_get_travel_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
@@ -450,7 +450,7 @@
 				Sets the exit position for the [param link].
 			</description>
 		</method>
-		<method name="link_set_enter_cost">
+		<method name="link_set_enter_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="enter_cost" type="float" />
@@ -490,7 +490,7 @@
 				Sets the entry position for this [param link].
 			</description>
 		</method>
-		<method name="link_set_travel_cost">
+		<method name="link_set_travel_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="travel_cost" type="float" />
@@ -1090,7 +1090,7 @@
 				If [param enabled] is [code]true[/code], the specified [param region] will contribute to its current navigation map.
 			</description>
 		</method>
-		<method name="region_set_enter_cost">
+		<method name="region_set_enter_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="enter_cost" type="float" />
@@ -1138,7 +1138,7 @@
 				Sets the global transformation for the region.
 			</description>
 		</method>
-		<method name="region_set_travel_cost">
+		<method name="region_set_travel_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="travel_cost" type="float" />

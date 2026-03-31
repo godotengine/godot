@@ -206,19 +206,23 @@ void NavigationLink3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_end_position", "position"), &NavigationLink3D::set_global_end_position);
 	ClassDB::bind_method(D_METHOD("get_global_end_position"), &NavigationLink3D::get_global_end_position);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationLink3D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationLink3D::get_enter_cost);
 
 	ClassDB::bind_method(D_METHOD("set_travel_cost", "travel_cost"), &NavigationLink3D::set_travel_cost);
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationLink3D::get_travel_cost);
+#endif // DISABLE_DEPRECATED
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bidirectional"), "set_bidirectional", "is_bidirectional");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "end_position"), "set_end_position", "get_end_position");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_travel_cost", "get_travel_cost");
+#endif // DISABLE_DEPRECATED
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -278,8 +282,10 @@ NavigationLink3D::NavigationLink3D() {
 	link = NavigationServer3D::get_singleton()->link_create();
 
 	NavigationServer3D::get_singleton()->link_set_owner_id(link, get_instance_id());
+#ifndef DISABLE_DEPRECATED
 	NavigationServer3D::get_singleton()->link_set_enter_cost(link, enter_cost);
 	NavigationServer3D::get_singleton()->link_set_travel_cost(link, travel_cost);
+#endif // DISABLE_DEPRECATED
 	NavigationServer3D::get_singleton()->link_set_navigation_layers(link, navigation_layers);
 	NavigationServer3D::get_singleton()->link_set_bidirectional(link, bidirectional);
 	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
@@ -472,6 +478,7 @@ Vector3 NavigationLink3D::get_global_end_position() const {
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
 void NavigationLink3D::set_enter_cost(real_t p_enter_cost) {
 	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
 	if (Math::is_equal_approx(enter_cost, p_enter_cost)) {
@@ -493,6 +500,7 @@ void NavigationLink3D::set_travel_cost(real_t p_travel_cost) {
 
 	NavigationServer3D::get_singleton()->link_set_travel_cost(link, travel_cost);
 }
+#endif // DISABLE_DEPRECATED
 
 PackedStringArray NavigationLink3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();

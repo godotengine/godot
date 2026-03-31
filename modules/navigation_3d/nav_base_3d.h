@@ -40,8 +40,10 @@ class NavMap3D;
 class NavBase3D : public NavRid3D {
 protected:
 	uint32_t navigation_layers = 1;
+#ifndef DISABLE_DEPRECATED
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
+#endif // DISABLE_DEPRECATED
 	ObjectID owner_id;
 	NavigationEnums3D::PathSegmentType type;
 
@@ -54,11 +56,13 @@ public:
 	virtual void set_navigation_layers(uint32_t p_navigation_layers) {}
 	uint32_t get_navigation_layers() const { return navigation_layers; }
 
+#ifndef DISABLE_DEPRECATED
 	virtual void set_enter_cost(real_t p_enter_cost) {}
 	real_t get_enter_cost() const { return enter_cost; }
 
 	virtual void set_travel_cost(real_t p_travel_cost) {}
 	real_t get_travel_cost() const { return travel_cost; }
+#endif // DISABLE_DEPRECATED
 
 	virtual void set_owner_id(ObjectID p_owner_id) {}
 	ObjectID get_owner_id() const { return owner_id; }
