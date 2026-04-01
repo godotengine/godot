@@ -52,19 +52,17 @@ GaussianSplatSceneDirector::~GaussianSplatSceneDirector() {
 void GaussianSplatSceneDirector::_bind_methods() {
 }
 
-GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_or_create_world(World3D *p_world) {
-	ERR_FAIL_NULL_V(p_world, nullptr);
-	RID scenario = p_world->get_scenario();
-	if (!scenario.is_valid()) {
+GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_or_create_world_for_scenario(const RID &p_scenario) {
+	if (!p_scenario.is_valid()) {
 		return nullptr;
 	}
 
-	SharedWorld *entry = worlds.getptr(scenario);
+	SharedWorld *entry = worlds.getptr(p_scenario);
 	if (!entry) {
 		SharedWorld world;
-		world.scenario = scenario;
-		worlds.insert(scenario, world);
-		entry = worlds.getptr(scenario);
+		world.scenario = p_scenario;
+		worlds.insert(p_scenario, world);
+		entry = worlds.getptr(p_scenario);
 	}
 
 	if (entry && !entry->renderer.is_valid()) {
@@ -76,7 +74,7 @@ GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_or_cre
 				warned_missing_device = true;
 				GS_LOG_RENDERER_ERROR(
 						"[GaussianSplatSceneDirector] Unable to acquire primary RenderingDevice for shared renderer (scenario=" +
-						String::num_uint64((uint64_t)scenario.get_id()) +
+						String::num_uint64((uint64_t)p_scenario.get_id()) +
 						"). Gaussian splat instances in this world will be collected but skipped because no renderer can be attached.");
 			}
 			return entry;
@@ -90,6 +88,11 @@ GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_or_cre
 	}
 
 	return entry;
+}
+
+GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_or_create_world(World3D *p_world) {
+	ERR_FAIL_NULL_V(p_world, nullptr);
+	return _get_or_create_world_for_scenario(p_world->get_scenario());
 }
 
 GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_world_for_instance(ObjectID p_node_id) {
@@ -150,6 +153,54 @@ const GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_find
 				vformat("renderer=%d not found (worlds=%d)",
 						(int64_t)(uintptr_t)p_renderer, (int)worlds.size()),
 				true);
+	}
+	return nullptr;
+}
+
+GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_find_world_for_world_submission(ObjectID p_owner_id) {
+	if (p_owner_id == ObjectID()) {
+		return nullptr;
+	}
+	for (KeyValue<RID, SharedWorld> &E : worlds) {
+		if (E.value.world_submission.active && E.value.world_submission.owner_id == p_owner_id) {
+			return &E.value;
+		}
+	}
+	return nullptr;
+}
+
+const GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_find_world_for_world_submission(ObjectID p_owner_id) const {
+	if (p_owner_id == ObjectID()) {
+		return nullptr;
+	}
+	for (const KeyValue<RID, SharedWorld> &E : worlds) {
+		if (E.value.world_submission.active && E.value.world_submission.owner_id == p_owner_id) {
+			return &E.value;
+		}
+	}
+	return nullptr;
+}
+
+GaussianSplatSceneDirector::PreviewSubmissionRecord *GaussianSplatSceneDirector::_find_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) {
+	if (!p_renderer) {
+		return nullptr;
+	}
+	for (KeyValue<ObjectID, PreviewSubmissionRecord> &E : preview_submissions) {
+		if (E.value.renderer.ptr() == p_renderer) {
+			return &E.value;
+		}
+	}
+	return nullptr;
+}
+
+const GaussianSplatSceneDirector::PreviewSubmissionRecord *GaussianSplatSceneDirector::_find_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const {
+	if (!p_renderer) {
+		return nullptr;
+	}
+	for (const KeyValue<ObjectID, PreviewSubmissionRecord> &E : preview_submissions) {
+		if (E.value.renderer.ptr() == p_renderer) {
+			return &E.value;
+		}
 	}
 	return nullptr;
 }
@@ -496,6 +547,64 @@ void GaussianSplatSceneDirector::unregister_instance(ObjectID p_node_id) {
 	world->instance_lookup.erase(p_node_id);
 	_release_asset_record(*world, asset_id);
 	_bump_instance_generation(world->instance_generation);
+}
+
+void GaussianSplatSceneDirector::register_instance_submission(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,
+		const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow,
+		float p_wind_intensity, uint32_t p_wind_mode, const Vector3 &p_wind_direction, float p_wind_frequency,
+		bool p_visible) {
+	register_instance(p_node_id, p_asset, p_transform, p_opacity, p_lod_bias, p_flags, p_casts_shadow,
+			p_wind_intensity, p_wind_mode, p_wind_direction, p_wind_frequency, p_visible);
+}
+
+void GaussianSplatSceneDirector::update_instance_submission_transform(ObjectID p_node_id, const Transform3D &p_transform) {
+	update_instance_transform(p_node_id, p_transform);
+}
+
+void GaussianSplatSceneDirector::update_instance_submission_params(ObjectID p_node_id, float p_opacity, float p_lod_bias,
+		uint32_t p_flags, bool p_casts_shadow, float p_wind_intensity, uint32_t p_wind_mode,
+		const Vector3 &p_wind_direction, float p_wind_frequency, bool p_visible) {
+	update_instance_params(p_node_id, p_opacity, p_lod_bias, p_flags, p_casts_shadow, p_wind_intensity,
+			p_wind_mode, p_wind_direction, p_wind_frequency, p_visible);
+}
+
+void GaussianSplatSceneDirector::unregister_instance_submission(ObjectID p_node_id) {
+	unregister_instance(p_node_id);
+}
+
+bool GaussianSplatSceneDirector::get_instance_submission(ObjectID p_node_id, InstanceSubmission *r_submission) const {
+	ERR_FAIL_NULL_V(r_submission, false);
+
+	MutexLock lock(world_mutex);
+	for (const KeyValue<RID, SharedWorld> &E : worlds) {
+		const SharedWorld &world = E.value;
+		const uint32_t *index_ptr = world.instance_lookup.getptr(p_node_id);
+		if (!index_ptr || *index_ptr >= world.instances.size()) {
+			continue;
+		}
+
+		const InstanceRecord &record = world.instances[*index_ptr];
+		const SharedWorld::AssetRecord *asset_record = world.asset_records.getptr(record.asset_id);
+
+		r_submission->node_id = record.node_id;
+		r_submission->scenario = world.scenario;
+		r_submission->renderer = world.renderer;
+		r_submission->asset = asset_record ? asset_record->asset : Ref<GaussianSplatAsset>();
+		r_submission->transform = record.transform;
+		r_submission->opacity = record.opacity;
+		r_submission->lod_bias = record.lod_bias;
+		r_submission->wind_intensity = record.wind_intensity;
+		r_submission->wind_mode = record.wind_mode;
+		r_submission->wind_direction = record.wind_direction;
+		r_submission->wind_frequency = record.wind_frequency;
+		r_submission->flags = record.flags;
+		r_submission->last_lod = record.last_lod;
+		r_submission->casts_shadow = record.casts_shadow;
+		r_submission->visible = record.visible;
+		return true;
+	}
+
+	return false;
 }
 
 void GaussianSplatSceneDirector::update_instance_lods(const Vector3 &p_camera_pos, const LODConfig &p_lod_config,
@@ -865,6 +974,148 @@ uint32_t GaussianSplatSceneDirector::get_instance_count_for_renderer(const Gauss
 		return 0;
 	}
 	return world->instances.size();
+}
+
+bool GaussianSplatSceneDirector::upsert_world_submission(const WorldSubmission &p_submission) {
+	if (p_submission.owner_id == ObjectID() || !p_submission.scenario.is_valid()) {
+		return false;
+	}
+
+	MutexLock lock(world_mutex);
+	SharedWorld *previous_world = _find_world_for_world_submission(p_submission.owner_id);
+	if (previous_world && previous_world->scenario != p_submission.scenario) {
+		previous_world->world_submission = SharedWorld::WorldSubmissionRecord();
+	}
+
+	SharedWorld *world = worlds.getptr(p_submission.scenario);
+	if (!world) {
+		SharedWorld new_world;
+		new_world.scenario = p_submission.scenario;
+		worlds.insert(p_submission.scenario, new_world);
+		world = worlds.getptr(p_submission.scenario);
+	}
+
+	world->world_submission.owner_id = p_submission.owner_id;
+	world->world_submission.gaussian_data = p_submission.gaussian_data;
+	world->world_submission.static_chunks = p_submission.static_chunks;
+	world->world_submission.bounds = p_submission.bounds;
+	world->world_submission.metadata = p_submission.metadata;
+	world->world_submission.desired_residency_hint = p_submission.desired_residency_hint;
+	world->world_submission.desired_renderer_overrides = p_submission.desired_renderer_overrides;
+	world->world_submission.active = true;
+	return true;
+}
+
+void GaussianSplatSceneDirector::unregister_world_submission(ObjectID p_owner_id) {
+	MutexLock lock(world_mutex);
+	SharedWorld *world = _find_world_for_world_submission(p_owner_id);
+	if (!world) {
+		return;
+	}
+	world->world_submission = SharedWorld::WorldSubmissionRecord();
+}
+
+bool GaussianSplatSceneDirector::get_world_submission(ObjectID p_owner_id, WorldSubmission *r_submission) const {
+	ERR_FAIL_NULL_V(r_submission, false);
+
+	MutexLock lock(world_mutex);
+	const SharedWorld *world = _find_world_for_world_submission(p_owner_id);
+	if (!world || !world->world_submission.active) {
+		return false;
+	}
+
+	r_submission->owner_id = world->world_submission.owner_id;
+	r_submission->scenario = world->scenario;
+	r_submission->gaussian_data = world->world_submission.gaussian_data;
+	r_submission->static_chunks = world->world_submission.static_chunks;
+	r_submission->bounds = world->world_submission.bounds;
+	r_submission->metadata = world->world_submission.metadata;
+	r_submission->desired_residency_hint = world->world_submission.desired_residency_hint;
+	r_submission->desired_renderer_overrides = world->world_submission.desired_renderer_overrides;
+	return true;
+}
+
+bool GaussianSplatSceneDirector::get_world_submission_for_scenario(const RID &p_scenario, WorldSubmission *r_submission) const {
+	ERR_FAIL_NULL_V(r_submission, false);
+
+	MutexLock lock(world_mutex);
+	const SharedWorld *world = worlds.getptr(p_scenario);
+	if (!world || !world->world_submission.active) {
+		return false;
+	}
+
+	r_submission->owner_id = world->world_submission.owner_id;
+	r_submission->scenario = world->scenario;
+	r_submission->gaussian_data = world->world_submission.gaussian_data;
+	r_submission->static_chunks = world->world_submission.static_chunks;
+	r_submission->bounds = world->world_submission.bounds;
+	r_submission->metadata = world->world_submission.metadata;
+	r_submission->desired_residency_hint = world->world_submission.desired_residency_hint;
+	r_submission->desired_renderer_overrides = world->world_submission.desired_renderer_overrides;
+	return true;
+}
+
+bool GaussianSplatSceneDirector::has_world_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const {
+	MutexLock lock(world_mutex);
+	const SharedWorld *world = _find_world_for_renderer(p_renderer);
+	return world && world->world_submission.active;
+}
+
+bool GaussianSplatSceneDirector::upsert_preview_submission(const PreviewSubmission &p_submission) {
+	if (p_submission.owner_id == ObjectID()) {
+		return false;
+	}
+
+	MutexLock lock(world_mutex);
+	PreviewSubmissionRecord record;
+	record.owner_id = p_submission.owner_id;
+	record.renderer = p_submission.renderer;
+	record.gaussian_data = p_submission.gaussian_data;
+	record.metadata = p_submission.metadata;
+	record.source_label = p_submission.source_label;
+	preview_submissions[p_submission.owner_id] = record;
+	return true;
+}
+
+void GaussianSplatSceneDirector::unregister_preview_submission(ObjectID p_owner_id) {
+	MutexLock lock(world_mutex);
+	preview_submissions.erase(p_owner_id);
+}
+
+bool GaussianSplatSceneDirector::get_preview_submission(ObjectID p_owner_id, PreviewSubmission *r_submission) const {
+	ERR_FAIL_NULL_V(r_submission, false);
+
+	MutexLock lock(world_mutex);
+	const PreviewSubmissionRecord *record = preview_submissions.getptr(p_owner_id);
+	if (!record) {
+		return false;
+	}
+
+	r_submission->owner_id = record->owner_id;
+	r_submission->renderer = record->renderer;
+	r_submission->gaussian_data = record->gaussian_data;
+	r_submission->metadata = record->metadata;
+	r_submission->source_label = record->source_label;
+	return true;
+}
+
+bool GaussianSplatSceneDirector::has_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const {
+	MutexLock lock(world_mutex);
+	return _find_preview_submission_for_renderer(p_renderer) != nullptr;
+}
+
+GaussianSplatSceneDirector::SubmissionCounts GaussianSplatSceneDirector::get_submission_counts() const {
+	MutexLock lock(world_mutex);
+
+	SubmissionCounts counts;
+	for (const KeyValue<RID, SharedWorld> &E : worlds) {
+		counts.instance_submissions += E.value.instances.size();
+		if (E.value.world_submission.active) {
+			counts.world_submissions++;
+		}
+	}
+	counts.preview_submissions = preview_submissions.size();
+	return counts;
 }
 
 namespace {
