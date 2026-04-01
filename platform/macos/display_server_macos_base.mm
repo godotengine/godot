@@ -569,6 +569,7 @@ void DisplayServerMacOSBase::_update_hdr_output(DisplayServerEnums::WindowID p_w
 	float current_ref_luminance = rendering_context->window_get_hdr_output_reference_luminance(p_window);
 	if (!Math::is_equal_approx(current_ref_luminance, new_reference_luminance)) {
 		rendering_context->window_set_hdr_output_reference_luminance(p_window, new_reference_luminance);
+		rendering_context->window_set_hdr_output_linear_luminance_scale(p_window, new_reference_luminance);
 		hdr_state_changed = true;
 	}
 
