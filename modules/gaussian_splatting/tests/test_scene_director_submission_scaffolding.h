@@ -1,10 +1,12 @@
 #pragma once
 
 #include "test_macros.h"
+#include "gs_test_setting_guard.h"
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../core/gaussian_splat_scene_director.h"
 #include "../nodes/gaussian_splat_node_3d.h"
+#include "../nodes/gaussian_splat_world_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
@@ -164,6 +166,279 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] World submission scaffo
 	CHECK(counts.instance_submissions == baseline_counts.instance_submissions);
 	CHECK(counts.world_submissions == baseline_counts.world_submissions);
 	CHECK(counts.preview_submissions == baseline_counts.preview_submissions);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
+TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] World submission entrypoints arbitrate ownership and release cleanly") {
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+	const GaussianSplatSceneDirector::SubmissionCounts baseline_counts = director->get_submission_counts();
+
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	Ref<World3D> world = root->get_world_3d();
+	REQUIRE(world.is_valid());
+	const RID scenario = world->get_scenario();
+	REQUIRE(scenario.is_valid());
+
+	Node *owner_a = memnew(Node);
+	Node *owner_b = memnew(Node);
+	REQUIRE(owner_a != nullptr);
+	REQUIRE(owner_b != nullptr);
+	root->add_child(owner_a);
+	root->add_child(owner_b);
+	tree->process(0.0);
+
+	GaussianSplatSceneDirector::WorldSubmission submission_a;
+	submission_a.owner_id = owner_a->get_instance_id();
+	submission_a.scenario = scenario;
+	submission_a.gaussian_data = stage1a_make_submission_test_data(3, 0.0f);
+	submission_a.static_chunks.push_back(stage1a_make_submission_test_chunk(0));
+	submission_a.metadata[StringName("label")] = String("owner_a");
+	submission_a.desired_renderer_overrides[StringName("max_splats")] = int64_t(2048);
+
+	GaussianSplatSceneDirector::WorldSubmission submission_b;
+	submission_b.owner_id = owner_b->get_instance_id();
+	submission_b.scenario = scenario;
+	submission_b.gaussian_data = stage1a_make_submission_test_data(2, 20.0f);
+	submission_b.static_chunks.push_back(stage1a_make_submission_test_chunk(1));
+	submission_b.metadata[StringName("label")] = String("owner_b");
+	submission_b.desired_renderer_overrides[StringName("max_splats")] = int64_t(1024);
+
+	CHECK(director->submit_world_submission(submission_a));
+
+	GaussianSplatSceneDirector::WorldSubmission queried_submission;
+	CHECK(director->get_world_submission_for_scenario(scenario, &queried_submission));
+	CHECK(queried_submission.owner_id == submission_a.owner_id);
+	CHECK(queried_submission.gaussian_data == submission_a.gaussian_data);
+
+	CHECK_FALSE(director->submit_world_submission(submission_b));
+	CHECK(director->get_world_submission_for_scenario(scenario, &queried_submission));
+	CHECK(queried_submission.owner_id == submission_a.owner_id);
+
+	GaussianSplatSceneDirector::SubmissionCounts counts = director->get_submission_counts();
+	CHECK(counts.instance_submissions == baseline_counts.instance_submissions);
+	CHECK(counts.world_submissions == baseline_counts.world_submissions + 1);
+	CHECK(counts.preview_submissions == baseline_counts.preview_submissions);
+
+	director->release_world_submission(submission_a.owner_id);
+	CHECK_FALSE(director->get_world_submission(submission_a.owner_id, &queried_submission));
+	CHECK_FALSE(director->get_world_submission_for_scenario(scenario, &queried_submission));
+
+	CHECK(director->submit_world_submission(submission_b));
+	CHECK(director->get_world_submission_for_scenario(scenario, &queried_submission));
+	CHECK(queried_submission.owner_id == submission_b.owner_id);
+
+	director->release_world_submission(submission_b.owner_id);
+	CHECK_FALSE(director->get_world_submission(submission_b.owner_id, &queried_submission));
+	counts = director->get_submission_counts();
+	CHECK(counts.instance_submissions == baseline_counts.instance_submissions);
+	CHECK(counts.world_submissions == baseline_counts.world_submissions);
+	CHECK(counts.preview_submissions == baseline_counts.preview_submissions);
+
+	root->remove_child(owner_b);
+	root->remove_child(owner_a);
+	memdelete(owner_b);
+	memdelete(owner_a);
+	tree->process(0.0);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
+TEST_CASE("[GaussianSplatting][World][SceneTree] World node forwards desired overrides through director submission") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	REQUIRE(project_settings != nullptr);
+	ProjectSettingGuard tier_preset_guard(project_settings, "rendering/gaussian_splatting/quality/tier_preset");
+	ProjectSettingGuard tier_apply_guard(project_settings, "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets");
+	ProjectSettingGuard predictive_guard(project_settings, "rendering/gaussian_splatting/streaming/predictive_prefetch_enabled");
+	ProjectSettingGuard prefetch_guard(project_settings, "rendering/gaussian_splatting/streaming/prefetch_lookahead_distance");
+	project_settings->set_setting("rendering/gaussian_splatting/quality/tier_preset", "low");
+	project_settings->set_setting("rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true);
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/predictive_prefetch_enabled", false);
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/prefetch_lookahead_distance", 6.0f);
+
+	Ref<GaussianSplatWorld> world_resource;
+	world_resource.instantiate();
+	Ref<GaussianData> data = stage1a_make_submission_test_data(5, 5.0f);
+	world_resource->set_gaussian_data(data);
+	Vector<GaussianSplatRenderer::StaticChunk> chunks;
+	chunks.push_back(stage1a_make_submission_test_chunk(0));
+	world_resource->set_static_chunks(chunks);
+	Dictionary metadata;
+	metadata[StringName("label")] = String("stage1b_world");
+	world_resource->set_metadata(metadata);
+	world_resource->set_path("res://stage1b_world.gsplatworld");
+
+	GaussianSplatWorld3D *node = memnew(GaussianSplatWorld3D);
+	REQUIRE(node != nullptr);
+	node->set_auto_apply_on_ready(false);
+	node->set_world(world_resource);
+	node->set_lod_enabled(false);
+	node->set_lod_bias(1.75f);
+	node->set_max_render_distance(80.0f);
+	node->set_max_splat_count(900000);
+	node->set_use_frustum_culling(false);
+	node->set_async_upload_enabled(false);
+	node->set_opacity(0.35f);
+
+	root->add_child(node);
+	tree->process(0.0);
+	node->apply_world();
+
+	GaussianSplatSceneDirector::WorldSubmission submission;
+	CHECK(director->get_world_submission(node->get_instance_id(), &submission));
+	CHECK(submission.owner_id == node->get_instance_id());
+	CHECK(submission.gaussian_data == data);
+	CHECK(submission.static_chunks.size() == 1);
+	CHECK(submission.metadata[StringName("label")] == String("stage1b_world"));
+	CHECK(submission.metadata[StringName("world_path")] == String("res://stage1b_world.gsplatworld"));
+	CHECK_FALSE((bool)submission.desired_renderer_overrides[StringName("lod_enabled")]);
+	CHECK(float(submission.desired_renderer_overrides[StringName("lod_bias")]) == doctest::Approx(1.75f));
+	CHECK(float(submission.desired_renderer_overrides[StringName("lod_max_distance")]) == doctest::Approx(80.0f));
+	CHECK(int64_t(submission.desired_renderer_overrides[StringName("max_splats")]) == 300000);
+	CHECK_FALSE((bool)submission.desired_renderer_overrides[StringName("frustum_culling")]);
+	CHECK_FALSE((bool)submission.desired_renderer_overrides[StringName("async_upload_enabled")]);
+	CHECK(float(submission.desired_renderer_overrides[StringName("opacity_multiplier")]) == doctest::Approx(0.35f));
+
+	const Dictionary streaming_overrides = submission.desired_renderer_overrides[StringName("streaming")];
+	CHECK((bool)streaming_overrides[StringName("override_prefetch")]);
+	CHECK_FALSE((bool)streaming_overrides[StringName("predictive_prefetch_enabled")]);
+	CHECK(float(streaming_overrides[StringName("prefetch_lookahead_distance")]) == doctest::Approx(12.0f));
+	CHECK((bool)streaming_overrides[StringName("override_vram_budget")]);
+	CHECK(int64_t(streaming_overrides[StringName("vram_budget_mb")]) == 256);
+	CHECK(int64_t(streaming_overrides[StringName("vram_min_chunks")]) == 2);
+	CHECK(int64_t(streaming_overrides[StringName("vram_max_chunks")]) == 32);
+	CHECK((bool)streaming_overrides[StringName("override_io_source")]);
+	CHECK(streaming_overrides[StringName("io_source_path")] == String("res://stage1b_world.gsplatworld"));
+
+	Ref<GaussianSplatRenderer> renderer = node->get_renderer();
+	if (renderer.is_valid()) {
+		CHECK(renderer->get_gaussian_data() == data);
+		CHECK(renderer->get_static_chunks().size() == 1);
+		CHECK_FALSE(renderer->get_lod_enabled());
+		CHECK(renderer->get_lod_bias() == doctest::Approx(1.75f));
+		CHECK(renderer->get_lod_max_distance() == doctest::Approx(80.0f));
+		CHECK(renderer->get_max_splats() == 5);
+		CHECK_FALSE(renderer->get_frustum_culling());
+		CHECK_FALSE(renderer->get_async_upload_enabled());
+		CHECK(renderer->get_opacity_multiplier() == doctest::Approx(0.35f));
+	}
+
+	node->clear_world();
+	CHECK_FALSE(director->get_world_submission(node->get_instance_id(), &submission));
+
+	root->remove_child(node);
+	memdelete(node);
+	tree->process(0.0);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
+TEST_CASE("[GaussianSplatting][World][SceneTree] World node preserves prior renderer streaming overrides when tier budgets are disabled") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	REQUIRE(project_settings != nullptr);
+	ProjectSettingGuard tier_preset_guard(project_settings, "rendering/gaussian_splatting/quality/tier_preset");
+	ProjectSettingGuard tier_apply_guard(project_settings, "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets");
+	ProjectSettingGuard predictive_guard(project_settings, "rendering/gaussian_splatting/streaming/predictive_prefetch_enabled");
+	ProjectSettingGuard prefetch_guard(project_settings, "rendering/gaussian_splatting/streaming/prefetch_lookahead_distance");
+	project_settings->set_setting("rendering/gaussian_splatting/quality/tier_preset", "low");
+	project_settings->set_setting("rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true);
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/predictive_prefetch_enabled", false);
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/prefetch_lookahead_distance", 6.0f);
+
+	Ref<GaussianSplatWorld> world_resource;
+	world_resource.instantiate();
+	world_resource->set_gaussian_data(stage1a_make_submission_test_data(5, 50.0f));
+	Vector<GaussianSplatRenderer::StaticChunk> chunks;
+	chunks.push_back(stage1a_make_submission_test_chunk(0));
+	world_resource->set_static_chunks(chunks);
+
+	GaussianSplatWorld3D *node = memnew(GaussianSplatWorld3D);
+	REQUIRE(node != nullptr);
+	node->set_auto_apply_on_ready(false);
+	node->set_world(world_resource);
+	node->set_max_render_distance(80.0f);
+	root->add_child(node);
+	tree->process(0.0);
+	node->apply_world();
+
+	Ref<GaussianSplatRenderer> renderer = node->get_renderer();
+	if (!renderer.is_valid()) {
+		MESSAGE("Skipping test - renderer unavailable");
+		root->remove_child(node);
+		memdelete(node);
+		if (owns_director) {
+			memdelete(director);
+		}
+		return;
+	}
+
+	const GaussianStreamingSystem::ConfigOverrides before_overrides = renderer->get_streaming_config_overrides();
+	CHECK(before_overrides.override_prefetch);
+	CHECK_FALSE(before_overrides.predictive_prefetch_enabled);
+	CHECK(before_overrides.prefetch_lookahead_distance == doctest::Approx(12.0f));
+	CHECK(before_overrides.override_vram_budget);
+
+	project_settings->set_setting("rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", false);
+	node->set_max_render_distance(120.0f);
+
+	GaussianSplatSceneDirector::WorldSubmission submission;
+	CHECK(director->get_world_submission(node->get_instance_id(), &submission));
+	CHECK_FALSE(submission.desired_renderer_overrides.has(StringName("streaming")));
+
+	const GaussianStreamingSystem::ConfigOverrides after_overrides = renderer->get_streaming_config_overrides();
+	CHECK(after_overrides.override_prefetch == before_overrides.override_prefetch);
+	CHECK(after_overrides.predictive_prefetch_enabled == before_overrides.predictive_prefetch_enabled);
+	CHECK(after_overrides.prefetch_lookahead_distance == doctest::Approx(before_overrides.prefetch_lookahead_distance));
+	CHECK(after_overrides.override_vram_budget == before_overrides.override_vram_budget);
+	CHECK(after_overrides.vram_budget_config.budget_mb == before_overrides.vram_budget_config.budget_mb);
+	CHECK(after_overrides.vram_budget_config.min_chunks == before_overrides.vram_budget_config.min_chunks);
+	CHECK(after_overrides.vram_budget_config.max_chunks == before_overrides.vram_budget_config.max_chunks);
+
+	root->remove_child(node);
+	memdelete(node);
+	tree->process(0.0);
 
 	if (owns_director) {
 		memdelete(director);

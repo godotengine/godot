@@ -1505,6 +1505,7 @@ public:
      */
     void set_static_chunks(const Vector<StaticChunk> &p_chunks) override;
     void set_streaming_config_overrides(const GaussianStreamingSystem::ConfigOverrides &p_overrides);
+    GaussianStreamingSystem::ConfigOverrides get_streaming_config_overrides() const;
 
     /** @brief Clears all static chunk definitions. */
     void clear_static_chunks();

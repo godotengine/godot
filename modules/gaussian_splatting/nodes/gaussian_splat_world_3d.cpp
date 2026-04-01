@@ -6,80 +6,13 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
-#include "core/object/object.h"
 #include "core/os/os.h"
-#include "core/os/mutex.h"
-#include "core/templates/hash_map.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
 #include "servers/rendering/renderer_rd/storage_rd/gaussian_splat_storage.h"
 #include "servers/rendering_server.h"
 
 namespace {
-
-Mutex g_world_renderer_owner_mutex;
-HashMap<ObjectID, ObjectID> g_world_renderer_owner_lookup;
-
-static bool _world_owner_is_live(ObjectID p_owner_id) {
-    if (p_owner_id == ObjectID()) {
-        return false;
-    }
-    Object *owner_obj = ObjectDB::get_instance(p_owner_id);
-    return Object::cast_to<GaussianSplatWorld3D>(owner_obj) != nullptr;
-}
-
-static bool _claim_world_renderer_owner(ObjectID p_renderer_id, ObjectID p_owner_id) {
-    if (p_renderer_id == ObjectID() || p_owner_id == ObjectID()) {
-        return false;
-    }
-
-    MutexLock lock(g_world_renderer_owner_mutex);
-    ObjectID *existing_owner = g_world_renderer_owner_lookup.getptr(p_renderer_id);
-    if (!existing_owner) {
-        g_world_renderer_owner_lookup.insert(p_renderer_id, p_owner_id);
-        return true;
-    }
-    if (*existing_owner == p_owner_id) {
-        return true;
-    }
-    if (!_world_owner_is_live(*existing_owner)) {
-        *existing_owner = p_owner_id;
-        return true;
-    }
-    return false;
-}
-
-static bool _is_world_renderer_owner(ObjectID p_renderer_id, ObjectID p_owner_id) {
-    if (p_renderer_id == ObjectID() || p_owner_id == ObjectID()) {
-        return false;
-    }
-
-    MutexLock lock(g_world_renderer_owner_mutex);
-    ObjectID *existing_owner = g_world_renderer_owner_lookup.getptr(p_renderer_id);
-    if (!existing_owner) {
-        return false;
-    }
-    if (!_world_owner_is_live(*existing_owner)) {
-        g_world_renderer_owner_lookup.erase(p_renderer_id);
-        return false;
-    }
-    return *existing_owner == p_owner_id;
-}
-
-static void _release_world_renderer_owner(ObjectID p_renderer_id, ObjectID p_owner_id) {
-    if (p_renderer_id == ObjectID()) {
-        return;
-    }
-
-    MutexLock lock(g_world_renderer_owner_mutex);
-    ObjectID *existing_owner = g_world_renderer_owner_lookup.getptr(p_renderer_id);
-    if (!existing_owner) {
-        return;
-    }
-    if (*existing_owner == p_owner_id || !_world_owner_is_live(*existing_owner)) {
-        g_world_renderer_owner_lookup.erase(p_renderer_id);
-    }
-}
 
 static bool _is_world_debug_enabled() {
     ProjectSettings *ps = ProjectSettings::get_singleton();
@@ -250,51 +183,37 @@ void GaussianSplatWorld3D::set_cast_shadow(bool p_enabled) {
 
 void GaussianSplatWorld3D::set_lod_enabled(bool p_enabled) {
     lod_enabled = p_enabled;
-    if (renderer.is_valid()) {
-        _apply_renderer_settings();
-    }
+    _resubmit_world_submission_if_registered();
 }
 
 void GaussianSplatWorld3D::set_lod_bias(float p_bias) {
     lod_bias = CLAMP(p_bias, 0.1f, 4.0f);
-    if (renderer.is_valid()) {
-        _apply_renderer_settings();
-    }
+    _resubmit_world_submission_if_registered();
 }
 
 void GaussianSplatWorld3D::set_max_render_distance(float p_distance) {
     max_render_distance = MAX(0.0f, p_distance);
-    if (renderer.is_valid()) {
-        _apply_renderer_settings();
-    }
+    _resubmit_world_submission_if_registered();
 }
 
 void GaussianSplatWorld3D::set_max_splat_count(int p_count) {
     max_splat_count = MAX(1000, p_count);
-    if (renderer.is_valid()) {
-        _apply_renderer_settings();
-    }
+    _resubmit_world_submission_if_registered();
 }
 
 void GaussianSplatWorld3D::set_use_frustum_culling(bool p_enabled) {
     use_frustum_culling = p_enabled;
-    if (renderer.is_valid()) {
-        _apply_renderer_settings();
-    }
+    _resubmit_world_submission_if_registered();
 }
 
 void GaussianSplatWorld3D::set_async_upload_enabled(bool p_enabled) {
     async_upload_enabled = p_enabled;
-    if (renderer.is_valid()) {
-        _apply_renderer_settings();
-    }
+    _resubmit_world_submission_if_registered();
 }
 
 void GaussianSplatWorld3D::set_opacity(float p_opacity) {
     opacity = CLAMP(p_opacity, 0.0f, 1.0f);
-    if (renderer.is_valid()) {
-        _apply_renderer_settings();
-    }
+    _resubmit_world_submission_if_registered();
 }
 
 void GaussianSplatWorld3D::apply_world() {
@@ -323,74 +242,80 @@ void GaussianSplatWorld3D::_ensure_renderer() {
     _sync_gaussian_storage();
 }
 
-void GaussianSplatWorld3D::_apply_renderer_settings() {
-    if (!renderer.is_valid()) {
-        return;
-    }
-    const ObjectID renderer_id = renderer->get_instance_id();
-    const ObjectID owner_id = get_instance_id();
-    if (renderer_id != ObjectID() && owner_id != ObjectID() && !_is_world_renderer_owner(renderer_id, owner_id)) {
-        return;
-    }
-    renderer->set_lod_enabled(lod_enabled);
-    renderer->set_lod_bias(lod_bias);
-    renderer->set_lod_max_distance(max_render_distance);
-    renderer->set_max_splats(max_splat_count);
-    renderer->set_frustum_culling(use_frustum_culling);
-    renderer->set_async_upload_enabled(async_upload_enabled);
-    renderer->set_opacity_multiplier(opacity);
-}
-
-void GaussianSplatWorld3D::_apply_quality_settings() {
-    if (!renderer.is_valid()) {
-        return;
-    }
-
-    _apply_renderer_settings();
+Dictionary GaussianSplatWorld3D::_build_desired_renderer_overrides() const {
+    Dictionary overrides;
+    overrides[StringName("lod_enabled")] = lod_enabled;
+    overrides[StringName("lod_bias")] = lod_bias;
+    overrides[StringName("lod_max_distance")] = max_render_distance;
+    overrides[StringName("max_splats")] = int64_t(max_splat_count);
+    overrides[StringName("frustum_culling")] = use_frustum_culling;
+    overrides[StringName("async_upload_enabled")] = async_upload_enabled;
+    overrides[StringName("opacity_multiplier")] = (double)opacity;
 
     ProjectSettings *ps = ProjectSettings::get_singleton();
     if (!ps) {
-        return;
+        return overrides;
     }
 
     const String tier_preset = ps->get_setting("rendering/gaussian_splatting/quality/tier_preset", "custom");
     const bool apply_tier_budgets = ps->get_setting("rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true);
     if (!apply_tier_budgets) {
-        return;
+        return overrides;
     }
 
     QualityTierConfig tier_config;
     if (!get_quality_tier_config(tier_preset, tier_config)) {
-        return;
+        return overrides;
     }
 
-    renderer->set_max_splats(MAX(1000, (int)tier_config.max_splats));
+    overrides[StringName("max_splats")] = int64_t(MAX(1000, int(tier_config.max_splats)));
 
-    GaussianStreamingSystem::ConfigOverrides overrides;
-    overrides.override_prefetch = true;
-    overrides.predictive_prefetch_enabled = ps->get_setting(
+    Dictionary streaming_overrides;
+    streaming_overrides[StringName("override_prefetch")] = true;
+    streaming_overrides[StringName("predictive_prefetch_enabled")] = ps->get_setting(
             "rendering/gaussian_splatting/streaming/predictive_prefetch_enabled", true);
     float base_prefetch = ps->get_setting(
             "rendering/gaussian_splatting/streaming/prefetch_lookahead_distance", 10.0f);
-    float max_distance = renderer->get_lod_max_distance();
+    float max_distance = max_render_distance;
     float computed_prefetch = max_distance > 0.0f ? max_distance * tier_config.load_ahead_factor : base_prefetch;
-    overrides.prefetch_lookahead_distance = MAX(0.0f, computed_prefetch);
+    streaming_overrides[StringName("prefetch_lookahead_distance")] = (double)MAX(0.0f, computed_prefetch);
 
-    overrides.override_vram_budget = true;
+    streaming_overrides[StringName("override_vram_budget")] = true;
     VRAMBudgetConfig vram_config = VRAMBudgetConfig::load_from_project_settings();
     // Tier caps the budget (acts as maximum), but respect project settings if lower
     // Ensure minimum of 64MB to avoid degenerate configurations
     vram_config.budget_mb = MAX(64u, MIN(vram_config.budget_mb, tier_config.max_gpu_memory_mb));
     vram_config.min_chunks = MIN(vram_config.min_chunks, vram_config.max_chunks);
-    overrides.vram_budget_config = vram_config;
+    streaming_overrides[StringName("vram_budget_mb")] = int64_t(vram_config.budget_mb);
+    streaming_overrides[StringName("vram_min_chunks")] = int64_t(vram_config.min_chunks);
+    streaming_overrides[StringName("vram_max_chunks")] = int64_t(vram_config.max_chunks);
 
     const String world_path = world.is_valid() ? world->get_path() : String();
     if (!world_path.is_empty() && world_path.get_extension().to_lower() == "gsplatworld") {
-        overrides.override_io_source = true;
-        overrides.io_source_path = world_path;
+        streaming_overrides[StringName("override_io_source")] = true;
+        streaming_overrides[StringName("io_source_path")] = world_path;
     }
 
-    renderer->set_streaming_config_overrides(overrides);
+    overrides[StringName("streaming")] = streaming_overrides;
+    return overrides;
+}
+
+void GaussianSplatWorld3D::_resubmit_world_submission_if_registered() {
+    if (!is_inside_tree() || world.is_null()) {
+        return;
+    }
+
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    if (!director) {
+        return;
+    }
+
+    GaussianSplatSceneDirector::WorldSubmission active_submission;
+    if (!director->get_world_submission(get_instance_id(), &active_submission)) {
+        return;
+    }
+
+    _register_shared_renderer();
 }
 
 void GaussianSplatWorld3D::_apply_world_internal() {
@@ -435,94 +360,43 @@ void GaussianSplatWorld3D::_register_shared_renderer() {
     if (world.is_null()) {
         return;
     }
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    if (!director) {
+        return;
+    }
+
+    GaussianSplatSceneDirector::WorldSubmission submission;
+    submission.owner_id = get_instance_id();
+    submission.scenario = get_world_3d().is_valid() ? get_world_3d()->get_scenario() : RID();
+    submission.gaussian_data = world->get_gaussian_data();
+    submission.static_chunks = world->get_static_chunks();
+    submission.bounds = world->get_bounds();
+    if (!submission.bounds.has_volume() && submission.gaussian_data.is_valid()) {
+        submission.bounds = submission.gaussian_data->get_aabb();
+    }
+    submission.metadata = world->get_metadata();
+    const String world_path = world->get_path();
+    if (!world_path.is_empty()) {
+        submission.metadata[StringName("world_path")] = world_path;
+    }
+    submission.desired_renderer_overrides = _build_desired_renderer_overrides();
+    if (!director->submit_world_submission(submission)) {
+        if (_is_world_debug_enabled()) {
+            GS_LOG_RENDERER_DEBUG(vformat("[GSWORLD-DBG] Skipping apply_world: scenario %d ownership is held by another world",
+                    (uint64_t)submission.scenario.get_id()));
+        }
+        return;
+    }
+
     _ensure_renderer();
-    if (!renderer.is_valid()) {
-        return;
-    }
-
-    const Ref<GaussianData> splat_data = world->get_gaussian_data();
-    const Vector<GaussianSplatRenderer::StaticChunk> &chunks = world->get_static_chunks();
-    const ObjectID renderer_id = renderer->get_instance_id();
-    const ObjectID owner_id = get_instance_id();
-    if (renderer_id == ObjectID() || owner_id == ObjectID()) {
-        return;
-    }
-
-    const bool owns_renderer = _is_world_renderer_owner(renderer_id, owner_id);
-    const auto &scene_state = renderer->get_scene_state();
-    const bool foreign_scene_data = scene_state.gaussian_data.is_valid() && scene_state.gaussian_data != splat_data && !owns_renderer;
-
-    if (!_claim_world_renderer_owner(renderer_id, owner_id)) {
-        if (_is_world_debug_enabled()) {
-            GS_LOG_RENDERER_DEBUG(vformat("[GSWORLD-DBG] Skipping apply_world: renderer %d ownership is held by another world",
-                    (uint64_t)renderer_id));
-        }
-        return;
-    }
-
-    _apply_quality_settings();
-
-    if (foreign_scene_data) {
-        if (_is_world_debug_enabled()) {
-            GS_LOG_RENDERER_DEBUG(vformat("[GSWORLD-DBG] Replacing stale renderer %d scene data with world data",
-                    (uint64_t)renderer_id));
-        }
-        renderer->set_gaussian_data(Ref<GaussianData>());
-        renderer->clear_static_chunks();
-    }
-
-    const uint32_t data_count = splat_data.is_valid() ? splat_data->get_count() : 0;
-    uint32_t effective_max = renderer->get_max_splats();
-    if (effective_max > 0 && data_count > 0) {
-        effective_max = MIN(effective_max, data_count);
-    } else if (data_count > 0) {
-        effective_max = data_count;
-    } else {
-        effective_max = 1000;
-    }
-    renderer->set_max_splats(effective_max);
-
-    const auto &resource_state = renderer->get_resource_state();
-    if (!resource_state.gpu_resources_initialized && !resource_state.gpu_initialization_pending) {
-        renderer->initialize();
-    }
-
-    Error err = renderer->set_gaussian_data(splat_data);
-    if (err != OK) {
-        GS_LOG_RENDERER_ERROR(vformat("[GaussianSplatWorld3D] Failed to apply world data (err=%d).", err));
-        renderer->clear_static_chunks();
-        _release_world_renderer_owner(renderer_id, owner_id);
-        return;
-    }
-    if (data_count == 0) {
-        const String world_path = world.is_valid() ? world->get_path() : String();
-        if (world_path.is_empty()) {
-            WARN_PRINT("[GaussianSplatWorld3D] World resource has zero splats; renderer will stay disconnected.");
-        } else {
-            WARN_PRINT(vformat("[GaussianSplatWorld3D] World resource '%s' has zero splats; renderer will stay disconnected.",
-                    world_path));
-        }
-        renderer->clear_static_chunks();
-        return;
-    }
-    renderer->set_static_chunks(chunks);
 }
 
 void GaussianSplatWorld3D::_unregister_shared_renderer() {
-    if (!renderer.is_valid()) {
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    if (!director) {
         return;
     }
-    const ObjectID renderer_id = renderer->get_instance_id();
-    const ObjectID owner_id = get_instance_id();
-    if (renderer_id == ObjectID() || owner_id == ObjectID()) {
-        return;
-    }
-    if (!_is_world_renderer_owner(renderer_id, owner_id)) {
-        return;
-    }
-    renderer->set_gaussian_data(Ref<GaussianData>());
-    renderer->clear_static_chunks();
-    _release_world_renderer_owner(renderer_id, owner_id);
+    director->release_world_submission(get_instance_id());
 }
 
 void GaussianSplatWorld3D::_update_bounds() {

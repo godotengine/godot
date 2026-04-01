@@ -111,6 +111,8 @@ public:
 
 	void collect_instance_assets_for_renderer(const GaussianSplatRenderer *p_renderer, LocalVector<InstanceAssetRegistration> &out,
 			bool p_shadow_casters_only = false) const;
+    bool submit_world_submission(const WorldSubmission &p_submission);
+    void release_world_submission(ObjectID p_owner_id);
     bool upsert_world_submission(const WorldSubmission &p_submission);
     void unregister_world_submission(ObjectID p_owner_id);
     bool get_world_submission(ObjectID p_owner_id, WorldSubmission *r_submission) const;
@@ -201,6 +203,12 @@ private:
     static bool _retain_asset_record(SharedWorld &p_world, const Ref<GaussianSplatAsset> &p_asset, uint32_t p_asset_id);
     static bool _refresh_asset_record(SharedWorld &p_world, const Ref<GaussianSplatAsset> &p_asset, uint32_t p_asset_id);
     static void _release_asset_record(SharedWorld &p_world, uint32_t p_asset_id);
+    static bool _is_world_submission_owner_live(ObjectID p_owner_id);
+    static void _store_world_submission_record(SharedWorld::WorldSubmissionRecord &r_record, const WorldSubmission &p_submission);
+    static void _copy_world_submission_record(const SharedWorld &p_world, const SharedWorld::WorldSubmissionRecord &p_record,
+            WorldSubmission *r_submission);
+    static void _clear_world_submission_renderer(SharedWorld &p_world);
+    static bool _apply_world_submission_to_renderer(SharedWorld &p_world, const SharedWorld::WorldSubmissionRecord &p_record);
 };
 
 #endif // GAUSSIAN_SPLAT_SCENE_DIRECTOR_H

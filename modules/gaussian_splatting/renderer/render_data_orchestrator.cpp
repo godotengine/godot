@@ -575,3 +575,7 @@ void GaussianSplatRenderer::set_streaming_config_overrides(
 		const GaussianStreamingSystem::ConfigOverrides &p_overrides) {
 	data_orchestrator->set_streaming_config_overrides(p_overrides);
 }
+
+GaussianStreamingSystem::ConfigOverrides GaussianSplatRenderer::get_streaming_config_overrides() const {
+	return data_orchestrator ? data_orchestrator->get_streaming_config_overrides() : GaussianStreamingSystem::ConfigOverrides();
+}
