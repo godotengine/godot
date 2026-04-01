@@ -140,6 +140,10 @@ void NavigationMeshArea3D::_notification(int p_what) {
 	}
 }
 
+RID NavigationMeshArea3D::get_rid() const {
+	return area;
+}
+
 void NavigationMeshAreaBox3D::_update_bounds() {
 	Vector<Vector3> vertices;
 	vertices.resize(4);
@@ -322,6 +326,8 @@ void NavigationMeshArea3D::_clear_debug() {
 #endif // DEBUG_ENABLED
 
 void NavigationMeshArea3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationMeshArea3D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshArea3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshArea3D::is_enabled);
 
@@ -359,6 +365,10 @@ NavigationMeshArea3D::NavigationMeshArea3D() {
 }
 
 NavigationMeshArea3D::~NavigationMeshArea3D() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+	NavigationServer3D::get_singleton()->free_rid(area);
+	area = RID();
+
 #ifdef DEBUG_ENABLED
 	RenderingServer *rs = RenderingServer::get_singleton();
 	ERR_FAIL_NULL(rs);
@@ -474,6 +484,10 @@ void NavigationMeshAreaBox3D::_bind_methods() {
 }
 
 NavigationMeshAreaBox3D::NavigationMeshAreaBox3D() {
+	area = NavigationServer3D::get_singleton()->area_create(NavigationServer3D::AreaShapeType3D::AREA_SHAPE_BOX);
+
+	NavigationServer3D::get_singleton()->area_set_navigation_layers(area, navigation_layers);
+	NavigationServer3D::get_singleton()->area_set_enabled(area, enabled);
 }
 
 NavigationMeshAreaBox3D::~NavigationMeshAreaBox3D() {
@@ -625,6 +639,10 @@ void NavigationMeshAreaCylinder3D::_bind_methods() {
 }
 
 NavigationMeshAreaCylinder3D::NavigationMeshAreaCylinder3D() {
+	area = NavigationServer3D::get_singleton()->area_create(NavigationServer3D::AreaShapeType3D::AREA_SHAPE_CYLINDER);
+
+	NavigationServer3D::get_singleton()->area_set_navigation_layers(area, navigation_layers);
+	NavigationServer3D::get_singleton()->area_set_enabled(area, enabled);
 }
 
 NavigationMeshAreaCylinder3D::~NavigationMeshAreaCylinder3D() {
@@ -768,6 +786,10 @@ void NavigationMeshAreaPolygon3D::_bind_methods() {
 }
 
 NavigationMeshAreaPolygon3D::NavigationMeshAreaPolygon3D() {
+	area = NavigationServer3D::get_singleton()->area_create(NavigationServer3D::AreaShapeType3D::AREA_SHAPE_POLYGON);
+
+	NavigationServer3D::get_singleton()->area_set_navigation_layers(area, navigation_layers);
+	NavigationServer3D::get_singleton()->area_set_enabled(area, enabled);
 }
 
 NavigationMeshAreaPolygon3D::~NavigationMeshAreaPolygon3D() {

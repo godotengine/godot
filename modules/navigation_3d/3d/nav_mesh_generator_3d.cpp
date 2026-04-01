@@ -158,6 +158,17 @@ void NavMeshGenerator3D::parse_source_geometry_data(Ref<NavigationMesh> p_naviga
 	}
 }
 
+void NavMeshGenerator3D::parse_map_geometry_meta_data(Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, NavMap3D *p_map, const Callable &p_callback) {
+	ERR_FAIL_COND(p_source_geometry_data.is_null());
+	ERR_FAIL_NULL(p_map);
+
+	generator_parse_map_geometry_meta_data(p_source_geometry_data, p_map);
+
+	if (p_callback.is_valid()) {
+		generator_emit_callback(p_callback);
+	}
+}
+
 void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
 	ERR_FAIL_COND(p_navigation_mesh.is_null());
 	ERR_FAIL_COND(p_source_geometry_data.is_null());
@@ -262,6 +273,7 @@ void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh>
 		if (!parser->callback.is_valid()) {
 			continue;
 		}
+		// The callback is defined in each Node. See `NavigationServer3D::get_singleton()->source_geometry_parser_create();` calls.
 		parser->callback.call(p_navigation_mesh, p_source_geometry_data, p_node);
 	}
 	generator_parsers_rwlock.read_unlock();
@@ -299,6 +311,14 @@ void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<Navigati
 
 	for (Node *parse_node : parse_nodes) {
 		generator_parse_geometry_node(p_navigation_mesh, p_source_geometry_data, parse_node, recurse_children);
+	}
+}
+
+void NavMeshGenerator3D::generator_parse_map_geometry_meta_data(Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, NavMap3D *p_map) {
+	// Parse all projected areas created over navigation server.
+	for (NavArea3D *area : p_map->get_areas()) {
+		// FIXME: see NavigationMeshArea3D::navmesh_parse_source_geometry().
+		// p_source_geometry_data->add_projected_area_box(area_bounds, area_navigation_layers, area_priority);
 	}
 }
 

@@ -298,6 +298,52 @@
 				Replaces the internal velocity in the collision avoidance simulation with [param velocity] for the specified [param agent]. When an agent is teleported to a new position this function should be used in the same frame. If called frequently this function can get agents stuck.
 			</description>
 		</method>
+		<method name="area_create">
+			<return type="RID" />
+			<param index="0" name="shape_type" type="int" enum="NavigationServer3D.AreaShapeType3D" />
+			<description>
+				Create a new server-only mesh area (see [NavigationMeshArea3D]) according to the given shape type on a map.
+			</description>
+		</method>
+		<method name="area_get_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_map" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_enabled">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_map">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_navigation_layers">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="bake_from_source_geometry_data">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
@@ -896,6 +942,15 @@
 			<param index="1" name="vertices" type="PackedVector3Array" />
 			<description>
 				Sets the outline vertices for the obstacle. If the vertices are winded in clockwise order agents will be pushed in by the obstacle, else they will be pushed out.
+			</description>
+		</method>
+		<method name="parse_map_geometry_meta_data">
+			<return type="void" />
+			<param index="0" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="1" name="map" type="RID" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<description>
+				Parses navigation area meshes created with [method area_create] that were assigned [param map] via [method area_set_map] and adds the result to [param source_geometry_data]. The resource can then be used to bake a navigation mesh with [method bake_from_source_geometry_data].
 			</description>
 		</method>
 		<method name="parse_source_geometry_data">

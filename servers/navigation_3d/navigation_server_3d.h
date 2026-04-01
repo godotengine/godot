@@ -157,6 +157,35 @@ public:
 
 	virtual AABB region_get_bounds(RID p_region) const = 0;
 
+	/* Area API */
+	enum AreaShapeType3D {
+		AREA_SHAPE_NONE = 0,
+		AREA_SHAPE_BOX,
+		AREA_SHAPE_CYLINDER,
+		AREA_SHAPE_POLYGON
+	};
+
+	virtual RID area_create(AreaShapeType3D p_shape_type) = 0;
+	virtual void area_set_map(RID p_area, RID p_map) = 0;
+	virtual RID area_get_map(RID p_area) const = 0;
+	virtual void area_set_enabled(RID p_area, bool p_enabled) = 0;
+	virtual bool area_get_enabled(RID p_area) const = 0;
+	// virtual void area_set_position(RID p_area, Vector3 p_position) = 0;
+	// virtual Vector3 area_get_position(RID p_area) const = 0;
+	// virtual void area_set_height(RID p_area, real_t p_height) = 0;
+	// virtual real_t area_get_height(RID p_area) const = 0;
+	virtual void area_set_navigation_layers(RID p_area, uint32_t p_layers) = 0;
+	virtual uint32_t area_get_navigation_layers(RID p_area) const = 0;
+	// virtual void area_set_bake_priority(RID p_area, int p_priority) = 0;
+	// virtual real_t area_get_bake_priority(RID p_area) const = 0;
+	// virtual AABB area_get_bounds(RID p_area) const = 0;
+	// virtual void area_set_cylinder_radius(RID p_area, real_t p_radius) = 0;
+	// virtual real_t area_get_cylinder_radius(RID p_area) const = 0;
+	// virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) = 0;
+	// virtual Vector<Vector3> area_get_vertices(RID p_area) const = 0;
+	// virtual bool are_area_polyogn_vertices_clockwise(RID p_area) const = 0;
+	// virtual bool are_area_polyogn_vertices_valid(RID p_area) const = 0;
+
 	/* LINK API */
 
 	virtual RID link_create() = 0;
@@ -279,14 +308,6 @@ public:
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) = 0;
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const = 0;
 
-	/* Area API */
-	enum AreaShapeType3D {
-		AREA_SHAPE_NONE = 0,
-		AREA_SHAPE_BOX,
-		AREA_SHAPE_CYLINDER,
-		AREA_SHAPE_POLYGON
-	};
-
 	/* QUERY API */
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result, const Callable &p_callback = Callable()) = 0;
@@ -295,6 +316,7 @@ public:
 
 #ifndef _3D_DISABLED
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) = 0;
+	virtual void parse_map_geometry_meta_data(const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, RID p_map, const Callable &p_callback = Callable()) = 0;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const = 0;

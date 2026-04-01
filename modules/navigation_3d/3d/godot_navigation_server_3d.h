@@ -31,14 +31,13 @@
 #pragma once
 
 #include "../nav_agent_3d.h"
+#include "../nav_area_3d.h"
 #include "../nav_link_3d.h"
 #include "../nav_map_3d.h"
 #include "../nav_obstacle_3d.h"
 #include "../nav_region_3d.h"
 
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
-#include "core/templates/rid_owner.h"
 #include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
 #include "servers/navigation_3d/navigation_path_query_result_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
@@ -74,6 +73,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	mutable RID_Owner<NavLink3D> link_owner;
 	mutable RID_Owner<NavMap3D> map_owner;
 	mutable RID_Owner<NavRegion3D> region_owner;
+	mutable RID_Owner<NavArea3D> area_owner;
 	mutable RID_Owner<NavAgent3D> agent_owner;
 	mutable RID_Owner<NavObstacle3D> obstacle_owner;
 
@@ -189,6 +189,14 @@ public:
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override;
 	virtual AABB region_get_bounds(RID p_region) const override;
 
+	virtual RID area_create(AreaShapeType3D p_shape_type) override;
+	COMMAND_2(area_set_map, RID, p_area, RID, p_map);
+	virtual RID area_get_map(RID p_area) const override;
+	COMMAND_2(area_set_enabled, RID, p_area, bool, p_enabled);
+	virtual bool area_get_enabled(RID p_area) const override;
+	COMMAND_2(area_set_navigation_layers, RID, p_area, uint32_t, p_navigation_layers);
+	virtual uint32_t area_get_navigation_layers(RID p_area) const override;
+
 	virtual RID link_create() override;
 	virtual uint32_t link_get_iteration_id(RID p_link) const override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
@@ -273,6 +281,7 @@ public:
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override;
 
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
+	virtual void parse_map_geometry_meta_data(const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, RID p_map, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;
