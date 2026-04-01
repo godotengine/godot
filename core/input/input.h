@@ -125,6 +125,7 @@ private:
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
+	bool legacy_keyboard_mouse_device_ids = false;
 	bool disable_input = false;
 	bool ignore_joypad_on_unfocused_application = false;
 	bool application_focused = true;

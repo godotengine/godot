@@ -206,19 +206,41 @@ void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputE
 		return; // Already added.
 	}
 
-	// Normalize legacy device IDs: before the device ID change,
-	// keyboard and mouse events defaulted to device=0.
-	if (p_event->get_device() == 0) {
+	bool legacy_keyboard_mouse_device_ids = false;
+	if (ProjectSettings::get_singleton()->has_setting("input_devices/compatibility/legacy_keyboard_mouse_device_ids")) {
+		legacy_keyboard_mouse_device_ids = GLOBAL_GET("input_devices/compatibility/legacy_keyboard_mouse_device_ids");
+	}
+	if (legacy_keyboard_mouse_device_ids) {
+		// Legacy behavior: keyboard and mouse events used device=0.
 		switch (p_event->get_type()) {
 			case InputEventType::KEY:
-				p_event->set_device(InputEvent::DEVICE_ID_KEYBOARD);
+				if (p_event->get_device() == InputEvent::DEVICE_ID_KEYBOARD) {
+					p_event->set_device(0);
+				}
 				break;
 			case InputEventType::MOUSE_BUTTON:
 			case InputEventType::MOUSE_MOTION:
-				p_event->set_device(InputEvent::DEVICE_ID_MOUSE);
+				if (p_event->get_device() == InputEvent::DEVICE_ID_MOUSE) {
+					p_event->set_device(0);
+				}
 				break;
 			default:
 				break;
+		}
+	} else {
+		// keyboard and mouse events defaults to device=0.
+		if (p_event->get_device() == 0) {
+			switch (p_event->get_type()) {
+				case InputEventType::KEY:
+					p_event->set_device(InputEvent::DEVICE_ID_KEYBOARD);
+					break;
+				case InputEventType::MOUSE_BUTTON:
+				case InputEventType::MOUSE_MOTION:
+					p_event->set_device(InputEvent::DEVICE_ID_MOUSE);
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
