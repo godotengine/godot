@@ -862,18 +862,26 @@ void GaussianSplatNodeQualityHelper::update_quality_settings() {
     const String preset_default_source_label = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM
             ? String("custom preset default")
             : preset_source_label;
+    auto maybe_log_tier_cap = [&](const StringName &p_key, const char *p_metric,
+            double p_requested, double p_effective, const String &p_source) {
+        if (p_source != "tier_cap") {
+            return;
+        }
+        const Dictionary previous_entry = GaussianEffectiveConfig::get_entry(previous_effective_snapshot, p_key);
+        const double previous_value = double(previous_entry.get(StringName("value"), Variant(-1.0)));
+        const String previous_source = String(previous_entry.get(StringName("source"), String()));
+        if (!Math::is_equal_approx(previous_value, p_effective) || previous_source != p_source) {
+            GS_LOG_INFO_DEFAULT(vformat("[Effective Config] %s capped by tier '%s': %s -> %s",
+                    String(p_metric), tier_preset, String::num_real(p_requested), String::num_real(p_effective)));
+        }
+    };
+
     String max_splats_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "node_property" : "quality_preset";
     String max_splats_source_label = preset_source_label;
     if (has_tier_config && effective_max_splats < owner.max_splat_count) {
         max_splats_source = "tier_cap";
         max_splats_source_label = vformat("capped by tier '%s'", tier_preset);
-        const Dictionary previous_entry = GaussianEffectiveConfig::get_entry(previous_effective_snapshot, StringName("max_splats"));
-        const int64_t previous_value = int64_t(previous_entry.get(StringName("value"), int64_t(-1)));
-        const String previous_source = String(previous_entry.get(StringName("source"), String()));
-        if (previous_value != int64_t(effective_max_splats) || previous_source != max_splats_source) {
-            GS_LOG_INFO_DEFAULT(vformat("[Effective Config] max_splats capped by tier '%s': %d -> %d",
-                    tier_preset, owner.max_splat_count, effective_max_splats));
-        }
+        maybe_log_tier_cap(StringName("max_splats"), "max_splats", owner.max_splat_count, effective_max_splats, max_splats_source);
     }
 
     String gpu_memory_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "preset_default" : "quality_preset";
@@ -883,13 +891,47 @@ void GaussianSplatNodeQualityHelper::update_quality_settings() {
     if (has_tier_config && effective_max_gpu_mb < max_gpu_memory_mb) {
         gpu_memory_source = "tier_cap";
         gpu_memory_source_label = vformat("capped by tier '%s'", tier_preset);
-        const Dictionary previous_entry = GaussianEffectiveConfig::get_entry(previous_effective_snapshot, StringName("gpu_memory_mb"));
-        const int64_t previous_value = int64_t(previous_entry.get(StringName("value"), int64_t(-1)));
-        const String previous_source = String(previous_entry.get(StringName("source"), String()));
-        if (previous_value != int64_t(effective_max_gpu_mb) || previous_source != gpu_memory_source) {
-            GS_LOG_INFO_DEFAULT(vformat("[Effective Config] gpu_memory_mb capped by tier '%s': %d -> %d",
-                    tier_preset, max_gpu_memory_mb, effective_max_gpu_mb));
-        }
+        maybe_log_tier_cap(StringName("gpu_memory_mb"), "gpu_memory_mb", max_gpu_memory_mb, effective_max_gpu_mb, gpu_memory_source);
+    }
+    String target_gpu_memory_source = gpu_memory_source;
+    String target_gpu_memory_source_label = gpu_memory_source_label;
+    if (has_tier_config && effective_target_gpu_mb < target_gpu_memory_mb) {
+        target_gpu_memory_source = "tier_cap";
+        target_gpu_memory_source_label = vformat("capped by tier '%s'", tier_preset);
+        maybe_log_tier_cap(StringName("target_gpu_memory_mb"), "target_gpu_memory_mb",
+                target_gpu_memory_mb, effective_target_gpu_mb, target_gpu_memory_source);
+    }
+    String load_ahead_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "preset_default" : "quality_preset";
+    String load_ahead_source_label = preset_default_source_label;
+    if (has_tier_config && effective_load_ahead < load_ahead_factor) {
+        load_ahead_source = "tier_cap";
+        load_ahead_source_label = vformat("capped by tier '%s'", tier_preset);
+        maybe_log_tier_cap(StringName("streaming_load_ahead_factor"), "streaming_load_ahead_factor",
+                load_ahead_factor, effective_load_ahead, load_ahead_source);
+    }
+    String unload_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "preset_default" : "quality_preset";
+    String unload_source_label = preset_default_source_label;
+    if (has_tier_config && effective_unload < unload_factor) {
+        unload_source = "tier_cap";
+        unload_source_label = vformat("capped by tier '%s'", tier_preset);
+        maybe_log_tier_cap(StringName("streaming_unload_factor"), "streaming_unload_factor",
+                unload_factor, effective_unload, unload_source);
+    }
+    String concurrent_loads_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "preset_default" : "quality_preset";
+    String concurrent_loads_source_label = preset_default_source_label;
+    if (has_tier_config && effective_concurrent_loads < max_concurrent_loads) {
+        concurrent_loads_source = "tier_cap";
+        concurrent_loads_source_label = vformat("capped by tier '%s'", tier_preset);
+        maybe_log_tier_cap(StringName("streaming_max_concurrent_loads"), "streaming_max_concurrent_loads",
+                max_concurrent_loads, effective_concurrent_loads, concurrent_loads_source);
+    }
+    String stream_budget_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "preset_default" : "quality_preset";
+    String stream_budget_source_label = preset_default_source_label;
+    if (has_tier_config && effective_stream_budget_ms < stream_budget_ms) {
+        stream_budget_source = "tier_cap";
+        stream_budget_source_label = vformat("capped by tier '%s'", tier_preset);
+        maybe_log_tier_cap(StringName("stream_budget_ms"), "stream_budget_ms",
+                stream_budget_ms, effective_stream_budget_ms, stream_budget_source);
     }
 
     const float lod0_ratio = CLAMP(get_float("lod0_ratio", 0.25f), 0.0f, 1.0f);
@@ -931,14 +973,21 @@ void GaussianSplatNodeQualityHelper::update_quality_settings() {
             int64_t(effective_max_gpu_mb), gpu_memory_source, gpu_memory_source_label,
             vformat("%d MB", effective_max_gpu_mb));
     GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("target_gpu_memory_mb"),
-            int64_t(effective_target_gpu_mb), gpu_memory_source, gpu_memory_source_label,
+            int64_t(effective_target_gpu_mb), target_gpu_memory_source, target_gpu_memory_source_label,
             vformat("%d MB", effective_target_gpu_mb));
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("streaming_load_ahead_factor"),
+            (double)effective_load_ahead, load_ahead_source, load_ahead_source_label,
+            String::num_real(effective_load_ahead));
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("streaming_unload_factor"),
+            (double)effective_unload, unload_source, unload_source_label,
+            String::num_real(effective_unload));
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("streaming_max_concurrent_loads"),
+            int64_t(effective_concurrent_loads), concurrent_loads_source, concurrent_loads_source_label,
+            itos(effective_concurrent_loads));
     GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("stream_budget_ms"),
             int64_t(effective_stream_budget_ms),
-            has_tier_config && effective_stream_budget_ms < stream_budget_ms ? String("tier_cap") : String("quality_preset"),
-            has_tier_config && effective_stream_budget_ms < stream_budget_ms
-                    ? vformat("capped by tier '%s'", tier_preset)
-                    : preset_default_source_label,
+            stream_budget_source,
+            stream_budget_source_label,
             vformat("%d ms", effective_stream_budget_ms));
     GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("lod_max_distance"),
             (double)owner.max_render_distance,

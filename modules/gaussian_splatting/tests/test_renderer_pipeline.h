@@ -21,6 +21,7 @@
 #include "../renderer/gaussian_gpu_layout.h"
 #include "../renderer/gpu_sorting_config.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/pipeline_feature_set.h"
 #include "../renderer/render_debug_state_orchestrator.h"
 #include "../renderer/render_instancing_orchestrator.h"
 #include "../renderer/render_pipeline_stages.h"
@@ -746,6 +747,42 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Resident route publishes an atlas-sh
     CHECK(hud_lines_contain(hud_lines, "Instance Contract: atlas_emulation (ready)"));
 
     renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting] Pipeline feature snapshot distinguishes code defaults from project overrides") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String fast_raster_setting = PipelineFeatureSet::ENABLE_FAST_RASTER_PATH;
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String tier_apply_setting = "rendering/gaussian_splatting/quality/tier_apply_pipeline_toggles";
+
+    ScopedProjectSetting fast_raster_guard(project_settings, fast_raster_setting);
+    ScopedProjectSetting tier_preset_guard(project_settings, tier_preset_setting);
+    ScopedProjectSetting tier_apply_guard(project_settings, tier_apply_setting);
+
+    project_settings->set_setting(tier_preset_setting, String("custom"));
+    project_settings->set_setting(tier_apply_setting, false);
+
+    project_settings->set_setting(fast_raster_setting, false);
+    project_settings->set_builtin_order(fast_raster_setting);
+    g_pipeline_feature_set.load_from_project_settings();
+    Dictionary snapshot = g_pipeline_feature_set.get_effective_config_snapshot();
+    Dictionary fast_raster_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("pipeline_fast_raster"));
+    CHECK(String(fast_raster_entry.get(StringName("source_label"), String())) == String("code default"));
+
+    project_settings->clear(fast_raster_setting);
+    project_settings->set_setting(fast_raster_setting, true);
+    g_pipeline_feature_set.load_from_project_settings();
+    snapshot = g_pipeline_feature_set.get_effective_config_snapshot();
+    fast_raster_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("pipeline_fast_raster"));
+    CHECK(bool(fast_raster_entry.get(StringName("value"), false)));
+    CHECK(String(fast_raster_entry.get(StringName("source_label"), String())) == String("project override"));
+
+    g_pipeline_feature_set.load_from_project_settings();
 }
 
 TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance drives GPU streaming + sorting") {

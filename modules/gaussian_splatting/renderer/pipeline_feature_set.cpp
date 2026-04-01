@@ -18,6 +18,17 @@ const String PipelineFeatureSet::ENABLE_ALL_EXPERIMENTAL_PATH = SECTION_PATH + "
 
 PipelineFeatureSet g_pipeline_feature_set;
 
+static void _describe_project_setting_source(ProjectSettings *p_ps, const String &p_path,
+        String &r_source, String &r_source_label) {
+    if (p_ps != nullptr && p_ps->has_setting(p_path) && !p_ps->is_builtin_setting(p_path)) {
+        r_source = "project_override";
+        r_source_label = "project override";
+        return;
+    }
+    r_source = "code_default";
+    r_source_label = "code default";
+}
+
 static void _register_pipeline_project_settings() {
     GLOBAL_DEF(PipelineFeatureSet::ENABLE_TWO_STAGE_SORT_PATH, g_pipeline_feature_set.enable_two_stage_sort);
     GLOBAL_DEF(PipelineFeatureSet::ENABLE_PACKED_STAGE_DATA_PATH, g_pipeline_feature_set.enable_packed_stage_data);
@@ -52,10 +63,27 @@ void PipelineFeatureSet::load_from_project_settings() {
 
     const String tier_preset = ps->get_setting("rendering/gaussian_splatting/quality/tier_preset", "custom");
     const bool apply_tier_toggles = ps->get_setting("rendering/gaussian_splatting/quality/tier_apply_pipeline_toggles", true);
-    const String default_source = "project_setting";
-    const String default_source_label = "project setting";
-    String feature_source = default_source;
-    String feature_source_label = default_source_label;
+
+    String two_stage_sort_source;
+    String two_stage_sort_source_label;
+    String packed_stage_source;
+    String packed_stage_source_label;
+    String tighter_bounds_source;
+    String tighter_bounds_source_label;
+    String fast_raster_source;
+    String fast_raster_source_label;
+    String sh_amortization_source;
+    String sh_amortization_source_label;
+    String sh_amortization_divisor_source;
+    String sh_amortization_divisor_source_label;
+
+    _describe_project_setting_source(ps, ENABLE_TWO_STAGE_SORT_PATH, two_stage_sort_source, two_stage_sort_source_label);
+    _describe_project_setting_source(ps, ENABLE_PACKED_STAGE_DATA_PATH, packed_stage_source, packed_stage_source_label);
+    _describe_project_setting_source(ps, ENABLE_TIGHTER_BOUNDS_PATH, tighter_bounds_source, tighter_bounds_source_label);
+    _describe_project_setting_source(ps, ENABLE_FAST_RASTER_PATH, fast_raster_source, fast_raster_source_label);
+    _describe_project_setting_source(ps, ENABLE_SH_AMORTIZATION_PATH, sh_amortization_source, sh_amortization_source_label);
+    _describe_project_setting_source(ps, SH_AMORTIZATION_DIVISOR_PATH, sh_amortization_divisor_source, sh_amortization_divisor_source_label);
+
     if (apply_tier_toggles) {
         QualityTierConfig tier_config;
         if (get_quality_tier_config(tier_preset, tier_config)) {
@@ -64,25 +92,33 @@ void PipelineFeatureSet::load_from_project_settings() {
             enable_fast_raster = tier_config.enable_fast_raster;
             enable_sh_amortization = tier_config.enable_sh_amortization;
             sh_amortization_divisor = tier_config.sh_amortization_divisor;
-            feature_source = "tier_preset";
-            feature_source_label = vformat("tier preset '%s'", tier_preset);
+            packed_stage_source = "tier_preset";
+            packed_stage_source_label = vformat("tier preset '%s'", tier_preset);
+            tighter_bounds_source = "tier_preset";
+            tighter_bounds_source_label = packed_stage_source_label;
+            fast_raster_source = "tier_preset";
+            fast_raster_source_label = packed_stage_source_label;
+            sh_amortization_source = "tier_preset";
+            sh_amortization_source_label = packed_stage_source_label;
+            sh_amortization_divisor_source = "tier_preset";
+            sh_amortization_divisor_source_label = packed_stage_source_label;
             GS_LOG_INFO_DEFAULT(vformat("[Pipeline Feature Set] Applying quality tier preset: %s", tier_config.name));
         }
     }
 
     Dictionary snapshot;
     GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_two_stage_sort"),
-            enable_two_stage_sort, default_source, default_source_label);
+            enable_two_stage_sort, two_stage_sort_source, two_stage_sort_source_label);
     GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_packed_stage_data"),
-            enable_packed_stage_data, feature_source, feature_source_label);
+            enable_packed_stage_data, packed_stage_source, packed_stage_source_label);
     GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_tighter_bounds"),
-            enable_tighter_bounds, feature_source, feature_source_label);
+            enable_tighter_bounds, tighter_bounds_source, tighter_bounds_source_label);
     GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_fast_raster"),
-            enable_fast_raster, feature_source, feature_source_label);
+            enable_fast_raster, fast_raster_source, fast_raster_source_label);
     GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_sh_amortization"),
-            enable_sh_amortization, feature_source, feature_source_label);
+            enable_sh_amortization, sh_amortization_source, sh_amortization_source_label);
     GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_sh_amortization_divisor"),
-            int64_t(sh_amortization_divisor), feature_source, feature_source_label);
+            int64_t(sh_amortization_divisor), sh_amortization_divisor_source, sh_amortization_divisor_source_label);
     loaded_provenance_snapshot = snapshot;
     effective_provenance_snapshot = Dictionary();
     effective_provenance_snapshot_valid = false;
@@ -178,15 +214,15 @@ PipelineFeatureSet PipelineFeatureSet::get_effective(RenderingDevice *p_device,
         effective.enable_fast_raster = true;
         effective.enable_sh_amortization = true;
         GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_two_stage_sort"),
-                true, "project_setting", "project setting");
+                true, "project_override", "project override");
         GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_packed_stage_data"),
-                true, "project_setting", "project setting");
+                true, "project_override", "project override");
         GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_tighter_bounds"),
-                true, "project_setting", "project setting");
+                true, "project_override", "project override");
         GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_fast_raster"),
-                true, "project_setting", "project setting");
+                true, "project_override", "project override");
         GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_sh_amortization"),
-                true, "project_setting", "project setting");
+                true, "project_override", "project override");
     }
 
     auto warn = [&](const String &p_msg) {

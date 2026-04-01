@@ -196,6 +196,11 @@ String format_gaussian_splat_stats(GaussianSplatNode3D *p_node, const Ref<Gaussi
     if (!effective_config.is_empty()) {
         _append_effective_config_line(text, effective_config, StringName("max_splats"), "Effective Max Splats");
         _append_effective_config_line(text, effective_config, StringName("gpu_memory_mb"), "Effective GPU Memory");
+        _append_effective_config_line(text, effective_config, StringName("target_gpu_memory_mb"), "Effective Target GPU Memory");
+        _append_effective_config_line(text, effective_config, StringName("streaming_load_ahead_factor"), "Effective Load Ahead");
+        _append_effective_config_line(text, effective_config, StringName("streaming_unload_factor"), "Effective Unload");
+        _append_effective_config_line(text, effective_config, StringName("streaming_max_concurrent_loads"), "Effective Concurrent Loads");
+        _append_effective_config_line(text, effective_config, StringName("stream_budget_ms"), "Effective Stream Budget");
         _append_effective_config_line(text, effective_config, StringName("lod_max_distance"), "Effective LOD Max Distance");
         _append_effective_config_line(text, effective_config, StringName("sh_bands"), "Effective SH Bands");
     }

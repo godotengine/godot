@@ -13,6 +13,9 @@
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../renderer/sh_config.h"
 #include "../resources/color_grading_resource.h"
+#ifdef TOOLS_ENABLED
+#include "../editor/gaussian_editor_services.h"
+#endif
 #include "core/math/math_funcs.h"
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
@@ -313,9 +316,52 @@ TEST_CASE("[GaussianSplatting][Node] Effective config snapshot reports tier caps
     CHECK(int64_t(gpu_memory_entry.get(StringName("value"), int64_t(-1))) == int64_t(256));
     CHECK(String(gpu_memory_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
     CHECK(String(lod_entry.get(StringName("source_label"), String())) == String("node property"));
+    const Dictionary load_ahead_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_load_ahead_factor"));
+    const Dictionary unload_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_unload_factor"));
+    const Dictionary concurrent_loads_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_max_concurrent_loads"));
+    CHECK(Math::is_equal_approx(float(double(load_ahead_entry.get(StringName("value"), 0.0))), 0.15f));
+    CHECK(String(load_ahead_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(Math::is_equal_approx(float(double(unload_entry.get(StringName("value"), 0.0))), 0.95f));
+    CHECK(String(unload_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(int64_t(concurrent_loads_entry.get(StringName("value"), int64_t(-1))) == int64_t(1));
+    CHECK(String(concurrent_loads_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
 
     memdelete(node);
 }
+
+#ifdef TOOLS_ENABLED
+TEST_CASE("[GaussianSplatting][Node] Editor summary surfaces capped streaming values with source attribution") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String tier_apply_setting = "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets";
+
+    ProjectSettingGuard tier_preset_guard(project_settings, tier_preset_setting);
+    ProjectSettingGuard tier_apply_guard(project_settings, tier_apply_setting);
+
+    project_settings->set_setting(tier_preset_setting, String("low"));
+    project_settings->set_setting(tier_apply_setting, true);
+
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+    if (node == nullptr) {
+        return;
+    }
+
+    node->set_quality_preset(GaussianSplatNode3D::QUALITY_QUALITY);
+    const String stats_text = GaussianEditorServices::format_gaussian_splat_stats(node, Ref<GaussianSplatRenderer>());
+    CHECK(stats_text.contains("Effective Load Ahead: 0.15"));
+    CHECK(stats_text.contains("Effective Unload: 0.95"));
+    CHECK(stats_text.contains("Effective Concurrent Loads: 1"));
+    CHECK(stats_text.contains("capped by tier 'low'"));
+
+    memdelete(node);
+}
+#endif
 
 TEST_CASE("[GaussianSplatting][Node] Effective config snapshot honors SH project override over tier default") {
     ProjectSettings *project_settings = ProjectSettings::get_singleton();
