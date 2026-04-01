@@ -1343,9 +1343,32 @@ static void gdextension_object_method_bind_call(GDExtensionMethodBindPtr p_metho
 }
 
 static void gdextension_object_method_bind_ptrcall(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) {
-	const MethodBind *mb = reinterpret_cast<const MethodBind *>(p_method_bind);
+	// Non-const cast needed because is_return_type_raw_object_ptr() lacks const qualifier.
+	MethodBind *mb = const_cast<MethodBind *>(reinterpret_cast<const MethodBind *>(p_method_bind));
 	Object *o = (Object *)p_instance;
+
+	// Methods returning Ref<T> use PtrToArg<Ref<T>>::encode which treats the
+	// return buffer as a Ref<T> and calls Ref::operator= — this increments the
+	// refcount. Internal C++ callers provide a proper Ref<T> on the stack whose
+	// destructor balances the increment. GDExtension callers provide a raw
+	// Object** buffer with no destructor, so the refcount is never decremented.
+	//
+	// Detect Ref<T> returns (OBJECT type + not raw_obj_ptr) and unreference
+	// after ptrcall to compensate. The GDExtension caller receives a borrowed
+	// pointer — it does not own an additional reference.
+	bool returns_ref = p_ret &&
+			mb->has_return() &&
+			mb->get_argument_type(-1) == Variant::OBJECT &&
+			!mb->is_return_type_raw_object_ptr();
+
 	mb->ptrcall(o, (const void **)p_args, p_ret);
+
+	if (returns_ref) {
+		RefCounted *rc = Object::cast_to<RefCounted>(*reinterpret_cast<Object **>(p_ret));
+		if (rc) {
+			rc->unreference();
+		}
+	}
 }
 
 static void gdextension_object_destroy(GDExtensionObjectPtr p_o) {
