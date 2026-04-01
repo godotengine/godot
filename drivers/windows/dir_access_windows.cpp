@@ -140,22 +140,29 @@ void DirAccessWindows::_update_drives() {
 	DWORD mask = GetLogicalDrives();
 	for (int i = 0; i < MAX_DRIVES; i++) {
 		if (mask & (1 << i)) {
-			String path = String::chr('A' + i) + ":";
+			String drive = String::chr('A' + i) + ':';
+			String path = drive + '\\';
 			String label;
 			char16_t wlabel[4096];
 			if (GetVolumeInformationW((LPCWSTR)(path).utf16().get_data(), (LPWSTR)wlabel, 4096, nullptr, nullptr, nullptr, nullptr, 0)) {
 				label = String::utf16(wlabel);
 			}
-			drives.push_back(DriveInfo{ path, label });
+			drives.push_back(DriveInfo{ drive, label });
 		}
 	}
 }
 
 int DirAccessWindows::get_drive_count() {
+	if (drives.size() == 0) {
+		_update_drives();
+	}
 	return drives.size();
 }
 
 String DirAccessWindows::get_drive_label(int p_drive) {
+	if (drives.size() == 0) {
+		_update_drives();
+	}
 	if (p_drive < 0 || p_drive >= (int)drives.size()) {
 		return String();
 	}
@@ -163,6 +170,9 @@ String DirAccessWindows::get_drive_label(int p_drive) {
 }
 
 String DirAccessWindows::get_drive(int p_drive) {
+	if (drives.size() == 0) {
+		_update_drives();
+	}
 	if (p_drive < 0 || p_drive >= (int)drives.size()) {
 		return String();
 	}
@@ -506,8 +516,6 @@ DirAccessWindows::DirAccessWindows() {
 	real_current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(real_current_dir_name.size(), (LPWSTR)real_current_dir_name.ptrw());
 	current_dir = String::utf16((const char16_t *)real_current_dir_name.get_data());
-
-	_update_drives();
 
 	change_dir(".");
 }
