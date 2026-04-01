@@ -1928,7 +1928,8 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
 
     // Update streaming system if active.
     const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
-    const bool streaming_requested = (route_policy == gs::settings::GS_ROUTE_STREAMING);
+    bool streaming_requested = (route_policy == gs::settings::GS_ROUTE_STREAMING);
+
     bool streaming_ready = get_streaming_state().current_streaming_system.is_valid();
     static uint64_t render_debug_count = 0;
     const auto &debug_config = get_debug_config();

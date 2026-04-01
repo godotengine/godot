@@ -1318,6 +1318,7 @@ void GaussianSplatNode3D::_update_viewport_render_state(RenderingServer *rs, int
 
     renderer->set_camera_transform(camera_to_world_transform);
     renderer->set_camera_projection(camera_projection);
+
     if (OS::get_singleton()->has_feature("headless")) {
         renderer->tick_streaming_only(camera_to_world_transform, camera_projection);
     }
@@ -1404,6 +1405,16 @@ PackedStringArray GaussianSplatNode3D::get_configuration_warnings() const {
         warnings.push_back("No Gaussian splat file or asset assigned. Set a file path (.ply or .spz) or assign a GaussianSplatAsset.");
     }
 
+    String asset_source_path;
+    if (_has_inconsistent_dual_source_configuration(&asset_source_path)) {
+        if (asset_source_path.is_empty()) {
+            warnings.push_back("Both splat_asset and ply_file_path are set, but the asset does not record a source path. Clear one property to remove editor ambiguity.");
+        } else {
+            warnings.push_back(vformat("Both splat_asset and ply_file_path are set to different sources. splat_asset source: %s, ply_file_path: %s. Clear one property to remove editor ambiguity.",
+                    asset_source_path, ply_file_path));
+        }
+    }
+
     if (!ply_file_path.is_empty() && !FileAccess::exists(ply_file_path)) {
         warnings.push_back(vformat("Gaussian splat file not found: %s", ply_file_path));
     }
@@ -1421,6 +1432,82 @@ PackedStringArray GaussianSplatNode3D::get_configuration_warnings() const {
     }
 
     return warnings;
+}
+
+String GaussianSplatNode3D::_get_asset_source_path() const {
+    if (splat_asset.is_null()) {
+        return String();
+    }
+
+    String source_path = splat_asset->get_source_path();
+    if (!source_path.is_empty()) {
+        return source_path;
+    }
+
+    const Dictionary metadata = splat_asset->get_import_metadata();
+    if (metadata.has(StringName("source_file"))) {
+        return String(metadata[StringName("source_file")]);
+    }
+    if (metadata.has(StringName("runtime_load_source_path"))) {
+        return String(metadata[StringName("runtime_load_source_path")]);
+    }
+    return String();
+}
+
+bool GaussianSplatNode3D::_has_inconsistent_dual_source_configuration(String *r_asset_source_path) const {
+    const String asset_source_path = _get_asset_source_path();
+    if (r_asset_source_path) {
+        *r_asset_source_path = asset_source_path;
+    }
+
+    if (splat_asset.is_null() || ply_file_path.is_empty()) {
+        return false;
+    }
+
+    if (asset_source_path.is_empty()) {
+        return true;
+    }
+    return asset_source_path != ply_file_path;
+}
+
+String GaussianSplatNode3D::get_asset_origin_label() const {
+    if (splat_asset.is_valid()) {
+        PackedStringArray details;
+        const String asset_source_path = _get_asset_source_path();
+        const String asset_resource_path = splat_asset->get_path();
+
+        if (!asset_source_path.is_empty()) {
+            details.push_back(vformat("source: %s", asset_source_path));
+        } else if (!asset_resource_path.is_empty()) {
+            details.push_back(vformat("resource: %s", asset_resource_path));
+        } else {
+            details.push_back("embedded resource");
+        }
+
+        if (!ply_file_path.is_empty()) {
+            if (!asset_source_path.is_empty() && asset_source_path == ply_file_path) {
+                details.push_back("ply_file_path also set");
+            } else {
+                details.push_back(vformat("ply_file_path: %s", ply_file_path));
+            }
+        }
+
+        String label = "Assigned GaussianSplatAsset";
+        if (!details.is_empty()) {
+            label += " (" + String("; ").join(details) + ")";
+        }
+        return label;
+    }
+
+    if (!ply_file_path.is_empty()) {
+        return vformat("Direct file path (%s)", ply_file_path);
+    }
+
+    if (renderer_data.is_valid() || runtime_asset.is_valid()) {
+        return "Runtime/generated data";
+    }
+
+    return "No asset assigned";
 }
 
 void GaussianSplatNode3D::_load_asset() {

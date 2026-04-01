@@ -254,6 +254,15 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
     }
 
     TEST_CASE("[Integration] Renderer debug overlay toggles reflected in stats") {
+        auto has_prefixed_line = [](const Array &p_lines, const String &p_prefix) {
+            for (int i = 0; i < p_lines.size(); i++) {
+                if (String(p_lines[i]).begins_with(p_prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
         GaussianSplatManager *manager = memnew(GaussianSplatManager);
         CHECK(manager != nullptr);
         if (manager == nullptr) {
@@ -280,6 +289,15 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
         CHECK(stats.has("performance_hud_lines"));
         CHECK(stats.has("debug_tile_density_peak"));
         CHECK(stats.has("debug_tile_density_size"));
+        CHECK(stats.has("route_uid"));
+        CHECK(stats.has("sort_route_uid"));
+        CHECK(stats.has("cull_route_uid"));
+        CHECK(stats.has("route_label"));
+        CHECK(stats.has("sort_route_label"));
+        CHECK(stats.has("cull_route_label"));
+        CHECK(String(stats["route_label"]).length() > 0);
+        CHECK(String(stats["sort_route_label"]).length() > 0);
+        CHECK(String(stats["cull_route_label"]).length() > 0);
         CHECK(!bool(stats["debug_show_tile_grid"]));
         CHECK(!bool(stats["debug_show_density_heatmap"]));
         CHECK(!bool(stats["debug_show_performance_hud"]));
@@ -302,6 +320,9 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
         CHECK(int(stats["debug_hud_version"]) > hud_version);
         Array hud_enabled_lines = stats["performance_hud_lines"];
         CHECK(hud_enabled_lines.size() > 0);
+        CHECK(has_prefixed_line(hud_enabled_lines, "Route: "));
+        CHECK(has_prefixed_line(hud_enabled_lines, "Sort Route: "));
+        CHECK(has_prefixed_line(hud_enabled_lines, "Cull Route: "));
         int overlay_version_enabled = int(stats["debug_overlay_version"]);
 
         renderer->set_debug_show_performance_hud(false);

@@ -319,6 +319,8 @@ private:
 #ifdef TOOLS_ENABLED
     void _notification_editor_post_save();
 #endif
+    String _get_asset_source_path() const;
+    bool _has_inconsistent_dual_source_configuration(String *r_asset_source_path = nullptr) const;
 
     void _ensure_gaussian_base();
     void _release_gaussian_base();
@@ -390,6 +392,7 @@ public:
      */
     void set_splat_asset(const Ref<GaussianSplatAsset> &p_asset);
     Ref<GaussianSplatAsset> get_splat_asset() const { return splat_asset; }
+    String get_asset_origin_label() const;
 
     /**
      * @brief Enables automatic loading when ply_file_path is set.

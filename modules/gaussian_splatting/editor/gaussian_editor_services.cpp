@@ -97,11 +97,35 @@ String format_gaussian_splat_stats(GaussianSplatNode3D *p_node, const Ref<Gaussi
         const double sort_ms = dict_get_double(render_stats, "sort_time_ms", 0.0);
         const double render_ms = dict_get_double(render_stats, "render_time_ms", 0.0);
         const int64_t frame_count = dict_get_int(render_stats, "frame_count", 0);
+        const String route_uid = dict_get_string(render_stats, "route_uid");
+        const String sort_route_uid = dict_get_string(render_stats, "sort_route_uid");
+        const String cull_route_uid = dict_get_string(render_stats, "cull_route_uid");
+        const String route_label = dict_get_string(render_stats, "route_label");
+        const String sort_route_label = dict_get_string(render_stats, "sort_route_label");
+        const String cull_route_label = dict_get_string(render_stats, "cull_route_label");
 
         text += "\nSort Time: " + String::num(sort_ms, 2) + " ms";
         text += "\nRender Time: " + String::num(render_ms, 2) + " ms";
         if (frame_count > 0) {
             text += "\nFrames Rendered: " + itos(frame_count);
+        }
+        if (!route_label.is_empty()) {
+            text += "\nRender Route: " + route_label;
+            if (!route_uid.is_empty()) {
+                text += " [" + route_uid + "]";
+            }
+        }
+        if (!sort_route_label.is_empty()) {
+            text += "\nSort Route: " + sort_route_label;
+            if (!sort_route_uid.is_empty()) {
+                text += " [" + sort_route_uid + "]";
+            }
+        }
+        if (!cull_route_label.is_empty()) {
+            text += "\nCull Route: " + cull_route_label;
+            if (!cull_route_uid.is_empty()) {
+                text += " [" + cull_route_uid + "]";
+            }
         }
         if (render_stats.has(StringName("debug_preview_mode"))) {
             int mode_value = int(render_stats[StringName("debug_preview_mode")]);

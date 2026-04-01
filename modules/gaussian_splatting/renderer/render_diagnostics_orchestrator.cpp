@@ -1,6 +1,7 @@
 #include "render_diagnostics_orchestrator.h"
 
 #include "../core/gs_project_settings.h"
+#include "render_route_labels.h"
 #include "render_debug_state_orchestrator.h"
 
 #include "core/config/project_settings.h"
@@ -1084,6 +1085,9 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	stats["route_uid"] = normalized_route_uid;
 	stats["sort_route_uid"] = normalized_sort_route_uid;
 	stats["cull_route_uid"] = normalized_cull_route_uid;
+	stats["route_label"] = GaussianRenderRouteLabels::describe_route_uid(normalized_route_uid);
+	stats["sort_route_label"] = GaussianRenderRouteLabels::describe_sort_route_uid(normalized_sort_route_uid);
+	stats["cull_route_label"] = GaussianRenderRouteLabels::describe_cull_route_uid(normalized_cull_route_uid);
 	stats["cull_route_reason"] = perf.cull_route_reason;
 	stats["route_uid_missing"] = RenderRouteUID::is_route_uid_missing(normalized_route_uid);
 	stats["sort_route_uid_missing"] = RenderRouteUID::is_sort_route_uid_missing(normalized_sort_route_uid);

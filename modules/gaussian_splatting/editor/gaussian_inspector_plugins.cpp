@@ -463,6 +463,11 @@ void GaussianSplatNodeInspectorPlugin::parse_begin(Object *p_object) {
     header->set_text("Gaussian Splat Overview");
     root->add_child(header);
 
+    Label *origin = memnew(Label);
+    origin->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+    origin->set_text("Asset Origin: " + node->get_asset_origin_label());
+    root->add_child(origin);
+
     Label *stats = memnew(Label);
     stats->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
     _update_stats_label(stats, node);

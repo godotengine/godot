@@ -688,6 +688,61 @@ TEST_CASE("[GaussianSplatting][Node] Legacy non-functional properties are not ex
     memdelete(node);
 }
 
+TEST_CASE("[GaussianSplatting][Node] Asset origin label describes active ingress") {
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+
+    CHECK(node->get_asset_origin_label() == String("No asset assigned"));
+
+    node->set_ply_file_path("res://direct_only.ply");
+    CHECK(node->get_asset_origin_label().contains("Direct file path"));
+    CHECK(node->get_asset_origin_label().contains("res://direct_only.ply"));
+
+    Ref<GaussianSplatAsset> asset = make_single_splat_asset();
+    asset->set_source_path("res://imported_source.ply");
+    node->set_splat_asset(asset);
+
+    const String asset_origin = node->get_asset_origin_label();
+    CHECK(asset_origin.contains("Assigned GaussianSplatAsset"));
+    CHECK(asset_origin.contains("source: res://imported_source.ply"));
+    CHECK(asset_origin.contains("ply_file_path: res://direct_only.ply"));
+
+    memdelete(node);
+}
+
+TEST_CASE("[GaussianSplatting][Node] Configuration warnings flag inconsistent dual-path sources") {
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+
+    Ref<GaussianSplatAsset> asset = make_single_splat_asset();
+    asset->set_source_path("res://asset_source.ply");
+    node->set_splat_asset(asset);
+    node->set_ply_file_path("res://other_source.ply");
+
+    PackedStringArray warnings = node->get_configuration_warnings();
+    bool has_dual_source_warning = false;
+    for (int i = 0; i < warnings.size(); i++) {
+        if (String(warnings[i]).contains("Both splat_asset and ply_file_path are set to different sources")) {
+            has_dual_source_warning = true;
+            break;
+        }
+    }
+    CHECK(has_dual_source_warning);
+
+    node->set_ply_file_path("res://asset_source.ply");
+    warnings = node->get_configuration_warnings();
+    has_dual_source_warning = false;
+    for (int i = 0; i < warnings.size(); i++) {
+        if (String(warnings[i]).contains("Both splat_asset and ply_file_path")) {
+            has_dual_source_warning = true;
+            break;
+        }
+    }
+    CHECK_FALSE(has_dual_source_warning);
+
+    memdelete(node);
+}
+
 TEST_CASE("[GaussianSplatting][World][SceneTree][RequiresGPU] Shared renderer ownership blocks foreign clear/mutate") {
     SceneTree *tree = SceneTree::get_singleton();
     REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");

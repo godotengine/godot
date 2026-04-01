@@ -5,6 +5,7 @@
 #include "servers/rendering_server.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/render_route_labels.h"
 #include "gpu_sorting_pipeline.h"
 
 DebugOverlayOptions DebugOverlayQueryView::get_options() const {
@@ -501,8 +502,15 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(const DebugOverl
     debug_state.hud_lines.clear();
 
     if (debug_state_view.show_performance_hud) {
-        const String route_uid = debug_state_view.route_uid.is_empty() ? String("unset") : debug_state_view.route_uid;
-        debug_state.hud_lines.push_back(vformat("Route UID: %s", route_uid));
+        debug_state.hud_lines.push_back(vformat("Route: %s",
+                GaussianRenderRouteLabels::format_route_uid(debug_state_view.route_uid)));
+        debug_state.hud_lines.push_back(vformat("Sort Route: %s",
+                GaussianRenderRouteLabels::format_sort_route_uid(debug_state_view.sort_route_uid)));
+        debug_state.hud_lines.push_back(vformat("Cull Route: %s",
+                GaussianRenderRouteLabels::format_cull_route_uid(performance_state.metrics.cull_route_uid)));
+        if (!performance_state.metrics.cull_route_reason.is_empty()) {
+            debug_state.hud_lines.push_back(vformat("Cull Reason: %s", performance_state.metrics.cull_route_reason));
+        }
 		debug_state.hud_lines.push_back(String("Visible Splats: ") +
 				String::num_uint64(frame_state.visible_splat_count.load(std::memory_order_acquire)));
 		debug_state.hud_lines.push_back(String("Sorted Splats: ") + String::num_uint64(sorting_state.sorted_splat_count));
