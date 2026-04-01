@@ -32,8 +32,8 @@
 
 #include "scene/gui/box_container.h"
 
-class PanelContainer;
 class Button;
+class PanelContainer;
 
 class ColorChannelSelector : public HBoxContainer {
 	GDCLASS(ColorChannelSelector, HBoxContainer);

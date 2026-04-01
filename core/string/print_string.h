@@ -32,8 +32,8 @@
 
 #include "core/templates/span.h"
 
-class Variant;
 class String;
+class Variant;
 
 extern void (*_print_func)(String);
 

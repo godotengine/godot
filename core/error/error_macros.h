@@ -32,8 +32,8 @@
 
 #include "core/typedefs.h"
 
-class String;
 class ObjectID;
+class String;
 
 enum ErrorHandlerType {
 	ERR_HANDLER_ERROR,

@@ -68,8 +68,8 @@
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 // API used to extend in GDExtension and other C compatible compiled languages.
-class MethodBind;
 class GDExtension;
+class MethodBind;
 
 struct ObjectGDExtension {
 	GDExtension *library = nullptr;

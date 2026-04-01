@@ -38,8 +38,8 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/display/display_server_enums.h"
 
-struct DBusMessage;
 struct DBusConnection;
+struct DBusMessage;
 struct DBusMessageIter;
 
 class FreeDesktopPortalDesktop : public Object {

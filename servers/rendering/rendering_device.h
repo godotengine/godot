@@ -44,20 +44,20 @@
 #include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_device_graph.h"
 
-class RDTextureFormat;
-class RDTextureView;
 class RDAttachmentFormat;
+class RDFramebufferPass;
+class RDPipelineColorBlendState;
+class RDPipelineDepthStencilState;
+class RDPipelineMultisampleState;
+class RDPipelineRasterizationState;
+class RDPipelineSpecializationConstant;
 class RDSamplerState;
-class RDVertexAttribute;
 class RDShaderSource;
 class RDShaderSPIRV;
+class RDTextureFormat;
+class RDTextureView;
 class RDUniform;
-class RDPipelineRasterizationState;
-class RDPipelineMultisampleState;
-class RDPipelineDepthStencilState;
-class RDPipelineColorBlendState;
-class RDFramebufferPass;
-class RDPipelineSpecializationConstant;
+class RDVertexAttribute;
 
 class RenderingDevice : public RenderingDeviceCommons {
 	GDCLASS(RenderingDevice, Object)

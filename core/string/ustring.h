@@ -39,6 +39,7 @@
 #include "core/typedefs.h"
 
 class String;
+
 template <typename T>
 class CharStringT;
 

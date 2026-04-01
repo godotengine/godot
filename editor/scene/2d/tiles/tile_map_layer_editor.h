@@ -46,10 +46,10 @@
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tree.h"
 
+class GridContainer;
 class TileMapLayer;
 class TileMapLayerEditor;
 class TileSetSourceItemList;
-class GridContainer;
 
 class SwitchSeparator : public MarginContainer {
 	GDCLASS(SwitchSeparator, MarginContainer);

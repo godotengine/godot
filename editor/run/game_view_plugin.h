@@ -38,9 +38,9 @@
 #include "scene/gui/box_container.h"
 
 class EmbeddedProcessBase;
+class ScriptEditorDebugger;
 class VSeparator;
 class WindowWrapper;
-class ScriptEditorDebugger;
 
 class GameViewDebugger : public EditorDebuggerPlugin {
 	GDCLASS(GameViewDebugger, EditorDebuggerPlugin);

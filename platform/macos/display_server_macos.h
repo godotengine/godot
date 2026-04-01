@@ -75,13 +75,13 @@
 #undef BitMap
 #undef FontVariation
 
-#ifdef TOOLS_ENABLED
-class EmbeddedProcessMacOS;
-#endif
-
 class InputEvent;
 class InputEventWithModifiers;
 class NativeMenuMacOS;
+
+#ifdef TOOLS_ENABLED
+class EmbeddedProcessMacOS;
+#endif
 
 class DisplayServerMacOS : public DisplayServerMacOSBase {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);

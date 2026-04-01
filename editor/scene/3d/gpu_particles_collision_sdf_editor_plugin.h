@@ -32,10 +32,11 @@
 
 #include "editor/plugins/editor_plugin.h"
 
-struct EditorProgress;
 class EditorFileDialog;
 class GPUParticlesCollisionSDF3D;
 class HBoxContainer;
+
+struct EditorProgress;
 
 class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticlesCollisionSDF3DEditorPlugin, EditorPlugin);

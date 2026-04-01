@@ -36,11 +36,11 @@
 #include "scene/resources/texture.h"
 
 class AspectRatioContainer;
-class ColorRect;
-class TextureRect;
-class ShaderMaterial;
 class ColorChannelSelector;
+class ColorRect;
+class ShaderMaterial;
 class SpinBox;
+class TextureRect;
 
 class TexturePreview : public MarginContainer {
 	GDCLASS(TexturePreview, MarginContainer);

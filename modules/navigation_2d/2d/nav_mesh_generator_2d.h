@@ -36,9 +36,9 @@
 #include "core/object/worker_thread_pool.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 
-class Node;
-class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
+class NavigationPolygon;
+class Node;
 
 class NavMeshGenerator2D : public Object {
 	GDSOFTCLASS(NavMeshGenerator2D, Object);

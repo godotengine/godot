@@ -33,14 +33,14 @@
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
 
-template <typename T>
-class Vector;
-
 struct AABB;
 struct Plane;
 struct Rect2;
 struct Transform3D;
 struct Vector2;
+
+template <typename T>
+class Vector;
 
 struct [[nodiscard]] Projection {
 	enum Planes {

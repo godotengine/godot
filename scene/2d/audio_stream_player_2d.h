@@ -33,10 +33,11 @@
 #include "scene/2d/node_2d.h"
 #include "servers/audio/audio_server.h"
 
-struct AudioFrame;
 class AudioStream;
 class AudioStreamPlayback;
 class AudioStreamPlayerInternal;
+
+struct AudioFrame;
 
 class AudioStreamPlayer2D : public Node2D {
 	GDCLASS(AudioStreamPlayer2D, Node2D);

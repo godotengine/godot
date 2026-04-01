@@ -42,6 +42,7 @@
 **/
 
 class CameraFeed;
+
 template <typename T>
 class TypedArray;
 

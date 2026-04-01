@@ -34,14 +34,16 @@
 #include "scene/3d/node_3d.h"
 #include "servers/audio/audio_server.h"
 
-#ifndef PHYSICS_3D_DISABLED
-class Area3D;
-#endif // PHYSICS_3D_DISABLED
-struct AudioFrame;
 class AudioStream;
 class AudioStreamPlayback;
 class AudioStreamPlayerInternal;
 class VelocityTracker3D;
+
+struct AudioFrame;
+
+#ifndef PHYSICS_3D_DISABLED
+class Area3D;
+#endif // PHYSICS_3D_DISABLED
 
 class AudioStreamPlayer3D : public Node3D {
 	GDCLASS(AudioStreamPlayer3D, Node3D);

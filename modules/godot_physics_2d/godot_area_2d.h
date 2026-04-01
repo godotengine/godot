@@ -35,9 +35,9 @@
 #include "core/templates/self_list.h"
 #include "servers/physics_2d/physics_server_2d.h"
 
-class GodotSpace2D;
 class GodotBody2D;
 class GodotConstraint2D;
+class GodotSpace2D;
 
 class GodotArea2D : public GodotCollisionObject2D {
 	PhysicsServer2D::AreaSpaceOverrideMode gravity_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;

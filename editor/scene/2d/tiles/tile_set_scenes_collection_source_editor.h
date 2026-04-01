@@ -35,9 +35,9 @@
 #include "scene/resources/2d/tile_set.h"
 
 class Button;
+class EditorFileDialog;
 class ItemList;
 class Label;
-class EditorFileDialog;
 
 class TileSetScenesCollectionSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetScenesCollectionSourceEditor, HBoxContainer);

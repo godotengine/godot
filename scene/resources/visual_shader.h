@@ -36,8 +36,8 @@
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
 
-class VisualShaderNodeParameter;
 class VisualShaderNode;
+class VisualShaderNodeParameter;
 
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);

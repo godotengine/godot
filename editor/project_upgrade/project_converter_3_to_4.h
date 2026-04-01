@@ -42,6 +42,7 @@ struct SourceLine {
 };
 
 class RegEx;
+
 template <typename T>
 class Ref;
 

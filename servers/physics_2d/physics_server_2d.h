@@ -36,6 +36,7 @@
 constexpr int MAX_CONTACTS_REPORTED_2D_MAX = 4096;
 
 class PhysicsDirectSpaceState2D;
+
 template <typename T>
 class TypedArray;
 
@@ -116,8 +117,8 @@ public:
 	PhysicsDirectBodyState2D();
 };
 
-class PhysicsRayQueryParameters2D;
 class PhysicsPointQueryParameters2D;
+class PhysicsRayQueryParameters2D;
 class PhysicsShapeQueryParameters2D;
 
 class PhysicsDirectSpaceState2D : public Object {

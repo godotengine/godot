@@ -35,8 +35,8 @@
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 
-class GodotJavaWrapper;
 class GodotIOJavaWrapper;
+class GodotJavaWrapper;
 
 struct ANativeWindow;
 

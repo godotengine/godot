@@ -32,8 +32,8 @@
 
 #include "scene/2d/node_2d.h"
 
-class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
+class NavigationPolygon;
 
 class NavigationObstacle2D : public Node2D {
 	GDCLASS(NavigationObstacle2D, Node2D);

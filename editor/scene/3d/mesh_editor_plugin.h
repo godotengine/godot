@@ -38,8 +38,8 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/camera_attributes.h"
 
-class SubViewport;
 class Button;
+class SubViewport;
 
 class MeshEditor : public SubViewportContainer {
 	GDCLASS(MeshEditor, SubViewportContainer);

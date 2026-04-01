@@ -32,9 +32,10 @@
 
 #include "editor/plugins/editor_plugin.h"
 
-struct EditorProgress;
 class EditorFileDialog;
 class LightmapGI;
+
+struct EditorProgress;
 
 class LightmapGIEditorPlugin : public EditorPlugin {
 	GDCLASS(LightmapGIEditorPlugin, EditorPlugin);

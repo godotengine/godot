@@ -40,8 +40,8 @@
 #include "servers/rendering/shader_compiler.h"
 
 // Forward declare RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
-class RendererSceneRenderRD;
 class RenderDataRD;
+class RendererSceneRenderRD;
 class RenderSceneBuffersRD;
 
 namespace RendererRD {

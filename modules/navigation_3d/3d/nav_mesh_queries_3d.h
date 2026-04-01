@@ -42,6 +42,7 @@ using namespace NavigationDefaults3D;
 using namespace NavigationEnums3D;
 
 class NavMap3D;
+
 struct NavMapIteration3D;
 
 class NavMeshQueries3D {

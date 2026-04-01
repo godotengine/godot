@@ -42,7 +42,6 @@ class RefCounted;
 
 template <typename T>
 struct GDExtensionConstPtr;
-
 template <typename T>
 struct GDExtensionPtr;
 

@@ -35,6 +35,7 @@
 #include "core/templates/hashfuncs.h"
 
 class String;
+
 struct Rect2i;
 struct Transform2D;
 

@@ -35,6 +35,7 @@
 
 class CodeTextEditor;
 class EditorDock;
+class HBoxContainer;
 class HSplitContainer;
 class ItemList;
 class MenuButton;
@@ -42,7 +43,6 @@ class ShaderCreateDialog;
 class ShaderEditor;
 class TabContainer;
 class VBoxContainer;
-class HBoxContainer;
 class WindowWrapper;
 
 class ShaderEditorPlugin : public EditorPlugin {

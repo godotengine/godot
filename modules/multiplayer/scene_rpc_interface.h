@@ -33,10 +33,10 @@
 #include "core/object/ref_counted.h"
 #include "scene/main/multiplayer_api.h"
 
-class SceneMultiplayer;
-class SceneCacheInterface;
-class SceneReplicationInterface;
 class Node;
+class SceneCacheInterface;
+class SceneMultiplayer;
+class SceneReplicationInterface;
 
 class SceneRPCInterface : public RefCounted {
 	GDCLASS(SceneRPCInterface, RefCounted);

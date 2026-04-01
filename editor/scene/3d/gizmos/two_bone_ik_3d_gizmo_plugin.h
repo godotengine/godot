@@ -32,8 +32,8 @@
 
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 
-class TwoBoneIK3D;
 class SurfaceTool;
+class TwoBoneIK3D;
 
 class TwoBoneIK3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(TwoBoneIK3DGizmoPlugin, EditorNode3DGizmoPlugin);

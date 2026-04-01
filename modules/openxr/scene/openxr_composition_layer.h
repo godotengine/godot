@@ -35,8 +35,8 @@
 #include <openxr/openxr.h>
 
 class JavaObject;
-class MeshInstance3D;
 class Mesh;
+class MeshInstance3D;
 class OpenXRAPI;
 class OpenXRCompositionLayerExtension;
 class SubViewport;

@@ -34,8 +34,8 @@
 
 #include "scene/gui/dialogs.h"
 
-class VBoxContainer;
 class ScrollContainer;
+class VBoxContainer;
 
 class OpenXRSelectActionDialog : public ConfirmationDialog {
 	GDCLASS(OpenXRSelectActionDialog, ConfirmationDialog);

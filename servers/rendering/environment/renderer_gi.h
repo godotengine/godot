@@ -33,6 +33,7 @@
 #include <cstdint>
 
 class RID;
+
 struct AABB;
 struct Transform3D;
 struct Vector3;

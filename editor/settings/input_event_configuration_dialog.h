@@ -32,10 +32,10 @@
 
 #include "scene/gui/dialogs.h"
 
+class CheckBox;
+class EventListenerLineEdit;
 class OptionButton;
 class Tree;
-class EventListenerLineEdit;
-class CheckBox;
 
 // Confirmation Dialog used when configuring an input event.
 // Separate from ActionMapEditor for code cleanliness and separation of responsibilities.

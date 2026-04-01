@@ -31,6 +31,7 @@
 #pragma once
 
 class String;
+
 template <typename T>
 class BitField;
 

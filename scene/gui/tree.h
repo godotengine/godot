@@ -34,7 +34,6 @@
 #include "scene/resources/text_paragraph.h"
 #include "servers/display/accessibility_server.h"
 
-class VBoxContainer;
 class HScrollBar;
 class HSlider;
 class LineEdit;
@@ -43,6 +42,7 @@ class PopupMenu;
 class TextEdit;
 class Timer;
 class Tree;
+class VBoxContainer;
 class VScrollBar;
 
 class TreeItem : public Object {

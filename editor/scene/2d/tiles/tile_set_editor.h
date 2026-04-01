@@ -39,11 +39,11 @@
 #include "scene/resources/2d/tile_set.h"
 
 class AcceptDialog;
-class SpinBox;
-class HBoxContainer;
-class SplitContainer;
 class EditorFileDialog;
 class EditorInspectorPlugin;
+class HBoxContainer;
+class SpinBox;
+class SplitContainer;
 class TileSetSourceItemList;
 
 class TileSetEditor : public EditorDock {

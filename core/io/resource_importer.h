@@ -33,8 +33,8 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 
-class ResourceImporter;
 class ResourceFormatImporter;
+class ResourceImporter;
 
 typedef Ref<Resource> (*ResourceFormatImporterLoadOnStartup)(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode);
 

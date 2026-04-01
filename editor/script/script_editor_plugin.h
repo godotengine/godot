@@ -41,18 +41,18 @@
 class CodeTextEditor;
 class EditorFileDialog;
 class EditorHelpSearch;
+class EditorSyntaxHighlighter;
 class FilterLineEdit;
 class FindReplaceBar;
 class HSplitContainer;
 class ItemList;
 class MenuButton;
+class ScriptEditorBase;
 class TabContainer;
 class TextureRect;
 class Tree;
 class VSplitContainer;
 class WindowWrapper;
-class EditorSyntaxHighlighter;
-class ScriptEditorBase;
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);

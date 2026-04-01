@@ -39,8 +39,8 @@
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
-class ResourceFormatImporter;
 class FileAccess;
+class ResourceFormatImporter;
 
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {

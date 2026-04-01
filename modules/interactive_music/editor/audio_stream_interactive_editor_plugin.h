@@ -34,12 +34,12 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 
+class AudioStreamInteractive;
 class CheckBox;
 class HSplitContainer;
-class VSplitContainer;
 class Tree;
 class TreeItem;
-class AudioStreamInteractive;
+class VSplitContainer;
 
 class AudioStreamInteractiveTransitionEditor : public AcceptDialog {
 	GDCLASS(AudioStreamInteractiveTransitionEditor, AcceptDialog);

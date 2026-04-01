@@ -36,8 +36,8 @@
 #include "core/variant/variant.h"
 
 class XRInterface;
-class XRTracker;
 class XRPositionalTracker;
+class XRTracker;
 
 /**
 	The XR server is a singleton object that gives access to the various

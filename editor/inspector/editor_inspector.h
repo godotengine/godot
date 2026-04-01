@@ -36,8 +36,8 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 
-class AddMetadataDialog;
 class AcceptDialog;
+class AddMetadataDialog;
 class EditorInspector;
 class HSeparator;
 class LineEdit;

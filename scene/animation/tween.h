@@ -33,9 +33,9 @@
 #include "core/object/ref_counted.h"
 #include "core/variant/type_info.h"
 
-class Tween;
 class Node;
 class SceneTree;
+class Tween;
 
 class Tweener : public RefCounted {
 	GDCLASS(Tweener, RefCounted);
@@ -57,12 +57,12 @@ protected:
 	bool finished = false;
 };
 
-class PropertyTweener;
-class IntervalTweener;
-class CallbackTweener;
-class MethodTweener;
-class SubtweenTweener;
 class AwaitTweener;
+class CallbackTweener;
+class IntervalTweener;
+class MethodTweener;
+class PropertyTweener;
+class SubtweenTweener;
 
 class Tween : public RefCounted {
 	GDCLASS(Tween, RefCounted);

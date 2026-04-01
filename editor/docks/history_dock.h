@@ -34,8 +34,8 @@
 
 class CheckBox;
 class ConfigFile;
-class ItemList;
 class EditorUndoRedoManager;
+class ItemList;
 
 class HistoryDock : public EditorDock {
 	GDCLASS(HistoryDock, EditorDock);

@@ -37,8 +37,8 @@
 class Button;
 class DebugAdapterParser;
 class EditorDebuggerPlugin;
-class EditorDebuggerTree;
 class EditorDebuggerRemoteObjects;
+class EditorDebuggerTree;
 class MenuButton;
 class ScriptEditorDebugger;
 class TabContainer;

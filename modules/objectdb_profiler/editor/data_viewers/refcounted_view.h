@@ -34,8 +34,8 @@
 #include "shared_controls.h"
 #include "snapshot_view.h"
 
-class Tree;
 class HSplitContainer;
+class Tree;
 
 class SnapshotRefCountedView : public SnapshotView {
 	GDCLASS(SnapshotRefCountedView, SnapshotView);

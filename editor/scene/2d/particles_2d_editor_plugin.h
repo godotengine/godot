@@ -33,8 +33,8 @@
 #include "editor/scene/particles_editor_plugin.h"
 
 class EditorFileDialog;
-class MarginContainer;
 class LineEdit;
+class MarginContainer;
 
 class Particles2DEditorPlugin : public ParticlesEditorPlugin {
 	GDCLASS(Particles2DEditorPlugin, ParticlesEditorPlugin);

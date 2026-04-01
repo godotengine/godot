@@ -56,11 +56,11 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	/**** GENERIC ****/
 	/*****************/
 
-	struct CommandQueue;
-	struct SwapChain;
 	struct CommandBufferInfo;
-	struct RenderPassInfo;
+	struct CommandQueue;
 	struct Framebuffer;
+	struct RenderPassInfo;
+	struct SwapChain;
 
 	struct Queue {
 		VkQueue queue = VK_NULL_HANDLE;

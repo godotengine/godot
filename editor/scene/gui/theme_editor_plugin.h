@@ -51,8 +51,8 @@ class OptionButton;
 class PanelContainer;
 class TabBar;
 class TabContainer;
-class ThemeEditorPlugin;
 class TextureRect;
+class ThemeEditorPlugin;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);

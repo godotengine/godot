@@ -35,6 +35,7 @@
 #include "core/templates/hashfuncs.h"
 
 class String;
+
 struct Vector4;
 
 struct [[nodiscard]] Vector4i {

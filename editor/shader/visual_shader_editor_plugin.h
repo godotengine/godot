@@ -46,13 +46,12 @@ class FilterLineEdit;
 class GraphElement;
 class GraphFrame;
 class HFlowContainer;
+class MaterialEditor;
 class MenuButton;
 class PopupPanel;
 class RichTextLabel;
 class Tree;
-
 class VisualShaderEditor;
-class MaterialEditor;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);

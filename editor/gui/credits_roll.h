@@ -32,9 +32,9 @@
 
 #include "scene/main/canvas_layer.h"
 
+class Font;
 class Label;
 class VBoxContainer;
-class Font;
 
 class CreditsRoll : public CanvasLayer {
 	GDCLASS(CreditsRoll, CanvasLayer);

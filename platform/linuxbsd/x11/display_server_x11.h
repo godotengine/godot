@@ -67,9 +67,10 @@ class InputEvent;
 class InputEventWithModifiers;
 class NativeMenu;
 
-#ifdef RD_ENABLED
-class RenderingDevice;
-class RenderingContextDriver;
+#ifdef DBUS_ENABLED
+class FreeDesktopAtSPIMonitor;
+class FreeDesktopPortalDesktop;
+class FreeDesktopScreenSaver;
 #endif
 
 #ifdef GLES3_ENABLED
@@ -77,10 +78,9 @@ class GLManager_X11;
 class GLManagerEGL_X11;
 #endif
 
-#ifdef DBUS_ENABLED
-class FreeDesktopPortalDesktop;
-class FreeDesktopAtSPIMonitor;
-class FreeDesktopScreenSaver;
+#ifdef RD_ENABLED
+class RenderingContextDriver;
+class RenderingDevice;
 #endif
 
 #ifdef SPEECHD_ENABLED

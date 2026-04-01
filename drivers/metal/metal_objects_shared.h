@@ -829,6 +829,7 @@ public:
 #pragma mark - Shader Types
 
 class MDLibrary; // Forward declaration for C++ code
+
 struct ShaderCacheEntry; // Forward declaration for C++ code
 
 enum class ShaderLoadStrategy {

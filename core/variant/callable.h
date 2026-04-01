@@ -34,9 +34,9 @@
 #include "core/string/string_name.h"
 
 class Array;
+class CallableCustom;
 class Object;
 class Variant;
-class CallableCustom;
 
 // This is an abstraction of things that can be called.
 // It is used for signals and other cases where efficient calling of functions

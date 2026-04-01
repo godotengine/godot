@@ -34,19 +34,18 @@
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
 
+class Image;
 class RendererCanvasRender;
-class RendererSceneRender;
-
 class RendererFog;
 class RendererGI;
 class RendererLightStorage;
 class RendererMaterialStorage;
 class RendererMeshStorage;
 class RendererParticlesStorage;
+class RendererSceneRender;
 class RendererTextureStorage;
 class RendererUtilities;
 
-class Image;
 struct Color;
 
 class RendererCompositor {

@@ -35,12 +35,12 @@
 class EditorFileDialog;
 class EditorFileSystemDirectory;
 class ItemList;
+class LineEdit;
+class MenuButton;
 class PopupMenu;
 class Tree;
 class TreeItem;
 class VBoxContainer;
-class LineEdit;
-class MenuButton;
 
 enum class DependencyEditorSortBy {
 	TYPE,

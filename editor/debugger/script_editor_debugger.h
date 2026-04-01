@@ -36,25 +36,25 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "scene/gui/margin_container.h"
 
-class Button;
-class Tree;
-class LineEdit;
-class TabContainer;
-class RichTextLabel;
-class TextureButton;
 class AcceptDialog;
-class TreeItem;
+class Button;
+class DebugAdapterParser;
+class DebugAdapterProtocol;
+class EditorDebuggerPlugin;
+class EditorExpressionEvaluator;
+class EditorFileDialog;
+class EditorPerformanceProfiler;
+class EditorProfiler;
+class EditorVisualProfiler;
 class HSplitContainer;
 class ItemList;
-class EditorProfiler;
-class EditorFileDialog;
-class EditorVisualProfiler;
-class EditorPerformanceProfiler;
+class LineEdit;
+class RichTextLabel;
 class SceneDebuggerTree;
-class EditorDebuggerPlugin;
-class DebugAdapterProtocol;
-class DebugAdapterParser;
-class EditorExpressionEvaluator;
+class TabContainer;
+class TextureButton;
+class Tree;
+class TreeItem;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);

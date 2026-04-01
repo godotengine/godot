@@ -34,6 +34,7 @@
 #include "servers/rendering/rendering_server_enums.h"
 
 class RID;
+
 struct AABB;
 struct Color;
 struct Transform3D;

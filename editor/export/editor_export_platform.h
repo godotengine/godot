@@ -41,6 +41,7 @@ class Image;
 class Node;
 class RichTextLabel;
 class Texture2D;
+
 struct EditorProgress;
 struct SharedObject;
 

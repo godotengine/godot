@@ -36,14 +36,12 @@
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 
-class Node3D;
 class Button;
-class PopupMenu;
 class EditorDebuggerPlugin;
 class EditorDock;
 class EditorExport;
-class EditorExportPlugin;
 class EditorExportPlatform;
+class EditorExportPlugin;
 class EditorImportPlugin;
 class EditorInspectorPlugin;
 class EditorInterface;
@@ -54,6 +52,8 @@ class EditorScenePostImportPlugin;
 class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
+class Node3D;
+class PopupMenu;
 class ScriptCreateDialog;
 
 class EditorPlugin : public Node {

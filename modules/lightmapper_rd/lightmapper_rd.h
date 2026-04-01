@@ -33,8 +33,8 @@
 #include "core/templates/local_vector.h"
 #include "scene/3d/lightmapper.h"
 
-class RenderingDevice;
 class RDShaderFile;
+class RenderingDevice;
 
 class LightmapperRD : public Lightmapper {
 	GDCLASS(LightmapperRD, Lightmapper)

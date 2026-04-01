@@ -32,10 +32,11 @@
 
 #include <cstdint>
 
-class Node3D;
 class Node;
-struct Transform3D;
+class Node3D;
 class SceneTreeFTI;
+
+struct Transform3D;
 
 class SceneTreeFTITests {
 	SceneTreeFTI &_fti;

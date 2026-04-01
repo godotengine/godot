@@ -34,8 +34,9 @@
 #include "core/debugger/remote_debugger.h"
 #include "editor/debugger/debug_adapter/debug_adapter_types.h"
 
-struct DAPeer;
 class DebugAdapterProtocol;
+
+struct DAPeer;
 
 class DebugAdapterParser : public Object {
 	GDCLASS(DebugAdapterParser, Object);

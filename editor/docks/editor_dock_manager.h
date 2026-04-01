@@ -39,11 +39,11 @@ class ConfigFile;
 class Control;
 class EditorDock;
 class PopupMenu;
+class StyleBoxFlat;
 class TabBar;
 class TabContainer;
 class VBoxContainer;
 class WindowWrapper;
-class StyleBoxFlat;
 
 class DockSplitContainer : public SplitContainer {
 	GDCLASS(DockSplitContainer, SplitContainer);
@@ -73,8 +73,8 @@ public:
 };
 
 class DockContextPopup;
-class EditorDockDragHint;
 class DockTabContainer;
+class EditorDockDragHint;
 
 class EditorDockManager : public Object {
 	GDCLASS(EditorDockManager, Object);

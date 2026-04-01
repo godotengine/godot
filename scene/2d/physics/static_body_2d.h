@@ -35,8 +35,8 @@
 class PhysicsMaterial;
 
 #ifndef NAVIGATION_2D_DISABLED
-class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
+class NavigationPolygon;
 #endif
 
 class StaticBody2D : public PhysicsBody2D {

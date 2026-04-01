@@ -36,15 +36,15 @@
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/material.h"
 
+class Button;
 class Camera3D;
 class ColorRect;
 class DirectionalLight3D;
 class HBoxContainer;
+class Label;
 class MeshInstance3D;
 class SubViewport;
 class SubViewportContainer;
-class Button;
-class Label;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);

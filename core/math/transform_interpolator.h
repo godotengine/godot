@@ -43,10 +43,10 @@
 // several frames may occur between each physics tick, which will make it cheaper
 // than performing every frame.
 
-struct Transform2D;
-struct Transform3D;
 struct Basis;
 struct Quaternion;
+struct Transform2D;
+struct Transform3D;
 
 class TransformInterpolator {
 public:

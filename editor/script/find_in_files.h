@@ -91,10 +91,10 @@ private:
 	int _initial_files_count = 0;
 };
 
-class LineEdit;
 class CheckBox;
 class FileDialog;
 class HBoxContainer;
+class LineEdit;
 
 // Prompts search parameters
 class FindInFilesDialog : public AcceptDialog {
@@ -162,9 +162,9 @@ private:
 
 class Button;
 class CheckButton;
+class ProgressBar;
 class Tree;
 class TreeItem;
-class ProgressBar;
 
 // Display search results
 class FindInFilesPanel : public MarginContainer {

@@ -33,8 +33,8 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/multimesh.h"
 
-class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
+class NavigationPolygon;
 
 class MultiMeshInstance2D : public Node2D {
 	GDCLASS(MultiMeshInstance2D, Node2D);

@@ -33,8 +33,8 @@
 #include "scene/gui/tree.h"
 
 class AcceptDialog;
-class SceneDebuggerTree;
 class EditorFileDialog;
+class SceneDebuggerTree;
 
 class EditorDebuggerTree : public Tree {
 	GDCLASS(EditorDebuggerTree, Tree);
