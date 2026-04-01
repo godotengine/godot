@@ -725,6 +725,28 @@ void EditorProperty::_notification(int p_what) {
 				get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 				_update_property_bg();
 			}
+
+			Node *parent = get_parent();
+			Node *prev_parent = nullptr;
+			while (parent && parent != inspector) {
+				if (prev_parent && parent->get_meta(SNAME("_has_categories"), false).operator bool()) {
+					for (int i = prev_parent->get_index() - 1; i >= 0; i--) {
+						EditorInspectorCategory *category = Object::cast_to<EditorInspectorCategory>(parent->get_child(i));
+						if (category) {
+							category->register_property(this);
+							break;
+						}
+					}
+					break;
+				}
+
+				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(parent);
+				if (section) {
+					section->register_property(this);
+				}
+				prev_parent = parent;
+				parent = parent->get_parent();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1762,6 +1784,13 @@ void EditorInspectorCategory::_notification(int p_what) {
 			connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspectorCategory::_theme_changed));
 		} break;
 
+		case NOTIFICATION_ENTER_TREE: {
+			VBoxContainer *parent_vbox = Object::cast_to<VBoxContainer>(get_parent());
+			if (parent_vbox) {
+				parent_vbox->set_meta(SNAME("_has_categories"), true);
+			}
+		} break;
+
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
@@ -1928,20 +1957,9 @@ void EditorInspectorCategory::_collect_properties(const Object *p_object, LocalV
 void EditorInspectorCategory::_handle_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			const Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
-			String category_name = info.name;
-			if (!EditorNode::get_editor_data().is_type_recognized(info.name) && ResourceLoader::exists(info.hint_string, "Script")) {
-				Ref<Script> scr = ResourceLoader::load(info.hint_string, "Script");
-				if (scr.is_valid()) {
-					category_name = scr->get_doc_class_name();
-				}
-			}
 			Dictionary clipboard;
-			LocalVector<String> properties;
-			_collect_properties(object, properties);
-
-			for (const String &property_name : properties) {
-				clipboard[property_name] = object->get(property_name);
+			for (const EditorProperty *property : category_properties) {
+				clipboard[property->get_edited_property()] = property->get_edited_property_value();
 			}
 			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::CATEGORY, clipboard);
 		} break;
@@ -1950,78 +1968,21 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::CATEGORY) {
 				break;
 			}
-			Object *object = EditorInterface::get_singleton()->get_inspector()->get_edited_object();
 			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
-			String category_name = info.name;
-
-			if (!EditorNode::get_editor_data().is_type_recognized(info.name) && ResourceLoader::exists(info.hint_string, "Script")) {
-				Ref<Script> scr = ResourceLoader::load(info.hint_string, "Script");
-				if (scr.is_valid()) {
-					category_name = scr->get_doc_class_name();
-				}
-			}
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			if (const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object)) {
-				const Node *es = EditorNode::get_singleton()->get_edited_scene();
-				const String action_name = vformat(TTR("Set category %s on %d nodes"), category_name, multi_node_edit->get_node_count());
-				ur->create_action(action_name);
-
-				for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
-					const NodePath E = multi_node_edit->get_node(i);
-					Node *n = es->get_node(E);
-					if (!n) {
-						continue;
-					}
-
-					for (const KeyValue<Variant, Variant> &pair : clipboard) {
-						String property_name = pair.key;
-						ur->add_do_property(n, property_name, pair.value);
-						ur->add_undo_property(n, property_name, n->get(property_name));
-					}
+			ur->create_action(TTR("Paste category properties"));
+			for (EditorProperty *property : category_properties) {
+				if (property->is_read_only()) {
+					continue;
 				}
-
-				ur->commit_action();
-			} else if (EditorDebuggerRemoteObjects *remote_objects = Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
-				const int size = remote_objects->remote_object_ids.size();
-				ur->create_action(size == 1 ? vformat(TTR("Set category %s"), category_name) : vformat(TTR("Set %s on %d objects"), category_name, size), UndoRedo::MERGE_ENDS);
-
-				for (const KeyValue<Variant, Variant> &pair : clipboard) {
-					const String property_name = pair.key;
-					String name = property_name;
-					if (!remote_objects->prop_values.has(name) || String(name).begins_with("Constants/")) {
-						continue;
-					}
-
-					// Change it back to the real name when fetching.
-					if (name == "Script") {
-						name = "script";
-					} else if (name.begins_with("Metadata/")) {
-						name = name.replace_first("Metadata/", "metadata/");
-					}
-
-					Dictionary values = remote_objects->prop_values[property_name];
-					Dictionary old_values = values.duplicate();
-					for (const uint64_t key : values.keys()) {
-						values.set(key, pair.value);
-					}
-					ur->add_do_method(remote_objects, SNAME("emit_signal"), SNAME("values_edited"), name, values, "");
-					ur->add_undo_method(remote_objects, SNAME("emit_signal"), SNAME("values_edited"), name, old_values, "");
+				const StringName &property_name = property->get_edited_property();
+				if (clipboard.has(property_name)) {
+					ur->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
+					ur->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
 				}
-
-				ur->commit_action();
-			} else {
-				const String action_name = vformat(TTR("Set category %s on node %s"), category_name, object->get("name"));
-				ur->create_action(action_name);
-
-				for (const KeyValue<Variant, Variant> &pair : clipboard) {
-					const String property_name = pair.key;
-					ur->add_do_property(object, property_name, pair.value);
-					ur->add_undo_property(object, property_name, object->get(property_name));
-				}
-
-				ur->commit_action();
 			}
+			ur->commit_action();
 		} break;
 
 		case MENU_OPEN_DOCS: {
@@ -2862,57 +2823,32 @@ void EditorInspectorSection::_collect_properties(LocalVector<String> &r_properti
 void EditorInspectorSection::menu_option(int p_option) const {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			LocalVector<String> properties;
 			Dictionary clipboard;
-			_collect_properties(properties);
-
-			for (const String &property_name : properties) {
-				clipboard[property_name] = object->get(property_name);
+			for (const EditorProperty *property : section_properties) {
+				clipboard[property->get_edited_property()] = property->get_edited_property_value();
 			}
 			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::SECTION, clipboard);
 		} break;
+
 		case MENU_PASTE_VALUE: {
 			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION) {
 				break;
 			}
-
 			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
-			LocalVector<String> properties;
 
-			_collect_properties(properties);
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-
-			if (const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object)) {
-				const Node *es = EditorNode::get_singleton()->get_edited_scene();
-				const String action_name = vformat(TTR("Set section values on %d nodes"), multi_node_edit->get_node_count());
-				ur->create_action(action_name);
-
-				for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
-					const NodePath E = multi_node_edit->get_node(i);
-					Node *n = es->get_node(E);
-					if (!n) {
-						continue;
-					}
-
-					for (const String &property_name : properties) {
-						ur->add_do_property(n, property_name, clipboard[property_name]);
-						ur->add_undo_property(n, property_name, n->get(property_name));
-					}
+			ur->create_action(TTR("Paste section properties"));
+			for (EditorProperty *property : section_properties) {
+				if (property->is_read_only()) {
+					continue;
 				}
-
-				ur->commit_action();
-			} else {
-				const String action_name = vformat(TTR("Set section values on node %s"), object->get("name"));
-				ur->create_action(action_name);
-
-				for (const String &property_name : properties) {
-					ur->add_do_property(object, property_name, clipboard[property_name]);
-					ur->add_undo_property(object, property_name, object->get(property_name));
+				const StringName &property_name = property->get_edited_property();
+				if (clipboard.has(property_name)) {
+					ur->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
+					ur->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
 				}
-
-				ur->commit_action();
 			}
-
+			ur->commit_action();
 		} break;
 	}
 }
