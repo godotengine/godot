@@ -6800,8 +6800,11 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTRC("Preview"));
 	preview_camera->set_tooltip_text(TTRC("Preview through the selected camera.\nHold Shift while clicking to also enable Pilot mode."));
-	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
-	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
+	// Quick Open uses Ctrl+P on Win/Linux (Cmd+P on macOS). 
+	// macOS keeps Ctrl+P (distinct from Cmd+P for Quick Open) for camera preview but on Win/Linux it's Shift+P.
+	ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::SHIFT | Key::P);
+	ED_SHORTCUT_OVERRIDE("spatial_editor/toggle_camera_preview", "macos", KeyModifierMask::CTRL | Key::P);
+	preview_camera->set_shortcut(ED_GET_SHORTCUT("spatial_editor/toggle_camera_preview"));
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->set_theme_type_variation("CheckBoxNoIconTint");
