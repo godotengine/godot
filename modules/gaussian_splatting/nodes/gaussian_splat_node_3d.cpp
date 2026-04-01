@@ -1,4 +1,5 @@
 #include "gaussian_splat_node_3d.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gs_project_settings.h"
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_manager.h"
@@ -1089,8 +1090,23 @@ void GaussianSplatNode3D::set_show_residency_hud(bool p_show) {
     debug_helper.set_show_residency_hud(p_show);
 }
 
+Dictionary GaussianSplatNode3D::get_effective_config_snapshot() const {
+    Dictionary composed_effective_config = effective_config_snapshot.duplicate(true);
+    if (renderer.is_valid()) {
+        Dictionary render_stats = renderer->get_render_stats();
+        if (render_stats.has(StringName("effective_config_snapshot"))) {
+            const Variant &snapshot_variant = render_stats[StringName("effective_config_snapshot")];
+            if (snapshot_variant.get_type() == Variant::DICTIONARY) {
+                GaussianEffectiveConfig::merge_into(composed_effective_config, snapshot_variant);
+            }
+        }
+    }
+    return composed_effective_config;
+}
+
 Dictionary GaussianSplatNode3D::get_statistics() const {
     Dictionary stats;
+    Dictionary composed_effective_config = get_effective_config_snapshot();
     stats["update_time_ms"] = last_update_time_ms;
     stats["gpu_memory_mb"] = gpu_memory_mb;
     stats["bounds"] = local_aabb;
@@ -1119,6 +1135,7 @@ Dictionary GaussianSplatNode3D::get_statistics() const {
     // reports aggregate world metrics.
     stats["visible_splats"] = visible_splat_count;
     stats["total_splats"] = total_splat_count;
+    stats["effective_config_snapshot"] = composed_effective_config;
 
     return stats;
 }

@@ -1,6 +1,7 @@
 #include "gaussian_splat_node_helpers.h"
 
 #include "gaussian_splat_node_3d.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gaussian_splat_settings_manager.h"
 #include "../core/gaussian_splat_scene_director.h"
 #include "../core/gaussian_streaming.h"
@@ -89,6 +90,27 @@ static GaussianSplatRenderer::DebugPreviewMode _node_debug_draw_to_renderer_prev
         default:
             return GaussianSplatRenderer::DEBUG_PREVIEW_OFF;
     }
+}
+
+static String _quality_preset_name(GaussianSplatNode3D::QualityPreset p_preset) {
+	switch (p_preset) {
+		case GaussianSplatNode3D::QUALITY_PERFORMANCE:
+			return "Performance";
+		case GaussianSplatNode3D::QUALITY_BALANCED:
+			return "Balanced";
+		case GaussianSplatNode3D::QUALITY_QUALITY:
+			return "Quality";
+		case GaussianSplatNode3D::QUALITY_CUSTOM:
+		default:
+			return "Custom";
+	}
+}
+
+static String _quality_value_source_label(GaussianSplatNode3D::QualityPreset p_preset) {
+	if (p_preset == GaussianSplatNode3D::QUALITY_CUSTOM) {
+		return "node property";
+	}
+	return vformat("quality preset '%s'", _quality_preset_name(p_preset));
 }
 
 } // namespace
@@ -774,6 +796,7 @@ void GaussianSplatNodeQualityHelper::apply_quality_preset() {
 void GaussianSplatNodeQualityHelper::update_quality_settings() {
     Dictionary config;
     fill_preset_config(owner.quality_preset, config);
+    const Dictionary previous_effective_snapshot = owner.effective_config_snapshot;
 
     auto get_float = [&](const char *p_key, float p_default) -> float {
         Variant value = config.get(p_key, Variant(p_default));
@@ -819,6 +842,12 @@ void GaussianSplatNodeQualityHelper::update_quality_settings() {
     const bool async_loading = get_bool("async_loading", true);
     const bool compression = get_bool("compression", true);
 
+    ProjectSettings *ps = ProjectSettings::get_singleton();
+    const String tier_preset = ps ? String(ps->get_setting("rendering/gaussian_splatting/quality/tier_preset", "custom")) : String("custom");
+    const bool apply_tier_budgets = ps ? bool(ps->get_setting("rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", true)) : false;
+    QualityTierConfig tier_config;
+    const bool has_tier_config = apply_tier_budgets && get_quality_tier_config(tier_preset, tier_config);
+
     int effective_max_splats = owner.max_splat_count;
     int effective_max_gpu_mb = max_gpu_memory_mb;
     int effective_target_gpu_mb = target_gpu_memory_mb;
@@ -828,6 +857,40 @@ void GaussianSplatNodeQualityHelper::update_quality_settings() {
     int effective_stream_budget_ms = stream_budget_ms;
     apply_quality_tier_limits(effective_max_splats, effective_max_gpu_mb, effective_target_gpu_mb,
             effective_load_ahead, effective_unload, effective_concurrent_loads, effective_stream_budget_ms);
+
+    const String preset_source_label = _quality_value_source_label(owner.quality_preset);
+    const String preset_default_source_label = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM
+            ? String("custom preset default")
+            : preset_source_label;
+    String max_splats_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "node_property" : "quality_preset";
+    String max_splats_source_label = preset_source_label;
+    if (has_tier_config && effective_max_splats < owner.max_splat_count) {
+        max_splats_source = "tier_cap";
+        max_splats_source_label = vformat("capped by tier '%s'", tier_preset);
+        const Dictionary previous_entry = GaussianEffectiveConfig::get_entry(previous_effective_snapshot, StringName("max_splats"));
+        const int64_t previous_value = int64_t(previous_entry.get(StringName("value"), int64_t(-1)));
+        const String previous_source = String(previous_entry.get(StringName("source"), String()));
+        if (previous_value != int64_t(effective_max_splats) || previous_source != max_splats_source) {
+            GS_LOG_INFO_DEFAULT(vformat("[Effective Config] max_splats capped by tier '%s': %d -> %d",
+                    tier_preset, owner.max_splat_count, effective_max_splats));
+        }
+    }
+
+    String gpu_memory_source = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM ? "preset_default" : "quality_preset";
+    String gpu_memory_source_label = owner.quality_preset == GaussianSplatNode3D::QUALITY_CUSTOM
+            ? String("custom preset default")
+            : preset_source_label;
+    if (has_tier_config && effective_max_gpu_mb < max_gpu_memory_mb) {
+        gpu_memory_source = "tier_cap";
+        gpu_memory_source_label = vformat("capped by tier '%s'", tier_preset);
+        const Dictionary previous_entry = GaussianEffectiveConfig::get_entry(previous_effective_snapshot, StringName("gpu_memory_mb"));
+        const int64_t previous_value = int64_t(previous_entry.get(StringName("value"), int64_t(-1)));
+        const String previous_source = String(previous_entry.get(StringName("source"), String()));
+        if (previous_value != int64_t(effective_max_gpu_mb) || previous_source != gpu_memory_source) {
+            GS_LOG_INFO_DEFAULT(vformat("[Effective Config] gpu_memory_mb capped by tier '%s': %d -> %d",
+                    tier_preset, max_gpu_memory_mb, effective_max_gpu_mb));
+        }
+    }
 
     const float lod0_ratio = CLAMP(get_float("lod0_ratio", 0.25f), 0.0f, 1.0f);
     const float lod1_ratio = CLAMP(get_float("lod1_ratio", 0.5f), lod0_ratio, 1.0f);
@@ -860,6 +923,29 @@ void GaussianSplatNodeQualityHelper::update_quality_settings() {
             effective_load_ahead, effective_unload, effective_concurrent_loads, predictive_loading,
             prediction_time, lod_level_count, lod_distance_multiplier, adaptive_quality,
             effective_stream_budget_ms, async_loading, compression);
+
+    Dictionary effective_snapshot;
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("max_splats"),
+            int64_t(owner.max_splat_count), max_splats_source, max_splats_source_label);
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("gpu_memory_mb"),
+            int64_t(effective_max_gpu_mb), gpu_memory_source, gpu_memory_source_label,
+            vformat("%d MB", effective_max_gpu_mb));
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("target_gpu_memory_mb"),
+            int64_t(effective_target_gpu_mb), gpu_memory_source, gpu_memory_source_label,
+            vformat("%d MB", effective_target_gpu_mb));
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("stream_budget_ms"),
+            int64_t(effective_stream_budget_ms),
+            has_tier_config && effective_stream_budget_ms < stream_budget_ms ? String("tier_cap") : String("quality_preset"),
+            has_tier_config && effective_stream_budget_ms < stream_budget_ms
+                    ? vformat("capped by tier '%s'", tier_preset)
+                    : preset_default_source_label,
+            vformat("%d ms", effective_stream_budget_ms));
+    GaussianEffectiveConfig::set_entry(effective_snapshot, StringName("lod_max_distance"),
+            (double)owner.max_render_distance,
+            "node_property",
+            "node property",
+            owner.max_render_distance > 0.0f ? String::num(owner.max_render_distance, 2) : String("Disabled"));
+    owner.effective_config_snapshot = effective_snapshot;
 
     if (owner.renderer.is_valid()) {
         owner._apply_renderer_settings();

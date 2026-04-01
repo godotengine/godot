@@ -13,6 +13,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/variant/variant.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_streaming.h"
@@ -726,6 +727,16 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Resident route publishes an atlas-sh
     CHECK(stats.get("instance_contract_shape", String()) == String("atlas_emulation"));
     CHECK(bool(stats.get("instance_contract_ready", false)));
     CHECK(stats.get("data_source", String()) == String(GaussianRenderPipeline::SplatDataSource::kSourceResidentInstance));
+    const Dictionary effective_config = stats.get("effective_config_snapshot", Dictionary());
+    const Dictionary route_entry = GaussianEffectiveConfig::get_entry(effective_config, StringName("active_route"));
+    const Dictionary backend_entry = GaussianEffectiveConfig::get_entry(effective_config, StringName("instance_backend_policy"));
+    const Dictionary requested_policy_entry = GaussianEffectiveConfig::get_entry(effective_config, StringName("requested_route_policy"));
+    CHECK(String(route_entry.get(StringName("display_value"), String())) == String("Resident instanced path [INSTANCE.RESIDENT]"));
+    CHECK(String(route_entry.get(StringName("source_label"), String())) == String("Resident was requested by the route policy"));
+    CHECK(String(backend_entry.get(StringName("value"), String())) == String("resident"));
+    CHECK(String(backend_entry.get(StringName("source_label"), String())) == String("Resident was requested by the route policy"));
+    CHECK(String(requested_policy_entry.get(StringName("value"), String())) == String("resident"));
+    CHECK(String(requested_policy_entry.get(StringName("source_label"), String())) == String("route_policy"));
 
     const Array hud_lines = stats.get("performance_hud_lines", Array());
     CHECK(hud_lines_contain(hud_lines, "Route: Resident instanced path [INSTANCE.RESIDENT]"));

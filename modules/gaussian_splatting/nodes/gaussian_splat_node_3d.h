@@ -19,6 +19,7 @@
 #include "core/math/vector2i.h"
 #include "core/object/object_id.h"
 #include "core/templates/rid.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "gaussian_splat_node_helpers.h"
@@ -141,6 +142,7 @@ private:
 
     GaussianSplatting::AdaptiveLODSystem::LODConfig lod_config;
     GaussianSplatting::StreamingLODManager::StreamingConfig streaming_config;
+    Dictionary effective_config_snapshot;
 
     // Painterly settings
     bool enable_painterly = false;
@@ -455,6 +457,9 @@ public:
 
     /** @brief Returns the current streaming configuration. */
     const GaussianSplatting::StreamingLODManager::StreamingConfig &get_streaming_config() const { return streaming_config; }
+
+    /** @brief Returns the latest read-only effective configuration snapshot. */
+    Dictionary get_effective_config_snapshot() const;
 
     /** @brief Sets LOD bias (higher values keep more detail at distance). */
     void set_lod_bias(float p_bias);

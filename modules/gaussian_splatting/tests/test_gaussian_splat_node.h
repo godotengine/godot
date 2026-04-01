@@ -5,11 +5,13 @@
 #include "../nodes/gaussian_splat_world_3d.h"
 #include "../nodes/gaussian_splat_dynamic_instance_3d.h"
 #include "../core/gaussian_data.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_splat_world.h"
 #include "../core/gaussian_splat_scene_director.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/sh_config.h"
 #include "../resources/color_grading_resource.h"
 #include "core/math/math_funcs.h"
 #include "core/config/project_settings.h"
@@ -275,6 +277,73 @@ TEST_CASE("[GaussianSplatting][Node] Debug flag persistence mirrors project sett
 #endif
 
     memdelete(fresh_node);
+}
+
+TEST_CASE("[GaussianSplatting][Node] Effective config snapshot reports tier caps with source attribution") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String tier_apply_setting = "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets";
+
+    ProjectSettingGuard tier_preset_guard(project_settings, tier_preset_setting);
+    ProjectSettingGuard tier_apply_guard(project_settings, tier_apply_setting);
+
+    project_settings->set_setting(tier_preset_setting, String("low"));
+    project_settings->set_setting(tier_apply_setting, true);
+
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+    if (node == nullptr) {
+        return;
+    }
+
+    node->set_quality_preset(GaussianSplatNode3D::QUALITY_QUALITY);
+
+    const Dictionary snapshot = node->get_effective_config_snapshot();
+    const Dictionary max_splats_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("max_splats"));
+    const Dictionary gpu_memory_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("gpu_memory_mb"));
+    const Dictionary lod_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("lod_max_distance"));
+
+    CHECK(int64_t(max_splats_entry.get(StringName("value"), int64_t(-1))) == int64_t(300000));
+    CHECK(String(max_splats_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(int64_t(gpu_memory_entry.get(StringName("value"), int64_t(-1))) == int64_t(256));
+    CHECK(String(gpu_memory_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(String(lod_entry.get(StringName("source_label"), String())) == String("node property"));
+
+    memdelete(node);
+}
+
+TEST_CASE("[GaussianSplatting][Node] Effective config snapshot honors SH project override over tier default") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String sh_bands_setting = SHConfig::BANDS_PATH;
+
+    {
+        ProjectSettingGuard tier_preset_guard(project_settings, tier_preset_setting);
+        ProjectSettingGuard sh_bands_guard(project_settings, sh_bands_setting);
+
+        project_settings->set_setting(tier_preset_setting, String("steam_deck"));
+        project_settings->set_setting(sh_bands_setting, int64_t(SH_BAND_3));
+
+        g_sh_config.load_from_project_settings();
+        const Dictionary snapshot = g_sh_config.get_effective_config_snapshot();
+        const Dictionary sh_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("sh_bands"));
+
+        CHECK(int64_t(sh_entry.get(StringName("value"), int64_t(-1))) == int64_t(SH_BAND_3));
+        CHECK(String(sh_entry.get(StringName("source_label"), String())) == String("project override"));
+        CHECK(String(sh_entry.get(StringName("display_value"), String())) == String("SH3 (3rd order)"));
+    }
+
+    g_sh_config.load_from_project_settings();
 }
 
 TEST_CASE("[GaussianSplatting][Node][SceneTree] Default update mode processes automatically") {

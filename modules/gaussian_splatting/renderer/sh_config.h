@@ -3,6 +3,7 @@
 
 #include "core/string/ustring.h"
 #include "core/config/project_settings.h"
+#include "core/variant/dictionary.h"
 
 /**
  * @file sh_config.h
@@ -69,10 +70,15 @@ struct SHConfig {
     // Debug output
     void print_config_summary() const;
 
+    Dictionary get_effective_config_snapshot() const;
+
     // Constants for project settings paths
     static const String BANDS_PATH;
     static const String DC_LOGIT_PATH;
     static const String PROGRESSIVE_PATH;
+
+    String sh_bands_source = "code_default";
+    String sh_bands_source_label = "code default";
 };
 
 // Global configuration instance

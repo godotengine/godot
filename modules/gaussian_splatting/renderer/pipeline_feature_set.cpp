@@ -1,6 +1,7 @@
 #include "pipeline_feature_set.h"
 
 #include "servers/rendering/rendering_device.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/quality_tier_config.h"
 #include "../logger/gs_logger.h"
 
@@ -51,6 +52,10 @@ void PipelineFeatureSet::load_from_project_settings() {
 
     const String tier_preset = ps->get_setting("rendering/gaussian_splatting/quality/tier_preset", "custom");
     const bool apply_tier_toggles = ps->get_setting("rendering/gaussian_splatting/quality/tier_apply_pipeline_toggles", true);
+    const String default_source = "project_setting";
+    const String default_source_label = "project setting";
+    String feature_source = default_source;
+    String feature_source_label = default_source_label;
     if (apply_tier_toggles) {
         QualityTierConfig tier_config;
         if (get_quality_tier_config(tier_preset, tier_config)) {
@@ -59,9 +64,28 @@ void PipelineFeatureSet::load_from_project_settings() {
             enable_fast_raster = tier_config.enable_fast_raster;
             enable_sh_amortization = tier_config.enable_sh_amortization;
             sh_amortization_divisor = tier_config.sh_amortization_divisor;
+            feature_source = "tier_preset";
+            feature_source_label = vformat("tier preset '%s'", tier_preset);
             GS_LOG_INFO_DEFAULT(vformat("[Pipeline Feature Set] Applying quality tier preset: %s", tier_config.name));
         }
     }
+
+    Dictionary snapshot;
+    GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_two_stage_sort"),
+            enable_two_stage_sort, default_source, default_source_label);
+    GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_packed_stage_data"),
+            enable_packed_stage_data, feature_source, feature_source_label);
+    GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_tighter_bounds"),
+            enable_tighter_bounds, feature_source, feature_source_label);
+    GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_fast_raster"),
+            enable_fast_raster, feature_source, feature_source_label);
+    GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_sh_amortization"),
+            enable_sh_amortization, feature_source, feature_source_label);
+    GaussianEffectiveConfig::set_entry(snapshot, StringName("pipeline_sh_amortization_divisor"),
+            int64_t(sh_amortization_divisor), feature_source, feature_source_label);
+    loaded_provenance_snapshot = snapshot;
+    effective_provenance_snapshot = Dictionary();
+    effective_provenance_snapshot_valid = false;
 
     if (enable_all_experimental || enable_two_stage_sort || enable_packed_stage_data ||
             enable_tighter_bounds || enable_fast_raster || enable_sh_amortization) {
@@ -145,6 +169,7 @@ PipelineFeatureSet PipelineFeatureSet::get_effective(RenderingDevice *p_device,
         bool p_global_sort_enabled,
         String *r_warnings) const {
     PipelineFeatureSet effective = *this;
+    Dictionary provenance_snapshot = loaded_provenance_snapshot.duplicate(true);
 
     if (enable_all_experimental) {
         effective.enable_two_stage_sort = true;
@@ -152,6 +177,16 @@ PipelineFeatureSet PipelineFeatureSet::get_effective(RenderingDevice *p_device,
         effective.enable_tighter_bounds = true;
         effective.enable_fast_raster = true;
         effective.enable_sh_amortization = true;
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_two_stage_sort"),
+                true, "project_setting", "project setting");
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_packed_stage_data"),
+                true, "project_setting", "project setting");
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_tighter_bounds"),
+                true, "project_setting", "project setting");
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_fast_raster"),
+                true, "project_setting", "project setting");
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_sh_amortization"),
+                true, "project_setting", "project setting");
     }
 
     auto warn = [&](const String &p_msg) {
@@ -163,12 +198,16 @@ PipelineFeatureSet PipelineFeatureSet::get_effective(RenderingDevice *p_device,
     if (effective.enable_two_stage_sort && !p_global_sort_enabled) {
         warn("Two-stage sort requires global composite sort; disabling feature.");
         effective.enable_two_stage_sort = false;
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_two_stage_sort"),
+                false, "runtime_requirement", "disabled by runtime requirement");
     }
 
     if (!p_compute_raster_enabled) {
         if (effective.enable_fast_raster) {
             warn("Fast raster path requires compute raster; disabling feature.");
             effective.enable_fast_raster = false;
+            GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_fast_raster"),
+                    false, "runtime_requirement", "disabled by runtime requirement");
         }
     }
 
@@ -176,9 +215,22 @@ PipelineFeatureSet PipelineFeatureSet::get_effective(RenderingDevice *p_device,
         warn("SH amortization requires divisor > 1; disabling feature.");
         effective.enable_sh_amortization = false;
         effective.sh_amortization_divisor = 1;
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_sh_amortization"),
+                false, "invalid_setting", "disabled by invalid setting");
+        GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_sh_amortization_divisor"),
+                int64_t(1), "invalid_setting", "disabled by invalid setting");
     }
     if (!effective.enable_sh_amortization) {
         effective.sh_amortization_divisor = 1;
+        Dictionary divisor_entry = GaussianEffectiveConfig::get_entry(provenance_snapshot, StringName("pipeline_sh_amortization_divisor"));
+        if (divisor_entry.is_empty()) {
+            GaussianEffectiveConfig::set_entry(provenance_snapshot, StringName("pipeline_sh_amortization_divisor"),
+                    int64_t(1), "project_setting", "project setting");
+        } else {
+            divisor_entry[StringName("value")] = int64_t(1);
+            divisor_entry[StringName("display_value")] = String("1");
+            provenance_snapshot[StringName("pipeline_sh_amortization_divisor")] = divisor_entry;
+        }
     }
     if (effective.enable_sh_amortization && effective.disable_sh_amortization_on_visibility_change) {
         if (!Math::is_finite(effective.sh_amortization_visibility_threshold)) {
@@ -195,6 +247,8 @@ PipelineFeatureSet PipelineFeatureSet::get_effective(RenderingDevice *p_device,
 
     if (!p_device) {
         warn("No RenderingDevice available to validate pipeline feature capabilities.");
+        effective_provenance_snapshot = provenance_snapshot;
+        effective_provenance_snapshot_valid = true;
         return effective;
     }
 
@@ -209,7 +263,19 @@ PipelineFeatureSet PipelineFeatureSet::get_effective(RenderingDevice *p_device,
         warn("Fast raster path requested but subgroup operations are unavailable; expect reduced gains.");
     }
 
+    effective_provenance_snapshot = provenance_snapshot;
+    effective_provenance_snapshot_valid = true;
+
     return effective;
+}
+
+Dictionary PipelineFeatureSet::get_effective_config_snapshot() const {
+	if (effective_provenance_snapshot_valid) {
+		return effective_provenance_snapshot.duplicate(true);
+	}
+	Dictionary snapshot = loaded_provenance_snapshot.duplicate(true);
+	GaussianEffectiveConfig::mark_snapshot_limited(snapshot, "runtime capability validation pending");
+	return snapshot;
 }
 
 void PipelineFeatureSet::print_config_summary() const {

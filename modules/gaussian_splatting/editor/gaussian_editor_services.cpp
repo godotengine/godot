@@ -4,6 +4,7 @@
 
 #include "core/math/aabb.h"
 #include "core/string/translation.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../nodes/gaussian_splat_node_3d.h"
 #include "../renderer/gaussian_splat_renderer.h"
@@ -51,6 +52,21 @@ static bool _has_reason_text(const String &p_reason) {
 
 static String _reason_display_text(const String &p_reason_label, const String &p_reason) {
     return !p_reason_label.is_empty() ? p_reason_label : p_reason;
+}
+
+static void _append_effective_config_line(String &r_text, const Dictionary &p_snapshot,
+        const StringName &p_key, const String &p_label) {
+    Dictionary entry = GaussianEffectiveConfig::get_entry(p_snapshot, p_key);
+    if (entry.is_empty()) {
+        return;
+    }
+
+    String line = "\n" + p_label + ": " + GaussianEffectiveConfig::get_display_value(entry);
+    const String source_label = GaussianEffectiveConfig::get_source_label(entry);
+    if (!source_label.is_empty()) {
+        line += " (" + source_label + ")";
+    }
+    r_text += line;
 }
 
 } // namespace
@@ -175,6 +191,14 @@ String format_gaussian_splat_stats(GaussianSplatNode3D *p_node, const Ref<Gaussi
     }
     text += "\nLOD Spheres: " + String(p_node->is_showing_lod_spheres() ? "On" : "Off");
     text += "\nOverlay: " + String(p_node->is_showing_performance_overlay() ? "On" : "Off");
+
+    const Dictionary effective_config = node_stats.get(StringName("effective_config_snapshot"), Dictionary());
+    if (!effective_config.is_empty()) {
+        _append_effective_config_line(text, effective_config, StringName("max_splats"), "Effective Max Splats");
+        _append_effective_config_line(text, effective_config, StringName("gpu_memory_mb"), "Effective GPU Memory");
+        _append_effective_config_line(text, effective_config, StringName("lod_max_distance"), "Effective LOD Max Distance");
+        _append_effective_config_line(text, effective_config, StringName("sh_bands"), "Effective SH Bands");
+    }
 
     return text;
 }
