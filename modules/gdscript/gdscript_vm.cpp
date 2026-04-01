@@ -226,8 +226,7 @@ void GDScriptFunction::_script_error_debug_break(GDScriptInstance *p_instance, G
 	if (instance_valid_with_script && p_instance->script->local_name != StringName()) {
 		err_func = p_instance->script->local_name.operator String() + "." + err_func;
 	}
-	int err_line = _initial_line;
-	_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, p_err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+	_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), p_line, p_err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 	GDScriptLanguage::get_singleton()->debug_break(p_err_text, false);
 }
 
@@ -663,7 +662,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 	// This is used to catch cases where the instance owner is freed during the call.
-	Ref<RefCounted> instance_owner(p_instance->owner);
+	Ref<RefCounted> instance_owner(p_instance ? p_instance->owner : nullptr);
 #endif
 
 	// We must call a `Variant` constructor here, as accessing an object without doing so is undefined behavior.

@@ -1,0 +1,9 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/self_destruction.gd:7 on MyObj.run(): Instance was freed during function call.
+<null>
+>> SCRIPT ERROR at runtime/errors/self_destruction.gd:14 on MyObj.@prop_getter(): Instance was freed during function call.
+<null>
+>> SCRIPT ERROR at runtime/errors/self_destruction.gd:11 on MyObj.@prop_setter(): Instance was freed during function call.
+<null>
+>> SCRIPT ERROR at runtime/errors/self_destruction.gd:17 on MyObj._on_some_signal(): Instance was freed during function call.
+<null>
