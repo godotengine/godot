@@ -168,7 +168,11 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	};
 
 	DescriptorHeap resource_descriptor_heap;
+	BinaryMutex resource_descriptor_heap_mutex;
+
 	DescriptorHeap sampler_descriptor_heap;
+	BinaryMutex sampler_descriptor_heap_mutex;
+
 	CPUDescriptorHeapPool resource_descriptor_heap_pool;
 	CPUDescriptorHeapPool rtv_descriptor_heap_pool;
 	CPUDescriptorHeapPool dsv_descriptor_heap_pool;
@@ -336,8 +340,6 @@ public:
 	/**** SAMPLER ****/
 	/*****************/
 private:
-	LocalVector<D3D12_SAMPLER_DESC> samplers;
-
 	struct SamplerDescriptorHeapAllocation : DescriptorHeap::Allocation {
 		uint32_t key = 0;
 		uint32_t use_count = 1;
@@ -939,9 +941,9 @@ private:
 
 	using VersatileResource = VersatileResourceTemplate<
 			BufferInfo,
+			BufferDynamicInfo,
 			TextureInfo,
-			TextureInfo,
-			TextureInfo,
+			D3D12_SAMPLER_DESC,
 			VertexFormatInfo,
 			CommandBufferInfo,
 			FramebufferInfo,
