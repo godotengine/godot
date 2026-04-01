@@ -423,7 +423,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 		// Create the buffer for transcoded/decompressed data.
 		Vector<uint8_t> out_data;
-		out_data.resize(Image::get_image_data_size(transcoder.get_width(), transcoder.get_height(), image_format, transcoder.get_levels() > 1));
+		out_data.resize(Image::get_image_data_size(transcoder.get_width(), transcoder.get_height(), image_format, true, transcoder.get_levels() - 1));
 
 		uint8_t *dst = out_data.ptrw();
 		memset(dst, 0, out_data.size());
@@ -443,7 +443,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 			}
 		}
 
-		image = Image::create_from_data(transcoder.get_width(), transcoder.get_height(), transcoder.get_levels() > 1, image_format, out_data);
+		image = Image::create_from_data(transcoder.get_width(), transcoder.get_height(), true, image_format, out_data, transcoder.get_levels() - 1);
 	} else {
 		basist::basisu_transcoder transcoder;
 		ERR_FAIL_COND_V(!transcoder.validate_header(src_ptr, src_size), image);
@@ -455,7 +455,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 		// Create the buffer for transcoded/decompressed data.
 		Vector<uint8_t> out_data;
-		out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, basisu_info.m_total_levels > 1));
+		out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, true, basisu_info.m_total_levels - 1));
 
 		uint8_t *dst = out_data.ptrw();
 		memset(dst, 0, out_data.size());
@@ -475,7 +475,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 			}
 		}
 
-		image = Image::create_from_data(basisu_info.m_width, basisu_info.m_height, basisu_info.m_total_levels > 1, image_format, out_data);
+		image = Image::create_from_data(basisu_info.m_width, basisu_info.m_height, true, image_format, out_data, basisu_info.m_total_levels - 1);
 	}
 
 	if (needs_ra_rg_swap) {
