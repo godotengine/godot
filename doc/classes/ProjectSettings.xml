@@ -3627,11 +3627,14 @@
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
 		</member>
+		<member name="xr/openxr/foveation_eye_tracked" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] and foveation level is set to anything other than "Disabled", eye-tracked foveation will be used, so long as it's supported by the headset.
+		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
 			Applied foveation level if supported.
 			[b]Note:[/b] On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
-		<member name="xr/openxr/foveation_with_subsampled_images" type="bool" setter="" getter="" default="false">
+		<member name="xr/openxr/foveation_with_subsampled_images" type="bool" setter="" getter="" default="true">
 			If [code]true[/code] and foveation is also enabled, subsampled images will be used on Vulkan. This can improve the performance gain from foveated rendering, especially when using high foveation levels.
 			[b]Note:[/b]: Using subsampled images is incompatible with many screen-space rendering features or post-processing effects like FXAA or glow. If any such effects are enabled, subsampled images will automatically be disabled and a warning shown in the log.
 		</member>
