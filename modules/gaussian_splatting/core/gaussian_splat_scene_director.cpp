@@ -1000,6 +1000,7 @@ bool GaussianSplatSceneDirector::upsert_world_submission(const WorldSubmission &
 	world->world_submission.static_chunks = p_submission.static_chunks;
 	world->world_submission.bounds = p_submission.bounds;
 	world->world_submission.metadata = p_submission.metadata;
+	world->world_submission.has_desired_residency_hint = p_submission.has_desired_residency_hint;
 	world->world_submission.desired_residency_hint = p_submission.desired_residency_hint;
 	world->world_submission.desired_renderer_overrides = p_submission.desired_renderer_overrides;
 	world->world_submission.active = true;
@@ -1030,6 +1031,7 @@ bool GaussianSplatSceneDirector::get_world_submission(ObjectID p_owner_id, World
 	r_submission->static_chunks = world->world_submission.static_chunks;
 	r_submission->bounds = world->world_submission.bounds;
 	r_submission->metadata = world->world_submission.metadata;
+	r_submission->has_desired_residency_hint = world->world_submission.has_desired_residency_hint;
 	r_submission->desired_residency_hint = world->world_submission.desired_residency_hint;
 	r_submission->desired_renderer_overrides = world->world_submission.desired_renderer_overrides;
 	return true;
@@ -1050,6 +1052,7 @@ bool GaussianSplatSceneDirector::get_world_submission_for_scenario(const RID &p_
 	r_submission->static_chunks = world->world_submission.static_chunks;
 	r_submission->bounds = world->world_submission.bounds;
 	r_submission->metadata = world->world_submission.metadata;
+	r_submission->has_desired_residency_hint = world->world_submission.has_desired_residency_hint;
 	r_submission->desired_residency_hint = world->world_submission.desired_residency_hint;
 	r_submission->desired_renderer_overrides = world->world_submission.desired_renderer_overrides;
 	return true;

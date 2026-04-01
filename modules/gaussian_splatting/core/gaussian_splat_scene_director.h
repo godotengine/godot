@@ -28,8 +28,6 @@ public:
         INSTANCE_WIND_FORCE_ENABLED = 2u,
     };
 
-    static constexpr int32_t SUBMISSION_RESIDENCY_HINT_UNSPECIFIED = -1;
-
     struct InstanceSubmission {
         ObjectID node_id;
         RID scenario;
@@ -55,7 +53,8 @@ public:
         Vector<GaussianSplatRenderer::StaticChunk> static_chunks;
         AABB bounds;
         Dictionary metadata;
-        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_UNSPECIFIED;
+        bool has_desired_residency_hint = false;
+        int32_t desired_residency_hint = 0;
         Dictionary desired_renderer_overrides;
     };
 
@@ -158,7 +157,8 @@ private:
             Vector<GaussianSplatRenderer::StaticChunk> static_chunks;
             AABB bounds;
             Dictionary metadata;
-            int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_UNSPECIFIED;
+            bool has_desired_residency_hint = false;
+            int32_t desired_residency_hint = 0;
             Dictionary desired_renderer_overrides;
             bool active = false;
         };

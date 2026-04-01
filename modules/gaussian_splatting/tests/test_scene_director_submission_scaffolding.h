@@ -119,6 +119,7 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] World submission scaffo
 	submission_a.static_chunks.push_back(stage1a_make_submission_test_chunk(0));
 	submission_a.bounds = AABB(Vector3(-1.0f, -1.0f, -1.0f), Vector3(2.0f, 2.0f, 2.0f));
 	submission_a.metadata[StringName("label")] = String("world_a");
+	submission_a.has_desired_residency_hint = true;
 	submission_a.desired_residency_hint = 7;
 	submission_a.desired_renderer_overrides[StringName("max_splats")] = int64_t(4096);
 
@@ -130,6 +131,7 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] World submission scaffo
 	CHECK(queried_submission.gaussian_data == submission_a.gaussian_data);
 	CHECK(queried_submission.static_chunks.size() == 1);
 	CHECK(queried_submission.metadata[StringName("label")] == String("world_a"));
+	CHECK(queried_submission.has_desired_residency_hint);
 	CHECK(queried_submission.desired_residency_hint == 7);
 	CHECK(int64_t(queried_submission.desired_renderer_overrides[StringName("max_splats")]) == 4096);
 
@@ -254,6 +256,88 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Instance submission que
 	tree->process(0.0);
 
 	CHECK_FALSE(director->get_instance_submission(submission.node_id, &submission));
+	counts = director->get_submission_counts();
+	CHECK(counts.instance_submissions == baseline_counts.instance_submissions);
+	CHECK(counts.world_submissions == baseline_counts.world_submissions);
+	CHECK(counts.preview_submissions == baseline_counts.preview_submissions);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
+TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Explicit instance submission entrypoints round-trip") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+	const GaussianSplatSceneDirector::SubmissionCounts baseline_counts = director->get_submission_counts();
+
+	GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+	REQUIRE(node != nullptr);
+	root->add_child(node);
+	tree->process(0.0);
+
+	Ref<GaussianSplatAsset> asset = stage1a_make_submission_test_asset(8.0f);
+	const Transform3D initial_transform(Basis(), Vector3(1.0f, 2.0f, 3.0f));
+	const Transform3D updated_transform(Basis(), Vector3(4.0f, 5.0f, 6.0f));
+	const Vector3 updated_wind_direction(0.0f, 1.0f, 0.0f);
+
+	director->register_instance_submission(node->get_instance_id(), asset, initial_transform,
+			0.25f, 1.5f, 0u, true, 0.8f,
+			GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_ENABLED,
+			Vector3(1.0f, 0.0f, 0.0f), 2.0f, true);
+
+	GaussianSplatSceneDirector::InstanceSubmission submission;
+	CHECK(director->get_instance_submission(node->get_instance_id(), &submission));
+	CHECK(submission.node_id == node->get_instance_id());
+	CHECK(submission.asset == asset);
+	CHECK(submission.transform.origin.is_equal_approx(initial_transform.origin));
+	CHECK(submission.opacity == doctest::Approx(0.25f));
+	CHECK(submission.lod_bias == doctest::Approx(1.5f));
+	CHECK(submission.casts_shadow);
+	CHECK(submission.visible);
+	CHECK(submission.wind_intensity == doctest::Approx(0.8f));
+	CHECK(submission.wind_mode == GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_ENABLED);
+	CHECK(submission.wind_direction.is_equal_approx(Vector3(1.0f, 0.0f, 0.0f)));
+	CHECK(submission.wind_frequency == doctest::Approx(2.0f));
+
+	director->update_instance_submission_transform(node->get_instance_id(), updated_transform);
+	director->update_instance_submission_params(node->get_instance_id(), 0.6f, 0.9f, 0u, false, 1.2f,
+			GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_DISABLED,
+			updated_wind_direction, 3.5f, false);
+
+	CHECK(director->get_instance_submission(node->get_instance_id(), &submission));
+	CHECK(submission.transform.origin.is_equal_approx(updated_transform.origin));
+	CHECK(submission.opacity == doctest::Approx(0.6f));
+	CHECK(submission.lod_bias == doctest::Approx(0.9f));
+	CHECK_FALSE(submission.casts_shadow);
+	CHECK_FALSE(submission.visible);
+	CHECK(submission.wind_intensity == doctest::Approx(1.2f));
+	CHECK(submission.wind_mode == GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_DISABLED);
+	CHECK(submission.wind_direction.is_equal_approx(updated_wind_direction));
+	CHECK(submission.wind_frequency == doctest::Approx(3.5f));
+
+	GaussianSplatSceneDirector::SubmissionCounts counts = director->get_submission_counts();
+	CHECK(counts.instance_submissions == baseline_counts.instance_submissions + 1);
+	CHECK(counts.world_submissions == baseline_counts.world_submissions);
+	CHECK(counts.preview_submissions == baseline_counts.preview_submissions);
+
+	director->unregister_instance_submission(node->get_instance_id());
+	CHECK_FALSE(director->get_instance_submission(node->get_instance_id(), &submission));
+
+	root->remove_child(node);
+	memdelete(node);
+	tree->process(0.0);
+
 	counts = director->get_submission_counts();
 	CHECK(counts.instance_submissions == baseline_counts.instance_submissions);
 	CHECK(counts.world_submissions == baseline_counts.world_submissions);
