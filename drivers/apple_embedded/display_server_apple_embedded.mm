@@ -837,6 +837,7 @@ void DisplayServerAppleEmbedded::_update_hdr_output(bool edr_headroom_changed) {
 
 	float reference_luminance = _calculate_current_reference_luminance();
 	rendering_context->window_set_hdr_output_reference_luminance(DisplayServerEnums::MAIN_WINDOW_ID, reference_luminance);
+	rendering_context->window_set_hdr_output_linear_luminance_scale(DisplayServerEnums::MAIN_WINDOW_ID, reference_luminance);
 
 	float max_luminance = _screen_potential_edr_headroom() * hardware_reference_luminance_nits;
 	rendering_context->window_set_hdr_output_max_luminance(DisplayServerEnums::MAIN_WINDOW_ID, max_luminance);
