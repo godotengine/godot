@@ -4,7 +4,9 @@
 		A navigation mesh that defines traversable areas and obstacles.
 	</brief_description>
 	<description>
-		A navigation mesh acts as a blueprint for creating a traversable environment, used by agents for pathfinding through complicated spaces. The blueprint needs to be baked, see [method NavigationRegion3D.bake_navigation_mesh] and [method NavigationServer3D.bake_from_source_geometry_data]. Once the navmesh is baked, a collection of polygons is available for said pathfinding.
+		[NavigationMesh] has 2 purposes:
+		1. It acts as a blueprint that has the specifications to create a traversable map for agents. Add some source geometry and it can be baked. The final result is a traversable map. For info about source geometry and baking, see [method NavigationRegion3D.bake_navigation_mesh] and [method NavigationServer3D.bake_from_source_geometry_data].
+		2. Once the navigation mesh is baked, a collection of polygons is available for pathfinding by agents.
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>

@@ -5,6 +5,9 @@
 	</brief_description>
 	<description>
 		An axis-aligned area with a projected shape of cylinder to affect navigation mesh geometry and traversal cost (when baked).
+		[b]Note:[/b] To guarantee that the area affects the intended [NavigationMesh], make sure that
+		1. the area's origin is as close as possible to the source geometry, and
+		2. the [member NavigationMeshArea3D.navigation_layers] are different from the [NavigationRegion3D] you intend to bake with.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -6,6 +6,9 @@
 	<description>
 		An area shape to affect navigation mesh geometry and traversal cost (when baked).
 		[NavigationMeshArea3D] is a base for other resources. It cannot be used directly.
+		[b]Note:[/b] To guarantee that the area affects the intended [NavigationMesh], make sure that
+		1. the area's origin is as close as possible to the source geometry, and
+		2. the [member navigation_layers] are different from the [NavigationRegion3D] you intend to bake with.
 	</description>
 	<tutorials>
 	</tutorials>
