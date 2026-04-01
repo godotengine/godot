@@ -160,6 +160,11 @@ GaussianSplatSceneDirector::GaussianSplatSceneDirector() {
 }
 
 GaussianSplatSceneDirector::~GaussianSplatSceneDirector() {
+    // Release all SharedWorld entries so their Ref<GaussianSplatRenderer>
+    // instances are unreferenced, allowing GPU resources (compute/shader
+    // RIDs, buffers) to be freed.  Without this, each F6 runtime cycle
+    // leaks an entire renderer's worth of GPU allocations.
+    worlds.clear();
     if (singleton == this) {
         singleton = nullptr;
     }
@@ -808,6 +813,22 @@ void GaussianSplatSceneDirector::unregister_instance(ObjectID p_node_id) {
 	world->instance_lookup.erase(p_node_id);
 	_release_asset_record(*world, asset_id);
 	_bump_instance_generation(world->instance_generation);
+
+	// Free the SharedWorld (and its renderer's GPU resources) once the
+	// last instance leaves.  This prevents GPU resource accumulation
+	// across F6 runtime cycles.
+	if (world->instances.is_empty()) {
+		RID erase_key;
+		for (const KeyValue<RID, SharedWorld> &kv : worlds) {
+			if (&kv.value == world) {
+				erase_key = kv.key;
+				break;
+			}
+		}
+		if (erase_key.is_valid()) {
+			worlds.erase(erase_key);
+		}
+	}
 }
 
 void GaussianSplatSceneDirector::register_instance_submission(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,

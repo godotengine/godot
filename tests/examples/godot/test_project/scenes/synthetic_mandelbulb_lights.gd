@@ -12,8 +12,8 @@ func _process(delta: float) -> void:
 	var idx := 0
 	for child in get_children():
 		if child is OmniLight3D:
-			var angle = _elapsed * orbit_speed + idx * PI * 0.5  # Offset each light by 90°.
-			var base_z = child.position.z  # Keep Z from scene, only orbit XY.
+			var angle: float = _elapsed * orbit_speed + idx * PI * 0.5  # Offset each light by 90°.
+			var base_z: float = child.position.z  # Keep Z from scene, only orbit XY.
 			child.position.x = cos(angle) * orbit_radius
 			child.position.y = sin(angle) * orbit_radius
 			idx += 1
