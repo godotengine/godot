@@ -1247,6 +1247,7 @@ bool GaussianSplatSceneDirector::upsert_world_submission(const WorldSubmission &
 		return false;
 	}
 
+	// Scaffolding-only path: update stored submission metadata without mutating renderer state.
 	MutexLock lock(world_mutex);
 	SharedWorld *previous_world = _find_world_for_world_submission(p_submission.owner_id);
 	if (previous_world && previous_world->scenario != p_submission.scenario) {
@@ -1270,6 +1271,7 @@ bool GaussianSplatSceneDirector::submit_world_submission(const WorldSubmission &
 		return false;
 	}
 
+	// Runtime world path: renderer mutation, ownership arbitration, and rollback stay centralized here.
 	MutexLock lock(world_mutex);
 	SharedWorld *world = _get_or_create_world_for_scenario(p_submission.scenario);
 	if (!world) {

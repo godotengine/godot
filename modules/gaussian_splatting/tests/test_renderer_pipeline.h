@@ -635,6 +635,48 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Instance buffer upload uses the publ
     renderer.unref();
 }
 
+TEST_CASE("[GaussianSplatting] Clearing the published instance contract also clears the renderer-side remap") {
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate();
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+
+    GaussianRenderPipeline::InstancePipelineBuffers buffers;
+    buffers.instance_count = 3;
+    buffers.max_visible_splats = 9;
+
+    GaussianRenderPipeline::PublishedInstanceAssetRemap remap;
+    remap.asset_to_dense_id.insert(5u, 2u);
+    remap.generation = 11u;
+    remap.valid = true;
+
+    renderer->publish_instance_pipeline_contract(
+            buffers,
+            remap,
+            GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT,
+            remap.generation,
+            "atlas_emulation");
+
+    CHECK(renderer->has_instance_pipeline_buffers());
+    CHECK(renderer->has_instance_asset_remap());
+    CHECK(renderer->get_instance_backend_policy() == GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT);
+    CHECK(renderer->get_instance_contract_shape() == String("atlas_emulation"));
+    CHECK(renderer->get_instance_asset_remap().generation == 11u);
+
+    renderer->clear_instance_pipeline_buffers();
+
+    CHECK_FALSE(renderer->has_instance_pipeline_buffers());
+    CHECK_FALSE(renderer->has_instance_asset_remap());
+    CHECK(renderer->get_instance_backend_policy() == GaussianRenderPipeline::InstanceBackendPolicy::NONE);
+    CHECK(renderer->get_instance_contract_shape() == String("none"));
+    CHECK(renderer->get_instance_pipeline_buffers().instance_count == 0u);
+    CHECK(renderer->get_instance_pipeline_buffers().max_visible_splats == 0u);
+    CHECK(renderer->get_instance_asset_remap().asset_to_dense_id.is_empty());
+    CHECK(renderer->get_instance_asset_remap().generation == 0u);
+}
+
 TEST_CASE("[GaussianSplatting][RequiresGPU] Resident route publishes an atlas-shaped instance contract without a streaming system") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (rs == nullptr) {

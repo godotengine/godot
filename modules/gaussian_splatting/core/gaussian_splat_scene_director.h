@@ -126,9 +126,17 @@ public:
 
 	void collect_instance_assets_for_renderer(const GaussianSplatRenderer *p_renderer, LocalVector<InstanceAssetRegistration> &out,
 			bool p_shadow_casters_only = false) const;
+    // Runtime world-submission path. Applies the submitted payload to the shared renderer and
+    // becomes the authoritative active world-backed source for the scenario.
     bool submit_world_submission(const WorldSubmission &p_submission);
+    // Runtime inverse of submit_world_submission(). Clears renderer-owned world state and
+    // releases the active world-backed source for this owner.
     void release_world_submission(ObjectID p_owner_id);
+    // Scaffolding/introspection helper. Stores or replaces the director-owned world submission
+    // record without mutating renderer state. Kept public for tests and migration probes only.
     bool upsert_world_submission(const WorldSubmission &p_submission);
+    // Scaffolding/introspection inverse of upsert_world_submission(). Removes only the stored
+    // world submission record and intentionally leaves renderer state untouched.
     void unregister_world_submission(ObjectID p_owner_id);
     bool get_world_submission(ObjectID p_owner_id, WorldSubmission *r_submission) const;
     bool get_world_submission_for_scenario(const RID &p_scenario, WorldSubmission *r_submission) const;
@@ -137,6 +145,8 @@ public:
     void unregister_preview_submission(ObjectID p_owner_id);
     bool get_preview_submission(ObjectID p_owner_id, PreviewSubmission *r_submission) const;
     bool has_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const;
+    // Current hint precedence is preview > active world > homogeneous instance submissions.
+    // Conflicting instance submission hints return false with source "mixed_instance_submissions".
     bool get_submission_residency_hint_for_renderer(const GaussianSplatRenderer *p_renderer,
             int32_t *r_hint, String *r_source = nullptr) const;
     SubmissionCounts get_submission_counts() const;

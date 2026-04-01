@@ -161,6 +161,9 @@ bool publish(GaussianSplatRenderer *p_renderer, bool p_allow_primary_fallback_in
 	}
 
 	if (g_quantization_config.per_chunk_quantization) {
+		// Accepted Stage 2B behavior: the resident atlas publisher does not emulate per-chunk
+		// quantization. Callers preserve this rejection reason and fall back to streaming or the
+		// legacy resident path instead of inventing a second resident-only stage contract.
 		if (r_reason) {
 			*r_reason = "resident_quantization_unsupported";
 		}

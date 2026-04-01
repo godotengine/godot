@@ -2044,6 +2044,8 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
             return;
         }
 
+        // Preserve the rejected resident reason when we pivot into the streaming backend so
+        // stats/HUD surfaces can explain both "why resident was rejected" and "what won next".
         const String resident_rejection_reason =
                 vformat("%s_not_feasible:%s", backend_preference_reason, resident_attempt_reason);
         _set_instance_backend_diagnostics(InstanceBackendPolicy::STREAMING,

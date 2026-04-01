@@ -8,6 +8,7 @@
 #include "../core/gs_project_settings.h"
 #include "../nodes/gaussian_splat_node_3d.h"
 #include "../nodes/gaussian_splat_world_3d.h"
+#include "../renderer/quantization_config.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/rendering_server.h"
@@ -456,6 +457,96 @@ TEST_CASE("[GaussianSplatting][World][SceneTree][RequiresGPU] World submission r
 	tree->process(0.0);
 }
 
+TEST_CASE("[GaussianSplatting][World][SceneTree][RequiresGPU] Resident rejection preserves chained streaming fallback diagnostics") {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	if (rs == nullptr) {
+		MESSAGE("Skipping test - Rendering server unavailable");
+		return;
+	}
+
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	REQUIRE(project_settings != nullptr);
+	ProjectSettingGuard route_guard(project_settings, "rendering/gaussian_splatting/streaming/route_policy");
+	ProjectSettingGuard streaming_guard(project_settings, "rendering/gaussian_splatting/streaming/enabled");
+	ProjectSettingGuard instance_guard(project_settings, "rendering/gaussian_splatting/instance_pipeline/enabled");
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/route_policy",
+			int64_t(gs::settings::GS_ROUTE_STREAMING));
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/enabled", true);
+	project_settings->set_setting("rendering/gaussian_splatting/instance_pipeline/enabled", true);
+	project_settings->emit_signal("settings_changed");
+
+	const QuantizationConfig saved_quantization_config = g_quantization_config;
+	g_quantization_config.per_chunk_quantization = true;
+	g_quantization_config.position_bits = 16;
+	g_quantization_config.scale_bits = 12;
+	g_quantization_config.quantize_scales = false;
+
+	Ref<GaussianSplatWorld> world_resource;
+	world_resource.instantiate();
+	Ref<GaussianData> data = stage1a_make_submission_test_data(32, 20.0f);
+	world_resource->set_gaussian_data(data);
+	Vector<GaussianSplatRenderer::StaticChunk> chunks;
+	chunks.push_back(stage1a_make_submission_test_chunk(0));
+	world_resource->set_static_chunks(chunks);
+
+	GaussianSplatWorld3D *node = memnew(GaussianSplatWorld3D);
+	REQUIRE(node != nullptr);
+	node->set_auto_apply_on_ready(false);
+	node->set_world(world_resource);
+	root->add_child(node);
+	tree->process(0.0);
+	node->apply_world();
+
+	Ref<GaussianSplatRenderer> renderer = node->get_renderer();
+	if (!renderer.is_valid()) {
+		MESSAGE("Skipping test - renderer unavailable");
+		root->remove_child(node);
+		memdelete(node);
+		tree->process(0.0);
+		g_quantization_config = saved_quantization_config;
+		return;
+	}
+
+	renderer->get_debug_state().show_performance_hud = true;
+	renderer->test_release_current_streaming_system();
+	CHECK_FALSE(renderer->test_has_current_streaming_system());
+
+	RenderSceneDataRD scene_data;
+	scene_data.cam_transform = Transform3D(Basis(), Vector3(0.0f, 0.0f, 5.0f));
+	scene_data.cam_projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+	RenderDataRD render_data;
+	render_data.scene_data = &scene_data;
+	render_data.render_buffers = Ref<RenderSceneBuffersRD>();
+
+	renderer->render_scene_instance(&render_data);
+
+	CHECK(renderer->test_has_current_streaming_system());
+	const Dictionary stats = renderer->get_render_stats();
+	CHECK(stats.get("route_uid", String()) == String("INSTANCE.STREAMING"));
+	CHECK(stats.get("requested_route_policy", String()) == String("streaming"));
+	CHECK(stats.get("instance_backend_policy", String()) == String("streaming"));
+	CHECK(stats.get("backend_selection_reason", String()) ==
+			String("submission_hint_resident:world_submission_not_feasible:resident_quantization_unsupported -> streaming_contract_published"));
+	CHECK(String(stats.get("backend_selection_reason_label", String())).find(
+			"Resident was requested by the world submission") != -1);
+	CHECK(String(stats.get("backend_selection_reason_label", String())).find(
+			"quantized resident data cannot publish the resident instance contract") != -1);
+	CHECK(String(stats.get("backend_selection_reason_label", String())).find(
+			"published the streaming instance contract") != -1);
+
+	root->remove_child(node);
+	memdelete(node);
+	tree->process(0.0);
+	g_quantization_config = saved_quantization_config;
+}
+
 TEST_CASE("[GaussianSplatting][World][SceneTree] World node preserves prior renderer streaming overrides when tier budgets are disabled") {
 	SceneTree *tree = SceneTree::get_singleton();
 	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
@@ -729,6 +820,137 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Explicit instance submi
 	CHECK(counts.instance_submissions == baseline_counts.instance_submissions);
 	CHECK(counts.world_submissions == baseline_counts.world_submissions);
 	CHECK(counts.preview_submissions == baseline_counts.preview_submissions);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
+TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Mixed instance residency hints collapse to no effective renderer hint") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+
+	GaussianSplatNode3D *node_a = memnew(GaussianSplatNode3D);
+	GaussianSplatNode3D *node_b = memnew(GaussianSplatNode3D);
+	REQUIRE(node_a != nullptr);
+	REQUIRE(node_b != nullptr);
+	root->add_child(node_a);
+	root->add_child(node_b);
+	tree->process(0.0);
+
+	director->register_instance_submission(node_a->get_instance_id(), stage1a_make_submission_test_asset(2.0f),
+			Transform3D(), 1.0f, 0.0f, 0u, false, 1.0f,
+			GaussianSplatSceneDirector::INSTANCE_WIND_INHERIT, Vector3(), 1.0f, true,
+			true, GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
+	director->register_instance_submission(node_b->get_instance_id(), stage1a_make_submission_test_asset(12.0f),
+			Transform3D(), 1.0f, 0.0f, 0u, false, 1.0f,
+			GaussianSplatSceneDirector::INSTANCE_WIND_INHERIT, Vector3(), 1.0f, true,
+			true, GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING);
+
+	GaussianSplatSceneDirector::InstanceSubmission submission_a;
+	GaussianSplatSceneDirector::InstanceSubmission submission_b;
+	CHECK(director->get_instance_submission(node_a->get_instance_id(), &submission_a));
+	CHECK(director->get_instance_submission(node_b->get_instance_id(), &submission_b));
+	REQUIRE(submission_a.renderer.is_valid());
+	REQUIRE(submission_b.renderer.is_valid());
+	CHECK(submission_a.renderer == submission_b.renderer);
+	CHECK_FALSE(director->has_world_submission_for_renderer(submission_a.renderer.ptr()));
+
+	int32_t renderer_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT;
+	String renderer_hint_source;
+	CHECK_FALSE(director->get_submission_residency_hint_for_renderer(submission_a.renderer.ptr(),
+			&renderer_hint, &renderer_hint_source));
+	CHECK(renderer_hint_source == String("mixed_instance_submissions"));
+
+	director->unregister_instance_submission(node_a->get_instance_id());
+	director->unregister_instance_submission(node_b->get_instance_id());
+
+	root->remove_child(node_a);
+	root->remove_child(node_b);
+	memdelete(node_a);
+	memdelete(node_b);
+	tree->process(0.0);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
+TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Active world residency hint takes precedence over instance hints") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+
+	Ref<GaussianSplatWorld> world_resource;
+	world_resource.instantiate();
+	world_resource->set_gaussian_data(stage1a_make_submission_test_data(8, 4.0f));
+	Vector<GaussianSplatRenderer::StaticChunk> chunks;
+	chunks.push_back(stage1a_make_submission_test_chunk(0));
+	world_resource->set_static_chunks(chunks);
+
+	GaussianSplatWorld3D *world_node = memnew(GaussianSplatWorld3D);
+	GaussianSplatNode3D *instance_node = memnew(GaussianSplatNode3D);
+	REQUIRE(world_node != nullptr);
+	REQUIRE(instance_node != nullptr);
+	world_node->set_auto_apply_on_ready(false);
+	world_node->set_world(world_resource);
+	root->add_child(world_node);
+	root->add_child(instance_node);
+	tree->process(0.0);
+	world_node->apply_world();
+
+	Ref<GaussianSplatRenderer> renderer = world_node->get_renderer();
+	if (!renderer.is_valid()) {
+		MESSAGE("Skipping test - renderer unavailable");
+		root->remove_child(world_node);
+		root->remove_child(instance_node);
+		memdelete(world_node);
+		memdelete(instance_node);
+		tree->process(0.0);
+		if (owns_director) {
+			memdelete(director);
+		}
+		return;
+	}
+
+	director->register_instance_submission(instance_node->get_instance_id(), stage1a_make_submission_test_asset(18.0f),
+			Transform3D(), 1.0f, 0.0f, 0u, false, 1.0f,
+			GaussianSplatSceneDirector::INSTANCE_WIND_INHERIT, Vector3(), 1.0f, true,
+			true, GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING);
+
+	int32_t renderer_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING;
+	String renderer_hint_source;
+	CHECK(director->get_submission_residency_hint_for_renderer(renderer.ptr(), &renderer_hint, &renderer_hint_source));
+	CHECK(renderer_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
+	CHECK(renderer_hint_source == String("world_submission"));
+
+	director->unregister_instance_submission(instance_node->get_instance_id());
+	world_node->clear_world();
+
+	root->remove_child(world_node);
+	root->remove_child(instance_node);
+	memdelete(world_node);
+	memdelete(instance_node);
+	tree->process(0.0);
 
 	if (owns_director) {
 		memdelete(director);

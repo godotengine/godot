@@ -684,10 +684,13 @@ public:
     const SubsystemState &get_subsystem_state() const { return subsystem_state; }
     JacobianDebugConfig &get_jacobian_debug() { return jacobian_debug; }
     const JacobianDebugConfig &get_jacobian_debug() const { return jacobian_debug; }
+    // Publishes the shared atlas-shaped instance contract together with the renderer-owned
+    // dense asset-ID remap sidecar.
     void publish_instance_pipeline_contract(const InstancePipelineBuffers &p_buffers,
             const PublishedInstanceAssetRemap &p_remap, InstanceBackendPolicy p_backend_policy,
             uint64_t p_source_generation, const String &p_contract_shape = "atlas_emulation");
     void set_instance_pipeline_buffers(const InstancePipelineBuffers &p_buffers);
+    // Clears both the published instance contract and its renderer-owned remap sidecar.
     void clear_instance_pipeline_buffers();
     bool has_instance_pipeline_buffers() const { return instance_pipeline_buffers_valid; }
     const InstancePipelineBuffers &get_instance_pipeline_buffers() const { return instance_pipeline_buffers; }

@@ -319,12 +319,18 @@ TEST_CASE("[GaussianSplatting][Node] Effective config snapshot reports tier caps
     const Dictionary load_ahead_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_load_ahead_factor"));
     const Dictionary unload_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_unload_factor"));
     const Dictionary concurrent_loads_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_max_concurrent_loads"));
+    const Dictionary target_gpu_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("target_gpu_memory_mb"));
+    const Dictionary stream_budget_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("stream_budget_ms"));
+    CHECK(int64_t(target_gpu_entry.get(StringName("value"), int64_t(-1))) == int64_t(192));
+    CHECK(String(target_gpu_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
     CHECK(Math::is_equal_approx(float(double(load_ahead_entry.get(StringName("value"), 0.0))), 0.15f));
     CHECK(String(load_ahead_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
     CHECK(Math::is_equal_approx(float(double(unload_entry.get(StringName("value"), 0.0))), 0.95f));
     CHECK(String(unload_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
     CHECK(int64_t(concurrent_loads_entry.get(StringName("value"), int64_t(-1))) == int64_t(1));
     CHECK(String(concurrent_loads_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(int64_t(stream_budget_entry.get(StringName("value"), int64_t(-1))) == int64_t(1));
+    CHECK(String(stream_budget_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
 
     memdelete(node);
 }
@@ -354,9 +360,11 @@ TEST_CASE("[GaussianSplatting][Node] Editor summary surfaces capped streaming va
 
     node->set_quality_preset(GaussianSplatNode3D::QUALITY_QUALITY);
     const String stats_text = GaussianEditorServices::format_gaussian_splat_stats(node, Ref<GaussianSplatRenderer>());
+    CHECK(stats_text.contains("Effective Target GPU Memory: 192 MB"));
     CHECK(stats_text.contains("Effective Load Ahead: 0.15"));
     CHECK(stats_text.contains("Effective Unload: 0.95"));
     CHECK(stats_text.contains("Effective Concurrent Loads: 1"));
+    CHECK(stats_text.contains("Effective Stream Budget: 1 ms"));
     CHECK(stats_text.contains("capped by tier 'low'"));
 
     memdelete(node);
