@@ -1142,7 +1142,9 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	if (!type) {
+		return;
+	}
 
 	for (const KeyValue<StringName, int64_t> &E : type->gdtype->get_integer_constant_map(p_no_inheritance)) {
 		p_constants->push_back(E.key);
@@ -1207,10 +1209,14 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	if (!type) {
+		return;
+	}
 
 	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_enum);
-	ERR_FAIL_NULL(enum_info);
+	if (!enum_info) {
+		return;
+	}
 
 	for (const KeyValue<StringName, int64_t> &kv : (*enum_info)->values) {
 		p_constants->push_back(kv.key);
@@ -1282,7 +1288,9 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	if (!type) {
+		return;
+	}
 
 	for (const KeyValue<StringName, const MethodInfo *> &kv : type->gdtype->get_signal_map(p_no_inheritance)) {
 		p_signals->push_back(*kv.value);
