@@ -101,6 +101,52 @@ static const StringName WORLD_STREAMING_VRAM_MAX_CHUNKS("vram_max_chunks");
 static const StringName WORLD_STREAMING_OVERRIDE_IO_SOURCE("override_io_source");
 static const StringName WORLD_STREAMING_IO_SOURCE_PATH("io_source_path");
 
+struct WorldSubmissionRendererConfigSnapshot {
+	bool valid = false;
+	bool lod_enabled = true;
+	float lod_bias = 1.0f;
+	float lod_max_distance = 0.0f;
+	bool frustum_culling = true;
+	bool async_upload_enabled = true;
+	float opacity_multiplier = 1.0f;
+	int max_splats = 1000000;
+	GaussianStreamingTypes::ConfigOverrides streaming_overrides;
+};
+
+static WorldSubmissionRendererConfigSnapshot _snapshot_world_submission_renderer_config(const Ref<GaussianSplatRenderer> &p_renderer) {
+	WorldSubmissionRendererConfigSnapshot snapshot;
+	if (p_renderer.is_null()) {
+		return snapshot;
+	}
+
+	snapshot.valid = true;
+	snapshot.lod_enabled = p_renderer->get_lod_enabled();
+	snapshot.lod_bias = p_renderer->get_lod_bias();
+	snapshot.lod_max_distance = p_renderer->get_lod_max_distance();
+	snapshot.frustum_culling = p_renderer->get_frustum_culling();
+	snapshot.async_upload_enabled = p_renderer->get_async_upload_enabled();
+	snapshot.opacity_multiplier = p_renderer->get_opacity_multiplier();
+	snapshot.max_splats = p_renderer->get_max_splats();
+	snapshot.streaming_overrides = p_renderer->get_streaming_config_overrides();
+	return snapshot;
+}
+
+static void _restore_world_submission_renderer_config(const Ref<GaussianSplatRenderer> &p_renderer,
+		const WorldSubmissionRendererConfigSnapshot &p_snapshot) {
+	if (p_renderer.is_null() || !p_snapshot.valid) {
+		return;
+	}
+
+	p_renderer->set_lod_enabled(p_snapshot.lod_enabled);
+	p_renderer->set_lod_bias(p_snapshot.lod_bias);
+	p_renderer->set_lod_max_distance(p_snapshot.lod_max_distance);
+	p_renderer->set_frustum_culling(p_snapshot.frustum_culling);
+	p_renderer->set_async_upload_enabled(p_snapshot.async_upload_enabled);
+	p_renderer->set_opacity_multiplier(p_snapshot.opacity_multiplier);
+	p_renderer->set_max_splats(p_snapshot.max_splats);
+	p_renderer->set_streaming_config_overrides(p_snapshot.streaming_overrides);
+}
+
 GaussianSplatSceneDirector *GaussianSplatSceneDirector::singleton = nullptr;
 
 GaussianSplatSceneDirector *GaussianSplatSceneDirector::get_singleton() {
@@ -1215,14 +1261,12 @@ bool GaussianSplatSceneDirector::submit_world_submission(const WorldSubmission &
 		}
 	}
 
-	const GaussianStreamingSystem::ConfigOverrides target_previous_streaming_overrides =
-			world->renderer.is_valid() ? world->renderer->get_streaming_config_overrides() : GaussianStreamingSystem::ConfigOverrides();
+	const WorldSubmissionRendererConfigSnapshot target_previous_renderer_config =
+			_snapshot_world_submission_renderer_config(world->renderer);
 	SharedWorld::WorldSubmissionRecord candidate_record;
 	_store_world_submission_record(candidate_record, p_submission);
 	if (!_apply_world_submission_to_renderer(*world, candidate_record)) {
-		if (world->renderer.is_valid()) {
-			world->renderer->set_streaming_config_overrides(target_previous_streaming_overrides);
-		}
+		_restore_world_submission_renderer_config(world->renderer, target_previous_renderer_config);
 		if (target_previous_record.active) {
 			_apply_world_submission_to_renderer(*world, target_previous_record);
 		} else {
