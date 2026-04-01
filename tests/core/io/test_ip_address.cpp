@@ -265,6 +265,11 @@ TEST_CASE("[IPAddress] IPv6 Parsing") {
 	CHECK(test_ip("1:1::", { 1, 1, 0, 0, 0, 0, 0, 0 }));
 	CHECK(test_ip("1::", { 1, 0, 0, 0, 0, 0, 0, 0 }));
 
+	CHECK(test_ip("1::1", { 1, 0, 0, 0, 0, 0, 0, 1 }));
+	CHECK(test_ip("1:1:1:1:1::1", { 1, 1, 1, 1, 1, 0, 0, 1 }));
+	CHECK(test_ip("1:1:1::1:1:1", { 1, 1, 1, 0, 0, 1, 1, 1 }));
+	CHECK(test_ip("1::1:1:1:1:1", { 1, 0, 0, 1, 1, 1, 1, 1 }));
+
 	CHECK(test_ip("ffff::", { 0xFFFF, 0, 0, 0, 0, 0, 0, 0 }));
 	CHECK(test_ip("::ffff", { 0, 0, 0, 0, 0, 0, 0, 0xFFFF }));
 	CHECK(test_ip("::fffe:0", { 0, 0, 0, 0, 0, 0, 0xFFFE, 0 }));
