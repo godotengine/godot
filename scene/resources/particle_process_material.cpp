@@ -1000,6 +1000,8 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "		}\n";
 		}
 	}
+	code += "	} else {\n";
+	code += "		USERDATA1.xyz = VELOCITY.xyz;\n";
 	code += "	}\n\n";
 	code += "	process_display_param(params, 0.0);\n\n";
 	code += "	USERDATA1.xyz = (EMISSION_TRANSFORM * vec4(USERDATA1.xyz, 0.0)).xyz;\n";
