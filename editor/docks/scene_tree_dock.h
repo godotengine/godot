@@ -243,6 +243,7 @@ class SceneTreeDock : public EditorDock {
 	Node *node_hovered_now = nullptr;
 	Node *node_hovered_previously = nullptr;
 	Object *edited_object_at_drag_start = nullptr;
+	bool scene_tree_drag_active = false;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
