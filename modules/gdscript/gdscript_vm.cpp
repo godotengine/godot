@@ -209,6 +209,30 @@ String GDScriptFunction::_get_callable_call_error(const String &p_where, const C
 	}
 }
 
+#ifdef DEBUG_ENABLED
+
+void GDScriptFunction::_script_error_debug_break(GDScriptInstance *p_instance, GDScript *p_script, int p_line, const String &p_err_text) const {
+	String err_file;
+	bool instance_valid_with_script = p_instance != nullptr && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid();
+	if (instance_valid_with_script && !p_instance->script->path.is_empty()) {
+		err_file = p_instance->script->path;
+	} else if (p_script) {
+		err_file = p_script->path;
+	}
+	if (err_file.is_empty()) {
+		err_file = "<built-in>";
+	}
+	String err_func = name;
+	if (instance_valid_with_script && p_instance->script->local_name != StringName()) {
+		err_func = p_instance->script->local_name.operator String() + "." + err_func;
+	}
+	int err_line = _initial_line;
+	_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, p_err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+	GDScriptLanguage::get_singleton()->debug_break(p_err_text, false);
+}
+
+#endif
+
 void (*type_init_function_table[])(Variant *) = {
 	nullptr, // NIL (shouldn't be called).
 	&VariantInitializer<bool>::init, // BOOL.
@@ -511,23 +535,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	if (unlikely(++call_depth > MAX_CALL_DEPTH)) {
 		call_depth--;
 #ifdef DEBUG_ENABLED
-		String err_file;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty()) {
-			err_file = p_instance->script->path;
-		} else if (_script) {
-			err_file = _script->path;
-		}
-		if (err_file.is_empty()) {
-			err_file = "<built-in>";
-		}
-		String err_func = name;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && p_instance->script->local_name != StringName()) {
-			err_func = p_instance->script->local_name.operator String() + "." + err_func;
-		}
-		int err_line = _initial_line;
-		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
-		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
-		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
+		_script_error_debug_break(p_instance, _script, _initial_line, "Stack overflow. Check for infinite recursion in your script.");
 #endif
 		return _get_default_variant_for_data_type(return_type);
 	}
@@ -3963,27 +3971,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		//error
 		// function, file, line, error, explanation
-		String err_file;
-		bool instance_valid_with_script = p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid();
-		if (instance_valid_with_script && !get_script()->path.is_empty()) {
-			err_file = get_script()->path;
-		} else if (script) {
-			err_file = script->path;
-		}
-		if (err_file.is_empty()) {
-			err_file = "<built-in>";
-		}
-		String err_func = name;
-		if (instance_valid_with_script && p_instance->script->local_name != StringName()) {
-			err_func = p_instance->script->local_name.operator String() + "." + err_func;
-		}
-		int err_line = line;
 		if (err_text.is_empty()) {
 			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
 		}
-
-		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
+		_script_error_debug_break(p_instance, script, line, err_text);
 
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
