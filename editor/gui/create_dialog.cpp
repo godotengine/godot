@@ -41,12 +41,19 @@
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/tree.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
+
+	types_enabled[TYPE_BUILT_IN] = EditorSettings::get_singleton()->get_project_metadata("create_dialog", "built_in_enabled", true);
+	types_enabled[TYPE_CUSTOM] = EditorSettings::get_singleton()->get_project_metadata("create_dialog", "custom_enabled", true);
+	types_enabled[TYPE_EDITOR] = EditorSettings::get_singleton()->get_project_metadata("create_dialog", "editor_enabled", false);
+	_update_filter_button_state();
 
 	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
 
@@ -175,13 +182,6 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		return true;
 	}
 
-	if (is_base_type_node && ClassDB::class_exists(p_type)) {
-		const ClassDB::APIType api_type = ClassDB::get_api_type(p_type);
-		if (api_type == ClassDB::API_EDITOR || api_type == ClassDB::API_EDITOR_EXTENSION) {
-			return true; // Do not show editor-only classes.
-		}
-	}
-
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
 			return true; // Can't create abstract or virtual class.
@@ -253,11 +253,50 @@ void CreateDialog::_update_search() {
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE, "");
 
 	const String search_text = search_box->get_text();
+	bool type_filter_enabled = search_text.is_empty();
+
+	selectable_types.clear();
+	if (type_filter_enabled) {
+		for (const TypeInfo &candidate : type_info_list) {
+			bool is_script_type = !ClassDB::class_exists(candidate.type_name);
+			bool is_extension = !is_script_type && ClassDB::is_gdextension(candidate.type_name);
+			bool is_editor = false;
+			if (!is_script_type) {
+				const ClassDB::APIType api_type = ClassDB::get_api_type(candidate.type_name);
+				is_editor = (api_type == ClassDB::API_EDITOR || api_type == ClassDB::API_EDITOR_EXTENSION);
+			}
+
+			bool valid = false;
+			if (is_script_type) {
+				valid = types_enabled[TYPE_CUSTOM];
+			} else if (is_extension) {
+				if (is_editor) {
+					valid = types_enabled[TYPE_EDITOR];
+				} else {
+					valid = types_enabled[TYPE_CUSTOM];
+				}
+			} else {
+				// Native type.
+				if (is_editor) {
+					valid = types_enabled[TYPE_EDITOR];
+				} else {
+					valid = types_enabled[TYPE_BUILT_IN];
+				}
+			}
+
+			if (valid) {
+				selectable_types.insert(candidate.type_name);
+			}
+		}
+	}
 
 	float highest_score = 0.0f;
 	StringName best_match;
 
 	for (const TypeInfo &candidate : type_info_list) {
+		if (type_filter_enabled && !selectable_types.has(candidate.type_name)) {
+			continue;
+		}
 		String match_keyword;
 
 		// First check if the name matches. If it does not, try the search keywords.
@@ -540,7 +579,33 @@ void CreateDialog::_confirmed() {
 	_cleanup();
 }
 
+void CreateDialog::_reset_filters() {
+	if (!types_enabled[TYPE_BUILT_IN]) {
+		_type_filter_toggled(TYPE_BUILT_IN, false);
+	}
+	if (!types_enabled[TYPE_CUSTOM]) {
+		_type_filter_toggled(TYPE_CUSTOM, false);
+	}
+	if (types_enabled[TYPE_EDITOR]) {
+		_type_filter_toggled(TYPE_EDITOR, false);
+	}
+	reset_filters_button->hide();
+	_update_search();
+}
+
+void CreateDialog::_update_filter_button_state() {
+	const bool is_searching = !search_box->get_text().is_empty();
+	filters_button->set_disabled(is_searching);
+	if (!is_searching) {
+		filters_button->get_popup()->set_item_checked(TYPE_BUILT_IN, types_enabled[TYPE_BUILT_IN]);
+		filters_button->get_popup()->set_item_checked(TYPE_CUSTOM, types_enabled[TYPE_CUSTOM]);
+		filters_button->get_popup()->set_item_checked(TYPE_EDITOR, types_enabled[TYPE_EDITOR]);
+	}
+	reset_filters_button->set_visible(!is_searching && (!types_enabled[TYPE_BUILT_IN] || !types_enabled[TYPE_CUSTOM] || types_enabled[TYPE_EDITOR]));
+}
+
 void CreateDialog::_text_changed(const String &p_newtext) {
+	_update_filter_button_state();
 	_update_search();
 }
 
@@ -560,6 +625,20 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_event) {
 
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("docks/scene_tree")) {
+				break;
+			}
+
+			[[fallthrough]];
+		}
+
+		case NOTIFICATION_READY: {
+			if (is_visible()) {
+				_update_search();
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect(SceneStringName(confirmed), callable_mp(this, &CreateDialog::_confirmed));
 		} break;
@@ -584,6 +663,8 @@ void CreateDialog::_notification(int p_what) {
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
 
 			favorite->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
+			reset_filters_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
+			filters_button->set_button_icon(get_editor_theme_icon(SNAME("GuiDropdown")));
 		} break;
 	}
 }
@@ -692,6 +773,29 @@ void CreateDialog::_hide_requested() {
 
 void CreateDialog::cancel_pressed() {
 	_cleanup();
+}
+
+void CreateDialog::_type_filter_toggled(int p_type, bool p_search) {
+	filters_button->get_popup()->toggle_item_checked(p_type);
+	bool is_checked = filters_button->get_popup()->is_item_checked(p_type);
+
+	switch (p_type) {
+		case TYPE_BUILT_IN:
+			EditorSettings::get_singleton()->set_project_metadata("create_dialog", "built_in_enabled", is_checked);
+			break;
+		case TYPE_CUSTOM:
+			EditorSettings::get_singleton()->set_project_metadata("create_dialog", "custom_enabled", is_checked);
+			break;
+		case TYPE_EDITOR:
+			EditorSettings::get_singleton()->set_project_metadata("create_dialog", "editor_enabled", is_checked);
+			break;
+	}
+	types_enabled[p_type] = is_checked;
+
+	if (p_search) {
+		reset_filters_button->set_visible(!types_enabled[TYPE_BUILT_IN] || !types_enabled[TYPE_CUSTOM] || types_enabled[TYPE_EDITOR]);
+		_update_search();
+	}
 }
 
 void CreateDialog::_favorite_toggled() {
@@ -941,15 +1045,46 @@ CreateDialog::CreateDialog() {
 	search_hb->add_child(favorite);
 	vbc->add_margin_child(TTR("Search:"), search_hb);
 
+	HBoxContainer *matches_hb = memnew(HBoxContainer);
+	vbc->add_child(matches_hb);
+
+	Label *matches_label = memnew(Label(TTRC("Matches:")));
+	matches_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	matches_label->set_theme_type_variation("HeaderSmall");
+	matches_hb->add_child(matches_label);
+
+	reset_filters_button = memnew(Button);
+	reset_filters_button->set_tooltip_text(TTRC("Reset filters."));
+	reset_filters_button->set_theme_type_variation(SceneStringName(FlatButton));
+	reset_filters_button->set_h_size_flags(Control::SIZE_SHRINK_END);
+	matches_hb->add_child(reset_filters_button);
+	reset_filters_button->connect(SceneStringName(pressed), callable_mp(this, &CreateDialog::_reset_filters));
+
+	filters_button = memnew(MenuButton);
+	filters_button->set_flat(false);
+	filters_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	filters_button->set_theme_type_variation("FlatMenuButton");
+	filters_button->set_text(TTRC("Filters"));
+	filters_button->set_h_size_flags(Control::SIZE_SHRINK_END);
+	matches_hb->add_child(filters_button);
+
+	PopupMenu *filter_popup = filters_button->get_popup();
+	filter_popup->add_check_item(TTRC("Show Built-in"), TYPE_BUILT_IN);
+	filter_popup->add_check_item(TTRC("Show Custom"), TYPE_CUSTOM);
+	filter_popup->add_check_item(TTRC("Show Editor"), TYPE_EDITOR);
+	filter_popup->set_hide_on_checkable_item_selection(false);
+	filter_popup->connect(SceneStringName(id_pressed), callable_mp(this, &CreateDialog::_type_filter_toggled).bind(true));
+
 	search_options = memnew(Tree);
 	search_box->set_forward_control(search_options);
 	search_options->set_accessibility_name(TTRC("Matches:"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	search_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	search_options->set_theme_type_variation("TreeSecondary");
+	vbc->add_child(search_options);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
 	search_options->connect("button_clicked", callable_mp(this, &CreateDialog::_script_button_clicked));
-	search_options->set_theme_type_variation("TreeSecondary");
-	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	help_bit = memnew(EditorHelpBit);
 	help_bit->set_accessibility_name(TTRC("Description:"));
