@@ -520,7 +520,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	return shortcut_item;
 }
 
-bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const {
+bool EditorSettingsDialog::_should_display_shortcut(const String &p_path, const Array &p_events, const String &p_name) const {
 	const Ref<InputEvent> search_ev = shortcut_search_bar->get_event();
 	if (search_ev.is_valid()) {
 		bool event_match = false;
@@ -543,7 +543,10 @@ bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const 
 	if (search_text.is_subsequence_ofn(p_name)) {
 		return true;
 	}
-	if (p_match_localized_name && search_text.is_subsequence_ofn(TTR(p_name))) {
+	if (search_text.is_subsequence_ofn(TTR(p_name))) {
+		return true;
+	}
+	if (search_text.is_subsequence_ofn(p_path)) {
 		return true;
 	}
 
@@ -615,7 +618,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
 		Array action_events = _event_list_to_array_helper(action.inputs);
-		if (!_should_display_shortcut(action_name, action_events, false)) {
+		if (!_should_display_shortcut(action_name, action_events)) {
 			continue;
 		}
 
@@ -678,7 +681,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		String section_name = E.get_slicec('/', 0);
 		TreeItem *section = sections[section_name];
 
-		if (!_should_display_shortcut(sc->get_name(), sc->get_events(), true)) {
+		if (!_should_display_shortcut(E, sc->get_events(), sc->get_name())) {
 			continue;
 		}
 
