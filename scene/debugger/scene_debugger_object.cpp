@@ -53,6 +53,11 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	}
 
 	if (Node *node = Object::cast_to<Node>(p_obj)) {
+		{
+			PropertyInfo pi(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
+			properties.push_back(SceneDebuggerProperty(pi, node->get_name()));
+		}
+
 		// For debugging multiplayer.
 		{
 			PropertyInfo pi(Variant::INT, String("Node/multiplayer_authority"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY);
