@@ -65,6 +65,7 @@ public:
 	GLint64 max_uniform_buffer_size = 0;
 	uint32_t max_shader_varyings = 0;
 
+	int64_t max_decals = 512; // TODO: Make this a setting!
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;
