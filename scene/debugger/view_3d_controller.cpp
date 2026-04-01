@@ -161,7 +161,7 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 		int pan_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_2);
 		int zoom_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_2);
 		bool orbit_not_empty = !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_1) || !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_2);
-		bool pan_not_empty = !_is_shortcut_empty(SHORTCUT_PAN_MOD_2) || !_is_shortcut_empty(SHORTCUT_PAN_MOD_2);
+		bool pan_not_empty = !_is_shortcut_empty(SHORTCUT_PAN_MOD_1) || !_is_shortcut_empty(SHORTCUT_PAN_MOD_2);
 		bool zoom_not_empty = !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_1) || !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_2);
 		shortcut_checks.push_back(ShortcutCheck(orbit_mod_pressed, orbit_not_empty, orbit_mod_input_count, orbit_mouse_button, NAV_MODE_ORBIT));
 		shortcut_checks.push_back(ShortcutCheck(pan_mod_pressed, pan_not_empty, pan_mod_input_count, pan_mouse_button, NAV_MODE_PAN));
