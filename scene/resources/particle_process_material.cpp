@@ -1223,6 +1223,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		params.scale *= texture(scale_over_velocity_curve, vec2(0.0)).rgb;\n";
 		code += "	}\n";
 	}
+
+	if (particle_flags[PARTICLE_FLAG_INHERIT_EMITTER_SCALE]) {
+		code += "	vec3 emitter_scale = vec3(length(EMISSION_TRANSFORM[0].xyz), length(EMISSION_TRANSFORM[1].xyz), length(EMISSION_TRANSFORM[2].xyz));\n";
+		code += "	params.scale = params.scale * emitter_scale;\n";
+	}
+
 	// A scale of 0 results in no emission at some emission amounts (including 3 and 6).
 	// `sign(scale)` is unsuitable, because sign(0) returns 0, nullifying the minimum value.
 	// The following evaluates to 1 when scale is 0, falling back to a positive minimum value.
@@ -2559,6 +2565,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_rotate_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ROTATE_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_disable_z"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DISABLE_Z);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_damping_as_friction"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DAMPING_AS_FRICTION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_inherit_emitter_scale"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_INHERIT_EMITTER_SCALE);
 	ADD_GROUP("Spawn", "");
 	ADD_SUBGROUP("Position", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_shape_offset"), "set_emission_shape_offset", "get_emission_shape_offset");
@@ -2701,6 +2708,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ROTATE_Y);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DISABLE_Z);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DAMPING_AS_FRICTION);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_INHERIT_EMITTER_SCALE);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
