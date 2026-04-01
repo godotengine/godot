@@ -39,6 +39,8 @@ class NavigationMeshArea3D : public Node3D {
 	GDCLASS(NavigationMeshArea3D, Node3D);
 
 protected:
+	RID area;
+
 	bool enabled = true;
 	float height = 1.0;
 	uint32_t navigation_layers = 1;
@@ -61,6 +63,11 @@ protected:
 #endif // DEBUG_ENABLED
 
 public:
+	NavigationMeshArea3D();
+	~NavigationMeshArea3D();
+
+	RID get_rid() const;
+
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
@@ -77,9 +84,6 @@ public:
 	int get_priority() const;
 
 	AABB get_bounds();
-
-	NavigationMeshArea3D();
-	~NavigationMeshArea3D();
 
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
@@ -105,13 +109,13 @@ protected:
 #endif // DEBUG_ENABLED
 
 public:
+	NavigationMeshAreaBox3D();
+	~NavigationMeshAreaBox3D();
+
 	void set_size(const Vector3 &p_size);
 	const Vector3 &get_size() const;
 
 	PackedStringArray get_configuration_warnings() const override;
-
-	NavigationMeshAreaBox3D();
-	~NavigationMeshAreaBox3D();
 };
 
 class NavigationMeshAreaCylinder3D : public NavigationMeshArea3D {
@@ -129,13 +133,13 @@ protected:
 #endif // DEBUG_ENABLED
 
 public:
+	NavigationMeshAreaCylinder3D();
+	~NavigationMeshAreaCylinder3D();
+
 	void set_radius(float p_radius);
 	float get_radius() const;
 
 	PackedStringArray get_configuration_warnings() const override;
-
-	NavigationMeshAreaCylinder3D();
-	~NavigationMeshAreaCylinder3D();
 };
 
 class NavigationMeshAreaPolygon3D : public NavigationMeshArea3D {
@@ -155,6 +159,9 @@ protected:
 #endif // DEBUG_ENABLED
 
 public:
+	NavigationMeshAreaPolygon3D();
+	~NavigationMeshAreaPolygon3D();
+
 	void set_vertices(const Vector<Vector3> &p_vertices);
 	const Vector<Vector3> &get_vertices() const;
 
@@ -162,7 +169,4 @@ public:
 	bool are_vertices_valid() const;
 
 	PackedStringArray get_configuration_warnings() const override;
-
-	NavigationMeshAreaPolygon3D();
-	~NavigationMeshAreaPolygon3D();
 };

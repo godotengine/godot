@@ -34,6 +34,7 @@
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_iteration_3d.h"
 #include "nav_agent_3d.h"
+#include "nav_area_3d.h"
 #include "nav_link_3d.h"
 #include "nav_obstacle_3d.h"
 #include "nav_region_3d.h"
@@ -240,6 +241,19 @@ void NavMap3D::add_region(NavRegion3D *p_region) {
 
 void NavMap3D::remove_region(NavRegion3D *p_region) {
 	if (regions.erase_unordered(p_region)) {
+		iteration_dirty = true;
+	}
+}
+
+void NavMap3D::add_area(NavArea3D *p_area) {
+	DEV_ASSERT(!areas.has(p_area));
+
+	areas.push_back(p_area);
+	iteration_dirty = true;
+}
+
+void NavMap3D::remove_area(NavArea3D *p_area) {
+	if (areas.erase_unordered(p_area)) {
 		iteration_dirty = true;
 	}
 }

@@ -120,6 +120,14 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_random_point", "region", "navigation_layers", "uniformly"), &NavigationServer3D::region_get_random_point);
 	ClassDB::bind_method(D_METHOD("region_get_bounds", "region"), &NavigationServer3D::region_get_bounds);
 
+	ClassDB::bind_method(D_METHOD("area_create", "shape_type"), &NavigationServer3D::area_create);
+	ClassDB::bind_method(D_METHOD("area_set_map", "area", "map"), &NavigationServer3D::area_set_map);
+	ClassDB::bind_method(D_METHOD("area_get_map", "area"), &NavigationServer3D::area_get_map);
+	ClassDB::bind_method(D_METHOD("area_set_enabled", "area", "enabled"), &NavigationServer3D::area_set_enabled);
+	ClassDB::bind_method(D_METHOD("area_get_enabled", "area"), &NavigationServer3D::area_get_enabled);
+	ClassDB::bind_method(D_METHOD("area_set_navigation_layers", "area", "navigation_layers"), &NavigationServer3D::area_set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("area_get_navigation_layers", "area"), &NavigationServer3D::area_get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
 	ClassDB::bind_method(D_METHOD("link_get_iteration_id", "link"), &NavigationServer3D::link_get_iteration_id);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer3D::link_set_map);
@@ -206,6 +214,7 @@ void NavigationServer3D::_bind_methods() {
 
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationServer3D::parse_source_geometry_data, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("parse_map_geometry_meta_data", "source_geometry_data", "map", "callback"), &NavigationServer3D::parse_map_geometry_meta_data, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data_async", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data_async, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("is_baking_navigation_mesh", "navigation_mesh"), &NavigationServer3D::is_baking_navigation_mesh);

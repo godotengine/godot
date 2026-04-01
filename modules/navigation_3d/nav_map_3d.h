@@ -47,6 +47,7 @@
 
 class NavLink3D;
 class NavRegion3D;
+class NavArea3D;
 class NavAgent3D;
 class NavObstacle3D;
 
@@ -76,6 +77,9 @@ class NavMap3D : public NavRid3D {
 
 	/// Map regions
 	LocalVector<NavRegion3D *> regions;
+
+	/// Map areas
+	LocalVector<NavArea3D *> areas;
 
 	/// Map links
 	LocalVector<NavLink3D *> links;
@@ -115,6 +119,10 @@ class NavMap3D : public NavRid3D {
 			RWLock rwlock;
 			SelfList<NavRegion3D>::List list;
 		} regions;
+		struct {
+			RWLock rwlock;
+			SelfList<NavRegion3D>::List list;
+		} areas;
 		struct {
 			RWLock rwlock;
 			SelfList<NavLink3D>::List list;
@@ -209,6 +217,12 @@ public:
 	void remove_region(NavRegion3D *p_region);
 	const LocalVector<NavRegion3D *> &get_regions() const {
 		return regions;
+	}
+
+	void add_area(NavArea3D *p_area);
+	void remove_area(NavArea3D *p_area);
+	const LocalVector<NavArea3D *> &get_areas() const {
+		return areas;
 	}
 
 	void add_link(NavLink3D *p_link);
