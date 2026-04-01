@@ -241,7 +241,7 @@
 		<method name="redo">
 			<return type="bool" />
 			<description>
-				Redo the last action.
+				Redo the last action. Returns [code]false[/code] if there was no action to redo.
 			</description>
 		</method>
 		<method name="start_force_keep_in_merge_ends">
@@ -253,7 +253,7 @@
 		<method name="undo">
 			<return type="bool" />
 			<description>
-				Undo the last action.
+				Undo the last action. Returns [code]false[/code] if there was no action to undo.
 			</description>
 		</method>
 	</methods>
