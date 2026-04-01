@@ -803,6 +803,17 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	// Regardless where the event came from originally, this has to happen on the main thread.
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 
+	// Backward compatibility for projects before 4.7: keyboard/mouse device IDs used to be 0.
+	if (legacy_keyboard_mouse_device_ids) {
+		const InputEventType type = p_event->get_type();
+		if (type == InputEventType::KEY || type == InputEventType::MOUSE_BUTTON || type == InputEventType::MOUSE_MOTION) {
+			const int device = p_event->get_device();
+			if (device == InputEvent::DEVICE_ID_KEYBOARD || device == InputEvent::DEVICE_ID_MOUSE) {
+				p_event->set_device(0);
+			}
+		}
+	}
+
 	// Notes on mouse-touch emulation:
 	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
 	//   as true mouse events. The only difference is the situation is flagged as emulated so they are not
@@ -2362,6 +2373,7 @@ Input::Input() {
 	}
 
 	legacy_just_pressed_behavior = GLOBAL_DEF("input_devices/compatibility/legacy_just_pressed_behavior", false);
+	legacy_keyboard_mouse_device_ids = GLOBAL_DEF("input_devices/compatibility/legacy_keyboard_mouse_device_ids", false);
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// Always use standard behavior in the editor.
 		legacy_just_pressed_behavior = false;

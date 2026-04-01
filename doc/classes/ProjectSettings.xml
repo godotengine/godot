@@ -1665,6 +1665,8 @@
 			If [code]false[/code], no input will be lost.
 			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
+		<member name="input_devices/compatibility/legacy_keyboard_mouse_device_ids" type="bool" setter="" getter="" default="false">
+		</member>
 		<member name="input_devices/joypads/ignore_joypad_on_unfocused_application" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], joypad input (including motion sensors) and LED light changes will be ignored and joypad vibration will be stopped when the application is not focused.
 		</member>
