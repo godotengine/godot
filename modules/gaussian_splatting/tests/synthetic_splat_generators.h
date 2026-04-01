@@ -150,6 +150,33 @@ public:
 	static uint64_t hash_config(const Config &p_config);
 };
 
+// ── Mandelbulb 3D fractal ─────────────────────────────────────────────
+
+class MandelbulbSplatGenerator {
+public:
+	struct Config {
+		uint32_t splat_count = 100000;
+		uint64_t seed = 42;
+		float radius = 1.5f;
+		float power = 8.0f;
+		uint32_t max_iterations = 64;
+		float world_scale = 2.0f;
+		float z_offset = 0.0f;
+		float min_scale = 0.005f;
+		float max_scale = 0.08f;
+		float anisotropy = 0.5f;
+		float sh_intensity = 0.2f;
+		float min_opacity = 0.5f;
+		float max_opacity = 1.0f;
+
+		Dictionary to_dict() const;
+		void from_dict(const Dictionary &p_dict);
+	};
+
+	static LocalVector<Gaussian> generate(const Config &p_config, SyntheticSceneSummary *r_summary = nullptr);
+	static uint64_t hash_config(const Config &p_config);
+};
+
 // ── Biham-Middleton-Levine traffic model ────────────────────────────────
 
 class BMLTrafficSplatGenerator {

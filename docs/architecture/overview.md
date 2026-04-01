@@ -24,6 +24,7 @@ This page is the canonical high-level architecture entrypoint.
 
 - [Render pipeline details](render-pipeline.md)
 - [Lighting and shadows details](lighting-system.md)
+- [Unified Gaussian pipeline refactor plan](gaussian-pipeline-unification-plan.md)
 - [Refactor phase runner](refactor-phase-runner.md)
 - [Renderer refactor memory journal](gaussian-renderer-refactor-memory.md)
 - [Module-wide architecture map](../../modules/gaussian_splatting/ARCHITECTURE.md)

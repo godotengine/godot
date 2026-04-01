@@ -2,6 +2,7 @@
 #include "test_macros.h"
 #include "test_utils.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/render_debug_state_orchestrator.h"
 #include "../renderer/gpu_memory_stream.h"
 #include "../renderer/gpu_sorter.h"
 #include "../renderer/tile_renderer.h"

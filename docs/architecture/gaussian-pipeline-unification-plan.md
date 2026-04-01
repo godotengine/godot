@@ -320,6 +320,12 @@ This stage is intentionally deferred.
 
 - publish one explicit precedence model for effective settings if Stage 3 provenance proves the distributed rules can be collapsed safely
 - remove transitional compatibility hooks that remain public only for tests, tools, or migration support
+- remove `upsert_world_submission()` — this was a scaffolding-only entrypoint used by tests before `submit_world_submission()` was validated; it should be retired once all test coverage uses the ownership-aware submission path
+- collapse the duplicated source-path resolution logic between `GaussianSplatNode3D::_get_asset_source_path()` and the editor plugin's `_get_asset_source_path()` into a single shared function
+
+### Deferred Validation
+
+- add an explicit test for the resident-plus-quantization-rejection fallback path: verify that when `ResidentInstanceContractPublisher::publish()` rejects per-chunk quantization (`resident_quantization_unsupported`), the renderer correctly falls back to streaming publication for streaming-capable routes and to the legacy resident path for explicit-resident requests; this is currently covered only by diagnostic reason strings, not by a dedicated test case
 
 ### Important Constraint
 
