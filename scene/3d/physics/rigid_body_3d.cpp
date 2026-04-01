@@ -147,7 +147,7 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	if (!get_global_transform().is_equal_approx(p_state->get_transform())) {
+	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
 		set_ignore_transform_notification(true);
 		set_global_transform(p_state->get_transform());
 		set_ignore_transform_notification(false);
