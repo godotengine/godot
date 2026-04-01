@@ -627,6 +627,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_long_press_as_right_click", is_native_touchscreen, "")
 	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/haptic_on_long_press", is_native_touchscreen, "")
+	set_restart_if_changed("interface/touchscreen/haptic_on_long_press", true);
 
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
