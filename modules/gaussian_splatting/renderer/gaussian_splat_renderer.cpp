@@ -15,7 +15,9 @@
 #include "render_resource_orchestrator.h"
 #include "render_data_orchestrator.h"
 #include "render_output_orchestrator.h"
+#include "instance_pipeline_contract.h"
 #include "pipeline_io_contracts.h"
+#include "resident_instance_contract_publisher.h"
 #include "../logger/gs_debug_trace.h"
 #include "core/object/callable_method_pointer.h"
 
@@ -65,6 +67,7 @@ using GaussianSplatting::ScopedGpuMarker;
 #include "gaussian_gpu_layout.h"
 #include "rendering_diagnostics.h"
 #include "shader_compilation_helper.h"
+#include "quantization_config.h"
 #include "sorting_config.h"
 #include "gpu_sorting_config.h"
 #include "sorting_contract.h"
@@ -307,6 +310,8 @@ static bool _projection_nearly_equal(const Projection &p_a, const Projection &p_
 Error GaussianSplatRenderer::get_active_data_source(const SceneState &p_scene_state,
         const StreamingState &p_streaming_state,
         const SortingState &p_sorting_state,
+        const InstancePipelineBuffers *p_instance_buffers,
+        InstanceBackendPolicy p_instance_backend_policy,
         const ResourceState &p_resource_state,
         const SubsystemState &p_subsystem_state,
         SplatDataSource &r_source,
@@ -316,6 +321,37 @@ Error GaussianSplatRenderer::get_active_data_source(const SceneState &p_scene_st
 
     (void)p_scene_state;
     (void)p_resource_state;
+
+    if (p_instance_buffers != nullptr &&
+            (p_instance_backend_policy == InstanceBackendPolicy::RESIDENT ||
+                    p_instance_backend_policy == InstanceBackendPolicy::STREAMING)) {
+        if (!p_instance_buffers->atlas_gaussian_buffer.is_valid()) {
+            r_error = "Instance atlas buffer unavailable";
+            return ERR_UNAVAILABLE;
+        }
+        if (!p_subsystem_state.sorting_pipeline.is_valid()) {
+            r_error = "Sorting pipeline unavailable";
+            return ERR_UNAVAILABLE;
+        }
+
+        RID sort_indices = p_subsystem_state.sorting_pipeline->get_sort_indices_buffer();
+        if (!sort_indices.is_valid()) {
+            r_error = "Sorted indices buffer unavailable";
+            return ERR_UNAVAILABLE;
+        }
+
+        r_source.source_name = p_instance_backend_policy == InstanceBackendPolicy::RESIDENT
+                ? SplatDataSource::kSourceResidentInstance
+                : SplatDataSource::kSourceStreaming;
+        r_source.gaussian_buffer = p_instance_buffers->atlas_gaussian_buffer;
+        r_source.sorted_indices = sort_indices;
+        r_source.splat_count = p_sorting_state.sorted_splat_count;
+        r_source.total_gaussians = p_instance_buffers->atlas_gaussian_count;
+        if (r_source.total_gaussians == 0 && r_source.splat_count > 0) {
+            r_source.total_gaussians = r_source.splat_count;
+        }
+        return OK;
+    }
 
     if (!p_streaming_state.current_streaming_system.is_valid()) {
         r_error = "Streaming system unavailable";
@@ -356,11 +392,13 @@ Error GaussianSplatRenderer::get_active_data_source(const SceneState &p_scene_st
 GaussianSplatRenderer::DataSourcePlan GaussianSplatRenderer::build_data_source_plan(const SceneState &p_scene_state,
         const StreamingState &p_streaming_state,
         const SortingState &p_sorting_state,
+        const InstancePipelineBuffers *p_instance_buffers,
+        InstanceBackendPolicy p_instance_backend_policy,
         const ResourceState &p_resource_state,
         const SubsystemState &p_subsystem_state) {
     // Delegate to RenderPipelineStages (T4-PR3)
     return RenderPipelineStages::build_data_source_plan(p_scene_state, p_streaming_state, p_sorting_state,
-            p_resource_state, p_subsystem_state);
+            p_instance_buffers, p_instance_backend_policy, p_resource_state, p_subsystem_state);
 }
 
 void GaussianSplatRenderer::apply_data_source_plan(const DataSourcePlan &p_plan, PerformanceMetrics &p_metrics,
@@ -372,6 +410,8 @@ void GaussianSplatRenderer::apply_data_source_plan(const DataSourcePlan &p_plan,
 GaussianSplatRenderer::RenderFramePlan GaussianSplatRenderer::build_frame_plan(const SceneState &p_scene_state,
         const StreamingState &p_streaming_state,
         const SortingState &p_sorting_state,
+        const InstancePipelineBuffers *p_instance_buffers,
+        InstanceBackendPolicy p_instance_backend_policy,
         const ResourceState &p_resource_state,
         const SubsystemState &p_subsystem_state,
         const PipelineFeatureSet *p_pipeline_features,
@@ -384,7 +424,7 @@ GaussianSplatRenderer::RenderFramePlan GaussianSplatRenderer::build_frame_plan(c
         bool p_clear_cull_state_on_skip) {
     // Delegate to RenderPipelineStages (T4-PR3)
     return RenderPipelineStages::build_frame_plan(p_scene_state, p_streaming_state, p_sorting_state,
-            p_resource_state, p_subsystem_state, p_pipeline_features, p_has_render_data, p_cull_skip_reason,
+            p_instance_buffers, p_instance_backend_policy, p_resource_state, p_subsystem_state, p_pipeline_features, p_has_render_data, p_cull_skip_reason,
             p_sort_skip_reason, p_cull_skip_reason_code, p_sort_skip_reason_code, p_set_skip_metrics,
             p_clear_cull_state_on_skip);
 }
@@ -1726,12 +1766,16 @@ void GaussianSplatRenderer::_reset_legacy_streaming_data_path_state() {
     streaming_state.cached_streamed_indices_valid = false;
 }
 
-void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
-        const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers) {
+bool GaussianSplatRenderer::_try_render_resident_frame(RenderDataRD *p_render_data,
+        const Transform3D &p_world_to_camera_transform, const Projection &p_projection,
+        const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers,
+        bool p_allow_legacy_resident_fallback, String *r_reason) {
     // Fallback to test data if streaming is not active.
     _reset_legacy_streaming_data_path_state();
 
-    StreamingState &streaming_state = get_streaming_state();
+    if (r_reason) {
+        *r_reason = String();
+    }
 
     const bool has_gaussian_dataset = get_scene_state().gaussian_data.is_valid();
     bool has_buffer_manager_data = get_resource_state().buffer_manager.is_valid() &&
@@ -1756,6 +1800,12 @@ void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, 
 #endif
 
     if (!has_gaussian_dataset && !has_buffer_manager_data) {
+        if (r_reason) {
+            *r_reason = "no_render_data";
+        }
+        if (!p_allow_legacy_resident_fallback) {
+            return false;
+        }
         _run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
                 p_render_buffers, false,
                 "Cull skipped: no render data",
@@ -1763,40 +1813,53 @@ void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, 
                 RenderFallbackReason::DATA_UNAVAILABLE,
                 RenderFallbackReason::DATA_UNAVAILABLE,
                 true, true);
-        return;
+        return true;
     }
 
-    const bool has_dynamic_asset_handle = streaming_state.shared_dynamic_asset_handle.is_valid();
-    const bool instanced_path_ready = streaming_state.current_streaming_system.is_valid() &&
-            has_instance_pipeline_buffers();
+    String resident_contract_reason = "resident_contract_published";
+    const bool resident_contract_ready = _publish_resident_instance_pipeline_contract(has_gaussian_dataset,
+            &resident_contract_reason);
+    _set_instance_backend_diagnostics(InstanceBackendPolicy::RESIDENT,
+            resident_contract_ready ? String("resident_contract_published") : resident_contract_reason,
+            resident_contract_ready,
+            String("atlas_emulation"));
 
-    if (has_dynamic_asset_handle && instanced_path_ready) {
+    if (resident_contract_ready) {
         if (debug_state_orchestrator) {
-            get_debug_state().route_uid = RenderRouteUID::INSTANCE_ENTRY_INSTANCED_FAST;
+            get_debug_state().route_uid = RenderRouteUID::INSTANCE_RESIDENT;
         }
         LocalVector<Transform3D> instance_transforms;
         instance_transforms.push_back(Transform3D());
-        // NOTE: Pass p_world_to_camera_transform (not effective_view_transform) because render_instanced()
-        // will multiply the instance_transform into the view transform internally.
-        // Passing effective_view_transform would apply instance_transform TWICE.
-        render_instanced(p_render_data, streaming_state.shared_dynamic_asset_handle,
+        render_instanced(p_render_data, GaussianSplatManager::SharedDynamicAssetHandle(),
                 p_world_to_camera_transform, p_projection, p_render_projection, instance_transforms);
-        return;
+        if (r_reason) {
+            *r_reason = "resident_contract_published";
+        }
+        return true;
     }
-    if (has_dynamic_asset_handle && !instanced_path_ready) {
-        WARN_PRINT_ONCE("[GaussianSplatRenderer] Resident fallback bypassed instanced path because instance pipeline is not ready.");
+
+    if (r_reason) {
+        *r_reason = resident_contract_reason;
     }
-    const bool resident_pipeline_ready = has_instance_pipeline_buffers();
-    if (!resident_pipeline_ready) {
-        WARN_PRINT_ONCE("[GaussianSplatRenderer] Resident fallback skipped: instance pipeline buffers unavailable.");
+    if (!p_allow_legacy_resident_fallback) {
+        return false;
     }
+    WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Resident instance contract not ready; falling back to legacy resident path (%s).",
+            resident_contract_reason));
     _run_cull_sort_pipeline_frame(p_render_data, effective_view_transform, p_projection, p_render_projection,
-            p_render_buffers, resident_pipeline_ready,
-            "Cull skipped: resident fallback instance pipeline unavailable",
-            "Sort skipped: resident fallback instance pipeline unavailable",
-            RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
-            RenderFallbackReason::STREAMING_DATA_UNAVAILABLE,
+            p_render_buffers, true,
+            String(),
+            String(),
+            RenderFallbackReason::NONE,
+            RenderFallbackReason::NONE,
             false, false);
+    return true;
+}
+
+void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
+        const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers) {
+    _try_render_resident_frame(p_render_data, p_world_to_camera_transform, p_projection,
+            p_render_projection, p_render_buffers, true, nullptr);
 }
 
 void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
@@ -1927,8 +1990,16 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     }
 
     // Update streaming system if active.
-    const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    const int route_policy = gs::settings::get_streaming_route_policy(project_settings);
+    _set_route_policy_diagnostics(route_policy, gs::settings::get_streaming_route_policy_source(project_settings));
+    String backend_preference_reason;
+    const bool prefer_resident_backend = should_prefer_resident_backend(route_policy, &backend_preference_reason);
     bool streaming_requested = (route_policy == gs::settings::GS_ROUTE_STREAMING);
+    String streaming_backend_reason = "requested_streaming_policy";
+    String streaming_contract_ready_reason = "streaming_contract_published";
+    String streaming_not_ready_fallback_reason = "streaming_frame_not_ready_fallback";
+    String streaming_unavailable_fallback_reason = "streaming_unavailable_fallback";
 
     bool streaming_ready = get_streaming_state().current_streaming_system.is_valid();
     static uint64_t render_debug_count = 0;
@@ -1944,10 +2015,10 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     }
 #if defined(DEBUG_ENABLED) || kLogFrameDebug
     if (should_log_frame) {
-        _trace_render_path(true, log_frame, streaming_requested, streaming_ready);
+        _trace_render_path(true, log_frame, streaming_requested && !prefer_resident_backend, streaming_ready);
     }
 #endif
-    if (streaming_requested && !streaming_ready && streaming_orchestrator) {
+    if (streaming_requested && !prefer_resident_backend && !streaming_ready && streaming_orchestrator) {
         if (streaming_orchestrator->ensure_instance_streaming_system()) {
             streaming_ready = get_streaming_state().current_streaming_system.is_valid();
         }
@@ -1961,11 +2032,43 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
                         streaming_ready ? "YES" : "no"),
                 false);
     }
+    if (prefer_resident_backend) {
+        const bool allow_legacy_resident_fallback = !streaming_requested;
+        String resident_attempt_reason;
+        if (_try_render_resident_frame(p_render_data, view_transform, cam_projection, render_projection,
+                    render_buffers_rd, allow_legacy_resident_fallback, &resident_attempt_reason)) {
+            _set_instance_backend_diagnostics(InstanceBackendPolicy::RESIDENT,
+                    backend_preference_reason,
+                    is_instance_contract_ready(),
+                    get_instance_contract_shape());
+            return;
+        }
+
+        const String resident_rejection_reason =
+                vformat("%s_not_feasible:%s", backend_preference_reason, resident_attempt_reason);
+        _set_instance_backend_diagnostics(InstanceBackendPolicy::STREAMING,
+                resident_rejection_reason,
+                false,
+                "atlas_emulation");
+        streaming_backend_reason = resident_rejection_reason;
+        streaming_contract_ready_reason = vformat("%s -> streaming_contract_published", resident_rejection_reason);
+        streaming_not_ready_fallback_reason = vformat("%s -> streaming_frame_not_ready_fallback",
+                resident_rejection_reason);
+        streaming_unavailable_fallback_reason = vformat("%s -> streaming_unavailable_fallback",
+                resident_rejection_reason);
+        if (streaming_requested && !streaming_ready && streaming_orchestrator) {
+            if (streaming_orchestrator->ensure_instance_streaming_system()) {
+                streaming_ready = get_streaming_state().current_streaming_system.is_valid();
+            }
+        }
+    }
     if (streaming_requested && streaming_ready) {
         const bool has_primary_gaussian_data =
                 get_scene_state().gaussian_data.is_valid() &&
                 get_scene_state().gaussian_data->get_count() > 0;
         const bool allow_primary_fallback_instance = has_primary_gaussian_data;
+        _set_instance_backend_diagnostics(InstanceBackendPolicy::STREAMING,
+                streaming_backend_reason, has_instance_pipeline_buffers(), "atlas_emulation");
         if (debug_state_orchestrator) {
             get_debug_state().route_uid = RenderRouteUID::INSTANCE_STREAMING;
         }
@@ -1974,6 +2077,10 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
                         p_render_data, cam_transform, view_transform, cam_projection, render_projection, render_buffers_rd,
                         allow_primary_fallback_instance);
         if (streaming_frame_rendered) {
+            _set_instance_backend_diagnostics(InstanceBackendPolicy::STREAMING,
+                    streaming_contract_ready_reason,
+                    is_instance_contract_ready(),
+                    get_instance_contract_shape());
             return;
         }
         String fallback_route_uid;
@@ -1992,14 +2099,12 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
             WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming resources not ready (route=%s); falling back to resident render path.",
                     fallback_route_uid));
         }
-    } else if (!streaming_requested) {
-        // Resident path intentionally selected via route_policy — not a failure.
-        if (debug_state_orchestrator) {
-            DebugState &debug_state = get_debug_state();
-            debug_state.route_uid = RenderRouteUID::RESIDENT_SELECTED;
-        }
+        _set_instance_backend_diagnostics(InstanceBackendPolicy::RESIDENT,
+                streaming_not_ready_fallback_reason, has_instance_pipeline_buffers(), "atlas_emulation");
     } else {
         // Streaming was requested but the system failed to initialize.
+        _set_instance_backend_diagnostics(InstanceBackendPolicy::RESIDENT,
+                streaming_unavailable_fallback_reason, has_instance_pipeline_buffers(), "atlas_emulation");
         String fallback_route_uid = _streaming_not_ready_route_uid("MISSING_STREAMING_SYSTEM");
         if (debug_state_orchestrator) {
             DebugState &debug_state = get_debug_state();
@@ -2022,7 +2127,7 @@ void GaussianSplatRenderer::tick_streaming_only(const Transform3D &p_camera_to_w
     // or update the streaming system.  This eliminates all per-frame streaming
     // overhead (visibility scan, prefetch, eviction, worker threads).
     const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
-    if (route_policy == gs::settings::GS_ROUTE_RESIDENT) {
+    if (should_prefer_resident_backend(route_policy)) {
         return;
     }
     if (!streaming_orchestrator) {
@@ -2058,8 +2163,9 @@ void GaussianSplatRenderer::render_sorted_splats(RenderDataRD *p_render_data,
 	IFrameMutationAccess &state_mut = frame_provider;
 	frame_context.state_view = &state_view;
 	frame_context.mutation_access = &state_mut;
+	const InstancePipelineBuffers *instance_buffers = has_instance_pipeline_buffers() ? &get_instance_pipeline_buffers() : nullptr;
 	RenderFramePlan frame_plan = build_frame_plan(state_view.get_scene_state(), state_view.get_streaming_state(), state_view.get_sorting_state_view(),
-			state_view.get_resource_state_view(), state_view.get_subsystem_state_view(), state_view.get_pipeline_features(),
+			instance_buffers, get_instance_backend_policy(), state_view.get_resource_state_view(), state_view.get_subsystem_state_view(), state_view.get_pipeline_features(),
 			true, String(), String(), RenderFallbackReason::NONE, RenderFallbackReason::NONE, false, false);
     frame_context.deps.frame_plan = &frame_plan;
     DEV_ASSERT(frame_context.deps.frame_plan);
@@ -2232,8 +2338,90 @@ const GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::get_resource_
     return resource_orchestrator->get_resource_state();
 }
 
-void GaussianSplatRenderer::set_instance_pipeline_buffers(const InstancePipelineBuffers &p_buffers) {
+bool GaussianSplatRenderer::get_submission_residency_hint(int32_t *r_hint, String *r_source) const {
+    ERR_FAIL_NULL_V(r_hint, false);
+
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    if (director == nullptr) {
+        if (r_source) {
+            *r_source = "director_unavailable";
+        }
+        return false;
+    }
+
+    return director->get_submission_residency_hint_for_renderer(this, r_hint, r_source);
+}
+
+bool GaussianSplatRenderer::should_prefer_resident_backend(int p_requested_route_policy, String *r_reason) const {
+    if (r_reason) {
+        *r_reason = "requested_streaming_policy";
+    }
+
+    if (p_requested_route_policy == gs::settings::GS_ROUTE_RESIDENT) {
+        if (r_reason) {
+            *r_reason = "requested_resident_policy";
+        }
+        return true;
+    }
+
+    int32_t submission_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT;
+    String submission_hint_source;
+    if (!get_submission_residency_hint(&submission_hint, &submission_hint_source)) {
+        return false;
+    }
+
+    if (submission_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT) {
+        if (r_reason) {
+            *r_reason = submission_hint_source.is_empty()
+                    ? String("submission_hint_resident")
+                    : vformat("submission_hint_resident:%s", submission_hint_source);
+        }
+        return true;
+    }
+
+    if (r_reason) {
+        *r_reason = submission_hint_source.is_empty()
+                ? String("submission_hint_streaming")
+                : vformat("submission_hint_streaming:%s", submission_hint_source);
+    }
+    return false;
+}
+
+void GaussianSplatRenderer::_set_route_policy_diagnostics(int p_requested_route_policy, const char *p_policy_source) {
+    if (!debug_state_orchestrator) {
+        return;
+    }
+    DebugState &debug_state = get_debug_state();
+    debug_state.requested_route_policy = gs::settings::get_streaming_route_policy_token(p_requested_route_policy);
+    debug_state.requested_route_policy_source = p_policy_source ? String(p_policy_source) : String("default_fallback");
+}
+
+void GaussianSplatRenderer::_set_instance_backend_diagnostics(InstanceBackendPolicy p_backend_policy,
+        const String &p_reason, bool p_contract_ready, const String &p_contract_shape) {
+    if (!debug_state_orchestrator) {
+        return;
+    }
+    DebugState &debug_state = get_debug_state();
+    debug_state.instance_backend_policy = instance_backend_policy_to_string(p_backend_policy);
+    debug_state.backend_selection_reason = p_reason;
+    debug_state.instance_contract_shape = p_contract_shape;
+    debug_state.instance_contract_ready = p_contract_ready;
+}
+
+bool GaussianSplatRenderer::_publish_resident_instance_pipeline_contract(bool p_allow_primary_fallback_instance,
+        String *r_reason) {
+    return ResidentInstanceContractPublisher::publish(this, p_allow_primary_fallback_instance, r_reason);
+}
+
+void GaussianSplatRenderer::publish_instance_pipeline_contract(const InstancePipelineBuffers &p_buffers,
+        const PublishedInstanceAssetRemap &p_remap, InstanceBackendPolicy p_backend_policy,
+        uint64_t p_source_generation, const String &p_contract_shape) {
     instance_pipeline_buffers = p_buffers;
+    instance_asset_remap = p_remap;
+    instance_backend_policy = p_backend_policy;
+    instance_contract_shape = p_contract_shape;
+    instance_contract_source_generation = p_source_generation;
+
     StreamingState &streaming_state = get_streaming_state();
     if (instance_pipeline_buffers.atlas_gaussian_count == 0 &&
             streaming_state.shared_dynamic_asset_handle.is_valid()) {
@@ -2247,9 +2435,18 @@ void GaussianSplatRenderer::set_instance_pipeline_buffers(const InstancePipeline
     instance_pipeline_buffers_valid = true;
 }
 
+void GaussianSplatRenderer::set_instance_pipeline_buffers(const InstancePipelineBuffers &p_buffers) {
+    publish_instance_pipeline_contract(p_buffers, instance_asset_remap, instance_backend_policy,
+            instance_contract_source_generation, instance_contract_shape);
+}
+
 void GaussianSplatRenderer::clear_instance_pipeline_buffers() {
     instance_pipeline_buffers = InstancePipelineBuffers();
+    instance_asset_remap.clear();
     instance_pipeline_buffers_valid = false;
+    instance_backend_policy = InstanceBackendPolicy::NONE;
+    instance_contract_shape = "none";
+    instance_contract_source_generation = 0;
 }
 
 bool GaussianSplatRenderer::update_instance_buffer(LocalVector<InstanceDataGPU> &p_instances) {
@@ -2257,19 +2454,31 @@ bool GaussianSplatRenderer::update_instance_buffer(LocalVector<InstanceDataGPU> 
         return false;
     }
 
-    StreamingState &streaming_state = get_streaming_state();
-    if (!streaming_state.current_streaming_system.is_valid()) {
-        WARN_PRINT_ONCE("[GaussianSplatRenderer] Instance buffer upload skipped; streaming system not available.");
-        instance_pipeline_buffers.instance_count = 0;
-        return false;
-    }
-
-    streaming_state.current_streaming_system->remap_instance_asset_ids(p_instances);
-
     const uint32_t instance_count = p_instances.size();
     if (instance_count == 0) {
         instance_pipeline_buffers.instance_count = 0;
         return true;
+    }
+
+    if (!instance_asset_remap.valid) {
+        WARN_PRINT_ONCE("[GaussianSplatRenderer] Instance buffer upload skipped; published asset remap unavailable.");
+        instance_pipeline_buffers.instance_count = 0;
+        return false;
+    }
+
+    const uint32_t published_generation = instance_asset_remap.generation == 0
+            ? 1u
+            : uint32_t(instance_asset_remap.generation & uint64_t(UINT32_MAX));
+    for (uint32_t i = 0; i < instance_count; i++) {
+        const uint32_t incoming_asset_id = p_instances[i].ids[0];
+        uint32_t dense_id = 0u;
+        if (const uint32_t *mapped_dense_id = instance_asset_remap.asset_to_dense_id.getptr(incoming_asset_id)) {
+            dense_id = *mapped_dense_id;
+        } else {
+            WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Instance asset_id %u is not published; using primary resident asset.", incoming_asset_id));
+        }
+        p_instances[i].ids[0] = dense_id;
+        p_instances[i].lod[1] = published_generation;
     }
 
     RenderingDevice *rd = get_device_state().rd;

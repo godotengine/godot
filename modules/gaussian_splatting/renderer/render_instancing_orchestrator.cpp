@@ -37,11 +37,11 @@ RenderInstancingOrchestrator::RenderInstancingOrchestrator(const Dependencies &p
 }
 
 RenderInstancingOrchestrator::InstanceReadinessResult RenderInstancingOrchestrator::evaluate_instance_pipeline_readiness(
-		bool p_streaming_system_ready, bool p_has_instance_pipeline_buffers,
+		bool p_backend_contract_ready, bool p_has_instance_pipeline_buffers,
 		const GaussianRenderPipeline::InstancePipelineBuffers &p_buffers) {
 	InstanceReadinessResult result;
-	if (!p_streaming_system_ready) {
-		result.failure_mode = InstanceReadinessFailureMode::STREAMING_SYSTEM_UNAVAILABLE;
+	if (!p_backend_contract_ready) {
+		result.failure_mode = InstanceReadinessFailureMode::INSTANCE_BACKEND_CONTRACT_UNAVAILABLE;
 		return result;
 	}
 	if (!p_has_instance_pipeline_buffers) {
@@ -64,8 +64,8 @@ void RenderInstancingOrchestrator::_warn_instanced_readiness_failure_once(
 	switch (p_failure_mode) {
 		case InstanceReadinessFailureMode::NONE:
 			return;
-		case InstanceReadinessFailureMode::STREAMING_SYSTEM_UNAVAILABLE:
-			WARN_PRINT_ONCE("[GaussianSplatRenderer] Instanced render skipped: streaming system unavailable.");
+		case InstanceReadinessFailureMode::INSTANCE_BACKEND_CONTRACT_UNAVAILABLE:
+			WARN_PRINT_ONCE("[GaussianSplatRenderer] Instanced render skipped: instance backend contract unavailable.");
 			return;
 		case InstanceReadinessFailureMode::INSTANCE_PIPELINE_BUFFERS_UNAVAILABLE:
 			WARN_PRINT_ONCE("[GaussianSplatRenderer] Instanced render skipped: instance pipeline buffers are unavailable.");
@@ -101,10 +101,9 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 	GaussianSplatRenderer::SortingState &root_sorting_state = root_state_mut.get_sorting_state_mut();
 	GaussianSplatRenderer::PerformanceMetrics &metrics = root_state_mut.get_performance_state_mut().metrics;
 
-	const GaussianSplatRenderer::StreamingState &streaming_state = root_state_view.get_streaming_state();
-	const bool streaming_system_ready = streaming_state.current_streaming_system.is_valid();
+	const bool backend_contract_ready = renderer->is_instance_contract_ready();
 	const InstanceReadinessResult readiness = evaluate_instance_pipeline_readiness(
-			streaming_system_ready, renderer->has_instance_pipeline_buffers(),
+			backend_contract_ready, renderer->has_instance_pipeline_buffers(),
 			renderer->get_instance_pipeline_buffers());
 	if (!readiness.ready) {
 		_warn_instanced_readiness_failure_once(readiness.failure_mode);
@@ -159,9 +158,12 @@ void RenderInstancingOrchestrator::render_instanced(RenderDataRD *p_render_data,
 		GaussianSplatRenderer::IFrameMutationAccess &frame_mutation_access = frame_provider;
 		frame_context.state_view = &frame_state_view;
 		frame_context.mutation_access = &frame_mutation_access;
+		const GaussianRenderPipeline::InstancePipelineBuffers *instance_buffers = renderer->has_instance_pipeline_buffers()
+				? &renderer->get_instance_pipeline_buffers()
+				: nullptr;
 		GaussianSplatRenderer::RenderFramePlan frame_plan = GaussianSplatRenderer::build_frame_plan(
 				frame_state_view.get_scene_state(), frame_state_view.get_streaming_state(), frame_state_view.get_sorting_state_view(),
-				frame_state_view.get_resource_state_view(), frame_state_view.get_subsystem_state_view(), frame_state_view.get_pipeline_features(),
+				instance_buffers, renderer->get_instance_backend_policy(), frame_state_view.get_resource_state_view(), frame_state_view.get_subsystem_state_view(), frame_state_view.get_pipeline_features(),
 				true, String(), String(), GaussianSplatRenderer::RenderFallbackReason::NONE,
 				GaussianSplatRenderer::RenderFallbackReason::NONE, false, false);
 		frame_context.deps.frame_plan = &frame_plan;

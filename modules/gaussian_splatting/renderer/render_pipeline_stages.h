@@ -22,6 +22,8 @@ public:
 	using SceneState = GaussianSplatRenderer::SceneState;
 	using StreamingState = GaussianSplatRenderer::StreamingState;
 	using SortingState = GaussianSplatRenderer::SortingState;
+	using InstanceBackendPolicy = GaussianSplatRenderer::InstanceBackendPolicy;
+	using InstancePipelineBuffers = GaussianSplatRenderer::InstancePipelineBuffers;
 	using ResourceState = GaussianSplatRenderer::ResourceState;
 	using SubsystemState = GaussianSplatRenderer::SubsystemState;
 	using PerformanceMetrics = GaussianSplatRenderer::PerformanceMetrics;
@@ -31,6 +33,8 @@ public:
 	static DataSourcePlan build_data_source_plan(const SceneState &p_scene_state,
 			const StreamingState &p_streaming_state,
 			const SortingState &p_sorting_state,
+			const InstancePipelineBuffers *p_instance_buffers,
+			InstanceBackendPolicy p_instance_backend_policy,
 			const ResourceState &p_resource_state,
 			const SubsystemState &p_subsystem_state);
 	static void apply_data_source_plan(const DataSourcePlan &p_plan, PerformanceMetrics &p_metrics,
@@ -38,6 +42,8 @@ public:
 	static RenderFramePlan build_frame_plan(const SceneState &p_scene_state,
 			const StreamingState &p_streaming_state,
 			const SortingState &p_sorting_state,
+			const InstancePipelineBuffers *p_instance_buffers,
+			InstanceBackendPolicy p_instance_backend_policy,
 			const ResourceState &p_resource_state,
 			const SubsystemState &p_subsystem_state,
 			const PipelineFeatureSet *p_pipeline_features,

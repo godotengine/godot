@@ -508,6 +508,15 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(const DebugOverl
                 GaussianRenderRouteLabels::format_sort_route_uid(debug_state_view.sort_route_uid)));
         debug_state.hud_lines.push_back(vformat("Cull Route: %s",
                 GaussianRenderRouteLabels::format_cull_route_uid(performance_state.metrics.cull_route_uid)));
+        debug_state.hud_lines.push_back(vformat("Requested Policy: %s (%s)",
+                debug_state_view.requested_route_policy,
+                debug_state_view.requested_route_policy_source));
+        debug_state.hud_lines.push_back(vformat("Instance Backend: %s (%s)",
+                debug_state_view.instance_backend_policy,
+                debug_state_view.backend_selection_reason));
+        debug_state.hud_lines.push_back(vformat("Instance Contract: %s (%s)",
+                debug_state_view.instance_contract_shape,
+                debug_state_view.instance_contract_ready ? "ready" : "not ready"));
         if (!performance_state.metrics.cull_route_reason.is_empty()) {
             debug_state.hud_lines.push_back(vformat("Cull Reason: %s", performance_state.metrics.cull_route_reason));
         }

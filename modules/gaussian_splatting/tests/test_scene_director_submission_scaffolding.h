@@ -5,10 +5,14 @@
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../core/gaussian_splat_scene_director.h"
+#include "../core/gs_project_settings.h"
 #include "../nodes/gaussian_splat_node_3d.h"
 #include "../nodes/gaussian_splat_world_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "servers/rendering_server.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
+#include "servers/rendering/storage/render_scene_buffers.h"
 
 #if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
 
@@ -318,6 +322,8 @@ TEST_CASE("[GaussianSplatting][World][SceneTree] World node forwards desired ove
 	CHECK(submission.static_chunks.size() == 1);
 	CHECK(submission.metadata[StringName("label")] == String("stage1b_world"));
 	CHECK(submission.metadata[StringName("world_path")] == String("res://stage1b_world.gsplatworld"));
+	CHECK(submission.has_desired_residency_hint);
+	CHECK(submission.desired_residency_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
 	CHECK_FALSE((bool)submission.desired_renderer_overrides[StringName("lod_enabled")]);
 	CHECK(float(submission.desired_renderer_overrides[StringName("lod_bias")]) == doctest::Approx(1.75f));
 	CHECK(float(submission.desired_renderer_overrides[StringName("lod_max_distance")]) == doctest::Approx(80.0f));
@@ -339,6 +345,14 @@ TEST_CASE("[GaussianSplatting][World][SceneTree] World node forwards desired ove
 
 	Ref<GaussianSplatRenderer> renderer = node->get_renderer();
 	if (renderer.is_valid()) {
+		int32_t residency_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING;
+		String residency_source;
+		CHECK(director->get_submission_residency_hint_for_renderer(renderer.ptr(), &residency_hint, &residency_source));
+		CHECK(residency_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
+		CHECK(residency_source == String("world_submission"));
+		String backend_reason;
+		CHECK(renderer->should_prefer_resident_backend(gs::settings::GS_ROUTE_STREAMING, &backend_reason));
+		CHECK(backend_reason == String("submission_hint_resident:world_submission"));
 		CHECK(renderer->get_gaussian_data() == data);
 		CHECK(renderer->get_static_chunks().size() == 1);
 		CHECK_FALSE(renderer->get_lod_enabled());
@@ -360,6 +374,86 @@ TEST_CASE("[GaussianSplatting][World][SceneTree] World node forwards desired ove
 	if (owns_director) {
 		memdelete(director);
 	}
+}
+
+TEST_CASE("[GaussianSplatting][World][SceneTree][RequiresGPU] World submission renders through the resident instanced route without a streaming system") {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	if (rs == nullptr) {
+		MESSAGE("Skipping test - Rendering server unavailable");
+		return;
+	}
+
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	REQUIRE(project_settings != nullptr);
+	ProjectSettingGuard route_guard(project_settings, "rendering/gaussian_splatting/streaming/route_policy");
+	ProjectSettingGuard streaming_guard(project_settings, "rendering/gaussian_splatting/streaming/enabled");
+	ProjectSettingGuard instance_guard(project_settings, "rendering/gaussian_splatting/instance_pipeline/enabled");
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/route_policy",
+			int64_t(gs::settings::GS_ROUTE_STREAMING));
+	project_settings->set_setting("rendering/gaussian_splatting/streaming/enabled", true);
+	project_settings->set_setting("rendering/gaussian_splatting/instance_pipeline/enabled", true);
+	project_settings->emit_signal("settings_changed");
+
+	Ref<GaussianSplatWorld> world_resource;
+	world_resource.instantiate();
+	Ref<GaussianData> data = stage1a_make_submission_test_data(32, 15.0f);
+	world_resource->set_gaussian_data(data);
+	Vector<GaussianSplatRenderer::StaticChunk> chunks;
+	chunks.push_back(stage1a_make_submission_test_chunk(0));
+	world_resource->set_static_chunks(chunks);
+
+	GaussianSplatWorld3D *node = memnew(GaussianSplatWorld3D);
+	REQUIRE(node != nullptr);
+	node->set_auto_apply_on_ready(false);
+	node->set_world(world_resource);
+	root->add_child(node);
+	tree->process(0.0);
+	node->apply_world();
+
+	Ref<GaussianSplatRenderer> renderer = node->get_renderer();
+	if (!renderer.is_valid()) {
+		MESSAGE("Skipping test - renderer unavailable");
+		root->remove_child(node);
+		memdelete(node);
+		tree->process(0.0);
+		return;
+	}
+
+	renderer->get_debug_state().show_performance_hud = true;
+	renderer->test_release_current_streaming_system();
+	CHECK_FALSE(renderer->test_has_current_streaming_system());
+
+	RenderSceneDataRD scene_data;
+	scene_data.cam_transform = Transform3D(Basis(), Vector3(0.0f, 0.0f, 5.0f));
+	scene_data.cam_projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+	RenderDataRD render_data;
+	render_data.scene_data = &scene_data;
+	render_data.render_buffers = Ref<RenderSceneBuffersRD>();
+
+	renderer->render_scene_instance(&render_data);
+
+	CHECK_FALSE(renderer->test_has_current_streaming_system());
+	CHECK(renderer->has_instance_pipeline_buffers());
+	CHECK(renderer->has_instance_asset_remap());
+
+	const Dictionary stats = renderer->get_render_stats();
+	CHECK(stats.get("route_uid", String()) == String("INSTANCE.RESIDENT"));
+	CHECK(stats.get("requested_route_policy", String()) == String("streaming"));
+	CHECK(stats.get("instance_backend_policy", String()) == String("resident"));
+	CHECK(stats.get("backend_selection_reason", String()) == String("submission_hint_resident:world_submission"));
+	CHECK(bool(stats.get("instance_contract_ready", false)));
+	CHECK(stats.get("data_source", String()) == String("ResidentInstanceAtlas"));
+
+	root->remove_child(node);
+	memdelete(node);
+	tree->process(0.0);
 }
 
 TEST_CASE("[GaussianSplatting][World][SceneTree] World node preserves prior renderer streaming overrides when tier budgets are disabled") {
@@ -459,6 +553,8 @@ TEST_CASE("[GaussianSplatting][SceneDirector] Preview submission scaffolding rou
 	preview_submission.gaussian_data = stage1a_make_submission_test_data(4, 20.0f);
 	preview_submission.metadata[StringName("label")] = String("preview");
 	preview_submission.source_label = "editor_preview";
+	preview_submission.has_desired_residency_hint = true;
+	preview_submission.desired_residency_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING;
 
 	CHECK(director->upsert_preview_submission(preview_submission));
 
@@ -468,6 +564,8 @@ TEST_CASE("[GaussianSplatting][SceneDirector] Preview submission scaffolding rou
 	CHECK(queried_preview.gaussian_data == preview_submission.gaussian_data);
 	CHECK(queried_preview.metadata[StringName("label")] == String("preview"));
 	CHECK(queried_preview.source_label == String("editor_preview"));
+	CHECK(queried_preview.has_desired_residency_hint);
+	CHECK(queried_preview.desired_residency_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING);
 
 	GaussianSplatSceneDirector::SubmissionCounts counts = director->get_submission_counts();
 	CHECK(counts.instance_submissions == baseline_counts.instance_submissions);
@@ -569,7 +667,8 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Explicit instance submi
 	director->register_instance_submission(node->get_instance_id(), asset, initial_transform,
 			0.25f, 1.5f, 0u, true, 0.8f,
 			GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_ENABLED,
-			Vector3(1.0f, 0.0f, 0.0f), 2.0f, true);
+			Vector3(1.0f, 0.0f, 0.0f), 2.0f, true,
+			true, GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING);
 
 	GaussianSplatSceneDirector::InstanceSubmission submission;
 	CHECK(director->get_instance_submission(node->get_instance_id(), &submission));
@@ -584,11 +683,19 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Explicit instance submi
 	CHECK(submission.wind_mode == GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_ENABLED);
 	CHECK(submission.wind_direction.is_equal_approx(Vector3(1.0f, 0.0f, 0.0f)));
 	CHECK(submission.wind_frequency == doctest::Approx(2.0f));
+	CHECK(submission.has_desired_residency_hint);
+	CHECK(submission.desired_residency_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING);
+	int32_t renderer_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT;
+	String renderer_hint_source;
+	CHECK(director->get_submission_residency_hint_for_renderer(submission.renderer.ptr(), &renderer_hint, &renderer_hint_source));
+	CHECK(renderer_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING);
+	CHECK(renderer_hint_source == String("instance_submission"));
 
 	director->update_instance_submission_transform(node->get_instance_id(), updated_transform);
 	director->update_instance_submission_params(node->get_instance_id(), 0.6f, 0.9f, 0u, false, 1.2f,
 			GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_DISABLED,
-			updated_wind_direction, 3.5f, false);
+			updated_wind_direction, 3.5f, false,
+			true, GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
 
 	CHECK(director->get_instance_submission(node->get_instance_id(), &submission));
 	CHECK(submission.transform.origin.is_equal_approx(updated_transform.origin));
@@ -600,6 +707,11 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Explicit instance submi
 	CHECK(submission.wind_mode == GaussianSplatSceneDirector::INSTANCE_WIND_FORCE_DISABLED);
 	CHECK(submission.wind_direction.is_equal_approx(updated_wind_direction));
 	CHECK(submission.wind_frequency == doctest::Approx(3.5f));
+	CHECK(submission.has_desired_residency_hint);
+	CHECK(submission.desired_residency_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
+	CHECK(director->get_submission_residency_hint_for_renderer(submission.renderer.ptr(), &renderer_hint, &renderer_hint_source));
+	CHECK(renderer_hint == GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
+	CHECK(renderer_hint_source == String("instance_submission"));
 
 	GaussianSplatSceneDirector::SubmissionCounts counts = director->get_submission_counts();
 	CHECK(counts.instance_submissions == baseline_counts.instance_submissions + 1);

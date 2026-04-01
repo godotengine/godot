@@ -562,12 +562,14 @@ RenderPipelineStages::DataSourcePlan RenderPipelineStages::build_data_source_pla
 		const SceneState &p_scene_state,
 		const StreamingState &p_streaming_state,
 		const SortingState &p_sorting_state,
+		const InstancePipelineBuffers *p_instance_buffers,
+		InstanceBackendPolicy p_instance_backend_policy,
 		const ResourceState &p_resource_state,
 		const SubsystemState &p_subsystem_state) {
 	DataSourcePlan plan;
 	String error;
 	Error status = GaussianSplatRenderer::get_active_data_source(p_scene_state, p_streaming_state, p_sorting_state,
-			p_resource_state, p_subsystem_state, plan.source, error);
+			p_instance_buffers, p_instance_backend_policy, p_resource_state, p_subsystem_state, plan.source, error);
 	if (status != OK && error.is_empty()) {
 		error = "Active data source unavailable";
 	}
@@ -588,6 +590,8 @@ RenderPipelineStages::RenderFramePlan RenderPipelineStages::build_frame_plan(
 		const SceneState &p_scene_state,
 		const StreamingState &p_streaming_state,
 		const SortingState &p_sorting_state,
+		const InstancePipelineBuffers *p_instance_buffers,
+		InstanceBackendPolicy p_instance_backend_policy,
 		const ResourceState &p_resource_state,
 		const SubsystemState &p_subsystem_state,
 		const PipelineFeatureSet *p_pipeline_features,
@@ -610,7 +614,7 @@ RenderPipelineStages::RenderFramePlan RenderPipelineStages::build_frame_plan(
 	plan.cull_skip_reason_code = p_cull_skip_reason_code;
 	plan.sort_skip_reason_code = p_sort_skip_reason_code;
 	plan.data_source = build_data_source_plan(p_scene_state, p_streaming_state, p_sorting_state,
-			p_resource_state, p_subsystem_state);
+			p_instance_buffers, p_instance_backend_policy, p_resource_state, p_subsystem_state);
 	return plan;
 }
 
@@ -732,7 +736,11 @@ void RenderPipelineStages::execute_frame_entry(const RenderFrameContext &p_frame
 			? frame_context.deps.pipeline_features
 			: preplan_view.get_pipeline_features();
 
-	RenderFramePlan frame_plan = build_frame_plan(scene_state, streaming_state, sorting_state, resource_state,
+	const InstancePipelineBuffers *instance_buffers = renderer->has_instance_pipeline_buffers()
+			? &renderer->get_instance_pipeline_buffers()
+			: nullptr;
+	RenderFramePlan frame_plan = build_frame_plan(scene_state, streaming_state, sorting_state, instance_buffers,
+			renderer->get_instance_backend_policy(), resource_state,
 			subsystem_state_ref, pipeline_features, p_has_render_data, p_cull_skip_reason,
 			p_sort_skip_reason, p_cull_skip_reason_code, p_sort_skip_reason_code, p_set_skip_metrics,
 			p_clear_cull_state_on_skip);
@@ -833,7 +841,7 @@ void RenderPipelineStages::execute_frame_entry(const RenderFrameContext &p_frame
 	frame_context.snapshot.sorted_splats = sort_output.sorted_count;
 	update_counts_from_snapshot();
 	frame_plan.data_source = build_data_source_plan(scene_state, streaming_state, sorting_state,
-			resource_state, subsystem_state_ref);
+			instance_buffers, renderer->get_instance_backend_policy(), resource_state, subsystem_state_ref);
 	render_sorted_splats_with_context(frame_context);
 }
 

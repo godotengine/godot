@@ -4,6 +4,7 @@
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
 #include "../core/gaussian_splat_scene_director.h"
+#include "../core/gs_project_settings.h"
 #include "../interfaces/gpu_sorting_pipeline.h"
 #include "../logger/gs_logger.h"
 
@@ -366,6 +367,28 @@ Error RenderDataOrchestrator::update_gpu_buffers_with_real_data() {
 		streaming_state.streamed_indices_are_local = false;
 		streaming_state.cached_streamed_indices_valid = false;
 		sorting_state.sorted_splat_count = 0;
+		return OK;
+	}
+
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	const int route_policy = gs::settings::get_streaming_route_policy(project_settings);
+	if (renderer->should_prefer_resident_backend(route_policy)) {
+		streaming_state.current_streaming_system.unref();
+		streaming_state.use_streamed_data = false;
+		streaming_state.cached_streamed_gaussians.clear();
+		streaming_state.cached_streamed_indices.clear();
+		streaming_state.cached_streamed_source_indices.clear();
+		streaming_state.cached_streamed_sh_limits.clear();
+		streaming_state.cached_streamed_index_lookup.clear();
+		streaming_state.current_stream_gpu_buffer = RID();
+		streaming_state.streaming_gpu_splat_count = 0;
+		streaming_state.streaming_gpu_total_capacity = 0;
+		streaming_state.streamed_indices_generation = 0;
+		streaming_state.streamed_indices_are_local = false;
+		streaming_state.cached_streamed_indices_valid = false;
+		sorting_state.sorted_splat_count = 0;
+		renderer->clear_instance_pipeline_buffers();
+		frame_state.visible_splat_count.store(0, std::memory_order_release);
 		return OK;
 	}
 

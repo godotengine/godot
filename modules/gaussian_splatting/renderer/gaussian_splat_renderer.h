@@ -208,7 +208,9 @@ public:
     using StageIO = GaussianRenderPipeline::StageIO;
     using SortStageOutput = GaussianRenderPipeline::SortStageOutput;
     using SplatDataSource = GaussianRenderPipeline::SplatDataSource;
+    using InstanceBackendPolicy = GaussianRenderPipeline::InstanceBackendPolicy;
     using InstancePipelineBuffers = GaussianRenderPipeline::InstancePipelineBuffers;
+    using PublishedInstanceAssetRemap = GaussianRenderPipeline::PublishedInstanceAssetRemap;
     using RenderFrameSnapshot = GaussianRenderPipeline::RenderFrameSnapshot;
     using DataSourcePlan = GaussianRenderPipeline::DataSourcePlan;
     using RasterStageOutput = GaussianRenderPipeline::RasterStageOutput;
@@ -419,6 +421,8 @@ public:
     static Error get_active_data_source(const SceneState &p_scene_state,
             const StreamingState &p_streaming_state,
             const SortingState &p_sorting_state,
+            const InstancePipelineBuffers *p_instance_buffers,
+            InstanceBackendPolicy p_instance_backend_policy,
             const ResourceState &p_resource_state,
             const SubsystemState &p_subsystem_state,
             SplatDataSource &r_source,
@@ -427,6 +431,8 @@ public:
     static DataSourcePlan build_data_source_plan(const SceneState &p_scene_state,
             const StreamingState &p_streaming_state,
             const SortingState &p_sorting_state,
+            const InstancePipelineBuffers *p_instance_buffers,
+            InstanceBackendPolicy p_instance_backend_policy,
             const ResourceState &p_resource_state,
             const SubsystemState &p_subsystem_state);
     static void apply_data_source_plan(const DataSourcePlan &p_plan, PerformanceMetrics &p_metrics,
@@ -435,6 +441,8 @@ public:
     static RenderFramePlan build_frame_plan(const SceneState &p_scene_state,
             const StreamingState &p_streaming_state,
             const SortingState &p_sorting_state,
+            const InstancePipelineBuffers *p_instance_buffers,
+            InstanceBackendPolicy p_instance_backend_policy,
             const ResourceState &p_resource_state,
             const SubsystemState &p_subsystem_state,
             const PipelineFeatureSet *p_pipeline_features,
@@ -513,7 +521,11 @@ public:
     std::atomic<bool> teardown_resources_started{false};
 
     InstancePipelineBuffers instance_pipeline_buffers;
+    PublishedInstanceAssetRemap instance_asset_remap;
     bool instance_pipeline_buffers_valid = false;
+    InstanceBackendPolicy instance_backend_policy = InstanceBackendPolicy::NONE;
+    String instance_contract_shape = "none";
+    uint64_t instance_contract_source_generation = 0;
     PipelineFeatureSet pipeline_features_effective;
     String pipeline_features_warning_cache;
 
@@ -577,6 +589,15 @@ public:
             bool p_has_render_data, const String &p_cull_skip_reason, const String &p_sort_skip_reason,
             RenderFallbackReason p_cull_skip_reason_code, RenderFallbackReason p_sort_skip_reason_code,
             bool p_set_skip_metrics, bool p_clear_cull_state_on_skip);
+    void _set_route_policy_diagnostics(int p_requested_route_policy, const char *p_policy_source);
+    void _set_instance_backend_diagnostics(InstanceBackendPolicy p_backend_policy, const String &p_reason,
+            bool p_contract_ready, const String &p_contract_shape = "atlas_emulation");
+    bool _publish_resident_instance_pipeline_contract(bool p_allow_primary_fallback_instance,
+            String *r_reason = nullptr);
+    bool _try_render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
+            const Projection &p_projection, const Projection &p_render_projection,
+            RenderSceneBuffersRD *p_render_buffers, bool p_allow_legacy_resident_fallback,
+            String *r_reason = nullptr);
     void _reset_legacy_streaming_data_path_state();
     void _render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
             const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers);
@@ -663,10 +684,20 @@ public:
     const SubsystemState &get_subsystem_state() const { return subsystem_state; }
     JacobianDebugConfig &get_jacobian_debug() { return jacobian_debug; }
     const JacobianDebugConfig &get_jacobian_debug() const { return jacobian_debug; }
+    void publish_instance_pipeline_contract(const InstancePipelineBuffers &p_buffers,
+            const PublishedInstanceAssetRemap &p_remap, InstanceBackendPolicy p_backend_policy,
+            uint64_t p_source_generation, const String &p_contract_shape = "atlas_emulation");
     void set_instance_pipeline_buffers(const InstancePipelineBuffers &p_buffers);
     void clear_instance_pipeline_buffers();
     bool has_instance_pipeline_buffers() const { return instance_pipeline_buffers_valid; }
     const InstancePipelineBuffers &get_instance_pipeline_buffers() const { return instance_pipeline_buffers; }
+    bool has_instance_asset_remap() const { return instance_asset_remap.valid; }
+    const PublishedInstanceAssetRemap &get_instance_asset_remap() const { return instance_asset_remap; }
+    InstanceBackendPolicy get_instance_backend_policy() const { return instance_backend_policy; }
+    const String &get_instance_contract_shape() const { return instance_contract_shape; }
+    bool is_instance_contract_ready() const { return instance_pipeline_buffers_valid; }
+    bool get_submission_residency_hint(int32_t *r_hint, String *r_source = nullptr) const;
+    bool should_prefer_resident_backend(int p_requested_route_policy, String *r_reason = nullptr) const;
     bool update_instance_buffer(LocalVector<InstanceDataGPU> &p_instances);
 
     bool ensure_rendering_device(const char *p_context) { return _ensure_rendering_device(p_context); }

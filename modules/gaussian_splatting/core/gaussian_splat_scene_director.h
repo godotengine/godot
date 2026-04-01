@@ -28,6 +28,11 @@ public:
         INSTANCE_WIND_FORCE_ENABLED = 2u,
     };
 
+    enum SubmissionResidencyHint : int32_t {
+        SUBMISSION_RESIDENCY_HINT_RESIDENT = 0,
+        SUBMISSION_RESIDENCY_HINT_STREAMING = 1,
+    };
+
     struct InstanceSubmission {
         ObjectID node_id;
         RID scenario;
@@ -44,6 +49,8 @@ public:
         uint32_t last_lod = 0;
         bool casts_shadow = false;
         bool visible = true;
+        bool has_desired_residency_hint = false;
+        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
     };
 
     struct WorldSubmission {
@@ -54,7 +61,7 @@ public:
         AABB bounds;
         Dictionary metadata;
         bool has_desired_residency_hint = false;
-        int32_t desired_residency_hint = 0;
+        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
         Dictionary desired_renderer_overrides;
     };
 
@@ -64,6 +71,8 @@ public:
         Ref<GaussianData> gaussian_data;
         Dictionary metadata;
         String source_label;
+        bool has_desired_residency_hint = false;
+        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
     };
 
     struct SubmissionCounts {
@@ -81,12 +90,14 @@ public:
 			float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow = false,
 			float p_wind_intensity = 1.0f, uint32_t p_wind_mode = INSTANCE_WIND_INHERIT,
 			const Vector3 &p_wind_direction = Vector3(), float p_wind_frequency = 1.0f,
-			bool p_visible = true);
+			bool p_visible = true, bool p_has_desired_residency_hint = false,
+			int32_t p_desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT);
 	void update_instance_transform(ObjectID p_node_id, const Transform3D &p_transform);
 	void update_instance_params(ObjectID p_node_id, float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow = false,
 			float p_wind_intensity = 1.0f, uint32_t p_wind_mode = INSTANCE_WIND_INHERIT,
 			const Vector3 &p_wind_direction = Vector3(), float p_wind_frequency = 1.0f,
-			bool p_visible = true);
+			bool p_visible = true, bool p_has_desired_residency_hint = false,
+			int32_t p_desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT);
 	void unregister_instance(ObjectID p_node_id);
 	void update_instance_lods(const Vector3 &p_camera_pos, const LODConfig &p_lod_config, float p_hysteresis_zone);
     void update_instance_lods_for_renderer(const GaussianSplatRenderer *p_renderer, const Vector3 &p_camera_pos,
@@ -100,12 +111,16 @@ public:
             const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags,
             bool p_casts_shadow = false, float p_wind_intensity = 1.0f,
             uint32_t p_wind_mode = INSTANCE_WIND_INHERIT, const Vector3 &p_wind_direction = Vector3(),
-            float p_wind_frequency = 1.0f, bool p_visible = true);
+            float p_wind_frequency = 1.0f, bool p_visible = true,
+            bool p_has_desired_residency_hint = false,
+            int32_t p_desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT);
     void update_instance_submission_transform(ObjectID p_node_id, const Transform3D &p_transform);
     void update_instance_submission_params(ObjectID p_node_id, float p_opacity, float p_lod_bias, uint32_t p_flags,
             bool p_casts_shadow = false, float p_wind_intensity = 1.0f,
             uint32_t p_wind_mode = INSTANCE_WIND_INHERIT, const Vector3 &p_wind_direction = Vector3(),
-            float p_wind_frequency = 1.0f, bool p_visible = true);
+            float p_wind_frequency = 1.0f, bool p_visible = true,
+            bool p_has_desired_residency_hint = false,
+            int32_t p_desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT);
     void unregister_instance_submission(ObjectID p_node_id);
     bool get_instance_submission(ObjectID p_node_id, InstanceSubmission *r_submission) const;
 
@@ -122,6 +137,8 @@ public:
     void unregister_preview_submission(ObjectID p_owner_id);
     bool get_preview_submission(ObjectID p_owner_id, PreviewSubmission *r_submission) const;
     bool has_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const;
+    bool get_submission_residency_hint_for_renderer(const GaussianSplatRenderer *p_renderer,
+            int32_t *r_hint, String *r_source = nullptr) const;
     SubmissionCounts get_submission_counts() const;
 
     Ref<GaussianSplatRenderer> get_shared_renderer(World3D *p_world);
@@ -141,10 +158,12 @@ private:
 		float wind_frequency = 1.0f;
 		uint32_t asset_id = 0;
 		uint32_t flags = 0;
-		uint32_t last_lod = 0;
-		bool casts_shadow = false;
-		bool visible = true;
-		bool dirty = true;
+        uint32_t last_lod = 0;
+        bool casts_shadow = false;
+        bool visible = true;
+        bool has_desired_residency_hint = false;
+        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
+        bool dirty = true;
 	};
 
     struct SharedWorld {
@@ -160,7 +179,7 @@ private:
             AABB bounds;
             Dictionary metadata;
             bool has_desired_residency_hint = false;
-            int32_t desired_residency_hint = 0;
+            int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
             Dictionary desired_renderer_overrides;
             bool active = false;
         };
@@ -180,6 +199,8 @@ private:
         Ref<GaussianData> gaussian_data;
         Dictionary metadata;
         String source_label;
+        bool has_desired_residency_hint = false;
+        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
     };
 
     static GaussianSplatSceneDirector *singleton;

@@ -1088,6 +1088,12 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	stats["route_label"] = GaussianRenderRouteLabels::describe_route_uid(normalized_route_uid);
 	stats["sort_route_label"] = GaussianRenderRouteLabels::describe_sort_route_uid(normalized_sort_route_uid);
 	stats["cull_route_label"] = GaussianRenderRouteLabels::describe_cull_route_uid(normalized_cull_route_uid);
+	stats["requested_route_policy"] = debug_state.requested_route_policy;
+	stats["requested_route_policy_source"] = debug_state.requested_route_policy_source;
+	stats["instance_backend_policy"] = debug_state.instance_backend_policy;
+	stats["backend_selection_reason"] = debug_state.backend_selection_reason;
+	stats["instance_contract_shape"] = debug_state.instance_contract_shape;
+	stats["instance_contract_ready"] = debug_state.instance_contract_ready;
 	stats["cull_route_reason"] = perf.cull_route_reason;
 	stats["route_uid_missing"] = RenderRouteUID::is_route_uid_missing(normalized_route_uid);
 	stats["sort_route_uid_missing"] = RenderRouteUID::is_sort_route_uid_missing(normalized_sort_route_uid);

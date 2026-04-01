@@ -167,6 +167,30 @@ enum GSStreamingRoutePolicy {
 	GS_ROUTE_STREAMING = 1,
 };
 
+static inline const char *get_streaming_route_policy_token(int p_policy) {
+	switch (p_policy) {
+		case GS_ROUTE_RESIDENT:
+			return "resident";
+		case GS_ROUTE_STREAMING:
+			return "streaming";
+		default:
+			return "unknown";
+	}
+}
+
+static inline const char *get_streaming_route_policy_source(ProjectSettings *p_ps) {
+	if (!p_ps) {
+		return "default_fallback";
+	}
+	if (!get_bool(p_ps, "rendering/gaussian_splatting/streaming/enabled", true)) {
+		return "legacy_streaming_enabled_forced_resident";
+	}
+	if (!p_ps->has_setting("rendering/gaussian_splatting/streaming/route_policy")) {
+		return "default_fallback";
+	}
+	return "route_policy";
+}
+
 /**
  * @brief Resolve the effective streaming route policy.
  *

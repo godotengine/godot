@@ -546,7 +546,7 @@ bool GaussianSplatSceneDirector::_apply_world_submission_to_renderer(SharedWorld
 void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,
         const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow,
         float p_wind_intensity, uint32_t p_wind_mode, const Vector3 &p_wind_direction, float p_wind_frequency,
-        bool p_visible) {
+        bool p_visible, bool p_has_desired_residency_hint, int32_t p_desired_residency_hint) {
 	MutexLock lock(world_mutex);
 	SharedWorld *world = _get_world_for_instance(p_node_id);
 	if (!world) {
@@ -620,6 +620,14 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 			record.wind_frequency = wind_frequency;
 			dirty = true;
 		}
+		if (record.has_desired_residency_hint != p_has_desired_residency_hint) {
+			record.has_desired_residency_hint = p_has_desired_residency_hint;
+			dirty = true;
+		}
+		if (record.desired_residency_hint != p_desired_residency_hint) {
+			record.desired_residency_hint = p_desired_residency_hint;
+			dirty = true;
+		}
 		if (record.asset_id == asset_id) {
 			if (world->asset_records.has(asset_id)) {
 				if (!_refresh_asset_record(*world, p_asset, asset_id)) {
@@ -665,6 +673,8 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 	record.last_lod = 0;
 	record.casts_shadow = p_casts_shadow;
 	record.visible = p_visible;
+	record.has_desired_residency_hint = p_has_desired_residency_hint;
+	record.desired_residency_hint = p_desired_residency_hint;
 	record.dirty = true;
 
 	world->instance_lookup[p_node_id] = world->instances.size();
@@ -701,7 +711,8 @@ void GaussianSplatSceneDirector::update_instance_transform(ObjectID p_node_id, c
 
 void GaussianSplatSceneDirector::update_instance_params(ObjectID p_node_id, float p_opacity, float p_lod_bias,
 		uint32_t p_flags, bool p_casts_shadow, float p_wind_intensity, uint32_t p_wind_mode,
-		const Vector3 &p_wind_direction, float p_wind_frequency, bool p_visible) {
+		const Vector3 &p_wind_direction, float p_wind_frequency, bool p_visible,
+		bool p_has_desired_residency_hint, int32_t p_desired_residency_hint) {
 	MutexLock lock(world_mutex);
 	SharedWorld *world = _get_world_for_instance(p_node_id);
 	if (!world) {
@@ -757,6 +768,14 @@ void GaussianSplatSceneDirector::update_instance_params(ObjectID p_node_id, floa
 		record.wind_frequency = wind_frequency;
 		dirty = true;
 	}
+	if (record.has_desired_residency_hint != p_has_desired_residency_hint) {
+		record.has_desired_residency_hint = p_has_desired_residency_hint;
+		dirty = true;
+	}
+	if (record.desired_residency_hint != p_desired_residency_hint) {
+		record.desired_residency_hint = p_desired_residency_hint;
+		dirty = true;
+	}
 	record.dirty = record.dirty || dirty;
 	if (dirty) {
 		_bump_instance_generation(world->instance_generation);
@@ -794,9 +813,10 @@ void GaussianSplatSceneDirector::unregister_instance(ObjectID p_node_id) {
 void GaussianSplatSceneDirector::register_instance_submission(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,
 		const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow,
 		float p_wind_intensity, uint32_t p_wind_mode, const Vector3 &p_wind_direction, float p_wind_frequency,
-		bool p_visible) {
+		bool p_visible, bool p_has_desired_residency_hint, int32_t p_desired_residency_hint) {
 	register_instance(p_node_id, p_asset, p_transform, p_opacity, p_lod_bias, p_flags, p_casts_shadow,
-			p_wind_intensity, p_wind_mode, p_wind_direction, p_wind_frequency, p_visible);
+			p_wind_intensity, p_wind_mode, p_wind_direction, p_wind_frequency, p_visible,
+			p_has_desired_residency_hint, p_desired_residency_hint);
 }
 
 void GaussianSplatSceneDirector::update_instance_submission_transform(ObjectID p_node_id, const Transform3D &p_transform) {
@@ -805,9 +825,11 @@ void GaussianSplatSceneDirector::update_instance_submission_transform(ObjectID p
 
 void GaussianSplatSceneDirector::update_instance_submission_params(ObjectID p_node_id, float p_opacity, float p_lod_bias,
 		uint32_t p_flags, bool p_casts_shadow, float p_wind_intensity, uint32_t p_wind_mode,
-		const Vector3 &p_wind_direction, float p_wind_frequency, bool p_visible) {
+		const Vector3 &p_wind_direction, float p_wind_frequency, bool p_visible,
+		bool p_has_desired_residency_hint, int32_t p_desired_residency_hint) {
 	update_instance_params(p_node_id, p_opacity, p_lod_bias, p_flags, p_casts_shadow, p_wind_intensity,
-			p_wind_mode, p_wind_direction, p_wind_frequency, p_visible);
+			p_wind_mode, p_wind_direction, p_wind_frequency, p_visible,
+			p_has_desired_residency_hint, p_desired_residency_hint);
 }
 
 void GaussianSplatSceneDirector::unregister_instance_submission(ObjectID p_node_id) {
@@ -843,6 +865,8 @@ bool GaussianSplatSceneDirector::get_instance_submission(ObjectID p_node_id, Ins
 		r_submission->last_lod = record.last_lod;
 		r_submission->casts_shadow = record.casts_shadow;
 		r_submission->visible = record.visible;
+		r_submission->has_desired_residency_hint = record.has_desired_residency_hint;
+		r_submission->desired_residency_hint = record.desired_residency_hint;
 		return true;
 	}
 
@@ -1347,6 +1371,8 @@ bool GaussianSplatSceneDirector::upsert_preview_submission(const PreviewSubmissi
 	record.gaussian_data = p_submission.gaussian_data;
 	record.metadata = p_submission.metadata;
 	record.source_label = p_submission.source_label;
+	record.has_desired_residency_hint = p_submission.has_desired_residency_hint;
+	record.desired_residency_hint = p_submission.desired_residency_hint;
 	preview_submissions[p_submission.owner_id] = record;
 	return true;
 }
@@ -1370,12 +1396,71 @@ bool GaussianSplatSceneDirector::get_preview_submission(ObjectID p_owner_id, Pre
 	r_submission->gaussian_data = record->gaussian_data;
 	r_submission->metadata = record->metadata;
 	r_submission->source_label = record->source_label;
+	r_submission->has_desired_residency_hint = record->has_desired_residency_hint;
+	r_submission->desired_residency_hint = record->desired_residency_hint;
 	return true;
 }
 
 bool GaussianSplatSceneDirector::has_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const {
 	MutexLock lock(world_mutex);
 	return _find_preview_submission_for_renderer(p_renderer) != nullptr;
+}
+
+bool GaussianSplatSceneDirector::get_submission_residency_hint_for_renderer(const GaussianSplatRenderer *p_renderer,
+		int32_t *r_hint, String *r_source) const {
+	ERR_FAIL_NULL_V(r_hint, false);
+
+	MutexLock lock(world_mutex);
+	if (const PreviewSubmissionRecord *preview = _find_preview_submission_for_renderer(p_renderer)) {
+		if (preview->has_desired_residency_hint) {
+			*r_hint = preview->desired_residency_hint;
+			if (r_source) {
+				*r_source = "preview_submission";
+			}
+			return true;
+		}
+	}
+
+	if (const SharedWorld *world = _find_world_for_renderer(p_renderer)) {
+		if (world->world_submission.active && world->world_submission.has_desired_residency_hint) {
+			*r_hint = world->world_submission.desired_residency_hint;
+			if (r_source) {
+				*r_source = "world_submission";
+			}
+			return true;
+		}
+
+		bool found_instance_hint = false;
+		int32_t instance_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
+		for (const InstanceRecord &record : world->instances) {
+			if (!record.has_desired_residency_hint) {
+				continue;
+			}
+			if (!found_instance_hint) {
+				found_instance_hint = true;
+				instance_hint = record.desired_residency_hint;
+				continue;
+			}
+			if (instance_hint != record.desired_residency_hint) {
+				if (r_source) {
+					*r_source = "mixed_instance_submissions";
+				}
+				return false;
+			}
+		}
+		if (found_instance_hint) {
+			*r_hint = instance_hint;
+			if (r_source) {
+				*r_source = "instance_submission";
+			}
+			return true;
+		}
+	}
+
+	if (r_source) {
+		*r_source = "none";
+	}
+	return false;
 }
 
 GaussianSplatSceneDirector::SubmissionCounts GaussianSplatSceneDirector::get_submission_counts() const {

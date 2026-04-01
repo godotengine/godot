@@ -379,6 +379,11 @@ void GaussianSplatWorld3D::_register_shared_renderer() {
     if (!world_path.is_empty()) {
         submission.metadata[StringName("world_path")] = world_path;
     }
+    // World submissions are fully materialized payloads, so they prefer the
+    // resident backend while leaving the renderer free to fall back when the
+    // resident instance contract is not feasible.
+    submission.has_desired_residency_hint = true;
+    submission.desired_residency_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT;
     submission.desired_renderer_overrides = _build_desired_renderer_overrides();
     if (!director->submit_world_submission(submission)) {
         if (_is_world_debug_enabled()) {

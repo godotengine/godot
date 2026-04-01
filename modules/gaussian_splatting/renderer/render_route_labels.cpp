@@ -104,6 +104,9 @@ String describe_route_uid(const String &p_route_uid) {
 	if (route_uid == String(RenderRouteUID::INSTANCE_ENTRY_INSTANCED_FAST)) {
 		return "Entered the shared instance pipeline";
 	}
+	if (route_uid == String(RenderRouteUID::INSTANCE_RESIDENT)) {
+		return "Resident instanced path";
+	}
 	if (route_uid == String(RenderRouteUID::INSTANCE_STREAMING)) {
 		return "Selected the streaming backend";
 	}

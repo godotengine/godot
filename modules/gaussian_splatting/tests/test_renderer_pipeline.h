@@ -394,15 +394,24 @@ static GaussianRenderPipeline::InstancePipelineBuffers make_ready_instance_pipel
     return buffers;
 }
 
+static bool hud_lines_contain(const Array &p_lines, const String &p_fragment) {
+    for (int i = 0; i < p_lines.size(); i++) {
+        if (String(p_lines[i]).find(p_fragment) != -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
 TEST_CASE("[GaussianSplatting] Instanced readiness gate reports deterministic buffer failure modes") {
     GaussianRenderPipeline::InstancePipelineBuffers ready_buffers = make_ready_instance_pipeline_buffers(false);
 
-    RenderInstancingOrchestrator::InstanceReadinessResult missing_streaming =
+    RenderInstancingOrchestrator::InstanceReadinessResult missing_contract =
             RenderInstancingOrchestrator::evaluate_instance_pipeline_readiness(
                     false, true, ready_buffers);
-    CHECK(!missing_streaming.ready);
-    CHECK(missing_streaming.failure_mode ==
-            RenderInstancingOrchestrator::InstanceReadinessFailureMode::STREAMING_SYSTEM_UNAVAILABLE);
+    CHECK(!missing_contract.ready);
+    CHECK(missing_contract.failure_mode ==
+            RenderInstancingOrchestrator::InstanceReadinessFailureMode::INSTANCE_BACKEND_CONTRACT_UNAVAILABLE);
 
     RenderInstancingOrchestrator::InstanceReadinessResult missing_pipeline_buffers =
             RenderInstancingOrchestrator::evaluate_instance_pipeline_readiness(
@@ -535,12 +544,12 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Instanced render skips callbacks whe
     RenderInstancingOrchestrator orchestrator(instancing_dependencies);
 
     GaussianRenderPipeline::InstancePipelineBuffers ready_buffers = make_ready_instance_pipeline_buffers(false);
-    RenderInstancingOrchestrator::InstanceReadinessResult missing_streaming =
+    RenderInstancingOrchestrator::InstanceReadinessResult missing_contract =
             RenderInstancingOrchestrator::evaluate_instance_pipeline_readiness(
                     false, true, ready_buffers);
-    CHECK(!missing_streaming.ready);
-    CHECK(missing_streaming.failure_mode ==
-            RenderInstancingOrchestrator::InstanceReadinessFailureMode::STREAMING_SYSTEM_UNAVAILABLE);
+    CHECK(!missing_contract.ready);
+    CHECK(missing_contract.failure_mode ==
+            RenderInstancingOrchestrator::InstanceReadinessFailureMode::INSTANCE_BACKEND_CONTRACT_UNAVAILABLE);
 
     LocalVector<Transform3D> instance_transforms;
     instance_transforms.push_back(Transform3D());
@@ -549,6 +558,178 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Instanced render skips callbacks whe
 
     CHECK_MESSAGE(!prepare_called, "Expected readiness gate to skip frame preparation callback");
     CHECK_MESSAGE(!render_called, "Expected readiness gate to skip render callback");
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Instance buffer upload uses the published renderer-side remap") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    GaussianRenderPipeline::PublishedInstanceAssetRemap remap;
+    remap.asset_to_dense_id.insert(0u, 0u);
+    remap.asset_to_dense_id.insert(42u, 7u);
+    remap.generation = 19u;
+    remap.valid = true;
+    renderer->publish_instance_pipeline_contract(
+            GaussianRenderPipeline::InstancePipelineBuffers(),
+            remap,
+            GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT,
+            remap.generation,
+            "atlas_emulation");
+
+    LocalVector<InstanceDataGPU> instances;
+    InstanceDataGPU instance = {};
+    instance.rotation[3] = 1.0f;
+    instance.inv_rotation[3] = 1.0f;
+    instance.translation_scale[3] = 1.0f;
+    instance.params[0] = 1.0f;
+    instance.params[1] = 1.0f;
+    instance.params[2] = 1.0f;
+    instance.wind_params[3] = 1.0f;
+    instance.ids[0] = 42u;
+    instances.push_back(instance);
+
+    CHECK(renderer->update_instance_buffer(instances));
+    REQUIRE(instances.size() == 1);
+    CHECK(instances[0].ids[0] == 7u);
+    CHECK(instances[0].lod[1] == 19u);
+
+    const RID instance_buffer = renderer->get_instance_pipeline_buffers().instance_buffer;
+    REQUIRE(instance_buffer.is_valid());
+    const Vector<uint8_t> bytes = primary_rd->buffer_get_data(instance_buffer, 0, sizeof(InstanceDataGPU));
+    REQUIRE(bytes.size() == sizeof(InstanceDataGPU));
+
+    InstanceDataGPU uploaded = {};
+    memcpy(&uploaded, bytes.ptr(), sizeof(InstanceDataGPU));
+    CHECK(uploaded.ids[0] == 7u);
+    CHECK(uploaded.lod[1] == 19u);
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Resident route publishes an atlas-shaped instance contract without a streaming system") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    if (project_settings == nullptr) {
+        MESSAGE("Skipping test - ProjectSettings unavailable");
+        return;
+    }
+
+    const String route_policy_setting = "rendering/gaussian_splatting/streaming/route_policy";
+    const String streaming_enabled_setting = "rendering/gaussian_splatting/streaming/enabled";
+    const String instance_pipeline_setting = "rendering/gaussian_splatting/instance_pipeline/enabled";
+    ScopedProjectSetting route_guard(project_settings, route_policy_setting);
+    ScopedProjectSetting enabled_guard(project_settings, streaming_enabled_setting);
+    ScopedProjectSetting instance_pipeline_guard(project_settings, instance_pipeline_setting);
+    project_settings->set_setting(route_policy_setting, int64_t(gs::settings::GS_ROUTE_RESIDENT));
+    project_settings->set_setting(streaming_enabled_setting, true);
+    project_settings->set_setting(instance_pipeline_setting, true);
+    project_settings->emit_signal("settings_changed");
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+    renderer->get_debug_state().show_performance_hud = true;
+
+    LocalVector<Gaussian> gaussians;
+    fill_gaussians(gaussians, 64);
+    Ref<::GaussianData> data;
+    data.instantiate();
+    data->set_gaussians(gaussians);
+
+    renderer->set_max_splats(64);
+    const Error set_data_err = renderer->set_gaussian_data(data);
+    CHECK(set_data_err == OK);
+    if (set_data_err != OK) {
+        renderer.unref();
+        return;
+    }
+
+    renderer->set_static_chunks(make_single_static_chunk(64, data->get_aabb()));
+    renderer->test_release_current_streaming_system();
+    CHECK_FALSE(renderer->test_has_current_streaming_system());
+
+    RenderSceneDataRD scene_data;
+    scene_data.cam_transform = Transform3D(Basis(), Vector3(0.0f, 0.0f, 5.0f));
+    scene_data.cam_projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+    RenderDataRD render_data;
+    render_data.scene_data = &scene_data;
+    render_data.render_buffers = Ref<RenderSceneBuffersRD>();
+
+    renderer->render_scene_instance(&render_data);
+
+    CHECK_FALSE(renderer->test_has_current_streaming_system());
+    CHECK(renderer->has_instance_pipeline_buffers());
+    CHECK(renderer->has_instance_asset_remap());
+    CHECK(renderer->get_instance_backend_policy() == GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT);
+    CHECK(renderer->is_instance_contract_ready());
+    CHECK(renderer->get_instance_contract_shape() == String("atlas_emulation"));
+
+    const Dictionary stats = renderer->get_render_stats();
+    CHECK(stats.get("route_uid", String()) == String(RenderRouteUID::INSTANCE_RESIDENT));
+    CHECK(stats.get("route_label", String()) == String("Resident instanced path"));
+    CHECK(stats.get("requested_route_policy", String()) == String("resident"));
+    CHECK(stats.get("requested_route_policy_source", String()) == String("route_policy"));
+    CHECK(stats.get("instance_backend_policy", String()) == String("resident"));
+    CHECK(stats.get("instance_contract_shape", String()) == String("atlas_emulation"));
+    CHECK(bool(stats.get("instance_contract_ready", false)));
+    CHECK(stats.get("data_source", String()) == String(GaussianRenderPipeline::SplatDataSource::kSourceResidentInstance));
+
+    const Array hud_lines = stats.get("performance_hud_lines", Array());
+    CHECK(hud_lines_contain(hud_lines, "Route: Resident instanced path [INSTANCE.RESIDENT]"));
+    CHECK(hud_lines_contain(hud_lines, "Requested Policy: resident (route_policy)"));
+    CHECK(hud_lines_contain(hud_lines, "Instance Backend: resident"));
+    CHECK(hud_lines_contain(hud_lines, "Instance Contract: atlas_emulation (ready)"));
 
     renderer.unref();
 }
@@ -2953,6 +3134,34 @@ TEST_CASE("[GaussianSplatting] streaming/enabled=false forces RESIDENT regardles
 	// Also verify route_policy=0 + enabled=false still gives resident.
 	project_settings->set_setting(route_policy_setting, 0);
 	CHECK(gs::settings::get_streaming_route_policy(project_settings) == gs::settings::GS_ROUTE_RESIDENT);
+}
+
+TEST_CASE("[GaussianSplatting] Legacy streaming toggle and explicit resident route share the same resident policy fingerprint") {
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	if (project_settings == nullptr) {
+		MESSAGE("Skipping test - ProjectSettings unavailable");
+		return;
+	}
+
+	const String route_policy_setting = "rendering/gaussian_splatting/streaming/route_policy";
+	const String streaming_enabled_setting = "rendering/gaussian_splatting/streaming/enabled";
+	ScopedProjectSetting route_guard(project_settings, route_policy_setting);
+	ScopedProjectSetting enabled_guard(project_settings, streaming_enabled_setting);
+
+	project_settings->set_setting(streaming_enabled_setting, true);
+	project_settings->set_setting(route_policy_setting, int64_t(gs::settings::GS_ROUTE_RESIDENT));
+	const int explicit_resident_policy = gs::settings::get_streaming_route_policy(project_settings);
+	CHECK(explicit_resident_policy == gs::settings::GS_ROUTE_RESIDENT);
+	CHECK(String(gs::settings::get_streaming_route_policy_token(explicit_resident_policy)) == String("resident"));
+	CHECK(String(gs::settings::get_streaming_route_policy_source(project_settings)) == String("route_policy"));
+
+	project_settings->set_setting(streaming_enabled_setting, false);
+	project_settings->set_setting(route_policy_setting, int64_t(gs::settings::GS_ROUTE_STREAMING));
+	const int legacy_forced_policy = gs::settings::get_streaming_route_policy(project_settings);
+	CHECK(legacy_forced_policy == gs::settings::GS_ROUTE_RESIDENT);
+	CHECK(String(gs::settings::get_streaming_route_policy_token(legacy_forced_policy)) == String("resident"));
+	CHECK(String(gs::settings::get_streaming_route_policy_source(project_settings)) ==
+			String("legacy_streaming_enabled_forced_resident"));
 }
 
 TEST_CASE("[GaussianSplatting] get_streaming_route_policy defaults to STREAMING when unset") {
