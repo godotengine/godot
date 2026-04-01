@@ -45,6 +45,14 @@ static String _format_compression_flags(uint32_t p_flags) {
     return String(", ").join(parts);
 }
 
+static bool _has_reason_text(const String &p_reason) {
+    return !p_reason.is_empty() && p_reason != "not_evaluated";
+}
+
+static String _reason_display_text(const String &p_reason_label, const String &p_reason) {
+    return !p_reason_label.is_empty() ? p_reason_label : p_reason;
+}
+
 } // namespace
 
 namespace GaussianEditorServices {
@@ -103,6 +111,13 @@ String format_gaussian_splat_stats(GaussianSplatNode3D *p_node, const Ref<Gaussi
         const String route_label = dict_get_string(render_stats, "route_label");
         const String sort_route_label = dict_get_string(render_stats, "sort_route_label");
         const String cull_route_label = dict_get_string(render_stats, "cull_route_label");
+        const String requested_route_policy = dict_get_string(render_stats, "requested_route_policy");
+        const String requested_route_policy_source = dict_get_string(render_stats, "requested_route_policy_source");
+        const String instance_backend_policy = dict_get_string(render_stats, "instance_backend_policy");
+        const String backend_selection_reason = dict_get_string(render_stats, "backend_selection_reason");
+        const String backend_selection_reason_label = dict_get_string(render_stats, "backend_selection_reason_label");
+        const String cull_route_reason = dict_get_string(render_stats, "cull_route_reason");
+        const String cull_route_reason_label = dict_get_string(render_stats, "cull_route_reason_label");
 
         text += "\nSort Time: " + String::num(sort_ms, 2) + " ms";
         text += "\nRender Time: " + String::num(render_ms, 2) + " ms";
@@ -126,6 +141,23 @@ String format_gaussian_splat_stats(GaussianSplatNode3D *p_node, const Ref<Gaussi
             if (!cull_route_uid.is_empty()) {
                 text += " [" + cull_route_uid + "]";
             }
+        }
+        if (!requested_route_policy.is_empty()) {
+            text += "\nRequested Policy: " + requested_route_policy;
+            if (!requested_route_policy_source.is_empty()) {
+                text += " (" + requested_route_policy_source + ")";
+            }
+        }
+        if (!instance_backend_policy.is_empty()) {
+            text += "\nInstance Backend: " + instance_backend_policy;
+        }
+        if (_has_reason_text(backend_selection_reason)) {
+            text += "\nBackend Reason: " + _reason_display_text(
+                    backend_selection_reason_label, backend_selection_reason);
+        }
+        if (!cull_route_reason.is_empty()) {
+            text += "\nCull Reason: " + _reason_display_text(
+                    cull_route_reason_label, cull_route_reason);
         }
         if (render_stats.has(StringName("debug_preview_mode"))) {
             int mode_value = int(render_stats[StringName("debug_preview_mode")]);

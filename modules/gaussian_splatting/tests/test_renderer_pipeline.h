@@ -721,6 +721,8 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Resident route publishes an atlas-sh
     CHECK(stats.get("requested_route_policy", String()) == String("resident"));
     CHECK(stats.get("requested_route_policy_source", String()) == String("route_policy"));
     CHECK(stats.get("instance_backend_policy", String()) == String("resident"));
+    CHECK(stats.get("backend_selection_reason", String()) == String("requested_resident_policy"));
+    CHECK(stats.get("backend_selection_reason_label", String()) == String("Resident was requested by the route policy"));
     CHECK(stats.get("instance_contract_shape", String()) == String("atlas_emulation"));
     CHECK(bool(stats.get("instance_contract_ready", false)));
     CHECK(stats.get("data_source", String()) == String(GaussianRenderPipeline::SplatDataSource::kSourceResidentInstance));
@@ -729,6 +731,7 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Resident route publishes an atlas-sh
     CHECK(hud_lines_contain(hud_lines, "Route: Resident instanced path [INSTANCE.RESIDENT]"));
     CHECK(hud_lines_contain(hud_lines, "Requested Policy: resident (route_policy)"));
     CHECK(hud_lines_contain(hud_lines, "Instance Backend: resident"));
+    CHECK(hud_lines_contain(hud_lines, "Backend Reason: Resident was requested by the route policy"));
     CHECK(hud_lines_contain(hud_lines, "Instance Contract: atlas_emulation (ready)"));
 
     renderer.unref();

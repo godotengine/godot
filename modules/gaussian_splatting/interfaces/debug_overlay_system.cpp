@@ -511,14 +511,21 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(const DebugOverl
         debug_state.hud_lines.push_back(vformat("Requested Policy: %s (%s)",
                 debug_state_view.requested_route_policy,
                 debug_state_view.requested_route_policy_source));
-        debug_state.hud_lines.push_back(vformat("Instance Backend: %s (%s)",
-                debug_state_view.instance_backend_policy,
-                debug_state_view.backend_selection_reason));
+        debug_state.hud_lines.push_back(vformat("Instance Backend: %s",
+                debug_state_view.instance_backend_policy));
+        if (!debug_state_view.backend_selection_reason.is_empty() &&
+                debug_state_view.backend_selection_reason != "not_evaluated") {
+            debug_state.hud_lines.push_back(vformat("Backend Reason: %s",
+                    GaussianRenderRouteLabels::format_backend_selection_reason(
+                            debug_state_view.backend_selection_reason)));
+        }
         debug_state.hud_lines.push_back(vformat("Instance Contract: %s (%s)",
                 debug_state_view.instance_contract_shape,
                 debug_state_view.instance_contract_ready ? "ready" : "not ready"));
         if (!performance_state.metrics.cull_route_reason.is_empty()) {
-            debug_state.hud_lines.push_back(vformat("Cull Reason: %s", performance_state.metrics.cull_route_reason));
+            debug_state.hud_lines.push_back(vformat("Cull Reason: %s",
+                    GaussianRenderRouteLabels::format_cull_route_reason(
+                            performance_state.metrics.cull_route_reason)));
         }
 		debug_state.hud_lines.push_back(String("Visible Splats: ") +
 				String::num_uint64(frame_state.visible_splat_count.load(std::memory_order_acquire)));
