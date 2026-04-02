@@ -1930,30 +1930,6 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	return ms;
 }
 
-void EditorInspectorCategory::_collect_properties(const Object *p_object, LocalVector<String> &r_properties) const {
-	List<PropertyInfo> property_list;
-	p_object->get_property_list(&property_list, true);
-
-	String current_category;
-	for (const PropertyInfo &prop_info : property_list) {
-		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
-			continue;
-		}
-		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
-			current_category = prop_info.name;
-			continue;
-		}
-		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
-			continue;
-		}
-		if (!current_category.ends_with(info.name)) {
-			continue;
-		}
-
-		r_properties.push_back(prop_info.name);
-	}
-}
-
 void EditorInspectorCategory::_handle_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
@@ -2776,48 +2752,6 @@ void EditorInspectorSection::_update_popup() {
 		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
 	}
 	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
-}
-
-void EditorInspectorSection::_collect_properties(LocalVector<String> &r_properties) const {
-	List<PropertyInfo> property_list;
-	object->get_property_list(&property_list, true);
-
-	String current_category;
-	String current_group;
-	String current_subgroup;
-	for (const PropertyInfo &prop_info : property_list) {
-		if (prop_info.usage & PROPERTY_USAGE_GROUP) {
-			current_group = prop_info.name;
-			continue;
-		}
-		if (prop_info.usage & PROPERTY_USAGE_SUBGROUP) {
-			current_subgroup = prop_info.name;
-			continue;
-		}
-		if (prop_info.usage & PROPERTY_USAGE_CATEGORY) {
-			current_category = prop_info.name;
-			if (!EditorNode::get_editor_data().is_type_recognized(prop_info.name) && ResourceLoader::exists(prop_info.hint_string, "Script")) {
-				Ref<Script> scr = ResourceLoader::load(prop_info.hint_string, "Script");
-				if (scr.is_valid()) {
-					current_category = scr->get_doc_class_name();
-				}
-			}
-			current_group = "";
-			current_subgroup = "";
-			continue;
-		}
-		if (!(prop_info.usage & PROPERTY_USAGE_EDITOR)) {
-			continue;
-		}
-		if (prop_info.name.get_slice_count("/") > 1) {
-			current_group = prop_info.name.get_slicec('/', 0);
-		}
-		if (!(current_category + "/" + current_group + "/" + current_subgroup).begins_with(get_inspector_path())) {
-			continue;
-		}
-
-		r_properties.push_back(prop_info.name);
-	}
 }
 
 void EditorInspectorSection::menu_option(int p_option) const {

@@ -417,7 +417,6 @@ class EditorInspectorCategory : public Control {
 
 	LocalVector<EditorProperty *> category_properties;
 
-	void _collect_properties(const Object *p_object, LocalVector<String> &r_properties) const;
 	void _handle_menu_option(int p_option);
 	void _popup_context_menu(const Point2i &p_position);
 	void _update_icon();
@@ -566,7 +565,6 @@ public:
 	void update_property();
 
 	void _update_popup();
-	void _collect_properties(LocalVector<String> &r_properties) const;
 	void menu_option(int p_option) const;
 
 	void register_property(EditorProperty *p_property) { section_properties.push_back(p_property); }
