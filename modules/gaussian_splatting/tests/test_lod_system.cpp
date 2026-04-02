@@ -597,8 +597,8 @@ bool test_node_quality_presets() {
     for (const PresetExpectation &expectation : preset_expectations) {
         node->set_quality_preset(expectation.preset);
 
-        const GaussianSplatting::AdaptiveLODSystem::LODConfig &lod_config = node->get_lod_config();
-        const GaussianSplatting::StreamingLODManager::StreamingConfig &stream_config = node->get_streaming_config();
+        const GaussianSplatting::GaussianSplatLODConfig &lod_config = node->get_lod_config();
+        const GaussianSplatting::GaussianSplatStreamingConfig &stream_config = node->get_streaming_config();
 
         if (!Math::is_equal_approx(lod_config.lod_bias, expectation.expected_bias, 0.001f)) {
             ERR_PRINT(vformat("Failed: Preset %d expected bias %.2f but got %.2f", (int)expectation.preset, expectation.expected_bias, lod_config.lod_bias));
@@ -638,8 +638,8 @@ bool test_node_quality_presets() {
     node->set_lod_bias(1.3f);
     node->set_max_splat_count(750000);
 
-    const GaussianSplatting::AdaptiveLODSystem::LODConfig &custom_lod = node->get_lod_config();
-    const GaussianSplatting::StreamingLODManager::StreamingConfig &custom_stream = node->get_streaming_config();
+    const GaussianSplatting::GaussianSplatLODConfig &custom_lod = node->get_lod_config();
+    const GaussianSplatting::GaussianSplatStreamingConfig &custom_stream = node->get_streaming_config();
 
     if (!Math::is_equal_approx(custom_lod.lod_bias, 1.3f, 0.001f)) {
         ERR_PRINT("Failed: Custom preset did not preserve manual LOD bias override.");
@@ -922,6 +922,27 @@ TEST_CASE("[GaussianSplatting] Hierarchical LOD query keeps index and weight car
     CHECK(capped.visible_indices.size() == capped.lod_weights.size());
 
     memdelete(camera);
+}
+
+TEST_CASE("[GaussianSplatting] Hierarchical parallel_build fallback still subdivides the tree") {
+    GaussianSplatting::Tests::LODSystemTest fixture;
+    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_test_splats(20000, 75.0f);
+
+    GaussianSplatting::HierarchicalSplatStructure structure;
+    GaussianSplatting::HierarchicalSplatStructure::BuildParams params;
+    params.max_depth = 7;
+    params.min_splats_per_node = 16;
+    params.parallel_build = true;
+    structure.build_hierarchy(splats, params);
+
+    const GaussianSplatting::HierarchicalSplatStructure::TreeStats stats = structure.get_statistics();
+    const GaussianSplatting::HierarchicalSplatStructure::OctreeNode *root = structure.get_root();
+
+    REQUIRE(root != nullptr);
+    CHECK(stats.total_nodes > 1);
+    CHECK(stats.leaf_nodes > 1);
+    CHECK(stats.max_depth_reached > 0);
+    CHECK_FALSE(root->is_leaf());
 }
 
 TEST_CASE("[GaussianSplatting] Hybrid LOD selection enforces cardinality invariants") {

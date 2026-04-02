@@ -14,6 +14,7 @@
 #include "../renderer/pipeline_feature_set.h"
 #include "../renderer/sorting_config.h"
 #include "../renderer/gpu_sorter.h"
+#include "../core/gaussian_splat_quality_config.h"
 #include "../lod/adaptive_lod_system.h"
 #include "../interfaces/gpu_culler.h"
 
@@ -475,6 +476,40 @@ TEST_CASE("[GaussianSplatting][Config] LODConfig threshold values") {
 	CHECK(config.target_framerate > 0.0f);
 	CHECK(config.quality_adjustment_rate > 0.0f);
 	CHECK(config.quality_adjustment_rate <= 1.0f);
+}
+
+// =============================================================================
+// Node-facing LOD/Streaming config validation
+// =============================================================================
+
+TEST_CASE("[GaussianSplatting][Config] GaussianSplatLODConfig defaults match live node expectations") {
+	using namespace GaussianSplatting;
+	GaussianSplatLODConfig config;
+
+	CHECK(config.lod0_distance < config.lod1_distance);
+	CHECK(config.lod1_distance < config.lod2_distance);
+	CHECK(config.lod2_distance < config.lod3_distance);
+	CHECK(config.lod3_distance < config.cull_distance);
+	CHECK(config.min_splats_per_frame < config.max_splats_per_frame);
+	CHECK(config.importance_threshold >= 0.0f);
+	CHECK(config.importance_threshold <= 1.0f);
+	CHECK(config.size_cull_threshold > 0.0f);
+	CHECK(config.lod_bias > 0.0f);
+}
+
+TEST_CASE("[GaussianSplatting][Config] GaussianSplatStreamingConfig defaults match live node expectations") {
+	using namespace GaussianSplatting;
+	GaussianSplatStreamingConfig config;
+
+	CHECK(config.max_gpu_memory > 0);
+	CHECK(config.target_gpu_memory > 0);
+	CHECK(config.target_gpu_memory <= config.max_gpu_memory);
+	CHECK(config.max_cpu_memory >= config.max_gpu_memory);
+	CHECK(config.load_ahead_distance > 0.0f);
+	CHECK(config.unload_distance > config.load_ahead_distance);
+	CHECK(config.max_concurrent_loads > 0);
+	CHECK(config.num_lod_levels >= 2);
+	CHECK(config.stream_budget_ms > 0);
 }
 
 // =============================================================================

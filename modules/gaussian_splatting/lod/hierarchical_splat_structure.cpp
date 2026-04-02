@@ -1,4 +1,5 @@
 #include "hierarchical_splat_structure.h"
+#include "core/error/error_macros.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/templates/local_vector.h"
@@ -86,34 +87,11 @@ void HierarchicalSplatStructure::build_hierarchy(
     root->depth = 0;
     nodes_created++;
 
-    // Build recursively or in parallel
+    // Keep the live path safe until a real parallel builder exists.
     if (params.parallel_build && total_splats > 10000) {
-        // Parallel build for large datasets
-        Vector<OctreeNode*> current_level;
-        current_level.push_back(root.get());
-
-        for (uint32_t depth = 0; depth < params.max_depth; depth++) {
-            parallel_build_level(depth, current_level, splat_data, params);
-
-            // Collect next level nodes
-            Vector<OctreeNode*> next_level;
-            for (OctreeNode* node : current_level) {
-                if (!node->is_leaf()) {
-                    for (auto& child : node->children) {
-                        if (child) {
-                            next_level.push_back(child.get());
-                        }
-                    }
-                }
-            }
-
-            if (next_level.is_empty()) {
-                break;
-            }
-            current_level = next_level;
-        }
+        WARN_PRINT_ONCE("[HierarchicalSplatStructure] parallel_build requested, but the parallel hierarchy builder is not implemented; falling back to sequential build.");
+        build_node_recursive(root.get(), splat_data, 0, total_splats, 0, params);
     } else {
-        // Sequential build for smaller datasets
         build_node_recursive(root.get(), splat_data, 0, total_splats, 0, params);
     }
 
@@ -528,25 +506,6 @@ float HierarchicalSplatStructure::calculate_importance(
 
     // Combined importance
     return (size_importance + opacity_importance + color_importance) / 3.0f;
-}
-
-void HierarchicalSplatStructure::parallel_build_level(
-    uint32_t level,
-    Vector<OctreeNode*>& nodes_to_process,
-    Vector<SplatInfo>& splats,
-    const BuildParams& params) {
-
-    // Process nodes in parallel
-    // Note: In production, use Godot's WorkerThreadPool
-    for (OctreeNode* node : nodes_to_process) {
-        if (node->splat_count > params.min_splats_per_node &&
-            level < params.max_depth) {
-
-            // Subdivide this node
-            // (Similar to build_node_recursive but for one level only)
-            // This would be parallelized in production
-        }
-    }
 }
 
 HierarchicalSplatStructure::TreeStats HierarchicalSplatStructure::get_statistics() const {

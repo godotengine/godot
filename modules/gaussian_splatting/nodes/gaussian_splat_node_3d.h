@@ -12,9 +12,8 @@
 
 #include "scene/3d/node_3d.h"
 #include "../core/gaussian_splat_asset.h"
+#include "../core/gaussian_splat_quality_config.h"
 #include "../core/painterly_manager.h"
-#include "../lod/adaptive_lod_system.h"
-#include "../lod/streaming_lod_manager.h"
 #include "core/math/aabb.h"
 #include "core/math/vector2i.h"
 #include "core/object/object_id.h"
@@ -140,8 +139,8 @@ private:
     bool asset_lod_enabled = true;         // From import metadata "enable_lod"
     bool asset_optimize_for_gpu = true;    // From import metadata "optimize_for_gpu"
 
-    GaussianSplatting::AdaptiveLODSystem::LODConfig lod_config;
-    GaussianSplatting::StreamingLODManager::StreamingConfig streaming_config;
+    GaussianSplatting::GaussianSplatLODConfig lod_config;
+    GaussianSplatting::GaussianSplatStreamingConfig streaming_config;
     Dictionary effective_config_snapshot;
 
     // Painterly settings
@@ -453,10 +452,10 @@ public:
     QualityPreset get_quality_preset() const { return quality_preset; }
 
     /** @brief Returns the current LOD configuration. */
-    const GaussianSplatting::AdaptiveLODSystem::LODConfig &get_lod_config() const { return lod_config; }
+    const GaussianSplatting::GaussianSplatLODConfig &get_lod_config() const { return lod_config; }
 
     /** @brief Returns the current streaming configuration. */
-    const GaussianSplatting::StreamingLODManager::StreamingConfig &get_streaming_config() const { return streaming_config; }
+    const GaussianSplatting::GaussianSplatStreamingConfig &get_streaming_config() const { return streaming_config; }
 
     /** @brief Returns the latest read-only effective configuration snapshot. */
     Dictionary get_effective_config_snapshot() const;

@@ -82,7 +82,7 @@ public:
         uint32_t min_splats_per_node = 16; // Minimum splats to subdivide
         float size_threshold = 0.01f;      // Minimum node size
         bool compute_importance = true;    // Calculate importance metrics
-        bool parallel_build = false;       // Disabled: parallel_build_level() is a stub (see #70)
+        bool parallel_build = false;       // Requests parallel build, currently falls back to the supported sequential path.
     };
 
 public:
@@ -157,14 +157,6 @@ private:
     );
 
     void compute_node_statistics(OctreeNode* node, const Vector<SplatInfo>& splats);
-
-    // Parallel build support
-    void parallel_build_level(
-        uint32_t level,
-        Vector<OctreeNode*>& nodes_to_process,
-        Vector<SplatInfo>& splats,
-        const BuildParams& params
-    );
 
     // Importance calculation
     float calculate_importance(const SplatInfo& splat, const OctreeNode* node) const;
