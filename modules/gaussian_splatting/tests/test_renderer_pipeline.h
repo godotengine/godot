@@ -13,6 +13,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/variant/variant.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_streaming.h"
@@ -20,6 +21,7 @@
 #include "../renderer/gaussian_gpu_layout.h"
 #include "../renderer/gpu_sorting_config.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/pipeline_feature_set.h"
 #include "../renderer/render_debug_state_orchestrator.h"
 #include "../renderer/render_instancing_orchestrator.h"
 #include "../renderer/render_pipeline_stages.h"
@@ -394,15 +396,24 @@ static GaussianRenderPipeline::InstancePipelineBuffers make_ready_instance_pipel
     return buffers;
 }
 
+static bool hud_lines_contain(const Array &p_lines, const String &p_fragment) {
+    for (int i = 0; i < p_lines.size(); i++) {
+        if (String(p_lines[i]).find(p_fragment) != -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
 TEST_CASE("[GaussianSplatting] Instanced readiness gate reports deterministic buffer failure modes") {
     GaussianRenderPipeline::InstancePipelineBuffers ready_buffers = make_ready_instance_pipeline_buffers(false);
 
-    RenderInstancingOrchestrator::InstanceReadinessResult missing_streaming =
+    RenderInstancingOrchestrator::InstanceReadinessResult missing_contract =
             RenderInstancingOrchestrator::evaluate_instance_pipeline_readiness(
                     false, true, ready_buffers);
-    CHECK(!missing_streaming.ready);
-    CHECK(missing_streaming.failure_mode ==
-            RenderInstancingOrchestrator::InstanceReadinessFailureMode::STREAMING_SYSTEM_UNAVAILABLE);
+    CHECK(!missing_contract.ready);
+    CHECK(missing_contract.failure_mode ==
+            RenderInstancingOrchestrator::InstanceReadinessFailureMode::INSTANCE_BACKEND_CONTRACT_UNAVAILABLE);
 
     RenderInstancingOrchestrator::InstanceReadinessResult missing_pipeline_buffers =
             RenderInstancingOrchestrator::evaluate_instance_pipeline_readiness(
@@ -535,12 +546,12 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Instanced render skips callbacks whe
     RenderInstancingOrchestrator orchestrator(instancing_dependencies);
 
     GaussianRenderPipeline::InstancePipelineBuffers ready_buffers = make_ready_instance_pipeline_buffers(false);
-    RenderInstancingOrchestrator::InstanceReadinessResult missing_streaming =
+    RenderInstancingOrchestrator::InstanceReadinessResult missing_contract =
             RenderInstancingOrchestrator::evaluate_instance_pipeline_readiness(
                     false, true, ready_buffers);
-    CHECK(!missing_streaming.ready);
-    CHECK(missing_streaming.failure_mode ==
-            RenderInstancingOrchestrator::InstanceReadinessFailureMode::STREAMING_SYSTEM_UNAVAILABLE);
+    CHECK(!missing_contract.ready);
+    CHECK(missing_contract.failure_mode ==
+            RenderInstancingOrchestrator::InstanceReadinessFailureMode::INSTANCE_BACKEND_CONTRACT_UNAVAILABLE);
 
     LocalVector<Transform3D> instance_transforms;
     instance_transforms.push_back(Transform3D());
@@ -551,6 +562,269 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Instanced render skips callbacks whe
     CHECK_MESSAGE(!render_called, "Expected readiness gate to skip render callback");
 
     renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Instance buffer upload uses the published renderer-side remap") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+
+    GaussianRenderPipeline::PublishedInstanceAssetRemap remap;
+    remap.asset_to_dense_id.insert(0u, 0u);
+    remap.asset_to_dense_id.insert(42u, 7u);
+    remap.generation = 19u;
+    remap.valid = true;
+    renderer->publish_instance_pipeline_contract(
+            GaussianRenderPipeline::InstancePipelineBuffers(),
+            remap,
+            GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT,
+            remap.generation,
+            "atlas_emulation");
+
+    LocalVector<InstanceDataGPU> instances;
+    InstanceDataGPU instance = {};
+    instance.rotation[3] = 1.0f;
+    instance.inv_rotation[3] = 1.0f;
+    instance.translation_scale[3] = 1.0f;
+    instance.params[0] = 1.0f;
+    instance.params[1] = 1.0f;
+    instance.params[2] = 1.0f;
+    instance.wind_params[3] = 1.0f;
+    instance.ids[0] = 42u;
+    instances.push_back(instance);
+
+    CHECK(renderer->update_instance_buffer(instances));
+    REQUIRE(instances.size() == 1);
+    CHECK(instances[0].ids[0] == 7u);
+    CHECK(instances[0].lod[1] == 19u);
+
+    const RID instance_buffer = renderer->get_instance_pipeline_buffers().instance_buffer;
+    REQUIRE(instance_buffer.is_valid());
+    const Vector<uint8_t> bytes = primary_rd->buffer_get_data(instance_buffer, 0, sizeof(InstanceDataGPU));
+    REQUIRE(bytes.size() == sizeof(InstanceDataGPU));
+
+    InstanceDataGPU uploaded = {};
+    memcpy(&uploaded, bytes.ptr(), sizeof(InstanceDataGPU));
+    CHECK(uploaded.ids[0] == 7u);
+    CHECK(uploaded.lod[1] == 19u);
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting] Clearing the published instance contract also clears the renderer-side remap") {
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate();
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+
+    GaussianRenderPipeline::InstancePipelineBuffers buffers;
+    buffers.instance_count = 3;
+    buffers.max_visible_splats = 9;
+
+    GaussianRenderPipeline::PublishedInstanceAssetRemap remap;
+    remap.asset_to_dense_id.insert(5u, 2u);
+    remap.generation = 11u;
+    remap.valid = true;
+
+    renderer->publish_instance_pipeline_contract(
+            buffers,
+            remap,
+            GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT,
+            remap.generation,
+            "atlas_emulation");
+
+    CHECK(renderer->has_instance_pipeline_buffers());
+    CHECK(renderer->has_instance_asset_remap());
+    CHECK(renderer->get_instance_backend_policy() == GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT);
+    CHECK(renderer->get_instance_contract_shape() == String("atlas_emulation"));
+    CHECK(renderer->get_instance_asset_remap().generation == 11u);
+
+    renderer->clear_instance_pipeline_buffers();
+
+    CHECK_FALSE(renderer->has_instance_pipeline_buffers());
+    CHECK_FALSE(renderer->has_instance_asset_remap());
+    CHECK(renderer->get_instance_backend_policy() == GaussianRenderPipeline::InstanceBackendPolicy::NONE);
+    CHECK(renderer->get_instance_contract_shape() == String("none"));
+    CHECK(renderer->get_instance_pipeline_buffers().instance_count == 0u);
+    CHECK(renderer->get_instance_pipeline_buffers().max_visible_splats == 0u);
+    CHECK(renderer->get_instance_asset_remap().asset_to_dense_id.is_empty());
+    CHECK(renderer->get_instance_asset_remap().generation == 0u);
+}
+
+TEST_CASE("[GaussianSplatting][RequiresGPU] Resident route publishes an atlas-shaped instance contract without a streaming system") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (rs == nullptr) {
+        MESSAGE("Skipping test - Rendering server unavailable");
+        return;
+    }
+
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    if (project_settings == nullptr) {
+        MESSAGE("Skipping test - ProjectSettings unavailable");
+        return;
+    }
+
+    const String route_policy_setting = "rendering/gaussian_splatting/streaming/route_policy";
+    const String streaming_enabled_setting = "rendering/gaussian_splatting/streaming/enabled";
+    const String instance_pipeline_setting = "rendering/gaussian_splatting/instance_pipeline/enabled";
+    ScopedProjectSetting route_guard(project_settings, route_policy_setting);
+    ScopedProjectSetting enabled_guard(project_settings, streaming_enabled_setting);
+    ScopedProjectSetting instance_pipeline_guard(project_settings, instance_pipeline_setting);
+    project_settings->set_setting(route_policy_setting, int64_t(gs::settings::GS_ROUTE_RESIDENT));
+    project_settings->set_setting(streaming_enabled_setting, true);
+    project_settings->set_setting(instance_pipeline_setting, true);
+    project_settings->emit_signal("settings_changed");
+
+    ScopedGaussianManagerPipeline manager_scope;
+    GaussianSplatManager *manager = manager_scope.get();
+    if (manager == nullptr) {
+        MESSAGE("Skipping test - GaussianSplatManager unavailable");
+        return;
+    }
+
+    ScopedRenderingDeviceLease device_lease;
+    RenderingDevice *primary_rd = device_lease.acquire(rs, manager);
+    if (primary_rd == nullptr) {
+        MESSAGE("Skipping test - Rendering device unavailable");
+        return;
+    }
+
+    Ref<GaussianSplatRenderer> renderer;
+    renderer.instantiate(primary_rd);
+    CHECK(renderer.is_valid());
+    if (!renderer.is_valid()) {
+        return;
+    }
+    renderer->initialize();
+    renderer->get_debug_state().show_performance_hud = true;
+
+    LocalVector<Gaussian> gaussians;
+    fill_gaussians(gaussians, 64);
+    Ref<::GaussianData> data;
+    data.instantiate();
+    data->set_gaussians(gaussians);
+
+    renderer->set_max_splats(64);
+    const Error set_data_err = renderer->set_gaussian_data(data);
+    CHECK(set_data_err == OK);
+    if (set_data_err != OK) {
+        renderer.unref();
+        return;
+    }
+
+    renderer->set_static_chunks(make_single_static_chunk(64, data->get_aabb()));
+    renderer->test_release_current_streaming_system();
+    CHECK_FALSE(renderer->test_has_current_streaming_system());
+
+    RenderSceneDataRD scene_data;
+    scene_data.cam_transform = Transform3D(Basis(), Vector3(0.0f, 0.0f, 5.0f));
+    scene_data.cam_projection.set_perspective(70.0f, 1.0f, 0.1f, 100.0f);
+
+    RenderDataRD render_data;
+    render_data.scene_data = &scene_data;
+    render_data.render_buffers = Ref<RenderSceneBuffersRD>();
+
+    renderer->render_scene_instance(&render_data);
+
+    CHECK_FALSE(renderer->test_has_current_streaming_system());
+    CHECK(renderer->has_instance_pipeline_buffers());
+    CHECK(renderer->has_instance_asset_remap());
+    CHECK(renderer->get_instance_backend_policy() == GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT);
+    CHECK(renderer->is_instance_contract_ready());
+    CHECK(renderer->get_instance_contract_shape() == String("atlas_emulation"));
+
+    const Dictionary stats = renderer->get_render_stats();
+    CHECK(stats.get("route_uid", String()) == String(RenderRouteUID::INSTANCE_RESIDENT));
+    CHECK(stats.get("route_label", String()) == String("Resident instanced path"));
+    CHECK(stats.get("requested_route_policy", String()) == String("resident"));
+    CHECK(stats.get("requested_route_policy_source", String()) == String("route_policy"));
+    CHECK(stats.get("instance_backend_policy", String()) == String("resident"));
+    CHECK(stats.get("backend_selection_reason", String()) == String("requested_resident_policy"));
+    CHECK(stats.get("backend_selection_reason_label", String()) == String("Resident was requested by the route policy"));
+    CHECK(stats.get("instance_contract_shape", String()) == String("atlas_emulation"));
+    CHECK(bool(stats.get("instance_contract_ready", false)));
+    CHECK(stats.get("data_source", String()) == String(GaussianRenderPipeline::SplatDataSource::kSourceResidentInstance));
+    const Dictionary effective_config = stats.get("effective_config_snapshot", Dictionary());
+    const Dictionary route_entry = GaussianEffectiveConfig::get_entry(effective_config, StringName("active_route"));
+    const Dictionary backend_entry = GaussianEffectiveConfig::get_entry(effective_config, StringName("instance_backend_policy"));
+    const Dictionary requested_policy_entry = GaussianEffectiveConfig::get_entry(effective_config, StringName("requested_route_policy"));
+    CHECK(String(route_entry.get(StringName("display_value"), String())) == String("Resident instanced path [INSTANCE.RESIDENT]"));
+    CHECK(String(route_entry.get(StringName("source_label"), String())) == String("Resident was requested by the route policy"));
+    CHECK(String(backend_entry.get(StringName("value"), String())) == String("resident"));
+    CHECK(String(backend_entry.get(StringName("source_label"), String())) == String("Resident was requested by the route policy"));
+    CHECK(String(requested_policy_entry.get(StringName("value"), String())) == String("resident"));
+    CHECK(String(requested_policy_entry.get(StringName("source_label"), String())) == String("route_policy"));
+
+    const Array hud_lines = stats.get("performance_hud_lines", Array());
+    CHECK(hud_lines_contain(hud_lines, "Route: Resident instanced path [INSTANCE.RESIDENT]"));
+    CHECK(hud_lines_contain(hud_lines, "Requested Policy: resident (route_policy)"));
+    CHECK(hud_lines_contain(hud_lines, "Instance Backend: resident"));
+    CHECK(hud_lines_contain(hud_lines, "Backend Reason: Resident was requested by the route policy"));
+    CHECK(hud_lines_contain(hud_lines, "Instance Contract: atlas_emulation (ready)"));
+
+    renderer.unref();
+}
+
+TEST_CASE("[GaussianSplatting] Pipeline feature snapshot distinguishes code defaults from project overrides") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String fast_raster_setting = PipelineFeatureSet::ENABLE_FAST_RASTER_PATH;
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String tier_apply_setting = "rendering/gaussian_splatting/quality/tier_apply_pipeline_toggles";
+
+    ScopedProjectSetting fast_raster_guard(project_settings, fast_raster_setting);
+    ScopedProjectSetting tier_preset_guard(project_settings, tier_preset_setting);
+    ScopedProjectSetting tier_apply_guard(project_settings, tier_apply_setting);
+
+    project_settings->set_setting(tier_preset_setting, String("custom"));
+    project_settings->set_setting(tier_apply_setting, false);
+
+    project_settings->set_setting(fast_raster_setting, false);
+    project_settings->set_builtin_order(fast_raster_setting);
+    g_pipeline_feature_set.load_from_project_settings();
+    Dictionary snapshot = g_pipeline_feature_set.get_effective_config_snapshot();
+    Dictionary fast_raster_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("pipeline_fast_raster"));
+    CHECK(String(fast_raster_entry.get(StringName("source_label"), String())) == String("code default"));
+
+    project_settings->clear(fast_raster_setting);
+    project_settings->set_setting(fast_raster_setting, true);
+    g_pipeline_feature_set.load_from_project_settings();
+    snapshot = g_pipeline_feature_set.get_effective_config_snapshot();
+    fast_raster_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("pipeline_fast_raster"));
+    CHECK(bool(fast_raster_entry.get(StringName("value"), false)));
+    CHECK(String(fast_raster_entry.get(StringName("source_label"), String())) == String("project override"));
+
+    g_pipeline_feature_set.load_from_project_settings();
 }
 
 TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance drives GPU streaming + sorting") {
@@ -2953,6 +3227,34 @@ TEST_CASE("[GaussianSplatting] streaming/enabled=false forces RESIDENT regardles
 	// Also verify route_policy=0 + enabled=false still gives resident.
 	project_settings->set_setting(route_policy_setting, 0);
 	CHECK(gs::settings::get_streaming_route_policy(project_settings) == gs::settings::GS_ROUTE_RESIDENT);
+}
+
+TEST_CASE("[GaussianSplatting] Legacy streaming toggle and explicit resident route share the same resident policy fingerprint") {
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	if (project_settings == nullptr) {
+		MESSAGE("Skipping test - ProjectSettings unavailable");
+		return;
+	}
+
+	const String route_policy_setting = "rendering/gaussian_splatting/streaming/route_policy";
+	const String streaming_enabled_setting = "rendering/gaussian_splatting/streaming/enabled";
+	ScopedProjectSetting route_guard(project_settings, route_policy_setting);
+	ScopedProjectSetting enabled_guard(project_settings, streaming_enabled_setting);
+
+	project_settings->set_setting(streaming_enabled_setting, true);
+	project_settings->set_setting(route_policy_setting, int64_t(gs::settings::GS_ROUTE_RESIDENT));
+	const int explicit_resident_policy = gs::settings::get_streaming_route_policy(project_settings);
+	CHECK(explicit_resident_policy == gs::settings::GS_ROUTE_RESIDENT);
+	CHECK(String(gs::settings::get_streaming_route_policy_token(explicit_resident_policy)) == String("resident"));
+	CHECK(String(gs::settings::get_streaming_route_policy_source(project_settings)) == String("route_policy"));
+
+	project_settings->set_setting(streaming_enabled_setting, false);
+	project_settings->set_setting(route_policy_setting, int64_t(gs::settings::GS_ROUTE_STREAMING));
+	const int legacy_forced_policy = gs::settings::get_streaming_route_policy(project_settings);
+	CHECK(legacy_forced_policy == gs::settings::GS_ROUTE_RESIDENT);
+	CHECK(String(gs::settings::get_streaming_route_policy_token(legacy_forced_policy)) == String("resident"));
+	CHECK(String(gs::settings::get_streaming_route_policy_source(project_settings)) ==
+			String("legacy_streaming_enabled_forced_resident"));
 }
 
 TEST_CASE("[GaussianSplatting] get_streaming_route_policy defaults to STREAMING when unset") {

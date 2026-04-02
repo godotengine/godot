@@ -1,6 +1,7 @@
 #include "sh_config.h"
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gs_project_settings.h"
 #include "../core/quality_tier_config.h"
 #include "../logger/gs_logger.h"
@@ -22,6 +23,8 @@ void SHConfig::load_from_project_settings() {
     // Load SH band level with sentinel-based tier seeding.
     // -1 means "not explicitly set by user" -- check active tier for a recommendation.
     int band_value = gs::settings::get_int(ps, BANDS_PATH, -1);
+    sh_bands_source = "code_default";
+    sh_bands_source_label = "code default";
     if (band_value < 0) {
         // Sentinel: user never set this. Check tier.
         band_value = static_cast<int>(SH_BAND_3); // Code default.
@@ -29,7 +32,12 @@ void SHConfig::load_from_project_settings() {
         QualityTierConfig tier_config;
         if (get_quality_tier_config(tier_preset, tier_config) && tier_config.sh_bands >= 0) {
             band_value = tier_config.sh_bands;
+            sh_bands_source = "tier_preset";
+            sh_bands_source_label = vformat("tier preset '%s'", tier_preset);
         }
+    } else {
+        sh_bands_source = "project_override";
+        sh_bands_source_label = "project override";
     }
     sh_bands = static_cast<SHBandLevel>(CLAMP(band_value, 0, static_cast<int>(SH_BAND_MAX)));
 
@@ -120,6 +128,17 @@ void SHConfig::print_config_summary() const {
     GS_LOG_STREAMING_INFO(vformat("[SH Config] DC Logit Decode: %s",
             dc_is_logit ? "enabled (sigmoid)" : "disabled (linear)"));
     GS_LOG_STREAMING_INFO(String("[SH Config] ================================================"));
+}
+
+Dictionary SHConfig::get_effective_config_snapshot() const {
+	Dictionary snapshot;
+	GaussianEffectiveConfig::set_entry(snapshot,
+			StringName("sh_bands"),
+			int64_t(static_cast<int>(sh_bands)),
+			sh_bands_source,
+			sh_bands_source_label,
+			String(get_band_name(sh_bands)));
+	return snapshot;
 }
 
 void initialize_sh_config() {

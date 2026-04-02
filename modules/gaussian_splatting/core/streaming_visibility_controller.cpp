@@ -343,12 +343,12 @@ void StreamingVisibilityController::update_chunk_lod_blend_factors(GaussianStrea
 }
 
 void StreamingVisibilityController::update_chunk_lod_parameters(GaussianStreamingSystem &system, const Vector3 &camera_pos) {
-    (void)camera_pos;
-    lod_transitions_this_frame = 0;
+	    (void)camera_pos;
+	    lod_transitions_this_frame = 0;
 
-    const LODConfig &lod_config = system._get_lod_config();
-    const auto mark_resident_chunk_meta_if_lod_changed = [&](uint32_t chunk_idx,
-                                                             const GaussianStreamingSystem::StreamingChunk &chunk,
+	    const LODConfig &lod_config = system._get_lod_config();
+	    const auto mark_resident_chunk_meta_if_lod_changed = [&](uint32_t chunk_idx,
+	                                                             const GaussianStreamingSystem::StreamingChunk &chunk,
                                                              uint32_t prev_effective_count,
                                                              uint32_t prev_lod_level,
                                                              int prev_sh_band_level) {

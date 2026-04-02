@@ -92,6 +92,7 @@ struct SplatDataSource {
 	static constexpr const char *kSourceUnavailable = "Unavailable";
 	static constexpr const char *kSourceBufferManager = "GPUBufferManager";
 	static constexpr const char *kSourceStreaming = "StreamingGPU";
+	static constexpr const char *kSourceResidentInstance = "ResidentInstanceAtlas";
 	static constexpr const char *kSourceCpuData = "gaussian_data";
 
 	RID gaussian_buffer;
@@ -99,6 +100,36 @@ struct SplatDataSource {
 	uint32_t splat_count = 0;
 	uint32_t total_gaussians = 0;
 	const char *source_name = kSourceUnavailable;
+};
+
+enum class InstanceBackendPolicy : uint8_t {
+	NONE = 0,
+	STREAMING,
+	RESIDENT,
+};
+
+inline const char *instance_backend_policy_to_string(InstanceBackendPolicy p_policy) {
+	switch (p_policy) {
+		case InstanceBackendPolicy::NONE:
+			return "none";
+		case InstanceBackendPolicy::STREAMING:
+			return "streaming";
+		case InstanceBackendPolicy::RESIDENT:
+			return "resident";
+	}
+	return "none";
+}
+
+struct PublishedInstanceAssetRemap {
+	HashMap<uint32_t, uint32_t> asset_to_dense_id;
+	uint64_t generation = 0;
+	bool valid = false;
+
+	void clear() {
+		asset_to_dense_id.clear();
+		generation = 0;
+		valid = false;
+	}
 };
 
 struct InstancePipelineBuffers {

@@ -5,12 +5,17 @@
 #include "../nodes/gaussian_splat_world_3d.h"
 #include "../nodes/gaussian_splat_dynamic_instance_3d.h"
 #include "../core/gaussian_data.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_splat_world.h"
 #include "../core/gaussian_splat_scene_director.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/sh_config.h"
 #include "../resources/color_grading_resource.h"
+#ifdef TOOLS_ENABLED
+#include "../editor/gaussian_editor_services.h"
+#endif
 #include "core/math/math_funcs.h"
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
@@ -275,6 +280,124 @@ TEST_CASE("[GaussianSplatting][Node] Debug flag persistence mirrors project sett
 #endif
 
     memdelete(fresh_node);
+}
+
+TEST_CASE("[GaussianSplatting][Node] Effective config snapshot reports tier caps with source attribution") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String tier_apply_setting = "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets";
+
+    ProjectSettingGuard tier_preset_guard(project_settings, tier_preset_setting);
+    ProjectSettingGuard tier_apply_guard(project_settings, tier_apply_setting);
+
+    project_settings->set_setting(tier_preset_setting, String("low"));
+    project_settings->set_setting(tier_apply_setting, true);
+
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+    if (node == nullptr) {
+        return;
+    }
+
+    node->set_quality_preset(GaussianSplatNode3D::QUALITY_QUALITY);
+
+    const Dictionary snapshot = node->get_effective_config_snapshot();
+    const Dictionary max_splats_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("max_splats"));
+    const Dictionary gpu_memory_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("gpu_memory_mb"));
+    const Dictionary lod_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("lod_max_distance"));
+
+    CHECK(int64_t(max_splats_entry.get(StringName("value"), int64_t(-1))) == int64_t(300000));
+    CHECK(String(max_splats_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(int64_t(gpu_memory_entry.get(StringName("value"), int64_t(-1))) == int64_t(256));
+    CHECK(String(gpu_memory_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(String(lod_entry.get(StringName("source_label"), String())) == String("node property"));
+    const Dictionary load_ahead_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_load_ahead_factor"));
+    const Dictionary unload_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_unload_factor"));
+    const Dictionary concurrent_loads_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("streaming_max_concurrent_loads"));
+    const Dictionary target_gpu_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("target_gpu_memory_mb"));
+    const Dictionary stream_budget_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("stream_budget_ms"));
+    CHECK(int64_t(target_gpu_entry.get(StringName("value"), int64_t(-1))) == int64_t(192));
+    CHECK(String(target_gpu_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(Math::is_equal_approx(float(double(load_ahead_entry.get(StringName("value"), 0.0))), 0.15f));
+    CHECK(String(load_ahead_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(Math::is_equal_approx(float(double(unload_entry.get(StringName("value"), 0.0))), 0.95f));
+    CHECK(String(unload_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(int64_t(concurrent_loads_entry.get(StringName("value"), int64_t(-1))) == int64_t(1));
+    CHECK(String(concurrent_loads_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+    CHECK(int64_t(stream_budget_entry.get(StringName("value"), int64_t(-1))) == int64_t(1));
+    CHECK(String(stream_budget_entry.get(StringName("source_label"), String())) == String("capped by tier 'low'"));
+
+    memdelete(node);
+}
+
+#ifdef TOOLS_ENABLED
+TEST_CASE("[GaussianSplatting][Node] Editor summary surfaces capped streaming values with source attribution") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String tier_apply_setting = "rendering/gaussian_splatting/quality/tier_apply_streaming_budgets";
+
+    ProjectSettingGuard tier_preset_guard(project_settings, tier_preset_setting);
+    ProjectSettingGuard tier_apply_guard(project_settings, tier_apply_setting);
+
+    project_settings->set_setting(tier_preset_setting, String("low"));
+    project_settings->set_setting(tier_apply_setting, true);
+
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+    if (node == nullptr) {
+        return;
+    }
+
+    node->set_quality_preset(GaussianSplatNode3D::QUALITY_QUALITY);
+    const String stats_text = GaussianEditorServices::format_gaussian_splat_stats(node, Ref<GaussianSplatRenderer>());
+    CHECK(stats_text.contains("Effective Target GPU Memory: 192 MB"));
+    CHECK(stats_text.contains("Effective Load Ahead: 0.15"));
+    CHECK(stats_text.contains("Effective Unload: 0.95"));
+    CHECK(stats_text.contains("Effective Concurrent Loads: 1"));
+    CHECK(stats_text.contains("Effective Stream Budget: 1 ms"));
+    CHECK(stats_text.contains("capped by tier 'low'"));
+
+    memdelete(node);
+}
+#endif
+
+TEST_CASE("[GaussianSplatting][Node] Effective config snapshot honors SH project override over tier default") {
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    REQUIRE(project_settings != nullptr);
+    if (project_settings == nullptr) {
+        return;
+    }
+
+    const String tier_preset_setting = "rendering/gaussian_splatting/quality/tier_preset";
+    const String sh_bands_setting = SHConfig::BANDS_PATH;
+
+    {
+        ProjectSettingGuard tier_preset_guard(project_settings, tier_preset_setting);
+        ProjectSettingGuard sh_bands_guard(project_settings, sh_bands_setting);
+
+        project_settings->set_setting(tier_preset_setting, String("steam_deck"));
+        project_settings->set_setting(sh_bands_setting, int64_t(SH_BAND_3));
+
+        g_sh_config.load_from_project_settings();
+        const Dictionary snapshot = g_sh_config.get_effective_config_snapshot();
+        const Dictionary sh_entry = GaussianEffectiveConfig::get_entry(snapshot, StringName("sh_bands"));
+
+        CHECK(int64_t(sh_entry.get(StringName("value"), int64_t(-1))) == int64_t(SH_BAND_3));
+        CHECK(String(sh_entry.get(StringName("source_label"), String())) == String("project override"));
+        CHECK(String(sh_entry.get(StringName("display_value"), String())) == String("SH3 (3rd order)"));
+    }
+
+    g_sh_config.load_from_project_settings();
 }
 
 TEST_CASE("[GaussianSplatting][Node][SceneTree] Default update mode processes automatically") {
@@ -684,6 +807,61 @@ TEST_CASE("[GaussianSplatting][Node] Legacy non-functional properties are not ex
     Variant occlusion_culling = node->get(StringName("rendering/occlusion_culling"), &get_valid);
     CHECK(get_valid);
     CHECK_FALSE((bool)occlusion_culling);
+
+    memdelete(node);
+}
+
+TEST_CASE("[GaussianSplatting][Node] Asset origin label describes active ingress") {
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+
+    CHECK(node->get_asset_origin_label() == String("No asset assigned"));
+
+    node->set_ply_file_path("res://direct_only.ply");
+    CHECK(node->get_asset_origin_label().contains("Direct file path"));
+    CHECK(node->get_asset_origin_label().contains("res://direct_only.ply"));
+
+    Ref<GaussianSplatAsset> asset = make_single_splat_asset();
+    asset->set_source_path("res://imported_source.ply");
+    node->set_splat_asset(asset);
+
+    const String asset_origin = node->get_asset_origin_label();
+    CHECK(asset_origin.contains("Assigned GaussianSplatAsset"));
+    CHECK(asset_origin.contains("source: res://imported_source.ply"));
+    CHECK(asset_origin.contains("ply_file_path: res://direct_only.ply"));
+
+    memdelete(node);
+}
+
+TEST_CASE("[GaussianSplatting][Node] Configuration warnings flag inconsistent dual-path sources") {
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    REQUIRE(node != nullptr);
+
+    Ref<GaussianSplatAsset> asset = make_single_splat_asset();
+    asset->set_source_path("res://asset_source.ply");
+    node->set_splat_asset(asset);
+    node->set_ply_file_path("res://other_source.ply");
+
+    PackedStringArray warnings = node->get_configuration_warnings();
+    bool has_dual_source_warning = false;
+    for (int i = 0; i < warnings.size(); i++) {
+        if (String(warnings[i]).contains("Both splat_asset and ply_file_path are set to different sources")) {
+            has_dual_source_warning = true;
+            break;
+        }
+    }
+    CHECK(has_dual_source_warning);
+
+    node->set_ply_file_path("res://asset_source.ply");
+    warnings = node->get_configuration_warnings();
+    has_dual_source_warning = false;
+    for (int i = 0; i < warnings.size(); i++) {
+        if (String(warnings[i]).contains("Both splat_asset and ply_file_path")) {
+            has_dual_source_warning = true;
+            break;
+        }
+    }
+    CHECK_FALSE(has_dual_source_warning);
 
     memdelete(node);
 }

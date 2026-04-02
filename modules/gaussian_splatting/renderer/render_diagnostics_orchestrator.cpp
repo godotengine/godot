@@ -1,7 +1,11 @@
 #include "render_diagnostics_orchestrator.h"
 
+#include "../core/effective_config_snapshot.h"
 #include "../core/gs_project_settings.h"
+#include "render_route_labels.h"
 #include "render_debug_state_orchestrator.h"
+#include "pipeline_feature_set.h"
+#include "sh_config.h"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
@@ -1084,7 +1088,43 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 	stats["route_uid"] = normalized_route_uid;
 	stats["sort_route_uid"] = normalized_sort_route_uid;
 	stats["cull_route_uid"] = normalized_cull_route_uid;
+	stats["route_label"] = GaussianRenderRouteLabels::describe_route_uid(normalized_route_uid);
+	stats["sort_route_label"] = GaussianRenderRouteLabels::describe_sort_route_uid(normalized_sort_route_uid);
+	stats["cull_route_label"] = GaussianRenderRouteLabels::describe_cull_route_uid(normalized_cull_route_uid);
+	stats["requested_route_policy"] = debug_state.requested_route_policy;
+	stats["requested_route_policy_source"] = debug_state.requested_route_policy_source;
+	stats["instance_backend_policy"] = debug_state.instance_backend_policy;
+	stats["backend_selection_reason"] = debug_state.backend_selection_reason;
+	stats["backend_selection_reason_label"] =
+			GaussianRenderRouteLabels::describe_backend_selection_reason(debug_state.backend_selection_reason);
+	stats["instance_contract_shape"] = debug_state.instance_contract_shape;
+	stats["instance_contract_ready"] = debug_state.instance_contract_ready;
 	stats["cull_route_reason"] = perf.cull_route_reason;
+	stats["cull_route_reason_label"] =
+			GaussianRenderRouteLabels::describe_cull_route_reason(perf.cull_route_reason);
+	Dictionary effective_config_snapshot = g_sh_config.get_effective_config_snapshot();
+	GaussianEffectiveConfig::merge_into(effective_config_snapshot, g_pipeline_feature_set.get_effective_config_snapshot());
+	GaussianEffectiveConfig::set_entry(effective_config_snapshot,
+			StringName("requested_route_policy"),
+			debug_state.requested_route_policy,
+			debug_state.requested_route_policy_source,
+			GaussianEffectiveConfig::describe_route_policy_source(debug_state.requested_route_policy_source));
+	GaussianEffectiveConfig::set_entry(effective_config_snapshot,
+			StringName("instance_backend_policy"),
+			debug_state.instance_backend_policy,
+			debug_state.backend_selection_reason,
+			GaussianRenderRouteLabels::describe_backend_selection_reason(debug_state.backend_selection_reason));
+	String active_route_display = String(stats["route_label"]);
+	if (!normalized_route_uid.is_empty()) {
+		active_route_display += " [" + normalized_route_uid + "]";
+	}
+	GaussianEffectiveConfig::set_entry(effective_config_snapshot,
+			StringName("active_route"),
+			normalized_route_uid,
+			debug_state.backend_selection_reason,
+			GaussianRenderRouteLabels::describe_backend_selection_reason(debug_state.backend_selection_reason),
+			active_route_display);
+	stats["effective_config_snapshot"] = effective_config_snapshot;
 	stats["route_uid_missing"] = RenderRouteUID::is_route_uid_missing(normalized_route_uid);
 	stats["sort_route_uid_missing"] = RenderRouteUID::is_sort_route_uid_missing(normalized_sort_route_uid);
 	stats["cull_route_uid_missing"] = RenderRouteUID::is_route_uid_missing(normalized_cull_route_uid);

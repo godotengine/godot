@@ -4,6 +4,7 @@
 
 #include "core/math/aabb.h"
 #include "core/string/translation.h"
+#include "../core/effective_config_snapshot.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../nodes/gaussian_splat_node_3d.h"
 #include "../renderer/gaussian_splat_renderer.h"
@@ -43,6 +44,29 @@ static String _format_compression_flags(uint32_t p_flags) {
         return TTR("None");
     }
     return String(", ").join(parts);
+}
+
+static bool _has_reason_text(const String &p_reason) {
+    return !p_reason.is_empty() && p_reason != "not_evaluated";
+}
+
+static String _reason_display_text(const String &p_reason_label, const String &p_reason) {
+    return !p_reason_label.is_empty() ? p_reason_label : p_reason;
+}
+
+static void _append_effective_config_line(String &r_text, const Dictionary &p_snapshot,
+        const StringName &p_key, const String &p_label) {
+    Dictionary entry = GaussianEffectiveConfig::get_entry(p_snapshot, p_key);
+    if (entry.is_empty()) {
+        return;
+    }
+
+    String line = "\n" + p_label + ": " + GaussianEffectiveConfig::get_display_value(entry);
+    const String source_label = GaussianEffectiveConfig::get_source_label(entry);
+    if (!source_label.is_empty()) {
+        line += " (" + source_label + ")";
+    }
+    r_text += line;
 }
 
 } // namespace
@@ -97,11 +121,59 @@ String format_gaussian_splat_stats(GaussianSplatNode3D *p_node, const Ref<Gaussi
         const double sort_ms = dict_get_double(render_stats, "sort_time_ms", 0.0);
         const double render_ms = dict_get_double(render_stats, "render_time_ms", 0.0);
         const int64_t frame_count = dict_get_int(render_stats, "frame_count", 0);
+        const String route_uid = dict_get_string(render_stats, "route_uid");
+        const String sort_route_uid = dict_get_string(render_stats, "sort_route_uid");
+        const String cull_route_uid = dict_get_string(render_stats, "cull_route_uid");
+        const String route_label = dict_get_string(render_stats, "route_label");
+        const String sort_route_label = dict_get_string(render_stats, "sort_route_label");
+        const String cull_route_label = dict_get_string(render_stats, "cull_route_label");
+        const String requested_route_policy = dict_get_string(render_stats, "requested_route_policy");
+        const String requested_route_policy_source = dict_get_string(render_stats, "requested_route_policy_source");
+        const String instance_backend_policy = dict_get_string(render_stats, "instance_backend_policy");
+        const String backend_selection_reason = dict_get_string(render_stats, "backend_selection_reason");
+        const String backend_selection_reason_label = dict_get_string(render_stats, "backend_selection_reason_label");
+        const String cull_route_reason = dict_get_string(render_stats, "cull_route_reason");
+        const String cull_route_reason_label = dict_get_string(render_stats, "cull_route_reason_label");
 
         text += "\nSort Time: " + String::num(sort_ms, 2) + " ms";
         text += "\nRender Time: " + String::num(render_ms, 2) + " ms";
         if (frame_count > 0) {
             text += "\nFrames Rendered: " + itos(frame_count);
+        }
+        if (!route_label.is_empty()) {
+            text += "\nRender Route: " + route_label;
+            if (!route_uid.is_empty()) {
+                text += " [" + route_uid + "]";
+            }
+        }
+        if (!sort_route_label.is_empty()) {
+            text += "\nSort Route: " + sort_route_label;
+            if (!sort_route_uid.is_empty()) {
+                text += " [" + sort_route_uid + "]";
+            }
+        }
+        if (!cull_route_label.is_empty()) {
+            text += "\nCull Route: " + cull_route_label;
+            if (!cull_route_uid.is_empty()) {
+                text += " [" + cull_route_uid + "]";
+            }
+        }
+        if (!requested_route_policy.is_empty()) {
+            text += "\nRequested Policy: " + requested_route_policy;
+            if (!requested_route_policy_source.is_empty()) {
+                text += " (" + requested_route_policy_source + ")";
+            }
+        }
+        if (!instance_backend_policy.is_empty()) {
+            text += "\nInstance Backend: " + instance_backend_policy;
+        }
+        if (_has_reason_text(backend_selection_reason)) {
+            text += "\nBackend Reason: " + _reason_display_text(
+                    backend_selection_reason_label, backend_selection_reason);
+        }
+        if (!cull_route_reason.is_empty()) {
+            text += "\nCull Reason: " + _reason_display_text(
+                    cull_route_reason_label, cull_route_reason);
         }
         if (render_stats.has(StringName("debug_preview_mode"))) {
             int mode_value = int(render_stats[StringName("debug_preview_mode")]);
@@ -119,6 +191,19 @@ String format_gaussian_splat_stats(GaussianSplatNode3D *p_node, const Ref<Gaussi
     }
     text += "\nLOD Spheres: " + String(p_node->is_showing_lod_spheres() ? "On" : "Off");
     text += "\nOverlay: " + String(p_node->is_showing_performance_overlay() ? "On" : "Off");
+
+    const Dictionary effective_config = node_stats.get(StringName("effective_config_snapshot"), Dictionary());
+    if (!effective_config.is_empty()) {
+        _append_effective_config_line(text, effective_config, StringName("max_splats"), "Effective Max Splats");
+        _append_effective_config_line(text, effective_config, StringName("gpu_memory_mb"), "Effective GPU Memory");
+        _append_effective_config_line(text, effective_config, StringName("target_gpu_memory_mb"), "Effective Target GPU Memory");
+        _append_effective_config_line(text, effective_config, StringName("streaming_load_ahead_factor"), "Effective Load Ahead");
+        _append_effective_config_line(text, effective_config, StringName("streaming_unload_factor"), "Effective Unload");
+        _append_effective_config_line(text, effective_config, StringName("streaming_max_concurrent_loads"), "Effective Concurrent Loads");
+        _append_effective_config_line(text, effective_config, StringName("stream_budget_ms"), "Effective Stream Budget");
+        _append_effective_config_line(text, effective_config, StringName("lod_max_distance"), "Effective LOD Max Distance");
+        _append_effective_config_line(text, effective_config, StringName("sh_bands"), "Effective SH Bands");
+    }
 
     return text;
 }

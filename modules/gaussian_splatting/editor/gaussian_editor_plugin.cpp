@@ -87,6 +87,46 @@ static Ref<::GaussianData> convert_asset_to_gaussian_data(const Ref<GaussianSpla
     return data;
 }
 
+static String _get_asset_source_path(const Ref<GaussianSplatAsset> &p_asset) {
+    if (p_asset.is_null()) {
+        return String();
+    }
+
+    String source_path = p_asset->get_source_path();
+    if (!source_path.is_empty()) {
+        return source_path;
+    }
+
+    const Dictionary metadata = p_asset->get_import_metadata();
+    if (metadata.has(StringName("source_file"))) {
+        return String(metadata[StringName("source_file")]);
+    }
+    if (metadata.has(StringName("runtime_load_source_path"))) {
+        return String(metadata[StringName("runtime_load_source_path")]);
+    }
+    return String();
+}
+
+static String _get_node_source_path(GaussianSplatNode3D *p_node) {
+    if (!p_node) {
+        return String();
+    }
+
+    // Stage 0 editor flows treat imported assets as the authoritative source
+    // when they carry source metadata, even if legacy nodes still serialize a
+    // stale ply_file_path alongside the asset reference.
+    const String asset_source_path = _get_asset_source_path(p_node->get_splat_asset());
+    if (!asset_source_path.is_empty()) {
+        return asset_source_path;
+    }
+
+    const String file_path = p_node->get_ply_file_path();
+    if (!file_path.is_empty()) {
+        return file_path;
+    }
+    return String();
+}
+
 } // namespace
 
 // GaussianEditorPlugin implementation
@@ -238,13 +278,13 @@ void GaussianEditorPlugin::edit(Object *p_object) {
         current_node = node;
         current_renderer = node->get_renderer();
         active_asset = node->get_splat_asset();
-        current_source_path = node->get_ply_file_path();
+        current_source_path = _get_node_source_path(node);
     } else if (GaussianSplatRenderer *renderer = Object::cast_to<GaussianSplatRenderer>(p_object)) {
         current_renderer = Ref<GaussianSplatRenderer>(renderer);
     } else if (GaussianSplatAsset *asset_obj = Object::cast_to<GaussianSplatAsset>(p_object)) {
         Ref<GaussianSplatAsset> asset(asset_obj);
         active_asset = asset;
-        current_source_path = asset->get_source_path();
+        current_source_path = _get_asset_source_path(asset);
     }
 
     if (active_asset.is_valid()) {
@@ -346,7 +386,6 @@ Error GaussianEditorPlugin::_import_from_path(const String &p_path, const Dictio
 
     if (current_node) {
         current_node->set_splat_asset(asset);
-        current_node->set_ply_file_path(p_path);
     }
 
     if (!current_renderer.is_valid() && current_node) {
@@ -426,6 +465,11 @@ void GaussianEditorPlugin::_refresh_active_asset_metadata() {
         _sync_ui_from_asset();
         _update_stats();
         return;
+    }
+
+    const String asset_source_path = _get_asset_source_path(active_asset);
+    if (!asset_source_path.is_empty()) {
+        current_source_path = asset_source_path;
     }
 
     Dictionary asset_metadata = active_asset->get_import_metadata();
@@ -701,7 +745,7 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
             current_node = target_node;
             current_renderer = target_node->get_renderer();
             active_asset = target_node->get_splat_asset();
-            current_source_path = target_node->get_ply_file_path();
+            current_source_path = _get_node_source_path(target_node);
             last_import_options = options;
         }
 
@@ -735,7 +779,7 @@ void GaussianEditorPlugin::request_asset_reimport(const Ref<GaussianSplatAsset> 
     }
 
     active_asset = p_asset;
-    current_source_path = p_asset->get_source_path();
+    current_source_path = _get_asset_source_path(p_asset);
 
     if (current_source_path.is_empty()) {
         EditorNode::get_singleton()->show_warning(TTR("The selected asset does not have a recorded source path."));

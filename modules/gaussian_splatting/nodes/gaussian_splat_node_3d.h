@@ -19,6 +19,7 @@
 #include "core/math/vector2i.h"
 #include "core/object/object_id.h"
 #include "core/templates/rid.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "gaussian_splat_node_helpers.h"
@@ -141,6 +142,7 @@ private:
 
     GaussianSplatting::AdaptiveLODSystem::LODConfig lod_config;
     GaussianSplatting::StreamingLODManager::StreamingConfig streaming_config;
+    Dictionary effective_config_snapshot;
 
     // Painterly settings
     bool enable_painterly = false;
@@ -319,6 +321,8 @@ private:
 #ifdef TOOLS_ENABLED
     void _notification_editor_post_save();
 #endif
+    String _get_asset_source_path() const;
+    bool _has_inconsistent_dual_source_configuration(String *r_asset_source_path = nullptr) const;
 
     void _ensure_gaussian_base();
     void _release_gaussian_base();
@@ -390,6 +394,7 @@ public:
      */
     void set_splat_asset(const Ref<GaussianSplatAsset> &p_asset);
     Ref<GaussianSplatAsset> get_splat_asset() const { return splat_asset; }
+    String get_asset_origin_label() const;
 
     /**
      * @brief Enables automatic loading when ply_file_path is set.
@@ -452,6 +457,9 @@ public:
 
     /** @brief Returns the current streaming configuration. */
     const GaussianSplatting::StreamingLODManager::StreamingConfig &get_streaming_config() const { return streaming_config; }
+
+    /** @brief Returns the latest read-only effective configuration snapshot. */
+    Dictionary get_effective_config_snapshot() const;
 
     /** @brief Sets LOD bias (higher values keep more detail at distance). */
     void set_lod_bias(float p_bias);

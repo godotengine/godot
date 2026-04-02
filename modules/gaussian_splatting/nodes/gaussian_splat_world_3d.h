@@ -35,8 +35,8 @@ private:
     float opacity = 1.0f;
 
     void _ensure_renderer();
-    void _apply_renderer_settings();
-    void _apply_quality_settings();
+    Dictionary _build_desired_renderer_overrides() const;
+    void _resubmit_world_submission_if_registered();
     void _apply_world_internal();
     void _register_shared_renderer();
     void _unregister_shared_renderer();

@@ -5,6 +5,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
+#include "core/variant/dictionary.h"
 
 class RenderingDevice;
 
@@ -45,7 +46,13 @@ struct PipelineFeatureSet {
             bool p_global_sort_enabled,
             String *r_warnings = nullptr) const;
 
+    Dictionary get_effective_config_snapshot() const;
+
     void print_config_summary() const;
+
+    Dictionary loaded_provenance_snapshot;
+    mutable Dictionary effective_provenance_snapshot;
+    mutable bool effective_provenance_snapshot_valid = false;
 };
 
 extern PipelineFeatureSet g_pipeline_feature_set;

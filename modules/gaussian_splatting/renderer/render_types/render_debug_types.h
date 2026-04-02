@@ -132,6 +132,12 @@ struct DebugState {
 	float last_sort_time_ms = 0.0f;
 	String route_uid;
 	String sort_route_uid;
+	String requested_route_policy = "streaming";
+	String requested_route_policy_source = "default_fallback";
+	String instance_backend_policy = "none";
+	String backend_selection_reason = "not_evaluated";
+	String instance_contract_shape = "none";
+	bool instance_contract_ready = false;
 	StageMetricsT last_stage_metrics;
 	bool last_stage_metrics_valid = false;
 	SplatAuditSummary splat_audit;

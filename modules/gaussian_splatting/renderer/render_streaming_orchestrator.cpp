@@ -26,7 +26,9 @@ using StreamingState = GaussianSplatRenderer::StreamingState;
 using PerformanceSettings = GaussianSplatRenderer::PerformanceSettings;
 using ResourceState = GaussianSplatRenderer::ResourceState;
 using RenderFallbackReason = GaussianSplatRenderer::RenderFallbackReason;
+using InstanceBackendPolicy = GaussianSplatRenderer::InstanceBackendPolicy;
 using InstancePipelineBuffers = GaussianSplatRenderer::InstancePipelineBuffers;
+using PublishedInstanceAssetRemap = GaussianSplatRenderer::PublishedInstanceAssetRemap;
 using InvariantViolation = GaussianSplatting::InstancePipelineContract::InvariantViolation;
 using InvariantViolationReason = GaussianSplatting::InstancePipelineContract::InvariantViolationReason;
 
@@ -80,6 +82,8 @@ static uint64_t _compute_instance_pipeline_resource_fingerprint(const ResourceSt
 }
 
 constexpr uint32_t kInstanceAssetEmptySyncGraceFrames = 3u;
+constexpr uint32_t kPrimaryStreamingAssetId = 0u;
+constexpr uint32_t kInvalidStreamingAssetId = UINT32_MAX;
 
 static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
 	if (!p_metadata.has(p_key)) {
@@ -101,6 +105,50 @@ static double _metadata_double(const Dictionary &p_metadata, const StringName &p
 		return double(int64_t(value));
 	}
 	return (double)value;
+}
+
+static PublishedInstanceAssetRemap _build_streaming_instance_asset_remap(
+		GaussianStreamingSystem *p_streaming_system,
+		const LocalVector<InstanceAssetRegistration> &p_asset_cache,
+		const LocalVector<InstanceDataGPU> &p_instances,
+		uint64_t p_generation) {
+	PublishedInstanceAssetRemap remap;
+	if (p_streaming_system == nullptr) {
+		return remap;
+	}
+
+	const uint32_t primary_dense_id = p_streaming_system->get_dense_asset_id(kPrimaryStreamingAssetId) !=
+					kInvalidStreamingAssetId
+			? p_streaming_system->get_dense_asset_id(kPrimaryStreamingAssetId)
+			: kPrimaryStreamingAssetId;
+	remap.asset_to_dense_id.insert(kPrimaryStreamingAssetId, primary_dense_id);
+
+	for (const InstanceAssetRegistration &entry : p_asset_cache) {
+		if (entry.asset_id == 0) {
+			continue;
+		}
+		uint32_t dense_id = p_streaming_system->get_dense_asset_id(entry.asset_id);
+		if (dense_id == kInvalidStreamingAssetId) {
+			dense_id = primary_dense_id;
+		}
+		remap.asset_to_dense_id.insert(entry.asset_id, dense_id);
+	}
+
+	for (const InstanceDataGPU &entry : p_instances) {
+		const uint32_t asset_id = entry.ids[0];
+		if (remap.asset_to_dense_id.has(asset_id)) {
+			continue;
+		}
+		uint32_t dense_id = p_streaming_system->get_dense_asset_id(asset_id);
+		if (dense_id == kInvalidStreamingAssetId) {
+			dense_id = primary_dense_id;
+		}
+		remap.asset_to_dense_id.insert(asset_id, dense_id);
+	}
+
+	remap.generation = p_generation == 0 ? 1u : p_generation;
+	remap.valid = true;
+	return remap;
 }
 
 static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
@@ -730,7 +778,7 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	// Route-policy gate: when resident is selected, never create the streaming system.
 	// This is the single chokepoint — all 4 callers funnel through here.
 	const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
-	if (route_policy == gs::settings::GS_ROUTE_RESIDENT) {
+	if (renderer->should_prefer_resident_backend(route_policy)) {
 		return false;
 	}
 
@@ -1511,7 +1559,6 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
 		return false;
 	}
-	(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache);
 
 	streaming_state.current_streaming_system->set_chunk_radius_multiplier(
 			(renderer->*runtime_ports.get_cull_radius_multiplier)() *
@@ -1569,6 +1616,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			buffers.quantization_required = quantization_required;
 			buffers.quantization_buffer = quantization_required ? atlas_state.quantization_buffer : RID();
 
+		buffers.instance_count = instance_pipeline_instance_cache.size();
 		const uint32_t instance_count = buffers.instance_count;
 		instance_pipeline_instance_count = instance_count;
 		buffers.dispatch_chunk_count = streaming_system->get_max_chunk_count_per_asset();
@@ -1925,19 +1973,35 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 					instance_invariant_reason));
 		}
 
+		const PublishedInstanceAssetRemap published_remap = _build_streaming_instance_asset_remap(
+				streaming_system, instance_pipeline_assets_cache, instance_pipeline_instance_cache,
+				base_content_generation);
+
 		if (stream_readiness_state == StreamingReadinessState::MISSING_ATLAS_INPUTS) {
 			if (atlas_buffers_required) {
 				WARN_PRINT_ONCE("[GaussianSplatRenderer] Instance pipeline requires global atlas buffers; streaming not ready.");
 			}
+			renderer->clear_instance_pipeline_buffers();
 			renderer->instance_pipeline_buffers = buffers;
 			renderer->instance_pipeline_buffers_valid = false;
 		} else if (stream_readiness_state == StreamingReadinessState::READY) {
 			if (trace_enabled) {
 				GaussianSplatting::debug_trace_record_event("instance_pipeline",
-						"InstanceBufferCheck READY - set_instance_pipeline_buffers",
+						"InstanceBufferCheck READY - publish_instance_pipeline_contract",
 						false);
 			}
-			renderer->set_instance_pipeline_buffers(buffers);
+			renderer->publish_instance_pipeline_contract(
+					buffers,
+					published_remap,
+					InstanceBackendPolicy::STREAMING,
+					base_content_generation,
+					"atlas_emulation");
+			if (!(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache)) {
+				renderer->clear_instance_pipeline_buffers();
+				renderer->instance_pipeline_buffers = buffers;
+				renderer->instance_pipeline_buffers_valid = false;
+				stream_readiness_state = StreamingReadinessState::MISSING_CULL_INPUTS;
+			}
 		} else {
 			if (trace_enabled) {
 				GaussianSplatting::debug_trace_record_event("instance_pipeline",
@@ -1945,6 +2009,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 								String(_streaming_readiness_state_token(stream_readiness_state))),
 						true);
 			}
+			renderer->clear_instance_pipeline_buffers();
 			renderer->instance_pipeline_buffers = buffers;
 			renderer->instance_pipeline_buffers_valid = false;
 		}
@@ -1952,7 +2017,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 				base_content_generation,
 				_compute_instance_pipeline_resource_fingerprint(resource_state_mut, buffers));
 	} else {
-		renderer->instance_pipeline_buffers_valid = false;
+		renderer->clear_instance_pipeline_buffers();
 		resource_state.instance_pipeline_content_generation = base_content_generation;
 	}
 

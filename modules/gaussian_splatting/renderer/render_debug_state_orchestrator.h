@@ -20,6 +20,7 @@ struct RenderRouteUID {
 	static constexpr const char *RESIDENT_SELECTED = "RESIDENT.SELECTED";
 
 	static constexpr const char *INSTANCE_ENTRY_INSTANCED_FAST = "INSTANCE.ENTRY.INSTANCED_FAST";
+	static constexpr const char *INSTANCE_RESIDENT = "INSTANCE.RESIDENT";
 	static constexpr const char *INSTANCE_STREAMING = "INSTANCE.STREAMING";
 	static constexpr const char *INSTANCE_CULL_GPU = "INSTANCE.CULL.GPU";
 	static constexpr const char *INSTANCE_CULL_CPU_FALLBACK = "INSTANCE.CULL.CPU_FALLBACK";

@@ -2,12 +2,17 @@
 #include "test_macros.h"
 #include "test_utils.h"
 #include "../renderer/gaussian_splat_renderer.h"
+#include "../renderer/render_debug_state_orchestrator.h"
 #include "../renderer/gpu_memory_stream.h"
 #include "../renderer/gpu_sorter.h"
 #include "../renderer/tile_renderer.h"
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_manager.h"
 #include "../interfaces/sync_policy.h"
+#ifdef TOOLS_ENABLED
+#include "../editor/gaussian_editor_services.h"
+#include "../nodes/gaussian_splat_node_3d.h"
+#endif
 #include "core/error/error_macros.h"
 #include "../lod/streaming_lod_manager.h"
 #include "../lod/hierarchical_splat_structure.h"
@@ -254,6 +259,15 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
     }
 
     TEST_CASE("[Integration] Renderer debug overlay toggles reflected in stats") {
+        auto has_prefixed_line = [](const Array &p_lines, const String &p_prefix) {
+            for (int i = 0; i < p_lines.size(); i++) {
+                if (String(p_lines[i]).begins_with(p_prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
         GaussianSplatManager *manager = memnew(GaussianSplatManager);
         CHECK(manager != nullptr);
         if (manager == nullptr) {
@@ -280,6 +294,15 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
         CHECK(stats.has("performance_hud_lines"));
         CHECK(stats.has("debug_tile_density_peak"));
         CHECK(stats.has("debug_tile_density_size"));
+        CHECK(stats.has("route_uid"));
+        CHECK(stats.has("sort_route_uid"));
+        CHECK(stats.has("cull_route_uid"));
+        CHECK(stats.has("route_label"));
+        CHECK(stats.has("sort_route_label"));
+        CHECK(stats.has("cull_route_label"));
+        CHECK(String(stats["route_label"]).length() > 0);
+        CHECK(String(stats["sort_route_label"]).length() > 0);
+        CHECK(String(stats["cull_route_label"]).length() > 0);
         CHECK(!bool(stats["debug_show_tile_grid"]));
         CHECK(!bool(stats["debug_show_density_heatmap"]));
         CHECK(!bool(stats["debug_show_performance_hud"]));
@@ -302,6 +325,9 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
         CHECK(int(stats["debug_hud_version"]) > hud_version);
         Array hud_enabled_lines = stats["performance_hud_lines"];
         CHECK(hud_enabled_lines.size() > 0);
+        CHECK(has_prefixed_line(hud_enabled_lines, "Route: "));
+        CHECK(has_prefixed_line(hud_enabled_lines, "Sort Route: "));
+        CHECK(has_prefixed_line(hud_enabled_lines, "Cull Route: "));
         int overlay_version_enabled = int(stats["debug_overlay_version"]);
 
         renderer->set_debug_show_performance_hud(false);
@@ -334,6 +360,83 @@ TEST_SUITE("[Gaussian Splatting Integration]") {
         CHECK(int(stats["debug_overlay_version"]) >= overlay_version_enabled + 2);
         Array hud_disabled_lines = stats["performance_hud_lines"];
         CHECK(hud_disabled_lines.is_empty());
+
+        renderer.unref();
+        memdelete(manager);
+    }
+
+    TEST_CASE("[Integration] Route reason labels surface through stats, HUD, and editor summary") {
+        auto has_prefixed_line = [](const Array &p_lines, const String &p_prefix) {
+            for (int i = 0; i < p_lines.size(); i++) {
+                if (String(p_lines[i]).begins_with(p_prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        GaussianSplatManager *manager = memnew(GaussianSplatManager);
+        CHECK(manager != nullptr);
+        if (manager == nullptr) {
+            return;
+        }
+
+        Ref<GaussianSplatRenderer> renderer;
+        renderer.instantiate(manager->get_primary_rendering_device());
+        CHECK(renderer.is_valid());
+        if (!renderer.is_valid()) {
+            memdelete(manager);
+            return;
+        }
+
+        renderer->set_debug_show_performance_hud(true);
+        renderer->get_debug_state().route_uid = RenderRouteUID::INSTANCE_STREAMING;
+        renderer->get_debug_state().sort_route_uid = RenderRouteUID::INSTANCE_SORT_GPU;
+        renderer->get_debug_state().requested_route_policy = "streaming";
+        renderer->get_debug_state().requested_route_policy_source = "route_policy";
+        renderer->get_debug_state().instance_backend_policy = "streaming";
+        renderer->get_debug_state().backend_selection_reason =
+                "submission_hint_resident:world_submission_not_feasible:resident_quantization_unsupported -> streaming_contract_published";
+        renderer->get_debug_state().instance_contract_shape = "atlas_emulation";
+        renderer->get_debug_state().instance_contract_ready = true;
+        renderer->get_performance_state().metrics.cull_route_uid = RenderRouteUID::INSTANCE_CULL_GPU;
+        renderer->get_performance_state().metrics.cull_route_reason = "instance_pipeline_active";
+
+        Dictionary stats = renderer->get_render_stats();
+        CHECK(stats.has("backend_selection_reason_label"));
+        CHECK(stats.has("cull_route_reason_label"));
+        CHECK(String(stats.get("route_label", String())) == String("Streaming instanced path"));
+        CHECK(String(stats.get("sort_route_label", String())).length() > 0);
+        CHECK(String(stats.get("cull_route_label", String())).length() > 0);
+        CHECK(String(stats.get("backend_selection_reason", String())) ==
+                String("submission_hint_resident:world_submission_not_feasible:resident_quantization_unsupported -> streaming_contract_published"));
+        CHECK(String(stats.get("backend_selection_reason_label", String())).find(
+                "Resident was requested by the world submission was not feasible because quantized resident data cannot publish the resident instance contract") != -1);
+        CHECK(String(stats.get("backend_selection_reason_label", String())).find(
+                "published the streaming instance contract") != -1);
+        CHECK(String(stats.get("cull_route_reason_label", String())) ==
+                String("Instance pipeline culling handled the frame"));
+
+        Array hud_lines = stats["performance_hud_lines"];
+        CHECK(has_prefixed_line(hud_lines, "Route: "));
+        CHECK(has_prefixed_line(hud_lines, "Sort Route: "));
+        CHECK(has_prefixed_line(hud_lines, "Cull Route: "));
+        CHECK(has_prefixed_line(hud_lines, "Backend Reason: "));
+        CHECK(has_prefixed_line(hud_lines, "Cull Reason: "));
+
+#ifdef TOOLS_ENABLED
+        GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+        CHECK(node != nullptr);
+        if (node != nullptr) {
+            const String summary = GaussianEditorServices::format_gaussian_splat_stats(node, renderer);
+            CHECK(summary.find("Render Route: Streaming instanced path [INSTANCE.STREAMING]") != -1);
+            CHECK(summary.find("Sort Route: ") != -1);
+            CHECK(summary.find("Cull Route: ") != -1);
+            CHECK(summary.find("Backend Reason: Resident was requested by the world submission") != -1);
+            CHECK(summary.find("Cull Reason: Instance pipeline culling handled the frame") != -1);
+            memdelete(node);
+        }
+#endif
 
         renderer.unref();
         memdelete(manager);
