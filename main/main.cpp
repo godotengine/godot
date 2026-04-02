@@ -4333,7 +4333,7 @@ int Main::start() {
 #endif
 
 	MainLoop *main_loop = nullptr;
-	if (editor) {
+	if (editor && script.is_empty()) {
 		main_loop = memnew(SceneTree);
 	}
 	if (main_loop_type.is_empty()) {
