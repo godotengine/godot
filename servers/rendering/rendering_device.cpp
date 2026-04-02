@@ -223,88 +223,97 @@ RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData>
 /**** ACCELERATION STRUCTURE ****/
 /********************************/
 
-RID RenderingDevice::blas_create(RID p_vertex_array, RID p_index_array, BitField<AccelerationStructureGeometryBits> p_geometry_bits, uint32_t p_position_attribute_location) {
+RID RenderingDevice::blas_create(Span<AccelerationStructureGeometry> p_geometries) {
 	ERR_FAIL_COND_V_MSG(!has_feature(SUPPORTS_RAYTRACING_PIPELINE) && !has_feature(SUPPORTS_RAY_QUERY), RID(), "The current rendering device has neither raytracing pipeline nor ray query support.");
 
-	VertexArray *vertex_array = vertex_array_owner.get_or_null(p_vertex_array);
-	ERR_FAIL_NULL_V(vertex_array, RID());
+	thread_local LocalVector<RDD::AccelerationStructureGeometry> rdd_geometries;
+	rdd_geometries.resize(p_geometries.size());
 
-	uint32_t position_binding = p_position_attribute_location;
-	RDD::VertexFormatID vertex_format;
+	Vector<RDG::ResourceTracker *> draw_trackers;
+	HashSet<RID> untracked_buffers;
 
-	if (vertex_array->description != INVALID_ID) {
-		ERR_FAIL_COND_V(!vertex_formats.has(vertex_array->description), RID());
-		const VertexDescriptionCache &vd_cache = vertex_formats[vertex_array->description];
-		vertex_format = vd_cache.driver_id;
+	for (uint64_t i = 0; i < p_geometries.size(); i++) {
+		const AccelerationStructureGeometry &rd_geometry = p_geometries[i];
+		if (rd_geometry.index_buffer.is_valid()) {
+			ERR_FAIL_COND_V_MSG((rd_geometry.index_count % 3) != 0, RID(), "An indexed geometry must have an index count that is a multiple of 3.");
+		} else {
+			ERR_FAIL_COND_V_MSG((rd_geometry.vertex_count % 3) != 0, RID(), "A non-indexed geometry must have a vertex count that is a multiple of 3.");
+		}
 
-		const VertexAttribute *position_attribute = nullptr;
-		for (int i = 0; i < vd_cache.vertex_formats.size(); i++) {
-			const VertexAttribute &attr = vd_cache.vertex_formats[i];
-			if (attr.location == p_position_attribute_location) {
-				position_attribute = &attr;
-				break;
+		RDD::AccelerationStructureGeometry &rdd_geometry = rdd_geometries[i];
+		rdd_geometry = {};
+		rdd_geometry.flags = rd_geometry.flags;
+
+		Buffer *vertex_buffer = vertex_buffer_owner.get_or_null(rd_geometry.vertex_buffer);
+		ERR_FAIL_NULL_V(vertex_buffer, RID());
+
+		ERR_FAIL_COND_V_MSG((rd_geometry.vertex_offset + rd_geometry.vertex_count * rd_geometry.vertex_stride) > vertex_buffer->size, RID(), "The specified vertex offset and count are outside the range of the vertex buffer.");
+		ERR_FAIL_COND_V_MSG(rd_geometry.vertex_format >= DataFormat::DATA_FORMAT_MAX, RID(), "An invalid vertex format was specified.");
+
+		rdd_geometry.vertex_buffer = vertex_buffer->driver_id;
+		rdd_geometry.vertex_offset = rd_geometry.vertex_offset;
+		rdd_geometry.vertex_stride = rd_geometry.vertex_stride;
+		rdd_geometry.vertex_count = rd_geometry.vertex_count;
+		rdd_geometry.vertex_format = rd_geometry.vertex_format;
+
+		if (vertex_buffer->draw_tracker != nullptr) {
+			draw_trackers.push_back(vertex_buffer->draw_tracker);
+		} else {
+			untracked_buffers.insert(rd_geometry.vertex_buffer);
+		}
+
+		_check_transfer_worker_buffer(vertex_buffer);
+
+		if (rd_geometry.index_buffer.is_valid()) {
+			IndexBuffer *index_buffer = index_buffer_owner.get_or_null(rd_geometry.index_buffer);
+			ERR_FAIL_NULL_V(index_buffer, RID());
+
+			uint32_t index_stride = (index_buffer->format == INDEX_BUFFER_FORMAT_UINT32 ? sizeof(uint32_t) : sizeof(uint16_t));
+			ERR_FAIL_COND_V_MSG((rd_geometry.index_offset + rd_geometry.index_count * index_stride) > index_buffer->size, RID(), "The specified index offset and count are outside the range of the index buffer.");
+			ERR_FAIL_COND_V_MSG(index_buffer->max_index >= rd_geometry.vertex_count, RID(), "The index buffer contains an index that is outside the specified vertex range.");
+
+			rdd_geometry.index_buffer = index_buffer->driver_id;
+			rdd_geometry.index_offset = rd_geometry.index_offset;
+			rdd_geometry.index_count = rd_geometry.index_count;
+			rdd_geometry.index_format = index_buffer->format;
+
+			if (index_buffer->draw_tracker != nullptr) {
+				draw_trackers.push_back(index_buffer->draw_tracker);
+			} else {
+				untracked_buffers.insert(rd_geometry.index_buffer);
 			}
+
+			_check_transfer_worker_buffer(index_buffer);
 		}
-		ERR_FAIL_NULL_V_MSG(position_attribute, RID(), vformat("Vertex array is missing a position attribute at location %u.", p_position_attribute_location));
-		ERR_FAIL_COND_V_MSG(position_attribute->frequency != VERTEX_FREQUENCY_VERTEX, RID(), vformat("Position attribute at location %u must use vertex frequency.", p_position_attribute_location));
-
-		if (position_attribute->binding != UINT32_MAX) {
-			position_binding = position_attribute->binding;
-		}
-	}
-
-	ERR_FAIL_COND_V_MSG(position_binding >= (uint32_t)vertex_array->buffers.size(), RID(), vformat("Vertex array is missing a buffer for binding %u.", position_binding));
-	RDD::BufferID vertex_buffer = vertex_array->buffers[position_binding];
-	uint64_t vertex_offset = vertex_array->offsets[position_binding];
-
-	// Indices are optional.
-	IndexArray *index_array = index_array_owner.get_or_null(p_index_array);
-	RDD::BufferID index_buffer = RDD::BufferID();
-	IndexBufferFormat index_format = IndexBufferFormat::INDEX_BUFFER_FORMAT_UINT32;
-	uint32_t index_offset_bytes = 0;
-	uint32_t index_count = 0;
-	if (index_array) {
-		index_buffer = index_array->driver_id;
-		index_format = index_array->format;
-		index_offset_bytes = index_array->offset * (index_array->format == INDEX_BUFFER_FORMAT_UINT16 ? sizeof(uint16_t) : sizeof(uint32_t));
-		index_count = index_array->indices;
 	}
 
 	AccelerationStructure acceleration_structure;
 	acceleration_structure.type = RDD::ACCELERATION_STRUCTURE_TYPE_BLAS;
-
-	BitField<RDD::AccelerationStructureGeometryBits> geometry_bits = 0;
-	if (p_geometry_bits.has_flag(ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE)) {
-		geometry_bits.set_flag(RDD::ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE);
-	}
-	if (p_geometry_bits.has_flag(ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION)) {
-		geometry_bits.set_flag(RDD::ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION);
-	}
-
-	acceleration_structure.driver_id = driver->blas_create(vertex_buffer, vertex_offset, vertex_format, vertex_array->vertex_count, p_position_attribute_location, index_buffer, index_format, index_offset_bytes, index_count, geometry_bits);
+	acceleration_structure.driver_id = driver->blas_create(rdd_geometries);
 	ERR_FAIL_COND_V_MSG(!acceleration_structure.driver_id, RID(), "Failed to create BLAS.");
-	acceleration_structure.vertex_array = p_vertex_array;
-	acceleration_structure.index_array = p_index_array;
 
 	acceleration_structure.draw_tracker = RDG::resource_tracker_create();
 	acceleration_structure.draw_tracker->acceleration_structure_driver_id = acceleration_structure.driver_id;
 	// Assume we are going to build this acceleration structure
 	acceleration_structure.draw_tracker->usage = RDG::RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE;
 
-	for (int i = 0; i < vertex_array->draw_trackers.size(); i++) {
-		acceleration_structure.draw_trackers.push_back(vertex_array->draw_trackers[i]);
-	}
-	_check_transfer_worker_vertex_array(vertex_array);
-
-	if (index_array && index_array->draw_tracker) {
-		acceleration_structure.draw_trackers.push_back(index_array->draw_tracker);
-	}
-	_check_transfer_worker_index_array(index_array);
+	acceleration_structure.draw_trackers = std::move(draw_trackers);
+	acceleration_structure.untracked_buffers = std::move(untracked_buffers);
 
 	RID id = acceleration_structure_owner.make_rid(acceleration_structure);
 #ifdef DEV_ENABLED
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
+
+	for (uint32_t i = 0; i < p_geometries.size(); i++) {
+		const AccelerationStructureGeometry &geometry = p_geometries[i];
+		_add_dependency(id, geometry.vertex_buffer);
+
+		if (geometry.index_buffer.is_valid()) {
+			_add_dependency(id, geometry.index_buffer);
+		}
+	}
+
 	return id;
 }
 
@@ -393,7 +402,6 @@ RID RenderingDevice::tlas_create(RID p_instances_buffer) {
 	acceleration_structure.type = RDD::ACCELERATION_STRUCTURE_TYPE_TLAS;
 	acceleration_structure.driver_id = driver->tlas_create(instances_buffer->buffer.driver_id);
 	ERR_FAIL_COND_V_MSG(!acceleration_structure.driver_id, RID(), "Failed to create TLAS.");
-	acceleration_structure.instances_buffer = p_instances_buffer;
 
 	acceleration_structure.draw_tracker = RDG::resource_tracker_create();
 	acceleration_structure.draw_tracker->acceleration_structure_driver_id = acceleration_structure.driver_id;
@@ -6858,6 +6866,18 @@ bool RenderingDevice::_uniform_set_make_mutable(UniformSet *p_uniform_set, RID p
 	}
 }
 
+bool RenderingDevice::_acceleration_structure_make_mutable(AccelerationStructure *p_acceleration_structure, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker) {
+	if (!p_acceleration_structure->untracked_buffers.has(p_resource_id)) {
+		// Acceleration structure thinks the buffer is already tracked or does not use it.
+		return false;
+	} else {
+		// Acceleration structure is aware of the buffer but it isn't being tracked.
+		p_acceleration_structure->draw_trackers.push_back(p_resource_tracker);
+		p_acceleration_structure->untracked_buffers.erase(p_resource_id);
+		return true;
+	}
+}
+
 bool RenderingDevice::_dependency_make_mutable(RID p_id, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker) {
 	if (texture_owner.owns(p_id)) {
 		Texture *texture = texture_owner.get_or_null(p_id);
@@ -6871,6 +6891,9 @@ bool RenderingDevice::_dependency_make_mutable(RID p_id, RID p_resource_id, RDG:
 	} else if (uniform_set_owner.owns(p_id)) {
 		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
 		return _uniform_set_make_mutable(uniform_set, p_resource_id, p_resource_tracker);
+	} else if (acceleration_structure_owner.owns(p_id)) {
+		AccelerationStructure *acceleration_structure = acceleration_structure_owner.get_or_null(p_id);
+		return _acceleration_structure_make_mutable(acceleration_structure, p_resource_id, p_resource_tracker);
 	} else {
 		DEV_ASSERT(false && "Unknown resource type to make mutable.");
 		return false;
@@ -7025,6 +7048,7 @@ void RenderingDevice::_free_internal(RID p_id) {
 		compute_pipeline_owner.free(p_id);
 	} else if (acceleration_structure_owner.owns(p_id)) {
 		AccelerationStructure *acceleration_structure = acceleration_structure_owner.get_or_null(p_id);
+		RDG::resource_tracker_free(acceleration_structure->draw_tracker);
 		frames[frame].acceleration_structures_to_dispose_of.push_back(*acceleration_structure);
 		acceleration_structure_owner.free(p_id);
 	} else if (raytracing_pipeline_owner.owns(p_id)) {
@@ -8396,7 +8420,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("raytracing_pipeline_create", "shader", "specialization_constants"), &RenderingDevice::_raytracing_pipeline_create, DEFVAL(TypedArray<RDPipelineSpecializationConstant>()));
 	ClassDB::bind_method(D_METHOD("raytracing_pipeline_is_valid", "raytracing_pipeline"), &RenderingDevice::raytracing_pipeline_is_valid);
 
-	ClassDB::bind_method(D_METHOD("blas_create", "vertex_array", "index_array", "geometry_bits", "position_attribute_location"), &RenderingDevice::blas_create, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("blas_create", "geometries"), &RenderingDevice::_blas_create);
 	ClassDB::bind_method(D_METHOD("tlas_instances_buffer_create", "instance_count", "creation_bits"), &RenderingDevice::tlas_instances_buffer_create, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("tlas_instances_buffer_fill", "instances_buffer", "blases", "transforms"), &RenderingDevice::_tlas_instances_buffer_fill);
 	ClassDB::bind_method(D_METHOD("tlas_create", "instances_buffer"), &RenderingDevice::tlas_create);
@@ -8856,8 +8880,8 @@ void RenderingDevice::_bind_methods() {
 	//BIND_BITFIELD_FLAG(BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT);
 	BIND_BITFIELD_FLAG(BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT);
 
-	BIND_BITFIELD_FLAG(ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE);
-	BIND_BITFIELD_FLAG(ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION);
+	BIND_BITFIELD_FLAG(ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT);
+	BIND_BITFIELD_FLAG(ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT);
 
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER); //for sampling only (sampler GLSL type)
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER_WITH_TEXTURE); // for sampling only); but includes a texture); (samplerXX GLSL type)); first a sampler then a texture
@@ -9331,6 +9355,19 @@ RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms
 
 Error RenderingDevice::_buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data) {
 	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr());
+}
+
+RID RenderingDevice::_blas_create(const TypedArray<RDAccelerationStructureGeometry> &p_geometries) {
+	thread_local LocalVector<AccelerationStructureGeometry> geometries;
+	geometries.resize(p_geometries.size());
+
+	for (int i = 0; i < p_geometries.size(); i++) {
+		Ref<RDAccelerationStructureGeometry> geometry = p_geometries[i];
+		ERR_FAIL_COND_V(geometry.is_null(), RID());
+		geometries[i] = geometry->base;
+	}
+
+	return blas_create(geometries);
 }
 
 void RenderingDevice::_tlas_instances_buffer_fill(RID p_instances_buffer, const TypedArray<RID> &p_blases, const TypedArray<Transform3D> &p_transforms) {

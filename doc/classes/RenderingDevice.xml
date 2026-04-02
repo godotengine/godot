@@ -31,14 +31,10 @@
 		</method>
 		<method name="blas_create">
 			<return type="RID" />
-			<param index="0" name="vertex_array" type="RID" />
-			<param index="1" name="index_array" type="RID" />
-			<param index="2" name="geometry_bits" type="int" enum="RenderingDevice.AccelerationStructureGeometryBits" is_bitfield="true" default="0" />
-			<param index="3" name="position_attribute_location" type="int" default="0" />
+			<param index="0" name="geometries" type="RDAccelerationStructureGeometry[]" />
 			<description>
 				Creates a new Bottom Level Acceleration Structure. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-				[param position_attribute_location] selects which vertex attribute location supplies the position data (default is 0).
 			</description>
 		</method>
 		<method name="buffer_clear">
@@ -763,7 +759,7 @@
 				assert(rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE))
 
 				# Create a BLAS for a mesh.
-				blas = rd.blas_create(vertex_array, index_array, RenderingDevice.ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE)
+				blas = rd.blas_create(geometries)
 				# Create TLAS with BLASs.
 				instances_buffer = rd.tlas_instances_buffer_create(1)
 				rd.tlas_instances_buffer_fill(instances_buffer, [blas], [Transform3D()])
@@ -2298,10 +2294,10 @@
 			[/gdscript]
 			[/codeblocks]
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE" value="1" enum="AccelerationStructureGeometryBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
 			An opaque geometry does not invoke the any hit shaders.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION" value="2" enum="AccelerationStructureGeometryBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT" value="2" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
 			This geometry only calls the any hit shader a single time for each primitive.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
