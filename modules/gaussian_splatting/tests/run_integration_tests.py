@@ -377,20 +377,20 @@ script = ExtResource("1")
 
         test_scenarios = [
             {
-                "name": "chunk_loading",
-                "description": "Test StreamingLODManager chunk loading"
+                "name": "hierarchy_queries",
+                "description": "Test HierarchicalSplatStructure build and query behavior"
             },
             {
-                "name": "hierarchical_clustering",
-                "description": "Test HierarchicalSplatStructure clustering"
+                "name": "hierarchy_parallel_build",
+                "description": "Test HierarchicalSplatStructure parallel-build fallback"
             },
             {
-                "name": "adaptive_selection",
-                "description": "Test adaptive LOD selection feeding renderer"
+                "name": "renderer_lod_culling",
+                "description": "Test renderer LOD bias and distance culling behavior"
             },
             {
-                "name": "memory_consistency",
-                "description": "Test memory consistency across LOD transitions"
+                "name": "node_quality_presets",
+                "description": "Test node-facing neutral quality and streaming config behavior"
             }
         ]
 

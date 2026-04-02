@@ -543,7 +543,7 @@ TEST_CASE("[GaussianSplatting][Importer] Ultra import initializes fresh node run
     CHECK(node->get_quality_preset() == GaussianSplatNode3D::QUALITY_CUSTOM);
     CHECK_MESSAGE(node->get_max_splat_count() >= source_count,
             "Fresh node should not re-cap a full-fidelity imported asset below its imported splat count.");
-    const GaussianSplatting::AdaptiveLODSystem::LODConfig &lod_config = node->get_lod_config();
+    const GaussianSplatting::GaussianSplatLODConfig &lod_config = node->get_lod_config();
     CHECK(lod_config.max_splats_per_frame >= (uint32_t)source_count);
     CHECK(lod_config.importance_threshold == doctest::Approx(0.0f));
     CHECK(lod_config.size_cull_threshold == doctest::Approx(0.0f));

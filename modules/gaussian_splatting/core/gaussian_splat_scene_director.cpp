@@ -547,6 +547,35 @@ bool GaussianSplatSceneDirector::_apply_world_submission_to_renderer(SharedWorld
 	return true;
 }
 
+bool GaussianSplatSceneDirector::_should_prune_world(const SharedWorld &p_world) const {
+	if (!p_world.instances.is_empty()) {
+		return false;
+	}
+	if (p_world.world_submission.active) {
+		return false;
+	}
+	if (p_world.renderer.is_null()) {
+		return true;
+	}
+
+	// Preserve the SharedWorld while some external owner (for example a node that
+	// temporarily left the tree, an active world node, or editor tooling) still
+	// holds the shared renderer Ref. Otherwise re-registration can desynchronize
+	// the director from that retained renderer.
+	return p_world.renderer->get_reference_count() <= 1;
+}
+
+void GaussianSplatSceneDirector::_prune_world_if_unused(const RID &p_scenario) {
+	const SharedWorld *world = worlds.getptr(p_scenario);
+	if (!world) {
+		return;
+	}
+	if (!_should_prune_world(*world)) {
+		return;
+	}
+	worlds.erase(p_scenario);
+}
+
 
 void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,
         const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags, bool p_casts_shadow,
@@ -814,21 +843,7 @@ void GaussianSplatSceneDirector::unregister_instance(ObjectID p_node_id) {
 	_release_asset_record(*world, asset_id);
 	_bump_instance_generation(world->instance_generation);
 
-	// Free the SharedWorld (and its renderer's GPU resources) once the
-	// last instance leaves.  This prevents GPU resource accumulation
-	// across F6 runtime cycles.
-	if (world->instances.is_empty()) {
-		RID erase_key;
-		for (const KeyValue<RID, SharedWorld> &kv : worlds) {
-			if (&kv.value == world) {
-				erase_key = kv.key;
-				break;
-			}
-		}
-		if (erase_key.is_valid()) {
-			worlds.erase(erase_key);
-		}
-	}
+	_prune_world_if_unused(world->scenario);
 }
 
 void GaussianSplatSceneDirector::register_instance_submission(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,
@@ -1337,7 +1352,9 @@ void GaussianSplatSceneDirector::unregister_world_submission(ObjectID p_owner_id
 	if (!world) {
 		return;
 	}
+	const RID scenario = world->scenario;
 	world->world_submission = SharedWorld::WorldSubmissionRecord();
+	_prune_world_if_unused(scenario);
 }
 
 void GaussianSplatSceneDirector::release_world_submission(ObjectID p_owner_id) {
@@ -1346,8 +1363,10 @@ void GaussianSplatSceneDirector::release_world_submission(ObjectID p_owner_id) {
 	if (!world) {
 		return;
 	}
+	const RID scenario = world->scenario;
 	_clear_world_submission_renderer(*world);
 	world->world_submission = SharedWorld::WorldSubmissionRecord();
+	_prune_world_if_unused(scenario);
 }
 
 bool GaussianSplatSceneDirector::get_world_submission(ObjectID p_owner_id, WorldSubmission *r_submission) const {

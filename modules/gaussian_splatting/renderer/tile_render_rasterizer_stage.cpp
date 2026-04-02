@@ -132,6 +132,9 @@ uint64_t TileRenderer::TileRasterizerStage::dispatch_tile_rasterizer(uint32_t p_
     if (!submission_device) {
         return 0;
     }
+    if (!p_buffer_uniform_set.is_valid() || !p_param_uniform_set.is_valid()) {
+        return 0;
+    }
 
     if (owner.shader_resources.tile_raster_pipeline.is_valid() &&
             owner.render_targets.tile_framebuffer_format != submission_device->framebuffer_get_format(owner.render_targets.tile_framebuffer)) {
@@ -275,7 +278,9 @@ RID TileRenderer::TileRasterizerStage::acquire_raster_buffer_uniform_set(Renderi
             cached_generation == owner.descriptor_generation &&
             cached_raster_buffer_device == p_device &&
             cached_raster_gaussian_buffer == p_gaussian_buffer &&
-            cached_raster_sorted_indices == p_sorted_indices) {
+            cached_raster_sorted_indices == p_sorted_indices &&
+            cached_raster_splat_ref_buffer == owner.instance_pipeline_buffers.splat_ref_buffer &&
+            cached_raster_indirect_count_buffer == owner.instance_pipeline_buffers.indirect_count_buffer) {
         return cached_raster_buffer_uniform_set;
     }
 
@@ -365,6 +370,8 @@ RID TileRenderer::TileRasterizerStage::acquire_raster_buffer_uniform_set(Renderi
 	p_device->set_resource_name(cached_raster_buffer_uniform_set, "GS_TileRenderer_RasterBufferSet");
     cached_raster_gaussian_buffer = p_gaussian_buffer;
     cached_raster_sorted_indices = p_sorted_indices;
+    cached_raster_splat_ref_buffer = owner.instance_pipeline_buffers.splat_ref_buffer;
+    cached_raster_indirect_count_buffer = owner.instance_pipeline_buffers.indirect_count_buffer;
     cached_raster_buffer_device = p_device;
     cached_generation = owner.descriptor_generation;
 
@@ -392,7 +399,9 @@ RID TileRenderer::TileRasterizerStage::acquire_raster_compute_buffer_uniform_set
             cached_generation == owner.descriptor_generation &&
             cached_raster_compute_buffer_device == p_device &&
             cached_raster_compute_gaussian_buffer == p_gaussian_buffer &&
-            cached_raster_compute_sorted_indices == p_sorted_indices) {
+            cached_raster_compute_sorted_indices == p_sorted_indices &&
+            cached_raster_compute_splat_ref_buffer == owner.instance_pipeline_buffers.splat_ref_buffer &&
+            cached_raster_compute_indirect_count_buffer == owner.instance_pipeline_buffers.indirect_count_buffer) {
         return cached_raster_compute_buffer_uniform_set;
     }
 
@@ -482,6 +491,8 @@ RID TileRenderer::TileRasterizerStage::acquire_raster_compute_buffer_uniform_set
     p_device->set_resource_name(cached_raster_compute_buffer_uniform_set, "GS_TileRenderer_RasterComputeBufferSet");
     cached_raster_compute_gaussian_buffer = p_gaussian_buffer;
     cached_raster_compute_sorted_indices = p_sorted_indices;
+    cached_raster_compute_splat_ref_buffer = owner.instance_pipeline_buffers.splat_ref_buffer;
+    cached_raster_compute_indirect_count_buffer = owner.instance_pipeline_buffers.indirect_count_buffer;
     cached_raster_compute_buffer_device = p_device;
     cached_generation = owner.descriptor_generation;
 

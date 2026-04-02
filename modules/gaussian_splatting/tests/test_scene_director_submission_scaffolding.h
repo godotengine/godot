@@ -973,4 +973,137 @@ TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Active world residency 
 	}
 }
 
+TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Shared renderer survives temporary last-instance unregister") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	Ref<World3D> world = root->get_world_3d();
+	REQUIRE(world.is_valid());
+
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+	const GaussianSplatSceneDirector::SubmissionCounts baseline_counts = director->get_submission_counts();
+
+	GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+	REQUIRE(node != nullptr);
+	node->set_splat_asset(stage1a_make_submission_test_asset(6.0f));
+	root->add_child(node);
+	tree->process(0.0);
+
+	Ref<GaussianSplatRenderer> retained_renderer = node->get_renderer();
+	if (!retained_renderer.is_valid()) {
+		MESSAGE("Skipping renderer-retention test - shared renderer unavailable");
+		root->remove_child(node);
+		memdelete(node);
+		tree->process(0.0);
+		if (owns_director) {
+			memdelete(director);
+		}
+		return;
+	}
+
+	CHECK(director->get_submission_counts().instance_submissions == baseline_counts.instance_submissions + 1);
+
+	root->remove_child(node);
+	tree->process(0.0);
+
+	CHECK(director->get_submission_counts().instance_submissions == baseline_counts.instance_submissions);
+
+	Ref<GaussianSplatRenderer> shared_renderer = director->get_shared_renderer(world.ptr());
+	CHECK(shared_renderer == retained_renderer);
+
+	root->add_child(node);
+	tree->process(0.0);
+
+	CHECK(node->get_renderer() == retained_renderer);
+	CHECK(director->get_submission_counts().instance_submissions == baseline_counts.instance_submissions + 1);
+
+	root->remove_child(node);
+	memdelete(node);
+	tree->process(0.0);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
+TEST_CASE("[GaussianSplatting][SceneDirector][SceneTree] Active world submission survives last-instance unregister") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+	Window *root = tree->get_root();
+	REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+	Ref<World3D> world = root->get_world_3d();
+	REQUIRE(world.is_valid());
+
+	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+	const bool owns_director = (director == nullptr);
+	if (!director) {
+		director = memnew(GaussianSplatSceneDirector);
+	}
+	REQUIRE(director != nullptr);
+
+	Ref<GaussianSplatWorld> world_resource;
+	world_resource.instantiate();
+	world_resource->set_gaussian_data(stage1a_make_submission_test_data(8, 4.0f));
+	Vector<GaussianSplatRenderer::StaticChunk> chunks;
+	chunks.push_back(stage1a_make_submission_test_chunk(0));
+	world_resource->set_static_chunks(chunks);
+
+	GaussianSplatWorld3D *world_node = memnew(GaussianSplatWorld3D);
+	GaussianSplatNode3D *instance_node = memnew(GaussianSplatNode3D);
+	REQUIRE(world_node != nullptr);
+	REQUIRE(instance_node != nullptr);
+	world_node->set_auto_apply_on_ready(false);
+	world_node->set_world(world_resource);
+	instance_node->set_splat_asset(stage1a_make_submission_test_asset(18.0f));
+	root->add_child(world_node);
+	root->add_child(instance_node);
+	tree->process(0.0);
+	world_node->apply_world();
+
+	Ref<GaussianSplatRenderer> renderer = world_node->get_renderer();
+	if (!renderer.is_valid()) {
+		MESSAGE("Skipping active-world retention test - renderer unavailable");
+		root->remove_child(world_node);
+		root->remove_child(instance_node);
+		memdelete(world_node);
+		memdelete(instance_node);
+		tree->process(0.0);
+		if (owns_director) {
+			memdelete(director);
+		}
+		return;
+	}
+
+	GaussianSplatSceneDirector::WorldSubmission queried_submission;
+	CHECK(director->has_world_submission_for_renderer(renderer.ptr()));
+	CHECK(director->get_world_submission_for_scenario(world->get_scenario(), &queried_submission));
+
+	root->remove_child(instance_node);
+	tree->process(0.0);
+
+	CHECK(director->has_world_submission_for_renderer(renderer.ptr()));
+	CHECK(director->get_world_submission_for_scenario(world->get_scenario(), &queried_submission));
+	CHECK(director->get_shared_renderer(world.ptr()) == renderer);
+
+	world_node->clear_world();
+	root->remove_child(world_node);
+	memdelete(world_node);
+	memdelete(instance_node);
+	tree->process(0.0);
+
+	if (owns_director) {
+		memdelete(director);
+	}
+}
+
 #endif // TESTS_ENABLED || TOOLS_ENABLED

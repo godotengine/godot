@@ -14,8 +14,9 @@
 #include "../renderer/pipeline_feature_set.h"
 #include "../renderer/sorting_config.h"
 #include "../renderer/gpu_sorter.h"
-#include "../lod/adaptive_lod_system.h"
+#include "../core/gaussian_splat_quality_config.h"
 #include "../interfaces/gpu_culler.h"
+#include "../lod/lod_config.h"
 
 #include <limits>
 
@@ -438,43 +439,131 @@ TEST_CASE("[GaussianSplatting][Config] SortKeyConfig bit allocation consistency"
 }
 
 // =============================================================================
-// LODConfig Validation Tests (GaussianSplatting::AdaptiveLODSystem::LODConfig)
+// Live LODConfig validation
 // =============================================================================
 
-TEST_CASE("[GaussianSplatting][Config] LODConfig distance thresholds ordering") {
-	using namespace GaussianSplatting;
-	AdaptiveLODSystem::LODConfig config;
+TEST_CASE("[GaussianSplatting][Config] LODConfig calculate_lod_level handles disabled and near-zero distances") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.enabled = false;
 
-	// Default values should be properly ordered
+	CHECK(config.calculate_lod_level(0.0f) == 0);
+	CHECK(config.calculate_lod_level(25.0f) == 0);
+	CHECK(config.calculate_lod_level(100.0f) == 0);
+
+	config.enabled = true;
+
+	CHECK(config.calculate_lod_level(0.0f) == 0);
+	CHECK(config.calculate_lod_level(0.0001f) == 0);
+	CHECK(config.calculate_lod_level(0.001f) == 0);
+	CHECK(config.calculate_lod_level(12.5f) == 0);
+}
+
+TEST_CASE("[GaussianSplatting][Config] LODConfig calculate_lod_level boundary mapping is explicit") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.enabled = true;
+	config.num_levels = 4;
+	config.max_distance = 100.0f;
+	config.base_threshold = 10.0f;
+
+	CHECK(config.calculate_lod_level(24.9999f) == 0);
+	CHECK_MESSAGE(config.calculate_lod_level(25.0f) == 1,
+			"Exact 25.0 enters LOD 1 because calculate_lod_level() is driven by max_distance/num_levels.");
+	CHECK(config.calculate_lod_level(25.0001f) == 1);
+	CHECK(config.calculate_lod_level(49.9999f) == 1);
+	CHECK_MESSAGE(config.calculate_lod_level(50.0f) == 2,
+			"Exact 50.0 enters LOD 2 under the current live floor/clamp mapping.");
+	CHECK(config.calculate_lod_level(50.0001f) == 2);
+	CHECK(config.calculate_lod_level(99.9999f) == 2);
+	CHECK_MESSAGE(config.calculate_lod_level(100.0f) == 3,
+			"Exact max_distance lands on the farthest LOD level in the live implementation.");
+	CHECK(config.calculate_lod_level(100.0001f) == 3);
+	CHECK(config.calculate_lod_level(1000.0f) == 3);
+}
+
+TEST_CASE("[GaussianSplatting][Config] LODConfig distance thresholds follow base-threshold progression") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.base_threshold = 10.0f;
+	config.max_distance = 100.0f;
+
+	CHECK(config.get_distance_threshold(-1) == doctest::Approx(10.0f));
+	CHECK(config.get_distance_threshold(0) == doctest::Approx(10.0f));
+	CHECK(config.get_distance_threshold(1) == doctest::Approx(20.0f));
+	CHECK(config.get_distance_threshold(2) == doctest::Approx(40.0f));
+	CHECK(config.get_distance_threshold(3) == doctest::Approx(80.0f));
+	CHECK_MESSAGE(config.get_distance_threshold(4) == doctest::Approx(100.0f),
+			"Distance thresholds double from base_threshold and clamp at max_distance.");
+}
+
+TEST_CASE("[GaussianSplatting][Config] LODConfig helper mappings match the live implementation") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.base_threshold = 10.0f;
+	config.max_distance = 100.0f;
+
+	CHECK(config.get_splat_skip_factor(0) == 1);
+	CHECK(config.get_splat_skip_factor(1) == 2);
+	CHECK(config.get_splat_skip_factor(2) == 4);
+	CHECK(config.get_splat_skip_factor(3) == 8);
+
+	config.splat_skip_enabled = false;
+	CHECK(config.get_splat_skip_factor(3) == 1);
+	config.splat_skip_enabled = true;
+
+	CHECK(config.get_sh_band_for_lod(0) == 3);
+	CHECK(config.get_sh_band_for_lod(1) == 2);
+	CHECK(config.get_sh_band_for_lod(2) == 1);
+	CHECK(config.get_sh_band_for_lod(3) == 0);
+	CHECK(config.get_sh_band_for_lod(4) == 0);
+
+	config.sh_reduction_enabled = false;
+	CHECK(config.get_sh_band_for_lod(3) == 3);
+	config.sh_reduction_enabled = true;
+
+	CHECK(config.get_opacity_multiplier(0.0f) == doctest::Approx(1.0f));
+	CHECK(config.get_opacity_multiplier(10.0f) == doctest::Approx(1.0f));
+	CHECK(config.get_opacity_multiplier(55.0f) == doctest::Approx(0.5f));
+	CHECK(config.get_opacity_multiplier(100.0f) == doctest::Approx(0.0f));
+	CHECK(config.get_opacity_multiplier(120.0f) == doctest::Approx(0.0f));
+
+	config.opacity_fade_enabled = false;
+	CHECK(config.get_opacity_multiplier(55.0f) == doctest::Approx(1.0f));
+}
+
+// =============================================================================
+// Node-facing LOD/Streaming config validation
+// =============================================================================
+
+TEST_CASE("[GaussianSplatting][Config] GaussianSplatLODConfig defaults match live node expectations") {
+	using namespace GaussianSplatting;
+	GaussianSplatLODConfig config;
+
 	CHECK(config.lod0_distance < config.lod1_distance);
 	CHECK(config.lod1_distance < config.lod2_distance);
 	CHECK(config.lod2_distance < config.lod3_distance);
 	CHECK(config.lod3_distance < config.cull_distance);
-}
-
-TEST_CASE("[GaussianSplatting][Config] LODConfig budget constraints") {
-	using namespace GaussianSplatting;
-	AdaptiveLODSystem::LODConfig config;
-
-	// Budget constraints should be sensible
 	CHECK(config.min_splats_per_frame < config.max_splats_per_frame);
-	CHECK(config.max_splats_per_frame > 0);
-	CHECK(config.min_splats_per_frame > 0);
-}
-
-TEST_CASE("[GaussianSplatting][Config] LODConfig threshold values") {
-	using namespace GaussianSplatting;
-	AdaptiveLODSystem::LODConfig config;
-
-	// Thresholds should be in valid ranges
 	CHECK(config.importance_threshold >= 0.0f);
 	CHECK(config.importance_threshold <= 1.0f);
 	CHECK(config.size_cull_threshold > 0.0f);
 	CHECK(config.lod_bias > 0.0f);
-	CHECK(config.transition_time >= 0.0f);
-	CHECK(config.target_framerate > 0.0f);
-	CHECK(config.quality_adjustment_rate > 0.0f);
-	CHECK(config.quality_adjustment_rate <= 1.0f);
+}
+
+TEST_CASE("[GaussianSplatting][Config] GaussianSplatStreamingConfig defaults match live node expectations") {
+	using namespace GaussianSplatting;
+	GaussianSplatStreamingConfig config;
+
+	CHECK(config.max_gpu_memory > 0);
+	CHECK(config.target_gpu_memory > 0);
+	CHECK(config.target_gpu_memory <= config.max_gpu_memory);
+	CHECK(config.max_cpu_memory >= config.max_gpu_memory);
+	CHECK(config.load_ahead_distance > 0.0f);
+	CHECK(config.unload_distance > config.load_ahead_distance);
+	CHECK(config.max_concurrent_loads > 0);
+	CHECK(config.num_lod_levels >= 2);
+	CHECK(config.stream_budget_ms > 0);
 }
 
 // =============================================================================

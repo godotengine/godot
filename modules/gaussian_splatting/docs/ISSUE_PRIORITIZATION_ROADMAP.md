@@ -48,7 +48,7 @@ The most impactful path is to fix correctness bugs and QA blockers first, then e
 | #747 | Consolidate GaussianSplatAsset and GaussianData | 2-4w | Removes conversion complexity and bugs. |
 | #797 | Compute rasterizer tile artifacts at distance | 1-2w | High-visibility quality regression. |
 | #798 | Decouple max_splat_count from streaming chunk budget | 1-2w | Restores correct scaling and tuning. |
-| #806 | LOD compression in StreamingLODManager | 2-4w | Big memory win for large scenes. |
+| #806 | LOD compression for the live streaming path | 2-4w | Big memory win for large scenes. |
 | #810 | Integrate splat depth buffer with Godot scene depth | 2-4w | Enables mesh+splat compositing. |
 | #811 | Mip-Splatting for anti-aliasing and zoom stability | 2-4w | Major quality improvement. |
 | #812 | Vector Quantization compression | 3-6w | Significant memory reduction. |
@@ -165,7 +165,7 @@ Key dependencies:
 | P0 | #810 | Integrate splat depth buffer with Godot scene depth | 2-4w |
 | P0 | #811 | Mip-Splatting for anti-aliasing and zoom stability | 2-4w |
 | P1 | #815 | Painterly pipeline stability review | 1-2w |
-| P1 | #806 | LOD compression in StreamingLODManager | 2-4w |
+| P1 | #806 | LOD compression for the live streaming path | 2-4w |
 | P1 | #812 | Vector Quantization compression (research spike + plan) | 1-2w |
 
 **Success Criteria**: Mesh+splat compositing works with depth, zoomed views are stable, painterly mode has defined test coverage, LOD memory reduction quantified.

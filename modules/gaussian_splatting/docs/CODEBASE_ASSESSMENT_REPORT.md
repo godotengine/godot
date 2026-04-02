@@ -47,7 +47,6 @@ There are explicit correctness risks in multi-threaded code paths (LOD async loa
 | Issue | Location | Severity | Description |
 |-------|----------|----------|-------------|
 | GPU buffer leak risk in sorting pipeline | modules/gaussian_splatting/interfaces/gpu_sorting_pipeline.cpp:1880-1886 | Critical | Commented warning states owned buffers can become "external" and then be forgotten, leaking ~2 StorageBuffer RIDs per frame. Must fix ownership semantics and add regression tests. |
-| Async LOD worker mutates shared state without synchronization | modules/gaussian_splatting/lod/streaming_lod_manager.cpp:326-344, 544-567, 434-474 | Critical | Background thread calls `stream_lod_level` and writes `lod_levels` while the main thread reads/writes the same structure. This is a data race and can corrupt state or crash. |
 | Async pack threads read non-thread-safe GaussianData | modules/gaussian_splatting/core/gaussian_streaming.cpp:1691-1735; modules/gaussian_splatting/core/gaussian_data.h:225-237; modules/gaussian_splatting/core/gaussian_data.cpp:355-356 | Critical | Pack threads read Gaussian storage and SH pointers without locking. The class explicitly states most methods are not thread-safe and the SH pointer getter does not lock. This is unsafe if data is edited or reloaded concurrently. |
 
 ## Major Concerns (Should Fix)
@@ -96,8 +95,6 @@ There are explicit correctness risks in multi-threaded code paths (LOD async loa
   - modules/gaussian_splatting/core/gaussian_streaming.cpp:2292-2485
 
 ## Thread Safety Concerns
-- Async LOD loading thread writes `lod_levels` without synchronization while main thread reads/updates priorities.
-  - modules/gaussian_splatting/lod/streaming_lod_manager.cpp:326-344, 434-474, 544-567
 - Streaming pack threads read GaussianData without locking even though the class declares most methods not thread-safe and provides only SH mutex protection.
   - modules/gaussian_splatting/core/gaussian_streaming.cpp:1691-1735
   - modules/gaussian_splatting/core/gaussian_data.h:225-237

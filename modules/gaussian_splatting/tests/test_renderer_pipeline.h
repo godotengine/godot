@@ -908,13 +908,21 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] RenderSceneInstance drives GPU strea
     }
 
     CHECK(visible_splat_count > 0);
+    CHECK(renderer->is_instance_contract_ready());
+    const GaussianRenderPipeline::InstancePipelineBuffers &streaming_buffers =
+            renderer->get_instance_pipeline_buffers();
+    CHECK(streaming_buffers.instance_buffer.is_valid());
+    CHECK(streaming_buffers.instance_count > 0);
 
     Dictionary stats = renderer->get_render_stats();
+    CHECK(stats.get("route_uid", String()) == String(RenderRouteUID::INSTANCE_STREAMING));
     CHECK(stats.get("using_real_data", false));
     const String data_source = stats.get("data_source", String());
     bool valid_data_source = (data_source == String("StreamingGPU")) || (data_source == String("GPUBufferManager"));
     CHECK_MESSAGE(valid_data_source, vformat("Unexpected render stats data_source: %s", data_source));
     CHECK(stats.get("gpu_sorter_ready", false));
+    CHECK(bool(stats.get("instance_contract_ready", false)));
+    CHECK(stats.get("instance_contract_shape", String()) == String("atlas_emulation"));
 
     Dictionary sort_metrics = renderer->get_last_sort_metrics();
     CHECK(sort_metrics.has("elements"));
@@ -1088,14 +1096,21 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] World static chunks keep streaming i
     }
 
     Dictionary stats = renderer->get_render_stats();
+    CHECK_MESSAGE(stats.get("route_uid", String()) == String(RenderRouteUID::INSTANCE_STREAMING),
+            "Expected route UID to report the streaming instance path");
     CHECK_MESSAGE(stats.get("cull_route_uid", String()) == String(RenderRouteUID::INSTANCE_CULL_GPU),
             "Expected cull route UID to report the instance pipeline");
     CHECK_MESSAGE(stats.get("cull_route_reason", String()) == String("instance_pipeline_active"),
             "Expected cull route reason to report the instance pipeline");
+    CHECK(bool(stats.get("instance_contract_ready", false)));
 
     CHECK_MESSAGE(instance_buffers_ready,
             "Expected instance pipeline buffers to become ready for world/static-chunk streaming without SceneDirector instances");
     const GaussianRenderPipeline::InstancePipelineBuffers &buffers = renderer->get_instance_pipeline_buffers();
+    CHECK_MESSAGE(renderer->is_instance_contract_ready(),
+            "Expected world/static-chunk streaming to publish a ready instance contract");
+    CHECK_MESSAGE(buffers.instance_buffer.is_valid(),
+            "Expected streaming instance buffer upload to complete before readiness validation");
     CHECK_MESSAGE(buffers.instance_count > 0, "Expected instance pipeline to synthesize at least one instance for world/static-chunk streaming");
     CHECK_MESSAGE(buffers.max_visible_chunks > 0, "Expected world/static-chunk streaming buffers to expose visible chunk capacity");
 

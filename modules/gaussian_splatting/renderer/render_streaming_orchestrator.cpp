@@ -1794,33 +1794,57 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 
 		const bool atlas_buffers_required = !instance_pipeline_assets_cache.is_empty();
 		instance_buffers_atlas_required = atlas_buffers_required;
+		const PublishedInstanceAssetRemap published_remap = _build_streaming_instance_asset_remap(
+				streaming_system, instance_pipeline_assets_cache, instance_pipeline_instance_cache,
+				base_content_generation);
+		const bool atlas_ready_preupload = GaussianSplatting::InstancePipelineContract::has_atlas_buffers(buffers);
+		if (atlas_ready_preupload) {
+			if (trace_enabled) {
+				GaussianSplatting::debug_trace_record_event("instance_pipeline",
+						"InstanceBufferCheck atlas ready - publish_instance_pipeline_contract",
+						false);
+			}
+			renderer->publish_instance_pipeline_contract(
+					buffers,
+					published_remap,
+					InstanceBackendPolicy::STREAMING,
+					base_content_generation,
+					"atlas_emulation");
+			if (!(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache)) {
+				buffers = renderer->get_instance_pipeline_buffers();
+				renderer->clear_instance_pipeline_buffers();
+			} else {
+				buffers = renderer->get_instance_pipeline_buffers();
+			}
+		}
+
 		const bool atlas_ready = GaussianSplatting::InstancePipelineContract::has_atlas_buffers(buffers);
 		const bool cull_ready = GaussianSplatting::InstancePipelineContract::has_cull_buffers(buffers);
 		const bool sort_ready = GaussianSplatting::InstancePipelineContract::has_sort_buffers(buffers);
 		const bool raster_ready = GaussianSplatting::InstancePipelineContract::has_raster_buffers(buffers);
-			stream_readiness_state = StreamingReadinessState::READY;
-			if (!atlas_ready) {
-				stream_readiness_state = StreamingReadinessState::MISSING_ATLAS_INPUTS;
+		stream_readiness_state = StreamingReadinessState::READY;
+		if (!atlas_ready) {
+			stream_readiness_state = StreamingReadinessState::MISSING_ATLAS_INPUTS;
 		} else if (!cull_ready) {
 			stream_readiness_state = StreamingReadinessState::MISSING_CULL_INPUTS;
 		} else if (!sort_ready) {
 			stream_readiness_state = StreamingReadinessState::MISSING_SORT_INPUTS;
-			} else if (!raster_ready) {
-				stream_readiness_state = StreamingReadinessState::MISSING_RASTER_INPUTS;
-			}
-			const InvariantViolationReason atlas_violation_reason = atlas_buffers_required
-					? GaussianSplatting::InstancePipelineContract::first_atlas_violation(buffers)
-					: InvariantViolationReason::NONE;
+		} else if (!raster_ready) {
+			stream_readiness_state = StreamingReadinessState::MISSING_RASTER_INPUTS;
+		}
+		const InvariantViolationReason atlas_violation_reason = atlas_buffers_required
+				? GaussianSplatting::InstancePipelineContract::first_atlas_violation(buffers)
+				: InvariantViolationReason::NONE;
 		const InvariantViolationReason cull_violation_reason = cull_ready
 				? InvariantViolationReason::NONE
 				: GaussianSplatting::InstancePipelineContract::first_cull_violation(buffers);
 		const InvariantViolationReason sort_violation_reason = sort_ready
 				? InvariantViolationReason::NONE
-					: GaussianSplatting::InstancePipelineContract::first_sort_violation(buffers);
-			const InvariantViolationReason raster_violation_reason = raster_ready
-					? InvariantViolationReason::NONE
-					: GaussianSplatting::InstancePipelineContract::first_raster_violation(buffers);
-			instance_buffers_atlas_ready = atlas_ready;
+				: GaussianSplatting::InstancePipelineContract::first_sort_violation(buffers);
+		const InvariantViolationReason raster_violation_reason = raster_ready
+				? InvariantViolationReason::NONE
+				: GaussianSplatting::InstancePipelineContract::first_raster_violation(buffers);
+		instance_buffers_atlas_ready = atlas_ready;
 		instance_buffers_cull_ready = cull_ready;
 		instance_buffers_sort_ready = sort_ready;
 		instance_buffers_raster_ready = raster_ready;
@@ -1908,6 +1932,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 					GaussianSplatting::InstancePipelineContract::get_violation_class(p_reason));
 			const char *reason_name = GaussianSplatting::InstancePipelineContract::get_violation_reason_name(p_reason);
 			const bool expected_zero_instance_warmup_reason =
+					instance_pipeline_instance_count == 0 ||
 					p_reason == InvariantViolationReason::CULL_INSTANCE_COUNT_ZERO;
 			if (should_emit_log) {
 				if (expected_zero_instance_warmup_reason) {
@@ -1943,6 +1968,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 				_is_impossible_streaming_activation_violation(
 						instance_pipeline_instance_count,
 						activation_violation)) {
+			renderer->clear_instance_pipeline_buffers();
 			renderer->instance_pipeline_buffers = buffers;
 			renderer->instance_pipeline_buffers_valid = false;
 			resource_state.instance_pipeline_content_generation = _mix_content_generation(
@@ -1973,10 +1999,6 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 					instance_invariant_reason));
 		}
 
-		const PublishedInstanceAssetRemap published_remap = _build_streaming_instance_asset_remap(
-				streaming_system, instance_pipeline_assets_cache, instance_pipeline_instance_cache,
-				base_content_generation);
-
 		if (stream_readiness_state == StreamingReadinessState::MISSING_ATLAS_INPUTS) {
 			if (atlas_buffers_required) {
 				WARN_PRINT_ONCE("[GaussianSplatRenderer] Instance pipeline requires global atlas buffers; streaming not ready.");
@@ -1985,23 +2007,8 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			renderer->instance_pipeline_buffers = buffers;
 			renderer->instance_pipeline_buffers_valid = false;
 		} else if (stream_readiness_state == StreamingReadinessState::READY) {
-			if (trace_enabled) {
-				GaussianSplatting::debug_trace_record_event("instance_pipeline",
-						"InstanceBufferCheck READY - publish_instance_pipeline_contract",
-						false);
-			}
-			renderer->publish_instance_pipeline_contract(
-					buffers,
-					published_remap,
-					InstanceBackendPolicy::STREAMING,
-					base_content_generation,
-					"atlas_emulation");
-			if (!(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache)) {
-				renderer->clear_instance_pipeline_buffers();
-				renderer->instance_pipeline_buffers = buffers;
-				renderer->instance_pipeline_buffers_valid = false;
-				stream_readiness_state = StreamingReadinessState::MISSING_CULL_INPUTS;
-			}
+			// Contract publication and instance-buffer upload must happen before
+			// readiness validation so instance_buffer can satisfy cull/sort/raster.
 		} else {
 			if (trace_enabled) {
 				GaussianSplatting::debug_trace_record_event("instance_pipeline",
