@@ -16,8 +16,8 @@ config/features=PackedStringArray("4.5")
 
 [display]
 
-window/size/viewport_width=3840
-window/size/viewport_height=2160
+window/size/viewport_width=1920
+window/size/viewport_height=1080
 window/vsync/vsync_mode=0
 
 [editor_plugins]
@@ -26,12 +26,11 @@ enabled=PackedStringArray()
 
 [rendering]
 
-gaussian_splatting/gpu_sorting/max_overlap_records=30000000
+gaussian_splatting/gpu_sorting/max_overlap_records=5000000
 gaussian_splatting/gpu_sorting/key_bits=32
 gaussian_splatting/gpu_sorting/tile_bits=16
 gaussian_splatting/gpu_sorting/depth_bits=16
 gaussian_splatting/gpu_sorting/enable_tie_breaker=true
-gaussian_splatting/gpu_sorting/enable_compute_raster=true
 gaussian_splatting/pipeline/enable_tighter_bounds=true
 gaussian_splatting/lod/max_distance=50.0
 gaussian_splatting/lod/base_threshold=5.0
@@ -46,7 +45,8 @@ gaussian_splatting/quality/tier_apply_streaming_budgets=false
 gaussian_splatting/streaming/pack_worker_threads=4
 gaussian_splatting/streaming/eviction_hysteresis_frames=30
 gaussian_splatting/streaming/async_io_enabled=true
-gaussian_splatting/streaming/vram_budget_mb=2048
+gaussian_splatting/streaming/vram_budget_mb=512
+gaussian_splatting/streaming/max_chunks_in_vram=16
 gaussian_splatting/streaming/auto_regulate_enabled=false
 rendering/driver/threads/thread_model=1
 gaussian_splatting/instance_pipeline/enabled=true
