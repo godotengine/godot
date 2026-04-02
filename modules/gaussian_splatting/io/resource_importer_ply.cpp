@@ -464,10 +464,9 @@ Error ResourceImporterPLY::import(ResourceUID::ID p_source_id, const String &p_s
 
     if (r_gen_files) {
         r_gen_files->push_back(save_path);
-        // Register the .gsplatworld cache written by PLYLoader::write_cache()
-        // so Godot's import system treats it as a generated artifact rather
-        // than a separate importable resource.
-        String cache_path = p_source_file.get_basename() + ".gsplatworld";
+        // Register the .gsplatcache written by PLYLoader::write_cache()
+        // so Godot's import system treats it as a generated artifact.
+        String cache_path = p_source_file.get_basename() + ".gsplatcache";
         if (FileAccess::exists(cache_path)) {
             r_gen_files->push_back(cache_path);
         }

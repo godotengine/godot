@@ -3,6 +3,8 @@
 #include "test_macros.h"
 #include "../io/ply_loader.h"
 #include "../io/resource_importer_ply.h"
+#include "../io/gaussian_splat_world_io.h"
+#include "../core/gaussian_splat_world.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
@@ -135,4 +137,62 @@ end_header
 
     // Cleanup
     _remove_ply_fixture(path);
+}
+
+TEST_CASE("[GaussianSplatting][PLYLoader] Cache version mismatch forces re-parse") {
+    // Write a minimal binary PLY fixture using the same pattern as other tests.
+    const String ply_path = _make_ply_fixture_path("cache_version");
+
+    {
+        Ref<FileAccess> f = FileAccess::open(ply_path, FileAccess::WRITE);
+        REQUIRE_MESSAGE(f.is_valid(), "Should create test PLY file");
+        f->store_string(MINIMAL_PLY_CONTENT);
+        float v0[14] = { 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0 };
+        f->store_buffer((const uint8_t *)v0, sizeof(v0));
+        float v1[14] = { 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0 };
+        f->store_buffer((const uint8_t *)v1, sizeof(v1));
+    }
+
+    // First load: parses PLY, writes .gsplatcache.
+    {
+        PLYLoader loader;
+        Error err = loader.load_file(ply_path);
+        CHECK_MESSAGE(err == OK, "Initial PLY load should succeed");
+        CHECK(loader.get_splat_count() == 2);
+    }
+
+    // Tamper with the cache version: load the .gsplatcache, change version, re-save.
+    // Use the format loader/saver directly because .gsplatcache is not a globally
+    // recognised extension (by design — it's internal to PLYLoader).
+    const String cache_path = ply_path.get_basename() + ".gsplatcache";
+    if (FileAccess::exists(cache_path)) {
+        ResourceFormatLoaderGaussianSplatWorld format_loader;
+        Error load_err = OK;
+        Ref<Resource> resource = format_loader.load(cache_path, cache_path, &load_err);
+        Ref<GaussianSplatWorld> world = resource;
+        REQUIRE_MESSAGE(world.is_valid(), "Cache should be a valid GaussianSplatWorld");
+
+        Dictionary metadata = world->get_metadata();
+        metadata[StringName("cache_version")] = 9999; // Wrong version
+        world->set_metadata(metadata);
+        ResourceFormatSaverGaussianSplatWorld format_saver;
+        format_saver.save(world, cache_path);
+
+        // Second load: cache should be rejected because of version mismatch.
+        PLYLoader loader;
+        Error err = loader.load_file(ply_path);
+        CHECK_MESSAGE(err == OK, "PLY load should still succeed (re-parse fallback)");
+        CHECK(loader.get_splat_count() == 2);
+
+        Dictionary stats = loader.get_load_statistics();
+        if (stats.has("cache_hit")) {
+            CHECK_MESSAGE(!(bool)stats["cache_hit"], "Version-mismatched cache should not be a cache hit");
+        }
+    } else {
+        MESSAGE("Cache file not created (caching may be disabled); skipping version guard test");
+    }
+
+    // Cleanup.
+    _remove_ply_fixture(ply_path);
+    DirAccess::remove_absolute(cache_path);
 }

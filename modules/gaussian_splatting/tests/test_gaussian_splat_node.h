@@ -1480,4 +1480,101 @@ TEST_CASE("[GaussianSplatting][DynamicInstance][SceneTree] Null or empty data un
     memdelete(dynamic_node);
 }
 
+// ── Import propagation proof ───────────────────────────────────────────
+
+TEST_CASE("[GaussianSplatting][Node][SceneTree] Two nodes sharing one asset both observe asset mutation via changed signal") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE(tree != nullptr);
+	Window *root = tree->get_root();
+	REQUIRE(root != nullptr);
+
+	// Create a shared asset with 1 splat.
+	Ref<GaussianSplatAsset> shared_asset = make_single_splat_asset(0.0f);
+	REQUIRE(shared_asset.is_valid());
+	CHECK(shared_asset->get_splat_count() == 1);
+
+	// Two nodes both point to the same asset Ref.
+	GaussianSplatNode3D *node_a = memnew(GaussianSplatNode3D);
+	GaussianSplatNode3D *node_b = memnew(GaussianSplatNode3D);
+	root->add_child(node_a);
+	root->add_child(node_b);
+
+	node_a->set_splat_asset(shared_asset);
+	node_b->set_splat_asset(shared_asset);
+	tree->process(0.0);
+
+	CHECK(node_a->get_total_splat_count() == 1);
+	CHECK(node_b->get_total_splat_count() == 1);
+
+	// Mutate the shared asset: grow to 5 splats.
+	// This simulates what happens when Godot reloads an imported resource in-place.
+	shared_asset->set_splat_count(5);
+	PackedFloat32Array new_positions;
+	new_positions.resize(5 * 3);
+	{
+		float *ptr = new_positions.ptrw();
+		for (int i = 0; i < 5 * 3; i++) {
+			ptr[i] = float(i);
+		}
+	}
+	shared_asset->set_positions(new_positions);
+
+	// The asset emits "changed" on set_positions(). Both nodes should have
+	// received _on_asset_changed() which calls _update_asset() and re-reads
+	// total_splat_count from the asset.
+	CHECK(node_a->get_total_splat_count() == 5);
+	CHECK(node_b->get_total_splat_count() == 5);
+
+	// Verify the asset Ref is truly shared (same object).
+	CHECK(node_a->get_splat_asset() == node_b->get_splat_asset());
+
+	root->remove_child(node_a);
+	root->remove_child(node_b);
+	memdelete(node_a);
+	memdelete(node_b);
+}
+
+TEST_CASE("[GaussianSplatting][Node][SceneTree] Two nodes with separate asset Refs do not cross-propagate") {
+	SceneTree *tree = SceneTree::get_singleton();
+	REQUIRE(tree != nullptr);
+	Window *root = tree->get_root();
+	REQUIRE(root != nullptr);
+
+	Ref<GaussianSplatAsset> asset_a = make_single_splat_asset(0.0f);
+	Ref<GaussianSplatAsset> asset_b = make_single_splat_asset(10.0f);
+
+	GaussianSplatNode3D *node_a = memnew(GaussianSplatNode3D);
+	GaussianSplatNode3D *node_b = memnew(GaussianSplatNode3D);
+	root->add_child(node_a);
+	root->add_child(node_b);
+
+	node_a->set_splat_asset(asset_a);
+	node_b->set_splat_asset(asset_b);
+	tree->process(0.0);
+
+	CHECK(node_a->get_total_splat_count() == 1);
+	CHECK(node_b->get_total_splat_count() == 1);
+
+	// Mutate only asset_a.
+	asset_a->set_splat_count(7);
+	PackedFloat32Array new_positions;
+	new_positions.resize(7 * 3);
+	{
+		float *ptr = new_positions.ptrw();
+		for (int i = 0; i < 7 * 3; i++) {
+			ptr[i] = float(i);
+		}
+	}
+	asset_a->set_positions(new_positions);
+
+	// node_a should see 7; node_b should still see 1.
+	CHECK(node_a->get_total_splat_count() == 7);
+	CHECK(node_b->get_total_splat_count() == 1);
+
+	root->remove_child(node_a);
+	root->remove_child(node_b);
+	memdelete(node_a);
+	memdelete(node_b);
+}
+
 #endif // TESTS_ENABLED || TOOLS_ENABLED
