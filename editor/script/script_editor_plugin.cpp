@@ -2128,6 +2128,25 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	String path = ResourceLoader::path_remap(local_path);
 
+	// Reuse an already-open TextFile resource to avoid creating duplicates.
+	// This prevents opening the same file multiple times as "unsaved" tabs.
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (!seb) {
+			continue;
+		}
+
+		if (seb->edited_file_data.path == local_path) {
+			Ref<TextFile> existing_text_file = seb->get_edited_resource();
+			if (existing_text_file.is_valid()) {
+				if (r_error) {
+					*r_error = OK;
+				}
+				return existing_text_file;
+			}
+		}
+	}
+
 	Ref<TextFile> text_file;
 	text_file.instantiate();
 	Error err = text_file->load_text(path);
