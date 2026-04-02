@@ -79,6 +79,18 @@ repos:
 
   - repo: local
     hooks:
+      # Not automatically triggered (because it requires compile_commands.json to be up-to-date).
+      # Invoke it manually via `pre-commit run --hook-stage manual clangd-tidy`.
+      - id: clangd-tidy
+        name: clangd-tidy
+        language: python
+        entry: clangd-tidy --allow-extensions c,h,cpp,hpp,cc,hh,cxx,hxx,m,mm,java
+        # TODO .inc ignored for now because they don't include their parent header.
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|java)$
+        additional_dependencies: [clangd-tidy, clangd, clang-tidy==22.1.0.1]
+        require_serial: true
+        stages: [manual]
+
       - id: make-rst
         name: make-rst
         language: python
