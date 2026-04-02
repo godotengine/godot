@@ -385,8 +385,8 @@ script = ExtResource("1")
                 "description": "Test HierarchicalSplatStructure parallel-build fallback"
             },
             {
-                "name": "adaptive_selection",
-                "description": "Test adaptive LOD selection feeding renderer"
+                "name": "renderer_lod_culling",
+                "description": "Test renderer LOD bias and distance culling behavior"
             },
             {
                 "name": "node_quality_presets",

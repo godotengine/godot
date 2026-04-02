@@ -1,6 +1,5 @@
 #include "test_lod_system.h"
 #include "../lod/hierarchical_splat_structure.h"
-#include "../lod/adaptive_lod_system.h"
 #include "../core/gaussian_data.h"
 #include "../nodes/gaussian_splat_node_3d.h"
 #include "../renderer/gaussian_splat_renderer.h"
@@ -8,7 +7,7 @@
 #include "core/os/os.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/projection.h"
-#include "core/templates/hash_set.h"
+#include "scene/3d/camera_3d.h"
 #include "tests/test_macros.h"
 
 namespace GaussianSplatting {
@@ -61,30 +60,6 @@ public:
         return camera;
     }
 };
-
-static float compute_visibility_churn_ratio(
-    const LocalVector<uint32_t> &previous_visible,
-    const LocalVector<uint32_t> &current_visible) {
-
-    HashSet<uint32_t> previous_set;
-    for (uint32_t idx : previous_visible) {
-        previous_set.insert(idx);
-    }
-
-    uint32_t retained = 0;
-    for (uint32_t idx : current_visible) {
-        if (previous_set.has(idx)) {
-            retained++;
-            previous_set.erase(idx);
-        }
-    }
-
-    const uint32_t removed = previous_set.size();
-    const uint32_t added = current_visible.size() - retained;
-    const uint32_t denominator = MAX((uint32_t)1, MAX(previous_visible.size(), current_visible.size()));
-
-    return float(added + removed) / float(denominator);
-}
 
 // Test hierarchical splat structure
 bool test_hierarchical_structure_build() {
@@ -175,119 +150,6 @@ bool test_frustum_culling() {
                       result.lod_stats.lod1_count,
                       result.lod_stats.lod2_count,
                       result.lod_stats.lod3_count));
-
-    memdelete(camera);
-    return success;
-}
-
-// Test adaptive LOD selection
-bool test_adaptive_lod() {
-    print_line("Testing: Adaptive LOD Selection");
-
-    LODSystemTest test;
-    auto splats = test.generate_test_splats(50000);
-    auto camera = test.create_test_camera();
-
-    GaussianSplatting::AdaptiveLODSystem lod_system;
-    GaussianSplatting::AdaptiveLODSystem::LODConfig config;
-    config.max_splats_per_frame = 10000;
-    config.lod_bias = 1.0f;
-    lod_system.initialize(config);
-
-    // Test different strategies
-    const char* strategies[] = {
-        "Distance-based",
-        "Importance-based",
-        "Budget-based",
-        "Hybrid"
-    };
-
-    bool success = true;
-
-    for (int i = 0; i < 4; i++) {
-        auto strategy = static_cast<AdaptiveLODSystem::LODStrategy>(i);
-
-        uint64_t start = OS::get_singleton()->get_ticks_usec();
-        auto selection = lod_system.select_lod_splats(
-            splats,
-            camera,
-            nullptr,  // No spatial structure for this test
-            strategy
-        );
-        uint64_t select_time = OS::get_singleton()->get_ticks_usec() - start;
-
-        print_line(vformat("  %s:", strategies[i]));
-        print_line(vformat("    Selection time: %.2f ms", select_time / 1000.0f));
-        print_line(vformat("    Selected: %d / %d", selection.visible_indices.size(), splats.size()));
-        print_line(vformat("    Frustum culled: %d", selection.stats.frustum_culled));
-        print_line(vformat("    Distance culled: %d", selection.stats.distance_culled));
-        print_line(vformat("    Size culled: %d", selection.stats.size_culled));
-        print_line(vformat("    Budget culled: %d", selection.stats.budget_culled));
-
-        if (selection.visible_indices.size() == 0) {
-            ERR_PRINT(vformat("Failed: No splats selected for strategy %s", strategies[i]));
-            success = false;
-        }
-
-        if (strategy == AdaptiveLODSystem::BUDGET_BASED &&
-            selection.visible_indices.size() > config.max_splats_per_frame) {
-            ERR_PRINT("Failed: Budget constraint violated");
-            success = false;
-        }
-    }
-
-    memdelete(camera);
-    return success;
-}
-
-// Test LOD transition smoothness
-bool test_lod_transitions() {
-    print_line("Testing: LOD Transitions");
-
-    LODSystemTest test;
-    auto splats = test.generate_test_splats(10000);
-    auto camera = test.create_test_camera();
-
-    GaussianSplatting::AdaptiveLODSystem lod_system;
-    GaussianSplatting::AdaptiveLODSystem::LODConfig config;
-    config.smooth_transitions = true;
-    config.transition_time = 0.25f;
-    lod_system.initialize(config);
-
-    bool success = true;
-    float prev_weight_sum = 0.0f;
-
-    // Simulate smooth camera movement
-    for (float z = 10.0f; z <= 100.0f; z += 5.0f) {
-        Transform3D transform = camera->get_global_transform();
-        transform.origin = Vector3(0, 0, z);
-        camera->set_global_transform(transform);
-
-        auto selection = lod_system.select_lod_splats(
-            splats,
-            camera,
-            nullptr,
-            AdaptiveLODSystem::DISTANCE_BASED
-        );
-
-        // Check weight smoothness
-        float weight_sum = 0.0f;
-        for (float w : selection.lod_weights) {
-            weight_sum += w;
-        }
-
-        if (prev_weight_sum > 0.0f) {
-            float weight_change = abs(weight_sum - prev_weight_sum) / prev_weight_sum;
-            if (weight_change > 0.2f) {  // More than 20% change
-                WARN_PRINT(vformat("Warning: Large weight change at Z=%.0f: %.1f%%",
-                                  z, weight_change * 100.0f));
-            }
-        }
-
-        prev_weight_sum = weight_sum;
-    }
-
-    print_line("  LOD transitions validated");
 
     memdelete(camera);
     return success;
@@ -455,8 +317,6 @@ void run_lod_system_tests() {
     TestCase tests[] = {
         {"Hierarchical Structure Build", test_hierarchical_structure_build},
         {"Frustum Culling", test_frustum_culling},
-        {"Adaptive LOD Selection", test_adaptive_lod},
-        {"LOD Transitions", test_lod_transitions},
         {"Node Quality Presets", test_node_quality_presets},
         {"Scalability", test_scalability}
     };
@@ -626,188 +486,4 @@ TEST_CASE("[GaussianSplatting] Hierarchical parallel_build fallback still subdiv
     CHECK(stats.leaf_nodes > 1);
     CHECK(stats.max_depth_reached > 0);
     CHECK_FALSE(root->is_leaf());
-}
-
-TEST_CASE("[GaussianSplatting] Hybrid LOD selection enforces cardinality invariants") {
-    GaussianSplatting::Tests::LODSystemTest fixture;
-    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_test_splats(6000, 60.0f);
-
-    GaussianSplatting::HierarchicalSplatStructure structure;
-    GaussianSplatting::HierarchicalSplatStructure::BuildParams params;
-    params.max_depth = 7;
-    params.min_splats_per_node = 8;
-    structure.build_hierarchy(splats, params);
-
-    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 320.0f));
-    CHECK(camera != nullptr);
-    if (camera == nullptr) {
-        return;
-    }
-
-    GaussianSplatting::AdaptiveLODSystem lod_system;
-    GaussianSplatting::AdaptiveLODSystem::LODConfig config;
-    config.max_splats_per_frame = 2048;
-    lod_system.initialize(config);
-
-    auto selection = lod_system.select_lod_splats(
-        splats,
-        camera,
-        &structure,
-        GaussianSplatting::AdaptiveLODSystem::HYBRID
-    );
-
-    CHECK(selection.visible_indices.size() > 0);
-    CHECK(selection.visible_indices.size() == selection.lod_weights.size());
-    CHECK(selection.visible_indices.size() == selection.lod_levels.size());
-
-    memdelete(camera);
-}
-
-TEST_CASE("[GaussianSplatting] Hybrid LOD can use hierarchy without aggregated splat vector") {
-    GaussianSplatting::Tests::LODSystemTest fixture;
-    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_test_splats(2048, 6.0f);
-
-    GaussianSplatting::HierarchicalSplatStructure structure;
-    structure.build_hierarchy(splats);
-
-    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 8.0f));
-    CHECK(camera != nullptr);
-    if (camera == nullptr) {
-        return;
-    }
-
-    GaussianSplatting::AdaptiveLODSystem lod_system;
-    GaussianSplatting::AdaptiveLODSystem::LODConfig config;
-    config.max_splats_per_frame = 4096;
-    lod_system.initialize(config);
-
-    Vector<GaussianSplatting::GaussianData> no_aggregated_splats;
-    auto selection = lod_system.select_lod_splats(
-        no_aggregated_splats,
-        camera,
-        &structure,
-        GaussianSplatting::AdaptiveLODSystem::HYBRID
-    );
-
-    CHECK(selection.visible_indices.size() > 0);
-
-    memdelete(camera);
-}
-
-TEST_CASE("[GaussianSplatting] Distance LOD far sampling stays deterministic and spatially stable") {
-    GaussianSplatting::Tests::LODSystemTest fixture;
-    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_test_splats(20000, 15.0f);
-    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 220.0f));
-    CHECK(camera != nullptr);
-    if (camera == nullptr) {
-        return;
-    }
-
-    GaussianSplatting::AdaptiveLODSystem lod_system;
-    GaussianSplatting::AdaptiveLODSystem::LODConfig config;
-    config.enable_temporal_coherence = false;
-    config.lod0_distance = 5.0f;
-    config.lod1_distance = 10.0f;
-    config.lod2_distance = 20.0f;
-    config.lod3_distance = 30.0f;
-    config.cull_distance = 400.0f;
-    config.far_lod_keep_ratio = 0.15f;
-    config.max_splats_per_frame = 20000;
-    lod_system.initialize(config);
-
-    auto frame_a = lod_system.select_lod_splats(
-        splats,
-        camera,
-        nullptr,
-        GaussianSplatting::AdaptiveLODSystem::DISTANCE_BASED
-    );
-    auto frame_b = lod_system.select_lod_splats(
-        splats,
-        camera,
-        nullptr,
-        GaussianSplatting::AdaptiveLODSystem::DISTANCE_BASED
-    );
-
-    CHECK(frame_a.visible_indices.size() == frame_b.visible_indices.size());
-    for (uint32_t i = 0; i < frame_a.visible_indices.size(); i++) {
-        CHECK(frame_a.visible_indices[i] == frame_b.visible_indices[i]);
-    }
-
-    Transform3D jittered_transform = camera->get_global_transform();
-    jittered_transform.origin += Vector3(1.0f, 0.0f, 1.0f);
-    camera->set_global_transform(jittered_transform);
-    auto frame_c = lod_system.select_lod_splats(
-        splats,
-        camera,
-        nullptr,
-        GaussianSplatting::AdaptiveLODSystem::DISTANCE_BASED
-    );
-
-    const float churn_ratio = GaussianSplatting::Tests::compute_visibility_churn_ratio(
-        frame_a.visible_indices,
-        frame_c.visible_indices);
-    CHECK(churn_ratio < 0.05f);
-
-    const float observed_keep_ratio = float(frame_a.visible_indices.size()) / float(splats.size());
-    CHECK(observed_keep_ratio > config.far_lod_keep_ratio * 0.5f);
-    CHECK(observed_keep_ratio < MIN(1.0f, config.far_lod_keep_ratio * 1.5f));
-
-    memdelete(camera);
-}
-
-TEST_CASE("[GaussianSplatting] Temporal churn metrics scale with camera motion") {
-    GaussianSplatting::Tests::LODSystemTest fixture;
-    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_test_splats(18000, 80.0f);
-    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 35.0f));
-    CHECK(camera != nullptr);
-    if (camera == nullptr) {
-        return;
-    }
-
-    GaussianSplatting::AdaptiveLODSystem lod_system;
-    GaussianSplatting::AdaptiveLODSystem::LODConfig config;
-    config.enable_temporal_coherence = true;
-    config.smooth_transitions = true;
-    config.lod0_distance = 20.0f;
-    config.lod1_distance = 45.0f;
-    config.lod2_distance = 90.0f;
-    config.lod3_distance = 140.0f;
-    config.cull_distance = 260.0f;
-    config.max_splats_per_frame = 18000;
-    lod_system.initialize(config);
-
-    auto frame_a = lod_system.select_lod_splats(
-        splats,
-        camera,
-        nullptr,
-        GaussianSplatting::AdaptiveLODSystem::DISTANCE_BASED
-    );
-    CHECK(Math::is_equal_approx(frame_a.stats.temporal_visibility_churn_ratio, 0.0f, 0.0001f));
-
-    Transform3D small_move = camera->get_global_transform();
-    small_move.origin = Vector3(0.0f, 0.0f, 38.0f);
-    camera->set_global_transform(small_move);
-    auto frame_b = lod_system.select_lod_splats(
-        splats,
-        camera,
-        nullptr,
-        GaussianSplatting::AdaptiveLODSystem::DISTANCE_BASED
-    );
-    CHECK(frame_b.stats.temporal_visibility_churn_ratio < 0.5f);
-
-    Transform3D large_move = camera->get_global_transform();
-    large_move.origin = Vector3(0.0f, 0.0f, 190.0f);
-    camera->set_global_transform(large_move);
-    auto frame_c = lod_system.select_lod_splats(
-        splats,
-        camera,
-        nullptr,
-        GaussianSplatting::AdaptiveLODSystem::DISTANCE_BASED
-    );
-
-    CHECK(frame_c.stats.temporal_visibility_churn_ratio > frame_b.stats.temporal_visibility_churn_ratio);
-    CHECK((frame_c.stats.temporal_added + frame_c.stats.temporal_removed) >=
-            (frame_b.stats.temporal_added + frame_b.stats.temporal_removed));
-
-    memdelete(camera);
 }

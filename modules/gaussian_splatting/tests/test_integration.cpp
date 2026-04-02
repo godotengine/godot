@@ -15,7 +15,6 @@
 #endif
 #include "core/error/error_macros.h"
 #include "../lod/hierarchical_splat_structure.h"
-#include "../lod/adaptive_lod_system.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 #include "core/config/engine.h"

@@ -318,7 +318,6 @@
 | modules/gaussian_splatting/shaders/includes/gs_lighting_bridge.glsl.gen.h | 0.12 | 118 | 1013 |
 | modules/gaussian_splatting/renderer/gpu_performance_monitor.cpp | 0.12 | 21 | 180 |
 | modules/gaussian_splatting/shaders/includes/gs_lighting_common.glsl.gen.h | 0.12 | 30 | 256 |
-| modules/gaussian_splatting/lod/adaptive_lod_system.h | 0.12 | 24 | 201 |
 | modules/gaussian_splatting/shaders/includes/gs_instance_layout.glsl | 0.12 | 9 | 74 |
 | modules/gaussian_splatting/core/gaussian_data_io.cpp | 0.12 | 36 | 294 |
 | modules/gaussian_splatting/interfaces/sync_policy.h | 0.12 | 14 | 114 |
@@ -335,7 +334,6 @@
 | modules/gaussian_splatting/core/gaussian_splat_config_registry.h | 0.14 | 1 | 7 |
 | modules/gaussian_splatting/shaders/includes/sort_contract.glsl | 0.14 | 1 | 7 |
 | scripts/import_gaussian_scene.gd | 0.15 | 6 | 41 |
-| modules/gaussian_splatting/lod/adaptive_lod_system.cpp | 0.15 | 80 | 545 |
 | modules/gaussian_splatting/interfaces/debug_overlay_system.h | 0.15 | 14 | 95 |
 | modules/gaussian_splatting/renderer/sh_config.cpp | 0.15 | 18 | 121 |
 | modules/gaussian_splatting/animation/keyframe_interpolator.h | 0.15 | 7 | 47 |

@@ -18,9 +18,9 @@ Tests runtime wiring between components:
 ### 2. LOD System Tests (`test_lod_system.cpp`)
 Validates Level-of-Detail functionality:
 - **HierarchicalSplatStructure**: Spatial hierarchy builds, queries, and parallel-build fallback
-- **Adaptive Selection**: Budget-based and hybrid LOD selection
 - **Renderer LOD Culling**: Bias and distance limits affect live culling as expected
 - **Node Quality Presets**: Neutral node-facing quality and streaming configs stay coherent
+- **Hierarchy Scalability**: Large hierarchy builds and queries stay on the accepted live path
 
 ### 3. Performance Benchmarks (`performance_benchmark.cpp`)
 Stress tests with varying splat counts:
@@ -152,9 +152,9 @@ struct StreamingStats {
 
 ### LOD Test Scenarios
 1. **Static Camera** - Validate stable LOD selection
-2. **Moving Camera** - Test smooth transitions
-3. **Rapid Movement** - Stress test streaming
-4. **Memory Pressure** - Test under budget constraints
+2. **Parallel Build Fallback** - Validate large-scene hierarchy build stays subdivided
+3. **Renderer Culling** - Validate distance and frustum controls affect live visibility
+4. **Node Presets** - Validate neutral node-facing quality and streaming config surfaces
 
 ### Async Compute Validation
 ```cpp

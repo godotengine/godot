@@ -17,13 +17,10 @@ static const Vector2 BLUE_NOISE_TABLE[] = {
 }
 
 PainterlyManager::PainterlyManager() {
-    frame_counter = 0;
 }
 
 void PainterlyManager::configure(const Settings &p_settings) {
     settings = p_settings;
-    frame_counter = 0;
-    history.clear();
 }
 
 void PainterlyManager::ensure_metadata_for_level(Vector<GaussianData> &splats, uint32_t lod_level) {
@@ -36,80 +33,6 @@ void PainterlyManager::ensure_metadata_for_level(Vector<GaussianData> &splats, u
             uint32_t combined = hash_combine(meta.temporal_seed, lod_level * 2654435761u);
             meta.temporal_seed = combined != 0 ? combined : 1;
         }
-    }
-}
-
-void PainterlyManager::apply_temporal_smoothing(AdaptiveLODSystem::LODSelection &selection, float delta_time) {
-    if (selection.visible_indices.is_empty()) {
-        return;
-    }
-
-    frame_counter++;
-
-    uint32_t target_size = selection.visible_indices.size();
-    selection.painterly_metadata.resize(target_size);
-    selection.painterly_seeds.resize(target_size);
-    selection.painterly_prev_seeds.resize(target_size);
-    selection.painterly_blend_weights.resize(target_size);
-
-    float step = settings.blend_rate * delta_time;
-    const float blend_step = MIN(step, 1.0f);
-    float hold = settings.hold_strength;
-
-    for (uint32_t i = 0; i < target_size; i++) {
-        uint32_t idx = selection.visible_indices[i];
-        const PainterlyMetadata &current_meta = selection.painterly_metadata[i];
-        uint32_t current_seed = current_meta.temporal_seed;
-        uint8_t lod_level = selection.lod_levels[i];
-
-        HistoryEntry &entry = history[idx];
-        if (!entry.initialized) {
-            entry.initialized = true;
-            entry.active_seed = current_seed != 0 ? current_seed : 1;
-            entry.previous_seed = entry.active_seed;
-            entry.active_metadata = current_meta;
-            entry.previous_metadata = current_meta;
-            entry.blend = 1.0f;
-            entry.last_lod = lod_level;
-        } else {
-            if (entry.active_seed != current_seed && current_seed != 0) {
-                entry.previous_seed = entry.active_seed;
-                entry.previous_metadata = entry.active_metadata;
-                entry.active_seed = current_seed;
-                entry.active_metadata = current_meta;
-                entry.blend = 0.0f;
-            } else {
-                // Keep metadata in sync when seed stays the same.
-                entry.active_metadata = blend_metadata(entry.active_metadata, current_meta, blend_step);
-                entry.previous_metadata = entry.active_metadata;
-                entry.previous_seed = entry.active_seed;
-            }
-
-            if (lod_level > entry.last_lod) {
-                entry.blend = MIN(entry.blend, 1.0f - hold);
-            }
-
-            entry.last_lod = lod_level;
-        }
-
-        if (entry.blend < 1.0f) {
-            entry.blend = MIN(1.0f, entry.blend + step);
-        }
-
-        PainterlyMetadata final_meta;
-        if (entry.previous_seed == entry.active_seed || entry.blend >= 0.999f) {
-            final_meta = entry.active_metadata;
-            entry.previous_seed = entry.active_seed;
-            entry.previous_metadata = entry.active_metadata;
-            entry.blend = 1.0f;
-        } else {
-            final_meta = blend_metadata(entry.previous_metadata, entry.active_metadata, entry.blend);
-        }
-
-        selection.painterly_metadata[i] = final_meta;
-        selection.painterly_seeds[i] = entry.active_seed;
-        selection.painterly_prev_seeds[i] = entry.previous_seed;
-        selection.painterly_blend_weights[i] = entry.blend;
     }
 }
 
@@ -141,50 +64,6 @@ PainterlyMetadata PainterlyManager::generate_metadata(const GaussianData &splat,
     }
 
     return meta;
-}
-
-PainterlyMetadata PainterlyManager::blend_metadata(const PainterlyMetadata &from, const PainterlyMetadata &to, float t) const {
-    float weight_to = CLAMP(t, 0.0f, 1.0f);
-    float weight_from = 1.0f - weight_to;
-
-    PainterlyMetadata result;
-
-    if (weight_to == 0.0f) {
-        result.temporal_seed = to.temporal_seed != 0 ? to.temporal_seed : from.temporal_seed;
-        result.jitter = from.jitter;
-        result.blue_noise = from.blue_noise;
-        result.stroke_scale = from.stroke_scale;
-        result.stroke_angle = from.stroke_angle;
-        result.stability = from.stability;
-        return result;
-    }
-
-    if (weight_to == 1.0f) {
-        result.temporal_seed = to.temporal_seed != 0 ? to.temporal_seed : from.temporal_seed;
-        result.jitter = to.jitter;
-        result.blue_noise = to.blue_noise;
-        result.stroke_scale = to.stroke_scale;
-        result.stroke_angle = to.stroke_angle;
-        result.stability = to.stability;
-        return result;
-    }
-
-    result.temporal_seed = to.temporal_seed != 0 ? to.temporal_seed : from.temporal_seed;
-    result.jitter = from.jitter * weight_from + to.jitter * weight_to;
-    result.blue_noise = from.blue_noise * weight_from + to.blue_noise * weight_to;
-    result.stroke_scale = Math::lerp(from.stroke_scale, to.stroke_scale, weight_to);
-
-    Vector2 dir_from(Math::cos(from.stroke_angle), Math::sin(from.stroke_angle));
-    Vector2 dir_to(Math::cos(to.stroke_angle), Math::sin(to.stroke_angle));
-    Vector2 dir_mix = dir_from * weight_from + dir_to * weight_to;
-    if (dir_mix.length_squared() > 0.0001f) {
-        result.stroke_angle = Math::atan2(dir_mix.y, dir_mix.x);
-    } else {
-        result.stroke_angle = to.stroke_angle;
-    }
-
-    result.stability = Math::lerp(from.stability, to.stability, weight_to);
-    return result;
 }
 
 uint32_t PainterlyManager::hash_combine(uint32_t seed, uint32_t value) {

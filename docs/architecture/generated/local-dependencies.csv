@@ -104,7 +104,6 @@ include,core/gaussian_streaming.h,core/streaming_visibility_controller.h,core,co
 include,core/gaussian_streaming.h,core/streaming_vram_regulator.h,core,core
 include,core/painterly_manager.cpp,core/painterly_manager.h,core,core
 include,core/painterly_manager.h,core/gaussian_data.h,core,core
-include,core/painterly_manager.h,lod/adaptive_lod_system.h,core,lod
 include,core/performance_monitors.cpp,core/performance_monitors.h,core,core
 include,core/performance_monitors.cpp,renderer/gaussian_gpu_layout.h,core,renderer
 include,core/performance_monitors.cpp,renderer/gaussian_splat_renderer.h,core,renderer
@@ -336,9 +335,6 @@ include,io/resource_importer_spz.h,core/gaussian_splat_asset.h,io,core
 include,io/spz_loader.cpp,io/spz_loader.h,io,io
 include,io/spz_loader.cpp,logger/gs_logger.h,io,logger
 include,io/spz_loader.h,core/gaussian_data.h,io,core
-include,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-include,lod/adaptive_lod_system.h,core/gaussian_data.h,lod,core
-include,lod/adaptive_lod_system.h,lod/hierarchical_splat_structure.h,lod,lod
 include,lod/cluster_builder.cpp,lod/cluster_builder.h,lod,lod
 include,lod/cluster_builder.cpp,logger/gs_logger.h,lod,logger
 include,lod/cluster_builder.h,core/gaussian_data.h,lod,core
@@ -382,7 +378,6 @@ include,nodes/gaussian_splat_node_3d.cpp,renderer/gpu_debug_utils.h,nodes,render
 include,nodes/gaussian_splat_node_3d.cpp,resources/color_grading_resource.h,nodes,resources
 include,nodes/gaussian_splat_node_3d.h,core/gaussian_splat_asset.h,nodes,core
 include,nodes/gaussian_splat_node_3d.h,core/painterly_manager.h,nodes,core
-include,nodes/gaussian_splat_node_3d.h,lod/adaptive_lod_system.h,nodes,lod
 include,nodes/gaussian_splat_node_3d.h,nodes/gaussian_splat_node_helpers.h,nodes,nodes
 include,nodes/gaussian_splat_node_helpers.cpp,core/gaussian_splat_scene_director.h,nodes,core
 include,nodes/gaussian_splat_node_helpers.cpp,core/gaussian_splat_settings_manager.h,nodes,core
@@ -839,7 +834,6 @@ symbol,asset_management/asset_dependency_manager.cpp,asset_management/asset_depe
 symbol,asset_management/asset_dependency_manager.cpp,asset_management/asset_dependency_manager.h,asset_management,asset_management
 symbol,asset_management/asset_dependency_manager.cpp,asset_management/asset_dependency_manager.h,asset_management,asset_management
 symbol,asset_management/asset_dependency_manager.cpp,asset_management/asset_dependency_manager.h,asset_management,asset_management
-symbol,asset_management/asset_dependency_manager.h,lod/adaptive_lod_system.h,asset_management,lod
 symbol,compute/compute_infrastructure.cpp,compute/compute_infrastructure.h,compute,compute
 symbol,compute/compute_infrastructure.cpp,compute/compute_infrastructure.h,compute,compute
 symbol,compute/compute_infrastructure.cpp,compute/compute_infrastructure.h,compute,compute
@@ -852,13 +846,11 @@ symbol,core/gaussian_data.cpp,core/gaussian_data.h,core,core
 symbol,core/gaussian_data.cpp,core/gaussian_splat_manager.h,core,core
 symbol,core/gaussian_data.cpp,core/gaussian_data.h,core,core
 symbol,core/gaussian_data.cpp,core/streaming_upload_pipeline.h,core,core
-symbol,core/gaussian_data.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/gaussian_data.h,resources/color_grading_resource.h,core,resources
 symbol,core/gaussian_data.h,animation/animation_state_machine.h,core,animation
 symbol,core/gaussian_data.h,persistence/incremental_saver.h,core,persistence
 symbol,core/gaussian_data.h,core/gaussian_splat_asset.h,core,core
 symbol,core/gaussian_data.h,core/streaming_upload_pipeline.h,core,core
-symbol,core/gaussian_data.h,lod/adaptive_lod_system.h,core,lod
 symbol,core/gaussian_data_animation.cpp,animation/animation_state_machine.h,core,animation
 symbol,core/gaussian_data_animation.cpp,core/gaussian_data.h,core,core
 symbol,core/gaussian_data_animation.cpp,persistence/incremental_saver.h,core,persistence
@@ -917,13 +909,11 @@ symbol,core/gaussian_splat_scene_director.cpp,renderer/gaussian_splat_renderer.h
 symbol,core/gaussian_splat_scene_director.cpp,core/gaussian_splat_scene_director.h,core,core
 symbol,core/gaussian_splat_scene_director.cpp,renderer/gaussian_splat_renderer.h,core,renderer
 symbol,core/gaussian_splat_scene_director.cpp,core/gaussian_splat_scene_director.h,core,core
-symbol,core/gaussian_splat_scene_director.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/gaussian_splat_scene_director.cpp,core/gaussian_splat_scene_director.h,core,core
 symbol,core/gaussian_splat_scene_director.h,core/gaussian_data.h,core,core
 symbol,core/gaussian_splat_scene_director.h,core/gaussian_splat_asset.h,core,core
 symbol,core/gaussian_splat_scene_director.h,renderer/gaussian_splat_renderer.h,core,renderer
 symbol,core/gaussian_splat_scene_director.h,renderer/gaussian_splat_renderer.h,core,renderer
-symbol,core/gaussian_splat_scene_director.h,lod/adaptive_lod_system.h,core,lod
 symbol,core/gaussian_splat_settings_manager.cpp,core/gaussian_splat_settings_manager.h,core,core
 symbol,core/gaussian_splat_settings_manager.cpp,core/gaussian_splat_settings_manager.h,core,core
 symbol,core/gaussian_splat_world.cpp,core/gaussian_data.h,core,core
@@ -948,7 +938,6 @@ symbol,core/gaussian_streaming.cpp,core/gaussian_data.h,core,core
 symbol,core/gaussian_streaming.cpp,renderer/gpu_memory_stream.h,core,renderer
 symbol,core/gaussian_streaming.cpp,core/gaussian_splat_manager.h,core,core
 symbol,core/gaussian_streaming.cpp,core/gaussian_streaming.h,core,core
-symbol,core/gaussian_streaming.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/gaussian_streaming.cpp,core/streaming_queue_pressure_controller.h,core,core
 symbol,core/gaussian_streaming.cpp,core/streaming_queue_pressure_controller.h,core,core
 symbol,core/gaussian_streaming.cpp,core/streaming_telemetry_adapter.h,core,core
@@ -982,7 +971,6 @@ symbol,core/gaussian_streaming.h,core/gaussian_data.h,core,core
 symbol,core/gaussian_streaming.h,renderer/gpu_memory_stream.h,core,renderer
 symbol,core/gaussian_streaming.h,core/gaussian_splat_manager.h,core,core
 symbol,core/gaussian_streaming.h,core/streaming_global_atlas_registry.h,core,core
-symbol,core/gaussian_streaming.h,lod/adaptive_lod_system.h,core,lod
 symbol,core/gaussian_streaming.h,core/streaming_runtime_state.h,core,core
 symbol,core/gaussian_streaming.h,core/streaming_asset_types.h,core,core
 symbol,core/gaussian_streaming.h,core/residency_budget_controller.h,core,core
@@ -997,16 +985,12 @@ symbol,core/gaussian_streaming.h,core/streaming_visibility_controller.h,core,cor
 symbol,core/gaussian_streaming.h,core/streaming_vram_regulator.h,core,core
 symbol,core/gaussian_streaming.h,core/streaming_visibility_controller.h,core,core
 symbol,core/gs_project_settings.h,core/gaussian_data.h,core,core
-symbol,core/painterly_manager.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/painterly_manager.cpp,core/gaussian_data.h,core,core
 symbol,core/painterly_manager.cpp,core/painterly_manager.h,core,core
-symbol,core/painterly_manager.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/painterly_manager.cpp,core/painterly_manager.h,core,core
 symbol,core/painterly_manager.cpp,core/gaussian_data.h,core,core
 symbol,core/painterly_manager.cpp,core/painterly_manager.h,core,core
-symbol,core/painterly_manager.h,lod/adaptive_lod_system.h,core,lod
 symbol,core/painterly_manager.h,core/gaussian_data.h,core,core
-symbol,core/painterly_manager.h,lod/adaptive_lod_system.h,core,lod
 symbol,core/painterly_manager.h,core/gaussian_data.h,core,core
 symbol,core/performance_monitors.cpp,renderer/render_types/render_debug_types.h,core,renderer
 symbol,core/performance_monitors.cpp,renderer/render_frame_context_manager.h,core,renderer
@@ -1014,11 +998,9 @@ symbol,core/performance_monitors.cpp,renderer/gaussian_splat_renderer.h,core,ren
 symbol,core/performance_monitors.cpp,core/performance_monitors.h,core,core
 symbol,core/performance_monitors.cpp,renderer/gaussian_splat_renderer.h,core,renderer
 symbol,core/performance_monitors.cpp,renderer/gaussian_gpu_layout.h,core,renderer
-symbol,core/performance_monitors.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/performance_monitors.cpp,renderer/tile_renderer.cpp,core,renderer
 symbol,core/performance_monitors.h,core/gaussian_data.h,core,core
 symbol,core/performance_monitors.h,renderer/gaussian_splat_renderer.h,core,renderer
-symbol,core/performance_monitors.h,lod/adaptive_lod_system.h,core,lod
 symbol,core/performance_monitors.h,renderer/tile_renderer.cpp,core,renderer
 symbol,core/quality_tier_config.cpp,core/quality_tier_config.h,core,core
 symbol,core/residency_budget_controller.cpp,core/residency_budget_controller.h,core,core
@@ -1035,7 +1017,6 @@ symbol,core/streaming_atlas.cpp,core/gaussian_streaming.h,core,core
 symbol,core/streaming_atlas.cpp,core/streaming_asset_types.h,core,core
 symbol,core/streaming_atlas.cpp,core/streaming_asset_types.h,core,core
 symbol,core/streaming_config_overrides.h,core/streaming_vram_regulator.h,core,core
-symbol,core/streaming_config_overrides.h,lod/adaptive_lod_system.h,core,lod
 symbol,core/streaming_config_overrides.h,core/streaming_vram_regulator.h,core,core
 symbol,core/streaming_eviction_controller.cpp,core/streaming_asset_types.h,core,core
 symbol,core/streaming_eviction_controller.cpp,core/gaussian_streaming.h,core,core
@@ -1053,7 +1034,6 @@ symbol,core/streaming_global_atlas_registry.h,core/gaussian_streaming.h,core,cor
 symbol,core/streaming_lod_policy.cpp,core/streaming_runtime_state.h,core,core
 symbol,core/streaming_lod_policy.cpp,core/gaussian_streaming.h,core,core
 symbol,core/streaming_lod_policy.cpp,core/streaming_vram_regulator.h,core,core
-symbol,core/streaming_lod_policy.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/streaming_lod_policy.cpp,core/streaming_asset_types.h,core,core
 symbol,core/streaming_quantization.cpp,core/streaming_asset_types.h,core,core
 symbol,core/streaming_quantization.cpp,core/streaming_quantization.h,core,core
@@ -1094,7 +1074,6 @@ symbol,core/streaming_upload_pipeline.h,renderer/gaussian_gpu_layout.h,core,rend
 symbol,core/streaming_visibility_controller.cpp,core/streaming_visibility_controller.h,core,core
 symbol,core/streaming_visibility_controller.cpp,core/gaussian_streaming.h,core,core
 symbol,core/streaming_visibility_controller.cpp,core/streaming_vram_regulator.h,core,core
-symbol,core/streaming_visibility_controller.cpp,lod/adaptive_lod_system.h,core,lod
 symbol,core/streaming_visibility_controller.cpp,core/streaming_queue_pressure_controller.h,core,core
 symbol,core/streaming_visibility_controller.cpp,core/streaming_queue_pressure_controller.h,core,core
 symbol,core/streaming_visibility_controller.cpp,core/streaming_asset_types.h,core,core
@@ -1160,7 +1139,6 @@ symbol,editor/gaussian_import_dialog.cpp,editor/gaussian_import_dialog.h,editor,
 symbol,editor/gaussian_import_dialog.cpp,io/ply_loader.h,editor,io
 symbol,editor/gaussian_import_dialog.cpp,io/spz_loader.h,editor,io
 symbol,editor/gaussian_import_dialog.cpp,core/painterly_manager.h,editor,core
-symbol,editor/gaussian_import_dialog.cpp,lod/adaptive_lod_system.h,editor,lod
 symbol,editor/gaussian_import_dialog.h,core/gaussian_data.h,editor,core
 symbol,editor/gaussian_import_dialog.h,io/gaussian_import_preset.h,editor,io
 symbol,editor/gaussian_import_dialog.h,core/gaussian_splat_asset.h,editor,core
@@ -1177,7 +1155,6 @@ symbol,editor/gaussian_inspector_plugins.cpp,core/gaussian_splat_asset.h,editor,
 symbol,editor/gaussian_inspector_plugins.cpp,nodes/gaussian_splat_node_3d.h,editor,nodes
 symbol,editor/gaussian_inspector_plugins.cpp,editor/gaussian_inspector_plugins.h,editor,editor
 symbol,editor/gaussian_inspector_plugins.cpp,renderer/gaussian_splat_renderer.h,editor,renderer
-symbol,editor/gaussian_inspector_plugins.cpp,lod/adaptive_lod_system.h,editor,lod
 symbol,editor/gaussian_inspector_plugins.h,core/gaussian_data.h,editor,core
 symbol,editor/gaussian_inspector_plugins.h,editor/gaussian_editor_plugin.h,editor,editor
 symbol,editor/gaussian_inspector_plugins.h,core/gaussian_splat_asset.h,editor,core
@@ -1190,7 +1167,6 @@ symbol,editor/gaussian_resource_preview_generator.h,editor/gaussian_thumbnail_ge
 symbol,editor/gaussian_splat_gizmo_plugin.cpp,core/gaussian_splat_asset.h,editor,core
 symbol,editor/gaussian_splat_gizmo_plugin.cpp,editor/gaussian_splat_gizmo_plugin.h,editor,editor
 symbol,editor/gaussian_splat_gizmo_plugin.cpp,nodes/gaussian_splat_node_3d.h,editor,nodes
-symbol,editor/gaussian_splat_gizmo_plugin.cpp,lod/adaptive_lod_system.h,editor,lod
 symbol,editor/gaussian_splat_gizmo_plugin.h,nodes/gaussian_splat_node_3d.h,editor,nodes
 symbol,editor/gaussian_thumbnail_generator.cpp,core/gaussian_splat_asset.h,editor,core
 symbol,editor/gaussian_thumbnail_generator.cpp,editor/gaussian_thumbnail_generator.h,editor,editor
@@ -1215,7 +1191,6 @@ symbol,interfaces/cluster_culler.h,lod/cluster_builder.h,interfaces,lod
 symbol,interfaces/cluster_culler.h,interfaces/culler_interfaces.h,interfaces,interfaces
 symbol,interfaces/cluster_culler.h,core/gaussian_data.h,interfaces,core
 symbol,interfaces/cluster_culler.h,lod/cluster_builder.h,interfaces,lod
-symbol,interfaces/cluster_culler.h,lod/adaptive_lod_system.h,interfaces,lod
 symbol,interfaces/debug_overlay_macros.h,interfaces/debug_overlay_interfaces.h,interfaces,interfaces
 symbol,interfaces/debug_overlay_macros.h,interfaces/debug_overlay_system.h,interfaces,interfaces
 symbol,interfaces/debug_overlay_macros.h,renderer/render_types/render_debug_types.h,interfaces,renderer
@@ -1319,7 +1294,6 @@ symbol,interfaces/gpu_sorting_pipeline.h,interfaces/gpu_sorting_pipeline_interfa
 symbol,interfaces/gpu_sorting_pipeline.h,interfaces/gpu_sorting_pipeline_interfaces.h,interfaces,interfaces
 symbol,interfaces/gpu_sorting_pipeline.h,interfaces/gpu_sorting_pipeline_interfaces.h,interfaces,interfaces
 symbol,interfaces/gpu_sorting_pipeline.h,renderer/gpu_sorter.h,interfaces,renderer
-symbol,interfaces/gpu_sorting_pipeline.h,lod/adaptive_lod_system.h,interfaces,lod
 symbol,interfaces/gpu_sorting_pipeline_interfaces.h,core/gaussian_data.h,interfaces,core
 symbol,interfaces/gpu_sorting_pipeline_interfaces.h,core/gaussian_data.h,interfaces,core
 symbol,interfaces/gpu_sorting_pipeline_interfaces.h,renderer/pipeline_io_contracts.h,interfaces,renderer
@@ -1359,7 +1333,6 @@ symbol,interfaces/output_compositor.h,interfaces/output_compositor_interfaces.h,
 symbol,interfaces/output_compositor.h,interfaces/output_compositor_interfaces.h,interfaces,interfaces
 symbol,interfaces/output_compositor.h,interfaces/output_compositor_interfaces.h,interfaces,interfaces
 symbol,interfaces/output_compositor.h,interfaces/render_device_manager.h,interfaces,interfaces
-symbol,interfaces/output_compositor.h,lod/adaptive_lod_system.h,interfaces,lod
 symbol,interfaces/overflow_auto_tuner.cpp,interfaces/overflow_auto_tuner.h,interfaces,interfaces
 symbol,interfaces/overflow_auto_tuner.cpp,renderer/gaussian_splat_renderer.h,interfaces,renderer
 symbol,interfaces/overflow_auto_tuner.cpp,interfaces/overflow_auto_tuner.h,interfaces,interfaces
@@ -1411,7 +1384,6 @@ symbol,interfaces/painterly_renderer.h,interfaces/tile_rasterizer.h,interfaces,i
 symbol,interfaces/painterly_renderer_interfaces.h,interfaces/tile_rasterizer.h,interfaces,interfaces
 symbol,interfaces/rasterizer_interfaces.h,core/gaussian_data.h,interfaces,core
 symbol,interfaces/rasterizer_interfaces.h,nodes/gaussian_splat_node_3d.h,interfaces,nodes
-symbol,interfaces/rasterizer_interfaces.h,lod/adaptive_lod_system.h,interfaces,lod
 symbol,interfaces/render_device_manager.cpp,interfaces/render_device_manager.h,interfaces,interfaces
 symbol,interfaces/render_device_manager.cpp,interfaces/render_device_manager.h,interfaces,interfaces
 symbol,interfaces/render_device_manager.cpp,core/gaussian_splat_manager.h,interfaces,core
@@ -1427,7 +1399,6 @@ symbol,interfaces/renderer_interfaces.h,core/gaussian_data.h,interfaces,core
 symbol,interfaces/renderer_interfaces.h,core/gaussian_splat_asset.h,interfaces,core
 symbol,interfaces/renderer_interfaces.h,core/gaussian_streaming.h,interfaces,core
 symbol,interfaces/renderer_interfaces.h,interfaces/gpu_culler.h,interfaces,interfaces
-symbol,interfaces/renderer_interfaces.h,lod/adaptive_lod_system.h,interfaces,lod
 symbol,interfaces/tile_rasterizer.cpp,interfaces/debug_overlay_interfaces.h,interfaces,interfaces
 symbol,interfaces/tile_rasterizer.cpp,interfaces/rasterizer_interfaces.h,interfaces,interfaces
 symbol,interfaces/tile_rasterizer.cpp,interfaces/rasterizer_interfaces.h,interfaces,interfaces
@@ -1473,7 +1444,6 @@ symbol,io/ply_loader.cpp,io/ply_loader.h,io,io
 symbol,io/ply_loader.h,core/gaussian_data.h,io,core
 symbol,io/ply_loader.h,core/gaussian_data.h,io,core
 symbol,io/ply_loader.h,io/spz_loader.h,io,io
-symbol,io/ply_loader.h,lod/adaptive_lod_system.h,io,lod
 symbol,io/resource_importer_gsplatworld.cpp,core/gaussian_data.h,io,core
 symbol,io/resource_importer_gsplatworld.cpp,core/gaussian_splat_world.h,io,core
 symbol,io/resource_importer_gsplatworld.cpp,io/resource_importer_gsplatworld.h,io,io
@@ -1501,19 +1471,6 @@ symbol,io/spz_loader.cpp,io/spz_loader.h,io,io
 symbol,io/spz_loader.h,core/gaussian_data.h,io,core
 symbol,io/spz_loader.h,core/gaussian_data.h,io,core
 symbol,io/spz_loader.h,io/ply_loader.h,io,io
-symbol,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-symbol,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-symbol,lod/adaptive_lod_system.cpp,core/gaussian_data.h,lod,core
-symbol,lod/adaptive_lod_system.cpp,core/gaussian_data.h,lod,core
-symbol,lod/adaptive_lod_system.cpp,lod/hierarchical_splat_structure.h,lod,lod
-symbol,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-symbol,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-symbol,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-symbol,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-symbol,lod/adaptive_lod_system.cpp,lod/adaptive_lod_system.h,lod,lod
-symbol,lod/adaptive_lod_system.h,core/gaussian_data.h,lod,core
-symbol,lod/adaptive_lod_system.h,lod/hierarchical_splat_structure.h,lod,lod
-symbol,lod/adaptive_lod_system.h,core/gaussian_data.h,lod,core
 symbol,lod/cluster_builder.cpp,lod/cluster_builder.h,lod,lod
 symbol,lod/cluster_builder.cpp,lod/cluster_builder.h,lod,lod
 symbol,lod/cluster_builder.cpp,lod/cluster_builder.h,lod,lod
@@ -1529,13 +1486,10 @@ symbol,lod/hierarchical_splat_structure.cpp,lod/hierarchical_splat_structure.h,l
 symbol,lod/hierarchical_splat_structure.cpp,lod/hierarchical_splat_structure.h,lod,lod
 symbol,lod/hierarchical_splat_structure.h,core/gaussian_data.h,lod,core
 symbol,lod/hierarchical_splat_structure.h,core/gaussian_data.h,lod,core
-symbol,lod/hierarchical_splat_structure.h,lod/adaptive_lod_system.h,lod,lod
 symbol,lod/lod_config.cpp,lod/lod_config.h,lod,lod
-symbol,lod/lod_config.cpp,lod/adaptive_lod_system.h,lod,lod
 symbol,lod/lod_config.cpp,lod/lod_config.h,lod,lod
 symbol,lod/lod_config.cpp,lod/hierarchical_splat_structure.h,lod,lod
 symbol,lod/lod_config.h,core/gaussian_data.h,lod,core
-symbol,lod/lod_config.h,lod/adaptive_lod_system.h,lod,lod
 symbol,nodes/gaussian_splat_container.cpp,core/gaussian_splat_asset.h,nodes,core
 symbol,nodes/gaussian_splat_container.cpp,nodes/gaussian_splat_container.h,nodes,nodes
 symbol,nodes/gaussian_splat_container.cpp,core/gaussian_splat_merge_utils.h,nodes,core
@@ -1573,7 +1527,6 @@ symbol,nodes/gaussian_splat_node_3d.cpp,core/gaussian_splat_scene_director.h,nod
 symbol,nodes/gaussian_splat_node_3d.cpp,core/gaussian_splat_settings_manager.h,nodes,core
 symbol,nodes/gaussian_splat_node_3d.cpp,core/painterly_manager.h,nodes,core
 symbol,nodes/gaussian_splat_node_3d.cpp,core/painterly_manager.h,nodes,core
-symbol,nodes/gaussian_splat_node_3d.h,lod/adaptive_lod_system.h,nodes,lod
 symbol,nodes/gaussian_splat_node_3d.h,resources/color_grading_resource.h,nodes,resources
 symbol,nodes/gaussian_splat_node_3d.h,core/gaussian_data.h,nodes,core
 symbol,nodes/gaussian_splat_node_3d.h,core/gaussian_data.h,nodes,core
@@ -1586,7 +1539,6 @@ symbol,nodes/gaussian_splat_node_3d.h,nodes/gaussian_splat_node_helpers.h,nodes,
 symbol,nodes/gaussian_splat_node_3d.h,nodes/gaussian_splat_node_helpers.h,nodes,nodes
 symbol,nodes/gaussian_splat_node_3d.h,nodes/gaussian_splat_node_helpers.h,nodes,nodes
 symbol,nodes/gaussian_splat_node_3d.h,renderer/gaussian_splat_renderer.h,nodes,renderer
-symbol,nodes/gaussian_splat_node_3d.h,lod/adaptive_lod_system.h,nodes,lod
 symbol,nodes/gaussian_splat_node_3d.h,core/painterly_manager.h,nodes,core
 symbol,nodes/gaussian_splat_node_3d.h,core/painterly_manager.h,nodes,core
 symbol,nodes/gaussian_splat_node_helpers.cpp,core/streaming_config_overrides.h,nodes,core
@@ -1603,7 +1555,6 @@ symbol,nodes/gaussian_splat_node_helpers.cpp,renderer/gaussian_splat_renderer.h,
 symbol,nodes/gaussian_splat_node_helpers.cpp,core/gaussian_splat_scene_director.h,nodes,core
 symbol,nodes/gaussian_splat_node_helpers.cpp,core/gaussian_splat_settings_manager.h,nodes,core
 symbol,nodes/gaussian_splat_node_helpers.cpp,core/gaussian_streaming.h,nodes,core
-symbol,nodes/gaussian_splat_node_helpers.cpp,lod/adaptive_lod_system.h,nodes,lod
 symbol,nodes/gaussian_splat_node_helpers.cpp,core/quality_tier_config.h,nodes,core
 symbol,nodes/gaussian_splat_node_helpers.cpp,core/streaming_vram_regulator.h,nodes,core
 symbol,nodes/gaussian_splat_node_helpers.h,nodes/gaussian_splat_node_3d.h,nodes,nodes
@@ -1687,14 +1638,12 @@ symbol,register_types.cpp,io/spz_loader.h,register_types.cpp,io
 symbol,register_types.cpp,core/streaming_vram_regulator.h,register_types.cpp,core
 symbol,renderer/batched_async_readback.cpp,renderer/batched_async_readback.h,renderer,renderer
 symbol,renderer/batched_async_readback.cpp,renderer/batched_async_readback.h,renderer,renderer
-symbol,renderer/batched_async_readback.h,lod/adaptive_lod_system.h,renderer,lod
 symbol,renderer/debug_overlay_methods.cpp,interfaces/debug_overlay_system.h,renderer,interfaces
 symbol,renderer/float16_config.cpp,renderer/float16_config.h,renderer,renderer
 symbol,renderer/float16_config.h,core/gaussian_data.h,renderer,core
 symbol,renderer/float16_utils.cpp,renderer/float16_utils.h,renderer,renderer
 symbol,renderer/float16_utils.cpp,renderer/float16_utils.h,renderer,renderer
 symbol,renderer/float16_utils.h,core/gaussian_data.h,renderer,core
-symbol,renderer/float16_utils.h,lod/adaptive_lod_system.h,renderer,lod
 symbol,renderer/gaussian_gpu_layout.cpp,core/gaussian_data.h,renderer,core
 symbol,renderer/gaussian_gpu_layout.cpp,renderer/gaussian_gpu_layout.h,renderer,renderer
 symbol,renderer/gaussian_gpu_layout.h,core/gaussian_data.h,renderer,core
@@ -1883,7 +1832,6 @@ symbol,renderer/gpu_memory_stream.cpp,renderer/gpu_memory_stream.h,renderer,rend
 symbol,renderer/gpu_memory_stream.h,core/gaussian_data.h,renderer,core
 symbol,renderer/gpu_memory_stream.h,core/gaussian_data.h,renderer,core
 symbol,renderer/gpu_memory_stream.h,interfaces/render_device_manager.h,renderer,interfaces
-symbol,renderer/gpu_memory_stream.h,lod/adaptive_lod_system.h,renderer,lod
 symbol,renderer/gpu_performance_monitor.cpp,renderer/gpu_performance_monitor.h,renderer,renderer
 symbol,renderer/gpu_performance_monitor.cpp,renderer/gpu_performance_monitor.h,renderer,renderer
 symbol,renderer/gpu_performance_monitor.cpp,renderer/gpu_performance_monitor.h,renderer,renderer
@@ -2219,7 +2167,6 @@ symbol,renderer/render_streaming_orchestrator.cpp,renderer/resource_owner_mismat
 symbol,renderer/render_streaming_orchestrator.cpp,renderer/gaussian_splat_renderer.h,renderer,renderer
 symbol,renderer/render_streaming_orchestrator.cpp,renderer/render_types/render_pipeline_io_types.h,renderer,renderer
 symbol,renderer/render_streaming_orchestrator.cpp,renderer/instance_pipeline_contract.h,renderer,renderer
-symbol,renderer/render_streaming_orchestrator.cpp,lod/adaptive_lod_system.h,renderer,lod
 symbol,renderer/render_streaming_orchestrator.cpp,renderer/render_types/render_performance_types.h,renderer,renderer
 symbol,renderer/render_streaming_orchestrator.cpp,renderer/render_data_orchestrator.h,renderer,renderer
 symbol,renderer/render_streaming_orchestrator.cpp,renderer/render_device_orchestrator.h,renderer,renderer

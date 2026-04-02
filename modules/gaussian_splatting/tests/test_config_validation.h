@@ -15,7 +15,6 @@
 #include "../renderer/sorting_config.h"
 #include "../renderer/gpu_sorter.h"
 #include "../core/gaussian_splat_quality_config.h"
-#include "../lod/adaptive_lod_system.h"
 #include "../interfaces/gpu_culler.h"
 
 #include <limits>
@@ -436,46 +435,6 @@ TEST_CASE("[GaussianSplatting][Config] SortKeyConfig bit allocation consistency"
 		config.depth_bits = 16;
 		CHECK(config.tile_bits + config.depth_bits == config.key_bits);
 	}
-}
-
-// =============================================================================
-// LODConfig Validation Tests (GaussianSplatting::AdaptiveLODSystem::LODConfig)
-// =============================================================================
-
-TEST_CASE("[GaussianSplatting][Config] LODConfig distance thresholds ordering") {
-	using namespace GaussianSplatting;
-	AdaptiveLODSystem::LODConfig config;
-
-	// Default values should be properly ordered
-	CHECK(config.lod0_distance < config.lod1_distance);
-	CHECK(config.lod1_distance < config.lod2_distance);
-	CHECK(config.lod2_distance < config.lod3_distance);
-	CHECK(config.lod3_distance < config.cull_distance);
-}
-
-TEST_CASE("[GaussianSplatting][Config] LODConfig budget constraints") {
-	using namespace GaussianSplatting;
-	AdaptiveLODSystem::LODConfig config;
-
-	// Budget constraints should be sensible
-	CHECK(config.min_splats_per_frame < config.max_splats_per_frame);
-	CHECK(config.max_splats_per_frame > 0);
-	CHECK(config.min_splats_per_frame > 0);
-}
-
-TEST_CASE("[GaussianSplatting][Config] LODConfig threshold values") {
-	using namespace GaussianSplatting;
-	AdaptiveLODSystem::LODConfig config;
-
-	// Thresholds should be in valid ranges
-	CHECK(config.importance_threshold >= 0.0f);
-	CHECK(config.importance_threshold <= 1.0f);
-	CHECK(config.size_cull_threshold > 0.0f);
-	CHECK(config.lod_bias > 0.0f);
-	CHECK(config.transition_time >= 0.0f);
-	CHECK(config.target_framerate > 0.0f);
-	CHECK(config.quality_adjustment_rate > 0.0f);
-	CHECK(config.quality_adjustment_rate <= 1.0f);
 }
 
 // =============================================================================
