@@ -64,7 +64,7 @@ struct CoverageScopedReset {
 		saved_threshold = lang->coverage_threshold;
 		saved_include = lang->coverage_include;
 		saved_exclude = lang->coverage_exclude;
-		saved_enabled = lang->coverage_enabled;
+		saved_enabled = lang->coverage_enabled.is_set();
 		saved_written = lang->coverage_written;
 
 		// Start fresh so recorded data is isolated to this test.
@@ -73,7 +73,7 @@ struct CoverageScopedReset {
 		lang->coverage_branch_hits.clear();
 		lang->coverage_include.clear();
 		lang->coverage_exclude.clear();
-		lang->coverage_enabled = true;
+		lang->coverage_enabled.set();
 		lang->coverage_written = false;
 		lang->coverage_threshold = 0.0f;
 		lang->coverage_mode = GDScriptLanguage::COVERAGE_MODE_SET;
@@ -90,7 +90,7 @@ struct CoverageScopedReset {
 		lang->coverage_threshold = saved_threshold;
 		lang->coverage_include = saved_include;
 		lang->coverage_exclude = saved_exclude;
-		lang->coverage_enabled = saved_enabled;
+		lang->coverage_enabled.set_to(saved_enabled);
 		lang->coverage_written = saved_written;
 		lang->coverage_hits.clear();
 		lang->coverage_func_hits.clear();
@@ -186,7 +186,7 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK(lang->coverage_hits.is_empty());
 		CHECK(lang->coverage_func_hits.is_empty());
 		CHECK(lang->coverage_branch_hits.is_empty());
-		CHECK(lang->coverage_enabled);
+		CHECK(lang->coverage_enabled.is_set());
 		CHECK(!lang->coverage_written);
 	}
 
