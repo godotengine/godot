@@ -16,6 +16,7 @@
 #include "../renderer/gpu_sorter.h"
 #include "../core/gaussian_splat_quality_config.h"
 #include "../interfaces/gpu_culler.h"
+#include "../lod/lod_config.h"
 
 #include <limits>
 
@@ -435,6 +436,100 @@ TEST_CASE("[GaussianSplatting][Config] SortKeyConfig bit allocation consistency"
 		config.depth_bits = 16;
 		CHECK(config.tile_bits + config.depth_bits == config.key_bits);
 	}
+}
+
+// =============================================================================
+// Live LODConfig validation
+// =============================================================================
+
+TEST_CASE("[GaussianSplatting][Config] LODConfig calculate_lod_level handles disabled and near-zero distances") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.enabled = false;
+
+	CHECK(config.calculate_lod_level(0.0f) == 0);
+	CHECK(config.calculate_lod_level(25.0f) == 0);
+	CHECK(config.calculate_lod_level(100.0f) == 0);
+
+	config.enabled = true;
+
+	CHECK(config.calculate_lod_level(0.0f) == 0);
+	CHECK(config.calculate_lod_level(0.0001f) == 0);
+	CHECK(config.calculate_lod_level(0.001f) == 0);
+	CHECK(config.calculate_lod_level(12.5f) == 0);
+}
+
+TEST_CASE("[GaussianSplatting][Config] LODConfig calculate_lod_level boundary mapping is explicit") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.enabled = true;
+	config.num_levels = 4;
+	config.max_distance = 100.0f;
+	config.base_threshold = 10.0f;
+
+	CHECK(config.calculate_lod_level(24.9999f) == 0);
+	CHECK_MESSAGE(config.calculate_lod_level(25.0f) == 1,
+			"Exact 25.0 enters LOD 1 because calculate_lod_level() is driven by max_distance/num_levels.");
+	CHECK(config.calculate_lod_level(25.0001f) == 1);
+	CHECK(config.calculate_lod_level(49.9999f) == 1);
+	CHECK_MESSAGE(config.calculate_lod_level(50.0f) == 2,
+			"Exact 50.0 enters LOD 2 under the current live floor/clamp mapping.");
+	CHECK(config.calculate_lod_level(50.0001f) == 2);
+	CHECK(config.calculate_lod_level(99.9999f) == 2);
+	CHECK_MESSAGE(config.calculate_lod_level(100.0f) == 3,
+			"Exact max_distance lands on the farthest LOD level in the live implementation.");
+	CHECK(config.calculate_lod_level(100.0001f) == 3);
+	CHECK(config.calculate_lod_level(1000.0f) == 3);
+}
+
+TEST_CASE("[GaussianSplatting][Config] LODConfig distance thresholds follow base-threshold progression") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.base_threshold = 10.0f;
+	config.max_distance = 100.0f;
+
+	CHECK(config.get_distance_threshold(-1) == doctest::Approx(10.0f));
+	CHECK(config.get_distance_threshold(0) == doctest::Approx(10.0f));
+	CHECK(config.get_distance_threshold(1) == doctest::Approx(20.0f));
+	CHECK(config.get_distance_threshold(2) == doctest::Approx(40.0f));
+	CHECK(config.get_distance_threshold(3) == doctest::Approx(80.0f));
+	CHECK_MESSAGE(config.get_distance_threshold(4) == doctest::Approx(100.0f),
+			"Distance thresholds double from base_threshold and clamp at max_distance.");
+}
+
+TEST_CASE("[GaussianSplatting][Config] LODConfig helper mappings match the live implementation") {
+	LODConfig config;
+	config.reset_to_defaults();
+	config.base_threshold = 10.0f;
+	config.max_distance = 100.0f;
+
+	CHECK(config.get_splat_skip_factor(0) == 1);
+	CHECK(config.get_splat_skip_factor(1) == 2);
+	CHECK(config.get_splat_skip_factor(2) == 4);
+	CHECK(config.get_splat_skip_factor(3) == 8);
+
+	config.splat_skip_enabled = false;
+	CHECK(config.get_splat_skip_factor(3) == 1);
+	config.splat_skip_enabled = true;
+
+	CHECK(config.get_sh_band_for_lod(0) == 3);
+	CHECK(config.get_sh_band_for_lod(1) == 2);
+	CHECK(config.get_sh_band_for_lod(2) == 1);
+	CHECK(config.get_sh_band_for_lod(3) == 0);
+	CHECK(config.get_sh_band_for_lod(4) == 0);
+
+	config.sh_reduction_enabled = false;
+	CHECK(config.get_sh_band_for_lod(3) == 3);
+	config.sh_reduction_enabled = true;
+
+	CHECK(config.get_opacity_multiplier(0.0f) == doctest::Approx(1.0f));
+	CHECK(config.get_opacity_multiplier(10.0f) == doctest::Approx(1.0f));
+	CHECK(config.get_opacity_multiplier(55.0f) == doctest::Approx(0.5f));
+	CHECK(config.get_opacity_multiplier(100.0f) == doctest::Approx(0.0f));
+	CHECK(config.get_opacity_multiplier(120.0f) == doctest::Approx(0.0f));
+
+	config.opacity_fade_enabled = false;
+	CHECK(config.get_opacity_multiplier(55.0f) == doctest::Approx(1.0f));
 }
 
 // =============================================================================
