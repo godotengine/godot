@@ -80,7 +80,7 @@ void GDScriptLanguage::coverage_start() {
 	coverage_func_hits.clear();
 	coverage_branch_hits.clear();
 	coverage_written = false;
-	coverage_enabled = true;
+	coverage_enabled.set();
 }
 
 /*************** Path and filter helpers ***************/
@@ -780,7 +780,7 @@ static void _cobertura_write_class(Ref<FileAccess> f, const String &p_res_path,
 	float flr = fs.lines > 0 ? (float)fs.hit_lines / fs.lines : 0.0f;
 	float fbr = fs.branches > 0 ? (float)fs.hit_branches / fs.branches : 0.0f;
 
-	// DTD requires name= (class identifier) and filename= (relative path).
+	// DTD requires name= (class identifier) and filename= (absolute filesystem path).
 	String class_name = _xml_escape(p_res_path.get_file().get_basename());
 	f->store_line(vformat("    <class name=\"%s\" filename=\"%s\" line-rate=\"%.4f\" branch-rate=\"%.4f\">",
 			class_name, _xml_escape(_coverage_globalize(p_res_path)), flr, fbr));
@@ -814,7 +814,8 @@ static Error _write_cobertura(const String &p_path,
 	f->store_line("<!DOCTYPE coverage SYSTEM \"http://cobertura.sourceforge.net/xml/coverage-04.dtd\">");
 	f->store_line(vformat("<coverage version=\"5.0\" timestamp=\"%d\" line-rate=\"%.4f\" branch-rate=\"%.4f\" lines-covered=\"%d\" lines-valid=\"%d\" branches-covered=\"%d\" branches-valid=\"%d\">",
 			(int64_t)ts, line_rate, branch_rate, t.hit_lines, t.lines, t.hit_branches, t.branches));
-	f->store_line("  <packages><package name=\"gdscript\"><classes>");
+	f->store_line(vformat("  <packages><package name=\"gdscript\" line-rate=\"%.4f\" branch-rate=\"%.4f\" complexity=\"0\"><classes>",
+			line_rate, branch_rate));
 
 	Vector<String> sorted_cobertura = _build_sorted_path_union(p_hits, p_func_hits, p_branch_hits, coverable);
 	static const HashMap<int, int> empty_cob_hits;
@@ -863,10 +864,23 @@ static void _json_write_lines(Ref<FileAccess> f, const HashMap<int, int> &p_line
 	f->store_line("},");
 }
 
-static void _json_write_funcs(Ref<FileAccess> f, const HashMap<String, int> &p_funcs) {
+static void _json_write_funcs(Ref<FileAccess> f, const HashMap<String, int> *p_funcs,
+		const HashMap<String, int> *p_func_starts) {
+	// Merge: start with all compiled functions (p_func_starts), then overlay recorded hits.
+	HashMap<String, int> all_funcs;
+	if (p_func_starts) {
+		for (const KeyValue<String, int> &kv : *p_func_starts) {
+			all_funcs[kv.key] = 0;
+		}
+	}
+	if (p_funcs) {
+		for (const KeyValue<String, int> &kv : *p_funcs) {
+			all_funcs[kv.key] = kv.value;
+		}
+	}
 	f->store_string("      \"functions\": {");
 	Vector<String> sorted_funcs;
-	for (const KeyValue<String, int> &fv : p_funcs) {
+	for (const KeyValue<String, int> &fv : all_funcs) {
 		sorted_funcs.push_back(fv.key);
 	}
 	sorted_funcs.sort();
@@ -876,7 +890,7 @@ static void _json_write_funcs(Ref<FileAccess> f, const HashMap<String, int> &p_f
 			f->store_string(",");
 		}
 		first = false;
-		f->store_string("\"" + fn.c_escape() + "\":" + itos(*p_funcs.getptr(fn)));
+		f->store_string("\"" + fn.c_escape() + "\":" + itos(*all_funcs.getptr(fn)));
 	}
 	f->store_line("},");
 }
@@ -907,7 +921,8 @@ static void _json_write_file_entry(Ref<FileAccess> f, const String &p_path,
 		const HashMap<int, int> *p_lines,
 		const HashMap<String, int> *p_funcs,
 		const HashMap<int, GDScriptLanguage::BranchResult> *p_branches,
-		const HashMap<int, int> *p_coverable) {
+		const HashMap<int, int> *p_coverable,
+		const HashMap<String, int> *p_func_starts) {
 	f->store_line("    \"" + p_path.c_escape() + "\": {");
 	if (p_lines || (p_coverable && !p_coverable->is_empty())) {
 		static const HashMap<int, int> empty_json_lines;
@@ -915,11 +930,7 @@ static void _json_write_file_entry(Ref<FileAccess> f, const String &p_path,
 	} else {
 		f->store_line("      \"lines\": {},");
 	}
-	if (p_funcs) {
-		_json_write_funcs(f, *p_funcs);
-	} else {
-		f->store_line("      \"functions\": {},");
-	}
+	_json_write_funcs(f, p_funcs, p_func_starts);
 	if (p_branches) {
 		_json_write_branches(f, *p_branches);
 	} else {
@@ -944,7 +955,7 @@ static Error _write_json(const String &p_path,
 	f->store_line("  \"files\": {");
 	for (int i = 0; i < file_list.size(); i++) {
 		const String &fp = file_list[i];
-		_json_write_file_entry(f, fp, p_hits.getptr(fp), p_func_hits.getptr(fp), p_branch_hits.getptr(fp), coverable.getptr(fp));
+		_json_write_file_entry(f, fp, p_hits.getptr(fp), p_func_hits.getptr(fp), p_branch_hits.getptr(fp), coverable.getptr(fp), func_starts.getptr(fp));
 		if (i + 1 < file_list.size()) {
 			f->store_line(",");
 		} else {
