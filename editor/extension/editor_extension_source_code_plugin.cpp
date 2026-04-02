@@ -74,6 +74,12 @@ Ref<Texture2D> EditorExtensionSourceCodePlugin::get_language_icon() const {
 	return icon;
 }
 
+PackedStringArray EditorExtensionSourceCodePlugin::get_language_extensions() const {
+	PackedStringArray extensions;
+	GDVIRTUAL_CALL(_get_language_extensions, extensions);
+	return extensions;
+}
+
 int EditorExtensionSourceCodePlugin::get_path_count() const {
 	int path_count = 1;
 	GDVIRTUAL_CALL(_get_path_count, path_count);
@@ -216,6 +222,7 @@ void EditorExtensionSourceCodePlugin::_bind_methods() {
 
 	GDVIRTUAL_BIND(_get_language_name);
 	GDVIRTUAL_BIND(_get_language_icon);
+	GDVIRTUAL_BIND(_get_language_extensions);
 
 	GDVIRTUAL_BIND(_get_path_count);
 	GDVIRTUAL_BIND(_get_path_label, "path_index");

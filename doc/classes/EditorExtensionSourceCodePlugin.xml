@@ -134,6 +134,12 @@
 				Implement to provide the name of the class declared in the given [param source_path]. This is used by the editor when dragging and dropping source files into the scene tree, to determine which registered class should be instantiated.
 			</description>
 		</method>
+		<method name="_get_language_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+				Implement to provide a list of extensions for files that should be displayed in the FileSystem dock. This allows plugins to show source files that may be handled by the plugin as text files.
+			</description>
+		</method>
 		<method name="_get_language_icon" qualifiers="virtual const">
 			<return type="Texture2D" />
 			<description>

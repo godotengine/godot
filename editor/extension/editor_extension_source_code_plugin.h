@@ -57,6 +57,7 @@ protected:
 
 	GDVIRTUAL0RC_REQUIRED(String, _get_language_name);
 	GDVIRTUAL0RC(Ref<Texture2D>, _get_language_icon);
+	GDVIRTUAL0RC(PackedStringArray, _get_language_extensions);
 
 	GDVIRTUAL0RC(int, _get_path_count);
 	GDVIRTUAL1RC(String, _get_path_label, int);
@@ -97,6 +98,7 @@ public:
 
 	virtual String get_language_name() const;
 	virtual Ref<Texture2D> get_language_icon() const;
+	virtual PackedStringArray get_language_extensions() const;
 
 	virtual int get_path_count() const;
 	virtual String get_path_label(int p_path_index) const;
