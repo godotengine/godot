@@ -254,6 +254,19 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	errors.push_back(err);
 }
 
+void GDScriptParser::push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin) {
+	panic_mode = true;
+
+	ParserError err;
+	err.message = p_message;
+	err.start_line = p_origin.start_line;
+	err.start_column = p_origin.start_column;
+	err.end_line = p_origin.end_line;
+	err.end_column = p_origin.end_column;
+
+	errors.push_back(err);
+}
+
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_NULL(p_source);
@@ -486,7 +499,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
 	while (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::NEWLINE) {
 		if (current.type == GDScriptTokenizer::Token::ERROR) {
-			push_error(current.literal);
+			push_error(current.literal, current);
 		}
 		current = tokenizer->scan();
 	}
@@ -549,7 +562,7 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
 	while (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::NEWLINE) {
 		if (current.type == GDScriptTokenizer::Token::ERROR) {
-			push_error(current.literal);
+			push_error(current.literal, current);
 		}
 		current = tokenizer->scan();
 	}
@@ -577,7 +590,7 @@ GDScriptTokenizer::Token GDScriptParser::advance() {
 	previous = current;
 	current = tokenizer->scan();
 	while (current.type == GDScriptTokenizer::Token::ERROR) {
-		push_error(current.literal);
+		push_error(current.literal, current);
 		current = tokenizer->scan();
 	}
 	if (previous.type != GDScriptTokenizer::Token::DEDENT) { // `DEDENT` belongs to the next non-empty line.
