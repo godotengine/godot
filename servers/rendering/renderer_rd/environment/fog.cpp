@@ -302,7 +302,8 @@ ALBEDO = vec3(1.0);
 
 	{
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(p_max_directional_lights) + "\n";
-		defines += "\n#define MAX_SKY_LOD " + itos(p_roughness_layers - 1) + ".0\n";
+		const int max_sky_roughness_lod = MIN(p_roughness_layers, SkyRD::Sky::REAL_TIME_ROUGHNESS_LAYERS) - 1;
+		defines += "\n#define MAX_SKY_LOD " + itos(max_sky_roughness_lod) + ".0\n";
 		if (p_is_using_radiance_octmap_array) {
 			defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY \n";
 		}

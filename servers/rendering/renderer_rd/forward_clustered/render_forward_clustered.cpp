@@ -5002,7 +5002,8 @@ RenderForwardClustered::RenderForwardClustered() {
 
 	{
 		String defines;
-		defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
+		const int max_sky_roughness_lod = MIN(get_roughness_layers(), RendererRD::SkyRD::Sky::REAL_TIME_ROUGHNESS_LAYERS) - 1;
+		defines += "\n#define MAX_ROUGHNESS_LOD " + itos(max_sky_roughness_lod) + ".0\n";
 		if (is_using_radiance_octmap_array()) {
 			defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY \n";
 		}
