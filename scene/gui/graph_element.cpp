@@ -49,8 +49,8 @@ void GraphElement::_edit_set_position(const Point2 &p_position) {
 void GraphElement::_resort() {
 	Size2 size = get_size();
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = as_sortable_control(get_child(i));
+	for (Node *childn : iterate_children()) {
+		Control *child = as_sortable_control(childn);
 		if (!child) {
 			continue;
 		}
@@ -60,8 +60,8 @@ void GraphElement::_resort() {
 
 Size2 GraphElement::get_minimum_size() const {
 	Size2 minsize;
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = as_sortable_control(get_child(i), SortableVisibilityMode::IGNORE);
+	for (Node *childn : iterate_children()) {
+		Control *child = as_sortable_control(childn, SortableVisibilityMode::IGNORE);
 		if (!child) {
 			continue;
 		}

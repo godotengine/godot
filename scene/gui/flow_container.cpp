@@ -64,8 +64,8 @@ void FlowContainer::_resort() {
 	Control *last_child = nullptr;
 
 	// First pass for line wrapping and minimum size calculation.
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = as_sortable_control(get_child(i));
+	for (Node *childn : iterate_children()) {
+		Control *child = as_sortable_control(childn);
 		if (!child) {
 			continue;
 		}
@@ -136,8 +136,8 @@ void FlowContainer::_resort() {
 	ofs.x = 0;
 	ofs.y = 0;
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = as_sortable_control(get_child(i));
+	for (Node *childn : iterate_children()) {
+		Control *child = as_sortable_control(childn);
 		if (!child) {
 			continue;
 		}
@@ -268,8 +268,8 @@ void FlowContainer::_resort() {
 Size2 FlowContainer::get_minimum_size() const {
 	Size2i minimum;
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}

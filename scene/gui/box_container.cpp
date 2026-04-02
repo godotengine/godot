@@ -55,8 +55,8 @@ void BoxContainer::_resort() {
 	float stretch_ratio_total = 0.0;
 	HashMap<Control *, _MinSizeCache> min_size_cache;
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i));
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child);
 		if (!c) {
 			continue;
 		}

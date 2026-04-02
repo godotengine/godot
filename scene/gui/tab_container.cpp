@@ -106,8 +106,7 @@ void TabContainer::_notification(int p_what) {
 
 			int tab_index = 0;
 			int tab_cur = tab_bar->get_current_tab();
-			for (int i = 0; i < get_child_count(); i++) {
-				Node *child_node = get_child(i);
+			for (Node *child_node : iterate_children()) {
 				Window *child_wnd = Object::cast_to<Window>(child_node);
 				if (child_wnd && !child_wnd->is_embedded()) {
 					continue;

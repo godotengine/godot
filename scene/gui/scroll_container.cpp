@@ -45,8 +45,8 @@ Size2 ScrollContainer::get_minimum_size() const {
 	// and needs to be calculated before being used by `_update_scrollbars()`.
 	largest_child_min_size = Size2();
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
 		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
@@ -367,8 +367,8 @@ void ScrollContainer::_reposition_children() {
 		}
 	}
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i));
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child);
 		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
@@ -788,8 +788,8 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 
 	int found = 0;
 
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
 		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
