@@ -48,6 +48,38 @@ public:
         return splats;
     }
 
+    Vector<GaussianData> generate_grid_splats(uint32_t x_count, uint32_t y_count, uint32_t z_count, float spacing = 1.0f, float importance = 1.0f) {
+        Vector<GaussianData> splats;
+        const uint32_t total = x_count * y_count * z_count;
+        splats.resize(total);
+
+        const Vector3 half_extent(
+                (x_count > 1 ? float(x_count - 1) * spacing * 0.5f : 0.0f),
+                (y_count > 1 ? float(y_count - 1) * spacing * 0.5f : 0.0f),
+                (z_count > 1 ? float(z_count - 1) * spacing * 0.5f : 0.0f));
+
+        uint32_t write_index = 0;
+        for (uint32_t z = 0; z < z_count; z++) {
+            for (uint32_t y = 0; y < y_count; y++) {
+                for (uint32_t x = 0; x < x_count; x++) {
+                    GaussianData &splat = splats.write[write_index];
+                    splat.position = Vector3(
+                            float(x) * spacing - half_extent.x,
+                            float(y) * spacing - half_extent.y,
+                            float(z) * spacing - half_extent.z);
+                    splat.color = Color(1.0f, 1.0f, 1.0f, 1.0f);
+                    splat.rotation = Quaternion();
+                    splat.scale = Vector3(1.0f, 1.0f, 1.0f);
+                    splat.index = write_index;
+                    splat.importance = importance;
+                    write_index++;
+                }
+            }
+        }
+
+        return splats;
+    }
+
     Camera3D* create_test_camera(const Vector3& position = Vector3(0, 0, 10)) {
         Camera3D* camera = memnew(Camera3D);
         Transform3D transform;
@@ -486,4 +518,169 @@ TEST_CASE("[GaussianSplatting] Hierarchical parallel_build fallback still subdiv
     CHECK(stats.leaf_nodes > 1);
     CHECK(stats.max_depth_reached > 0);
     CHECK_FALSE(root->is_leaf());
+}
+
+TEST_CASE("[GaussianSplatting] Hierarchical empty rebuild clears hierarchy state") {
+    GaussianSplatting::Tests::LODSystemTest fixture;
+    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_grid_splats(4, 4, 4, 2.0f);
+
+    GaussianSplatting::HierarchicalSplatStructure structure;
+    GaussianSplatting::HierarchicalSplatStructure::BuildParams params;
+    params.max_depth = 6;
+    params.min_splats_per_node = 4;
+    structure.build_hierarchy(splats, params);
+
+    REQUIRE(structure.get_root() != nullptr);
+    CHECK(structure.get_total_splats() == splats.size());
+
+    Vector<GaussianSplatting::GaussianData> empty_splats;
+    structure.build_hierarchy(empty_splats, params);
+
+    const GaussianSplatting::HierarchicalSplatStructure::TreeStats stats = structure.get_statistics();
+    CHECK(structure.get_root() == nullptr);
+    CHECK(structure.get_total_splats() == 0);
+    CHECK(stats.total_nodes == 0);
+    CHECK(stats.leaf_nodes == 0);
+    CHECK(stats.max_depth_reached == 0);
+
+    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 25.0f));
+    REQUIRE(camera != nullptr);
+
+    const GaussianSplatting::Frustum frustum = camera->get_frustum();
+    const Vector3 camera_pos = camera->get_global_transform().origin;
+    const GaussianSplatting::HierarchicalSplatStructure::QueryResult query =
+            structure.query_visible_splats(frustum, camera_pos, 1.0f, 128);
+
+    CHECK(query.total_splats == 0);
+    CHECK(query.visible_indices.size() == 0);
+    CHECK(query.lod_weights.size() == 0);
+    CHECK(query.culled_percentage == doctest::Approx(0.0f));
+
+    memdelete(camera);
+}
+
+TEST_CASE("[GaussianSplatting] Hierarchical build preserves source importance weights") {
+    GaussianSplatting::Tests::LODSystemTest fixture;
+    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_grid_splats(2, 2, 1, 2.0f);
+    splats.write[0].importance = 0.1f;
+    splats.write[1].importance = 0.2f;
+    splats.write[2].importance = 0.3f;
+    splats.write[3].importance = 0.4f;
+
+    GaussianSplatting::HierarchicalSplatStructure structure;
+    GaussianSplatting::HierarchicalSplatStructure::BuildParams params;
+    params.compute_importance = true;
+    structure.build_hierarchy(splats, params);
+
+    const GaussianSplatting::HierarchicalSplatStructure::OctreeNode *root = structure.get_root();
+    REQUIRE(root != nullptr);
+    CHECK(root->importance_sum == doctest::Approx(1.0f));
+
+    GaussianSplatting::HierarchicalSplatStructure uniform_structure;
+    params.compute_importance = false;
+    uniform_structure.build_hierarchy(splats, params);
+
+    const GaussianSplatting::HierarchicalSplatStructure::OctreeNode *uniform_root = uniform_structure.get_root();
+    REQUIRE(uniform_root != nullptr);
+    CHECK(uniform_root->importance_sum == doctest::Approx(4.0f));
+}
+
+TEST_CASE("[GaussianSplatting] Hierarchical small leaf query stays aligned and full-detail") {
+    GaussianSplatting::Tests::LODSystemTest fixture;
+    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_grid_splats(2, 2, 2, 1.5f);
+
+    GaussianSplatting::HierarchicalSplatStructure structure;
+    GaussianSplatting::HierarchicalSplatStructure::BuildParams params;
+    params.max_depth = 6;
+    params.min_splats_per_node = 32;
+    structure.build_hierarchy(splats, params);
+
+    const GaussianSplatting::HierarchicalSplatStructure::TreeStats stats = structure.get_statistics();
+    const GaussianSplatting::HierarchicalSplatStructure::OctreeNode *root = structure.get_root();
+    REQUIRE(root != nullptr);
+    CHECK(stats.total_nodes == 1);
+    CHECK(root->is_leaf());
+
+    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 20.0f));
+    REQUIRE(camera != nullptr);
+
+    const GaussianSplatting::HierarchicalSplatStructure::QueryResult query = structure.query_visible_splats(
+            camera->get_frustum(),
+            camera->get_global_transform().origin,
+            1.0f,
+            splats.size());
+
+    CHECK(query.visible_indices.size() == splats.size());
+    CHECK(query.visible_indices.size() == query.lod_weights.size());
+    for (uint32_t i = 0; i < query.lod_weights.size(); i++) {
+        CHECK(query.lod_weights[i] == doctest::Approx(1.0f));
+    }
+
+    memdelete(camera);
+}
+
+TEST_CASE("[GaussianSplatting] Hierarchical query returns empty for a non-intersecting frustum") {
+    GaussianSplatting::Tests::LODSystemTest fixture;
+    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_grid_splats(3, 3, 3, 2.0f);
+
+    GaussianSplatting::HierarchicalSplatStructure structure;
+    structure.build_hierarchy(splats);
+
+    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, -30.0f));
+    REQUIRE(camera != nullptr);
+
+    const GaussianSplatting::HierarchicalSplatStructure::QueryResult query = structure.query_visible_splats(
+            camera->get_frustum(),
+            camera->get_global_transform().origin,
+            1.0f,
+            128);
+
+    CHECK(query.visible_indices.size() == 0);
+    CHECK(query.lod_weights.size() == 0);
+    CHECK(query.nodes_visited > 0);
+    CHECK(query.nodes_frustum_culled > 0);
+    CHECK(query.splats_frustum_culled == splats.size());
+
+    memdelete(camera);
+}
+
+TEST_CASE("[GaussianSplatting] Hierarchical capped query is deterministic across repeated calls") {
+    GaussianSplatting::Tests::LODSystemTest fixture;
+    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_test_splats(4096, 40.0f);
+
+    GaussianSplatting::HierarchicalSplatStructure structure;
+    GaussianSplatting::HierarchicalSplatStructure::BuildParams params;
+    params.max_depth = 7;
+    params.min_splats_per_node = 8;
+    structure.build_hierarchy(splats, params);
+
+    const GaussianSplatting::HierarchicalSplatStructure::TreeStats stats = structure.get_statistics();
+    const GaussianSplatting::HierarchicalSplatStructure::OctreeNode *root = structure.get_root();
+    REQUIRE(root != nullptr);
+    CHECK(stats.total_nodes > 1);
+    CHECK_FALSE(root->is_leaf());
+
+    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 280.0f));
+    REQUIRE(camera != nullptr);
+
+    const GaussianSplatting::Frustum frustum = camera->get_frustum();
+    const Vector3 camera_pos = camera->get_global_transform().origin;
+
+    const GaussianSplatting::HierarchicalSplatStructure::QueryResult first =
+            structure.query_visible_splats(frustum, camera_pos, 1.0f, 256);
+    const GaussianSplatting::HierarchicalSplatStructure::QueryResult second =
+            structure.query_visible_splats(frustum, camera_pos, 1.0f, 256);
+
+    CHECK(first.visible_indices.size() > 0);
+    CHECK(first.visible_indices.size() <= 256);
+    CHECK(first.visible_indices.size() == first.lod_weights.size());
+    CHECK(second.visible_indices.size() == second.lod_weights.size());
+    CHECK(first.visible_indices.size() == second.visible_indices.size());
+    CHECK(first.lod_weights.size() == second.lod_weights.size());
+    for (uint32_t i = 0; i < first.visible_indices.size(); i++) {
+        CHECK(first.visible_indices[i] == second.visible_indices[i]);
+        CHECK(first.lod_weights[i] == doctest::Approx(second.lod_weights[i]));
+    }
+
+    memdelete(camera);
 }

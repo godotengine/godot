@@ -62,7 +62,7 @@ public:
 
     struct QueryResult {
         LocalVector<uint32_t> visible_indices;
-        LocalVector<float> lod_weights;    // Blend weights for smooth transitions
+        LocalVector<float> lod_weights;    // One weight per visible index; consumed as a coarse candidate weight by GPUCuller.
         uint32_t total_splats;
         float culled_percentage;
         uint32_t nodes_visited = 0;
@@ -78,25 +78,27 @@ public:
     };
 
     struct BuildParams {
-        uint32_t max_depth = 8;           // Maximum octree depth
+        uint32_t max_depth = 8;            // Maximum octree depth
         uint32_t min_splats_per_node = 16; // Minimum splats to subdivide
         float size_threshold = 0.01f;      // Minimum node size
-        bool compute_importance = true;    // Calculate importance metrics
-        bool parallel_build = false;       // Requests parallel build, currently falls back to the supported sequential path.
+        bool compute_importance = true;    // Consume source GaussianData::importance for LOD decisions; otherwise treat splats as equally important.
+        bool parallel_build = false;       // Requests parallel build, but the live path still uses the supported sequential builder.
     };
 
 public:
     HierarchicalSplatStructure();
     ~HierarchicalSplatStructure();
 
-    // Build hierarchy from splat data
+    // Build a coarse CPU hierarchy for live candidate generation. GPUCuller still performs the
+    // final per-splat frustum, distance, and budget filtering on the query output.
     void build_hierarchy(const Vector<GaussianData>& splats, const BuildParams& params);
     void build_hierarchy(const Vector<GaussianData>& splats) { build_hierarchy(splats, BuildParams()); }
 
     // Rebuild specific nodes (for dynamic updates)
     void update_node(OctreeNode* node, const Vector<GaussianData>& splats);
 
-    // Query visible splats with LOD
+    // Query coarse visible candidates. The returned visible_indices and lod_weights vectors are
+    // kept aligned so downstream culling can consume them as paired lists.
     QueryResult query_visible_splats(
         const Frustum& frustum,
         const Vector3& camera_pos,

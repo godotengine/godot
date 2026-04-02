@@ -47,7 +47,9 @@ void HierarchicalSplatStructure::build_hierarchy(
     // Clear existing hierarchy
     root.reset();
     splat_data.clear();
+    total_splats = 0;
     nodes_created = 0;
+    build_time_us = 0;
 
     if (splats.is_empty()) {
         return;
@@ -67,7 +69,7 @@ void HierarchicalSplatStructure::build_hierarchy(
         info.radius = g.compute_radius();  // Compute from covariance
         info.color = g.color;
         info.opacity = g.color.a;
-        info.importance = 1.0f;  // Will be computed later
+        info.importance = params.compute_importance ? MAX(0.0f, g.importance) : 1.0f;
 
         // Expand bounds - AABB takes (position, size), not (min, max)
         Vector3 half_size(info.radius, info.radius, info.radius);
@@ -291,7 +293,8 @@ HierarchicalSplatStructure::QueryResult HierarchicalSplatStructure::query_visibl
     result.visible_indices.reserve(MIN(max_splats, total_splats));
     result.lod_weights.reserve(MIN(max_splats, total_splats));
 
-    // Perform hierarchical culling
+    // Perform hierarchical culling. The hierarchy is responsible only for coarse subtree rejection
+    // and LOD sampling; GPUCuller still owns the final per-splat filtering pass.
     cull_hierarchical(root.get(), frustum, camera_pos, result, 1.0f, lod_bias);
 
     // Sort by distance if we exceeded max_splats
