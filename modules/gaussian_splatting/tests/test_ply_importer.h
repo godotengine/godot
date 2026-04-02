@@ -196,3 +196,56 @@ TEST_CASE("[GaussianSplatting][PLYLoader] Cache version mismatch forces re-parse
     _remove_ply_fixture(ply_path);
     DirAccess::remove_absolute(cache_path);
 }
+
+TEST_CASE("[GaussianSplatting][PLYLoader] Legacy gsplatworld cache hits migrate to gsplatcache") {
+    const String ply_path = _make_ply_fixture_path("legacy_cache_migration");
+
+    {
+        Ref<FileAccess> f = FileAccess::open(ply_path, FileAccess::WRITE);
+        REQUIRE_MESSAGE(f.is_valid(), "Should create test PLY file");
+        f->store_string(MINIMAL_PLY_CONTENT);
+        float v0[14] = { 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0 };
+        f->store_buffer((const uint8_t *)v0, sizeof(v0));
+        float v1[14] = { 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0 };
+        f->store_buffer((const uint8_t *)v1, sizeof(v1));
+    }
+
+    {
+        PLYLoader loader;
+        Error err = loader.load_file(ply_path);
+        CHECK_MESSAGE(err == OK, "Initial PLY load should succeed");
+        CHECK(loader.get_splat_count() == 2);
+    }
+
+    const String cache_path = ply_path.get_basename() + ".gsplatcache";
+    const String legacy_cache_path = ply_path.get_basename() + ".gsplatworld";
+
+    if (FileAccess::exists(cache_path)) {
+        DirAccess::remove_absolute(legacy_cache_path);
+        REQUIRE_MESSAGE(DirAccess::rename_absolute(cache_path, legacy_cache_path) == OK,
+                "Renaming the cache to the legacy .gsplatworld path should succeed");
+        CHECK_FALSE(FileAccess::exists(cache_path));
+        CHECK(FileAccess::exists(legacy_cache_path));
+
+        PLYLoader loader;
+        Error err = loader.load_file(ply_path);
+        CHECK_MESSAGE(err == OK, "PLY load through the legacy cache path should succeed");
+        CHECK(loader.get_splat_count() == 2);
+
+        Dictionary stats = loader.get_load_statistics();
+        if (stats.has("cache_hit")) {
+            CHECK_MESSAGE((bool)stats["cache_hit"], "Legacy cache fallback should still count as a cache hit");
+        }
+
+        CHECK_MESSAGE(FileAccess::exists(cache_path),
+                "Legacy cache hits should rewrite the migrated .gsplatcache");
+        CHECK_MESSAGE(!FileAccess::exists(legacy_cache_path),
+                "Legacy cache hits should remove the migrated .gsplatworld cache");
+    } else {
+        MESSAGE("Cache file not created (caching may be disabled); skipping legacy cache migration test");
+    }
+
+    _remove_ply_fixture(ply_path);
+    DirAccess::remove_absolute(cache_path);
+    DirAccess::remove_absolute(legacy_cache_path);
+}

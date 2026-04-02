@@ -1,5 +1,6 @@
 #include "ply_loader.h"
 #include "gaussian_splat_world_io.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
@@ -285,6 +286,18 @@ bool PLYLoader::try_load_cache(const String &p_source_path, uint64_t p_source_si
     }
 
     gaussian_data = cached_data;
+
+    if (legacy_fallback) {
+        write_cache(p_source_path, p_source_size, p_source_mtime);
+        if (FileAccess::exists(cache_path)) {
+            const Error remove_err = DirAccess::remove_absolute(legacy_cache_path);
+            if (remove_err != OK && GaussianSplattingIO::is_data_log_enabled()) {
+                GS_LOG_STREAMING_DEBUG(vformat("Failed to remove migrated legacy PLY cache: %s (error %d)",
+                        legacy_cache_path, remove_err));
+            }
+        }
+    }
+
     return true;
 }
 

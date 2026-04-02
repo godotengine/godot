@@ -240,6 +240,8 @@ private:
             WorldSubmission *r_submission);
     static void _clear_world_submission_renderer(SharedWorld &p_world);
     static bool _apply_world_submission_to_renderer(SharedWorld &p_world, const SharedWorld::WorldSubmissionRecord &p_record);
+	bool _should_prune_world(const SharedWorld &p_world) const;
+	void _prune_world_if_unused(const RID &p_scenario);
 };
 
 #endif // GAUSSIAN_SPLAT_SCENE_DIRECTOR_H
