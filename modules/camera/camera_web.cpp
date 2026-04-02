@@ -256,7 +256,7 @@ void CameraWeb::set_monitoring_feeds(bool p_monitoring_feeds) {
 	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
 		if (driver == nullptr) {
-			driver = new CameraDriverWeb();
+			driver = memnew(CameraDriverWeb);
 		}
 		_update_feeds();
 	} else {
