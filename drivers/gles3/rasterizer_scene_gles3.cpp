@@ -2271,26 +2271,33 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
-	bool apply_environment_effects_in_post = false;
-	bool is_reflection_probe = p_reflection_probe.is_valid();
-
 	Ref<RenderSceneBuffersGLES3> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 
+	bool apply_environment_effects_in_post = false;
+
 	if (rb->get_scaling_3d_mode() != RSE::VIEWPORT_SCALING_3D_MODE_OFF) {
-		// If we're scaling, we apply tonemapping etc. in post, so disable it during rendering
+		// If we're scaling, we apply tonemapping etc. in post, so disable it during rendering.
 		apply_environment_effects_in_post = true;
 	}
 
-	GLES3::RenderTarget *rt = nullptr; // No render target for reflection probe
+	GLES3::RenderTarget *rt = nullptr; // No render target for reflection probe.
+	bool is_reflection_probe = p_reflection_probe.is_valid();
 	if (!is_reflection_probe) {
 		rt = texture_storage->get_render_target(rb->render_target);
 		ERR_FAIL_NULL(rt);
 	}
 
+	bool fxaa_enabled = rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA;
+	if (fxaa_enabled) {
+		// The tonemap pass is required when FXAA is enabled, as FXAA is performed within that pass.
+		apply_environment_effects_in_post = true;
+	}
+
 	bool glow_enabled = false;
 	bool ssao_enabled = false;
 	bool use_bcs = false;
+
 	if (p_environment.is_valid()) {
 		// We apply tonemapping, etc. in post when any of these are true. In this
 		// case, set apply_environment_effects_in_post to true to skip tonemapping during rendering.
@@ -2298,7 +2305,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		ssao_enabled = environment_get_ssao_enabled(p_environment);
 		use_bcs = environment_get_adjustments_enabled(p_environment);
 		bool canvas_tonemapping = environment_get_background(p_environment) == RSE::ENV_BG_CANVAS && environment_get_tone_mapper(p_environment) != RSE::ENV_TONE_MAPPER_LINEAR;
-		if (glow_enabled || ssao_enabled || use_bcs || canvas_tonemapping) {
+		if (glow_enabled || ssao_enabled || use_bcs || fxaa_enabled || canvas_tonemapping) {
 			apply_environment_effects_in_post = true;
 		}
 	}
@@ -2947,7 +2954,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			// Copy color buffer
 			post_effects->post_copy(fbo_rt, target_size, color,
 					depth_buffer, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
-					internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
+					internal_size, p_render_data->luminance_multiplier, rb->get_screen_space_aa(), glow_buffers, glow_intensity,
 					srgb_white, 0, false, bcs_spec_constants);
 
 			// Copy depth buffer
@@ -3021,7 +3028,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, write_color, 0, v);
 				post_effects->post_copy(fbos[2], target_size, source_color,
 						read_depth, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
-						internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
+						internal_size, p_render_data->luminance_multiplier, rb->get_screen_space_aa(), glow_buffers, glow_intensity,
 						srgb_white, v, true, bcs_spec_constants);
 			}
 

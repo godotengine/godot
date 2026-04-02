@@ -45,7 +45,7 @@ public:
 	Size2i target_size; // Size of our output buffer (render target).
 	RSE::ViewportScaling3DMode scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
 	//float fsr_sharpness = 0.2f;
-	//RSE::ViewportScreenSpaceAA screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+	RSE::ViewportScreenSpaceAA screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	//bool use_taa = false;
 	//bool use_debanding = false;
 	uint32_t view_count = 1;
@@ -159,7 +159,7 @@ public:
 	_FORCE_INLINE_ RSE::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
 	//_FORCE_INLINE_ float get_fsr_sharpness() const { return fsr_sharpness; }
 	_FORCE_INLINE_ RSE::ViewportMSAA get_msaa_3d() const { return msaa3d.mode; }
-	//_FORCE_INLINE_ RSE::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
+	_FORCE_INLINE_ RSE::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
 	//_FORCE_INLINE_ bool get_use_taa() const { return use_taa; }
 	//_FORCE_INLINE_ bool get_use_debanding() const { return use_debanding; }
 };
