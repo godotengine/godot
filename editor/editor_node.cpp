@@ -9202,6 +9202,7 @@ EditorNode::EditorNode() {
 
 	confirmation = memnew(ConfirmationDialog);
 	confirmation_button = confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
+	confirmation->set_negative_action_button(confirmation_button);
 	gui_base->add_child(confirmation);
 	confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
@@ -9209,7 +9210,8 @@ EditorNode::EditorNode() {
 	confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_confirmation));
 
 	save_confirmation = memnew(ConfirmationDialog);
-	save_confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
+	Button *dont_save_button = save_confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
+	save_confirmation->set_negative_action_button(dont_save_button);
 	gui_base->add_child(save_confirmation);
 	save_confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	save_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
