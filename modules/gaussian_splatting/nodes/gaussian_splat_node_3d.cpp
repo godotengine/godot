@@ -1295,16 +1295,10 @@ void GaussianSplatNode3D::_update_viewport_render_state(RenderingServer *rs, int
     }
 #endif
 
-    if (viewport_texture_state != ViewportTextureState::READY || !cached_viewport_render_target.is_valid()) {
-#ifndef GS_SILENCE_LOGS
-        if (_is_frame_log_enabled() && update_call_count <= 10) {
-            GS_LOG_RENDERER_DEBUG("[update_splats] Queueing viewport bootstrap...");
-        }
-#endif
-        _queue_viewport_bootstrap();
-        return;
-    }
-
+    // Always update the renderer's camera even when the viewport texture
+    // is not ready yet.  Without this, viewport size changes or bootstrap
+    // delays leave the renderer with stale camera data, causing the GPU
+    // culler to use an outdated frustum and cull all splats.
     Camera3D *camera = viewport->get_camera_3d();
     Transform3D camera_to_world_transform = camera ? camera->get_camera_transform() : get_global_transform();
     Projection camera_projection;
@@ -1318,6 +1312,17 @@ void GaussianSplatNode3D::_update_viewport_render_state(RenderingServer *rs, int
 
     renderer->set_camera_transform(camera_to_world_transform);
     renderer->set_camera_projection(camera_projection);
+
+    if (viewport_texture_state != ViewportTextureState::READY || !cached_viewport_render_target.is_valid()) {
+#ifndef GS_SILENCE_LOGS
+        if (_is_frame_log_enabled() && update_call_count <= 10) {
+            GS_LOG_RENDERER_DEBUG("[update_splats] Queueing viewport bootstrap...");
+        }
+#endif
+        _queue_viewport_bootstrap();
+        return;
+    }
+
     if (OS::get_singleton()->has_feature("headless")) {
         renderer->tick_streaming_only(camera_to_world_transform, camera_projection);
     }
