@@ -39,6 +39,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
+#include "core/templates/safe_refcount.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
@@ -672,7 +673,7 @@ public:
 		COVERAGE_FORMAT_JSON,
 		COVERAGE_FORMAT_TEXT };
 
-	bool coverage_enabled = false;
+	SafeFlag coverage_enabled; // read from VM threads; SafeFlag gives acquire/release ordering
 	bool coverage_written = false;
 	CoverageMode coverage_mode = COVERAGE_MODE_SET;
 	CoverageFormat coverage_format = COVERAGE_FORMAT_LCOV;

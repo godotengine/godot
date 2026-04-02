@@ -2221,7 +2221,7 @@ void GDScriptLanguage::finish() {
 	finishing = true;
 
 #ifdef TOOLS_ENABLED
-	if (coverage_enabled && !coverage_written) {
+	if (coverage_enabled.is_set() && !coverage_written) {
 		Error err = coverage_write();
 		if (err != OK) {
 			OS::get_singleton()->set_exit_code(1);
