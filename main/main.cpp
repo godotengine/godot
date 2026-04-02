@@ -2303,7 +2303,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		String base_path;
 		int max_files;
 		if (!log_file.is_empty()) {
-			base_path = log_file;
+			if (!log_file.is_absolute_path()) {
+				base_path = OS::get_singleton()->get_cwd().path_join(log_file);
+			} else {
+				base_path = log_file;
+			}
 			// Ensure log file name respects the specified override by disabling log rotation.
 			max_files = 1;
 		} else {
