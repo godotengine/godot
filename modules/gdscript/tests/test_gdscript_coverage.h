@@ -895,6 +895,57 @@ TEST_SUITE("[Modules][GDScript]") {
 		CHECK(contents.contains("file_a.gd"));
 		CHECK(contents.contains("file_b.gd"));
 	}
+
+	TEST_CASE("[Modules][GDScript] Coverage: inner-class methods with the same name produce distinct LCOV FN records") {
+		// Regression test: two inner classes that both define a method with the same
+		// name (e.g. "_ready") must each appear as a separate FN/FNDA entry.
+		// Before the fix, _coverage_collect_func_starts used a flat key of just the
+		// method name, so the second class would overwrite the first, causing FNF=1.
+		GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+		REQUIRE(lang != nullptr);
+		CoverageScopedReset guard;
+
+		// Compile a script with two inner classes that share a method name.
+		const String script_path = TestUtils::get_temp_path("coverage_inner_clash.gd");
+		{
+			Ref<FileAccess> fw = FileAccess::open(script_path, FileAccess::WRITE);
+			REQUIRE(fw.is_valid());
+			fw->store_string(
+					"extends RefCounted\n"
+					"class A:\n"
+					"\tfunc _ready():\n"
+					"\t\tpass\n"
+					"class B:\n"
+					"\tfunc _ready():\n"
+					"\t\tpass\n");
+		}
+
+		ERR_PRINT_OFF;
+		Ref<GDScript> script = ResourceLoader::load(script_path, "GDScript");
+		ERR_PRINT_ON;
+		REQUIRE_MESSAGE(script.is_valid(), "Inner-class test script must compile");
+
+		const String out_path = TestUtils::get_temp_path("coverage_inner_clash.lcov");
+		lang->coverage_set_output(out_path);
+		lang->coverage_set_format("lcov");
+
+		// Simulate both inner-class methods being called with qualified names.
+		lang->coverage_record_func_entry(script_path, "A._ready");
+		lang->coverage_record_func_entry(script_path, "B._ready");
+
+		Error err = lang->coverage_write();
+		REQUIRE(err == OK);
+
+		Ref<FileAccess> f = FileAccess::open(out_path, FileAccess::READ);
+		REQUIRE(f.is_valid());
+		String contents = f->get_as_text();
+
+		CHECK_MESSAGE(contents.contains("A._ready"), "Inner class A._ready must appear in LCOV");
+		CHECK_MESSAGE(contents.contains("B._ready"), "Inner class B._ready must appear in LCOV");
+		// FNF must count each inner-class method separately, not collapse them.
+		CHECK_MESSAGE(contents.contains("FNF:2"), "Two distinct inner-class methods must each be counted in FNF");
+		CHECK_MESSAGE(contents.contains("FNH:2"), "Both called inner-class methods must be counted in FNH");
+	}
 }
 
 } // namespace GDScriptTests

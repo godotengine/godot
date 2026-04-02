@@ -670,7 +670,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef TOOLS_ENABLED
 	if (unlikely(GDScriptLanguage::get_singleton()->coverage_enabled.is_set())) {
-		GDScriptLanguage::get_singleton()->coverage_record_func_entry(source, name);
+		// Qualify the function name with its inner-class chain so that same-named
+		// methods in different inner classes (e.g. A._ready and B._ready) produce
+		// distinct keys in coverage_func_hits. For top-level scripts the fqn is
+		// just the file path, so no prefix is prepended.
+		StringName qualified_name = name;
+		if (script) {
+			const String fqn = script->get_fully_qualified_name();
+			const int sep = fqn.find("::");
+			if (sep >= 0) {
+				qualified_name = StringName(fqn.substr(sep + 2).replace("::", ".") + "." + String(name));
+			}
+		}
+		GDScriptLanguage::get_singleton()->coverage_record_func_entry(source, qualified_name);
 	}
 #endif // TOOLS_ENABLED
 

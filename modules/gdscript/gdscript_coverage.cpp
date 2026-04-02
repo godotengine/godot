@@ -423,7 +423,9 @@ void GDScriptLanguage::_coverage_collect_lines(GDScript *p_script, HashMap<int, 
 }
 
 // Walk bytecode to find the first OPCODE_LINE for each function (its start line).
-void GDScriptLanguage::_coverage_collect_func_starts(const GDScript *p_script, HashMap<String, int> &r_starts) {
+// p_class_prefix is the dot-separated inner-class chain (e.g. "Outer.Inner") for subclasses,
+// so that same-named methods in different inner classes get distinct keys.
+void GDScriptLanguage::_coverage_collect_func_starts(const GDScript *p_script, HashMap<String, int> &r_starts, const String &p_class_prefix) {
 	if (!p_script) {
 		return;
 	}
@@ -436,13 +438,15 @@ void GDScriptLanguage::_coverage_collect_func_starts(const GDScript *p_script, H
 		int code_size = func->_code_size;
 		for (int i = 0; i < code_size; i++) {
 			if (code[i] == GDScriptFunction::OPCODE_LINE && i + 1 < code_size) {
-				r_starts[String(func->get_name())] = code[i + 1];
+				String key = p_class_prefix.is_empty() ? String(func->get_name()) : p_class_prefix + "." + String(func->get_name());
+				r_starts[key] = code[i + 1];
 				break; // only the first line number is the start line
 			}
 		}
 	}
 	for (const KeyValue<StringName, Ref<GDScript>> &kv : p_script->get_subclasses()) {
-		_coverage_collect_func_starts(kv.value.ptr(), r_starts);
+		String child_prefix = p_class_prefix.is_empty() ? String(kv.key) : p_class_prefix + "." + String(kv.key);
+		_coverage_collect_func_starts(kv.value.ptr(), r_starts, child_prefix);
 	}
 }
 

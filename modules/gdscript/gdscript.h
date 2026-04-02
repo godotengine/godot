@@ -704,7 +704,7 @@ public:
 	// Static helpers: must be methods of GDScriptLanguage to access private members of
 	// GDScriptFunction (via friend at gdscript_function.h:344) and script_list (private).
 	static void _coverage_collect_lines(GDScript *p_script, HashMap<int, int> &r_lines);
-	static void _coverage_collect_func_starts(const GDScript *p_script, HashMap<String, int> &r_starts);
+	static void _coverage_collect_func_starts(const GDScript *p_script, HashMap<String, int> &r_starts, const String &p_class_prefix = String());
 	HashMap<String, HashMap<int, int>> _coverage_enumerate_coverable_lines();
 	HashMap<String, HashMap<String, int>> _coverage_enumerate_func_start_lines();
 #endif // TOOLS_ENABLED
