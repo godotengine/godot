@@ -747,7 +747,7 @@ static void _cobertura_write_lines_block(Ref<FileAccess> f,
 		const HashMap<int, int> &p_lines,
 		const HashMap<int, int> *p_coverable,
 		const HashMap<int, Vector<const GDScriptLanguage::BranchResult *>> &p_line_branches) {
-	HashMap<int, int> all_lines = p_lines;
+	HashMap<int, int> all_lines(p_lines);
 	if (p_coverable) {
 		for (const KeyValue<int, int> &cv : *p_coverable) {
 			if (!all_lines.has(cv.key)) {
