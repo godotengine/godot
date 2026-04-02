@@ -203,8 +203,12 @@
         // Per-call parameter tracking (varies per-frame, not covered by generation).
         RID cached_raster_gaussian_buffer;
         RID cached_raster_sorted_indices;
+        RID cached_raster_splat_ref_buffer;
+        RID cached_raster_indirect_count_buffer;
         RID cached_raster_compute_gaussian_buffer;
         RID cached_raster_compute_sorted_indices;
+        RID cached_raster_compute_splat_ref_buffer;
+        RID cached_raster_compute_indirect_count_buffer;
         RID cached_state_uniform;
         RID cached_raster_compute_state_uniform;
         RID cached_raster_image_output;
