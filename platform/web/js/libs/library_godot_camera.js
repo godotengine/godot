@@ -74,6 +74,19 @@ const GodotCamera = {
 		 */
 		workerBlobUrl: null,
 
+		/**
+		 * Cached Wasm heap pointer for frame data copy.
+		 * Avoids per-frame malloc/free overhead and fragmentation.
+		 * @type {number}
+		 */
+		_cachedDataPtr: 0,
+
+		/**
+		 * Size of the cached Wasm heap buffer.
+		 * @type {number}
+		 */
+		_cachedDataSize: 0,
+
 		defaultMinimumCapabilities: {
 			'width': {
 				'min': 1,
@@ -191,6 +204,30 @@ let width = 0;
 let height = 0;
 let isCapturing = false;
 
+// Buffer pool state
+let bufferPool = [];
+let currentBufferSize = 0;
+const POOL_SIZE = 4;
+
+function ensureBufferPool(requiredSize) {
+	if (requiredSize === currentBufferSize) {
+		return;
+	}
+	// Resolution changed - reallocate pool.
+	currentBufferSize = requiredSize;
+	bufferPool = [];
+	for (let i = 0; i < POOL_SIZE; i++) {
+		bufferPool.push(new ArrayBuffer(currentBufferSize));
+	}
+}
+
+function acquireBuffer() {
+	if (bufferPool.length === 0) {
+		return null;
+	}
+	return bufferPool.pop();
+}
+
 // Process ImageBitmap using Canvas 2D (fallback method)
 function processImageBitmap(imageBitmap) {
 	const frameWidth = imageBitmap.width;
@@ -208,8 +245,19 @@ function processImageBitmap(imageBitmap) {
 	const imageData = canvasContext.getImageData(0, 0, width, height);
 	imageBitmap.close();
 
+	const requiredSize = width * height * 4;
+	ensureBufferPool(requiredSize);
+
+	const arrayBuffer = acquireBuffer();
+	if (arrayBuffer === null) {
+		return null;
+	}
+
+	const poolBuffer = new Uint8Array(arrayBuffer);
+	poolBuffer.set(imageData.data);
+
 	return {
-		pixelData: imageData.data,
+		pixelData: poolBuffer,
 		width: width,
 		height: height,
 	};
@@ -219,8 +267,17 @@ function processImageBitmap(imageBitmap) {
 async function processVideoFrame(videoFrame) {
 	const frameWidth = videoFrame.displayWidth;
 	const frameHeight = videoFrame.displayHeight;
-	const bufferSize = frameWidth * frameHeight * 4;
-	const pixelBuffer = new Uint8Array(bufferSize);
+	const requiredSize = frameWidth * frameHeight * 4;
+
+	ensureBufferPool(requiredSize);
+
+	const arrayBuffer = acquireBuffer();
+	if (arrayBuffer === null) {
+		videoFrame.close();
+		return null;
+	}
+
+	const pixelBuffer = new Uint8Array(arrayBuffer);
 
 	try {
 		await videoFrame.copyTo(pixelBuffer, {
@@ -249,7 +306,18 @@ self.onmessage = async function(event) {
 		height = data.height || 480;
 		canvasContext = canvas.getContext('2d', { willReadFrequently: true });
 		isCapturing = true;
+		currentBufferSize = width * height * 4;
+		bufferPool = [];
+		for (let i = 0; i < POOL_SIZE; i++) {
+			bufferPool.push(new ArrayBuffer(currentBufferSize));
+		}
 		self.postMessage({ type: 'initialized' });
+		break;
+
+	case 'returnBuffer':
+		if (data.buffer && data.buffer.byteLength === currentBufferSize) {
+			bufferPool.push(data.buffer);
+		}
 		break;
 
 	case 'videoFrame':
@@ -263,6 +331,9 @@ self.onmessage = async function(event) {
 
 		try {
 			const result = await processVideoFrame(data.videoFrame);
+			if (result === null) {
+				return;
+			}
 			self.postMessage(
 				{
 					type: 'frameData',
@@ -292,6 +363,9 @@ self.onmessage = async function(event) {
 
 		try {
 			const result = processImageBitmap(data.imageBitmap);
+			if (result === null) {
+				return;
+			}
 			self.postMessage(
 				{
 					type: 'frameData',
@@ -314,6 +388,8 @@ self.onmessage = async function(event) {
 		isCapturing = false;
 		canvas = null;
 		canvasContext = null;
+		bufferPool = [];
+		currentBufferSize = 0;
 		self.postMessage({ type: 'stopped' });
 		break;
 
@@ -350,6 +426,13 @@ self.onmessage = async function(event) {
 		 */
 		cleanup: function () {
 			this.api.stop();
+
+			// Free cached Wasm heap buffer.
+			if (this._cachedDataPtr) {
+				GodotRuntime.free(this._cachedDataPtr);
+				this._cachedDataPtr = 0;
+				this._cachedDataSize = 0;
+			}
 
 			// Revoke worker blob URL to free memory.
 			if (this.workerBlobUrl) {
@@ -400,15 +483,23 @@ self.onmessage = async function(event) {
 		 * @param {number} context Context value to pass to callback
 		 * @returns {void}
 		 */
-		handleWorkerFrameData: function (eventData, callback, context) {
+		handleWorkerFrameData: function (eventData, callback, context, worker) {
 			const { pixelData, width, height, facingMode } = eventData;
-			const dataPtr = GodotRuntime.malloc(pixelData.length);
-			GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
+
+			// Reuse cached Wasm heap buffer to avoid per-frame malloc/free.
+			if (GodotCamera._cachedDataSize !== pixelData.length) {
+				if (GodotCamera._cachedDataPtr) {
+					GodotRuntime.free(GodotCamera._cachedDataPtr);
+				}
+				GodotCamera._cachedDataPtr = GodotRuntime.malloc(pixelData.length);
+				GodotCamera._cachedDataSize = pixelData.length;
+			}
+			GodotRuntime.heapCopy(HEAPU8, pixelData, GodotCamera._cachedDataPtr);
 
 			GodotCamera.sendGetPixelDataCallback(
 				callback,
 				context,
-				dataPtr,
+				GodotCamera._cachedDataPtr,
 				pixelData.length,
 				width,
 				height,
@@ -416,7 +507,13 @@ self.onmessage = async function(event) {
 				null
 			);
 
-			GodotRuntime.free(dataPtr);
+			// Return used buffer to worker pool.
+			if (worker && pixelData.buffer.byteLength > 0) {
+				worker.postMessage(
+					{ type: 'returnBuffer', data: { buffer: pixelData.buffer } },
+					[pixelData.buffer]
+				);
+			}
 		},
 
 		/**
@@ -489,8 +586,6 @@ self.onmessage = async function(event) {
 							const dataPtr = GodotRuntime.malloc(pixelBuffer.length);
 							GodotRuntime.heapCopy(HEAPU8, pixelBuffer, dataPtr);
 
-							const facingMode = GodotCamera.getFacingMode(currentCamera.stream);
-
 							GodotCamera.sendGetPixelDataCallback(
 								callback,
 								context,
@@ -498,7 +593,7 @@ self.onmessage = async function(event) {
 								pixelBuffer.length,
 								width,
 								height,
-								facingMode,
+								currentCamera.facingMode,
 								null
 							);
 
@@ -571,7 +666,7 @@ self.onmessage = async function(event) {
 
 				switch (type) {
 				case 'frameData':
-					GodotCamera.handleWorkerFrameData(event.data, callback, context);
+					GodotCamera.handleWorkerFrameData(event.data, callback, context, camera.worker);
 					break;
 
 				case 'error':
@@ -632,15 +727,13 @@ self.onmessage = async function(event) {
 							break;
 						}
 
-						const facingMode = GodotCamera.getFacingMode(currentCamera.stream);
-
 						// Transfer VideoFrame to worker
 						currentCamera.worker.postMessage(
 							{
 								type: 'videoFrame',
 								data: {
 									videoFrame,
-									facingMode,
+									facingMode: currentCamera.facingMode,
 								},
 							},
 							[videoFrame]
@@ -735,8 +828,6 @@ self.onmessage = async function(event) {
 						const dataPtr = GodotRuntime.malloc(pixelData.length);
 						GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
 
-						const facingMode = GodotCamera.getFacingMode(stream);
-
 						GodotCamera.sendGetPixelDataCallback(
 							callback,
 							context,
@@ -744,7 +835,7 @@ self.onmessage = async function(event) {
 							pixelData.length,
 							_width,
 							_height,
-							facingMode,
+							currentCamera.facingMode,
 							null
 						);
 
@@ -801,7 +892,7 @@ self.onmessage = async function(event) {
 
 				switch (type) {
 				case 'frameData':
-					GodotCamera.handleWorkerFrameData(event.data, callback, context);
+					GodotCamera.handleWorkerFrameData(event.data, callback, context, camera.worker);
 					break;
 
 				case 'error':
@@ -862,14 +953,12 @@ self.onmessage = async function(event) {
 								return;
 							}
 
-							const facingMode = GodotCamera.getFacingMode(cam.stream);
-
 							cam.worker.postMessage(
 								{
 									type: 'frame',
 									data: {
 										imageBitmap,
-										facingMode,
+										facingMode: cam.facingMode,
 									},
 								},
 								[imageBitmap]
@@ -1032,6 +1121,7 @@ self.onmessage = async function(event) {
 							useWebCodecsWorker: false,
 							useWebCodecs: false,
 							useWorker: false,
+							facingMode: 0,
 						};
 						camerasMap.set(cameraId, camera);
 					}
@@ -1084,21 +1174,21 @@ self.onmessage = async function(event) {
 						camera.video.srcObject = camera.stream;
 						await camera.video.play();
 
+						// Cache facing mode once (doesn't change during stream).
+						camera.facingMode = GodotCamera.getFacingMode(camera.stream);
+
 						// Choose capture method (ordered by efficiency):
 						// 1. WebCodecs + Worker: VideoFrame transferred to Worker, copyTo() in Worker
 						// 2. Worker Canvas 2D: ImageBitmap transferred to Worker, drawImage + getImageData in Worker
 						// 3. WebCodecs (main thread): copyTo() on main thread
 						// 4. Canvas 2D (main thread): drawImage + getImageData on main thread
 						if (GodotCamera.isWebCodecsSupported() && GodotCamera.isWorkerSupported()) {
-							// eslint-disable-next-line require-atomic-updates
 							camera.useWebCodecsWorker = true;
 							GodotCamera.setupWebCodecsWorkerCapture(camera, cameraId, callback, context, deniedCallback);
 						} else if (GodotCamera.isWorkerSupported()) {
-							// eslint-disable-next-line require-atomic-updates
 							camera.useWorker = true;
 							GodotCamera.setupCanvas2DWorkerCapture(camera, cameraId, callback, context, deniedCallback);
 						} else if (GodotCamera.isWebCodecsSupported()) {
-							// eslint-disable-next-line require-atomic-updates
 							camera.useWebCodecs = true;
 							GodotCamera.setupWebCodecsCapture(camera, cameraId, callback, context, deniedCallback);
 						} else {
