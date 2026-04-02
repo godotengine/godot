@@ -2132,66 +2132,70 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		reason->set_context_menu_enabled(true);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
 		reason->set_v_size_flags(SIZE_SHRINK_CENTER);
-		reason->connect(SceneStringName(resized), callable_mp(this, &ScriptEditorDebugger::_update_reason_content_height));
+		reason->connect(SceneStringName(resized), callable_mp(this, &ScriptEditorDebugger::_update_reason_content_height), CONNECT_DEFERRED);
 		hbc->add_child(reason);
 
-		hbc->add_child(memnew(VSeparator));
+		HBoxContainer *buttons = memnew(HBoxContainer);
+		buttons->set_v_size_flags(SIZE_SHRINK_END);
+		hbc->add_child(buttons);
+
+		buttons->add_child(memnew(VSeparator));
 
 		skip_breakpoints = memnew(Button);
 		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(skip_breakpoints);
+		buttons->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTRC("Skip Breakpoints"));
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		ignore_error_breaks = memnew(Button);
 		ignore_error_breaks->set_theme_type_variation(SceneStringName(FlatButton));
 		ignore_error_breaks->set_tooltip_text(TTRC("Ignore Error Breaks"));
-		hbc->add_child(ignore_error_breaks);
+		buttons->add_child(ignore_error_breaks);
 		ignore_error_breaks->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
 
-		hbc->add_child(memnew(VSeparator));
+		buttons->add_child(memnew(VSeparator));
 
 		copy = memnew(Button);
 		copy->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(copy);
+		buttons->add_child(copy);
 		copy->set_tooltip_text(TTRC("Copy Error"));
 		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
-		hbc->add_child(memnew(VSeparator));
+		buttons->add_child(memnew(VSeparator));
 
 		step = memnew(Button);
 		step->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(step);
+		buttons->add_child(step);
 		step->set_tooltip_text(TTRC("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
 		next->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(next);
+		buttons->add_child(next);
 		next->set_tooltip_text(TTRC("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
 		next->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_next));
 
 		out = memnew(Button);
 		out->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(out);
+		buttons->add_child(out);
 		out->set_tooltip_text(TTRC("Step Out"));
 		out->set_shortcut(ED_GET_SHORTCUT("debugger/step_out"));
 		out->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_out));
 
-		hbc->add_child(memnew(VSeparator));
+		buttons->add_child(memnew(VSeparator));
 
 		dobreak = memnew(Button);
 		dobreak->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(dobreak);
+		buttons->add_child(dobreak);
 		dobreak->set_tooltip_text(TTRC("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
 		docontinue->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(docontinue);
+		buttons->add_child(docontinue);
 		docontinue->set_tooltip_text(TTRC("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
