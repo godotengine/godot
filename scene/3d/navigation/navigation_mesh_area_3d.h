@@ -40,16 +40,15 @@ class NavigationMeshArea3D : public Node3D {
 
 protected:
 	RID area;
+	RID map_override;
 
 	bool enabled = true;
-	float height = 1.0;
 	uint32_t navigation_layers = 1;
 	int priority = 0;
 	AABB bounds;
 	bool bounds_dirty = true;
 
 	virtual void _update_bounds();
-	static AABB _xform_bounds(const Vector<Vector3> &p_vertices, const Transform3D &p_gt, float p_height);
 
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -71,8 +70,8 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_height(float p_height);
-	float get_height() const;
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
@@ -92,6 +91,7 @@ private:
 public:
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+	static AABB _xform_bounds(const Vector<Vector3> &p_vertices, const Transform3D &p_gt, float p_height);
 };
 
 class NavigationMeshAreaBox3D : public NavigationMeshArea3D {
@@ -121,6 +121,7 @@ public:
 class NavigationMeshAreaCylinder3D : public NavigationMeshArea3D {
 	GDCLASS(NavigationMeshAreaCylinder3D, NavigationMeshArea3D);
 
+	float height = 1.0;
 	float radius = 1.0;
 
 	virtual void _update_bounds() override;
@@ -136,6 +137,9 @@ public:
 	NavigationMeshAreaCylinder3D();
 	~NavigationMeshAreaCylinder3D();
 
+	void set_height(float p_height);
+	float get_height() const;
+
 	void set_radius(float p_radius);
 	float get_radius() const;
 
@@ -145,6 +149,7 @@ public:
 class NavigationMeshAreaPolygon3D : public NavigationMeshArea3D {
 	GDCLASS(NavigationMeshAreaPolygon3D, NavigationMeshArea3D);
 
+	float height = 1.0;
 	Vector<Vector3> vertices;
 	bool vertices_are_clockwise = true;
 	bool vertices_are_valid = true;
@@ -161,6 +166,9 @@ protected:
 public:
 	NavigationMeshAreaPolygon3D();
 	~NavigationMeshAreaPolygon3D();
+
+	void set_height(float p_height);
+	float get_height() const;
 
 	void set_vertices(const Vector<Vector3> &p_vertices);
 	const Vector<Vector3> &get_vertices() const;

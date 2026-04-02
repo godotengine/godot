@@ -183,8 +183,6 @@ public:
 	// virtual real_t area_get_cylinder_radius(RID p_area) const = 0;
 	// virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) = 0;
 	// virtual Vector<Vector3> area_get_vertices(RID p_area) const = 0;
-	// virtual bool are_area_polyogn_vertices_clockwise(RID p_area) const = 0;
-	// virtual bool are_area_polyogn_vertices_valid(RID p_area) const = 0;
 
 	/* LINK API */
 
@@ -326,7 +324,7 @@ public:
 protected:
 	static RWLock geometry_parser_rwlock;
 	static RID_Owner<NavMeshGeometryParser3D> geometry_parser_owner;
-	static LocalVector<NavMeshGeometryParser3D *> generator_parsers;
+	static LocalVector<NavMeshGeometryParser3D *> generator_parsers; // The Nodes and custom ones created via server.
 
 public:
 	virtual RID source_geometry_parser_create() = 0;

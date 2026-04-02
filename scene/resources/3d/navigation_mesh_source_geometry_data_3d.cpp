@@ -384,16 +384,16 @@ void NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Vector
 	projected_area.priority = p_priority;
 	projected_area.shape_type = ProjectedArea::ShapeType::POLYGON;
 
-	float *obstruction_vertices_ptrw = projected_area.vertices.ptrw();
+	float *area_vertices_ptrw = projected_area.vertices.ptrw();
 
 	AABB area_aabb;
 	area_aabb.position = p_vertices[0];
 
 	int vertex_index = 0;
 	for (const Vector3 &vertex : p_vertices) {
-		obstruction_vertices_ptrw[vertex_index++] = vertex.x;
-		obstruction_vertices_ptrw[vertex_index++] = vertex.y;
-		obstruction_vertices_ptrw[vertex_index++] = vertex.z;
+		area_vertices_ptrw[vertex_index++] = vertex.x;
+		area_vertices_ptrw[vertex_index++] = vertex.y;
+		area_vertices_ptrw[vertex_index++] = vertex.z;
 		area_aabb.expand_to(vertex);
 	}
 	projected_area.aabb = area_aabb;
