@@ -1,9 +1,8 @@
 #include "ply_loader.h"
+#include "gaussian_splat_world_io.h"
 #include "core/os/os.h"
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "io_settings_utils.h"
 #include "../core/gaussian_splat_world.h"
 #include "../logger/gs_logger.h"
@@ -11,6 +10,11 @@
 #include <climits>
 
 namespace {
+
+// Bump this when the GaussianSplatWorld binary format or the metadata
+// contract changes.  try_load_cache() rejects caches with a different version
+// so stale data is never silently reused after a format change.
+static constexpr int PLY_CACHE_VERSION = 1;
 
 static constexpr int SH_DC_COMPONENTS = 3;
 static constexpr int SH_REST_COMPONENTS = 45;
@@ -226,12 +230,26 @@ bool PLYLoader::try_load_cache(const String &p_source_path, uint64_t p_source_si
         return false;
     }
 
-    const String cache_path = p_source_path.get_basename() + ".gsplatworld";
-    if (!FileAccess::exists(cache_path)) {
+    // Use .gsplatcache (not .gsplatworld) so Godot's filesystem scanner does
+    // not treat PLY caches as standalone importable resources.  User-created
+    // .gsplatworld files from the bake script remain importable.
+    const String cache_path = p_source_path.get_basename() + ".gsplatcache";
+    // Fall back to legacy .gsplatworld caches written before the rename.
+    const String legacy_cache_path = p_source_path.get_basename() + ".gsplatworld";
+    const bool legacy_fallback = !FileAccess::exists(cache_path) && FileAccess::exists(legacy_cache_path);
+    const String effective_cache_path = legacy_fallback ? legacy_cache_path : cache_path;
+    if (!FileAccess::exists(effective_cache_path)) {
         return false;
     }
 
-    Ref<Resource> resource = ResourceLoader::load(cache_path, "GaussianSplatWorld");
+    // Call the format loader directly with CACHE_MODE_IGNORE so we always
+    // read from disk.  Going through ResourceLoader::load() with the default
+    // CACHE_MODE_REUSE would return stale in-memory data when the cache file
+    // has been rewritten during the same editor session.
+    ResourceFormatLoaderGaussianSplatWorld format_loader;
+    Error load_err = OK;
+    Ref<Resource> resource = format_loader.load(effective_cache_path, effective_cache_path,
+            &load_err, false, nullptr, ResourceFormatLoader::CACHE_MODE_IGNORE);
     Ref<GaussianSplatWorld> world = resource;
     if (world.is_null()) {
         return false;
@@ -247,6 +265,14 @@ bool PLYLoader::try_load_cache(const String &p_source_path, uint64_t p_source_si
         return false;
     }
     if (cached_size != p_source_size || cached_mtime != p_source_mtime) {
+        return false;
+    }
+
+    const Variant version_var = cache_metadata.get(StringName("cache_version"), Variant());
+    if (version_var.get_type() != Variant::INT && version_var.get_type() != Variant::FLOAT) {
+        return false;
+    }
+    if (int(version_var) != PLY_CACHE_VERSION) {
         return false;
     }
 
@@ -270,7 +296,7 @@ void PLYLoader::write_cache(const String &p_source_path, uint64_t p_source_size,
         return;
     }
 
-    const String cache_path = p_source_path.get_basename() + ".gsplatworld";
+    const String cache_path = p_source_path.get_basename() + ".gsplatcache";
 
     Ref<GaussianSplatWorld> world;
     world.instantiate();
@@ -281,10 +307,13 @@ void PLYLoader::write_cache(const String &p_source_path, uint64_t p_source_size,
     cache_metadata[StringName("cache_source_path")] = p_source_path;
     cache_metadata[StringName("cache_source_size")] = static_cast<int64_t>(p_source_size);
     cache_metadata[StringName("cache_source_mtime")] = static_cast<int64_t>(p_source_mtime);
-    cache_metadata[StringName("cache_version")] = 1;
+    cache_metadata[StringName("cache_version")] = PLY_CACHE_VERSION;
     world->set_metadata(cache_metadata);
 
-    Error err = ResourceSaver::save(world, cache_path);
+    // Write through the format saver directly so .gsplatcache does not need
+    // to be a globally recognised ResourceSaver extension.
+    ResourceFormatSaverGaussianSplatWorld format_saver;
+    Error err = format_saver.save(world, cache_path);
     if (err != OK && GaussianSplattingIO::is_data_log_enabled()) {
         GS_LOG_STREAMING_DEBUG(vformat("Failed to write PLY cache: %s (error %d)", cache_path, err));
     }

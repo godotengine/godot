@@ -622,5 +622,6 @@ bool ResourceFormatSaverGaussianSplatWorld::recognize(const Ref<Resource> &p_res
 }
 
 bool ResourceFormatSaverGaussianSplatWorld::recognize_path(const Ref<Resource> &p_resource, const String &p_path) const {
-	return p_path.get_extension().to_lower() == "gsplatworld" && recognize(p_resource);
+	const String ext = p_path.get_extension().to_lower();
+	return ext == "gsplatworld" && recognize(p_resource);
 }
