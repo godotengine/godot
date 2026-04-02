@@ -1238,6 +1238,9 @@ Table of contents:
 - LSP: Reuse stale parsers in request ([GH-114791](https://github.com/godotengine/godot/pull/114791)).
 - Don't clean up other scripts ([GH-114801](https://github.com/godotengine/godot/pull/114801)).
 - Core: Fix implicit conversions in `ContainerTypeValidate` ([GH-114808](https://github.com/godotengine/godot/pull/114808)).
+- Add GDScript coverage instrumentation (line, function, and branch tracking) with LCOV, Cobertura XML, JSON, and text report formats.
+- Fix inner-class method name collision in function coverage by qualifying names with their class chain.
+- Use `SafeFlag` for `coverage_enabled` to prevent data race between VM threads and the coverage write path.
 
 #### GUI
 
