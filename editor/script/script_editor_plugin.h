@@ -388,6 +388,8 @@ class ScriptEditor : public PanelContainer {
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(const PackedStringArray &paths);
 
+	void _start_find_all_references_in_files(const String &p_text, const String &p_origin_script_path, const int p_lookup_type, const int p_lookup_location);
+
 	void _set_script_zoom_factor(float p_zoom_factor);
 	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);
 

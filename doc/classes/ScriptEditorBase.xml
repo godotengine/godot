@@ -83,5 +83,14 @@
 				Emitted when the user request to search text in the file system.
 			</description>
 		</signal>
+		<signal name="search_references_in_files_requested">
+			<param index="0" name="text" type="String" />
+			<param index="1" name="origin_script_path" type="String" />
+			<param index="2" name="lookup_type" type="int" />
+			<param index="3" name="lookup_location" type="int" />
+			<description>
+				Emitted when the user request to search all references in scripts.
+			</description>
+		</signal>
 	</signals>
 </class>

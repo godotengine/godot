@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -692,11 +693,6 @@ const char *FindInFilesPanel::SIGNAL_FILES_MODIFIED = "files_modified";
 const char *FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED = "close_button_clicked";
 
 FindInFilesPanel::FindInFilesPanel() {
-	_finder = memnew(FindInFiles);
-	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, callable_mp(this, &FindInFilesPanel::_on_result_found));
-	_finder->connect(SceneStringName(finished), callable_mp(this, &FindInFilesPanel::_on_finished));
-	add_child(_finder);
-
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
 	vbc->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
@@ -800,6 +796,13 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		vbc->add_child(_replace_container);
 	}
+}
+
+void FindInFilesPanel::set_finder(FindInFiles *p_finder) {
+	_finder = p_finder;
+	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, callable_mp(this, &FindInFilesPanel::_on_result_found));
+	_finder->connect(SceneStringName(finished), callable_mp(this, &FindInFilesPanel::_on_finished));
+	add_child(_finder);
 }
 
 void FindInFilesPanel::set_with_replace(bool with_replace) {
@@ -1320,6 +1323,7 @@ void FindInFilesPanel::_bind_methods() {
 }
 
 //-----------------------------------------------------------------------------
+const char *FindInFilesContainer::FIND_ALL_REFERENCES_META = "find_all_references";
 
 FindInFilesContainer::FindInFilesContainer() {
 	set_name(TTRC("Search Results"));
@@ -1353,9 +1357,13 @@ FindInFilesContainer::FindInFilesContainer() {
 	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &FindInFilesContainer::_on_theme_changed));
 }
 
-FindInFilesPanel *FindInFilesContainer::_create_new_panel() {
+FindInFilesPanel *FindInFilesContainer::_create_new_panel(bool p_for_references_search) {
 	int index = _tabs->get_current_tab();
 	FindInFilesPanel *panel = memnew(FindInFilesPanel);
+	panel->set_finder(_create_new_find_in_files(p_for_references_search));
+	if (p_for_references_search) {
+		panel->set_meta(FIND_ALL_REFERENCES_META, p_for_references_search);
+	}
 	_tabs->add_child(panel);
 	_tabs->move_child(panel, index + 1); // New panel is added after the current activated panel.
 	_tabs->set_current_tab(index + 1);
@@ -1367,20 +1375,41 @@ FindInFilesPanel *FindInFilesContainer::_create_new_panel() {
 	return panel;
 }
 
+FindInFiles *FindInFilesContainer::_create_new_find_in_files(bool p_for_references_search) {
+	if (p_for_references_search) {
+		return memnew(FindAllReferencesInFiles);
+	}
+
+	return memnew(FindInFiles);
+}
+
 FindInFilesPanel *FindInFilesContainer::_get_current_panel() {
 	return Object::cast_to<FindInFilesPanel>(_tabs->get_current_tab_control());
 }
 
-FindInFilesPanel *FindInFilesContainer::get_panel_for_results(const String &p_label) {
+bool FindInFilesContainer::_can_return_panel(const FindInFilesPanel *p_panel, bool p_for_references_search) {
+	if (!p_panel) {
+		return false;
+	}
+
+	if (p_panel->is_keep_results()) {
+		return false;
+	}
+
+	bool has_reference_finder = p_panel->has_meta(FIND_ALL_REFERENCES_META);
+	return has_reference_finder == p_for_references_search;
+}
+
+FindInFilesPanel *FindInFilesContainer::get_panel_for_results(const String &p_label, bool p_for_references_search) {
 	FindInFilesPanel *panel = nullptr;
 	// Prefer the current panel.
-	if (_get_current_panel() && !_get_current_panel()->is_keep_results()) {
+	if (_can_return_panel(_get_current_panel(), p_for_references_search)) {
 		panel = _get_current_panel();
 	} else {
 		// Find the first panel which does not keep results.
 		for (int i = 0; i < _tabs->get_tab_count(); i++) {
 			FindInFilesPanel *p = Object::cast_to<FindInFilesPanel>(_tabs->get_tab_control(i));
-			if (p && !p->is_keep_results()) {
+			if (_can_return_panel(p, p_for_references_search)) {
 				panel = p;
 				_tabs->set_current_tab(i);
 				break;
@@ -1388,7 +1417,7 @@ FindInFilesPanel *FindInFilesContainer::get_panel_for_results(const String &p_la
 		}
 
 		if (!panel) {
-			panel = _create_new_panel();
+			panel = _create_new_panel(p_for_references_search);
 		}
 	}
 	_tabs->set_tab_title(_tabs->get_current_tab(), p_label);
@@ -1532,4 +1561,85 @@ void FindInFilesContainer::_on_dock_closed() {
 		tab->queue_free();
 	}
 	_update_bar_visibility();
+}
+
+//-----------------------------------------------------------------------------
+void FindAllReferencesInFiles::_bind_methods() {
+	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_FOUND,
+			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::INT, "line_number"),
+			PropertyInfo(Variant::INT, "begin"),
+			PropertyInfo(Variant::INT, "end"),
+			PropertyInfo(Variant::STRING, "text")));
+
+	ADD_SIGNAL(MethodInfo("finished"));
+}
+
+void FindAllReferencesInFiles::_scan_file(const String &fpath) {
+	if (!ResourceLoader::exists(fpath, "Script")) {
+		return;
+	}
+
+	Ref<Script> script = ResourceLoader::load(fpath);
+
+	if (!script.is_valid()) {
+		return;
+	}
+
+	PackedStringArray lines = script->get_source_code().split("\n");
+
+	for (int i = 0; i < lines.size(); i++) {
+		String current_line = lines[i];
+		// Line number starts at 1.
+		int line_number = i + 1;
+		int begin = 0;
+		int end = 0;
+		while (find_next(current_line, get_search_text(), end, is_match_case(), is_whole_words(), begin, end)) {
+			if (ScriptServer::is_global_class(get_search_text()) || _is_lookup_return_back(script, fpath, lines, line_number, begin)) {
+				emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, current_line);
+			}
+		}
+	}
+}
+
+void FindAllReferencesInFiles::initialize(const String &p_pattern, const String &p_origin_path, const int p_type, const int p_location) {
+	_origin_script_path = p_origin_path;
+
+	if (ResourceLoader::exists(p_origin_path)) {
+		_origin_script = ResourceLoader::load(p_origin_path);
+	}
+
+	_lookup_location = p_location;
+	_lookup_type = p_type;
+
+	set_search_text(p_pattern);
+	set_match_case(true);
+	set_whole_words(true);
+	set_folder("");
+	set_filter(HashSet<String>({ "gd" }));
+}
+
+static String _insert_cursor_char_to_text_line(const PackedStringArray &lines, int p_line, int p_column) {
+	PackedStringArray result;
+	result.append_array(lines);
+	result.write[p_line] = result[p_line].insert(p_column, String::chr(0xFFFF));
+	return String("\n").join(result);
+}
+
+bool FindAllReferencesInFiles::_is_lookup_return_back(Ref<Script> target, const String &p_path, const PackedStringArray &p_code_lines, const int p_row, const int p_column) {
+	ScriptLanguage::LookupResult result;
+	String code_text = _insert_cursor_char_to_text_line(p_code_lines, p_row - 1, p_column);
+	Error lc_error = target->get_language()->lookup_code(code_text, get_search_text(), target->get_path(), nullptr, result);
+
+	if (lc_error != OK || result.type != _lookup_type) {
+		return false;
+	}
+
+	bool is_same_script = p_path == _origin_script_path;
+	bool is_function_declaration = is_same_script && _lookup_location == p_row;
+	bool is_parent_script = !is_same_script && _origin_script->get_base_script() == target;
+	bool is_valid_return_path = result.script_path == _origin_script_path && result.location == _lookup_location;
+	bool is_success_return = is_valid_return_path || is_function_declaration || is_parent_script;
+
+	return is_success_return;
 }

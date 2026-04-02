@@ -48,6 +48,7 @@ void ScriptEditorBase::_bind_methods() {
 	// First use in TextEditorBase.
 	ADD_SIGNAL(MethodInfo("edited_script_changed"));
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(MethodInfo("search_references_in_files_requested", PropertyInfo(Variant::STRING, "text"), PropertyInfo(Variant::STRING, "origin_script_path"), PropertyInfo(Variant::INT, "lookup_type"), PropertyInfo(Variant::INT, "lookup_location")));
 	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptEditorBase::add_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
 

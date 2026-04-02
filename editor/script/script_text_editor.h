@@ -118,6 +118,7 @@ class ScriptTextEditor : public CodeEditorBase {
 		SHOW_TOOLTIP_AT_CARET,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		FIND_ALL_REFERENCES,
 	};
 
 	enum COLOR_MODE {
