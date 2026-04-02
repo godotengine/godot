@@ -3684,6 +3684,7 @@ PopupMenu::PopupMenu() {
 	scroll_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	scroll_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbox_container->add_child(scroll_container, false, INTERNAL_MODE_FRONT);
+	scroll_container->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
 
 	// The control which will display the items
 	control = memnew(Control);
