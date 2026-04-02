@@ -1718,6 +1718,10 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 		}
 	}
 
+	if (p_renames.has(main_scene_path)) {
+		main_scene_path = p_renames[main_scene_path];
+	}
+
 	// Update folder colors.
 	for (const KeyValue<String, String> &rename : p_folders_renames) {
 		if (assigned_folder_colors.has(rename.key)) {
