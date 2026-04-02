@@ -30,8 +30,11 @@
 
 #include "nav_mesh_generator_3d.h"
 
+#include "../nav_area_3d.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/thread.h"
+#include "scene/3d/navigation/navigation_mesh_area_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
@@ -316,9 +319,29 @@ void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<Navigati
 
 void NavMeshGenerator3D::generator_parse_map_geometry_meta_data(Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, NavMap3D *p_map) {
 	// Parse all projected areas created over navigation server.
+	// NOTE: We use global data, therefore don't take p_source_geometry_data's root node's transform into consideration!
 	for (NavArea3D *area : p_map->get_areas()) {
-		// FIXME: see NavigationMeshArea3D::navmesh_parse_source_geometry().
-		// p_source_geometry_data->add_projected_area_box(area_bounds, area_navigation_layers, area_priority);
+		switch (area->get_shape_type()) {
+			case NavigationMeshSourceGeometryData3D::ProjectedArea::BOX: {
+				Vector3 size = area->get_size();
+				Vector<Vector3> vertices;
+				vertices.resize(4);
+				vertices.write[0] = Vector3(-size.x * 0.5, 0.0, -size.z * 0.5);
+				vertices.write[1] = Vector3(size.x * 0.5, 0.0, -size.z * 0.5);
+				vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
+				vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
+				AABB bounds = NavigationMeshArea3D::_xform_bounds(vertices, Transform3D(Basis(), area->get_position()), size.y);
+				p_source_geometry_data->add_projected_area_box(bounds, area->get_navigation_layers(), area->get_priority());
+			} break;
+			case NavigationMeshSourceGeometryData3D::ProjectedArea::CYLINDER: {
+				p_source_geometry_data->add_projected_area_cylinder(area->get_position(), area->get_radius(), area->get_height(), area->get_navigation_layers(), area->get_priority());
+			} break;
+			case NavigationMeshSourceGeometryData3D::ProjectedArea::POLYGON: {
+				p_source_geometry_data->add_projected_area_polygon(area->get_vertices(), area->get_elevation(), area->get_height(), area->get_navigation_layers(), area->get_priority());
+			} break;
+			default:
+				break;
+		}
 	}
 }
 

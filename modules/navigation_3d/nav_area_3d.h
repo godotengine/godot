@@ -34,15 +34,26 @@
 
 #include "core/math/vector3.h"
 #include "core/templates/self_list.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 
 class NavMap3D;
 
+// Variant of NavigationMeshSourceGeometryData3D::ProjectedArea for parsing navigation mesh areas created via navigation server.
+// TODO: we could interpret size.x as radius, size.y as height.
 class NavArea3D : public NavRid3D {
 	NavMap3D *map = nullptr;
 	Vector3 position;
+	// Vector-packing Legend:
+	// For AreaBox only: xyz means `size`.
+	// For AreaCylinder: x means `radius`, y means `height`.
+	// For AreaPolygon: z means `elevation`, y means `height`.
+	Vector3 xyz = Vector3(1.0, 1.0, 1.0);
+
+	Vector<Vector3> vertices; // For AreaPolygon only.
+
+	NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType shape_type = NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType::NONE;
 
 	bool enabled = false;
-	real_t height = 0.0;
 	uint32_t navigation_layers = 1;
 	int priority = 0;
 
@@ -56,42 +67,30 @@ public:
 	void set_position(const Vector3 p_position);
 	const Vector3 &get_position() const { return position; }
 
+	void set_shape_type(NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType p_shape_type);
+	NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType get_shape_type() const { return shape_type; }
+
 	void set_enabled(bool p_enabled);
 	bool get_enabled() const { return enabled; }
-
-	void set_height(const real_t p_height);
-	real_t get_height() const { return height; }
 
 	void set_navigation_layers(uint32_t p_layers);
 	uint32_t get_navigation_layers() const { return navigation_layers; }
 
 	void set_priority(int p_priority);
-	int get_prioset_priority() const { return priority; }
-};
+	int get_priority() const { return priority; }
 
-class NavAreaBox3D : public NavArea3D {
-	Vector3 size = Vector3(1.0, 1.0, 1.0);
-
-public:
 	void set_size(const Vector3 p_size);
-	const Vector3 &get_size() const { return size; }
-};
+	const Vector3 &get_size() const { return xyz; }
 
-class NavAreaCylinder3D : public NavArea3D {
-	real_t radius = 1.0;
+	void set_elevation(const real_t p_elevation);
+	real_t get_elevation() const { return xyz.z; }
 
-public:
+	void set_height(const real_t p_height);
+	real_t get_height() const { return xyz.y; }
+
 	void set_radius(real_t p_radius);
-	real_t get_radius() const { return radius; }
-};
+	real_t get_radius() const { return xyz.x; }
 
-class NavAreaPolygon3D : public NavArea3D {
-	Vector<Vector3> vertices;
-	// FIXME:
-	// bool vertices_are_clockwise = true;
-	// bool vertices_are_valid = true;
-
-public:
 	void set_vertices(const Vector<Vector3> &p_vertices);
 	const Vector<Vector3> &get_vertices() const { return vertices; }
 };

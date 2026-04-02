@@ -76,12 +76,12 @@ public:
 	struct ProjectedArea {
 		static inline uint32_t VERSION = 1; // Increase on format changes.
 
-		Vector<float> vertices;
+		Vector<float> vertices; // Used by POLYGON only.
 		AABB aabb;
-		Vector3 position;
-		float radius = 0.0;
-		float elevation = 0.0;
-		float height = 0.0;
+		Vector3 position; // Used by BOX and CYLINDER as position. Unused by POLYGON.
+		float radius = 0.0; // Used by CYLINDER only.
+		float elevation = 0.0; // Used by POLYGON only. // FIXME: is the area height min. this + height is the height max. Could be merged into position.y.
+		float height = 0.0; // Used by CYLINDER and POLYGON. For BOX, it is baked into aabb.
 		uint32_t navigation_layers = 0;
 		int priority = 0;
 		enum ShapeType { // Duplicate of NavigationServer3D::AreaShapeType3D to prevent import issues.

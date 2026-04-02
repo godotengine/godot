@@ -25,6 +25,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
+			Sets how much the projected area shape is extruded along the positive y-axis starting from its global position.
+		</member>
 		<member name="vertices" type="PackedVector3Array" setter="set_vertices" getter="get_vertices" default="PackedVector3Array()">
 			The vertices that define the outline of the projected area shape.
 		</member>

@@ -45,9 +45,6 @@
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationMeshArea3D] is enabled or disabled. Requires a navigation mesh rebake to take any real effect.
 		</member>
-		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
-			Sets how much the projected area shape is extruded along the positive y-axis starting from its global position.
-		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the area applies to its affecting polygons. If multiple areas overlap for the same polygons the area with the highest [member priority] wins. These navigation layers can be checked upon when doing path queries with [method NavigationServer3D.query_path] using a [NavigationPathQueryParameters3D] object.
 		</member>

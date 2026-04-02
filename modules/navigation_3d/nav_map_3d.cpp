@@ -249,13 +249,10 @@ void NavMap3D::add_area(NavArea3D *p_area) {
 	DEV_ASSERT(!areas.has(p_area));
 
 	areas.push_back(p_area);
-	iteration_dirty = true;
 }
 
 void NavMap3D::remove_area(NavArea3D *p_area) {
-	if (areas.erase_unordered(p_area)) {
-		iteration_dirty = true;
-	}
+	areas.erase_unordered(p_area);
 }
 
 void NavMap3D::add_link(NavLink3D *p_link) {

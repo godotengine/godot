@@ -79,6 +79,7 @@ class NavMap3D : public NavRid3D {
 	LocalVector<NavRegion3D *> regions;
 
 	/// Map areas
+	// NOTE: only affect navmesh baking, not syncs/iterations.
 	LocalVector<NavArea3D *> areas;
 
 	/// Map links

@@ -62,19 +62,18 @@ void NavArea3D::set_position(const Vector3 p_position) {
 	position = p_position;
 }
 
+void NavArea3D::set_shape_type(NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType p_shape_type) {
+	if (shape_type == p_shape_type) {
+		return;
+	}
+	shape_type = p_shape_type;
+}
+
 void NavArea3D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
 	}
 	enabled = p_enabled;
-}
-
-void NavArea3D::set_height(const real_t p_height) {
-	if (height == p_height) {
-		return;
-	}
-
-	height = p_height;
 }
 
 void NavArea3D::set_navigation_layers(uint32_t p_navigation_layers) {
@@ -91,21 +90,37 @@ void NavArea3D::set_priority(int p_priority) {
 	priority = p_priority;
 }
 
-void NavAreaBox3D::set_size(const Vector3 p_size) {
-	if (size == p_size) {
+void NavArea3D::set_size(const Vector3 p_size) {
+	if (xyz == p_size) {
 		return;
 	}
-	size = p_size;
+	xyz = p_size;
 }
 
-void NavAreaCylinder3D::set_radius(real_t p_radius) {
-	if (radius == p_radius) {
+void NavArea3D::set_elevation(const real_t p_elevation) {
+	if (xyz.z == p_elevation) {
 		return;
 	}
-	radius = p_radius;
+
+	xyz.z = p_elevation;
 }
 
-void NavAreaPolygon3D::set_vertices(const Vector<Vector3> &p_vertices) {
+void NavArea3D::set_height(const real_t p_height) {
+	if (xyz.y == p_height) {
+		return;
+	}
+
+	xyz.y = p_height;
+}
+
+void NavArea3D::set_radius(real_t p_radius) {
+	if (xyz.x == p_radius) {
+		return;
+	}
+	xyz.x = p_radius;
+}
+
+void NavArea3D::set_vertices(const Vector<Vector3> &p_vertices) {
 	if (vertices == p_vertices) {
 		return;
 	}

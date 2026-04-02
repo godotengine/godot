@@ -624,6 +624,7 @@ RID GodotNavigationServer3D::area_create(AreaShapeType3D p_shape_type) {
 
 	RID rid = area_owner.make_rid();
 	NavArea3D *area = area_owner.get_or_null(rid);
+	area->set_shape_type(NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType(p_shape_type));
 	area->set_self(rid);
 	return rid;
 }

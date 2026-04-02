@@ -45,6 +45,8 @@ RID NavigationMeshArea3D::_navmesh_source_geometry_parser;
 void NavigationMeshArea3D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 
+	NavigationServer3D::get_singleton()->area_set_enabled(area, enabled);
+
 #ifdef DEBUG_ENABLED
 	update_gizmos();
 	_update_debug();
@@ -55,19 +57,23 @@ bool NavigationMeshArea3D::is_enabled() const {
 	return enabled;
 }
 
-void NavigationMeshArea3D::set_height(float p_height) {
-	ERR_FAIL_COND_MSG(p_height < 0, "NavigationMeshArea3D height cannot be negative.");
-	height = p_height;
+void NavigationMeshArea3D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
 
-	bounds_dirty = true;
-	update_gizmos();
-#ifdef DEBUG_ENABLED
-	_update_debug();
-#endif // DEBUG_ENABLED
+	map_override = p_navigation_map;
+
+	NavigationServer3D::get_singleton()->area_set_map(area, map_override);
 }
 
-float NavigationMeshArea3D::get_height() const {
-	return height;
+RID NavigationMeshArea3D::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (is_inside_tree()) {
+		return get_world_3d()->get_navigation_map();
+	}
+	return RID();
 }
 
 void NavigationMeshArea3D::set_navigation_layers(uint32_t p_navigation_layers) {
@@ -76,6 +82,8 @@ void NavigationMeshArea3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	}
 
 	navigation_layers = p_navigation_layers;
+
+	NavigationServer3D::get_singleton()->area_set_navigation_layers(area, navigation_layers);
 }
 
 uint32_t NavigationMeshArea3D::get_navigation_layers() const {
@@ -157,7 +165,7 @@ void NavigationMeshAreaBox3D::_update_bounds() {
 	const Vector3 safe_scale = basis.get_scale().abs().maxf(0.001);
 	const Transform3D gt = Transform3D(Basis().scaled(safe_scale), gp);
 
-	bounds = _xform_bounds(vertices, gt, height);
+	bounds = _xform_bounds(vertices, gt, size.y);
 }
 
 void NavigationMeshAreaCylinder3D::_update_bounds() {
@@ -176,28 +184,6 @@ void NavigationMeshAreaCylinder3D::_update_bounds() {
 	bounds = _xform_bounds(vertices, gt, height);
 }
 
-void NavigationMeshArea3D::_update_bounds() {
-}
-
-AABB NavigationMeshArea3D::_xform_bounds(const Vector<Vector3> &p_vertices, const Transform3D &p_gt, float p_height) {
-	if (p_vertices.size() == 0) {
-		return AABB();
-	}
-
-	AABB new_bounds;
-	new_bounds.position = p_gt.xform(p_vertices[0]);
-
-	for (const Vector3 &vertex : p_vertices) {
-		new_bounds.expand_to(p_gt.xform(vertex));
-	}
-	const Vector3 height_offset = Vector3(0.0, p_height, 0.0);
-	for (const Vector3 &vertex : p_vertices) {
-		new_bounds.expand_to(p_gt.xform(vertex + height_offset));
-	}
-
-	return new_bounds;
-}
-
 void NavigationMeshAreaPolygon3D::_update_bounds() {
 	if (get_vertices().is_empty()) {
 		bounds = AABB();
@@ -211,6 +197,26 @@ void NavigationMeshAreaPolygon3D::_update_bounds() {
 	const Transform3D gt = Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), rotation_y), gp);
 
 	bounds = _xform_bounds(get_vertices(), gt, height);
+}
+
+void NavigationMeshArea3D::_update_bounds() {
+}
+
+AABB NavigationMeshArea3D::_xform_bounds(const Vector<Vector3> &p_vertices, const Transform3D &p_gt, float p_height) {
+	if (p_vertices.size() == 0) {
+		return AABB();
+	}
+
+	AABB new_bounds;
+	new_bounds.position = p_gt.xform(p_vertices[0]);
+
+	const Vector3 height_offset = Vector3(0.0, p_height, 0.0);
+	for (const Vector3 &vertex : p_vertices) {
+		new_bounds.expand_to(p_gt.xform(vertex));
+		new_bounds.expand_to(p_gt.xform(vertex + height_offset));
+	}
+
+	return new_bounds;
 }
 
 void NavigationMeshArea3D::navmesh_parse_init() {
@@ -240,28 +246,16 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 		NavigationMeshAreaBox3D *node = Object::cast_to<NavigationMeshAreaBox3D>(p_node);
 		if (node) {
 			const Transform3D gt = p_source_geometry_data->root_node_transform * node->get_global_transform();
-
-			const Vector3 size = node->get_size();
-			const float height = node->get_height();
-
-			LocalVector<Vector3> b_vertices;
-			b_vertices.resize(4);
-			b_vertices[0] = Vector3(-size.x * 0.5, 0.0, -size.z * 0.5);
-			b_vertices[1] = Vector3(size.x * 0.5, 0.0, -size.z * 0.5);
-			b_vertices[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
-			b_vertices[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
-
-			AABB area_bounds;
-			area_bounds.position = gt.xform(b_vertices[0]);
-
-			const Vector3 height_offset = Vector3(0.0, height, 0.0);
-
-			for (const Vector3 &vertex : b_vertices) {
-				area_bounds.expand_to(gt.xform(vertex));
-				area_bounds.expand_to(gt.xform(vertex + height_offset));
-			}
-
-			p_source_geometry_data->add_projected_area_box(area_bounds, area_navigation_layers, area_priority);
+			// FIXME: there's no safe_scale like in NavigationMeshAreaBox3D::_update_bounds or below.
+			Vector3 size = node->get_size();
+			Vector<Vector3> vertices;
+			vertices.resize(4);
+			vertices.write[0] = Vector3(-size.x * 0.5, 0.0, -size.z * 0.5);
+			vertices.write[1] = Vector3(size.x * 0.5, 0.0, -size.z * 0.5);
+			vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
+			vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
+			AABB bounds = _xform_bounds(vertices, gt, size.y);
+			p_source_geometry_data->add_projected_area_box(bounds, area_navigation_layers, area_priority);
 			return;
 		}
 	}
@@ -274,8 +268,7 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 			Vector3 safe_scale = gt.basis.get_scale().abs().maxf(0.001);
 			if (safe_scale.x > safe_scale.z) {
 				safe_scale.z = safe_scale.x;
-			}
-			if (safe_scale.z > safe_scale.x) {
+			} else if (safe_scale.z > safe_scale.x) {
 				safe_scale.x = safe_scale.z;
 			}
 
@@ -331,9 +324,6 @@ void NavigationMeshArea3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshArea3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshArea3D::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_height", "height"), &NavigationMeshArea3D::set_height);
-	ClassDB::bind_method(D_METHOD("get_height"), &NavigationMeshArea3D::get_height);
-
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationMeshArea3D::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationMeshArea3D::get_navigation_layers);
 
@@ -346,7 +336,6 @@ void NavigationMeshArea3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshArea3D::get_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.0,64.0,0.01,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,100000,1,or_greater,or_less"), "set_priority", "get_priority");
 }
@@ -428,10 +417,10 @@ void NavigationMeshAreaBox3D::_update_debug() {
 	int vertex_index = 0;
 
 	AABB aabb;
-	aabb.position = -size / 2;
+	aabb.position = -size * 0.5;
 	aabb.size = size;
 	aabb.position.y = 0.0;
-	aabb.size.y = get_height();
+	aabb.size.y = size.y;
 
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
@@ -491,6 +480,21 @@ NavigationMeshAreaBox3D::NavigationMeshAreaBox3D() {
 }
 
 NavigationMeshAreaBox3D::~NavigationMeshAreaBox3D() {
+}
+
+void NavigationMeshAreaCylinder3D::set_height(float p_height) {
+	ERR_FAIL_COND_MSG(p_height < 0, "NavigationMeshAreaCylinder3D height cannot be negative.");
+	height = p_height;
+
+	bounds_dirty = true;
+	update_gizmos();
+#ifdef DEBUG_ENABLED
+	_update_debug();
+#endif // DEBUG_ENABLED
+}
+
+float NavigationMeshAreaCylinder3D::get_height() const {
+	return height;
 }
 
 void NavigationMeshAreaCylinder3D::set_radius(float p_radius) {
@@ -632,9 +636,13 @@ PackedStringArray NavigationMeshAreaCylinder3D::get_configuration_warnings() con
 }
 
 void NavigationMeshAreaCylinder3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &NavigationMeshAreaCylinder3D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &NavigationMeshAreaCylinder3D::get_height);
+
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationMeshAreaCylinder3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &NavigationMeshAreaCylinder3D::get_radius);
 
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.0,64.0,0.01,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.0,100,0.01,or_greater,suffix:m"), "set_radius", "get_radius");
 }
 
@@ -646,6 +654,21 @@ NavigationMeshAreaCylinder3D::NavigationMeshAreaCylinder3D() {
 }
 
 NavigationMeshAreaCylinder3D::~NavigationMeshAreaCylinder3D() {
+}
+
+void NavigationMeshAreaPolygon3D::set_height(float p_height) {
+	ERR_FAIL_COND_MSG(p_height < 0, "NavigationMeshAreaPolygon3D height cannot be negative.");
+	height = p_height;
+
+	bounds_dirty = true;
+	update_gizmos();
+#ifdef DEBUG_ENABLED
+	_update_debug();
+#endif // DEBUG_ENABLED
+}
+
+float NavigationMeshAreaPolygon3D::get_height() const {
+	return height;
 }
 
 void NavigationMeshAreaPolygon3D::set_vertices(const Vector<Vector3> &p_vertices) {
@@ -776,12 +799,16 @@ PackedStringArray NavigationMeshAreaPolygon3D::get_configuration_warnings() cons
 }
 
 void NavigationMeshAreaPolygon3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &NavigationMeshAreaPolygon3D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &NavigationMeshAreaPolygon3D::get_height);
+
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationMeshAreaPolygon3D::set_vertices);
 	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationMeshAreaPolygon3D::get_vertices);
 
 	ClassDB::bind_method(D_METHOD("are_vertices_clockwise"), &NavigationMeshAreaPolygon3D::are_vertices_clockwise);
 	ClassDB::bind_method(D_METHOD("are_vertices_valid"), &NavigationMeshAreaPolygon3D::are_vertices_valid);
 
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.0,64.0,0.01,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices"), "set_vertices", "get_vertices");
 }
 
