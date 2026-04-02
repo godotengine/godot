@@ -30,122 +30,166 @@
 
 #include "tapered_capsule_shape_3d.h"
 
-#include "scene/resources/3d/primitive_meshes.h"
-#include "scene/resources/3d/tapered_capsule_mesh.h" // Include the header for TaperedCapsuleMesh
-#include "servers/physics_3d/physics_server_3d.h"
+#include "core/object/class_db.h"
+#include "scene/resources/3d/tapered_capsule_mesh.h"
 
 Vector<Vector3> TaperedCapsuleShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 
-	// Top hemisphere
-	real_t r1 = get_radius_top();
-	real_t h = get_mid_height();
-	Vector3 top_center = Vector3(0, h * 0.5f, 0);
-	for (int i = 0; i < 360; i++) {
-		real_t ra = Math::deg_to_rad((real_t)i);
-		real_t rb = Math::deg_to_rad((real_t)i + 1);
-		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r1;
-		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r1;
+	const int points_per_circle = 60;
+	const int circle_step = 360 / points_per_circle;
+	const int num_connecting_lines = 6;
+	points.reserve(points_per_circle * (2 * 3 + num_connecting_lines));
 
-		points.push_back(Vector3(a.x, 0, a.y) + top_center);
-		points.push_back(Vector3(b.x, 0, b.y) + top_center);
+	// Top circle
+	const real_t angle = TaperedCapsuleMesh::get_tangent_angle(top_radius, bottom_radius, mid_height); // 0 on horizontal, pi/2 on top, -pi/2 on bottom
+	const real_t rtop = get_top_radius();
+	const real_t r1 = rtop * Math::cos(angle);
+	const real_t h = get_mid_height();
+	const Vector3 top_center(0, h / 2 + Math::sin(angle) * rtop, 0);
 
-		if (i % 90 == 0) {
-			points.push_back(Vector3(0, a.x, a.y) + top_center);
-			points.push_back(Vector3(0, b.x, b.y) + top_center);
-			points.push_back(Vector3(a.y, a.x, 0) + top_center);
-			points.push_back(Vector3(b.y, b.x, 0) + top_center);
+	// Bottom circle
+	const real_t rbottom = get_bottom_radius();
+	const real_t r2 = rbottom * Math::cos(angle);
+	const Vector3 bottom_center(0, -h / 2 + Math::sin(angle) * rbottom, 0);
+	Vector<Pair<real_t, Vector3>> circles = { { r1, top_center }, { r2, bottom_center } };
+
+	// Add another circle around the bigger end
+	if (Math::abs(angle) > Math::PI / 18) { // 10deg
+		// circle on the biggest end of the tapered cylinder
+		const bool circle_at_top = rtop > rbottom;
+		const Vector3 center(0, circle_at_top ? h / 2 : -h / 2, 0);
+		const real_t radius = circle_at_top ? rtop : rbottom;
+		circles.push_back({ radius, center });
+	}
+
+	// Draw circles
+	for (const Pair<real_t, Vector3> k : circles) {
+		const Vector3 &center = k.second;
+		const real_t &radius = k.first;
+		if (radius <= CMP_EPSILON) {
+			continue;
+		}
+
+		for (int i = 0; i <= 360; i += circle_step) {
+			real_t ra = Math::deg_to_rad((real_t)i);
+			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
+
+			Vector3 newpoint = Vector3(a.x, 0, a.y) + center;
+			points.push_back(newpoint);
+			switch (i) {
+				case 360:
+				case 0:
+					break;
+
+				default:
+					points.push_back(newpoint);
+					break;
+			}
 		}
 	}
 
-	// Bottom hemisphere
-	real_t r2 = get_radius_bottom();
-	Vector3 bottom_center = Vector3(0, -h * 0.5f, 0);
-	for (int i = 0; i < 360; i++) {
-		real_t ra = Math::deg_to_rad((real_t)i);
-		real_t rb = Math::deg_to_rad((real_t)i + 1);
-		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r2;
-		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r2;
+	const int points_per_connecting_line = points_per_circle / 2;
+	int top_transition = Math::round(points_per_connecting_line * (Math::PI / 2 - angle) / Math::PI);
+	// index where the transition from top to bottom happens
+	// If the transition from top to bottom happens at the start, we can skip the first point and start at 1 because it's a sphere, so a point from top_radius would start from inside the sphere
+	int start = top_transition == 0 ? 1 : 0;
+	// Same for the end, if the top transition happens at the last point, then the bottom sphere is engulfed in the top sphere, so we don't need to come back to bottom_radius
+	// It's normally +1, for the duplicated point, except when engulfed
+	int end = points_per_connecting_line + (top_transition == points_per_connecting_line ? 0 : 1);
 
-		points.push_back(Vector3(a.x, 0, a.y) + bottom_center);
-		points.push_back(Vector3(b.x, 0, b.y) + bottom_center);
-
-		if (i % 90 == 0) {
-			points.push_back(Vector3(0, a.x, a.y) + bottom_center);
-			points.push_back(Vector3(0, b.x, b.y) + bottom_center);
-			points.push_back(Vector3(a.y, a.x, 0) + bottom_center);
-			points.push_back(Vector3(b.y, b.x, 0) + bottom_center);
+	// Connecting lines running from top to bottom
+	for (size_t i = 0; i < num_connecting_lines; i++) {
+		real_t ra = Math::deg_to_rad((real_t)360 * i / num_connecting_lines);
+		Point2 a = Vector2(Math::cos(ra), Math::sin(ra));
+		for (int j = start; j <= end; j++) {
+			bool is_top = j <= top_transition;
+			// Point at the transition between top and bottom needs to be duplicated so that there is a line connecting the top and the bottom hemisphere, hence the -1 to the effective index on bottom
+			real_t phi = (j - (is_top ? 0 : 1)) * Math::PI / points_per_connecting_line; // 0 on top, pi on bottom
+			// At the transition, force the angle to be the tangent angle
+			if (j == top_transition || j == top_transition + 1) {
+				phi = Math::PI / 2 - angle;
+			}
+			real_t radius = is_top ? rtop : rbottom;
+			real_t rxz = Math::sin(phi) * radius;
+			real_t y = (is_top ? h / 2 : -h / 2) + Math::cos(phi) * radius;
+			Vector3 newpoint(a.x * rxz, y, a.y * rxz);
+			points.push_back(newpoint);
+			if (unlikely(j == start || j == end)) {
+			} else {
+				points.push_back(newpoint);
+			}
 		}
 	}
-
-	// Connecting lines (cylinder part)
-	points.push_back(Vector3(r1, h * 0.5f, 0));
-	points.push_back(Vector3(r2, -h * 0.5f, 0));
-	points.push_back(Vector3(-r1, h * 0.5f, 0));
-	points.push_back(Vector3(-r2, -h * 0.5f, 0));
-	points.push_back(Vector3(0, h * 0.5f, r1));
-	points.push_back(Vector3(0, -h * 0.5f, r2));
-	points.push_back(Vector3(0, h * 0.5f, -r1));
-	points.push_back(Vector3(0, -h * 0.5f, -r2));
 
 	return points;
 }
 
 Ref<ArrayMesh> TaperedCapsuleShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
 	Array capsule_array;
-	capsule_array.resize(RS::ARRAY_MAX);
-	TaperedCapsuleMesh::create_mesh_array(capsule_array, radius_top, radius_bottom, mid_height, 32, 8);
+	capsule_array.resize(RSE::ARRAY_MAX);
+	TaperedCapsuleMesh::create_mesh_array(capsule_array, top_radius, bottom_radius, mid_height, 32, 8);
 
 	Vector<Color> colors;
-	const PackedVector3Array &verts = capsule_array[RS::ARRAY_VERTEX];
+	const PackedVector3Array &verts = capsule_array[RSE::ARRAY_VERTEX];
 	const int32_t verts_size = verts.size();
 	for (int i = 0; i < verts_size; i++) {
 		colors.append(p_modulate);
 	}
 
 	Ref<ArrayMesh> capsule_mesh = memnew(ArrayMesh);
-	capsule_array[RS::ARRAY_COLOR] = colors;
+	capsule_array[RSE::ARRAY_COLOR] = colors;
 	capsule_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, capsule_array);
 	return capsule_mesh;
 }
 
 real_t TaperedCapsuleShape3D::get_enclosing_radius() const {
-	return MAX(radius_top, radius_bottom) + mid_height * 0.5f;
+	return MAX(top_radius, bottom_radius) + mid_height * 0.5f;
 }
 
 void TaperedCapsuleShape3D::_update_shape() {
 	Dictionary d;
-	d["radius"] = (radius_top + radius_bottom) / 2.0;
-	d["height"] = mid_height;
+	static PhysicsServer3D::ShapeType created_shape = PhysicsServer3D::get_singleton()->shape_get_type(get_shape());
+	static bool can_make_tapered_shapes = created_shape == PhysicsServer3D::SHAPE_TAPERED_CAPSULE; // Jolt can do that
+	static bool can_make_basic_shape = created_shape == PhysicsServer3D::SHAPE_CAPSULE; // Dummy can't do that, but GodotPhysics3D can
+	if (can_make_tapered_shapes) {
+		d["radius_top"] = top_radius;
+		d["radius_bottom"] = bottom_radius;
+		d["height"] = mid_height;
+	} else if (can_make_basic_shape) {
+		d["radius"] = (top_radius + bottom_radius) / 2.0;
+		d["height"] = get_height();
+		WARN_PRINT_ONCE("Tapered capsule shapes aren't supported by the current physics engine (" + PhysicsServer3DManager::get_singleton()->get_default_server_name() + "). They will behave as regular capsules instead.");
+	}
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
 
-void TaperedCapsuleShape3D::set_radius_top(real_t p_radius_top) {
-	ERR_FAIL_COND_MSG(p_radius_top < 0.0f, "TaperedCapsuleShape3D radius_top cannot be negative.");
-	radius_top = p_radius_top;
+void TaperedCapsuleShape3D::set_top_radius(real_t p_top_radius) {
+	ERR_FAIL_COND_MSG(p_top_radius <= 0.0f, "TaperedCapsuleShape3D top_radius must be positive.");
+	top_radius = p_top_radius < CMP_EPSILON ? CMP_EPSILON : p_top_radius;
 	_update_shape();
 	emit_changed();
 }
 
-real_t TaperedCapsuleShape3D::get_radius_top() const {
-	return radius_top;
+real_t TaperedCapsuleShape3D::get_top_radius() const {
+	return top_radius;
 }
 
-void TaperedCapsuleShape3D::set_radius_bottom(real_t p_radius_bottom) {
-	ERR_FAIL_COND_MSG(p_radius_bottom < 0.0f, "TaperedCapsuleShape3D radius_bottom cannot be negative.");
-	radius_bottom = p_radius_bottom;
+void TaperedCapsuleShape3D::set_bottom_radius(real_t p_bottom_radius) {
+	ERR_FAIL_COND_MSG(p_bottom_radius <= 0.0f, "TaperedCapsuleShape3D bottom_radius must be positive.");
+	bottom_radius = p_bottom_radius < CMP_EPSILON ? CMP_EPSILON : p_bottom_radius;
 	_update_shape();
 	emit_changed();
 }
 
-real_t TaperedCapsuleShape3D::get_radius_bottom() const {
-	return radius_bottom;
+real_t TaperedCapsuleShape3D::get_bottom_radius() const {
+	return bottom_radius;
 }
 
 void TaperedCapsuleShape3D::set_mid_height(real_t p_mid_height) {
 	ERR_FAIL_COND_MSG(p_mid_height <= 0.0f, "TaperedCapsuleShape3D mid_height must be positive.");
-	mid_height = p_mid_height;
+	mid_height = p_mid_height < CMP_EPSILON ? CMP_EPSILON : p_mid_height;
 	_update_shape();
 	emit_changed();
 }
@@ -155,7 +199,7 @@ real_t TaperedCapsuleShape3D::get_mid_height() const {
 }
 
 void TaperedCapsuleShape3D::set_height(real_t p_height) {
-	real_t new_mid_height = p_height - radius_top - radius_bottom;
+	real_t new_mid_height = p_height - top_radius - bottom_radius;
 	if (new_mid_height <= 0) {
 		new_mid_height = 0.001f; // Minimum
 	}
@@ -163,67 +207,33 @@ void TaperedCapsuleShape3D::set_height(real_t p_height) {
 }
 
 real_t TaperedCapsuleShape3D::get_height() const {
-	return mid_height + radius_top + radius_bottom;
-}
-
-Variant TaperedCapsuleShape3D::get_data() const {
-	Vector<real_t> data;
-	data.resize(3);
-	data.write[0] = radius_top;
-	data.write[1] = radius_bottom;
-	data.write[2] = mid_height;
-	return data;
-}
-
-void TaperedCapsuleShape3D::set_data(const Variant &p_data) {
-	if (p_data.get_type() == Variant::ARRAY) {
-		// Backward compatibility with dictionary
-		const Dictionary data = p_data;
-		const Variant maybe_radius_top = data.get("radius_top", Variant());
-		const Variant maybe_radius_bottom = data.get("radius_bottom", Variant());
-		const Variant maybe_height = data.get("height", Variant());
-		if (maybe_radius_top.get_type() == Variant::FLOAT && maybe_radius_bottom.get_type() == Variant::FLOAT && maybe_height.get_type() == Variant::FLOAT) {
-			set_radius_top(maybe_radius_top);
-			set_radius_bottom(maybe_radius_bottom);
-			set_height(maybe_height);
-			return;
-		}
-	}
-
-	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_FLOAT64_ARRAY);
-
-	const Vector<real_t> data = p_data;
-	ERR_FAIL_COND(data.size() != 3);
-
-	set_radius_top(data[0]);
-	set_radius_bottom(data[1]);
-	set_mid_height(data[2]);
+	return mid_height + top_radius + bottom_radius;
 }
 
 void TaperedCapsuleShape3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_radius_top", "radius_top"), &TaperedCapsuleShape3D::set_radius_top);
-	ClassDB::bind_method(D_METHOD("get_radius_top"), &TaperedCapsuleShape3D::get_radius_top);
-	ClassDB::bind_method(D_METHOD("set_radius_bottom", "radius_bottom"), &TaperedCapsuleShape3D::set_radius_bottom);
-	ClassDB::bind_method(D_METHOD("get_radius_bottom"), &TaperedCapsuleShape3D::get_radius_bottom);
+	ClassDB::bind_method(D_METHOD("set_top_radius", "top_radius"), &TaperedCapsuleShape3D::set_top_radius);
+	ClassDB::bind_method(D_METHOD("get_top_radius"), &TaperedCapsuleShape3D::get_top_radius);
+	ClassDB::bind_method(D_METHOD("set_bottom_radius", "bottom_radius"), &TaperedCapsuleShape3D::set_bottom_radius);
+	ClassDB::bind_method(D_METHOD("get_bottom_radius"), &TaperedCapsuleShape3D::get_bottom_radius);
 	ClassDB::bind_method(D_METHOD("set_mid_height", "mid_height"), &TaperedCapsuleShape3D::set_mid_height);
 	ClassDB::bind_method(D_METHOD("get_mid_height"), &TaperedCapsuleShape3D::get_mid_height);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &TaperedCapsuleShape3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &TaperedCapsuleShape3D::get_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius_top", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_radius_top", "get_radius_top");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius_bottom", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_radius_bottom", "get_radius_bottom");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m", PROPERTY_USAGE_EDITOR), "set_height", "get_height");
 
-	ADD_LINKED_PROPERTY("radius_top", "height");
-	ADD_LINKED_PROPERTY("radius_bottom", "height");
+	ADD_LINKED_PROPERTY("top_radius", "height");
+	ADD_LINKED_PROPERTY("bottom_radius", "height");
 	ADD_LINKED_PROPERTY("mid_height", "height");
-	ADD_LINKED_PROPERTY("height", "radius_top");
-	ADD_LINKED_PROPERTY("height", "radius_bottom");
+	ADD_LINKED_PROPERTY("height", "top_radius");
+	ADD_LINKED_PROPERTY("height", "bottom_radius");
 	ADD_LINKED_PROPERTY("height", "mid_height");
 }
 
 TaperedCapsuleShape3D::TaperedCapsuleShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CAPSULE)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_TAPERED_CAPSULE)) {
 	_update_shape();
 }

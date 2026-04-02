@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jolt_tapered_capsule_shape_3d.h                                       */
+/*  tapered_cylinder_shape_3d.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,26 +30,37 @@
 
 #pragma once
 
-#include "jolt_shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
-class JoltTaperedCapsuleShape3D final : public JoltShape3D {
-	float radius_top = 0.0f;
-	float radius_bottom = 0.0f;
-	float mid_height = 0.0f;
+class ArrayMesh;
 
-	virtual JPH::ShapeRefC _build() const override;
+class TaperedCylinderShape3D : public Shape3D {
+	GDCLASS(TaperedCylinderShape3D, Shape3D);
+	real_t top_radius = 0.5;
+	real_t bottom_radius = 0.5;
+	real_t height = 2.0;
+
+protected:
+	static void _bind_methods();
+
+	virtual void _update_shape() override;
 
 public:
-	virtual ShapeType get_type() const override { return ShapeType::SHAPE_TAPERED_CAPSULE; }
-	virtual bool is_convex() const override { return true; }
+	void set_top_radius(real_t p_radius_top);
+	real_t get_top_radius() const;
 
-	virtual Variant get_data() const override;
-	virtual void set_data(const Variant &p_data) override;
+	void set_bottom_radius(real_t p_radius_bottom);
+	real_t get_bottom_radius() const;
 
-	virtual float get_margin() const override { return 0.0f; }
-	virtual void set_margin(float p_margin) override {}
+	void set_height(real_t p_height);
+	real_t get_height() const;
 
-	virtual AABB get_aabb() const override;
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
+	virtual real_t get_enclosing_radius() const override;
 
-	String to_string() const;
+	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_TAPERED_CYLINDER; }
+
+	TaperedCylinderShape3D();
 };

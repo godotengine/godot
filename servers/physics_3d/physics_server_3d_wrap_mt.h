@@ -88,6 +88,7 @@ public:
 	FUNCRID(capsule_shape)
 	FUNCRID(cylinder_shape)
 	FUNCRID(tapered_capsule_shape)
+	FUNCRID(tapered_cylinder_shape)
 	FUNCRID(convex_polygon_shape)
 	FUNCRID(concave_polygon_shape)
 	FUNCRID(heightmap_shape)

@@ -37,8 +37,8 @@ class ArrayMesh;
 
 class TaperedCapsuleShape3D : public Shape3D {
 	GDCLASS(TaperedCapsuleShape3D, Shape3D);
-	real_t radius_top = 0.5;
-	real_t radius_bottom = 0.5;
+	real_t top_radius = 0.5;
+	real_t bottom_radius = 0.5;
 	real_t mid_height = 1.0; // Height of the cylindrical part
 
 protected:
@@ -47,11 +47,11 @@ protected:
 	virtual void _update_shape() override;
 
 public:
-	void set_radius_top(real_t p_radius_top);
-	real_t get_radius_top() const;
+	void set_top_radius(real_t p_top_radius);
+	real_t get_top_radius() const;
 
-	void set_radius_bottom(real_t p_radius_bottom);
-	real_t get_radius_bottom() const;
+	void set_bottom_radius(real_t p_bottom_radius);
+	real_t get_bottom_radius() const;
 
 	void set_mid_height(real_t p_mid_height);
 	real_t get_mid_height() const;
@@ -63,10 +63,7 @@ public:
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	virtual Variant get_data() const;
-	virtual void set_data(const Variant &p_data);
-
-	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CAPSULE; } // Use capsule type for physics server compatibility
+	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_TAPERED_CAPSULE; }
 
 	TaperedCapsuleShape3D();
 };

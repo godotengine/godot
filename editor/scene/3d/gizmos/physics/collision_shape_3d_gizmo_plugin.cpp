@@ -47,6 +47,7 @@
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/tapered_capsule_shape_3d.h"
+#include "scene/resources/3d/tapered_cylinder_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
@@ -127,15 +128,8 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 		return helper->cylinder_get_handle_name(p_id);
 	}
 
-	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
-		switch (p_id) {
-			case 0:
-				return "Radius Top";
-			case 1:
-				return "Radius Bottom";
-			case 2:
-				return "Mid Height";
-		}
+	if (Object::cast_to<TaperedCapsuleShape3D>(*s) || Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		return helper->tapered_capsule_cylinder_get_handle_name(p_id);
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -175,7 +169,12 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p
 
 	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
 		Ref<TaperedCapsuleShape3D> tcs = s;
-		return Vector3(tcs->get_radius_top(), tcs->get_radius_bottom(), tcs->get_mid_height());
+		return Vector3(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_mid_height());
+	}
+
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
+		return Vector3(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_height());
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -268,41 +267,25 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 
 	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
 		Ref<TaperedCapsuleShape3D> tcs = s;
-		Vector3 ra, rb;
 
-		real_t mid_height = tcs->get_mid_height(); // Fix: use mid_height for sphere centers
+		real_t top_radius = tcs->get_top_radius();
+		real_t bottom_radius = tcs->get_bottom_radius();
+		real_t mid_height = tcs->get_mid_height();
+		helper->tapered_capsule_set_handle(sg, p_id, top_radius, bottom_radius, mid_height);
+		tcs->set_top_radius(top_radius);
+		tcs->set_bottom_radius(bottom_radius);
+		tcs->set_mid_height(mid_height);
+	}
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
 
-		if (p_id == 0) { // Radius Top handle
-			Geometry3D::get_closest_points_between_segments(Vector3(0, mid_height * 0.5, 0), Vector3(4096, mid_height * 0.5, 0), sg[0], sg[1], ra, rb);
-			real_t d = ra.x;
-			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-				d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-			}
-			if (d < 0.001) {
-				d = 0.001;
-			}
-			tcs->set_radius_top(d);
-		} else if (p_id == 1) { // Radius Bottom handle
-			Geometry3D::get_closest_points_between_segments(Vector3(0, -mid_height * 0.5, 0), Vector3(4096, -mid_height * 0.5, 0), sg[0], sg[1], ra, rb);
-			real_t d = ra.x;
-			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-				d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-			}
-			if (d < 0.001) {
-				d = 0.001;
-			}
-			tcs->set_radius_bottom(d);
-		} else if (p_id == 2) { // Mid Height handle
-			Geometry3D::get_closest_points_between_segments(Vector3(0, -mid_height * 0.5, 0), Vector3(0, mid_height * 0.5 + 4096, 0), sg[0], sg[1], ra, rb);
-			real_t d = ra.y + mid_height * 0.5;
-			if (d < 0.001) {
-				d = 0.001;
-			}
-			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-				d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
-			}
-			tcs->set_mid_height(d);
-		}
+		real_t top_radius = tcs->get_top_radius();
+		real_t bottom_radius = tcs->get_bottom_radius();
+		real_t height = tcs->get_height();
+		helper->tapered_cylinder_set_handle(sg, p_id, top_radius, bottom_radius, height);
+		tcs->set_top_radius(top_radius);
+		tcs->set_bottom_radius(bottom_radius);
+		tcs->set_height(height);
 	}
 }
 
@@ -344,36 +327,12 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
 		Ref<TaperedCapsuleShape3D> tcs = s;
-		if (p_cancel) {
-			Vector3 restore = p_restore;
-			tcs->set_radius_top(restore.x);
-			tcs->set_radius_bottom(restore.y);
-			tcs->set_mid_height(restore.z);
-			return;
-		}
+		helper->tapered_capsule_commit_handle(p_id, p_cancel, *tcs);
+	}
 
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		String action_name;
-		switch (p_id) {
-			case 0:
-				action_name = TTR("Change Tapered Capsule Shape Radius Top");
-				break;
-			case 1:
-				action_name = TTR("Change Tapered Capsule Shape Radius Bottom");
-				break;
-			case 2:
-				action_name = TTR("Change Tapered Capsule Shape Mid Height");
-				break;
-		}
-		ur->create_action(action_name);
-		ur->add_do_method(tcs.ptr(), "set_radius_top", tcs->get_radius_top());
-		ur->add_do_method(tcs.ptr(), "set_radius_bottom", tcs->get_radius_bottom());
-		ur->add_do_method(tcs.ptr(), "set_mid_height", tcs->get_mid_height());
-		Vector3 restore = p_restore;
-		ur->add_undo_method(tcs.ptr(), "set_radius_top", restore.x);
-		ur->add_undo_method(tcs.ptr(), "set_radius_bottom", restore.y);
-		ur->add_undo_method(tcs.ptr(), "set_mid_height", restore.z);
-		ur->commit_action();
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
+		helper->tapered_cylinder_commit_handle(p_id, p_cancel, *tcs);
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -772,7 +731,6 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
 		Ref<TaperedCapsuleShape3D> tcs = s;
-		real_t mid_height = tcs->get_mid_height();
 
 		Vector<Vector3> points;
 		Vector<Vector3> lines = tcs->get_debug_mesh_lines();
@@ -780,10 +738,20 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_collision_segments(lines);
 
 		// Add handles for tapered capsule
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(tcs->get_radius_top(), mid_height * 0.5, 0)); // Radius Top handle on cylinder lip
-		handles.push_back(Vector3(tcs->get_radius_bottom(), -mid_height * 0.5, 0)); // Radius Bottom handle on cylinder lip
-		handles.push_back(Vector3(0, mid_height * 0.5, 0)); // Mid Height handle at cylinder top center
+		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_mid_height());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
+
+		Vector<Vector3> points;
+		Vector<Vector3> lines = tcs->get_debug_mesh_lines();
+		p_gizmo->add_lines(lines, material, false, collision_color);
+		p_gizmo->add_collision_segments(lines);
+
+		// Add handles for tapered cylinder
+		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_height());
 		p_gizmo->add_handles(handles, handles_material);
 	}
 

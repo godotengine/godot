@@ -83,6 +83,14 @@ RID GodotPhysicsServer3D::tapered_capsule_shape_create() {
 	return rid;
 }
 
+RID GodotPhysicsServer3D::tapered_cylinder_shape_create() {
+	// For now, fallback to regular cylinder since Godot physics doesn't have tapered capsules
+	GodotShape3D *shape = memnew(GodotCylinderShape3D);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+
 RID GodotPhysicsServer3D::cylinder_shape_create() {
 	GodotShape3D *shape = memnew(GodotCylinderShape3D);
 	RID rid = shape_owner.make_rid(shape);

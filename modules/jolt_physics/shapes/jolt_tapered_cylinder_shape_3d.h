@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jolt_tapered_capsule_shape_3d.h                                       */
+/*  jolt_tapered_cylinder_shape_3d.h                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,15 +32,15 @@
 
 #include "jolt_shape_3d.h"
 
-class JoltTaperedCapsuleShape3D final : public JoltShape3D {
+class JoltTaperedCylinderShape3D final : public JoltShape3D {
 	float radius_top = 0.0f;
 	float radius_bottom = 0.0f;
-	float mid_height = 0.0f;
+	float height = 0.0f;
 
 	virtual JPH::ShapeRefC _build() const override;
 
 public:
-	virtual ShapeType get_type() const override { return ShapeType::SHAPE_TAPERED_CAPSULE; }
+	virtual ShapeType get_type() const override { return ShapeType::SHAPE_TAPERED_CYLINDER; }
 	virtual bool is_convex() const override { return true; }
 
 	virtual Variant get_data() const override;
