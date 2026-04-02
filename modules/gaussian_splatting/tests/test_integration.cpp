@@ -14,7 +14,6 @@
 #include "../nodes/gaussian_splat_node_3d.h"
 #endif
 #include "core/error/error_macros.h"
-#include "../lod/streaming_lod_manager.h"
 #include "../lod/hierarchical_splat_structure.h"
 #include "../lod/adaptive_lod_system.h"
 #include "core/templates/local_vector.h"

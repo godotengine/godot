@@ -279,7 +279,6 @@
 | modules/gaussian_splatting/io/i_gaussian_loader.cpp | 0.07 | 4 | 55 |
 | modules/gaussian_splatting/tests/test_integration.cpp | 0.07 | 41 | 563 |
 | modules/gaussian_splatting/core/gaussian_streaming.h | 0.07 | 61 | 835 |
-| modules/gaussian_splatting/lod/streaming_lod_manager.cpp | 0.07 | 52 | 711 |
 | modules/gaussian_splatting/editor/gaussian_splat_gizmo_plugin.h | 0.07 | 3 | 41 |
 | modules/gaussian_splatting/renderer/pipeline_io_contracts.h | 0.07 | 3 | 41 |
 | tests/runtime/test_runtime_modifications.cpp | 0.07 | 10 | 136 |
@@ -288,7 +287,6 @@
 | modules/gaussian_splatting/tests/test_logger_rate_limit.h | 0.08 | 2 | 26 |
 | tests/examples/godot/test_project/scenes/perf_test_clean.gd | 0.08 | 6 | 78 |
 | modules/gaussian_splatting/shaders/gaussian_splat.frag.glsl.gen.h | 0.08 | 30 | 385 |
-| modules/gaussian_splatting/lod/splat_clusterer.cpp | 0.08 | 65 | 821 |
 | modules/gaussian_splatting/io/i_gaussian_loader.h | 0.08 | 2 | 25 |
 | modules/gaussian_splatting/tests/memory_validator.cpp | 0.08 | 82 | 1015 |
 | modules/gaussian_splatting/core/gaussian_splat_manager.cpp | 0.08 | 81 | 986 |
@@ -314,7 +312,6 @@
 | modules/gaussian_splatting/tests/test_ply_importer.h | 0.11 | 11 | 101 |
 | modules/gaussian_splatting/interfaces/painterly_material_manager.cpp | 0.11 | 17 | 154 |
 | modules/gaussian_splatting/shaders/tile_prefix_scan.glsl | 0.11 | 19 | 172 |
-| modules/gaussian_splatting/lod/splat_clusterer.h | 0.11 | 24 | 215 |
 | modules/gaussian_splatting/shaders/includes/tile_raster_common.glsl | 0.11 | 60 | 535 |
 | modules/gaussian_splatting/lod/hierarchical_splat_structure.h | 0.11 | 17 | 150 |
 | modules/gaussian_splatting/core/residency_budget_controller.h | 0.11 | 5 | 44 |
@@ -325,7 +322,6 @@
 | modules/gaussian_splatting/shaders/includes/gs_instance_layout.glsl | 0.12 | 9 | 74 |
 | modules/gaussian_splatting/core/gaussian_data_io.cpp | 0.12 | 36 | 294 |
 | modules/gaussian_splatting/interfaces/sync_policy.h | 0.12 | 14 | 114 |
-| modules/gaussian_splatting/lod/streaming_lod_manager.h | 0.12 | 25 | 201 |
 | modules/gaussian_splatting/interfaces/tile_rasterizer.h | 0.12 | 8 | 64 |
 | modules/gaussian_splatting/renderer/render_types/render_pipeline_io_types.h | 0.13 | 18 | 141 |
 | modules/gaussian_splatting/core/gaussian_data_animation.cpp | 0.13 | 24 | 184 |

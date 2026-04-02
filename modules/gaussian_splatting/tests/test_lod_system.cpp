@@ -1,20 +1,15 @@
 #include "test_lod_system.h"
 #include "../lod/hierarchical_splat_structure.h"
 #include "../lod/adaptive_lod_system.h"
-#include "../lod/splat_clusterer.h"
-#include "../lod/streaming_lod_manager.h"
 #include "../core/gaussian_data.h"
 #include "../nodes/gaussian_splat_node_3d.h"
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../core/gaussian_splat_manager.h"
 #include "core/os/os.h"
-#include "core/os/thread.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/projection.h"
-#include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "tests/test_macros.h"
-#include <vector>
 
 namespace GaussianSplatting {
 namespace Tests {
@@ -245,191 +240,6 @@ bool test_adaptive_lod() {
     return success;
 }
 
-// Test splat clustering
-bool test_splat_clustering() {
-    print_line("Testing: Splat Clustering");
-
-    LODSystemTest test;
-    auto splats = test.generate_test_splats(1000);
-
-    SplatClusterer clusterer;
-    SplatClusterer::ClusteringParams params;
-    params.method = SplatClusterer::ClusteringParams::HIERARCHICAL_CLUSTERING;
-    params.cluster_radius = 5.0f;
-    params.target_count = 250;  // 75% reduction
-
-    uint64_t start = OS::get_singleton()->get_ticks_usec();
-    auto result = clusterer.cluster_splats(splats, params);
-    uint64_t cluster_time = OS::get_singleton()->get_ticks_usec() - start;
-
-    bool success = true;
-
-    if (result.clusters.is_empty()) {
-        ERR_PRINT("Failed: No clusters created");
-        success = false;
-    }
-
-    if (result.clusters.size() > params.target_count * 1.5f) {
-        WARN_PRINT(vformat("Warning: Too many clusters: %d (target: %d)",
-                          result.clusters.size(), params.target_count));
-    }
-
-    print_line(vformat("  Clustering time: %.2f ms", cluster_time / 1000.0f));
-    print_line(vformat("  Original splats: %d", splats.size()));
-    print_line(vformat("  Clusters created: %d", result.clusters.size()));
-    print_line(vformat("  Reduction ratio: %.1f%%", result.reduction_ratio * 100.0f));
-    print_line(vformat("  Quality score: %.2f", result.quality_score));
-    print_line(vformat("  Avg cluster size: %.1f", result.stats.avg_cluster_size));
-
-    // Test LOD-specific clustering
-    for (uint32_t lod = 0; lod < 4; lod++) {
-        auto lod_result = clusterer.generate_lod_clusters(splats, lod);
-        print_line(vformat("  LOD %d: %d clusters (%.1f%% reduction)",
-                          lod,
-                          lod_result.clusters.size(),
-                          (1.0f - float(lod_result.clusters.size()) / splats.size()) * 100.0f));
-    }
-
-    return success;
-}
-
-// Test streaming LOD manager
-bool test_streaming_lod() {
-    print_line("Testing: Streaming LOD Manager");
-
-    LODSystemTest test;
-    auto splats = test.generate_test_splats(100000);
-    auto camera = test.create_test_camera();
-
-    StreamingLODManager manager;
-    StreamingLODManager::StreamingConfig config;
-    config.num_lod_levels = 4;
-    config.max_gpu_memory = 512 * 1024 * 1024;  // 512 MB
-    config.enable_async_loading = false;  // Sync for testing
-
-    manager.initialize(splats, config);
-
-    bool success = true;
-
-    // Simulate camera movement
-    Vector3 camera_positions[] = {
-        Vector3(0, 0, 10),
-        Vector3(0, 0, 50),
-        Vector3(0, 0, 100),
-        Vector3(0, 0, 200)
-    };
-
-    for (const auto& pos : camera_positions) {
-        Transform3D transform = camera->get_global_transform();
-        transform.origin = pos;
-        camera->set_global_transform(transform);
-
-        uint64_t start = OS::get_singleton()->get_ticks_usec();
-        manager.update(camera, 0.016f);  // 60 FPS
-        uint64_t update_time = OS::get_singleton()->get_ticks_usec() - start;
-
-        auto visible = manager.get_visible_splats(camera, 50000);
-        auto stats = manager.get_stats();
-
-        print_line(vformat("  Camera at Z=%.0f:", pos.z));
-        print_line(vformat("    Update time: %.2f ms", update_time / 1000.0f));
-        print_line(vformat("    Visible splats: %d", visible.total_count));
-        print_line(vformat("    Loaded LODs: %d", stats.loaded_lod_levels));
-        print_line(vformat("    GPU memory: %d MB", stats.total_gpu_memory / (1024 * 1024)));
-        print_line(vformat("    CPU memory: %d MB", stats.total_cpu_memory / (1024 * 1024)));
-
-        if (visible.total_count == 0) {
-            ERR_PRINT("Failed: No visible splats");
-            success = false;
-        }
-    }
-
-    memdelete(camera);
-    return success;
-}
-
-bool test_streaming_lod_async_prepare_contract() {
-    print_line("Testing: Streaming LOD Async Prepare Contract");
-
-    LODSystemTest test;
-    auto splats = test.generate_test_splats(40000);
-    auto camera = test.create_test_camera(Vector3(0, 0, 20));
-
-    StreamingLODManager manager;
-    StreamingLODManager::StreamingConfig config;
-    config.num_lod_levels = 4;
-    config.max_gpu_memory = 512 * 1024 * 1024;
-    config.max_concurrent_loads = 1;
-    config.stream_budget_ms = 8;
-    config.enable_async_loading = true;
-    config.enable_predictive_loading = false;
-    config.enable_painterly_mode = false;
-
-    manager.initialize(splats, config);
-
-    bool success = true;
-
-    for (int i = 0; i < 240; i++) {
-        manager.update(camera, 0.016f);
-
-        const auto stats = manager.get_stats_snapshot();
-        if (stats.async_prepare_jobs_completed > 0 &&
-                stats.async_apply_jobs_completed > 0 &&
-                stats.loaded_lod_levels > 0) {
-            break;
-        }
-
-        Thread::yield();
-        OS::get_singleton()->delay_usec(1000);
-    }
-
-    const auto stats = manager.get_stats_snapshot();
-
-    if (stats.async_prepare_jobs_completed == 0) {
-        ERR_PRINT("Failed: Async prepare job never completed.");
-        success = false;
-    }
-    if (stats.async_apply_jobs_completed == 0) {
-        ERR_PRINT("Failed: Async apply stage never ran.");
-        success = false;
-    }
-    if (stats.loaded_lod_levels == 0) {
-        ERR_PRINT("Failed: Async apply path never produced a loaded LOD.");
-        success = false;
-    }
-    if (!stats.async_prepare_observed_off_main_thread) {
-        ERR_PRINT("Failed: Async prepare path executed on the main thread.");
-        success = false;
-    }
-    if (!stats.async_apply_observed_on_main_thread) {
-        ERR_PRINT("Failed: Async apply path did not run on the main thread.");
-        success = false;
-    }
-    if (stats.async_prepare_main_thread_violations != 0) {
-        ERR_PRINT("Failed: Async prepare path observed main-thread violations.");
-        success = false;
-    }
-    if (stats.async_apply_off_main_thread_violations != 0) {
-        ERR_PRINT("Failed: Async apply path observed off-main-thread violations.");
-        success = false;
-    }
-    if (stats.performance.avg_async_prepare_time_ms <= 0.0f) {
-        ERR_PRINT("Failed: Async prepare timing metric was not recorded.");
-        success = false;
-    }
-    if (stats.performance.avg_async_apply_time_ms <= 0.0f) {
-        ERR_PRINT("Failed: Async apply timing metric was not recorded.");
-        success = false;
-    }
-    if (stats.performance.avg_load_time_ms <= 0.0f) {
-        ERR_PRINT("Failed: Combined load timing metric regressed in async mode.");
-        success = false;
-    }
-
-    memdelete(camera);
-    return success;
-}
-
 // Test LOD transition smoothness
 bool test_lod_transitions() {
     print_line("Testing: LOD Transitions");
@@ -478,92 +288,6 @@ bool test_lod_transitions() {
     }
 
     print_line("  LOD transitions validated");
-
-    memdelete(camera);
-    return success;
-}
-
-bool test_painterly_temporal_stability() {
-    print_line("Testing: Painterly Temporal Stability");
-
-    LODSystemTest test;
-    auto splats = test.generate_test_splats(20000);
-    auto camera = test.create_test_camera(Vector3(0, 0, 25));
-
-    StreamingLODManager manager;
-    StreamingLODManager::StreamingConfig config;
-    config.num_lod_levels = 4;
-    config.enable_async_loading = false;
-    config.enable_painterly_mode = true;
-    config.painterly_seed = 424242;
-    config.painterly_transition_rate = 6.0f;
-    config.painterly_hold_strength = 0.25f;
-
-    manager.initialize(splats, config);
-
-    bool success = true;
-
-    // Baseline frame
-    manager.update(camera, 0.016f);
-    auto frame_a = manager.get_visible_splats(camera, 50000);
-
-    if (frame_a.painterly_seeds.is_empty()) {
-        ERR_PRINT("Failed: Painterly metadata was not generated on the first frame.");
-        memdelete(camera);
-        return false;
-    }
-
-    HashMap<uint32_t, uint32_t> seeds_frame_a;
-    for (uint32_t i = 0; i < frame_a.total_count; i++) {
-        seeds_frame_a[frame_a.indices[i]] = frame_a.painterly_seeds[i];
-    }
-
-    // Second frame at same position should keep identical seeds and blend weights at 1.
-    manager.update(camera, 0.016f);
-    auto frame_b = manager.get_visible_splats(camera, 50000);
-
-    bool stable = true;
-    for (uint32_t i = 0; i < frame_b.total_count; i++) {
-        uint32_t index = frame_b.indices[i];
-        if (uint32_t *expected_seed = seeds_frame_a.getptr(index)) {
-            if (frame_b.painterly_seeds[i] != *expected_seed) {
-                ERR_PRINT("Failed: Painterly seed changed between identical frames.");
-                stable = false;
-                break;
-            }
-            if (!Math::is_equal_approx(frame_b.painterly_blend_weights[i], 1.0f, 0.05f)) {
-                ERR_PRINT("Failed: Painterly blend weight did not settle to 1 for stable view.");
-                stable = false;
-                break;
-            }
-        }
-    }
-
-    if (!stable) {
-        success = false;
-    }
-
-    // Move camera to force a LOD change and ensure hysteresis engages.
-    Transform3D transform = camera->get_global_transform();
-    transform.origin = Vector3(0, 0, 140);
-    camera->set_global_transform(transform);
-
-    manager.update(camera, 0.016f);
-    auto frame_c = manager.get_visible_splats(camera, 50000);
-
-    bool transition_detected = false;
-    for (uint32_t i = 0; i < frame_c.total_count; i++) {
-        if (frame_c.painterly_prev_seeds[i] != frame_c.painterly_seeds[i] &&
-            frame_c.painterly_blend_weights[i] < 0.999f) {
-            transition_detected = true;
-            break;
-        }
-    }
-
-    if (!transition_detected) {
-        ERR_PRINT("Failed: Painterly hysteresis did not trigger during LOD change.");
-        success = false;
-    }
 
     memdelete(camera);
     return success;
@@ -719,42 +443,6 @@ bool test_scalability() {
     return success;
 }
 
-bool test_million_scale_lod_benchmark() {
-    print_line("Testing: Million-Scale LOD Benchmark");
-
-    String run_benchmark = OS::get_singleton()->get_environment("GS_RUN_MILLION_SCALE_LOD_BENCH");
-    if (run_benchmark.is_empty() || run_benchmark == "0") {
-        print_line("  Skipping million-scale benchmark (set GS_RUN_MILLION_SCALE_LOD_BENCH=1 to run).");
-        return true;
-    }
-
-    LODSystemTest test;
-    auto splats = test.generate_test_splats(1000000, 1000.0f);
-
-    SplatClusterer clusterer;
-    SplatClusterer::ClusteringParams params;
-    params.method = SplatClusterer::ClusteringParams::IMPORTANCE_WEIGHTED;
-    params.cluster_radius = 16.0f;
-    params.max_cluster_size = 32;
-    params.target_count = 100000;
-
-    uint64_t start = OS::get_singleton()->get_ticks_usec();
-    auto result = clusterer.cluster_splats(splats, params);
-    float cluster_time_ms = (OS::get_singleton()->get_ticks_usec() - start) / 1000.0f;
-
-    print_line(vformat("  Input splats: %d", splats.size()));
-    print_line(vformat("  Output clusters: %d", result.clusters.size()));
-    print_line(vformat("  Cluster time: %.2f ms", cluster_time_ms));
-    print_line(vformat("  Reduction ratio: %.2f%%", result.reduction_ratio * 100.0f));
-
-    if (result.clusters.is_empty()) {
-        ERR_PRINT("Failed: million-scale benchmark produced zero clusters.");
-        return false;
-    }
-
-    return true;
-}
-
 // Main test runner
 void run_lod_system_tests() {
     print_line("\n========== LOD System Tests ==========");
@@ -768,14 +456,9 @@ void run_lod_system_tests() {
         {"Hierarchical Structure Build", test_hierarchical_structure_build},
         {"Frustum Culling", test_frustum_culling},
         {"Adaptive LOD Selection", test_adaptive_lod},
-        {"Splat Clustering", test_splat_clustering},
-        {"Streaming LOD Manager", test_streaming_lod},
-        {"Streaming LOD Async Prepare Contract", test_streaming_lod_async_prepare_contract},
         {"LOD Transitions", test_lod_transitions},
-        {"Painterly Temporal Stability", test_painterly_temporal_stability},
         {"Node Quality Presets", test_node_quality_presets},
-        {"Scalability", test_scalability},
-        {"Million-Scale LOD Benchmark", test_million_scale_lod_benchmark}
+        {"Scalability", test_scalability}
     };
 
     int passed = 0;
@@ -1007,67 +690,6 @@ TEST_CASE("[GaussianSplatting] Hybrid LOD can use hierarchy without aggregated s
     );
 
     CHECK(selection.visible_indices.size() > 0);
-
-    memdelete(camera);
-}
-
-TEST_CASE("[GaussianSplatting] Streaming LOD requires explicit content-distance contract") {
-    GaussianSplatting::Tests::LODSystemTest fixture;
-    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 80.0f));
-    CHECK(camera != nullptr);
-    if (camera == nullptr) {
-        return;
-    }
-
-    GaussianSplatting::StreamingLODManager manager;
-    GaussianSplatting::StreamingLODManager::StreamingConfig config;
-    config.num_lod_levels = 3;
-    config.enable_async_loading = false;
-    config.enable_predictive_loading = false;
-
-    Vector<GaussianSplatting::GaussianData> empty_splats;
-    manager.initialize(empty_splats, config);
-    manager.update(camera, 0.016f);
-
-    const auto &stats = manager.get_stats();
-    CHECK_FALSE(stats.content_distance_valid_last_frame);
-    CHECK_FALSE(stats.content_visible_last_frame);
-    CHECK(stats.load_requests_last_frame == 0);
-
-    memdelete(camera);
-}
-
-TEST_CASE("[GaussianSplatting] Streaming LOD rejects off-frustum content in production path") {
-    GaussianSplatting::Tests::LODSystemTest fixture;
-    Vector<GaussianSplatting::GaussianData> splats = fixture.generate_test_splats(12000, 20.0f);
-    Camera3D *camera = fixture.create_test_camera(Vector3(0.0f, 0.0f, 60.0f));
-    CHECK(camera != nullptr);
-    if (camera == nullptr) {
-        return;
-    }
-
-    GaussianSplatting::StreamingLODManager manager;
-    GaussianSplatting::StreamingLODManager::StreamingConfig config;
-    config.num_lod_levels = 3;
-    config.enable_async_loading = false;
-    config.enable_predictive_loading = false;
-    manager.initialize(splats, config);
-
-    manager.update(camera, 0.016f);
-    const auto &front_stats = manager.get_stats();
-    CHECK(front_stats.content_distance_valid_last_frame);
-    CHECK(front_stats.content_visible_last_frame);
-    CHECK(front_stats.load_requests_last_frame > 0);
-
-    Transform3D transform = camera->get_global_transform();
-    transform.basis = Basis(Vector3(0.0f, 1.0f, 0.0f), Math::PI);
-    camera->set_global_transform(transform);
-    manager.update(camera, 0.016f);
-
-    const auto &back_stats = manager.get_stats();
-    CHECK_FALSE(back_stats.content_visible_last_frame);
-    CHECK(back_stats.frustum_rejected_lods_last_frame > 0);
-    CHECK(back_stats.load_requests_last_frame == 0);
 
     memdelete(camera);
 }

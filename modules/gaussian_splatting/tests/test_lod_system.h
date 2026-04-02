@@ -11,8 +11,7 @@ void run_lod_system_tests();
 bool test_hierarchical_structure_build();
 bool test_frustum_culling();
 bool test_adaptive_lod();
-bool test_splat_clustering();
-bool test_streaming_lod();
+bool test_node_quality_presets();
 bool test_lod_transitions();
 bool test_scalability();
 

@@ -17,11 +17,10 @@ Tests runtime wiring between components:
 
 ### 2. LOD System Tests (`test_lod_system.cpp`)
 Validates Level-of-Detail functionality:
-- **StreamingLODManager**: Chunk loading and unloading
-- **HierarchicalSplatStructure**: Spatial clustering and queries
-- **Adaptive Selection**: Budget-based LOD selection
-- **Memory Consistency**: Validates LOD transitions don't leak
-- **Painterly Temporal Stability**: Ensures smooth visual transitions
+- **HierarchicalSplatStructure**: Spatial hierarchy builds, queries, and parallel-build fallback
+- **Adaptive Selection**: Budget-based and hybrid LOD selection
+- **Renderer LOD Culling**: Bias and distance limits affect live culling as expected
+- **Node Quality Presets**: Neutral node-facing quality and streaming configs stay coherent
 
 ### 3. Performance Benchmarks (`performance_benchmark.cpp`)
 Stress tests with varying splat counts:
