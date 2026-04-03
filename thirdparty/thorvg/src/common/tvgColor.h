@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
+ * Copyright (c) 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,30 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_ITERATOR_ACCESSOR_H_
-#define _TVG_ITERATOR_ACCESSOR_H_
+#ifndef _TVG_COLOR_H_
+#define _TVG_COLOR_H_
 
-#include "tvgPaint.h"
+
+#include "tvgCommon.h"
 
 namespace tvg
 {
-
-class IteratorAccessor
-{
-public:
-    //Utility Method: Iterator Accessor
-    static Iterator* iterator(const Paint* paint)
+    struct RGB
     {
-        return PAINT(paint)->iterator();
-    }
-};
+        uint8_t r, g, b;
+    };
 
+    struct RGBA
+    {
+        uint8_t r, g, b, a;
+    };
+
+    struct HSL
+    {
+        float h, s, l;
+    };
+
+    void hsl2rgb(float h, float s, float l, uint8_t& r, uint8_t& g, uint8_t& b);
 }
 
-#endif //_TVG_ITERATOR_ACCESSOR_H_
+#endif //_TVG_COLOR_H_

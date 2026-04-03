@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,19 @@
 #ifndef _TVG_COMMON_H_
 #define _TVG_COMMON_H_
 
+#ifdef _WIN32
+    #if defined(WINAPI_ENTRY)
+        #if (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
+            #include <windows.h>
+        #endif
+    #elif !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+        #include <windows.h>
+    #endif
+#endif
+#include <string>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include "config.h"
 #include "thorvg.h"
 
@@ -34,6 +47,7 @@ using namespace tvg;
     #define TVG_UNUSED
     #define strncasecmp _strnicmp
     #define strcasecmp _stricmp
+    #define strtok_r strtok_s
 #else
     #define TVG_UNUSED __attribute__ ((__unused__))
 #endif
@@ -51,41 +65,37 @@ using namespace tvg;
 
 #if defined(_MSC_VER) && defined(__clang__)
     #define strncpy strncpy_s
-    #define strdup _strdup
 #endif
 
-enum class FileType { Png = 0, Jpg, Webp, Tvg, Svg, Lottie, Ttf, Raw, Gif, Unknown };
+namespace tvg {
 
-#ifdef THORVG_LOG_ENABLED
-    constexpr auto ErrorColor = "\033[31m";  //red
-    constexpr auto ErrorBgColor = "\033[41m";//bg red
-    constexpr auto LogColor = "\033[32m";    //green
-    constexpr auto LogBgColor = "\033[42m";  //bg green
-    constexpr auto GreyColor = "\033[90m";   //grey
-    constexpr auto ResetColors = "\033[0m";  //default
-    #define TVGERR(tag, fmt, ...) fprintf(stderr, "%s[E]%s %s" tag "%s (%s %d): %s" fmt "\n", ErrorBgColor, ResetColors, ErrorColor, GreyColor, __FILE__, __LINE__, ResetColors, ##__VA_ARGS__)
-    #define TVGLOG(tag, fmt, ...) fprintf(stdout, "%s[L]%s %s" tag "%s (%s %d): %s" fmt "\n", LogBgColor, ResetColors, LogColor, GreyColor, __FILE__, __LINE__, ResetColors, ##__VA_ARGS__)
-#else
-    #define TVGERR(...) do {} while(0)
-    #define TVGLOG(...) do {} while(0)
-#endif
+    enum class FileType { Png = 0, Jpg, Webp, Svg, Lot, Ttf, Raw, Gif, Unknown };
 
-uint16_t THORVG_VERSION_NUMBER();
+    #ifdef THORVG_LOG_ENABLED
+        constexpr auto ErrorColor = "\033[31m";  //red
+        constexpr auto ErrorBgColor = "\033[41m";//bg red
+        constexpr auto LogColor = "\033[32m";    //green
+        constexpr auto LogBgColor = "\033[42m";  //bg green
+        constexpr auto GreyColor = "\033[90m";   //grey
+        constexpr auto ResetColors = "\033[0m";  //default
+        #define TVGERR(tag, fmt, ...) fprintf(stderr, "%s[E]%s %s" tag "%s (%s %d): %s" fmt "\n", ErrorBgColor, ResetColors, ErrorColor, GreyColor, __FILE__, __LINE__, ResetColors, ##__VA_ARGS__)
+        #define TVGLOG(tag, fmt, ...) fprintf(stdout, "%s[L]%s %s" tag "%s (%s %d): %s" fmt "\n", LogBgColor, ResetColors, LogColor, GreyColor, __FILE__, __LINE__, ResetColors, ##__VA_ARGS__)
+    #else
+        #define TVGERR(...) do {} while(0)
+        #define TVGLOG(...) do {} while(0)
+    #endif
 
+    template<typename T>
+    static inline T* to(const Paint* p)
+    {
+        return static_cast<T*>(const_cast<Paint*>(p));
+    }
 
-#define P(A) ((A)->pImpl)              //Access to pimpl.
-#define PP(A) (((Paint*)(A))->pImpl)   //Access to pimpl.
+    uint16_t THORVG_VERSION_NUMBER();
 
-
-//for debugging
-#if 0
-#include <sys/time.h>
-static inline double THORVG_TIMESTAMP()
-{
-   struct timeval tv;
-   gettimeofday(&tv, NULL);
-   return (tv.tv_sec + tv.tv_usec / 1000000.0);
+    extern int engineInit;
 }
-#endif
+
+#include "tvgAllocator.h"
 
 #endif //_TVG_COMMON_H_
