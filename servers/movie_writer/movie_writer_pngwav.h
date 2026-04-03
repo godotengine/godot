@@ -45,7 +45,7 @@ class MovieWriterPNGWAV : public MovieWriter {
 	uint32_t frame_count = 0;
 	uint32_t fps = 0;
 
-	bool optimize_speed = false;
+	bool optimize_speed = true;
 
 	uint32_t audio_block_size = 0;
 

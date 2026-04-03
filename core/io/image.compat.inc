@@ -30,8 +30,9 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "image.h"
+
 #include "core/object/class_db.h"
-#include "core/io/image.h"
 
 Vector<uint8_t> Image::_save_exr_to_buffer_bind_compat_117800(bool p_grayscale) const {
 	return save_exr_to_buffer(p_grayscale);
