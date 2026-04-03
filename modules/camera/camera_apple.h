@@ -43,4 +43,7 @@ public:
 
 	void update_feeds();
 	void set_monitoring_feeds(bool p_monitoring_feeds) override;
+	void handle_display_rotation_change(int p_orientation) override;
+	void handle_application_pause() override;
+	void handle_application_resume() override;
 };
