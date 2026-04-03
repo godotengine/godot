@@ -4360,6 +4360,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 		new_size = new_size.min(ws.rect.size);
 	}
 
+#ifdef LIBDECOR_ENABLED
 	// NOTE: Older versions of libdecor (~2022) do not have a way to get the max
 	// content size. Let's also check for its pointer so that we can preserve
 	// compatibility with older distros.
@@ -4376,6 +4377,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 			new_size.height = MIN(new_size.height, max_height);
 		}
 	}
+#endif
 
 	window_state_update_size(&ws, new_size.width, new_size.height);
 
@@ -4562,12 +4564,14 @@ bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id
 		};
 
 		case DisplayServerEnums::WINDOW_MODE_MAXIMIZED: {
+#ifdef LIBDECOR_ENABLED
 			if (ws.libdecor_frame) {
 				// NOTE: libdecor doesn't seem to have a maximize capability query?
 				// The fact that there's a fullscreen one makes me suspicious. Anyways,
 				// let's act as if we always can.
 				return true;
 			}
+#endif
 			return ws.can_maximize;
 		};
 
