@@ -1119,6 +1119,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 			} break;
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
 				check_class_member_name_conflict(p_class, member.signal->identifier->name, member.signal);
+#ifdef DEBUG_ENABLED
+				is_shadowing(member.signal->identifier, "signal", false);
+#endif // DEBUG_ENABLED
 
 				member.signal->set_datatype(resolving_datatype);
 
@@ -1149,6 +1152,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 			} break;
 			case GDScriptParser::ClassNode::Member::ENUM: {
 				check_class_member_name_conflict(p_class, member.m_enum->identifier->name, member.m_enum);
+#ifdef DEBUG_ENABLED
+				is_shadowing(member.m_enum->identifier, "named enum", false);
+#endif // DEBUG_ENABLED
 
 				member.m_enum->set_datatype(resolving_datatype);
 				GDScriptParser::DataType enum_type = make_class_enum_type(member.m_enum->identifier->name, p_class, parser->script_path, true);
@@ -1183,8 +1189,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					dictionary[String(element.identifier->name)] = element.value;
 
 #ifdef DEBUG_ENABLED
-					// Named enum identifiers do not shadow anything since you can only access them with `NamedEnum.ENUM_VALUE`.
+					// Named enum values do not shadow anything since you can only access them with `NamedEnum.VALUE`.
 					if (member.m_enum->identifier->name == StringName()) {
+						// TODO: Unreachable code? Unnamed enum values are checked in case GDScriptParser::ClassNode::Member::ENUM_VALUE.
 						is_shadowing(element.identifier, "enum member", false);
 					}
 #endif // DEBUG_ENABLED
@@ -1214,6 +1221,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				if (member.enum_value.custom_value) {
 					check_class_member_name_conflict(p_class, member.enum_value.identifier->name, member.enum_value.custom_value);
+#ifdef DEBUG_ENABLED
+					is_shadowing(member.enum_value.identifier, "enum value", false);
+#endif // DEBUG_ENABLED
 
 					const GDScriptParser::EnumNode *prev_enum = current_enum;
 					current_enum = member.enum_value.parent_enum;
@@ -1230,6 +1240,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					}
 				} else {
 					check_class_member_name_conflict(p_class, member.enum_value.identifier->name, member.enum_value.parent_enum);
+#ifdef DEBUG_ENABLED
+					is_shadowing(member.enum_value.identifier, "enum value", false);
+#endif // DEBUG_ENABLED
 
 					if (member.enum_value.index > 0) {
 						const GDScriptParser::EnumNode::Value &prev_value = member.enum_value.parent_enum->values[member.enum_value.index - 1];
@@ -1247,6 +1260,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				member.enum_value.identifier->set_datatype(make_class_enum_type(UNNAMED_ENUM, p_class, parser->script_path, false));
 			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
+				// TODO: Unreachanble code? Inner classes do not trigger this.
 				check_class_member_name_conflict(p_class, member.m_class->identifier->name, member.m_class);
 				// If it's already resolving, that's ok.
 				if (!member.m_class->base_type.is_resolving()) {
@@ -1314,6 +1328,15 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 			resolve_class_interface(base_class, p_class);
 		}
 
+#ifdef DEBUG_ENABLED
+		// TODO: This only checks if any inner class name shadows global identifiers,
+		//       because global class names are also considered as global identifiers.
+		//       Checking global class names would require changing is_shadowing() to ignore
+		//       global class names as global identifiers when checking for shadowed global identifiers.
+		if (p_class->identifier && !ScriptServer::is_global_class(p_class->identifier->name)) {
+			is_shadowing(p_class->identifier, "class", false);
+		}
+#endif // DEBUG_ENABLED
 		for (int i = 0; i < p_class->members.size(); i++) {
 			resolve_class_member(p_class, i);
 
@@ -1968,6 +1991,14 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	}
 
 #ifdef DEBUG_ENABLED
+	// Named lambdas do not override anything because they cannot be accessed by name.
+	// Native methods have a special push_warning() instead of is_shadowing(),
+	// because the latter also throws an unnecessary SHADOWED_VARIABLE_BASE_CLASS for native method overrides.
+	MethodBind *native_method = ClassDB::get_method(parser->current_class->base_type.native_type, function_name);
+	if (!p_is_lambda && !native_method && p_function->identifier) {
+		is_shadowing(p_function->identifier, "method", false);
+	}
+
 	if (p_function->return_type == nullptr) {
 		parser->push_warning(p_function, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
