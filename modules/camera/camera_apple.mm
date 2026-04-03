@@ -95,11 +95,27 @@
 			[self commitConfiguration];
 			return nil;
 		}
+		if (![self canAddInput:input]) {
+			print_line("Couldn't add input to capture session");
+			input = nullptr;
+			[self commitConfiguration];
+			return nil;
+		}
 		[self addInput:input];
 
 		output = [AVCaptureVideoDataOutput new];
 		if (!output) {
 			print_line("Couldn't get output device for camera");
+			[self removeInput:input];
+			input = nullptr;
+			[self commitConfiguration];
+			return nil;
+		}
+		if (![self canAddOutput:output]) {
+			print_line("Couldn't add output to capture session");
+			[self removeInput:input];
+			input = nullptr;
+			output = nullptr;
 			[self commitConfiguration];
 			return nil;
 		}
@@ -193,6 +209,7 @@
 		// do Y
 		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
 		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
+		size_t row_stride = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
 
 		if ((width[0] != new_width) || (height[0] != new_height)) {
 			width[0] = new_width;
@@ -201,7 +218,15 @@
 		}
 
 		uint8_t *w = img_data[0].ptrw();
-		memcpy(w, dataY, new_width * new_height);
+		if (new_width == row_stride) {
+			memcpy(w, dataY, new_width * new_height);
+		} else {
+			for (size_t i = 0; i < new_height; i++) {
+				memcpy(w, dataY, new_width);
+				w += new_width;
+				dataY += row_stride;
+			}
+		}
 
 		img[0].instantiate();
 		img[0]->set_data(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
@@ -211,6 +236,7 @@
 		// do CbCr
 		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
 		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
+		size_t row_stride = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1);
 
 		if ((width[1] != new_width) || (height[1] != new_height)) {
 			width[1] = new_width;
@@ -219,7 +245,15 @@
 		}
 
 		uint8_t *w = img_data[1].ptrw();
-		memcpy(w, dataCbCr, 2 * new_width * new_height);
+		if (new_width * 2 == row_stride) {
+			memcpy(w, dataCbCr, 2 * new_width * new_height);
+		} else {
+			for (size_t i = 0; i < new_height; i++) {
+				memcpy(w, dataCbCr, new_width * 2);
+				w += new_width * 2;
+				dataCbCr += row_stride;
+			}
+		}
 
 		///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
 		img[1].instantiate();
@@ -228,28 +262,6 @@
 
 	// set our texture...
 	feed->set_ycbcr_images(img[0], img[1]);
-
-#ifdef IOS_ENABLED
-	UIInterfaceOrientation orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
-
-	Transform2D display_transform;
-	switch (orientation) {
-		case UIInterfaceOrientationPortrait: {
-			display_transform = Transform2D(0.0, -1.0, -1.0, 0.0, 1.0, 1.0);
-		} break;
-		case UIInterfaceOrientationLandscapeRight: {
-			display_transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
-		} break;
-		case UIInterfaceOrientationLandscapeLeft: {
-			display_transform = Transform2D(-1.0, 0.0, 0.0, 1.0, 1.0, 0.0);
-		} break;
-		default: {
-			display_transform = Transform2D(0.0, 1.0, 1.0, 0.0, 0.0, 0.0);
-		} break;
-	}
-
-	feed->set_transform(display_transform);
-#endif // IOS_ENABLED
 
 	// and unlock
 	CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
@@ -266,6 +278,8 @@ class CameraFeedApple : public CameraFeed {
 private:
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
+	bool device_locked;
+	bool was_active_before_pause = false;
 
 public:
 	AVCaptureDevice *get_device() const;
@@ -274,6 +288,10 @@ public:
 	~CameraFeedApple();
 
 	void set_device(AVCaptureDevice *p_device);
+
+	void handle_rotation_change(int p_orientation);
+	void handle_pause();
+	void handle_resume();
 
 	bool activate_feed() override;
 	void deactivate_feed() override;
@@ -286,7 +304,8 @@ AVCaptureDevice *CameraFeedApple::get_device() const {
 CameraFeedApple::CameraFeedApple() {
 	device = nullptr;
 	capture_session = nullptr;
-	transform = Transform2D(1.0, 0.0, 0.0, 1.0, 0.0, 0.0); /* should re-orientate this based on device orientation */
+	device_locked = false;
+	transform = Transform2D(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
 }
 
 CameraFeedApple::~CameraFeedApple() {
@@ -307,6 +326,56 @@ void CameraFeedApple::set_device(AVCaptureDevice *p_device) {
 	} else if ([p_device position] == AVCaptureDevicePositionFront) {
 		position = CameraFeed::FEED_FRONT;
 	};
+}
+
+void CameraFeedApple::handle_rotation_change(int p_orientation) {
+	// UIInterfaceOrientation values:
+	// 1 = UIInterfaceOrientationPortrait
+	// 2 = UIInterfaceOrientationPortraitUpsideDown
+	// 3 = UIInterfaceOrientationLandscapeLeft
+	// 4 = UIInterfaceOrientationLandscapeRight
+	int display_rotation = 0;
+	switch (p_orientation) {
+		case 1:
+			display_rotation = 0;
+			break;
+		case 2:
+			display_rotation = 180;
+			break;
+		case 3:
+			display_rotation = 270;
+			break;
+		case 4:
+			display_rotation = 90;
+			break;
+		default:
+			display_rotation = 0;
+			break;
+	}
+
+	// iOS camera sensor orientation is 90 degrees.
+	int sensor_orientation = 90;
+	int sign = position == CameraFeed::FEED_FRONT ? 1 : -1;
+	int image_rotation = (sensor_orientation - display_rotation * sign + 360) % 360;
+
+	transform = Transform2D();
+	transform = transform.rotated(Math::deg_to_rad((float)image_rotation));
+}
+
+void CameraFeedApple::handle_pause() {
+	if (capture_session) {
+		was_active_before_pause = true;
+		deactivate_feed();
+	} else {
+		was_active_before_pause = false;
+	}
+}
+
+void CameraFeedApple::handle_resume() {
+	if (was_active_before_pause) {
+		activate_feed();
+		was_active_before_pause = false;
+	}
 }
 
 bool CameraFeedApple::activate_feed() {
@@ -350,6 +419,10 @@ void CameraFeedApple::deactivate_feed() {
 		[capture_session cleanup];
 		capture_session = nullptr;
 	};
+	if (device_locked) {
+		[device unlockForConfiguration];
+		device_locked = false;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -463,6 +536,18 @@ void CameraApple::update_feeds() {
 			add_feed(newfeed);
 		};
 	};
+
+#ifdef IOS_ENABLED
+	// Update rotation for all feeds.
+	UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+	UIWindow *window = [UIApplication sharedApplication].delegate.window;
+	UIWindowScene *windowScene = window.windowScene;
+	if (windowScene) {
+		orientation = windowScene.interfaceOrientation;
+	}
+	handle_display_rotation_change((int)orientation);
+#endif // IOS_ENABLED
+
 	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
@@ -481,6 +566,33 @@ void CameraApple::set_monitoring_feeds(bool p_monitoring_feeds) {
 	} else {
 		// Stop monitoring feed changes.
 		device_notifications = nil;
+	}
+}
+
+void CameraApple::handle_display_rotation_change(int p_orientation) {
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedApple> feed = (Ref<CameraFeedApple>)feeds[i];
+		if (feed.is_valid()) {
+			feed->handle_rotation_change(p_orientation);
+		}
+	}
+}
+
+void CameraApple::handle_application_pause() {
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedApple> feed = (Ref<CameraFeedApple>)feeds[i];
+		if (feed.is_valid()) {
+			feed->handle_pause();
+		}
+	}
+}
+
+void CameraApple::handle_application_resume() {
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedApple> feed = (Ref<CameraFeedApple>)feeds[i];
+		if (feed.is_valid()) {
+			feed->handle_resume();
+		}
 	}
 }
 
