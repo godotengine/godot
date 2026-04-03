@@ -1298,48 +1298,6 @@ struct DocumentSymbol {
 		}
 		return markdown;
 	}
-
-	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		LSP::CompletionItem item;
-		item.label = name;
-
-		if (resolved) {
-			item.documentation = render();
-		}
-
-		switch (kind) {
-			case LSP::SymbolKind::Enum:
-				item.kind = LSP::CompletionItemKind::Enum;
-				break;
-			case LSP::SymbolKind::Class:
-				item.kind = LSP::CompletionItemKind::Class;
-				break;
-			case LSP::SymbolKind::Property:
-				item.kind = LSP::CompletionItemKind::Property;
-				break;
-			case LSP::SymbolKind::Method:
-			case LSP::SymbolKind::Function:
-				item.kind = LSP::CompletionItemKind::Method;
-				break;
-			case LSP::SymbolKind::Event:
-				item.kind = LSP::CompletionItemKind::Event;
-				break;
-			case LSP::SymbolKind::Constant:
-				item.kind = LSP::CompletionItemKind::Constant;
-				break;
-			case LSP::SymbolKind::Variable:
-				item.kind = LSP::CompletionItemKind::Variable;
-				break;
-			case LSP::SymbolKind::File:
-				item.kind = LSP::CompletionItemKind::File;
-				break;
-			default:
-				item.kind = LSP::CompletionItemKind::Text;
-				break;
-		}
-
-		return item;
-	}
 };
 
 struct ApplyWorkspaceEditParams {
