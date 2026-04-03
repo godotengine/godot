@@ -14,14 +14,14 @@ Use `GaussianSplatDynamicInstance3D` as a lightweight instance node that registe
   </thead>
   <tbody>
     <tr>
-      <td>Load splats from a PLY file path.</td>
-      <td><code>set_ply_file_path(path)</code>, <code>set_auto_load(true)</code></td>
-      <td><code>modules/gaussian_splatting/nodes/gaussian_splat_dynamic_instance_3d.cpp:157</code></td>
-    </tr>
-    <tr>
       <td>Assign a preprocessed asset.</td>
       <td><code>set_splat_asset(asset)</code></td>
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_dynamic_instance_3d.cpp:165</code></td>
+    </tr>
+    <tr>
+      <td>Load splats from a file path (compatibility path).</td>
+      <td><code>set_ply_file_path(path)</code>, <code>set_auto_load(true)</code></td>
+      <td><code>modules/gaussian_splatting/nodes/gaussian_splat_dynamic_instance_3d.cpp:157</code></td>
     </tr>
     <tr>
       <td>Push procedural data directly.</td>
@@ -62,7 +62,7 @@ This class does not define any enums.
       <td><code>ply_file_path</code></td>
       <td><code>String</code></td>
       <td><code>set_ply_file_path</code>, <code>get_ply_file_path</code></td>
-      <td>Path to a <code>.ply</code> file. Setting this clears any runtime asset and triggers auto-load when in the tree.</td>
+      <td>Deprecated compatibility path to a <code>.ply</code> or <code>.spz</code> file. Prefer <code>splat_asset</code> or <code>gaussian_data</code>.</td>
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_dynamic_instance_3d.cpp:17</code></td>
     </tr>
     <tr>
@@ -130,11 +130,10 @@ This class does not define any signals.
 ```gdscript
 extends Node3D
 
-## Spawn a dynamic splat instance from a PLY file.
-func spawn_splat(file_path: String, spawn_position: Vector3) -> void:
+## Spawn a dynamic splat instance from a preloaded asset.
+func spawn_splat(asset: GaussianSplatAsset, spawn_position: Vector3) -> void:
     var instance := GaussianSplatDynamicInstance3D.new()
-    instance.set_ply_file_path(file_path)
-    instance.set_auto_load(true)
+    instance.set_splat_asset(asset)
     instance.position = spawn_position
     add_child(instance)
 ```
@@ -177,12 +176,12 @@ func remove_from_pipeline() -> void:
     </tr>
     <tr>
       <td>Warning about missing asset or data for instance pipeline.</td>
-      <td>Provide at least one data source: <code>ply_file_path</code>, <code>splat_asset</code>, or <code>gaussian_data</code>. The node requires valid data to build a runtime asset for registration.</td>
+      <td>Provide at least one data source. Prefer <code>splat_asset</code> or <code>gaussian_data</code>; the deprecated <code>ply_file_path</code> path still works for compatibility.</td>
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_dynamic_instance_3d.cpp:130</code></td>
     </tr>
     <tr>
       <td>File load failure logged with error code.</td>
-      <td>Verify the <code>ply_file_path</code> points to an existing, readable PLY file. Check the error code in the log message for details.</td>
+      <td>If using the deprecated <code>ply_file_path</code> compatibility path, verify it points to an existing, readable file. Check the error code in the log message for details.</td>
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_dynamic_instance_3d.cpp:284</code></td>
     </tr>
   </tbody>

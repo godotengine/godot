@@ -1254,32 +1254,6 @@ uint32_t GaussianSplatSceneDirector::get_instance_count_for_renderer(const Gauss
 	return world->instances.size();
 }
 
-#if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
-bool GaussianSplatSceneDirector::upsert_world_submission(const WorldSubmission &p_submission) {
-	if (p_submission.owner_id == ObjectID() || !p_submission.scenario.is_valid()) {
-		return false;
-	}
-
-	// Scaffolding-only path: update stored submission metadata without mutating renderer state.
-	MutexLock lock(world_mutex);
-	SharedWorld *previous_world = _find_world_for_world_submission(p_submission.owner_id);
-	if (previous_world && previous_world->scenario != p_submission.scenario) {
-		previous_world->world_submission = SharedWorld::WorldSubmissionRecord();
-	}
-
-	SharedWorld *world = worlds.getptr(p_submission.scenario);
-	if (!world) {
-		SharedWorld new_world;
-		new_world.scenario = p_submission.scenario;
-		worlds.insert(p_submission.scenario, new_world);
-		world = worlds.getptr(p_submission.scenario);
-	}
-
-	_store_world_submission_record(world->world_submission, p_submission);
-	return true;
-}
-#endif
-
 bool GaussianSplatSceneDirector::submit_world_submission(const WorldSubmission &p_submission) {
 	if (p_submission.owner_id == ObjectID() || !p_submission.scenario.is_valid()) {
 		return false;
@@ -1323,19 +1297,6 @@ bool GaussianSplatSceneDirector::submit_world_submission(const WorldSubmission &
 	world->world_submission = candidate_record;
 	return true;
 }
-
-#if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
-void GaussianSplatSceneDirector::unregister_world_submission(ObjectID p_owner_id) {
-	MutexLock lock(world_mutex);
-	SharedWorld *world = _find_world_for_world_submission(p_owner_id);
-	if (!world) {
-		return;
-	}
-	const RID scenario = world->scenario;
-	world->world_submission = SharedWorld::WorldSubmissionRecord();
-	_prune_world_if_unused(scenario);
-}
-#endif
 
 void GaussianSplatSceneDirector::release_world_submission(ObjectID p_owner_id) {
 	MutexLock lock(world_mutex);

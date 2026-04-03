@@ -121,15 +121,6 @@ public:
     // Runtime inverse of submit_world_submission(). Clears renderer-owned world state and
     // releases the active world-backed source for this owner.
     void release_world_submission(ObjectID p_owner_id);
-#if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
-    // Scaffolding/introspection helper. Stores or replaces the director-owned world submission
-    // record without mutating renderer state. Kept public only for tools/test builds because
-    // the current doctest umbrella still compiles against the editor/tools build surface.
-    bool upsert_world_submission(const WorldSubmission &p_submission);
-    // Scaffolding/introspection inverse of upsert_world_submission(). Removes only the stored
-    // world submission record and intentionally leaves renderer state untouched.
-    void unregister_world_submission(ObjectID p_owner_id);
-#endif
     bool get_world_submission(ObjectID p_owner_id, WorldSubmission *r_submission) const;
     bool get_world_submission_for_scenario(const RID &p_scenario, WorldSubmission *r_submission) const;
     bool has_world_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const;

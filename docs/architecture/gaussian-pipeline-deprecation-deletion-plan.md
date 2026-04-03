@@ -48,7 +48,7 @@ That means the remaining cleanup work is concentrated in compatibility seams, no
 | Surface | Current role | Category | Recommended action | Earliest bucket |
 | --- | --- | --- | --- | --- |
 | `rendering/gaussian_splatting/streaming/enabled` | Removed legacy compatibility toggle | Removed in Bucket B | Route policy is now the sole supported backend-policy setting | Complete |
-| `upsert_world_submission()` / `unregister_world_submission()` | Scaffolding with no renderer side effects | Tools/test compatibility API | Keep behind tools/test-only compilation until tests migrate off the editor-tools build surface | Bucket B |
+| `upsert_world_submission()` / `unregister_world_submission()` | Removed scaffolding-only storage helpers | Removed in follow-up cleanup | Runtime world submission now goes through `submit_world_submission()` / `release_world_submission()` only | Complete |
 | Editor preview direct `renderer->set_gaussian_data()` | Editor-only bypass of canonical submission path | Editor compatibility route | Keep as the single accepted editor-only preview exception | Bucket A |
 | `GaussianSplatNode3D::ply_file_path` | Raw file load, auto-load, drag/drop, validation | Runtime and editor compatibility route | Demote from editor-primary path first; later decide whether runtime raw-load survives | Bucket C |
 | `GaussianSplatDynamicInstance3D::ply_file_path` | Raw file to `GaussianData` bypass | Runtime compatibility route | Deprecate earlier than normal node path; require `splat_asset` or explicit `GaussianData` later | Bucket B/C |
@@ -121,31 +121,17 @@ Canonical files:
 
 Current state:
 
-- `submit_world_submission()` / `release_world_submission()` are the runtime path.
-- `upsert_*` / `unregister_*` are scaffolding-only storage helpers with no renderer side effects.
-- They remain compiled only for tools/test builds.
+- `submit_world_submission()` / `release_world_submission()` are now the only public world-submission entrypoints.
+- The scaffolding-only `upsert_*` / `unregister_*` helpers have been removed.
 
-Why they still exist:
+Result:
 
-- Tests use them for storage/query coverage without exercising ownership or renderer mutation.
-
-Blockers:
-
-- Scaffolding tests in [test_scene_director_submission_scaffolding.h](../../modules/gaussian_splatting/tests/test_scene_director_submission_scaffolding.h) still call them directly.
-
-Removal plan:
-
-1. Split tests into:
-   - runtime-path tests using `submit_*` / `release_*`
-   - pure record-copy tests using a private/internal helper if still needed
-2. Keep them behind tools/test-only compilation while tests still need direct storage/query coverage.
-   Current blocker: the module doctest umbrella still compiles these helpers through the editor/tools build surface, so `TESTS_ENABLED` alone is not sufficient yet.
-3. Remove them entirely once no test still calls them directly.
+1. Runtime world submission remains covered through `submit_*` / `release_*` tests.
+2. The director no longer exposes a metadata-only world-submission path on the public tools/test surface.
 
 Deletion criteria:
 
-- No public code calls `upsert_world_submission()` or `unregister_world_submission()`.
-- Equivalent coverage exists for runtime world submission and record-copy behavior.
+- Complete.
 
 ### 3. Editor Preview Direct Upload
 
@@ -369,8 +355,6 @@ Deletion criteria:
 
 The current test suite still locks in several compatibility surfaces:
 
-- `upsert_world_submission()` / `unregister_world_submission()`:
-  [test_scene_director_submission_scaffolding.h](../../modules/gaussian_splatting/tests/test_scene_director_submission_scaffolding.h)
 - `ply_file_path` as a supported node workflow:
   [test_gaussian_splat_node.h](../../modules/gaussian_splatting/tests/test_gaussian_splat_node.h)
 - diagnostic chaining and mixed-hint behavior:
