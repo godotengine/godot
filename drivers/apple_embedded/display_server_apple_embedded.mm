@@ -711,6 +711,8 @@ void DisplayServerAppleEmbedded::virtual_keyboard_show(const String &p_existing_
 	GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
 	GDTAppDelegateService.viewController.keyboardView.textContentType = nil;
 	GDTAppDelegateService.viewController.keyboardView.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+	GDTAppDelegateService.viewController.keyboardView.autocorrectionType = UITextAutocorrectionTypeDefault;
+	GDTAppDelegateService.viewController.keyboardView.secureTextEntry = NO;
 	switch (p_type) {
 		case DisplayServerEnums::KEYBOARD_TYPE_DEFAULT: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
