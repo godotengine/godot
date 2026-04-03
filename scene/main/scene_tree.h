@@ -441,7 +441,7 @@ public:
 	static SceneTree *get_singleton() { return singleton; }
 
 #ifdef TOOLS_ENABLED
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+	static PackedStringArray get_argument_options(const Object *instance, const StringName &p_function, int p_idx);
 #endif
 
 	//network API

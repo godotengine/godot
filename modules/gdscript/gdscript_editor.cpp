@@ -3010,39 +3010,60 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				if (ClassDB::get_method_info(class_name, method, &info)) {
 					method_args = info.arguments.size();
+					List<String> options;
+					Object *obj = NULL;
 					if (base.get_type() == Variant::OBJECT) {
-						Object *obj = base.operator Object *();
-						if (obj) {
-							List<String> options;
-							obj->get_argument_options(method, p_argidx, &options);
-							for (String &opt : options) {
-								// Handle user preference.
-								if (opt.is_quoted()) {
-									opt = opt.unquote().quote(quote_style);
-									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
-										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-											if (literal->value.get_type() == Variant::STRING) {
-												opt = "&" + opt;
-											}
-										} else {
-											opt = "&" + opt;
-										}
-									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
-										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-											if (literal->value.get_type() == Variant::STRING) {
-												opt = "^" + opt;
-											}
-										} else {
-											opt = "^" + opt;
-										}
+						obj = base.operator Object *();
+					}
+					List<MethodBind *> options_getters;
+					ClassDB::get_argument_options_getters(class_name, &options_getters);
+					Variant instance_arg = obj;
+					Variant method_name_arg = method;
+					Variant argidx_arg = p_argidx;
+					Vector<const Variant *> get_argument_options_argptr = {
+						&instance_arg,
+						&method_name_arg,
+						&argidx_arg
+					};
+					for (MethodBind *options_getter : options_getters) {
+						Callable::CallError ce;
+						Variant ret = options_getter->call(obj, (const Variant **)get_argument_options_argptr.ptr(), get_argument_options_argptr.size(), ce);
+						if (ce.error == Callable::CallError::CALL_OK) {
+							PackedStringArray ret_options = static_cast<PackedStringArray>(ret);
+							for (String opt : ret_options) {
+								options.push_back(opt);
+							}
+						} else {
+							String error_text = Variant::get_call_error_text(obj, options_getter->get_name(), (const Variant **)get_argument_options_argptr.ptr(), get_argument_options_argptr.size(), ce);
+							ERR_PRINT(vformat("Error calling get_argument_options for method '%s' : %s.", String(method), error_text));
+						}
+					}
+					for (String &opt : options) {
+						// Handle user preference.
+						if (opt.is_quoted()) {
+							opt = opt.unquote().quote(quote_style);
+							if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
+								if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+									GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+									if (literal->value.get_type() == Variant::STRING) {
+										opt = "&" + opt;
 									}
+								} else {
+									opt = "&" + opt;
 								}
-								ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-								r_result.insert(option.display, option);
+							} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
+								if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
+									GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
+									if (literal->value.get_type() == Variant::STRING) {
+										opt = "^" + opt;
+									}
+								} else {
+									opt = "^" + opt;
+								}
 							}
 						}
+						ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+						r_result.insert(option.display, option);
 					}
 
 					if (p_argidx < method_args) {

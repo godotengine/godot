@@ -1960,6 +1960,10 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_static_method("SceneTree", D_METHOD("get_argument_options", "instance", "function", "idx"), &SceneTree::get_argument_options);
+#endif
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
@@ -2006,7 +2010,8 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 }
 
 #ifdef TOOLS_ENABLED
-void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+PackedStringArray SceneTree::get_argument_options(const Object *p_instance, const StringName &p_function, int p_idx) {
+	Vector<String> returned_options;
 	bool add_options = false;
 	if (p_idx == 0) {
 		static const Vector<StringName> names = {
@@ -2030,11 +2035,12 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	}
 	if (add_options) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
+		returned_options.reserve(global_groups.size());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			returned_options.push_back(E.key.operator String().quote());
 		}
 	}
-	MainLoop::get_argument_options(p_function, p_idx, r_options);
+	return returned_options;
 }
 #endif
 
