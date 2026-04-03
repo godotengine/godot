@@ -54,8 +54,10 @@ var test_custom_enum_hard_no_export: CustomEnum
 
 # `@export_storage`.
 @export_storage var test_storage_untyped
+@export_storage var test_storage_hard_variant: Variant
 @export_storage var test_storage_weak_int = 3 # Property info still `Variant`, unlike `@export`.
 @export_storage var test_storage_hard_int: int = 4
+@export_storage var test_storage_weak_refc = _get_refc()
 
 # `@export_custom`.
 # NOTE: `PROPERTY_USAGE_NIL_IS_VARIANT` flag will be removed.
@@ -71,3 +73,6 @@ func test():
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):
 			Utils.print_property_extended_info(property, self)
+
+func _get_refc() -> RefCounted:
+	return null
