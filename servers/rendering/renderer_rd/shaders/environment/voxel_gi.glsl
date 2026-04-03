@@ -40,6 +40,9 @@ cell_data;
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_OMNI 1
 #define LIGHT_TYPE_SPOT 2
+#define LIGHT_TYPE_AREA 3
+
+#include "../area_lights_inc.glsl"
 
 #if defined(MODE_COMPUTE_LIGHT) || defined(MODE_DYNAMIC_LIGHTING)
 
@@ -57,12 +60,18 @@ struct Light {
 
 	vec3 direction;
 	bool has_shadow;
+
+	vec4 area_width;
+	vec4 area_height;
+	vec4 area_projector_rect;
 };
 
 layout(set = 0, binding = 3, std140) uniform Lights {
 	Light data[MAX_LIGHTS];
 }
 lights;
+
+layout(set = 0, binding = 13) uniform texture2D area_light_atlas;
 
 #endif // MODE COMPUTE LIGHT
 
@@ -275,7 +284,6 @@ void clip_segment(vec4 plane, vec3 begin, inout vec3 end) {
 bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, inout vec3 light_dir) {
 	float attenuation;
 	vec3 light_pos;
-
 	if (!compute_light_vector(index, pos, attenuation, light_pos)) {
 		return false;
 	}
@@ -333,6 +341,67 @@ bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, i
 	return true;
 }
 
+// implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
+bool compute_area_light(uint index, vec3 pos, vec3 normal, inout vec3 light) {
+	float EPSILON = 1e-7f;
+	vec3 area_width = lights.data[index].area_width.xyz;
+	vec3 area_height = lights.data[index].area_height.xyz;
+	vec3 area_direction = lights.data[index].direction;
+	vec3 vertex = pos;
+
+	if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) { // area is 0
+		return false;
+	}
+	if (dot(area_direction, vertex - lights.data[index].position) <= 0) {
+		return false; // vertex is behind light
+	}
+
+	float a_len = length(area_width);
+	float b_len = length(area_height);
+	vec3 area_width_norm = normalize(area_width);
+	vec3 area_height_norm = normalize(area_height);
+	float a_half_len = a_len / 2.0;
+	float b_half_len = b_len / 2.0;
+	vec3 light_center = lights.data[index].position + (area_width + area_height) / 2.0;
+	vec3 light_to_vert = vertex - light_center;
+	vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -area_direction)); // vertex in LIGHT SPACE
+	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0); // LIGHT SPACE
+	vec3 closest_point_on_light = light_center + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm; // VIEW SPACE
+	float dist = length(closest_point_on_light - vertex);
+
+	float light_length = max(1.0 / params.cell_size, dist);
+	if (light_length >= lights.data[index].radius) {
+		return false;
+	}
+	float attenuation = get_omni_attenuation(light_length * params.cell_size, 1.0 / (lights.data[index].radius * params.cell_size), lights.data[index].attenuation) * light_length * light_length * params.cell_size * params.cell_size; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+
+	if (attenuation < 0.01) {
+		return false;
+	}
+
+	vec3 points[4];
+	vec3 h_area_width = area_width / 2.0;
+	vec3 h_area_height = area_height / 2.0;
+	points[0] = (lights.data[index].position - h_area_width - h_area_height - vertex) * params.cell_size;
+	points[1] = (lights.data[index].position + h_area_width - h_area_height - vertex) * params.cell_size;
+	points[2] = (lights.data[index].position + h_area_width + h_area_height - vertex) * params.cell_size;
+	points[3] = (lights.data[index].position - h_area_width + h_area_height - vertex) * params.cell_size;
+
+	if (dot(normal, normal) < 0.04) { // length(normal) < 0.2
+		// if the normal is invalid, just assume, it faces the light to get full light
+		// in this case, the horizon clipping could actually be skipped, since it won't clip anything.
+		normal = -area_direction;
+	}
+	vec3 light_tex_color = vec3(1.0);
+	float ltc;
+	ltc_evaluate_diff(normal, points, lights.data[index].area_projector_rect, lights.data[index].cos_spot_angle, area_light_atlas, texture_sampler, ltc, light_tex_color);
+	vec3 ltc_diffuse = ltc * light_tex_color;
+
+	light = lights.data[index].color * ltc_diffuse * attenuation * lights.data[index].energy;
+
+	return true;
+}
+
 #endif // MODE COMPUTE LIGHT
 
 void main() {
@@ -361,19 +430,29 @@ void main() {
 	vec3 accum = vec3(0.0);
 
 	for (uint i = 0; i < params.light_count; i++) {
-		vec3 light;
-		vec3 light_dir;
-		if (!compute_light_at_pos(i, pos, normal.xyz, light, light_dir)) {
-			continue;
-		}
+		if (lights.data[i].type != LIGHT_TYPE_AREA) {
+			vec3 light;
+			vec3 light_dir;
+			if (!compute_light_at_pos(i, pos, normal, light, light_dir)) {
+				continue;
+			}
 
-		light *= albedo.rgb;
+			light *= albedo.rgb;
 
-		if (length(normal) > 0.2) {
-			accum += max(0.0, dot(normal, -light_dir)) * light;
+			if (length(normal) > 0.2) {
+				accum += max(0.0, dot(normal, -light_dir)) * light;
+			} else {
+				//all directions
+				accum += light;
+			}
 		} else {
-			//all directions
+			vec3 light;
+			if (!compute_area_light(i, pos, normal, light)) {
+				continue;
+			}
+			light *= albedo.rgb;
 			accum += light;
+			// TODO: since horizon clipping and integration methods will be reused yet again, add them to their own shader file that can be inc'ed.
 		}
 	}
 
@@ -505,15 +584,26 @@ void main() {
 
 		vec3 accum = vec3(0.0);
 		for (uint i = 0; i < params.light_count; i++) {
-			vec3 light;
-			vec3 light_dir;
-			if (!compute_light_at_pos(i, vec3(pos) * params.pos_multiplier, normal, light, light_dir)) {
-				continue;
+			if (lights.data[i].type != LIGHT_TYPE_AREA) {
+				vec3 light;
+				vec3 light_dir;
+				if (!compute_light_at_pos(i, vec3(pos) * params.pos_multiplier, normal, light, light_dir)) {
+					continue;
+				}
+
+				light *= albedo.rgb;
+
+				accum += max(0.0, dot(normal, -light_dir)) * light;
+			} else {
+				vec3 light;
+				if (!compute_area_light(i, vec3(pos) * params.pos_multiplier, normal, light)) {
+					continue;
+				}
+				light *= albedo.rgb;
+				accum += light;
+
+				// TODO: since horizon clipping and integration methods will be reused yet again, add them to their own shader file that can be inc'ed.
 			}
-
-			light *= albedo.rgb;
-
-			accum += max(0.0, dot(normal, -light_dir)) * light;
 		}
 
 		accum += imageLoad(emission, uv_xy).xyz;
