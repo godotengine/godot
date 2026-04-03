@@ -63,6 +63,42 @@ void OS::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
 }
 
+// Geometry2D
+
+TypedArray<PackedVector2Array> Geometry2D::_merge_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	return merge_polygons(p_polygon_a, p_polygon_b, PolyFillRule::FILL_EVEN_ODD);
+}
+
+TypedArray<PackedVector2Array> Geometry2D::_clip_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	return clip_polygons(p_polygon_a, p_polygon_b, PolyFillRule::FILL_EVEN_ODD);
+}
+
+TypedArray<PackedVector2Array> Geometry2D::_intersect_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	return intersect_polygons(p_polygon_a, p_polygon_b, PolyFillRule::FILL_EVEN_ODD);
+}
+
+TypedArray<PackedVector2Array> Geometry2D::_exclude_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	return exclude_polygons(p_polygon_a, p_polygon_b, PolyFillRule::FILL_EVEN_ODD);
+}
+
+TypedArray<PackedVector2Array> Geometry2D::_clip_polyline_with_polygon_bind_compat_118171(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+	return clip_polyline_with_polygon(p_polyline, p_polygon, PolyFillRule::FILL_EVEN_ODD);
+}
+
+TypedArray<PackedVector2Array> Geometry2D::_intersect_polyline_with_polygon_bind_compat_118171(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+	return intersect_polyline_with_polygon(p_polyline, p_polygon, PolyFillRule::FILL_EVEN_ODD);
+}
+
+void Geometry2D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("merge_polygons", "polygon_a", "polygon_b"), &Geometry2D::_merge_polygons_bind_compat_118171);
+	ClassDB::bind_compatibility_method(D_METHOD("clip_polygons", "polygon_a", "polygon_b"), &Geometry2D::_clip_polygons_bind_compat_118171);
+	ClassDB::bind_compatibility_method(D_METHOD("intersect_polygons", "polygon_a", "polygon_b"), &Geometry2D::_intersect_polygons_bind_compat_118171);
+	ClassDB::bind_compatibility_method(D_METHOD("exclude_polygons", "polygon_a", "polygon_b"), &Geometry2D::_exclude_polygons_bind_compat_118171);
+
+	ClassDB::bind_compatibility_method(D_METHOD("clip_polyline_with_polygon", "polyline", "polygon"), &Geometry2D::_merge_polygons_bind_compat_118171);
+	ClassDB::bind_compatibility_method(D_METHOD("intersect_polyline_with_polygon", "polyline", "polygon"), &Geometry2D::_merge_polygons_bind_compat_118171);
+}
+
 } // namespace CoreBind
 
 #endif // DISABLE_DEPRECATED

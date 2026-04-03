@@ -303,29 +303,35 @@ public:
 		END_SQUARE,
 		END_ROUND
 	};
+	enum PolyFillRule {
+		FILL_EVEN_ODD,
+		FILL_NON_ZERO,
+		FILL_POSITIVE,
+		FILL_NEGATIVE
+	};
 
-	static Vector<Vector<Point2>> merge_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
+	static Vector<Vector<Point2>> merge_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD) {
+		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b, false, p_fill_rule);
 	}
 
-	static Vector<Vector<Point2>> clip_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
+	static Vector<Vector<Point2>> clip_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD) {
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b, false, p_fill_rule);
 	}
 
-	static Vector<Vector<Point2>> intersect_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
+	static Vector<Vector<Point2>> intersect_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD) {
+		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b, false, p_fill_rule);
 	}
 
-	static Vector<Vector<Point2>> exclude_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
+	static Vector<Vector<Point2>> exclude_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD) {
+		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b, false, p_fill_rule);
 	}
 
-	static Vector<Vector<Point2>> clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
+	static Vector<Vector<Point2>> clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD) {
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true, p_fill_rule);
 	}
 
-	static Vector<Vector<Point2>> intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
+	static Vector<Vector<Point2>> intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD) {
+		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true, p_fill_rule);
 	}
 
 	static Vector<Vector<Point2>> offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
@@ -508,6 +514,6 @@ public:
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
 private:
-	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
+	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD);
 	static Vector<Vector<Point2>> _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };

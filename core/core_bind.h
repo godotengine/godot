@@ -329,6 +329,18 @@ class Geometry2D : public Object {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	TypedArray<PackedVector2Array> _merge_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b);
+	TypedArray<PackedVector2Array> _clip_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b);
+	TypedArray<PackedVector2Array> _intersect_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b);
+	TypedArray<PackedVector2Array> _exclude_polygons_bind_compat_118171(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b);
+
+	TypedArray<PackedVector2Array> _clip_polyline_with_polygon_bind_compat_118171(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon);
+	TypedArray<PackedVector2Array> _intersect_polyline_with_polygon_bind_compat_118171(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon);
+
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	static Geometry2D *get_singleton();
 	Variant segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
@@ -354,15 +366,22 @@ public:
 		OPERATION_INTERSECTION,
 		OPERATION_XOR
 	};
+	enum PolyFillRule {
+		FILL_EVEN_ODD,
+		FILL_NON_ZERO,
+		FILL_POSITIVE,
+		FILL_NEGATIVE
+	};
+
 	// 2D polygon boolean operations.
-	TypedArray<PackedVector2Array> merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Union (add).
-	TypedArray<PackedVector2Array> clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
-	TypedArray<PackedVector2Array> intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
-	TypedArray<PackedVector2Array> exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
+	TypedArray<PackedVector2Array> merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD); // Union (add).
+	TypedArray<PackedVector2Array> clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD); // Difference (subtract).
+	TypedArray<PackedVector2Array> intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD); // Common area (multiply).
+	TypedArray<PackedVector2Array> exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD); // All but common area (xor).
 
 	// 2D polyline vs polygon operations.
-	TypedArray<PackedVector2Array> clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
-	TypedArray<PackedVector2Array> intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
+	TypedArray<PackedVector2Array> clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD); // Cut.
+	TypedArray<PackedVector2Array> intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon, PolyFillRule p_fill_rule = PolyFillRule::FILL_EVEN_ODD); // Chop.
 
 	// 2D offset polygons/polylines.
 	enum PolyJoinType {
@@ -705,6 +724,7 @@ VARIANT_ENUM_CAST(CoreBind::OS::SystemDir);
 VARIANT_ENUM_CAST(CoreBind::OS::StdHandleType);
 
 VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyBooleanOperation);
+VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyFillRule);
 VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyJoinType);
 VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyEndType);
 
