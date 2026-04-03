@@ -257,6 +257,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-godot-socket.patch` ([GH-7985](https://github.com/godotengine/godot/pull/7985))
+- `0002-supports-long-timeouts.patch` ([GH-118158](https://github.com/godotengine/godot/pull/118158))
 
 Important: Building against a system wide ENet is possible, but will limit its
 functionality to IPv4 only and no DTLS. We recommend against it.

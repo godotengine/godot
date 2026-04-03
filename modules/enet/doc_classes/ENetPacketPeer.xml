@@ -106,12 +106,15 @@
 		</method>
 		<method name="set_timeout">
 			<return type="void" />
-			<param index="0" name="timeout" type="int" />
+			<param index="0" name="timeout_retry_limit" type="int" />
 			<param index="1" name="timeout_min" type="int" />
 			<param index="2" name="timeout_max" type="int" />
 			<description>
-				Sets the timeout parameters for a peer. The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
-				The [param timeout] is a factor that, multiplied by a value based on the average round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [param timeout_min]. The [param timeout_max] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
+				Sets the timeout parameters for a peer. The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. [param timeout_min] and [param timeout_max] values are expressed in milliseconds.
+				It uses an exponential backoff scheme, where the retransmission interval is doubled each time a reliable packet is not acknowledged within an interval derived from the average RTT plus a variance tolerance. The [param timeout_retry_limit] specifies the maximum number of exponential backoff retransmissions allowed.
+				A peer is disconnected if either of the following conditions is met:
+				- Reliable packets have been sent but remain unacknowledged for a duration exceeding [param timeout_max].
+				- The number of retransmissions has reached the [param timeout_retry_limit], and reliable packets have been unacknowledged for at least [param timeout_min].
 			</description>
 		</method>
 		<method name="throttle_configure">

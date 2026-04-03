@@ -76,10 +76,10 @@ void ENetPacketPeer::throttle_configure(int p_interval, int p_acceleration, int 
 	enet_peer_throttle_configure(peer, p_interval, p_acceleration, p_deceleration);
 }
 
-void ENetPacketPeer::set_timeout(int p_timeout, int p_timeout_min, int p_timeout_max) {
+void ENetPacketPeer::set_timeout(int p_timeout_retry_limit, int p_timeout_min, int p_timeout_max) {
 	ERR_FAIL_NULL_MSG(peer, "Peer not connected.");
-	ERR_FAIL_COND_MSG(p_timeout > p_timeout_min || p_timeout_min > p_timeout_max, "Timeout limit must be less than minimum timeout, which itself must be less than maximum timeout");
-	enet_peer_timeout(peer, p_timeout, p_timeout_min, p_timeout_max);
+	ERR_FAIL_COND_MSG(p_timeout_min > p_timeout_max, "Minimum timeout must be less than maximum timeout");
+	enet_peer_timeout(peer, p_timeout_retry_limit, p_timeout_min, p_timeout_max);
 }
 
 int ENetPacketPeer::get_max_packet_size() const {
@@ -215,7 +215,7 @@ void ENetPacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reset"), &ENetPacketPeer::reset);
 	ClassDB::bind_method(D_METHOD("send", "channel", "packet", "flags"), &ENetPacketPeer::_send);
 	ClassDB::bind_method(D_METHOD("throttle_configure", "interval", "acceleration", "deceleration"), &ENetPacketPeer::throttle_configure);
-	ClassDB::bind_method(D_METHOD("set_timeout", "timeout", "timeout_min", "timeout_max"), &ENetPacketPeer::set_timeout);
+	ClassDB::bind_method(D_METHOD("set_timeout", "timeout_retry_limit", "timeout_min", "timeout_max"), &ENetPacketPeer::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_packet_flags"), &ENetPacketPeer::get_packet_flags);
 	ClassDB::bind_method(D_METHOD("get_remote_address"), &ENetPacketPeer::get_remote_address);
 	ClassDB::bind_method(D_METHOD("get_remote_port"), &ENetPacketPeer::get_remote_port);

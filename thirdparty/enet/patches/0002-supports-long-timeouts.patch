@@ -1,0 +1,26 @@
+diff --git a/thirdparty/enet/enet/enet.h b/thirdparty/enet/enet/enet.h
+index ccd8382c23..8f3c4489dc 100644
+--- a/thirdparty/enet/enet/enet.h
++++ b/thirdparty/enet/enet/enet.h
+@@ -233,7 +233,7 @@ enum
+    ENET_PEER_PACKET_LOSS_SCALE            = (1 << 16),
+    ENET_PEER_PACKET_LOSS_INTERVAL         = 10000,
+    ENET_PEER_WINDOW_SIZE_SCALE            = 64 * 1024,
+-   ENET_PEER_TIMEOUT_LIMIT                = 32,
++   ENET_PEER_TIMEOUT_LIMIT                = 5,
+    ENET_PEER_TIMEOUT_MINIMUM              = 5000,
+    ENET_PEER_TIMEOUT_MAXIMUM              = 30000,
+    ENET_PEER_PING_INTERVAL                = 500,
+diff --git a/thirdparty/enet/protocol.c b/thirdparty/enet/protocol.c
+index 5f18700599..873003db08 100644
+--- a/thirdparty/enet/protocol.c
++++ b/thirdparty/enet/protocol.c
+@@ -1372,7 +1372,7 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
+ 
+        if (peer -> earliestTimeout != 0 &&
+              (ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMaximum ||
+-               ((1 << (outgoingCommand -> sendAttempts - 1)) >= peer -> timeoutLimit &&
++               ((outgoingCommand -> sendAttempts - 1) >= peer -> timeoutLimit &&
+                  ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMinimum)))
+        {
+           enet_protocol_notify_disconnect (host, peer, event);
