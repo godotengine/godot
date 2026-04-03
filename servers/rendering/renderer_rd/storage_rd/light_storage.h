@@ -78,6 +78,9 @@ private:
 		RSE::LightDirectionalShadowMode directional_shadow_mode = RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
 		bool directional_blend_splits = false;
 		RSE::LightDirectionalSkyMode directional_sky_mode = RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
+		Vector2 area_size = Vector2(1, 1);
+		bool area_normalize_energy = true;
+		RID area_texture;
 		uint64_t version = 0;
 
 		Dependency dependency;
@@ -142,11 +145,16 @@ private:
 		float color[3];
 		float attenuation;
 
-		float inv_spot_attenuation;
-		float cos_spot_angle;
+		float area_width[3];
+		float inv_spot_attenuation; // area lights: 1 / (range + diagonal/2)
+
+		float area_height[3];
+		float cos_spot_angle; // area lights: max mipmaps
+
 		float specular_amount;
 		float shadow_opacity;
 
+		float pad[2];
 		float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
 		float shadow_matrix[16];
 		float shadow_bias;
@@ -172,12 +180,18 @@ private:
 	uint32_t max_lights;
 	uint32_t omni_light_count = 0;
 	uint32_t spot_light_count = 0;
+	uint32_t area_light_count = 0;
 	LightData *omni_lights = nullptr;
 	LightData *spot_lights = nullptr;
+	LightData *area_lights = nullptr;
 	LightInstanceDepthSort *omni_light_sort = nullptr;
 	LightInstanceDepthSort *spot_light_sort = nullptr;
+	LightInstanceDepthSort *area_light_sort = nullptr;
 	RID omni_light_buffer;
 	RID spot_light_buffer;
+	RID area_light_buffer;
+
+	ForwardIDType _light_type_to_forward_id_type(RSE::LightType p_type);
 
 	/* DIRECTIONAL LIGHT DATA */
 
@@ -482,6 +496,9 @@ public:
 	virtual RID spot_light_allocate() override;
 	virtual void spot_light_initialize(RID p_light) override;
 
+	virtual RID area_light_allocate() override;
+	virtual void area_light_initialize(RID p_light) override;
+
 	virtual void light_free(RID p_rid) override;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) override;
@@ -507,6 +524,12 @@ public:
 
 	virtual RSE::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) override;
 	virtual RSE::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override;
+	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) override;
+	virtual Vector2 light_area_get_size(RID p_light) const override;
+	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) override;
+	virtual bool light_area_get_normalize_energy(RID p_light) const override;
+	virtual void light_area_set_texture(RID p_light, RID p_texture) override;
+	virtual RID light_area_get_texture(RID p_light) const override;
 
 	virtual RSE::LightType light_get_type(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
@@ -808,6 +831,7 @@ public:
 	void set_max_lights(const uint32_t p_max_lights);
 	RID get_omni_light_buffer() { return omni_light_buffer; }
 	RID get_spot_light_buffer() { return spot_light_buffer; }
+	RID get_area_light_buffer() { return area_light_buffer; }
 	RID get_directional_light_buffer() { return directional_light_buffer; }
 	uint32_t get_max_directional_lights() { return max_directional_lights; }
 	uint32_t get_directional_light_blend_splits(uint32_t p_directional_light_count) const {

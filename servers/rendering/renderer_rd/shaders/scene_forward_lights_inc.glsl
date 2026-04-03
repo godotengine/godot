@@ -2,6 +2,8 @@
 
 #extension GL_EXT_control_flow_attributes : require
 
+#include "area_lights_inc.glsl"
+
 // This annotation macro must be placed before any loops that rely on specialization constants as their upper bound.
 // Drivers may choose to unroll these loops based on the possible range of the value that can be deduced from the
 // spec constant, which can lead to their code generation taking a much longer time than desired.
@@ -24,6 +26,31 @@ half D_GGX(half NoH, half roughness, hvec3 n, hvec3 h) {
 	half d = k * k * half(1.0 / M_PI);
 	return saturateHalf(d);
 }
+
+#ifdef LIGHT_TRANSMITTANCE_USED
+#ifdef SSS_MODE_SKIN
+hvec3 SSS_skin(half NdotL, half transmittance_depth, half transmittance_z, half transmittance_boost, hvec4 transmittance_color, hvec3 light_color) {
+	half scale = half(8.25) / transmittance_depth;
+	half d = scale * abs(transmittance_z);
+	float dd = float(-d * d);
+	hvec3 profile = hvec3(vec3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
+			vec3(0.1, 0.336, 0.344) * exp(dd / 0.0484) +
+			vec3(0.118, 0.198, 0.0) * exp(dd / 0.187) +
+			vec3(0.113, 0.007, 0.007) * exp(dd / 0.567) +
+			vec3(0.358, 0.004, 0.0) * exp(dd / 1.99) +
+			vec3(0.078, 0.0, 0.0) * exp(dd / 7.41));
+
+	return profile * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, half(0.0), half(1.0)) * half(1.0 / M_PI);
+}
+#else
+hvec3 SSS(half NdotL, half transmittance_depth, half transmittance_z, half transmittance_boost, hvec4 transmittance_color, hvec3 light_color) {
+	half scale = half(8.25) / transmittance_depth;
+	half d = scale * abs(transmittance_z);
+	half dd = -d * d;
+	return exp(dd) * transmittance_color.rgb * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, half(0.0), half(1.0)) * half(1.0 / M_PI);
+}
+#endif
+#endif
 
 // From Earl Hammon, Jr. "PBR Diffuse Lighting for GGX+Smith Microsurfaces" https://www.gdcvault.com/play/1024478/PBR-Diffuse-Lighting-for-GGX
 half V_GGX(half NdotL, half NdotV, half alpha) {
@@ -135,6 +162,11 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	float attenuation_highp = float(attenuation);
 	vec3 diffuse_light_highp = vec3(diffuse_light);
 	vec3 specular_light_highp = vec3(specular_light);
+	bool is_area = false;
+	float area_diffuse = 1.0;
+	float area_specular = 1.0;
+	vec3 area_diffuse_tex_color = vec3(1.0);
+	vec3 area_specular_tex_color = vec3(1.0);
 
 #CODE : LIGHT
 
@@ -148,23 +180,9 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 #ifdef LIGHT_TRANSMITTANCE_USED
 	{
 #ifdef SSS_MODE_SKIN
-		half scale = half(8.25) / transmittance_depth;
-		half d = scale * abs(transmittance_z);
-		float dd = float(-d * d);
-		hvec3 profile = hvec3(vec3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
-				vec3(0.1, 0.336, 0.344) * exp(dd / 0.0484) +
-				vec3(0.118, 0.198, 0.0) * exp(dd / 0.187) +
-				vec3(0.113, 0.007, 0.007) * exp(dd / 0.567) +
-				vec3(0.358, 0.004, 0.0) * exp(dd / 1.99) +
-				vec3(0.078, 0.0, 0.0) * exp(dd / 7.41));
-
-		diffuse_light += profile * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, half(0.0), half(1.0)) * half(1.0 / M_PI);
+		diffuse_light += SSS_skin(NdotL, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, light_color);
 #else
-
-		half scale = half(8.25) / transmittance_depth;
-		half d = scale * abs(transmittance_z);
-		half dd = -d * d;
-		diffuse_light += exp(dd) * transmittance_color.rgb * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, half(0.0), half(1.0)) * half(1.0 / M_PI);
+		diffuse_light += SSS(NdotL, transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, light_color);
 #endif
 	}
 #endif //LIGHT_TRANSMITTANCE_USED
@@ -932,7 +950,366 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
+
 			diffuse_light, specular_light);
+}
+
+// implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
+void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, hvec3 f0, half roughness, half metallic, float taa_frame_count, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
+#ifdef LIGHT_BACKLIGHT_USED
+		hvec3 backlight,
+#endif
+#ifdef LIGHT_TRANSMITTANCE_USED
+		hvec4 transmittance_color,
+		half transmittance_depth,
+		half transmittance_boost,
+#endif
+#ifdef LIGHT_RIM_USED
+		half rim, half rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+		half clearcoat, half clearcoat_roughness, hvec3 vertex_normal,
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+		hvec3 binormal, hvec3 tangent, half anisotropy,
+#endif
+		inout hvec3 diffuse_light, inout hvec3 specular_light) {
+	half EPSILON = half(1e-7);
+	hvec3 area_width = hvec3(area_lights.data[idx].area_width);
+	hvec3 area_height = hvec3(area_lights.data[idx].area_height);
+
+	if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) { // area is 0
+		return;
+	}
+
+	if (dot(area_lights.data[idx].direction, vertex - area_lights.data[idx].position) <= 0) {
+		return; // vertex is behind light
+	}
+
+	half a_len = length(area_width);
+	half b_len = length(area_height);
+	half a_half_len = a_len / half(2.0);
+	half b_half_len = b_len / half(2.0);
+	hvec3 light_center = hvec3(area_lights.data[idx].position);
+	hvec3 light_to_vert = hvec3(vertex) - light_center;
+	hvec3 area_a_dir = normalize(area_width);
+	hvec3 area_b_dir = normalize(area_height);
+	hvec3 area_direction = hvec3(area_lights.data[idx].direction);
+	hvec3 pos_local_to_light = hvec3(dot(light_to_vert, area_a_dir), dot(light_to_vert, area_b_dir), dot(light_to_vert, -area_direction));
+
+	hvec3 closest_point_local_to_light = hvec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+	half dist = length(closest_point_local_to_light - pos_local_to_light);
+
+	half light_length = max(half(0.0), dist);
+	half light_attenuation_raw = get_omni_attenuation(float(light_length), area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
+	half light_attenuation_ltc = light_attenuation_raw * half(light_length * light_length); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+	half shadow = half(1.0);
+
+#ifndef SHADOWS_DISABLED
+	// Area light shadow.
+	if (light_attenuation_raw > HALF_FLT_MIN && area_lights.data[idx].shadow_opacity > 0.001) {
+		// there is a shadowmap
+		vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
+		vec4 base_uv_rect = area_lights.data[idx].atlas_rect;
+		base_uv_rect.xy += texel_size;
+		base_uv_rect.zw -= texel_size * 2.0;
+
+		vec3 local_vert = (area_lights.data[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
+
+		float shadow_len = length(local_vert); //need to remember shadow len from here
+		vec3 shadow_dir = normalize(local_vert);
+
+		vec3 local_normal = normalize(mat3(area_lights.data[idx].shadow_matrix) * vec3(normal));
+		vec3 normal_bias = local_normal * area_lights.data[idx].shadow_normal_bias * (1.0 - abs(dot(local_normal, shadow_dir)));
+
+		float inv_center_range = area_lights.data[idx].cone_attenuation;
+
+		if (sc_use_light_soft_shadows() && area_lights.data[idx].soft_shadow_size > 0.0) {
+			//soft shadow
+
+			//find blocker
+
+			float blocker_count = 0.0;
+			float blocker_average = 0.0;
+
+			mat2 disk_rotation;
+			{
+				float r = quick_hash(gl_FragCoord.xy + vec2(taa_frame_count * 5.588238)) * 2.0 * M_PI;
+				float sr = sin(r);
+				float cr = cos(r);
+				disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+			}
+
+			vec3 basis_normal = shadow_dir;
+			vec3 v0 = abs(basis_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+			vec3 tangent = normalize(cross(v0, basis_normal));
+			vec3 bitangent = normalize(cross(tangent, basis_normal));
+			float z_norm = 1.0 - shadow_len * inv_center_range;
+
+			tangent *= area_lights.data[idx].soft_shadow_size * area_lights.data[idx].soft_shadow_scale;
+			bitangent *= area_lights.data[idx].soft_shadow_size * area_lights.data[idx].soft_shadow_scale;
+
+			SPEC_CONSTANT_LOOP_ANNOTATION
+			for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
+				vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
+
+				vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
+
+				pos = normalize(pos);
+
+				vec4 uv_rect = base_uv_rect;
+
+				pos.z = 1.0 + abs(pos.z);
+				pos.xy /= pos.z;
+
+				pos.xy = pos.xy * 0.5 + 0.5;
+				pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+
+				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos.xy, 0.0).r;
+				if (d > z_norm) {
+					blocker_average += d;
+					blocker_count += 1.0;
+				}
+			}
+
+			if (blocker_count > 0.0) {
+				//blockers found, do soft shadow
+				blocker_average /= blocker_count;
+				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
+				tangent *= penumbra;
+				bitangent *= penumbra;
+
+				z_norm += inv_center_range * area_lights.data[idx].shadow_bias;
+
+				shadow = half(0.0);
+
+				SPEC_CONSTANT_LOOP_ANNOTATION
+				for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
+					vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
+					vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
+
+					pos = normalize(pos);
+					pos = normalize(pos + normal_bias);
+
+					vec4 uv_rect = base_uv_rect;
+
+					pos.z = 1.0 + abs(pos.z);
+					pos.xy /= pos.z;
+
+					pos.xy = pos.xy * 0.5 + 0.5;
+					pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+					shadow += half(textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(pos.xy, z_norm, 1.0)));
+				}
+
+				shadow /= half(sc_penumbra_shadow_samples());
+				shadow = mix(half(1.0), shadow, half(area_lights.data[idx].shadow_opacity));
+
+			} else {
+				//no blockers found, so no shadow
+				shadow = half(1.0);
+			}
+		} else {
+			vec4 uv_rect = base_uv_rect;
+
+			vec3 shadow_sample = normalize(shadow_dir + normal_bias);
+
+			shadow_sample.z = 1.0 + abs(shadow_sample.z);
+			vec2 pos = shadow_sample.xy / shadow_sample.z;
+			float depth = shadow_len - area_lights.data[idx].shadow_bias;
+			depth *= inv_center_range;
+			depth = 1.0 - depth;
+			shadow = mix(half(1.0), sample_omni_pcf_shadow(shadow_atlas, area_lights.data[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, vec2(0), depth, taa_frame_count), half(area_lights.data[idx].shadow_opacity));
+		}
+	}
+#endif
+	light_attenuation_ltc = light_attenuation_ltc * shadow;
+	half light_attenuation = light_attenuation_raw * shadow;
+	hvec3 color = hvec3(area_lights.data[idx].color);
+	float max_mipmap = area_lights.data[idx].cone_angle;
+
+	vec3 points[4];
+	hvec3 h_area_width = area_width / half(2.0);
+	hvec3 h_area_height = area_height / half(2.0);
+	points[0] = area_lights.data[idx].position - h_area_width - h_area_height - vertex;
+	points[1] = area_lights.data[idx].position + h_area_width - h_area_height - vertex;
+	points[2] = area_lights.data[idx].position + h_area_width + h_area_height - vertex;
+	points[3] = area_lights.data[idx].position - h_area_width + h_area_height - vertex;
+
+	float ltc_diffuse = 0.0;
+	vec3 ltc_diffuse_tex_color = vec3(1.0);
+	float ltc_specular = 0.0;
+	vec3 ltc_specular_tex_color = vec3(1.0);
+	vec2 ltc_fresnel = vec2(0.0);
+	hvec3 fresnel_color = hvec3(0.0);
+	ltc_evaluate(vec3(normal), vec3(eye_vec), mat3(1), points, area_lights.data[idx].projector_rect, max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, ltc_diffuse, ltc_diffuse_tex_color);
+
+#if !defined(SPECULAR_DISABLED) || (defined(LIGHT_CODE_USED) && defined(AREA_LIGHT_CODE_USED))
+	ltc_evaluate_specular(vec3(normal), vec3(eye_vec), roughness, points, area_lights.data[idx].projector_rect, max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, ltc_lut1, ltc_lut2, ltc_specular, ltc_fresnel, ltc_specular_tex_color);
+	half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
+	fresnel_color = f0 * max(half(ltc_fresnel.x), half(0.0)) + (f90 - f0) * max(half(ltc_fresnel.y), half(0.0));
+#endif
+
+#if defined(LIGHT_CODE_USED) && defined(AREA_LIGHT_CODE_USED)
+	// Light is written by the user shader.
+	mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+			scene_data_block.data.inv_view_matrix[1],
+			scene_data_block.data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_view_matrix = transpose(mat4(scene_data_block.data.view_matrix[0],
+			scene_data_block.data.view_matrix[1],
+			scene_data_block.data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+#ifdef USING_MOBILE_RENDERER
+	uint instance_index = draw_call.instance_index;
+#else
+	uint instance_index = instance_index_interp;
+#endif
+
+	mat4 read_model_matrix = transpose(mat4(instances.data[instance_index].transform[0],
+			instances.data[instance_index].transform[1],
+			instances.data[instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+#undef projection_matrix
+#define projection_matrix scene_data_block.data.projection_matrix
+#undef inv_projection_matrix
+#define inv_projection_matrix scene_data_block.data.inv_projection_matrix
+
+	vec2 read_viewport_size = scene_data_block.data.viewport_size;
+
+#ifdef LIGHT_BACKLIGHT_USED
+	vec3 backlight_highp = vec3(backlight);
+#endif
+	float roughness_highp = float(roughness);
+	float metallic_highp = float(metallic);
+	vec3 albedo_highp = vec3(albedo);
+	float alpha_highp = float(alpha);
+	vec3 normal_highp = vec3(normal);
+	vec3 light_highp = (light_center - vertex) / light_length;
+	vec3 view_highp = vec3(eye_vec);
+	float specular_amount_highp = float(area_lights.data[idx].specular_amount);
+	vec3 light_color_highp = vec3(color);
+	float attenuation_highp = float(light_attenuation_ltc);
+	vec3 diffuse_light_highp = vec3(diffuse_light);
+	vec3 specular_light_highp = vec3(specular_light);
+	bool is_directional = false;
+	bool is_area = true;
+	vec3 area_diffuse = ltc_diffuse * ltc_diffuse_tex_color;
+	vec3 area_specular = ltc_specular * vec3(fresnel_color) * ltc_specular_tex_color;
+
+#CODE : LIGHT
+
+	alpha = half(alpha_highp);
+	diffuse_light = hvec3(diffuse_light_highp);
+	specular_light = hvec3(specular_light_highp);
+
+#else
+	half specular_amount = half(area_lights.data[idx].specular_amount);
+	half area = a_len * b_len;
+	half cc_attenuation = half(1.0);
+
+#if defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED) || defined(LIGHT_RIM_USED) || defined(DIFFUSE_TOON)
+	hvec3 isotropic_light_color = hvec3(1.0); // independent of normal
+	if (area_lights.data[idx].projector_rect != vec4(0.0)) {
+		half lod = dist / sqrt(area);
+		lod = log(half(2048.0) * lod) / log(half(3.0));
+
+		hvec2 uv = (closest_point_local_to_light.xy + hvec2(a_half_len, b_half_len)) / hvec2(a_len, b_len);
+		isotropic_light_color = hvec3(fetch_ltc_lod(vec2(hvec2(1.0) - uv), area_lights.data[idx].projector_rect, float(lod), max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP));
+	}
+#endif
+#ifdef LIGHT_TRANSMITTANCE_USED
+	{
+		half transmittance_z = transmittance_depth;
+		transmittance_color.a *= light_attenuation_raw; // not including shadows or ltc falloff
+#ifndef SHADOWS_DISABLED
+		if (area_lights.data[idx].shadow_opacity > 0.001) {
+			// Redo shadowmapping, but shrink the model a bit to avoid artifacts.
+			vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
+			vec4 uv_rect = area_lights.data[idx].atlas_rect;
+			uv_rect.xy += texel_size;
+			uv_rect.zw -= texel_size * 2.0;
+			vec3 local_vert = (area_lights.data[idx].shadow_matrix * vec4(vertex - vec3(normal) * area_lights.data[idx].transmittance_bias, 1.0)).xyz;
+
+			float shadow_len = length(local_vert); //need to remember shadow len from here
+			vec3 shadow_sample = normalize(local_vert);
+
+			shadow_sample.z = 1.0 + abs(shadow_sample.z);
+			vec2 pos = shadow_sample.xy / shadow_sample.z;
+			float inv_center_range = area_lights.data[idx].cone_attenuation;
+			float depth = shadow_len * inv_center_range;
+			depth = 1.0 - depth;
+
+			pos = pos * 0.5 + 0.5;
+			pos = uv_rect.xy + pos * uv_rect.zw;
+			float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos, 0.0).r;
+			transmittance_z = half((depth - shadow_z) / inv_center_range);
+		}
+#endif
+		// transmission can't use ltc_diffuse_tex_color, because for backface pixels texture would have to be sampled for opposite normal direction.
+#ifdef SSS_MODE_SKIN
+		diffuse_light += SSS_skin(half(ltc_diffuse), transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * isotropic_light_color * area);
+#else
+		diffuse_light += SSS(half(ltc_diffuse), transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * isotropic_light_color * area);
+#endif
+	}
+#endif //LIGHT_TRANSMITTANCE_USED
+
+#if defined(LIGHT_BACKLIGHT_USED) || defined(LIGHT_RIM_USED) || defined(DIFFUSE_TOON) || defined(SPECULAR_TOON)
+	float solid_angle = quad_solid_angle(points);
+#endif
+
+#if defined(LIGHT_CLEARCOAT_USED)
+	vec3 cc_specular_tex_color = vec3(1.0);
+	float cc_specular_ltc = 0.0;
+	vec2 cc_fresnel;
+	ltc_evaluate_specular(vec3(vertex_normal), vec3(eye_vec), sqrt(mix(0.001, 0.1, float(clearcoat_roughness))), points, area_lights.data[idx].projector_rect, max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, ltc_lut1, ltc_lut2, cc_specular_ltc, cc_fresnel, cc_specular_tex_color);
+	half Fr = half(0.04) * max(half(cc_fresnel.x), half(0.0)) + half(1.0 - 0.04) * max(half(cc_fresnel.y), half(0.0)) * clearcoat;
+	cc_attenuation = half(1.0) - Fr;
+	specular_light += half(cc_specular_ltc) * hvec3(cc_specular_tex_color) * Fr * color * light_attenuation_ltc * specular_amount;
+#endif // LIGHT_CLEARCOAT_USED
+
+	if (metallic < half(1.0)) {
+#if defined(DIFFUSE_TOON)
+		float backface_ltc_diffuse = 0.0;
+		vec3 backface_ltc_tex_color_discard = vec3(1.0);
+		ltc_evaluate(vec3(-normal), vec3(eye_vec), mat3(1), points, vec4(0.0), max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, backface_ltc_diffuse, backface_ltc_tex_color_discard);
+		half NdotL = half((ltc_diffuse - backface_ltc_diffuse) / (max(solid_angle, 0.001) / M_PI));
+		half diffuse_brdf_NL = smoothstep(-roughness, max(roughness, half(0.01)), NdotL) * half(1.0 / M_PI);
+		diffuse_light += diffuse_brdf_NL * isotropic_light_color * color * area * light_attenuation * cc_attenuation;
+#else
+		diffuse_light += half(ltc_diffuse) * hvec3(ltc_diffuse_tex_color) * color * light_attenuation_ltc * cc_attenuation;
+#endif // DIFFUSE_TOON
+
+#if defined(LIGHT_BACKLIGHT_USED)
+		// backlight can't use ltc_diffuse_tex_color, because for backface pixels texture would have to sampled for opposite normal direction.
+		diffuse_light += color * max(half(solid_angle / M_PI) - half(ltc_diffuse), half(0.0)) * backlight * isotropic_light_color * light_attenuation_ltc;
+#endif
+	}
+
+#if defined(LIGHT_RIM_USED) // same as for point lights
+	half cNdotV = max(dot(normal, eye_vec), half(1e-4));
+	half rim_light = pow(max(half(1e-4), half(1.0) - cNdotV), max(half(0.0), (half(1.0) - roughness) * half(16.0)));
+	diffuse_light += rim_light * rim * mix(hvec3(1.0), albedo, rim_tint) * isotropic_light_color * color * half(solid_angle) * light_attenuation_ltc;
+#endif
+
+#if defined(SPECULAR_TOON)
+	// If ltc_specular turns out to be not similar enough to RdotV, since its based on GGX, toon shading would need its own lookup-table.
+	half mid = half(1.0) - roughness;
+	mid *= mid;
+
+	half RdotV = half(ltc_specular / (max(solid_angle, 0.001) / (M_PI)));
+	half intensity = smoothstep(mid - roughness * half(0.5), mid + roughness * half(0.5), RdotV) * mid; // should we use specular tex color here?? or diffuse? or white?
+	diffuse_light += intensity * hvec3(ltc_specular_tex_color) * color * area * light_attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
+#elif defined(SPECULAR_DISABLED)
+	// do nothing
+#else
+	hvec3 spec = half(ltc_specular) * hvec3(ltc_specular_tex_color) * color * fresnel_color;
+	specular_light += spec * specular_amount * light_attenuation_ltc * cc_attenuation;
+#endif // SPECULAR_TOON
+
+#endif // LIGHT_CODE_USED
 }
 
 void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light,

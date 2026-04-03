@@ -12,6 +12,7 @@ DISABLE_LIGHTMAP = false
 DISABLE_LIGHT_DIRECTIONAL = false
 DISABLE_LIGHT_OMNI = false
 DISABLE_LIGHT_SPOT = false
+DISABLE_LIGHT_AREA = false
 DISABLE_REFLECTION_PROBE = true
 DISABLE_FOG = false
 USE_DEPTH_FOG = false
@@ -255,7 +256,7 @@ struct PositionalShadowData {
 	highp float shadow_atlas_pixel_size;
 };
 
-layout(std140) uniform PositionalShadows { // ubo:9
+layout(std140) uniform PositionalShadows { // ubo:10
 	PositionalShadowData positional_shadows[MAX_LIGHT_DATA_STRUCTS];
 };
 
@@ -277,13 +278,13 @@ struct DirectionalShadowData {
 	mediump vec2 pad;
 };
 
-layout(std140) uniform DirectionalShadows { // ubo:10
+layout(std140) uniform DirectionalShadows { // ubo:11
 	DirectionalShadowData directional_shadows[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
 uniform lowp uint directional_shadow_index;
 
-#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT))
+#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
 #endif // USE_ADDITIVE_LIGHTING
 
 #ifdef USE_VERTEX_LIGHTING
@@ -310,7 +311,7 @@ struct DirectionalLightData {
 	highp uint mask;
 };
 
-layout(std140) uniform DirectionalLights { // ubo:7
+layout(std140) uniform DirectionalLights { // ubo:8
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
@@ -319,8 +320,8 @@ layout(std140) uniform DirectionalLights { // ubo:7
 #define DIRECTIONAL_LIGHT_BAKE_DYNAMIC uint(1 << 2)
 #endif // !DISABLE_LIGHT_DIRECTIONAL
 
-// Omni and spot light data.
-#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
+// Omni, spot, and area light data.
+#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || (defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
 
 struct LightData { // This structure needs to be as packed as possible.
 	highp vec3 position;
@@ -339,6 +340,9 @@ struct LightData { // This structure needs to be as packed as possible.
 
 	lowp vec3 pad;
 	lowp uint bake_mode;
+
+	mediump vec4 area_width;
+	mediump vec4 area_height;
 };
 
 #if !defined(DISABLE_LIGHT_OMNI) || defined(ADDITIVE_OMNI)
@@ -360,7 +364,18 @@ uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint spot_light_count;
 #endif // BASE_PASS
 #endif // DISABLE_LIGHT_SPOT
-#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
+
+#if !defined(DISABLE_LIGHT_AREA)
+layout(std140) uniform AreaLightData { // ubo:7
+	LightData area_lights[MAX_LIGHT_DATA_STRUCTS];
+};
+#if defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+uniform uint area_light_indices[MAX_FORWARD_LIGHTS];
+uniform uint area_light_count;
+#endif // defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+#endif // !defined(DISABLE_LIGHT_AREA)
+
+#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || (!defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
 
 #ifdef USE_ADDITIVE_LIGHTING
 #ifdef ADDITIVE_OMNI
@@ -863,6 +878,13 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 				diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 #endif // !DISABLE_LIGHT_SPOT
+
+#ifndef DISABLE_LIGHT_AREA
+	for (uint i = 0u; i < area_light_count; i++) {
+		light_process_area(area_light_indices[i], vertex_interp, view, normal_interp, roughness,
+				diffuse_light_interp.rgb, specular_light_interp.rgb);
+	}
+#endif // !DISABLE_LIGHT_AREA
 #endif // BASE_PASS
 
 /* ADDITIVE LIGHTING PASS */
@@ -1018,6 +1040,8 @@ void main() {
 7-depth
 8-reflection probe 1
 9-reflection probe 2
+10-area light LUT 1
+11-area light LUT 2
 
 */
 
@@ -1250,7 +1274,7 @@ struct DirectionalLightData {
 	highp uint mask;
 };
 
-layout(std140) uniform DirectionalLights { // ubo:7
+layout(std140) uniform DirectionalLights { // ubo:8
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
@@ -1261,8 +1285,8 @@ uniform highp sampler2DShadow directional_shadow_atlas; // texunit:-3
 
 #endif // !DISABLE_LIGHT_DIRECTIONAL || USE_SUN_SCATTER
 
-// Omni and spot light data.
-#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
+// Omni, spot, and area light data.
+#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
 
 struct LightData { // This structure needs to be as packed as possible.
 	highp vec3 position;
@@ -1281,6 +1305,9 @@ struct LightData { // This structure needs to be as packed as possible.
 
 	lowp vec3 pad;
 	lowp uint bake_mode;
+
+	mediump vec4 area_width;
+	mediump vec4 area_height;
 };
 
 #if !defined(DISABLE_LIGHT_OMNI) || defined(ADDITIVE_OMNI)
@@ -1302,7 +1329,21 @@ uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint spot_light_count;
 #endif // defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
 #endif // !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
-#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
+
+#if !defined(DISABLE_LIGHT_AREA)
+layout(std140) uniform AreaLightData { // ubo:7
+	LightData area_lights[MAX_LIGHT_DATA_STRUCTS];
+};
+uniform highp sampler2D ltc_lut1; // texunit:-10
+uniform highp sampler2D ltc_lut2; // texunit:-11
+
+#if defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+uniform uint area_light_indices[MAX_FORWARD_LIGHTS];
+uniform uint area_light_count;
+#endif // defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+#endif // !defined(DISABLE_LIGHT_AREA)
+
+#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
 
 #ifdef USE_ADDITIVE_LIGHTING
 #ifdef ADDITIVE_OMNI
@@ -1323,7 +1364,7 @@ struct PositionalShadowData {
 	highp float shadow_atlas_pixel_size;
 };
 
-layout(std140) uniform PositionalShadows { // ubo:9
+layout(std140) uniform PositionalShadows { // ubo:10
 	PositionalShadowData positional_shadows[MAX_LIGHT_DATA_STRUCTS];
 };
 
@@ -1343,7 +1384,7 @@ struct DirectionalShadowData {
 	mediump vec2 pad;
 };
 
-layout(std140) uniform DirectionalShadows { // ubo:10
+layout(std140) uniform DirectionalShadows { // ubo:11
 	DirectionalShadowData directional_shadows[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
@@ -1483,7 +1524,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 #ifndef MODE_RENDER_DEPTH
 
 #ifndef USE_VERTEX_LIGHTING
-#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(USE_ADDITIVE_LIGHTING)
+#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(USE_ADDITIVE_LIGHTING)
 
 float D_GGX(float cos_theta_m, float alpha) {
 	float a = cos_theta_m * alpha;
@@ -1547,6 +1588,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	vec3 normal = N;
 	vec3 light = L;
 	vec3 view = V;
+	bool is_area = false;
+	float area_diffuse = 1.0;
+	float area_specular = 1.0;
+	vec3 area_diffuse_tex_color = vec3(1.0);
+	vec3 area_specular_tex_color = vec3(1.0);
 
 	/* clang-format off */
 
@@ -1730,6 +1776,152 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 			specular_light);
 }
 #endif // !DISABLE_LIGHT_OMNI
+
+#if !defined(DISABLE_LIGHT_AREA)
+
+#include "area_lights_inc.glsl"
+
+// implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
+void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha, vec2 screen_uv,
+#ifdef LIGHT_BACKLIGHT_USED
+		vec3 backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+		float rim, float rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+		vec3 binormal, vec3 tangent, float anisotropy,
+#endif
+		inout vec3 diffuse_light, inout vec3 specular_light) {
+	float EPSILON = 1e-7f;
+	vec3 area_width = area_lights[idx].area_width.xyz;
+	vec3 area_height = area_lights[idx].area_height.xyz;
+	vec3 area_direction = area_lights[idx].direction;
+
+	if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) { // area is 0
+		return;
+	}
+	if (dot(area_direction, vertex - area_lights[idx].position) <= 0) {
+		return; // vertex is behind light
+	}
+
+	float a_len = length(area_width);
+	float b_len = length(area_height);
+	float a_half_len = a_len / 2.0;
+	float b_half_len = b_len / 2.0;
+	vec3 light_center = area_lights[idx].position;
+	vec3 light_to_vert = vertex - light_center;
+	vec3 pos_local_to_light = vec3(dot(light_to_vert, normalize(area_width)), dot(light_to_vert, normalize(area_height)), dot(light_to_vert, -area_direction));
+
+	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+	float dist = length(closest_point_local_to_light - pos_local_to_light);
+
+	vec3 points[4];
+	vec3 h_area_width = area_width / 2.0;
+	vec3 h_area_height = area_height / 2.0;
+	points[0] = area_lights[idx].position - h_area_width - h_area_height - vertex;
+	points[1] = area_lights[idx].position + h_area_width - h_area_height - vertex;
+	points[2] = area_lights[idx].position + h_area_width + h_area_height - vertex;
+	points[3] = area_lights[idx].position - h_area_width + h_area_height - vertex;
+
+	float ltc_diffuse = 0.0;
+	float ltc_specular = 0.0;
+	vec2 ltc_fresnel = vec2(0.0);
+	ltc_evaluate(normal, eye_vec, mat3(1), points, ltc_diffuse);
+	ltc_evaluate_specular(normal, eye_vec, roughness, points, ltc_lut1, ltc_lut2, ltc_specular, ltc_fresnel);
+
+	float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), metallic, 1.0);
+	vec3 fresnel_color = f0 * max(ltc_fresnel.x, 0.0) + (f90 - f0) * max(ltc_fresnel.y, 0.0);
+
+	float light_length = max(0, dist);
+	float light_attenuation_raw = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
+	float light_attenuation_ltc = light_attenuation_raw * light_length * light_length; // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+
+	vec3 light_color = area_lights[idx].color;
+	light_attenuation_ltc = light_attenuation_ltc * shadow;
+	float light_attenuation = light_attenuation_raw * shadow;
+	float specular_amount = area_lights[idx].specular_amount;
+
+#if defined(LIGHT_CODE_USED) && defined(AREA_LIGHT_CODE_USED)
+	// light is written by the light shader
+
+	highp mat4 model_matrix = world_transform;
+	mat4 projection_matrix = scene_data_block.data.projection_matrix;
+	mat4 inv_projection_matrix = scene_data_block.data.inv_projection_matrix;
+
+	vec3 light = (light_center - vertex) / light_length;
+	vec3 view = eye_vec;
+
+	bool is_area = true;
+	vec3 area_diffuse = vec3(ltc_diffuse);
+	vec3 area_specular = ltc_specular * fresnel_color;
+	float attenuation = light_attenuation_ltc;
+
+	/* clang-format off */
+
+#CODE : LIGHT
+
+	/* clang-format on */
+
+#else
+	float area = a_len * b_len;
+	float cc_attenuation = 1.0;
+
+#if defined(LIGHT_BACKLIGHT_USED) || defined(LIGHT_RIM_USED) || defined(DIFFUSE_TOON) || defined(SPECULAR_TOON)
+	float solid_angle = quad_solid_angle(points);
+#endif
+
+#if defined(LIGHT_CLEARCOAT_USED)
+	float cc_specular_ltc = 0.0;
+	vec2 cc_fresnel = vec2(0.0);
+	ltc_evaluate_specular(vertex_normal, eye_vec, sqrt(mix(0.001, 0.1, float(clearcoat_roughness))), points, ltc_lut1, ltc_lut2, cc_specular_ltc, cc_fresnel);
+	float Fr = 0.04 * max(cc_fresnel.x, 0.0) + (1.0 - 0.04) * max(cc_fresnel.y, 0.0) * clearcoat;
+	cc_attenuation = 1.0 - Fr;
+	specular_light += cc_specular_ltc * Fr * light_color * light_attenuation_ltc * specular_amount;
+#endif // LIGHT_CLEARCOAT_USED
+
+	if (metallic < 1.0) {
+#if defined(DIFFUSE_TOON)
+		float backface_ltc_diffuse = 0.0;
+		ltc_evaluate(vec3(-normal), vec3(eye_vec), mat3(1), points, backface_ltc_diffuse);
+		float NdotL = (ltc_diffuse - backface_ltc_diffuse) / (max(solid_angle, 0.001) / M_PI);
+		float diffuse_brdf_NL = smoothstep(-roughness, max(roughness, 0.01), NdotL) * (1.0 / M_PI);
+		diffuse_light += diffuse_brdf_NL * light_color * area * light_attenuation * cc_attenuation;
+#else
+		diffuse_light += ltc_diffuse * light_color * light_attenuation_ltc * cc_attenuation;
+#endif // DIFFUSE_TOON
+
+#if defined(LIGHT_BACKLIGHT_USED)
+		diffuse_light += light_color * max((solid_angle / M_PI) - ltc_diffuse, 0.0) * backlight * light_attenuation_ltc;
+#endif
+	}
+
+#if defined(LIGHT_RIM_USED) // same as for point lights
+	float cNdotV = max(dot(normal, eye_vec), 1e-4);
+	float rim_light = pow(max(1e-4, 1.0 - cNdotV), max(0.0, (1.0 - roughness) * 16.0));
+	diffuse_light += rim_light * rim * mix(vec3(1.0), albedo, rim_tint) * light_color * solid_angle * light_attenuation_ltc;
+#endif
+
+#if defined(SPECULAR_TOON)
+	// If ltc_specular turns out to be not similar enough to RdotV, since its based on GGX, toon shading would need its own lookup-table.
+	float mid = 1.0 - roughness;
+	mid *= mid;
+
+	float RdotV = ltc_specular / (max(solid_angle, 0.001) / (M_PI));
+	float intensity = smoothstep(mid - roughness * 0.5, mid + roughness * 0.5, RdotV) * mid; // should we use specular tex color here?? or diffuse? or white?
+	diffuse_light += intensity * light_color * area * light_attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
+#elif defined(SPECULAR_DISABLED)
+	// do nothing
+#else
+	vec3 spec = ltc_specular * light_color * fresnel_color;
+	specular_light += spec * specular_amount * light_attenuation_ltc * cc_attenuation;
+#endif // SPECULAR_TOON
+#endif // LIGHT_CODE_USED
+}
+#endif // !DISABLE_LIGHT_AREA
 
 #if !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
 void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha, vec2 screen_uv,
@@ -2502,6 +2694,32 @@ void main() {
 				diffuse_light, specular_light);
 	}
 #endif // !DISABLE_LIGHT_SPOT
+
+#ifndef DISABLE_LIGHT_AREA
+	for (uint i = 0u; i < MAX_FORWARD_LIGHTS; i++) {
+		if (i >= area_light_count) {
+			break;
+		}
+
+		light_process_area(area_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo, alpha, screen_uv,
+#ifdef LIGHT_BACKLIGHT_USED
+				backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+				rim,
+				rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+				clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
+#ifdef LIGHT_ANISOTROPY_USED
+				tangent,
+				binormal, anisotropy,
+#endif
+				diffuse_light, specular_light);
+	}
+#endif // !DISABLE_LIGHT_AREA
+
 #endif // !USE_VERTEX_LIGHTING
 #endif // BASE_PASS
 #endif // !MODE_UNSHADED
