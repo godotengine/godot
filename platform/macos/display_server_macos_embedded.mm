@@ -378,7 +378,7 @@ void DisplayServerMacOSEmbedded::send_input_text(const String &p_text, DisplaySe
 	}
 }
 
-void DisplayServerMacOSEmbedded::send_window_event(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id) const {
+void DisplayServerMacOSEmbedded::send_window_event_by_id(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id) const {
 	const Callable *cb = window_event_callbacks.getptr(p_id);
 	if (cb) {
 		_window_callback(*cb, int(p_event));

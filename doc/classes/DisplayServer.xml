@@ -3387,7 +3387,6 @@
 		<constant name="WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED" value="9" enum="WindowEvent">
 			Sent when the output max linear value returned by [method Window.get_output_max_linear_value] has changed.
 			This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen.
-			[b]Note:[/b] This flag is implemented only on Windows.
 		</constant>
 		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
 			Top-left edge of a window.
