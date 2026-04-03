@@ -49,6 +49,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/script/editor_language.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -1153,7 +1154,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
-	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
+	Error err = script->get_language()->get_editor_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);

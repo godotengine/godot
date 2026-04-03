@@ -587,6 +587,10 @@ public:
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	virtual EditorLanguage *get_editor_language() override;
+#endif // TOOLS_ENABLED
+
 	virtual Vector<String> get_reserved_words() const override;
 	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
 	virtual Vector<String> get_comment_delimiters() const override;
@@ -601,7 +605,6 @@ public:
 	virtual bool can_inherit_from_file() const override { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
 #endif
