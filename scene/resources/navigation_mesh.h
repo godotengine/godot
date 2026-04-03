@@ -198,6 +198,7 @@ public:
 	void set_polygons(const Vector<Vector<int>> &p_polygons);
 	Vector<Vector<int>> get_polygons() const;
 
+	int get_polygon_meta_count() const;
 	uint32_t get_polygon_meta(int p_idx);
 
 	void clear();

@@ -555,6 +555,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 	RandomPCG rand;
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	bool has_polygon_meta = navigation_mesh->get_polygon_meta_count() == polygon_count;
 
 	int face_vertex_index = 0;
 	int line_vertex_index = 0;
@@ -570,7 +571,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 			continue;
 		}
 
-		if (navigation_mesh->get_polygon_meta(polygon_index) != navigation_layers) {
+		if (has_polygon_meta && navigation_mesh->get_polygon_meta(polygon_index) != navigation_layers) {
 			// Color faces that were generated because of area meshes differently using vertex colors.
 			// FIXME: does not work if !enabled_geometry_face_random_color.
 			polygon_color = debug_navigation_geometry_face_area_color;
