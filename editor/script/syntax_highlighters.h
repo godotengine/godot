@@ -141,3 +141,14 @@ public:
 
 	EditorConfigFileSyntaxHighlighter() { highlighter.instantiate(); }
 };
+
+class EditorBBCodeSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorBBCodeSyntaxHighlighter, EditorSyntaxHighlighter)
+
+public:
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
+
+	virtual String _get_name() const override { return TTR("BBCode"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+};

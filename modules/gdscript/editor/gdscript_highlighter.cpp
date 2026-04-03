@@ -76,7 +76,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	int in_declaration_param_dicts = 0; // The number of opened `{` inside func params.
 	int in_type_params = 0; // The number of opened `[` after type name.
 
-	Color keyword_color;
+	Color current_keyword_color;
 	Color color;
 
 	color_region_cache[p_line] = -1;
@@ -248,7 +248,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						for (; from < line_length; from++) {
 							if (line_length - from < end_key_length) {
 								// Don't break if '\' to highlight escape sequences,
-								// and '%' and '{' to highlight placeholders.
+								// '%' and '{' to highlight placeholders.
 								if (str.find_char('\\', from) == -1 && str.find_char('%', from) == -1 && str.find_char('{', from) == -1) {
 									break;
 								}
@@ -497,7 +497,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 				if (!in_member_variable && col != Color()) {
 					in_keyword = true;
-					keyword_color = col;
+					current_keyword_color = col;
 				}
 			}
 		}
@@ -677,7 +677,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color = node_path_color;
 		} else if (in_keyword) {
 			next_type = KEYWORD;
-			color = keyword_color;
+			color = current_keyword_color;
 		} else if (in_signal_declaration) {
 			next_type = SIGNAL;
 			color = member_variable_color;
@@ -814,7 +814,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	class_names[SNAME("float")] = basetype_color;
 
 	/* Reserved words. */
-	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 	for (const String &keyword : gdscript->get_reserved_words()) {
 		if (gdscript->is_control_flow_keyword(keyword)) {

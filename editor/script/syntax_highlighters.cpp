@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/gui/text_edit.h"
 
 String EditorSyntaxHighlighter::_get_name() const {
 	String ret = "Unnamed";
@@ -303,6 +304,188 @@ void EditorConfigFileSyntaxHighlighter::_update_cache() {
 
 Ref<EditorSyntaxHighlighter> EditorConfigFileSyntaxHighlighter::_create() const {
 	Ref<EditorConfigFileSyntaxHighlighter> syntax_highlighter;
+	syntax_highlighter.instantiate();
+	return syntax_highlighter;
+}
+
+///
+
+Dictionary EditorBBCodeSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
+	Dictionary color_map;
+
+	if (!text_edit) {
+		return color_map;
+	}
+
+	const String &line_text = text_edit->get_line(p_line);
+	int len = line_text.length();
+
+	const Color normal_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+	const Color tag_color = EDITOR_GET("text_editor/theme/highlighting/bbcode/tag_color");
+	const Color bracket_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
+	const Color attribute_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+	const Color value_color = EDITOR_GET("text_editor/theme/highlighting/bbcode/value_color");
+
+	// Start the line with normal color.
+	if (len > 0) {
+		Dictionary entry;
+		entry["color"] = normal_color;
+		color_map[0] = entry;
+	}
+
+	int i = 0;
+	while (i < len) {
+		if (line_text[i] != '[') {
+			i++;
+			continue;
+		}
+
+		// Opening bracket.
+		{
+			Dictionary entry;
+			entry["color"] = tag_color;
+			color_map[i] = entry;
+		}
+		i++;
+
+		// Optional closing slash for end-tags.
+		if (i < len && line_text[i] == '/') {
+			Dictionary entry;
+			entry["color"] = tag_color;
+			color_map[i] = entry;
+			i++;
+		}
+
+		// Tag name.
+		int tag_start = i;
+		while (i < len && line_text[i] != ' ' && line_text[i] != '=' && line_text[i] != ']' && line_text[i] != '/') {
+			i++;
+		}
+		if (i > tag_start) {
+			Dictionary entry;
+			entry["color"] = tag_color;
+			color_map[tag_start] = entry;
+		}
+
+		// Parse the inside of the tag (attributes / value after '=').
+		while (i < len && line_text[i] != ']') {
+			// Skip whitespace.
+			if (line_text[i] == ' ') {
+				// Reset to normal color for spaces so they don't inherit the previous color.
+				Dictionary entry;
+				entry["color"] = normal_color;
+				color_map[i] = entry;
+				i++;
+				continue;
+			}
+
+			// Closing slash before ']' in self-closing tags.
+			if (line_text[i] == '/') {
+				Dictionary entry;
+				entry["color"] = tag_color;
+				color_map[i] = entry;
+				i++;
+				continue;
+			}
+
+			// '=' directly after the tag name means the rest before ']' is the tag value.
+			if (line_text[i] == '=') {
+				Dictionary eq_entry;
+				eq_entry["color"] = bracket_color;
+				color_map[i] = eq_entry;
+				i++;
+
+				// Consume the value.
+				int val_start = i;
+				bool in_quotes = i < len && (line_text[i] == '"' || line_text[i] == '\'');
+				char32_t quote_char = in_quotes ? (char32_t)line_text[i] : 0;
+				if (in_quotes) {
+					Dictionary val_entry;
+					val_entry["color"] = value_color;
+					color_map[i] = val_entry;
+					i++;
+				}
+				while (i < len && line_text[i] != ']') {
+					if (in_quotes && line_text[i] == quote_char) {
+						i++;
+						break;
+					} else if (!in_quotes && line_text[i] == ' ') {
+						break;
+					}
+					i++;
+				}
+				if (!in_quotes && i > val_start) {
+					Dictionary val_entry;
+					val_entry["color"] = value_color;
+					color_map[val_start] = val_entry;
+				}
+				continue;
+			}
+
+			// Attribute name.
+			int attr_start = i;
+			while (i < len && line_text[i] != '=' && line_text[i] != ']' && line_text[i] != ' ') {
+				i++;
+			}
+			if (i > attr_start) {
+				Dictionary attr_entry;
+				attr_entry["color"] = attribute_color;
+				color_map[attr_start] = attr_entry;
+			}
+
+			if (i < len && line_text[i] == '=') {
+				Dictionary eq_entry;
+				eq_entry["color"] = bracket_color;
+				color_map[i] = eq_entry;
+				i++;
+
+				int val_start = i;
+				bool in_quotes = i < len && (line_text[i] == '"' || line_text[i] == '\'');
+				char32_t quote_char = in_quotes ? (char32_t)line_text[i] : 0;
+				if (in_quotes) {
+					Dictionary val_entry;
+					val_entry["color"] = value_color;
+					color_map[i] = val_entry;
+					i++;
+				}
+				while (i < len && line_text[i] != ']') {
+					if (in_quotes && line_text[i] == quote_char) {
+						i++;
+						break;
+					} else if (!in_quotes && line_text[i] == ' ') {
+						break;
+					}
+					i++;
+				}
+				if (!in_quotes && i > val_start) {
+					Dictionary val_entry;
+					val_entry["color"] = value_color;
+					color_map[val_start] = val_entry;
+				}
+			}
+		}
+
+		// Closing bracket.
+		if (i < len && line_text[i] == ']') {
+			Dictionary entry;
+			entry["color"] = tag_color;
+			color_map[i] = entry;
+			i++;
+		}
+
+		// Restore normal color after the tag.
+		if (i < len) {
+			Dictionary entry;
+			entry["color"] = normal_color;
+			color_map[i] = entry;
+		}
+	}
+
+	return color_map;
+}
+
+Ref<EditorSyntaxHighlighter> EditorBBCodeSyntaxHighlighter::_create() const {
+	Ref<EditorBBCodeSyntaxHighlighter> syntax_highlighter;
 	syntax_highlighter.instantiate();
 	return syntax_highlighter;
 }
