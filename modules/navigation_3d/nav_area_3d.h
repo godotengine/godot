@@ -33,7 +33,6 @@
 #include "nav_rid_3d.h"
 
 #include "core/math/vector3.h"
-#include "core/templates/self_list.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 
 class NavMap3D;

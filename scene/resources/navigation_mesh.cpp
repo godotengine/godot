@@ -373,6 +373,11 @@ void NavigationMesh::clear_polygons() {
 	polygons_meta.clear();
 }
 
+int NavigationMesh::get_polygon_meta_count() const {
+	RWLockRead read_lock(rwlock);
+	return polygons_meta.size();
+}
+
 uint32_t NavigationMesh::get_polygon_meta(int p_idx) {
 	RWLockRead read_lock(rwlock);
 	ERR_FAIL_INDEX_V(p_idx, polygons_meta.size(), uint32_t(0));

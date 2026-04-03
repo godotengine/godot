@@ -169,10 +169,11 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	RandomPCG rand;
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	bool has_polygon_meta = navigationmesh->get_polygon_meta_count() == polygon_count;
 	uint32_t default_navigation_layers = navigationregion->get_navigation_layers();
 
 	for (int i = 0; i < polygon_count; i++) {
-		if (navigationmesh->get_polygon_meta(i) != default_navigation_layers) {
+		if (has_polygon_meta && navigationmesh->get_polygon_meta(i) != default_navigation_layers) {
 			// Color faces that were generated because of area meshes differently using vertex colors.
 			polygon_color = debug_navigation_geometry_face_area_color;
 		} else if (enabled_geometry_face_random_color) {
