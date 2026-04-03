@@ -182,8 +182,7 @@ Known migration surface: there are currently 18 direct test calls to `set_gaussi
 ### Current Implementation Notes
 
 - `submit_world_submission()` and `release_world_submission()` are the runtime world-submission entrypoints. They apply and clear renderer-owned world state in addition to tracking the active world-backed source.
-- `upsert_world_submission()` and `unregister_world_submission()` remain as scaffolding and introspection helpers. They update only the director-owned record and intentionally have no renderer side effects.
-- The current one-active-world-per-scenario rule is enforced only by the runtime `submit_*` / `release_*` path. The scaffolding helpers remain compiled only for tools/test builds, not as a normal runtime surface.
+- The current one-active-world-per-scenario rule is enforced by the runtime `submit_*` / `release_*` path, which is now the only public world-submission surface.
 
 ### Exit Criteria
 
@@ -320,7 +319,6 @@ This stage is intentionally deferred.
 
 - publish one explicit precedence model for effective settings if Stage 3 provenance proves the distributed rules can be collapsed safely
 - remove transitional compatibility hooks that remain public only for tests, tools, or migration support
-- remove `upsert_world_submission()` — this is now a tests-only scaffolding entrypoint and should be retired once all coverage uses the ownership-aware submission path
 - collapse the duplicated source-path resolution logic between `GaussianSplatNode3D::_get_asset_source_path()` and the editor plugin's `_get_asset_source_path()` into a single shared function
 
 ### Validation Status
