@@ -3653,7 +3653,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 	if (ResourceLoader::exists(fpath)) {
 		Ref<Resource> res = ResourceLoader::load(fpath);
 
-		if (fpath.get_extension() == "gdshader") {
+		if (fpath.has_extension("gdshader") || fpath.has_extension("gdshaderinc")) {
 			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
@@ -3662,7 +3662,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 				text_shader_editor->goto_line_selection(line_number - 1, begin, end);
 			}
 			return;
-		} else if (fpath.get_extension() == "tscn") {
+		} else if (fpath.has_extension("tscn")) {
 			const PackedStringArray lines = FileAccess::get_file_as_string(fpath).split("\n");
 			if (line_number > lines.size()) {
 				return;
