@@ -37,6 +37,7 @@
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 using namespace RendererRD;
@@ -762,62 +763,69 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		{
 			RD::Uniform u;
 			u.binding = 3;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(cascade.solid_cell_dispatch_buffer_storage);
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
+			u.append_id(material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 4;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(cascade.solid_cell_buffer);
+			u.append_id(cascade.solid_cell_dispatch_buffer_storage);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 5;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.append_id(cascade.light_data);
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.append_id(cascade.solid_cell_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 6;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.append_id(cascade.light_aniso_0_tex);
+			u.append_id(cascade.light_data);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 7;
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u.append_id(cascade.light_aniso_1_tex);
+			u.append_id(cascade.light_aniso_0_tex);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 8;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.append_id(cascade.light_aniso_1_tex);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 9;
 			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.append_id(cascades_ubo);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 9;
+			u.binding = 10;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.append_id(cascade.lights_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 10;
+			u.binding = 11;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.append_id(lightprobe_texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 11;
+			u.binding = 12;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.append_id(occlusion_texture);
 			uniforms.push_back(u);
@@ -1282,6 +1290,7 @@ void GI::SDFGI::update_light() {
 		cascades[i].all_dynamic_lights_dirty = false;
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_dynamic_uniform_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_dynamic_render_uniform_set, 1);
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
 		RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascade.solid_cell_dispatch_buffer_call, 0);
 	}
@@ -1809,6 +1818,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 	}
 
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	/* Update general SDFGI Buffer */
 
 	SDFGIData sdfgi_data;
@@ -1958,6 +1968,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			}
 
 			Vector3 dir = -light_transform.basis.get_column(Vector3::AXIS_Z);
+			Vector2 area_size = RSG::light_storage->light_area_get_size(light);
 			//faster to not do this here
 			//dir.y *= y_mult;
 			//dir.normalize();
@@ -2000,6 +2011,32 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ANGLE)));
 			lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ATTENUATION);
 
+			if (lights[idx].type == RSE::LIGHT_AREA) {
+				Vector3 area_vec_a = light_transform.basis.get_column(0).normalized() * area_size.x;
+				Vector3 area_vec_b = light_transform.basis.get_column(1).normalized() * area_size.y;
+				Rect2 proj_rect = texture_storage->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(light));
+				lights[idx].area_width[0] = area_vec_a.x;
+				lights[idx].area_width[1] = area_vec_a.y;
+				lights[idx].area_width[2] = area_vec_a.z;
+				lights[idx].area_height[0] = area_vec_b.x;
+				lights[idx].area_height[1] = area_vec_b.y;
+				lights[idx].area_height[2] = area_vec_b.z;
+				lights[idx].area_projector_rect[0] = proj_rect.position.x;
+				lights[idx].area_projector_rect[1] = proj_rect.position.y;
+				lights[idx].area_projector_rect[2] = proj_rect.size.x;
+				lights[idx].area_projector_rect[3] = proj_rect.size.y;
+
+				Size2i texture_size = proj_rect.size * texture_storage->area_light_atlas_get_size();
+				lights[idx].cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f))), texture_storage->area_light_atlas_get_mipmaps()) - 1.0f; // max mipmaps
+				lights[idx].inv_spot_attenuation = 1.0f / (lights[idx].radius + area_size.length() / 2.0f); // center range
+
+				if (RSG::light_storage->light_area_get_normalize_energy(light)) {
+					// normalization to make larger lights output same amount of light as smaller lights with same energy
+					float surface_area = area_size.x * area_size.y;
+					lights[idx].energy /= surface_area;
+				}
+			}
+
 			idx++;
 		}
 
@@ -2008,6 +2045,18 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		cascade_dynamic_light_count[i] = idx;
+
+		thread_local LocalVector<RD::Uniform> uniforms;
+		uniforms.clear();
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.append_id(texture_storage->area_light_atlas_get_texture());
+			uniforms.push_back(u);
+		}
+		cascade.sdf_direct_light_static_render_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_STATIC), 1, uniforms);
+		cascade.sdf_direct_light_dynamic_render_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(gi->sdfgi_shader.direct_light.version_get_shader(gi->sdfgi_shader.direct_light_shader, SDFGIShader::DIRECT_LIGHT_MODE_DYNAMIC), 1, uniforms);
 	}
 }
 
@@ -2376,6 +2425,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 	ERR_FAIL_COND(p_render_buffers.is_null()); // we wouldn't be here if this failed but...
 
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	RD::get_singleton()->draw_command_begin_label("SDFGI Render Static Lights");
 
@@ -2421,6 +2471,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				lights[idx].type = RSG::light_storage->light_get_type(light);
 
 				Vector3 dir = -light_transform.basis.get_column(Vector3::AXIS_Z);
+				Vector2 area_size = RSG::light_storage->light_area_get_size(light);
 				if (lights[idx].type == RSE::LIGHT_DIRECTIONAL) {
 					dir.y *= y_mult; //only makes sense for directional
 					dir.normalize();
@@ -2462,6 +2513,32 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				lights[idx].radius = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_RANGE);
 				lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ANGLE)));
 				lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SPOT_ATTENUATION);
+
+				if (lights[idx].type == RSE::LIGHT_AREA) {
+					Vector3 area_vec_a = light_transform.basis.get_column(0).normalized() * area_size.x;
+					Vector3 area_vec_b = light_transform.basis.get_column(1).normalized() * area_size.y;
+					Rect2 proj_rect = texture_storage->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(light));
+					lights[idx].area_width[0] = area_vec_a.x;
+					lights[idx].area_width[1] = area_vec_a.y;
+					lights[idx].area_width[2] = area_vec_a.z;
+					lights[idx].area_height[0] = area_vec_b.x;
+					lights[idx].area_height[1] = area_vec_b.y;
+					lights[idx].area_height[2] = area_vec_b.z;
+					lights[idx].area_projector_rect[0] = proj_rect.position.x;
+					lights[idx].area_projector_rect[1] = proj_rect.position.y;
+					lights[idx].area_projector_rect[2] = proj_rect.size.x;
+					lights[idx].area_projector_rect[3] = proj_rect.size.y;
+
+					Size2i texture_size = proj_rect.size * texture_storage->area_light_atlas_get_size();
+					lights[idx].cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f))), texture_storage->area_light_atlas_get_mipmaps()) - 1.0f; // max mipmaps
+					lights[idx].inv_spot_attenuation = 1.0f / (lights[idx].radius + area_size.length() / 2.0f); // center range
+
+					if (RSG::light_storage->light_area_get_normalize_energy(light)) {
+						// normalization to make larger lights output same amount of light as smaller lights with same energy
+						float surface_area = area_size.x * area_size.y;
+						lights[idx].energy /= surface_area;
+					}
+				}
 
 				idx++;
 			}
@@ -2513,6 +2590,7 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 
 		if (dl_push_constant.light_count > 0) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cc.sdf_direct_light_static_uniform_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cc.sdf_direct_light_static_render_uniform_set, 1);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &dl_push_constant, sizeof(SDFGIShader::DirectLightPushConstant));
 			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cc.solid_cell_dispatch_buffer_call, 0);
 		}
@@ -2624,6 +2702,14 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 							u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 							u.binding = 3;
 							u.append_id(gi->voxel_gi_lights_uniform);
+							copy_uniforms.push_back(u);
+						}
+
+						{
+							RD::Uniform u;
+							u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+							u.binding = 13;
+							u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
 							copy_uniforms.push_back(u);
 						}
 
@@ -2789,6 +2875,13 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 								u.append_id(dmap.depth);
 								uniforms.push_back(u);
 							}
+							{
+								RD::Uniform u;
+								u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+								u.binding = 13;
+								u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+								uniforms.push_back(u);
+							}
 
 							dmap.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING], 0);
 						}
@@ -2855,6 +2948,14 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 							}
 						}
 
+						{
+							RD::Uniform u;
+							u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+							u.binding = 13;
+							u.append_id(RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture());
+							uniforms.push_back(u);
+						}
+
 						dmap.uniform_set = RD::get_singleton()->uniform_set_create(
 								uniforms,
 								gi->voxel_gi_lighting_shader_version_shaders[(write && plot) ? VOXEL_GI_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT : (write ? VOXEL_GI_SHADER_VERSION_DYNAMIC_SHRINK_WRITE : VOXEL_GI_SHADER_VERSION_DYNAMIC_SHRINK_PLOT)],
@@ -2912,6 +3013,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					// Convert from Luminous Power to Luminous Intensity
 					if (l.type == RSE::LIGHT_OMNI) {
 						l.energy *= 1.0 / (Math::PI * 4.0);
+					} else if (l.type == RSE::LIGHT_AREA) {
+						l.energy *= 1.0 / (Math::PI * 2.0);
 					} else if (l.type == RSE::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
@@ -2930,6 +3033,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 				Transform3D xform = light_storage->light_instance_get_base_transform(light_instance);
 
+				Vector2 area_size = RSG::light_storage->light_area_get_size(light);
+
 				Vector3 pos = to_probe_xform.xform(xform.origin);
 				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_column(2)).normalized();
 
@@ -2942,6 +3047,32 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				l.direction[2] = dir.z;
 
 				l.has_shadow = RSG::light_storage->light_has_shadow(light);
+
+				if (l.type == RSE::LIGHT_AREA) {
+					Vector3 area_vec_a = to_probe_xform.basis.xform(xform.basis.get_column(0).normalized() * area_size.x);
+					Vector3 area_vec_b = to_probe_xform.basis.xform(xform.basis.get_column(1).normalized() * area_size.y);
+					// adjust energy for probe space
+					l.area_width[0] = area_vec_a.x;
+					l.area_width[1] = area_vec_a.y;
+					l.area_width[2] = area_vec_a.z;
+
+					l.area_height[0] = area_vec_b.x;
+					l.area_height[1] = area_vec_b.y;
+					l.area_height[2] = area_vec_b.z;
+					Rect2 proj_rect = RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(light));
+					l.area_projector_rect[0] = proj_rect.position.x;
+					l.area_projector_rect[1] = proj_rect.position.y;
+					l.area_projector_rect[2] = proj_rect.size.width;
+					l.area_projector_rect[3] = proj_rect.size.height;
+					l.inv_spot_attenuation = 1.0f / (l.radius + area_size.length() / 2.0f); // center range
+					Size2i texture_size = proj_rect.size * RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_size();
+					l.cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f))), RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_mipmaps()) - 1.0f; // max mipmaps
+					if (RSG::light_storage->light_area_get_normalize_energy(light)) {
+						// normalization to make larger lights output same amount of light as smaller lights with same energy
+						float surface_area = area_size.x * area_size.y;
+						l.energy /= surface_area;
+					}
+				}
 			}
 
 			RD::get_singleton()->buffer_update(gi->voxel_gi_lights_uniform, 0, sizeof(VoxelGILight) * light_count, gi->voxel_gi_lights);

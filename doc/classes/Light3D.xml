@@ -95,7 +95,7 @@
 			[b]Note:[/b] Light projector textures are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0" keywords="pcss">
-			The size of the light in Godot units. Only available for [OmniLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier (also called percentage-closer soft shadows, or PCSS). This can be used to simulate area lights to an extent. Increasing this value above [code]0.0[/code] for lights with shadows enabled will have a noticeable performance cost due to PCSS.
+			The simulated size of the light in Godot units, affecting shading and shadows. For [OmniLight3D]s and [SpotLight3D]s, increasing this value simulates a spherical area light, expanding the size of specular highlights. If shadows are enabled, a penumbra is rendered, making shadows appear blurrier. For [AreaLight3D]s, only the shadows are affected. Penumbras are simulated with percentage-closer soft shadows, or PCSS, which has a noticeable performance cost for values above [code]0.0[/code].
 			[b]Note:[/b] [member light_size] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 			[b]Note:[/b] PCSS for positional lights is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
