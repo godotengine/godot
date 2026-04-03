@@ -39,8 +39,10 @@ struct StaticChunk;
  * @class IRendererLifecycle
  * @brief Lifecycle and data-binding surface.
  *
- * Consumers that only need to set up or tear down the renderer (e.g. scene
- * loaders, asset importers) depend on this interface alone.
+ * Consumers that only need low-level setup or data binding (for example tests,
+ * focused tools, editor preview helpers, or import/runtime plumbing) depend on
+ * this interface alone. High-level scene workflows should prefer the
+ * node/director submission paths instead of binding raw data here directly.
  */
 class IRendererLifecycle {
 public:
@@ -49,13 +51,13 @@ public:
 	/// Initialize GPU resources. Must be called before rendering.
 	virtual void initialize() = 0;
 
-	/// Set the Gaussian data to render.
+	/// Bind raw GaussianData directly. Low-level API, not the canonical scene path.
 	virtual Error set_gaussian_data(const Ref<GaussianData> &p_data) = 0;
 
 	/// Get the current Gaussian data.
 	virtual Ref<GaussianData> get_gaussian_data() const = 0;
 
-	/// Set the Gaussian asset (alternative to raw data).
+	/// Set the Gaussian asset (preferred asset-backed alternative to raw data binding).
 	virtual void set_gaussian_asset(const Ref<GaussianSplatAsset> &p_asset) = 0;
 
 	/// Set static chunk data for world rendering.
@@ -222,10 +224,16 @@ public:
  *   - IRendererDebug     for overlays, stats, diagnostics
  *   - IRendererPipeline  for render_for_view / get_final_texture
  *
+ * Direct `set_gaussian_data()` binding is the low-level raw-data path used by
+ * tests, tools, editor preview, and internal runtime plumbing. Production scene
+ * code usually reaches the renderer through nodes, world submissions, and the
+ * scene director instead.
+ *
  * ## Usage
  * @code
  * IRenderer *renderer = get_renderer();
- * renderer->set_gaussian_data(my_data);
+ * renderer->initialize();
+ * renderer->set_gaussian_data(my_data); // low-level raw-data binding
  * renderer->set_camera_transform(camera_xform);
  * @endcode
  */

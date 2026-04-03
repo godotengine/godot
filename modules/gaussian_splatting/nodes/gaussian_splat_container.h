@@ -51,6 +51,15 @@ public:
 
     void merge_children();
     void clear_merged_data();
+    /**
+     * @brief Legacy low-level convenience helper that pushes merged data
+     * directly into a renderer.
+     *
+     * Prefer apply_to_node() or export_world_resource() for normal scene
+     * workflows so data flows through the canonical node/world submission path.
+     * Kept for low-level tooling while the direct raw-data renderer route still
+     * exists.
+     */
     Error apply_to_renderer(const Ref<GaussianSplatRenderer> &p_renderer);
     Error apply_to_node(Node *p_node);
     Error merge_children_to_node(Node *p_node);

@@ -12,10 +12,12 @@
 
 /**
  * @class GaussianSplatDynamicInstance3D
- * @brief Lightweight node that feeds dynamic splats into the streaming renderer.
+ * @brief Lightweight node that feeds dynamic splats into the shared instance renderer.
  *
  * This node does not render by itself. It registers an instance in the scene
  * director so the instance pipeline can render it alongside other splat nodes.
+ * Prefer GaussianSplatAsset or explicit GaussianData assignment. The raw
+ * ply_file_path compatibility path is deprecated.
  */
 class GaussianSplatDynamicInstance3D : public Node3D {
     GDCLASS(GaussianSplatDynamicInstance3D, Node3D);

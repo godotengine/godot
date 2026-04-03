@@ -104,8 +104,8 @@ func _on_test_start():
 		return
 
 	if _prev_streaming_settings.is_empty():
-		_prev_streaming_settings["rendering/gaussian_splatting/streaming/enabled"] = ProjectSettings.get_setting(
-			"rendering/gaussian_splatting/streaming/enabled", false
+		_prev_streaming_settings["rendering/gaussian_splatting/streaming/route_policy"] = ProjectSettings.get_setting(
+			"rendering/gaussian_splatting/streaming/route_policy", 1
 		)
 		_prev_streaming_settings["rendering/gaussian_splatting/instance_pipeline/enabled"] = ProjectSettings.get_setting(
 			"rendering/gaussian_splatting/instance_pipeline/enabled", false
@@ -114,7 +114,7 @@ func _on_test_start():
 			"rendering/gaussian_splatting/streaming/chunk_frustum_culling_enabled", true
 		)
 
-	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/enabled", true)
+	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/route_policy", 1)
 	ProjectSettings.set_setting("rendering/gaussian_splatting/instance_pipeline/enabled", true)
 	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/chunk_frustum_culling_enabled", false)
 

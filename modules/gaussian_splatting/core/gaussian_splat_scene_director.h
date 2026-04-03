@@ -65,20 +65,9 @@ public:
         Dictionary desired_renderer_overrides;
     };
 
-    struct PreviewSubmission {
-        ObjectID owner_id;
-        Ref<GaussianSplatRenderer> renderer;
-        Ref<GaussianData> gaussian_data;
-        Dictionary metadata;
-        String source_label;
-        bool has_desired_residency_hint = false;
-        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
-    };
-
     struct SubmissionCounts {
         uint32_t instance_submissions = 0;
         uint32_t world_submissions = 0;
-        uint32_t preview_submissions = 0;
     };
 
     static GaussianSplatSceneDirector *get_singleton();
@@ -132,20 +121,19 @@ public:
     // Runtime inverse of submit_world_submission(). Clears renderer-owned world state and
     // releases the active world-backed source for this owner.
     void release_world_submission(ObjectID p_owner_id);
+#if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
     // Scaffolding/introspection helper. Stores or replaces the director-owned world submission
-    // record without mutating renderer state. Kept public for tests and migration probes only.
+    // record without mutating renderer state. Kept public only for tools/test builds because
+    // the current doctest umbrella still compiles against the editor/tools build surface.
     bool upsert_world_submission(const WorldSubmission &p_submission);
     // Scaffolding/introspection inverse of upsert_world_submission(). Removes only the stored
     // world submission record and intentionally leaves renderer state untouched.
     void unregister_world_submission(ObjectID p_owner_id);
+#endif
     bool get_world_submission(ObjectID p_owner_id, WorldSubmission *r_submission) const;
     bool get_world_submission_for_scenario(const RID &p_scenario, WorldSubmission *r_submission) const;
     bool has_world_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const;
-    bool upsert_preview_submission(const PreviewSubmission &p_submission);
-    void unregister_preview_submission(ObjectID p_owner_id);
-    bool get_preview_submission(ObjectID p_owner_id, PreviewSubmission *r_submission) const;
-    bool has_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const;
-    // Current hint precedence is preview > active world > homogeneous instance submissions.
+    // Current hint precedence is active world > homogeneous instance submissions.
     // Conflicting instance submission hints return false with source "mixed_instance_submissions".
     bool get_submission_residency_hint_for_renderer(const GaussianSplatRenderer *p_renderer,
             int32_t *r_hint, String *r_source = nullptr) const;
@@ -203,21 +191,10 @@ private:
         HashMap<uint32_t, AssetRecord> asset_records;
     };
 
-    struct PreviewSubmissionRecord {
-        ObjectID owner_id;
-        Ref<GaussianSplatRenderer> renderer;
-        Ref<GaussianData> gaussian_data;
-        Dictionary metadata;
-        String source_label;
-        bool has_desired_residency_hint = false;
-        int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
-    };
-
     static GaussianSplatSceneDirector *singleton;
 
     mutable Mutex world_mutex;
     HashMap<RID, SharedWorld> worlds;
-    HashMap<ObjectID, PreviewSubmissionRecord> preview_submissions;
 
     SharedWorld *_get_or_create_world_for_scenario(const RID &p_scenario);
     SharedWorld *_get_or_create_world(World3D *p_world);
@@ -227,8 +204,6 @@ private:
     const SharedWorld *_find_world_for_renderer(const GaussianSplatRenderer *p_renderer) const;
     SharedWorld *_find_world_for_world_submission(ObjectID p_owner_id);
     const SharedWorld *_find_world_for_world_submission(ObjectID p_owner_id) const;
-    PreviewSubmissionRecord *_find_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer);
-    const PreviewSubmissionRecord *_find_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const;
 
     static bool _populate_gaussian_data_from_asset(const Ref<GaussianSplatAsset> &p_asset, Ref<GaussianData> &r_data);
     static bool _retain_asset_record(SharedWorld &p_world, const Ref<GaussianSplatAsset> &p_asset, uint32_t p_asset_id);

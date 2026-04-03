@@ -109,9 +109,6 @@ static String _describe_submission_hint_source(const String &p_source) {
 	if (p_source == "world_submission") {
 		return "the world submission";
 	}
-	if (p_source == "preview_submission") {
-		return "the preview submission";
-	}
 	if (p_source == "instance_submission") {
 		return "the instance submissions";
 	}

@@ -25,7 +25,7 @@ func _ready():
 
 func _on_test_start():
 	var keys = [
-		"rendering/gaussian_splatting/streaming/enabled",
+		"rendering/gaussian_splatting/streaming/route_policy",
 		"rendering/gaussian_splatting/instance_pipeline/enabled",
 		"rendering/gaussian_splatting/streaming/vram_budget_mb",
 		"rendering/gaussian_splatting/streaming/auto_regulate_enabled",
@@ -33,12 +33,14 @@ func _on_test_start():
 		"rendering/gaussian_splatting/streaming/min_chunks_in_vram",
 	]
 	for key in keys:
-		if key == "rendering/gaussian_splatting/streaming/enabled" or key == "rendering/gaussian_splatting/instance_pipeline/enabled":
+		if key == "rendering/gaussian_splatting/streaming/route_policy":
+			_prev_settings[key] = int(ProjectSettings.get_setting(key, 1))
+		elif key == "rendering/gaussian_splatting/instance_pipeline/enabled":
 			_prev_settings[key] = ProjectSettings.get_setting(key, false)
 		else:
 			_prev_settings[key] = ProjectSettings.get_setting(key)
 
-	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/enabled", true)
+	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/route_policy", 1)
 	ProjectSettings.set_setting("rendering/gaussian_splatting/instance_pipeline/enabled", false)
 	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/vram_budget_mb", 128)
 	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/auto_regulate_enabled", true)

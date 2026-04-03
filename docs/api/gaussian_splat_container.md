@@ -118,7 +118,7 @@ This class does not define any enums.
     </tr>
     <tr>
       <td><code>apply_to_renderer(renderer)</code></td>
-      <td>Pushes merged <code>GaussianData</code> and static chunks to the given <code>GaussianSplatRenderer</code>. Returns <code>ERR_UNAVAILABLE</code> when no merged data exists.</td>
+      <td>Low-level compatibility helper that pushes merged <code>GaussianData</code> and static chunks to the given <code>GaussianSplatRenderer</code>. Prefer <code>apply_to_node()</code> or <code>export_world_resource()</code> for normal scene workflows. Returns <code>ERR_UNAVAILABLE</code> when no merged data exists.</td>
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_container.cpp:86</code></td>
     </tr>
     <tr>

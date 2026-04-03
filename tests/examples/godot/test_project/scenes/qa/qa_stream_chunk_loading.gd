@@ -26,13 +26,13 @@ func _ready():
 	camera = get_node_or_null("Camera3D")
 
 func _on_test_start():
-	_prev_streaming_settings["rendering/gaussian_splatting/streaming/enabled"] = ProjectSettings.get_setting(
-		"rendering/gaussian_splatting/streaming/enabled", false
+	_prev_streaming_settings["rendering/gaussian_splatting/streaming/route_policy"] = ProjectSettings.get_setting(
+		"rendering/gaussian_splatting/streaming/route_policy", 1
 	)
 	_prev_streaming_settings["rendering/gaussian_splatting/instance_pipeline/enabled"] = ProjectSettings.get_setting(
 		"rendering/gaussian_splatting/instance_pipeline/enabled", false
 	)
-	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/enabled", true)
+	ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/route_policy", 1)
 	ProjectSettings.set_setting("rendering/gaussian_splatting/instance_pipeline/enabled", false)
 	if world_node != null:
 		world_node.clear_world()

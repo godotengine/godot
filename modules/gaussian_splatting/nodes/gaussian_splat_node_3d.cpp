@@ -5,6 +5,7 @@
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_splat_settings_manager.h"
 #include "../core/gaussian_splat_scene_director.h"
+#include "../core/gaussian_splat_source_path.h"
 #include "../core/quality_tier_config.h"
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../logger/gs_debug_trace.h"
@@ -1456,28 +1457,8 @@ PackedStringArray GaussianSplatNode3D::get_configuration_warnings() const {
     return warnings;
 }
 
-String GaussianSplatNode3D::_get_asset_source_path() const {
-    if (splat_asset.is_null()) {
-        return String();
-    }
-
-    String source_path = splat_asset->get_source_path();
-    if (!source_path.is_empty()) {
-        return source_path;
-    }
-
-    const Dictionary metadata = splat_asset->get_import_metadata();
-    if (metadata.has(StringName("source_file"))) {
-        return String(metadata[StringName("source_file")]);
-    }
-    if (metadata.has(StringName("runtime_load_source_path"))) {
-        return String(metadata[StringName("runtime_load_source_path")]);
-    }
-    return String();
-}
-
 bool GaussianSplatNode3D::_has_inconsistent_dual_source_configuration(String *r_asset_source_path) const {
-    const String asset_source_path = _get_asset_source_path();
+    const String asset_source_path = GaussianSplatSourcePath::get_asset_source_path(splat_asset);
     if (r_asset_source_path) {
         *r_asset_source_path = asset_source_path;
     }
@@ -1495,7 +1476,7 @@ bool GaussianSplatNode3D::_has_inconsistent_dual_source_configuration(String *r_
 String GaussianSplatNode3D::get_asset_origin_label() const {
     if (splat_asset.is_valid()) {
         PackedStringArray details;
-        const String asset_source_path = _get_asset_source_path();
+        const String asset_source_path = GaussianSplatSourcePath::get_asset_source_path(splat_asset);
         const String asset_resource_path = splat_asset->get_path();
 
         if (!asset_source_path.is_empty()) {
@@ -2235,7 +2216,20 @@ void GaussianSplatNode3D::_drop_data_fw(const Point2 &p_point, const Variant &p_
     if (!files.is_empty()) {
         const String file_lower = files[0].to_lower();
         if (file_lower.ends_with(".ply") || file_lower.ends_with(".spz")) {
-            set_ply_file_path(files[0]);
+            const String file_path = files[0];
+            Ref<GaussianSplatAsset> dropped_asset = ResourceLoader::load(file_path, "GaussianSplatAsset");
+            if (dropped_asset.is_null()) {
+                dropped_asset.instantiate();
+                if (dropped_asset->load_from_file(file_path) != OK) {
+                    set_ply_file_path(file_path);
+                    return;
+                }
+            }
+
+            if (!ply_file_path.is_empty()) {
+                set_ply_file_path(String());
+            }
+            set_splat_asset(dropped_asset);
         }
     }
 }

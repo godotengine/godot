@@ -53,6 +53,16 @@ var _orchestrated := false
 func apply_benchmark_contract(contract: Dictionary) -> void:
 	_pending_contract = contract.duplicate(true)
 
+func _load_scene_asset(path: String) -> GaussianSplatAsset:
+	var imported := load(path)
+	if imported is GaussianSplatAsset:
+		return imported as GaussianSplatAsset
+
+	var asset := GaussianSplatAsset.new()
+	if asset.load_from_file(path) != OK:
+		return null
+	return asset
+
 func _ready() -> void:
 	_apply_contract()
 	Engine.max_fps = 0
@@ -77,10 +87,15 @@ func _ready() -> void:
 		_finish_with_error("No ply_path set")
 		return
 
+	var splat_asset := _load_scene_asset(ply_path)
+	if splat_asset == null:
+		push_error("[SYNTHETIC] Failed to load %s as GaussianSplatAsset" % ply_path)
+		_finish_with_error("Failed to load GaussianSplatAsset")
+		return
+
 	var splat_node = GaussianSplatNode3D.new()
 	splat_node.name = "SplatNode"
-	splat_node.set_ply_file_path(ply_path)
-	splat_node.set_auto_load(true)
+	splat_node.set_splat_asset(splat_asset)
 	add_child(splat_node)
 
 	if enable_wind:

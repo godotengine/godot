@@ -123,12 +123,18 @@ struct InstanceAssetRegistration {
  *
  * ## Usage
  *
- * Typically created and managed by GaussianSplatNode3D:
+ * In production scenes this is typically created and managed by
+ * GaussianSplatNode3D, GaussianSplatWorld3D, or the shared scene-director
+ * renderer flow. Direct `set_gaussian_data()` calls are the low-level raw-data
+ * path kept for tests, tools, editor preview, and internal world-submission
+ * realization.
+ *
+ * Low-level usage:
  * @code
  * Ref<GaussianSplatRenderer> renderer;
  * renderer.instantiate();
  * renderer->initialize();
- * renderer->set_gaussian_data(my_data);
+ * renderer->set_gaussian_data(my_data); // low-level raw-data binding
  * renderer->render_for_view(camera_transform, projection, render_target, viewport_size);
  * @endcode
  *
@@ -799,9 +805,13 @@ public:
     /// @{
 
     /**
-     * @brief Sets the Gaussian data to render.
+     * @brief Binds raw GaussianData directly to the renderer.
      * @param p_data GaussianData resource containing splat data.
      * @return OK on success, or an error code if data cannot be loaded.
+     *
+     * @note Low-level raw-data API for tests, tools, editor preview, and
+     * internal world-submission realization. High-level scene code should
+     * prefer node/world submission paths instead of calling this directly.
      */
     Error set_gaussian_data(const Ref<::GaussianData> &p_data) override;
 

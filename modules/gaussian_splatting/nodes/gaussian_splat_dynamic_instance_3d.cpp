@@ -155,6 +155,12 @@ void GaussianSplatDynamicInstance3D::_update_instance_transform_registry() {
 }
 
 void GaussianSplatDynamicInstance3D::set_ply_file_path(const String &p_path) {
+    if (ply_file_path == p_path) {
+        return;
+    }
+#ifndef DISABLE_DEPRECATED
+    WARN_DEPRECATED_MSG("GaussianSplatDynamicInstance3D::ply_file_path is deprecated. Use splat_asset or gaussian_data instead.");
+#endif
     ply_file_path = p_path;
     runtime_asset.unref();
     if (auto_load && is_inside_tree()) {
@@ -275,6 +281,8 @@ bool GaussianSplatDynamicInstance3D::_load_from_file() {
         return false;
     }
 
+    // Compatibility path only. Bucket B keeps it functional but no longer treats it as a
+    // preferred workflow; new usage should go through splat_asset or gaussian_data.
     if (gaussian_data.is_null()) {
         gaussian_data.instantiate();
     }

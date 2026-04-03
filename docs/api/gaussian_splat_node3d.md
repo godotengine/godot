@@ -14,14 +14,14 @@ Use `GaussianSplatNode3D` to render Gaussian splat assets or procedural splat ar
   </thead>
   <tbody>
     <tr>
-      <td>Load from file path.</td>
-      <td><code>set_ply_file_path(path)</code>, <code>set_auto_load(enabled)</code></td>
-      <td><code>modules/gaussian_splatting/nodes/gaussian_splat_node_3d.cpp:496</code></td>
-    </tr>
-    <tr>
       <td>Assign preprocessed asset.</td>
       <td><code>set_splat_asset(asset)</code></td>
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_node_3d.cpp:511</code></td>
+    </tr>
+    <tr>
+      <td>Load from file path (compatibility path).</td>
+      <td><code>set_ply_file_path(path)</code>, <code>set_auto_load(enabled)</code></td>
+      <td><code>modules/gaussian_splatting/nodes/gaussian_splat_node_3d.cpp:496</code></td>
     </tr>
     <tr>
       <td>Push procedural data.</td>
@@ -86,7 +86,7 @@ Use `GaussianSplatNode3D` to render Gaussian splat assets or procedural splat ar
       <td><code>ply_file_path</code></td>
       <td><code>String</code></td>
       <td><code>set_ply_file_path</code>, <code>get_ply_file_path</code></td>
-      <td>Accepts <code>.ply</code> and <code>.spz</code> by file hint.</td>
+      <td>Deprecated compatibility path. Accepts <code>.ply</code> and <code>.spz</code> by file hint, but new scene workflows should prefer <code>splat_asset</code>.</td>
       <td><code>modules/gaussian_splatting/nodes/gaussian_splat_node_3d.cpp:89</code></td>
     </tr>
     <tr>
@@ -418,8 +418,8 @@ extends Node3D
 @onready var splat: GaussianSplatNode3D = $GaussianSplatNode3D
 
 func _ready() -> void:
-    splat.set_ply_file_path("res://splats/scene.ply")
-    splat.set_auto_load(true)
+    var asset := load("res://splats/scene.ply") as GaussianSplatAsset
+    splat.set_splat_asset(asset)
     splat.set_quality_preset(GaussianSplatNode3D.QUALITY_BALANCED)
     splat.set_update_mode(GaussianSplatNode3D.UPDATE_MODE_WHEN_VISIBLE)
 ```

@@ -17,10 +17,14 @@ container.apply_to_node($MergedWorldRenderer)  # GaussianSplatNode3D
 
 Methods:
 - `merge_children()` – build merged data + chunk cache.
-- `apply_to_renderer(renderer)` – push merged data + static chunks into a renderer.
+- `apply_to_renderer(renderer)` – legacy low-level convenience helper that pushes merged data + static chunks into a renderer. Prefer `apply_to_node(node)` or `export_world_resource()` for normal scene workflows.
 - `apply_to_node(node)` – convenience wrapper for GaussianSplatNode3D and GaussianSplatWorld3D targets.
 - `merge_children_to_node(node)` – merge + apply in one step.
 - `export_world_resource()` – build a GaussianSplatWorld resource from merged data.
+
+Note: `apply_to_renderer()` bypasses the canonical node/world submission flow and
+is kept only as a low-level convenience while direct raw-data renderer binding
+still exists.
 
 Optional properties:
 - `apply_to_target_on_merge`: auto-apply after merge.
@@ -72,7 +76,7 @@ add_child(dynamic)
 Properties:
 - `splat_asset`: GaussianSplatAsset used by the instance registry (required for rendering).
 - `gaussian_data`: Optional GaussianData resource for authoring; must be converted to an asset for runtime rendering.
-- `ply_file_path`: Optional file path to load into GaussianData.
+- `ply_file_path`: Deprecated compatibility path that loads directly into GaussianData. Prefer `splat_asset` or explicit `gaussian_data`.
 - `auto_load`: Load asset/path on enter tree when true.
 
 Methods:
@@ -85,7 +89,7 @@ Notes:
 
 ## Features
 
-- **Scene Integration**: Drag and drop Gaussian splat files directly into scenes
+- **Scene Integration**: Assign GaussianSplatAsset resources or drag and drop Gaussian splat files for asset-backed scene setup
 - **Format Support**: Import PLY and SPZ (Niantic compressed) formats
 - **Quality Presets**: Performance, Balanced, Quality, and Custom quality settings
 - **Painterly Rendering**: Advanced artistic rendering with configurable strokes
@@ -100,14 +104,14 @@ Notes:
 1. In the scene dock, click "Add Node"
 2. Search for "GaussianSplatNode3D"
 3. Add the node to your scene
-4. Set the file path or drag a Gaussian splat file (.ply or .spz) onto the node
+4. Assign a `GaussianSplatAsset`, or drag a Gaussian splat file (`.ply` or `.spz`) onto the node to create an asset-backed assignment
 
 ### Properties
 
 #### File Management
-- `ply_file_path`: Path to the Gaussian splat file (.ply or .spz)
-- `splat_asset`: Reference to a GaussianSplatAsset resource
-- `auto_load`: Automatically load the file when path is set
+- `splat_asset`: Reference to a GaussianSplatAsset resource (preferred)
+- `ply_file_path`: Deprecated compatibility path to the Gaussian splat file (.ply or .spz)
+- `auto_load`: Automatically load the file when the compatibility path is set
 
 > **Note:** The property is named `ply_file_path` for historical reasons but accepts both PLY and SPZ formats.
 
@@ -174,7 +178,7 @@ These flags populate `get_statistics()` but do **not** draw HUD text in the view
 ### Methods
 
 ```gdscript
-# Reload the PLY file
+# Reload the currently configured asset or compatibility file path
 reload_asset()
 
 # Force update the splats
@@ -253,8 +257,8 @@ func _ready():
     splat.set_stroke_opacity(0.8)
     splat.set_edge_threshold(0.15)
 
-    # Load PLY file
-    splat.set_ply_file_path("res://assets/my_splat.ply")
+    # Load an asset resource (preferred)
+    splat.set_splat_asset(load("res://assets/my_splat.ply"))
 
     # Connect to signals
     splat.asset_loaded.connect(_on_splat_loaded)

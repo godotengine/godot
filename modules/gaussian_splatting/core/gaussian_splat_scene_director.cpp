@@ -304,30 +304,6 @@ const GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_find
 	return nullptr;
 }
 
-GaussianSplatSceneDirector::PreviewSubmissionRecord *GaussianSplatSceneDirector::_find_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) {
-	if (!p_renderer) {
-		return nullptr;
-	}
-	for (KeyValue<ObjectID, PreviewSubmissionRecord> &E : preview_submissions) {
-		if (E.value.renderer.ptr() == p_renderer) {
-			return &E.value;
-		}
-	}
-	return nullptr;
-}
-
-const GaussianSplatSceneDirector::PreviewSubmissionRecord *GaussianSplatSceneDirector::_find_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const {
-	if (!p_renderer) {
-		return nullptr;
-	}
-	for (const KeyValue<ObjectID, PreviewSubmissionRecord> &E : preview_submissions) {
-		if (E.value.renderer.ptr() == p_renderer) {
-			return &E.value;
-		}
-	}
-	return nullptr;
-}
-
 bool GaussianSplatSceneDirector::_populate_gaussian_data_from_asset(const Ref<GaussianSplatAsset> &p_asset, Ref<GaussianData> &r_data) {
 	if (p_asset.is_null()) {
 		return false;
@@ -1278,6 +1254,7 @@ uint32_t GaussianSplatSceneDirector::get_instance_count_for_renderer(const Gauss
 	return world->instances.size();
 }
 
+#if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
 bool GaussianSplatSceneDirector::upsert_world_submission(const WorldSubmission &p_submission) {
 	if (p_submission.owner_id == ObjectID() || !p_submission.scenario.is_valid()) {
 		return false;
@@ -1301,6 +1278,7 @@ bool GaussianSplatSceneDirector::upsert_world_submission(const WorldSubmission &
 	_store_world_submission_record(world->world_submission, p_submission);
 	return true;
 }
+#endif
 
 bool GaussianSplatSceneDirector::submit_world_submission(const WorldSubmission &p_submission) {
 	if (p_submission.owner_id == ObjectID() || !p_submission.scenario.is_valid()) {
@@ -1346,6 +1324,7 @@ bool GaussianSplatSceneDirector::submit_world_submission(const WorldSubmission &
 	return true;
 }
 
+#if defined(TESTS_ENABLED) || defined(TOOLS_ENABLED)
 void GaussianSplatSceneDirector::unregister_world_submission(ObjectID p_owner_id) {
 	MutexLock lock(world_mutex);
 	SharedWorld *world = _find_world_for_world_submission(p_owner_id);
@@ -1356,6 +1335,7 @@ void GaussianSplatSceneDirector::unregister_world_submission(ObjectID p_owner_id
 	world->world_submission = SharedWorld::WorldSubmissionRecord();
 	_prune_world_if_unused(scenario);
 }
+#endif
 
 void GaussianSplatSceneDirector::release_world_submission(ObjectID p_owner_id) {
 	MutexLock lock(world_mutex);
@@ -1401,68 +1381,11 @@ bool GaussianSplatSceneDirector::has_world_submission_for_renderer(const Gaussia
 	return world && world->world_submission.active;
 }
 
-bool GaussianSplatSceneDirector::upsert_preview_submission(const PreviewSubmission &p_submission) {
-	if (p_submission.owner_id == ObjectID()) {
-		return false;
-	}
-
-	MutexLock lock(world_mutex);
-	PreviewSubmissionRecord record;
-	record.owner_id = p_submission.owner_id;
-	record.renderer = p_submission.renderer;
-	record.gaussian_data = p_submission.gaussian_data;
-	record.metadata = p_submission.metadata;
-	record.source_label = p_submission.source_label;
-	record.has_desired_residency_hint = p_submission.has_desired_residency_hint;
-	record.desired_residency_hint = p_submission.desired_residency_hint;
-	preview_submissions[p_submission.owner_id] = record;
-	return true;
-}
-
-void GaussianSplatSceneDirector::unregister_preview_submission(ObjectID p_owner_id) {
-	MutexLock lock(world_mutex);
-	preview_submissions.erase(p_owner_id);
-}
-
-bool GaussianSplatSceneDirector::get_preview_submission(ObjectID p_owner_id, PreviewSubmission *r_submission) const {
-	ERR_FAIL_NULL_V(r_submission, false);
-
-	MutexLock lock(world_mutex);
-	const PreviewSubmissionRecord *record = preview_submissions.getptr(p_owner_id);
-	if (!record) {
-		return false;
-	}
-
-	r_submission->owner_id = record->owner_id;
-	r_submission->renderer = record->renderer;
-	r_submission->gaussian_data = record->gaussian_data;
-	r_submission->metadata = record->metadata;
-	r_submission->source_label = record->source_label;
-	r_submission->has_desired_residency_hint = record->has_desired_residency_hint;
-	r_submission->desired_residency_hint = record->desired_residency_hint;
-	return true;
-}
-
-bool GaussianSplatSceneDirector::has_preview_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const {
-	MutexLock lock(world_mutex);
-	return _find_preview_submission_for_renderer(p_renderer) != nullptr;
-}
-
 bool GaussianSplatSceneDirector::get_submission_residency_hint_for_renderer(const GaussianSplatRenderer *p_renderer,
 		int32_t *r_hint, String *r_source) const {
 	ERR_FAIL_NULL_V(r_hint, false);
 
 	MutexLock lock(world_mutex);
-	if (const PreviewSubmissionRecord *preview = _find_preview_submission_for_renderer(p_renderer)) {
-		if (preview->has_desired_residency_hint) {
-			*r_hint = preview->desired_residency_hint;
-			if (r_source) {
-				*r_source = "preview_submission";
-			}
-			return true;
-		}
-	}
-
 	if (const SharedWorld *world = _find_world_for_renderer(p_renderer)) {
 		if (world->world_submission.active && world->world_submission.has_desired_residency_hint) {
 			*r_hint = world->world_submission.desired_residency_hint;
@@ -1515,7 +1438,6 @@ GaussianSplatSceneDirector::SubmissionCounts GaussianSplatSceneDirector::get_sub
 			counts.world_submissions++;
 		}
 	}
-	counts.preview_submissions = preview_submissions.size();
 	return counts;
 }
 

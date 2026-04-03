@@ -53,7 +53,7 @@ const MONITOR_KEYS := [
 ]
 
 const PROJECT_SETTING_KEYS := [
-	"rendering/gaussian_splatting/streaming/enabled",
+	"rendering/gaussian_splatting/streaming/route_policy",
 	"rendering/gaussian_splatting/instance_pipeline/enabled",
 	"rendering/gaussian_splatting/quality/tier_apply_streaming_budgets",
 	"rendering/gaussian_splatting/streaming/vram_budget_mb",
@@ -472,7 +472,7 @@ func _snapshot_project_settings() -> void:
 		}
 
 func _apply_base_project_settings() -> void:
-	_set_project_setting("rendering/gaussian_splatting/streaming/enabled", true)
+	_set_project_setting("rendering/gaussian_splatting/streaming/route_policy", 1)
 	_set_project_setting("rendering/gaussian_splatting/instance_pipeline/enabled", true)
 	_set_project_setting("rendering/gaussian_splatting/quality/tier_apply_streaming_budgets", false)
 	_set_project_setting("rendering/gaussian_splatting/lighting/direct_light_scale", 1.0)

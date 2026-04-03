@@ -182,9 +182,6 @@ static inline const char *get_streaming_route_policy_source(ProjectSettings *p_p
 	if (!p_ps) {
 		return "default_fallback";
 	}
-	if (!get_bool(p_ps, "rendering/gaussian_splatting/streaming/enabled", true)) {
-		return "legacy_streaming_enabled_forced_resident";
-	}
 	if (!p_ps->has_setting("rendering/gaussian_splatting/streaming/route_policy")) {
 		return "default_fallback";
 	}
@@ -194,17 +191,11 @@ static inline const char *get_streaming_route_policy_source(ProjectSettings *p_p
 /**
  * @brief Resolve the effective streaming route policy.
  *
- * Checks both the new route_policy setting and the legacy streaming/enabled
- * toggle.  If streaming/enabled is false, the result is always RESIDENT
- * regardless of route_policy (backward compatibility).
+ * Route policy is the sole settings-boundary control for backend selection.
  */
 static inline int get_streaming_route_policy(ProjectSettings *p_ps) {
 	if (!p_ps) {
 		return GS_ROUTE_STREAMING; // safe fallback: preserve existing behavior
-	}
-	// Legacy compatibility: streaming/enabled=false forces resident.
-	if (!get_bool(p_ps, "rendering/gaussian_splatting/streaming/enabled", true)) {
-		return GS_ROUTE_RESIDENT;
 	}
 	return (int)get_uint(p_ps, "rendering/gaussian_splatting/streaming/route_policy",
 			(uint32_t)GS_ROUTE_STREAMING);

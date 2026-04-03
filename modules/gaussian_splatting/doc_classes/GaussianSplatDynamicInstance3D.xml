@@ -4,7 +4,7 @@
 		Lightweight node that feeds dynamic splat instances into the streaming renderer.
 	</brief_description>
 	<description>
-		GaussianSplatDynamicInstance3D does not render by itself. Instead, it registers an instance in the scene director so the instance pipeline can render it alongside other splat nodes in a unified draw pass. This is ideal for scenes with many independently-transformable splat objects that share a common renderer, such as scattered props, foliage clusters, or procedurally placed elements. The node supports asset loading from PLY/SPZ files, GaussianSplatAsset resources, or direct GaussianData assignment.
+		GaussianSplatDynamicInstance3D does not render by itself. Instead, it registers an instance in the scene director so the instance pipeline can render it alongside other splat nodes in a unified draw pass. This is ideal for scenes with many independently-transformable splat objects that share a common renderer, such as scattered props, foliage clusters, or procedurally placed elements. Prefer [member splat_asset] or [member gaussian_data] as the supported data sources. The legacy [member ply_file_path] compatibility path remains functional but is deprecated.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +13,7 @@
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Sets the file path to a PLY or SPZ file for this instance's splat data. Triggers a reload if [member auto_load] is enabled and the node is in the tree.
+				Deprecated compatibility path. Sets the file path to a PLY or SPZ file for this instance's splat data and triggers a reload if [member auto_load] is enabled and the node is in the tree. Prefer [member splat_asset] or [member gaussian_data].
 			</description>
 		</method>
 		<method name="get_ply_file_path">
@@ -88,7 +88,7 @@
 	</methods>
 	<members>
 		<member name="ply_file_path" type="String" setter="set_ply_file_path" getter="get_ply_file_path" default="&quot;&quot;">
-			Path to a PLY or SPZ file for this instance's splat data.
+			Deprecated compatibility path to a PLY or SPZ file for this instance's splat data. Prefer [member splat_asset] or [member gaussian_data].
 		</member>
 		<member name="splat_asset" type="GaussianSplatAsset" setter="set_splat_asset" getter="get_splat_asset">
 			The GaussianSplatAsset resource providing data for this instance.

@@ -4,7 +4,7 @@
 		3D scene node for displaying Gaussian splat content in a Godot scene.
 	</brief_description>
 	<description>
-		GaussianSplatNode3D is the primary scene node for integrating Gaussian Splatting into Godot projects. It handles asset loading from PLY and SPZ files, quality preset management, level-of-detail control, painterly brush-stroke effects, wind simulation, color grading, and debug visualization. The node participates in the shared scene renderer registry and supports both editor preview and runtime rendering.
+		GaussianSplatNode3D is the primary scene node for integrating Gaussian Splatting into Godot projects. It handles asset-backed loading, compatibility loading from PLY and SPZ file paths, quality preset management, level-of-detail control, painterly brush-stroke effects, wind simulation, color grading, and debug visualization. The node participates in the shared scene renderer registry and supports both editor preview and runtime rendering. Prefer [member splat_asset] for new scene workflows; [member ply_file_path] remains a compatibility path.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +13,7 @@
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Sets the file path for loading Gaussian splat data. Accepts both [code].ply[/code] and [code].spz[/code] formats. Triggers an asset reload if [member auto_load] is enabled.
+				Sets the file path for loading Gaussian splat data. Accepts both [code].ply[/code] and [code].spz[/code] formats. Triggers an asset reload if [member auto_load] is enabled. This path remains supported for compatibility, but new scene workflows should prefer [member splat_asset].
 			</description>
 		</method>
 		<method name="get_ply_file_path">
@@ -602,7 +602,7 @@
 	</methods>
 	<members>
 		<member name="ply_file_path" type="String" setter="set_ply_file_path" getter="get_ply_file_path" default="&quot;&quot;">
-			Path to a PLY or SPZ file to load. Accepts [code]*.ply[/code] and [code]*.spz[/code] file formats.
+			Compatibility path to a PLY or SPZ file to load. Accepts [code]*.ply[/code] and [code]*.spz[/code] file formats. Prefer [member splat_asset] for new scene and editor workflows.
 		</member>
 		<member name="splat_asset" type="GaussianSplatAsset" setter="set_splat_asset" getter="get_splat_asset">
 			The GaussianSplatAsset resource providing splat data. Takes precedence over [member ply_file_path] when set.

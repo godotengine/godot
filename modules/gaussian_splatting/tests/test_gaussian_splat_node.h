@@ -10,6 +10,7 @@
 #include "../core/gaussian_splat_manager.h"
 #include "../core/gaussian_splat_world.h"
 #include "../core/gaussian_splat_scene_director.h"
+#include "../core/gaussian_splat_source_path.h"
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../renderer/sh_config.h"
 #include "../resources/color_grading_resource.h"
@@ -831,6 +832,38 @@ TEST_CASE("[GaussianSplatting][Node] Asset origin label describes active ingress
     CHECK(asset_origin.contains("ply_file_path: res://direct_only.ply"));
 
     memdelete(node);
+}
+
+TEST_CASE("[GaussianSplatting][Node] Source path helper preserves asset-first precedence") {
+    Ref<GaussianSplatAsset> asset;
+    asset.instantiate();
+
+    Dictionary metadata;
+    metadata[StringName("source_file")] = String("res://metadata_source.ply");
+    asset->set_import_metadata(metadata);
+
+    CHECK(GaussianSplatSourcePath::get_asset_source_path(asset) == String("res://metadata_source.ply"));
+    CHECK(GaussianSplatSourcePath::resolve_primary_source_path(asset, "res://fallback_path.ply") ==
+            String("res://metadata_source.ply"));
+
+    metadata.erase(StringName("source_file"));
+    metadata[StringName("runtime_load_source_path")] = String("res://runtime_source.ply");
+    asset->set_import_metadata(metadata);
+
+    CHECK(GaussianSplatSourcePath::get_asset_source_path(asset) == String("res://runtime_source.ply"));
+    CHECK(GaussianSplatSourcePath::resolve_primary_source_path(asset, "res://fallback_path.ply") ==
+            String("res://runtime_source.ply"));
+
+    asset->set_source_path("res://asset_source.ply");
+    CHECK(GaussianSplatSourcePath::get_asset_source_path(asset) == String("res://asset_source.ply"));
+    CHECK(GaussianSplatSourcePath::resolve_primary_source_path(asset, "res://fallback_path.ply") ==
+            String("res://asset_source.ply"));
+
+    asset->set_source_path(String());
+    asset->set_import_metadata(Dictionary());
+    CHECK(GaussianSplatSourcePath::get_asset_source_path(asset).is_empty());
+    CHECK(GaussianSplatSourcePath::resolve_primary_source_path(asset, "res://fallback_path.ply") ==
+            String("res://fallback_path.ply"));
 }
 
 TEST_CASE("[GaussianSplatting][Node] Configuration warnings flag inconsistent dual-path sources") {

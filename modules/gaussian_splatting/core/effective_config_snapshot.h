@@ -93,9 +93,6 @@ static inline String describe_route_policy_source(const String &p_source) {
 	if (p_source == "route_policy") {
 		return "route_policy";
 	}
-	if (p_source == "legacy_streaming_enabled_forced_resident") {
-		return "legacy streaming/enabled=false";
-	}
 	if (p_source == "default_fallback") {
 		return "code default";
 	}

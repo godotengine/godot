@@ -96,23 +96,22 @@ Stage 2B must not invent a second policy resolver in renderer code.
 
 The current canonical policy-resolution site is [gs_project_settings.h](../../modules/gaussian_splatting/core/gs_project_settings.h), specifically `gs::settings::get_streaming_route_policy(ProjectSettings *)`.
 
-Stage 2B should keep that as the only settings-boundary compatibility resolver and make the renderer/backend consume only its resolved enum output.
+Stage 2B should keep that as the only settings-boundary policy accessor and make the renderer/backend consume only its resolved enum output.
 
 Required Stage 2B rule:
 
-- no renderer, orchestrator, or backend component may read `rendering/gaussian_splatting/streaming/enabled` directly
-- only `gs::settings::get_streaming_route_policy()` may translate legacy `streaming/enabled` into the enum route policy during migration
+- no renderer, orchestrator, or backend component may read compatibility booleans directly
+- `gs::settings::get_streaming_route_policy()` is the sole accessor for the canonical enum route policy
 - backend selection then consumes:
   - resolved route policy from `get_streaming_route_policy()`
   - submission residency hint when present
   - runtime/device feasibility
   - budget feasibility
 
-That gives Stage 2B an explicit collapse model for the legacy overlap called out in the refactor plan:
+That gives Stage 2B an explicit collapse model for the overlap called out in the refactor plan:
 
-- `streaming/enabled=false` is treated only as a compatibility translation at the settings boundary
 - `route_policy` is the canonical policy seen by renderer code
-- after Stage 2 migration, removing the legacy toggle means simplifying `get_streaming_route_policy()`, not redesigning renderer call sites
+- after Bucket B, the legacy toggle is gone and `get_streaming_route_policy()` is a thin enum accessor rather than a compatibility translator
 
 For diagnostics, Stage 2B should expose the selection inputs on the existing stats surface:
 
@@ -124,7 +123,6 @@ For diagnostics, Stage 2B should expose the selection inputs on the existing sta
 `requested_route_policy_source` should distinguish at least:
 
 - `route_policy`
-- `legacy_streaming_enabled_forced_resident`
 - `default_fallback`
 
 ### Resident Semantics
@@ -252,7 +250,7 @@ These implementation areas are coupled and must change as one slice.
 
 Required change:
 
-- keep `gs::settings::get_streaming_route_policy()` as the sole compatibility resolver for settings-driven backend choice
+- keep `gs::settings::get_streaming_route_policy()` as the sole settings-boundary accessor for backend choice
 - choose resident vs streaming backend from the resolved enum plus submission hint and runtime feasibility
 - stop unconditional streaming-system creation for resident data
 - publish atlas-shaped resident dataset buffers and dense asset-ID mapping
@@ -362,7 +360,7 @@ Add or update focused tests for:
 - `update_instance_buffer()` remaps asset IDs through the published renderer-side remap
 - diagnostics report `INSTANCE.RESIDENT` and the expected human-readable label
 - route policy `resident` does not create a streaming system for resident-fit scenes
-- legacy `streaming/enabled=false` resolves through `get_streaming_route_policy()` and produces the same requested policy/diagnostic fingerprint as explicit resident route policy
+- Bucket B removes the legacy `streaming/enabled` translation. Route-policy diagnostics now distinguish only explicit `route_policy` and default fallback.
 
 Runtime/integration coverage should include:
 

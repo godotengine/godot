@@ -82,7 +82,7 @@ These current facts shape the plan:
 - The data-upload path still instantiates a streaming system in [render_data_orchestrator.cpp](../../modules/gaussian_splatting/renderer/render_data_orchestrator.cpp).
 - The instanced path still depends on streaming readiness in [render_instancing_orchestrator.cpp](../../modules/gaussian_splatting/renderer/render_instancing_orchestrator.cpp) and [gaussian_splat_renderer.cpp](../../modules/gaussian_splatting/renderer/gaussian_splat_renderer.cpp).
 - The current instance-pipeline contract is atlas-shaped across cull, sort, raster, and tile stages.
-- Route control still overlaps legacy `streaming/enabled` and enum-based `route_policy` in [gs_project_settings.h](../../modules/gaussian_splatting/core/gs_project_settings.h).
+- Route control is now owned solely by enum-based `route_policy` in [gs_project_settings.h](../../modules/gaussian_splatting/core/gs_project_settings.h).
 - The editor still sets both `splat_asset` and `ply_file_path` in [gaussian_editor_plugin.cpp](../../modules/gaussian_splatting/editor/gaussian_editor_plugin.cpp).
 - `ply_file_path` is still a real public API and load path in [gaussian_splat_node_3d.cpp](../../modules/gaussian_splatting/nodes/gaussian_splat_node_3d.cpp) and [gaussian_splat_node_helpers.cpp](../../modules/gaussian_splatting/nodes/gaussian_splat_node_helpers.cpp).
 - Route IDs and renderer stats already exist, but they are not explained well to users.
@@ -183,7 +183,7 @@ Known migration surface: there are currently 18 direct test calls to `set_gaussi
 
 - `submit_world_submission()` and `release_world_submission()` are the runtime world-submission entrypoints. They apply and clear renderer-owned world state in addition to tracking the active world-backed source.
 - `upsert_world_submission()` and `unregister_world_submission()` remain as scaffolding and introspection helpers. They update only the director-owned record and intentionally have no renderer side effects.
-- The current one-active-world-per-scenario rule is enforced only by the runtime `submit_*` / `release_*` path. The scaffolding helpers remain public for tests and migration probes, not as the normal runtime world path.
+- The current one-active-world-per-scenario rule is enforced only by the runtime `submit_*` / `release_*` path. The scaffolding helpers remain compiled only for tools/test builds, not as a normal runtime surface.
 
 ### Exit Criteria
 
@@ -313,19 +313,19 @@ This stage is intentionally deferred.
 
 - `ply_file_path` as a primary editor workflow
 - compatibility remnants for direct high-level world-to-renderer mutation after Stage 1 migration
-- compatibility remnants for legacy `streaming/enabled` after Stage 2 migration
+- post-migration cleanup once the enum `route_policy` is the only supported settings control
 - tests and samples that still encode the old split as the preferred path
 
 ### Candidates For Consolidation
 
 - publish one explicit precedence model for effective settings if Stage 3 provenance proves the distributed rules can be collapsed safely
 - remove transitional compatibility hooks that remain public only for tests, tools, or migration support
-- remove `upsert_world_submission()` — this was a scaffolding-only entrypoint used by tests before `submit_world_submission()` was validated; it should be retired once all test coverage uses the ownership-aware submission path
+- remove `upsert_world_submission()` — this is now a tests-only scaffolding entrypoint and should be retired once all coverage uses the ownership-aware submission path
 - collapse the duplicated source-path resolution logic between `GaussianSplatNode3D::_get_asset_source_path()` and the editor plugin's `_get_asset_source_path()` into a single shared function
 
-### Deferred Validation
+### Validation Status
 
-- add an explicit test for the resident-plus-quantization-rejection fallback path: verify that when `ResidentInstanceContractPublisher::publish()` rejects per-chunk quantization (`resident_quantization_unsupported`), the renderer correctly falls back to streaming publication for streaming-capable routes and to the legacy resident path for explicit-resident requests; this is currently covered only by diagnostic reason strings, not by a dedicated test case
+- The explicit resident-plus-quantization-rejection fallback path now has dedicated coverage in `modules/gaussian_splatting/tests/test_scene_director_submission_scaffolding.h`. Keep that test as baseline coverage while the legacy explicit-resident fallback remains supported.
 
 ### Important Constraint
 

@@ -85,6 +85,7 @@ void GaussianSplatContainer::merge_children() {
 
 Error GaussianSplatContainer::apply_to_renderer(const Ref<GaussianSplatRenderer> &p_renderer) {
     ERR_FAIL_COND_V(p_renderer.is_null(), ERR_INVALID_PARAMETER);
+    WARN_PRINT_ONCE("GaussianSplatContainer::apply_to_renderer() is a low-level compatibility helper. Prefer apply_to_node() or export_world_resource() for scene workflows.");
     if (merged_data.is_null() || merged_data->get_count() == 0) {
         GS_LOG_WARN_DEFAULT("GaussianSplatContainer: no merged data available to apply.");
         return ERR_UNAVAILABLE;

@@ -7,6 +7,9 @@ const METRICS_MARKER := "[RUNTIME_METRICS]"
 const ASSET_PATH := "res://tests/fixtures/test_splats.ply"
 const MAX_TEST_FRAMES := 300
 const CAMERA_MOVE_FRAME := 24
+const STREAMING_ROUTE_POLICY_PATH := "rendering/gaussian_splatting/streaming/route_policy"
+const STREAMING_ROUTE_RESIDENT := 0
+const STREAMING_ROUTE_STREAMING := 1
 
 var scene_root: Node3D
 var world_node: GaussianSplatWorld3D
@@ -14,7 +17,7 @@ var camera: Camera3D
 var manager = null
 
 var _settings_captured := false
-var _prev_streaming_enabled := false
+var _prev_streaming_route_policy := STREAMING_ROUTE_STREAMING
 var _prev_instance_pipeline_enabled := false
 
 var metrics: Dictionary = {
@@ -51,21 +54,21 @@ func _is_headless_runtime() -> bool:
 func _capture_streaming_settings() -> void:
     if _settings_captured:
         return
-    _prev_streaming_enabled = bool(ProjectSettings.get_setting("rendering/gaussian_splatting/streaming/enabled", false))
+    _prev_streaming_route_policy = int(ProjectSettings.get_setting(STREAMING_ROUTE_POLICY_PATH, STREAMING_ROUTE_STREAMING))
     _prev_instance_pipeline_enabled = bool(ProjectSettings.get_setting("rendering/gaussian_splatting/instance_pipeline/enabled", false))
     _settings_captured = true
 
 
 func _apply_streaming_settings() -> void:
     _capture_streaming_settings()
-    ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/enabled", true)
+    ProjectSettings.set_setting(STREAMING_ROUTE_POLICY_PATH, STREAMING_ROUTE_STREAMING)
     ProjectSettings.set_setting("rendering/gaussian_splatting/instance_pipeline/enabled", true)
 
 
 func _restore_streaming_settings() -> void:
     if not _settings_captured:
         return
-    ProjectSettings.set_setting("rendering/gaussian_splatting/streaming/enabled", _prev_streaming_enabled)
+    ProjectSettings.set_setting(STREAMING_ROUTE_POLICY_PATH, _prev_streaming_route_policy)
     ProjectSettings.set_setting("rendering/gaussian_splatting/instance_pipeline/enabled", _prev_instance_pipeline_enabled)
 
 

@@ -56,18 +56,18 @@ class GaussianSplatDebugHUD;
  *
  * In the editor:
  * 1. Add a GaussianSplatNode3D to your scene
- * 2. Set the file path (.ply or .spz) or assign a "Splat Asset"
+ * 2. Assign a "Splat Asset" resource or drag a .ply/.spz file onto the node
  * 3. Adjust quality preset and rendering options as needed
  *
  * From GDScript:
  * @code
  * var splat_node = GaussianSplatNode3D.new()
- * splat_node.ply_file_path = "res://my_scan.ply"  // Also accepts .spz files
+ * splat_node.splat_asset = load("res://my_scan.ply")
  * splat_node.quality_preset = GaussianSplatNode3D.QUALITY_BALANCED
  * add_child(splat_node)
  * @endcode
  *
- * @note The property is named `ply_file_path` for historical reasons but accepts
+ * @note `ply_file_path` remains available as a compatibility route and accepts
  *       both PLY and SPZ formats.
  * @note This node participates in the shared scene renderer registry and does not
  *       own a dedicated GaussianSplatRenderer instance.
@@ -320,7 +320,6 @@ private:
 #ifdef TOOLS_ENABLED
     void _notification_editor_post_save();
 #endif
-    String _get_asset_source_path() const;
     bool _has_inconsistent_dual_source_configuration(String *r_asset_source_path = nullptr) const;
 
     void _ensure_gaussian_base();
@@ -381,8 +380,10 @@ public:
      *
      * If auto_load is enabled, the file will be loaded immediately.
      *
-     * @note The property name includes "ply" for historical reasons but
-     *       the loader auto-detects format based on file extension.
+     * @note Compatibility route. Prefer assigning [code]splat_asset[/code] for
+     *       new editor and script workflows. The property name includes "ply"
+     *       for historical reasons but the loader auto-detects format based on
+     *       file extension.
      */
     void set_ply_file_path(const String &p_path);
     String get_ply_file_path() const { return ply_file_path; }

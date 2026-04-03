@@ -4,7 +4,7 @@
 		Container node that merges child splat nodes into a single optimized dataset.
 	</brief_description>
 	<description>
-		GaussianSplatContainer collects GaussianSplatNode3D and GaussianSplatWorld3D children, merges their splat data into a single GaussianData resource with spatial chunking, and can apply the result to a target renderer or node. This enables rendering multiple assets as one draw call for improved performance. The container supports automatic merging on ready, chunk-based spatial subdivision, and export to GaussianSplatWorld resources.
+		GaussianSplatContainer collects GaussianSplatNode3D and GaussianSplatWorld3D children, merges their splat data into a single GaussianData resource with spatial chunking, and can apply the result to a target renderer or node. This enables rendering multiple assets as one draw call for improved performance. The container supports automatic merging on ready, chunk-based spatial subdivision, and export to GaussianSplatWorld resources. Prefer [method apply_to_node] or [method export_world_resource] for scene workflows; [method apply_to_renderer] remains a low-level compatibility helper while the direct renderer raw-data route still exists.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -90,7 +90,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="renderer" type="GaussianSplatRenderer" />
 			<description>
-				Applies the merged data and chunk layout to the given [param renderer]. Returns [constant OK] on success, or [constant ERR_UNAVAILABLE] if no merged data exists.
+				Applies the merged data and chunk layout to the given [param renderer]. This is a low-level compatibility helper; prefer [method apply_to_node] or [method export_world_resource] for normal scene workflows. Returns [constant OK] on success, or [constant ERR_UNAVAILABLE] if no merged data exists.
 			</description>
 		</method>
 		<method name="apply_to_node">

@@ -19,7 +19,7 @@
       <td><code>modules/gaussian_splatting/renderer/gaussian_splat_renderer.h:778</code></td>
     </tr>
     <tr>
-      <td>Assign splat data for rendering.</td>
+      <td>Assign splat data for rendering (low-level path).</td>
       <td><code>set_gaussian_data(data)</code></td>
       <td><code>modules/gaussian_splatting/renderer/gaussian_splat_renderer.h:798</code></td>
     </tr>
@@ -86,7 +86,7 @@
       <td><code>gaussian_data</code></td>
       <td><code>GaussianData</code></td>
       <td><code>set_gaussian_data</code>, <code>get_gaussian_data</code></td>
-      <td>Resource containing the splat dataset to render.</td>
+      <td>Low-level raw-data binding surface. Scene-facing code should normally use nodes, worlds, or submissions instead of writing this directly.</td>
       <td><code>modules/gaussian_splatting/renderer/gaussian_splat_renderer_bindings.cpp:186</code></td>
     </tr>
     <tr>
@@ -523,7 +523,7 @@
   <tbody>
     <tr>
       <td><code>set_gaussian_data(data: GaussianData)</code></td>
-      <td>Assigns a GaussianData resource for rendering. Dispatches GPU buffer upload on the render thread and returns an <code>Error</code> code.</td>
+      <td>Assigns a GaussianData resource for rendering. This is the renderer's low-level raw-data upload path, used by tests, tools, preview flows, and internal plumbing. Scene-facing workflows should normally prefer node/world submission paths. Dispatches GPU buffer upload on the render thread and returns an <code>Error</code> code.</td>
       <td><code>modules/gaussian_splatting/renderer/gaussian_splat_renderer.h:798</code></td>
     </tr>
     <tr>
