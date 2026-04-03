@@ -173,6 +173,7 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/theme/theme_db.h"
+#include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
@@ -6041,6 +6042,26 @@ String EditorNode::_get_system_info() const {
 	const String processor_name = OS::get_singleton()->get_processor_name();
 	const int processor_count = OS::get_singleton()->get_processor_count();
 
+	const String audio_driver_name = AudioServer::get_singleton()->get_driver_name();
+	const float mix_rate = AudioServer::get_singleton()->get_mix_rate();
+
+	AudioServer::SpeakerMode speaker_mode = AudioServer::get_singleton()->get_speaker_mode();
+	String speaker_mode_string;
+	switch (speaker_mode) {
+		case AudioServer::SpeakerMode::SPEAKER_MODE_STEREO:
+			speaker_mode_string = "Stereo/mono";
+			break;
+		case AudioServer::SpeakerMode::SPEAKER_SURROUND_31:
+			speaker_mode_string = "Surround 3.1";
+			break;
+		case AudioServer::SpeakerMode::SPEAKER_SURROUND_51:
+			speaker_mode_string = "Surround 5.1";
+			break;
+		case AudioServer::SpeakerMode::SPEAKER_SURROUND_71:
+			speaker_mode_string = "Surround 7.1";
+			break;
+	}
+
 	// Prettify
 	if (rendering_method == "forward_plus") {
 		rendering_method = "Forward+";
@@ -6122,6 +6143,8 @@ String EditorNode::_get_system_info() const {
 		// If the memory info is available, display it.
 		info.push_back(vformat("%s memory", String::humanize_size(system_ram)));
 	}
+
+	info.push_back(vformat("%s (%d Hz, %s)", audio_driver_name, int(mix_rate), speaker_mode_string));
 
 	return String(" - ").join(info);
 }
