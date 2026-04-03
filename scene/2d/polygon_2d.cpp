@@ -440,7 +440,9 @@ void Polygon2D::_notification(int p_what) {
 void Polygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	rect_cache_dirty = true;
-	vertex_colors.resize(p_polygon.size());
+	if (use_vertex_colors) {
+		vertex_colors.resize(p_polygon.size());
+	}
 	queue_redraw();
 }
 
@@ -485,6 +487,9 @@ Color Polygon2D::get_color() const {
 
 void Polygon2D::set_use_vertex_colors(bool p_vcol_enabled) {
 	use_vertex_colors = p_vcol_enabled;
+	if (p_vcol_enabled) {
+		vertex_colors.resize(polygon.size());
+	}
 	queue_redraw();
 }
 

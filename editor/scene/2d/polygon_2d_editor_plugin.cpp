@@ -978,9 +978,11 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				for (int i = 0; i < editing_points.size(); i++) {
 					if (mtx.xform(rv[i]).distance_to(paint_pos) < radius) {
 						Vector<Color> newColors = node->get_vertex_colors();
-						Color newColor = newColors[i].lerp(pickedColor, strength);
-						newColors.set(i, newColor);
-						node->set_vertex_colors(newColors);
+						if (i < newColors.size()) {
+							Color newColor = newColors[i].lerp(pickedColor, strength);
+							newColors.set(i, newColor);
+							node->set_vertex_colors(newColors);
+						}
 					}
 				}
 			}
@@ -1011,7 +1013,14 @@ void Polygon2DEditor::_update_available_modes() {
 		mode_buttons[MODE_UV]->set_disabled(false);
 		mode_buttons[MODE_POLYGONS]->set_disabled(false);
 		mode_buttons[MODE_BONES]->set_disabled(false);
-		mode_buttons[MODE_VCOLOR]->set_disabled(false);
+		if (node->get_use_vertex_colors()) {
+			mode_buttons[MODE_VCOLOR]->set_disabled(false);
+		}
+		else {
+			//don't let them paint vertex colors if it's not being used.
+			_select_mode(MODE_POINTS);
+			mode_buttons[MODE_VCOLOR]->set_disabled(true);
+		}
 	}
 }
 
