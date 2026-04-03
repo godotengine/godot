@@ -156,15 +156,15 @@ void JoypadSDL::process_events() {
 				}
 
 				const int MAX_GUID_SIZE = 64;
-				char guid[MAX_GUID_SIZE] = {};
+				char guid_buffer[MAX_GUID_SIZE] = {};
+				const char *guid = guid_buffer;
 				SDL_GUID joy_guid = SDL_GetJoystickGUID(joy);
-				SDL_GUIDToString(joy_guid, guid, MAX_GUID_SIZE);
+				SDL_GUIDToString(joy_guid, guid_buffer, MAX_GUID_SIZE);
 				SDL_PropertiesID propertiesID = SDL_GetJoystickProperties(joy);
 
 				joypads[joy_id].attached = true;
 				joypads[joy_id].sdl_instance_idx = sdl_event.jdevice.which;
 				joypads[joy_id].supports_force_feedback = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
-				joypads[joy_id].guid = StringName(String(guid));
 				joypads[joy_id].supports_motion_sensors = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL) || SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
 
 				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
@@ -193,6 +193,7 @@ void JoypadSDL::process_events() {
 				if (player_index >= 0 && joy_guid.data[14] == 'x') { // See also "SDL_IsJoystickXInput" in "thirdparty/sdl/joystick/SDL_joystick.c".
 					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
 					joypad_info["xinput_index"] = itos(player_index);
+					guid = "__XINPUT_DEVICE__";
 				}
 #endif
 
@@ -200,7 +201,7 @@ void JoypadSDL::process_events() {
 						joy_id,
 						true,
 						device_name,
-						joypads[joy_id].guid,
+						guid,
 						joypad_info);
 
 				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
