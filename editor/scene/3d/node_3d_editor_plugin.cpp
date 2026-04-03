@@ -10538,9 +10538,9 @@ Node3DEditor::Node3DEditor() {
 					int32_t(KeyModifierMask::ALT | KeyModifierMask::META | Key::G) });
 	ED_SHORTCUT("spatial_editor/align_rotation_with_view", TTRC("Align Rotation with View"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::F);
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTRC("Toggle Freelook"), KeyModifierMask::SHIFT + Key::F);
-	ED_SHORTCUT("spatial_editor/decrease_fov", TTRC("Decrease Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::EQUAL); // Usually direct access key for `KEY_PLUS`.
-	ED_SHORTCUT("spatial_editor/increase_fov", TTRC("Increase Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::MINUS);
-	ED_SHORTCUT("spatial_editor/reset_fov", TTRC("Reset Field of View to Default"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_0);
+	ED_SHORTCUT("spatial_editor/decrease_fov", TTRC("Decrease Field of View"), Key::EQUAL, true); // Usually direct access key for `KEY_PLUS`.
+	ED_SHORTCUT("spatial_editor/increase_fov", TTRC("Increase Field of View"), Key::MINUS, true);
+	ED_SHORTCUT("spatial_editor/reset_fov", TTRC("Reset Field of View to Default"), Key::KEY_0);
 
 	PopupMenu *p;
 
