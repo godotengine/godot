@@ -5258,6 +5258,28 @@ Error WaylandThread::init() {
 
 	thread_data.wl_display = wl_display;
 
+#ifdef LIBDECOR_ENABLED
+	bool libdecor_found = true;
+
+	bool skip_libdecor = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_LIBDECOR") == "1";
+
+#ifdef SOWRAP_ENABLED
+	if (!skip_libdecor && initialize_libdecor(dylibloader_verbose) != 0) {
+		libdecor_found = false;
+	}
+#endif // SOWRAP_ENABLED
+
+	if (skip_libdecor) {
+		print_verbose("Skipping libdecor check because GODOT_WAYLAND_DISABLE_LIBDECOR is set to 1.");
+	} else {
+		if (libdecor_found) {
+			libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+		} else {
+			print_verbose("libdecor not found. Client-side decorations disabled.");
+		}
+	}
+#endif // LIBDECOR_ENABLED
+
 	wl_registry = wl_display_get_registry(wl_display);
 
 	ERR_FAIL_NULL_V_MSG(wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
@@ -5306,28 +5328,6 @@ Error WaylandThread::init() {
 	// Wait for seat capabilities.
 	// TODO: Async?
 	wl_display_roundtrip(wl_display);
-
-#ifdef LIBDECOR_ENABLED
-	bool libdecor_found = true;
-
-	bool skip_libdecor = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_LIBDECOR") == "1";
-
-#ifdef SOWRAP_ENABLED
-	if (!skip_libdecor && initialize_libdecor(dylibloader_verbose) != 0) {
-		libdecor_found = false;
-	}
-#endif // SOWRAP_ENABLED
-
-	if (skip_libdecor) {
-		print_verbose("Skipping libdecor check because GODOT_WAYLAND_DISABLE_LIBDECOR is set to 1.");
-	} else {
-		if (libdecor_found) {
-			libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
-		} else {
-			print_verbose("libdecor not found. Client-side decorations disabled.");
-		}
-	}
-#endif // LIBDECOR_ENABLED
 
 	cursor_theme_name = OS::get_singleton()->get_environment("XCURSOR_THEME");
 
