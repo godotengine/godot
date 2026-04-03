@@ -247,7 +247,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	r_size = Size2(results[best].max_w, results[best].max_h);
 }
 
-Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
+Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open, PolyFillRule p_fill_rule) {
 	using namespace Clipper2Lib;
 
 	ClipType op = ClipType::Union;
@@ -264,6 +264,22 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 			break;
 		case OPERATION_XOR:
 			op = ClipType::Xor;
+			break;
+	}
+
+	FillRule fill_rule = FillRule::EvenOdd;
+	switch (p_fill_rule) {
+		case FILL_EVEN_ODD:
+			fill_rule = FillRule::EvenOdd;
+			break;
+		case FILL_NON_ZERO:
+			fill_rule = FillRule::NonZero;
+			break;
+		case FILL_NEGATIVE:
+			fill_rule = FillRule::Negative;
+			break;
+		case FILL_POSITIVE:
+			fill_rule = FillRule::Positive;
 			break;
 	}
 
@@ -289,9 +305,9 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 
 	if (is_a_open) {
 		PolyTreeD tree; // Needed to populate polylines.
-		clp.Execute(op, FillRule::EvenOdd, tree, paths);
+		clp.Execute(op, fill_rule, tree, paths);
 	} else {
-		clp.Execute(op, FillRule::EvenOdd, paths); // Works on closed polygons only.
+		clp.Execute(op, fill_rule, paths); // Works on closed polygons only.
 	}
 
 	Vector<Vector<Point2>> polypaths;
