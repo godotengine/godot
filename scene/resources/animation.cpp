@@ -2877,8 +2877,8 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					case TYPE_POSITION_3D: {
 						const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 						if (tt->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, length, p_indices);
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, p_start, to_time, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, end, p_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, start, to_time, p_indices);
 						} else {
 							if (!is_backward) {
 								_track_get_key_indices_in_range(tt->positions, from_time, anim_end, p_indices, is_backward);
