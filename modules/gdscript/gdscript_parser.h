@@ -751,6 +751,7 @@ public:
 		HashMap<StringName, int> members_indices;
 		ClassNode *outer = nullptr;
 		bool extends_used = false;
+		bool oninstantiated_used = false;
 		bool onready_used = false;
 		bool is_abstract = false;
 		bool has_static_data = false;
@@ -1255,6 +1256,12 @@ public:
 			PROP_SETGET,
 		};
 
+		enum InitStage {
+			INIT_STAGE_NORMAL,
+			INIT_STAGE_ONINSTANTIATED,
+			INIT_STAGE_ONREADY,
+		};
+
 		PropertyStyle property = PROP_NONE;
 		union {
 			FunctionNode *setter = nullptr;
@@ -1266,8 +1273,8 @@ public:
 			IdentifierNode *getter_pointer;
 		};
 
+		InitStage init_stage = INIT_STAGE_NORMAL;
 		bool exported = false;
-		bool onready = false;
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
@@ -1557,6 +1564,7 @@ private:
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool oninstantiated_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
