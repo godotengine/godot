@@ -2051,8 +2051,34 @@ TEST_CASE("[GaussianSplatting][Editor] Hot reload fans one watched source path o
 
     memdelete(node_c);
     memdelete(node_b);
-    memdelete(node_a);
-    memdelete(plugin);
+	memdelete(node_a);
+	memdelete(plugin);
+}
+
+TEST_CASE("[GaussianSplatting][Editor] Hot reload leaves watched nodes unchanged when no refreshed asset is available") {
+	const String source_path = "user://hot_reload_failure_fixture.ply";
+
+	GaussianEditorPlugin *plugin = memnew(GaussianEditorPlugin);
+	GaussianSplatNode3D *node_a = memnew(GaussianSplatNode3D);
+	GaussianSplatNode3D *node_b = memnew(GaussianSplatNode3D);
+
+	Ref<GaussianSplatAsset> asset_a = _make_editor_test_asset(source_path, 1, Dictionary());
+	Ref<GaussianSplatAsset> asset_b = _make_editor_test_asset(source_path, 1, Dictionary());
+
+	node_a->set_splat_asset(asset_a);
+	node_b->set_splat_asset(asset_b);
+
+	plugin->_test_track_hot_reload_source(source_path, Dictionary(), node_a->get_instance_id());
+	plugin->_test_track_hot_reload_source(source_path, Dictionary(), node_b->get_instance_id());
+
+	CHECK(plugin->_test_process_hot_reload_path_now(source_path, Ref<GaussianSplatAsset>()));
+
+	CHECK(node_a->get_splat_asset() == asset_a);
+	CHECK(node_b->get_splat_asset() == asset_b);
+
+	memdelete(node_b);
+	memdelete(node_a);
+	memdelete(plugin);
 }
 
 #endif // TOOLS_ENABLED

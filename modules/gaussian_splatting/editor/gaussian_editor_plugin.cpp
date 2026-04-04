@@ -768,9 +768,10 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
         }
     };
 
-    const String source_extension = p_path.get_extension().to_lower();
-    if (source_extension == "ply" || source_extension == "spz") {
-        Dictionary options = p_watch.import_options;
+	const String source_extension = p_path.get_extension().to_lower();
+	Ref<GaussianSplatAsset> refreshed_asset;
+	if (source_extension == "ply" || source_extension == "spz") {
+		Dictionary options = p_watch.import_options;
         if (options.is_empty()) {
             for (int i = 0; i < watched_nodes.size(); i++) {
                 Ref<GaussianSplatAsset> target_asset = watched_nodes[i]->get_splat_asset();
@@ -796,22 +797,24 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
             options = last_import_options;
         }
 
-        hot_reload_processing = true;
-        _import_from_path(p_path, options);
-        hot_reload_processing = false;
-    } else {
-        Ref<Resource> res = ResourceLoader::load(p_path, String(), ResourceFormatLoader::CACHE_MODE_REPLACE);
-        if (res.is_valid()) {
-            res->reload_from_file();
-            Ref<GaussianSplatAsset> refreshed_asset = res;
-            if (refreshed_asset.is_valid() && active_asset.is_valid() && active_asset->get_path() == p_path) {
-                active_asset = refreshed_asset;
-            }
-        }
-    }
+		hot_reload_processing = true;
+		const Error import_err = _import_from_path(p_path, options);
+		hot_reload_processing = false;
+		if (import_err == OK) {
+			refreshed_asset = active_asset;
+		}
+	} else {
+		Ref<Resource> res = ResourceLoader::load(p_path, String(), ResourceFormatLoader::CACHE_MODE_REPLACE);
+		if (res.is_valid()) {
+			res->reload_from_file();
+			refreshed_asset = res;
+			if (refreshed_asset.is_valid() && active_asset.is_valid() && active_asset->get_path() == p_path) {
+				active_asset = refreshed_asset;
+			}
+		}
+	}
 
-    Ref<GaussianSplatAsset> refreshed_asset = active_asset;
-    _apply_hot_reload_asset_to_nodes(p_path, watched_nodes, refreshed_asset);
+	_apply_hot_reload_asset_to_nodes(p_path, watched_nodes, refreshed_asset);
     if (watched_nodes.is_empty() && current_node) {
         current_node->force_update();
     }
