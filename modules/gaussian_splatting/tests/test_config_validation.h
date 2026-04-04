@@ -40,14 +40,17 @@ TEST_CASE("[GaussianSplatting][Config] Hidden runtime-affecting ProjectSettings 
 	REQUIRE(ps != nullptr);
 
 	const StringName renderdoc_key("rendering/gaussian_splatting/renderdoc_compatibility");
+	const StringName renderdoc_explicit_key("rendering/gaussian_splatting/internal/renderdoc_compatibility_explicit");
 	const StringName depth_test_key("rendering/gaussian_splatting/composite/depth_test");
 	const StringName effector_frequency_key("rendering/gaussian_splatting/effects/sphere_effector_frequency");
 
 	CHECK(ps->has_setting(renderdoc_key));
+	CHECK(ps->has_setting(renderdoc_explicit_key));
 	CHECK(ps->has_setting(depth_test_key));
 	CHECK(ps->has_setting(effector_frequency_key));
 
 	CHECK_FALSE(bool(ps->get_setting(renderdoc_key)));
+	CHECK_FALSE(bool(ps->get_setting(renderdoc_explicit_key)));
 	CHECK(bool(ps->get_setting(depth_test_key)));
 	CHECK(Math::is_equal_approx(double(ps->get_setting(effector_frequency_key)), 2.0));
 }
