@@ -92,6 +92,21 @@ static GaussianSplatRenderer::DebugPreviewMode _node_debug_draw_to_renderer_prev
     }
 }
 
+static bool _is_renderer_shared_with_other_content(const GaussianSplatNode3D &p_owner) {
+    if (!p_owner.renderer.is_valid()) {
+        return false;
+    }
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    if (!director) {
+        return false;
+    }
+    const GaussianSplatRenderer *renderer_ptr = p_owner.renderer.ptr();
+    if (director->get_instance_count_for_renderer(renderer_ptr) > 1u) {
+        return true;
+    }
+    return director->has_world_submission_for_renderer(renderer_ptr);
+}
+
 static String _quality_preset_name(GaussianSplatNode3D::QualityPreset p_preset) {
 	switch (p_preset) {
 		case GaussianSplatNode3D::QUALITY_PERFORMANCE:
@@ -621,10 +636,11 @@ void GaussianSplatNodeDebugHelper::apply_renderer_debug_settings() {
         return;
     }
 
-    owner.renderer->set_debug_show_tile_grid(owner.show_tile_grid);
-    owner.renderer->set_debug_show_density_heatmap(owner.show_density_heatmap);
-    owner.renderer->set_debug_show_performance_hud(owner.show_performance_hud);
-    owner.renderer->set_debug_show_residency_hud(owner.show_residency_hud);
+    const bool shared_renderer = _is_renderer_shared_with_other_content(owner);
+    owner.renderer->set_debug_show_tile_grid(shared_renderer ? false : owner.show_tile_grid);
+    owner.renderer->set_debug_show_density_heatmap(shared_renderer ? false : owner.show_density_heatmap);
+    owner.renderer->set_debug_show_performance_hud(shared_renderer ? false : owner.show_performance_hud);
+    owner.renderer->set_debug_show_residency_hud(shared_renderer ? false : owner.show_residency_hud);
     owner.renderer->set_debug_overlay_opacity(owner.debug_overlay_opacity);
     owner.renderer->set_debug_preview_mode(_node_debug_draw_to_renderer_preview_mode(owner.debug_draw_mode));
     if (owner.runtime_preview_enabled) {
@@ -644,7 +660,8 @@ void GaussianSplatNodeDebugHelper::set_show_tile_grid(bool p_show) {
 
     GaussianSplatSettingsManager::set_debug_show_tile_grid(owner.show_tile_grid);
 
-    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings()) {
+    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings() &&
+            !_is_renderer_shared_with_other_content(owner)) {
         owner.renderer->set_debug_show_tile_grid(owner.show_tile_grid);
     }
 }
@@ -658,7 +675,8 @@ void GaussianSplatNodeDebugHelper::set_show_density_heatmap(bool p_show) {
 
     GaussianSplatSettingsManager::set_debug_show_density_heatmap(owner.show_density_heatmap);
 
-    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings()) {
+    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings() &&
+            !_is_renderer_shared_with_other_content(owner)) {
         owner.renderer->set_debug_show_density_heatmap(owner.show_density_heatmap);
     }
 }
@@ -672,7 +690,8 @@ void GaussianSplatNodeDebugHelper::set_show_performance_hud(bool p_show) {
 
     GaussianSplatSettingsManager::set_debug_show_performance_hud(owner.show_performance_hud);
 
-    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings()) {
+    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings() &&
+            !_is_renderer_shared_with_other_content(owner)) {
         owner.renderer->set_debug_show_performance_hud(owner.show_performance_hud);
     }
 
@@ -762,7 +781,8 @@ void GaussianSplatNodeDebugHelper::set_show_residency_hud(bool p_show) {
 
     GaussianSplatSettingsManager::set_debug_show_residency_hud(owner.show_residency_hud);
 
-    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings()) {
+    if (owner.renderer.is_valid() && owner.renderer_helper.can_apply_renderer_settings() &&
+            !_is_renderer_shared_with_other_content(owner)) {
         owner.renderer->set_debug_show_residency_hud(owner.show_residency_hud);
     }
 

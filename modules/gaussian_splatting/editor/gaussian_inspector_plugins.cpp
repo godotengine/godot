@@ -24,6 +24,7 @@
 #include "core/object/object.h"
 #include "core/string/translation.h"
 #include "../core/gaussian_data.h"
+#include "../core/gaussian_splat_scene_director.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../nodes/gaussian_splat_node_3d.h"
@@ -46,6 +47,23 @@ static Ref<ColorGradingResource> clone_color_grading_resource(const Ref<ColorGra
     snapshot->set_tint(p_grading->get_tint());
     snapshot->set_hue_shift(p_grading->get_hue_shift());
     return snapshot;
+}
+
+static bool is_renderer_shared_with_other_content(GaussianSplatNode3D *p_node) {
+    if (p_node == nullptr) {
+        return false;
+    }
+    Ref<GaussianSplatRenderer> renderer = p_node->get_renderer();
+    if (!renderer.is_valid()) {
+        return false;
+    }
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    if (!director) {
+        return false;
+    }
+    const GaussianSplatRenderer *renderer_ptr = renderer.ptr();
+    return director->get_instance_count_for_renderer(renderer_ptr) > 1u ||
+            director->has_world_submission_for_renderer(renderer_ptr);
 }
 
 } // namespace
@@ -506,6 +524,8 @@ void GaussianSplatNodeInspectorPlugin::parse_begin(Object *p_object) {
     root->add_child(quality_row);
 
 #ifdef DEBUG_ENABLED
+    const bool shared_renderer_debug_controls = is_renderer_shared_with_other_content(node);
+
     Label *debug_label = memnew(Label);
     debug_label->set_text("Debug Visualization");
     root->add_child(debug_label);
@@ -536,31 +556,38 @@ void GaussianSplatNodeInspectorPlugin::parse_begin(Object *p_object) {
 
     root->add_child(toggle_row);
 
-    HFlowContainer *overlay_row = memnew(HFlowContainer);
-    overlay_row->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+    if (!shared_renderer_debug_controls) {
+        HFlowContainer *overlay_row = memnew(HFlowContainer);
+        overlay_row->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-    CheckButton *grid_toggle = memnew(CheckButton);
-    grid_toggle->set_text("Tile Grid");
-    grid_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    grid_toggle->set_pressed(node->is_showing_tile_grid());
-    grid_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_tile_grid_toggled).bind(node->get_instance_id()));
-    overlay_row->add_child(grid_toggle);
+        CheckButton *grid_toggle = memnew(CheckButton);
+        grid_toggle->set_text("Tile Grid");
+        grid_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+        grid_toggle->set_pressed(node->is_showing_tile_grid());
+        grid_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_tile_grid_toggled).bind(node->get_instance_id()));
+        overlay_row->add_child(grid_toggle);
 
-    CheckButton *heatmap_toggle = memnew(CheckButton);
-    heatmap_toggle->set_text("Heatmap");
-    heatmap_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    heatmap_toggle->set_pressed(node->is_showing_density_heatmap());
-    heatmap_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_density_heatmap_toggled).bind(node->get_instance_id()));
-    overlay_row->add_child(heatmap_toggle);
+        CheckButton *heatmap_toggle = memnew(CheckButton);
+        heatmap_toggle->set_text("Heatmap");
+        heatmap_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+        heatmap_toggle->set_pressed(node->is_showing_density_heatmap());
+        heatmap_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_density_heatmap_toggled).bind(node->get_instance_id()));
+        overlay_row->add_child(heatmap_toggle);
 
-    CheckButton *hud_toggle = memnew(CheckButton);
-    hud_toggle->set_text("HUD");
-    hud_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    hud_toggle->set_pressed(node->is_showing_performance_hud());
-    hud_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_performance_hud_toggled).bind(node->get_instance_id()));
-    overlay_row->add_child(hud_toggle);
+        CheckButton *hud_toggle = memnew(CheckButton);
+        hud_toggle->set_text("HUD");
+        hud_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+        hud_toggle->set_pressed(node->is_showing_performance_hud());
+        hud_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_performance_hud_toggled).bind(node->get_instance_id()));
+        overlay_row->add_child(hud_toggle);
 
-    root->add_child(overlay_row);
+        root->add_child(overlay_row);
+    } else {
+        Label *shared_debug_hint = memnew(Label);
+        shared_debug_hint->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+        shared_debug_hint->set_text(TTR("Per-node tile grid, heatmap, and HUD toggles are unavailable while this renderer is shared with other content."));
+        root->add_child(shared_debug_hint);
+    }
 
     HFlowContainer *lod_row = memnew(HFlowContainer);
     lod_row->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -618,12 +645,14 @@ void GaussianSplatNodeInspectorPlugin::parse_begin(Object *p_object) {
     runtime_preview_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_runtime_preview_toggled).bind(node->get_instance_id(), preview_mode));
     runtime_row->add_child(runtime_preview_toggle);
 
-    CheckButton *residency_toggle = memnew(CheckButton);
-    residency_toggle->set_text(TTR("Residency HUD"));
-    residency_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    residency_toggle->set_pressed(node->is_showing_residency_hud());
-    residency_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_residency_hud_toggled).bind(node->get_instance_id()));
-    runtime_row->add_child(residency_toggle);
+    if (!shared_renderer_debug_controls) {
+        CheckButton *residency_toggle = memnew(CheckButton);
+        residency_toggle->set_text(TTR("Residency HUD"));
+        residency_toggle->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+        residency_toggle->set_pressed(node->is_showing_residency_hud());
+        residency_toggle->connect("toggled", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_residency_hud_toggled).bind(node->get_instance_id()));
+        runtime_row->add_child(residency_toggle);
+    }
 
     root->add_child(runtime_row);
 #endif

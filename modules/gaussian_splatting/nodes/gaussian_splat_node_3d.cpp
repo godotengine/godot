@@ -362,6 +362,7 @@ void GaussianSplatNode3D::_notification_exit_tree() {
     _update_visibility();
     _clear_parent_visibility_tracking();
     _update_cached_render_target(nullptr);
+    renderer_helper.release_renderer_settings_ownership();
     _unregister_shared_renderer();
 
     // Release GPU storage when detached to avoid keeping allocations alive.
@@ -443,7 +444,11 @@ void GaussianSplatNode3D::_notification(int p_what) {
 
 void GaussianSplatNode3D::_validate_property(PropertyInfo &p_property) const {
     if (_is_renderer_shared_with_other_content(renderer)) {
-        if (p_property.name.begins_with("painterly/") || p_property.name == "rendering/color_grading") {
+        if (p_property.name.begins_with("painterly/") || p_property.name == "rendering/color_grading" ||
+                p_property.name == "debug/show_tile_grid" ||
+                p_property.name == "debug/show_density_heatmap" ||
+                p_property.name == "debug/show_performance_hud" ||
+                p_property.name == "debug/show_residency_hud") {
             p_property.usage = PROPERTY_USAGE_NO_EDITOR;
             return;
         }

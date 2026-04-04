@@ -957,7 +957,7 @@ TEST_CASE("[GaussianSplatting][World][SceneTree][RequiresGPU] Shared renderer ow
     memdelete(node_a);
 }
 
-TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer debug settings follow the latest writer") {
+TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer hides node-local debug settings and restores them when the settings owner exits") {
     SceneTree *tree = SceneTree::get_singleton();
     REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
 
@@ -987,21 +987,28 @@ TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer deb
         memdelete(node_a);
         return;
     }
-    CHECK(renderer_a->is_debug_show_density_heatmap());
 
-    node_b->set_show_density_heatmap(false);
+    CHECK(node_a->is_showing_density_heatmap());
+    CHECK_FALSE(node_b->is_showing_density_heatmap());
+    CHECK_FALSE(renderer_a->is_debug_show_density_heatmap());
+    CHECK_FALSE(is_property_editor_exposed(node_a, StringName("debug/show_density_heatmap")));
+    CHECK_FALSE(is_property_editor_exposed(node_b, StringName("debug/show_density_heatmap")));
+
+    node_b->set_show_density_heatmap(true);
+    CHECK(node_b->is_showing_density_heatmap());
     CHECK_FALSE(renderer_a->is_debug_show_density_heatmap());
 
-    node_a->set_show_density_heatmap(false);
-    CHECK_FALSE(renderer_a->is_debug_show_density_heatmap());
+    root->remove_child(node_a);
+    memdelete(node_a);
+    node_a = nullptr;
+    tree->process(0.0);
 
-    node_a->set_show_density_heatmap(true);
+    CHECK(is_property_editor_exposed(node_b, StringName("debug/show_density_heatmap")));
+    CHECK(node_b->is_showing_density_heatmap());
     CHECK(renderer_a->is_debug_show_density_heatmap());
 
     root->remove_child(node_b);
-    root->remove_child(node_a);
     memdelete(node_b);
-    memdelete(node_a);
 }
 
 TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer instance buffer tracks per-node opacity") {
