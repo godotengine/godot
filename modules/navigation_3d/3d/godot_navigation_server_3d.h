@@ -209,7 +209,7 @@ public:
 	// virtual AABB area_get_bounds(RID p_area) const override;
 	COMMAND_2(area_set_radius, RID, p_area, real_t, p_radius);
 	virtual real_t area_get_radius(RID p_area) const override;
-	virtual void area_set_vertices(RID p_area, const Vector<Vector3> & p_vertices) override;
+	virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) override;
 	virtual Vector<Vector3> area_get_vertices(RID p_area) const override;
 
 	virtual RID link_create() override;
