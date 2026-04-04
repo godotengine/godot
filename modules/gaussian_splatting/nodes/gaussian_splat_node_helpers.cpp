@@ -92,15 +92,16 @@ static GaussianSplatRenderer::DebugPreviewMode _node_debug_draw_to_renderer_prev
     }
 }
 
-static bool _is_renderer_shared_with_other_content(const GaussianSplatNode3D &p_owner) {
-    if (!p_owner.renderer.is_valid()) {
+static bool _is_renderer_shared_with_other_content(GaussianSplatNode3D &p_owner) {
+    Ref<GaussianSplatRenderer> renderer = p_owner.get_renderer();
+    if (!renderer.is_valid()) {
         return false;
     }
     GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
     if (!director) {
         return false;
     }
-    const GaussianSplatRenderer *renderer_ptr = p_owner.renderer.ptr();
+    const GaussianSplatRenderer *renderer_ptr = renderer.ptr();
     if (director->get_instance_count_for_renderer(renderer_ptr) > 1u) {
         return true;
     }
