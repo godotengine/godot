@@ -38,8 +38,8 @@
 #include "editor/import/audio_stream_import_settings.h"
 #endif
 
-#include <include/opus.h>
 #include <ogg/ogg.h>
+#include <opus/opus.h>
 
 String ResourceImporterOggOpus::get_importer_name() const {
 	return "oggopusstr";

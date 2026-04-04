@@ -941,6 +941,34 @@ Patches:
 
 - `0001-remove-try-catch.patch` ([GH-123123](https://github.com/godotengine/godot/pull/123123))
 
+## libopus
+
+- Upstream: https://opus-codec.org/downloads
+- Version: 1.6.1 (6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1, 2026)
+- License: Opus
+
+Files extracted from upstream source:
+
+- `celt/*` except from: `tests/*`, `meson.build`, `arm/meson.build`
+- `include/*` except from: `meson.build`
+- `silk/*` except from: `tests/*`, `meson.build`
+- `src/*` except from: `meson.build`
+- `COPYING`
+
+
+## libopusfile
+
+- Upstream: https://opus-codec.org/downloads
+- Version: 0.12 (118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b, 2020)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include/*`
+- `src/*`
+- `COPYING`
+
+
 ## pcre2
 
 - Upstream: https://pcre2project.github.io/pcre2/
