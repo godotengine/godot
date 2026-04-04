@@ -57,14 +57,6 @@ static uint32_t encode_rgb9e5(const Vector3 &value) {
     return (uint32_t(exp_shared) << 27) | (uint32_t(bm) << 18) | (uint32_t(gm) << 9) | uint32_t(rm);
 }
 
-static uint32_t pack_sh_metadata(uint32_t stored_first, uint32_t stored_high, uint32_t encoded_total) {
-    const uint32_t encoding = 1u; // RGB9E5 encoding identifier
-    stored_first = MIN(stored_first, 0xFFu);
-    stored_high = MIN(stored_high, 0xFFu);
-    encoded_total = MIN(encoded_total, 0xFFu);
-    return stored_first | (stored_high << 8) | (encoded_total << 16) | (encoding << 24);
-}
-
 } // namespace
 
 void PackedSphericalHarmonics::clear() {
@@ -147,7 +139,12 @@ void pack_gaussian(const Gaussian &src,
             src.sh_1[0].x, src.sh_1[0].y, src.sh_1[0].z));
     }
 
-    dst.sh_metadata = pack_sh_metadata(stored_first, stored_high, encoded_total);
+    dst.sh_metadata = gs_pack_sh_metadata(
+            stored_first,
+            stored_high,
+            encoded_total,
+            gaussian_get_dc_encoding(src.render_meta),
+            GS_SH_ENCODING_RGB9E5);
 
     if (_is_data_log_enabled() && !logged_once) {
         GS_LOG_RENDERER_DEBUG(vformat("[GPU Pack] sh_metadata = 0x%08X", dst.sh_metadata));
@@ -365,12 +362,12 @@ void pack_gaussian_f16(const Gaussian &src,
     dst.brush_axes[1] = src.brush_axes.y;
     dst.painterly_meta = src.painterly_meta;
 
-    // Pack SH metadata with FP16 encoding indicator
-    const uint32_t SH_ENCODING_F16 = 2u; // New encoding type for FP16
-    dst.sh_metadata = (stored_first & 0xFFu) |
-                      ((stored_high & 0xFFu) << 8) |
-                      ((encoded_total & 0xFFu) << 16) |
-                      (SH_ENCODING_F16 << 24);
+    dst.sh_metadata = gs_pack_sh_metadata(
+            stored_first,
+            stored_high,
+            encoded_total,
+            gaussian_get_dc_encoding(src.render_meta),
+            GS_SH_ENCODING_F16);
 
     // Zero padding arrays for alignment
     std::fill_n(dst._pre_sh_padding, 3, 0u);

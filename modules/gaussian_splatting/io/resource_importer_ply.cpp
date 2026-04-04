@@ -416,6 +416,7 @@ Error ResourceImporterPLY::import(ResourceUID::ID p_source_id, const String &p_s
 
     Dictionary import_metadata;
     import_metadata[StringName("source_file")] = p_source_file;
+    import_metadata[StringName("dc_encoding")] = "legacy_bias";
     import_metadata[StringName("import_time")] = Time::get_singleton()->get_datetime_dict_from_system();
     import_metadata[StringName("original_splat_count")] = original_count;
     import_metadata[StringName("splat_count")] = final_count;
