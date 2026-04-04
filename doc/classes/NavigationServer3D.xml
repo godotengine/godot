@@ -878,7 +878,7 @@
 		<method name="obstacle_create">
 			<return type="RID" />
 			<description>
-				Creates a new obstacle. To create an obstacle that affects the navigation bake process, a [NavigationObstacle3D] is required with [method NavigationObstacle3D.obstacle_create] set to [code]true[/true].
+				Creates a new obstacle. To create an obstacle that affects the navigation bake process, a [NavigationObstacle3D] is required with [member NavigationObstacle3D.affect_navigation_mesh] set to [code]true[/code].
 			</description>
 		</method>
 		<method name="obstacle_get_avoidance_enabled" qualifiers="const">

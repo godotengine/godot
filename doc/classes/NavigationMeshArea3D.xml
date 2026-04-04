@@ -44,14 +44,14 @@
 	</methods>
 	<members>
 		<member name="bake_priority" type="int" setter="set_bake_priority" getter="get_bake_priority" default="0">
-			The priority of the area. If multiple areas overlap for the same polygons the area with the highest [member priority] wins.
+			The priority of the area. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins.
 			[b]NOTE[/b]: This affects the baking of the [NavigationMesh] only, not queries.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationMeshArea3D] is enabled or disabled. Requires a navigation mesh rebake to take any real effect.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
-			A bitfield determining all navigation layers the area applies to its affecting polygons. If multiple areas overlap for the same polygons the area with the highest [member priority] wins. These navigation layers can be checked upon when doing path queries with [method NavigationServer3D.query_path] using a [NavigationPathQueryParameters3D] object.
+			A bitfield determining all navigation layers the area applies to its affecting polygons. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins. These navigation layers can be checked upon when doing path queries with [method NavigationServer3D.query_path] using a [NavigationPathQueryParameters3D] object.
 			States which layers should be considered for the cost calculation during a path query.
 			A query takes the first matching layer between the query parameter and the polygon. This means if the area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
 			[b]NOTE[/b]: Changing this at runtime requires a sync of the navigation map, which may cause performance problems.
