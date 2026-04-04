@@ -41,6 +41,8 @@ using namespace Nav3D;
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
+// Take the first matching layer between the query and the polygon.
+// This means if our p_polygon is an area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
 float NavMeshQueries3D::_get_polygon_travel_cost(const Polygon *p_polygon, uint32_t p_navigation_layers, const LocalVector<float> &p_costs_map) {
 	for (uint32_t i = 0; i < 32; i++) {
 		if ((p_polygon->navigation_layers & 1 << i) && (p_navigation_layers & 1 << i)) {

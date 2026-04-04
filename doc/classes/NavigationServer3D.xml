@@ -342,6 +342,9 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
+				States which layers should be considered for the cost calculation during a path query.
+				A query takes the first matching layer between the query parameter and the polygon. This means if the area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
+				[b]Note:[/b] Requires re-baking the affected region(s). And will only be used for baking in a region, if at least 1 layer bit is different from the targeted region.
 			</description>
 		</method>
 		<method name="bake_from_source_geometry_data">
@@ -547,7 +550,7 @@
 		<method name="map_create">
 			<return type="RID" />
 			<description>
-				Create a new map.
+				Create a new map that holds regions, agents, obstacles, areas, and links.
 			</description>
 		</method>
 		<method name="map_force_update" deprecated="This method is no longer supported, as it is incompatible with asynchronous updates. It can only be used in a single-threaded context, at your own risk.">
@@ -791,7 +794,7 @@
 		<method name="obstacle_create">
 			<return type="RID" />
 			<description>
-				Creates a new obstacle.
+				Creates a new obstacle. To create an obstacle that affects the navigation bake process, a [NavigationObstacle3D] is required with [method NavigationObstacle3D.obstacle_create] set to [code]true[/true].
 			</description>
 		</method>
 		<method name="obstacle_get_avoidance_enabled" qualifiers="const">
@@ -1167,6 +1170,7 @@
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
 				Set the region's navigation layers. This allows selecting regions from a path request (when using [method NavigationServer3D.map_get_path]).
+				[b]Note:[/b] Prefer working with navigation layers in path queries whenever possible, as enabling or disabling navigation layers on a region triggers a costly recalculation of the navigation map connections.
 			</description>
 		</method>
 		<method name="region_set_navigation_mesh">
