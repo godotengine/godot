@@ -986,6 +986,27 @@ TEST_CASE("[GaussianSplatting][Renderer] SH metadata preserves DC encoding mode"
     CHECK(gs_get_sh_encoding(packed.sh_metadata) == GS_SH_ENCODING_RGB9E5);
 }
 
+TEST_CASE("[GaussianSplatting][Renderer] SH metadata preserves DC encoding mode for F16 packing") {
+    SHCompressionMetrics metrics;
+    PackedGaussianF16 packed = {};
+
+    Gaussian legacy = {};
+    legacy.rotation = Quaternion();
+    legacy.scale = Vector3(1.0f, 1.0f, 1.0f);
+    legacy.opacity = 1.0f;
+    legacy.sh_dc = Color(0.25f, 0.5f, 0.75f, 1.0f);
+    legacy.render_meta = gaussian_set_dc_encoding(0u, GAUSSIAN_DC_ENCODING_LEGACY_BIAS);
+    pack_gaussian_f16(legacy, packed, metrics, Vector3(), nullptr, 0, 0, PackedSphericalHarmonicsF16::MAX_ENCODED_COEFFICIENTS);
+    CHECK(gs_get_dc_encoding(packed.sh_metadata) == GAUSSIAN_DC_ENCODING_LEGACY_BIAS);
+    CHECK(gs_get_sh_encoding(packed.sh_metadata) == GS_SH_ENCODING_F16);
+
+    Gaussian linear = legacy;
+    linear.render_meta = gaussian_set_dc_encoding(0u, GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+    pack_gaussian_f16(linear, packed, metrics, Vector3(), nullptr, 0, 0, PackedSphericalHarmonicsF16::MAX_ENCODED_COEFFICIENTS);
+    CHECK(gs_get_dc_encoding(packed.sh_metadata) == GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+    CHECK(gs_get_sh_encoding(packed.sh_metadata) == GS_SH_ENCODING_F16);
+}
+
 TEST_CASE("[GaussianSplatting][Importer] populate_from_asset preserves DC encoding metadata") {
     Ref<GaussianSplatAsset> asset = _make_thumbnail_fixture_asset(1);
     REQUIRE_MESSAGE(asset.is_valid(), "Fixture asset must be created");
