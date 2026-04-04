@@ -761,7 +761,7 @@ void SceneState::bind_deferred_node_paths_in_dictionary(const Dictionary &p_dict
 	bool convert_value = r_out_dict.get_typed_value_builtin() == Variant::OBJECT &&
 			ClassDB::is_parent_class(r_out_dict.get_typed_value_class_name(), "Node");
 
-	for (const KeyValue<Variant, Variant> &kv : r_out_dict) {
+	for (const KeyValue<Variant, Variant> &kv : p_dictionary_to_scan) {
 		Variant key = kv.key;
 		key = bind_node_paths(key, p_base_node, convert_key);
 
