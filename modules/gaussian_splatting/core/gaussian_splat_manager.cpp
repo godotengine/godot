@@ -970,6 +970,8 @@ void GaussianSplatManager::initialize_module() {
     // Register project settings
     GLOBAL_DEF("rendering/gaussian_splatting/gpu_sorting_enabled", true);
     GLOBAL_DEF("rendering/gaussian_splatting/shared_submission_device_enabled", false);
+    GLOBAL_DEF("rendering/gaussian_splatting/renderdoc_compatibility", false);
+    GLOBAL_DEF("rendering/gaussian_splatting/composite/depth_test", true);
     // Scene composite depth policy: 0=strict (skip frame if depth contract is missing), 1=relaxed (allow no-depth blend fallback).
     GLOBAL_DEF("rendering/gaussian_splatting/composite/scene_depth_policy", 0);
     // Streaming route policy: 0=resident (no streaming overhead), 1=streaming (current default).
@@ -1007,6 +1009,7 @@ void GaussianSplatManager::initialize_module() {
     GLOBAL_DEF("rendering/gaussian_splatting/effects/sphere_effector_radius", 0.0f);
     GLOBAL_DEF("rendering/gaussian_splatting/effects/sphere_effector_strength", 0.0f);
     GLOBAL_DEF("rendering/gaussian_splatting/effects/sphere_effector_falloff", 2.0f);
+    GLOBAL_DEF("rendering/gaussian_splatting/effects/sphere_effector_frequency", 2.0f);
 
     // Culling and LOD settings from PR #146
     GLOBAL_DEF("rendering/gaussian_splatting/culling/octree_max_depth", 8);
