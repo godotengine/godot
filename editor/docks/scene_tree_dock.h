@@ -38,8 +38,8 @@
 class CheckBox;
 class EditorData;
 class EditorSelection;
-class HBoxContainer;
 class MenuButton;
+class PanelContainer;
 class RenameDialog;
 class ReparentDialog;
 class Shader;
@@ -128,7 +128,7 @@ class SceneTreeDock : public EditorDock {
 	Button *button_custom = nullptr;
 	Button *button_clipboard = nullptr;
 
-	HBoxContainer *button_hb = nullptr;
+	PanelContainer *button_panel = nullptr;
 	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree = nullptr;
 	Tree *remote_tree = nullptr;
