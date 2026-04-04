@@ -143,6 +143,8 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				const double new_value = pre_grab_value + drag_step * grabbing_spinner_dist_cache;
 
 				double val = (mm->is_command_or_control_pressed() && !editing_integer) ? Math::round(new_value) : new_value;
+				val = CLAMP(val, get_min(), get_max());
+
 				if (deferred_drag_mode) {
 					set_value_no_signal(val);
 				} else {
