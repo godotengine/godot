@@ -9,7 +9,8 @@
 const uint SH_METADATA_FIRST_ORDER_MASK = 0x000000FFu;
 const uint SH_METADATA_HIGH_ORDER_MASK = 0x0000FF00u;
 const uint SH_METADATA_ENCODED_COUNT_MASK = 0x00FF0000u;
-const uint SH_METADATA_ENCODING_MASK = 0xFF000000u;
+const uint SH_METADATA_ENCODING_MASK = 0x7F000000u;
+const uint SH_METADATA_DC_ENCODING_MASK = 0x80000000u;
 const uint SH_ENCODING_RGB9E5 = 1u;
 
 // Read the number of first-order SH coefficients encoded in metadata.

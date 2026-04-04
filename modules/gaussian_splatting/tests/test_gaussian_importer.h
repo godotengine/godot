@@ -37,6 +37,14 @@
 
 namespace {
 
+String _load_text_fixture_or_empty(const String &p_path) {
+    Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
+    if (file.is_null()) {
+        return String();
+    }
+    return file->get_as_text();
+}
+
 Error _write_missing_opacity_ascii_ply(const String &p_path) {
     static const char *k_missing_opacity_ascii_ply = R"(ply
 format ascii 1.0
@@ -1100,6 +1108,18 @@ TEST_CASE("[GaussianSplatting][Renderer] SH metadata preserves DC encoding mode 
     pack_gaussian_f16(linear, packed, metrics, Vector3(), nullptr, 0, 0, PackedSphericalHarmonicsF16::MAX_ENCODED_COEFFICIENTS);
     CHECK(gs_get_dc_encoding(packed.sh_metadata) == GAUSSIAN_DC_ENCODING_LINEAR_RGB);
     CHECK(gs_get_sh_encoding(packed.sh_metadata) == GS_SH_ENCODING_F16);
+}
+
+TEST_CASE("[GaussianSplatting][Renderer] Shader SH metadata masks match host DC encoding contract") {
+    const String common_source = _load_text_fixture_or_empty("res://modules/gaussian_splatting/shaders/includes/gaussian_splat_common_inc.glsl");
+    REQUIRE_MESSAGE(!common_source.is_empty(), "gaussian_splat_common_inc.glsl must be readable in test environment");
+    CHECK(common_source.contains("const uint SH_METADATA_ENCODING_MASK = 0x7F000000u;"));
+    CHECK(common_source.contains("const uint SH_METADATA_DC_ENCODING_MASK = 0x80000000u;"));
+
+    const String binning_source = _load_text_fixture_or_empty("res://modules/gaussian_splatting/shaders/includes/gs_sh_binning.glsl");
+    REQUIRE_MESSAGE(!binning_source.is_empty(), "gs_sh_binning.glsl must be readable in test environment");
+    CHECK(binning_source.contains("const uint SH_METADATA_ENCODING_MASK = 0x7F000000u;"));
+    CHECK(binning_source.contains("const uint SH_METADATA_DC_ENCODING_MASK = 0x80000000u;"));
 }
 
 TEST_CASE("[GaussianSplatting][Importer] populate_from_asset preserves DC encoding metadata") {
