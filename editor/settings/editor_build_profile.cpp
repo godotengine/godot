@@ -277,6 +277,10 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildP
 			"NavigationLink3D",
 			"NavigationMeshSourceGeometryData3D",
 			"NavigationObstacle3D",
+			"NavigationMeshArea3D",
+			"NavigationMeshAreaBox3D",
+			"NavigationMeshAreaCylinder3D",
+			"NavigationMeshAreaPolygon3D",
 			"NavigationRegion3D",
 	} },
 	{ BUILD_OPTION_XR, {
