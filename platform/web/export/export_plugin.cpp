@@ -624,11 +624,15 @@ bool EditorExportPlatformWeb::poll_export() {
 
 	if (preset.is_valid()) {
 		const bool debug = true;
-		// Throwaway variables to pass to `can_export`.
+		bool valid = true;
+		// Throwaway variables to pass to validation functions
 		String err;
 		bool missing_templates;
 
-		if (can_export(preset, err, missing_templates, debug)) {
+		valid = valid && has_valid_export_configuration(preset, err, missing_templates, debug);
+		valid = valid && has_valid_project_configuration(preset, err);
+
+		if (valid) {
 			if (server->is_listening()) {
 				remote_debug_state = REMOTE_DEBUG_STATE_SERVING;
 			} else {
