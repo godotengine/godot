@@ -166,23 +166,26 @@ public:
 	};
 
 	virtual RID area_create(AreaShapeType3D p_shape_type) = 0;
+	virtual AreaShapeType3D area_get_shape_type(RID p_area) const = 0;
 	virtual void area_set_map(RID p_area, RID p_map) = 0;
 	virtual RID area_get_map(RID p_area) const = 0;
 	virtual void area_set_enabled(RID p_area, bool p_enabled) = 0;
 	virtual bool area_get_enabled(RID p_area) const = 0;
-	// virtual void area_set_position(RID p_area, Vector3 p_position) = 0;
-	// virtual Vector3 area_get_position(RID p_area) const = 0;
-	// virtual void area_set_height(RID p_area, real_t p_height) = 0;
-	// virtual real_t area_get_height(RID p_area) const = 0;
+	virtual void area_set_position(RID p_area, Vector3 p_position) = 0;
+	virtual Vector3 area_get_position(RID p_area) const = 0;
+	virtual void area_set_height(RID p_area, real_t p_height) = 0;
+	virtual real_t area_get_height(RID p_area) const = 0;
 	virtual void area_set_navigation_layers(RID p_area, uint32_t p_layers) = 0;
 	virtual uint32_t area_get_navigation_layers(RID p_area) const = 0;
-	// virtual void area_set_bake_priority(RID p_area, int p_priority) = 0;
-	// virtual real_t area_get_bake_priority(RID p_area) const = 0;
+	virtual void area_set_bake_priority(RID p_area, int p_priority) = 0;
+	virtual int area_get_bake_priority(RID p_area) const = 0;
+	virtual void area_set_size(RID p_area, Vector3 p_size) = 0;
+	virtual Vector3 area_get_size(RID p_area) const = 0;
 	// virtual AABB area_get_bounds(RID p_area) const = 0;
-	// virtual void area_set_cylinder_radius(RID p_area, real_t p_radius) = 0;
-	// virtual real_t area_get_cylinder_radius(RID p_area) const = 0;
-	// virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) = 0;
-	// virtual Vector<Vector3> area_get_vertices(RID p_area) const = 0;
+	virtual void area_set_radius(RID p_area, real_t p_radius) = 0;
+	virtual real_t area_get_radius(RID p_area) const = 0;
+	virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) = 0;
+	virtual Vector<Vector3> area_get_vertices(RID p_area) const = 0;
 
 	/* LINK API */
 
