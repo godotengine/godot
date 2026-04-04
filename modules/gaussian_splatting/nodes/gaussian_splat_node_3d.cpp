@@ -37,12 +37,23 @@
 namespace {
 static bool _is_frame_log_enabled() { return gs::settings::is_frame_log_enabled(); }
 
-static bool _is_multi_instance_shared_renderer_active(const Ref<GaussianSplatRenderer> &p_renderer) {
+static bool _is_renderer_shared_with_other_content(const Ref<GaussianSplatRenderer> &p_renderer) {
     if (!p_renderer.is_valid()) {
         return false;
     }
     GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
-    return director && director->get_instance_count_for_renderer(p_renderer.ptr()) > 1u;
+    if (!director) {
+        return false;
+    }
+    // Shared if multiple instances use this renderer...
+    if (director->get_instance_count_for_renderer(p_renderer.ptr()) > 1u) {
+        return true;
+    }
+    // ...or if a world submission is active on this renderer.
+    if (director->has_world_submission_for_renderer(p_renderer.ptr())) {
+        return true;
+    }
+    return false;
 }
 } // namespace
 
@@ -431,7 +442,7 @@ void GaussianSplatNode3D::_notification(int p_what) {
 }
 
 void GaussianSplatNode3D::_validate_property(PropertyInfo &p_property) const {
-    if (_is_multi_instance_shared_renderer_active(renderer)) {
+    if (_is_renderer_shared_with_other_content(renderer)) {
         if (p_property.name.begins_with("painterly/") || p_property.name == "rendering/color_grading") {
             p_property.usage = PROPERTY_USAGE_NO_EDITOR;
             return;
@@ -870,7 +881,7 @@ void GaussianSplatNode3D::set_enable_painterly(bool p_enabled) {
 }
 
 void GaussianSplatNode3D::set_edge_threshold(float p_threshold) {
-    if (_is_multi_instance_shared_renderer_active(renderer)) {
+    if (_is_renderer_shared_with_other_content(renderer)) {
         return;
     }
     edge_threshold = CLAMP(p_threshold, 0.0f, 1.0f);
@@ -883,7 +894,7 @@ void GaussianSplatNode3D::set_edge_threshold(float p_threshold) {
 }
 
 void GaussianSplatNode3D::set_stroke_opacity(float p_opacity) {
-    if (_is_multi_instance_shared_renderer_active(renderer)) {
+    if (_is_renderer_shared_with_other_content(renderer)) {
         return;
     }
     stroke_opacity = CLAMP(p_opacity, 0.0f, 1.0f);
@@ -895,7 +906,7 @@ void GaussianSplatNode3D::set_stroke_opacity(float p_opacity) {
 }
 
 void GaussianSplatNode3D::set_stroke_width(float p_width) {
-    if (_is_multi_instance_shared_renderer_active(renderer)) {
+    if (_is_renderer_shared_with_other_content(renderer)) {
         return;
     }
     stroke_width = CLAMP(p_width, 0.1f, 5.0f);
@@ -912,7 +923,7 @@ void GaussianSplatNode3D::set_color_variation(float p_variation) {
 }
 
 void GaussianSplatNode3D::set_temporal_blend(float p_blend) {
-    if (_is_multi_instance_shared_renderer_active(renderer)) {
+    if (_is_renderer_shared_with_other_content(renderer)) {
         return;
     }
     temporal_blend = CLAMP(p_blend, 0.01f, 1.0f);
@@ -925,7 +936,7 @@ void GaussianSplatNode3D::set_temporal_blend(float p_blend) {
 }
 
 void GaussianSplatNode3D::set_painterly_seed(uint32_t p_seed) {
-    if (_is_multi_instance_shared_renderer_active(renderer)) {
+    if (_is_renderer_shared_with_other_content(renderer)) {
         return;
     }
     painterly_seed = MIN(p_seed, (uint32_t)65535);
@@ -1379,7 +1390,7 @@ void GaussianSplatNode3D::process_gaussian_render() {
     _update_visibility();
 
     if (renderer.is_valid()) {
-        const bool shared_renderer_multi_instance = _is_multi_instance_shared_renderer_active(renderer);
+        const bool shared_renderer_multi_instance = _is_renderer_shared_with_other_content(renderer);
         if (shared_renderer_multi_instance_state != shared_renderer_multi_instance) {
             shared_renderer_multi_instance_state = shared_renderer_multi_instance;
             _apply_renderer_settings();
@@ -2050,7 +2061,7 @@ void GaussianSplatNode3D::_on_asset_changed() {
 
 void GaussianSplatNode3D::_on_color_grading_changed() {
     if (renderer.is_valid()) {
-        if (_is_multi_instance_shared_renderer_active(renderer)) {
+        if (_is_renderer_shared_with_other_content(renderer)) {
             renderer->set_color_grading(Ref<ColorGradingResource>());
         } else {
             renderer->set_color_grading(color_grading);
@@ -2123,7 +2134,7 @@ void GaussianSplatNode3D::set_color_grading(const Ref<ColorGradingResource> &p_g
     }
 
     if (renderer.is_valid()) {
-        if (_is_multi_instance_shared_renderer_active(renderer)) {
+        if (_is_renderer_shared_with_other_content(renderer)) {
             renderer->set_color_grading(Ref<ColorGradingResource>());
         } else {
             renderer->set_color_grading(color_grading);

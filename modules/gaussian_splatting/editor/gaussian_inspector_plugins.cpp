@@ -628,185 +628,190 @@ void GaussianSplatNodeInspectorPlugin::parse_begin(Object *p_object) {
     root->add_child(runtime_row);
 #endif
 
-    HSeparator *paint_separator = memnew(HSeparator);
-    root->add_child(paint_separator);
+    // Painterly Brush Tools: only shown when painterly is enabled and valid data is loaded.
+    {
+        Ref<GaussianSplatRenderer> brush_renderer = node->get_renderer();
+        Ref<::GaussianData> brush_data = brush_renderer.is_valid() ? brush_renderer->get_gaussian_data() : Ref<::GaussianData>();
+        const bool has_valid_data = brush_data.is_valid() && brush_data->get_count() > 0;
 
-    Label *paint_label = memnew(Label);
-    paint_label->set_text(TTR("Painterly Brush Tools"));
-    root->add_child(paint_label);
+        if (node->is_painterly_enabled() && has_valid_data) {
+            HSeparator *paint_separator = memnew(HSeparator);
+            root->add_child(paint_separator);
 
-    Label *paint_hint = memnew(Label);
-    paint_hint->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-    paint_hint->set_text(TTR("Session-only brush controls: values persist while the editor stays open and are not saved to scenes or resources."));
-    root->add_child(paint_hint);
+            Label *paint_label = memnew(Label);
+            paint_label->set_text(TTR("Painterly Brush Tools"));
+            root->add_child(paint_label);
 
-    GridContainer *paint_grid = memnew(GridContainer);
-    paint_grid->set_columns(2);
-    paint_grid->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            Label *paint_hint = memnew(Label);
+            paint_hint->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+            paint_hint->set_text(TTR("Session-only brush controls: values persist while the editor stays open and are not saved to scenes or resources."));
+            root->add_child(paint_hint);
 
-    Vector3 node_position = node->get_global_position();
-    if (!brush_session_state.has_center) {
-        brush_session_state.center = node_position;
-        brush_session_state.has_center = true;
+            GridContainer *paint_grid = memnew(GridContainer);
+            paint_grid->set_columns(2);
+            paint_grid->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+            Vector3 node_position = node->get_global_position();
+            if (!brush_session_state.has_center) {
+                brush_session_state.center = node_position;
+                brush_session_state.has_center = true;
+            }
+
+            Label *center_label = memnew(Label);
+            center_label->set_text(TTR("Center X"));
+            paint_grid->add_child(center_label);
+            SpinBox *center_x = memnew(SpinBox);
+            center_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            center_x->set_min(-10000.0);
+            center_x->set_max(10000.0);
+            center_x->set_step(0.1);
+            center_x->set_value(brush_session_state.center.x);
+            center_x->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_center_changed).bind(0));
+            paint_grid->add_child(center_x);
+
+            Label *center_y_label = memnew(Label);
+            center_y_label->set_text(TTR("Center Y"));
+            paint_grid->add_child(center_y_label);
+            SpinBox *center_y = memnew(SpinBox);
+            center_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            center_y->set_min(-10000.0);
+            center_y->set_max(10000.0);
+            center_y->set_step(0.1);
+            center_y->set_value(brush_session_state.center.y);
+            center_y->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_center_changed).bind(1));
+            paint_grid->add_child(center_y);
+
+            Label *center_z_label = memnew(Label);
+            center_z_label->set_text(TTR("Center Z"));
+            paint_grid->add_child(center_z_label);
+            SpinBox *center_z = memnew(SpinBox);
+            center_z->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            center_z->set_min(-10000.0);
+            center_z->set_max(10000.0);
+            center_z->set_step(0.1);
+            center_z->set_value(brush_session_state.center.z);
+            center_z->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_center_changed).bind(2));
+            paint_grid->add_child(center_z);
+
+            Label *radius_label = memnew(Label);
+            radius_label->set_text(TTR("Radius"));
+            paint_grid->add_child(radius_label);
+            SpinBox *radius_spin = memnew(SpinBox);
+            radius_spin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            radius_spin->set_min(0.01);
+            radius_spin->set_max(250.0);
+            radius_spin->set_step(0.05);
+            radius_spin->set_value(brush_session_state.radius);
+            radius_spin->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_radius_changed));
+            paint_grid->add_child(radius_spin);
+
+            Label *strength_label = memnew(Label);
+            strength_label->set_text(TTR("Strength"));
+            paint_grid->add_child(strength_label);
+            SpinBox *strength_spin = memnew(SpinBox);
+            strength_spin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            strength_spin->set_min(0.0);
+            strength_spin->set_max(1.0);
+            strength_spin->set_step(0.01);
+            strength_spin->set_value(brush_session_state.strength);
+            strength_spin->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_strength_changed));
+            paint_grid->add_child(strength_spin);
+
+            Label *hardness_label = memnew(Label);
+            hardness_label->set_text(TTR("Hardness"));
+            paint_grid->add_child(hardness_label);
+            SpinBox *hardness_spin = memnew(SpinBox);
+            hardness_spin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            hardness_spin->set_min(0.1);
+            hardness_spin->set_max(8.0);
+            hardness_spin->set_step(0.05);
+            hardness_spin->set_value(brush_session_state.hardness);
+            hardness_spin->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_hardness_changed));
+            paint_grid->add_child(hardness_spin);
+
+            Label *color_label = memnew(Label);
+            color_label->set_text(TTR("Color"));
+            paint_grid->add_child(color_label);
+            ColorPickerButton *color_button = memnew(ColorPickerButton);
+            color_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            color_button->set_custom_minimum_size(Size2(80, 0));
+            color_button->set_pick_color(brush_session_state.color);
+            color_button->connect("color_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_color_changed));
+            paint_grid->add_child(color_button);
+
+            root->add_child(paint_grid);
+
+            HFlowContainer *paint_actions = memnew(HFlowContainer);
+            paint_actions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+            Button *apply_brush = memnew(Button);
+            apply_brush->set_text(TTR("Apply Brush"));
+            apply_brush->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            apply_brush->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_apply_brush_pressed).bind(node->get_instance_id(), center_x, center_y, center_z, radius_spin, strength_spin, hardness_spin, color_button));
+            paint_actions->add_child(apply_brush);
+
+            Button *commit_brush = memnew(Button);
+            commit_brush->set_text(TTR("Commit"));
+            commit_brush->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            commit_brush->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_commit_brush_pressed).bind(node->get_instance_id()));
+            paint_actions->add_child(commit_brush);
+
+            Button *revert_brush = memnew(Button);
+            revert_brush->set_text(TTR("Revert"));
+            revert_brush->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            revert_brush->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_revert_brush_pressed).bind(node->get_instance_id()));
+            paint_actions->add_child(revert_brush);
+
+            root->add_child(paint_actions);
+        }
     }
 
-    Label *center_label = memnew(Label);
-    center_label->set_text(TTR("Center X"));
-    paint_grid->add_child(center_label);
-    SpinBox *center_x = memnew(SpinBox);
-    center_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    center_x->set_min(-10000.0);
-    center_x->set_max(10000.0);
-    center_x->set_step(0.1);
-    center_x->set_value(brush_session_state.center.x);
-    center_x->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_center_changed).bind(0));
-    paint_grid->add_child(center_x);
+    // Color Grading section: only shown when the node has valid GaussianData.
+    {
+        Ref<GaussianSplatRenderer> cg_renderer = node->get_renderer();
+        Ref<::GaussianData> cg_data = cg_renderer.is_valid() ? cg_renderer->get_gaussian_data() : Ref<::GaussianData>();
+        const bool cg_has_valid_data = cg_data.is_valid() && cg_data->get_count() > 0;
 
-    Label *center_y_label = memnew(Label);
-    center_y_label->set_text(TTR("Center Y"));
-    paint_grid->add_child(center_y_label);
-    SpinBox *center_y = memnew(SpinBox);
-    center_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    center_y->set_min(-10000.0);
-    center_y->set_max(10000.0);
-    center_y->set_step(0.1);
-    center_y->set_value(brush_session_state.center.y);
-    center_y->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_center_changed).bind(1));
-    paint_grid->add_child(center_y);
+        if (cg_has_valid_data) {
+            HSeparator *color_grading_separator = memnew(HSeparator);
+            root->add_child(color_grading_separator);
 
-    Label *center_z_label = memnew(Label);
-    center_z_label->set_text(TTR("Center Z"));
-    paint_grid->add_child(center_z_label);
-    SpinBox *center_z = memnew(SpinBox);
-    center_z->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    center_z->set_min(-10000.0);
-    center_z->set_max(10000.0);
-    center_z->set_step(0.1);
-    center_z->set_value(brush_session_state.center.z);
-    center_z->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_center_changed).bind(2));
-    paint_grid->add_child(center_z);
+            Label *color_grading_label = memnew(Label);
+            color_grading_label->set_text(TTR("Color Grading"));
+            root->add_child(color_grading_label);
 
-    Label *radius_label = memnew(Label);
-    radius_label->set_text(TTR("Radius"));
-    paint_grid->add_child(radius_label);
-    SpinBox *radius_spin = memnew(SpinBox);
-    radius_spin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    radius_spin->set_min(0.01);
-    radius_spin->set_max(250.0);
-    radius_spin->set_step(0.05);
-    radius_spin->set_value(brush_session_state.radius);
-    radius_spin->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_radius_changed));
-    paint_grid->add_child(radius_spin);
+            HFlowContainer *color_grading_actions = memnew(HFlowContainer);
+            color_grading_actions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-    Label *strength_label = memnew(Label);
-    strength_label->set_text(TTR("Strength"));
-    paint_grid->add_child(strength_label);
-    SpinBox *strength_spin = memnew(SpinBox);
-    strength_spin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    strength_spin->set_min(0.0);
-    strength_spin->set_max(1.0);
-    strength_spin->set_step(0.01);
-    strength_spin->set_value(brush_session_state.strength);
-    strength_spin->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_strength_changed));
-    paint_grid->add_child(strength_spin);
+            const bool is_baked = node->is_color_grading_baked();
+            const bool has_color_grading = node->get_color_grading().is_valid();
 
-    Label *hardness_label = memnew(Label);
-    hardness_label->set_text(TTR("Hardness"));
-    paint_grid->add_child(hardness_label);
-    SpinBox *hardness_spin = memnew(SpinBox);
-    hardness_spin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    hardness_spin->set_min(0.1);
-    hardness_spin->set_max(8.0);
-    hardness_spin->set_step(0.05);
-    hardness_spin->set_value(brush_session_state.hardness);
-    hardness_spin->connect("value_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_hardness_changed));
-    paint_grid->add_child(hardness_spin);
+            Button *bake_button = memnew(Button);
+            bake_button->set_text(TTR("Bake Color Grading"));
+            bake_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            bake_button->set_tooltip_text(TTR("Permanently applies color grading to splat colors (zero runtime cost)"));
+            bake_button->set_disabled(is_baked || !has_color_grading);
+            bake_button->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_bake_color_grading_pressed).bind(node->get_instance_id()));
+            color_grading_actions->add_child(bake_button);
 
-    Label *color_label = memnew(Label);
-    color_label->set_text(TTR("Color"));
-    paint_grid->add_child(color_label);
-    ColorPickerButton *color_button = memnew(ColorPickerButton);
-    color_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    color_button->set_custom_minimum_size(Size2(80, 0));
-    color_button->set_pick_color(brush_session_state.color);
-    color_button->connect("color_changed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_brush_color_changed));
-    paint_grid->add_child(color_button);
+            Button *restore_button = memnew(Button);
+            restore_button->set_text(TTR("Restore Original"));
+            restore_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+            restore_button->set_tooltip_text(TTR("Restores original colors before baking"));
+            restore_button->set_disabled(!is_baked);
+            restore_button->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_restore_color_grading_pressed).bind(node->get_instance_id()));
+            color_grading_actions->add_child(restore_button);
 
-    root->add_child(paint_grid);
+            root->add_child(color_grading_actions);
 
-    HFlowContainer *paint_actions = memnew(HFlowContainer);
-    paint_actions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-    Ref<GaussianSplatRenderer> node_renderer = node->get_renderer();
-    Ref<::GaussianData> node_data = node_renderer.is_valid() ? node_renderer->get_gaussian_data() : Ref<::GaussianData>();
-    const bool brush_actions_available = node_data.is_valid() && node_data->get_count() > 0;
-    const String brush_disabled_tooltip = TTR("Load a Gaussian asset before using brush actions.");
-
-    Button *apply_brush = memnew(Button);
-    apply_brush->set_text(TTR("Apply Brush"));
-    apply_brush->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    apply_brush->set_disabled(!brush_actions_available);
-    if (!brush_actions_available) {
-        apply_brush->set_tooltip_text(brush_disabled_tooltip);
-    }
-    apply_brush->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_apply_brush_pressed).bind(node->get_instance_id(), center_x, center_y, center_z, radius_spin, strength_spin, hardness_spin, color_button));
-    paint_actions->add_child(apply_brush);
-
-    Button *commit_brush = memnew(Button);
-    commit_brush->set_text(TTR("Commit"));
-    commit_brush->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    commit_brush->set_disabled(!brush_actions_available);
-    if (!brush_actions_available) {
-        commit_brush->set_tooltip_text(brush_disabled_tooltip);
-    }
-    commit_brush->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_commit_brush_pressed).bind(node->get_instance_id()));
-    paint_actions->add_child(commit_brush);
-
-    Button *revert_brush = memnew(Button);
-    revert_brush->set_text(TTR("Revert"));
-    revert_brush->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    revert_brush->set_disabled(!brush_actions_available);
-    if (!brush_actions_available) {
-        revert_brush->set_tooltip_text(brush_disabled_tooltip);
-    }
-    revert_brush->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_revert_brush_pressed).bind(node->get_instance_id()));
-    paint_actions->add_child(revert_brush);
-
-    root->add_child(paint_actions);
-
-    // Color Grading section
-    HSeparator *color_grading_separator = memnew(HSeparator);
-    root->add_child(color_grading_separator);
-
-    Label *color_grading_label = memnew(Label);
-    color_grading_label->set_text(TTR("Color Grading"));
-    root->add_child(color_grading_label);
-
-    HFlowContainer *color_grading_actions = memnew(HFlowContainer);
-    color_grading_actions->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-    Button *bake_button = memnew(Button);
-    bake_button->set_text(TTR("Bake Color Grading"));
-    bake_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    bake_button->set_tooltip_text(TTR("Permanently applies color grading to splat colors (zero runtime cost)"));
-    bake_button->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_bake_color_grading_pressed).bind(node->get_instance_id()));
-    color_grading_actions->add_child(bake_button);
-
-    Button *restore_button = memnew(Button);
-    restore_button->set_text(TTR("Restore Original"));
-    restore_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-    restore_button->set_tooltip_text(TTR("Restores original colors before baking"));
-    restore_button->connect("pressed", callable_mp(this, &GaussianSplatNodeInspectorPlugin::_on_restore_color_grading_pressed).bind(node->get_instance_id()));
-    color_grading_actions->add_child(restore_button);
-
-    root->add_child(color_grading_actions);
-
-    // Display bake status
-    if (node->is_color_grading_baked()) {
-        Label *bake_status = memnew(Label);
-        bake_status->set_text(TTR("Status: Color grading is baked"));
-        bake_status->add_theme_color_override("font_color", Color(0.4, 1.0, 0.4));
-        root->add_child(bake_status);
+            // Display bake status
+            if (is_baked) {
+                Label *bake_status = memnew(Label);
+                bake_status->set_text(TTR("Status: Color grading is baked"));
+                bake_status->add_theme_color_override("font_color", Color(0.4, 1.0, 0.4));
+                root->add_child(bake_status);
+            }
+        }
     }
 
     add_custom_control(root);

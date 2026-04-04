@@ -1180,15 +1180,90 @@ TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer hid
     Ref<GaussianSplatRenderer> renderer = node_a->get_renderer();
     if (!renderer.is_valid()) {
         MESSAGE("Skipping shared-renderer property check - renderer unavailable (headless mode)");
-    } else {
-        CHECK_FALSE(is_property_editor_exposed(node_a, StringName("rendering/color_grading")));
-        CHECK_FALSE(is_property_editor_exposed(node_b, StringName("rendering/color_grading")));
+        root->remove_child(node_b);
+        root->remove_child(node_a);
+        memdelete(node_b);
+        memdelete(node_a);
+        return;
     }
 
+    CHECK_FALSE(is_property_editor_exposed(node_a, StringName("rendering/color_grading")));
+    CHECK_FALSE(is_property_editor_exposed(node_b, StringName("rendering/color_grading")));
+
+    // Remove the second node — shared renderer collapses to single-instance.
+    // Color grading property should become editor-visible again on the remaining node.
     root->remove_child(node_b);
+    tree->process(0.0);
+    CHECK(is_property_editor_exposed(node_a, StringName("rendering/color_grading")));
+
     root->remove_child(node_a);
     memdelete(node_b);
     memdelete(node_a);
+}
+
+TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] World submission blocks node color grading push to renderer") {
+    SceneTree *tree = SceneTree::get_singleton();
+    REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+    Window *root = tree->get_root();
+    REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+    // Set up a world node with active submission.
+    Ref<GaussianSplatWorld> world_res;
+    world_res.instantiate();
+    Ref<GaussianData> world_data = make_test_gaussian_data(4, 500.0f);
+    world_res->set_gaussian_data(world_data);
+
+    GaussianSplatWorld3D *world_node = memnew(GaussianSplatWorld3D);
+    world_node->set_world(world_res);
+    root->add_child(world_node);
+    tree->process(0.0);
+    world_node->apply_world();
+
+    // Set up a splat node that shares the same renderer.
+    GaussianSplatNode3D *graded_node = memnew(GaussianSplatNode3D);
+    graded_node->set_splat_asset(make_single_splat_asset(9400.0f));
+    root->add_child(graded_node);
+    tree->process(0.0);
+
+    Ref<GaussianSplatRenderer> renderer = graded_node->get_renderer();
+    if (!renderer.is_valid()) {
+        MESSAGE("Skipping test - renderer unavailable (headless mode)");
+        root->remove_child(graded_node);
+        root->remove_child(world_node);
+        memdelete(graded_node);
+        memdelete(world_node);
+        return;
+    }
+
+    // Assign color grading to the splat node.
+    Ref<ColorGradingResource> grading = make_color_grading_resource();
+    graded_node->set_color_grading(grading);
+
+    // The renderer is shared with an active world submission, so color
+    // grading must NOT leak to the renderer.
+    CHECK_MESSAGE(graded_node->get_color_grading() == grading,
+            "Node retains its local color grading");
+    CHECK_MESSAGE(!renderer->get_color_grading().is_valid(),
+            "Renderer color grading must be null when world submission is active");
+
+    // Color grading property should be hidden in the inspector.
+    CHECK_FALSE(is_property_editor_exposed(graded_node, StringName("rendering/color_grading")));
+
+    // Remove the world node — renderer is no longer shared with world content.
+    world_node->clear_world();
+    root->remove_child(world_node);
+    tree->process(0.0);
+
+    // Now the splat node is the sole user. Re-push grading and verify it reaches the renderer.
+    graded_node->set_color_grading(grading);
+    CHECK_MESSAGE(renderer->get_color_grading() == grading,
+            "Color grading should reach renderer after world submission is removed");
+    CHECK(is_property_editor_exposed(graded_node, StringName("rendering/color_grading")));
+
+    root->remove_child(graded_node);
+    memdelete(graded_node);
+    memdelete(world_node);
 }
 
 TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer preserves local painterly and color grading state") {
@@ -1256,6 +1331,146 @@ TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer pre
     root->remove_child(node_a);
     memdelete(node_b);
     memdelete(node_a);
+}
+
+TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Single node color grading reaches renderer") {
+    SceneTree *tree = SceneTree::get_singleton();
+    REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+    Window *root = tree->get_root();
+    REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    node->set_splat_asset(make_single_splat_asset(9100.0f));
+
+    root->add_child(node);
+    tree->process(0.0);
+
+    Ref<GaussianSplatRenderer> renderer = node->get_renderer();
+    if (!renderer.is_valid()) {
+        MESSAGE("Skipping test - renderer unavailable (headless mode)");
+        root->remove_child(node);
+        memdelete(node);
+        return;
+    }
+
+    // Renderer should start with no color grading.
+    CHECK(renderer->get_color_grading().is_null());
+
+    Ref<ColorGradingResource> grading = make_color_grading_resource();
+    CHECK(grading.is_valid());
+
+    node->set_color_grading(grading);
+    tree->process(0.0);
+
+    // Single node owns the renderer exclusively, so color grading must propagate.
+    CHECK(node->get_color_grading() == grading);
+    CHECK(renderer->get_color_grading() == grading);
+
+    root->remove_child(node);
+    memdelete(node);
+}
+
+TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Color grading survives exit and re-enter tree") {
+    SceneTree *tree = SceneTree::get_singleton();
+    REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+    Window *root = tree->get_root();
+    REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    node->set_splat_asset(make_single_splat_asset(9200.0f));
+
+    Ref<ColorGradingResource> grading = make_color_grading_resource();
+    CHECK(grading.is_valid());
+
+    // Set color grading before entering tree.
+    node->set_color_grading(grading);
+    CHECK(node->get_color_grading() == grading);
+
+    // Enter tree.
+    root->add_child(node);
+    tree->process(0.0);
+
+    Ref<GaussianSplatRenderer> renderer = node->get_renderer();
+    if (!renderer.is_valid()) {
+        MESSAGE("Skipping test - renderer unavailable (headless mode)");
+        root->remove_child(node);
+        memdelete(node);
+        return;
+    }
+
+    CHECK(renderer->get_color_grading() == grading);
+
+    // Exit tree.
+    root->remove_child(node);
+    tree->process(0.0);
+
+    // Node should retain its color grading while detached.
+    CHECK(node->get_color_grading() == grading);
+
+    // Re-enter tree.
+    root->add_child(node);
+    tree->process(0.0);
+
+    Ref<GaussianSplatRenderer> renderer_after = node->get_renderer();
+    if (!renderer_after.is_valid()) {
+        MESSAGE("Skipping re-enter check - renderer unavailable after re-add");
+        root->remove_child(node);
+        memdelete(node);
+        return;
+    }
+
+    // Color grading must still be on the node and pushed to the (possibly new) renderer.
+    CHECK(node->get_color_grading() == grading);
+    CHECK(renderer_after->get_color_grading() == grading);
+
+    root->remove_child(node);
+    memdelete(node);
+}
+
+TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Color grading signal propagation updates renderer") {
+    SceneTree *tree = SceneTree::get_singleton();
+    REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+    Window *root = tree->get_root();
+    REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+    GaussianSplatNode3D *node = memnew(GaussianSplatNode3D);
+    node->set_splat_asset(make_single_splat_asset(9300.0f));
+
+    root->add_child(node);
+    tree->process(0.0);
+
+    Ref<GaussianSplatRenderer> renderer = node->get_renderer();
+    if (!renderer.is_valid()) {
+        MESSAGE("Skipping test - renderer unavailable (headless mode)");
+        root->remove_child(node);
+        memdelete(node);
+        return;
+    }
+
+    Ref<ColorGradingResource> grading = make_color_grading_resource();
+    CHECK(grading.is_valid());
+
+    node->set_color_grading(grading);
+    tree->process(0.0);
+
+    CHECK(renderer->get_color_grading() == grading);
+
+    // Mutate a property on the resource — the "changed" signal should propagate
+    // through _on_color_grading_changed and keep the renderer in sync.
+    const float original_exposure = grading->get_exposure();
+    grading->set_exposure(2.5f);
+    CHECK(grading->get_exposure() != doctest::Approx(original_exposure));
+
+    // The renderer should still reference the same resource (signal updates
+    // the renderer in-place, it does not swap the Ref).
+    CHECK(renderer->get_color_grading() == grading);
+    CHECK(renderer->get_color_grading()->get_exposure() == doctest::Approx(2.5f));
+
+    root->remove_child(node);
+    memdelete(node);
 }
 
 TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer full-fidelity override only follows attached assets") {

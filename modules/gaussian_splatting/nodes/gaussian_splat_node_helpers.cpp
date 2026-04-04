@@ -1397,7 +1397,19 @@ void GaussianSplatNodeRendererHelper::apply_renderer_settings() {
     owner.renderer->set_painterly_stroke_length(owner.stroke_width);
     owner.renderer->set_painterly_gamma(MAX(owner.temporal_blend, 0.01f));
     owner.renderer->set_opacity_multiplier(owner.opacity);
-    owner.renderer->set_color_grading(owner.color_grading);
+    {
+        bool renderer_shared = false;
+        GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+        if (director) {
+            renderer_shared = director->get_instance_count_for_renderer(owner.renderer.ptr()) > 1u ||
+                    director->has_world_submission_for_renderer(owner.renderer.ptr());
+        }
+        if (renderer_shared) {
+            owner.renderer->set_color_grading(Ref<ColorGradingResource>());
+        } else {
+            owner.renderer->set_color_grading(owner.color_grading);
+        }
+    }
     {
         GaussianStreamingSystem::ConfigOverrides overrides;
 
