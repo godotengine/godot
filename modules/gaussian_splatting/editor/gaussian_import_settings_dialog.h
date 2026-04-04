@@ -75,12 +75,13 @@ class GaussianImportSettingsDialog : public ConfirmationDialog {
 	float cam_rot_y = 0.0f;
 	float cam_zoom = 1.0f;
 
+	void _reload_import_options_from_sidecar();
 	void _build_ui();
 	void _build_viewport_scene();
 	void _clear_viewport_scene();
 	void _update_camera();
 	void _update_stats();
-	void _load_source_asset();
+	void _load_source_asset(bool p_force_reload = false);
 	void _viewport_input(const Ref<InputEvent> &p_input);
 	void _re_import();
 	void _on_light_1_switch_pressed();
@@ -98,6 +99,7 @@ protected:
 
 public:
 	void open_settings(const String &p_path);
+	static Dictionary load_import_options_from_sidecar(const String &p_path);
 	static GaussianImportSettingsDialog *get_singleton();
 
 	GaussianImportSettingsDialog();

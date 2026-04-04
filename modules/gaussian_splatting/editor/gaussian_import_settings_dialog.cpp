@@ -114,6 +114,26 @@ GaussianImportSettingsDialog *GaussianImportSettingsDialog::get_singleton() {
 
 void GaussianImportSettingsDialog::_bind_methods() {}
 
+Dictionary GaussianImportSettingsDialog::load_import_options_from_sidecar(const String &p_path) {
+	Dictionary options;
+	if (p_path.is_empty()) {
+		return options;
+	}
+
+	Ref<ConfigFile> config;
+	config.instantiate();
+	if (config->load(p_path + ".import") != OK || !config->has_section("params")) {
+		return options;
+	}
+
+	Vector<String> keys = config->get_section_keys("params");
+	for (const String &k : keys) {
+		options[k] = config->get_value("params", k);
+	}
+
+	return options;
+}
+
 // ---------------------------------------------------------------------------
 // Theme
 // ---------------------------------------------------------------------------
@@ -617,7 +637,11 @@ void GaussianImportSettingsDialog::_update_stats() {
 // Asset loading
 // ---------------------------------------------------------------------------
 
-void GaussianImportSettingsDialog::_load_source_asset() {
+void GaussianImportSettingsDialog::_reload_import_options_from_sidecar() {
+	import_options = load_import_options_from_sidecar(source_path);
+}
+
+void GaussianImportSettingsDialog::_load_source_asset(bool p_force_reload) {
 	loaded_asset.unref();
 	asset_bounds = AABB(Vector3(-0.5, -0.5, -0.5), Vector3(1, 1, 1));
 
@@ -625,7 +649,8 @@ void GaussianImportSettingsDialog::_load_source_asset() {
 		return;
 	}
 
-	loaded_asset = ResourceLoader::load(source_path, "GaussianSplatAsset");
+	loaded_asset = ResourceLoader::load(source_path, "GaussianSplatAsset",
+			p_force_reload ? ResourceFormatLoader::CACHE_MODE_REPLACE : ResourceFormatLoader::CACHE_MODE_REUSE);
 }
 
 // ---------------------------------------------------------------------------
@@ -721,6 +746,13 @@ void GaussianImportSettingsDialog::_re_import() {
 
 	ERR_FAIL_NULL(EditorFileSystem::get_singleton());
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(source_path, importer_name, params);
+
+	_reload_import_options_from_sidecar();
+	_load_source_asset(true);
+	_populate_settings_data();
+	_build_viewport_scene();
+	_update_camera();
+	_update_stats();
 }
 
 // ---------------------------------------------------------------------------
@@ -729,22 +761,7 @@ void GaussianImportSettingsDialog::_re_import() {
 
 void GaussianImportSettingsDialog::open_settings(const String &p_path) {
 	source_path = p_path;
-	import_options.clear();
-
-	// Read existing import params from .import sidecar.
-	{
-		Ref<ConfigFile> config;
-		config.instantiate();
-		Error err = config->load(p_path + ".import");
-		if (err == OK) {
-			if (config->has_section("params")) {
-				Vector<String> keys = config->get_section_keys("params");
-				for (const String &k : keys) {
-					import_options[k] = config->get_value("params", k);
-				}
-			}
-		}
-	}
+	_reload_import_options_from_sidecar();
 
 	file_label->set_text(vformat(TTR("Source: %s"), source_path.get_file()));
 

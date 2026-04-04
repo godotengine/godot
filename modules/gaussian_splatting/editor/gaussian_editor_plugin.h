@@ -9,6 +9,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "core/io/resource_loader.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/vector.h"
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../nodes/gaussian_splat_node_3d.h"
@@ -54,7 +55,7 @@ private:
     struct HotReloadWatch {
         uint64_t last_modified = 0;
         Dictionary import_options;
-        ObjectID node_id;
+        Vector<ObjectID> node_ids;
     };
 
     HashMap<String, HotReloadWatch> hot_reload_watches;
@@ -79,7 +80,7 @@ private:
     HashMap<StringName, Variant> _dictionary_to_hashmap(const Dictionary &p_dict) const;
     void _on_import_settings_confirmed(const String &p_source_path, const Dictionary &p_options);
     void _show_reimport_dialog(const Dictionary &p_options);
-    void _refresh_active_asset_metadata();
+    void _refresh_active_asset_metadata(bool p_force_reload = false);
     Ref<Texture2D> _resolve_asset_thumbnail(const Ref<GaussianSplatAsset> &p_asset);
     void _apply_brush_stroke(ObjectID p_node_id, const Vector3 &p_center, float p_radius, const Color &p_color, float p_strength, float p_hardness);
     void _commit_runtime_modifications(ObjectID p_node_id);
@@ -118,7 +119,7 @@ public:
     }
     void _internal_commit_runtime_modifications(ObjectID p_node_id) { _commit_runtime_modifications(p_node_id); }
     void _internal_revert_runtime_modifications(ObjectID p_node_id) { _revert_runtime_modifications(p_node_id); }
-    void _internal_refresh_active_asset_metadata() { _refresh_active_asset_metadata(); }
+    void _internal_refresh_active_asset_metadata() { _refresh_active_asset_metadata(true); }
 };
 
 #endif // TOOLS_ENABLED

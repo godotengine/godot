@@ -97,6 +97,62 @@ static String _get_node_source_path(GaussianSplatNode3D *p_node) {
             p_node->get_splat_asset(), p_node->get_ply_file_path());
 }
 
+static Ref<GaussianSplatAsset> _load_gaussian_splat_asset(const String &p_path, bool p_force_reload) {
+    if (p_path.is_empty()) {
+        return Ref<GaussianSplatAsset>();
+    }
+
+    return ResourceLoader::load(p_path, "GaussianSplatAsset",
+            p_force_reload ? ResourceFormatLoader::CACHE_MODE_REPLACE : ResourceFormatLoader::CACHE_MODE_REUSE);
+}
+
+static void _append_unique_hot_reload_node_id(Vector<ObjectID> &r_node_ids, ObjectID p_node_id) {
+    if (p_node_id == ObjectID()) {
+        return;
+    }
+
+    for (int i = 0; i < r_node_ids.size(); i++) {
+        if (r_node_ids[i] == p_node_id) {
+            return;
+        }
+    }
+
+    r_node_ids.push_back(p_node_id);
+}
+
+static Vector<GaussianSplatNode3D *> _collect_live_hot_reload_nodes(Vector<ObjectID> &r_node_ids) {
+    Vector<GaussianSplatNode3D *> live_nodes;
+    Vector<ObjectID> live_node_ids;
+    for (int i = 0; i < r_node_ids.size(); i++) {
+        const ObjectID node_id = r_node_ids[i];
+        if (node_id == ObjectID()) {
+            continue;
+        }
+
+        GaussianSplatNode3D *node = Object::cast_to<GaussianSplatNode3D>(ObjectDB::get_instance(node_id));
+        if (!node) {
+            continue;
+        }
+
+        bool already_added = false;
+        for (int j = 0; j < live_node_ids.size(); j++) {
+            if (live_node_ids[j] == node_id) {
+                already_added = true;
+                break;
+            }
+        }
+        if (already_added) {
+            continue;
+        }
+
+        live_node_ids.push_back(node_id);
+        live_nodes.push_back(node);
+    }
+
+    r_node_ids = live_node_ids;
+    return live_nodes;
+}
+
 } // namespace
 
 // GaussianEditorPlugin implementation
@@ -337,7 +393,7 @@ Error GaussianEditorPlugin::_import_from_path(const String &p_path, const Dictio
     HashMap<StringName, Variant> options = _dictionary_to_hashmap(effective_options);
     fs->reimport_file_with_custom_parameters(p_path, importer_name, options);
 
-    Ref<GaussianSplatAsset> asset = ResourceLoader::load(p_path);
+    Ref<GaussianSplatAsset> asset = _load_gaussian_splat_asset(p_path, true);
     if (asset.is_null()) {
         return ERR_CANT_OPEN;
     }
@@ -374,7 +430,7 @@ Error GaussianEditorPlugin::_import_from_path(const String &p_path, const Dictio
     }
 
     last_import_options = effective_options;
-    _refresh_active_asset_metadata();
+    _refresh_active_asset_metadata(true);
     return OK;
 }
 
@@ -432,12 +488,19 @@ void GaussianEditorPlugin::_on_import_settings_confirmed(const String &p_source_
     }
 }
 
-void GaussianEditorPlugin::_refresh_active_asset_metadata() {
+void GaussianEditorPlugin::_refresh_active_asset_metadata(bool p_force_reload) {
     if (!active_asset.is_valid()) {
         last_import_options.clear();
         _sync_ui_from_asset();
         _update_stats();
         return;
+    }
+
+    if (p_force_reload && !active_asset->get_path().is_empty()) {
+        Ref<GaussianSplatAsset> refreshed_asset = _load_gaussian_splat_asset(active_asset->get_path(), true);
+        if (refreshed_asset.is_valid()) {
+            active_asset = refreshed_asset;
+        }
     }
 
     const String asset_source_path = GaussianSplatSourcePath::get_asset_source_path(active_asset);
@@ -599,23 +662,21 @@ void GaussianEditorPlugin::_track_hot_reload_source(const String &p_path, const 
         return;
     }
 
+    HotReloadWatch *existing = hot_reload_watches.getptr(p_path);
+    if (existing) {
+        existing->last_modified = _get_file_timestamp(p_path);
+        if (!p_options.is_empty()) {
+            existing->import_options = p_options;
+        }
+        _append_unique_hot_reload_node_id(existing->node_ids, p_node_id);
+        _schedule_hot_reload_poll();
+        return;
+    }
+
     HotReloadWatch watch;
     watch.last_modified = _get_file_timestamp(p_path);
     watch.import_options = p_options;
-    watch.node_id = p_node_id;
-    if (hot_reload_processing) {
-        HotReloadWatch *existing = hot_reload_watches.getptr(p_path);
-        if (existing) {
-            existing->last_modified = watch.last_modified;
-            if (!p_options.is_empty()) {
-                existing->import_options = p_options;
-            }
-            if (p_node_id != ObjectID()) {
-                existing->node_id = p_node_id;
-            }
-            return;
-        }
-    }
+    _append_unique_hot_reload_node_id(watch.node_ids, p_node_id);
     hot_reload_watches[p_path] = watch;
     _schedule_hot_reload_poll();
 }
@@ -654,8 +715,18 @@ void GaussianEditorPlugin::_on_hot_reload_timer_timeout() {
         hot_reload_watches.clear();
         return;
     }
+    PackedStringArray stale_paths;
     for (KeyValue<String, HotReloadWatch> &E : hot_reload_watches) {
+        _collect_live_hot_reload_nodes(E.value.node_ids);
+        if (E.value.node_ids.is_empty() && current_source_path != E.key &&
+                (!active_asset.is_valid() || active_asset->get_path() != E.key)) {
+            stale_paths.push_back(E.key);
+            continue;
+        }
         _process_hot_reload_for_watch(E.key, E.value);
+    }
+    for (int i = 0; i < stale_paths.size(); i++) {
+        hot_reload_watches.erase(stale_paths[i]);
     }
     _schedule_hot_reload_poll();
 }
@@ -668,20 +739,16 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
 
     p_watch.last_modified = current_stamp;
 
-    GaussianSplatNode3D *target_node = nullptr;
-    if (p_watch.node_id != ObjectID()) {
-        Object *obj = ObjectDB::get_instance(p_watch.node_id);
-        target_node = Object::cast_to<GaussianSplatNode3D>(obj);
-        if (!target_node) {
-            p_watch.node_id = ObjectID();
-        }
-    }
+    Vector<GaussianSplatNode3D *> watched_nodes = _collect_live_hot_reload_nodes(p_watch.node_ids);
+    GaussianSplatNode3D *target_node = watched_nodes.is_empty() ? nullptr : watched_nodes[0];
 
     GaussianSplatNode3D *previous_node = current_node;
     Ref<GaussianSplatRenderer> previous_renderer = current_renderer;
     Ref<GaussianSplatAsset> previous_asset = active_asset;
     String previous_source_path = current_source_path;
     Dictionary previous_import_options = last_import_options;
+    const bool restore_selection_asset = previous_asset.is_valid() &&
+            (previous_asset->get_path() == p_path || previous_source_path == p_path);
 
     const bool context_swapped = target_node && target_node != current_node;
 
@@ -695,7 +762,7 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
         current_source_path = previous_source_path;
         last_import_options = previous_import_options;
         if (active_asset.is_valid()) {
-            _refresh_active_asset_metadata();
+            _refresh_active_asset_metadata(restore_selection_asset);
         } else {
             _sync_ui_from_asset();
         }
@@ -704,12 +771,15 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
     const String source_extension = p_path.get_extension().to_lower();
     if (source_extension == "ply" || source_extension == "spz") {
         Dictionary options = p_watch.import_options;
-        if (options.is_empty() && target_node) {
-            Ref<GaussianSplatAsset> target_asset = target_node->get_splat_asset();
-            if (target_asset.is_valid()) {
-                Dictionary asset_metadata = target_asset->get_import_metadata();
-                if (asset_metadata.has(StringName("options"))) {
-                    options = asset_metadata[StringName("options")];
+        if (options.is_empty()) {
+            for (int i = 0; i < watched_nodes.size(); i++) {
+                Ref<GaussianSplatAsset> target_asset = watched_nodes[i]->get_splat_asset();
+                if (target_asset.is_valid()) {
+                    Dictionary asset_metadata = target_asset->get_import_metadata();
+                    if (asset_metadata.has(StringName("options"))) {
+                        options = asset_metadata[StringName("options")];
+                        break;
+                    }
                 }
             }
         }
@@ -733,12 +803,34 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
         Ref<Resource> res = ResourceLoader::load(p_path, String(), ResourceFormatLoader::CACHE_MODE_REPLACE);
         if (res.is_valid()) {
             res->reload_from_file();
+            Ref<GaussianSplatAsset> refreshed_asset = res;
+            if (refreshed_asset.is_valid() && active_asset.is_valid() && active_asset->get_path() == p_path) {
+                active_asset = refreshed_asset;
+            }
         }
     }
 
-    GaussianSplatNode3D *node_to_update = target_node ? target_node : current_node;
-    if (node_to_update) {
-        node_to_update->force_update();
+    Ref<GaussianSplatAsset> refreshed_asset = active_asset;
+    for (int i = 0; i < watched_nodes.size(); i++) {
+        GaussianSplatNode3D *node = watched_nodes[i];
+        if (refreshed_asset.is_valid()) {
+            const String node_source_path = _get_node_source_path(node);
+            Ref<GaussianSplatAsset> node_asset = node->get_splat_asset();
+            const bool same_source = !node_source_path.is_empty() && node_source_path == p_path;
+            const bool same_asset_path = node_asset.is_valid() && !refreshed_asset->get_path().is_empty() &&
+                    node_asset->get_path() == refreshed_asset->get_path();
+            if ((same_source || same_asset_path) && node_asset != refreshed_asset) {
+                node->set_splat_asset(refreshed_asset);
+            }
+        }
+        node->force_update();
+    }
+    if (watched_nodes.is_empty() && current_node) {
+        current_node->force_update();
+    }
+    if (!watched_nodes.is_empty() && (current_source_path == p_path ||
+            (active_asset.is_valid() && active_asset->get_path() == p_path))) {
+        _refresh_active_asset_metadata(true);
     }
     restore_context();
     _update_stats();

@@ -10,6 +10,7 @@
 #include "../io/ply_loader.h"
 #include "../io/spz_loader.h"
 #include "../editor/gaussian_import_dialog.h"
+#include "../editor/gaussian_import_settings_dialog.h"
 #include "../editor/gaussian_thumbnail_generator.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../core/gaussian_splat_world.h"
@@ -187,6 +188,19 @@ void _remove_user_file(const String &p_user_path) {
     }
 
     dir->remove(p_user_path.get_file());
+}
+
+Error _write_import_sidecar(const String &p_source_path, const Dictionary &p_options) {
+    Ref<ConfigFile> config;
+    config.instantiate();
+
+    Array keys = p_options.keys();
+    for (int i = 0; i < keys.size(); i++) {
+        const StringName key = keys[i];
+        config->set_value("params", String(key), p_options[keys[i]]);
+    }
+
+    return config->save(p_source_path + ".import");
 }
 
 PackedByteArray _make_spz_header(uint32_t p_version, uint32_t p_num_points, uint8_t p_sh_degree, uint8_t p_fractional_bits, uint8_t p_flags = 0, uint8_t p_reserved = 0) {
@@ -1838,6 +1852,32 @@ TEST_CASE("[GaussianSplatting][Editor] Import dialog handles SPZ source paths") 
     CHECK(config.preset == "desktop");
 
     memdelete(dialog);
+}
+
+TEST_CASE("[GaussianSplatting][Editor] Import settings dialog loads sidecar params") {
+    const String source_path = "user://gaussian_import_settings_sidecar_fixture.ply";
+    Dictionary options;
+    options[StringName("quality/preset")] = String("ultra");
+    options[StringName("quality/max_splats")] = 12345;
+    options[StringName("compression/quantize_positions")] = true;
+
+    const Error write_err = _write_import_sidecar(source_path, options);
+    CHECK_MESSAGE(write_err == OK, "Failed to write synthetic .import sidecar for settings dialog test");
+
+    Dictionary loaded = GaussianImportSettingsDialog::load_import_options_from_sidecar(source_path);
+    CHECK(String(loaded.get(StringName("quality/preset"), String())) == String("ultra"));
+    CHECK(int(loaded.get(StringName("quality/max_splats"), -1)) == 12345);
+    CHECK(bool(loaded.get(StringName("compression/quantize_positions"), false)) == true);
+
+    _remove_user_file(source_path + ".import");
+}
+
+TEST_CASE("[GaussianSplatting][Editor] Import settings dialog ignores missing sidecar") {
+    const String source_path = "user://gaussian_import_settings_missing_sidecar_fixture.ply";
+    _remove_user_file(source_path + ".import");
+
+    Dictionary loaded = GaussianImportSettingsDialog::load_import_options_from_sidecar(source_path);
+    CHECK(loaded.is_empty());
 }
 
 #endif // TOOLS_ENABLED

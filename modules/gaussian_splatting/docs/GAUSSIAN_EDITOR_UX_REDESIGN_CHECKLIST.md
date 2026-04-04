@@ -56,6 +56,8 @@ The Gaussian bottom panel is no longer part of the normal editor flow.
 - [x] Broadened shared-renderer color grading guard to cover both multi-instance and active world submissions. Renamed `_is_multi_instance_shared_renderer_active` to `_is_renderer_shared_with_other_content` and added `has_world_submission_for_renderer` check. Shared-renderer mode no longer leaks one node's grading to others or to world content.
 - [x] Added disabled states to bake/restore color grading buttons (disabled when no data, no grading, or wrong bake state).
 - [x] Added 4 color grading tests: single-node push, enter/exit tree survival, signal propagation, and world submission blocking node grading push with recovery.
+- [x] Reimport from the advanced import settings dialog now force-refreshes the loaded asset, sidecar-backed settings, preview scene, and stats without reopening the dialog.
+- [x] Hot-reload watches now fan out to all live nodes registered for the same source/asset path instead of only the most recently tracked node.
 
 ### Follow-up improvements
 
@@ -63,8 +65,9 @@ The Gaussian bottom panel is no longer part of the normal editor flow.
 - [ ] Verify direct raw `.ply`/`.spz` drag semantics in the viewport and decide whether to support them explicitly. Currently falls back to `ply_file_path` if asset load fails.
 - [ ] Replace the proxy inspector preview with a deeper renderer-backed preview if coupling stays manageable.
 - [ ] Tighten asset inspector layout and styling once the workflow is stable.
-- [ ] Add automated tests or scripted editor QA for preview and reimport behavior.
+- [ ] Add fuller automated tests or scripted editor QA for preview, reimport, and multi-node hot-reload behavior. Current automation only covers stable non-GUI seams.
 - [ ] Add per-instance color grading support in the instance pipeline (currently renderer-level only, hidden in multi-instance mode).
+- [ ] Broad stale-cache orphan cleanup remains deferred. The current slice keeps `.gsplatcache` migration behavior local to import/load paths, but repo-wide orphan cleanup is still blocked on `AssetDependencyManager::cleanup_orphaned_assets()`.
 
 ## Manual QA Checklist
 
@@ -87,8 +90,8 @@ Run these steps in the editor on a clean project copy:
 15. ~~Use redo after undo and confirm the node is restored.~~ **Blocked: viewport drop not implemented.**
 16. Instead: manually add a `GaussianSplatNode3D`, assign the imported asset via the inspector, and confirm it loads and renders.
 17. Drag a `.ply` file onto an existing `GaussianSplatNode3D` and confirm asset-first load (not `ply_file_path` fallback if already imported).
-18. Modify the asset, reimport it, and confirm existing scene instances pick up the change or refresh as expected.
-19. Trigger any hot-reload path available on this branch and confirm the editor does not lose the asset link or crash.
+18. Modify the asset, reimport it from the advanced import settings dialog, and confirm the dialog preview/stats refresh without reopening.
+19. Trigger any hot-reload path available on this branch and confirm all registered live nodes tied to the changed source/asset path refresh without losing their asset links or crashing.
 20. Add two `GaussianSplatNode3D` instances sharing one renderer. Confirm color grading property is hidden on both nodes.
 21. Remove one node. Confirm color grading reappears on the remaining node and reaches the renderer.
 22. Confirm brush tools UI does not appear when `painterly/enabled` is false.
