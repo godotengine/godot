@@ -1528,6 +1528,11 @@ void EditorProperty::menu_option(int p_option) {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
+		default: {
+			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_option, this);
+			}
+		}
 	}
 }
 
@@ -1695,6 +1700,9 @@ void EditorProperty::_update_popup() {
 		menu->add_separator();
 		menu->add_icon_item(theme_cache.help_icon, TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
+
+	Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths);
 }
 
 ////////////////////////////////////////////////
