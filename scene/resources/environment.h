@@ -128,6 +128,19 @@ private:
 	float ssr_depth_tolerance = 0.5;
 	void _update_ssr();
 
+	// SSCS
+	bool sscs_enabled = false;
+	bool sscs_debug_enabled = false;
+	int sscs_debug_type = false;
+	int sscs_max_steps = 64;
+	float sscs_bilinear_threshold = 0.02f;
+	float sscs_shadow_contrast = 2.0f;
+	float sscs_surface_thickness = 0.005f;
+	bool sscs_use_precision_offset = false;
+	bool sscs_ignore_edge_pixels = false;
+	bool sscs_bilinear_sampling_offset_mode = false;
+	void _update_sscs();
+
 	// SSAO
 	bool ssao_enabled = false;
 	float ssao_radius = 1.0;
@@ -290,6 +303,28 @@ public:
 	float get_ssr_fade_out() const;
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
 	float get_ssr_depth_tolerance() const;
+
+	// SSCS
+	void set_sscs_enabled(bool p_enabled);
+	bool is_sscs_enabled() const;
+	void set_sscs_debug_enabled(bool p_enabled);
+	bool is_sscs_debug_enabled() const;
+	void set_sscs_debug_type(int p_steps);
+	int get_sscs_debug_type() const;
+	void set_sscs_max_steps(int p_steps);
+	int get_sscs_max_steps() const;
+	void set_sscs_bilinear_threshold(float p_bilinear_threshold);
+	float get_sscs_bilinear_threshold() const;
+	void set_sscs_shadow_contrast(float p_shadow_contrast);
+	float get_sscs_shadow_contrast() const;
+	void set_sscs_surface_thickness(float p_surface_thickness);
+	float get_sscs_surface_thickness() const;
+	void set_sscs_use_precision_offset(bool p_use_precision_offset);
+	bool get_sscs_use_precision_offset() const;
+	void set_sscs_ignore_edge_pixels(bool p_ignore_edge_pixels);
+	bool get_sscs_ignore_edge_pixels() const;
+	void set_sscs_bilinear_sampling_offset_mode(bool p_bilinear_sampling_offset_mode);
+	bool get_sscs_bilinear_sampling_offset_mode() const;
 
 	// SSAO
 	void set_ssao_enabled(bool p_enabled);

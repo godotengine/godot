@@ -39,6 +39,9 @@
 		<member name="sky_mode" type="int" setter="set_sky_mode" getter="get_sky_mode" enum="DirectionalLight3D.SkyMode" default="0">
 			Whether this [DirectionalLight3D] is visible in the sky, in the scene, or both in the sky and in the scene.
 		</member>
+		<member name="directional_shadow_contact_shadows" type="bool" setter="set_screen_space_contact_shadows" getter="get_screen_space_contact_shadows" default="0">
+			Enables screen-space contact shadows for this light. Only used when [member Environment.sscs_enabled] is enabled.
+		</member>
 	</members>
 	<constants>
 		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">

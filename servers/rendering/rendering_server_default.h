@@ -499,6 +499,7 @@ public:
 	FUNC2(light_directional_set_shadow_mode, RID, RSE::LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
 	FUNC2(light_directional_set_sky_mode, RID, RSE::LightDirectionalSkyMode)
+	FUNC2(light_directional_set_screen_space_contact_shadows, RID, bool)
 
 	/* PROBE API */
 
@@ -853,6 +854,8 @@ public:
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
 	FUNC1(environment_set_ssr_half_size, bool)
 	FUNC1(environment_set_ssr_roughness_quality, RSE::EnvironmentSSRRoughnessQuality)
+
+	FUNC11(environment_set_sscs, RID, bool, int, float, float, float, bool, bool, bool, bool, int)
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 	FUNC6(environment_set_ssao_quality, RSE::EnvironmentSSAOQuality, bool, float, int, float, float)
