@@ -5078,6 +5078,17 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 		col = TS->shaped_text_closest_character_pos(text_rid, col);
 	}
 
+	// Clamp column to stay within the current wrap for non-last wraps.
+	// Without this, clicking past the end of a wrapped line returns the wrap
+	// boundary column, which get_line_wrap_index_at_column resolves to the
+	// next wrap, causing the caret to appear on the wrong visual line.
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
+		const Vector<Vector2i> wrap_ranges = text.get_line_wrap_ranges(row);
+		if (col != 0 && wrap_index < wrap_ranges.size() - 1 && col >= wrap_ranges[wrap_index].y) {
+			col = wrap_ranges[wrap_index].y - 1;
+		}
+	}
+
 	return Point2i(col, row);
 }
 
