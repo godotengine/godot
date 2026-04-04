@@ -364,6 +364,7 @@ Error SPZLoader::load_file(const String &p_path) {
 
         // Color (stored in sh_dc for consistency with PLY loader)
         g.sh_dc = colors[i];
+        g.render_meta = gaussian_set_dc_encoding(g.render_meta, GAUSSIAN_DC_ENCODING_LINEAR_RGB);
 
         // Scale (already converted from log scale)
         g.scale = scales[i];

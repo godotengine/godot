@@ -81,6 +81,16 @@ static bool _validate_asset_buffer_size(const char *p_label, int p_actual_size, 
     return false;
 }
 
+static GaussianDCEncoding _resolve_dc_encoding_from_metadata(const Dictionary &p_import_metadata) {
+    if (p_import_metadata.has(StringName("dc_encoding"))) {
+        const String dc_encoding = String(p_import_metadata[StringName("dc_encoding")]).to_lower();
+        if (dc_encoding == "linear_rgb") {
+            return GAUSSIAN_DC_ENCODING_LINEAR_RGB;
+        }
+    }
+    return GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+}
+
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -249,8 +259,14 @@ Error GaussianData::populate_from_asset(const Ref<GaussianSplatAsset> &p_asset) 
         }
     }
 
-    bool staged_is_2d_mode = false;
     Dictionary import_metadata = p_asset->get_import_metadata();
+    const GaussianDCEncoding staged_dc_encoding = _resolve_dc_encoding_from_metadata(import_metadata);
+    for (int i = 0; i < splat_count; i++) {
+        staged_gaussians[i].render_meta =
+                gaussian_set_dc_encoding(staged_gaussians[i].render_meta, staged_dc_encoding);
+    }
+
+    bool staged_is_2d_mode = false;
     if (import_metadata.has(StringName("gaussian_2d_mode"))) {
         staged_is_2d_mode = (bool)import_metadata[StringName("gaussian_2d_mode")];
     }

@@ -866,9 +866,6 @@ TEST_CASE("[GaussianSplatting][Importer] SPZ loader rejects truncated payload se
 }
 
 TEST_CASE("[GaussianSplatting][Importer] SPZ loader marks DC encoding as linear RGB") {
-    // TODO: SPZ loader does not yet set render_meta with DC encoding after load.
-    MESSAGE("Skipping - aspirational test, requires SPZ loader DC encoding propagation (not yet wired)");
-    return;
     const String source_path = "user://gaussian_spz_linear_dc.spz";
 
     PackedByteArray payload = _make_spz_v2_single_point_payload(255, 64, 128, 255);
@@ -901,6 +898,53 @@ TEST_CASE("[GaussianSplatting][Importer] SPZ loader marks DC encoding as linear 
     _remove_user_file(source_path);
 }
 
+TEST_CASE("[GaussianSplatting][Importer] SPZ importer persists linear DC encoding metadata") {
+    const String source_path = "user://gaussian_spz_linear_dc_import.spz";
+    const String save_base_path = "user://gaussian_spz_linear_dc_imported";
+
+    PackedByteArray payload = _make_spz_v2_single_point_payload(255, 64, 128, 255);
+    PackedByteArray compressed_payload = _gzip_compress(payload);
+    REQUIRE_MESSAGE(!compressed_payload.is_empty(), "Failed to gzip-compress SPZ import fixture");
+
+    PackedByteArray file_data = _make_spz_header(SPZLoader::SPZ_VERSION_2, 1, 0, 12);
+    const int header_size = file_data.size();
+    file_data.resize(header_size + compressed_payload.size());
+    memcpy(file_data.ptrw() + header_size, compressed_payload.ptr(), compressed_payload.size());
+
+    Error write_err = _write_binary_file(source_path, file_data);
+    REQUIRE_MESSAGE(write_err == OK, "Failed to write SPZ import fixture");
+
+    Ref<ResourceImporterSPZ> importer;
+    importer.instantiate();
+
+    HashMap<StringName, Variant> options;
+    options.insert(StringName("quality/preset"), String("desktop"));
+    options.insert(StringName("preview/generate_thumbnail"), false);
+
+    Variant metadata_variant;
+    const Error import_err = importer->import(ResourceUID::INVALID_ID, source_path, save_base_path, options,
+            nullptr, nullptr, &metadata_variant);
+    REQUIRE_MESSAGE(import_err == OK, "SPZ importer should succeed for linear-DC fixture");
+
+    Ref<GaussianSplatAsset> asset = ResourceLoader::load(save_base_path + ".tres");
+    REQUIRE_MESSAGE(asset.is_valid(), "SPZ importer should emit a loadable GaussianSplatAsset");
+
+    const Dictionary metadata = asset->get_import_metadata();
+    CHECK(String(metadata.get(StringName("dc_encoding"), String())) == String("linear_rgb"));
+
+    Ref<::GaussianData> data;
+    data.instantiate();
+    REQUIRE_MESSAGE(data.is_valid(), "GaussianData must instantiate");
+    REQUIRE_MESSAGE(data->populate_from_asset(asset) == OK, "populate_from_asset should accept imported SPZ asset");
+    REQUIRE_MESSAGE(data->get_count() == 1, "Imported SPZ asset should materialize one gaussian");
+
+    const Gaussian g = data->get_gaussian(0);
+    CHECK(gaussian_get_dc_encoding(g.render_meta) == GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+
+    _remove_user_file(source_path);
+    _remove_user_file(save_base_path + ".tres");
+}
+
 TEST_CASE("[GaussianSplatting][Importer] PLY loader keeps legacy DC encoding") {
     const String source_path = "user://gaussian_ply_legacy_dc.ply";
     Error write_err = _write_minimal_ascii_ply(source_path);
@@ -922,9 +966,6 @@ TEST_CASE("[GaussianSplatting][Importer] PLY loader keeps legacy DC encoding") {
 }
 
 TEST_CASE("[GaussianSplatting][Renderer] SH metadata preserves DC encoding mode") {
-    // TODO: pack_gaussian does not yet propagate render_meta DC encoding into packed.sh_metadata.
-    MESSAGE("Skipping - aspirational test, requires pack_gaussian DC encoding propagation (not yet wired)");
-    return;
     SHCompressionMetrics metrics;
     PackedGaussian packed = {};
 
@@ -945,10 +986,28 @@ TEST_CASE("[GaussianSplatting][Renderer] SH metadata preserves DC encoding mode"
     CHECK(gs_get_sh_encoding(packed.sh_metadata) == GS_SH_ENCODING_RGB9E5);
 }
 
+TEST_CASE("[GaussianSplatting][Renderer] SH metadata preserves DC encoding mode for F16 packing") {
+    SHCompressionMetrics metrics;
+    PackedGaussianF16 packed = {};
+
+    Gaussian legacy = {};
+    legacy.rotation = Quaternion();
+    legacy.scale = Vector3(1.0f, 1.0f, 1.0f);
+    legacy.opacity = 1.0f;
+    legacy.sh_dc = Color(0.25f, 0.5f, 0.75f, 1.0f);
+    legacy.render_meta = gaussian_set_dc_encoding(0u, GAUSSIAN_DC_ENCODING_LEGACY_BIAS);
+    pack_gaussian_f16(legacy, packed, metrics, Vector3(), nullptr, 0, 0, PackedSphericalHarmonicsF16::MAX_ENCODED_COEFFICIENTS);
+    CHECK(gs_get_dc_encoding(packed.sh_metadata) == GAUSSIAN_DC_ENCODING_LEGACY_BIAS);
+    CHECK(gs_get_sh_encoding(packed.sh_metadata) == GS_SH_ENCODING_F16);
+
+    Gaussian linear = legacy;
+    linear.render_meta = gaussian_set_dc_encoding(0u, GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+    pack_gaussian_f16(linear, packed, metrics, Vector3(), nullptr, 0, 0, PackedSphericalHarmonicsF16::MAX_ENCODED_COEFFICIENTS);
+    CHECK(gs_get_dc_encoding(packed.sh_metadata) == GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+    CHECK(gs_get_sh_encoding(packed.sh_metadata) == GS_SH_ENCODING_F16);
+}
+
 TEST_CASE("[GaussianSplatting][Importer] populate_from_asset preserves DC encoding metadata") {
-    // TODO: populate_from_asset does not yet read dc_encoding from import_metadata into render_meta.
-    MESSAGE("Skipping - aspirational test, requires populate_from_asset DC encoding wiring (not yet wired)");
-    return;
     Ref<GaussianSplatAsset> asset = _make_thumbnail_fixture_asset(1);
     REQUIRE_MESSAGE(asset.is_valid(), "Fixture asset must be created");
 
@@ -969,9 +1028,6 @@ TEST_CASE("[GaussianSplatting][Importer] populate_from_asset preserves DC encodi
 }
 
 TEST_CASE("[GaussianSplatting][Importer] populate_gaussian_data restores DC encoding from asset metadata") {
-    // TODO: populate_gaussian_data does not yet propagate dc_encoding from import_metadata into render_meta.
-    MESSAGE("Skipping - aspirational test, requires populate_gaussian_data DC encoding wiring (not yet wired)");
-    return;
     Ref<GaussianSplatAsset> asset = _make_thumbnail_fixture_asset(1);
     REQUIRE_MESSAGE(asset.is_valid(), "Fixture asset must be created");
 
