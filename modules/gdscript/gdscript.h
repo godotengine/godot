@@ -172,7 +172,7 @@ private:
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
 
-	RBSet<Object *> instances;
+	SelfList<GDScriptInstance>::List instances;
 	bool destructing = false;
 	bool clearing = false;
 	//exported members
@@ -364,6 +364,9 @@ class GDScriptInstance : public ScriptInstance {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+	// Replacing `SelfList` with a better implementation could save 16bytes from the self and list pointer.
+	SelfList<GDScriptInstance> script_instance_list; // Linked list of instances with the same script.
+
 	void _call_implicit_ready_recursively(GDScript *p_script);
 
 public:
@@ -400,7 +403,7 @@ public:
 
 	virtual const Variant get_rpc_config() const;
 
-	GDScriptInstance() {}
+	GDScriptInstance() : script_instance_list(this) {}
 	~GDScriptInstance();
 };
 
