@@ -444,6 +444,7 @@ void NavMap3D::sync() {
 	performance_data.pm_agent_count = agents.size();
 	performance_data.pm_link_count = links.size();
 	performance_data.pm_obstacle_count = obstacles.size();
+	performance_data.pm_area_count = areas.size();
 
 	_sync_async_tasks();
 

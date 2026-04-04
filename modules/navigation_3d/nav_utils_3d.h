@@ -194,6 +194,7 @@ struct PerformanceData {
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
 	int pm_obstacle_count = 0;
+	int pm_area_count = 0;
 
 	void reset() {
 		pm_region_count = 0;
@@ -205,6 +206,7 @@ struct PerformanceData {
 		pm_edge_connection_count = 0;
 		pm_edge_free_count = 0;
 		pm_obstacle_count = 0;
+		pm_area_count = 0;
 	}
 };
 

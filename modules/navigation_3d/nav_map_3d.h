@@ -271,6 +271,7 @@ public:
 	int get_pm_edge_connection_count() const { return performance_data.pm_edge_connection_count; }
 	int get_pm_edge_free_count() const { return performance_data.pm_edge_free_count; }
 	int get_pm_obstacle_count() const { return performance_data.pm_obstacle_count; }
+	int get_pm_area_count() const { return performance_data.pm_area_count; }
 
 	int get_region_connections_count(NavRegion3D *p_region) const;
 	Vector3 get_region_connection_pathway_start(NavRegion3D *p_region, int p_connection_id) const;

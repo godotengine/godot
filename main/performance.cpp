@@ -106,6 +106,9 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_FREE_COUNT);
 	BIND_ENUM_CONSTANT(NAVIGATION_OBSTACLE_COUNT);
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+#ifndef NAVIGATION_3D_DISABLED
+	BIND_ENUM_CONSTANT(NAVIGATION_AREA_COUNT);
+#endif // NAVIGATION_3D_DISABLED
 	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_CANVAS);
 	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_MESH);
 	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_SURFACE);
@@ -134,6 +137,7 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(NAVIGATION_3D_EDGE_CONNECTION_COUNT);
 	BIND_ENUM_CONSTANT(NAVIGATION_3D_EDGE_FREE_COUNT);
 	BIND_ENUM_CONSTANT(NAVIGATION_3D_OBSTACLE_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_3D_AREA_COUNT);
 #endif // NAVIGATION_3D_DISABLED
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 
@@ -409,6 +413,12 @@ double Performance::get_monitor(Monitor p_monitor) const {
 #endif // NAVIGATION_3D_DISABLED
 			return info;
 
+		case NAVIGATION_AREA_COUNT:
+#ifndef NAVIGATION_3D_DISABLED
+			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_AREA_COUNT);
+#endif // NAVIGATION_3D_DISABLED
+			return info;
+
 #ifndef NAVIGATION_2D_DISABLED
 		case NAVIGATION_2D_ACTIVE_MAPS:
 			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_ACTIVE_MAPS);
@@ -453,6 +463,8 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_FREE_COUNT);
 		case NAVIGATION_3D_OBSTACLE_COUNT:
 			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_OBSTACLE_COUNT);
+		case NAVIGATION_3D_AREA_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_AREA_COUNT);
 #endif // NAVIGATION_3D_DISABLED
 
 		default: {
