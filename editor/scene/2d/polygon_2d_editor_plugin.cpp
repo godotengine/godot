@@ -1015,8 +1015,7 @@ void Polygon2DEditor::_update_available_modes() {
 		mode_buttons[MODE_BONES]->set_disabled(false);
 		if (node->get_use_vertex_colors()) {
 			mode_buttons[MODE_VCOLOR]->set_disabled(false);
-		}
-		else {
+		} else {
 			//don't let them paint vertex colors if it's not being used.
 			_select_mode(MODE_POINTS);
 			mode_buttons[MODE_VCOLOR]->set_disabled(true);
