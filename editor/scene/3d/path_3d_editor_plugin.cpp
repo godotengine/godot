@@ -867,48 +867,56 @@ void Path3DEditorPlugin::_auto_tangent() {
 	PackedVector3Array points = path->get_curve()->get_points().duplicate();
 	Ref<Curve3D> curve = path->get_curve();
 	undo_redo->create_action(TTR("Auto Tangent"));
-
 	// Smoothing.
 	int point_count = curve->get_point_count();
 	const float smooth_ratio = auto_tangent_torsion->get_value();
-	for (int i = 1; i < point_count - 1; i++) {
-		Vector3 next_p = curve->get_point_position(i + 1);
-		Vector3 prev_p = curve->get_point_position(i - 1);
-		Vector3 curr_p = curve->get_point_position(i);
-		Vector3 tangent = (next_p - prev_p).normalized();
-		undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
-		undo_redo->add_do_method(curve.ptr(), "set_point_in", i, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
-		undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
-		undo_redo->add_do_method(curve.ptr(), "set_point_out", i, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+
+	  Vector<int> selection = Node3DEditor::get_singleton()->get_subgizmo_selection();
+	  Vector<int> points_to_process;// This avoids duplicating the smoothing logic
+	  if (selection.is_empty()) {
+	      for (int i = 0; i < point_count; i++) {
+	          points_to_process.push_back(i);
+	      }
+	  } else {
+	      points_to_process = selection;
+	  }
+	  bool is_closed = curve->is_closed();
+	  for (const int idx : points_to_process) {
+		  const bool has_prev = is_closed || idx > 0;
+		  const bool has_next = is_closed || idx < point_count - 1;
+	      if (!has_prev && !has_next) {
+	          continue; // Single point curve is noop
+	      }
+	      Vector3 curr_p = curve->get_point_position(idx);
+
+	      if (has_prev && has_next) {
+	          int prev_idx = is_closed ? (idx - 1 + point_count) % point_count : idx - 1;
+	          int next_idx = is_closed ? (idx + 1) % point_count : idx + 1;
+	          Vector3 prev_p = curve->get_point_position(prev_idx);
+	          Vector3 next_p = curve->get_point_position(next_idx);
+	          Vector3 tangent = (next_p - prev_p).normalized();
+	          undo_redo->add_undo_method(curve.ptr(), "set_point_in", idx, curve->get_point_in(idx));
+	          undo_redo->add_do_method(curve.ptr(), "set_point_in", idx, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+	          undo_redo->add_undo_method(curve.ptr(), "set_point_out", idx, curve->get_point_out(idx));
+	          undo_redo->add_do_method(curve.ptr(), "set_point_out", idx, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+	      } else if (has_next) { // first point of an open curve set the out tangent and zero the in tangent
+	      		Vector3 next_p = curve->get_point_position(idx + 1);
+	      		Vector3 tangent = (next_p - curr_p).normalized();
+	      		undo_redo->add_undo_method(curve.ptr(), "set_point_in", idx, curve->get_point_in(idx));
+	      		undo_redo->add_do_method(curve.ptr(), "set_point_in", idx, Vector3());
+	      		undo_redo->add_undo_method(curve.ptr(), "set_point_out", idx, curve->get_point_out(idx));
+	      		undo_redo->add_do_method(curve.ptr(), "set_point_out", idx, tangent * curr_p.distance_to(next_p) * smooth_ratio);
+	      } else {// last point of an open curve, only set the in tangent
+	      		Vector3 prev_p = curve->get_point_position(idx - 1);
+	      		Vector3 tangent = (curr_p - prev_p).normalized();
+	      		undo_redo->add_undo_method(curve.ptr(), "set_point_in", idx, curve->get_point_in(idx));
+	      		undo_redo->add_do_method(curve.ptr(), "set_point_in", idx, -tangent * curr_p.distance_to(prev_p) * smooth_ratio);
+	      		undo_redo->add_undo_method(curve.ptr(), "set_point_out", idx, curve->get_point_out(idx));
+	      		undo_redo->add_do_method(curve.ptr(), "set_point_out", idx, Vector3());
+	      }
+	  }
+	  undo_redo->commit_action();
 	}
-	if (curve->is_closed()) {
-		Vector3 first_p = curve->get_point_position(0);
-		Vector3 second_p = curve->get_point_position(1);
-		Vector3 last_p = curve->get_point_position(point_count - 1);
-		Vector3 tangent_first = (second_p - last_p).normalized();
-
-		undo_redo->add_undo_method(curve.ptr(), "set_point_in", 0, curve->get_point_in(0));
-		undo_redo->add_do_method(curve.ptr(), "set_point_in", 0, -tangent_first * first_p.distance_to(last_p) * smooth_ratio);
-		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
-		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, tangent_first * first_p.distance_to(second_p) * smooth_ratio);
-
-		Vector3 second_last_p = curve->get_point_position(point_count - 2);
-		Vector3 tangent_last = (first_p - second_last_p).normalized();
-
-		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
-		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, -tangent_last * last_p.distance_to(second_last_p) * smooth_ratio);
-		undo_redo->add_undo_method(curve.ptr(), "set_point_out", point_count - 1, curve->get_point_out(point_count - 1));
-		undo_redo->add_do_method(curve.ptr(), "set_point_out", point_count - 1, tangent_last * last_p.distance_to(first_p) * smooth_ratio);
-
-	} else {
-		undo_redo->add_undo_method(curve.ptr(), "set_point_out", 0, curve->get_point_out(0));
-		undo_redo->add_do_method(curve.ptr(), "set_point_out", 0, Vector3());
-
-		undo_redo->add_undo_method(curve.ptr(), "set_point_in", point_count - 1, curve->get_point_in(point_count - 1));
-		undo_redo->add_do_method(curve.ptr(), "set_point_in", point_count - 1, Vector3());
-	}
-	undo_redo->commit_action();
-}
 void Path3DEditorPlugin::_clear_points() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	PackedVector3Array points = path->get_curve()->get_points().duplicate();
