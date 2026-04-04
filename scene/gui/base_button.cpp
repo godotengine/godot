@@ -437,7 +437,14 @@ void BaseButton::_shortcut_feedback_timeout() {
 void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!is_disabled() && p_event->is_pressed() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
+	bool action_mode_match = false;
+	if (action_mode == ACTION_MODE_BUTTON_PRESS && p_event->is_pressed()) {
+		action_mode_match = true;
+	} else if (action_mode == ACTION_MODE_BUTTON_RELEASE && p_event->is_released()) {
+		action_mode_match = true;
+	}
+
+	if (!is_disabled() && action_mode_match && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
 		if (toggle_mode) {
 			status.pressed = !status.pressed;
 
