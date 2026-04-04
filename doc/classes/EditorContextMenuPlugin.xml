@@ -117,5 +117,8 @@
 			[/codeblock]
 			The paths array is empty if there weren't any nodes under cursor. The option callback will receive a typed array of [CanvasItem] nodes.
 		</constant>
+		<constant name="CONTEXT_SLOT_INSPECTOR_PROPERTY" value="7" enum="ContextMenuSlot">
+			Context menu of the inspectors right-click menu. [method _popup_menu] will be called with an array of two items: The first will be the object's ID, the second will be the property name. An object can be retrieved from it's ID via [method @GlobalScope.instance_from_id] after converting it to an int. The option callback will receive the EditorProperty directly.
+		</constant>
 	</constants>
 </class>
