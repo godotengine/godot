@@ -745,11 +745,16 @@ RID GaussianMemoryStream::get_current_gpu_buffer() {
         _wait_for_buffer_complete(idx, false);
         BufferState expected = BUFFER_READY;
         if (!buffers[idx].state.compare_exchange_strong(expected, BUFFER_RENDERING)) {
-            if (expected != BUFFER_RENDERING) {
-                buffers[idx].state.store(BUFFER_RENDERING);
+            if (expected == BUFFER_RENDERING) {
+                // Already being rendered - still safe to return
+                active_rendering_index.store(idx);
+                return buffers[idx].gpu_buffer;
             }
+            // Buffer is in unexpected state (FREE/UPLOADING) - fall through to linear scan
+        } else {
+            active_rendering_index.store(idx);
+            return buffers[idx].gpu_buffer;
         }
-        return buffers[idx].gpu_buffer;
     }
 
     for (int i = 0; i < BUFFER_COUNT; i++) {
@@ -763,11 +768,14 @@ RID GaussianMemoryStream::get_current_gpu_buffer() {
             if (state == BUFFER_READY) {
                 BufferState expected2 = BUFFER_READY;
                 if (!buffers[i].state.compare_exchange_strong(expected2, BUFFER_RENDERING)) {
-                    if (expected2 != BUFFER_RENDERING) {
-                        buffers[i].state.store(BUFFER_RENDERING);
+                    if (expected2 == BUFFER_RENDERING) {
+                        active_rendering_index.store(i);
+                        return buffers[i].gpu_buffer;
                     }
+                    continue;  // State changed unexpectedly, try next buffer
                 }
             }
+            active_rendering_index.store(i);
             return buffers[i].gpu_buffer;
         }
     }
@@ -776,11 +784,14 @@ RID GaussianMemoryStream::get_current_gpu_buffer() {
 }
 
 void GaussianMemoryStream::swap_buffers() {
-    int current_idx = read_index % BUFFER_COUNT;
-    if (buffers[current_idx].state == BUFFER_RENDERING) {
-        buffers[current_idx].state = BUFFER_FREE;
-        buffers[current_idx].frame_last_used = current_frame;
+    int current_idx = active_rendering_index.load();
+    if (current_idx >= 0 && current_idx < BUFFER_COUNT) {
+        BufferState expected = BUFFER_RENDERING;
+        if (buffers[current_idx].state.compare_exchange_strong(expected, BUFFER_FREE)) {
+            buffers[current_idx].frame_last_used = current_frame;
+        }
     }
+    active_rendering_index.store(-1);
 
     read_index = (read_index + 1) % BUFFER_COUNT;
 }

@@ -9,6 +9,8 @@
 #include "core/math/vector3.h"
 #include "core/variant/typed_array.h"
 
+#include <atomic>
+
 class GaussianData;
 
 class GaussianSplatAsset : public Resource {
@@ -55,7 +57,7 @@ private:
     bool has_sh_dc_coefficients = false;
     mutable Ref<::GaussianData> gaussian_data_cache;
 
-    static uint32_t instance_count;
+    static std::atomic<uint32_t> instance_count;
 
     void _recalculate_sh_component_counts();
     void _ensure_buffer_sizes();
@@ -124,7 +126,7 @@ public:
     void set_stroke_ages(const PackedFloat32Array &p_stroke_ages);
     void set_sh_component_terms(uint32_t p_first_order_terms, uint32_t p_high_order_terms);
 
-    static uint32_t get_instance_count() { return instance_count; }
+    static uint32_t get_instance_count() { return instance_count.load(); }
 
     void set_import_metadata(const Dictionary &p_metadata);
     Dictionary get_import_metadata() const { return import_metadata; }

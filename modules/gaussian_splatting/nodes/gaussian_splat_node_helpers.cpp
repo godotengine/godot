@@ -1077,6 +1077,11 @@ void GaussianSplatNodeQualityHelper::apply_streaming_config_values(int effective
     owner.streaming_config.painterly_hold_strength = owner.edge_threshold;
     owner.streaming_config.stream_budget_ms = effective_stream_budget_ms;
     owner.streaming_config.enable_async_loading = async_loading;
+    if (!async_loading) {
+        WARN_PRINT_ONCE("GaussianSplat: enable_async_loading is set to false, but this flag is not currently "
+                "wired to any production code path. Streaming behavior will not change. "
+                "See gaussian_splat_quality_config.h for details.");
+    }
     owner.streaming_config.enable_compression = compression;
 }
 

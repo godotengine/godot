@@ -278,8 +278,13 @@ bool TileRenderer::TilePrefixScanStage::update_global_tile_ranges(const RID &p_g
         RenderingDevice *p_device,
 		uint32_t &r_record_count, uint32_t &r_raw_record_count, bool p_allow_sync_readback) {
 	RenderingDevice *device = p_device ? p_device : owner._get_resource_device();
-	if (!device || owner.grid_state.total_tiles == 0) {
+	if (!device) {
 		return false;
+	}
+	if (owner.grid_state.total_tiles == 0) {
+		r_record_count = 0u;
+		r_raw_record_count = 0u;
+		return true;
 	}
 	if (!owner.global_sort_resources.get_tile_counts_buffer().is_valid() || !owner.global_sort_resources.tile_ranges_buffer.is_valid() ||
 			!owner.global_sort_resources.wg_sums_buffer.is_valid() || !owner.global_sort_resources.wg_offsets_buffer.is_valid()) {

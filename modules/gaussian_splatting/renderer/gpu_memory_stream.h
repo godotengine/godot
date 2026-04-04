@@ -100,6 +100,7 @@ private:
     std::atomic<int> write_index{0};
     std::atomic<int> read_index{0};
     std::atomic<int> upload_index{0};
+    std::atomic<int> active_rendering_index{-1};
 
     // Upload fence tracking
     std::atomic<uint64_t> upload_timeline{0};

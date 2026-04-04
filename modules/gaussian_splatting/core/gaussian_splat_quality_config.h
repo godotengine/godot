@@ -51,6 +51,14 @@ struct GaussianSplatStreamingConfig {
 	float painterly_hold_strength = 0.2f;
 
 	uint32_t stream_budget_ms = 2;
+	// WARNING: enable_async_loading is currently dead config. It is written by
+	// GaussianSplatNodeQualityHelper::apply_streaming_config_values() but never
+	// read by any production code path. StreamingPipeline::start_streaming(),
+	// which would consume this flag, is only called from tests. The production
+	// render path drives GPU uploads via explicit per-frame calls through
+	// RenderDataOrchestrator and streaming_config_overrides, which do not
+	// consult this flag. Do not rely on this field until it is wired into the
+	// production streaming path. See gpu_memory_stream.h StreamingPipeline.
 	bool enable_async_loading = true;
 	bool enable_compression = true;
 };

@@ -38,7 +38,7 @@ static Dictionary _build_runtime_load_timing(const String &p_stage,
 
 } // namespace
 
-uint32_t GaussianSplatAsset::instance_count = 0;
+std::atomic<uint32_t> GaussianSplatAsset::instance_count{ 0 };
 
 void GaussianSplatAsset::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_asset_type", "type"), &GaussianSplatAsset::set_asset_type);
