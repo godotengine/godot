@@ -811,20 +811,7 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
     }
 
     Ref<GaussianSplatAsset> refreshed_asset = active_asset;
-    for (int i = 0; i < watched_nodes.size(); i++) {
-        GaussianSplatNode3D *node = watched_nodes[i];
-        if (refreshed_asset.is_valid()) {
-            const String node_source_path = _get_node_source_path(node);
-            Ref<GaussianSplatAsset> node_asset = node->get_splat_asset();
-            const bool same_source = !node_source_path.is_empty() && node_source_path == p_path;
-            const bool same_asset_path = node_asset.is_valid() && !refreshed_asset->get_path().is_empty() &&
-                    node_asset->get_path() == refreshed_asset->get_path();
-            if ((same_source || same_asset_path) && node_asset != refreshed_asset) {
-                node->set_splat_asset(refreshed_asset);
-            }
-        }
-        node->force_update();
-    }
+    _apply_hot_reload_asset_to_nodes(p_path, watched_nodes, refreshed_asset);
     if (watched_nodes.is_empty() && current_node) {
         current_node->force_update();
     }
@@ -835,6 +822,44 @@ void GaussianEditorPlugin::_process_hot_reload_for_watch(const String &p_path, H
     restore_context();
     _update_stats();
     _update_inspector_stats();
+}
+
+void GaussianEditorPlugin::_apply_hot_reload_asset_to_nodes(const String &p_path, const Vector<GaussianSplatNode3D *> &p_nodes,
+        const Ref<GaussianSplatAsset> &p_refreshed_asset) {
+    for (int i = 0; i < p_nodes.size(); i++) {
+        GaussianSplatNode3D *node = p_nodes[i];
+        if (!node) {
+            continue;
+        }
+
+        if (p_refreshed_asset.is_valid()) {
+            const String node_source_path = _get_node_source_path(node);
+            Ref<GaussianSplatAsset> node_asset = node->get_splat_asset();
+            const bool same_source = !node_source_path.is_empty() && node_source_path == p_path;
+            const bool same_asset_path = node_asset.is_valid() && !p_refreshed_asset->get_path().is_empty() &&
+                    node_asset->get_path() == p_refreshed_asset->get_path();
+            if ((same_source || same_asset_path) && node_asset != p_refreshed_asset) {
+                node->set_splat_asset(p_refreshed_asset);
+            }
+        }
+        node->force_update();
+    }
+}
+
+bool GaussianEditorPlugin::_test_process_hot_reload_path_now(const String &p_path, const Ref<GaussianSplatAsset> &p_refreshed_asset) {
+    HotReloadWatch *watch = hot_reload_watches.getptr(p_path);
+    if (!watch) {
+        return false;
+    }
+
+    Vector<GaussianSplatNode3D *> watched_nodes = _collect_live_hot_reload_nodes(watch->node_ids);
+    if (watched_nodes.is_empty()) {
+        return false;
+    }
+
+    watch->last_modified = 0;
+    _apply_hot_reload_asset_to_nodes(p_path, watched_nodes, p_refreshed_asset);
+    return true;
 }
 
 void GaussianEditorPlugin::request_asset_reimport(const Ref<GaussianSplatAsset> &p_asset, const Dictionary &p_override) {

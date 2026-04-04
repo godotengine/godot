@@ -96,11 +96,20 @@ protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual Dictionary _load_import_options_for_path(const String &p_path) const;
+	virtual Ref<GaussianSplatAsset> _load_asset_for_path(const String &p_path, bool p_force_reload) const;
+	virtual Error _perform_reimport_request(const String &p_source_path, const String &p_importer_name,
+			const HashMap<StringName, Variant> &p_params);
 
 public:
 	void open_settings(const String &p_path);
 	static Dictionary load_import_options_from_sidecar(const String &p_path);
 	static GaussianImportSettingsDialog *get_singleton();
+	void _test_reimport_now() { _re_import(); }
+	Variant _test_get_setting_value(const StringName &p_name) const;
+	String _test_get_stats_text() const;
+	bool _test_has_preview_splat_node() const { return splat_node != nullptr; }
+	Ref<GaussianSplatAsset> _test_get_loaded_asset() const { return loaded_asset; }
 
 	GaussianImportSettingsDialog();
 	~GaussianImportSettingsDialog();

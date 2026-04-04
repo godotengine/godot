@@ -89,6 +89,8 @@ private:
     void _schedule_hot_reload_poll();
     void _on_hot_reload_timer_timeout();
     void _process_hot_reload_for_watch(const String &p_path, HotReloadWatch &p_watch);
+    void _apply_hot_reload_asset_to_nodes(const String &p_path, const Vector<GaussianSplatNode3D *> &p_nodes,
+            const Ref<GaussianSplatAsset> &p_refreshed_asset);
     void _on_import_dialog_watch(const String &p_path);
 
 protected:
@@ -120,6 +122,10 @@ public:
     void _internal_commit_runtime_modifications(ObjectID p_node_id) { _commit_runtime_modifications(p_node_id); }
     void _internal_revert_runtime_modifications(ObjectID p_node_id) { _revert_runtime_modifications(p_node_id); }
     void _internal_refresh_active_asset_metadata() { _refresh_active_asset_metadata(true); }
+    void _test_track_hot_reload_source(const String &p_path, const Dictionary &p_options, ObjectID p_node_id = ObjectID()) {
+        _track_hot_reload_source(p_path, p_options, p_node_id);
+    }
+    bool _test_process_hot_reload_path_now(const String &p_path, const Ref<GaussianSplatAsset> &p_refreshed_asset = Ref<GaussianSplatAsset>());
 };
 
 #endif // TOOLS_ENABLED

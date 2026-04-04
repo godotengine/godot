@@ -134,6 +134,40 @@ Dictionary GaussianImportSettingsDialog::load_import_options_from_sidecar(const 
 	return options;
 }
 
+Dictionary GaussianImportSettingsDialog::_load_import_options_for_path(const String &p_path) const {
+	return load_import_options_from_sidecar(p_path);
+}
+
+Ref<GaussianSplatAsset> GaussianImportSettingsDialog::_load_asset_for_path(const String &p_path, bool p_force_reload) const {
+	return ResourceLoader::load(p_path, "GaussianSplatAsset",
+			p_force_reload ? ResourceFormatLoader::CACHE_MODE_REPLACE : ResourceFormatLoader::CACHE_MODE_REUSE);
+}
+
+Error GaussianImportSettingsDialog::_perform_reimport_request(const String &p_source_path, const String &p_importer_name,
+		const HashMap<StringName, Variant> &p_params) {
+	EditorFileSystem *fs = EditorFileSystem::get_singleton();
+	ERR_FAIL_NULL_V(fs, ERR_UNAVAILABLE);
+	fs->reimport_file_with_custom_parameters(p_source_path, p_importer_name, p_params);
+	return OK;
+}
+
+Variant GaussianImportSettingsDialog::_test_get_setting_value(const StringName &p_name) const {
+	if (!settings_data) {
+		return Variant();
+	}
+	if (settings_data->current.has(p_name)) {
+		return settings_data->current[p_name];
+	}
+	if (settings_data->defaults.has(p_name)) {
+		return settings_data->defaults[p_name];
+	}
+	return Variant();
+}
+
+String GaussianImportSettingsDialog::_test_get_stats_text() const {
+	return stats_label ? stats_label->get_text() : String();
+}
+
 // ---------------------------------------------------------------------------
 // Theme
 // ---------------------------------------------------------------------------
@@ -638,7 +672,7 @@ void GaussianImportSettingsDialog::_update_stats() {
 // ---------------------------------------------------------------------------
 
 void GaussianImportSettingsDialog::_reload_import_options_from_sidecar() {
-	import_options = load_import_options_from_sidecar(source_path);
+	import_options = _load_import_options_for_path(source_path);
 }
 
 void GaussianImportSettingsDialog::_load_source_asset(bool p_force_reload) {
@@ -649,8 +683,7 @@ void GaussianImportSettingsDialog::_load_source_asset(bool p_force_reload) {
 		return;
 	}
 
-	loaded_asset = ResourceLoader::load(source_path, "GaussianSplatAsset",
-			p_force_reload ? ResourceFormatLoader::CACHE_MODE_REPLACE : ResourceFormatLoader::CACHE_MODE_REUSE);
+	loaded_asset = _load_asset_for_path(source_path, p_force_reload);
 }
 
 // ---------------------------------------------------------------------------
@@ -744,8 +777,10 @@ void GaussianImportSettingsDialog::_re_import() {
 	_clear_viewport_scene();
 	loaded_asset.unref();
 
-	ERR_FAIL_NULL(EditorFileSystem::get_singleton());
-	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(source_path, importer_name, params);
+	const Error reimport_err = _perform_reimport_request(source_path, importer_name, params);
+	if (reimport_err != OK) {
+		return;
+	}
 
 	_reload_import_options_from_sidecar();
 	_load_source_asset(true);

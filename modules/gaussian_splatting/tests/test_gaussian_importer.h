@@ -10,6 +10,7 @@
 #include "../io/ply_loader.h"
 #include "../io/spz_loader.h"
 #include "../editor/gaussian_import_dialog.h"
+#include "../editor/gaussian_editor_plugin.h"
 #include "../editor/gaussian_import_settings_dialog.h"
 #include "../editor/gaussian_thumbnail_generator.h"
 #include "../core/gaussian_splat_asset.h"
@@ -26,7 +27,9 @@
 #include "core/config/project_settings.h"
 #include "core/templates/hash_map.h"
 #include "core/math/math_funcs.h"
+#include "editor/inspector/editor_inspector.h"
 #include "core/string/ustring.h"
+#include "scene/main/node.h"
 
 #include <cstring>
 
@@ -201,6 +204,84 @@ Error _write_import_sidecar(const String &p_source_path, const Dictionary &p_opt
     }
 
     return config->save(p_source_path + ".import");
+}
+
+Ref<GaussianSplatAsset> _make_editor_test_asset(const String &p_source_path, int p_splat_count, const Dictionary &p_options,
+        uint32_t p_compression_flags = GaussianSplatAsset::COMPRESSION_NONE, int64_t p_memory_estimate_bytes = 0) {
+    Ref<GaussianSplatAsset> asset;
+    asset.instantiate();
+    asset->set_source_path(p_source_path);
+    asset->set_splat_count(MAX(p_splat_count, 0));
+
+    PackedFloat32Array positions;
+    positions.resize(MAX(p_splat_count, 0) * 3);
+    for (int i = 0; i < p_splat_count; i++) {
+        positions.set(i * 3 + 0, float(i));
+        positions.set(i * 3 + 1, float(i) * 0.5f);
+        positions.set(i * 3 + 2, 0.0f);
+    }
+    asset->set_positions(positions);
+    asset->set_compression_flags(p_compression_flags);
+
+    Dictionary metadata;
+    metadata[StringName("options")] = p_options;
+    metadata[StringName("source_path")] = p_source_path;
+    if (p_memory_estimate_bytes > 0) {
+        metadata[StringName("memory_estimate_bytes")] = p_memory_estimate_bytes;
+    }
+    asset->set_import_metadata(metadata);
+    return asset;
+}
+
+class TestGaussianImportSettingsDialog : public GaussianImportSettingsDialog {
+public:
+    Dictionary current_import_options;
+    Ref<GaussianSplatAsset> current_asset;
+    int reimport_request_count = 0;
+    String last_importer_name;
+    HashMap<StringName, Variant> last_reimport_params;
+
+protected:
+    Dictionary _load_import_options_for_path(const String &p_path) const override {
+        (void)p_path;
+        return current_import_options;
+    }
+
+    Ref<GaussianSplatAsset> _load_asset_for_path(const String &p_path, bool p_force_reload) const override {
+        (void)p_path;
+        (void)p_force_reload;
+        return current_asset;
+    }
+
+    Error _perform_reimport_request(const String &p_source_path, const String &p_importer_name,
+            const HashMap<StringName, Variant> &p_params) override {
+        (void)p_source_path;
+        reimport_request_count += 1;
+        last_importer_name = p_importer_name;
+        last_reimport_params = p_params;
+        return OK;
+    }
+};
+
+EditorProperty *_find_property_editor(Node *p_root, const StringName &p_property_name) {
+    if (!p_root) {
+        return nullptr;
+    }
+
+    if (EditorProperty *property = Object::cast_to<EditorProperty>(p_root)) {
+        if (property->get_edited_property() == p_property_name) {
+            return property;
+        }
+    }
+
+    for (int i = 0; i < p_root->get_child_count(); i++) {
+        Node *child = p_root->get_child(i);
+        if (EditorProperty *property = _find_property_editor(child, p_property_name)) {
+            return property;
+        }
+    }
+
+    return nullptr;
 }
 
 PackedByteArray _make_spz_header(uint32_t p_version, uint32_t p_num_points, uint8_t p_sh_degree, uint8_t p_fractional_bits, uint8_t p_flags = 0, uint8_t p_reserved = 0) {
@@ -1878,6 +1959,100 @@ TEST_CASE("[GaussianSplatting][Editor] Import settings dialog ignores missing si
 
     Dictionary loaded = GaussianImportSettingsDialog::load_import_options_from_sidecar(source_path);
     CHECK(loaded.is_empty());
+}
+
+TEST_CASE("[GaussianSplatting][Editor] Advanced import settings reimport refreshes inspector, preview, and stats") {
+    const String source_path = "user://gaussian_import_settings_reimport_fixture.ply";
+
+    Dictionary initial_options;
+    initial_options[StringName("quality/preset")] = String("desktop");
+    initial_options[StringName("quality/max_splats")] = 12345;
+    initial_options[StringName("custom/preserve")] = String("alpha");
+    initial_options[StringName("metadata/include_statistics")] = true;
+
+    Dictionary refreshed_options = initial_options;
+    refreshed_options[StringName("quality/preset")] = String("ultra");
+    refreshed_options[StringName("quality/max_splats")] = 54321;
+    refreshed_options[StringName("custom/preserve")] = String("beta");
+
+    TestGaussianImportSettingsDialog *dialog = memnew(TestGaussianImportSettingsDialog);
+    dialog->current_import_options = initial_options;
+    dialog->current_asset = _make_editor_test_asset(source_path, 3, initial_options,
+            GaussianSplatAsset::COMPRESSION_POSITIONS, 1048576);
+
+    dialog->open_settings(source_path);
+
+    CHECK(String(dialog->_test_get_setting_value(StringName("quality/preset"))) == String("desktop"));
+    CHECK(int(dialog->_test_get_setting_value(StringName("quality/max_splats"))) == 12345);
+    REQUIRE_MESSAGE(dialog->_test_get_loaded_asset().is_valid(), "Import settings dialog should load the initial asset.");
+    CHECK(dialog->_test_get_loaded_asset()->get_splat_count() == 3);
+    CHECK(dialog->_test_get_stats_text().contains("Splats: 3"));
+    CHECK(dialog->_test_get_stats_text().contains("Est. Memory: 1.0 MB"));
+
+    EditorProperty *max_splats_property = _find_property_editor(dialog, StringName("quality/max_splats"));
+    REQUIRE_MESSAGE(max_splats_property != nullptr, "Import settings inspector should expose quality/max_splats.");
+    Object *edited_object = max_splats_property->get_edited_object();
+    REQUIRE_MESSAGE(edited_object != nullptr, "Import settings editor property should have a backing object.");
+    edited_object->set(StringName("quality/max_splats"), 22222);
+
+    dialog->current_import_options = refreshed_options;
+    dialog->current_asset = _make_editor_test_asset(source_path, 5, refreshed_options,
+            GaussianSplatAsset::COMPRESSION_POSITIONS | GaussianSplatAsset::COMPRESSION_COLORS, 2097152);
+
+    dialog->_test_reimport_now();
+
+    CHECK(dialog->reimport_request_count == 1);
+    CHECK(dialog->last_importer_name == "gaussian_splat_ply");
+    REQUIRE_MESSAGE(dialog->last_reimport_params.has(StringName("quality/max_splats")),
+            "Reimport request should preserve the edited inspector value.");
+    CHECK(int(dialog->last_reimport_params[StringName("quality/max_splats")]) == 22222);
+    REQUIRE_MESSAGE(dialog->last_reimport_params.has(StringName("custom/preserve")),
+            "Reimport request should preserve unexposed sidecar parameters.");
+    CHECK(String(dialog->last_reimport_params[StringName("custom/preserve")]) == "alpha");
+    CHECK(String(dialog->_test_get_setting_value(StringName("quality/preset"))) == String("ultra"));
+    CHECK(int(dialog->_test_get_setting_value(StringName("quality/max_splats"))) == 54321);
+    REQUIRE_MESSAGE(dialog->_test_get_loaded_asset().is_valid(), "Import settings dialog should refresh the loaded asset.");
+    CHECK(dialog->_test_get_loaded_asset()->get_splat_count() == 5);
+    CHECK(dialog->_test_get_stats_text().contains("Splats: 5"));
+    CHECK(dialog->_test_get_stats_text().contains("Est. Memory: 2.0 MB"));
+
+    GaussianSplatNode3D *preview_node = Object::cast_to<GaussianSplatNode3D>(dialog->find_child("ImportPreviewSplat", true, false));
+    REQUIRE_MESSAGE(preview_node != nullptr, "Import settings dialog should rebuild its preview splat node.");
+    CHECK(preview_node->get_splat_asset() == dialog->_test_get_loaded_asset());
+
+    memdelete(dialog);
+}
+
+TEST_CASE("[GaussianSplatting][Editor] Hot reload fans one watched source path out to all registered live nodes") {
+    const String source_path = "user://hot_reload_fanout_fixture.ply";
+
+    GaussianEditorPlugin *plugin = memnew(GaussianEditorPlugin);
+    GaussianSplatNode3D *node_a = memnew(GaussianSplatNode3D);
+    GaussianSplatNode3D *node_b = memnew(GaussianSplatNode3D);
+    GaussianSplatNode3D *node_c = memnew(GaussianSplatNode3D);
+
+    Ref<GaussianSplatAsset> asset_a = _make_editor_test_asset(source_path, 1, Dictionary());
+    Ref<GaussianSplatAsset> asset_b = _make_editor_test_asset(source_path, 1, Dictionary());
+    Ref<GaussianSplatAsset> asset_c = _make_editor_test_asset(source_path, 1, Dictionary());
+    Ref<GaussianSplatAsset> refreshed_asset = _make_editor_test_asset(source_path, 2, Dictionary());
+
+    node_a->set_splat_asset(asset_a);
+    node_b->set_splat_asset(asset_b);
+    node_c->set_splat_asset(asset_c);
+
+    plugin->_test_track_hot_reload_source(source_path, Dictionary(), node_a->get_instance_id());
+    plugin->_test_track_hot_reload_source(source_path, Dictionary(), node_b->get_instance_id());
+
+    CHECK(plugin->_test_process_hot_reload_path_now(source_path, refreshed_asset));
+
+    CHECK(node_a->get_splat_asset() == refreshed_asset);
+    CHECK(node_b->get_splat_asset() == refreshed_asset);
+    CHECK(node_c->get_splat_asset() == asset_c);
+
+    memdelete(node_c);
+    memdelete(node_b);
+    memdelete(node_a);
+    memdelete(plugin);
 }
 
 #endif // TOOLS_ENABLED
