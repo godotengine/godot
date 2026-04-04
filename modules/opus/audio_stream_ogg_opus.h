@@ -32,7 +32,7 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include <include/opusfile.h>
+#include <opusfile/opusfile.h>
 
 class AudioStreamOggOpus;
 

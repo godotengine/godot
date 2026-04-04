@@ -304,6 +304,10 @@ def configure(env: "SConsEnvironment"):
         else:
             env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
 
+    if not env["builtin_libopus"]:
+        env["builtin_libogg"] = False  # Needed to link against system libopus
+        env.ParseConfig("pkg-config opus opusfile --cflags --libs")
+
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")
 
