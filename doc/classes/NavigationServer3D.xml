@@ -305,8 +305,20 @@
 				Create a new server-only mesh area (see [NavigationMeshArea3D]) according to the given shape type on a map.
 			</description>
 		</method>
+		<method name="area_get_bake_priority" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="area_get_enabled" qualifiers="const">
 			<return type="bool" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_height" qualifiers="const">
+			<return type="float" />
 			<param index="0" name="area" type="RID" />
 			<description>
 			</description>
@@ -323,10 +335,54 @@
 			<description>
 			</description>
 		</method>
+		<method name="area_get_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_shape_type" qualifiers="const">
+			<return type="int" enum="NavigationServer3D.AreaShapeType3D" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_size" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_bake_priority">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="priority" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="area_set_enabled">
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_height">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="height" type="float" />
 			<description>
 			</description>
 		</method>
@@ -345,6 +401,34 @@
 				States which layers should be considered for the cost calculation during a path query.
 				A query takes the first matching layer between the query parameter and the polygon. This means if the area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
 				[b]Note:[/b] Requires re-baking the affected region(s). And will only be used for baking in a region, if at least 1 layer bit is different from the targeted region.
+			</description>
+		</method>
+		<method name="area_set_position">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_radius">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_size">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_vertices">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="vertices" type="PackedVector3Array" />
+			<description>
 			</description>
 		</method>
 		<method name="bake_from_source_geometry_data">

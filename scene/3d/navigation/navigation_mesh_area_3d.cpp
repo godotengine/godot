@@ -108,12 +108,12 @@ bool NavigationMeshArea3D::get_navigation_layer_value(int p_layer_number) const 
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
-void NavigationMeshArea3D::set_priority(int p_priority) {
-	priority = p_priority;
+void NavigationMeshArea3D::set_bake_priority(int p_priority) {
+	bake_priority = p_priority;
 }
 
-int NavigationMeshArea3D::get_priority() const {
-	return priority;
+int NavigationMeshArea3D::get_bake_priority() const {
+	return bake_priority;
 }
 
 AABB NavigationMeshArea3D::get_bounds() {
@@ -240,7 +240,7 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 	}
 
 	uint32_t area_navigation_layers = area->get_navigation_layers();
-	int area_priority = area->get_priority();
+	int area_priority = area->get_bake_priority();
 
 	{
 		NavigationMeshAreaBox3D *node = Object::cast_to<NavigationMeshAreaBox3D>(p_node);
@@ -330,14 +330,14 @@ void NavigationMeshArea3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationMeshArea3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationMeshArea3D::get_navigation_layer_value);
 
-	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &NavigationMeshArea3D::set_priority);
-	ClassDB::bind_method(D_METHOD("get_priority"), &NavigationMeshArea3D::get_priority);
+	ClassDB::bind_method(D_METHOD("set_bake_priority", "bake_priority"), &NavigationMeshArea3D::set_bake_priority);
+	ClassDB::bind_method(D_METHOD("get_bake_priority"), &NavigationMeshArea3D::get_bake_priority);
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshArea3D::get_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,100000,1,or_greater,or_less"), "set_priority", "get_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_priority", PROPERTY_HINT_RANGE, "0,100000,1,or_greater,or_less"), "set_bake_priority", "get_bake_priority");
 }
 
 NavigationMeshArea3D::NavigationMeshArea3D() {

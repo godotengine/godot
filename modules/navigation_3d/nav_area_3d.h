@@ -76,8 +76,8 @@ public:
 	void set_navigation_layers(uint32_t p_layers);
 	uint32_t get_navigation_layers() const { return navigation_layers; }
 
-	void set_priority(int p_priority);
-	int get_priority() const { return priority; }
+	void set_bake_priority(int p_priority);
+	int get_bake_priority() const { return priority; }
 
 	void set_size(const Vector3 p_size);
 	const Vector3 &get_size() const { return xyz; }

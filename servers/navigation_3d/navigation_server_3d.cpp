@@ -121,12 +121,26 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_bounds", "region"), &NavigationServer3D::region_get_bounds);
 
 	ClassDB::bind_method(D_METHOD("area_create", "shape_type"), &NavigationServer3D::area_create);
+	ClassDB::bind_method(D_METHOD("area_get_shape_type", "area"), &NavigationServer3D::area_get_shape_type);
 	ClassDB::bind_method(D_METHOD("area_set_map", "area", "map"), &NavigationServer3D::area_set_map);
 	ClassDB::bind_method(D_METHOD("area_get_map", "area"), &NavigationServer3D::area_get_map);
 	ClassDB::bind_method(D_METHOD("area_set_enabled", "area", "enabled"), &NavigationServer3D::area_set_enabled);
 	ClassDB::bind_method(D_METHOD("area_get_enabled", "area"), &NavigationServer3D::area_get_enabled);
+	ClassDB::bind_method(D_METHOD("area_set_position", "area", "position"), &NavigationServer3D::area_set_position);
+	ClassDB::bind_method(D_METHOD("area_get_position", "area"), &NavigationServer3D::area_get_position);
+	ClassDB::bind_method(D_METHOD("area_set_height", "area", "height"), &NavigationServer3D::area_set_height);
+	ClassDB::bind_method(D_METHOD("area_get_height", "area"), &NavigationServer3D::area_get_height);
 	ClassDB::bind_method(D_METHOD("area_set_navigation_layers", "area", "navigation_layers"), &NavigationServer3D::area_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("area_get_navigation_layers", "area"), &NavigationServer3D::area_get_navigation_layers);
+	ClassDB::bind_method(D_METHOD("area_set_bake_priority", "area", "priority"), &NavigationServer3D::area_set_bake_priority);
+	ClassDB::bind_method(D_METHOD("area_get_bake_priority", "area"), &NavigationServer3D::area_get_bake_priority);
+	ClassDB::bind_method(D_METHOD("area_set_size", "area", "size"), &NavigationServer3D::area_set_size);
+	ClassDB::bind_method(D_METHOD("area_get_size", "area"), &NavigationServer3D::area_get_size);
+	// ClassDB::bind_method(D_METHOD("area_get_bounds", "area"), &NavigationServer3D::area_get_bounds);
+	ClassDB::bind_method(D_METHOD("area_set_radius", "area", "radius"), &NavigationServer3D::area_set_radius);
+	ClassDB::bind_method(D_METHOD("area_get_radius", "area"), &NavigationServer3D::area_get_radius);
+	ClassDB::bind_method(D_METHOD("area_set_vertices", "area", "vertices"), &NavigationServer3D::area_set_vertices);
+	ClassDB::bind_method(D_METHOD("area_get_vertices", "area"), &NavigationServer3D::area_get_vertices);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
 	ClassDB::bind_method(D_METHOD("link_get_iteration_id", "link"), &NavigationServer3D::link_get_iteration_id);

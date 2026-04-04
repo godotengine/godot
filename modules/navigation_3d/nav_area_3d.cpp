@@ -86,7 +86,7 @@ void NavArea3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	// request_sync();
 }
 
-void NavArea3D::set_priority(int p_priority) {
+void NavArea3D::set_bake_priority(int p_priority) {
 	if (priority == p_priority) {
 		return;
 	}

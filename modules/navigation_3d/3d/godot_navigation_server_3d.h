@@ -190,12 +190,26 @@ public:
 	virtual AABB region_get_bounds(RID p_region) const override;
 
 	virtual RID area_create(AreaShapeType3D p_shape_type) override;
+	virtual AreaShapeType3D area_get_shape_type(RID p_area) const override;
 	COMMAND_2(area_set_map, RID, p_area, RID, p_map);
 	virtual RID area_get_map(RID p_area) const override;
 	COMMAND_2(area_set_enabled, RID, p_area, bool, p_enabled);
 	virtual bool area_get_enabled(RID p_area) const override;
+	COMMAND_2(area_set_position, RID, p_area, Vector3, p_position);
+	virtual Vector3 area_get_position(RID p_area) const override;
+	COMMAND_2(area_set_height, RID, p_area, real_t, p_height);
+	virtual real_t area_get_height(RID p_area) const override;
 	COMMAND_2(area_set_navigation_layers, RID, p_area, uint32_t, p_navigation_layers);
 	virtual uint32_t area_get_navigation_layers(RID p_area) const override;
+	COMMAND_2(area_set_bake_priority, RID, p_area, int, p_priority);
+	virtual int area_get_bake_priority(RID p_area) const override;
+	COMMAND_2(area_set_size, RID, p_area, Vector3, p_size);
+	virtual Vector3 area_get_size(RID p_area) const override;
+	// virtual AABB area_get_bounds(RID p_area) const override;
+	COMMAND_2(area_set_radius, RID, p_area, real_t, p_radius);
+	virtual real_t area_get_radius(RID p_area) const override;
+	virtual void area_set_vertices(RID p_area, const Vector<Vector3> & p_vertices) override;
+	virtual Vector<Vector3> area_get_vertices(RID p_area) const override;
 
 	virtual RID link_create() override;
 	virtual uint32_t link_get_iteration_id(RID p_link) const override;

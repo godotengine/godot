@@ -44,7 +44,7 @@ protected:
 
 	bool enabled = true;
 	uint32_t navigation_layers = 1;
-	int priority = 0;
+	int bake_priority = 0;
 	AABB bounds;
 	bool bounds_dirty = true;
 
@@ -79,8 +79,8 @@ public:
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
 
-	void set_priority(int p_priority);
-	int get_priority() const;
+	void set_bake_priority(int p_priority);
+	int get_bake_priority() const;
 
 	AABB get_bounds();
 
