@@ -157,18 +157,43 @@ void AudioStreamOggOpus::set_data(const Vector<uint8_t> &p_data) {
 	int src_data_len = p_data.size();
 	const uint8_t *src_datar = p_data.ptr();
 
-	// open to fetch metadata
+	// Open file to fetch metadata
 	OggOpusFile *opus_file = op_open_memory(src_datar, src_data_len, nullptr);
 	ERR_FAIL_COND_MSG(opus_file == nullptr, "Could not open opus stream.");
 
 	int64_t length_i = op_pcm_total(opus_file, -1);
 	length = (length_i > 0) ? (float(length_i) / OPUS_SAMPLERATE) : 0;
 
+	// Tags (parsed same as OGG Vorbis)
+	const OpusTags *opus_tags = op_tags(opus_file, -1);
+	Dictionary dictionary;
+	if (opus_tags != nullptr) {
+		for (int i = 0; i < opus_tags->comments; i++) {
+			String c = String::utf8(opus_tags->user_comments[i]);
+			int equals = c.find_char('=');
+
+#ifdef TOOLS_ENABLED
+			if (equals == -1) {
+				WARN_PRINT(vformat(R"(Invalid comment in Ogg Opus file "%s", should contain '=': "%s".)", get_path(), c));
+				continue;
+			}
+#endif
+
+			String tag = c.substr(0, equals);
+			String tag_value = c.substr(equals + 1);
+
+			dictionary[tag.to_lower()] = tag_value;
+		}
+	}
+	tags = dictionary;
+
+	// Close file
 	op_free(opus_file);
 
+	// Clear existing data
 	clear_data();
 
-	// copy
+	// Copy data
 	data = memalloc(src_data_len);
 	memcpy(data, src_datar, src_data_len);
 	data_len = src_data_len;
@@ -265,6 +290,14 @@ int AudioStreamOggOpus::get_bar_beats() const {
 	return bar_beats;
 }
 
+void AudioStreamOggOpus::set_tags(const Dictionary &p_tags) {
+	tags = p_tags;
+}
+
+Dictionary AudioStreamOggOpus::get_tags() const {
+	return tags;
+}
+
 bool AudioStreamOggOpus::is_monophonic() const {
 	return false;
 }
@@ -291,10 +324,14 @@ void AudioStreamOggOpus::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bar_beats", "count"), &AudioStreamOggOpus::set_bar_beats);
 	ClassDB::bind_method(D_METHOD("get_bar_beats"), &AudioStreamOggOpus::get_bar_beats);
 
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamOggOpus::set_tags);
+	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamOggOpus::get_tags);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), "set_bpm", "get_bpm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,1,or_greater"), "set_beat_count", "get_beat_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,1,or_greater"), "set_bar_beats", "get_bar_beats");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "tags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tags", "get_tags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
