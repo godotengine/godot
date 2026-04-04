@@ -1407,5 +1407,7 @@
 		<constant name="INFO_OBSTACLE_COUNT" value="9" enum="ProcessInfo">
 			Constant to get the number of active navigation obstacles.
 		</constant>
+		<constant name="INFO_AREA_COUNT" value="10" enum="ProcessInfo">
+		</constant>
 	</constants>
 </class>

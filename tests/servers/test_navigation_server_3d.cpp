@@ -254,6 +254,45 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK_EQ(navigation_server->get_maps().size(), 0);
 	}
 
+	TEST_CASE("[NavigationServer3D] Server should manage area properly") {
+		NavigationServer3D *ns = NavigationServer3D::get_singleton();
+
+		RID area = ns->area_create(NavigationServer3D::AreaShapeType3D::AREA_SHAPE_BOX);
+		CHECK(area.is_valid());
+
+		SUBCASE("'ProcessInfo' should not report dangling area") {
+			CHECK_EQ(ns->get_process_info(NavigationServer3D::INFO_AREA_COUNT), 0);
+		}
+
+		SUBCASE("Setters/getters should work") {
+			bool initial_is_enabled = ns->area_get_enabled(area);
+			ns->area_set_enabled(area, !initial_is_enabled);
+			Vector3 initial_pos = Vector3(0, 0, 3);
+			ns->area_set_position(area, initial_pos);
+			// TODO: test more setters/getters.
+
+			ns->physics_process(0.0); // Give server some cycles to commit.
+
+			CHECK_EQ(ns->area_get_enabled(area), !initial_is_enabled);
+			CHECK_EQ(ns->area_get_position(area), initial_pos);
+		}
+
+		SUBCASE("'ProcessInfo' should report area with active map") {
+			RID map = ns->map_create();
+			CHECK(map.is_valid());
+			ns->map_set_active(map, true);
+			ns->area_set_map(area, map);
+			ns->physics_process(0.0); // Give server some cycles to commit.
+			CHECK_EQ(ns->get_process_info(NavigationServer3D::INFO_AREA_COUNT), 1);
+			ns->area_set_map(area, RID());
+			ns->free_rid(map);
+			ns->physics_process(0.0); // Give server some cycles to commit.
+			CHECK_EQ(ns->get_process_info(NavigationServer3D::INFO_AREA_COUNT), 0);
+		}
+
+		ns->free_rid(area);
+	}
+
 	TEST_CASE("[NavigationServer3D] Server should manage link properly") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 

@@ -1585,6 +1585,7 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 	int _new_pm_edge_connection_count = 0;
 	int _new_pm_edge_free_count = 0;
 	int _new_pm_obstacle_count = 0;
+	int _new_pm_area_count = 0;
 
 	MutexLock lock(operations_mutex);
 	for (uint32_t i(0); i < active_maps.size(); i++) {
@@ -1601,6 +1602,7 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
 		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
+		_new_pm_area_count += active_maps[i]->get_pm_area_count();
 	}
 
 	pm_region_count = _new_pm_region_count;
@@ -1612,6 +1614,7 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 	pm_edge_connection_count = _new_pm_edge_connection_count;
 	pm_edge_free_count = _new_pm_edge_free_count;
 	pm_obstacle_count = _new_pm_obstacle_count;
+	pm_area_count = _new_pm_area_count;
 }
 
 void GodotNavigationServer3D::init() {
@@ -1725,6 +1728,9 @@ int GodotNavigationServer3D::get_process_info(ProcessInfo p_info) const {
 		} break;
 		case INFO_OBSTACLE_COUNT: {
 			return pm_obstacle_count;
+		} break;
+		case INFO_AREA_COUNT: {
+			return pm_area_count;
 		} break;
 	}
 
