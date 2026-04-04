@@ -351,6 +351,9 @@ void GaussianSplatNode3D::_notification_enter_world() {
     _ensure_renderer();
     _update_render_instance();
     _register_shared_renderer();
+    debug_helper.apply_renderer_debug_settings();
+    _update_debug_hud_visibility();
+    notify_property_list_changed();
 }
 
 void GaussianSplatNode3D::_notification_exit_tree() {

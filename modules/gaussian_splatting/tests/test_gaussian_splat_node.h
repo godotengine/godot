@@ -1011,6 +1011,63 @@ TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer hid
     memdelete(node_b);
 }
 
+TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Detached node reclaims retained renderer debug settings on re-entry") {
+    SceneTree *tree = SceneTree::get_singleton();
+    REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
+
+    Window *root = tree->get_root();
+    REQUIRE_MESSAGE(root != nullptr, "SceneTree root window required");
+
+    GaussianSplatNode3D *node_a = memnew(GaussianSplatNode3D);
+    GaussianSplatNode3D *node_b = memnew(GaussianSplatNode3D);
+    node_a->set_splat_asset(make_single_splat_asset(0.0f));
+    node_b->set_splat_asset(make_single_splat_asset(10.0f));
+
+    root->add_child(node_a);
+    tree->process(0.0);
+
+    Ref<GaussianSplatRenderer> renderer_a = node_a->get_renderer();
+    if (!renderer_a.is_valid()) {
+        MESSAGE("Skipping test - renderer unavailable (headless mode)");
+        root->remove_child(node_a);
+        memdelete(node_b);
+        memdelete(node_a);
+        return;
+    }
+
+    node_a->set_show_density_heatmap(true);
+    CHECK(renderer_a->is_debug_show_density_heatmap());
+
+    root->remove_child(node_a);
+    tree->process(0.0);
+
+    root->add_child(node_b);
+    tree->process(0.0);
+
+    Ref<GaussianSplatRenderer> renderer_b = node_b->get_renderer();
+    if (!renderer_b.is_valid() || renderer_b != renderer_a) {
+        MESSAGE("Skipping test - retained shared renderer unavailable");
+        root->remove_child(node_b);
+        memdelete(node_b);
+        memdelete(node_a);
+        return;
+    }
+    CHECK_FALSE(renderer_a->is_debug_show_density_heatmap());
+
+    root->remove_child(node_b);
+    tree->process(0.0);
+
+    root->add_child(node_a);
+    tree->process(0.0);
+
+    CHECK(is_property_editor_exposed(node_a, StringName("debug/show_density_heatmap")));
+    CHECK(renderer_a->is_debug_show_density_heatmap());
+
+    root->remove_child(node_a);
+    memdelete(node_b);
+    memdelete(node_a);
+}
+
 TEST_CASE("[GaussianSplatting][Node][SceneTree][RequiresGPU] Shared renderer instance buffer tracks per-node opacity") {
     SceneTree *tree = SceneTree::get_singleton();
     REQUIRE_MESSAGE(tree != nullptr, "SceneTree singleton required");
