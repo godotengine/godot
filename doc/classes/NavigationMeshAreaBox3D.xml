@@ -14,6 +14,7 @@
 	<members>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
 			The size of the projected box on the xzy-axis.
+			[b]NOTE[/b]: Changes require a re-baking of this area to the region.
 		</member>
 	</members>
 </class>

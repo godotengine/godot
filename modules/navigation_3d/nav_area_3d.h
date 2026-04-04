@@ -37,12 +37,13 @@
 
 class NavMap3D;
 
-// Variant of NavigationMeshSourceGeometryData3D::ProjectedArea for parsing navigation mesh areas created via navigation server.
-// TODO: we could interpret size.x as radius, size.y as height.
+// For parsing navigation mesh areas created via navigation server.
+// Lives inside a NavMap.
+// Variant of NavigationMeshSourceGeometryData3D::ProjectedArea.
 class NavArea3D : public NavRid3D {
 	NavMap3D *map = nullptr;
 	Vector3 position;
-	// Vector-packing Legend:
+	// Channel-packing Legend:
 	// For AreaBox only: xyz means `size`.
 	// For AreaCylinder: x means `radius`, y means `height`.
 	// For AreaPolygon: z means `elevation`, y means `height`.

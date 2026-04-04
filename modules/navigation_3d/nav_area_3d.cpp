@@ -81,6 +81,9 @@ void NavArea3D::set_navigation_layers(uint32_t p_navigation_layers) {
 		return;
 	}
 	navigation_layers = p_navigation_layers;
+	// iteration_dirty = true; // FIXME: makes sense, because this affects only queries after baking.
+
+	// request_sync();
 }
 
 void NavArea3D::set_priority(int p_priority) {

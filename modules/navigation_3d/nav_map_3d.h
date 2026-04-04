@@ -51,6 +51,12 @@ class NavArea3D;
 class NavAgent3D;
 class NavObstacle3D;
 
+// Holds regions, agents, obstacles, areas, and links.
+// Handles (or delegates to thirdparty library):
+// * parsing of NavArea3D objects created via server
+// * map iterations/syncs
+// * path queries for agents
+// * local avoidance
 class NavMap3D : public NavRid3D {
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
