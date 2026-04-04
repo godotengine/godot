@@ -27,7 +27,7 @@ if env["builtin_libopus"]:
             "#thirdparty/libopus/silk/fixed/",
             "#thirdparty/libopus/silk/float/",
             "#thirdparty/libopusfile/",
-            "#thirdparty/libopusfile/opusfile/",
+            "#thirdparty/libopusfile/opus/",
             "#thirdparty/libopusfile/src/",
         ]
     )
