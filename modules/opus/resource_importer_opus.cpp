@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_importer_ogg_opus.cpp                                        */
+/*  resource_importer_opus.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "resource_importer_ogg_opus.h"
+#include "resource_importer_opus.h"
 
-#include "audio_stream_ogg_opus.h"
+#include "audio_stream_opus.h"
 
 #include "core/io/resource_saver.h"
 
@@ -41,39 +41,39 @@
 #include <ogg/ogg.h>
 #include <opus/opus.h>
 
-String ResourceImporterOggOpus::get_importer_name() const {
+String ResourceImporterOpus::get_importer_name() const {
 	return "oggopusstr";
 }
 
-String ResourceImporterOggOpus::get_visible_name() const {
+String ResourceImporterOpus::get_visible_name() const {
 	return "Ogg Opus";
 }
 
-void ResourceImporterOggOpus::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceImporterOpus::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("opus");
 }
 
-String ResourceImporterOggOpus::get_save_extension() const {
+String ResourceImporterOpus::get_save_extension() const {
 	return "oggopusstr";
 }
 
-String ResourceImporterOggOpus::get_resource_type() const {
-	return "AudioStreamOggOpus";
+String ResourceImporterOpus::get_resource_type() const {
+	return "AudioStreamOpus";
 }
 
-bool ResourceImporterOggOpus::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+bool ResourceImporterOpus::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
-int ResourceImporterOggOpus::get_preset_count() const {
+int ResourceImporterOpus::get_preset_count() const {
 	return 0;
 }
 
-String ResourceImporterOggOpus::get_preset_name(int p_idx) const {
+String ResourceImporterOpus::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterOggOpus::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterOpus::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
@@ -82,41 +82,41 @@ void ResourceImporterOggOpus::get_import_options(const String &p_path, List<Impo
 }
 
 #ifdef TOOLS_ENABLED
-bool ResourceImporterOggOpus::has_advanced_options() const {
+bool ResourceImporterOpus::has_advanced_options() const {
 	return true;
 }
 
-void ResourceImporterOggOpus::show_advanced_options(const String &p_path) {
-	Ref<AudioStreamOggOpus> ogg_stream = AudioStreamOggOpus::load_from_file(p_path);
-	if (ogg_stream.is_valid()) {
-		AudioStreamImportSettingsDialog::get_singleton()->edit(p_path, "oggopusstr", ogg_stream);
+void ResourceImporterOpus::show_advanced_options(const String &p_path) {
+	Ref<AudioStreamOpus> opus_stream = AudioStreamOpus::load_from_file(p_path);
+	if (opus_stream.is_valid()) {
+		AudioStreamImportSettingsDialog::get_singleton()->edit(p_path, "oggopusstr", opus_stream);
 	}
 }
 #endif
 
-Error ResourceImporterOggOpus::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterOpus::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
 	double loop_offset = p_options["loop_offset"];
 	double bpm = p_options["bpm"];
 	int beat_count = p_options["beat_count"];
 	int bar_beats = p_options["bar_beats"];
 
-	Ref<AudioStreamOggOpus> ogg_opus_stream = AudioStreamOggOpus::load_from_file(p_source_file);
-	if (ogg_opus_stream.is_null()) {
+	Ref<AudioStreamOpus> opus_stream = AudioStreamOpus::load_from_file(p_source_file);
+	if (opus_stream.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
-	ogg_opus_stream->set_loop(loop);
-	ogg_opus_stream->set_loop_offset(loop_offset);
-	ogg_opus_stream->set_bpm(bpm);
-	ogg_opus_stream->set_beat_count(beat_count);
-	ogg_opus_stream->set_bar_beats(bar_beats);
+	opus_stream->set_loop(loop);
+	opus_stream->set_loop_offset(loop_offset);
+	opus_stream->set_bpm(bpm);
+	opus_stream->set_beat_count(beat_count);
+	opus_stream->set_bar_beats(bar_beats);
 
-	return ResourceSaver::save(ogg_opus_stream, p_save_path + ".oggopusstr");
+	return ResourceSaver::save(opus_stream, p_save_path + ".oggopusstr");
 }
 
-void ResourceImporterOggOpus::_bind_methods() {
+void ResourceImporterOpus::_bind_methods() {
 }
 
-ResourceImporterOggOpus::ResourceImporterOggOpus() {
+ResourceImporterOpus::ResourceImporterOpus() {
 }

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_importer_ogg_opus.h                                          */
+/*  resource_importer_opus.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,8 +32,8 @@
 
 #include "core/io/resource_importer.h"
 
-class ResourceImporterOggOpus : public ResourceImporter {
-	GDCLASS(ResourceImporterOggOpus, ResourceImporter);
+class ResourceImporterOpus : public ResourceImporter {
+	GDCLASS(ResourceImporterOpus, ResourceImporter);
 
 protected:
 	static void _bind_methods();
@@ -58,5 +58,5 @@ public:
 
 	virtual bool can_import_threaded() const override { return true; }
 
-	ResourceImporterOggOpus();
+	ResourceImporterOpus();
 };
