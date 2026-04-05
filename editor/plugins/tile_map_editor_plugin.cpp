@@ -414,6 +414,12 @@ void TileMapEditor::_update_palette() {
 		return;
 	}
 
+	const bool keep_tileset_layout = bool(EDITOR_GET("editors/tile_map/palette_keep_tileset_layout"));
+	manual_palette_scroll->set_enable_h_scroll(keep_tileset_layout);
+	manual_palette_scroll->set_enable_v_scroll(keep_tileset_layout);
+	palette->set_auto_height(false);
+	manual_palette->set_auto_height(keep_tileset_layout);
+
 	// Update the clear button.
 	clear_transform_button->set_disabled(!flip_h && !flip_v && !transpose);
 
@@ -423,7 +429,11 @@ void TileMapEditor::_update_palette() {
 	int selected_manual = manual_palette->get_current();
 	palette->clear();
 	manual_palette->clear();
-	manual_palette->hide();
+	palette->set_custom_minimum_size(Size2());
+	manual_palette->set_custom_minimum_size(Size2());
+	palette->set_max_columns(0);
+	manual_palette->set_max_columns(0);
+	manual_palette_scroll->hide();
 
 	Ref<TileSet> tileset = node->get_tileset();
 	if (tileset.is_null()) {
@@ -492,7 +502,10 @@ void TileMapEditor::_update_palette() {
 			continue;
 		}
 
-		const _PaletteEntry entry = { id, item_name };
+		_PaletteEntry entry;
+		entry.id = id;
+		entry.item_name = item_name;
+
 		entries.push_back(entry);
 	}
 
@@ -587,6 +600,21 @@ void TileMapEditor::_update_palette() {
 
 			manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries2[i]);
 		}
+
+		if (keep_tileset_layout) {
+			int manual_columns = 1;
+			for (int i = 0; i < entries2.size(); i++) {
+				manual_columns = MAX(manual_columns, int(entries2[i].x) + 1);
+			}
+			manual_palette->set_max_columns(manual_columns);
+
+			const int manual_hseparation = MAX(0, manual_palette->get_constant("hseparation"));
+			const float icon_width = manual_palette->get_fixed_icon_size().x * manual_palette->get_icon_scale();
+			const int manual_item_width = MAX(1, int(Math::ceil(icon_width)));
+			const int manual_cell_width = manual_item_width + manual_hseparation;
+			const int manual_content_width = manual_columns * manual_cell_width + MAX(0, manual_columns - 1) * manual_hseparation;
+			manual_palette->set_custom_minimum_size(Size2(manual_content_width, 0));
+		}
 	}
 
 	if (manual_palette->get_item_count() > 0) {
@@ -597,7 +625,7 @@ void TileMapEditor::_update_palette() {
 		if (selected_manual < manual_palette->get_item_count()) {
 			manual_palette->set_current(selected_manual);
 		}
-		manual_palette->show();
+		manual_palette_scroll->show();
 	}
 
 	if (sel_tile != TileMap::INVALID_CELL && tileset->has_tile(sel_tile) && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
@@ -2102,6 +2130,14 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	palette->add_child(info_message);
 
+	manual_palette_scroll = memnew(ScrollContainer);
+	manual_palette_scroll->set_h_size_flags(SIZE_EXPAND_FILL);
+	manual_palette_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	manual_palette_scroll->set_enable_h_scroll(true);
+	manual_palette_scroll->set_enable_v_scroll(true);
+	manual_palette_scroll->hide();
+	palette_container->add_child(manual_palette_scroll);
+
 	// Add autotile override palette.
 	manual_palette = memnew(ItemList);
 	manual_palette->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2109,8 +2145,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	manual_palette->set_max_columns(0);
 	manual_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	manual_palette->set_max_text_lines(2);
-	manual_palette->hide();
-	palette_container->add_child(manual_palette);
+	manual_palette_scroll->add_child(manual_palette);
 
 	// Add menu items.
 	toolbar = memnew(HBoxContainer);
@@ -2275,6 +2310,7 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("editors/tile_map/preview_size", 64);
 	EDITOR_DEF("editors/tile_map/palette_min_width", 80);
 	EDITOR_DEF("editors/tile_map/palette_item_hseparation", 8);
+	EDITOR_DEF("editors/tile_map/palette_keep_tileset_layout", false);
 	EDITOR_DEF("editors/tile_map/show_tile_names", true);
 	EDITOR_DEF("editors/tile_map/show_tile_ids", false);
 	EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true);

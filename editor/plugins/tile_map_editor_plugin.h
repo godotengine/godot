@@ -39,6 +39,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/tool_button.h"
 
 class TileMapEditor : public VBoxContainer {
@@ -78,6 +79,7 @@ class TileMapEditor : public VBoxContainer {
 
 	LineEdit *search_box;
 	HSlider *size_slider;
+	ScrollContainer *manual_palette_scroll;
 	ItemList *palette;
 	ItemList *manual_palette;
 
