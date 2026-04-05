@@ -435,15 +435,6 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 #endif
 }
 
-bool GDScript::instance_has(const Object *p_this) const {
-	GDScriptInstance *instance = dynamic_cast<GDScriptInstance *>(p_this->get_script_instance());
-
-	if (instance == nullptr) {
-		return false;
-	}
-	return instance->script.ptr() == this;
-}
-
 bool GDScript::has_source_code() const {
 	return !source.is_empty();
 }

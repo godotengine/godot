@@ -153,7 +153,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_instance_has" qualifiers="virtual required const">
+		<method name="_instance_has" qualifiers="virtual const" deprecated="This method is not called by the engine.">
 			<return type="bool" />
 			<param index="0" name="object" type="Object" />
 			<description>
