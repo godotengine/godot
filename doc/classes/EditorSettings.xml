@@ -653,6 +653,30 @@
 		<member name="editors/animation/onion_layers_past_color" type="Color" setter="" getter="">
 			The modulate color to use for "past" frames displayed in the animation editor's onion skinning feature.
 		</member>
+		<member name="editors/audio_buses/active_max_db_color" type="Color" setter="" getter="">
+			The color at the top of the VU meter gradient when it is active.
+		</member>
+		<member name="editors/audio_buses/active_min_db_color" type="Color" setter="" getter="">
+			The color at the bottom of the VU meter gradient when it is active.
+		</member>
+		<member name="editors/audio_buses/active_normalized_db_color" type="Color" setter="" getter="">
+			The color at 0 dB of the VU meter gradient when it is active.
+		</member>
+		<member name="editors/audio_buses/inactive_max_db_color" type="Color" setter="" getter="">
+			The color at the top of the VU meter gradient when it is inactive.
+		</member>
+		<member name="editors/audio_buses/inactive_min_db_color" type="Color" setter="" getter="">
+			The color at the bottom of the VU meter gradient when it is inactive.
+		</member>
+		<member name="editors/audio_buses/inactive_normalized_db_color" type="Color" setter="" getter="">
+			The color at 0 dB of the VU meter gradient when it is inactive.
+		</member>
+		<member name="editors/audio_buses/tint_over_color" type="Color" setter="" getter="">
+			The multiplier color for the VU meter gradient when it is inactive.
+		</member>
+		<member name="editors/audio_buses/tint_under_color" type="Color" setter="" getter="">
+			The multiplier color for the VU meter gradient where audio is not reaching.
+		</member>
 		<member name="editors/bone_mapper/handle_colors/error" type="Color" setter="" getter="">
 		</member>
 		<member name="editors/bone_mapper/handle_colors/missing" type="Color" setter="" getter="">
