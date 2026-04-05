@@ -47,11 +47,21 @@ Size2 FoldableContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		ms = ms.max(c->get_combined_minimum_size());
+		ms = ms.max(c->get_bound_minimum_size());
 	}
 	ms += theme_cache.panel_style->get_minimum_size();
 
 	return Size2(MAX(ms.width, title_minimum_size.width), ms.height + title_minimum_size.height);
+}
+
+Size2 FoldableContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
 }
 
 void FoldableContainer::fold() {
@@ -355,7 +365,7 @@ void FoldableContainer::_notification(int p_what) {
 					if (!control->is_visible()) {
 						continue;
 					}
-					Rect2 rect(Vector2(), control->get_combined_minimum_size());
+					Rect2 rect(Vector2(), control->get_bound_minimum_size());
 					rect.position.x = offset;
 					rect.position.y = v_center - rect.size.y * 0.5;
 					fit_child_in_rect(control, rect);
@@ -409,7 +419,7 @@ real_t FoldableContainer::_get_title_controls_width() const {
 	int visible_controls = 0;
 	for (const Control *control : title_controls) {
 		if (control->is_visible()) {
-			width += control->get_combined_minimum_size().x;
+			width += control->get_bound_minimum_size().x;
 			visible_controls++;
 		}
 	}
@@ -467,7 +477,7 @@ void FoldableContainer::_update_title_min_size() const {
 			if (!control->is_visible()) {
 				continue;
 			}
-			Vector2 size = control->get_combined_minimum_size();
+			Vector2 size = control->get_bound_minimum_size();
 			title_minimum_size.width += size.width;
 			controls_height = MAX(controls_height, size.height);
 			visible_controls++;

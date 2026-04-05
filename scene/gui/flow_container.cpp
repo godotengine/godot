@@ -52,6 +52,8 @@ void FlowContainer::_resort() {
 	bool rtl = is_layout_rtl();
 
 	HashMap<Control *, Size2i> children_minsize_cache;
+	HashMap<Control *, Size2i> children_maxsize_cache;
+	HashMap<Control *, int> children_stretch_cache;
 
 	Vector<_LineData> lines_data;
 
@@ -71,6 +73,7 @@ void FlowContainer::_resort() {
 		}
 
 		Size2i child_msc = child->get_combined_minimum_size();
+		Size2i child_max_size = child->get_combined_maximum_size();
 
 		if (vertical) { /* VERTICAL */
 			if (children_in_current_line > 0) {
@@ -119,12 +122,13 @@ void FlowContainer::_resort() {
 
 		last_child = child;
 		children_minsize_cache[child] = child_msc;
+		children_maxsize_cache[child] = child_max_size;
 		children_in_current_line++;
 	}
 	line_length = vertical ? (ofs.y) : (ofs.x);
 	bool is_filled = false;
 	if (last_child != nullptr) {
-		is_filled = vertical ? (ofs.y + last_child->get_combined_minimum_size().y > current_container_size ? true : false) : (ofs.x + last_child->get_combined_minimum_size().x > current_container_size ? true : false);
+		is_filled = vertical ? (ofs.y + last_child->get_bound_minimum_size().y > current_container_size ? true : false) : (ofs.x + last_child->get_bound_minimum_size().x > current_container_size ? true : false);
 	}
 	lines_data.push_back(_LineData{ children_in_current_line, line_height, line_length, current_container_size - line_length, line_stretch_ratio_total, is_filled });
 
@@ -157,9 +161,87 @@ void FlowContainer::_resort() {
 			line_data = lines_data[current_line_idx];
 		}
 
+		if (child_idx_in_line == 0) {
+			Vector<Control *> line_children;
+			for (int j = i; j < get_child_count() && line_children.size() < lines_data[current_line_idx].child_count; j++) {
+				Control *line_child = as_sortable_control(get_child(j));
+				if (!line_child) {
+					continue;
+				}
+
+				line_children.push_back(line_child);
+				children_stretch_cache[line_child] = 0;
+			}
+
+			int line_remaining_stretch = line_data.stretch_avail;
+			Vector<Control *> stretch_children;
+			Vector<bool> stretch_children_active;
+			line_stretch_ratio_total = 0;
+
+			for (int j = 0; j < line_children.size(); j++) {
+				Control *line_child = line_children[j];
+				bool can_stretch = vertical ? line_child->get_v_size_flags().has_flag(SIZE_EXPAND) : line_child->get_h_size_flags().has_flag(SIZE_EXPAND);
+				if (!can_stretch) {
+					continue;
+				}
+
+				stretch_children.push_back(line_child);
+				stretch_children_active.push_back(true);
+				line_stretch_ratio_total += line_child->get_stretch_ratio();
+			}
+
+			while (line_stretch_ratio_total > 0) {
+				bool refit_successful = true;
+
+				for (int j = 0; j < stretch_children.size(); j++) {
+					if (!stretch_children_active[j]) {
+						continue;
+					}
+
+					Control *line_child = stretch_children[j];
+					float stretch_ratio = line_child->get_stretch_ratio();
+					int child_stretch = line_remaining_stretch * stretch_ratio / line_stretch_ratio_total;
+
+					const Size2i &child_min_size = children_minsize_cache[line_child];
+					const Size2i &child_max_size = children_maxsize_cache[line_child];
+					int child_axis_min = vertical ? child_min_size.height : child_min_size.width;
+					int child_axis_max = vertical ? child_max_size.height : child_max_size.width;
+					int max_stretch = child_axis_max >= 0 ? MAX(child_axis_max - child_axis_min, 0) : INT_MAX;
+
+					if (child_stretch > max_stretch) {
+						children_stretch_cache[line_child] = max_stretch;
+						stretch_children_active.write[j] = false;
+						line_stretch_ratio_total -= stretch_ratio;
+						line_remaining_stretch -= max_stretch;
+						refit_successful = false;
+						break;
+					}
+				}
+
+				if (refit_successful) {
+					for (int j = 0; j < stretch_children.size(); j++) {
+						if (!stretch_children_active[j]) {
+							continue;
+						}
+
+						Control *line_child = stretch_children[j];
+						children_stretch_cache[line_child] = line_remaining_stretch * line_child->get_stretch_ratio() / line_stretch_ratio_total;
+					}
+					break;
+				}
+			}
+
+			int used_stretch = 0;
+			for (int j = 0; j < line_children.size(); j++) {
+				used_stretch += children_stretch_cache[line_children[j]];
+			}
+			lines_data.write[current_line_idx].stretch_avail = MAX(line_data.stretch_avail - used_stretch, 0);
+			line_data = lines_data[current_line_idx];
+		}
+
 		// The first child of each line adds the offset caused by the alignment,
-		// but only if the line doesn't contain a child that expands.
-		if (child_idx_in_line == 0 && Math::is_equal_approx(line_data.stretch_ratio_total, 0)) {
+		// but only if there is remaining space after expansion/capping.
+		if (child_idx_in_line == 0 && line_data.stretch_avail > 0) {
 			int alignment_ofs = 0;
 			bool is_not_first_line_and_not_filled = current_line_idx != 0 && !line_data.is_filled;
 			float prior_stretch_avail = is_not_first_line_and_not_filled ? lines_data[current_line_idx - 1].stretch_avail : 0.0;
@@ -227,7 +309,7 @@ void FlowContainer::_resort() {
 			}
 
 			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
-				int stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
+				int stretch = children_stretch_cache.has(child) ? children_stretch_cache[child] : 0;
 				child_size.height += stretch;
 			}
 
@@ -237,7 +319,7 @@ void FlowContainer::_resort() {
 			}
 
 			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
-				int stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
+				int stretch = children_stretch_cache.has(child) ? children_stretch_cache[child] : 0;
 				child_size.width += stretch;
 			}
 		}
@@ -274,7 +356,7 @@ Size2 FlowContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		Size2i size = c->get_bound_minimum_size();
 
 		if (vertical) { /* VERTICAL */
 			minimum.height = MAX(minimum.height, size.height);

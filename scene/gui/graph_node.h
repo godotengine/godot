@@ -64,6 +64,7 @@ class GraphNode : public GraphElement {
 
 	struct _MinSizeCache {
 		int min_size = 0;
+		int max_size = -1;
 		bool will_stretch = false;
 		int final_size = 0;
 	};

@@ -514,8 +514,8 @@ void GraphEdit::_update_scrollbars() {
 		v_scrollbar->show();
 	}
 
-	Size2 hmin = h_scrollbar->get_combined_minimum_size();
-	Size2 vmin = v_scrollbar->get_combined_minimum_size();
+	Size2 hmin = h_scrollbar->get_bound_minimum_size();
+	Size2 vmin = v_scrollbar->get_bound_minimum_size();
 
 	// Avoid scrollbar overlapping.
 	h_scrollbar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, v_scrollbar->is_visible() ? -vmin.width : 0);
@@ -840,8 +840,8 @@ void GraphEdit::_notification(int p_what) {
 			menu_panel->add_theme_style_override(SceneStringName(panel), theme_cache.menu_panel);
 		} break;
 		case NOTIFICATION_READY: {
-			Size2 hmin = h_scrollbar->get_combined_minimum_size();
-			Size2 vmin = v_scrollbar->get_combined_minimum_size();
+			Size2 hmin = h_scrollbar->get_bound_minimum_size();
+			Size2 vmin = v_scrollbar->get_bound_minimum_size();
 
 			h_scrollbar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
 			h_scrollbar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
