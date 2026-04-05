@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_ogg_opus.cpp                                             */
+/*  audio_stream_opus.cpp                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "audio_stream_ogg_opus.h"
+#include "audio_stream_opus.h"
 
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
 
 static const int OPUS_SAMPLERATE = 48000;
 
-int AudioStreamPlaybackOggOpus::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+int AudioStreamPlaybackOpus::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	ERR_FAIL_COND_V(!active, 0);
 
 	int todo = p_frames;
@@ -77,34 +77,34 @@ int AudioStreamPlaybackOggOpus::_mix_internal(AudioFrame *p_buffer, int p_frames
 	return p_frames - todo;
 }
 
-float AudioStreamPlaybackOggOpus::get_stream_sampling_rate() {
+float AudioStreamPlaybackOpus::get_stream_sampling_rate() {
 	return OPUS_SAMPLERATE;
 }
 
-void AudioStreamPlaybackOggOpus::start(double p_from_pos) {
+void AudioStreamPlaybackOpus::start(double p_from_pos) {
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
 	begin_resample();
 }
 
-void AudioStreamPlaybackOggOpus::stop() {
+void AudioStreamPlaybackOpus::stop() {
 	active = false;
 }
 
-bool AudioStreamPlaybackOggOpus::is_playing() const {
+bool AudioStreamPlaybackOpus::is_playing() const {
 	return active;
 }
 
-int AudioStreamPlaybackOggOpus::get_loop_count() const {
+int AudioStreamPlaybackOpus::get_loop_count() const {
 	return loops;
 }
 
-double AudioStreamPlaybackOggOpus::get_playback_position() const {
+double AudioStreamPlaybackOpus::get_playback_position() const {
 	return double(frames_mixed) / OPUS_SAMPLERATE;
 }
 
-void AudioStreamPlaybackOggOpus::seek(double p_time) {
+void AudioStreamPlaybackOpus::seek(double p_time) {
 	if (!active) {
 		return;
 	}
@@ -118,34 +118,34 @@ void AudioStreamPlaybackOggOpus::seek(double p_time) {
 	ERR_FAIL_COND_MSG(error != 0, "Opus seek failed.");
 }
 
-AudioStreamPlaybackOggOpus::~AudioStreamPlaybackOggOpus() {
+AudioStreamPlaybackOpus::~AudioStreamPlaybackOpus() {
 }
 
-Ref<AudioStreamPlayback> AudioStreamOggOpus::instantiate_playback() {
-	Ref<AudioStreamPlaybackOggOpus> opus;
+Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
+	Ref<AudioStreamPlaybackOpus> opus;
 
 	ERR_FAIL_COND_V_MSG(data == nullptr, nullptr,
-			"This AudioStreamOggOpus does not have an audio file assigned "
-			"to it. AudioStreamOggOpus should not be created from the "
+			"This AudioStreamOpus does not have an audio file assigned "
+			"to it. AudioStreamOpus should not be created from the "
 			"inspector or with `.new()`. Instead, load an audio file.");
 
 	opus.instantiate();
-	opus->opus_stream = Ref<AudioStreamOggOpus>(this);
+	opus->opus_stream = Ref<AudioStreamOpus>(this);
 	opus->frames_mixed = 0;
 	opus->active = false;
 	opus->loops = 0;
 
 	opus->opus_file = op_open_memory((const unsigned char *)data, data_len, nullptr);
-	ERR_FAIL_COND_V(!opus->opus_file, Ref<AudioStreamPlaybackOggOpus>());
+	ERR_FAIL_COND_V(!opus->opus_file, Ref<AudioStreamPlaybackOpus>());
 
 	return opus;
 }
 
-String AudioStreamOggOpus::get_stream_name() const {
+String AudioStreamOpus::get_stream_name() const {
 	return ""; //return stream_name;
 }
 
-void AudioStreamOggOpus::clear_data() {
+void AudioStreamOpus::clear_data() {
 	if (data) {
 		memfree(data);
 		data = nullptr;
@@ -153,7 +153,7 @@ void AudioStreamOggOpus::clear_data() {
 	}
 }
 
-void AudioStreamOggOpus::set_data(const Vector<uint8_t> &p_data) {
+void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
 	int src_data_len = p_data.size();
 	const uint8_t *src_datar = p_data.ptr();
 
@@ -199,7 +199,7 @@ void AudioStreamOggOpus::set_data(const Vector<uint8_t> &p_data) {
 	data_len = src_data_len;
 }
 
-Vector<uint8_t> AudioStreamOggOpus::get_data() const {
+Vector<uint8_t> AudioStreamOpus::get_data() const {
 	Vector<uint8_t> vdata;
 
 	if (data_len && data) {
@@ -213,27 +213,27 @@ Vector<uint8_t> AudioStreamOggOpus::get_data() const {
 	return vdata;
 }
 
-void AudioStreamOggOpus::set_loop(bool p_enable) {
+void AudioStreamOpus::set_loop(bool p_enable) {
 	loop = p_enable;
 }
 
-bool AudioStreamOggOpus::has_loop() const {
+bool AudioStreamOpus::has_loop() const {
 	return loop;
 }
 
-void AudioStreamOggOpus::set_loop_offset(float p_seconds) {
+void AudioStreamOpus::set_loop_offset(float p_seconds) {
 	loop_offset = p_seconds;
 }
 
-float AudioStreamOggOpus::get_loop_offset() const {
+float AudioStreamOpus::get_loop_offset() const {
 	return loop_offset;
 }
 
-double AudioStreamOggOpus::get_length() const {
+double AudioStreamOpus::get_length() const {
 	return length;
 }
 
-Ref<AudioSample> AudioStreamOggOpus::generate_sample() const {
+Ref<AudioSample> AudioStreamOpus::generate_sample() const {
 	Ref<AudioSample> sample;
 	sample.instantiate();
 	sample->stream = this;
@@ -245,87 +245,87 @@ Ref<AudioSample> AudioStreamOggOpus::generate_sample() const {
 	return sample;
 }
 
-Ref<AudioStreamOggOpus> AudioStreamOggOpus::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
-	Ref<AudioStreamOggOpus> ogg_opus_stream;
-	ogg_opus_stream.instantiate();
+Ref<AudioStreamOpus> AudioStreamOpus::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
+	Ref<AudioStreamOpus> opus_stream;
+	opus_stream.instantiate();
 
-	ogg_opus_stream->set_data(p_stream_data);
+	opus_stream->set_data(p_stream_data);
 
-	return ogg_opus_stream;
+	return opus_stream;
 }
 
-Ref<AudioStreamOggOpus> AudioStreamOggOpus::load_from_file(const String &p_path) {
+Ref<AudioStreamOpus> AudioStreamOpus::load_from_file(const String &p_path) {
 	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(p_path);
-	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<AudioStreamOggOpus>(), vformat("Cannot open file '%s'.", p_path));
+	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<AudioStreamOpus>(), vformat("Cannot open file '%s'.", p_path));
 	return load_from_buffer(stream_data);
 }
 
-void AudioStreamOggOpus::set_bpm(double p_bpm) {
+void AudioStreamOpus::set_bpm(double p_bpm) {
 	ERR_FAIL_COND(p_bpm < 0);
 	bpm = p_bpm;
 	emit_changed();
 }
 
-double AudioStreamOggOpus::get_bpm() const {
+double AudioStreamOpus::get_bpm() const {
 	return bpm;
 }
 
-void AudioStreamOggOpus::set_beat_count(int p_beat_count) {
+void AudioStreamOpus::set_beat_count(int p_beat_count) {
 	ERR_FAIL_COND(p_beat_count < 0);
 	beat_count = p_beat_count;
 	emit_changed();
 }
 
-int AudioStreamOggOpus::get_beat_count() const {
+int AudioStreamOpus::get_beat_count() const {
 	return beat_count;
 }
 
-void AudioStreamOggOpus::set_bar_beats(int p_bar_beats) {
+void AudioStreamOpus::set_bar_beats(int p_bar_beats) {
 	ERR_FAIL_COND(p_bar_beats < 2);
 	bar_beats = p_bar_beats;
 	emit_changed();
 }
 
-int AudioStreamOggOpus::get_bar_beats() const {
+int AudioStreamOpus::get_bar_beats() const {
 	return bar_beats;
 }
 
-void AudioStreamOggOpus::set_tags(const Dictionary &p_tags) {
+void AudioStreamOpus::set_tags(const Dictionary &p_tags) {
 	tags = p_tags;
 }
 
-Dictionary AudioStreamOggOpus::get_tags() const {
+Dictionary AudioStreamOpus::get_tags() const {
 	return tags;
 }
 
-bool AudioStreamOggOpus::is_monophonic() const {
+bool AudioStreamOpus::is_monophonic() const {
 	return false;
 }
 
-void AudioStreamOggOpus::_bind_methods() {
-	ClassDB::bind_static_method("AudioStreamOggOpus", D_METHOD("load_from_buffer", "stream_data"), &AudioStreamOggOpus::load_from_buffer);
-	ClassDB::bind_static_method("AudioStreamOggOpus", D_METHOD("load_from_file", "path"), &AudioStreamOggOpus::load_from_file);
+void AudioStreamOpus::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamOpus", D_METHOD("load_from_buffer", "stream_data"), &AudioStreamOpus::load_from_buffer);
+	ClassDB::bind_static_method("AudioStreamOpus", D_METHOD("load_from_file", "path"), &AudioStreamOpus::load_from_file);
 
-	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamOggOpus::set_data);
-	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamOggOpus::get_data);
+	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamOpus::set_data);
+	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamOpus::get_data);
 
-	ClassDB::bind_method(D_METHOD("set_loop", "enable"), &AudioStreamOggOpus::set_loop);
-	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamOggOpus::has_loop);
+	ClassDB::bind_method(D_METHOD("set_loop", "enable"), &AudioStreamOpus::set_loop);
+	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamOpus::has_loop);
 
-	ClassDB::bind_method(D_METHOD("set_loop_offset", "seconds"), &AudioStreamOggOpus::set_loop_offset);
-	ClassDB::bind_method(D_METHOD("get_loop_offset"), &AudioStreamOggOpus::get_loop_offset);
+	ClassDB::bind_method(D_METHOD("set_loop_offset", "seconds"), &AudioStreamOpus::set_loop_offset);
+	ClassDB::bind_method(D_METHOD("get_loop_offset"), &AudioStreamOpus::get_loop_offset);
 
-	ClassDB::bind_method(D_METHOD("set_bpm", "bpm"), &AudioStreamOggOpus::set_bpm);
-	ClassDB::bind_method(D_METHOD("get_bpm"), &AudioStreamOggOpus::get_bpm);
+	ClassDB::bind_method(D_METHOD("set_bpm", "bpm"), &AudioStreamOpus::set_bpm);
+	ClassDB::bind_method(D_METHOD("get_bpm"), &AudioStreamOpus::get_bpm);
 
-	ClassDB::bind_method(D_METHOD("set_beat_count", "count"), &AudioStreamOggOpus::set_beat_count);
-	ClassDB::bind_method(D_METHOD("get_beat_count"), &AudioStreamOggOpus::get_beat_count);
+	ClassDB::bind_method(D_METHOD("set_beat_count", "count"), &AudioStreamOpus::set_beat_count);
+	ClassDB::bind_method(D_METHOD("get_beat_count"), &AudioStreamOpus::get_beat_count);
 
-	ClassDB::bind_method(D_METHOD("set_bar_beats", "count"), &AudioStreamOggOpus::set_bar_beats);
-	ClassDB::bind_method(D_METHOD("get_bar_beats"), &AudioStreamOggOpus::get_bar_beats);
+	ClassDB::bind_method(D_METHOD("set_bar_beats", "count"), &AudioStreamOpus::set_bar_beats);
+	ClassDB::bind_method(D_METHOD("get_bar_beats"), &AudioStreamOpus::get_bar_beats);
 
-	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamOggOpus::set_tags);
-	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamOggOpus::get_tags);
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamOpus::set_tags);
+	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamOpus::get_tags);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), "set_bpm", "get_bpm");
@@ -336,7 +336,7 @@ void AudioStreamOggOpus::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
 
-AudioStreamOggOpus::AudioStreamOggOpus() {
+AudioStreamOpus::AudioStreamOpus() {
 	data = nullptr;
 	data_len = 0;
 	length = 0;
@@ -344,6 +344,6 @@ AudioStreamOggOpus::AudioStreamOggOpus() {
 	loop = false;
 }
 
-AudioStreamOggOpus::~AudioStreamOggOpus() {
+AudioStreamOpus::~AudioStreamOpus() {
 	clear_data();
 }

@@ -30,31 +30,31 @@
 
 #include "register_types.h"
 
-#include "audio_stream_ogg_opus.h"
+#include "audio_stream_opus.h"
 
 #include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
-#include "resource_importer_ogg_opus.h"
+#include "resource_importer_opus.h"
 
 #include "editor/editor_node.h"
 
 static void _editor_init() {
-	Ref<ResourceImporterOggOpus> ogg_opus_importer;
-	ogg_opus_importer.instantiate();
-	ResourceFormatImporter::get_singleton()->add_importer(ogg_opus_importer);
+	Ref<ResourceImporterOpus> opus_importer;
+	opus_importer.instantiate();
+	ResourceFormatImporter::get_singleton()->add_importer(opus_importer);
 }
 #endif
 
 void initialize_opus_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(AudioStreamOggOpus);
-		GDREGISTER_CLASS(AudioStreamPlaybackOggOpus);
+		GDREGISTER_CLASS(AudioStreamOpus);
+		GDREGISTER_CLASS(AudioStreamPlaybackOpus);
 	}
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDREGISTER_CLASS(ResourceImporterOggOpus);
+		GDREGISTER_CLASS(ResourceImporterOpus);
 
 		EditorNode::add_init_callback(_editor_init);
 	}
