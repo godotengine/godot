@@ -30,7 +30,6 @@
 
 #include "texture_storage.h"
 
-#include "core/math/math_defs.h"
 #include "core/config/engine.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
@@ -660,9 +659,9 @@ void TextureStorage::_tex_blit_shader_initialize() {
 		ShaderCompiler::DefaultIdentifierActions actions;
 
 		actions.renames["TIME"] = "data.time";
-		actions.renames["PI"] = _MKSTR(3.1415926535897932384626433833);
-		actions.renames["TAU"] = _MKSTR(6.2831853071795864769252867666);
-		actions.renames["E"] = _MKSTR(2.7182818284590452353602874713);
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 
