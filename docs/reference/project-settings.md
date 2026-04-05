@@ -56,7 +56,7 @@ These settings are registered with `GLOBAL_DEF(...)` and grouped by key prefix.
   </tbody>
 </table>
 
-`rendering/gaussian_splatting/renderdoc_compatibility` is an explicit override. When the key is absent from the project file, runtime behavior still defaults to RenderDoc auto-detection.
+`rendering/gaussian_splatting/renderdoc_compatibility` is a force-enable switch. When it is left at the default `false`, runtime behavior still follows RenderDoc auto-detection.
 
 #### Import
 

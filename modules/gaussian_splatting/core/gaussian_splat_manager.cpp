@@ -22,9 +22,7 @@
 #endif
 
 namespace {
-
 static const StringName RENDERDOC_COMPATIBILITY_PATH("rendering/gaussian_splatting/renderdoc_compatibility");
-static const StringName RENDERDOC_COMPATIBILITY_EXPLICIT_PATH("rendering/gaussian_splatting/internal/renderdoc_compatibility_explicit");
 
 // Project settings helpers: delegates to gs_project_settings.h (gs::settings namespace).
 static uint32_t _get_uint_setting(ProjectSettings *ps, const StringName &name, uint32_t fallback) {
@@ -234,11 +232,10 @@ GaussianSplatManager::GaussianSplatManager() {
 	renderdoc_compatibility_mode = _detect_renderdoc();
 
 	ProjectSettings *ps = ProjectSettings::get_singleton();
-	const bool has_explicit_renderdoc_override = ps && ps->has_setting(String(RENDERDOC_COMPATIBILITY_EXPLICIT_PATH)) &&
-			bool(ps->get_setting(RENDERDOC_COMPATIBILITY_EXPLICIT_PATH));
-	if (ps && has_explicit_renderdoc_override) {
-		// Allow manual override via project setting
-		renderdoc_compatibility_mode = ps->get_setting(RENDERDOC_COMPATIBILITY_PATH);
+	if (ps && bool(ps->get_setting(RENDERDOC_COMPATIBILITY_PATH))) {
+		// Project setting is a force-enable switch. Leaving it false preserves
+		// RenderDoc auto-detection, which avoids a broken "explicit false" path.
+		renderdoc_compatibility_mode = true;
 	}
 
     if (renderdoc_compatibility_mode) {
@@ -973,13 +970,9 @@ Dictionary GaussianSplatManager::get_sorting_config() const {
 
 void GaussianSplatManager::initialize_module() {
 	// Register project settings
-	ProjectSettings *ps = ProjectSettings::get_singleton();
-	const bool had_explicit_renderdoc_override = ps && ps->has_setting(String(RENDERDOC_COMPATIBILITY_PATH));
-
 	GLOBAL_DEF("rendering/gaussian_splatting/gpu_sorting_enabled", true);
 	GLOBAL_DEF("rendering/gaussian_splatting/shared_submission_device_enabled", false);
 	GLOBAL_DEF("rendering/gaussian_splatting/renderdoc_compatibility", false);
-	GLOBAL_DEF_INTERNAL("rendering/gaussian_splatting/internal/renderdoc_compatibility_explicit", had_explicit_renderdoc_override);
 	GLOBAL_DEF("rendering/gaussian_splatting/composite/depth_test", true);
     // Scene composite depth policy: 0=strict (skip frame if depth contract is missing), 1=relaxed (allow no-depth blend fallback).
     GLOBAL_DEF("rendering/gaussian_splatting/composite/scene_depth_policy", 0);
