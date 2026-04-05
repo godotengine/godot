@@ -1125,9 +1125,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	}
 
 	// Autoload singletons
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads(ProjectSettings::get_singleton()->get_autoload_list());
-
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (!info.is_singleton || !info.path.has_extension("gd")) {
 			continue;
