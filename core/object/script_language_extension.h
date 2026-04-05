@@ -69,7 +69,6 @@ public:
 		return reinterpret_cast<PlaceHolderScriptInstance *>(ret.operator void *());
 	}
 
-	EXBIND1RC(bool, instance_has, const Object *)
 	EXBIND0RC(bool, has_source_code)
 	EXBIND0RC(String, get_source_code)
 	EXBIND1(set_source_code, const String &)
@@ -214,6 +213,10 @@ public:
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
 	}
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL1RC(bool, _instance_has, const Object *)
+#endif // !DISABLE_DEPRECATED
 };
 
 typedef ScriptLanguage::ProfilingInfo ScriptLanguageExtensionProfilingInfo;
