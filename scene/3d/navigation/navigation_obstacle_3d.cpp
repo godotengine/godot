@@ -288,8 +288,10 @@ void NavigationObstacle3D::set_vertices(const Vector<Vector3> &p_vertices) {
 	NavigationServer3D::get_singleton()->obstacle_set_vertices(obstacle, safe_transform.xform(vertices));
 #ifdef DEBUG_ENABLED
 	_update_static_obstacle_debug();
-	update_gizmos();
 #endif // DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
+	update_gizmos();
+#endif // TOOLS_ENABLED
 }
 
 void NavigationObstacle3D::set_navigation_map(RID p_navigation_map) {
@@ -323,8 +325,10 @@ void NavigationObstacle3D::set_radius(real_t p_radius) {
 
 #ifdef DEBUG_ENABLED
 	_update_fake_agent_radius_debug();
-	update_gizmos();
 #endif // DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
+	update_gizmos();
+#endif // TOOLS_ENABLED
 }
 
 void NavigationObstacle3D::set_height(real_t p_height) {
@@ -339,8 +343,10 @@ void NavigationObstacle3D::set_height(real_t p_height) {
 
 #ifdef DEBUG_ENABLED
 	_update_static_obstacle_debug();
-	update_gizmos();
 #endif // DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
+	update_gizmos();
+#endif // TOOLS_ENABLED
 }
 
 void NavigationObstacle3D::set_avoidance_layers(uint32_t p_layers) {

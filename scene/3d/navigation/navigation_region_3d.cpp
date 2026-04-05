@@ -75,7 +75,9 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 	}
 #endif // DEBUG_ENABLED
 
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
 }
 
 bool NavigationRegion3D::is_enabled() const {
@@ -361,7 +363,9 @@ void NavigationRegion3D::_navigation_mesh_changed() {
 
 	emit_signal(SNAME("navigation_mesh_changed"));
 
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
 	update_configuration_warnings();
 }
 
