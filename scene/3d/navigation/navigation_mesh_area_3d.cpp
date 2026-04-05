@@ -47,8 +47,10 @@ void NavigationMeshArea3D::set_enabled(bool p_enabled) {
 
 	NavigationServer3D::get_singleton()->area_set_enabled(area, enabled);
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	_update_debug();
 #endif // DEBUG_ENABLED
 }
@@ -131,7 +133,9 @@ void NavigationMeshArea3D::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			bounds_dirty = true;
+#ifdef TOOLS_ENABLED
 			update_gizmos();
+#endif // TOOLS_ENABLED
 #ifdef DEBUG_ENABLED
 			_update_debug();
 #endif // DEBUG_ENABLED
@@ -377,7 +381,9 @@ void NavigationMeshAreaBox3D::set_size(const Vector3 &p_size) {
 	size = p_size;
 
 	bounds_dirty = true;
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
 #ifdef DEBUG_ENABLED
 	_update_debug();
 #endif // DEBUG_ENABLED
@@ -487,7 +493,9 @@ void NavigationMeshAreaCylinder3D::set_height(float p_height) {
 	height = p_height;
 
 	bounds_dirty = true;
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
 #ifdef DEBUG_ENABLED
 	_update_debug();
 #endif // DEBUG_ENABLED
@@ -502,7 +510,9 @@ void NavigationMeshAreaCylinder3D::set_radius(float p_radius) {
 	radius = p_radius;
 
 	bounds_dirty = true;
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
 
 #ifdef DEBUG_ENABLED
 	_update_debug();
@@ -661,7 +671,9 @@ void NavigationMeshAreaPolygon3D::set_height(float p_height) {
 	height = p_height;
 
 	bounds_dirty = true;
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
 #ifdef DEBUG_ENABLED
 	_update_debug();
 #endif // DEBUG_ENABLED
@@ -690,7 +702,9 @@ void NavigationMeshAreaPolygon3D::set_vertices(const Vector<Vector3> &p_vertices
 	vertices_are_clockwise = !Geometry2D::is_polygon_clockwise(vertices_2d); // Geometry2D is inverted. A true legacy gift that keeps on giving.
 	vertices_are_valid = !Geometry2D::triangulate_polygon(vertices_2d).is_empty();
 
+#ifdef TOOLS_ENABLED
 	update_gizmos();
+#endif // TOOLS_ENABLED
 
 #ifdef DEBUG_ENABLED
 	_update_debug();

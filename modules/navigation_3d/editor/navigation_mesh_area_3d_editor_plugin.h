@@ -42,6 +42,7 @@ class NavigationMeshAreaCylinder3D;
 class NavigationMeshAreaPolygon3D;
 class Gizmo3DHelper;
 
+// Is added to Node3DEditor via `add_gizmo_plugin`.
 class NavigationMeshArea3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(NavigationMeshArea3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
@@ -71,6 +72,7 @@ public:
 	NavigationMeshArea3DGizmoPlugin();
 };
 
+// The glue to the Godot editor, see initialize_navigation_3d_module().
 class NavigationMeshArea3DEditorPlugin : public EditorPlugin {
 	GDCLASS(NavigationMeshArea3DEditorPlugin, EditorPlugin);
 
