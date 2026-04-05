@@ -515,16 +515,12 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			String text = get_selected_path();
 			if (text.is_empty()) {
 				return;
-			} else if (text == "/root") {
+			}
+			// Keep full remote path but strip the "/root" prefix for user-facing copy.
+			if (text == "/root") {
 				text = ".";
-			} else {
-				text = text.replace("/root/", "");
-				int slash = text.find_char('/');
-				if (slash < 0) {
-					text = ".";
-				} else {
-					text = text.substr(slash + 1);
-				}
+			} else if (text.begins_with("/root/")) {
+				text = text.substr(String("/root/").length());
 			}
 			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;
