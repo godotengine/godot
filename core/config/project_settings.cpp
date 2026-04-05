@@ -320,11 +320,16 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 
-		if (props.has(p_name)) {
-			props[p_name].variant = p_value;
-		} else {
-			props[p_name] = VariantContainer(p_value, last_order++);
-		}
+			if (props.has(p_name)) {
+				if (props[p_name].order < NO_BUILTIN_ORDER_BASE) {
+					// A direct runtime write to an existing builtin setting is an explicit
+					// session override, even if the value matches the builtin default.
+					props[p_name].order = last_order++;
+				}
+				props[p_name].variant = p_value;
+			} else {
+				props[p_name] = VariantContainer(p_value, last_order++);
+			}
 		if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().split("/")[1];
 			AutoloadInfo autoload;

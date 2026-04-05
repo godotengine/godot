@@ -252,7 +252,7 @@ func apply_optimal_thresholds():
 			"godot_project_settings": {
 				"rendering/gaussian_splatting/gpu_sorting/bitonic_threshold": optimal_thresholds.bitonic_threshold,
 				"rendering/gaussian_splatting/gpu_sorting/radix_threshold": optimal_thresholds.radix_threshold,
-				"rendering/gaussian_splatting/gpu_sorting/target_sort_time_ms": TARGET_TIME_MS,
+				"rendering/gaussian_splatting/sorting/target_sort_time_ms": TARGET_TIME_MS,
 				"rendering/gaussian_splatting/gpu_sorting/enable_adaptive_thresholds": true,
 				"rendering/gaussian_splatting/gpu_sorting/enable_performance_logging": true
 			}

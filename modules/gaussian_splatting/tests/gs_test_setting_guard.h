@@ -10,6 +10,7 @@ class ProjectSettingGuard {
     String setting_path;
     Variant previous_value;
     bool had_previous_value = false;
+    int previous_order = -1;
 
 public:
     ProjectSettingGuard(ProjectSettings *p_settings, const String &p_setting_path) :
@@ -17,6 +18,7 @@ public:
         if (settings && settings->has_setting(setting_path)) {
             previous_value = settings->get_setting(setting_path);
             had_previous_value = true;
+            previous_order = settings->get_order(setting_path);
         }
     }
 
@@ -27,6 +29,7 @@ public:
 
         if (had_previous_value) {
             settings->set_setting(setting_path, previous_value);
+            settings->set_order(setting_path, previous_order);
         } else {
             settings->clear(setting_path);
         }

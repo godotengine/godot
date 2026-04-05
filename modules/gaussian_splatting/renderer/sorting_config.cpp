@@ -1,6 +1,7 @@
 #include "sorting_config.h"
 
 #include "../core/gs_project_settings.h"
+#include "sorting_settings_utils.h"
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
 #include "core/object/callable_method_pointer.h"
@@ -63,7 +64,7 @@ static void _refresh_sort_config() {
     config.hybrid_batch_size = _get_uint_setting(ps, "rendering/gaussian_splatting/sorting/hybrid_batch_size", config.hybrid_batch_size);
     config.history_size = _get_uint_setting(ps, "rendering/gaussian_splatting/sorting/history_size", config.history_size);
     config.log_interval_frames = _get_uint_setting(ps, "rendering/gaussian_splatting/sorting/log_interval_frames", config.log_interval_frames);
-    config.target_sort_time_ms = _get_float_setting(ps, "rendering/gaussian_splatting/sorting/target_sort_time_ms", config.target_sort_time_ms);
+    config.target_sort_time_ms = gs::sorting_settings::get_target_sort_time_ms(ps, config.target_sort_time_ms);
     config.log_metrics = _get_bool_setting(ps, "rendering/gaussian_splatting/sorting/log_metrics", config.log_metrics);
     config.force_algorithm = static_cast<SortingStrategyConfig::ForcedAlgorithm>(_get_int_setting(ps,
             "rendering/gaussian_splatting/sorting/force_algorithm",

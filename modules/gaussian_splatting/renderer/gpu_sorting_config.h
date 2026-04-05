@@ -120,6 +120,7 @@ struct GPUSortingConfig {
     // Constants for project settings paths
     static const String SECTION_PATH;
     static const String TARGET_TIME_PATH;
+    static const String LEGACY_TARGET_TIME_PATH;
     static const String MAX_ELEMENTS_PATH;
     static const String MAX_OVERLAP_RECORDS_PATH;
     static const String MAX_RASTER_SPLATS_PER_TILE_PATH;

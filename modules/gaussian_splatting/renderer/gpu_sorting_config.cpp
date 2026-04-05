@@ -1,4 +1,5 @@
 #include "gpu_sorting_config.h"
+#include "sorting_settings_utils.h"
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "../logger/gs_logger.h"
@@ -31,7 +32,8 @@ static void _apply_instance_pipeline_overrides(GPUSortingConfig &config) {
 
 // Project settings paths
 const String GPUSortingConfig::SECTION_PATH = "rendering/gaussian_splatting/gpu_sorting/";
-const String GPUSortingConfig::TARGET_TIME_PATH = SECTION_PATH + "target_sort_time_ms";
+const String GPUSortingConfig::TARGET_TIME_PATH = "rendering/gaussian_splatting/sorting/target_sort_time_ms";
+const String GPUSortingConfig::LEGACY_TARGET_TIME_PATH = SECTION_PATH + "target_sort_time_ms";
 const String GPUSortingConfig::MAX_ELEMENTS_PATH = SECTION_PATH + "max_sort_elements";
 const String GPUSortingConfig::MAX_OVERLAP_RECORDS_PATH = SECTION_PATH + "max_overlap_records";
 const String GPUSortingConfig::MAX_RASTER_SPLATS_PER_TILE_PATH = SECTION_PATH + "max_raster_splats_per_tile";
@@ -91,7 +93,7 @@ void GPUSortingConfig::load_from_project_settings() {
     }
 
     // Load individual settings (custom configuration)
-    target_sort_time_ms = ps->get_setting(TARGET_TIME_PATH, 2.0f);
+    target_sort_time_ms = gs::sorting_settings::get_target_sort_time_ms(ps, 2.0f);
     bool has_elements = ps->has_setting(MAX_ELEMENTS_PATH);
     bool has_overlap = ps->has_setting(MAX_OVERLAP_RECORDS_PATH);
     max_sort_elements = ps->get_setting(MAX_ELEMENTS_PATH, 50000000);
@@ -133,6 +135,9 @@ void GPUSortingConfig::save_to_project_settings() const {
     }
 
     ps->set_setting(TARGET_TIME_PATH, target_sort_time_ms);
+    if (ps->has_setting(LEGACY_TARGET_TIME_PATH)) {
+        ps->clear(LEGACY_TARGET_TIME_PATH);
+    }
     ps->set_setting(MAX_ELEMENTS_PATH, max_sort_elements);
     ps->set_setting(MAX_OVERLAP_RECORDS_PATH, max_overlap_records);
     ps->set_setting(MAX_RASTER_SPLATS_PER_TILE_PATH, max_raster_splats_per_tile);
@@ -537,10 +542,12 @@ String GPUSortingConfig::get_current_preset_name() const {
 }
 
 void initialize_gpu_sorting_config() {
-    // Register settings with GLOBAL_DEF so they can be read from project.godot
-    GLOBAL_DEF(GPUSortingConfig::GPU_PRESET_PATH, "high");
-    GLOBAL_DEF(GPUSortingConfig::TARGET_TIME_PATH, 2.0f);
-    GLOBAL_DEF(GPUSortingConfig::MAX_ELEMENTS_PATH, 50000000);
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+
+	// Register settings with GLOBAL_DEF so they can be read from project.godot
+	GLOBAL_DEF(GPUSortingConfig::GPU_PRESET_PATH, "high");
+	gs::sorting_settings::register_canonical_target_sort_time_setting(ps, 2.0f);
+	GLOBAL_DEF(GPUSortingConfig::MAX_ELEMENTS_PATH, 50000000);
     GLOBAL_DEF(GPUSortingConfig::MAX_OVERLAP_RECORDS_PATH, 100000000);
     GLOBAL_DEF(GPUSortingConfig::MAX_RASTER_SPLATS_PER_TILE_PATH, 8192);
     GLOBAL_DEF(GPUSortingConfig::RADIX_BITS_PATH, GPUSortingConstants::DEFAULT_RADIX_BITS);
