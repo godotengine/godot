@@ -124,6 +124,8 @@ public:
 	// AABB area_get_bounds(RID p_area) const override { return AABB(); }
 	void area_set_radius(RID p_area, real_t p_radius) override {}
 	real_t area_get_radius(RID p_area) const override { return 0; }
+	void area_set_elevation(RID p_area, real_t p_elevation) override {}
+	real_t area_get_elevation(RID p_area) const override { return 0; }
 	void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) override {}
 	Vector<Vector3> area_get_vertices(RID p_area) const override { return Vector<Vector3>(); }
 

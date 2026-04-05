@@ -760,6 +760,20 @@ real_t GodotNavigationServer3D::area_get_radius(const RID p_area) const {
 	return area->get_radius();
 }
 
+COMMAND_2(area_set_elevation, RID, p_area, real_t, p_elevation) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_elevation(p_elevation);
+}
+
+real_t GodotNavigationServer3D::area_get_elevation(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_elevation();
+}
+
 void GodotNavigationServer3D::area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) {
 	NavArea3D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL(area);
