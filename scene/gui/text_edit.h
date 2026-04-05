@@ -447,6 +447,7 @@ private:
 
 		Point2 draw_pos;
 		bool visible = false;
+		bool prefer_end_of_wrap = false;
 		int last_fit_x = 0;
 		int line = 0;
 		int column = 0;

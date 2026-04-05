@@ -3299,6 +3299,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 		_remove_text(get_caret_line(caret_index), get_caret_column(caret_index), next_line, next_column);
 		collapse_carets(get_caret_line(caret_index), get_caret_column(caret_index), next_line, next_column);
 		_offset_carets_after(next_line, next_column, get_caret_line(caret_index), get_caret_column(caret_index));
+		carets.write[caret_index].prefer_end_of_wrap = true;
 	}
 
 	end_multicaret_edit();
@@ -4343,6 +4344,7 @@ void TextEdit::insert_text_at_caret(const String &p_text, int p_caret) {
 
 		set_caret_line(new_line, false, true, -1, i);
 		set_caret_column(new_column, i == 0, i);
+		carets.write[i].prefer_end_of_wrap = true;
 	}
 
 	if (has_ime_text()) {
@@ -5761,6 +5763,7 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 	}
 	caret_moved = (caret_moved || get_caret_column(p_caret) != n_col);
 	carets.write[p_caret].column = n_col;
+	carets.write[p_caret].prefer_end_of_wrap = false;
 
 	// Unselect if the caret moved to the selection origin.
 	if (p_wrap_index >= 0 && has_selection(p_caret) && get_caret_line(p_caret) == get_selection_origin_line(p_caret) && get_caret_column(p_caret) == get_selection_origin_column(p_caret)) {
@@ -5791,6 +5794,7 @@ void TextEdit::set_caret_column(int p_column, bool p_adjust_viewport, int p_care
 
 	bool caret_moved = get_caret_column(p_caret) != p_column;
 	carets.write[p_caret].column = p_column;
+	carets.write[p_caret].prefer_end_of_wrap = false;
 
 	carets.write[p_caret].last_fit_x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
 
@@ -5821,7 +5825,22 @@ int TextEdit::get_caret_column(int p_caret) const {
 
 int TextEdit::get_caret_wrap_index(int p_caret) const {
 	ERR_FAIL_INDEX_V(p_caret, carets.size(), 0);
-	return get_line_wrap_index_at_column(get_caret_line(p_caret), get_caret_column(p_caret));
+	int wrap_index = get_line_wrap_index_at_column(get_caret_line(p_caret), get_caret_column(p_caret));
+
+	// After text editing, the caret column may land exactly on a wrap boundary.
+	// get_line_wrap_index_at_column resolves boundary columns to the next wrap,
+	// but after an edit the caret should stay at the end of the current visual
+	// line rather than jumping to the start of the next one.
+	if (carets[p_caret].prefer_end_of_wrap && wrap_index > 0) {
+		int line = get_caret_line(p_caret);
+		int col = get_caret_column(p_caret);
+		const Vector<Vector2i> wrap_ranges = text.get_line_wrap_ranges(line);
+		if (col == wrap_ranges[wrap_index].x) {
+			wrap_index--;
+		}
+	}
+
+	return wrap_index;
 }
 
 String TextEdit::get_word_under_caret(int p_caret) const {
@@ -7885,6 +7904,7 @@ void TextEdit::_backspace_internal(int p_caret) {
 
 		set_caret_line(from_line, false, true, -1, i);
 		set_caret_column(from_column, i == 0, i);
+		carets.write[i].prefer_end_of_wrap = true;
 	}
 	end_multicaret_edit();
 	end_complex_operation();
@@ -8410,6 +8430,7 @@ void TextEdit::_offset_carets_after(int p_old_line, int p_old_column, int p_new_
 				set_caret_line(caret_line, false, true, -1, i);
 			}
 			set_caret_column(caret_column, false, i);
+			carets.write[i].prefer_end_of_wrap = true;
 		}
 
 		// Move selection origin.
