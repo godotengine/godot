@@ -51,8 +51,12 @@ OpenXRFBFoveationExtension::OpenXRFBFoveationExtension(const String &p_rendering
 	if (fov_level >= 0 && fov_level < 4) {
 		foveation_level = XrFoveationLevelFB(fov_level);
 	}
+
 	bool fov_dyn = GLOBAL_GET("xr/openxr/foveation_dynamic");
 	foveation_dynamic = fov_dyn ? XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB : XR_FOVEATION_DYNAMIC_DISABLED_FB;
+
+	foveation_with_subsampled_images_enabled = GLOBAL_GET("xr/openxr/foveation_with_subsampled_images");
+	foveation_with_subsampled_images_active = foveation_with_subsampled_images_enabled;
 
 	swapchain_create_info_foveation_fb.type = XR_TYPE_SWAPCHAIN_CREATE_INFO_FOVEATION_FB;
 	swapchain_create_info_foveation_fb.next = nullptr;
@@ -69,7 +73,7 @@ OpenXRFBFoveationExtension::OpenXRFBFoveationExtension(const String &p_rendering
 #ifdef VULKAN_ENABLED
 	meta_vulkan_swapchain_create_info.type = XR_TYPE_VULKAN_SWAPCHAIN_CREATE_INFO_META;
 	meta_vulkan_swapchain_create_info.next = nullptr;
-	meta_vulkan_swapchain_create_info.additionalCreateFlags = VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
+	meta_vulkan_swapchain_create_info.additionalCreateFlags = 0;
 	meta_vulkan_swapchain_create_info.additionalUsageFlags = 0;
 #endif
 
@@ -94,8 +98,12 @@ HashMap<String, bool *> OpenXRFBFoveationExtension::get_requested_extensions(XrV
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (rendering_driver == "vulkan") {
 		request_extensions[XR_FB_FOVEATION_VULKAN_EXTENSION_NAME] = &fb_foveation_vulkan_ext;
-		request_extensions[XR_META_FOVEATION_EYE_TRACKED_EXTENSION_NAME] = &meta_foveation_eye_tracked_ext;
 		request_extensions[XR_META_VULKAN_SWAPCHAIN_CREATE_INFO_EXTENSION_NAME] = &meta_vulkan_swapchain_create_info_ext;
+
+		bool fov_eye_tracked = GLOBAL_GET("xr/openxr/foveation_eye_tracked");
+		if (fov_eye_tracked) {
+			request_extensions[XR_META_FOVEATION_EYE_TRACKED_EXTENSION_NAME] = &meta_foveation_eye_tracked_ext;
+		}
 	}
 #endif // XR_USE_GRAPHICS_API_VULKAN
 
@@ -150,7 +158,15 @@ void *OpenXRFBFoveationExtension::set_swapchain_create_info_and_get_next_pointer
 		next = &swapchain_create_info_foveation_fb;
 
 #ifdef VULKAN_ENABLED
-		if (meta_foveation_eye_tracked_ext && meta_vulkan_swapchain_create_info_ext && meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked) {
+		if (meta_vulkan_swapchain_create_info_ext) {
+			meta_vulkan_swapchain_create_info.additionalCreateFlags = 0;
+			if (meta_foveation_eye_tracked_ext && meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked) {
+				meta_vulkan_swapchain_create_info.additionalCreateFlags |= VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
+			}
+			if (foveation_with_subsampled_images_enabled && foveation_with_subsampled_images_active) {
+				meta_vulkan_swapchain_create_info.additionalCreateFlags |= VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT;
+			}
+
 			meta_vulkan_swapchain_create_info.next = next;
 			next = &meta_vulkan_swapchain_create_info;
 		}
@@ -224,6 +240,18 @@ void OpenXRFBFoveationExtension::get_fragment_density_offsets(LocalVector<Vector
 		const XrVector2f &xr_center = state.foveationCenter[i];
 		r_offsets.push_back(Vector2i((int)(xr_center.x * dims.x), (int)(xr_center.y * dims.y)));
 	}
+}
+
+void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_enabled(bool p_enabled) {
+	foveation_with_subsampled_images_enabled = p_enabled;
+}
+
+bool OpenXRFBFoveationExtension::is_foveation_with_subsampled_images_enabled() const {
+	return is_enabled() && meta_vulkan_swapchain_create_info_ext && foveation_with_subsampled_images_enabled;
+}
+
+void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_active(bool p_active) {
+	foveation_with_subsampled_images_active = p_active;
 }
 
 void OpenXRFBFoveationExtension::_update_profile_rt() {

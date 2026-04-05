@@ -30,8 +30,6 @@
 
 #include "gltf_physics_shape.h"
 
-#include "../../gltf_state.h"
-
 #include "core/math/convex_hull.h"
 #include "core/object/class_db.h"
 #include "scene/3d/physics/area_3d.h"

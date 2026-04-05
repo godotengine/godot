@@ -30,17 +30,15 @@
 
 #include "rendering_context_driver_metal.h"
 
-#include "metal3_objects.h"
-#include "metal_objects_shared.h"
-#include "rendering_device_driver_metal3.h"
-
 #include "core/os/os.h"
 #include "core/templates/sort_array.h"
-
-#include <os/log.h>
-#include <os/signpost.h>
+#include "drivers/metal/metal3_objects.h"
+#include "drivers/metal/metal_objects_shared.h"
+#include "drivers/metal/rendering_device_driver_metal3.h"
 
 #include <objc/message.h>
+#include <os/log.h>
+#include <os/signpost.h>
 
 #pragma mark - Logging
 

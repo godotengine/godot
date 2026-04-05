@@ -264,13 +264,13 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-				panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+				panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 			}
 		} break;
 
 		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			bezier_icon = get_editor_theme_icon(SNAME("KeyBezierPoint"));
@@ -911,6 +911,9 @@ Ref<Animation> AnimationBezierTrackEdit::get_animation() const {
 }
 
 void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only) {
+	if (p_animation != animation) {
+		selection.clear();
+	}
 	animation = p_animation;
 	read_only = p_read_only;
 	selected_track = p_track;

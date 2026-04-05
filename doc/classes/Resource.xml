@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Resource" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Resource" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for serializable objects.
 	</brief_description>
@@ -46,6 +46,13 @@
 				func _setup_local_to_scene():
 					damage = randi_range(10, 40)
 				[/codeblock]
+			</description>
+		</method>
+		<method name="copy_from_resource">
+			<return type="int" enum="Error" />
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				Copies the data from [param resource] into this resource. Both resources must share the same class.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">

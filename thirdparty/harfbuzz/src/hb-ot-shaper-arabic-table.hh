@@ -16,221 +16,76 @@
 #ifndef HB_OT_SHAPER_ARABIC_TABLE_HH
 #define HB_OT_SHAPER_ARABIC_TABLE_HH
 
+#include "hb.hh"
 
-#define A	JOINING_GROUP_ALAPH
-#define DR	JOINING_GROUP_DALATH_RISH
-#define C	JOINING_TYPE_C
-#define D	JOINING_TYPE_D
-#define L	JOINING_TYPE_L
-#define R	JOINING_TYPE_R
-#define T	JOINING_TYPE_T
-#define U	JOINING_TYPE_U
-#define X	JOINING_TYPE_X
+#include <stdint.h>
 
-static const uint8_t joining_table[] =
+static const uint8_t _hb_arabic_joining_u8[737]=
 {
+    0, 16,  2,  0,  0,  0,  3,  0,  4,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0, 96,135,  9,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,
+    0,  0,  0,  8, 16, 24, 32, 40, 48,  0, 56,  0, 64, 72, 80,  0,
+    0,  0,  0, 88, 96,104,  0,  0,  0,  0,  0,112,120,  0,  0,  0,
+    0,  0,  0,  0,128,  0,  0,  0,  0,  0,  0,  0,  0,  0,136,  0,
+    0,144,  0,  0,  0,  0,  0,152,  0,  0,  0,  0,  0,  0,160,168,
+  176,184,192,  0,  0,200,208,  0,  0,  0,  0,  0,  0,  0,  0,216,
+  224,  0,  0,  0,  0,  0,  0,  0,  0,  8,  9,  0,  0, 10, 11, 12,
+    1,  1, 13,  0,  0,  0, 14, 15,  1,  1,  2,  2,  4,  1,  1,  1,
+    1, 16, 17, 18,  3,  0, 19,  0, 20,  0, 21, 22, 23,  1, 24,  0,
+    0,  0, 25,  1, 26,  1, 27, 28,  4,  0, 29,  1,  1,  1, 30,  0,
+   31, 32,  5, 33, 34, 35, 36,  2,  2, 37, 38,  6,  0,  1, 39, 40,
+    5,  1,  7,  0,  0, 41,  0,  0,  0, 42, 43,  0,  0,  1,  1,  1,
+    1,  1,  1,  1,  1,  1,  1,  1,  7, 44,  1,  1,  1,  1, 45,  0,
+    0,  0, 46,  0,  0,  0, 47,  0,  0,  0,  0,  0,  0, 48,  6,  0,
+    0,  1,  1,  1,  1,  1,  1, 49,  0, 50, 51, 52, 53, 54, 55,  0,
+    0, 56, 57, 58,  0,  0, 59,  0,  0, 60,  1,  1,  1, 61,  0,  0,
+    0, 62,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 63,
+    1, 64,  0, 65,  0,  0,  0, 66,  1, 67,  0,  0,  0,  0,  0, 68,
+   69, 70, 71,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    3,  0,  3,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,
+    1, 72, 73,  0,  0,  0,  0,  0,  0,119,119,119,119, 51, 51, 51,
+   51, 34, 34, 34, 34,119,119,  7,119, 34, 51, 51, 51, 35, 51, 51,
+   51,  0,119,119,119,115,119,119,119,  0,  0,  0,119,112,  7,119,
+  119,  3, 34, 34, 35, 35, 51, 51, 35, 34, 50, 51, 51, 50,115,119,
+  119,119,119,119, 51, 39, 34, 32, 34, 50, 35, 34, 34, 34, 34, 35,
+   35, 51, 34, 39,119,119,119,119, 34,119, 51,115, 55,119,119,119,
+  103,116, 51, 83, 37, 34, 51, 51, 50, 50, 53, 50, 83,119,119, 39,
+   51, 35, 34, 51, 51, 51, 35, 50, 51, 35, 35, 50, 51,119, 51, 51,
+   51, 51,115,119,119,119,115,119,119, 50, 51, 51, 34, 51, 51, 50,
+   34,114,119,119,119,  3, 51, 51, 32, 35,114,119,119, 34, 50, 51,
+    3, 48, 51, 51, 50, 51, 34,  2, 50, 35, 50, 51, 51,119,112,119,
+  119,119,119,119, 48,119,115,119,112,  0,  0, 96, 54,115,115,119,
+  119,119,119, 48,119,119,119,119,  7,119,119,119,  0, 51,  1,119,
+  119, 51, 51, 35, 32, 32,  2, 16, 34, 34, 50, 51, 19, 51, 51, 35,
+   51, 35,  0,114,119,119, 55, 51, 35, 35, 35, 34, 51, 35, 51, 50,
+   34, 35,119,119,119, 39, 34, 50,  3, 49, 51, 51, 51, 51, 50,119,
+  119,119, 50,115, 51, 51, 35, 51, 51, 51, 51,  3,119, 55, 51,114,
+  119, 51, 51, 34, 51, 51,119,119,119,  3, 51, 34,  2, 35, 50, 35,
+   51, 48, 34,  3,  0, 32, 19,119,119, 51, 51,119,119,119,103,119,
+  119,
+};
 
-#define joining_offset_0x0600u 0
-
-  /* Arabic */
-
-  /* 0600 */ U,U,U,U,U,U,X,X,U,X,X,U,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 0620 */ D,U,R,R,R,R,D,R,D,R,D,D,D,D,D,R,R,R,R,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 0640 */ C,D,D,D,D,D,D,D,R,D,D,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 0660 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,D,D,X,R,R,R,U,R,R,R,D,D,D,D,D,D,D,D,
-  /* 0680 */ D,D,D,D,D,D,D,D,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,D,D,D,D,D,D,
-  /* 06A0 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 06C0 */ R,D,D,R,R,R,R,R,R,R,R,R,D,R,D,R,D,D,R,R,X,R,X,X,X,X,X,X,X,U,X,X,
-  /* 06E0 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,R,R,X,X,X,X,X,X,X,X,X,X,D,D,D,X,X,D,
-
-  /* Syriac */
-
-  /* 0700 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,T,A,X,D,D,D,DR,DR,R,R,R,D,D,D,D,R,D,
-  /* 0720 */ D,D,D,D,D,D,D,D,R,D,DR,D,R,D,D,DR,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 0740 */ X,X,X,X,X,X,X,X,X,X,X,X,X,R,D,D,
-
-  /* Arabic Supplement */
-
-  /* 0740 */                                 D,D,D,D,D,D,D,D,D,R,R,R,D,D,D,D,
-  /* 0760 */ D,D,D,D,D,D,D,D,D,D,D,R,R,D,D,D,D,R,D,R,R,D,D,D,R,R,D,D,D,D,D,D,
-
-  /* FILLER */
-
-  /* 0780 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 07A0 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-
-  /* NKo */
-
-  /* 07C0 */ X,X,X,X,X,X,X,X,X,X,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 07E0 */ D,D,D,D,D,D,D,D,D,D,D,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,C,X,X,X,X,X,
-
-  /* FILLER */
-
-  /* 0800 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 0820 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-
-  /* Mandaic */
-
-  /* 0840 */ R,D,D,D,D,D,R,R,D,R,D,D,D,D,D,D,D,D,D,D,R,D,R,R,R,X,X,X,X,X,X,X,
-
-  /* Syriac Supplement */
-
-  /* 0860 */ D,U,D,D,D,D,U,R,D,R,R,X,X,X,X,X,
-
-  /* Arabic Extended-B */
-
-  /* 0860 */                                 R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,R,
-  /* 0880 */ R,R,R,C,C,C,D,U,U,D,D,D,D,D,R,D,U,U,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-
-  /* Arabic Extended-A */
-
-  /* 08A0 */ D,D,D,D,D,D,D,D,D,D,R,R,R,U,R,D,D,R,R,D,D,D,D,D,D,R,D,D,D,D,D,D,
-  /* 08C0 */ D,D,D,D,D,D,D,D,D,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 08E0 */ X,X,U,
-
-#define joining_offset_0x1806u 739
-
-  /* Mongolian */
-
-  /* 1800 */             U,D,X,X,C,X,X,X,U,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 1820 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 1840 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 1860 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,X,X,X,X,X,X,X,
-  /* 1880 */ U,U,U,U,U,T,T,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 18A0 */ D,D,D,D,D,D,D,D,D,X,D,
-
-#define joining_offset_0x200cu 904
-
-  /* General Punctuation */
-
-  /* 2000 */                         U,C,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 2020 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,U,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 2040 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 2060 */ X,X,X,X,X,X,U,U,U,U,
-
-#define joining_offset_0xa840u 998
-
-  /* Phags-pa */
-
-  /* A840 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* A860 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,L,U,
-
-#define joining_offset_0x10ac0u 1050
-
-  /* Manichaean */
-
-  /* 10AC0 */ D,D,D,D,D,R,U,R,U,R,R,U,U,L,R,R,R,R,R,D,D,D,D,L,D,D,D,D,D,R,D,D,
-  /* 10AE0 */ D,R,U,U,R,X,X,X,X,X,X,D,D,D,D,R,
-
-#define joining_offset_0x10b80u 1098
-
-  /* Psalter Pahlavi */
-
-  /* 10B80 */ D,R,D,R,R,R,D,D,D,R,D,D,R,D,R,R,D,R,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 10BA0 */ X,X,X,X,X,X,X,X,X,R,R,R,R,D,D,U,
-
-#define joining_offset_0x10d00u 1146
-
-  /* Hanifi Rohingya */
-
-  /* 10D00 */ L,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 10D20 */ D,D,R,D,
-
-#define joining_offset_0x10ec2u 1182
-
-  /* Arabic Extended-C */
-
-  /* 10EC0 */     R,D,D,X,D,D,
-
-#define joining_offset_0x10f30u 1188
-
-  /* Sogdian */
-
-  /* 10F20 */                                 D,D,D,R,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 10F40 */ D,D,D,D,D,U,X,X,X,X,X,X,X,X,X,X,X,D,D,D,R,X,X,X,X,X,X,X,X,X,X,X,
-  /* 10F60 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-
-  /* Old Uyghur */
-
-  /* 10F60 */                                 D,D,D,D,R,R,D,D,D,D,D,D,D,D,D,D,
-  /* 10F80 */ D,D,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-  /* 10FA0 */ X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,
-
-  /* Chorasmian */
-
-  /* 10FA0 */                                 D,U,D,D,R,R,R,U,D,R,R,D,D,R,D,D,
-  /* 10FC0 */ U,D,R,R,D,U,U,U,U,R,D,L,
-
-#define joining_offset_0x110bdu 1344
-
-  /* Kaithi */
-
-  /* 110A0 */                                                           U,X,X,
-  /* 110C0 */ X,X,X,X,X,X,X,X,X,X,X,X,X,U,
-
-#define joining_offset_0x1e900u 1361
-
-  /* Adlam */
-
-  /* 1E900 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 1E920 */ D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,D,
-  /* 1E940 */ D,D,D,D,X,X,X,X,X,X,X,T,
-
-}; /* Table items: 1437; occupancy: 58% */
-
+static inline uint8_t _hb_arabic_joining_b4 (const uint8_t* a, unsigned i)
+{
+  return (a[i>>1]>>((i&1)<<2))&15;
+}
+static inline uint8_t _hb_arabic_joining_joining_type (unsigned u)
+{
+  /* packtab: [2^4,2^3,2^3,2^3] */
+  return u<125260u ? (uint8_t)(_hb_arabic_joining_b4(_hb_arabic_joining_u8+441u,((_hb_arabic_joining_u8[209u+_hb_arabic_joining_u8[123u+((_hb_arabic_joining_b4(_hb_arabic_joining_u8,((((((u)>>3))>>3))>>3)))<<3)+((((((u)>>3))>>3))&7)]+((((u)>>3))&7)])<<3)+((u)&7))) : 7;
+}
 
 static unsigned int
 joining_type (hb_codepoint_t u)
 {
-  switch (u >> 12)
-  {
-    case 0x0u:
-      if (hb_in_range<hb_codepoint_t> (u, 0x0600u, 0x08E2u)) return joining_table[u - 0x0600u + joining_offset_0x0600u];
-      break;
-
-    case 0x1u:
-      if (hb_in_range<hb_codepoint_t> (u, 0x1806u, 0x18AAu)) return joining_table[u - 0x1806u + joining_offset_0x1806u];
-      break;
-
-    case 0x2u:
-      if (hb_in_range<hb_codepoint_t> (u, 0x200Cu, 0x2069u)) return joining_table[u - 0x200Cu + joining_offset_0x200cu];
-      break;
-
-    case 0xAu:
-      if (hb_in_range<hb_codepoint_t> (u, 0xA840u, 0xA873u)) return joining_table[u - 0xA840u + joining_offset_0xa840u];
-      break;
-
-    case 0x10u:
-      if (hb_in_range<hb_codepoint_t> (u, 0x10AC0u, 0x10AEFu)) return joining_table[u - 0x10AC0u + joining_offset_0x10ac0u];
-      if (hb_in_range<hb_codepoint_t> (u, 0x10B80u, 0x10BAFu)) return joining_table[u - 0x10B80u + joining_offset_0x10b80u];
-      if (hb_in_range<hb_codepoint_t> (u, 0x10D00u, 0x10D23u)) return joining_table[u - 0x10D00u + joining_offset_0x10d00u];
-      if (hb_in_range<hb_codepoint_t> (u, 0x10EC2u, 0x10EC7u)) return joining_table[u - 0x10EC2u + joining_offset_0x10ec2u];
-      if (hb_in_range<hb_codepoint_t> (u, 0x10F30u, 0x10FCBu)) return joining_table[u - 0x10F30u + joining_offset_0x10f30u];
-      break;
-
-    case 0x11u:
-      if (hb_in_range<hb_codepoint_t> (u, 0x110BDu, 0x110CDu)) return joining_table[u - 0x110BDu + joining_offset_0x110bdu];
-      break;
-
-    case 0x1Eu:
-      if (hb_in_range<hb_codepoint_t> (u, 0x1E900u, 0x1E94Bu)) return joining_table[u - 0x1E900u + joining_offset_0x1e900u];
-      break;
-
-    default:
-      break;
-  }
-  return X;
+  return _hb_arabic_joining_joining_type (u);
 }
-
-#undef A
-#undef DR
-#undef C
-#undef D
-#undef L
-#undef R
-#undef T
-#undef U
-#undef X
 
 
 static const uint16_t shaping_table[][4] =

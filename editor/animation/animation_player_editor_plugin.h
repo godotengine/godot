@@ -36,9 +36,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/material.h"
 
@@ -333,7 +331,7 @@ public:
 class AnimationTrackKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTrackKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationTrackKeyEdit *atk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationTrackKeyEdit> atk_plugin;
 
 public:
 	virtual bool handles(Object *p_object) const override;
@@ -358,7 +356,7 @@ public:
 class AnimationMarkerKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationMarkerKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationMarkerKeyEdit *amk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationMarkerKeyEdit> amk_plugin;
 
 public:
 	virtual bool handles(Object *p_object) const override;

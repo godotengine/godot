@@ -30,8 +30,6 @@
 
 #pragma once
 
-#include "gdscript_language_protocol.h"
-
 #include "editor/plugins/editor_plugin.h"
 
 class GDScriptLanguageServer : public EditorPlugin {

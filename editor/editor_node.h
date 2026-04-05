@@ -217,10 +217,11 @@ public:
 
 		// Non-menu options.
 		SCENE_TAB_CLOSE,
-		SCENE_TAB_SET_AS_MAIN_SCENE,
+		SCENE_TAB_SAVE_SCENE,
+		SCENE_TAB_SAVE_AS_AND_RUN,
+		SCENE_TAB_SAVE_AS_MAIN_SCENE,
 		SAVE_AND_RUN,
 		SAVE_AND_RUN_MAIN_SCENE,
-		SAVE_AND_SET_MAIN_SCENE,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -373,6 +374,7 @@ private:
 
 	ConfirmationDialog *confirmation = nullptr;
 	bool stop_project_confirmation = false;
+	bool stop_download_confirmation = false;
 	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;

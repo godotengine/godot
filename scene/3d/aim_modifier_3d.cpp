@@ -29,9 +29,9 @@
 /**************************************************************************/
 
 #include "aim_modifier_3d.h"
-#include "scene/3d/look_at_modifier_3d.h"
 
 #include "core/object/class_db.h"
+#include "scene/3d/look_at_modifier_3d.h"
 
 bool AimModifier3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -172,7 +172,7 @@ void AimModifier3D::set_relative(int p_index, bool p_enabled) {
 }
 
 bool AimModifier3D::is_relative(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
 	return setting->relative;
 }

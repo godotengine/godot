@@ -34,8 +34,6 @@
 #include "../openxr_fb_foveation_extension.h"
 
 #include "core/string/print_string.h"
-#include "servers/rendering/renderer_rd/effects/copy_effects.h"
-#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -227,6 +225,15 @@ void OpenXRVulkanExtension::get_fragment_density_offsets(LocalVector<VkOffset2D>
 
 		r_vk_offsets.push_back(VkOffset2D{ offset.x, offset.y });
 	}
+}
+
+bool OpenXRVulkanExtension::use_subsampled_images() {
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return false;
+	}
+
+	return fb_foveation->is_foveation_with_subsampled_images_enabled();
 }
 
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;

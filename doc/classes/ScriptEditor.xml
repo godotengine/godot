@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptEditor" inherits="PanelContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScriptEditor" inherits="PanelContainer" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's script editor.
 	</brief_description>
@@ -16,6 +16,14 @@
 			<description>
 				Removes the documentation for the given [param script].
 				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
+			</description>
+		</method>
+		<method name="close_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Closes the file at the given [param path], discarding any unsaved changes.
+				Returns [constant OK] on success or [constant ERR_FILE_NOT_FOUND] if the file is not found.
 			</description>
 		</method>
 		<method name="get_breakpoints">
@@ -46,6 +54,12 @@
 			<return type="Script[]" />
 			<description>
 				Returns an array with all [Script] objects which are currently open in editor.
+			</description>
+		</method>
+		<method name="get_unsaved_files" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of file paths of scripts with unsaved changes open in the editor.
 			</description>
 		</method>
 		<method name="goto_help">

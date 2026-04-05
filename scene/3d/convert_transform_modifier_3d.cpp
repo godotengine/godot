@@ -287,7 +287,7 @@ void ConvertTransformModifier3D::set_relative(int p_index, bool p_enabled) {
 }
 
 bool ConvertTransformModifier3D::is_relative(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
 	return setting->is_relative();
 }
@@ -299,7 +299,7 @@ void ConvertTransformModifier3D::set_additive(int p_index, bool p_enabled) {
 }
 
 bool ConvertTransformModifier3D::is_additive(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
 	return setting->additive;
 }

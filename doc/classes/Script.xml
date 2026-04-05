@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Script" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Script" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class stored as a resource.
 	</brief_description>
@@ -89,6 +89,13 @@
 			<description>
 				Returns the list of signals defined in this [Script].
 				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_signal_list].
+			</description>
+		</method>
+		<method name="has_script_method" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="method_name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the script, or a base class, defines a method with the given name.
 			</description>
 		</method>
 		<method name="has_script_signal" qualifiers="const">

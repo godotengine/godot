@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/os/mutex.h"
 
-#include "thirdparty/misc/polypartition.h"
+#include <thirdparty/misc/polypartition.h>
 
 #ifdef DEBUG_ENABLED
 Rect2 NavigationPolygon::_edit_get_rect() const {

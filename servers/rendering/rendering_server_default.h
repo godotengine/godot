@@ -617,7 +617,7 @@ public:
 	FUNC2(particles_set_lifetime, RID, double)
 	FUNC2(particles_set_one_shot, RID, bool)
 	FUNC2(particles_set_pre_process_time, RID, double)
-	FUNC2(particles_request_process_time, RID, real_t)
+	FUNC3(particles_request_process_time, RID, real_t, real_t)
 	FUNC2(particles_set_explosiveness_ratio, RID, float)
 	FUNC2(particles_set_randomness_ratio, RID, float)
 	FUNC2(particles_set_seed, RID, uint32_t)
@@ -639,6 +639,8 @@ public:
 	FUNC2(particles_set_collision_base_size, RID, float)
 
 	FUNC2(particles_set_transform_align, RID, RSE::ParticlesTransformAlign)
+	FUNC2(particles_set_transform_align_channel_filter, RID, RSE::ParticlesTransformAlignCustomSrc)
+	FUNC2(particles_set_transform_align_axis, RID, RSE::ParticlesTransformAlignAxis)
 
 	FUNC2(particles_set_draw_order, RID, RSE::ParticlesDrawOrder)
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CompositorEffect" inherits="Resource" experimental="The implementation may change as more of the rendering internals are exposed over time." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CompositorEffect" inherits="Resource" api_type="core" experimental="The implementation may change as more of the rendering internals are exposed over time." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		This resource allows for creating a custom rendering effect.
 	</brief_description>

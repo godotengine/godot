@@ -34,8 +34,9 @@
 
 #include "core/math/color.h"
 #include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/callable.h"
 
-#include <android/log.h>
 #include <jni.h>
 
 // Class that makes functions in java/src/org/godotengine/godot/Godot.kt callable from C++

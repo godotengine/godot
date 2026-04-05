@@ -30,7 +30,7 @@
 
 #include "instance_uniforms.h"
 
-#include "rendering_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 void InstanceUniforms::free(RID p_self) {
 	ERR_FAIL_COND(p_self.is_null());

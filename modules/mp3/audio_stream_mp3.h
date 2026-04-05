@@ -32,7 +32,7 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include "thirdparty/dr_libs/dr_mp3.h"
+#include <thirdparty/dr_libs/dr_mp3.h>
 
 class AudioStreamMP3;
 

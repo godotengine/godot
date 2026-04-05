@@ -39,6 +39,7 @@ struct DebuggerMarshalls {
 		Variant value;
 		int type = -1;
 		int var_type = -1;
+		String type_hint;
 
 		Array serialize(int max_size = 1 << 20); // 1 MiB default.
 		bool deserialize(const Array &p_arr);
@@ -70,4 +71,6 @@ struct DebuggerMarshalls {
 
 	static Array serialize_key_shortcut(const Ref<Shortcut> &p_shortcut);
 	static Ref<Shortcut> deserialize_key_shortcut(const Array &p_keys);
+
+	static String parse_type_from_variant(const Variant &p_variant);
 };

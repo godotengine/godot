@@ -32,8 +32,9 @@
 
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
@@ -321,7 +322,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	validation_panel->add_line(MSG_ID_PLUGIN, TTRC("Plugin name is valid."));
 	validation_panel->add_line(MSG_ID_SCRIPT, TTRC("Script extension is valid."));
 	validation_panel->add_line(MSG_ID_SUBFOLDER, TTRC("Subfolder name is valid."));
-	validation_panel->add_line(MSG_ID_ACTIVE);
 	validation_panel->add_line(MSG_ID_ENABLE_WARNINGS);
 	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());

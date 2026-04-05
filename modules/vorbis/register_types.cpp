@@ -32,11 +32,13 @@
 
 #include "audio_stream_ogg_vorbis.h"
 
+#include "core/io/resource_importer.h"
 #include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
 #include "resource_importer_ogg_vorbis.h"
+
+#include "editor/editor_node.h"
 
 static void _editor_init() {
 	Ref<ResourceImporterOggVorbis> ogg_vorbis_importer;

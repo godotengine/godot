@@ -409,6 +409,13 @@ struct tuple_delta_t
       return;
     }
 
+    if (!axis_limit.is_point () &&
+        !(-1.0 <= axis_limit.minimum &&
+          axis_limit.minimum <= axis_limit.middle &&
+          axis_limit.middle <= axis_limit.maximum &&
+          axis_limit.maximum <= +1.0))
+      return;
+
     rebase_tent_result_t &solutions = scratch.first;
     rebase_tent (*tent, axis_limit, axis_triple_distances, solutions, scratch.second);
     for (unsigned i = 0; i < solutions.length; i++)
@@ -1700,6 +1707,16 @@ struct item_variations_t
   const hb_map_t& get_varidx_map () const
   { return varidx_map; }
 
+  bool add_vardata_encoding_for_testing (hb_vector_t<const hb_vector_t<int>*> &&rows,
+                                         unsigned num_cols)
+  {
+    encodings.push (delta_row_encoding_t (std::move (rows), num_cols));
+    return !encodings.in_error ();
+  }
+
+  bool compile_varidx_map_for_testing (const hb_hashmap_t<unsigned, const hb_vector_t<int>*>& front_mapping)
+  { return compile_varidx_map (front_mapping); }
+
   bool instantiate (const ItemVariationStore& varStore,
                     const hb_subset_plan_t *plan,
                     bool optimize=true,
@@ -2046,26 +2063,45 @@ struct item_variations_t
   {
     /* full encoding_row -> new VarIdxes mapping */
     hb_hashmap_t<const hb_vector_t<int>*, unsigned> back_mapping;
+    hb_vector_t<delta_row_encoding_t> split_encodings;
 
-    for (unsigned major = 0; major < encodings.length; major++)
+    for (unsigned i = 0; i < encodings.length; i++)
     {
-      delta_row_encoding_t& encoding = encodings[major];
+      delta_row_encoding_t& encoding = encodings[i];
       /* just sanity check, this shouldn't happen */
       if (encoding.is_empty ())
         return false;
 
       unsigned num_rows = encoding.items.length;
+      unsigned num_cols = encoding.chars.length;
 
       /* sort rows, make result deterministic */
       encoding.items.qsort (_cmp_row);
 
-      /* compile old to new var_idxes mapping */
-      for (unsigned minor = 0; minor < num_rows; minor++)
+      for (unsigned start = 0; start < num_rows; start += 0xFFFFu)
       {
-        unsigned new_varidx = (major << 16) + minor;
-        back_mapping.set (encoding.items.arrayZ[minor], new_varidx);
+        unsigned chunk_len = hb_min (num_rows - start, 0xFFFFu);
+        hb_vector_t<const hb_vector_t<int>*> rows;
+
+        if (!rows.alloc (chunk_len))
+          return false;
+
+        unsigned major = split_encodings.length;
+        for (unsigned minor = 0; minor < chunk_len; minor++)
+        {
+          const hb_vector_t<int> *row = encoding.items.arrayZ[start + minor];
+          rows.push (row);
+          if (!back_mapping.set (row, (major << 16) + minor))
+            return false;
+        }
+
+        split_encodings.push (delta_row_encoding_t (std::move (rows), num_cols));
       }
     }
+
+    encodings = std::move (split_encodings);
+    if (encodings.in_error () || back_mapping.in_error ())
+      return false;
 
     for (auto _ : front_mapping.iter ())
     {

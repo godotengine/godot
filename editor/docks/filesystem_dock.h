@@ -206,6 +206,8 @@ private:
 
 	ConfirmationDialog *conversion_dialog = nullptr;
 	ConfirmationDialog *move_confirm_dialog = nullptr;
+	CheckBox *confirm_before_move_checkbox = nullptr;
+	Label *move_confirm_dialog_label = nullptr;
 
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;

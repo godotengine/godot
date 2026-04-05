@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamRandomizer" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioStreamRandomizer" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Wraps a pool of audio streams with pitch and volume shifting.
 	</brief_description>
@@ -79,6 +79,14 @@
 		</member>
 		<member name="random_volume_offset_db" type="float" setter="set_random_volume_offset_db" getter="get_random_volume_offset_db" default="0.0">
 			The intensity of random volume variation. Volume will be increased or decreased by a random value up to [code skip-lint]random_volume_offset_db[/code]. A value of [code]0.0[/code] means no variation. A value of [code]3.0[/code] means volume will be randomized between [code]-3.0 dB[/code] and [code]+3.0 dB[/code].
+		</member>
+		<member name="stream_{index}/stream" type="AudioStream" setter="" getter="">
+			The [AudioStream] at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. streams_count - 1[/code] range.
+		</member>
+		<member name="stream_{index}/weight" type="float" setter="" getter="" default="1.0">
+			The probability weight of the [AudioStream] at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. streams_count - 1[/code] range.
 		</member>
 		<member name="streams_count" type="int" setter="set_streams_count" getter="get_streams_count" default="0">
 			The number of streams in the stream pool.

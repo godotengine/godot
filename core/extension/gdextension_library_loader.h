@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include <functional>
-
 #include "core/extension/gdextension_loader.h"
 #include "core/io/config_file.h"
 #include "core/os/shared_object.h"
+
+#include <functional>
 
 class GDExtensionLibraryLoader : public GDExtensionLoader {
 	GDSOFTCLASS(GDExtensionLibraryLoader, GDExtensionLoader);

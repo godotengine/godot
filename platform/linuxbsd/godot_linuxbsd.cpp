@@ -34,7 +34,7 @@
 #include "main/main.h"
 
 #include <unistd.h>
-#include <climits>
+
 #include <clocale>
 #include <cstdio>
 #include <cstdlib>

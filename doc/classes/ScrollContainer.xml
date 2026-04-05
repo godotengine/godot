@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScrollContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScrollContainer" inherits="Container" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container used to provide scrollbars to a child control when needed.
 	</brief_description>
@@ -63,6 +63,10 @@
 			func _ready():
 				set_deferred("scroll_horizontal", 600)
 			[/codeblock]
+		</member>
+		<member name="scroll_horizontal_by_default" type="bool" setter="set_scroll_horizontal_by_default" getter="is_scroll_horizontal_by_default" default="false">
+			If [code]true[/code], the mouse wheel scrolls the view horizontally, and holding [kbd]Shift[/kbd] scrolls vertically.
+			If [code]false[/code] (default), the mouse wheel scrolls the view vertically, and holding [kbd]Shift[/kbd] scrolls horizontally.
 		</member>
 		<member name="scroll_horizontal_custom_step" type="float" setter="set_horizontal_custom_step" getter="get_horizontal_custom_step" default="-1.0">
 			Overrides the [member ScrollBar.custom_step] used when clicking the internal scroll bar's horizontal increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.

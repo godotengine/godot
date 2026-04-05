@@ -34,7 +34,7 @@
 #include "core/templates/pair.h"
 
 extern "C" {
-#include "thirdparty/misc/smaz.h"
+#include <thirdparty/misc/smaz.h>
 }
 
 struct CompressedString {

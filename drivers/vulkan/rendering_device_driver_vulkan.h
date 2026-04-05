@@ -42,10 +42,10 @@
 #define _DEBUG
 #endif
 #endif
-#include "thirdparty/re-spirv/re-spirv.h"
-#include "thirdparty/vulkan/vk_mem_alloc.h"
+#include <thirdparty/re-spirv/re-spirv.h>
+#include <thirdparty/vulkan/vk_mem_alloc.h>
 
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 
 class FileAccess;
 
@@ -275,6 +275,7 @@ public:
 			VmaAllocation handle = nullptr;
 			VmaAllocationInfo info = {};
 		} allocation; // All 0/null if just a view.
+		bool is_subsampled = false;
 #ifdef DEBUG_ENABLED
 		bool created_from_extension = false;
 		bool transient = false;
@@ -418,6 +419,7 @@ private:
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		VkFormat format = VK_FORMAT_UNDEFINED;
 		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+		RDD::ColorSpace rdd_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
 		TightLocalVector<VkImage> images;
 		TightLocalVector<VkImageView> image_views;
 		TightLocalVector<VkSemaphore> present_semaphores;
@@ -432,7 +434,7 @@ private:
 #endif
 	};
 
-	bool _determine_swap_chain_format(RenderingContextDriver::SurfaceID p_surface, VkFormat &r_format, VkColorSpaceKHR &r_color_space);
+	bool _determine_swap_chain_format(RenderingContextDriver::SurfaceID p_surface, VkFormat &r_format, VkColorSpaceKHR &r_color_space, RDD::ColorSpace &r_rdd_color_space);
 	void _swap_chain_release(SwapChain *p_swap_chain);
 
 public:
@@ -716,13 +718,13 @@ public:
 		RDD::BufferID instances_buffer;
 
 		// Required for building
-		VkAccelerationStructureGeometryKHR geometry;
+		TightLocalVector<VkAccelerationStructureGeometryKHR> geometries;
 		LocalVector<VkAccelerationStructureInstanceKHR> instances;
 		VkAccelerationStructureBuildGeometryInfoKHR build_info;
-		VkAccelerationStructureBuildRangeInfoKHR range_info;
+		TightLocalVector<VkAccelerationStructureBuildRangeInfoKHR> range_infos;
 	};
 
-	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) override final;
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries) override final;
 	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) override final;
 	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) override final;
 	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) override final;

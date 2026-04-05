@@ -30,9 +30,12 @@
 
 #include "memory.h"
 
-#include "core/math/math_funcs_binary.h"
 #include "core/profiling/profiling.h"
 #include "core/templates/safe_refcount.h"
+
+#ifdef DEV_ENABLED
+#include "core/math/math_funcs_binary.h"
+#endif
 
 #include <cstdlib>
 

@@ -37,7 +37,7 @@
 #include "servers/rendering/rendering_server_enums.h"
 
 #ifndef PHYSICS_3D_DISABLED
-#include "shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 class MeshLibrary : public Resource {
@@ -113,6 +113,7 @@ public:
 	int find_item_by_name(const String &p_name) const;
 
 	Vector<int> get_item_list() const;
+	int get_item_count() const { return item_map.size(); }
 	int get_last_unused_item_id() const;
 
 	MeshLibrary();

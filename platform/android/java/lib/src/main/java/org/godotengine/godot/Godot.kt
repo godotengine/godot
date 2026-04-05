@@ -647,9 +647,6 @@ class Godot private constructor(val context: Context) {
 			})
 
 			renderView?.queueOnRenderThread {
-				for (plugin in pluginRegistry.allPlugins) {
-					plugin.onRegisterPluginWithGodotNative()
-				}
 				setKeepScreenOn(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")))
 			}
 
@@ -850,6 +847,7 @@ class Godot private constructor(val context: Context) {
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
+			plugin.onRegisterPluginWithGodotNative()
 			plugin.onGodotSetupCompleted()
 		}
 		primaryHost?.onGodotSetupCompleted()
@@ -978,8 +976,8 @@ class Godot private constructor(val context: Context) {
 			Log.w(TAG, "The vulkan hardware level does not meet the minimum requirement: 1")
 		}
 
-		// Check for api version 1.0
-		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+		// Check for api version 1.1
+		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x401000)
 	}
 
 	private fun setKeepScreenOn(enabled: Boolean) {

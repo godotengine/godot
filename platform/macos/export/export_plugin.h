@@ -30,15 +30,10 @@
 
 #pragma once
 
-#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access.h"
 #include "core/io/image.h"
-#include "core/io/marshalls.h"
-#include "core/io/resource_saver.h"
 #include "core/os/process_id.h"
-#include "editor/export/editor_export.h"
-#include "editor/settings/editor_settings.h"
+#include "editor/export/editor_export_platform.h"
 #include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>

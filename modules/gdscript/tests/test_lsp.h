@@ -34,20 +34,20 @@
 
 #ifndef GDSCRIPT_NO_LSP
 
-#include "tests/test_macros.h"
-
+#include "../gdscript_analyzer.h"
 #include "../language_server/gdscript_extend_parser.h"
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
 #include "../language_server/godot_lsp.h"
+#include "gdscript_test_runner.h"
 
 #include "core/io/dir_access.h"
 #include "editor/file_system/editor_file_system.h"
+#include "tests/test_macros.h"
 
-#include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/regex/regex.h"
 
-#include "thirdparty/doctest/doctest.h"
+#include <thirdparty/doctest/doctest.h>
 
 class TestGDScriptLanguageProtocolInitializer {
 public:

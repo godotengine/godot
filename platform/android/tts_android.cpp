@@ -30,10 +30,10 @@
 
 #include "tts_android.h"
 
-#include "java_godot_wrapper.h"
-#include "os_android.h"
+#include "jni_utils.h"
 #include "thread_jandroid.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "servers/display/display_server.h"
 

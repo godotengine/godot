@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TreeItem" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TreeItem" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An internal control for a single item inside [Tree].
 	</brief_description>
@@ -418,6 +418,12 @@
 				Returns the [Tree] that owns this TreeItem.
 			</description>
 		</method>
+		<method name="is_accepting_children" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [TreeItem] is allowed to accept children.
+			</description>
+		</method>
 		<method name="is_any_collapsed">
 			<return type="bool" />
 			<param index="0" name="only_visible" type="bool" default="false" />
@@ -526,6 +532,13 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Selects the given [param column].
+			</description>
+		</method>
+		<method name="set_accept_children">
+			<return type="void" />
+			<param index="0" name="allowed" type="bool" />
+			<description>
+				Sets [TreeItem]'s ability to accept children.
 			</description>
 		</method>
 		<method name="set_auto_translate_mode">

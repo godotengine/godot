@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "godot_audio.h"
 #include "godot_js.h"
 
 #include "core/os/mutex.h"

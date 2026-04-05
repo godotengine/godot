@@ -742,6 +742,14 @@ Ref<StyleBox> TextEdit::_get_current_stylebox() const {
 	return editable ? theme_cache.style_normal : theme_cache.style_readonly;
 }
 
+String TextEdit::_get_accessibility_name() const {
+	if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
+		return atr(placeholder_text);
+	} else {
+		return Control::_get_accessibility_name();
+	}
+}
+
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:
@@ -757,9 +765,7 @@ void TextEdit::_notification(int p_what) {
 			if (text.size() == 1 && text[0].is_empty()) {
 				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder_text));
 			}
-			if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder_text));
-			}
+
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &TextEdit::_accessibility_action_set_selection));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &TextEdit::_accessibility_action_replace_selected));
@@ -948,7 +954,7 @@ void TextEdit::_notification(int p_what) {
 			int left_margin = Math::ceil(style->get_margin(SIDE_LEFT));
 			int xmargin_beg = left_margin + gutters_width + gutter_padding;
 
-			int xmargin_end = size.width - Math::ceil(style->get_margin(SIDE_RIGHT));
+			int xmargin_end = size.width - Math::floor(style->get_margin(SIDE_RIGHT));
 			if (draw_minimap) {
 				xmargin_end -= minimap_width;
 			}
@@ -1385,9 +1391,9 @@ void TextEdit::_notification(int p_what) {
 
 					int ofs_y = style->get_margin(SIDE_TOP);
 
-					ofs_y += i * row_height + theme_cache.line_spacing / 2;
+					ofs_y += i * row_height;
 					ofs_y -= first_visible_line_wrap_ofs * row_height;
-					ofs_y -= _get_v_scroll_offset() * row_height;
+					ofs_y -= (int)Math::round(_get_v_scroll_offset() * row_height);
 
 					bool clipped = false;
 					if (ofs_y + row_height < top_limit_y) {
@@ -1464,12 +1470,16 @@ void TextEdit::_notification(int p_what) {
 									gutter_rect.size -= Point2(horizontal_padding, vertical_padding) * 2;
 
 									// Correct icon aspect ratio.
-									float icon_ratio = icon->get_width() / icon->get_height();
+									float icon_ratio = (float)icon->get_width() / (float)icon->get_height();
 									float gutter_ratio = gutter_rect.size.x / gutter_rect.size.y;
 									if (gutter_ratio > icon_ratio) {
-										gutter_rect.size.x = std::floor(icon->get_width() * (gutter_rect.size.y / icon->get_height()));
+										float ratio_width = Math::floor(gutter_rect.size.y * icon_ratio);
+										gutter_rect.position.x += (gutter_rect.size.x - ratio_width) / 2;
+										gutter_rect.size.x = ratio_width;
 									} else {
-										gutter_rect.size.y = std::floor(icon->get_height() * (gutter_rect.size.x / icon->get_width()));
+										float ratio_height = Math::floor(gutter_rect.size.x / icon_ratio);
+										gutter_rect.position.y += (gutter_rect.size.y - ratio_height) / 2;
+										gutter_rect.size.y = ratio_height;
 									}
 									if (rtl) {
 										gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
@@ -1979,7 +1989,7 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
-			if (has_focus()) {
+			if (has_focus() && editable) {
 				const String &new_ime_text = DisplayServer::get_singleton()->ime_get_text();
 				const Vector2i &new_ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 				if (ime_text == new_ime_text && ime_selection == new_ime_selection) {
@@ -2064,6 +2074,9 @@ void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 }
 
 bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
+	if (!editable) {
+		return false;
+	}
 	Ref<InputEventKey> k = p_gui_input;
 	if (k.is_valid()) {
 		// Start Unicode Alt input (hold).
@@ -3441,6 +3454,10 @@ void TextEdit::_update_ime_window_position() {
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
+	if (!editable) {
+		DisplayServer::get_singleton()->window_set_ime_active(false, wid);
+		return;
+	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	Point2 pos = get_global_position() + get_caret_draw_pos();
 	if (get_window()->get_embedder()) {
@@ -3616,7 +3633,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	}
 
-	int xmargin_end = get_size().width - Math::ceil(style->get_margin(SIDE_RIGHT));
+	int xmargin_end = get_size().width - Math::floor(style->get_margin(SIDE_RIGHT));
 	if (draw_minimap && p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
 		return CURSOR_ARROW;
 	}
@@ -4046,6 +4063,7 @@ void TextEdit::set_placeholder(const String &p_text) {
 
 	placeholder_text = p_text;
 	_update_placeholder();
+	update_configuration_warnings();
 	queue_accessibility_update();
 	queue_redraw();
 }
@@ -5007,7 +5025,7 @@ String TextEdit::get_word(int p_line, int p_column) const {
 
 Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line, bool p_clamp_column) const {
 	Ref<StyleBox> style = _get_current_stylebox();
-	float rows = p_pos.y - (style->get_margin(SIDE_TOP) + (theme_cache.line_spacing / 2));
+	float rows = p_pos.y - style->get_margin(SIDE_TOP);
 	rows /= get_line_height();
 	rows += _get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
@@ -5442,6 +5460,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 			carets.remove_at(new_caret_index);
 			carets.insert(0, new_caret);
 			i++;
+			num_carets += 1;
 		}
 	}
 
@@ -6655,7 +6674,7 @@ int TextEdit::get_total_visible_line_count() const {
 
 // Auto adjust.
 bool TextEdit::is_line_in_viewport(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 
 	int line_wrap = get_line_wrap_index_at_column(p_line, 0);
 
@@ -8930,7 +8949,7 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximi
 
 void TextEdit::_update_minimap_hover() {
 	const Point2 mp = get_local_mouse_pos();
-	const int xmargin_end = get_size().width - Math::ceil(_get_current_stylebox()->get_margin(SIDE_RIGHT));
+	const int xmargin_end = get_size().width - Math::floor(_get_current_stylebox()->get_margin(SIDE_RIGHT));
 
 	bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
 	if (!hovering_sidebar) {
@@ -8957,7 +8976,7 @@ void TextEdit::_update_minimap_hover() {
 void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_pos();
 
-	int xmargin_end = get_size().width - Math::ceil(_get_current_stylebox()->get_margin(SIDE_RIGHT));
+	int xmargin_end = get_size().width - Math::floor(_get_current_stylebox()->get_margin(SIDE_RIGHT));
 	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.x > xmargin_end)) {
 		minimap_clicked = false;
 		return;

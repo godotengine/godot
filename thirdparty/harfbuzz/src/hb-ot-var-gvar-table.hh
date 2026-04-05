@@ -634,6 +634,83 @@ struct gvar_GVAR
     static unsigned int next_index (unsigned int i, unsigned int start, unsigned int end)
     { return (i >= end) ? start : (i + 1); }
 
+#ifndef HB_OPTIMIZE_SIZE
+    template <bool is_x>
+#endif
+    static bool decompile_deltas_add_to_points (const HBUINT8 *&p /* IN/OUT */,
+						hb_array_t<contour_point_t> points,
+						float scalar,
+						const HBUINT8 *end,
+						unsigned start
+#ifdef HB_OPTIMIZE_SIZE
+						, bool is_x
+#endif
+						)
+    {
+      unsigned i = 0;
+      unsigned count = points.length;
+      while (i < count)
+      {
+	if (unlikely (p + 1 > end)) return false;
+	unsigned control = *p++;
+	unsigned run_count = (control & TupleValues::VALUE_RUN_COUNT_MASK) + 1;
+	unsigned stop = i + run_count;
+	if (unlikely (stop > count)) return false;
+
+	unsigned skip = i < start ? hb_min (start - i, run_count) : 0;
+	i += skip;
+
+	switch (control & TupleValues::VALUES_SIZE_MASK)
+	{
+	  case TupleValues::VALUES_ARE_ZEROS:
+	    i = stop;
+	    break;
+	  case TupleValues::VALUES_ARE_WORDS:
+	  {
+	    if (unlikely (p + run_count * HBINT16::static_size > end)) return false;
+	    p += skip * HBINT16::static_size;
+	    const auto *pp = (const HBINT16 *) p;
+	    for (; i < stop; i++)
+	    {
+	      float v = *pp++ * scalar;
+	      if (is_x) points.arrayZ[i].x += v;
+	      else points.arrayZ[i].y += v;
+	    }
+	    p = (const HBUINT8 *) pp;
+	  }
+	  break;
+	  case TupleValues::VALUES_ARE_LONGS:
+	  {
+	    if (unlikely (p + run_count * HBINT32::static_size > end)) return false;
+	    p += skip * HBINT32::static_size;
+	    const auto *pp = (const HBINT32 *) p;
+	    for (; i < stop; i++)
+	    {
+	      float v = *pp++ * scalar;
+	      if (is_x) points.arrayZ[i].x += v;
+	      else points.arrayZ[i].y += v;
+	    }
+	    p = (const HBUINT8 *) pp;
+	  }
+	  break;
+	  case TupleValues::VALUES_ARE_BYTES:
+	  {
+	    if (unlikely (p + run_count > end)) return false;
+	    p += skip * HBINT8::static_size;
+	    const auto *pp = (const HBINT8 *) p;
+	    for (; i < stop; i++)
+	    {
+	      float v = *pp++ * scalar;
+	      if (is_x) points.arrayZ[i].x += v;
+	      else points.arrayZ[i].y += v;
+	    }
+	    p = (const HBUINT8 *) pp;
+	  }
+	  break;
+	}
+      }
+      return true;
+    }
     public:
     bool apply_deltas_to_points (hb_codepoint_t glyph,
 				 hb_array_t<const int> coords,
@@ -655,6 +732,9 @@ struct gvar_GVAR
 						   var_data_bytes.arrayZ,
 						   shared_indices, &iterator))
 	return true; /* so isn't applied at all */
+
+      bool any_private_points = false;
+      bool private_points_checked = false;
 
       /* Save original points for inferred delta calculation */
       auto &orig_points_vec = scratch.orig_points;
@@ -682,6 +762,20 @@ struct gvar_GVAR
 								 gvar_cache);
 
 	if (scalar == 0.f) continue;
+
+	if (!private_points_checked)
+	{
+	  auto scan = iterator;
+	  do
+	  {
+	    if (scan.current_tuple->has_private_points ())
+	    {
+	      any_private_points = true;
+	      break;
+	    }
+	  } while (scan.move_to_next ());
+	  private_points_checked = true;
+	}
 	const HBUINT8 *p = iterator.get_serialized_data ();
 	unsigned int length = iterator.current_tuple->get_data_size ();
 	if (unlikely (!iterator.var_data_bytes.check_range (p, length)))
@@ -706,6 +800,19 @@ struct gvar_GVAR
 	bool apply_to_all = (indices.length == 0);
 	unsigned num_deltas = apply_to_all ? points.length : indices.length;
 	unsigned start_deltas = (apply_to_all && phantom_only && num_deltas >= 4 ? num_deltas - 4 : 0);
+
+	if (apply_to_all && !any_private_points)
+	{
+#ifdef HB_OPTIMIZE_SIZE
+	  if (unlikely (!decompile_deltas_add_to_points (p, points, scalar, end, start_deltas, true))) return false;
+	  if (unlikely (!decompile_deltas_add_to_points (p, points, scalar, end, start_deltas, false))) return false;
+#else
+	  if (unlikely (!decompile_deltas_add_to_points<true> (p, points, scalar, end, start_deltas))) return false;
+	  if (unlikely (!decompile_deltas_add_to_points<false> (p, points, scalar, end, start_deltas))) return false;
+#endif
+	  continue;
+	}
+
 	if (unlikely (!x_deltas.resize_dirty  (num_deltas))) return false;
 	if (unlikely (!GlyphVariationData::decompile_deltas (p, x_deltas, end, false, start_deltas))) return false;
 	if (unlikely (!y_deltas.resize_dirty  (num_deltas))) return false;
@@ -724,8 +831,6 @@ struct gvar_GVAR
 	  {
 	    for (unsigned int i = phantom_only ? count - 4 : 0; i < count; i++)
 	      points.arrayZ[i].translate (deltas.arrayZ[i]);
-	    flush = false;
-
 	  }
 	  hb_memset (deltas.arrayZ + (phantom_only ? count - 4 : 0), 0,
 		     (phantom_only ? 4 : count) * sizeof (deltas[0]));

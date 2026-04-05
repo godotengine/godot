@@ -40,7 +40,7 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
-	typedef uint32_t TypeHash;
+	typedef uint64_t TrackCacheID;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
@@ -109,9 +109,16 @@ public:
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
 		NodePath path; // Path to something.
-		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
+		StringName concatenated_path;
 		bool imported = false;
 		bool enabled = true;
+		TrackCacheID get_unique_id() const {
+			// HACK. StringName pointer allocates 40 bytes (sizeof(StringName::_Data)), so any StringName pointer we allocate
+			// is guaranteed to not have another StringName pointer within 40 bytes address range. get_cache_type() returns
+			// a value in range (0, 8) so this can be used as an offset while keeping the uniqueness property.
+			// This will break if sizeof(StringName::_Data) is less than max(CACHE_TYPE).
+			return (TrackCacheID)(concatenated_path.data_unique_pointer()) + get_cache_type(type);
+		}
 		virtual ~Track() {}
 	};
 
@@ -250,7 +257,6 @@ private:
 	HashMap<StringName, Color> marker_colors; // name -> color
 
 	LocalVector<Track *> tracks;
-
 #ifdef TOOLS_ENABLED
 	HashSet<StringName> folded_groups;
 #endif // TOOLS_ENABLED
@@ -287,8 +293,6 @@ private:
 	LoopMode loop_mode = LOOP_NONE;
 	bool capture_included = false;
 	void _check_capture_included();
-
-	void _track_update_hash(int p_track);
 
 	/* Animation compression page format (version 1):
 	 *
@@ -424,7 +428,7 @@ public:
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
-	TypeHash track_get_type_hash(int p_track) const;
+	TrackCacheID track_get_unique_id(int p_track) const;
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
@@ -564,6 +568,7 @@ public:
 
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
+	static bool needs_type_cast(const Variant &p_from, const Variant &p_to);
 	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);

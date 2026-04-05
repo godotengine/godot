@@ -50,10 +50,6 @@
 
 #include "rendering_device_driver_metal.h"
 
-#include "pixel_formats.h"
-#include "rendering_context_driver_metal.h"
-#include "rendering_shader_container_metal.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -61,10 +57,14 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "drivers/apple/foundation_helpers.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/rendering_context_driver_metal.h"
+#include "drivers/metal/rendering_shader_container_metal.h"
 
+#include <Metal/Metal.hpp>
 #include <os/log.h>
 #include <os/signpost.h>
-#include <Metal/Metal.hpp>
+
 #include <algorithm>
 
 #ifndef MTLGPUAddress
@@ -1603,14 +1603,14 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 	}
 
 	static const MTL::LoadAction LOAD_ACTIONS[] = {
-		[ATTACHMENT_LOAD_OP_LOAD] = MTL::LoadActionLoad,
-		[ATTACHMENT_LOAD_OP_CLEAR] = MTL::LoadActionClear,
-		[ATTACHMENT_LOAD_OP_DONT_CARE] = MTL::LoadActionDontCare,
+		MTL::LoadActionLoad, // ATTACHMENT_LOAD_OP_LOAD
+		MTL::LoadActionClear, // ATTACHMENT_LOAD_OP_CLEAR
+		MTL::LoadActionDontCare, // ATTACHMENT_LOAD_OP_DONT_CARE
 	};
 
 	static const MTL::StoreAction STORE_ACTIONS[] = {
-		[ATTACHMENT_STORE_OP_STORE] = MTL::StoreActionStore,
-		[ATTACHMENT_STORE_OP_DONT_CARE] = MTL::StoreActionDontCare,
+		MTL::StoreActionStore, // ATTACHMENT_STORE_OP_STORE
+		MTL::StoreActionDontCare, // ATTACHMENT_STORE_OP_DONT_CARE
 	};
 
 	Vector<MDAttachment> attachments;
@@ -2262,7 +2262,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 
 // ----- ACCELERATION STRUCTURE -----
 
-RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_coun, BitField<AccelerationStructureGeometryBits> p_geometry_bits) {
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(VectorView<AccelerationStructureGeometry> p_geometries) {
 	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
@@ -2848,6 +2848,7 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	device_properties = memnew(MetalDeviceProperties(device));
+	pixel_formats = memnew(PixelFormats(device, device_properties->features));
 	device_profile = device_profile_from_properties(device_properties);
 	resource_cache = std::make_unique<MDResourceCache>(device, *pixel_formats, device_properties->limits.maxPerStageBufferCount);
 	shader_container_format = memnew(RenderingShaderContainerFormatMetal(&device_profile));
@@ -2862,7 +2863,6 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 	// Set the pipeline cache ID based on the Metal version.
 	pipeline_cache_id = "metal-driver-" + get_api_version();
 
-	pixel_formats = memnew(PixelFormats(device, device_properties->features));
 	if (device_properties->features.layeredRendering) {
 		multiview_capabilities.is_supported = true;
 		multiview_capabilities.max_view_count = device_properties->limits.maxViewports;

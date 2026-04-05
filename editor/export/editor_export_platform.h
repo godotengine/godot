@@ -30,19 +30,21 @@
 
 #pragma once
 
-#include "core/io/zip_io.h"
 #include "core/os/process_id.h"
 #include "editor/export/editor_export_preset.h"
 
 class DirAccess;
 class EditorExportPlugin;
 class EditorFileSystemDirectory;
+class FileAccess;
 class Image;
 class Node;
 class RichTextLabel;
 class Texture2D;
 struct EditorProgress;
 struct SharedObject;
+
+typedef void *zipFile;
 
 const String ENV_SCRIPT_ENCRYPTION_KEY = "GODOT_SCRIPT_ENCRYPTION_KEY";
 
@@ -144,7 +146,13 @@ private:
 	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, HashSet<String> &r_list, bool exclude);
 	void _edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude);
 
-	static Vector<uint8_t> _filter_extension_list_config_file(const String &p_config_path, const HashSet<String> &p_paths);
+	struct FilteredCache {
+		Vector<uint8_t> extension_list;
+		Vector<uint8_t> global_class_list;
+		Vector<uint8_t> uids;
+	};
+
+	static FilteredCache _get_filtered_cache(const HashSet<String> &p_paths);
 
 	struct FileExportCache {
 		uint64_t source_modified_time = 0;

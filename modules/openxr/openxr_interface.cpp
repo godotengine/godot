@@ -30,6 +30,7 @@
 
 #include "openxr_interface.h"
 
+#include "action_map/openxr_action_map.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
@@ -88,6 +89,10 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_foveation_dynamic"), &OpenXRInterface::get_foveation_dynamic);
 	ClassDB::bind_method(D_METHOD("set_foveation_dynamic", "foveation_dynamic"), &OpenXRInterface::set_foveation_dynamic);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "foveation_dynamic"), "set_foveation_dynamic", "get_foveation_dynamic");
+
+	ClassDB::bind_method(D_METHOD("get_foveation_with_subsampled_images"), &OpenXRInterface::get_foveation_with_subsampled_images);
+	ClassDB::bind_method(D_METHOD("set_foveation_with_subsampled_images", "enabled"), &OpenXRInterface::set_foveation_with_subsampled_images);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "foveation_with_subsampled_images"), "set_foveation_with_subsampled_images", "get_foveation_with_subsampled_images");
 
 	// Action sets
 	ClassDB::bind_method(D_METHOD("is_action_set_active", "name"), &OpenXRInterface::is_action_set_active);
@@ -1022,6 +1027,22 @@ void OpenXRInterface::set_foveation_dynamic(bool p_foveation_dynamic) {
 		return;
 	} else {
 		openxr_api->set_foveation_dynamic(p_foveation_dynamic);
+	}
+}
+
+bool OpenXRInterface::get_foveation_with_subsampled_images() const {
+	if (openxr_api == nullptr) {
+		return false;
+	} else {
+		return openxr_api->get_foveation_with_subsampled_images();
+	}
+}
+
+void OpenXRInterface::set_foveation_with_subsampled_images(bool p_enabled) {
+	if (openxr_api == nullptr) {
+		return;
+	} else {
+		openxr_api->set_foveation_with_subsampled_images(p_enabled);
 	}
 }
 

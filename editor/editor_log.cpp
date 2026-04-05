@@ -41,12 +41,10 @@
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/file_system/editor_paths.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "modules/regex/regex.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
@@ -116,16 +114,16 @@ void EditorLog::_update_theme() {
 
 	Button *button = type_filter_map[MSG_TYPE_STD]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
-	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
 	button = type_filter_map[MSG_TYPE_ERROR]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
-	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
 	button = type_filter_map[MSG_TYPE_WARNING]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
-	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
 	button = type_filter_map[MSG_TYPE_EDITOR]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
-	button->set_custom_minimum_size(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()) * EDSCALE);
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
@@ -151,6 +149,13 @@ void EditorLog::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_theme();
 			_load_state();
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (!save_state_timer->is_stopped()) {
+				_save_state();
+				save_state_timer->stop();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -184,36 +189,20 @@ void EditorLog::_start_state_save_timer() {
 }
 
 void EditorLog::_save_state() {
-	Ref<ConfigFile> config;
-	config.instantiate();
-	// Load and amend existing config if it exists.
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-
-	const String section = "editor_log";
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		config->set_value(section, "log_filter_" + itos(E.key), E.value->is_active());
+		EditorSettings::get_singleton()->set_setting("_editor_log_filter_" + itos(E.key), E.value->is_active());
 	}
-
-	config->set_value(section, "collapse", collapse);
-
-	config->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+	EditorSettings::get_singleton()->set_setting("_editor_log_collapse", collapse);
+	EditorSettings::save();
 }
 
 void EditorLog::_load_state() {
 	is_loading_state = true;
 
-	Ref<ConfigFile> config;
-	config.instantiate();
-	config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-
-	// Run the below code even if config->load returns an error, since we want the defaults to be set even if the file does not exist yet.
-	const String section = "editor_log";
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		E.value->set_active(config->get_value(section, "log_filter_" + itos(E.key), true));
+		E.value->set_active(EDITOR_DEF("_editor_log_filter_" + itos(E.key), true));
 	}
-
-	collapse = config->get_value(section, "collapse", false);
-	collapse_button->set_pressed(collapse);
+	collapse_button->set_pressed(EDITOR_DEF("_editor_log_collapse", false));
 
 	is_loading_state = false;
 }

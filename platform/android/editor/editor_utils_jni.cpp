@@ -30,9 +30,9 @@
 
 #include "editor_utils_jni.h"
 
+#ifdef TOOLS_ENABLED
 #include "jni_utils.h"
 
-#ifdef TOOLS_ENABLED
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -98,9 +98,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_toggleTitleBar(JNIEnv *p_env, jclass, jboolean p_visible) {
 #ifdef TOOLS_ENABLED
-	EditorTitleBar *title_bar = EditorNode::get_singleton()->get_title_bar();
-	if (title_bar != nullptr) {
-		title_bar->call_deferred("set_visible", p_visible);
+	if (EditorNode::get_singleton() != nullptr) {
+		EditorTitleBar *title_bar = EditorNode::get_singleton()->get_title_bar();
+		if (title_bar != nullptr) {
+			title_bar->call_deferred("set_visible", p_visible);
+		}
 	}
 #endif
 }

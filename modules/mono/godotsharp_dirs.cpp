@@ -31,16 +31,24 @@
 #include "godotsharp_dirs.h"
 
 #include "mono_gd/gd_mono.h"
-#include "utils/path_utils.h"
 
-#include "core/config/engine.h"
+#ifndef TOOLS_ENABLED
+#include "utils/path_utils.h"
+#endif
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/version.h"
 #include "editor/file_system/editor_paths.h"
+#endif
+
+#ifndef TOOLS_ENABLED
+#include "core/config/engine.h"
+#ifndef ANDROID_ENABLED
+#include "core/io/file_access.h"
+#endif
 #endif
 
 namespace GodotSharpDirs {

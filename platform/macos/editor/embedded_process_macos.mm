@@ -30,8 +30,8 @@
 
 #include "embedded_process_macos.h"
 
-#include "platform/macos/display_server_macos.h"
-#include "platform/macos/display_server_macos_embedded.h"
+#include "../display_server_macos.h"
+#include "../display_server_macos_embedded.h"
 
 #include "core/input/input_event_codec.h"
 #include "core/os/main_loop.h"

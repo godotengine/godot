@@ -1034,7 +1034,7 @@ Animation::TrackType Animation::track_get_type(int p_track) const {
 void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
 	tracks[p_track]->path = p_path;
-	_track_update_hash(p_track);
+	tracks[p_track]->concatenated_path = StringName(String(tracks[p_track]->path));
 	emit_changed();
 }
 
@@ -1062,15 +1062,9 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 	return p_type;
 }
 
-void Animation::_track_update_hash(int p_track) {
-	const NodePath &track_path = tracks[p_track]->path;
-	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
-	tracks[p_track]->thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
-}
-
-Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
+Animation::TrackCacheID Animation::track_get_unique_id(int p_track) const {
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0);
-	return tracks[p_track]->thash;
+	return tracks[p_track]->get_unique_id();
 }
 
 void Animation::track_set_interpolation_type(int p_track, InterpolationType p_interp) {
@@ -3285,6 +3279,7 @@ double Animation::get_marker_time(const StringName &p_name) const {
 	return marker_times.get(p_name);
 }
 
+// TODO: This needs to be a TypedArray<StringName> see this PR for rationale https://github.com/godotengine/godot/pull/110767/
 PackedStringArray Animation::get_marker_names() const {
 	PackedStringArray names;
 	// We iterate on marker_names so the result is sorted by time.
@@ -5703,6 +5698,24 @@ Quaternion Animation::interpolate_via_rest(const Quaternion &p_from, const Quate
 bool Animation::is_variant_interpolatable(const Variant p_value) {
 	Variant::Type type = p_value.get_type();
 	return (type >= Variant::BOOL && type <= Variant::STRING_NAME) || type == Variant::ARRAY || type >= Variant::PACKED_INT32_ARRAY; // PackedByteArray is unsigned, so it would be better to ignore since blending uses float.
+}
+
+bool Animation::needs_type_cast(const Variant &p_from, const Variant &p_to) {
+	Variant::Type from_type = p_from.get_type();
+	Variant::Type to_type = p_to.get_type();
+
+	if (from_type == to_type) {
+		return false;
+	}
+
+	// Cast between double and int to avoid minor annoyances.
+	if (from_type == Variant::FLOAT && to_type == Variant::INT) {
+		return true;
+	} else if (from_type == Variant::INT && to_type == Variant::FLOAT) {
+		return true;
+	}
+
+	return false;
 }
 
 bool Animation::validate_type_match(const Variant &p_from, Variant &r_to) {

@@ -62,7 +62,7 @@ struct hb_vector_t
 	    hb_requires (hb_is_iterable (Iterable))>
   explicit hb_vector_t (const Iterable &o) : hb_vector_t ()
   {
-    extend (o);
+    extend (o, true);
   }
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
   hb_vector_t (const hb_vector_t &o) : hb_vector_t ()
@@ -117,12 +117,12 @@ struct hb_vector_t
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
-  void extend (const Iterable &o)
+  void extend (const Iterable &o, bool exact=false)
   {
     auto iter = hb_iter (o);
     if (iter.is_random_access_iterator || iter.has_fast_len)
     {
-      if (unlikely (!alloc (hb_len (iter), true)))
+      if (unlikely (!alloc (length + hb_len (iter), exact)))
 	return;
       unsigned count = hb_len (iter);
       for (unsigned i = 0; i < count; i++)
@@ -138,16 +138,16 @@ struct hb_vector_t
     }
   }
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
-  void extend (array_t o)
+  void extend (array_t o, bool exact=false)
   {
-    alloc (length + o.length);
+    alloc (length + o.length, exact);
     if (unlikely (in_error ())) return;
     copy_array (o);
   }
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
-  void extend (c_array_t o)
+  void extend (c_array_t o, bool exact=false)
   {
-    alloc (length + o.length);
+    alloc (length + o.length, exact);
     if (unlikely (in_error ())) return;
     copy_array (o);
   }
@@ -184,6 +184,34 @@ struct hb_vector_t
       reset_error ();
     resize (0);
     return *this;
+  }
+
+  /* Transfer ownership of the backing storage to caller.
+   * Returns nullptr if storage is not owned by this vector. */
+  Type *
+  steal (unsigned *len = nullptr, int *allocated_out = nullptr)
+  {
+    if (!is_owned ())
+      return nullptr;
+    if (len)
+      *len = length;
+    if (allocated_out)
+      *allocated_out = allocated;
+    Type *p = arrayZ;
+    init ();
+    return p;
+  }
+
+  /* Adopt a previously detached owned buffer. */
+  void
+  recycle_buffer (Type *buffer,
+                  unsigned len,
+                  int allocated_len)
+  {
+    fini ();
+    arrayZ = buffer;
+    length = len;
+    allocated = allocated_len;
   }
 
   friend void swap (hb_vector_t& a, hb_vector_t& b) noexcept
@@ -287,6 +315,12 @@ struct hb_vector_t
       return std::addressof (Crap (Type));
 
     return push_has_room (std::forward<Args> (args)...);
+  }
+  template <typename... Args>
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool push_or_fail (Args&&... args)
+  {
+    return push (std::forward<Args> (args)...) != std::addressof (Crap (Type));
   }
   template <typename... Args>
   HB_ALWAYS_INLINE_VECTOR_ALLOCS

@@ -48,7 +48,7 @@ enum khmer_syllable_type_t {
 };
 
 
-#line 49 "hb-ot-shaper-khmer-machine.hh"
+#line 52 "hb-ot-shaper-khmer-machine.hh"
 #define khmer_syllable_machine_ex_C 1u
 #define khmer_syllable_machine_ex_DOTTEDCIRCLE 11u
 #define khmer_syllable_machine_ex_H 4u
@@ -66,7 +66,7 @@ enum khmer_syllable_type_t {
 #define khmer_syllable_machine_ex_ZWNJ 5u
 
 
-#line 65 "hb-ot-shaper-khmer-machine.hh"
+#line 70 "hb-ot-shaper-khmer-machine.hh"
 static const unsigned char _khmer_syllable_machine_trans_keys[] = {
 	5u, 26u, 5u, 26u, 1u, 15u, 5u, 26u, 5u, 26u, 5u, 26u, 5u, 26u, 5u, 26u, 
 	5u, 26u, 5u, 26u, 5u, 26u, 5u, 26u, 5u, 26u, 1u, 15u, 5u, 26u, 5u, 26u, 
@@ -294,7 +294,7 @@ find_syllables_khmer (hb_buffer_t *buffer)
   int cs;
   hb_glyph_info_t *info = buffer->info;
   
-#line 287 "hb-ot-shaper-khmer-machine.hh"
+#line 298 "hb-ot-shaper-khmer-machine.hh"
 	{
 	cs = khmer_syllable_machine_start;
 	ts = 0;
@@ -310,7 +310,7 @@ find_syllables_khmer (hb_buffer_t *buffer)
 
   unsigned int syllable_serial = 1;
   
-#line 299 "hb-ot-shaper-khmer-machine.hh"
+#line 314 "hb-ot-shaper-khmer-machine.hh"
 	{
 	int _slen;
 	int _trans;
@@ -324,7 +324,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 311 "hb-ot-shaper-khmer-machine.hh"
+#line 328 "hb-ot-shaper-khmer-machine.hh"
 	}
 
 	_keys = _khmer_syllable_machine_trans_keys + (cs<<1);
@@ -394,7 +394,7 @@ _eof_trans:
 #line 98 "hb-ot-shaper-khmer-machine.rl"
 	{act = 3;}
 	break;
-#line 368 "hb-ot-shaper-khmer-machine.hh"
+#line 398 "hb-ot-shaper-khmer-machine.hh"
 	}
 
 _again:
@@ -403,7 +403,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 375 "hb-ot-shaper-khmer-machine.hh"
+#line 407 "hb-ot-shaper-khmer-machine.hh"
 	}
 
 	if ( ++p != pe )

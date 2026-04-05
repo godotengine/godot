@@ -801,6 +801,13 @@ bool AnimationPlayer::is_movie_quit_on_finish_enabled() const {
 	return movie_quit_on_finish;
 }
 
+void AnimationPlayer::_animation_changed(const StringName &p_name) {
+	AnimationMixer::_animation_changed(p_name);
+	if (playback.current.is_enabled && playback.current.animation_name == p_name && animation_set.has(p_name)) {
+		playback.current.animation_length = animation_set[p_name].animation->get_length();
+	}
+}
+
 void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 	_clear_caches();
 	Playback &c = playback;

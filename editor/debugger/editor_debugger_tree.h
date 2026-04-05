@@ -65,7 +65,6 @@ private:
 	bool scrolling_to_item = false;
 	bool notify_selection_queued = false;
 	bool selection_surpassed_limit = false;
-	bool selection_uncollapse_all = false;
 	HashSet<ObjectID> unfold_cache;
 	HashSet<ObjectID> selection_cache;
 	PopupMenu *item_menu = nullptr;

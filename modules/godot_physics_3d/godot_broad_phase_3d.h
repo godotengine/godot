@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/math/aabb.h"
-#include "core/math/math_funcs.h"
 
 class GodotCollisionObject3D;
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Font" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Font" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for fonts and font variations.
 	</brief_description>
@@ -125,6 +125,8 @@
 			<param index="6" name="spacing_space" type="int" default="0" />
 			<param index="7" name="spacing_glyph" type="int" default="0" />
 			<param index="8" name="baseline_offset" type="float" default="0.0" />
+			<param index="9" name="palette_index" type="int" default="0" />
+			<param index="10" name="custom_colors" type="PackedColorArray" default="PackedColorArray()" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>
@@ -224,6 +226,26 @@
 			<return type="Dictionary" />
 			<description>
 				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
+			</description>
+		</method>
+		<method name="get_palette_colors" qualifiers="const">
+			<return type="PackedColorArray" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the array in the predefined color palette at [param index]. Palette contains all colors used to render font glyphs. Each palette has the same number of colors. Colors can be overridden using [FontVariation].
+			</description>
+		</method>
+		<method name="get_palette_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of predefined color palettes. Palette contains all colors used to render font glyphs. Each palette has the same number of colors.
+			</description>
+		</method>
+		<method name="get_palette_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the name of the predefined color palette at [param index]. Palette contains all colors used to render font glyphs. Each palette has the same number of colors.
 			</description>
 		</method>
 		<method name="get_rids" qualifiers="const">

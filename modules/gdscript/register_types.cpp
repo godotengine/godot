@@ -33,6 +33,7 @@
 #include "gdscript.h"
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
+#include "gdscript_resource_format.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_utility_functions.h"
 
@@ -42,6 +43,7 @@
 #include "editor/script/script_editor_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
+#include "language_server/gdscript_language_protocol.h"
 #include "language_server/gdscript_language_server.h"
 #endif
 #endif // TOOLS_ENABLED
@@ -52,6 +54,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED

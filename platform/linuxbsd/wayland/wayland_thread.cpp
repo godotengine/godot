@@ -199,6 +199,21 @@ Vector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_displa
 	return Vector<uint8_t>();
 }
 
+void WaylandThread::_wl_display_check_error(struct wl_display *wl_display) {
+	int werror = wl_display_get_error(wl_display);
+	if (werror) {
+		if (werror == EPROTO) {
+			struct wl_interface *wl_interface = nullptr;
+			uint32_t id = 0;
+
+			int error_code = wl_display_get_protocol_error(wl_display, (const struct wl_interface **)&wl_interface, &id);
+			CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
+		} else {
+			CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
+		}
+	}
+}
+
 Ref<InputEventKey> WaylandThread::_seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed) {
 	Ref<InputEventKey> event;
 
@@ -497,6 +512,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
 
+	if (registry->global_names.has(name)) {
+		WARN_PRINT("Received duplicate Wayland global announcement!");
+	}
+
+	registry->global_names.insert(name);
+
 	if (strcmp(interface, wl_shm_interface.name) == 0) {
 		registry->wl_shm = (struct wl_shm *)wl_registry_bind(wl_registry, name, &wl_shm_interface, 1);
 		registry->wl_shm_name = name;
@@ -618,6 +639,16 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		registry->wp_viewporter_name = name;
 	}
 
+	if (strcmp(interface, wp_color_manager_v1_interface.name) == 0) {
+		registry->wp_color_manager = (struct wp_color_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_color_manager_v1_interface, 1);
+		registry->wp_color_manager_name = name;
+		wl_proxy_tag_godot((struct wl_proxy *)registry->wp_color_manager);
+
+		WaylandThread::ColorManagementState *color_state = memnew(WaylandThread::ColorManagementState);
+		wp_color_manager_v1_add_listener(registry->wp_color_manager, &wp_color_manager_listener, color_state);
+		return;
+	}
+
 	if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
 		registry->wp_cursor_shape_manager = (struct wp_cursor_shape_manager_v1 *)wl_registry_bind(wl_registry, name, &wp_cursor_shape_manager_v1_interface, 1);
 		registry->wp_cursor_shape_manager_name = name;
@@ -648,6 +679,17 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	if (strcmp(interface, xdg_toplevel_icon_manager_v1_interface.name) == 0) {
 		registry->xdg_toplevel_icon_manager = (struct xdg_toplevel_icon_manager_v1 *)wl_registry_bind(wl_registry, name, &xdg_toplevel_icon_manager_v1_interface, 1);
 		registry->xdg_toplevel_icon_manager_name = name;
+
+		if (registry->wayland_thread->xdg_icon) {
+			xdg_toplevel_icon_v1_destroy(registry->wayland_thread->xdg_icon);
+			registry->wayland_thread->xdg_icon = nullptr;
+		}
+
+		if (registry->wayland_thread->icon_buffer) {
+			wl_buffer_destroy(registry->wayland_thread->icon_buffer);
+			registry->wayland_thread->icon_buffer = nullptr;
+		}
+
 		return;
 	}
 
@@ -750,6 +792,10 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
 
+	if (!registry->global_names.erase(name)) {
+		WARN_PRINT("Received remove event for unknown Wayland global!");
+	}
+
 	if (name == registry->wl_shm_name) {
 		if (registry->wl_shm) {
 			wl_shm_destroy(registry->wl_shm);
@@ -847,6 +893,32 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		registry->wp_viewporter_name = 0;
 
 		return;
+	}
+
+	if (name == registry->wp_color_manager_name) {
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
+			WindowState ws = pair.value;
+
+			if (ws.wp_color_management_surface) {
+				wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
+				ws.wp_color_management_surface = nullptr;
+			}
+
+			if (ws.wp_color_management_surface_feedback) {
+				wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
+				ws.wp_color_management_surface_feedback = nullptr;
+			}
+		}
+
+		if (registry->wp_color_manager) {
+			ColorManagementState *color_state = wp_color_manager_get_state(registry->wp_color_manager);
+			memdelete(color_state);
+
+			wp_color_manager_v1_destroy(registry->wp_color_manager);
+			registry->wp_color_manager = nullptr;
+		}
+
+		registry->wp_color_manager_name = 0;
 	}
 
 	if (name == registry->wp_cursor_shape_manager_name) {
@@ -1242,17 +1314,6 @@ void WaylandThread::_frame_wl_callback_on_done(void *data, struct wl_callback *w
 
 	ws->frame_callback = wl_surface_frame(ws->wl_surface);
 	wl_callback_add_listener(ws->frame_callback, &frame_wl_callback_listener, ws);
-
-	if (ws->wl_surface && ws->buffer_scale_changed) {
-		// NOTE: We're only now setting the buffer scale as the idea is to get this
-		// data committed together with the new frame, all by the rendering driver.
-		// This is important because we might otherwise set an invalid combination of
-		// buffer size and scale (e.g. odd size and 2x scale). We're pretty much
-		// guaranteed to get a proper buffer in the next render loop as the rescaling
-		// method also informs the engine of a "window rect change", triggering
-		// rendering if needed.
-		wl_surface_set_buffer_scale(ws->wl_surface, window_state_get_preferred_buffer_scale(ws));
-	}
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
@@ -1361,12 +1422,22 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
+	ws->ready = true;
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure rect %s", ws->rect));
 }
 
 void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
+
+	if (width == 0) {
+		width = ws->rect.size.width;
+	}
+
+	if (height == 0) {
+		height = ws->rect.size.height;
+	}
 
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
@@ -1423,9 +1494,7 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 		}
 	}
 
-	if (width != 0 && height != 0) {
-		window_state_update_size(ws, width, height);
-	}
+	window_state_update_size(ws, width, height);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("XDG toplevel on configure width %d height %d.", width, height));
 }
@@ -1476,9 +1545,15 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	if (width != 0 && height != 0) {
-		window_state_update_size(ws, width, height);
+	if (width == 0) {
+		width = ws->rect.size.width;
 	}
+
+	if (height == 0) {
+		height = ws->rect.size.width;
+	}
+
+	window_state_update_size(ws, width, height);
 
 	WindowState *parent = ws->wayland_thread->window_get_state(ws->parent_id);
 	ERR_FAIL_NULL(parent);
@@ -1511,6 +1586,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 		rect_msg->id = ws->id;
 		rect_msg->rect.position = scale_vector2i(ws->rect.position, parent_scale);
 		rect_msg->rect.size = scale_vector2i(ws->rect.size, parent_scale);
+		rect_msg->buffer_scale = window_state_get_preferred_buffer_scale(ws);
 
 		ws->wayland_thread->push_message(rect_msg);
 	}
@@ -1570,6 +1646,8 @@ void WaylandThread::libdecor_on_error(struct libdecor *context, enum libdecor_er
 void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
 	WindowState *ws = (WindowState *)user_data;
 	ERR_FAIL_NULL(ws);
+
+	ws->ready = true;
 
 	int width = 0;
 	int height = 0;
@@ -2507,37 +2585,15 @@ void WaylandThread::_wl_data_source_on_target(void *data, struct wl_data_source 
 
 void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *wl_data_source, const char *mime_type, int32_t fd) {
 	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	Vector<uint8_t> *data_to_send = nullptr;
-
-	if (wl_data_source == ss->wl_data_source_selection) {
-		data_to_send = &ss->selection_data;
-		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested selection.");
+	if (ss == nullptr) {
+		ERR_PRINT("Seat state not set.");
+		close(fd);
+		return;
 	}
 
-	if (data_to_send) {
-		ssize_t written_bytes = 0;
-
-		bool valid_mime = false;
-
-		if (strcmp(mime_type, "text/plain;charset=utf-8") == 0) {
-			valid_mime = true;
-		} else if (strcmp(mime_type, "text/plain") == 0) {
-			valid_mime = true;
-		}
-
-		if (valid_mime) {
-			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
-		}
-
-		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
-		} else if (written_bytes == 0) {
-			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
-		} else {
-			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
-		}
+	if (wl_data_source == ss->wl_data_source_selection) {
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested selection.");
+		_clipboard_send(ss->selection_data, mime_type, fd);
 	}
 
 	close(fd);
@@ -2565,6 +2621,144 @@ void WaylandThread::_wl_data_source_on_dnd_finished(void *data, struct wl_data_s
 }
 
 void WaylandThread::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
+}
+
+void WaylandThread::_wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_render_intents |= 1 << render_intent;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_feature(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t feature) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_render_feature |= 1 << feature;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_tf_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t tf) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_transfer_function |= 1 << tf;
+}
+
+void WaylandThread::_wp_color_manager_on_supported_primaries_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t primaries) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	cms->supported_primaries |= 1 << primaries;
+}
+
+void WaylandThread::_wp_color_manager_on_done(void *data, struct wp_color_manager_v1 *wp_color_manager_v1) {
+	ColorManagementState *cms = (ColorManagementState *)data;
+	ERR_FAIL_NULL(cms);
+
+	// We require parametric profiles until we can support reading ICC files.
+	if ((cms->supported_render_feature & (1 << WP_COLOR_MANAGER_V1_FEATURE_PARAMETRIC)) == 0) {
+		return;
+	}
+
+	// We require the compositor to support extended linear sRGB.
+	// sRGB primaries support is assumed.
+	cms->supports_hdr = cms->supported_transfer_function & (1 << WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR);
+}
+
+void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity) {
+	_wp_color_management_surface_feedback_on_preferred_changed2(data, wp_color_management_surface_feedback_v1, 0, identity);
+}
+
+void WaylandThread::_wp_color_management_surface_feedback_on_preferred_changed2(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity_high, uint32_t identity_low) {
+	struct wp_image_description_v1 *image_description = wp_color_management_surface_feedback_v1_get_preferred_parametric(wp_color_management_surface_feedback_v1);
+
+	wp_image_description_v1_add_listener(image_description, &wp_image_description_listener, data);
+}
+
+void WaylandThread::_wp_image_description_on_failed(void *data, struct wp_image_description_v1 *image_descrptor, uint32_t cause, const char *msg) {
+	WARN_PRINT(msg);
+}
+
+void WaylandThread::_wp_image_description_on_ready(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity) {
+	_wp_image_description_on_ready2(data, image_descriptor, 0, identity);
+}
+
+void WaylandThread::_wp_image_description_on_ready2(void *data, struct wp_image_description_v1 *image_descriptor, uint32_t identity_high, uint32_t identity_low) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	struct wp_image_description_info_v1 *image_info = wp_image_description_v1_get_information(image_descriptor);
+	if (image_info != nullptr) {
+		// The wp_image_description_info_v1 listener takes ownership of this msg.
+		// We need to add a virtual reference so this msg is not freed when we leave the scope.
+		Ref<ColorProfileMessage> msg = memnew(ColorProfileMessage);
+		msg->reference();
+		msg->id = ws->id;
+		msg->wayland_thread = ws->wayland_thread;
+
+		wp_image_description_info_v1_add_listener(image_info, &wp_image_description_info_listener, msg.ptr());
+		wp_image_description_v1_destroy(image_descriptor);
+	}
+}
+
+void WaylandThread::_wp_image_description_info_on_done(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1) {
+	wp_image_description_info_v1_destroy(wp_image_description_info_v1);
+
+	ERR_FAIL_NULL(data);
+	// Now that we have claimed ownership of the msg, remove the virtual reference.
+	Ref<ColorProfileMessage> msg = (ColorProfileMessage *)data;
+	msg->unreference();
+
+	msg->wayland_thread->push_message(msg);
+}
+
+void WaylandThread::_wp_image_description_info_on_icc_file(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t icc, uint32_t icc_size) {
+	::close(icc);
+}
+
+void WaylandThread::_wp_image_description_info_on_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) {
+}
+
+void WaylandThread::_wp_image_description_info_on_primaries_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t primaries) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.named_primary = primaries;
+}
+
+void WaylandThread::_wp_image_description_info_on_tf_power(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t eexp) {
+}
+
+void WaylandThread::_wp_image_description_info_on_tf_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t tf) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.named_transfer_function = tf;
+}
+
+void WaylandThread::_wp_image_description_info_on_luminances(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum, uint32_t reference_lum) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	msg->color_profile.reference_luminance = reference_lum;
+}
+
+void WaylandThread::_wp_image_description_info_on_target_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y) {
+}
+
+void WaylandThread::_wp_image_description_info_on_target_luminance(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum) {
+	ColorProfileMessage *msg = (ColorProfileMessage *)data;
+	ERR_FAIL_NULL(msg);
+
+	// The uint32 is multiplied by 10000 for precision.
+	msg->color_profile.target_min_luminance = static_cast<float>(min_lum) / 10000;
+	msg->color_profile.target_max_luminance = max_lum;
+}
+
+void WaylandThread::_wp_image_description_info_on_target_max_cll(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_cll) {
+}
+
+void WaylandThread::_wp_image_description_info_on_target_max_fall(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_fall) {
 }
 
 void WaylandThread::_wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale) {
@@ -2703,29 +2897,15 @@ void WaylandThread::_wp_primary_selection_offer_on_offer(void *data, struct zwp_
 
 void WaylandThread::_wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1, const char *mime_type, int32_t fd) {
 	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	Vector<uint8_t> *data_to_send = nullptr;
-
-	if (wp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
-		data_to_send = &ss->primary_data;
-		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested primary selection.");
+	if (ss == nullptr) {
+		ERR_PRINT("Seat state not set.");
+		close(fd);
+		return;
 	}
 
-	if (data_to_send) {
-		ssize_t written_bytes = 0;
-
-		if (strcmp(mime_type, "text/plain") == 0) {
-			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
-		}
-
-		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
-		} else if (written_bytes == 0) {
-			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
-		} else {
-			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
-		}
+	if (wp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested primary selection.");
+		_clipboard_send(ss->primary_data, mime_type, fd);
 	}
 
 	close(fd);
@@ -3325,6 +3505,33 @@ void WaylandThread::_godot_embedded_client_on_window_focus_out(void *data, struc
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus out", state->pid));
 }
 
+void WaylandThread::_clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd) {
+	ssize_t written_bytes = 0;
+
+	bool valid_mime = false;
+
+	if (strcmp(p_media_type, "text/plain;charset=utf-8") == 0) {
+		valid_mime = true;
+	} else if (strcmp(p_media_type, "text/plain") == 0) {
+		valid_mime = true;
+	}
+
+	if (!valid_mime) {
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: Media type '%s' unknown, skipping.", p_media_type));
+		return;
+	}
+
+	written_bytes = write(p_fd, p_data.ptr(), p_data.size());
+
+	if (written_bytes > 0) {
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
+	} else if (written_bytes == 0) {
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
+	} else {
+		ERR_PRINT(vformat("Clipboard: write error %d.", errno));
+	}
+}
+
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
 	Thread::set_name("Wayland Events");
@@ -3361,19 +3568,7 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			}
 		}
 
-		int werror = wl_display_get_error(data->wl_display);
-
-		if (werror) {
-			if (werror == EPROTO) {
-				struct wl_interface *wl_interface = nullptr;
-				uint32_t id = 0;
-
-				int error_code = wl_display_get_protocol_error(data->wl_display, (const struct wl_interface **)&wl_interface, &id);
-				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
-			} else {
-				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
-			}
-		}
+		_wl_display_check_error(data->wl_display);
 
 		wl_display_flush(data->wl_display);
 
@@ -3479,6 +3674,14 @@ WaylandThread::OfferState *WaylandThread::wp_primary_selection_offer_get_offer_s
 	return nullptr;
 }
 
+WaylandThread::ColorManagementState *WaylandThread::wp_color_manager_get_state(wp_color_manager_v1 *p_color_manager) {
+	if (p_color_manager && wl_proxy_is_godot((wl_proxy *)p_color_manager)) {
+		return (ColorManagementState *)wp_color_manager_v1_get_user_data(p_color_manager);
+	}
+
+	return nullptr;
+}
+
 WaylandThread::EmbeddingCompositorState *WaylandThread::godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor) {
 	// NOTE: No need for tag check as it's a "fake" interface - nothing else exposes it.
 	if (p_compositor) {
@@ -3545,6 +3748,10 @@ double WaylandThread::window_state_get_scale_factor(const WindowState *p_ws) {
 void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int p_height) {
 	ERR_FAIL_NULL(p_ws);
 
+	// Failsafe.
+	p_width = MAX(p_width, 1);
+	p_height = MAX(p_height, 1);
+
 	int preferred_buffer_scale = window_state_get_preferred_buffer_scale(p_ws);
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
 
@@ -3567,7 +3774,6 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	if (p_ws->buffer_scale != preferred_buffer_scale) {
 		// The buffer scale is always important, even if we use frac scaling.
 		p_ws->buffer_scale = preferred_buffer_scale;
-		p_ws->buffer_scale_changed = true;
 
 		if (!using_fractional) {
 			// We don't bother updating everything else if it's turned on though.
@@ -3612,6 +3818,7 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		rect_msg->id = p_ws->id;
 		rect_msg->rect.position = scale_vector2i(p_ws->rect.position, win_scale);
 		rect_msg->rect.size = scaled_size;
+		rect_msg->buffer_scale = preferred_buffer_scale;
 		p_ws->wayland_thread->push_message(rect_msg);
 	}
 
@@ -3621,6 +3828,18 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		dpi_msg->id = p_ws->id;
 		dpi_msg->event = DisplayServerEnums::WINDOW_EVENT_DPI_CHANGE;
 		p_ws->wayland_thread->push_message(dpi_msg);
+	}
+}
+
+void WaylandThread::window_state_set_buffer_scale(WindowState *p_ws, int p_buffer_scale) {
+	ERR_FAIL_NULL(p_ws);
+	ERR_FAIL_COND(p_buffer_scale <= 0);
+
+	ERR_FAIL_NULL(p_ws->wl_surface);
+
+	if (p_ws->buffer_scale != p_buffer_scale) {
+		p_ws->buffer_scale = p_buffer_scale;
+		wl_surface_set_buffer_scale(p_ws->wl_surface, p_buffer_scale);
 	}
 }
 
@@ -3858,7 +4077,7 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size = p_size;
+	ws.rect.size = p_size.maxi(1);
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
@@ -3871,6 +4090,17 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 			ws.wp_fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(registry.wp_fractional_scale_manager, ws.wl_surface);
 			wp_fractional_scale_v1_add_listener(ws.wp_fractional_scale, &wp_fractional_scale_listener, &ws);
 		}
+	}
+
+	if (supports_hdr()) {
+		ws.wp_color_management_surface_feedback = wp_color_manager_v1_get_surface_feedback(registry.wp_color_manager, ws.wl_surface);
+		wp_color_management_surface_feedback_v1_add_listener(ws.wp_color_management_surface_feedback, &wp_color_management_surface_feedback_listener, &ws);
+
+		struct wp_image_description_v1 *image_description = wp_color_management_surface_feedback_v1_get_preferred_parametric(ws.wp_color_management_surface_feedback);
+		wp_image_description_v1_add_listener(image_description, &wp_image_description_listener, &ws);
+
+		//NOTE: requires vulkan to use the VK_COLOR_SPACE_PASSTHROUGH_EXT colorspace to not raise protocol errors
+		ws.wp_color_management_surface = wp_color_manager_v1_get_surface(registry.wp_color_manager, ws.wl_surface);
 	}
 
 	bool decorated = false;
@@ -3932,11 +4162,6 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	}
 
 	wl_surface_commit(ws.wl_surface);
-
-	// Wait for the surface to be configured before continuing.
-	wl_display_roundtrip(wl_display);
-
-	window_state_update_size(&ws, ws.rect.size.width, ws.rect.size.height);
 }
 
 void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect) {
@@ -3950,7 +4175,6 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
-
 	// We manually scaled based on the parent. If we don't set the relevant fields,
 	// the resizing routines will get confused and scale once more.
 	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
@@ -4021,9 +4245,6 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
 
 	wl_surface_commit(ws.wl_surface);
-
-	// Wait for the surface to be configured before continuing.
-	wl_display_roundtrip(wl_display);
 }
 
 void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
@@ -4052,6 +4273,14 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 		wp_fractional_scale_v1_destroy(ws.wp_fractional_scale);
 	}
 
+	if (ws.wp_color_management_surface) {
+		wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
+	}
+
+	if (ws.wp_color_management_surface_feedback) {
+		wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
+	}
+
 	if (ws.wp_viewport) {
 		wp_viewport_destroy(ws.wp_viewport);
 	}
@@ -4066,6 +4295,14 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 
 	if (ws.wl_surface) {
 		wl_surface_destroy(ws.wl_surface);
+	}
+
+	if (ws.xdg_icon) {
+		xdg_toplevel_icon_v1_destroy(ws.xdg_icon);
+	}
+
+	if (ws.icon_buffer) {
+		wl_buffer_destroy(ws.icon_buffer);
 	}
 
 	// Before continuing, let's handle any leftover event that might still refer to
@@ -4123,6 +4360,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 		new_size = new_size.min(ws.rect.size);
 	}
 
+#ifdef LIBDECOR_ENABLED
 	// NOTE: Older versions of libdecor (~2022) do not have a way to get the max
 	// content size. Let's also check for its pointer so that we can preserve
 	// compatibility with older distros.
@@ -4139,10 +4377,11 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 			new_size.height = MIN(new_size.height, max_height);
 		}
 	}
+#endif
 
 	window_state_update_size(&ws, new_size.width, new_size.height);
 
-	return scale_vector2i(new_size, window_scale);
+	return scale_vector2i(new_size, window_scale).maxi(1);
 }
 
 void WaylandThread::beep() const {
@@ -4325,12 +4564,14 @@ bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id
 		};
 
 		case DisplayServerEnums::WINDOW_MODE_MAXIMIZED: {
+#ifdef LIBDECOR_ENABLED
 			if (ws.libdecor_frame) {
 				// NOTE: libdecor doesn't seem to have a maximize capability query?
 				// The fact that there's a fullscreen one makes me suspicious. Anyways,
 				// let's act as if we always can.
 				return true;
 			}
+#endif
 			return ws.can_maximize;
 		};
 
@@ -4408,8 +4649,8 @@ void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id
 #endif // LIBDECOR_ENABLED
 		} break;
 	}
-
-	// Wait for a configure event and hope that something changed.
+	// Roundtrip and hope that something changed.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 	if (ws.mode != DisplayServerEnums::WINDOW_MODE_WINDOWED) {
@@ -4538,7 +4779,85 @@ void WaylandThread::window_set_app_id(DisplayServerEnums::WindowID p_window_id, 
 	}
 }
 
-void WaylandThread::set_icon(const Ref<Image> &p_icon) {
+void WaylandThread::set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id) {
+	if (!registry.xdg_toplevel_icon_manager) {
+		return;
+	}
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	if (ws.xdg_icon) {
+		xdg_toplevel_icon_v1_destroy(ws.xdg_icon);
+	}
+	if (ws.icon_buffer) {
+		wl_buffer_destroy(ws.icon_buffer);
+	}
+	ws.icon_set = true;
+
+	if (p_icon.is_valid()) {
+		Size2i icon_size = p_icon->get_size();
+		ERR_FAIL_COND(icon_size.width != icon_size.height);
+
+		// NOTE: The stride is the width of the icon in bytes.
+		uint32_t icon_stride = icon_size.width * 4;
+		uint32_t data_size = icon_stride * icon_size.height;
+
+		// We need a shared memory object file descriptor in order to create a
+		// wl_buffer through wl_shm.
+		int fd = WaylandThread::_allocate_shm_file(data_size);
+		ERR_FAIL_COND(fd == -1);
+
+		uint32_t *buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+		// Create the Wayland buffer.
+		struct wl_shm_pool *shm_pool = wl_shm_create_pool(registry.wl_shm, fd, data_size);
+		ws.icon_buffer = wl_shm_pool_create_buffer(shm_pool, 0, icon_size.width, icon_size.height, icon_stride, WL_SHM_FORMAT_ARGB8888);
+		wl_shm_pool_destroy(shm_pool);
+
+		// Fill the cursor buffer with the image data.
+		for (uint32_t index = 0; index < (uint32_t)(icon_size.width * icon_size.height); index++) {
+			int row_index = index / icon_size.width;
+			int column_index = (index % icon_size.width);
+
+			buffer_data[index] = p_icon->get_pixel(column_index, row_index).to_argb32();
+
+			// Wayland buffers, unless specified, require associated alpha, so we'll just
+			// associate the alpha in-place.
+			uint8_t *pixel_data = (uint8_t *)&buffer_data[index];
+			pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
+			pixel_data[1] = pixel_data[1] * pixel_data[3] / 255;
+			pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
+		}
+
+		ws.xdg_icon = xdg_toplevel_icon_manager_v1_create_icon(registry.xdg_toplevel_icon_manager);
+		xdg_toplevel_icon_v1_add_buffer(ws.xdg_icon, ws.icon_buffer, icon_size.width);
+
+#ifdef LIBDECOR_ENABLED
+		if (ws.libdecor_frame) {
+			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
+			ERR_FAIL_NULL(toplevel);
+			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, ws.xdg_icon);
+		}
+#endif
+		if (ws.xdg_toplevel) {
+			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, ws.xdg_icon);
+		}
+	} else {
+#ifdef LIBDECOR_ENABLED
+		if (ws.libdecor_frame) {
+			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
+			ERR_FAIL_NULL(toplevel);
+			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, nullptr);
+		}
+#endif
+		if (ws.xdg_toplevel) {
+			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, nullptr);
+		}
+	}
+}
+
+void WaylandThread::set_default_icon(const Ref<Image> &p_icon) {
 	ERR_FAIL_COND(p_icon.is_null());
 
 	Size2i icon_size = p_icon->get_size();
@@ -4600,6 +4919,10 @@ void WaylandThread::set_icon(const Ref<Image> &p_icon) {
 
 	for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
 		WindowState &ws = pair.value;
+		if (ws.icon_set) {
+			continue;
+		}
+
 #ifdef LIBDECOR_ENABLED
 		if (ws.libdecor_frame) {
 			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
@@ -4654,6 +4977,40 @@ bool WaylandThread::window_get_idle_inhibition(DisplayServerEnums::WindowID p_wi
 	const WindowState &ws = windows[p_window_id];
 
 	return ws.wp_idle_inhibitor != nullptr;
+}
+
+void WaylandThread::window_set_color_profile(DisplayServerEnums::WindowID p_window_id, ColorProfile p_profile) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	const WindowState &ws = windows[p_window_id];
+
+	if (!ws.wp_color_management_surface) {
+		return;
+	}
+
+	if (p_profile.named_transfer_function == WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22) {
+		// This is largely a problem with some HDR monitors applying "glare compensation" or not.
+		// For monitors which do not apply glare compensation, it is correct to report gamma22 like we would on SDR.
+		// But there also exist monitors which apply glare compensation, on these monitors it is correct to request compound_2_4.
+		// Since we have no way to know on which type of monitor we are in, we unset the image description in the hopes
+		// that future compositor features may include choosing a default transfer function.
+		wp_color_management_surface_v1_unset_image_description(ws.wp_color_management_surface);
+		return;
+	}
+
+	ColorManagementState *cms = wp_color_manager_get_state(registry.wp_color_manager);
+
+	struct wp_image_description_creator_params_v1 *builder = wp_color_manager_v1_create_parametric_creator(registry.wp_color_manager);
+	wp_image_description_creator_params_v1_set_primaries_named(builder, p_profile.named_primary);
+	wp_image_description_creator_params_v1_set_tf_named(builder, p_profile.named_transfer_function);
+
+	if ((cms->supported_render_feature & WP_COLOR_MANAGER_V1_FEATURE_SET_LUMINANCES) > 0) {
+		uint32_t min_luminance = static_cast<uint32_t>(p_profile.target_min_luminance * 10000);
+		wp_image_description_creator_params_v1_set_luminances(builder, min_luminance, p_profile.target_max_luminance, p_profile.reference_luminance);
+	}
+
+	struct wp_image_description_v1 *image_desc = wp_image_description_creator_params_v1_create(builder);
+	wp_color_management_surface_v1_set_image_description(ws.wp_color_management_surface, image_desc, WP_COLOR_MANAGER_V1_RENDER_INTENT_PERCEPTUAL);
+	wp_image_description_v1_destroy(image_desc);
 }
 
 WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
@@ -4910,6 +5267,7 @@ Error WaylandThread::init() {
 	wl_registry_add_listener(wl_registry, &wl_registry_listener, &registry);
 
 	// Wait for registry to get notified from the compositor.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 	ERR_FAIL_NULL_V_MSG(registry.wl_shm, ERR_UNAVAILABLE, "Can't obtain the Wayland shared memory global.");
@@ -4946,6 +5304,7 @@ Error WaylandThread::init() {
 	}
 
 	// Wait for seat capabilities.
+	// TODO: Async?
 	wl_display_roundtrip(wl_display);
 
 #ifdef LIBDECOR_ENABLED
@@ -5215,15 +5574,18 @@ void WaylandThread::selection_set_text(const String &p_text) {
 
 	ss->selection_data = p_text.to_utf8_buffer();
 
-	if (ss->wl_data_source_selection == nullptr) {
-		ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
-		wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
-		wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
-		wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
-
-		// TODO: Implement a good way of getting the latest serial from the user.
-		wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	if (ss->wl_data_source_selection != nullptr) {
+		wl_data_source_destroy(ss->wl_data_source_selection);
+		ss->wl_data_source_selection = nullptr;
 	}
+
+	ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
+	wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
+	wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
+	wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
@@ -5306,7 +5668,7 @@ Vector<uint8_t> WaylandThread::primary_get_mime(const String &p_mime) const {
 
 		if (os->mime_types.has(p_mime)) {
 			// All righty, we're offering this type. Let's just return the data as is.
-			return ss->selection_data;
+			return ss->primary_data;
 		}
 
 		// ... we don't offer that type. Oh well.
@@ -5336,19 +5698,31 @@ void WaylandThread::primary_set_text(const String &p_text) {
 
 	ss->primary_data = p_text.to_utf8_buffer();
 
-	if (ss->wp_primary_selection_source == nullptr) {
-		ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
-		zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
-		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
-		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
-
-		// TODO: Implement a good way of getting the latest serial from the user.
-		zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	if (ss->wp_primary_selection_source != nullptr) {
+		zwp_primary_selection_source_v1_destroy(ss->wp_primary_selection_source);
+		ss->wp_primary_selection_source = nullptr;
 	}
+
+	ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
+	zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
+	zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
+	zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
 	wl_display_roundtrip(wl_display);
+}
+
+bool WaylandThread::supports_hdr() const {
+	ColorManagementState *color_state = wp_color_manager_get_state(registry.wp_color_manager);
+	if (!color_state) {
+		return false;
+	}
+
+	return color_state->supports_hdr;
 }
 
 void WaylandThread::commit_surfaces() {
@@ -5368,6 +5742,41 @@ bool WaylandThread::get_reset_frame() {
 	return old_frame;
 }
 
+// Wraps around `wl_display_dispatch_pending`. Judging from the docs, this
+// should work pretty much like `wl_display_dispatch_timeout`, which is only
+// available on somewhat recent versions of libwayland.
+//
+// This implementation is NOT based on libwayland's code.
+int WaylandThread::wait_events(int p_timeout_ms) {
+	struct pollfd poll_fd;
+	poll_fd.fd = wl_display_get_fd(wl_display);
+	poll_fd.events = POLLIN | POLLHUP;
+
+	while (wl_display_prepare_read(wl_display) != 0) {
+		// Event queue got already something.
+		return wl_display_dispatch_pending(wl_display);
+	}
+
+	wl_display_flush(wl_display);
+
+	// Wait for the event file descriptor to have new data.
+	poll(&poll_fd, 1, p_timeout_ms);
+
+	if (poll_fd.revents | POLLIN) {
+		// Load the queues with fresh new data.
+		wl_display_read_events(wl_display);
+	} else {
+		// Oh well... Stop signaling that we want to read.
+		wl_display_cancel_read(wl_display);
+
+		// We've got no new events :(
+		return 0;
+	}
+
+	// Let's try dispatching now...
+	return wl_display_dispatch_pending(wl_display);
+}
+
 // Dispatches events until a frame event is received, a window is reported as
 // suspended or the timeout expires.
 bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
@@ -5376,9 +5785,21 @@ bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
 	// `wl_display_prepare_read` and `wl_display_read`. This means, that it will
 	// basically be guaranteed to stay stuck in a "prepare read" state, where it
 	// will block any other attempt at reading the display fd, such as ours. The
-	// solution? Let's make sure the mutex is locked (it should) and unblock the
-	// main thread with a roundtrip!
+	// solution? Let's make sure the mutex is locked (it should)...
 	MutexLock mutex_lock(mutex);
+
+	if (is_suspended()) {
+		return false;
+	}
+
+	if (frame) {
+		frame = false;
+		return true;
+	}
+
+	ERR_FAIL_COND_V(Thread::get_caller_id() == events_thread.get_id(), false);
+
+	// ...and unblock the main thread with a roundtrip!
 	wl_display_roundtrip(wl_display);
 
 	if (is_suspended()) {
@@ -5394,65 +5815,12 @@ bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
 		return true;
 	}
 
-	struct pollfd poll_fd;
-	poll_fd.fd = wl_display_get_fd(wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
+	for (int remaining_ms = p_timeout; remaining_ms > 0;) {
+		int begin_ms = OS::get_singleton()->get_ticks_msec();
 
-	int begin_ms = OS::get_singleton()->get_ticks_msec();
-	int remaining_ms = p_timeout;
+		wait_events(remaining_ms);
 
-	while (remaining_ms > 0) {
-		// Empty the event queue while it's full.
-		while (wl_display_prepare_read(wl_display) != 0) {
-			if (wl_display_dispatch_pending(wl_display) == -1) {
-				// Oh no. We'll check and handle any display error below.
-				break;
-			}
-
-			if (is_suspended()) {
-				return false;
-			}
-
-			if (frame) {
-				// We had a frame event in the queue :D
-				frame = false;
-				return true;
-			}
-		}
-
-		int werror = wl_display_get_error(wl_display);
-
-		if (werror) {
-			if (werror == EPROTO) {
-				struct wl_interface *wl_interface = nullptr;
-				uint32_t id = 0;
-
-				int error_code = wl_display_get_protocol_error(wl_display, (const struct wl_interface **)&wl_interface, &id);
-				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
-			} else {
-				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
-			}
-		}
-
-		wl_display_flush(wl_display);
-
-		// Wait for the event file descriptor to have new data.
-		poll(&poll_fd, 1, remaining_ms);
-
-		if (poll_fd.revents | POLLIN) {
-			// Load the queues with fresh new data.
-			wl_display_read_events(wl_display);
-		} else {
-			// Oh well... Stop signaling that we want to read.
-			wl_display_cancel_read(wl_display);
-
-			// We've got no new events :(
-			// We won't even bother with checking the frame flag.
-			return false;
-		}
-
-		// Let's try dispatching now...
-		wl_display_dispatch_pending(wl_display);
+		_wl_display_check_error(wl_display);
 
 		if (is_suspended()) {
 			return false;
@@ -5494,6 +5862,43 @@ bool WaylandThread::is_suspended() const {
 	return true;
 }
 
+bool WaylandThread::window_wait_ready(DisplayServerEnums::WindowID p_window_id, int p_timeout_ms) {
+	MutexLock mutex_lock(mutex);
+
+	WindowState *ws = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(ws, false);
+
+	if (ws->ready) {
+		return true;
+	}
+
+	// See _poll_events_thread.
+	ERR_FAIL_COND_V(Thread::get_caller_id() == events_thread.get_id(), ws->ready);
+
+	// Unlock the thread.
+	wl_display_roundtrip(wl_display);
+
+	if (ws->ready) {
+		return true;
+	}
+
+	for (int remaining_ms = p_timeout_ms; remaining_ms > 0;) {
+		int begin_ms = OS::get_singleton()->get_ticks_msec();
+
+		wait_events(remaining_ms);
+
+		_wl_display_check_error(wl_display);
+
+		if (ws->ready) {
+			return true;
+		}
+
+		remaining_ms -= OS::get_singleton()->get_ticks_msec() - begin_ms;
+	}
+
+	return false;
+}
+
 struct godot_embedding_compositor *WaylandThread::get_embedding_compositor() {
 	return registry.godot_embedding_compositor;
 }
@@ -5520,225 +5925,37 @@ void WaylandThread::destroy() {
 		events_thread.wait_to_finish();
 	}
 
-	for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
-		WindowState &ws = pair.value;
-		if (ws.wp_fractional_scale) {
-			wp_fractional_scale_v1_destroy(ws.wp_fractional_scale);
+	if (!windows.is_empty()) {
+		WARN_PRINT("Display server did not destroy all windows!");
+		// Destroy all remaining windows.
+		// FIXME: This code does not delete popups in order and might cause protocol
+		// errors, as all the popup tree tracking and signaling is done in the display
+		// server. We should figure whether the Wayland thread is the sole responsible
+		// for cleanup.
+		LocalVector<DisplayServerEnums::WindowID> window_ids;
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
+			print_verbose(vformat("Window %d still allocated", pair.key));
+			window_ids.push_back(pair.key);
 		}
 
-		if (ws.wp_viewport) {
-			wp_viewport_destroy(ws.wp_viewport);
-		}
-
-		if (ws.frame_callback) {
-			wl_callback_destroy(ws.frame_callback);
-		}
-
-#ifdef LIBDECOR_ENABLED
-		if (ws.libdecor_frame) {
-			libdecor_frame_close(ws.libdecor_frame);
-		}
-#endif // LIBDECOR_ENABLED
-
-		if (ws.xdg_toplevel_decoration) {
-			zxdg_toplevel_decoration_v1_destroy(ws.xdg_toplevel_decoration);
-		}
-
-		if (ws.xdg_toplevel) {
-			xdg_toplevel_destroy(ws.xdg_toplevel);
-		}
-
-		if (ws.xdg_surface) {
-			xdg_surface_destroy(ws.xdg_surface);
-		}
-
-		if (ws.wl_surface) {
-			wl_surface_destroy(ws.wl_surface);
+		for (LocalVector<DisplayServerEnums::WindowID>::Iterator E = window_ids.end(); E != window_ids.begin(); --E) {
+			window_destroy(*E);
 		}
 	}
 
-	for (struct wl_seat *wl_seat : registry.wl_seats) {
-		SeatState *ss = wl_seat_get_seat_state(wl_seat);
-		ERR_FAIL_NULL(ss);
-
-		wl_seat_destroy(wl_seat);
-
-		xkb_context_unref(ss->xkb_context);
-		xkb_state_unref(ss->xkb_state);
-		xkb_keymap_unref(ss->xkb_keymap);
-		xkb_compose_table_unref(ss->xkb_compose_table);
-		xkb_compose_state_unref(ss->xkb_compose_state);
-
-		if (ss->wl_keyboard) {
-			wl_keyboard_destroy(ss->wl_keyboard);
-		}
-
-		if (ss->keymap_buffer) {
-			munmap((void *)ss->keymap_buffer, ss->keymap_buffer_size);
-		}
-
-		if (ss->wl_pointer) {
-			wl_pointer_destroy(ss->wl_pointer);
-		}
-
-		if (ss->cursor_frame_callback) {
-			// We don't need to set a null userdata for safety as the thread is done.
-			wl_callback_destroy(ss->cursor_frame_callback);
-		}
-
-		if (ss->cursor_surface) {
-			wl_surface_destroy(ss->cursor_surface);
-		}
-
-		if (ss->wl_data_device) {
-			wl_data_device_destroy(ss->wl_data_device);
-		}
-
-		if (ss->wp_cursor_shape_device) {
-			wp_cursor_shape_device_v1_destroy(ss->wp_cursor_shape_device);
-		}
-
-		if (ss->wp_relative_pointer) {
-			zwp_relative_pointer_v1_destroy(ss->wp_relative_pointer);
-		}
-
-		if (ss->wp_locked_pointer) {
-			zwp_locked_pointer_v1_destroy(ss->wp_locked_pointer);
-		}
-
-		if (ss->wp_confined_pointer) {
-			zwp_confined_pointer_v1_destroy(ss->wp_confined_pointer);
-		}
-
-		if (ss->wp_tablet_seat) {
-			zwp_tablet_seat_v2_destroy(ss->wp_tablet_seat);
-		}
-
-		for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
-			TabletToolState *state = wp_tablet_tool_get_state(tool);
-			if (state) {
-				memdelete(state);
-			}
-
-			zwp_tablet_tool_v2_destroy(tool);
-		}
-
-		if (ss->wp_text_input) {
-			zwp_text_input_v3_destroy(ss->wp_text_input);
-		}
-
-		memdelete(ss);
+	// We can't iterate directly on `global_names` as it gets mutated by the global
+	// remove handler.
+	LocalVector<uint32_t> global_names_to_delete;
+	for (uint32_t name : registry.global_names) {
+		global_names_to_delete.push_back(name);
 	}
 
-	if (registry.wp_tablet_manager) {
-		zwp_tablet_manager_v2_destroy(registry.wp_tablet_manager);
-	}
-
-	if (registry.wp_text_input_manager) {
-		zwp_text_input_manager_v3_destroy(registry.wp_text_input_manager);
-	}
-
-	for (struct wl_output *wl_output : registry.wl_outputs) {
-		ERR_FAIL_NULL(wl_output);
-
-		memdelete(wl_output_get_screen_state(wl_output));
-		wl_output_destroy(wl_output);
-	}
-
-	if (registry.godot_embedding_compositor) {
-		EmbeddingCompositorState *es = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
-		ERR_FAIL_NULL(es);
-
-		es->mapped_clients.clear();
-
-		for (struct godot_embedded_client *client : es->clients) {
-			godot_embedded_client_destroy(client);
-		}
-		es->clients.clear();
-
-		memdelete(es);
-
-		godot_embedding_compositor_destroy(registry.godot_embedding_compositor);
+	for (uint32_t name : global_names_to_delete) {
+		_wl_registry_on_global_remove(wl_registry_get_user_data(wl_registry), wl_registry, name);
 	}
 
 	if (wl_cursor_theme) {
 		wl_cursor_theme_destroy(wl_cursor_theme);
-	}
-
-	if (registry.wp_idle_inhibit_manager) {
-		zwp_idle_inhibit_manager_v1_destroy(registry.wp_idle_inhibit_manager);
-	}
-
-	if (registry.wp_pointer_constraints) {
-		zwp_pointer_constraints_v1_destroy(registry.wp_pointer_constraints);
-	}
-
-	if (registry.wp_pointer_gestures) {
-		zwp_pointer_gestures_v1_destroy(registry.wp_pointer_gestures);
-	}
-
-	if (registry.wp_relative_pointer_manager) {
-		zwp_relative_pointer_manager_v1_destroy(registry.wp_relative_pointer_manager);
-	}
-
-	if (registry.wp_pointer_warp) {
-		wp_pointer_warp_v1_destroy(registry.wp_pointer_warp);
-	}
-
-	if (registry.xdg_activation) {
-		xdg_activation_v1_destroy(registry.xdg_activation);
-	}
-
-	if (registry.xdg_system_bell) {
-		xdg_system_bell_v1_destroy(registry.xdg_system_bell);
-	}
-
-	if (registry.xdg_toplevel_icon_manager) {
-		xdg_toplevel_icon_manager_v1_destroy(registry.xdg_toplevel_icon_manager);
-
-		if (xdg_icon) {
-			xdg_toplevel_icon_v1_destroy(xdg_icon);
-		}
-
-		if (icon_buffer) {
-			wl_buffer_destroy(icon_buffer);
-		}
-	}
-
-	if (registry.xdg_decoration_manager) {
-		zxdg_decoration_manager_v1_destroy(registry.xdg_decoration_manager);
-	}
-
-	if (registry.wp_cursor_shape_manager) {
-		wp_cursor_shape_manager_v1_destroy(registry.wp_cursor_shape_manager);
-	}
-
-	if (registry.wp_fractional_scale_manager) {
-		wp_fractional_scale_manager_v1_destroy(registry.wp_fractional_scale_manager);
-	}
-
-	if (registry.wp_viewporter) {
-		wp_viewporter_destroy(registry.wp_viewporter);
-	}
-
-	if (registry.xdg_wm_base) {
-		xdg_wm_base_destroy(registry.xdg_wm_base);
-	}
-
-	// NOTE: Deprecated.
-	if (registry.xdg_exporter_v1) {
-		zxdg_exporter_v1_destroy(registry.xdg_exporter_v1);
-	}
-
-	if (registry.xdg_exporter_v2) {
-		zxdg_exporter_v2_destroy(registry.xdg_exporter_v2);
-	}
-	if (registry.wl_shm) {
-		wl_shm_destroy(registry.wl_shm);
-	}
-
-	if (registry.wl_compositor) {
-		wl_compositor_destroy(registry.wl_compositor);
 	}
 
 	if (wl_registry) {

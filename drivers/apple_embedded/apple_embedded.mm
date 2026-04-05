@@ -30,14 +30,13 @@
 
 #import "apple_embedded.h"
 
-#import "app_delegate_service.h"
-#import "godot_view_controller.h"
+#include "core/object/class_db.h"
+#import "drivers/apple_embedded/app_delegate_service.h"
+#import "drivers/apple_embedded/godot_view_controller.h"
 
 #import <CoreHaptics/CoreHaptics.h>
 #import <UIKit/UIKit.h>
 #include <sys/sysctl.h>
-
-#include "core/object/class_db.h"
 
 void AppleEmbedded::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &AppleEmbedded::get_rate_url);

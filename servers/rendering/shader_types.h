@@ -31,7 +31,7 @@
 #pragma once
 
 #include "servers/rendering/rendering_server_enums.h"
-#include "shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 class ShaderTypes {
 	struct Type {

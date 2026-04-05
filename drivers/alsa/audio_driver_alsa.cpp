@@ -33,9 +33,14 @@
 #ifdef ALSA_ENABLED
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
+
+#ifdef SOWRAP_ENABLED
+#include "drivers/alsa/asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
 
 #include <cerrno>
 
@@ -91,7 +96,7 @@ Error AudioDriverALSA::init_output_device() {
 
 	ERR_FAIL_COND_V(status < 0, ERR_CANT_OPEN);
 
-	snd_pcm_hw_params_alloca(&hwparams);
+	snd_pcm_hw_params_alloca(&hwparams); // NOLINT(modernize-use-bool-literals)
 
 	status = snd_pcm_hw_params_any(pcm_handle, hwparams);
 	CHECK_FAIL(status < 0);
@@ -135,7 +140,7 @@ Error AudioDriverALSA::init_output_device() {
 
 	//snd_pcm_hw_params_free(&hwparams);
 
-	snd_pcm_sw_params_alloca(&swparams);
+	snd_pcm_sw_params_alloca(&swparams); // NOLINT(modernize-use-bool-literals)
 
 	status = snd_pcm_sw_params_current(pcm_handle, swparams);
 	CHECK_FAIL(status < 0);

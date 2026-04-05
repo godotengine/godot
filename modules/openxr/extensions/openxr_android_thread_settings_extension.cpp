@@ -37,6 +37,7 @@
 
 #ifdef XR_USE_PLATFORM_ANDROID
 #include "../openxr_api.h"
+
 #include <unistd.h>
 #endif
 

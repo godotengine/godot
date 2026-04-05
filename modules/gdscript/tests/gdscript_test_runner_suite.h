@@ -30,11 +30,11 @@
 
 #pragma once
 
+#include "../gdscript_cache.h"
 #include "gdscript_test_runner.h"
 
-#include "../gdscript_cache.h"
-
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 

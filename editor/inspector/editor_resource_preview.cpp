@@ -36,7 +36,6 @@
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"

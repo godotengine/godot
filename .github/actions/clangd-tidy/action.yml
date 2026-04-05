@@ -1,0 +1,30 @@
+name: clangd-tidy
+description: Setup and run clangd-tidy on relevant files
+
+inputs:
+  changed-files:
+    description: A pre-filtered list of changed files.
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Setup clangd-tidy
+      shell: sh
+      run: |
+        echo "::group::Prerequisite checks"
+        if [ ! -f "compile_commands.json" ]; then
+          echo "::error::clangd-tidy checker requires a compilation database to function"
+          exit 1
+        fi
+        echo "::endgroup::"
+
+        echo "::group::Installing clangd-tidy"
+        # Don't know which python we're using, so just access the global scope.
+        python -m pip install clangd clangd-tidy clang-tidy==22.1.0
+        echo "::endgroup::"
+
+        echo "::group::Running clangd-tidy"
+        clangd-tidy ${{ inputs.changed-files }}
+        echo "::endgroup::"

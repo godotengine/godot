@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/thread_safe.h"
 #include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
@@ -37,9 +38,9 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_apple_embedded.h"
+#import "drivers/apple_embedded/rendering_context_driver_vulkan_apple_embedded.h"
 
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 #endif // VULKAN_ENABLED
 
 #if defined(METAL_ENABLED)
@@ -89,7 +90,7 @@ class DisplayServerAppleEmbedded : public DisplayServer {
 	void initialize_tts() const;
 
 	bool edr_requested = false;
-	void _update_hdr_output();
+	void _update_hdr_output(bool edr_headroom_changed);
 	float _calculate_current_reference_luminance() const;
 
 protected:

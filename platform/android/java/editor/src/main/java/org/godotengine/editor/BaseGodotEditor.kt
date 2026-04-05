@@ -256,8 +256,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Skip permissions request if running in a device farm (e.g. firebase test lab) or if requested via the launch
 		// intent (e.g. instrumentation tests).
-		val skipPermissionsRequest = isRunningInInstrumentation() ||
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()
+		val skipPermissionsRequest = isRunningInInstrumentation() || ActivityManager.isRunningInUserTestHarness()
 		if (!skipPermissionsRequest) {
 			// We exclude certain permissions from the set we request at startup, as they'll be
 			// requested on demand based on use cases.
@@ -279,9 +278,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	override fun onConfigurationChanged(newConfig: Configuration) {
 		super.onConfigurationChanged(newConfig)
 
-		// Show EditorTitleBar only in landscape due to width limitations in portrait.
+		// Show EditorTitleBar on small screens only in landscape due to width limitations in portrait.
 		// TODO: Enable for portrait once the title bar width is optimized.
-		EditorUtils.toggleTitleBar(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+		EditorUtils.toggleTitleBar(isLargeScreen || newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
 	}
 
 	override fun onDestroy() {
@@ -450,6 +449,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
 		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
+		val hapticEnabled = enableHapticOnLongPress()
 
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
@@ -457,6 +457,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)
+				enableHapticFeedback(hapticEnabled)
 			}
 		}
 	}
@@ -722,6 +723,12 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
 
 	/**
+	 * Enable haptic feedback on long-press right-click for the Godot Android editor.
+	 */
+	protected open fun enableHapticOnLongPress() =
+		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/haptic_on_long_press"))
+
+	/**
 	 * Disable scroll deadzone for the Godot Android editor.
 	 */
 	protected open fun disableScrollDeadzone() = true
@@ -797,7 +804,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			}
 
 			PermissionsUtil.REQUEST_INSTALL_PACKAGES_REQ_CODE -> {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+				if (!packageManager.canRequestPackageInstalls()) {
 					Toast.makeText(
 						this,
 						R.string.denied_install_packages_permission_error_msg,

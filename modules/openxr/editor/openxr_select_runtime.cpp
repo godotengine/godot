@@ -31,7 +31,6 @@
 #include "openxr_select_runtime.h"
 
 #ifdef WINDOWS_ENABLED
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 

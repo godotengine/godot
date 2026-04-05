@@ -32,6 +32,7 @@
 
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_3d.h"
+#include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
@@ -314,6 +315,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
+	bool shape_readonly = EditorNode::get_singleton()->is_resource_read_only(s);
+
 	const Ref<StandardMaterial3D> material =
 			get_material(!cs->is_disabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 	const Ref<StandardMaterial3D> material_arraymesh =
@@ -402,9 +405,11 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(radius, 0, 0));
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles;
+			handles.push_back(Vector3(radius, 0, 0));
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
@@ -425,7 +430,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		p_gizmo->add_lines(lines, material, false, collision_color);
 		p_gizmo->add_collision_segments(lines);
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -524,8 +531,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
 
-		Vector<Vector3> handles = helper->capsule_get_handles(cs2->get_height(), cs2->get_radius());
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles = helper->capsule_get_handles(cs2->get_height(), cs2->get_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
@@ -591,8 +600,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
 
-		Vector<Vector3> handles = helper->cylinder_get_handles(cs2->get_height(), cs2->get_radius());
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles = helper->cylinder_get_handles(cs2->get_height(), cs2->get_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<WorldBoundaryShape3D>(*s)) {
@@ -662,9 +673,11 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		};
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(0, 0, rs->get_length()));
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles;
+			handles.push_back(Vector3(0, 0, rs->get_length()));
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<HeightMapShape3D>(*s)) {

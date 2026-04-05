@@ -42,6 +42,7 @@
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/texture.h"
 
 #include "modules/regex/regex.h"
 

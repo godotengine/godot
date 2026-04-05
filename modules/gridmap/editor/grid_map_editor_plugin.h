@@ -219,11 +219,12 @@ class GridMapEditor : public EditorDock {
 	ItemList *mesh_library_palette = nullptr;
 	Label *info_message = nullptr;
 
-	void update_grid(); // Change which and where the grid is displayed
+	void update_grid(); // Change which and where the grid is displayed.
 	void _draw_grids(const Vector3 &cell_size);
 	void _configure();
 	void _menu_option(int);
 	void update_palette();
+	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_idx);
 	void _update_mesh_library();
 	void _set_display_mode(int p_mode);
 	void _item_selected_cbk(int idx);

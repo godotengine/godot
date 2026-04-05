@@ -36,8 +36,6 @@
 #include "ip_web.h"
 #include "net_socket_web.h"
 
-#include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -46,11 +44,8 @@
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 
-#include "modules/modules_enabled.gen.h" // For websocket.
-
 #include <dlfcn.h>
 #include <emscripten.h>
-#include <cstdlib>
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());

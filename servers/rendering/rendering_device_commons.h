@@ -443,6 +443,7 @@ public:
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
+		bool is_subsampled = false;
 
 		bool operator==(const TextureFormat &b) const {
 			if (format != b.format) {
@@ -886,6 +887,15 @@ public:
 		DYNAMIC_STATE_STENCIL_COMPARE_MASK = (1 << 4),
 		DYNAMIC_STATE_STENCIL_WRITE_MASK = (1 << 5),
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
+	};
+
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	enum AccelerationStructureGeometryFlagBits {
+		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT = (1 << 1),
 	};
 
 	/**************/

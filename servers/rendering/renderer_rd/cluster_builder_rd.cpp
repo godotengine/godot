@@ -58,89 +58,40 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 		Vector<String> variants;
 		variants.push_back("");
 		variants.push_back("\n#define USE_ATTACHMENT\n");
-		variants.push_back("\n#define MOLTENVK_USED\n#define NO_IMAGE_ATOMICS\n");
-		variants.push_back("\n#define USE_ATTACHMENT\n#define MOLTENVK_USED\n#define NO_IMAGE_ATOMICS\n");
-		variants.push_back("\n#define NO_IMAGE_ATOMICS\n");
-		variants.push_back("\n#define MOLTENVK_USED\n#define NO_IMAGE_ATOMICS\n");
 
 		ClusterRender::ShaderVariant shader_variant;
 		RenderingDevice *rd = RD::get_singleton();
 		if (rd->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
 			fb_format = rd->framebuffer_format_create_empty();
 			blend_state = RD::PipelineColorBlendState::create_disabled();
-#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
-			if (rd->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
-				shader_variant = ClusterRender::SHADER_NORMAL_MOLTENVK;
-			} else if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-				shader_variant = ClusterRender::SHADER_NORMAL;
-			} else {
-				shader_variant = ClusterRender::SHADER_NORMAL_NO_ATOMICS;
-			}
-#else
-			if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-				shader_variant = ClusterRender::SHADER_NORMAL;
-			} else {
-				shader_variant = ClusterRender::SHADER_NORMAL_NO_ATOMICS;
-			}
-#endif
+			shader_variant = ClusterRender::SHADER_NORMAL;
 		} else {
 			Vector<RD::AttachmentFormat> afs;
 			afs.push_back(RD::AttachmentFormat());
 			afs.write[0].usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			fb_format = rd->framebuffer_format_create(afs);
 			blend_state = RD::PipelineColorBlendState::create_blend();
-#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
-			if (rd->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
-				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK;
-			} else if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
-			} else {
-				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS;
-			}
-#else
-			if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
-			} else {
-				shader_variant = ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS;
-			}
-#endif
+			shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
 		}
 
 		cluster_render.cluster_render_shader.initialize(variants);
-#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
-		if (rd->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_NO_ATOMICS, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, false);
-		} else if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_NO_ATOMICS, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, false);
-		} else {
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
-		}
-#else
-		if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_NO_ATOMICS, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, false);
-		} else {
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_NORMAL_MOLTENVK, false);
-			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
-		}
-#endif
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
 		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, shader_variant);
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0);
+
+		// On Apple platforms, gl_HelperInvocation (simd_is_helper_thread()) is unreliable with MSAA, causing rendering artifacts.
+		// Disable the helper invocation check for the MSAA pipeline via specialization constant.
+		Vector<RD::PipelineSpecializationConstant> specialization_constants;
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+		{
+			RD::PipelineSpecializationConstant sc;
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 0; // sc_use_helper_check
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+		}
+#endif
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0, 0, specialization_constants);
 	}
 	{
 		Vector<String> versions;

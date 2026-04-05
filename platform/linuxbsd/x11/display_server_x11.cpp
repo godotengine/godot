@@ -59,7 +59,6 @@
 #else // !SOWRAP_ENABLED
 #include <X11/XKBlib.h>
 #include <X11/Xutil.h>
-
 #include <X11/extensions/Xext.h>
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xrender.h>
@@ -3165,6 +3164,109 @@ void DisplayServerX11::window_set_mode(DisplayServerEnums::WindowMode p_mode, Di
 	}
 }
 
+void DisplayServerX11::window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.icon_set = true;
+
+	Ref<Image> img;
+	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+		img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+	}
+	wd.icon = img;
+	_update_window_icon(wd);
+}
+
+bool DisplayServerX11::g_set_icon_error = false;
+
+int DisplayServerX11::set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
+	g_set_icon_error = true;
+	return 0;
+}
+
+void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
+	Ref<Image> w_icon;
+	if (p_wd.icon_set) {
+		w_icon = p_wd.icon;
+	} else {
+		w_icon = icon;
+	}
+
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&DisplayServerX11::set_icon_errorhandler);
+
+	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
+
+	if (w_icon.is_valid()) {
+		while (true) {
+			int w = w_icon->get_width();
+			int h = w_icon->get_height();
+
+			if (g_set_icon_error) {
+				g_set_icon_error = false;
+
+				WARN_PRINT(vformat("Icon too large (%dx%d), attempting to downscale icon.", w, h));
+
+				int new_width, new_height;
+				if (w > h) {
+					new_width = w / 2;
+					new_height = h * new_width / w;
+				} else {
+					new_height = h / 2;
+					new_width = w * new_height / h;
+				}
+
+				w = new_width;
+				h = new_height;
+
+				if (!w || !h) {
+					WARN_PRINT("Unable to set icon.");
+					break;
+				}
+
+				w_icon->resize(w, h, Image::INTERPOLATE_CUBIC);
+			}
+
+			// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
+			Vector<long> pd;
+
+			pd.resize(2 + w * h);
+
+			pd.write[0] = w;
+			pd.write[1] = h;
+
+			const uint8_t *r = w_icon->get_data().ptr();
+
+			long *wr = &pd.write[2];
+			uint8_t const *pr = r;
+
+			for (int i = 0; i < w * h; i++) {
+				long v = 0;
+				//    A             R             G            B
+				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
+				*wr++ = v;
+				pr += 4;
+			}
+
+			if (net_wm_icon != None) {
+				XChangeProperty(x11_display, p_wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
+			}
+
+			if (!g_set_icon_error) {
+				break;
+			}
+		}
+	} else {
+		XDeleteProperty(x11_display, p_wd.x11_window, net_wm_icon);
+	}
+
+	XFlush(x11_display);
+	XSetErrorHandler(oldHandler);
+}
+
 DisplayServerEnums::WindowMode DisplayServerX11::window_get_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -5733,91 +5835,18 @@ void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
 
-bool g_set_icon_error = false;
-int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
-	g_set_icon_error = true;
-	return 0;
-}
-
 void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
-	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(p_icon.is_null());
 
-	WindowData &wd = windows[DisplayServerEnums::MAIN_WINDOW_ID];
+	icon = p_icon->duplicate();
+	icon->convert(Image::FORMAT_RGBA8);
 
-	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&set_icon_errorhandler);
-
-	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
-
-	if (p_icon.is_valid()) {
-		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
-
-		Ref<Image> img = p_icon->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		while (true) {
-			int w = img->get_width();
-			int h = img->get_height();
-
-			if (g_set_icon_error) {
-				g_set_icon_error = false;
-
-				WARN_PRINT(vformat("Icon too large (%dx%d), attempting to downscale icon.", w, h));
-
-				int new_width, new_height;
-				if (w > h) {
-					new_width = w / 2;
-					new_height = h * new_width / w;
-				} else {
-					new_height = h / 2;
-					new_width = w * new_height / h;
-				}
-
-				w = new_width;
-				h = new_height;
-
-				if (!w || !h) {
-					WARN_PRINT("Unable to set icon.");
-					break;
-				}
-
-				img->resize(w, h, Image::INTERPOLATE_CUBIC);
-			}
-
-			// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
-			Vector<long> pd;
-
-			pd.resize(2 + w * h);
-
-			pd.write[0] = w;
-			pd.write[1] = h;
-
-			const uint8_t *r = img->get_data().ptr();
-
-			long *wr = &pd.write[2];
-			uint8_t const *pr = r;
-
-			for (int i = 0; i < w * h; i++) {
-				long v = 0;
-				//    A             R             G            B
-				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
-				*wr++ = v;
-				pr += 4;
-			}
-
-			if (net_wm_icon != None) {
-				XChangeProperty(x11_display, wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
-			}
-
-			if (!g_set_icon_error) {
-				break;
-			}
+	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+			continue;
 		}
-	} else {
-		XDeleteProperty(x11_display, wd.x11_window, net_wm_icon);
+		_update_window_icon(E.value);
 	}
-
-	XFlush(x11_display);
-	XSetErrorHandler(oldHandler);
 }
 
 void DisplayServerX11::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
@@ -6650,6 +6679,8 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 	if (cursors[current_cursor] != None) {
 		XDefineCursor(x11_display, wd.x11_window, cursors[current_cursor]);
 	}
+
+	_update_window_icon(wd);
 
 	return id;
 }

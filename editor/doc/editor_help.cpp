@@ -36,6 +36,8 @@
 #include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/io/json.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
@@ -71,6 +73,8 @@
 #ifdef MODULE_MONO_ENABLED
 #include "modules/mono/csharp_script.h"
 #endif
+
+#include "modules/regex/regex.h"
 
 #define CONTRIBUTE_URL "https://contributing.godotengine.org/en/latest/documentation/class_reference.html"
 
@@ -3696,6 +3700,18 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 				}
 			}
 
+			if (property.name.contains("{index}")) {
+				RegEx reg_index = RegEx(property.name.replace("{index}", "\\d*"));
+				Ref<RegExMatch> match = reg_index.search(p_property_name);
+				if (match.is_valid()) {
+					result = current;
+
+					if (!is_native) {
+						break;
+					}
+				}
+			}
+
 			if (is_native) {
 				doc_property_cache[p_class_name][property.name] = current;
 			}
@@ -4368,6 +4384,238 @@ void EditorHelpBit::_notification(int p_what) {
 			_update_labels();
 			break;
 	}
+}
+
+String EditorHelpBit::get_as_plain_text(const String &p_symbol, const String &p_prologue) {
+	const PackedStringArray slices = p_symbol.split("|", true, 3);
+	ERR_FAIL_COND_V_MSG(slices.size() < 3, String(), R"(Invalid doc id: The expected format is "item_type|class_name|item_name[|item_data]".)");
+
+	const String &item_type = slices[0];
+	const String &class_name = slices[1];
+	const String &item_name = slices[2];
+
+	Dictionary item_data;
+	if (slices.size() > 3) {
+		item_data = JSON::parse_string(slices[3]);
+	}
+
+	HelpData new_help_data = HelpData();
+
+	if (item_type == "class") {
+		new_help_data = _get_class_help_data(class_name);
+	} else if (item_type == "enum") {
+		new_help_data = _get_enum_help_data(class_name, item_name);
+	} else if (item_type == "constant") {
+		new_help_data = _get_constant_help_data(class_name, item_name);
+	} else if (item_type == "property") {
+		new_help_data = _get_property_help_data(class_name, item_name);
+
+		// Add copy note to built-in properties returning `Packed*Array`.
+		const DocData::ClassDoc *cd = EditorHelp::get_doc(class_name);
+		if (cd && !cd->is_script_doc && packed_array_types.has(new_help_data.doc_type.type)) {
+			if (!new_help_data.description.is_empty()) {
+				new_help_data.description += "\n";
+			}
+			// See also `EditorHelp::_update_doc()` and `doc/tools/make_rst.py`.
+			new_help_data.description += vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), new_help_data.doc_type.type);
+		}
+	} else if (item_type == "internal_property") {
+		new_help_data.description = TTR("This property can only be set in the Inspector.");
+	} else if (item_type == "theme_item") {
+		new_help_data = _get_theme_item_help_data(class_name, item_name);
+	} else if (item_type == "method") {
+		new_help_data = _get_method_help_data(class_name, item_name);
+	} else if (item_type == "signal") {
+		new_help_data = _get_signal_help_data(class_name, item_name);
+	} else if (item_type == "annotation") {
+		new_help_data = _get_annotation_help_data(class_name, item_name);
+	} else if (item_type == "local_constant" || item_type == "local_variable") {
+		new_help_data.description = item_data.get("description", "").operator String().strip_edges();
+		if (item_data.get("is_deprecated", false)) {
+			const String deprecated_message = item_data.get("deprecated_message", "").operator String().strip_edges();
+			if (deprecated_message.is_empty()) {
+				if (item_type == "local_constant") {
+					new_help_data.deprecated_message = TTR("This constant may be changed or removed in future versions.");
+				} else {
+					new_help_data.deprecated_message = TTR("This variable may be changed or removed in future versions.");
+				}
+			} else {
+				new_help_data.deprecated_message = deprecated_message;
+			}
+		}
+		if (item_data.get("is_experimental", false)) {
+			const String experimental_message = item_data.get("experimental_message", "").operator String().strip_edges();
+			if (experimental_message.is_empty()) {
+				if (item_type == "local_constant") {
+					new_help_data.experimental_message = TTR("This constant may be changed or removed in future versions.");
+				} else {
+					new_help_data.experimental_message = TTR("This variable may be changed or removed in future versions.");
+				}
+			} else {
+				new_help_data.experimental_message = experimental_message;
+			}
+		}
+	}
+
+	if (!p_prologue.is_empty()) {
+		if (new_help_data.description.is_empty()) {
+			new_help_data.description = p_prologue;
+		} else {
+			new_help_data.description = p_prologue + "\n" + new_help_data.description;
+		}
+	}
+
+	if (new_help_data.description.is_empty() && item_type != "resource") {
+		new_help_data.description = TTR("No description available.");
+	}
+
+	String bbcode = new_help_data.description;
+	if (!new_help_data.deprecated_message.is_empty()) {
+		bbcode += "\n" + new_help_data.deprecated_message;
+	}
+	if (!new_help_data.experimental_message.is_empty()) {
+		bbcode += "\n" + new_help_data.experimental_message;
+	}
+
+	if (bbcode.is_empty()) {
+		return String();
+	}
+
+	DocTools *doc = EditorHelp::get_doc_data();
+
+	StringBuilder output;
+
+	List<String> tag_stack;
+	int pos = 0;
+	while (pos < bbcode.length()) {
+		int brk_pos = bbcode.find_char('[', pos);
+
+		if (brk_pos < 0) {
+			brk_pos = bbcode.length();
+		}
+
+		if (brk_pos > pos) {
+			String text = bbcode.substr(pos, brk_pos - pos);
+			output.append(text);
+		}
+
+		if (brk_pos == bbcode.length()) {
+			// Nothing else to add.
+			break;
+		}
+
+		int brk_end = bbcode.find_char(']', brk_pos + 1);
+
+		if (brk_end == -1) {
+			String text = bbcode.substr(brk_pos);
+			output.append(text);
+			break;
+		}
+
+		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+
+		if (tag.begins_with("/")) {
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1);
+
+			if (!tag_ok) {
+				output.append("]");
+				pos = brk_pos + 1;
+				continue;
+			}
+
+			tag_stack.pop_front();
+			pos = brk_end + 1;
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
+			int tag_end = tag.find_char(' ');
+			String link_tag = tag.left(tag_end);
+			String link_target = tag.substr(tag_end + 1).lstrip(" ");
+			if (link_tag == "param") {
+				link_tag = "parameter";
+			} else if (link_tag == "theme_item") {
+				link_tag = "theme item";
+			}
+			output.append(link_tag + " '" + link_target + "'");
+			pos = brk_end + 1;
+		} else if (tag == "codeblocks") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("codeblock");
+		} else if (tag.begins_with("gdscript")) {
+			pos = brk_end + 1;
+			output.append("GDScript:\n");
+			tag_stack.push_front("gdscript");
+		} else if (tag.begins_with("csharp")) {
+			pos = brk_end + 1;
+			output.append("C#:\n");
+			tag_stack.push_front("csharp");
+		} else if (tag == "b") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "i") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "code" || tag.begins_with("code ")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("code");
+		} else if (doc->class_list.has(tag)) {
+			output.append(tag);
+			pos = brk_end + 1;
+		} else if (tag == "kbd") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "center") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "br") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "u") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "s") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "url") {
+			int end = bbcode.find_char('[', brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			output.append(url);
+
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("url=")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("url");
+		} else if (tag == "img") {
+			int end = bbcode.find_char('[', brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
+
+			output.append("(Image: ");
+			output.append(image);
+			output.append(")");
+
+			pos = end;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("color=")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("color");
+		} else if (tag.begins_with("font=")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("font");
+		} else {
+			output.append("[");
+			pos = brk_pos + 1;
+		}
+	}
+
+	return output.as_string();
 }
 
 void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologue) {

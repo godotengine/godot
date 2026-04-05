@@ -67,7 +67,6 @@
 #endif
 
 #define GLAD_GL
-#define GLAD_GLES2
 #define GLAD_OPTION_GL_LOADER
 
 #ifdef __cplusplus

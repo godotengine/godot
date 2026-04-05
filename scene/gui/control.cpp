@@ -263,21 +263,32 @@ PackedStringArray Control::get_configuration_warnings() const {
 	return warnings;
 }
 
+String Control::_get_accessibility_name() const {
+	if (get_parent_control()) {
+		String container_info = get_parent_control()->get_accessibility_container_name(this);
+		return container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info;
+	} else {
+		return get_accessibility_name();
+	}
+}
+
 PackedStringArray Control::get_accessibility_configuration_warnings() const {
 	ERR_READ_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
 
-	String ac_name = get_accessibility_name().strip_edges();
-	if (ac_name.is_empty()) {
-		warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
-	}
-	if (ac_name.contains(get_class_name())) {
-		warnings.push_back(RTR("Accessibility Name must not include Node class name."));
-	}
-	for (int i = 0; i < ac_name.length(); i++) {
-		if (is_control(ac_name[i])) {
-			warnings.push_back(RTR("Accessibility Name must not include control character."));
-			break;
+	if (get_focus_mode_with_override() != FOCUS_NONE) {
+		String ac_name = _get_accessibility_name().strip_edges();
+		if (ac_name.is_empty()) {
+			warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
+		}
+		if (ac_name.contains(get_class_name())) {
+			warnings.push_back(RTR("Accessibility Name must not include Node class name."));
+		}
+		for (int i = 0; i < ac_name.length(); i++) {
+			if (is_control(ac_name[i])) {
+				warnings.push_back(RTR("Accessibility Name must not include control character."));
+				break;
+			}
 		}
 	}
 
@@ -1001,17 +1012,17 @@ Control::LayoutMode Control::_get_default_layout_mode() const {
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
-	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
-		// In other modes the anchor preset is non-operational and shouldn't be set to anything.
-		return;
-	}
-
 	if (p_preset == -1) {
 		if (!data.stored_use_custom_anchors) {
 			data.stored_use_custom_anchors = true;
 			notify_property_list_changed();
 		}
 		return; // Keep settings as is.
+	}
+
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		// In other modes the anchor preset is non-operational and shouldn't be set to anything.
+		return;
 	}
 
 	bool list_changed = false;
@@ -2328,7 +2339,7 @@ bool Control::is_focus_owner_in_shortcut_context() const {
 	}
 
 	const Node *ctx_node = get_shortcut_context();
-	const Control *vp_focus = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
+	const Control *vp_focus = (get_viewport() && get_viewport()->gui_shortcut_use_focus_owner()) ? get_viewport()->gui_get_focus_owner() : nullptr;
 
 	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
 	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
@@ -3183,6 +3194,10 @@ Control::CursorShape Control::get_default_cursor_shape() const {
 
 Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
 	ERR_READ_THREAD_GUARD_V(CURSOR_ARROW);
+	int ret;
+	if (GDVIRTUAL_CALL(_get_cursor_shape, p_pos, ret)) {
+		return (CursorShape)ret;
+	}
 	return data.default_cursor;
 }
 
@@ -3948,6 +3963,15 @@ Node::AutoTranslateMode Control::get_tooltip_auto_translate_mode() const {
 	return data.tooltip_auto_translate_mode;
 }
 
+Node::AutoTranslateMode Control::get_tooltip_auto_translate_mode_at(const Vector2 &p_at) const {
+	ERR_READ_THREAD_GUARD_V(AUTO_TRANSLATE_MODE_INHERIT);
+	AutoTranslateMode auto_translating;
+	if (GDVIRTUAL_CALL(_get_tooltip_auto_translate_mode_at, p_at, auto_translating)) {
+		return auto_translating;
+	}
+	return get_tooltip_auto_translate_mode();
+}
+
 // Extra properties.
 
 void Control::set_tooltip_text(const String &p_hint) {
@@ -4040,12 +4064,7 @@ void Control::_notification(int p_notification) {
 			ERR_FAIL_COND(ae.is_null());
 
 			// Base info.
-			if (get_parent_control()) {
-				String container_info = get_parent_control()->get_accessibility_container_name(this);
-				AccessibilityServer::get_singleton()->update_set_name(ae, container_info.is_empty() ? get_accessibility_name() : get_accessibility_name() + " " + container_info);
-			} else {
-				AccessibilityServer::get_singleton()->update_set_name(ae, get_accessibility_name());
-			}
+			AccessibilityServer::get_singleton()->update_set_name(ae, _get_accessibility_name());
 			AccessibilityServer::get_singleton()->update_set_description(ae, get_accessibility_description());
 			AccessibilityServer::get_singleton()->update_set_live(ae, get_accessibility_live());
 
@@ -4443,7 +4462,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Control::set_default_cursor_shape);
 	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"), &Control::get_default_cursor_shape);
-	ClassDB::bind_method(D_METHOD("get_cursor_shape", "position"), &Control::get_cursor_shape, DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("get_cursor_shape", "at_position"), &Control::get_cursor_shape, DEFVAL(Point2()));
 
 	ClassDB::bind_method(D_METHOD("set_focus_neighbor", "side", "neighbor"), &Control::set_focus_neighbor);
 	ClassDB::bind_method(D_METHOD("get_focus_neighbor", "side"), &Control::get_focus_neighbor);
@@ -4752,11 +4771,14 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");
 	GDVIRTUAL_BIND(_get_minimum_size);
 	GDVIRTUAL_BIND(_get_tooltip, "at_position");
+	GDVIRTUAL_BIND(_get_tooltip_auto_translate_mode_at, "at_position");
 
 	GDVIRTUAL_BIND(_get_drag_data, "at_position");
 	GDVIRTUAL_BIND(_can_drop_data, "at_position", "data");
 	GDVIRTUAL_BIND(_drop_data, "at_position", "data");
 	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
+
+	GDVIRTUAL_BIND(_get_cursor_shape, "at_position");
 
 	GDVIRTUAL_BIND(_accessibility_get_contextual_info);
 	GDVIRTUAL_BIND(_get_accessibility_container_name, "node");

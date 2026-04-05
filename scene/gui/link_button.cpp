@@ -62,6 +62,7 @@ void LinkButton::set_text(const String &p_text) {
 	text = p_text;
 	xl_text = atr(text);
 	_shape();
+	update_configuration_warnings();
 	update_minimum_size();
 	queue_redraw();
 }
@@ -206,6 +207,19 @@ Control::CursorShape LinkButton::get_cursor_shape(const Point2 &p_pos) const {
 	return is_disabled() ? CURSOR_ARROW : get_default_cursor_shape();
 }
 
+String LinkButton::_get_accessibility_name() const {
+	const String &ac_name = Control::_get_accessibility_name();
+	if (!xl_text.is_empty() && ac_name.is_empty()) {
+		return xl_text;
+	} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
+		return ac_name + ": " + xl_text;
+	} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
+		return get_tooltip_text(); // Fall back to tooltip.
+	} else {
+		return ac_name;
+	}
+}
+
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -213,20 +227,14 @@ void LinkButton::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LINK);
-			const String &ac_name = get_accessibility_name();
-			if (!xl_text.is_empty() && ac_name.is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, xl_text);
-			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, ac_name + ": " + xl_text);
-			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
-			}
+
 			AccessibilityServer::get_singleton()->update_set_url(ae, uri);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
+			update_configuration_warnings();
 			update_minimum_size();
 			queue_redraw();
 		} break;

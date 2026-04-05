@@ -30,8 +30,6 @@
 
 #include "tiles_editor_plugin.h"
 
-#include "tile_set_editor.h"
-
 #include "core/object/callable_mp.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
@@ -40,13 +38,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/2d/tiles/tile_set_editor.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
-#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
 #include "scene/2d/tile_map_layer.h"
-#include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/2d/tile_set.h"

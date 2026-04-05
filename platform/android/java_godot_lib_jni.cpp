@@ -52,9 +52,8 @@
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "servers/rendering/rendering_server.h"
-
 #include "servers/camera/camera_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"

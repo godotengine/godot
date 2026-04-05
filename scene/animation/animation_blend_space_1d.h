@@ -86,10 +86,12 @@ protected:
 #endif
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+
+	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual void get_child_nodes(LocalVector<ChildNode> *r_child_nodes) override;
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1, const StringName &p_name = "");
 	void set_blend_point_position(int p_point, float p_position);
@@ -98,7 +100,7 @@ public:
 	float get_blend_point_position(int p_point) const;
 	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
 	void set_blend_point_name(int p_point, const StringName &p_name);
-	StringName get_blend_point_name(int p_point) const;
+	const StringName &get_blend_point_name(int p_point) const;
 	int find_blend_point_by_name(const StringName &p_name) const;
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
@@ -123,7 +125,7 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false) override;
 	String get_caption() const override;
 
 	Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;

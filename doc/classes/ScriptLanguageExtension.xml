@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptLanguageExtension" inherits="ScriptLanguage" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScriptLanguageExtension" inherits="ScriptLanguage" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -319,6 +319,7 @@
 			<param index="0" name="scripts" type="Array" />
 			<param index="1" name="soft_reload" type="bool" />
 			<description>
+				Reloads all [param scripts] from disk and the specifics of how that happens is [ScriptLanguageExtension] specific.
 			</description>
 		</method>
 		<method name="_reload_tool_script" qualifiers="virtual required">
@@ -326,6 +327,7 @@
 			<param index="0" name="script" type="Script" />
 			<param index="1" name="soft_reload" type="bool" />
 			<description>
+				Reloads the given [param script] from disk and the specifics of how that happens is [ScriptLanguageExtension] specific.
 			</description>
 		</method>
 		<method name="_remove_named_global_constant" qualifiers="virtual required">

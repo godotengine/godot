@@ -49,7 +49,7 @@
 #define XRenderCreateLinearGradient XRenderCreateLinearGradient_dylibloader_orig_xrender
 #define XRenderCreateRadialGradient XRenderCreateRadialGradient_dylibloader_orig_xrender
 #define XRenderCreateConicalGradient XRenderCreateConicalGradient_dylibloader_orig_xrender
-#include "thirdparty/linuxbsd_headers/X11/extensions/Xrender.h"
+#include <thirdparty/linuxbsd_headers/X11/extensions/Xrender.h>
 #undef XRenderQueryExtension
 #undef XRenderQueryVersion
 #undef XRenderQueryFormats

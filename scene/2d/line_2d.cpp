@@ -33,7 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "line_builder.h"
+#include "scene/2d/line_builder.h"
 #include "servers/rendering/rendering_server.h"
 
 Line2D::Line2D() {

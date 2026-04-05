@@ -30,6 +30,9 @@
 
 #include "gltf_document_extension_physics.h"
 
+#include "gltf_physics_body.h"
+#include "gltf_physics_shape.h"
+
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/rigid_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"

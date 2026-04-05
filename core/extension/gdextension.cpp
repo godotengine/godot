@@ -32,11 +32,10 @@
 #include "gdextension.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension_library_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
-#include "gdextension_library_loader.h"
-#include "gdextension_manager.h"
 
 extern void gdextension_setup_interface();
 extern GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name);
@@ -845,68 +844,7 @@ void GDExtension::finalize_gdextensions() {
 	gdextension_interface_functions.clear();
 }
 
-Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension) {
-	ERR_FAIL_COND_V_MSG(p_extension.is_valid() && p_extension->is_library_open(), ERR_ALREADY_IN_USE, "Cannot load GDExtension resource into already opened library.");
-
-	GDExtensionManager *extension_manager = GDExtensionManager::get_singleton();
-
-	GDExtensionManager::LoadStatus status = extension_manager->load_extension(p_path);
-	if (status != GDExtensionManager::LOAD_STATUS_OK && status != GDExtensionManager::LOAD_STATUS_ALREADY_LOADED) {
-		// Errors already logged in load_extension().
-		return FAILED;
-	}
-
-	p_extension = extension_manager->get_extension(p_path);
-	return OK;
-}
-
-Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	// We can't have two GDExtension resource object representing the same library, because
-	// loading (or unloading) a GDExtension affects global data. So, we need reuse the same
-	// object if one has already been loaded (even if caching is disabled at the resource
-	// loader level).
-	GDExtensionManager *manager = GDExtensionManager::get_singleton();
-	if (manager->is_extension_loaded(p_path)) {
-		return manager->get_extension(p_path);
-	}
-
-	Ref<GDExtension> lib;
-	Error err = load_gdextension_resource(p_path, lib);
-	if (err != OK && r_error) {
-		// Errors already logged in load_gdextension_resource().
-		*r_error = err;
-	}
-	return lib;
-}
-
-void GDExtensionResourceLoader::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gdextension");
-}
-
-bool GDExtensionResourceLoader::handles_type(const String &p_type) const {
-	return p_type == "GDExtension";
-}
-
-String GDExtensionResourceLoader::get_resource_type(const String &p_path) const {
-	if (p_path.has_extension("gdextension")) {
-		return "GDExtension";
-	}
-	return "";
-}
-
 #ifdef TOOLS_ENABLED
-void GDExtensionResourceLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
-	Ref<GDExtension> gdext = ResourceLoader::load(p_path);
-	if (gdext.is_null()) {
-		return;
-	}
-
-	for (const StringName class_name : gdext->get_classes_used()) {
-		if (ClassDB::class_exists(class_name)) {
-			r_classes->insert(class_name);
-		}
-	}
-}
 
 bool GDExtension::has_library_changed() const {
 	return loader->has_library_changed();

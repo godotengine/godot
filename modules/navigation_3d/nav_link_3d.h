@@ -31,9 +31,10 @@
 #pragma once
 
 #include "3d/nav_base_iteration_3d.h"
-#include "core/os/rw_lock.h"
 #include "nav_base_3d.h"
 #include "nav_utils_3d.h"
+
+#include "core/os/rw_lock.h"
 
 class NavLinkIteration3D : public NavBaseIteration3D {
 	GDCLASS(NavLinkIteration3D, NavBaseIteration3D);

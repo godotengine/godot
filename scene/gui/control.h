@@ -435,11 +435,14 @@ protected:
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
+	GDVIRTUAL1RC(AutoTranslateMode, _get_tooltip_auto_translate_mode_at, Vector2)
 
 	GDVIRTUAL1R(Variant, _get_drag_data, Vector2)
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
 	GDVIRTUAL2(_drop_data, Vector2, Variant)
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+
+	GDVIRTUAL1RC(int, _get_cursor_shape, Vector2)
 
 	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
 	GDVIRTUAL1RC(String, _get_accessibility_container_name, RequiredParam<const Node>)
@@ -681,6 +684,8 @@ public:
 	void set_accessibility_name(const String &p_name);
 	String get_accessibility_name() const;
 
+	virtual String _get_accessibility_name() const;
+
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
 
@@ -703,7 +708,7 @@ public:
 
 	void set_default_cursor_shape(CursorShape p_shape);
 	CursorShape get_default_cursor_shape() const;
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2()) const;
 
 	void set_clip_contents(bool p_clip);
 	bool is_clipping_contents();
@@ -788,6 +793,7 @@ public:
 
 	void set_tooltip_auto_translate_mode(AutoTranslateMode p_mode);
 	AutoTranslateMode get_tooltip_auto_translate_mode() const;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Vector2 &p_at) const;
 
 	// Extra properties.
 

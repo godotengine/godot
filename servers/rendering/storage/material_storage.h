@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/object.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/utilities.h"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" keywords="select, dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OptionButton" inherits="Button" api_type="core" keywords="select, dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that brings up a dropdown with selectable options when pressed.
 	</brief_description>
@@ -248,6 +248,26 @@
 		</member>
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items to select from.
+		</member>
+		<member name="popup/item_{index}/disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is disabled.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/icon" type="Texture2D" setter="" getter="">
+			The icon of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/id" type="int" setter="" getter="" default="0">
+			The ID of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/separator" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is a separator.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/text" type="String" setter="" getter="" default="&quot;&quot;">
+			The text of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
 		</member>
 		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
 			The index of the currently selected item, or [code]-1[/code] if no item is selected.

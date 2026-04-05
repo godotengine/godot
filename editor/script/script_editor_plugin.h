@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/error/error_list.h"
 #include "core/object/script_language.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/script/script_editor_base.h"
@@ -412,6 +413,7 @@ public:
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
+	Error close_file(const String &p_file);
 
 	void ensure_select_current();
 
@@ -424,6 +426,7 @@ public:
 	void get_breakpoints(List<String> *p_breakpoints);
 
 	void reload_open_files();
+	PackedStringArray get_unsaved_files() const;
 	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();

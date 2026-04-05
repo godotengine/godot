@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/math_defs.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -7374,10 +7375,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("UV", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "uv", "UV"), { "uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
 	add_options.push_back(AddOption("Modulate", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Modulate", "MODULATE"), { "Modulate" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
 	add_options.push_back(AddOption("Fragcoord", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Fragcoord", "FRAGCOORD"), { "Fragcoord" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
-	add_options.push_back(AddOption("Source Texture", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture", "source_texture"), { "Source Texture" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
-	add_options.push_back(AddOption("Source Texture 2", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 2", "source_texture2"), { "Source Texture 2" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
-	add_options.push_back(AddOption("Source Texture 3", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 3", "source_texture3"), { "Source Texture 3" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
-	add_options.push_back(AddOption("Source Texture 4", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 4", "source_texture4"), { "Source Texture 4" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture", "source_texture0"), { "Source Texture" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 2", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 2", "source_texture1"), { "Source Texture 2" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 3", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 3", "source_texture2"), { "Source Texture 3" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 4", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 4", "source_texture3"), { "Source Texture 4" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
 
 	// PARTICLES INPUTS
 

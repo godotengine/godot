@@ -41,7 +41,7 @@
 #include "core/config/engine.h"
 #include "servers/rendering/rendering_server.h"
 
-#include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
+#include <Jolt/Physics/SoftBody/SoftBodyMotionProperties.h>
 
 namespace {
 

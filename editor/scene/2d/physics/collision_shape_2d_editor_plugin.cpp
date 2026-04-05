@@ -469,7 +469,7 @@ void CollisionShape2DEditor::_shape_changed() {
 
 	current_shape = node->get_shape();
 
-	if (current_shape.is_valid()) {
+	if (current_shape.is_valid() && !EditorNode::get_singleton()->is_resource_read_only(current_shape)) {
 		current_shape->connect_changed(callable_mp(canvas_item_editor, &CanvasItemEditor::update_viewport));
 	} else {
 		return;

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
@@ -1649,10 +1650,10 @@ void EditorPropertyObjectID::update_property() {
 		type = "Object";
 	}
 
-	ObjectID id = _get_object_id();
+	const ObjectID id = _get_object_id();
 	if (id.is_valid()) {
-		edit->set_text(type + " ID: " + uitos(id));
-		edit->set_tooltip_text(type + " ID: " + uitos(id));
+		edit->set_text(type + ": " + uitos(id));
+		edit->set_tooltip_text(type + ": " + uitos(id));
 		edit->set_disabled(false);
 		edit->set_button_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
@@ -3744,6 +3745,13 @@ void EditorPropertyResource::fold_resource() {
 		resource_picker->set_toggle_pressed(false);
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
 		update_property();
+	}
+}
+
+void EditorPropertyResource::set_keying(bool p_keying) {
+	EditorProperty::set_keying(p_keying);
+	if (sub_inspector) {
+		sub_inspector->set_keying(p_keying);
 	}
 }
 

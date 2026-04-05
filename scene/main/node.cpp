@@ -907,8 +907,7 @@ bool Node::can_process_notification(int p_what) const {
 }
 
 bool Node::can_process() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	return !data.tree->is_suspended() && _can_process(data.tree->is_paused());
+	return is_inside_tree() && !data.tree->is_suspended() && _can_process(data.tree->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {
@@ -1478,7 +1477,7 @@ void Node::set_name(const StringName &p_name) {
 }
 
 // Returns a clear description of this node depending on what is available. Useful for error messages.
-String Node::get_description() const {
+String Node::get_description(bool p_show_not_in_tree) const {
 	String description;
 	if (is_inside_tree()) {
 		description = String(get_path());
@@ -1486,6 +1485,9 @@ String Node::get_description() const {
 		description = get_name();
 		if (description.is_empty()) {
 			description = get_class();
+		}
+		if (p_show_not_in_tree) {
+			description += " (not inside tree)";
 		}
 	}
 	return description;
@@ -2363,7 +2365,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 		common_parent = common_parent->data.parent;
 	}
 
-	ERR_FAIL_NULL_V(common_parent, NodePath()); //nodes not in the same tree
+	ERR_FAIL_NULL_V_MSG(common_parent, NodePath(), vformat("No path can be resolved between the nodes %s and %s as they share no common ancestor.", get_description(true), p_node->get_description(true)));
 
 	visited.clear();
 
@@ -2846,6 +2848,19 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 					instance_roots.push_back(descendant);
 				}
 			}
+		}
+
+		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
+			const Node *source_node = N->get();
+			if (source_node->get_scene_file_path().is_empty()) {
+				continue;
+			}
+
+			NodePath relative_path = get_path_to(source_node);
+			Node *duplicated_node = node->get_node_or_null(relative_path);
+			ERR_CONTINUE(!duplicated_node);
+
+			duplicated_node->data.editable_instance = source_node->data.editable_instance;
 		}
 	}
 
@@ -3954,6 +3969,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_WM_POSITION_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);

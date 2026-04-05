@@ -1275,11 +1275,22 @@ struct CFFIndex
     if (unlikely (!serialize_header (c, +it, data_size, min_off_size))) return_trace (false);
     unsigned char *ret = c->allocate_size<unsigned char> (data_size, false);
     if (unlikely (!ret)) return_trace (false);
+    unsigned remaining = data_size;
     for (const auto &_ : +it)
     {
       unsigned len = _.length;
+
       if (!len)
 	continue;
+
+      if (unlikely (len > remaining)) {
+        // We have more bytes to write then the computed data size, so the size calculation
+        // must have encountered overflow.
+        return_trace (c->check_success (false, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+      }
+
+      remaining -= len;
+
       if (len <= 1)
       {
 	*ret++ = *_.arrayZ;
@@ -1948,6 +1959,7 @@ struct TupleValues
       return true;
     }
 
+    public:
     void skip (unsigned n)
     {
       while (n)
@@ -1961,6 +1973,7 @@ struct TupleValues
       }
     }
 
+    private:
     template <bool scaled>
     void _add_to (hb_array_t<float> out, float scale = 1.0f)
     {
@@ -2035,14 +2048,6 @@ struct TupleValues
     public:
     void add_to (hb_array_t<float> out, float scale = 1.0f)
     {
-      unsigned n = out.length;
-
-      if (scale == 0.0f)
-      {
-        skip (n);
-	return;
-      }
-
 #ifndef HB_OPTIMIZE_SIZE
       // The following branch is supposed to speed things up by avoiding
       // the multiplication in _add_to<> if scale is 1.0f.

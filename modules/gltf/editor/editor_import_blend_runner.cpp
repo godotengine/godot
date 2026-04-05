@@ -217,6 +217,7 @@ HTTPClient::Status EditorImportBlendRunner::connect_blender_rpc(const Ref<HTTPCl
 	bool done = false;
 	while (!done) {
 		OS::get_singleton()->delay_usec(wait_usecs);
+		attempts++;
 		status = p_client->get_status();
 		switch (status) {
 			case HTTPClient::STATUS_RESOLVING:

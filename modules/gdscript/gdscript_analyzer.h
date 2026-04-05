@@ -33,7 +33,6 @@
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
 
-#include "core/object/object.h"
 #include "core/object/ref_counted.h"
 
 class GDScriptAnalyzer {

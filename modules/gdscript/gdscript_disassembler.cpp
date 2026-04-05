@@ -33,7 +33,7 @@
 #include "gdscript.h"
 #include "gdscript_function.h"
 
-#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
 #include "core/string/string_builder.h"
 
 static String _get_variant_string(const Variant &p_variant) {

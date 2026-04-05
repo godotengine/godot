@@ -561,5 +561,3 @@ protected:
 public:
 	AudioBusLayout();
 };
-
-typedef AudioServer AS;

@@ -32,8 +32,6 @@
 
 #include "image_loader_svg.h"
 
-#include "core/config/engine.h"
-
 #include <thorvg.h>
 
 #ifdef THREADS_ENABLED
@@ -49,9 +47,7 @@ void initialize_svg_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	tvg::CanvasEngine tvgEngine = tvg::CanvasEngine::Sw;
-
-	if (tvg::Initializer::init(tvgEngine, TVG_THREADS) != tvg::Result::Success) {
+	if (tvg::Initializer::init(TVG_THREADS) != tvg::Result::Success) {
 		return;
 	}
 
@@ -71,5 +67,5 @@ void uninitialize_svg_module(ModuleInitializationLevel p_level) {
 
 	ImageLoader::remove_image_format_loader(image_loader_svg);
 	image_loader_svg.unref();
-	tvg::Initializer::term(tvg::CanvasEngine::Sw);
+	tvg::Initializer::term();
 }

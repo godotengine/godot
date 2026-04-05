@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UndoRedo" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="UndoRedo" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides a high-level interface for implementing undo and redo operations.
 	</brief_description>
@@ -241,7 +241,7 @@
 		<method name="redo">
 			<return type="bool" />
 			<description>
-				Redo the last action.
+				Redo the last action. Returns [code]false[/code] if there was no action to redo.
 			</description>
 		</method>
 		<method name="start_force_keep_in_merge_ends">
@@ -253,7 +253,7 @@
 		<method name="undo">
 			<return type="bool" />
 			<description>
-				Undo the last action.
+				Undo the last action. Returns [code]false[/code] if there was no action to undo.
 			</description>
 		</method>
 	</methods>

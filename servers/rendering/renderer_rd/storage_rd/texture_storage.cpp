@@ -30,13 +30,12 @@
 
 #include "texture_storage.h"
 
-#include "../effects/copy_effects.h"
-#include "../framebuffer_cache_rd.h"
-#include "../uniform_set_cache_rd.h"
-
 #include "core/config/engine.h"
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 using namespace RendererRD;
@@ -3464,7 +3463,8 @@ void TextureStorage::update_decal_atlas() {
 			int *v_offsets = v_offsetsv.ptrw();
 			memset(v_offsets, 0, sizeof(int) * base_size);
 
-			int max_height = 0;
+			// Take border into account for minimum height.
+			int max_height = 2;
 
 			for (int i = 0; i < item_count; i++) {
 				//best fit
@@ -4217,6 +4217,34 @@ Rect2i RendererRD::TextureStorage::render_target_get_render_region(RID p_render_
 	ERR_FAIL_NULL_V(rt, Rect2i());
 
 	return rt->render_region;
+}
+
+void RendererRD::TextureStorage::render_target_set_subsampled_enabled(RID p_render_target, bool p_enabled) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->subsampled_enabled = p_enabled;
+}
+
+bool RendererRD::TextureStorage::render_target_is_subsampled_enabled(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->subsampled_enabled;
+}
+
+void RendererRD::TextureStorage::render_target_set_subsampled_allowed(RID p_render_target, bool p_allowed) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->subsampled_allowed = p_allowed;
+}
+
+bool RendererRD::TextureStorage::render_target_is_subsampled_allowed(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->subsampled_allowed;
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_is_transparent) {

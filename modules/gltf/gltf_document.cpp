@@ -44,11 +44,11 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
+#include "core/io/resource_loader.h"
 #include "core/io/stream_peer.h"
 #include "core/object/class_db.h"
 #include "core/object/object_id.h"
 #include "core/version.h"
-#include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -4290,7 +4290,8 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 #else
 	const Array &cells = p_grid_map->get_used_cells();
 	for (int32_t k = 0; k < cells.size(); k++) {
-		GLTFNode *new_gltf_node = memnew(GLTFNode);
+		Ref<GLTFNode> new_gltf_node;
+		new_gltf_node.instantiate();
 		p_gltf_node->children.push_back(p_state->nodes.size());
 		p_state->nodes.push_back(new_gltf_node);
 		Vector3 cell_location = cells[k];

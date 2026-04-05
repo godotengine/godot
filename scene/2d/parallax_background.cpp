@@ -30,9 +30,8 @@
 
 #include "parallax_background.h"
 
-#include "parallax_layer.h"
-
 #include "core/object/class_db.h"
+#include "scene/2d/parallax_layer.h"
 
 void ParallaxBackground::_notification(int p_what) {
 	switch (p_what) {

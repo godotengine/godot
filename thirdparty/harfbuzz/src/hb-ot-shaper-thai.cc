@@ -356,13 +356,11 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 	       sizeof (buffer->out_info[0]) * (end - start - 2));
       buffer->out_info[start] = t;
     }
-    else
-    {
-      /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
-       * previous cluster. */
-      if (start)
-	buffer->merge_out_clusters (start - 1, end);
-    }
+
+    /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
+     * previous cluster. */
+    if (start)
+      buffer->merge_out_grapheme_clusters (start - 1, end);
   }
   buffer->sync ();
 

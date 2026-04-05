@@ -661,7 +661,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		}
 	}
 
-	if (index == 0) {
+	if (state.current_batch_index == 0 && state.canvas_instance_batches[0].instance_count == 0) {
 		// Nothing to render, just return.
 		return;
 	}

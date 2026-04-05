@@ -30,14 +30,13 @@
 
 #include "rendering_shader_container_metal.h"
 
-#include "metal_utils.h"
-
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/templates/fixed_vector.h"
+#include "drivers/metal/metal_utils.h"
 
-#include "thirdparty/spirv-reflect/spirv_reflect.h"
+#include <thirdparty/spirv-reflect/spirv_reflect.h>
 
 #include <Metal/Metal.hpp>
 #include <spirv.hpp>
@@ -218,11 +217,11 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 
 static spv::ExecutionModel SHADER_STAGE_REMAP[RDD::SHADER_STAGE_MAX] = {
-	[RDD::SHADER_STAGE_VERTEX] = spv::ExecutionModelVertex,
-	[RDD::SHADER_STAGE_FRAGMENT] = spv::ExecutionModelFragment,
-	[RDD::SHADER_STAGE_TESSELATION_CONTROL] = spv::ExecutionModelTessellationControl,
-	[RDD::SHADER_STAGE_TESSELATION_EVALUATION] = spv::ExecutionModelTessellationEvaluation,
-	[RDD::SHADER_STAGE_COMPUTE] = spv::ExecutionModelGLCompute,
+	spv::ExecutionModelVertex, // RDD::SHADER_STAGE_VERTEX
+	spv::ExecutionModelFragment, // RDD::SHADER_STAGE_FRAGMENT
+	spv::ExecutionModelTessellationControl, // RDD::SHADER_STAGE_TESSELATION_CONTROL
+	spv::ExecutionModelTessellationEvaluation, // RDD::SHADER_STAGE_TESSELATION_EVALUATION
+	spv::ExecutionModelGLCompute, // RDD::SHADER_STAGE_COMPUTE
 };
 
 spv::ExecutionModel get_stage(uint32_t p_stages_mask, RDD::ShaderStage p_stage) {

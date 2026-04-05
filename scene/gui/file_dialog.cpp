@@ -370,14 +370,24 @@ void FileDialog::update_dir() {
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
-			drives->add_item(ETR("Network"));
-			drives->set_item_disabled(-1, true);
-			drives->select(drives->get_item_count() - 1);
+			PopupMenu *pm = drives->get_popup();
+			pm->add_item(ETR("Network"));
+			Dictionary meta;
+			meta["index"] = -1;
+			meta["path"] = String();
+			meta["name"] = ETR("Network");
+			pm->set_item_metadata(-1, meta);
+			pm->set_item_disabled(-1, true);
+			drives->set_text(meta["name"]);
+			selected_drive = pm->get_item_count() - 1;
 		} else {
+			PopupMenu *pm = drives->get_popup();
 			int cur = dir_access->get_current_drive();
-			for (int i = 0; i < drives->get_item_count(); i++) {
-				if (drives->get_item_metadata(i).operator int() == cur) {
-					drives->select(i);
+			for (int i = 0; i < pm->get_item_count(); i++) {
+				const Dictionary &meta = pm->get_item_metadata(i);
+				if (meta["index"].operator int() == cur) {
+					drives->set_text(meta["name"]);
+					selected_drive = i;
 					break;
 				}
 			}
@@ -389,11 +399,11 @@ void FileDialog::update_dir() {
 }
 
 void FileDialog::_dir_submitted(String p_dir) {
-	String new_dir = p_dir;
+	String new_dir = OS::get_singleton()->expand_path(p_dir);
 #ifdef WINDOWS_ENABLED
 	if (root_prefix.is_empty() && drives->is_visible() && !new_dir.is_network_share_path() && new_dir.is_absolute_path() && new_dir.find(":/") == -1 && new_dir.find(":\\") == -1) {
 		// Non network path without X:/ prefix on Windows, add drive letter.
-		new_dir = drives->get_item_text(drives->get_selected()).path_join(new_dir);
+		new_dir = drives->get_popup()->get_item_metadata(selected_drive).operator Dictionary()["path"].operator String().path_join(new_dir);
 	}
 #endif
 	if (!root_prefix.is_empty()) {
@@ -458,6 +468,9 @@ void FileDialog::_action_pressed() {
 	}
 
 	String file_text = filename_edit->get_text();
+
+	file_text = OS::get_singleton()->expand_path(file_text);
+
 	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
@@ -1328,12 +1341,15 @@ void FileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size()) {
 		return;
 	}
-	int pos = MAX(p_path.rfind_char('/'), p_path.rfind_char('\\'));
+
+	String path = OS::get_singleton()->expand_path(p_path);
+
+	int pos = MAX(path.rfind_char('/'), path.rfind_char('\\'));
 	if (pos == -1) {
-		set_current_file(p_path);
+		set_current_file(path);
 	} else {
-		String path_dir = p_path.substr(0, pos);
-		String path_file = p_path.substr(pos + 1);
+		String path_dir = path.substr(0, pos);
+		String path_file = path.substr(pos + 1);
 		set_current_dir(path_dir);
 		set_current_file(path_file);
 	}
@@ -1609,8 +1625,11 @@ void FileDialog::_make_dir() {
 }
 
 void FileDialog::_select_drive(int p_idx) {
-	String d = drives->get_item_text(p_idx);
-	_change_dir(d);
+	const Dictionary &meta = drives->get_popup()->get_item_metadata(p_idx);
+	drives->set_text(meta["name"]);
+	selected_drive = p_idx;
+
+	_change_dir(meta["path"]);
 	filename_edit->set_text("");
 	_push_history();
 }
@@ -1656,7 +1675,8 @@ void FileDialog::_update_drives(bool p_select) {
 	if (drive_map.size() == 0) {
 		drives->hide();
 	} else {
-		drives->clear();
+		PopupMenu *pm = drives->get_popup();
+		pm->clear();
 		Node *dp = drives->get_parent();
 		if (dp) {
 			dp->remove_child(drives);
@@ -1666,10 +1686,22 @@ void FileDialog::_update_drives(bool p_select) {
 		drives->show();
 
 		for (const KeyValue<int, String> &drv : drive_map) {
-			drives->add_item(drv.value);
-			drives->set_item_metadata(-1, drv.key);
+			String display_name = drv.value;
+			String lbl = dir_access->get_drive_label(drv.key);
+			if (!lbl.is_empty()) {
+				display_name = drv.value + " (" + lbl + ")";
+			}
+			pm->add_item(display_name);
+			pm->set_item_tooltip(-1, drv.value);
+
+			Dictionary meta;
+			meta["index"] = drv.key;
+			meta["path"] = drv.value;
+			meta["name"] = drv.value;
+			pm->set_item_metadata(-1, meta);
 			if (p_select && drv.key == cur) {
-				drives->select(drives->get_item_count() - 1);
+				drives->set_text(drv.value);
+				selected_drive = drv.key;
 			}
 		}
 	}
@@ -2229,7 +2261,7 @@ void FileDialog::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &FileDialog::set_option_name, &FileDialog::get_option_name);
 	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &FileDialog::set_option_values, &FileDialog::get_option_values);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &FileDialog::set_option_default, &FileDialog::get_option_default);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 
 	ADD_CLASS_DEPENDENCY("Button");
 	ADD_CLASS_DEPENDENCY("ConfirmationDialog");
@@ -2361,8 +2393,9 @@ FileDialog::FileDialog() {
 	drives_container = memnew(HBoxContainer);
 	top_toolbar->add_child(drives_container);
 
-	drives = memnew(OptionButton);
-	drives->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_select_drive));
+	drives = memnew(MenuButton);
+	drives->set_flat(false);
+	drives->get_popup()->connect("index_pressed", callable_mp(this, &FileDialog::_select_drive));
 	drives->set_accessibility_name(ETR("Drive"));
 	top_toolbar->add_child(drives);
 

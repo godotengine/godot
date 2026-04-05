@@ -34,6 +34,7 @@
 #include "core/typedefs.h"
 
 #include <pthread.h>
+
 #include <new> // For hardware interference size
 
 class String;

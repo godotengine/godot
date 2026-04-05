@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Curve" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A mathematical curve.
 	</brief_description>
@@ -174,6 +174,26 @@
 		</member>
 		<member name="point_count" type="int" setter="set_point_count" getter="get_point_count" default="0">
 			The number of points describing the curve.
+		</member>
+		<member name="point_{index}/left_mode" type="int" setter="" getter="" default="0">
+			The left [enum TangentMode] for the point at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
+		</member>
+		<member name="point_{index}/left_tangent" type="float" setter="" getter="" default="0.0">
+			The left tangent angle (in degrees) for the point at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
+		</member>
+		<member name="point_{index}/position" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
+			The position of the point at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
+		</member>
+		<member name="point_{index}/right_mode" type="int" setter="" getter="" default="0">
+			The right [enum TangentMode] for the point at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
+		</member>
+		<member name="point_{index}/right_tangent" type="float" setter="" getter="" default="0.0">
+			The right tangent angle (in degrees) for the point at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 	</members>
 	<signals>

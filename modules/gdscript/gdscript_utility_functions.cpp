@@ -109,13 +109,13 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
 	}
-#endif // DISABLE_DEPRECATED
 
 	static inline void type_exists(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::STRING_NAME);
 		*r_ret = ClassDB::class_exists(*p_args[0]);
 	}
+#endif // DISABLE_DEPRECATED
 
 	static inline void _char(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
@@ -571,8 +571,8 @@ void GDScriptUtilityFunctions::register_functions() {
 	/* clang-format off */
 #ifndef DISABLE_DEPRECATED
 	REGISTER_FUNC( convert,        true,  RETVAR,             ARGS( ARGVAR("what"), ARGTYPE("type") ), false, varray(     ));
-#endif // DISABLE_DEPRECATED
 	REGISTER_FUNC( type_exists,    true,  RET(BOOL),          ARGS( ARG("type", STRING_NAME)        ), false, varray(     ));
+#endif // DISABLE_DEPRECATED
 	REGISTER_FUNC( _char,          true,  RET(STRING),        ARGS( ARG("code", INT)                ), false, varray(     ));
 	REGISTER_FUNC( ord,            true,  RET(INT),           ARGS( ARG("char", STRING)             ), false, varray(     ));
 	REGISTER_FUNC( range,          false, RET(ARRAY),         NOARGS,                                  true,  varray(     ));

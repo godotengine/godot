@@ -40,22 +40,25 @@
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/io/resource_uid.h"
+#include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/shared_object.h"
-#include "core/string/translation_server.h"
+#include "core/string/translation.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/export/editor_export_plugin.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "editor_export_plugin.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
@@ -1246,10 +1249,6 @@ Vector<String> EditorExportPlatform::get_forced_export_files(const Ref<EditorExp
 	if (!splash.is_empty() && FileAccess::exists(splash) && icon != splash) {
 		files.push_back(splash);
 	}
-	String resource_cache_file = ResourceUID::get_cache_file();
-	if (FileAccess::exists(resource_cache_file)) {
-		files.push_back(resource_cache_file);
-	}
 
 	String extension_list_config_file = GDExtension::get_extension_list_config_file();
 	if (FileAccess::exists(extension_list_config_file)) {
@@ -1787,21 +1786,34 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
+	const FilteredCache filtered_cache = _get_filtered_cache(paths);
+
 	Vector<String> forced_export = get_forced_export_files(p_preset);
-	for (int i = 0; i < forced_export.size(); i++) {
+	for (const String &file : forced_export) {
 		Vector<uint8_t> array;
-		if (GDExtension::get_extension_list_config_file() == forced_export[i]) {
-			array = _filter_extension_list_config_file(forced_export[i], paths);
-			if (array.is_empty()) {
-				continue;
-			}
+
+		if (file == GDExtension::get_extension_list_config_file()) {
+			array = filtered_cache.extension_list;
+		} else if (file == ProjectSettings::get_singleton()->get_global_class_list_path()) {
+			array = filtered_cache.global_class_list;
 		} else {
-			array = FileAccess::get_file_as_bytes(forced_export[i]);
+			array = FileAccess::get_file_as_bytes(file);
 		}
-		err = save_proxy.save_file(p_preset, p_udata, forced_export[i], array, idx, total, enc_in_filters, enc_ex_filters, key, seed, false);
+
+		if (array.is_empty()) {
+			continue;
+		}
+
+		err = save_proxy.save_file(p_preset, p_udata, file, array, idx, total, enc_in_filters, enc_ex_filters, key, seed, false);
 		if (err != OK) {
 			return err;
 		}
+	}
+
+	String uid_cache_file_path = ResourceUID::get_cache_file();
+	err = save_proxy.save_file(p_preset, p_udata, uid_cache_file_path, filtered_cache.uids, idx, total, enc_in_filters, enc_ex_filters, key, seed, false);
+	if (err != OK) {
+		return err;
 	}
 
 	Dictionary int_export = get_internal_export_files(p_preset, p_debug);
@@ -1840,20 +1852,69 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	return OK;
 }
 
-Vector<uint8_t> EditorExportPlatform::_filter_extension_list_config_file(const String &p_config_path, const HashSet<String> &p_paths) {
-	Ref<FileAccess> f = FileAccess::open(p_config_path, FileAccess::READ);
-	if (f.is_null()) {
-		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_config_path) + "'.");
-	}
-	Vector<uint8_t> data;
-	while (!f->eof_reached()) {
-		String l = f->get_line().strip_edges();
-		if (p_paths.has(l)) {
-			data.append_array(l.to_utf8_buffer());
-			data.append('\n');
+// Used by the main export function to filter excluded global classes, extensions
+// and UIDs based on excluded resources configured in the export preset.
+EditorExportPlatform::FilteredCache EditorExportPlatform::_get_filtered_cache(const HashSet<String> &p_paths) {
+	FilteredCache result;
+
+	HashSet<String> extension_list_lines;
+	Ref<FileAccess> ext_file = FileAccess::open(GDExtension::get_extension_list_config_file(), FileAccess::READ);
+	if (ext_file.is_valid()) {
+		while (!ext_file->eof_reached()) {
+			String line = ext_file->get_line().strip_edges();
+			extension_list_lines.insert(line);
 		}
 	}
-	return data;
+
+	HashMap<String, Dictionary> class_by_path;
+	Ref<ConfigFile> global_class_cf;
+	global_class_cf.instantiate();
+	if (global_class_cf->load(ProjectSettings::get_singleton()->get_global_class_list_path()) == OK) {
+		Array original_list = global_class_cf->get_value("", "list", Array());
+		class_by_path.reserve(original_list.size());
+		for (const Variant &item : original_list) {
+			const Dictionary &class_dict = item;
+			ERR_CONTINUE(!class_dict.has("path"));
+			class_by_path[class_dict["path"]] = class_dict;
+		}
+	}
+
+	Vector<String> extension_lines;
+	Array global_class_list;
+	Vector<Pair<ResourceUID::ID, String>> uid_entries;
+	extension_lines.reserve(extension_list_lines.size());
+	global_class_list.reserve(class_by_path.size());
+	uid_entries.reserve(p_paths.size());
+
+	for (const String &path : p_paths) {
+		if (extension_list_lines.has(path)) {
+			extension_lines.push_back(path);
+		}
+		if (class_by_path.has(path)) {
+			global_class_list.push_back(class_by_path[path]);
+		}
+		ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(path);
+		if (uid != ResourceUID::INVALID_ID) {
+			uid_entries.push_back(Pair<ResourceUID::ID, String>(uid, path));
+		}
+	}
+
+	// Encode extensions.
+	for (const String &line : extension_lines) {
+		result.extension_list.append_array(line.to_utf8_buffer());
+		result.extension_list.append('\n');
+	}
+
+	// Encode global classes.
+	if (!global_class_list.is_empty()) {
+		global_class_cf->set_value("", "list", global_class_list);
+		result.global_class_list = global_class_cf->encode_to_text().to_utf8_buffer();
+	}
+
+	// Encode UIDs.
+	result.uids = ResourceUID::encode_binary_cache(uid_entries);
+
+	return result;
 }
 
 Error EditorExportPlatform::_pack_add_shared_object(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so) {
@@ -1924,7 +1985,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 			// 0000755: permissions rwxr-xr-x
 			// 0000644: permissions rw-r--r--
 			uint32_t _mode = 0120644;
-			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
+			zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,
@@ -1968,7 +2029,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 			// 0000755: permissions rwxr-xr-x
 			// 0000644: permissions rw-r--r--
 			uint32_t _mode = (_is_executable ? 0100755 : 0100644);
-			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
+			zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,

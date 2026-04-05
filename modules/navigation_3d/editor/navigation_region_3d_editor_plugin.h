@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
-
 #include "navigation_region_3d_gizmo_plugin.h"
+
+#include "editor/plugins/editor_plugin.h"
 
 class AcceptDialog;
 class Button;

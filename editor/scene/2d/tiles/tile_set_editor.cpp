@@ -30,9 +30,7 @@
 
 #include "tile_set_editor.h"
 
-#include "tile_data_editors.h"
-#include "tiles_editor_plugin.h"
-
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
@@ -40,10 +38,11 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/scene/2d/tiles/tile_data_editors.h"
+#include "editor/scene/2d/tiles/tiles_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
@@ -543,6 +542,14 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	} else if (p_array_prefix == "custom_data_layer_") {
 		if (p_from_index < 0) {
 			undo_redo_man->add_undo_method(ed_tile_set, "remove_custom_data_layer", p_to_pos < 0 ? ed_tile_set->get_custom_data_layers_count() : p_to_pos);
+		}
+	}
+
+	// Terrain sets have a variable number of properties.
+	// Clearing terrain properties is needed to ensure UNDO works correctly.
+	if (p_array_prefix == "terrain_set_" && p_from_index >= 0 && p_to_pos >= 0) {
+		for (int i = begin; i < end; i++) {
+			undo_redo_man->add_undo_method(ed_tile_set, "clear_terrains", i);
 		}
 	}
 
