@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_ogg_opus.h                                               */
+/*  audio_stream_opus.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -34,19 +34,19 @@
 
 #include <opus/opusfile.h>
 
-class AudioStreamOggOpus;
+class AudioStreamOpus;
 
-class AudioStreamPlaybackOggOpus : public AudioStreamPlaybackResampled {
-	GDCLASS(AudioStreamPlaybackOggOpus, AudioStreamPlaybackResampled);
+class AudioStreamPlaybackOpus : public AudioStreamPlaybackResampled {
+	GDCLASS(AudioStreamPlaybackOpus, AudioStreamPlaybackResampled);
 
 	OggOpusFile *opus_file;
 	uint32_t frames_mixed;
 	bool active;
 	int loops;
 
-	friend class AudioStreamOggOpus;
+	friend class AudioStreamOpus;
 
-	Ref<AudioStreamOggOpus> opus_stream;
+	Ref<AudioStreamOpus> opus_stream;
 
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
@@ -62,16 +62,16 @@ public:
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
 
-	AudioStreamPlaybackOggOpus() {}
-	~AudioStreamPlaybackOggOpus();
+	AudioStreamPlaybackOpus() {}
+	~AudioStreamPlaybackOpus();
 };
 
-class AudioStreamOggOpus : public AudioStream {
-	GDCLASS(AudioStreamOggOpus, AudioStream);
+class AudioStreamOpus : public AudioStream {
+	GDCLASS(AudioStreamOpus, AudioStream);
 	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 	RES_BASE_EXTENSION("oggopusstr");
 
-	friend class AudioStreamPlaybackOggOpus;
+	friend class AudioStreamPlaybackOpus;
 
 	void *data;
 	uint32_t data_len;
@@ -89,8 +89,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<AudioStreamOggOpus> load_from_file(const String &p_path);
-	static Ref<AudioStreamOggOpus> load_from_buffer(const Vector<uint8_t> &p_stream_data);
+	static Ref<AudioStreamOpus> load_from_file(const String &p_path);
+	static Ref<AudioStreamOpus> load_from_buffer(const Vector<uint8_t> &p_stream_data);
 
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
@@ -125,6 +125,6 @@ public:
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
 
-	AudioStreamOggOpus();
-	virtual ~AudioStreamOggOpus();
+	AudioStreamOpus();
+	virtual ~AudioStreamOpus();
 };
