@@ -920,7 +920,7 @@ String EditorData::get_scene_path(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
 
 	if (edited_scene[p_idx].root) {
-		if (edited_scene[p_idx].root->get_scene_file_path().is_empty()) {
+		if (edited_scene[p_idx].root->get_scene_file_path().is_empty() && !edited_scene[p_idx].path.is_empty()) {
 			edited_scene[p_idx].root->set_scene_file_path(edited_scene[p_idx].path);
 		} else {
 			return edited_scene[p_idx].root->get_scene_file_path();
