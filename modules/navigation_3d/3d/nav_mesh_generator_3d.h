@@ -92,11 +92,11 @@ private:
 		NavMeshBakeState bake_state = NavMeshBakeState::BAKE_STATE_NONE;
 	};
 
-	static HashMap<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> generator_tasks;
+	static HashMap<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> generator_tasks; // List async bakers (i.e. threaded).
 
 	static void generator_thread_bake(void *p_arg);
 
-	static HashMap<Ref<NavigationMesh>, NavMeshGeneratorTask3D *> baking_navmeshes;
+	static HashMap<Ref<NavigationMesh>, NavMeshGeneratorTask3D *> baking_navmeshes; // Holds all baking navmeshes, threaded and non-threaded.
 
 	static void generator_parse_geometry_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node, bool p_recurse_children);
 	static void generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node);
@@ -108,7 +108,7 @@ private:
 public:
 	static NavMeshGenerator3D *get_singleton();
 
-	static void sync();
+	static void sync(); // Triggers the callbacks for each navigation mesh async baking that just finished.
 	static void cleanup();
 	static void finish();
 

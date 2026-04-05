@@ -476,7 +476,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 
 	// if enabled add vertex colors to colorize each face individually
-	// NOTE: Cannot color faces that were generated because of area meshes differently using vertex colors - no access to region's navigation layers.
+	// NOTE: Cannot color faces, that were generated because of area meshes, differently using vertex colors - no access to region's navigation layers.
 	print_line("area coloring not supported");
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {

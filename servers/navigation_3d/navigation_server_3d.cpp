@@ -139,6 +139,8 @@ void NavigationServer3D::_bind_methods() {
 	// ClassDB::bind_method(D_METHOD("area_get_bounds", "area"), &NavigationServer3D::area_get_bounds);
 	ClassDB::bind_method(D_METHOD("area_set_radius", "area", "radius"), &NavigationServer3D::area_set_radius);
 	ClassDB::bind_method(D_METHOD("area_get_radius", "area"), &NavigationServer3D::area_get_radius);
+	ClassDB::bind_method(D_METHOD("area_set_elevation", "area", "elevation"), &NavigationServer3D::area_set_elevation);
+	ClassDB::bind_method(D_METHOD("area_get_elevation", "area"), &NavigationServer3D::area_get_elevation);
 	ClassDB::bind_method(D_METHOD("area_set_vertices", "area", "vertices"), &NavigationServer3D::area_set_vertices);
 	ClassDB::bind_method(D_METHOD("area_get_vertices", "area"), &NavigationServer3D::area_get_vertices);
 

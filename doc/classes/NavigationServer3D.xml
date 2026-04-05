@@ -311,6 +311,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="area_get_elevation" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="area_get_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="area" type="RID" />
@@ -369,6 +375,13 @@
 			<return type="void" />
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="priority" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_elevation">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="elevation" type="float" />
 			<description>
 			</description>
 		</method>

@@ -320,7 +320,6 @@ void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<Navigati
 void NavMeshGenerator3D::generator_parse_map_geometry_meta_data(Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, NavMap3D *p_map) {
 	// Parse all projected areas created over navigation server.
 	// NOTE: We use global data, therefore don't take p_source_geometry_data's root node's transform into consideration!
-	const Transform3D root_transform = p_source_geometry_data->root_node_transform;
 	for (NavArea3D *area : p_map->get_areas()) {
 		switch (area->get_shape_type()) {
 			case NavigationMeshSourceGeometryData3D::ProjectedArea::BOX: {
@@ -331,8 +330,7 @@ void NavMeshGenerator3D::generator_parse_map_geometry_meta_data(Ref<NavigationMe
 				vertices.write[1] = Vector3(size.x * 0.5, 0.0, -size.z * 0.5);
 				vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
 				vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
-				const Transform3D gt = root_transform * Transform3D(Basis(), area->get_position());
-				AABB bounds = NavigationMeshArea3D::_xform_bounds(vertices, gt, size.y);
+				AABB bounds = NavigationMeshArea3D::_xform_bounds(vertices, Transform3D(Basis(), area->get_position()), size.y);
 				p_source_geometry_data->add_projected_area_box(bounds, area->get_navigation_layers(), area->get_bake_priority());
 			} break;
 			case NavigationMeshSourceGeometryData3D::ProjectedArea::CYLINDER: {
