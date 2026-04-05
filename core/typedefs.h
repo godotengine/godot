@@ -309,6 +309,22 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
 #endif
 
+// Deprecation warning suppression helper macros.
+#if defined(__clang__)
+#define GODOT_PUSH_IGNORE_DEPRECATION() GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
+#define GODOT_POP_IGNORE_DEPRECATION() GODOT_CLANG_WARNING_POP
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#define GODOT_PUSH_IGNORE_DEPRECATION() GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
+#define GODOT_POP_IGNORE_DEPRECATION() GODOT_GCC_WARNING_POP
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#define GODOT_PUSH_IGNORE_DEPRECATION() GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4996)
+#define GODOT_POP_IGNORE_DEPRECATION() GODOT_MSVC_WARNING_POP
+#endif
+
 template <typename T, typename = void>
 struct is_fully_defined : std::false_type {};
 

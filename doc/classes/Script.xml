@@ -112,7 +112,7 @@
 				[b]Note:[/b] If a script does not have source code, this does not mean that it is invalid or unusable. For example, a [GDScript] that was exported with binary tokenization has no source code, but still behaves as expected and could be instantiated. This can be checked with [method can_instantiate].
 			</description>
 		</method>
-		<method name="instance_has" qualifiers="const">
+		<method name="instance_has" qualifiers="const" deprecated="Compare this script with [method Object.get_script] instead.">
 			<return type="bool" />
 			<param index="0" name="base_object" type="Object" />
 			<description>

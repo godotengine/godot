@@ -2488,11 +2488,6 @@ PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_t
 #endif
 }
 
-bool CSharpScript::instance_has(const Object *p_this) const {
-	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-	return instances.has((Object *)p_this);
-}
-
 bool CSharpScript::has_source_code() const {
 	return !source.is_empty();
 }
