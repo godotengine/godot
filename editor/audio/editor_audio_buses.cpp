@@ -51,6 +51,7 @@
 #include "scene/gui/separator.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
+#include "scene/resources/gradient_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "servers/audio/audio_server.h"
 
@@ -63,6 +64,12 @@ void EditorAudioBus::_update_visible_channels() {
 		if (!channel[i].vu_r->is_visible()) {
 			channel[i].vu_r->show();
 		}
+		if (!channel[i].peak_indicator_l->is_visible()) {
+			channel[i].peak_indicator_l->show();
+		}
+		if (!channel[i].peak_indicator_r->is_visible()) {
+			channel[i].peak_indicator_r->show();
+		}
 	}
 
 	for (; i < CHANNELS_MAX; i++) {
@@ -72,26 +79,18 @@ void EditorAudioBus::_update_visible_channels() {
 		if (channel[i].vu_r->is_visible()) {
 			channel[i].vu_r->hide();
 		}
+		if (channel[i].peak_indicator_l->is_visible()) {
+			channel[i].peak_indicator_l->hide();
+		}
+		if (channel[i].peak_indicator_r->is_visible()) {
+			channel[i].peak_indicator_r->hide();
+		}
 	}
 }
 
 void EditorAudioBus::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			Ref<Texture2D> active_bus_texture = get_editor_theme_icon(SNAME("BusVuActive"));
-			for (int i = 0; i < CHANNELS_MAX; i++) {
-				channel[i].vu_l->set_under_texture(active_bus_texture);
-				channel[i].vu_l->set_tint_under(Color(0.75, 0.75, 0.75));
-				channel[i].vu_l->set_progress_texture(active_bus_texture);
-
-				channel[i].vu_r->set_under_texture(active_bus_texture);
-				channel[i].vu_r->set_tint_under(Color(0.75, 0.75, 0.75));
-				channel[i].vu_r->set_progress_texture(active_bus_texture);
-				channel[i].prev_active = true;
-			}
-
-			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
-
 			bool dark_icon_and_font = EditorThemeManager::is_dark_icon_and_font();
 			Color solo_color = dark_icon_and_font ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
 			Color mute_color = dark_icon_and_font ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
@@ -168,31 +167,87 @@ void EditorAudioBus::_notification(int p_what) {
 					real_peak[1] = MAX(real_peak[1], AudioServer::get_singleton()->get_bus_peak_volume_right_db(get_index(), i));
 				}
 
-				if (real_peak[0] > channel[i].peak_l) {
+				// Checking if equal too to avoid jitters.
+				if (real_peak[0] >= channel[i].peak_l) {
 					channel[i].peak_l = real_peak[0];
 				} else {
 					channel[i].peak_l -= get_process_delta_time() * 60.0;
 				}
 
-				if (real_peak[1] > channel[i].peak_r) {
+				if (real_peak[1] >= channel[i].peak_r) {
 					channel[i].peak_r = real_peak[1];
 				} else {
 					channel[i].peak_r -= get_process_delta_time() * 60.0;
 				}
 
-				channel[i].vu_l->set_value(channel[i].peak_l);
-				channel[i].vu_r->set_value(channel[i].peak_r);
+				channel[i].vu_l->set_value(_scaled_db_to_normalized_volume(channel[i].peak_l));
+				channel[i].vu_r->set_value(_scaled_db_to_normalized_volume(channel[i].peak_r));
+
+				if (!channel[i].indicator_fall_l) {
+					channel[i].peak_indicator_l->set_position(Point2(0.0, MIN(channel[i].peak_indicator_l->get_position().height, peak_indicator_range - channel[i].vu_l->get_value() * peak_indicator_range)));
+				} else {
+					channel[i].peak_indicator_l->set_position(Point2(0.0, MIN(peak_indicator_range, channel[i].peak_indicator_l->get_position().height + get_process_delta_time() * 60.0)));
+				}
+				if (!channel[i].indicator_fall_r) {
+					channel[i].peak_indicator_r->set_position(Point2(0.0, MIN(channel[i].peak_indicator_r->get_position().height, peak_indicator_range - channel[i].vu_r->get_value() * peak_indicator_range)));
+				} else {
+					channel[i].peak_indicator_r->set_position(Point2(0.0, MIN(peak_indicator_range, channel[i].peak_indicator_r->get_position().height + get_process_delta_time() * 60.0)));
+				}
+
+				double normalized_peak_indicator = (channel[i].peak_indicator_l->get_position().height - peak_indicator_range) / -peak_indicator_range;
+
+				if (channel[i].vu_l->get_value() > normalized_peak_indicator || Math::is_equal_approx(channel[i].vu_l->get_value(), normalized_peak_indicator, 0.01)) {
+					if (!channel[i].peak_timer_l->is_paused() || channel[i].indicator_fall_l) {
+						channel[i].peak_timer_l->set_paused(true);
+						channel[i].indicator_fall_l = false;
+					}
+				} else if (channel[i].peak_timer_l->is_paused()) {
+					channel[i].peak_timer_l->set_paused(false);
+					channel[i].peak_timer_l->start();
+				}
+
+				peak_indicator_stylebox_l->set_bg_color(active_gradient->get_color_at_offset(normalized_peak_indicator));
+
+				normalized_peak_indicator = (channel[i].peak_indicator_r->get_position().height - peak_indicator_range) / -peak_indicator_range;
+
+				if (channel[i].vu_r->get_value() > normalized_peak_indicator || Math::is_equal_approx(channel[i].vu_r->get_value(), normalized_peak_indicator, 0.01)) {
+					if (!channel[i].peak_timer_r->is_paused() || channel[i].indicator_fall_r) {
+						channel[i].peak_timer_r->set_paused(true);
+						channel[i].indicator_fall_r = false;
+					}
+				} else if (channel[i].peak_timer_r->is_paused()) {
+					channel[i].peak_timer_r->set_paused(false);
+					channel[i].peak_timer_r->start();
+				}
+
+				peak_indicator_stylebox_r->set_bg_color(active_gradient->get_color_at_offset(normalized_peak_indicator));
 
 				if (activity_found != channel[i].prev_active) {
 					if (activity_found) {
 						channel[i].vu_l->set_over_texture(Ref<Texture2D>());
 						channel[i].vu_r->set_over_texture(Ref<Texture2D>());
 					} else {
-						channel[i].vu_l->set_over_texture(disabled_vu);
-						channel[i].vu_r->set_over_texture(disabled_vu);
+						channel[i].vu_l->set_over_texture(inactive_bus_texture);
+						channel[i].vu_r->set_over_texture(inactive_bus_texture);
 					}
 
 					channel[i].prev_active = activity_found;
+				}
+
+				if (!activity_found) {
+					if (channel[i].peak_indicator_l->get_position().height > (peak_indicator_range - 2.0) && channel[i].peak_indicator_l->is_visible()) {
+						channel[i].peak_indicator_l->hide();
+					}
+					if (channel[i].peak_indicator_r->get_position().height > (peak_indicator_range - 2.0) && channel[i].peak_indicator_r->is_visible()) {
+						channel[i].peak_indicator_r->hide();
+					}
+				} else {
+					if (!channel[i].peak_indicator_l->is_visible()) {
+						channel[i].peak_indicator_l->show();
+					}
+					if (!channel[i].peak_indicator_r->is_visible()) {
+						channel[i].peak_indicator_r->show();
+					}
 				}
 			}
 		} break;
@@ -201,7 +256,14 @@ void EditorAudioBus::_notification(int p_what) {
 			for (int i = 0; i < CHANNELS_MAX; i++) {
 				channel[i].peak_l = -100;
 				channel[i].peak_r = -100;
-				channel[i].prev_active = true;
+			}
+
+			for (int i = 0; i < cc; i++) {
+				if (AudioServer::get_singleton()->is_bus_channel_active(get_index(), i)) {
+					channel[i].prev_active = false;
+				} else {
+					channel[i].prev_active = true;
+				}
 			}
 
 			set_process(is_visible_in_tree());
@@ -214,6 +276,22 @@ void EditorAudioBus::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			active_gradient_colors = { EDITOR_GET("editors/audio_buses/active_min_db_color"), EDITOR_GET("editors/audio_buses/active_normalized_db_color"), EDITOR_GET("editors/audio_buses/active_max_db_color") };
+			active_gradient->set_colors(active_gradient_colors);
+
+			inactive_gradient_colors = { EDITOR_GET("editors/audio_buses/inactive_min_db_color"), EDITOR_GET("editors/audio_buses/inactive_normalized_db_color"), EDITOR_GET("editors/audio_buses/inactive_max_db_color") };
+			inactive_gradient->set_colors(inactive_gradient_colors);
+
+			for (int i = 0; i < CHANNELS_MAX; i++) {
+				channel[i].vu_l->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+				channel[i].vu_l->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
+
+				channel[i].vu_r->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+				channel[i].vu_r->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
+			}
+		}
 	}
 }
 
@@ -390,7 +468,7 @@ float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
 
 float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 	/* Inversion of equations found in _normalized_volume_to_scaled_db.
-	 * IMPORTANT: If one function changes, the other much change to reflect it. */
+	 * IMPORTANT: If one function changes, the other must change to reflect it. */
 	if (db > -2.88) {
 		return (db + 16.2f) / 22.22f;
 	} else if (db < -38.602f) {
@@ -436,9 +514,10 @@ void EditorAudioBus::_show_value(float slider_value) {
 	const Vector2 slider_size = slider->get_size();
 	const Vector2 slider_position = slider->get_global_position();
 	const float vert_padding = 10.0f;
-	const Vector2 box_position = Vector2(slider_size.x, (slider_size.y - vert_padding) * (1.0f - slider->get_value()) - vert_padding);
+	const Size2 box_size = audio_value_preview_label->get_size();
+	const Vector2 box_position = Vector2(-box_size.x, (slider_size.y - vert_padding) * (1.0f - slider->get_value()) - vert_padding);
 	audio_value_preview_box->set_position(slider_position + box_position);
-	audio_value_preview_box->set_size(audio_value_preview_label->get_size());
+	audio_value_preview_box->set_size(box_size);
 	if (slider->has_focus() && !audio_value_preview_box->is_visible()) {
 		audio_value_preview_box->show();
 	}
@@ -447,6 +526,17 @@ void EditorAudioBus::_show_value(float slider_value) {
 
 void EditorAudioBus::_hide_value_preview() {
 	audio_value_preview_box->hide();
+}
+
+void EditorAudioBus::_enable_indicator_fall() {
+	for (int i = 0; i < cc; i++) {
+		if (channel[i].peak_timer_l->get_time_left() <= 0.0 && !channel[i].indicator_fall_l && Math::snapped(channel[i].peak_indicator_l->get_position().height, 0.0001) < peak_indicator_range) {
+			channel[i].indicator_fall_l = true;
+		}
+		if (channel[i].peak_timer_r->get_time_left() <= 0.0 && !channel[i].indicator_fall_r && Math::snapped(channel[i].peak_indicator_r->get_position().height, 0.0001) < peak_indicator_range) {
+			channel[i].indicator_fall_r = true;
+		}
+	}
 }
 
 void EditorAudioBus::_solo_toggled() {
@@ -933,26 +1023,88 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	preview_timer->connect("timeout", callable_mp(this, &EditorAudioBus::_hide_value_preview));
 	hb->add_child(slider);
 
+	active_bus_texture = memnew(GradientTexture2D);
+	active_gradient = memnew(Gradient);
+	active_gradient->set_offsets(gradient_offsets);
+	active_gradient_colors = { EDITOR_GET("editors/audio_buses/active_min_db_color"), EDITOR_GET("editors/audio_buses/active_normalized_db_color"), EDITOR_GET("editors/audio_buses/active_max_db_color") };
+	active_gradient->set_colors(active_gradient_colors);
+	active_bus_texture->set_gradient(active_gradient);
+	active_bus_texture->set_width(16);
+	active_bus_texture->set_height(128);
+	active_bus_texture->set_fill_from(Vector2(0.0, 1.0));
+	active_bus_texture->set_fill_to(Vector2(0.0, 0.0));
+	inactive_bus_texture = memnew(GradientTexture2D);
+	inactive_gradient = memnew(Gradient);
+	inactive_gradient->set_offsets(gradient_offsets);
+	inactive_gradient_colors = { EDITOR_GET("editors/audio_buses/inactive_min_db_color"), EDITOR_GET("editors/audio_buses/inactive_normalized_db_color"), EDITOR_GET("editors/audio_buses/inactive_max_db_color") };
+	inactive_gradient->set_colors(inactive_gradient_colors);
+	inactive_bus_texture->set_gradient(inactive_gradient);
+	inactive_bus_texture->set_width(16);
+	inactive_bus_texture->set_height(128);
+	inactive_bus_texture->set_fill_from(Vector2(0.0, 1.0));
+	inactive_bus_texture->set_fill_to(Vector2(0.0, 0.0));
+
+	peak_indicator_stylebox_l = memnew(StyleBoxFlat);
+	peak_indicator_stylebox_l->set_bg_color(Color(1.0, 1.0, 1.0, 0.75));
+	peak_indicator_stylebox_r = memnew(StyleBoxFlat);
+	peak_indicator_stylebox_r->set_bg_color(Color(1.0, 1.0, 1.0, 0.75));
+
 	cc = 0;
 	for (int i = 0; i < CHANNELS_MAX; i++) {
 		channel[i].vu_l = memnew(TextureProgressBar);
 		channel[i].vu_l->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_l->set_custom_minimum_size(Size2(16.0, 128.0));
+		channel[i].vu_l->set_progress_texture(active_bus_texture);
+		channel[i].vu_l->set_under_texture(active_bus_texture);
+		channel[i].vu_l->set_over_texture(inactive_bus_texture);
+		channel[i].vu_l->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+		channel[i].vu_l->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
 		hb->add_child(channel[i].vu_l);
-		channel[i].vu_l->set_min(-80);
-		channel[i].vu_l->set_max(24);
-		channel[i].vu_l->set_step(0.1);
+		channel[i].vu_l->set_min(0);
+		channel[i].vu_l->set_max(1);
+		channel[i].vu_l->set_step(0.0001);
 		channel[i].vu_l->set_accessibility_name(vformat(TTR("Channel %d, Left VU"), i));
+
+		channel[i].peak_indicator_l = memnew(Panel);
+		channel[i].peak_indicator_l->set_custom_minimum_size(Size2(16.0, 2.0));
+		channel[i].peak_indicator_l->add_theme_style_override(SceneStringName(panel), peak_indicator_stylebox_l);
+		channel[i].vu_l->add_child(channel[i].peak_indicator_l);
+		channel[i].peak_indicator_l->set_position(Point2(0.0, peak_indicator_range));
+		channel[i].peak_timer_l = memnew(Timer);
+		channel[i].peak_timer_l->set_wait_time(1.5f);
+		channel[i].peak_timer_l->set_one_shot(true);
+		channel[i].peak_timer_l->set_paused(true);
+		channel[i].peak_indicator_l->add_child(channel[i].peak_timer_l);
+		channel[i].peak_timer_l->connect("timeout", callable_mp(this, &EditorAudioBus::_enable_indicator_fall));
 
 		channel[i].vu_r = memnew(TextureProgressBar);
 		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
+		channel[i].vu_r->set_custom_minimum_size(Size2(16.0, 128.0));
+		channel[i].vu_r->set_progress_texture(active_bus_texture);
+		channel[i].vu_r->set_under_texture(active_bus_texture);
+		channel[i].vu_r->set_over_texture(inactive_bus_texture);
+		channel[i].vu_r->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
+		channel[i].vu_r->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
 		hb->add_child(channel[i].vu_r);
-		channel[i].vu_r->set_min(-80);
-		channel[i].vu_r->set_max(24);
-		channel[i].vu_r->set_step(0.1);
+		channel[i].vu_r->set_min(0);
+		channel[i].vu_r->set_max(1);
+		channel[i].vu_r->set_step(0.0001);
 		channel[i].vu_r->set_accessibility_name(vformat(TTR("Channel %d, Right VU"), i));
 
-		channel[i].peak_l = 0.0f;
-		channel[i].peak_r = 0.0f;
+		channel[i].peak_indicator_r = memnew(Panel);
+		channel[i].peak_indicator_r->set_custom_minimum_size(Size2(16.0, 2.0));
+		channel[i].peak_indicator_r->add_theme_style_override(SceneStringName(panel), peak_indicator_stylebox_r);
+		channel[i].vu_r->add_child(channel[i].peak_indicator_r);
+		channel[i].peak_indicator_r->set_position(Point2(0.0, peak_indicator_range));
+		channel[i].peak_timer_r = memnew(Timer);
+		channel[i].peak_timer_r->set_wait_time(1.5f);
+		channel[i].peak_timer_r->set_one_shot(true);
+		channel[i].peak_timer_r->set_paused(true);
+		channel[i].peak_indicator_r->add_child(channel[i].peak_timer_r);
+		channel[i].peak_timer_r->connect("timeout", callable_mp(this, &EditorAudioBus::_enable_indicator_fall));
+
+		channel[i].peak_l = -100.0f;
+		channel[i].peak_r = -100.0f;
 	}
 
 	EditorAudioMeterNotches *scale = memnew(EditorAudioMeterNotches);
@@ -1474,7 +1626,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 		return;
 	}
 
-	edited_path = p_path; // Use UID when available.
+	edited_path = ResourceUID::path_to_uid(p_path);
 	_update_file_label();
 
 	AudioServer::get_singleton()->set_bus_layout(state);
@@ -1515,11 +1667,12 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	float font_height = font->get_height(font_size);
 
 	float width = 0;
-	float height = top_padding + btm_padding;
+	float height = 0;
 
 	for (const EditorAudioMeterNotches::AudioNotch &notch : notches) {
 		if (notch.render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notch.db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
+			char sign = notch.db_value >= 0 ? '+' : '-';
+			width = MAX(width, font->get_string_size(sign + String::num(Math::abs(notch.db_value), 0) + " dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 			height += font_height;
 		}
 	}
@@ -1554,16 +1707,17 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 	float font_height = theme_cache.font->get_height(theme_cache.font_size);
 
 	for (const AudioNotch &n : notches) {
-		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
-				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
+		draw_line(Vector2(0, (1.0f - n.relative_position) * get_size().y),
+				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * get_size().y),
 				theme_cache.notch_color,
 				Math::round(EDSCALE));
 
 		if (n.render_db_value) {
+			char sign = n.db_value >= 0 ? '+' : '-';
 			draw_string(theme_cache.font,
 					Vector2((line_length + label_space) * EDSCALE,
-							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
-					String::num(Math::abs(n.db_value)) + "dB",
+							(1.0f - n.relative_position) * get_size().y + (font_height / 4)),
+					sign + String::num(Math::abs(n.db_value), 0) + " dB",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size,
 					theme_cache.notch_color);
 		}
