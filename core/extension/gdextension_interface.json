@@ -1184,6 +1184,23 @@
             ]
         },
         {
+            "name": "GDExtensionClassCreateInstance3",
+            "kind": "function",
+            "return_value": {
+                "type": "GDExtensionObjectPtr"
+            },
+            "arguments": [
+                {
+                    "name": "p_class_userdata",
+                    "type": "void*"
+                },
+                {
+                    "name": "p_notify_postinitialize",
+                    "type": "GDExtensionBool"
+                }
+            ]
+        },
+        {
             "name": "GDExtensionClassFreeInstance",
             "kind": "function",
             "arguments": [
@@ -1777,6 +1794,11 @@
             "name": "GDExtensionClassCreationInfo5",
             "kind": "alias",
             "type": "GDExtensionClassCreationInfo4"
+        },
+        {
+            "name": "GDExtensionClassCreationInfo6",
+            "kind": "alias",
+            "type": "GDExtensionClassCreationInfo5"
         },
         {
             "name": "GDExtensionClassLibraryPtr",
@@ -8242,7 +8264,7 @@
             "since": "4.1",
             "deprecated": {
                 "since": "4.4",
-                "replace_with": "classdb_construct_object2"
+                "replace_with": "classdb_construct_object3"
             }
         },
         {
@@ -8268,7 +8290,37 @@
                 "",
                 "\"NOTIFICATION_POSTINITIALIZE\" must be sent after construction."
             ],
-            "since": "4.4"
+            "since": "4.4",
+            "deprecated": {
+                "since": "4.6",
+                "replace_with": "classdb_construct_object3"
+            }
+        },
+        {
+            "name": "classdb_construct_object3",
+            "return_value": {
+                "type": "GDExtensionObjectPtr",
+                "description": [
+                    "A pointer to the newly created Object."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_classname",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the class name."
+                    ]
+                }
+            ],
+            "description": [
+                "Constructs an Object of the requested class.",
+                "The passed class must be a built-in godot class, or an already-registered extension class. In both cases, object_set_instance() should be called to fully initialize the object.",
+                "If the type is a subtype of RefCounted, it already has a refcount of 1. The caller must take ownership the refcount and is responsible for decrementing it again when the object is no longer needed.",
+                "",
+                "\"NOTIFICATION_POSTINITIALIZE\" must be sent after construction."
+            ],
+            "since": "4.6"
         },
         {
             "name": "classdb_get_method_bind",
@@ -8367,7 +8419,7 @@
             "since": "4.1",
             "deprecated": {
                 "since": "4.2",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
@@ -8409,7 +8461,7 @@
             "since": "4.2",
             "deprecated": {
                 "since": "4.3",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
@@ -8451,7 +8503,7 @@
             "since": "4.3",
             "deprecated": {
                 "since": "4.4",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
@@ -8493,7 +8545,7 @@
             "since": "4.4",
             "deprecated": {
                 "since": "4.5",
-                "replace_with": "classdb_register_extension_class5"
+                "replace_with": "classdb_register_extension_class6"
             }
         },
         {
@@ -8532,7 +8584,50 @@
                 "Registers an extension class in the ClassDB.",
                 "Provided struct can be safely freed once the function returns."
             ],
-            "since": "4.5"
+            "since": "4.5",
+            "deprecated": {
+                "since": "4.6",
+                "replace_with": "classdb_register_extension_class6"
+            }
+        },
+        {
+            "name": "classdb_register_extension_class6",
+            "arguments": [
+                {
+                    "name": "p_library",
+                    "type": "GDExtensionClassLibraryPtr",
+                    "description": [
+                        "A pointer the library received by the GDExtension's entry point function."
+                    ]
+                },
+                {
+                    "name": "p_class_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the class name."
+                    ]
+                },
+                {
+                    "name": "p_parent_class_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the parent class name."
+                    ]
+                },
+                {
+                    "name": "p_extension_funcs",
+                    "type": "const GDExtensionClassCreationInfo6*",
+                    "description": [
+                        "A pointer to a GDExtensionClassCreationInfo6 struct.",
+                        "In contrast to GDExtensionClassCreationInfo5, the creation function must return RefCounted subtypes with a refcount of 1."
+                    ]
+                }
+            ],
+            "description": [
+                "Registers an extension class in the ClassDB.",
+                "Provided struct can be safely freed once the function returns."
+            ],
+            "since": "4.6"
         },
         {
             "name": "classdb_register_extension_class_method",
