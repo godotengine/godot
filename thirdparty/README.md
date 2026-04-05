@@ -603,6 +603,34 @@ Files extracted from upstream source:
 - `COPYING`
 
 
+## libopus
+
+- Upstream: https://opus-codec.org/downloads
+- Version: 1.6.1 (6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1, 2026)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `celt/*` except from: `tests/*`, `meson.build`, `arm/meson.build`
+- `include/*` except from: `meson.build`
+- `silk/*` except from: `tests/*`, `meson.build`
+- `src/*` except from: `meson.build`
+- `COPYING`
+
+
+## libopusfile
+
+- Upstream: https://opus-codec.org/downloads
+- Version: 0.12 (118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b, 2020)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include/*`
+- `src/*`
+- `COPYING`
+
+
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
@@ -916,34 +944,6 @@ Exclude:
 
 Additional:
 - Update `openxrLoaderVersion` in `platform/android/java/app/config.gradle`
-
-
-## libopus
-
-- Upstream: https://opus-codec.org/downloads
-- Version: 1.6.1 (6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1, 2026)
-- License: Opus
-
-Files extracted from upstream source:
-
-- `celt/*` except from: `tests/*`, `meson.build`, `arm/meson.build`
-- `include/*` except from: `meson.build`
-- `silk/*` except from: `tests/*`, `meson.build`
-- `src/*` except from: `meson.build`
-- `COPYING`
-
-
-## libopusfile
-
-- Upstream: https://opus-codec.org/downloads
-- Version: 0.12 (118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b, 2020)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- `include/*`
-- `src/*`
-- `COPYING`
 
 
 ## pcre2
