@@ -285,7 +285,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		Size2 cms = c->get_combined_minimum_size();
+		Size2 cms = c->get_bound_minimum_size();
 		ms = cms.max(ms);
 	}
 

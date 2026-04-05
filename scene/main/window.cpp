@@ -1950,7 +1950,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (c) {
 			Point2i pos = c->get_position();
-			Size2i min = c->get_combined_minimum_size();
+			Size2i min = c->get_bound_minimum_size();
 
 			max = max.max(pos + min);
 		}

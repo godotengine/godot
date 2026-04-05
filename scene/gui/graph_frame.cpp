@@ -105,7 +105,7 @@ void GraphFrame::_notification(int p_what) {
 			Ref<StyleBoxFlat> sb_panel_flat = sb_to_draw_panel;
 			Ref<StyleBoxTexture> sb_panel_texture = sb_to_draw_panel;
 
-			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_combined_minimum_size() + sb_titlebar->get_minimum_size());
+			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_bound_minimum_size() + sb_titlebar->get_minimum_size());
 			Size2 body_size = get_size();
 			titlebar_rect.size.width = body_size.width;
 			body_size.y -= titlebar_rect.size.height;
@@ -156,7 +156,7 @@ void GraphFrame::_resort() {
 	fit_child_in_rect(titlebar_hbox, titlebar_rect);
 
 	// After resort the children of the titlebar container may have changed their height (e.g. Label autowrap).
-	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
+	Size2i titlebar_min_size = titlebar_hbox->get_bound_minimum_size();
 
 	Size2 size = get_size() - sb_panel->get_minimum_size() - Size2(0, titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
 	Point2 offset = Point2(sb_panel->get_margin(SIDE_LEFT), sb_panel->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
@@ -268,7 +268,7 @@ HBoxContainer *GraphFrame::get_titlebar_hbox() {
 }
 
 Size2 GraphFrame::get_titlebar_size() const {
-	return titlebar_hbox->get_combined_minimum_size() + theme_cache.titlebar->get_minimum_size();
+	return titlebar_hbox->get_bound_minimum_size() + theme_cache.titlebar->get_minimum_size();
 }
 
 void GraphFrame::set_drag_margin(int p_margin) {
@@ -307,7 +307,7 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 	}
 
 	// For grabbing on the titlebar.
-	int titlebar_height = titlebar_hbox->get_combined_minimum_size().height + sb_titlebar->get_minimum_size().height;
+	int titlebar_height = titlebar_hbox->get_bound_minimum_size().height + sb_titlebar->get_minimum_size().height;
 	if (Rect2(0, 0, get_size().width, titlebar_height).has_point(p_point)) {
 		return true;
 	}
@@ -335,7 +335,7 @@ Size2 GraphFrame::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size();
+		Size2i size = child->get_bound_minimum_size();
 		size.width += sb_panel->get_minimum_size().width;
 
 		minsize.x = MAX(minsize.x, size.x);
