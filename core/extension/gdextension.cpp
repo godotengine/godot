@@ -274,6 +274,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		nullptr,
+		false, // p_creation_is_with_refcount
 	};
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
@@ -313,6 +314,7 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtual get_virtual_func;
+		false, // p_creation_is_with_refcount
 	};
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
@@ -352,6 +354,7 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtual get_virtual_func;
+		false, // p_creation_is_with_refcount
 	};
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
@@ -366,12 +369,19 @@ void GDExtension::_register_extension_class4(GDExtensionClassLibraryPtr p_librar
 		nullptr, // GDExtensionClassGetRID get_rid;
 		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
 		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
+		false, // p_creation_is_with_refcount
 	};
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
-#endif // DISABLE_DEPRECATED
 
 void GDExtension::_register_extension_class5(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs) {
+	ClassCreationDeprecatedInfo legacy = {};
+	legacy.p_creation_is_with_refcount = false;
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, p_extension_funcs, &legacy);
+}
+#endif // DISABLE_DEPRECATED
+
+void GDExtension::_register_extension_class6(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo6 *p_extension_funcs) {
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, p_extension_funcs);
 }
 
@@ -471,7 +481,14 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.reference = p_extension_funcs->reference_func;
 	extension->gdextension.unreference = p_extension_funcs->unreference_func;
 	extension->gdextension.class_userdata = p_extension_funcs->class_userdata;
-	extension->gdextension.create_instance2 = p_extension_funcs->create_instance_func;
+#ifndef DISABLE_DEPRECATED
+	if (p_deprecated_funcs && !p_deprecated_funcs->p_creation_is_with_refcount) {
+		extension->gdextension.create_instance2 = p_extension_funcs->create_instance_func;
+	} else
+#endif
+	{
+		extension->gdextension.create_instance3 = p_extension_funcs->create_instance_func;
+	}
 	extension->gdextension.free_instance = p_extension_funcs->free_instance_func;
 	extension->gdextension.recreate_instance = p_extension_funcs->recreate_instance_func;
 	extension->gdextension.get_virtual2 = p_extension_funcs->get_virtual_func;
@@ -824,8 +841,9 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_register_extension_class2", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class2);
 	register_interface_function("classdb_register_extension_class3", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class3);
 	register_interface_function("classdb_register_extension_class4", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class4);
-#endif // DISABLE_DEPRECATED
 	register_interface_function("classdb_register_extension_class5", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class5);
+#endif // DISABLE_DEPRECATED
+	register_interface_function("classdb_register_extension_class6", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class6);
 	register_interface_function("classdb_register_extension_class_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_method);
 	register_interface_function("classdb_register_extension_class_virtual_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_virtual_method);
 	register_interface_function("classdb_register_extension_class_integer_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_integer_constant);

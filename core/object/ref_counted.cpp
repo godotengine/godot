@@ -45,6 +45,21 @@ bool RefCounted::init_ref() {
 	}
 }
 
+void RefCounted::deinit_ref() {
+	// Somewhat unsafe since we're doing tests in sync, but it's probably fine
+	// since this function is called from the creation thread, so nobody else should have access.
+
+	// If this succeeds, refcount_init is 2 (or more).
+	// This would be unexpected, since callers should already have consumed it, or never established it.
+	// It's a little unsafe to bring it above 1, since it means init_ref must be called more than once,
+	// but the alternative would be decrementing refcount instead, which is also unsafe since the object
+	// might unexpectedly destruct early. Better to risk zombying than to risk a crash.
+	if (!refcount_init.ref()) {
+		// refcount_init already dead, must re-establish (expected).
+		refcount_init.init(1);
+	}
+}
+
 void RefCounted::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_ref"), &RefCounted::init_ref);
 	ClassDB::bind_method(D_METHOD("reference"), &RefCounted::reference);

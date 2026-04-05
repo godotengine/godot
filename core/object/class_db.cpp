@@ -534,7 +534,42 @@ StringName ClassDB::get_compatibility_class(const StringName &p_class) {
 	return StringName();
 }
 
-Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize, bool p_exposed_only) {
+Object *ClassDB::_instantiate_from_gdextension(ObjectGDExtension *p_object_gd_extension, bool p_notify_postinitialize, bool p_with_refcount) {
+	if (p_with_refcount) {
+		if (p_object_gd_extension->create_instance3 != nullptr) {
+			// Caller expects refcount=1, creation func returns with refcount=1. It's a match.
+			return (Object *)p_object_gd_extension->create_instance3(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+		}
+#ifndef DISABLE_DEPRECATED
+		Object *object = (Object *)p_object_gd_extension->create_instance2(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+		if (object != nullptr && object->is_ref_counted()) {
+			// Caller expects a refcount, creation func didn't increment, so do it now.
+			((RefCounted *)object)->init_ref();
+		}
+		return object;
+#endif
+	} else {
+#ifndef DISABLE_DEPRECATED
+		if (p_object_gd_extension->create_instance2 != nullptr) {
+			// Caller expects no refcount, creation func returns without refcount. It's a match.
+			return (Object *)p_object_gd_extension->create_instance2(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+		}
+#endif
+		if (p_object_gd_extension->create_instance3 != nullptr) {
+			Object *object = (Object *)p_object_gd_extension->create_instance3(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+			if (object != nullptr && object->is_ref_counted()) {
+				// Caller expects no refcount, but refcount was already incremented by creation func.
+				// Must fall back to RefCounted's refcount_init trick.
+				((RefCounted *)object)->deinit_ref();
+			}
+			return object;
+		}
+	}
+
+	ERR_FAIL_V_MSG(nullptr, vformat("Internal error; ObjectGDExtension of %s has neither create_instance2 nor create_instance3.", p_object_gd_extension->class_name));
+}
+
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize, bool p_exposed_only, bool p_with_refcount) {
 	ClassInfo *ti;
 	{
 		Locker::Lock lock(Locker::STATE_READ);
@@ -570,11 +605,11 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 	if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
 		bool can_create_placeholder = false;
 		if (ti->gdextension) {
-			if (ti->gdextension->create_instance2) {
+			if (ti->gdextension->create_instance3) {
 				can_create_placeholder = true;
 			}
 #ifndef DISABLE_DEPRECATED
-			else if (ti->gdextension->create_instance) {
+			else if (ti->gdextension->create_instance || ti->gdextension->create_instance2) {
 				can_create_placeholder = true;
 			}
 #endif // DISABLE_DEPRECATED
@@ -586,23 +621,32 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 
 		if (can_create_placeholder) {
 			ObjectGDExtension *extension = get_placeholder_extension(ti->gdtype->get_name());
-			return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+			return _instantiate_from_gdextension(extension, p_notify_postinitialize, p_with_refcount);
 		}
 	}
 #endif // TOOLS_ENABLED
 
-	if (ti->gdextension && ti->gdextension->create_instance2) {
+	if (ti->gdextension && ti->gdextension->create_instance3) {
 		ObjectGDExtension *extension = ti->gdextension;
-		return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+		return _instantiate_from_gdextension(extension, p_notify_postinitialize, p_with_refcount);
 	}
 #ifndef DISABLE_DEPRECATED
-	else if (ti->gdextension && ti->gdextension->create_instance) {
+	else if (ti->gdextension && ti->gdextension->create_instance2) {
+		ObjectGDExtension *extension = ti->gdextension;
+		return _instantiate_from_gdextension(extension, p_notify_postinitialize, p_with_refcount);
+	} else if (ti->gdextension && ti->gdextension->create_instance) {
 		ObjectGDExtension *extension = ti->gdextension;
 		return (Object *)extension->create_instance(extension->class_userdata);
 	}
 #endif // DISABLE_DEPRECATED
 	else {
-		return ti->creation_func(p_notify_postinitialize);
+		Object *object = ti->creation_func(p_notify_postinitialize);
+		if (p_with_refcount && object != nullptr && object->is_ref_counted()) {
+			// creation_func creates the object with an (effective) refcount of 1,
+			// so establish the expected refcount=1 now.
+			((RefCounted *)object)->init_ref();
+		}
+		return object;
 	}
 }
 
@@ -630,11 +674,15 @@ bool ClassDB::_can_instantiate(ClassInfo *p_class_info, bool p_exposed_only) {
 		return true;
 	}
 
-	if (p_class_info->gdextension->create_instance2) {
+	if (p_class_info->gdextension->create_instance3) {
 		return true;
 	}
 
 #ifndef DISABLE_DEPRECATED
+	if (p_class_info->gdextension->create_instance2) {
+		return true;
+	}
+
 	if (p_class_info->gdextension->create_instance) {
 		return true;
 	}
@@ -652,6 +700,10 @@ Object *ClassDB::instantiate_no_placeholders(const StringName &p_class) {
 
 Object *ClassDB::instantiate_without_postinitialization(const StringName &p_class) {
 	return _instantiate_internal(p_class, true, false);
+}
+
+Object *ClassDB::instantiate_without_postinitialization_with_refcount(const StringName &p_class) {
+	return _instantiate_internal(p_class, true, false, true, true);
 }
 
 #ifdef TOOLS_ENABLED
@@ -828,9 +880,9 @@ bool ClassDB::is_abstract(const StringName &p_class) {
 			return true;
 		}
 #ifndef DISABLE_DEPRECATED
-		return ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance == nullptr;
+		return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance2 == nullptr;
 #else
-		return ti->gdextension->create_instance2 == nullptr;
+		return ti->gdextension->create_instance3 == nullptr;
 #endif //  DISABLE_DEPRECATED
 	}
 
