@@ -32,82 +32,89 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-
-#include "audio/audio_effect.h"
-#include "audio/audio_stream.h"
-#include "audio/effects/audio_effect_amplify.h"
-#include "audio/effects/audio_effect_capture.h"
-#include "audio/effects/audio_effect_chorus.h"
-#include "audio/effects/audio_effect_compressor.h"
-#include "audio/effects/audio_effect_delay.h"
-#include "audio/effects/audio_effect_distortion.h"
-#include "audio/effects/audio_effect_eq.h"
-#include "audio/effects/audio_effect_filter.h"
-#include "audio/effects/audio_effect_hard_limiter.h"
-#include "audio/effects/audio_effect_panner.h"
-#include "audio/effects/audio_effect_phaser.h"
-#include "audio/effects/audio_effect_pitch_shift.h"
-#include "audio/effects/audio_effect_record.h"
-#include "audio/effects/audio_effect_reverb.h"
-#include "audio/effects/audio_effect_spectrum_analyzer.h"
-#include "audio/effects/audio_effect_stereo_enhance.h"
-#include "audio/effects/audio_stream_generator.h"
-#include "audio_server.h"
-#include "camera/camera_feed.h"
-#include "camera_server.h"
-#include "debugger/servers_debugger.h"
-#include "display/native_menu.h"
-#include "display_server.h"
-#include "movie_writer/movie_writer.h"
-#include "movie_writer/movie_writer_pngwav.h"
-#include "rendering/renderer_rd/framebuffer_cache_rd.h"
-#include "rendering/renderer_rd/storage_rd/render_data_rd.h"
-#include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
-#include "rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
-#include "rendering/renderer_rd/uniform_set_cache_rd.h"
-#include "rendering/rendering_device.h"
-#include "rendering/rendering_device_binds.h"
-#include "rendering/shader_include_db.h"
-#include "rendering/storage/render_data.h"
-#include "rendering/storage/render_scene_buffers.h"
-#include "rendering/storage/render_scene_data.h"
-#include "rendering_server.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
+#include "servers/audio/audio_effect.h"
+#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_stream.h"
+#include "servers/audio/effects/audio_effect_amplify.h"
+#include "servers/audio/effects/audio_effect_capture.h"
+#include "servers/audio/effects/audio_effect_chorus.h"
+#include "servers/audio/effects/audio_effect_compressor.h"
+#include "servers/audio/effects/audio_effect_delay.h"
+#include "servers/audio/effects/audio_effect_distortion.h"
+#include "servers/audio/effects/audio_effect_eq.h"
+#include "servers/audio/effects/audio_effect_filter.h"
+#include "servers/audio/effects/audio_effect_hard_limiter.h"
+#include "servers/audio/effects/audio_effect_panner.h"
+#include "servers/audio/effects/audio_effect_phaser.h"
+#include "servers/audio/effects/audio_effect_pitch_shift.h"
+#include "servers/audio/effects/audio_effect_record.h"
+#include "servers/audio/effects/audio_effect_reverb.h"
+#include "servers/audio/effects/audio_effect_spectrum_analyzer.h"
+#include "servers/audio/effects/audio_effect_stereo_enhance.h"
+#include "servers/audio/effects/audio_stream_generator.h"
+#include "servers/camera/camera_feed.h"
+#include "servers/camera/camera_server.h"
+#include "servers/debugger/servers_debugger.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
+#include "servers/display/native_menu.h"
+#include "servers/movie_writer/movie_writer.h"
+#include "servers/movie_writer/movie_writer_pngwav.h"
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/shader_include_db.h"
 #include "servers/rendering/shader_types.h"
-#include "text/text_server_dummy.h"
-#include "text/text_server_extension.h"
-#include "text_server.h"
+#include "servers/rendering/storage/render_data.h"
+#include "servers/rendering/storage/render_data_extension.h"
+#include "servers/rendering/storage/render_scene_buffers.h"
+#include "servers/rendering/storage/render_scene_data.h"
+#include "servers/text/text_server.h"
+#include "servers/text/text_server_dummy.h"
+#include "servers/text/text_server_extension.h"
+
 #ifndef DISABLE_DEPRECATED
-#include "audio/effects/audio_effect_limiter.h"
+#include "servers/audio/effects/audio_effect_limiter.h"
 #endif
 
 // 2D physics and navigation.
 #ifndef NAVIGATION_2D_DISABLED
-#include "navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-#include "physics_server_2d.h"
-#include "physics_server_2d_dummy.h"
-#include "servers/extensions/physics_server_2d_extension.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_dummy.h"
+#include "servers/physics_2d/physics_server_2d_extension.h"
 #endif // PHYSICS_2D_DISABLED
 
 // 3D physics and navigation.
 #ifndef NAVIGATION_3D_DISABLED
-#include "navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
-#include "physics_server_3d.h"
-#include "physics_server_3d_dummy.h"
-#include "servers/extensions/physics_server_3d_extension.h"
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_dummy.h"
+#include "servers/physics_3d/physics_server_3d_extension.h"
 #endif // PHYSICS_3D_DISABLED
+
+// XR
 #ifndef XR_DISABLED
-#include "xr/xr_body_tracker.h"
-#include "xr/xr_controller_tracker.h"
-#include "xr/xr_face_tracker.h"
-#include "xr/xr_hand_tracker.h"
-#include "xr/xr_interface.h"
-#include "xr/xr_interface_extension.h"
-#include "xr/xr_positional_tracker.h"
-#include "xr_server.h"
+#include "servers/xr/xr_body_tracker.h"
+#include "servers/xr/xr_controller_tracker.h"
+#include "servers/xr/xr_face_tracker.h"
+#include "servers/xr/xr_hand_tracker.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_interface_extension.h"
+#include "servers/xr/xr_positional_tracker.h"
+#include "servers/xr/xr_server.h"
+#include "servers/xr/xr_vrs.h"
 #endif // XR_DISABLED
 
 ShaderTypes *shader_types = nullptr;
@@ -153,6 +160,7 @@ void register_server_types() {
 
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
+	GDREGISTER_ABSTRACT_CLASS(AccessibilityServer);
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
 	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
@@ -237,6 +245,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(RDShaderSPIRV);
 	GDREGISTER_CLASS(RDShaderFile);
 	GDREGISTER_CLASS(RDPipelineSpecializationConstant);
+	GDREGISTER_CLASS(RDAccelerationStructureGeometry);
 
 	GDREGISTER_ABSTRACT_CLASS(RenderData);
 	GDREGISTER_CLASS(RenderDataExtension);
@@ -261,9 +270,16 @@ void register_server_types() {
 	ServersDebugger::initialize();
 
 #ifndef NAVIGATION_2D_DISABLED
+	GDREGISTER_CLASS(NavigationServer2DManager);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2DManager", NavigationServer2DManager::get_singleton(), "NavigationServer2DManager"));
+
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
 	GDREGISTER_CLASS(NavigationPathQueryParameters2D);
 	GDREGISTER_CLASS(NavigationPathQueryResult2D);
+
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, NavigationServer2DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
+
+	NavigationServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(NavigationServer2DManager::create_dummy_server_callback));
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
@@ -273,7 +289,9 @@ void register_server_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2DExtension);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2DExtension);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState2D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2DExtension);
 
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionRayResult, "Vector2 position;Vector2 normal;RID rid;ObjectID collider_id;Object *collider;int shape");
@@ -281,8 +299,6 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionShapeRestInfo, "Vector2 point;Vector2 normal;RID rid;ObjectID collider_id;int shape;Vector2 linear_velocity");
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionMotionResult, "Vector2 travel;Vector2 remainder;Vector2 collision_point;Vector2 collision_normal;Vector2 collider_velocity;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;int collision_local_shape;ObjectID collider_id;RID collider;int collider_shape");
 
-	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState2D);
-	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState2D);
 	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
@@ -295,9 +311,16 @@ void register_server_types() {
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
+	GDREGISTER_CLASS(NavigationServer3DManager);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3DManager", NavigationServer3DManager::get_singleton(), "NavigationServer3DManager"));
+
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
 	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
 	GDREGISTER_CLASS(NavigationPathQueryResult3D);
+
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, NavigationServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"), "DEFAULT");
+
+	NavigationServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(NavigationServer3DManager::create_dummy_server_callback));
 #endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
@@ -307,7 +330,9 @@ void register_server_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DExtension);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3DExtension);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3DExtension)
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DRenderingServerHandler)
 
@@ -317,8 +342,6 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionCollision, "Vector3 position;Vector3 normal;Vector3 collider_velocity;Vector3 collider_angular_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape");
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionResult, "Vector3 travel;Vector3 remainder;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count");
 
-	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState3D);
-	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState3D);
 	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
@@ -332,19 +355,19 @@ void register_server_types() {
 
 #ifndef XR_DISABLED
 	GDREGISTER_ABSTRACT_CLASS(XRInterface);
+	GDREGISTER_ABSTRACT_CLASS(XRTracker);
 	GDREGISTER_CLASS(XRVRS);
+	GDREGISTER_CLASS(XRPositionalTracker);
 	GDREGISTER_CLASS(XRBodyTracker);
 	GDREGISTER_CLASS(XRControllerTracker);
 	GDREGISTER_CLASS(XRFaceTracker);
 	GDREGISTER_CLASS(XRHandTracker);
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
 	GDREGISTER_CLASS(XRPose);
-	GDREGISTER_CLASS(XRPositionalTracker);
 	GDREGISTER_CLASS(XRServer);
-	GDREGISTER_ABSTRACT_CLASS(XRTracker);
 #endif // XR_DISABLED
 
-	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		writer_pngwav = memnew(MovieWriterPNGWAV);
 		MovieWriter::add_writer(writer_pngwav);
 	}
@@ -357,7 +380,7 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
-	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		memdelete(writer_pngwav);
 	}
 
@@ -367,6 +390,7 @@ void unregister_server_types() {
 void register_server_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Singletons");
 
+	Engine::get_singleton()->add_singleton(Engine::Singleton("AccessibilityServer", AccessibilityServer::get_singleton(), "AccessibilityServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));

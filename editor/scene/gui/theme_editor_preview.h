@@ -37,6 +37,7 @@ class Button;
 class ColorPickerButton;
 class ColorRect;
 class MarginContainer;
+class PackedScene;
 class ScrollContainer;
 
 class ThemeEditorPreview : public VBoxContainer {

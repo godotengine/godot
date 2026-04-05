@@ -108,6 +108,10 @@ protected:
 		Transform2D xform_curr;
 		Transform2D xform_prev;
 		uint32_t last_update_physics_tick = UINT32_MAX; // Ensure tick 0 is detected as a change.
+
+		// Camera2D can only call get_camera_transform() without flagging warnings after setting up viewports
+		// during NOTIFICATION_ENTER_TREE, so we reject resets outside this lifetime.
+		bool accepting_resets = false;
 	} _interpolation_data;
 
 	void _ensure_update_interpolation_data();

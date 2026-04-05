@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CameraFeed" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CameraFeed" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A camera feed gives you access to a single physical camera attached to your device.
 	</brief_description>
@@ -21,6 +21,20 @@
 			<return type="void" />
 			<description>
 				Called when the camera feed is deactivated.
+			</description>
+		</method>
+		<method name="_get_formats" qualifiers="virtual const">
+			<return type="Array" />
+			<description>
+				Override this method to define supported formats of the camera feed.
+			</description>
+		</method>
+		<method name="_set_format" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Override this method to set the format of the camera feed.
 			</description>
 		</method>
 		<method name="get_datatype" qualifiers="const">
@@ -99,6 +113,14 @@
 			<param index="0" name="ycbcr_image" type="Image" />
 			<description>
 				Sets YCbCr image for this feed.
+			</description>
+		</method>
+		<method name="set_ycbcr_images">
+			<return type="void" />
+			<param index="0" name="y_image" type="Image" />
+			<param index="1" name="cbcr_image" type="Image" />
+			<description>
+				Sets Y and CbCr images for this feed.
 			</description>
 		</method>
 	</methods>

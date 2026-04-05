@@ -36,6 +36,6 @@ class ShaderBakerExportPluginPlatformVulkan : public ShaderBakerExportPluginPlat
 	GDCLASS(ShaderBakerExportPluginPlatformVulkan, ShaderBakerExportPluginPlatform);
 
 public:
-	virtual RenderingShaderContainerFormat *create_shader_container_format(const Ref<EditorExportPlatform> &p_platform) override;
+	virtual RenderingShaderContainerFormat *create_shader_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) override;
 	virtual bool matches_driver(const String &p_driver) override;
 };

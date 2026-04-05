@@ -30,23 +30,18 @@
 
 #pragma once
 
-#include "plugin_config_apple_embedded.h"
-
 #include "core/config/project_settings.h"
-#include "core/io/file_access.h"
-#include "core/io/image_loader.h"
-#include "core/io/marshalls.h"
-#include "core/io/resource_saver.h"
-#include "core/io/zip_io.h"
-#include "core/os/os.h"
+#include "core/io/dir_access.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/export/editor_export_platform.h"
-#include "editor/settings/editor_settings.h"
-#include "main/splash.gen.h"
+#include "editor/export/plugin_config_apple_embedded.h"
 #include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>
+
+#ifdef MACOS_ENABLED
 #include <functional>
+#endif
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
@@ -98,6 +93,13 @@ protected:
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 	}
 
+	void _stop_remote_device_poller_thread() {
+		quit_request.set();
+		if (check_for_changes_thread.is_started()) {
+			check_for_changes_thread.wait_to_finish();
+		}
+	}
+
 	int _execute(const String &p_path, const List<String> &p_arguments, std::function<void(const String &)> p_on_data);
 
 private:
@@ -106,21 +108,6 @@ private:
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(Ref<DirAccess> &p_da, FileHandler p_handler, void *p_userdata);
 	static Error _codesign(String p_file, void *p_userdata);
-
-	struct AppleEmbeddedConfigData {
-		String pkg_name;
-		String binary_name;
-		String plist_content;
-		String architectures;
-		String linker_flags;
-		String cpp_code;
-		String modules_buildfile;
-		String modules_fileref;
-		String modules_buildphase;
-		String modules_buildgrp;
-		Vector<String> capabilities;
-		bool use_swift_runtime;
-	};
 
 	struct ExportArchitecture {
 		String name;
@@ -143,6 +130,61 @@ private:
 	String _get_additional_plist_content();
 	String _get_linker_flags();
 	String _get_cpp_code();
+
+protected:
+	struct AppleEmbeddedConfigData {
+		String pkg_name;
+		String binary_name;
+		String plist_content;
+		String architectures;
+		String linker_flags;
+		String cpp_code;
+		String modules_buildfile;
+		String modules_fileref;
+		String modules_buildphase;
+		String modules_buildgrp;
+		Vector<String> capabilities;
+	};
+
+	struct CodeSigningDetails {
+		String debug_signing_identity;
+		String release_signing_identity;
+		String debug_provisioning_profile_uuid;
+		String release_provisioning_profile_uuid;
+		String debug_provisioning_profile_specifier;
+		String release_provisioning_profile_specifier;
+		bool debug_manual_signing = false;
+		bool release_manual_signing = false;
+
+		CodeSigningDetails(const Ref<EditorExportPreset> &p_preset) {
+			debug_signing_identity = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "Apple Development" : p_preset->get("application/code_sign_identity_debug");
+			release_signing_identity = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "Apple Distribution" : p_preset->get("application/code_sign_identity_release");
+
+			debug_provisioning_profile_uuid = p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_APPLE_PLATFORM_PROFILE_UUID_DEBUG).operator String();
+			release_provisioning_profile_uuid = p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_APPLE_PLATFORM_PROFILE_UUID_DEBUG).operator String();
+
+			debug_manual_signing = !debug_provisioning_profile_uuid.is_empty() || (debug_signing_identity != "Apple Development" && debug_signing_identity != "Apple Distribution");
+			release_manual_signing = !release_provisioning_profile_uuid.is_empty() || (release_signing_identity != "Apple Development" && release_signing_identity != "Apple Distribution");
+
+			debug_provisioning_profile_specifier = p_preset->get_or_env("application/provisioning_profile_specifier_debug", ENV_APPLE_PLATFORM_PROFILE_SPECIFIER_DEBUG).operator String();
+			debug_manual_signing |= !debug_provisioning_profile_specifier.is_empty();
+
+			release_provisioning_profile_specifier = p_preset->get_or_env("application/provisioning_profile_specifier_release", ENV_APPLE_PLATFORM_PROFILE_SPECIFIER_RELEASE).operator String();
+			release_manual_signing |= !release_provisioning_profile_specifier.is_empty();
+		}
+	};
+
+	struct IconInfo {
+		const char *preset_key;
+		const char *idiom;
+		const char *export_name;
+		const char *actual_size_side;
+		const char *scale;
+		const char *unscaled_size;
+		bool force_opaque;
+	};
+
+private:
 	void _fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const AppleEmbeddedConfigData &p_config, bool p_debug);
 
 	Vector<ExportArchitecture> _get_supported_architectures() const;
@@ -155,22 +197,14 @@ private:
 	Error _export_additional_assets(const Ref<EditorExportPreset> &p_preset, const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<AppleEmbeddedExportAsset> &r_exported_assets);
 	Error _copy_asset(const Ref<EditorExportPreset> &p_preset, const String &p_out_dir, const String &p_asset, const String *p_custom_file_name, bool p_is_framework, bool p_should_embed, Vector<AppleEmbeddedExportAsset> &r_exported_assets);
 	Error _export_additional_assets(const Ref<EditorExportPreset> &p_preset, const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<AppleEmbeddedExportAsset> &r_exported_assets);
-	Error _export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &dest_dir, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug);
+	Error _export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &p_dest_dir, const Vector<String> &p_module_libs, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug);
 
 	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_oneclick);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 
 protected:
-	struct IconInfo {
-		const char *preset_key;
-		const char *idiom;
-		const char *export_name;
-		const char *actual_size_side;
-		const char *scale;
-		const char *unscaled_size;
-		bool force_opaque;
-	};
+	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing);
 
 	void _blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p_src, bool p_rot);
 
@@ -195,6 +229,8 @@ protected:
 		r_features->push_back("mobile");
 		r_features->push_back("apple_embedded");
 	}
+
+	void _initialize(const char *p_platform_logo_svg, const char *p_run_icon_svg);
 
 public:
 	virtual Ref<Texture2D> get_logo() const override { return logo; }
@@ -246,7 +282,6 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
-	EditorExportPlatformAppleEmbedded(const char *p_platform_logo_svg, const char *p_run_icon_svg);
 	~EditorExportPlatformAppleEmbedded();
 
 	/// List the gdip files in the directory specified by the p_path parameter.

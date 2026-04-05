@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "debug_effects.h"
+
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 using namespace RendererRD;
 
@@ -102,7 +104,7 @@ void DebugEffects::_create_frustum_arrays() {
 			2, 6, 4, // FRT, NRT, NLT
 			// Bottom
 			5, 7, 1, // NLB, NRB, FLB,
-			7, 3, 1, // NRB, FRB, FLB
+			7, 3, 1 // NRB, FRB, FLB
 		};
 
 		// Create our index_array
@@ -136,7 +138,7 @@ void DebugEffects::_create_frustum_arrays() {
 			0, 4, // FLT - NLT
 			1, 5, // FLB - NLB
 			2, 6, // FRT - NRT
-			3, 7, // FRB - NRB
+			3, 7 // FRB - NRB
 		};
 
 		// Create our lines_array
@@ -161,17 +163,17 @@ DebugEffects::~DebugEffects() {
 
 	// Destroy vertex buffer and array.
 	if (frustum.vertex_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.vertex_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.vertex_buffer); // Array gets freed as dependency.
 	}
 
 	// Destroy index buffer and array,
 	if (frustum.index_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.index_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.index_buffer); // Array gets freed as dependency.
 	}
 
 	// Destroy lines buffer and array.
 	if (frustum.lines_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.lines_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.lines_buffer); // Array gets freed as dependency.
 	}
 
 	motion_vectors.shader.version_free(motion_vectors.shader_version);
@@ -181,7 +183,7 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	RID base = light_storage->light_instance_get_base_light(p_light);
-	ERR_FAIL_COND(light_storage->light_get_type(base) != RS::LIGHT_DIRECTIONAL);
+	ERR_FAIL_COND(light_storage->light_get_type(base) != RSE::LIGHT_DIRECTIONAL);
 
 	// Make sure our buffers and arrays exist.
 	_create_frustum_arrays();
@@ -191,12 +193,12 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	points.resize(8 * sizeof(float) * 3);
 
 	// Get info about our splits.
-	RS::LightDirectionalShadowMode shadow_mode = light_storage->light_directional_get_shadow_mode(base);
+	RSE::LightDirectionalShadowMode shadow_mode = light_storage->light_directional_get_shadow_mode(base);
 	bool overlap = light_storage->light_directional_get_blend_splits(base);
 	int splits = 1;
-	if (shadow_mode == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
+	if (shadow_mode == RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
 		splits = 4;
-	} else if (shadow_mode == RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS) {
+	} else if (shadow_mode == RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS) {
 		splits = 2;
 	}
 
@@ -212,7 +214,7 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	}
 	real_t min_distance = p_cam_projection.get_z_near();
 	real_t max_distance = p_cam_projection.get_z_far();
-	real_t shadow_max = RSG::light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
+	real_t shadow_max = RSG::light_storage->light_get_param(base, RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 	if (shadow_max > 0 && !is_orthogonal) {
 		max_distance = MIN(shadow_max, max_distance);
 	}
@@ -225,7 +227,7 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	real_t distances[5];
 	distances[0] = min_distance;
 	for (int i = 0; i < splits; i++) {
-		distances[i + 1] = min_distance + RSG::light_storage->light_get_param(base, RS::LightParam(RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET + i)) * range;
+		distances[i + 1] = min_distance + RSG::light_storage->light_get_param(base, RSE::LightParam(RSE::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET + i)) * range;
 	};
 	distances[splits] = max_distance;
 
@@ -346,7 +348,7 @@ void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_f
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	RD::Uniform u_source_velocity(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_velocity }));
 	RD::Uniform u_source_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ default_sampler, p_depth }));
 

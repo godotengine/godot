@@ -32,6 +32,9 @@
 
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
@@ -98,7 +101,6 @@ void PluginConfigDialog::_create_script_for_plugin(const String &p_plugin_path, 
 		scr->set_path(script_path, true);
 		ResourceSaver::save(scr);
 		p_config_file->save(p_plugin_path.path_join("plugin.cfg"));
-		emit_signal(SNAME("plugin_ready"), scr.ptr(), active_edit->is_pressed() ? _to_absolute_plugin_path(_get_subfolder()) : "");
 	}
 }
 
@@ -108,15 +110,15 @@ void PluginConfigDialog::_on_canceled() {
 
 void PluginConfigDialog::_on_required_text_changed() {
 	if (name_edit->get_text().is_empty()) {
-		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_PLUGIN, TTRC("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
 	}
 	if (subfolder_edit->is_visible()) {
 		if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
-			validation_panel->set_message(MSG_ID_SUBFOLDER, TTR("Subfolder name is not a valid folder name."), EditorValidationPanel::MSG_ERROR);
+			validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder name is not a valid folder name."), EditorValidationPanel::MSG_ERROR);
 		} else {
 			String path = "res://addons/" + _get_subfolder();
 			if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
-				validation_panel->set_message(MSG_ID_SUBFOLDER, TTR("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
+				validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
 			}
 		}
 	} else {
@@ -132,14 +134,8 @@ void PluginConfigDialog::_on_required_text_changed() {
 	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
 		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
 	}
-	if (active_edit->is_visible()) {
-		if (language->get_name() == "C#") {
-			active_edit->set_pressed(false);
-			active_edit->set_disabled(true);
-			validation_panel->set_message(MSG_ID_ACTIVE, TTR("C# doesn't support activating the plugin on creation because the project must be built first."), EditorValidationPanel::MSG_WARNING);
-		} else {
-			active_edit->set_disabled(false);
-		}
+	if (language->get_name() == "GDScript") {
+		validation_panel->set_message(MSG_ID_ENABLE_WARNINGS, TTRC("Consider enabling GDScript warnings for this plugin by adding an entry for it to the project setting Debug > GDScript > Warnings > Directory Rules."), EditorValidationPanel::MSG_INFO);
 	}
 }
 
@@ -236,7 +232,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	plugin_edit_hidden_controls.push_back(subfolder_lb);
 
 	subfolder_edit = memnew(LineEdit);
-	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
+	subfolder_edit->set_placeholder(U"\"my_plugin\" → res://addons/my_plugin");
 	subfolder_edit->set_tooltip_text(TTR("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
 	subfolder_edit->set_accessibility_name(TTRC("Subfolder:"));
 	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -312,23 +308,10 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	script_edit = memnew(LineEdit);
 	script_edit->set_tooltip_text(TTR("Optional. The name of the script file. If left empty, will default to the subfolder name."));
-	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
+	script_edit->set_placeholder(U"\"plugin.gd\" → res://addons/my_plugin/plugin.gd");
 	script_edit->set_accessibility_name(TTRC("Script Name:"));
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
-
-	// Activate now checkbox
-	Label *active_label = memnew(Label);
-	active_label->set_text(TTR("Activate now?"));
-	active_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	grid->add_child(active_label);
-	plugin_edit_hidden_controls.push_back(active_label);
-
-	active_edit = memnew(CheckBox);
-	active_edit->set_pressed(true);
-	active_edit->set_accessibility_name(TTRC("Activate now?"));
-	grid->add_child(active_edit);
-	plugin_edit_hidden_controls.push_back(active_edit);
 
 	Control *spacing = memnew(Control);
 	vbox->add_child(spacing);
@@ -336,10 +319,10 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	validation_panel = memnew(EditorValidationPanel);
 	vbox->add_child(validation_panel);
-	validation_panel->add_line(MSG_ID_PLUGIN, TTR("Plugin name is valid."));
-	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script extension is valid."));
-	validation_panel->add_line(MSG_ID_SUBFOLDER, TTR("Subfolder name is valid."));
-	validation_panel->add_line(MSG_ID_ACTIVE, "");
+	validation_panel->add_line(MSG_ID_PLUGIN, TTRC("Plugin name is valid."));
+	validation_panel->add_line(MSG_ID_SCRIPT, TTRC("Script extension is valid."));
+	validation_panel->add_line(MSG_ID_SUBFOLDER, TTRC("Subfolder name is valid."));
+	validation_panel->add_line(MSG_ID_ENABLE_WARNINGS);
 	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());
 

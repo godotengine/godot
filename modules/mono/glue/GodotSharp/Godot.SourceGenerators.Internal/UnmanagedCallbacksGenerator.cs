@@ -140,7 +140,7 @@ using Godot.NativeInterop;
                 source.Append("partial ");
                 source.Append(containingType.GetDeclarationKeyword());
                 source.Append(" ");
-                source.Append(containingType.NameWithTypeParameters());
+                source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                 source.Append("\n{\n");
             }
         }
@@ -319,7 +319,7 @@ using Godot.NativeInterop;
                 source.Append("partial ");
                 source.Append(containingType.GetDeclarationKeyword());
                 source.Append(" ");
-                source.Append(containingType.NameWithTypeParameters());
+                source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                 source.Append("\n{\n");
             }
         }

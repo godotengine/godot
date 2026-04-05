@@ -45,11 +45,21 @@
 template <typename K>
 struct hb_priority_queue_t
 {
- private:
+ public:
   typedef hb_pair_t<K, unsigned> item_t;
+
+ private:
   hb_vector_t<item_t> heap;
 
  public:
+
+  hb_priority_queue_t () = default;
+  hb_priority_queue_t (hb_vector_t<item_t>&& other) : heap (std::move (other))
+  {
+    // Heapify the vector.
+    for (int i = (heap.length / 2) - 1; i >= 0; i--)
+      bubble_down (i);
+  }
 
   void reset () { heap.resize (0); }
 

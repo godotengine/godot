@@ -31,13 +31,20 @@
 #include "import_dock.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_resource_preview.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/box_container.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -742,11 +749,17 @@ void ImportDock::initialize_import_options() const {
 
 ImportDock::ImportDock() {
 	singleton = this;
-	set_name("Import");
+	set_name(TTRC("Import"));
+	set_icon_name("FileAccess");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_import", TTRC("Open Import Dock")));
+	set_default_slot(EditorDock::DOCK_SLOT_LEFT_UR);
+
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
 
 	content = memnew(VBoxContainer);
 	content->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(content);
+	main_vb->add_child(content);
 	content->hide();
 
 	imported = memnew(Label);
@@ -771,9 +784,14 @@ ImportDock::ImportDock() {
 	preset->get_popup()->connect("index_pressed", callable_mp(this, &ImportDock::_preset_selected));
 	hb->add_child(preset);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	content->add_child(mc);
+
 	import_opts = memnew(EditorInspector);
-	content->add_child(import_opts);
-	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->add_child(import_opts);
+	import_opts->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
 	// Make it possible to display tooltips stored in the XML class reference.
@@ -815,11 +833,12 @@ ImportDock::ImportDock() {
 	select_a_resource->set_focus_mode(FOCUS_ACCESSIBILITY);
 	select_a_resource->set_text(TTRC("Select a resource file in the filesystem or in the inspector to adjust import settings."));
 	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
-	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	select_a_resource->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
+	select_a_resource->set_custom_minimum_size(Size2(120, 80) * EDSCALE);
 	select_a_resource->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_resource->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	select_a_resource->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	add_child(select_a_resource);
+	main_vb->add_child(select_a_resource);
 }
 
 ImportDock::~ImportDock() {

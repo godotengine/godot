@@ -42,14 +42,6 @@
 #define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column) - 1)
 #endif
 
-#ifndef SYMBOL_SEPARATOR
-#define SYMBOL_SEPARATOR "::"
-#endif
-
-#ifndef JOIN_SYMBOLS
-#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPARATOR + (name))
-#endif
-
 typedef HashMap<String, const LSP::DocumentSymbol *> ClassMembers;
 
 /**
@@ -134,8 +126,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	const LSP::DocumentSymbol *search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
 
-	Array member_completions;
-
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
@@ -143,6 +133,7 @@ public:
 	_FORCE_INLINE_ const Vector<LSP::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
+	Error parse_result;
 
 	Error get_left_function_call(const LSP::Position &p_position, LSP::Position &r_func_pos, int &r_arg_index) const;
 
@@ -166,5 +157,5 @@ public:
 	const Array &get_member_completions();
 	Dictionary generate_api() const;
 
-	Error parse(const String &p_code, const String &p_path);
+	void parse(const String &p_code, const String &p_path);
 };

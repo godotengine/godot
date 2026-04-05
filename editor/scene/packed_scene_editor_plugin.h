@@ -34,16 +34,14 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
+class PackedScene;
+
 class PackedSceneEditor : public VBoxContainer {
 	GDCLASS(PackedSceneEditor, VBoxContainer);
 
 	Ref<PackedScene> packed_scene;
-	Button *open_scene_button;
 
 	void _on_open_scene_pressed();
-
-protected:
-	void _notification(int p_what);
 
 public:
 	PackedSceneEditor(Ref<PackedScene> &p_packed_scene);

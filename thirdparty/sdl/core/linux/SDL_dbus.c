@@ -97,15 +97,18 @@ static bool LoadDBUSSyms(void)
 
 static void UnloadDBUSLibrary(void)
 {
+#ifdef SOWRAP_ENABLED // Godot build system constant
     if (dbus_handle) {
         SDL_UnloadObject(dbus_handle);
         dbus_handle = NULL;
     }
+#endif
 }
 
 static bool LoadDBUSLibrary(void)
 {
     bool result = true;
+#ifdef SOWRAP_ENABLED // Godot build system constant
     if (!dbus_handle) {
         dbus_handle = SDL_LoadObject(dbus_library);
         if (!dbus_handle) {
@@ -118,6 +121,9 @@ static bool LoadDBUSLibrary(void)
             }
         }
     }
+#else
+    result = LoadDBUSSyms();
+#endif
     return result;
 }
 

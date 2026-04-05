@@ -1,0 +1,7 @@
+GH-81582
+--------
+Validate extension JSON: API was removed: classes/GraphEdit/methods/is_arrange_nodes_button_hidden
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_arrange_nodes_button_hidden
+Validate extension JSON: API was removed: classes/GraphEdit/properties/arrange_nodes_button_hidden
+
+Make GraphEdit toolbar more customizable

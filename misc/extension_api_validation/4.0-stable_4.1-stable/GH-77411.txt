@@ -1,0 +1,5 @@
+GH-77411
+--------
+Validate extension JSON: Error: Field 'classes/Control/methods/_get_drag_data': is_const changed value in new API, from true to false.
+
+`const` was removed from virtual method, it may be necessary to adjust the constness of implementing methods.

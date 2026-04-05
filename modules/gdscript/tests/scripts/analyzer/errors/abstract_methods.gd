@@ -37,5 +37,8 @@ class Test4 extends AbstractClass:
 @abstract @abstract class DuplicateAbstract:
 	pass
 
+func holding_some_invalid_lambda(invalid_default_arg = func():):
+	var some_invalid_lambda = (func():)
+
 func test():
 	pass

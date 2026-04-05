@@ -33,16 +33,14 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
-#include "core/version.h"
 #include "editor/file_system/editor_file_system.h"
-#include "editor/gui/editor_toaster.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/resources/compressed_texture.h"
 
-void ResourceImporterTexture::_texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_channel) {
+void ResourceImporterTexture::_texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_channel) {
 	ERR_FAIL_COND(p_tex.is_null());
 
 	MutexLock lock(singleton->mutex);

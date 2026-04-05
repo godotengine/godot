@@ -35,6 +35,8 @@
 class MultiNodeEdit : public RefCounted {
 	GDCLASS(MultiNodeEdit, RefCounted);
 
+	friend class EditorQuickOpenDialog;
+
 	LocalVector<NodePath> nodes;
 	bool notify_property_list_changed_pending = false;
 	struct PLData {
@@ -42,7 +44,7 @@ class MultiNodeEdit : public RefCounted {
 		PropertyInfo info;
 	};
 
-	bool _set_impl(const StringName &p_name, const Variant &p_value, const String &p_field);
+	bool _set_impl(const StringName &p_name, const Variant &p_value, const String &p_field, bool p_undo_redo = true);
 	void _queue_notify_property_list_changed();
 	void _notify_property_list_changed();
 
@@ -74,8 +76,12 @@ public:
 		if (get_node_count() != p_other->get_node_count()) {
 			return false;
 		}
-		for (int i = 0; i < get_node_count(); i++) {
-			if (!nodes.has(p_other->get_node(i))) {
+		HashSet<NodePath> nodes_in_selection;
+		for (const NodePath &node : p_other->nodes) {
+			nodes_in_selection.insert(node);
+		}
+		for (const NodePath &node : nodes) {
+			if (!nodes_in_selection.has(node)) {
 				return false;
 			}
 		}

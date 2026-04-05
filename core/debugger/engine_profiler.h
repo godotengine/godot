@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 
 class EngineProfiler : public RefCounted {
@@ -55,6 +55,5 @@ public:
 	GDVIRTUAL1(_add_frame, Array);
 	GDVIRTUAL4(_tick, double, double, double, double);
 
-	EngineProfiler() {}
 	virtual ~EngineProfiler();
 };

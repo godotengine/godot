@@ -5,6 +5,8 @@ extends Node
 const PreloadedGlobalClass = preload("./export_variable_global.notest.gd")
 const PreloadedUnnamedClass = preload("./export_variable_unnamed.notest.gd")
 
+enum CustomEnum {A, B, C}
+
 # Built-in types.
 @export var test_weak_int = 1
 @export var test_hard_int: int = 2
@@ -16,8 +18,21 @@ const PreloadedUnnamedClass = preload("./export_variable_unnamed.notest.gd")
 @export_node_path("Sprite2D", "Sprite3D", "Control", "Node") var test_node_path := ^"hello"
 
 # Enums.
-@export var test_side: Side
-@export var test_atm: AutoTranslateMode
+@export var test_side_weak = SIDE_LEFT
+@export var test_atm_weak = AUTO_TRANSLATE_MODE_INHERIT
+@export var test_custom_enum_weak = CustomEnum.A
+
+@export var test_side_hard: Side
+@export var test_atm_hard: AutoTranslateMode
+@export var test_custom_enum_hard: CustomEnum
+
+var test_side_weak_no_export = SIDE_LEFT
+var test_atm_weak_no_export = AUTO_TRANSLATE_MODE_INHERIT
+var test_custom_enum_weak_no_export = CustomEnum.A
+
+var test_side_hard_no_export: Side
+var test_atm_hard_no_export: AutoTranslateMode
+var test_custom_enum_hard_no_export: CustomEnum
 
 # Resources and nodes.
 @export var test_image: Image

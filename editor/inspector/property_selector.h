@@ -33,6 +33,7 @@
 #include "scene/gui/dialogs.h"
 
 class EditorHelpBit;
+class FilterLineEdit;
 class LineEdit;
 class Tree;
 class TreeItem;
@@ -40,11 +41,10 @@ class TreeItem;
 class PropertySelector : public ConfirmationDialog {
 	GDCLASS(PropertySelector, ConfirmationDialog);
 
-	LineEdit *search_box = nullptr;
+	FilterLineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
 
 	void _text_changed(const String &p_newtext);
-	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _update_search();
 	void _confirmed();
 	void _item_selected();
@@ -54,7 +54,7 @@ class PropertySelector : public ConfirmationDialog {
 
 	bool properties = false;
 	String selected;
-	Variant::Type type;
+	Variant::Type type = Variant::NIL;
 	String base_type;
 	ObjectID script;
 	Object *instance = nullptr;

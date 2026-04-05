@@ -199,7 +199,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     hb_glyph_info_t *info = buffer->info;
     for (unsigned int i = 1; i < count; i++)
       if (HB_UNICODE_GENERAL_CATEGORY_IS_MARK (unicode->general_category (info[i].codepoint)))
-	buffer->merge_clusters (i - 1, i + 1);
+	buffer->merge_grapheme_clusters (i - 1, i + 1);
   }
 
   hb_vector_t<range_record_t> range_records;

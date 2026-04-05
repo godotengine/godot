@@ -116,6 +116,20 @@
 			@"iPad14,4", // iPad Pro 11 inch 6th Gen
 			@"iPad14,5", // iPad Pro 12.9 inch 6th Gen
 			@"iPad14,6", // iPad Pro 12.9 inch 6th Gen
+			@"iPad16,3", // iPad Pro 11-inch M4
+			@"iPad16,4", // iPad Pro 11-inch M4
+			@"iPad16,5", // iPad Pro 13-inch M4
+			@"iPad16,6", // iPad Pro 13-inch M4
+			@"iPad15,3", // iPad Air M3
+			@"iPad15,4", // iPad Air M3
+			@"iPad15,5", // iPad Air M3
+			@"iPad15,6", // iPad Air M3
+			@"iPad15,7", // iPad 11th Gen
+			@"iPad15,8", // iPad 11th Gen
+			@"iPad17,1", // iPad Pro 11-inch M5
+			@"iPad17,2", // iPad Pro 11-inch M5
+			@"iPad17,3", // iPad Pro 13-inch M5
+			@"iPad17,4", // iPad Pro 13-inch M5
 		] : @264,
 		@[
 			@"iPhone3,1", // iPhone 4
@@ -154,6 +168,12 @@
 			@"iPod5,1", // iPod 5th Gen
 			@"iPod7,1", // iPod 6th Gen
 			@"iPod9,1", // iPod 7th Gen
+			@"iPad14,8", // iPad Air 11-inch M2
+			@"iPad14,9", // iPad Air 11-inch M2
+			@"iPad14,10", // iPad Air 13-inch M2
+			@"iPad14,11", // iPad Air 13-inch M2
+			@"iPad16,1", // iPad mini A17 Pro
+			@"iPad16,2", // iPad mini A17 Pro
 		] : @326,
 		@[
 			@"iPhone7,1", // iPhone 6 Plus
@@ -183,6 +203,19 @@
 			@"iPhone14,7", // iPhone 14
 			@"iPhone15,2", // iPhone 14 Pro
 			@"iPhone15,3", // iPhone 14 Pro Max
+			@"iPhone15,4", // iPhone 15
+			@"iPhone15,5", // iPhone 15 Plus
+			@"iPhone16,1", // iPhone 15 Pro
+			@"iPhone16,2", // iPhone 15 Pro Max
+			@"iPhone17,1", // iPhone 16 Pro
+			@"iPhone17,2", // iPhone 16 Pro Max
+			@"iPhone17,3", // iPhone 16
+			@"iPhone17,4", // iPhone 16 Plus
+			@"iPhone17,5", // iPhone 16e
+			@"iPhone18,1", // iPhone 17 Pro
+			@"iPhone18,2", // iPhone 17 Pro Max
+			@"iPhone18,3", // iPhone 17
+			@"iPhone18,4", // iPhone Air
 		] : @460,
 		@[
 			@"iPhone13,1", // iPhone 12 Mini

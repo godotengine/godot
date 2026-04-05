@@ -34,9 +34,8 @@
 #include "mono_gd/gd_mono.h"
 
 #include "core/doc_data.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
@@ -512,10 +511,6 @@ public:
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
-	Script *create_script() const override;
-#ifndef DISABLE_DEPRECATED
-	virtual bool has_named_classes() const override { return false; }
-#endif
 	bool supports_builtin_mode() const override;
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;
@@ -586,19 +581,4 @@ public:
 
 	CSharpLanguage();
 	~CSharpLanguage();
-};
-
-class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
-public:
-	Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	void get_recognized_extensions(List<String> *p_extensions) const override;
-	bool handles_type(const String &p_type) const override;
-	String get_resource_type(const String &p_path) const override;
-};
-
-class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {
-public:
-	Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
-	bool recognize(const Ref<Resource> &p_resource) const override;
 };

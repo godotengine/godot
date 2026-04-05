@@ -74,6 +74,10 @@ void RegisterTypesInternal(uint64 inVersionID)
 	{
 		Trace("Version mismatch, make sure you compile the client code with the same Jolt version and compiler definitions!");
 		uint64 mismatch = JPH_VERSION_ID ^ inVersionID;
+		if (mismatch & 0xffffff)
+			Trace("Client reported version %d.%d.%d, library version is %d.%d.%d.",
+				(inVersionID >> 16) & 0xff, (inVersionID >> 8) & 0xff, inVersionID & 0xff,
+				JPH_VERSION_MAJOR, JPH_VERSION_MINOR, JPH_VERSION_PATCH);
 		auto check_bit = [mismatch](int inBit, const char *inLabel) { if (mismatch & (uint64(1) << (inBit + 23))) Trace("Mismatching define %s.", inLabel); };
 		check_bit(1, "JPH_DOUBLE_PRECISION");
 		check_bit(2, "JPH_CROSS_PLATFORM_DETERMINISTIC");

@@ -30,6 +30,10 @@
 
 #include "openxr_binding_modifier_editor.h"
 
+#include "../action_map/openxr_interaction_profile_metadata.h"
+
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "scene/gui/option_button.h"
 
@@ -273,7 +277,7 @@ OpenXRBindingModifierEditor::OpenXRBindingModifierEditor() {
 	main_vb->add_child(editor_inspector);
 }
 
-void OpenXRBindingModifierEditor::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier) {
+void OpenXRBindingModifierEditor::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRBindingModifier> &p_binding_modifier) {
 	ERR_FAIL_NULL(binding_modifier_title);
 	ERR_FAIL_NULL(editor_inspector);
 

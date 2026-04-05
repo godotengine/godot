@@ -32,7 +32,7 @@
 
 #ifdef COREAUDIO_ENABLED
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #import <AudioUnit/AudioUnit.h>
 #ifdef MACOS_ENABLED

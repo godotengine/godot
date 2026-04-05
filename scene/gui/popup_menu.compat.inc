@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "popup_menu.h"
+
+#include "core/object/class_db.h"
+
 void PopupMenu::_add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id, bool p_global) {
 	add_shortcut(p_shortcut, p_id, p_global, false);
 }
@@ -78,4 +82,4 @@ void PopupMenu::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_system_menu_root"), &PopupMenu::_get_system_menu_root_compat_87452);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

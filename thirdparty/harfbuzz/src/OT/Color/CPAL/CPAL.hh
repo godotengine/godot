@@ -307,6 +307,7 @@ struct CPAL
       if (first_color_to_layer_index.has (first_color_record_idx)) continue;
 
       first_color_index_for_layer.push (first_color_record_idx);
+      if (unlikely (!c->serializer->propagate_error (first_color_index_for_layer))) return_trace (false);
       first_color_to_layer_index.set (first_color_record_idx,
                                       first_color_index_for_layer.length - 1);
     }

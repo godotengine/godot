@@ -35,23 +35,35 @@
 class OptimizedTranslation : public Translation {
 	GDCLASS(OptimizedTranslation, Translation);
 
-	//this translation uses a sort of modified perfect hash algorithm
-	//it requires hashing strings twice and then does a binary search,
-	//so it's slower, but at the same time it has an extremely high chance
-	//of catching untranslated strings
+	// This translation uses a sort of modified perfect hash algorithm
+	// it requires hashing strings twice and then does a binary search,
+	// so it's slower, but at the same time it has an extremely high chance
+	// of catching untranslated strings.
 
-	//load/store friendly types
+	// `hash_table[hash(0, text)]` produces a `bucket_table` index or 0xFFFFFFFF if not found.
 	Vector<int> hash_table;
+
+	// Continuous `Bucket`s in a flat layout.
 	Vector<int> bucket_table;
+
+	// Data for translated strings, UTF-8 encoded, either compressed or uncompressed.
 	Vector<uint8_t> strings;
 
 	struct Bucket {
+		// Number of `Elem` objects at `elem`.
 		int size;
+
+		// Use `hash(func, text)` to generate the unique `Elem::key` in this bucket.
 		uint32_t func;
 
 		struct Elem {
+			// Unique key for the text.
 			uint32_t key;
+
+			// Used to index into `strings`.
 			uint32_t str_offset;
+
+			// The string is not compressed if `comp_size` equals `uncomp_size`.
 			uint32_t comp_size;
 			uint32_t uncomp_size;
 		};
@@ -71,6 +83,8 @@ class OptimizedTranslation : public Translation {
 		return d;
 	}
 
+	virtual Vector<String> _get_message_list() const override;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -83,5 +97,6 @@ public:
 	virtual Vector<String> get_translated_message_list() const override;
 	void generate(const Ref<Translation> &p_from);
 
-	OptimizedTranslation() {}
+	virtual void get_message_list(List<StringName> *r_messages) const override;
+	virtual int get_message_count() const override;
 };

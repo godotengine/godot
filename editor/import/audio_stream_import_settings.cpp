@@ -30,11 +30,13 @@
 
 #include "audio_stream_import_settings.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "servers/rendering/rendering_server.h"
 
 AudioStreamImportSettingsDialog *AudioStreamImportSettingsDialog::singleton = nullptr;
 
@@ -226,6 +228,28 @@ void AudioStreamImportSettingsDialog::_preview_zoom_offset_changed(double) {
 	_indicator->queue_redraw();
 }
 
+void AudioStreamImportSettingsDialog::_reset_master() {
+	master_state.bypass = AudioServer::get_singleton()->is_bus_bypassing_effects(0);
+	master_state.mute = AudioServer::get_singleton()->is_bus_mute(0);
+	master_state.volume = AudioServer::get_singleton()->get_bus_volume_db(0);
+
+	AudioServer::get_singleton()->set_bus_bypass_effects(0, true); // We don't want effects interfering.
+	AudioServer::get_singleton()->set_bus_mute(0, false);
+	AudioServer::get_singleton()->set_bus_volume_db(0, 0);
+
+	// Prevent the modifications from being saved.
+	AudioServer::get_singleton()->set_edited(false);
+}
+
+void AudioStreamImportSettingsDialog::_load_master_state() {
+	AudioServer::get_singleton()->set_bus_bypass_effects(0, master_state.bypass);
+	AudioServer::get_singleton()->set_bus_mute(0, master_state.mute);
+	AudioServer::get_singleton()->set_bus_volume_db(0, master_state.volume);
+
+	// Prevent the modifications from being saved.
+	AudioServer::get_singleton()->set_edited(false);
+}
+
 void AudioStreamImportSettingsDialog::_audio_changed() {
 	if (!is_visible()) {
 		return;
@@ -237,12 +261,16 @@ void AudioStreamImportSettingsDialog::_audio_changed() {
 
 void AudioStreamImportSettingsDialog::_play() {
 	if (_player->is_playing()) {
+		_load_master_state();
+
 		// '_pausing' variable indicates that we want to pause the audio player, not stop it. See '_on_finished()'.
 		_pausing = true;
 		_player->stop();
 		_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	} else {
+		_reset_master();
+
 		_player->play(_current);
 		_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 		set_process(true);
@@ -250,6 +278,8 @@ void AudioStreamImportSettingsDialog::_play() {
 }
 
 void AudioStreamImportSettingsDialog::_stop() {
+	_load_master_state();
+
 	_player->stop();
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	_current = 0;

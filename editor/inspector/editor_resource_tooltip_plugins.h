@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "scene/gui/control.h"
 
@@ -41,7 +41,7 @@ class VBoxContainer;
 class EditorResourceTooltipPlugin : public RefCounted {
 	GDCLASS(EditorResourceTooltipPlugin, RefCounted);
 
-	void _thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
+	void _thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_trect_id);
 
 protected:
 	static void _bind_methods();

@@ -248,12 +248,48 @@ _GSUBGPOS_find_duplicate_features (const OT::GSUBGPOS &g,
   }
 }
 
+static void
+remap_feature_indices (const hb_set_t &feature_indices,
+                       const hb_map_t &duplicate_feature_map,
+                       const hb_hashmap_t<unsigned, hb_pair_t<const void*, const void*>>& catch_all_record_idx_feature_map,
+                       hb_map_t       *mapping, /* OUT */
+                       hb_map_t       *mapping_w_duplicates /* OUT */)
+{
+  unsigned i = 0;
+  for (const auto _ : feature_indices)
+  {
+    // retain those features in case we need to insert a catch-all record to reinstate the old features
+    if (catch_all_record_idx_feature_map.has (_))
+    {
+      mapping->set (_, i);
+      mapping_w_duplicates->set (_, i);
+      i++;
+    }
+    else
+    {
+      uint32_t f_idx = duplicate_feature_map.get (_);
+      uint32_t *new_idx;
+      if (mapping-> has (f_idx, &new_idx))
+      {
+        mapping_w_duplicates->set (_, *new_idx);
+      }
+      else
+      {
+        mapping->set (_, i);
+        mapping_w_duplicates->set (_, i);
+        i++;
+      }
+    }
+  }
+}
+
 template <typename T>
 static void
 _closure_glyphs_lookups_features (hb_subset_plan_t   *plan,
 				 hb_set_t	     *gids_to_retain,
 				 hb_map_t	     *lookups,
 				 hb_map_t	     *features,
+				 hb_map_t	     *features_w_duplicates,
 				 script_langsys_map *langsys_map,
 				 hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *feature_record_cond_idx_map,
 				 hb_hashmap_t<unsigned, const OT::Feature*> *feature_substitutes_map,
@@ -291,7 +327,7 @@ _closure_glyphs_lookups_features (hb_subset_plan_t   *plan,
 
   feature_indices.clear ();
   table->prune_langsys (&duplicate_feature_map, &plan->layout_scripts, langsys_map, &feature_indices);
-  remap_indexes (&feature_indices, features);
+  remap_feature_indices (feature_indices, duplicate_feature_map, catch_all_record_idx_feature_map, features, features_w_duplicates);
 
   table.destroy ();
 }
@@ -323,6 +359,7 @@ layout_populate_gids_to_retain (hb_subset_plan_t* plan,
         &plan->_glyphset_gsub,
         &plan->gsub_lookups,
         &plan->gsub_features,
+        &plan->gsub_features_w_duplicates,
         &plan->gsub_langsys,
         &plan->gsub_feature_record_cond_idx_map,
         &plan->gsub_feature_substitutes_map,
@@ -335,6 +372,7 @@ layout_populate_gids_to_retain (hb_subset_plan_t* plan,
         &plan->_glyphset_gsub,
         &plan->gpos_lookups,
         &plan->gpos_features,
+        &plan->gpos_features_w_duplicates,
         &plan->gpos_langsys,
         &plan->gpos_feature_record_cond_idx_map,
         &plan->gpos_feature_substitutes_map,

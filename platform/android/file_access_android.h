@@ -35,7 +35,6 @@
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <jni.h>
-#include <cstdio>
 
 class FileAccessAndroid : public FileAccess {
 	GDSOFTCLASS(FileAccessAndroid, FileAccess);

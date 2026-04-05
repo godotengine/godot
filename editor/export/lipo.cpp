@@ -30,7 +30,7 @@
 
 #include "lipo.h"
 
-#include "macho.h"
+#include "editor/export/macho.h"
 
 bool LipO::is_lipo(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);

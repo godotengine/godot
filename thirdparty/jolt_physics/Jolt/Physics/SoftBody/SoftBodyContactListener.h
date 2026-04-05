@@ -44,11 +44,11 @@ public:
 	/// @return Whether the contact should be processed or not.
 	virtual SoftBodyValidateResult	OnSoftBodyContactValidate([[maybe_unused]] const Body &inSoftBody, [[maybe_unused]] const Body &inOtherBody, [[maybe_unused]] SoftBodyContactSettings &ioSettings) { return SoftBodyValidateResult::AcceptContact; }
 
-	/// Called after all contact points for a soft body have been handled. You only receive one callback per body pair per simulation step and can use inManifold to iterate through all contacts.
+	/// Called after all contact points for a soft body have been handled.
 	/// Note that this callback is called when all bodies are locked, so don't use any locking functions!
 	/// You will receive a single callback for a soft body per simulation step for performance reasons, this callback will apply to all vertices in the soft body.
 	/// @param inSoftBody The soft body that collided. It is safe to access this as the soft body is only updated on the current thread.
-	/// @param inManifold The manifold that describes the contact surface between the two bodies. Other bodies may be modified by other threads during this callback.
+	/// @param inManifold The manifold that describes which vertices collide and with what body they collide. Other bodies may be modified by other threads during this callback.
 	virtual void					OnSoftBodyContactAdded([[maybe_unused]] const Body &inSoftBody, const SoftBodyManifold &inManifold) { /* Do nothing */ }
 };
 

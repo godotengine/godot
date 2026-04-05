@@ -315,6 +315,10 @@ extern int ZEXPORT unzGetCurrentFileInfo(unzFile file,
             This is the Central-header version of the extra field
   if szComment!=NULL, the comment string of the file will be copied in szComment
             (commentBufferSize is the size of the buffer)
+  The file name and comment will be zero-terminated if there is room in the
+  provided buffer. Otherwise the buffer will contain as much as will fit. If at
+  least 65537 bytes of room is provided, then the result will always be
+  complete and zero-terminated.
 */
 
 

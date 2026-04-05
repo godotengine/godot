@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectBodyState2DExtension" inherits="PhysicsDirectBodyState2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsDirectBodyState2DExtension" inherits="PhysicsDirectBodyState2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides virtual methods that can be overridden to create custom [PhysicsDirectBodyState2D] implementations.
 	</brief_description>
@@ -92,6 +92,16 @@
 			<return type="Vector2" />
 			<description>
 				Implement to override the behavior of [member PhysicsDirectBodyState2D.center_of_mass_local] and its respective getter.
+			</description>
+		</method>
+		<method name="_get_collision_layer" qualifiers="virtual required const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_collision_mask" qualifiers="virtual required const">
+			<return type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="_get_constant_force" qualifiers="virtual required const">
@@ -267,6 +277,18 @@
 			<param index="0" name="velocity" type="float" />
 			<description>
 				Implement to override the behavior of [member PhysicsDirectBodyState2D.angular_velocity] and its respective setter.
+			</description>
+		</method>
+		<method name="_set_collision_layer" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_collision_mask" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="mask" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="_set_constant_force" qualifiers="virtual required">

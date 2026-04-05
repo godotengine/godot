@@ -31,19 +31,35 @@
 #include "input_event_configuration_dialog.h"
 
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
 void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
-		event = p_event;
-		original_event = p_original_event;
+		// If there is already a binding set, let enter or escape confirm/cancel the popup.
+		if (event.is_valid()) {
+			Ref<InputEventKey> current_key = p_event;
+			// Without this is_visible() check, the gui would not open if the already bound
+			// keybind was escape.
+			if (current_key.is_valid() && is_visible()) {
+				if (current_key->get_physical_keycode() == Key::ENTER) {
+					_ok_pressed();
+					return;
+				}
+				if (current_key->get_physical_keycode() == Key::ESCAPE) {
+					_cancel_pressed();
+					return;
+				}
+			}
+		}
 
 		// If the event is changed to something which is not the same as the listener,
 		// clear out the event from the listener text box to avoid confusion.
@@ -51,9 +67,23 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		if (listener_event.is_valid() && !listener_event->is_match(p_event)) {
 			event_listener->clear_event();
 		}
-
+		event = p_event;
+		original_event = p_original_event;
 		// Update Label
 		event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
+
+		bool exists = false;
+		for (const Variant &v : action_events) {
+			Ref<InputEvent> ie = v;
+			if (ie.is_null()) {
+				continue;
+			} else if (ie->is_match(p_event)) {
+				exists = true;
+				break;
+			}
+		}
+		event_exists->set_visible(exists);
+		get_ok_button()->set_disabled(exists);
 
 		Ref<InputEventKey> k = p_event;
 		Ref<InputEventMouseButton> mb = p_event;
@@ -194,6 +224,8 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		original_event = Ref<InputEvent>();
 		event_listener->clear_event();
 		event_as_text->set_text(TTRC("No Event Configured"));
+		event_exists->set_visible(false);
+		get_ok_button()->set_disabled(false);
 
 		additional_options_container->hide();
 		input_list_tree->deselect_all();
@@ -527,10 +559,8 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		} break;
 		case INPUT_JOY_BUTTON: {
 			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
-			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx);
-
 			// Maintain selected device
-			jb->set_device(_get_current_device());
+			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx, _get_current_device());
 
 			_set_event(jb, jb, false);
 		} break;
@@ -585,6 +615,7 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.joypad_axis = get_editor_theme_icon(SNAME("JoyAxis"));
 
 			event_as_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			event_exists->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			_update_input_list();
 		} break;
@@ -597,8 +628,20 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 	}
 }
 
-void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name) {
+void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name, const Dictionary &p_current_action) {
+	action_events = p_current_action.get("events", Array()).duplicate();
+
 	if (p_event.is_valid()) {
+		// Here we remove one instance of the InputEvent being edited so it doesn't immediately get flagged as duplicated in the dialog.
+		for (int i = 0; i < action_events.size(); i++) {
+			Ref<InputEvent> ie = action_events[i];
+			if (ie.is_null()) {
+				continue;
+			} else if (ie->is_match(p_event)) {
+				action_events.remove_at(i);
+				break;
+			}
+		}
 		_set_event(p_event->duplicate(), p_event->duplicate());
 	} else {
 		// Clear Event
@@ -679,12 +722,17 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	input_list_search->connect(SceneStringName(text_changed), callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
 	manual_vbox->add_child(input_list_search);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	manual_vbox->add_child(mc);
+
 	input_list_tree = memnew(Tree);
 	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	input_list_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
 	input_list_tree->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
-	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	manual_vbox->add_child(input_list_tree);
+	mc->add_child(input_list_tree);
 
 	input_list_tree->set_hide_root(true);
 	input_list_tree->set_columns(1);
@@ -758,7 +806,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	location_container = memnew(HBoxContainer);
 	location_container->hide();
 
-	location_container->add_child(memnew(Label(TTRC("Physical location"))));
+	location_container->add_child(memnew(Label(TTRC("Physical Location"))));
 
 	key_location = memnew(OptionButton);
 	key_location->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -768,10 +816,15 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_location->add_item(String(), (int)KeyLocation::LEFT);
 	key_location->add_item(String(), (int)KeyLocation::RIGHT);
 	key_location->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
-	key_location->set_accessibility_name(TTRC("Physical location"));
+	key_location->set_accessibility_name(TTRC("Physical Location"));
 
 	location_container->add_child(key_location);
 	additional_options_container->add_child(location_container);
 
 	main_vbox->add_child(additional_options_container);
+
+	event_exists = memnew(Label(TTRC("Error: This action already contains this input event.")));
+	event_exists->set_theme_type_variation("HeaderSmall");
+	event_exists->set_visible(false);
+	main_vbox->add_child(event_exists);
 }

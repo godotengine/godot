@@ -1,0 +1,4 @@
+GDTEST_RUNTIME_ERROR
+>> ERROR: Index p_index = 4 is out of bounds (p_instance->size() = 3).
+>> ERROR: Index p_index = 4 is out of bounds (p_instance->size() = 3).
+>> SCRIPT ERROR at runtime/errors/array_bad_index.gd:5 on test(): Out of bounds get index '4' (on base: 'Array')

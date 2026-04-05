@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_properties.h"
 
 class EditorSpinSlider;
 class TextureButton;
@@ -46,13 +47,11 @@ class EditorPropertyVectorN : public EditorProperty {
 	Vector<EditorSpinSlider *> spin_sliders;
 	TextureButton *linked = nullptr;
 	Vector<double> ratio;
-	bool is_grabbed = false;
 
 	bool radians_as_degrees = false;
 
 	void _update_ratio();
 	void _store_link(bool p_linked);
-	void _grab_changed(bool p_grab);
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -60,8 +59,9 @@ protected:
 	void _notification(int p_what);
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step = 1.0, bool p_hide_slider = true, bool p_link = false, const String &p_suffix = String(), bool p_radians_as_degrees = false, bool p_is_int = false);
+	void setup(const EditorPropertyRangeHint &p_range_hint, bool p_link = false, bool p_is_int = false);
 	EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, bool p_horizontal);
 };
 

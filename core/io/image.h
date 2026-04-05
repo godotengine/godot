@@ -55,8 +55,8 @@ typedef Ref<Image> (*ScalableImageMemLoadFunc)(const uint8_t *p_data, int p_size
 typedef Error (*SaveWebPFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 typedef Vector<uint8_t> (*SaveWebPBufferFunc)(const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 
-typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
-typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale);
+typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
+typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
 
 typedef Error (*SaveDDSFunc)(const String &p_path, const Ref<Image> &p_img);
 typedef Vector<uint8_t> (*SaveDDSBufferFunc)(const Ref<Image> &p_img);
@@ -111,6 +111,14 @@ public:
 		FORMAT_ASTC_4x4_HDR,
 		FORMAT_ASTC_8x8,
 		FORMAT_ASTC_8x8_HDR,
+		FORMAT_R16,
+		FORMAT_RG16,
+		FORMAT_RGB16,
+		FORMAT_RGBA16,
+		FORMAT_R16I,
+		FORMAT_RG16I,
+		FORMAT_RGB16I,
+		FORMAT_RGBA16I,
 		FORMAT_MAX
 	};
 
@@ -211,6 +219,7 @@ public:
 	static inline ScalableImageMemLoadFunc _svg_scalable_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _ktx_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _dds_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _exr_mem_loader_func = nullptr;
 
 	// External VRAM compression function pointers.
 
@@ -248,6 +257,12 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Vector<uint8_t> _save_exr_to_buffer_bind_compat_117800(bool p_grayscale = false) const;
+	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
+	static void _bind_compatibility_methods();
+#endif
+
 private:
 	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
@@ -282,10 +297,14 @@ private:
 	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
 	static void average_4_half(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
 	static void average_4_rgbe9995(uint32_t &p_out, const uint32_t &p_a, const uint32_t &p_b, const uint32_t &p_c, const uint32_t &p_d);
+	static void average_4_uint16(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
+	static void average_4_rgba4444(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
+	static void average_4_rgb565(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
+
 	static void renormalize_uint8(uint8_t *p_rgb);
 	static void renormalize_float(float *p_rgb);
 	static void renormalize_half(uint16_t *p_rgb);
-	static void renormalize_rgbe9995(uint32_t *p_rgb);
+	static void renormalize_uint16(uint16_t *p_rgb);
 
 public:
 	int get_width() const;
@@ -348,9 +367,9 @@ public:
 	Error save_dds(const String &p_path) const;
 	Vector<uint8_t> save_png_to_buffer() const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
-	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false) const;
+	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Vector<uint8_t> save_dds_to_buffer() const;
-	Error save_exr(const String &p_path, bool p_grayscale = false) const;
+	Error save_exr(const String &p_path, bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
@@ -363,8 +382,6 @@ public:
 	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data); // Import an image of a specific size and format from a byte vector.
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1); // Import either a png or jpg from a pointer.
 	Image(const char **p_xpm); // Import an XPM image.
-
-	~Image() {}
 
 	AlphaMode detect_alpha() const;
 	bool is_invisible() const;
@@ -419,6 +436,7 @@ public:
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_ktx_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_exr_from_buffer(const Vector<uint8_t> &p_array);
 
 	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
 	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);

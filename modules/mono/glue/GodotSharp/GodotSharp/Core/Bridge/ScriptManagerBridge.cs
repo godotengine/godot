@@ -250,7 +250,8 @@ namespace Godot.Bridge
                 }
                 if (!foundGlobalBaseScript)
                 {
-                    *outBaseType = Marshaling.ConvertStringToNative(native.Name);
+                    string nativeName = native.GetCustomAttribute<GodotClassNameAttribute>(false)?.Name ?? native.Name;
+                    *outBaseType = Marshaling.ConvertStringToNative(nativeName);
                 }
             }
 
@@ -361,9 +362,12 @@ namespace Godot.Bridge
             {
                 if (_pathTypeBiMap.Paths.Count > 0)
                 {
-                    string[] scriptPaths = _pathTypeBiMap.Paths.ToArray();
-                    using godot_packed_string_array scriptPathsNative = Marshaling.ConvertSystemArrayToNativePackedStringArray(scriptPaths);
-                    NativeFuncs.godotsharp_internal_editor_file_system_update_files(scriptPathsNative);
+                    Callable.From(() =>
+                    {
+                        string[] scriptPaths = _pathTypeBiMap.Paths.ToArray();
+                        using godot_packed_string_array scriptPathsNative = Marshaling.ConvertSystemArrayToNativePackedStringArray(scriptPaths);
+                        NativeFuncs.godotsharp_internal_editor_file_system_update_files(scriptPathsNative);
+                    }).CallDeferred();
                 }
             }
         }

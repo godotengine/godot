@@ -1,0 +1,14 @@
+GH-112539
+---------
+Validate extension JSON: Error: Field 'builtin_classes/PackedByteArray/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedColorArray/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat32Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat64Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt32Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt64Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedStringArray/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector2Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/bsearch': is_const changed value in new API, from false to true.
+
+bsearch method made const. Compatibility methods registered.

@@ -37,15 +37,15 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_importer.h"
+#include "core/io/xml_parser.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/translation_server.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
-
-// Used for a hack preserving Mono properties on non-Mono builds.
-#include "modules/modules_enabled.gen.h" // For mono.
 
 static String _get_indent(const String &p_text) {
 	String indent;
@@ -71,7 +71,7 @@ static String _get_indent(const String &p_text) {
 static String _translate_doc_string(const String &p_text) {
 	const String indent = _get_indent(p_text);
 	const String message = p_text.dedent().strip_edges();
-	const String translated = TranslationServer::get_singleton()->doc_translate(message, "");
+	const String translated = TranslationServer::get_singleton()->get_doc_domain()->translate(message, StringName());
 	// No need to restore stripped edges because they'll be stripped again later.
 	return translated.indent(indent);
 }
@@ -382,7 +382,18 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	if (ClassDB::can_instantiate(p_class_name) && !ClassDB::is_virtual(p_class_name)) { // Keep this condition in sync with ClassDB::class_get_default_property_value.
 		default_value = ClassDB::class_get_default_property_value(p_class_name, p_property_name, &r_default_value_valid);
 	} else {
-		// Cannot get default value of classes that can't be instantiated
+		// Cannot get default value of classes that can't be instantiated.
+
+		// Let's see if the abstract class has an explicitly set default.
+		const HashMap<StringName, Variant> *default_properties = ClassDB::default_values.getptr(p_class_name);
+		if (default_properties) {
+			const Variant *property = default_properties->getptr(p_property_name);
+			if (property) {
+				r_default_value_valid = true;
+				return *property;
+			}
+		}
+
 		List<StringName> inheriting_classes;
 		ClassDB::get_direct_inheriters_from_class(p_class_name, &inheriting_classes);
 		for (const StringName &class_name : inheriting_classes) {
@@ -398,6 +409,16 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	return default_value;
 }
 
+bool helpers_has_property(const String &p_class_name, const String &p_name) {
+	const Vector<PropertyListHelper *> helpers = PropertyListHelper::get_helpers_for_class(p_class_name);
+	for (const PropertyListHelper *helper : helpers) {
+		if (helper->documentation_has_property(p_name)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void DocTools::generate(BitField<GenerateFlags> p_flags) {
 	// This may involve instantiating classes that are only usable from the main thread
 	// (which is in fact the case of the core API).
@@ -405,39 +426,57 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 	// Add ClassDB-exposed classes.
 	{
-		List<StringName> classes;
+		LocalVector<StringName> classes;
 		if (p_flags.has_flag(GENERATE_FLAG_EXTENSION_CLASSES_ONLY)) {
-			ClassDB::get_extensions_class_list(&classes);
+			ClassDB::get_extensions_class_list(classes);
 		} else {
-			ClassDB::get_class_list(&classes);
+			ClassDB::get_class_list(classes);
 			// Move ProjectSettings, so that other classes can register properties there.
-			classes.move_to_back(classes.find("ProjectSettings"));
+			classes.erase("ProjectSettings");
+			classes.push_back("ProjectSettings");
 		}
 
 		bool skip_setter_getter_methods = true;
 
 		// Populate documentation data for each exposed class.
-		while (classes.size()) {
-			const String &name = classes.front()->get();
+		for (uint32_t classes_idx = 0; classes_idx < classes.size(); classes_idx++) {
+			const String &name = classes[classes_idx];
 			if (!ClassDB::is_class_exposed(name)) {
 				print_verbose(vformat("Class '%s' is not exposed, skipping.", name));
-				classes.pop_front();
 				continue;
 			}
 
-			const String &cname = name;
 			// Property setters and getters do not get exposed as individual methods.
 			HashSet<StringName> setters_getters;
 
-			class_list[cname] = DocData::ClassDoc();
-			DocData::ClassDoc &c = class_list[cname];
-			c.name = cname;
+			class_list[name] = DocData::ClassDoc();
+			DocData::ClassDoc &c = class_list[name];
+			c.name = name;
 			c.inherits = ClassDB::get_parent_class(name);
 
-			inheriting[c.inherits].insert(cname);
+			inheriting[c.inherits].insert(name);
+
+			switch (ClassDB::get_api_type(name)) {
+				case ClassDB::API_CORE:
+					c.api_type = "core";
+					break;
+				case ClassDB::API_EDITOR:
+					c.api_type = "editor";
+					break;
+				case ClassDB::API_EXTENSION:
+					c.api_type = "extension";
+					break;
+				case ClassDB::API_EDITOR_EXTENSION:
+					c.api_type = "editor_extension";
+					break;
+				case ClassDB::API_NONE:
+					c.api_type = String();
+					break;
+			}
 
 			List<PropertyInfo> properties;
 			List<PropertyInfo> own_properties;
+			Vector<PropertyListHelper *> helpers = PropertyListHelper::get_helpers_for_class(name);
 
 			// Special cases for editor/project settings, and ResourceImporter classes,
 			// we have to rely on Object's property list to get settings and import options.
@@ -482,6 +521,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				properties_from_instance = false;
 				ClassDB::get_property_list(name, &properties);
 				ClassDB::get_property_list(name, &own_properties, true);
+
+				for (const PropertyListHelper *helper : helpers) {
+					helper->documentation_get_property_list(&properties);
+					helper->documentation_get_property_list(&own_properties);
+				}
 			}
 
 			// Sort is still needed here to handle inherited properties, even though it is done below, do not remove.
@@ -497,7 +541,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				}
 
 				if (properties_from_instance) {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script" || E.name == "resource_scene_unique_id") {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "resource_scene_unique_id") {
 						// Don't include spurious properties from Object property list.
 						continue;
 					}
@@ -507,14 +551,22 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					continue;
 				}
 
+				bool from_helper = E.name.contains("{index}");
+
 				DocData::PropertyDoc prop;
 				prop.name = E.name;
 				prop.overridden = inherited;
 
 				if (inherited) {
 					String parent = ClassDB::get_parent_class(c.name);
-					while (!ClassDB::has_property(parent, prop.name, true)) {
-						parent = ClassDB::get_parent_class(parent);
+					if (from_helper) {
+						while (!helpers_has_property(parent, prop.name)) {
+							parent = ClassDB::get_parent_class(parent);
+						}
+					} else {
+						while (!ClassDB::has_property(parent, prop.name, true)) {
+							parent = ClassDB::get_parent_class(parent);
+						}
 					}
 					prop.overrides = parent;
 				}
@@ -539,12 +591,22 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					default_value = import_options_default[E.name];
 					default_value_valid = true;
 				} else {
-					default_value = get_documentation_default_value(name, E.name, default_value_valid);
-					if (inherited) {
-						bool base_default_value_valid = false;
-						Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E.name, base_default_value_valid);
-						if (!default_value_valid || !base_default_value_valid || default_value == base_default_value) {
-							continue;
+					if (from_helper) {
+						for (const PropertyListHelper *helper : helpers) {
+							if (helper->documentation_has_property(E.name)) {
+								default_value = helper->documentation_get_default_value(E.name);
+								default_value_valid = true;
+								break;
+							}
+						}
+					} else {
+						default_value = get_documentation_default_value(name, E.name, default_value_valid);
+						if (inherited) {
+							bool base_default_value_valid = false;
+							Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E.name, base_default_value_valid);
+							if (!default_value_valid || !base_default_value_valid || default_value == base_default_value) {
+								continue;
+							}
 						}
 					}
 				}
@@ -649,6 +711,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			if (signal_list.size()) {
 				for (const MethodInfo &mi : signal_list) {
+					if (mi.name.is_empty() || mi.name[0] == '_') {
+						continue; // Hidden, don't count.
+					}
+
 					DocData::MethodDoc signal;
 					signal.name = mi.name;
 					for (const PropertyInfo &arginfo : mi.arguments) {
@@ -681,7 +747,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			// Theme items.
 			{
 				List<ThemeDB::ThemeItemBind> theme_items;
-				ThemeDB::get_singleton()->get_class_items(cname, &theme_items);
+				ThemeDB::get_singleton()->get_class_items(name, &theme_items);
 				Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
 				for (const ThemeDB::ThemeItemBind &theme_item : theme_items) {
@@ -718,7 +784,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					}
 
 					if (theme_item.data_type == Theme::DATA_TYPE_COLOR || theme_item.data_type == Theme::DATA_TYPE_CONSTANT) {
-						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, cname));
+						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, name));
 					}
 
 					c.theme_properties.push_back(tid);
@@ -726,8 +792,6 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				c.theme_properties.sort();
 			}
-
-			classes.pop_front();
 		}
 	}
 
@@ -975,7 +1039,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 			pd.name = s.name;
 			pd.type = s.ptr->get_class();
-			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
+			while (!ClassDB::is_class_exposed(pd.type)) {
 				pd.type = ClassDB::get_parent_class(pd.type);
 			}
 			c.properties.push_back(pd);
@@ -1288,7 +1352,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		ERR_FAIL_COND_V(parser->get_node_name() != "class", ERR_FILE_CORRUPT);
 
 		ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-		String name = parser->get_named_attribute_value("name");
+		const String name = parser->get_named_attribute_value("name");
 		class_list[name] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[name];
 
@@ -1298,6 +1362,10 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		}
 
 		inheriting[c.inherits].insert(name);
+
+		if (parser->has_attribute("api_type")) {
+			c.api_type = parser->get_named_attribute_value("api_type");
+		}
 
 #ifndef DISABLE_DEPRECATED
 		if (parser->has_attribute("is_deprecated")) {
@@ -1638,12 +1706,15 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		String header = "<class name=\"" + c.name.xml_escape(true) + "\"";
 		if (!c.inherits.is_empty()) {
 			header += " inherits=\"" + c.inherits.xml_escape(true) + "\"";
-			if (c.is_deprecated) {
-				header += " deprecated=\"" + c.deprecated_message.xml_escape(true) + "\"";
-			}
-			if (c.is_experimental) {
-				header += " experimental=\"" + c.experimental_message.xml_escape(true) + "\"";
-			}
+		}
+		if (!c.api_type.is_empty()) {
+			header += " api_type=\"" + c.api_type.xml_escape(true) + "\"";
+		}
+		if (c.is_deprecated) {
+			header += " deprecated=\"" + c.deprecated_message.xml_escape(true) + "\"";
+		}
+		if (c.is_experimental) {
+			header += " experimental=\"" + c.experimental_message.xml_escape(true) + "\"";
 		}
 		if (!c.keywords.is_empty()) {
 			header += String(" keywords=\"") + c.keywords.xml_escape(true) + "\"";

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
@@ -264,9 +265,14 @@ int DirAccess::_get_drive_count() {
 	return d->get_drive_count();
 }
 
-String DirAccess::get_drive_name(int p_idx) {
+String DirAccess::_get_drive_name(int p_idx) {
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	return d->get_drive(p_idx);
+}
+
+String DirAccess::_get_drive_label(int p_idx) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	return d->get_drive_label(p_idx);
 }
 
 Error DirAccess::make_dir_absolute(const String &p_dir) {
@@ -326,7 +332,7 @@ Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error
 
 	if (!p_prefix.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
-		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
 
 	Ref<DirAccess> dir_access = DirAccess::open(OS::get_singleton()->get_temp_path());
@@ -351,7 +357,7 @@ Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error
 	Error err = dir_access->make_dir(path);
 	if (err != OK) {
 		*r_error = err;
-		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
 	}
 	err = dir_access->change_dir(path);
 	if (err != OK) {
@@ -490,19 +496,22 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (p_copy_links && is_link(get_current_dir().path_join(n))) {
-				create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				Error err = p_target_da->create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				if (err) {
+					ERR_PRINT(vformat("Failed to copy symlink \"%s\".", n));
+				}
 			} else if (current_is_dir()) {
 				dirs.push_back(n);
 			} else {
 				const String &rel_path = n;
 				if (!n.is_relative_path()) {
 					list_dir_end();
-					return ERR_BUG;
+					ERR_FAIL_V_MSG(ERR_BUG, vformat("BUG: \"%s\" is not a relative path.", n));
 				}
 				Error err = copy(get_current_dir().path_join(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
-					return err;
+					ERR_FAIL_V_MSG(err, vformat("Failed to copy file \"%s\".", n));
 				}
 			}
 		}
@@ -642,7 +651,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_directories"), &DirAccess::get_directories);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_directories_at", "path"), &DirAccess::get_directories_at);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_count"), &DirAccess::_get_drive_count);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::get_drive_name);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::_get_drive_name);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_label", "idx"), &DirAccess::_get_drive_label);
 	ClassDB::bind_method(D_METHOD("get_current_drive"), &DirAccess::get_current_drive);
 	ClassDB::bind_method(D_METHOD("change_dir", "to_dir"), &DirAccess::change_dir);
 	ClassDB::bind_method(D_METHOD("get_current_dir", "include_drive"), &DirAccess::get_current_dir, DEFVAL(true));

@@ -72,7 +72,7 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   cff2_cs_interp_env_t (const hb_ubytes_t &str, ACC &acc, unsigned int fd,
 			const int *coords_=nullptr, unsigned int num_coords_=0)
     : SUPER (str, acc.globalSubrs, acc.privateDicts[fd].localSubrs),
-      cached_scalars_vector (&acc.cached_scalars_vector)
+      region_count (0), cached_scalars_vector (&acc.cached_scalars_vector)
   {
     coords = coords_;
     num_coords = num_coords_;
@@ -291,7 +291,7 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
     for (unsigned int i = 0; i < n; i++)
     {
       const hb_array_t<const ELEM> blends = env.argStack.sub_array (start + n + (i * k), k);
-      process_arg_blend (env, env.argStack[start + i], blends, n, i);
+      process_arg_blend (env, env.argStack.arrayZ[start + i], blends, n, i);
     }
 
     /* pop off blend values leaving default values now adorned with blend values */

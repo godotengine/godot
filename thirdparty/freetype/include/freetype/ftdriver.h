@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2024 by
+ * Copyright (C) 2017-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -282,7 +282,7 @@ FT_BEGIN_HEADER
    *   minimize hinting techniques that were problematic with the extra
    *   resolution of ClearType; see
    *   http://rastertragedy.com/RTRCh4.htm#Sec1 and
-   *   https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx.
+   *   https://learn.microsoft.com/typography/cleartype/truetypecleartype.
    *   This technique is not to be confused with ClearType compatible widths.
    *   ClearType backward compatibility has no direct impact on changing
    *   advance widths, but there might be an indirect impact on disabling
@@ -784,7 +784,7 @@ FT_BEGIN_HEADER
    *
    *   Details on subpixel hinting and some of the necessary tweaks can be
    *   found in Greg Hitchcock's whitepaper at
-   *   'https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx'.
+   *   'https://learn.microsoft.com/typography/cleartype/truetypecleartype'.
    *   Note that FreeType currently doesn't really 'subpixel hint' (6x1, 6x2,
    *   or 6x5 supersampling) like discussed in the paper.  Depending on the
    *   chosen interpreter, it simply ignores instructions on vertical stems

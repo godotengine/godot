@@ -31,7 +31,6 @@
 #pragma once
 
 #include "gdscript_function.h"
-#include "gdscript_utility_functions.h"
 
 #include "core/string/string_name.h"
 #include "core/variant/variant.h"
@@ -160,7 +159,7 @@ public:
 	virtual void write_continue() = 0;
 	virtual void write_breakpoint() = 0;
 	virtual void write_newline(int p_line) = 0;
-	virtual void write_return(const Address &p_return_value) = 0;
+	virtual void write_return(const Address &p_return_value, bool p_use_conversion) = 0;
 	virtual void write_assert(const Address &p_test, const Address &p_message) = 0;
 
 	virtual ~GDScriptCodeGenerator() {}

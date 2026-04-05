@@ -34,15 +34,20 @@
 
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // SceneTree only forward declares it.
 
 #ifdef TOOLS_ENABLED
+#include "core/io/file_access.h"
 #include "editor/web_tools_editor_plugin.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // SceneTree only forward declares it.
 #endif
 
 #include <emscripten/emscripten.h>
+
 #include <cstdlib>
 
 static OS_Web *os = nullptr;
@@ -64,6 +69,7 @@ void exit_callback() {
 	int exit_code = OS_Web::get_singleton()->get_exit_code();
 	memdelete(os);
 	os = nullptr;
+	godot_cleanup_profiler();
 	emscripten_force_exit(exit_code); // Exit runtime.
 }
 
@@ -125,6 +131,8 @@ void print_web_header() {
 
 /// When calling main, it is assumed FS is setup and synced.
 extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
+	godot_init_profiler();
+
 	os = new OS_Web();
 
 #ifdef TOOLS_ENABLED

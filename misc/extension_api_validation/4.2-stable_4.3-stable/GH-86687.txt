@@ -1,0 +1,5 @@
+GH-86687
+--------
+Validate extension JSON: Error: Field 'classes/AnimationMixer/methods/_post_process_key_value/arguments/3': type changed value in new API, from "Object" to "int".
+
+Exposing the pointer was dangerous and it must be changed to avoid crash. Compatibility methods registered.

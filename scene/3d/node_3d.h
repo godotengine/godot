@@ -54,6 +54,8 @@ class Node3D : public Node {
 	friend class SceneTreeFTITests;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_3D;
+
 	// Edit mode for the rotation.
 	// THIS MODE ONLY AFFECTS HOW DATA IS EDITED AND SAVED
 	// IT DOES _NOT_ AFFECT THE TRANSFORM LOGIC (see comment in TransformDirty).
@@ -150,8 +152,12 @@ private:
 		RID visibility_parent;
 
 		Node3D *parent = nullptr;
-		List<Node3D *> children;
-		List<Node3D *>::Element *C = nullptr;
+
+		// An unordered vector of `Spatial` children only.
+		// This is a subset of the `Node::children`, purely
+		// an optimization for faster traversal.
+		LocalVector<Node3D *> node3d_children;
+		uint32_t index_in_parent = UINT32_MAX;
 
 		ClientPhysicsInterpolationData *client_physics_interpolation_data = nullptr;
 
@@ -168,7 +174,7 @@ private:
 	NodePath visibility_parent_path;
 
 	_FORCE_INLINE_ uint32_t _read_dirty_mask() const { return is_group_processing() ? data.dirty.mt.get() : data.dirty.st; }
-	_FORCE_INLINE_ bool _test_dirty_bits(uint32_t p_bits) const { return is_group_processing() ? data.dirty.mt.bit_and(p_bits) : (data.dirty.st & p_bits); }
+	_FORCE_INLINE_ bool _test_dirty_bits(uint32_t p_bits) const { return (is_group_processing() ? data.dirty.mt.get() : data.dirty.st) & p_bits; }
 	void _replace_dirty_mask(uint32_t p_mask) const;
 	void _set_dirty_bits(uint32_t p_bits) const;
 	void _clear_dirty_bits(uint32_t p_bits) const;
@@ -226,7 +232,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
+		NOTIFICATION_TRANSFORM_CHANGED = 2000, // Keep in sync with SceneTree.
 		NOTIFICATION_ENTER_WORLD = 41,
 		NOTIFICATION_EXIT_WORLD = 42,
 		NOTIFICATION_VISIBILITY_CHANGED = 43,
@@ -283,7 +289,7 @@ public:
 	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; }
 	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; }
 #endif
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	void set_disable_gizmos(bool p_enabled);
 	void update_gizmos();
@@ -321,8 +327,8 @@ public:
 	void global_scale(const Vector3 &p_scale);
 	void global_translate(const Vector3 &p_offset);
 
-	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
-	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
+	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
+	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
 
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;

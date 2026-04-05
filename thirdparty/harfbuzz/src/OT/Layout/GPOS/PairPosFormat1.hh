@@ -103,46 +103,29 @@ struct PairPosFormat1_3
 
   const Coverage &get_coverage () const { return this+coverage; }
 
-  unsigned cache_cost () const
+  struct external_cache_t
   {
-    return (this+coverage).cost ();
-  }
-  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
+    hb_ot_layout_mapping_cache_t coverage;
+  };
+  void *external_cache_create () const
   {
-    switch (op)
+    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
+    if (likely (cache))
     {
-      case hb_ot_lookup_cache_op_t::CREATE:
-      {
-	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) hb_malloc (sizeof (hb_ot_lookup_cache_t));
-	if (likely (cache))
-	  cache->clear ();
-	return cache;
-      }
-      case hb_ot_lookup_cache_op_t::ENTER:
-	return (void *) true;
-      case hb_ot_lookup_cache_op_t::LEAVE:
-	return nullptr;
-      case hb_ot_lookup_cache_op_t::DESTROY:
-      {
-	hb_ot_lookup_cache_t *cache = (hb_ot_lookup_cache_t *) p;
-	hb_free (cache);
-	return nullptr;
-      }
+      cache->coverage.clear ();
     }
-    return nullptr;
+    return cache;
   }
 
-  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
-  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
-  bool _apply (hb_ot_apply_context_t *c, bool cached) const
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
 
     hb_buffer_t *buffer = c->buffer;
 
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
-    hb_ot_lookup_cache_t *cache = cached ? (hb_ot_lookup_cache_t *) c->lookup_accel->cache : nullptr;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache);
+    external_cache_t *cache = (external_cache_t *) external_cache;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
 #else
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
 #endif

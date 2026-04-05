@@ -7,6 +7,7 @@
 		An array specifically designed to hold [Color]. Packs data tightly, so it saves memory for large array sizes.
 		[b]Differences between packed arrays, typed arrays, and untyped arrays:[/b] Packed arrays are generally faster to iterate on and modify compared to a typed array of the same type (e.g. [PackedColorArray] versus [code]Array[Color][/code]). Also, packed arrays consume less memory. As a downside, packed arrays are less flexible as they don't offer as many convenience methods such as [method Array.map]. Typed arrays are in turn faster to iterate on and modify than untyped arrays.
 		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. In these cases the returned packed array is a copy, and changing it will [i]not[/i] affect the original value. To update a built-in property of this type, modify the returned array and then assign it to the property again.
+		[b]Note:[/b] In a boolean context, a packed array will evaluate to [code]false[/code] if it's empty. Otherwise, a packed array will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -51,7 +52,7 @@
 				Appends a [PackedColorArray] at the end of this array.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="Color" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -73,7 +74,7 @@
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedColorArray" />
 			<description>
 				Creates a copy of the array, and returns it.
@@ -105,7 +106,7 @@
 			<return type="Color" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [Color] at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]Color(0, 0, 0, 1)[/code].
+				Returns the [Color] at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]Color(0, 0, 0, 1)[/code].
 				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>

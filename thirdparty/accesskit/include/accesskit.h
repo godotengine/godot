@@ -16,6 +16,9 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#ifdef __ANDROID__
+#include <jni.h>
+#endif
 
 /**
  * An action to be taken on an accessibility node.
@@ -53,16 +56,25 @@ enum accesskit_action
    * Requires [`ActionRequest::data`] to be set to [`ActionData::Value`].
    */
   ACCESSKIT_ACTION_REPLACE_SELECTED_TEXT,
-  ACCESSKIT_ACTION_SCROLL_BACKWARD,
+  /**
+   * Scroll down by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_DOWN,
-  ACCESSKIT_ACTION_SCROLL_FORWARD,
+  /**
+   * Scroll left by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_LEFT,
+  /**
+   * Scroll right by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_RIGHT,
+  /**
+   * Scroll up by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_UP,
   /**
-   * Scroll any scrollable containers to make the target object visible
-   * on the screen.  Optionally set [`ActionRequest::data`] to
-   * [`ActionData::ScrollTargetRect`].
+   * Scroll any scrollable containers to make the target node visible.
+   * Optionally set [`ActionRequest::data`] to [`ActionData::ScrollHint`].
    */
   ACCESSKIT_ACTION_SCROLL_INTO_VIEW,
   /**
@@ -303,11 +315,8 @@ enum accesskit_role
   ACCESSKIT_ROLE_CONTENT_INFO,
   ACCESSKIT_ROLE_DEFINITION,
   ACCESSKIT_ROLE_DESCRIPTION_LIST,
-  ACCESSKIT_ROLE_DESCRIPTION_LIST_DETAIL,
-  ACCESSKIT_ROLE_DESCRIPTION_LIST_TERM,
   ACCESSKIT_ROLE_DETAILS,
   ACCESSKIT_ROLE_DIALOG,
-  ACCESSKIT_ROLE_DIRECTORY,
   ACCESSKIT_ROLE_DISCLOSURE_TRIANGLE,
   ACCESSKIT_ROLE_DOCUMENT,
   ACCESSKIT_ROLE_EMBEDDED_OBJECT,
@@ -316,12 +325,11 @@ enum accesskit_role
   ACCESSKIT_ROLE_FIGURE_CAPTION,
   ACCESSKIT_ROLE_FIGURE,
   ACCESSKIT_ROLE_FOOTER,
-  ACCESSKIT_ROLE_FOOTER_AS_NON_LANDMARK,
   ACCESSKIT_ROLE_FORM,
   ACCESSKIT_ROLE_GRID,
+  ACCESSKIT_ROLE_GRID_CELL,
   ACCESSKIT_ROLE_GROUP,
   ACCESSKIT_ROLE_HEADER,
-  ACCESSKIT_ROLE_HEADER_AS_NON_LANDMARK,
   ACCESSKIT_ROLE_HEADING,
   ACCESSKIT_ROLE_IFRAME,
   ACCESSKIT_ROLE_IFRAME_PRESENTATIONAL,
@@ -343,8 +351,6 @@ enum accesskit_role
   ACCESSKIT_ROLE_NAVIGATION,
   ACCESSKIT_ROLE_NOTE,
   ACCESSKIT_ROLE_PLUGIN_OBJECT,
-  ACCESSKIT_ROLE_PORTAL,
-  ACCESSKIT_ROLE_PRE,
   ACCESSKIT_ROLE_PROGRESS_INDICATOR,
   ACCESSKIT_ROLE_RADIO_GROUP,
   ACCESSKIT_ROLE_REGION,
@@ -355,6 +361,8 @@ enum accesskit_role
   ACCESSKIT_ROLE_SCROLL_VIEW,
   ACCESSKIT_ROLE_SEARCH,
   ACCESSKIT_ROLE_SECTION,
+  ACCESSKIT_ROLE_SECTION_FOOTER,
+  ACCESSKIT_ROLE_SECTION_HEADER,
   ACCESSKIT_ROLE_SLIDER,
   ACCESSKIT_ROLE_SPIN_BUTTON,
   ACCESSKIT_ROLE_SPLITTER,
@@ -439,6 +447,50 @@ enum accesskit_role
 typedef uint8_t accesskit_role;
 #endif  // __cplusplus
 
+/**
+ * A suggestion about where the node being scrolled into view should be
+ * positioned relative to the edges of the scrollable container.
+ */
+enum accesskit_scroll_hint
+#ifdef __cplusplus
+    : uint8_t
+#endif  // __cplusplus
+{
+  ACCESSKIT_SCROLL_HINT_TOP_LEFT,
+  ACCESSKIT_SCROLL_HINT_BOTTOM_RIGHT,
+  ACCESSKIT_SCROLL_HINT_TOP_EDGE,
+  ACCESSKIT_SCROLL_HINT_BOTTOM_EDGE,
+  ACCESSKIT_SCROLL_HINT_LEFT_EDGE,
+  ACCESSKIT_SCROLL_HINT_RIGHT_EDGE,
+};
+#ifndef __cplusplus
+typedef uint8_t accesskit_scroll_hint;
+#endif  // __cplusplus
+
+/**
+ * The amount by which to scroll in the direction specified by one of the
+ * `Scroll` actions.
+ */
+enum accesskit_scroll_unit
+#ifdef __cplusplus
+    : uint8_t
+#endif  // __cplusplus
+{
+  /**
+   * A single item of a list, line of text (for vertical scrolling),
+   * character (for horizontal scrolling), or an approximation of
+   * one of these.
+   */
+  ACCESSKIT_SCROLL_UNIT_ITEM,
+  /**
+   * The amount of content that fits in the viewport.
+   */
+  ACCESSKIT_SCROLL_UNIT_PAGE,
+};
+#ifndef __cplusplus
+typedef uint8_t accesskit_scroll_unit;
+#endif  // __cplusplus
+
 enum accesskit_sort_direction
 #ifdef __cplusplus
     : uint8_t
@@ -466,19 +518,19 @@ enum accesskit_text_align
 typedef uint8_t accesskit_text_align;
 #endif  // __cplusplus
 
-enum accesskit_text_decoration
+enum accesskit_text_decoration_style
 #ifdef __cplusplus
     : uint8_t
 #endif  // __cplusplus
 {
-  ACCESSKIT_TEXT_DECORATION_SOLID,
-  ACCESSKIT_TEXT_DECORATION_DOTTED,
-  ACCESSKIT_TEXT_DECORATION_DASHED,
-  ACCESSKIT_TEXT_DECORATION_DOUBLE,
-  ACCESSKIT_TEXT_DECORATION_WAVY,
+  ACCESSKIT_TEXT_DECORATION_STYLE_SOLID,
+  ACCESSKIT_TEXT_DECORATION_STYLE_DOTTED,
+  ACCESSKIT_TEXT_DECORATION_STYLE_DASHED,
+  ACCESSKIT_TEXT_DECORATION_STYLE_DOUBLE,
+  ACCESSKIT_TEXT_DECORATION_STYLE_WAVY,
 };
 #ifndef __cplusplus
-typedef uint8_t accesskit_text_decoration;
+typedef uint8_t accesskit_text_decoration_style;
 #endif  // __cplusplus
 
 enum accesskit_text_direction
@@ -519,6 +571,26 @@ enum accesskit_vertical_offset
 #ifndef __cplusplus
 typedef uint8_t accesskit_vertical_offset;
 #endif  // __cplusplus
+
+#if defined(__ANDROID__)
+typedef struct accesskit_android_adapter accesskit_android_adapter;
+#endif
+
+#if defined(__ANDROID__)
+typedef struct accesskit_android_injecting_adapter
+    accesskit_android_injecting_adapter;
+#endif
+
+#if defined(__ANDROID__)
+typedef struct accesskit_android_platform_action
+    accesskit_android_platform_action;
+#endif
+
+#if defined(__ANDROID__)
+typedef struct accesskit_android_queued_events accesskit_android_queued_events;
+#endif
+
+typedef struct accesskit_custom_action accesskit_custom_action;
 
 #if defined(__APPLE__)
 typedef struct accesskit_macos_adapter accesskit_macos_adapter;
@@ -575,6 +647,24 @@ typedef struct accesskit_opt_node_id {
 } accesskit_opt_node_id;
 
 /**
+ * A 128-bit identifier for a tree, represented as a UUID in big-endian byte
+ * order.
+ */
+typedef struct accesskit_tree_id {
+  uint8_t bytes[16];
+} accesskit_tree_id;
+
+/**
+ * Represents an optional value.
+ *
+ * If `has_value` is false, do not read the `value` field.
+ */
+typedef struct accesskit_opt_tree_id {
+  bool has_value;
+  struct accesskit_tree_id value;
+} accesskit_opt_tree_id;
+
+/**
  * Represents an optional value.
  *
  * If `has_value` is false, do not read the `value` field.
@@ -589,10 +679,30 @@ typedef struct accesskit_opt_double {
  *
  * If `has_value` is false, do not read the `value` field.
  */
+typedef struct accesskit_opt_float {
+  bool has_value;
+  float value;
+} accesskit_opt_float;
+
+/**
+ * Represents an optional value.
+ *
+ * If `has_value` is false, do not read the `value` field.
+ */
 typedef struct accesskit_opt_index {
   bool has_value;
   size_t value;
 } accesskit_opt_index;
+
+/**
+ * A color represented in 8-bit sRGB plus alpha.
+ */
+typedef struct accesskit_color {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+  uint8_t alpha;
+} accesskit_color;
 
 /**
  * Represents an optional value.
@@ -601,8 +711,16 @@ typedef struct accesskit_opt_index {
  */
 typedef struct accesskit_opt_color {
   bool has_value;
-  uint32_t value;
+  struct accesskit_color value;
 } accesskit_opt_color;
+
+/**
+ * The style and color for a type of text decoration.
+ */
+typedef struct accesskit_text_decoration {
+  accesskit_text_decoration_style style;
+  struct accesskit_color color;
+} accesskit_text_decoration;
 
 /**
  * Represents an optional value.
@@ -611,7 +729,7 @@ typedef struct accesskit_opt_color {
  */
 typedef struct accesskit_opt_text_decoration {
   bool has_value;
-  accesskit_text_decoration value;
+  struct accesskit_text_decoration value;
 } accesskit_opt_text_decoration;
 
 typedef struct accesskit_lengths {
@@ -815,20 +933,9 @@ typedef struct accesskit_opt_text_selection {
   struct accesskit_text_selection value;
 } accesskit_opt_text_selection;
 
-/**
- * Use `accesskit_custom_action_new` to create this struct. Do not reallocate
- * `description`.
- *
- * When you get this struct, you are responsible for freeing `description`.
- */
-typedef struct accesskit_custom_action {
-  int32_t id;
-  char *description;
-} accesskit_custom_action;
-
 typedef struct accesskit_custom_actions {
   size_t length;
-  struct accesskit_custom_action *values;
+  struct accesskit_custom_action **values;
 } accesskit_custom_actions;
 
 /**
@@ -849,7 +956,13 @@ typedef enum accesskit_action_data_Tag {
   ACCESSKIT_ACTION_DATA_CUSTOM_ACTION,
   ACCESSKIT_ACTION_DATA_VALUE,
   ACCESSKIT_ACTION_DATA_NUMERIC_VALUE,
-  ACCESSKIT_ACTION_DATA_SCROLL_TARGET_RECT,
+  ACCESSKIT_ACTION_DATA_SCROLL_UNIT,
+  /**
+   * Optional suggestion for `ACCESSKIT_ACTION_SCROLL_INTO_VIEW`, specifying
+   * the preferred position of the target node relative to the scrollable
+   * container's viewport.
+   */
+  ACCESSKIT_ACTION_DATA_SCROLL_HINT,
   ACCESSKIT_ACTION_DATA_SCROLL_TO_POINT,
   ACCESSKIT_ACTION_DATA_SET_SCROLL_OFFSET,
   ACCESSKIT_ACTION_DATA_SET_TEXT_SELECTION,
@@ -868,7 +981,10 @@ typedef struct accesskit_action_data {
       double numeric_value;
     };
     struct {
-      struct accesskit_rect scroll_target_rect;
+      accesskit_scroll_unit scroll_unit;
+    };
+    struct {
+      accesskit_scroll_hint scroll_hint;
     };
     struct {
       struct accesskit_point scroll_to_point;
@@ -894,7 +1010,8 @@ typedef struct accesskit_opt_action_data {
 
 typedef struct accesskit_action_request {
   accesskit_action action;
-  accesskit_node_id target;
+  struct accesskit_tree_id target_tree;
+  accesskit_node_id target_node;
   struct accesskit_opt_action_data data;
 } accesskit_action_request;
 
@@ -930,13 +1047,6 @@ typedef struct accesskit_size {
   double height;
 } accesskit_size;
 
-/**
- * Ownership of `request` is transferred to the callback. `request` must
- * be freed using `accesskit_action_request_free`.
- */
-typedef void (*accesskit_action_handler_callback)(
-    struct accesskit_action_request *request, void *userdata);
-
 typedef void *accesskit_tree_update_factory_userdata;
 
 /**
@@ -948,6 +1058,13 @@ typedef struct accesskit_tree_update *(*accesskit_tree_update_factory)(
 
 typedef struct accesskit_tree_update *(*accesskit_activation_handler_callback)(
     void *userdata);
+
+/**
+ * Ownership of `request` is transferred to the callback. `request` must
+ * be freed using `accesskit_action_request_free`.
+ */
+typedef void (*accesskit_action_handler_callback)(
+    struct accesskit_action_request *request, void *userdata);
 
 typedef void (*accesskit_deactivation_handler_callback)(void *userdata);
 
@@ -967,6 +1084,8 @@ typedef struct accesskit_opt_lresult {
 extern "C" {
 #endif  // __cplusplus
 
+extern const struct accesskit_tree_id ACCESSKIT_TREE_ID_ROOT;
+
 accesskit_role accesskit_node_role(const struct accesskit_node *node);
 
 void accesskit_node_set_role(struct accesskit_node *node, accesskit_role value);
@@ -981,6 +1100,33 @@ void accesskit_node_remove_action(struct accesskit_node *node,
                                   accesskit_action action);
 
 void accesskit_node_clear_actions(struct accesskit_node *node);
+
+/**
+ * Return whether the specified action is in the set supported on this node's
+ * direct children in the filtered tree.
+ */
+bool accesskit_node_child_supports_action(const struct accesskit_node *node,
+                                          accesskit_action action);
+
+/**
+ * Add the specified action to the set supported on this node's direct
+ * children in the filtered tree.
+ */
+void accesskit_node_add_child_action(struct accesskit_node *node,
+                                     accesskit_action action);
+
+/**
+ * Remove the specified action from the set supported on this node's direct
+ * children in the filtered tree.
+ */
+void accesskit_node_remove_child_action(struct accesskit_node *node,
+                                        accesskit_action action);
+
+/**
+ * Clear the set of actions supported on this node's direct children in the
+ * filtered tree.
+ */
+void accesskit_node_clear_child_actions(struct accesskit_node *node);
 
 bool accesskit_node_is_hidden(const struct accesskit_node *node);
 
@@ -1041,12 +1187,6 @@ bool accesskit_node_is_disabled(const struct accesskit_node *node);
 void accesskit_node_set_disabled(struct accesskit_node *node);
 
 void accesskit_node_clear_disabled(struct accesskit_node *node);
-
-bool accesskit_node_is_bold(const struct accesskit_node *node);
-
-void accesskit_node_set_bold(struct accesskit_node *node);
-
-void accesskit_node_clear_bold(struct accesskit_node *node);
 
 bool accesskit_node_is_italic(const struct accesskit_node *node);
 
@@ -1264,6 +1404,14 @@ void accesskit_node_set_popup_for(struct accesskit_node *node,
 
 void accesskit_node_clear_popup_for(struct accesskit_node *node);
 
+struct accesskit_opt_tree_id accesskit_node_tree_id(
+    const struct accesskit_node *node);
+
+void accesskit_node_set_tree_id(struct accesskit_node *node,
+                                struct accesskit_tree_id value);
+
+void accesskit_node_clear_tree_id(struct accesskit_node *node);
+
 /**
  * Only call this function with a string that originated from AccessKit.
  */
@@ -1279,6 +1427,12 @@ char *accesskit_node_label(const struct accesskit_node *node);
  */
 void accesskit_node_set_label(struct accesskit_node *node, const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_label_with_length(struct accesskit_node *node,
+                                          const char *value, size_t length);
+
 void accesskit_node_clear_label(struct accesskit_node *node);
 
 /**
@@ -1292,6 +1446,13 @@ char *accesskit_node_description(const struct accesskit_node *node);
 void accesskit_node_set_description(struct accesskit_node *node,
                                     const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_description_with_length(struct accesskit_node *node,
+                                                const char *value,
+                                                size_t length);
+
 void accesskit_node_clear_description(struct accesskit_node *node);
 
 /**
@@ -1303,6 +1464,12 @@ char *accesskit_node_value(const struct accesskit_node *node);
  * Caller is responsible for freeing the memory pointed by `value`.
  */
 void accesskit_node_set_value(struct accesskit_node *node, const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_value_with_length(struct accesskit_node *node,
+                                          const char *value, size_t length);
 
 void accesskit_node_clear_value(struct accesskit_node *node);
 
@@ -1317,6 +1484,13 @@ char *accesskit_node_access_key(const struct accesskit_node *node);
 void accesskit_node_set_access_key(struct accesskit_node *node,
                                    const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_access_key_with_length(struct accesskit_node *node,
+                                               const char *value,
+                                               size_t length);
+
 void accesskit_node_clear_access_key(struct accesskit_node *node);
 
 /**
@@ -1329,6 +1503,12 @@ char *accesskit_node_author_id(const struct accesskit_node *node);
  */
 void accesskit_node_set_author_id(struct accesskit_node *node,
                                   const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_author_id_with_length(struct accesskit_node *node,
+                                              const char *value, size_t length);
 
 void accesskit_node_clear_author_id(struct accesskit_node *node);
 
@@ -1343,6 +1523,13 @@ char *accesskit_node_class_name(const struct accesskit_node *node);
 void accesskit_node_set_class_name(struct accesskit_node *node,
                                    const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_class_name_with_length(struct accesskit_node *node,
+                                               const char *value,
+                                               size_t length);
+
 void accesskit_node_clear_class_name(struct accesskit_node *node);
 
 /**
@@ -1355,6 +1542,13 @@ char *accesskit_node_font_family(const struct accesskit_node *node);
  */
 void accesskit_node_set_font_family(struct accesskit_node *node,
                                     const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_font_family_with_length(struct accesskit_node *node,
+                                                const char *value,
+                                                size_t length);
 
 void accesskit_node_clear_font_family(struct accesskit_node *node);
 
@@ -1369,6 +1563,12 @@ char *accesskit_node_html_tag(const struct accesskit_node *node);
 void accesskit_node_set_html_tag(struct accesskit_node *node,
                                  const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_html_tag_with_length(struct accesskit_node *node,
+                                             const char *value, size_t length);
+
 void accesskit_node_clear_html_tag(struct accesskit_node *node);
 
 /**
@@ -1381,6 +1581,13 @@ char *accesskit_node_inner_html(const struct accesskit_node *node);
  */
 void accesskit_node_set_inner_html(struct accesskit_node *node,
                                    const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_inner_html_with_length(struct accesskit_node *node,
+                                               const char *value,
+                                               size_t length);
 
 void accesskit_node_clear_inner_html(struct accesskit_node *node);
 
@@ -1395,6 +1602,12 @@ char *accesskit_node_keyboard_shortcut(const struct accesskit_node *node);
 void accesskit_node_set_keyboard_shortcut(struct accesskit_node *node,
                                           const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_keyboard_shortcut_with_length(
+    struct accesskit_node *node, const char *value, size_t length);
+
 void accesskit_node_clear_keyboard_shortcut(struct accesskit_node *node);
 
 /**
@@ -1407,6 +1620,12 @@ char *accesskit_node_language(const struct accesskit_node *node);
  */
 void accesskit_node_set_language(struct accesskit_node *node,
                                  const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_language_with_length(struct accesskit_node *node,
+                                             const char *value, size_t length);
 
 void accesskit_node_clear_language(struct accesskit_node *node);
 
@@ -1421,6 +1640,13 @@ char *accesskit_node_placeholder(const struct accesskit_node *node);
 void accesskit_node_set_placeholder(struct accesskit_node *node,
                                     const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_placeholder_with_length(struct accesskit_node *node,
+                                                const char *value,
+                                                size_t length);
+
 void accesskit_node_clear_placeholder(struct accesskit_node *node);
 
 /**
@@ -1433,6 +1659,12 @@ char *accesskit_node_role_description(const struct accesskit_node *node);
  */
 void accesskit_node_set_role_description(struct accesskit_node *node,
                                          const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_role_description_with_length(
+    struct accesskit_node *node, const char *value, size_t length);
 
 void accesskit_node_clear_role_description(struct accesskit_node *node);
 
@@ -1447,6 +1679,12 @@ char *accesskit_node_state_description(const struct accesskit_node *node);
 void accesskit_node_set_state_description(struct accesskit_node *node,
                                           const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_state_description_with_length(
+    struct accesskit_node *node, const char *value, size_t length);
+
 void accesskit_node_clear_state_description(struct accesskit_node *node);
 
 /**
@@ -1459,6 +1697,12 @@ char *accesskit_node_tooltip(const struct accesskit_node *node);
  */
 void accesskit_node_set_tooltip(struct accesskit_node *node, const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_tooltip_with_length(struct accesskit_node *node,
+                                            const char *value, size_t length);
+
 void accesskit_node_clear_tooltip(struct accesskit_node *node);
 
 /**
@@ -1470,6 +1714,12 @@ char *accesskit_node_url(const struct accesskit_node *node);
  * Caller is responsible for freeing the memory pointed by `value`.
  */
 void accesskit_node_set_url(struct accesskit_node *node, const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_url_with_length(struct accesskit_node *node,
+                                        const char *value, size_t length);
 
 void accesskit_node_clear_url(struct accesskit_node *node);
 
@@ -1484,6 +1734,13 @@ char *accesskit_node_row_index_text(const struct accesskit_node *node);
 void accesskit_node_set_row_index_text(struct accesskit_node *node,
                                        const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_row_index_text_with_length(struct accesskit_node *node,
+                                                   const char *value,
+                                                   size_t length);
+
 void accesskit_node_clear_row_index_text(struct accesskit_node *node);
 
 /**
@@ -1497,7 +1754,53 @@ char *accesskit_node_column_index_text(const struct accesskit_node *node);
 void accesskit_node_set_column_index_text(struct accesskit_node *node,
                                           const char *value);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_column_index_text_with_length(
+    struct accesskit_node *node, const char *value, size_t length);
+
 void accesskit_node_clear_column_index_text(struct accesskit_node *node);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_node_braille_label(const struct accesskit_node *node);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_label(struct accesskit_node *node,
+                                      const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_label_with_length(struct accesskit_node *node,
+                                                  const char *value,
+                                                  size_t length);
+
+void accesskit_node_clear_braille_label(struct accesskit_node *node);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_node_braille_role_description(
+    const struct accesskit_node *node);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_role_description(struct accesskit_node *node,
+                                                 const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_role_description_with_length(
+    struct accesskit_node *node, const char *value, size_t length);
+
+void accesskit_node_clear_braille_role_description(struct accesskit_node *node);
 
 struct accesskit_opt_double accesskit_node_scroll_x(
     const struct accesskit_node *node);
@@ -1581,17 +1884,17 @@ void accesskit_node_set_numeric_value_jump(struct accesskit_node *node,
 
 void accesskit_node_clear_numeric_value_jump(struct accesskit_node *node);
 
-struct accesskit_opt_double accesskit_node_font_size(
+struct accesskit_opt_float accesskit_node_font_size(
     const struct accesskit_node *node);
 
-void accesskit_node_set_font_size(struct accesskit_node *node, double value);
+void accesskit_node_set_font_size(struct accesskit_node *node, float value);
 
 void accesskit_node_clear_font_size(struct accesskit_node *node);
 
-struct accesskit_opt_double accesskit_node_font_weight(
+struct accesskit_opt_float accesskit_node_font_weight(
     const struct accesskit_node *node);
 
-void accesskit_node_set_font_weight(struct accesskit_node *node, double value);
+void accesskit_node_set_font_weight(struct accesskit_node *node, float value);
 
 void accesskit_node_clear_font_weight(struct accesskit_node *node);
 
@@ -1663,7 +1966,7 @@ struct accesskit_opt_color accesskit_node_color_value(
     const struct accesskit_node *node);
 
 void accesskit_node_set_color_value(struct accesskit_node *node,
-                                    uint32_t value);
+                                    struct accesskit_color value);
 
 void accesskit_node_clear_color_value(struct accesskit_node *node);
 
@@ -1671,7 +1974,7 @@ struct accesskit_opt_color accesskit_node_background_color(
     const struct accesskit_node *node);
 
 void accesskit_node_set_background_color(struct accesskit_node *node,
-                                         uint32_t value);
+                                         struct accesskit_color value);
 
 void accesskit_node_clear_background_color(struct accesskit_node *node);
 
@@ -1679,7 +1982,7 @@ struct accesskit_opt_color accesskit_node_foreground_color(
     const struct accesskit_node *node);
 
 void accesskit_node_set_foreground_color(struct accesskit_node *node,
-                                         uint32_t value);
+                                         struct accesskit_color value);
 
 void accesskit_node_clear_foreground_color(struct accesskit_node *node);
 
@@ -1687,7 +1990,7 @@ struct accesskit_opt_text_decoration accesskit_node_overline(
     const struct accesskit_node *node);
 
 void accesskit_node_set_overline(struct accesskit_node *node,
-                                 accesskit_text_decoration value);
+                                 struct accesskit_text_decoration value);
 
 void accesskit_node_clear_overline(struct accesskit_node *node);
 
@@ -1695,7 +1998,7 @@ struct accesskit_opt_text_decoration accesskit_node_strikethrough(
     const struct accesskit_node *node);
 
 void accesskit_node_set_strikethrough(struct accesskit_node *node,
-                                      accesskit_text_decoration value);
+                                      struct accesskit_text_decoration value);
 
 void accesskit_node_clear_strikethrough(struct accesskit_node *node);
 
@@ -1703,7 +2006,7 @@ struct accesskit_opt_text_decoration accesskit_node_underline(
     const struct accesskit_node *node);
 
 void accesskit_node_set_underline(struct accesskit_node *node,
-                                  accesskit_text_decoration value);
+                                  struct accesskit_text_decoration value);
 
 void accesskit_node_clear_underline(struct accesskit_node *node);
 
@@ -1718,16 +2021,16 @@ void accesskit_node_set_character_lengths(struct accesskit_node *node,
 
 void accesskit_node_clear_character_lengths(struct accesskit_node *node);
 
-struct accesskit_lengths accesskit_node_word_lengths(
+struct accesskit_lengths accesskit_node_word_starts(
     const struct accesskit_node *node);
 
 /**
  * Caller is responsible for freeing `values`.
  */
-void accesskit_node_set_word_lengths(struct accesskit_node *node, size_t length,
-                                     const uint8_t *values);
+void accesskit_node_set_word_starts(struct accesskit_node *node, size_t length,
+                                    const uint8_t *values);
 
-void accesskit_node_clear_word_lengths(struct accesskit_node *node);
+void accesskit_node_clear_word_starts(struct accesskit_node *node);
 
 struct accesskit_opt_coords accesskit_node_character_positions(
     const struct accesskit_node *node);
@@ -1884,32 +2187,67 @@ void accesskit_node_set_text_selection(struct accesskit_node *node,
 
 void accesskit_node_clear_text_selection(struct accesskit_node *node);
 
-struct accesskit_custom_action accesskit_custom_action_new(
-    int32_t id, const char *description);
+struct accesskit_custom_action *accesskit_custom_action_new(int32_t id);
+
+void accesskit_custom_action_free(struct accesskit_custom_action *action);
+
+int32_t accesskit_custom_action_id(
+    const struct accesskit_custom_action *action);
+
+void accesskit_custom_action_set_id(struct accesskit_custom_action *action,
+                                    int32_t id);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_custom_action_description(
+    const struct accesskit_custom_action *action);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `description`.
+ */
+void accesskit_custom_action_set_description(
+    struct accesskit_custom_action *action, const char *description);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `description`.
+ */
+void accesskit_custom_action_set_description_with_length(
+    struct accesskit_custom_action *action, const char *description,
+    size_t length);
 
 void accesskit_custom_actions_free(struct accesskit_custom_actions *value);
 
 /**
- * Caller is responsible for freeing the returned value.
+ * Caller must call `accesskit_custom_actions_free` with the return value.
  */
-const struct accesskit_custom_actions *accesskit_node_custom_actions(
+struct accesskit_custom_actions *accesskit_node_custom_actions(
     const struct accesskit_node *node);
 
 /**
- * Caller is responsible for freeing `values`.
+ * Caller is responsible for freeing each `custom_action` in the array
+ * as well as the `values` array itself.
  */
 void accesskit_node_set_custom_actions(
     struct accesskit_node *node, size_t length,
-    const struct accesskit_custom_action *values);
+    struct accesskit_custom_action *const *values);
 
+/**
+ * Takes ownership of `action`.
+ */
 void accesskit_node_push_custom_action(struct accesskit_node *node,
-                                       struct accesskit_custom_action item);
+                                       struct accesskit_custom_action *action);
 
 void accesskit_node_clear_custom_actions(struct accesskit_node *node);
 
 struct accesskit_node *accesskit_node_new(accesskit_role role);
 
 void accesskit_node_free(struct accesskit_node *node);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_node_debug(const struct accesskit_node *node);
 
 struct accesskit_tree *accesskit_tree_new(accesskit_node_id root);
 
@@ -1920,8 +2258,18 @@ void accesskit_tree_free(struct accesskit_tree *tree);
  */
 char *accesskit_tree_get_toolkit_name(const struct accesskit_tree *tree);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `toolkit_name`
+ */
 void accesskit_tree_set_toolkit_name(struct accesskit_tree *tree,
                                      const char *toolkit_name);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `toolkit_name`
+ */
+void accesskit_tree_set_toolkit_name_with_length(struct accesskit_tree *tree,
+                                                 const char *toolkit_name,
+                                                 size_t length);
 
 void accesskit_tree_clear_toolkit_name(struct accesskit_tree *tree);
 
@@ -1930,10 +2278,25 @@ void accesskit_tree_clear_toolkit_name(struct accesskit_tree *tree);
  */
 char *accesskit_tree_get_toolkit_version(const struct accesskit_tree *tree);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `toolkit_version`
+ */
 void accesskit_tree_set_toolkit_version(struct accesskit_tree *tree,
                                         const char *toolkit_version);
 
+/**
+ * Caller is responsible for freeing the memory pointed by `toolkit_version`
+ */
+void accesskit_tree_set_toolkit_version_with_length(struct accesskit_tree *tree,
+                                                    const char *toolkit_version,
+                                                    size_t length);
+
 void accesskit_tree_clear_toolkit_version(struct accesskit_tree *tree);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_tree_debug(const struct accesskit_tree *tree);
 
 struct accesskit_tree_update *accesskit_tree_update_with_focus(
     accesskit_node_id focus);
@@ -1958,6 +2321,18 @@ void accesskit_tree_update_clear_tree(struct accesskit_tree_update *update);
 
 void accesskit_tree_update_set_focus(struct accesskit_tree_update *update,
                                      accesskit_node_id focus);
+
+struct accesskit_tree_id accesskit_tree_update_get_tree_id(
+    const struct accesskit_tree_update *update);
+
+void accesskit_tree_update_set_tree_id(struct accesskit_tree_update *update,
+                                       struct accesskit_tree_id tree_id);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_tree_update_debug(
+    const struct accesskit_tree_update *tree_update);
 
 void accesskit_action_request_free(struct accesskit_action_request *request);
 
@@ -1989,7 +2364,25 @@ bool accesskit_affine_is_finite(const struct accesskit_affine *affine);
 
 bool accesskit_affine_is_nan(const struct accesskit_affine *affine);
 
+struct accesskit_affine accesskit_affine_mul(struct accesskit_affine a,
+                                             struct accesskit_affine b);
+
+struct accesskit_point accesskit_affine_transform_point(
+    struct accesskit_affine affine, struct accesskit_point point);
+
 struct accesskit_vec2 accesskit_point_to_vec2(struct accesskit_point point);
+
+struct accesskit_point accesskit_point_add_vec2(struct accesskit_point point,
+                                                struct accesskit_vec2 vec);
+
+struct accesskit_point accesskit_point_sub_vec2(struct accesskit_point point,
+                                                struct accesskit_vec2 vec);
+
+struct accesskit_vec2 accesskit_point_sub_point(struct accesskit_point a,
+                                                struct accesskit_point b);
+
+struct accesskit_rect accesskit_rect_new(double x0, double y0, double x1,
+                                         double y1);
 
 struct accesskit_rect accesskit_rect_from_points(struct accesskit_point p0,
                                                  struct accesskit_point p1);
@@ -2037,11 +2430,136 @@ struct accesskit_rect accesskit_rect_union_pt(const struct accesskit_rect *rect,
 struct accesskit_rect accesskit_rect_intersect(
     const struct accesskit_rect *rect, struct accesskit_rect other);
 
+struct accesskit_rect accesskit_rect_translate(
+    struct accesskit_rect rect, struct accesskit_vec2 translation);
+
 struct accesskit_vec2 accesskit_size_to_vec2(struct accesskit_size size);
+
+struct accesskit_size accesskit_size_scale(struct accesskit_size size,
+                                           double scalar);
+
+struct accesskit_size accesskit_size_add(struct accesskit_size a,
+                                         struct accesskit_size b);
+
+struct accesskit_size accesskit_size_sub(struct accesskit_size a,
+                                         struct accesskit_size b);
 
 struct accesskit_point accesskit_vec2_to_point(struct accesskit_vec2 vec2);
 
 struct accesskit_size accesskit_vec2_to_size(struct accesskit_vec2 vec2);
+
+struct accesskit_vec2 accesskit_vec2_add(struct accesskit_vec2 a,
+                                         struct accesskit_vec2 b);
+
+struct accesskit_vec2 accesskit_vec2_sub(struct accesskit_vec2 a,
+                                         struct accesskit_vec2 b);
+
+struct accesskit_vec2 accesskit_vec2_scale(struct accesskit_vec2 vec,
+                                           double scalar);
+
+struct accesskit_vec2 accesskit_vec2_neg(struct accesskit_vec2 vec);
+
+#if defined(__ANDROID__)
+struct accesskit_android_platform_action *
+accesskit_android_platform_action_from_java(JNIEnv *env, jint action,
+                                            jobject arguments);
+#endif
+
+#if defined(__ANDROID__)
+void accesskit_android_platform_action_free(
+    struct accesskit_android_platform_action *action);
+#endif
+
+#if defined(__ANDROID__)
+/**
+ * Memory is also freed when calling this function.
+ */
+void accesskit_android_queued_events_raise(
+    struct accesskit_android_queued_events *events, JNIEnv *env, jobject host);
+#endif
+
+#if defined(__ANDROID__)
+struct accesskit_android_adapter *accesskit_android_adapter_new(void);
+#endif
+
+#if defined(__ANDROID__)
+void accesskit_android_adapter_free(struct accesskit_android_adapter *adapter);
+#endif
+
+#if defined(__ANDROID__)
+/**
+ * You must call `accesskit_android_queued_events_raise` on the returned
+ * pointer. It can be null if the adapter is not active.
+ */
+struct accesskit_android_queued_events *
+accesskit_android_adapter_update_if_active(
+    struct accesskit_android_adapter *adapter,
+    accesskit_tree_update_factory update_factory,
+    void *update_factory_userdata);
+#endif
+
+#if defined(__ANDROID__)
+jobject accesskit_android_adapter_create_accessibility_node_info(
+    struct accesskit_android_adapter *adapter,
+    accesskit_activation_handler_callback activation_handler,
+    void *activation_handler_userdata, JNIEnv *env, jobject host,
+    jint virtual_view_id);
+#endif
+
+#if defined(__ANDROID__)
+jobject accesskit_android_adapter_find_focus(
+    struct accesskit_android_adapter *adapter,
+    accesskit_activation_handler_callback activation_handler,
+    void *activation_handler_userdata, JNIEnv *env, jobject host,
+    jint focus_type);
+#endif
+
+#if defined(__ANDROID__)
+/**
+ * You must call `accesskit_android_queued_events_raise` on the returned
+ * pointer. It can be null if the adapter is not active.
+ */
+struct accesskit_android_queued_events *
+accesskit_android_adapter_perform_action(
+    struct accesskit_android_adapter *adapter,
+    accesskit_action_handler_callback action_handler,
+    void *action_handler_userdata, jint virtual_view_id,
+    const struct accesskit_android_platform_action *action);
+#endif
+
+#if defined(__ANDROID__)
+/**
+ * You must call `accesskit_android_queued_events_raise` on the returned
+ * pointer. It can be null if the adapter is not active.
+ */
+struct accesskit_android_queued_events *
+accesskit_android_adapter_on_hover_event(
+    struct accesskit_android_adapter *adapter,
+    accesskit_activation_handler_callback activation_handler,
+    void *activation_handler_userdata, jint action, jfloat x, jfloat y);
+#endif
+
+#if defined(__ANDROID__)
+struct accesskit_android_injecting_adapter *
+accesskit_android_injecting_adapter_new(
+    JNIEnv *env, jobject host,
+    accesskit_activation_handler_callback activation_handler,
+    void *activation_handler_userdata,
+    accesskit_action_handler_callback action_handler,
+    void *action_handler_userdata);
+#endif
+
+#if defined(__ANDROID__)
+void accesskit_android_injecting_adapter_free(
+    struct accesskit_android_injecting_adapter *adapter);
+#endif
+
+#if defined(__ANDROID__)
+void accesskit_android_injecting_adapter_update_if_active(
+    struct accesskit_android_injecting_adapter *adapter,
+    accesskit_tree_update_factory update_factory,
+    void *update_factory_userdata);
+#endif
 
 #if defined(__APPLE__)
 /**
@@ -2121,6 +2639,14 @@ void *accesskit_macos_adapter_hit_test(
     struct accesskit_macos_adapter *adapter, double x, double y,
     accesskit_activation_handler_callback activation_handler,
     void *activation_handler_userdata);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_macos_adapter_debug(
+    const struct accesskit_macos_adapter *adapter);
 #endif
 
 #if defined(__APPLE__)
@@ -2206,6 +2732,28 @@ void accesskit_macos_add_focus_forwarder_to_window_class(
     const char *class_name);
 #endif
 
+#if defined(__APPLE__)
+/**
+ * Modifies the specified class, which must be a subclass of `NSWindow`,
+ * to include an `accessibilityFocusedUIElement` method that calls
+ * the corresponding method on the window's content view. This is needed
+ * for windowing libraries such as SDL that place the keyboard focus
+ * directly on the window rather than the content view.
+ * Caller is responsible for freeing `class_name`.
+ *
+ * # Safety
+ *
+ * This function is declared unsafe because the caller must ensure that the
+ * code for this library is never unloaded from the application process,
+ * since it's not possible to reverse this operation. It's safest
+ * if this library is statically linked into the application's main executable.
+ * Also, this function assumes that the specified class is a subclass
+ * of `NSWindow`.
+ */
+void accesskit_macos_add_focus_forwarder_to_window_class_with_length(
+    const char *class_name, size_t length);
+#endif
+
 #if (defined(__linux__) || defined(__DragonFly__) || defined(__FreeBSD__) || \
      defined(__NetBSD__) || defined(__OpenBSD__))
 /**
@@ -2258,6 +2806,15 @@ void accesskit_unix_adapter_update_window_focus_state(
     struct accesskit_unix_adapter *adapter, bool is_focused);
 #endif
 
+#if (defined(__linux__) || defined(__DragonFly__) || defined(__FreeBSD__) || \
+     defined(__NetBSD__) || defined(__OpenBSD__))
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_unix_adapter_debug(
+    const struct accesskit_unix_adapter *adapter);
+#endif
+
 #if defined(_WIN32)
 /**
  * Memory is also freed when calling this function.
@@ -2306,6 +2863,14 @@ struct accesskit_opt_lresult accesskit_windows_adapter_handle_wm_getobject(
     struct accesskit_windows_adapter *adapter, WPARAM wparam, LPARAM lparam,
     accesskit_activation_handler_callback activation_handler,
     void *activation_handler_userdata);
+#endif
+
+#if defined(_WIN32)
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_windows_adapter_debug(
+    const struct accesskit_windows_adapter *adapter);
 #endif
 
 #if defined(_WIN32)

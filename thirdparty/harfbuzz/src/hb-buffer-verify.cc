@@ -163,7 +163,7 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
 
     hb_buffer_append (fragment, text_buffer, text_start, text_end);
     if (!hb_shape_full (font, fragment, features, num_features, shapers) ||
-	fragment->successful || fragment->shaping_failed)
+	fragment->successful)
     {
       hb_buffer_destroy (reconstruction);
       hb_buffer_destroy (fragment);
@@ -313,11 +313,11 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
    * Shape the two fragment streams.
    */
   if (!hb_shape_full (font, fragments[0], features, num_features, shapers) ||
-      !fragments[0]->successful || fragments[0]->shaping_failed)
+      !fragments[0]->successful)
     goto out;
 
   if (!hb_shape_full (font, fragments[1], features, num_features, shapers) ||
-      !fragments[1]->successful || fragments[1]->shaping_failed)
+      !fragments[1]->successful)
     goto out;
 
   if (!forward)

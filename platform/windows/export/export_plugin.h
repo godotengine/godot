@@ -30,10 +30,8 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "editor/export/editor_export_platform_pc.h"
-#include "editor/settings/editor_settings.h"
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
@@ -65,7 +63,7 @@ class EditorExportPlatformWindows : public EditorExportPlatformPC {
 	Ref<ImageTexture> stop_icon;
 
 	Vector<SSHCleanupCommand> cleanup_commands;
-	OS::ProcessID ssh_pid = 0;
+	ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
 	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);
@@ -97,5 +95,5 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformWindows();
+	virtual void initialize() override;
 };

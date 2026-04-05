@@ -118,6 +118,7 @@ class ProjectManager : public Control {
 
 	void _show_about();
 	void _open_asset_library_confirmed();
+	void _project_list_menu_option(int p_option);
 
 	AcceptDialog *error_dialog = nullptr;
 
@@ -162,6 +163,7 @@ class ProjectManager : public Control {
 	Button *manage_tags_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
+	Button *donate_btn = nullptr;
 
 	HBoxContainer *open_btn_container = nullptr;
 	PopupMenu *open_options_popup = nullptr;
@@ -194,6 +196,7 @@ class ProjectManager : public Control {
 	void _rename_project();
 	void _duplicate_project();
 	void _duplicate_project_with_action(PostDuplicateAction p_action);
+	void _show_project_in_file_manager();
 	void _erase_project();
 	void _erase_missing_projects();
 	void _erase_project_confirm();
@@ -201,6 +204,7 @@ class ProjectManager : public Control {
 	void _update_project_buttons();
 	void _open_options_popup();
 	void _open_recovery_mode_ask(bool manual = false);
+	void _open_donate_page();
 
 	void _on_project_created(const String &dir, bool edit);
 	void _on_project_duplicated(const String &p_original_path, const String &p_duplicate_path, bool p_edit);

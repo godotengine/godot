@@ -4,7 +4,7 @@
  *
  *   Load the metrics tables common to TTF and OTF fonts (body).
  *
- * Copyright (C) 2006-2024 by
+ * Copyright (C) 2006-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -306,7 +306,7 @@
     }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-    if ( var && face->blend )
+    if ( var && FT_IS_VARIATION( &face->root ) )
     {
       FT_Face  f = FT_FACE( face );
       FT_Int   a = (FT_Int)*aadvance;

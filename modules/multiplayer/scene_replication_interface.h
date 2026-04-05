@@ -34,6 +34,7 @@
 #include "multiplayer_synchronizer.h"
 
 #include "core/object/ref_counted.h"
+#include "core/templates/rb_set.h"
 
 class SceneMultiplayer;
 class SceneCacheInterface;

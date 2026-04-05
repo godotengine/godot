@@ -1,13 +1,17 @@
 name: 🤖 Android Builds
 on:
   workflow_call:
+    secrets:
+      SERVICE_ACCOUNT_KEY:
+        required: true
+
+  workflow_dispatch:
 
 # Global Settings
 env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    tests=no
     swappy=yes
 
 jobs:
@@ -22,28 +26,31 @@ jobs:
           - name: Editor (target=editor)
             cache-name: android-editor
             target: editor
+            instrumented_tests: true
             scons-flags: >-
               arch=arm64
               production=yes
 
-          - name: Template arm32 (target=template_release, arch=arm32)
+          - name: Template arm32 (target=template_debug, arch=arm32)
             cache-name: android-template-arm32
-            target: template_release
+            target: template_debug
+            instrumented_tests: false
             scons-flags: arch=arm32
 
-          - name: Template arm64 (target=template_release, arch=arm64)
+          - name: Template arm64 (target=template_debug, arch=arm64)
             cache-name: android-template-arm64
-            target: template_release
+            target: template_debug
+            instrumented_tests: true
             scons-flags: arch=arm64
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -57,16 +64,8 @@ jobs:
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      - name: Download pre-built Android Swappy Frame Pacing Library
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
-        with:
-          repo: godotengine/godot-swappy
-          version: tags/from-source-2025-01-31
-          file: godot-swappy.7z
-          target: swappy/godot-swappy.7z
-
-      - name: Extract pre-built Android Swappy Frame Pacing Library
-        run: 7za x -y swappy/godot-swappy.7z -o${{github.workspace}}/thirdparty/swappy-frame-pacing
+      - name: Download Swappy
+        run: python ./misc/scripts/install_swappy_android.py
 
       - name: Compilation
         uses: ./.github/actions/godot-build
@@ -82,7 +81,7 @@ jobs:
         continue-on-error: true
 
       - name: Generate Godot templates
-        if: matrix.target == 'template_release'
+        if: matrix.target == 'template_debug'
         run: |
           cd platform/android/java
           ./gradlew generateGodotTemplates
@@ -123,3 +122,54 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}-picoos
           path: picoos
+
+      - name: Generate Instrumented test APKs
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        run: |
+          cd platform/android/java
+          if [ "${{ matrix.target }}" = "editor" ]; then
+            ./gradlew :editor:assembleAndroidAndroidTest :editor:assembleAndroidDebug -Pperform_signing=true
+          else
+            ./gradlew :app:assembleAndroidTest :app:assembleInstrumentedDebug -Pperform_signing=true
+          fi
+          cd ../../..
+
+      - name: Create credentials file
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+
+      - name: Set up gcloud CLI
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Run tests on Firebase Test Lab
+        if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        run: |
+          set +e
+
+          if [ "${{ matrix.target }}" = "editor" ]; then
+            APP_APK="platform/android/java/editor/build/outputs/apk/android/debug/android_editor-android-debug.apk"
+            TEST_APK="platform/android/java/editor/build/outputs/apk/androidTest/android/debug/android_editor-android-debug-androidTest.apk"
+          else
+            APP_APK="platform/android/java/app/build/outputs/apk/instrumented/debug/android_debug.apk"
+            TEST_APK="platform/android/java/app/build/outputs/apk/androidTest/instrumented/debug/app-instrumented-debug-androidTest.apk"
+          fi
+
+          output=$(gcloud firebase test android run \
+            --type instrumentation \
+            --app "$APP_APK" \
+            --test "$TEST_APK" \
+            --device model=pa3q,version=35,orientation=landscape \
+            --device model=java,version=30,orientation=landscape \
+            --device model=MediumPhone.arm,version=26,orientation=landscape \
+            --use-orchestrator \
+            --timeout 2m 2>&1)
+          exit_code=$?
+          echo "$output"
+          if [[ $exit_code -eq 1 && "$output" == *"TEST_QUOTA_EXCEEDED"* ]]; then
+            echo "::warning title=Firebase Test Lab::Test quota exceeded."
+            exit_code=0
+          fi
+          exit "$exit_code"

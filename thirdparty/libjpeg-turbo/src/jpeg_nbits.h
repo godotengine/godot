@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, 2021, 2024, D. R. Commander.
+ * Copyright (C) 2014, 2021, 2024-2025, D. R. Commander.
  * Copyright (C) 2014, Olle Liljenzin.
  * Copyright (C) 2020, Arm Limited.
  *
@@ -23,7 +23,7 @@
 
 /* NOTE: Both GCC and Clang define __GNUC__ */
 #if (defined(__GNUC__) && (defined(__arm__) || defined(__aarch64__))) || \
-    defined(_M_ARM) || defined(_M_ARM64)
+    defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #if !defined(__thumb__) || defined(__thumb2__)
 #define USE_CLZ_INTRINSIC
 #endif

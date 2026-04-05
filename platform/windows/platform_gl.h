@@ -34,17 +34,23 @@
 #define GL_API_ENABLED // Allow using desktop GL.
 #endif
 
+#ifdef ANGLE_ENABLED
 #ifndef GLES_API_ENABLED
 #define GLES_API_ENABLED // Allow using GLES (ANGLE).
 #endif
 
-#ifdef EGL_STATIC
-#define KHRONOS_STATIC 1
-#include "thirdparty/angle/include/EGL/egl.h"
-#include "thirdparty/angle/include/EGL/eglext.h"
-#undef KHRONOS_STATIC
-#else
-#include "thirdparty/glad/glad/egl.h"
+#ifndef GLAD_GLES2
+#define GLAD_GLES2
 #endif
 
-#include "thirdparty/glad/glad/gl.h"
+// IWYU pragma: begin_exports.
+#ifdef EGL_STATIC
+#define KHRONOS_STATIC 1
+#include <thirdparty/angle/include/EGL/egl.h>
+#include <thirdparty/angle/include/EGL/eglext.h>
+#undef KHRONOS_STATIC
+#endif
+#endif
+
+#include <thirdparty/glad/glad/gl.h>
+// IWYU pragma: end_exports.

@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 
 class EditorResourceConversionPlugin : public RefCounted {
 	GDCLASS(EditorResourceConversionPlugin, RefCounted);

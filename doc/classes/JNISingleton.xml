@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JNISingleton" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="JNISingleton" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Singleton that connects the engine with Android plugins to interface with native Android code.
 	</brief_description>
@@ -9,4 +9,13 @@
 	<tutorials>
 		<link title="Creating Android plugins">$DOCS_URL/tutorials/platform/android/android_plugin.html#doc-android-plugin</link>
 	</tutorials>
+	<methods>
+		<method name="has_java_method" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given [param method] name exists in the JNISingleton's Java methods.
+			</description>
+		</method>
+	</methods>
 </class>

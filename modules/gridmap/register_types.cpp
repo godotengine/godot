@@ -49,7 +49,7 @@ void initialize_gridmap_module(ModuleInitializationLevel p_level) {
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDREGISTER_CLASS(GridMapEditorPlugin);
+		GDREGISTER_VIRTUAL_CLASS(GridMapEditorPlugin);
 		EditorPlugins::add_by_type<GridMapEditorPlugin>();
 	}
 #endif

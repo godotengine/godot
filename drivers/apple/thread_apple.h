@@ -34,6 +34,7 @@
 #include "core/typedefs.h"
 
 #include <pthread.h>
+
 #include <new> // For hardware interference size
 
 class String;
@@ -57,8 +58,6 @@ public:
 
 	struct Settings {
 		Priority priority;
-		/// Override the default stack size (0 means default)
-		uint64_t stack_size = 0;
 		Settings() { priority = PRIORITY_NORMAL; }
 	};
 

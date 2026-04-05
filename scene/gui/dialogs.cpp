@@ -31,13 +31,17 @@
 #include "dialogs.h"
 #include "dialogs.compat.inc"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/gui/line_edit.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 // AcceptDialog
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
-	if (close_on_escape && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+	if (close_on_escape && p_event->is_action_pressed(SNAME("ui_close_dialog"), false, true)) {
 		_cancel_pressed();
 	}
 	Window::_input_from_window(p_event);
@@ -55,7 +59,7 @@ void AcceptDialog::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DIALOG);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_DIALOG);
 		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			if (is_visible()) {

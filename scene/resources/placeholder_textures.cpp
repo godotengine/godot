@@ -30,6 +30,9 @@
 
 #include "placeholder_textures.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void PlaceholderTexture2D::set_size(Size2 p_size) {
 	size = p_size;
 	emit_changed();
@@ -70,7 +73,7 @@ PlaceholderTexture2D::PlaceholderTexture2D() {
 PlaceholderTexture2D::~PlaceholderTexture2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (rid.is_valid()) {
-		RS::get_singleton()->free(rid);
+		RS::get_singleton()->free_rid(rid);
 	}
 }
 
@@ -127,7 +130,7 @@ PlaceholderTexture3D::PlaceholderTexture3D() {
 PlaceholderTexture3D::~PlaceholderTexture3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (rid.is_valid()) {
-		RS::get_singleton()->free(rid);
+		RS::get_singleton()->free_rid(rid);
 	}
 }
 
@@ -176,7 +179,7 @@ Ref<Image> PlaceholderTextureLayered::get_layer_data(int p_layer) const {
 
 RID PlaceholderTextureLayered::get_rid() const {
 	if (rid.is_null()) {
-		rid = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
+		rid = RS::get_singleton()->texture_2d_layered_placeholder_create(RSE::TextureLayeredType(layered_type));
 	}
 	return rid;
 }
@@ -195,6 +198,6 @@ PlaceholderTextureLayered::PlaceholderTextureLayered(LayeredType p_type) {
 PlaceholderTextureLayered::~PlaceholderTextureLayered() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (rid.is_valid()) {
-		RS::get_singleton()->free(rid);
+		RS::get_singleton()->free_rid(rid);
 	}
 }

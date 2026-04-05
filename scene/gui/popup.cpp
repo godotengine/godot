@@ -30,15 +30,20 @@
 
 #include "popup.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/config/project_settings.h"
-#endif
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "scene/gui/panel.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/config/project_settings.h"
+#endif
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
-	if ((ac_popup || get_flag(FLAG_POPUP)) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		hide_reason = HIDE_REASON_CANCELED; // ESC pressed, mark as canceled unconditionally.
 		_close_pressed();
 	}
@@ -78,6 +83,8 @@ void Popup::_notification(int p_what) {
 			if (!is_in_edited_scene_root()) {
 				if (is_visible()) {
 					_initialize_visible_parents();
+					popped_up = true;
+					hide_reason = HIDE_REASON_NONE;
 				} else {
 					_deinitialize_visible_parents();
 					if (hide_reason == HIDE_REASON_NONE) {
@@ -85,15 +92,6 @@ void Popup::_notification(int p_what) {
 					}
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
-				}
-			}
-		} break;
-
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
-			if (!is_in_edited_scene_root()) {
-				if (has_focus()) {
-					popped_up = true;
-					hide_reason = HIDE_REASON_NONE;
 				}
 			}
 		} break;
@@ -115,7 +113,7 @@ void Popup::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			if (!is_in_edited_scene_root() && (get_flag(FLAG_POPUP) || ac_popup)) {
+			if (!is_in_edited_scene_root() && get_flag(FLAG_POPUP)) {
 				if (hide_reason == HIDE_REASON_NONE) {
 					hide_reason = HIDE_REASON_UNFOCUSED;
 				}
@@ -126,7 +124,7 @@ void Popup::_notification(int p_what) {
 }
 
 void Popup::_parent_focused() {
-	if (popped_up && (get_flag(FLAG_POPUP) || ac_popup)) {
+	if (popped_up && get_flag(FLAG_POPUP)) {
 		if (hide_reason == HIDE_REASON_NONE) {
 			hide_reason = HIDE_REASON_UNFOCUSED;
 		}
@@ -170,7 +168,7 @@ Rect2i Popup::_popup_adjust_rect() const {
 
 	Rect2i current(get_position(), get_size());
 
-	if (!is_embedded() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+	if (!is_embedded() && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
 		// We're fine as is, the Display Server will take care of that for us.
 		return current;
 	}
@@ -437,6 +435,8 @@ void PopupPanel::_bind_methods() {
 
 PopupPanel::PopupPanel() {
 	set_flag(FLAG_TRANSPARENT, true);
+	set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+	set_default_canvas_item_texture_repeat(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE);
 
 	panel = memnew(Panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);

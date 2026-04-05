@@ -53,12 +53,12 @@
 // As some data is setup before we start rendering, and cleaned up
 // after we've stopped, that is accessed directly from both threads.
 
-#include "action_map/openxr_action_map.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
 #include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_vrs.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -120,7 +120,7 @@ private:
 
 	void free_interaction_profiles();
 
-	void _set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye);
+	void _set_default_pos(Transform3D &r_transform, double p_world_scale, uint64_t p_eye);
 
 	void handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand);
 
@@ -170,6 +170,9 @@ public:
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
 
+	bool get_foveation_with_subsampled_images() const;
+	void set_foveation_with_subsampled_images(bool p_enabled);
+
 	float get_vrs_min_radius() const;
 	void set_vrs_min_radius(float p_vrs_min_radius);
 
@@ -193,7 +196,7 @@ public:
 	virtual void process() override;
 	virtual void pre_render() override;
 	bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
 
 	virtual bool is_passthrough_supported() override;
@@ -213,7 +216,7 @@ public:
 	void on_state_stopping();
 	void on_state_loss_pending();
 	void on_state_exiting();
-	void on_reference_space_change_pending();
+	void on_reference_space_change_pending(XrReferenceSpaceType p_type);
 	void on_refresh_rate_changes(float p_new_rate);
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
 
@@ -231,6 +234,10 @@ public:
 	};
 
 	SessionState get_session_state();
+
+	/** User presence. */
+	bool is_user_presence_supported() const;
+	bool is_user_present() const;
 
 	/** Hand tracking. */
 	enum Hand {

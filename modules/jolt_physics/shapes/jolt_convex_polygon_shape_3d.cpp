@@ -33,7 +33,7 @@
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/ConvexHullShape.h"
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 
 JPH::ShapeRefC JoltConvexPolygonShape3D::_build() const {
 	const int vertex_count = (int)vertices.size();

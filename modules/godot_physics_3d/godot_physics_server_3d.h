@@ -36,7 +36,7 @@
 #include "godot_step_3d.h"
 
 #include "core/templates/rid_owner.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class GodotPhysicsServer3D : public PhysicsServer3D {
 	GDCLASS(GodotPhysicsServer3D, PhysicsServer3D);
@@ -263,7 +263,7 @@ public:
 
 	virtual RID soft_body_create() override;
 
-	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) override;
+	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
 	virtual RID soft_body_get_space(RID p_body) const override;
@@ -371,7 +371,7 @@ public:
 
 	/* MISC */
 
-	virtual void free(RID p_rid) override;
+	virtual void free_rid(RID p_rid) override;
 
 	virtual void set_active(bool p_active) override;
 	virtual void init() override;

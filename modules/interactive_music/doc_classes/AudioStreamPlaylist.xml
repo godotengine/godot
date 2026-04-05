@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlaylist" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="AudioStreamPlaylist" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		[AudioStream] that includes sub-streams and plays them back like a playlist.
 	</brief_description>
 	<description>
+		An audio stream that can play back sub-streams in sequence. Streams can be added to the Playlist with [method set_list_stream], and shuffled with [member shuffle].
 	</description>
 	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_bpm" qualifiers="const">

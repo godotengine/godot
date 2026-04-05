@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 

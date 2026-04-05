@@ -30,6 +30,8 @@
 
 #include "generic_6dof_joint_3d.h"
 
+#include "core/object/class_db.h"
+
 void Generic6DOFJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param_x", "param", "value"), &Generic6DOFJoint3D::set_param_x);
 	ClassDB::bind_method(D_METHOD("get_param_x", "param"), &Generic6DOFJoint3D::get_param_x);

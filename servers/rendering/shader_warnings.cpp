@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "shader_warnings.h"
+
 #include "core/variant/variant.h"
 
 #ifdef DEBUG_ENABLED
@@ -97,7 +98,7 @@ String ShaderWarning::get_name_from_code(Code p_code) {
 		PNAME("MAGIC_POSITION_WRITE"),
 	};
 
-	static_assert(std::size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
+	static_assert(std_size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
 
 	return names[(int)p_code];
 }

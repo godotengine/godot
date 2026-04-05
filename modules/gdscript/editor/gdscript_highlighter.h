@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 
 class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
 	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
@@ -89,6 +89,7 @@ private:
 	Color number_color;
 	Color member_variable_color;
 	Color string_color;
+	Color placeholder_color;
 	Color node_path_color;
 	Color node_ref_color;
 	Color annotation_color;

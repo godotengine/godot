@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Control" inherits="CanvasItem" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all GUI controls. Adapts its position and size based on its parent control.
 	</brief_description>
@@ -11,8 +11,8 @@
 		Godot propagates input events via viewports. Each [Viewport] is responsible for propagating [InputEvent]s to their child nodes. As the [member SceneTree.root] is a [Window], this already happens automatically for all UI elements in your game.
 		Input events are propagated through the [SceneTree] from the root node to all child nodes by calling [method Node._input]. For UI elements specifically, it makes more sense to override the virtual method [method _gui_input], which filters out unrelated input events, such as by checking z-order, [member mouse_filter], focus, or if the event was inside of the control's bounding box.
 		Call [method accept_event] so no other node receives the event. Once you accept an input, it becomes handled so [method Node._unhandled_input] will not process it.
-		Only one [Control] node can be in focus. Only the node in focus will receive events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
-		Sets [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
+		Only one [Control] node can be in focus. Only the node in focus will receive events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus. Focus will not be represented visually if gained via mouse/touch input, only appearing with keyboard/gamepad input (for accessibility), or via [method grab_focus].
+		Set [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
 		[Theme] resources change the control's appearance. The [member theme] of a [Control] node affects all of its direct and indirect children (as long as a chain of controls is uninterrupted). To override some of the theme items, call one of the [code]add_theme_*_override[/code] methods, like [method add_theme_font_override]. You can also override theme items in the Inspector.
 		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use the [code]get_theme_*[/code] and [code]add_theme_*_override[/code] methods provided by this class.
 	</description>
@@ -92,6 +92,14 @@
 				Override this method to return a human-readable description of the position of the child [param node] in the custom container, added to the [member accessibility_name].
 			</description>
 		</method>
+		<method name="_get_cursor_shape" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="at_position" type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Returns the cursor shape for the position [param at_position] in the control's local coordinates, which will typically be used while hovering over this control. See [method get_cursor_shape].
+				If not overridden, defaults to [member mouse_default_cursor_shape].
+			</description>
+		</method>
 		<method name="_get_drag_data" qualifiers="virtual">
 			<return type="Variant" />
 			<param index="0" name="at_position" type="Vector2" />
@@ -129,8 +137,15 @@
 			<return type="String" />
 			<param index="0" name="at_position" type="Vector2" />
 			<description>
-				Virtual method to be implemented by the user. Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. See [method get_tooltip].
+				Virtual method to be implemented by the user. Returns the tooltip text for the position [param at_position] in the control's local coordinates, which will typically appear when the cursor is resting over this control. See [method get_tooltip].
 				[b]Note:[/b] If this method returns an empty [String] and [method _make_custom_tooltip] is not overridden, no tooltip is displayed.
+			</description>
+		</method>
+		<method name="_get_tooltip_auto_translate_mode_at" qualifiers="virtual const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="at_position" type="Vector2" />
+			<description>
+				Return the auto-translation mode at the given [param at_position]. If not implemented, the [member tooltip_auto_translate_mode] property will be used instead.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -173,7 +188,7 @@
 			<param index="0" name="point" type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [param point] is inside this control.
-				If not overridden, default behavior is checking if the point is within control's Rect.
+				If not overridden, default behavior is checking if the point is within the control's Rect.
 				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]Rect2(Vector2.ZERO, size).has_point(point)[/code].
 			</description>
 		</method>
@@ -204,7 +219,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Example:[/b] Usa a scene instance as a tooltip:
+				[b]Example:[/b] Use a scene instance as a tooltip:
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
@@ -409,11 +424,18 @@
 				Returns combined minimum size from [member custom_minimum_size] and [method get_minimum_size].
 			</description>
 		</method>
+		<method name="get_combined_pivot_offset" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the combined value of [member pivot_offset] and [member pivot_offset_ratio], in pixels. The ratio is multiplied by the control's size.
+			</description>
+		</method>
 		<method name="get_cursor_shape" qualifiers="const">
 			<return type="int" enum="Control.CursorShape" />
-			<param index="0" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<param index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the mouse cursor shape for this control when hovered over [param position] in local coordinates. For most controls, this is the same as [member mouse_default_cursor_shape], but some built-in controls implement more complex logic.
+				Returns the mouse cursor shape for this control when hovered over [param at_position] in local coordinates. For most controls, this is the same as [member mouse_default_cursor_shape], but some built-in controls implement more complex logic.
+				You can override [method _get_cursor_shape] to implement custom behavior for this method.
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
@@ -487,10 +509,14 @@
 			<return type="Vector2" />
 			<description>
 				Returns the position of this [Control] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
-				Equals to [member global_position] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Equivalent to [code]get_screen_transform().origin[/code] (see [method CanvasItem.get_screen_transform]).
 				[b]Example:[/b] Show a popup at the mouse position:
 				[codeblock]
-				popup_menu.position = get_screen_position() + get_local_mouse_position()
+				popup_menu.position = get_screen_position() + get_screen_transform().basis_xform(get_local_mouse_position())
+
+				# The above code is equivalent to:
+				popup_menu.position = get_screen_transform() * get_local_mouse_position()
+
 				popup_menu.reset_size()
 				popup_menu.popup()
 				[/codeblock]
@@ -593,8 +619,8 @@
 			<return type="String" />
 			<param index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
-				This method can be overridden to customize its behavior. See [method _get_tooltip].
+				Returns the tooltip text for the position [param at_position] in the control's local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
+				You can override [method _get_tooltip] to implement custom behavior for this method.
 				[b]Note:[/b] If this method returns an empty [String] and [method _make_custom_tooltip] is not overridden, no tooltip is displayed.
 			</description>
 		</method>
@@ -618,15 +644,19 @@
 		</method>
 		<method name="grab_focus">
 			<return type="void" />
+			<param index="0" name="hide_focus" type="bool" default="false" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
+				If [param hide_focus] is [code]true[/code], the control will not visually show its focused state. Has no effect for [LineEdit] and [TextEdit] when [member ProjectSettings.gui/common/show_focus_state_on_pointer_event] is set to [code]Text Input Controls[/code], or for any control when it is set to [code]Always[/code].
 				[b]Note:[/b] Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
 			<return type="bool" />
+			<param index="0" name="ignore_hidden_focus" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if this is the current focused control. See [member focus_mode].
+				If [param ignore_hidden_focus] is [code]true[/code], controls that have their focus hidden will always return [code]false[/code]. Hidden focus happens automatically when controls gain focus via mouse input, or manually using [method grab_focus] with [code]hide_focus[/code] set to [code]true[/code].
 			</description>
 		</method>
 		<method name="has_theme_color" qualifiers="const">
@@ -984,7 +1014,7 @@
 		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
 			The paths to the nodes which label this node.
 		</member>
-		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
+		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="AccessibilityServer.AccessibilityLiveMode" default="0">
 			The mode with which a live region updates. A live region is a [Node] that is updated as a result of an external event when the user's focus may be elsewhere.
 		</member>
 		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
@@ -1084,9 +1114,49 @@
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
+		<member name="offset_transform_enabled" type="bool" setter="set_offset_transform_enabled" getter="is_offset_transform_enabled" default="false">
+			If [code]true[/code], applies all offset transform properties. Otherwise, no offset transform is applied and the properties have no effect.
+		</member>
+		<member name="offset_transform_pivot" type="Vector2" setter="set_offset_transform_pivot" getter="get_offset_transform_pivot" default="Vector2(0, 0)">
+			Pivot used by [member offset_transform_rotation] and [member offset_transform_scale] in absolute units.
+			The final pivot position is the combined value of this property and [member offset_transform_pivot_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_pivot_ratio" type="Vector2" setter="set_offset_transform_pivot_ratio" getter="get_offset_transform_pivot_ratio" default="Vector2(0.5, 0.5)">
+			Same as [member offset_transform_pivot] but expressed in units relative to the [Control] [member size] where [code]Vector2(0, 0)[/code] is the top-left corner of this control, and [code]Vector2(1, 1)[/code] is its bottom-right corner.
+			The final pivot position is the combined value of this property and [member offset_transform_pivot].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_position" type="Vector2" setter="set_offset_transform_position" getter="get_offset_transform_position" default="Vector2(0, 0)">
+			Position offset in absolute units. The final offset is the combined value of this property and [member offset_transform_position_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_position_ratio" type="Vector2" setter="set_offset_transform_position_ratio" getter="get_offset_transform_position_ratio" default="Vector2(0, 0)">
+			Same as [member offset_transform_position] but expressed in units relative to the [Control] [member size] where [code]Vector2(0, 0)[/code] is the top-left corner of this control, and [code]Vector2(1, 1)[/code] is its bottom-right corner.
+			The final offset is the combined value of this property and [member offset_transform_position].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_rotation" type="float" setter="set_offset_transform_rotation" getter="get_offset_transform_rotation" default="0.0">
+			Rotation offset. The rotation pivot is defined by [member offset_transform_pivot] and [member offset_transform_pivot_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_scale" type="Vector2" setter="set_offset_transform_scale" getter="get_offset_transform_scale" default="Vector2(1, 1)">
+			Scale offset. The scale pivot is defined by [member offset_transform_pivot] and [member offset_transform_pivot_ratio].
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
+		<member name="offset_transform_visual_only" type="bool" setter="set_offset_transform_visual_only" getter="is_offset_transform_visual_only" default="true">
+			If [code]true[/code], the offset transforms is only applied visually and does not affect input. In other words, this Control will still receive input events at its original location before the offset transform is applied.
+			If [code]false[/code], the entire transform of this Control is affected and input events will register where the Control is visually.
+			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
+		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
-			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot. Set this property to [member size] / 2 to pivot around the Control's center.
+			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot.
+			The actual offset is the combined value of this property and [member pivot_offset_ratio].
+		</member>
+		<member name="pivot_offset_ratio" type="Vector2" setter="set_pivot_offset_ratio" getter="get_pivot_offset_ratio" default="Vector2(0, 0)">
+			Same as [member pivot_offset], but expressed as uniform vector, where [code]Vector2(0, 0)[/code] is the top-left corner of this control, and [code]Vector2(1, 1)[/code] is its bottom-right corner. Set this property to [code]Vector2(0.5, 0.5)[/code] to pivot around this control's center.
+			The actual offset is the combined value of this property and [member pivot_offset].
 		</member>
 		<member name="position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
 			The node's position, relative to its containing node. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].
@@ -1242,7 +1312,7 @@
 			Prevents the control from receiving mouse input. [method get_mouse_filter_with_override] will return [constant MOUSE_FILTER_IGNORE].
 		</constant>
 		<constant name="MOUSE_BEHAVIOR_ENABLED" value="2" enum="MouseBehaviorRecursive">
-			Allows the control to be receive mouse input, depending on the [member mouse_filter]. This can be used to ignore the parent's [member mouse_behavior_recursive]. [method get_mouse_filter_with_override] will return the [member mouse_filter].
+			Allows the control to receive mouse input, depending on the [member mouse_filter]. This can be used to ignore the parent's [member mouse_behavior_recursive]. [method get_mouse_filter_with_override] will return the [member mouse_filter].
 		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40">
 			Sent when the node changes size. Use [member size] to get the new size.
@@ -1272,6 +1342,7 @@
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_EXIT" value="44">
 			Sent when the node loses focus.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
 			Sent when the node needs to refresh its theme items. This happens in one of the following cases:
@@ -1469,7 +1540,7 @@
 			Right-to-left layout direction.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4" enum="LayoutDirection">
-			Automatic layout direction, determined from the system locale. Right-to-left layout direction is automatically used for languages that require it such as Arabic and Hebrew, but only if a valid translation file is loaded for the given language.. For all other languages (or if no valid translation file is found by Godot), left-to-right layout direction is used. If using [TextServerFallback] ([member ProjectSettings.internationalization/rendering/text_driver]), left-to-right layout direction is always used regardless of the language.
+			Automatic layout direction, determined from the system locale. Right-to-left layout direction is automatically used for languages that require it such as Arabic and Hebrew, but only if a valid translation file is loaded for the given language. For all other languages (or if no valid translation file is found by Godot), left-to-right layout direction is used. If using [TextServerFallback] ([member ProjectSettings.internationalization/rendering/text_driver]), left-to-right layout direction is always used regardless of the language.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_MAX" value="5" enum="LayoutDirection">
 			Represents the size of the [enum LayoutDirection] enum.

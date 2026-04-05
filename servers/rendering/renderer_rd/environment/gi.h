@@ -35,6 +35,7 @@
 #include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/environment/sky.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug_probes.glsl.gen.h"
@@ -232,7 +233,7 @@ private:
 	VoxelGiShaderRD voxel_gi_shader;
 	RID voxel_gi_lighting_shader_version;
 	RID voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_MAX];
-	RID voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_MAX];
+	PipelineDeferredRD voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_MAX];
 
 	enum {
 		VOXEL_GI_DEBUG_COLOR,
@@ -289,7 +290,7 @@ private:
 
 		SdfgiPreprocessShaderRD preprocess;
 		RID preprocess_shader;
-		RID preprocess_pipeline[PRE_PROCESS_MAX];
+		PipelineDeferredRD preprocess_pipeline[PRE_PROCESS_MAX];
 
 		struct DebugPushConstant {
 			float grid_size[3];
@@ -308,7 +309,7 @@ private:
 		SdfgiDebugShaderRD debug;
 		RID debug_shader;
 		RID debug_shader_version;
-		RID debug_pipeline;
+		PipelineDeferredRD debug_pipeline;
 
 		enum ProbeDebugMode {
 			PROBE_DEBUG_PROBES,
@@ -381,7 +382,7 @@ private:
 		};
 		SdfgiDirectLightShaderRD direct_light;
 		RID direct_light_shader;
-		RID direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
+		PipelineDeferredRD direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
 
 		enum {
 			INTEGRATE_MODE_PROCESS,
@@ -418,13 +419,14 @@ private:
 			float sky_color_or_orientation[3];
 			float y_mult;
 
+			float sky_irradiance_border_size[2];
 			uint32_t store_ambient_texture;
-			uint32_t pad[3];
+			uint32_t pad;
 		};
 
 		SdfgiIntegrateShaderRD integrate;
 		RID integrate_shader;
-		RID integrate_pipeline[INTEGRATE_MODE_MAX];
+		PipelineDeferredRD integrate_pipeline[INTEGRATE_MODE_MAX];
 
 		RID integrate_default_sky_uniform_set;
 
@@ -539,7 +541,7 @@ public:
 
 	void voxel_gi_instance_free(RID p_rid);
 
-	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
+	RSE::VoxelGIQuality voxel_gi_quality = RSE::VOXEL_GI_QUALITY_LOW;
 
 	/* SDFGI */
 
@@ -665,7 +667,7 @@ public:
 		float energy = 1.0;
 		float normal_bias = 1.1;
 		float probe_bias = 1.1;
-		RS::EnvironmentSDFGIYScale y_scale_mode = RS::ENV_SDFGI_Y_SCALE_75_PERCENT;
+		RSE::EnvironmentSDFGIYScale y_scale_mode = RSE::ENV_SDFGI_Y_SCALE_75_PERCENT;
 
 		float y_mult = 1.0;
 
@@ -695,9 +697,9 @@ public:
 		void render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result);
 	};
 
-	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
-	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
-	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
+	RSE::EnvironmentSDFGIRayCount sdfgi_ray_count = RSE::ENV_SDFGI_RAY_COUNT_16;
+	RSE::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RSE::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
+	RSE::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RSE::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
 
 	float sdfgi_solid_cell_ratio = 0.25;
 	Vector3 sdfgi_debug_probe_pos;
@@ -815,7 +817,7 @@ public:
 	bool half_resolution = false;
 	GiShaderRD shader;
 	RID shader_version;
-	RID pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
+	PipelineDeferredRD pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
 
 	GI();
 	~GI();

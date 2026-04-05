@@ -75,7 +75,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Control *state_machine_play_pos = nullptr;
 
 	PanelContainer *error_panel = nullptr;
-	Label *error_label = nullptr;
+	RichTextLabel *error_label = nullptr;
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
@@ -130,7 +130,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	static AnimationNodeStateMachineEditor *singleton;
 
 	void _state_machine_gui_input(const Ref<InputEvent> &p_event);
-	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, float p_opacity = 1.0);
+	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group, float p_opacity = 1.0, bool p_endpoint_hovered = false, bool p_endpoint_hovered_start = false);
 
 	void _state_machine_draw();
 
@@ -144,7 +144,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	PopupMenu *state_machine_menu = nullptr;
 	PopupMenu *end_menu = nullptr;
 	PopupMenu *animations_menu = nullptr;
-	Vector<String> animations_to_add;
+	Vector<StringName> animations_to_add;
 	Vector<String> nodes_to_connect;
 
 	Vector2 add_node_pos;
@@ -168,9 +168,21 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Vector2 connecting_to;
 	StringName connecting_to_node;
 
+	bool reconnecting = false;
+	int hovered_transition_index = -1;
+	bool hovered_transition_start = false;
+	int reconnecting_transition_index = -1;
+	bool reconnecting_transition_start = false;
+	int reconnecting_from_node_rect_index = -1;
+	int reconnecting_to_node_rect_index = -1;
+	Vector2 reconnecting_transition_pos;
+	StringName reconnecting_transition_target;
+
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
 	void _connect_to(int p_index);
+	void _reconnect_transition();
+	void _select_transition(const StringName &p_from, const StringName &p_to);
 
 	struct NodeRect {
 		StringName node_name;
@@ -268,7 +280,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	float fading_pos = 0.0f;
 
 	float error_time = 0.0f;
-	String error_text;
 
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;

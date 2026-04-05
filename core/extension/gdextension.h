@@ -30,11 +30,9 @@
 
 #pragma once
 
-#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/extension/gdextension_loader.h"
-#include "core/io/config_file.h"
-#include "core/io/resource_loader.h"
-#include "core/object/ref_counted.h"
+#include "core/io/resource.h"
 
 class GDExtensionMethodBind;
 
@@ -67,6 +65,7 @@ class GDExtension : public Resource {
 
 	struct ClassCreationDeprecatedInfo {
 #ifndef DISABLE_DEPRECATED
+		bool legacy_unexposed_class = false;
 		GDExtensionClassNotification notification_func = nullptr;
 		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 		GDExtensionClassCreateInstance create_instance_func = nullptr;
@@ -176,24 +175,10 @@ public:
 	static void initialize_gdextensions();
 	static void finalize_gdextensions();
 
-	GDExtension();
 	~GDExtension();
 };
 
 VARIANT_ENUM_CAST(GDExtension::InitializationLevel)
-
-class GDExtensionResourceLoader : public ResourceFormatLoader {
-public:
-	static Error load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension);
-
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-#ifdef TOOLS_ENABLED
-	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
-#endif // TOOLS_ENABLED
-};
 
 #ifdef TOOLS_ENABLED
 class GDExtensionEditorPlugins {

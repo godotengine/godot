@@ -1,7 +1,8 @@
 using Godot;
 using System;
+using static Godot.Mathf;
 
-public partial class ExportedProperties : GodotObject
+public partial class ExportedProperties(string primaryCtorParameter) : GodotObject
 {
     // Do not generate default value
     private String _notGeneratePropertyString = new string("not generate");
@@ -82,6 +83,20 @@ public partial class ExportedProperties : GodotObject
         }
     }
 
+    private Single _fullPropertyStaticImport = Pi;
+    [Export]
+    public Single FullPropertyStaticImport
+    {
+        get
+        {
+            return _fullPropertyStaticImport;
+        }
+        set
+        {
+            _fullPropertyStaticImport = value;
+        }
+    }
+
     // Lambda Property
     private String _lamdaPropertyString = "LamdaPropertyString";
     [Export]
@@ -90,6 +105,30 @@ public partial class ExportedProperties : GodotObject
         get => _lamdaPropertyString;
         set => _lamdaPropertyString = value;
     }
+
+    private Single _lambdaPropertyStaticImport = Tau;
+    [Export]
+    public Single LambdaPropertyStaticImport
+    {
+        get => _lambdaPropertyStaticImport;
+        set => _lambdaPropertyStaticImport = value;
+    }
+
+    // Primary Constructor Parameter
+    [Export]
+    public String PrimaryCtorParameter { get; set; } = primaryCtorParameter;
+
+    // Constant Math Expression
+    [Export]
+    public Single ConstantMath { get; set; } = 2 * Mathf.Pi;
+
+    //Constant Math Expression With Static Import
+    [Export]
+    public Single ConstantMathStaticImport { get; set; } = RadToDeg(2 * Pi);
+
+    // Static Strings Addition
+    [Export]
+    public string StaticStringAddition { get; set; } = string.Empty + string.Empty;
 
     // Auto Property
     [Export] private Boolean PropertyBoolean { get; set; } = true;
@@ -168,6 +207,7 @@ public partial class ExportedProperties : GodotObject
     // Classes
     [Export] private GodotObject PropertyGodotObjectOrDerived { get; set; }
     [Export] private Godot.Texture PropertyGodotResourceTexture { get; set; }
+    [Export] private Godot.Texture PropertyGodotResourceTextureWithInitializer { get; set; } = new() { ResourceName = "" };
     [Export] private StringName PropertyStringName { get; set; } = new StringName("foo");
     [Export] private NodePath PropertyNodePath { get; set; } = new NodePath("foo");
     [Export] private Rid PropertyRid { get; set; }

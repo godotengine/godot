@@ -29,7 +29,10 @@
 /**************************************************************************/
 
 #include "resource_preloader.h"
+
+#include "core/object/class_db.h"
 #include "core/templates/rb_set.h"
+
 void ResourcePreloader::_set_resources(const Array &p_data) {
 	resources.clear();
 
@@ -67,8 +70,7 @@ Array ResourcePreloader::_get_resources() const {
 		i++;
 	}
 
-	Array res = { names, arr };
-	return res;
+	return Array{ names, arr };
 }
 
 void ResourcePreloader::add_resource(const StringName &p_name, const Ref<Resource> &p_resource) {

@@ -269,7 +269,10 @@ public:
 		// };
 		// Type type = NO_ERROR;
 		String message;
-		int line = 0, column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -337,8 +340,10 @@ public:
 		};
 
 		Type type = NONE;
-		int start_line = 0, end_line = 0;
-		int start_column = 0, end_column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
@@ -904,6 +909,7 @@ public:
 			MEMBER_CLASS,
 			INHERITED_VARIABLE,
 			STATIC_VARIABLE,
+			NATIVE_CLASS,
 		};
 		Source source = UNDEFINED_SOURCE;
 
@@ -1041,6 +1047,7 @@ public:
 	struct ReturnNode : public Node {
 		ExpressionNode *return_value = nullptr;
 		bool void_return = false;
+		bool use_conversion = false;
 
 		ReturnNode() {
 			type = RETURN;
@@ -1107,8 +1114,10 @@ public:
 			StringName name;
 			FunctionNode *source_function = nullptr;
 
-			int start_line = 0, end_line = 0;
-			int start_column = 0, end_column = 0;
+			int start_line = 0;
+			int start_column = 0;
+			int end_line = 0;
+			int end_column = 0;
 
 			DataType get_datatype() const;
 			String get_name() const;
@@ -1289,7 +1298,7 @@ public:
 		COMPLETION_ATTRIBUTE_METHOD, // After id.| to look for methods.
 		COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
 		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
-		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
+		COMPLETION_DECLARATION, // Potential declaration (var, const, class, etc.).
 		COMPLETION_GET_NODE, // Get node with $ notation.
 		COMPLETION_IDENTIFIER, // List available identifiers in scope.
 		COMPLETION_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
@@ -1348,6 +1357,19 @@ private:
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
+public:
+	struct WarningDirectoryRule {
+		enum Decision {
+			DECISION_EXCLUDE,
+			DECISION_INCLUDE,
+			DECISION_MAX,
+		};
+
+		String directory_path; // With a trailing slash.
+		Decision decision = DECISION_EXCLUDE;
+	};
+
+private:
 	struct PendingWarning {
 		const Node *source = nullptr;
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
@@ -1355,13 +1377,17 @@ private:
 		Vector<String> symbols;
 	};
 
-	bool is_ignoring_warnings = false;
+	static bool is_project_ignoring_warnings;
+	static GDScriptWarning::WarnLevel warning_levels[GDScriptWarning::WARNING_MAX];
+	static LocalVector<WarningDirectoryRule> warning_directory_rules;
+
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
+	bool is_script_ignoring_warnings = false;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
-#endif
+#endif // DEBUG_ENABLED
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1472,6 +1498,7 @@ private:
 	}
 
 	void clear();
+
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
@@ -1480,7 +1507,9 @@ private:
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
 	void apply_pending_warnings();
-#endif
+	void evaluate_warning_directory_rules_for_script_path();
+#endif // DEBUG_ENABLED
+
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
@@ -1614,11 +1643,13 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+
 #ifdef DEBUG_ENABLED
+	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;

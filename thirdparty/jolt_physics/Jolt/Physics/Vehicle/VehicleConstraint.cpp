@@ -687,8 +687,17 @@ void VehicleConstraint::RestoreState(StateRecorder &inStream)
 
 Ref<ConstraintSettings> VehicleConstraint::GetConstraintSettings() const
 {
-	JPH_ASSERT(false); // Not implemented yet
-	return nullptr;
+	VehicleConstraintSettings *settings = new VehicleConstraintSettings;
+	ToConstraintSettings(*settings);
+	settings->mUp = mUp;
+	settings->mForward = mForward;
+	settings->mMaxPitchRollAngle = ACos(mCosMaxPitchRollAngle);
+	settings->mWheels.resize(mWheels.size());
+	for (Wheels::size_type w = 0; w < mWheels.size(); ++w)
+		settings->mWheels[w] = const_cast<WheelSettings *>(mWheels[w]->mSettings.GetPtr());
+	settings->mAntiRollBars = mAntiRollBars;
+	settings->mController = mController->GetSettings();
+	return settings;
 }
 
 JPH_NAMESPACE_END

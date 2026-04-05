@@ -30,6 +30,9 @@
 
 #include "joint_2d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
 
 void Joint2D::_disconnect_signals() {
@@ -253,5 +256,5 @@ Joint2D::Joint2D() {
 
 Joint2D::~Joint2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
-	PhysicsServer2D::get_singleton()->free(joint);
+	PhysicsServer2D::get_singleton()->free_rid(joint);
 }

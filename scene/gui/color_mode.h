@@ -115,7 +115,7 @@ public:
 	float slider_max[3] = { 1, 1, 1 };
 	Ref<GradientTexture2D> rgb_texture[3];
 
-	virtual String get_name() const override { return "Linear"; }
+	virtual String get_name() const override { return ETR("Linear"); }
 
 	virtual float get_slider_step() const override { return 0.001; }
 	virtual float get_spinbox_arrow_step() const override { return 0.01; }

@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/missing_resource.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
 #include "scene/property_utils.h"
@@ -749,7 +750,7 @@ Error ResourceLoaderBinary::load() {
 		Ref<Resource> res;
 		Resource *r = nullptr;
 
-		MissingResource *missing_resource = nullptr;
+		Ref<MissingResource> missing_resource;
 
 		if (main) {
 			res = ResourceLoader::get_resource_ref_override(local_path);
@@ -775,7 +776,7 @@ Error ResourceLoaderBinary::load() {
 						missing_resource = memnew(MissingResource);
 						missing_resource->set_original_class(t);
 						missing_resource->set_recording_properties(true);
-						obj = missing_resource;
+						obj = missing_resource.ptr();
 					} else {
 						error = ERR_FILE_CORRUPT;
 						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource of unrecognized type in file: '%s'.", local_path, t));
@@ -831,7 +832,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			bool set_valid = true;
-			if (value.get_type() == Variant::OBJECT && missing_resource == nullptr && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+			if (value.get_type() == Variant::OBJECT && missing_resource.is_null() && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
 				// If the property being set is a missing resource (and the parent is not),
 				// then setting it will most likely not work.
 				// Instead, save it as metadata.
@@ -873,7 +874,7 @@ Error ResourceLoaderBinary::load() {
 			}
 		}
 
-		if (missing_resource) {
+		if (missing_resource.is_valid()) {
 			missing_resource->set_recording_properties(false);
 		}
 
@@ -1520,33 +1521,39 @@ void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<
 	loader.res_path = loader.local_path;
 	loader.get_classes_used(f, r_classes);
 
-	// Fetch the nodes inside scene files.
-	if (loader.type == "PackedScene") {
-		ERR_FAIL_COND(loader.load() != OK);
+	if (loader.type != "PackedScene") {
+		return;
+	}
 
-		Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
-		for (int i = 0; i < state->get_node_count(); i++) {
-			const StringName node_name = state->get_node_type(i);
-			if (ClassDB::class_exists(node_name)) {
-				r_classes->insert(node_name);
+	// Fetch the nodes inside scene files.
+
+	// Reopening is necessary, or errors will occur.
+	f->reopen(p_path, FileAccess::READ);
+	loader.open(f);
+	ERR_FAIL_COND(loader.load() != OK);
+
+	Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
+	for (int i = 0; i < state->get_node_count(); i++) {
+		const StringName node_name = state->get_node_type(i);
+		if (ClassDB::class_exists(node_name)) {
+			r_classes->insert(node_name);
+		}
+
+		// Fetch the values of properties in the node.
+		for (int j = 0; j < state->get_node_property_count(i); j++) {
+			const Variant var = state->get_node_property_value(i, j);
+			if (var.get_type() != Variant::OBJECT) {
+				continue;
 			}
 
-			// Fetch the values of properties in the node.
-			for (int j = 0; j < state->get_node_property_count(i); j++) {
-				const Variant var = state->get_node_property_value(i, j);
-				if (var.get_type() != Variant::OBJECT) {
-					continue;
-				}
+			const Object *obj = var.get_validated_object();
+			if (obj == nullptr) {
+				continue;
+			}
 
-				const Object *obj = var.get_validated_object();
-				if (obj == nullptr) {
-					continue;
-				}
-
-				const StringName obj_name = obj->get_class_name();
-				if (ClassDB::class_exists(obj_name)) {
-					r_classes->insert(obj_name);
-				}
+			const StringName obj_name = obj->get_class_name();
+			if (ClassDB::class_exists(obj_name)) {
+				r_classes->insert(obj_name);
 			}
 		}
 	}

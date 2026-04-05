@@ -33,7 +33,7 @@
 // This file should only be included by other headers.
 
 // GLTF classes.
-struct GLTFAccessor;
+class GLTFAccessor;
 class GLTFAnimation;
 class GLTFBufferView;
 class GLTFCamera;

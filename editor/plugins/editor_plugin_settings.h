@@ -43,13 +43,11 @@ class EditorPluginSettings : public VBoxContainer {
 	};
 
 	enum {
-		COLUMN_PADDING_LEFT,
 		COLUMN_STATUS,
 		COLUMN_NAME,
 		COLUMN_VERSION,
 		COLUMN_AUTHOR,
 		COLUMN_EDIT,
-		COLUMN_PADDING_RIGHT,
 		COLUMN_MAX,
 	};
 

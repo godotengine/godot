@@ -122,7 +122,7 @@ def configure(env: "SConsEnvironment"):
     env["EXPORTED_RUNTIME_METHODS"] = []
 
     # Validate arch.
-    supported_arches = ["wasm32"]
+    supported_arches = ["wasm32", "wasm64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     try:
@@ -183,12 +183,15 @@ def configure(env: "SConsEnvironment"):
 
     # Sanitizers
     if env["use_ubsan"]:
+        env.Append(CPPDEFINES=["UBSAN_ENABLED"])
         env.Append(CCFLAGS=["-fsanitize=undefined"])
         env.Append(LINKFLAGS=["-fsanitize=undefined"])
     if env["use_asan"]:
+        env.Append(CPPDEFINES=["ASAN_ENABLED"])
         env.Append(CCFLAGS=["-fsanitize=address"])
         env.Append(LINKFLAGS=["-fsanitize=address"])
     if env["use_lsan"]:
+        env.Append(CPPDEFINES=["LSAN_ENABLED"])
         env.Append(CCFLAGS=["-fsanitize=leak"])
         env.Append(LINKFLAGS=["-fsanitize=leak"])
     if env["use_safe_heap"]:
@@ -296,6 +299,8 @@ def configure(env: "SConsEnvironment"):
         env.extra_suffix = ".dlink" + env.extra_suffix
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
+    env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
+    env.Append(LINKFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
 
     # Run the main application in a web worker
     if env["proxy_to_pthread"]:

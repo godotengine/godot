@@ -33,6 +33,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
+#include "scene/resources/shader.h"
 
 class AspectRatioContainer;
 class ColorMode;
@@ -167,11 +168,6 @@ public:
 	};
 
 private:
-	static inline Ref<Shader> wheel_shader;
-	static inline Ref<Shader> circle_shader;
-	static inline Ref<Shader> circle_ok_color_shader;
-	static inline Ref<Shader> rectangle_ok_color_hs_shader;
-	static inline Ref<Shader> rectangle_ok_color_hl_shader;
 	static inline List<Color> preset_cache;
 	static inline List<Color> recent_preset_cache;
 
@@ -216,6 +212,7 @@ private:
 	Button *btn_pick = nullptr;
 	Label *palette_name = nullptr;
 	String palette_path;
+	bool presets_just_loaded = false;
 	Button *btn_preset = nullptr;
 	Button *btn_recent_preset = nullptr;
 	PopupMenu *shape_popup = nullptr;
@@ -249,6 +246,7 @@ private:
 
 	Button *text_type = nullptr;
 	LineEdit *c_text = nullptr;
+	Button *text_copy = nullptr;
 
 	HSlider *alpha_slider = nullptr;
 	SpinBox *alpha_value = nullptr;
@@ -343,11 +341,13 @@ private:
 		Ref<Texture2D> color_hue;
 
 		Ref<Texture2D> color_script;
+		Ref<Texture2D> color_copy;
 
 		/* Mode buttons */
 		Ref<StyleBox> mode_button_normal;
 		Ref<StyleBox> mode_button_pressed;
 		Ref<StyleBox> mode_button_hover;
+		Ref<StyleBox> mode_button_hover_pressed;
 	} theme_cache;
 
 	void _copy_normalized_to_hsv_okhsl();
@@ -369,6 +369,7 @@ private:
 #ifdef TOOLS_ENABLED
 	void _text_type_toggled();
 #endif // TOOLS_ENABLED
+	void _text_copy_pressed();
 	void _sample_input(const Ref<InputEvent> &p_event);
 	void _sample_draw();
 	void _slider_draw(int p_which);
@@ -432,9 +433,6 @@ public:
 	GridContainer *get_slider_container();
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
-
-	static void init_shaders();
-	static void finish_shaders();
 
 	void add_mode(ColorMode *p_mode);
 	void add_shape(ColorPickerShape *p_shape);
@@ -521,6 +519,7 @@ class ColorPickerButton : public Button {
 	Color color;
 	bool edit_alpha = true;
 	bool edit_intensity = true;
+	bool popup_was_open = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
@@ -540,6 +539,7 @@ class ColorPickerButton : public Button {
 protected:
 	void _notification(int);
 	static void _bind_methods();
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void set_pick_color(const Color &p_color);

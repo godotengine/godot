@@ -30,7 +30,13 @@
 
 #include "openxr_select_action_dialog.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/scroll_container.h"
 
 void OpenXRSelectActionDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_selected", PropertyInfo(Variant::STRING, "action")));
@@ -44,7 +50,7 @@ void OpenXRSelectActionDialog::_notification(int p_what) {
 	}
 }
 
-void OpenXRSelectActionDialog::_on_select_action(const String p_action) {
+void OpenXRSelectActionDialog::_on_select_action(const String &p_action) {
 	if (selected_action != "") {
 		NodePath button_path = action_buttons[selected_action];
 		Button *button = Object::cast_to<Button>(get_node(button_path));
@@ -120,7 +126,7 @@ void OpenXRSelectActionDialog::ok_pressed() {
 	hide();
 }
 
-OpenXRSelectActionDialog::OpenXRSelectActionDialog(Ref<OpenXRActionMap> p_action_map) {
+OpenXRSelectActionDialog::OpenXRSelectActionDialog(const Ref<OpenXRActionMap> &p_action_map) {
 	action_map = p_action_map;
 
 	set_title(TTR("Select an action"));

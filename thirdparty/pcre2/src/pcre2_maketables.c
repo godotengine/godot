@@ -45,12 +45,12 @@ own as part of the PCRE2 library. It is also included in the compilation of
 pcre2_dftables.c as a freestanding program, in which case the macro
 PCRE2_DFTABLES is defined. */
 
+
 #ifndef PCRE2_DFTABLES    /* Compiling the library */
-#  ifdef HAVE_CONFIG_H
-#  include "config.h"
-#  endif
-#  include "pcre2_internal.h"
+#include "pcre2_internal.h"
 #endif
+
+
 
 /*************************************************
 *           Create PCRE2 character tables        *
@@ -64,14 +64,15 @@ supplied, but when PCRE2_DFTABLES is defined (when compiling the pcre2_dftables
 freestanding auxiliary program) malloc() is used, and the function has a
 different name so as not to clash with the prototype in pcre2.h.
 
-Arguments:   none when PCRE2_DFTABLES is defined
+Arguments:   pointers to character-transforming functions when PCRE2_DFTABLES is
+             defined;
                else a PCRE2 general context or NULL
-Returns:     pointer to the contiguous block of data
+Returns:     pointer to the contiguous block of data;
                else NULL if memory allocation failed
 */
 
 #ifdef PCRE2_DFTABLES  /* Included in freestanding pcre2_dftables program */
-static const uint8_t *maketables(void)
+static const uint8_t *maketables(int (*charfn_to)(int), int (*charfn_from)(int))
 {
 uint8_t *yield = (uint8_t *)malloc(TABLES_LENGTH);
 
@@ -82,6 +83,9 @@ pcre2_maketables(pcre2_general_context *gcontext)
 uint8_t *yield = (uint8_t *)((gcontext != NULL)?
   gcontext->memctl.malloc(TABLES_LENGTH, gcontext->memctl.memory_data) :
   malloc(TABLES_LENGTH));
+
+#define charfn_to(c)    (c)
+#define charfn_from(c)  (c)
 #endif  /* PCRE2_DFTABLES */
 
 int i;
@@ -92,13 +96,18 @@ p = yield;
 
 /* First comes the lower casing table */
 
-for (i = 0; i < 256; i++) *p++ = tolower(i);
+for (i = 0; i < 256; i++)
+  {
+  int c = charfn_from(tolower(charfn_to(i)));
+  *p++ = (c < 256)? c : i;
+  }
 
 /* Next the case-flipping table */
 
 for (i = 0; i < 256; i++)
   {
-  int c = islower(i)? toupper(i) : tolower(i);
+  int c = charfn_from(islower(charfn_to(i))? toupper(charfn_to(i))
+                                           : tolower(charfn_to(i)));
   *p++ = (c < 256)? c : i;
   }
 
@@ -118,17 +127,17 @@ test for alnum specially. */
 memset(p, 0, cbit_length);
 for (i = 0; i < 256; i++)
   {
-  if (isdigit(i))  p[cbit_digit  + i/8] |= 1u << (i&7);
-  if (isupper(i))  p[cbit_upper  + i/8] |= 1u << (i&7);
-  if (islower(i))  p[cbit_lower  + i/8] |= 1u << (i&7);
-  if (isalnum(i))  p[cbit_word   + i/8] |= 1u << (i&7);
-  if (i == '_')    p[cbit_word   + i/8] |= 1u << (i&7);
-  if (isspace(i))  p[cbit_space  + i/8] |= 1u << (i&7);
-  if (isxdigit(i)) p[cbit_xdigit + i/8] |= 1u << (i&7);
-  if (isgraph(i))  p[cbit_graph  + i/8] |= 1u << (i&7);
-  if (isprint(i))  p[cbit_print  + i/8] |= 1u << (i&7);
-  if (ispunct(i))  p[cbit_punct  + i/8] |= 1u << (i&7);
-  if (iscntrl(i))  p[cbit_cntrl  + i/8] |= 1u << (i&7);
+  if (isdigit(charfn_to(i)))  p[cbit_digit  + i/8] |= 1u << (i&7);
+  if (isupper(charfn_to(i)))  p[cbit_upper  + i/8] |= 1u << (i&7);
+  if (islower(charfn_to(i)))  p[cbit_lower  + i/8] |= 1u << (i&7);
+  if (isalnum(charfn_to(i)))  p[cbit_word   + i/8] |= 1u << (i&7);
+  if (i == CHAR_UNDERSCORE)   p[cbit_word   + i/8] |= 1u << (i&7);
+  if (isspace(charfn_to(i)))  p[cbit_space  + i/8] |= 1u << (i&7);
+  if (isxdigit(charfn_to(i))) p[cbit_xdigit + i/8] |= 1u << (i&7);
+  if (isgraph(charfn_to(i)))  p[cbit_graph  + i/8] |= 1u << (i&7);
+  if (isprint(charfn_to(i)))  p[cbit_print  + i/8] |= 1u << (i&7);
+  if (ispunct(charfn_to(i)))  p[cbit_punct  + i/8] |= 1u << (i&7);
+  if (iscntrl(charfn_to(i)))  p[cbit_cntrl  + i/8] |= 1u << (i&7);
   }
 p += cbit_length;
 
@@ -140,11 +149,11 @@ changed at release 8.34 and it's always been this way for PCRE2. */
 for (i = 0; i < 256; i++)
   {
   int x = 0;
-  if (isspace(i)) x += ctype_space;
-  if (isalpha(i)) x += ctype_letter;
-  if (islower(i)) x += ctype_lcletter;
-  if (isdigit(i)) x += ctype_digit;
-  if (isalnum(i) || i == '_') x += ctype_word;
+  if (isspace(charfn_to(i))) x += ctype_space;
+  if (isalpha(charfn_to(i))) x += ctype_letter;
+  if (islower(charfn_to(i))) x += ctype_lcletter;
+  if (isdigit(charfn_to(i))) x += ctype_digit;
+  if (isalnum(charfn_to(i)) || i == CHAR_UNDERSCORE) x += ctype_word;
   *p++ = x;
   }
 
@@ -152,6 +161,9 @@ return yield;
 }
 
 #ifndef PCRE2_DFTABLES   /* Compiling the library */
+#undef charfn_to
+#undef charfn_from
+
 PCRE2_EXP_DEFN void PCRE2_CALL_CONVENTION
 pcre2_maketables_free(pcre2_general_context *gcontext, const uint8_t *tables)
 {

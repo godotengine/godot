@@ -30,15 +30,18 @@
 
 #include "polygon_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/2d/skeleton_2d.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
-#include "servers/navigation_server_2d.h"
-#endif // NAVIGATION_2D_DISABLED
-#include "skeleton_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
-#ifndef NAVIGATION_2D_DISABLED
 Callable Polygon2D::_navmesh_source_geometry_parsing_callback;
 RID Polygon2D::_navmesh_source_geometry_parser;
 #endif // NAVIGATION_2D_DISABLED
@@ -355,27 +358,39 @@ void Polygon2D::_notification(int p_what) {
 				}
 			}
 
-			RS::get_singleton()->mesh_clear(mesh);
+			bool has_uv = uvs.size() == points.size();
+			bool has_color = colors.size() == points.size();
+			bool has_bones = skeleton_node != nullptr;
+
+			bool needs_clear = len != last_len;
+			needs_clear |= index_array.size() != last_index_count;
+			needs_clear |= has_uv != last_has_uv;
+			needs_clear |= has_color != last_has_color;
+			needs_clear |= has_bones || has_bones != last_has_bones;
+
+			if (needs_clear) {
+				RS::get_singleton()->mesh_clear(mesh);
+			}
 
 			if (index_array.size()) {
 				Array arr;
-				arr.resize(RS::ARRAY_MAX);
-				arr[RS::ARRAY_VERTEX] = points;
+				arr.resize(RSE::ARRAY_MAX);
+				arr[RSE::ARRAY_VERTEX] = points;
 				if (uvs.size() == points.size()) {
-					arr[RS::ARRAY_TEX_UV] = uvs;
+					arr[RSE::ARRAY_TEX_UV] = uvs;
 				}
 				if (colors.size() == points.size()) {
-					arr[RS::ARRAY_COLOR] = colors;
+					arr[RSE::ARRAY_COLOR] = colors;
 				}
 
 				if (bones.size() == points.size() * 4) {
-					arr[RS::ARRAY_BONES] = bones;
-					arr[RS::ARRAY_WEIGHTS] = weights;
+					arr[RSE::ARRAY_BONES] = bones;
+					arr[RSE::ARRAY_WEIGHTS] = weights;
 				}
 
-				arr[RS::ARRAY_INDEX] = index_array;
+				arr[RSE::ARRAY_INDEX] = index_array;
 
-				RS::SurfaceData sd;
+				RenderingServerTypes::SurfaceData sd;
 
 				if (skeleton_node) {
 					// Compute transform between mesh and skeleton for runtime AABB compute.
@@ -393,15 +408,29 @@ void Polygon2D::_notification(int p_what) {
 					sd.mesh_to_skeleton_xform.origin.y = mesh_to_sk2d.get_origin().y;
 				}
 
-				Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
 				if (err != OK) {
 					return;
 				}
 
-				RS::get_singleton()->mesh_add_surface(mesh, sd);
-				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_rid() : RID());
+				if (needs_clear) {
+					RS::get_singleton()->mesh_add_surface(mesh, sd);
+				} else {
+					RS::get_singleton()->mesh_surface_update_vertex_region(mesh, 0, 0, sd.vertex_data);
+					if (has_uv || has_color) {
+						RS::get_singleton()->mesh_surface_update_attribute_region(mesh, 0, 0, sd.attribute_data);
+					}
+					RS::get_singleton()->mesh_surface_update_index_region(mesh, 0, 0, sd.index_data);
+				}
 			}
 
+			last_len = len;
+			last_index_count = index_array.size();
+			last_has_uv = has_uv;
+			last_has_color = has_color;
+			last_has_bones = has_bones;
+
+			RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_scaled_rid() : RID());
 		} break;
 	}
 }
@@ -702,7 +731,7 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
 
 	ADD_GROUP("Texture", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale", PROPERTY_HINT_LINK), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_texture_rotation", "get_texture_rotation");
@@ -731,5 +760,5 @@ Polygon2D::~Polygon2D() {
 	// This will free the internally-allocated mesh instance, if allocated.
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
-	RS::get_singleton()->free(mesh);
+	RS::get_singleton()->free_rid(mesh);
 }

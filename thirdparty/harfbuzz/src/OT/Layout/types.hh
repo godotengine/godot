@@ -29,8 +29,11 @@
 #ifndef OT_LAYOUT_TYPES_HH
 #define OT_LAYOUT_TYPES_HH
 
-using hb_ot_lookup_cache_t = hb_cache_t<15, 8, 7>;
-static_assert (sizeof (hb_ot_lookup_cache_t) == 256, "");
+using hb_ot_layout_mapping_cache_t = hb_cache_t<16, 8, 8>;
+static_assert (sizeof (hb_ot_layout_mapping_cache_t) == 512, "");
+
+using hb_ot_layout_binary_cache_t = hb_cache_t<14, 1, 8>;
+static_assert (sizeof (hb_ot_layout_binary_cache_t) == 256, "");
 
 namespace OT {
 namespace Layout {

@@ -38,13 +38,12 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 /* This module contains the function for checking a script run. */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "pcre2_internal.h"
+
 
 
 /*************************************************

@@ -30,6 +30,7 @@
 
 #include "visible_on_screen_notifier_3d_gizmo_plugin.h"
 
+#include "core/math/geometry_3d.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"

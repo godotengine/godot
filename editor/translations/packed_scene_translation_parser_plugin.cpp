@@ -31,6 +31,7 @@
 #include "packed_scene_translation_parser_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/resources/packed_scene.h"
 
@@ -106,11 +107,37 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		// If `auto_translate_mode` wasn't found, that means it is set to its default value (`AUTO_TRANSLATE_MODE_INHERIT`).
 		if (!auto_translate_mode_found) {
 			int idx_last = atr_owners.size() - 1;
-			if (idx_last > 0 && parent_path.begins_with(String(atr_owners[idx_last].first))) {
+			if (idx_last >= 0 && parent_path.begins_with(String(atr_owners[idx_last].first))) {
 				auto_translating = atr_owners[idx_last].second;
 			} else {
 				atr_owners.push_back(Pair(state->get_node_path(i), true));
 			}
+		}
+
+		// Handle the `tooltip_auto_translate_mode` property separately.
+		String tooltip_text;
+		bool tooltip_auto_translating = auto_translating;
+		for (int j = 0; j < state->get_node_property_count(i); j++) {
+			String property = state->get_node_property_name(i, j);
+			if (property == "tooltip_text") {
+				tooltip_text = (String)state->get_node_property_value(i, j);
+				continue;
+			}
+			if (property == "tooltip_auto_translate_mode") {
+				int mode = (int)state->get_node_property_value(i, j);
+				switch (mode) {
+					case Node::AUTO_TRANSLATE_MODE_ALWAYS: {
+						tooltip_auto_translating = true;
+					} break;
+					case Node::AUTO_TRANSLATE_MODE_DISABLED: {
+						tooltip_auto_translating = false;
+					} break;
+				}
+				continue;
+			}
+		}
+		if (!tooltip_text.is_empty() && tooltip_auto_translating) {
+			r_translations->push_back({ tooltip_text });
 		}
 
 		// Parse the names of children of `TabContainer`s, as they are used for tab titles.
@@ -144,7 +171,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			if (property_name == "script" && property_value.get_type() == Variant::OBJECT && !property_value.is_null()) {
 				// Parse built-in script.
 				Ref<Script> s = Object::cast_to<Script>(property_value);
-				if (!s->is_built_in()) {
+				if (s.is_null() || !s->is_built_in()) {
 					continue;
 				}
 
@@ -152,7 +179,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
 					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), r_translations);
 				}
-			} else if (node_type == "FileDialog" && property_name == "filters") {
+			} else if ((node_type == "FileDialog" || node_type == "EditorFileDialog") && property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
 				Vector<String> str_values = property_value;
 				for (int k = 0; k < str_values.size(); k++) {
@@ -203,9 +230,12 @@ PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlug
 	lookup_properties.insert("filters");
 	lookup_properties.insert("script");
 	lookup_properties.insert("item_*/text");
+	lookup_properties.insert("accessibility_name");
+	lookup_properties.insert("accessibility_description");
 
 	// Exception list (to prevent false positives).
 	exception_list.insert("LineEdit", { "text" });
 	exception_list.insert("TextEdit", { "text" });
 	exception_list.insert("CodeEdit", { "text" });
+	exception_list.insert("Control", { "tooltip_text" });
 }

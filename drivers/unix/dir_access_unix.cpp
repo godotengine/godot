@@ -32,7 +32,6 @@
 
 #if defined(UNIX_ENABLED)
 
-#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
@@ -44,6 +43,7 @@
 #include <sys/statfs.h>
 #endif
 #include <sys/statvfs.h>
+
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -51,6 +51,10 @@
 #if __has_include(<mntent.h>)
 #include <mntent.h>
 #endif
+
+String DirAccessUnix::fix_path(const String &p_path) const {
+	return DirAccess::fix_path(p_path).simplify_path();
+}
 
 Error DirAccessUnix::list_dir_begin() {
 	list_dir_end(); //close any previous dir opening!
@@ -437,7 +441,7 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	struct stat flags = {};
-	if ((lstat(p_path.utf8().get_data(), &flags) != 0)) {
+	if (lstat(p_path.utf8().get_data(), &flags) != 0) {
 		return FAILED;
 	}
 
@@ -467,7 +471,7 @@ bool DirAccessUnix::is_link(String p_file) {
 	}
 
 	struct stat flags = {};
-	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
+	if (lstat(p_file.utf8().get_data(), &flags) != 0) {
 		return false;
 	}
 
@@ -484,8 +488,8 @@ String DirAccessUnix::read_link(String p_file) {
 		p_file = p_file.left(-1);
 	}
 
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
 	String link;
 	if (len > 0) {

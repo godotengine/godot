@@ -34,9 +34,9 @@
 
 #include "core/string/char_utils.h" // IWYU pragma: export
 #include "core/templates/cowdata.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
-#include "core/variant/array.h"
 
 class String;
 template <typename T>
@@ -177,10 +177,13 @@ class [[nodiscard]] CharStringT {
 public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const T *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const T *get_data() const { return size() ? ptr() : &_null; }
 
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	// Returns the number of characters in the string (excluding terminating NUL character).
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
@@ -208,12 +211,7 @@ public:
 	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(p_cstr); }
 	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(p_cstr); }
 
-	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const {
-		if (length() != p_other.length()) {
-			return false;
-		}
-		return memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
-	}
+	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const { return span() == p_other.span(); }
 	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
 	_FORCE_INLINE_ bool operator<(const CharStringT<T> &p_other) const {
 		if (length() == 0) {
@@ -231,6 +229,8 @@ public:
 
 		return *this;
 	}
+
+	uint32_t hash() const { return hash_djb2(get_data()); }
 
 protected:
 	void copy_from(const T *p_cstr) {
@@ -268,26 +268,12 @@ class [[nodiscard]] String {
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
 
-	// Known-length copy.
-	void copy_from_unchecked(const char32_t *p_char, int p_length);
-
 	// NULL-terminated c string copy - automatically parse the string to find the length.
 	void append_latin1(const char *p_cstr) {
 		append_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
 	void append_utf32(const char32_t *p_cstr) {
 		append_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
-	}
-
-	// wchar_t copy_from depends on the platform.
-	void append_wstring(const Span<wchar_t> &p_cstr) {
-#ifdef WINDOWS_ENABLED
-		// wchar_t is 16-bit, parse as UTF-16
-		append_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
-#else
-		// wchar_t is 32-bit, copy directly
-		append_utf32((Span<char32_t> &)p_cstr);
-#endif
 	}
 	void append_wstring(const wchar_t *p_cstr) {
 #ifdef WINDOWS_ENABLED
@@ -311,10 +297,13 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const char32_t *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const char32_t *get_data() const { return size() ? ptr() : &_null; }
 
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	// Returns the number of characters in the string (excluding terminating NUL character).
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
@@ -330,6 +319,11 @@ public:
 	/// Resizes the string. The given size must include the null terminator.
 	/// New characters are not initialized, and should be set by the caller.
 	Error resize_uninitialized(int64_t p_size) { return _cowdata.resize<false>(p_size); }
+
+	Error reserve(int64_t p_size) {
+		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+		return _cowdata.reserve(p_size);
+	}
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
@@ -438,7 +432,7 @@ public:
 	String trim_suffix(const char *p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
-	String sprintf(const Array &values, bool *error) const;
+	String sprintf(const Span<Variant> &values, bool *error) const;
 	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
@@ -520,6 +514,8 @@ public:
 	String get_basename() const;
 	String path_join(const String &p_path) const;
 	char32_t unicode_at(int p_idx) const;
+	bool has_extension(const char *p_ext) const { return get_extension().to_lower() == p_ext; }
+	bool has_extension(const String &p_ext) const { return get_extension().to_lower() == p_ext; }
 
 	CharString ascii(bool p_allow_extended = false) const;
 	// Parse an ascii string.
@@ -539,9 +535,9 @@ public:
 	}
 
 	CharString utf8(Vector<uint8_t> *r_ch_length_map = nullptr) const;
-	Error append_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
-	Error append_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
-		return append_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
+	Error append_utf8(const char *p_utf8, int p_len = -1);
+	Error append_utf8(const Span<char> &p_range) {
+		return append_utf8(p_range.ptr(), p_range.size());
 	}
 	static String utf8(const char *p_utf8, int p_len = -1) {
 		String ret;
@@ -562,10 +558,35 @@ public:
 	}
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
-	void append_utf32(const Span<char32_t> &p_cstr);
+	// wchar_t copy_from depends on the platform.
+	Error append_wstring(const Span<wchar_t> &p_cstr) {
+#ifdef WINDOWS_ENABLED
+		// wchar_t is 16-bit, parse as UTF-16
+		return append_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
+#else
+		// wchar_t is 32-bit, copy directly
+		return append_utf32((Span<char32_t> &)p_cstr);
+#endif
+	}
+	static String wstring(const Span<wchar_t> &p_string) {
+		String string;
+		string.append_wstring(p_string);
+		return string;
+	}
+
+	Error append_utf32(const Span<char32_t> &p_cstr);
 	static String utf32(const Span<char32_t> &p_span) {
 		String string;
 		string.append_utf32(p_span);
+		return string;
+	}
+
+	// Like append_utf32, but does not check the string for string integrity (and is thus faster).
+	// Prefer this function for conversion from trusted utf32 strings.
+	void append_utf32_unchecked(const Span<char32_t> &p_span);
+	static String utf32_unchecked(const Span<char32_t> &p_string) {
+		String string;
+		string.append_utf32_unchecked(p_string);
 		return string;
 	}
 

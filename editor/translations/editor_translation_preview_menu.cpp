@@ -30,6 +30,7 @@
 
 #include "editor_translation_preview_menu.h"
 
+#include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 
@@ -45,10 +46,16 @@ void EditorTranslationPreviewMenu::_prepare() {
 		set_item_checked(-1, true);
 	}
 
+	add_separator();
+
 	const Vector<String> locales = TranslationServer::get_singleton()->get_loaded_locales();
-	if (!locales.is_empty()) {
-		add_separator();
+	if (locales.is_empty()) {
+		add_item(TTRC("No Translations Configured"));
+		set_item_tooltip(-1, TTRC("You can add translations in the Project Settings."));
+		set_item_disabled(-1, true);
+		return;
 	}
+
 	for (const String &locale : locales) {
 		const String name = TranslationServer::get_singleton()->get_locale_name(locale);
 		add_radio_check_item(name == locale ? name : name + " [" + locale + "]");

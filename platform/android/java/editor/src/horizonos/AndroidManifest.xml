@@ -47,20 +47,31 @@
 
         <activity
             android:name=".GodotEditor"
-            android:exported="true"
+            android:exported="false"
             android:screenOrientation="landscape"
             tools:node="merge"
             tools:replace="android:screenOrientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="com.oculus.intent.category.2D" />
             </intent-filter>
 
             <meta-data android:name="com.oculus.vrshell.free_resizing_lock_aspect_ratio" android:value="true"/>
         </activity>
+        <activity-alias
+            android:name=".ProjectManager"
+            android:exported="true"
+            tools:node="merge"
+            android:targetActivity=".GodotEditor">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="com.oculus.intent.category.2D" />
+            </intent-filter>
+        </activity-alias>
         <activity
             android:name=".GodotXRGame"
             android:exported="false"
@@ -76,7 +87,7 @@
         <!-- Supported Meta devices -->
         <meta-data
             android:name="com.oculus.supportedDevices"
-            android:value="quest2|quest3|questpro"
+            android:value="quest2|quest3|questpro|quest3s"
             tools:replace="android:value" />
 
         <!-- Enable system splash screen -->

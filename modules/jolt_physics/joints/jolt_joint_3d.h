@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Constraints/Constraint.h"
+#include <Jolt/Physics/Constraints/Constraint.h>
 
 class JoltBody3D;
 class JoltSpace3D;

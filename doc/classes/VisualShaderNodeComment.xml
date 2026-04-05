@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeComment" inherits="VisualShaderNodeFrame" deprecated="This class has no function anymore and only exists for compatibility." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeComment" inherits="VisualShaderNodeFrame" api_type="core" deprecated="This class has no function anymore and only exists for compatibility." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Only exists for compatibility. Use [VisualShaderNodeFrame] as a replacement.
 	</brief_description>

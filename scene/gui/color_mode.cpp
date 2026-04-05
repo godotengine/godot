@@ -283,7 +283,7 @@ void ColorModeLinear::slider_draw(int p_which) {
 	Size2 size = slider->get_size();
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->color_normalized.linear_to_srgb();
+	Color color = color_picker->color_normalized;
 	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
 	left_color = Color(

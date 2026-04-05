@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "../oct_inc.glsl"
+
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #define FLAG_HORIZONTAL (1 << 0)
@@ -15,12 +17,13 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_FORCE_LUMINANCE (1 << 6)
 #define FLAG_COPY_ALL_SOURCE (1 << 7)
 #define FLAG_ALPHA_TO_ONE (1 << 8)
+#define FLAG_SANITIZE_INF_NAN (1 << 9)
 
 layout(push_constant, std430) uniform Params {
 	ivec4 section;
 	ivec2 target;
 	uint flags;
-	uint pad;
+	float luminance_multiplier;
 	// Glow.
 	float glow_strength;
 	float glow_bloom;
@@ -34,16 +37,17 @@ layout(push_constant, std430) uniform Params {
 	// DOF.
 	float camera_z_far;
 	float camera_z_near;
-	uint pad2[2];
+	// Octmap.
+	vec2 octmap_border_size;
 
 	vec4 set_color;
 }
 params;
 
-#ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA
-layout(set = 0, binding = 0) uniform samplerCubeArray source_color;
-#elif defined(MODE_CUBEMAP_TO_PANORAMA)
-layout(set = 0, binding = 0) uniform samplerCube source_color;
+#ifdef MODE_OCTMAP_ARRAY_TO_PANORAMA
+layout(set = 0, binding = 0) uniform sampler2DArray source_color;
+#elif defined(MODE_OCTMAP_TO_PANORAMA)
+layout(set = 0, binding = 0) uniform sampler2D source_color;
 #elif !defined(MODE_SET_COLOR)
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
@@ -226,6 +230,11 @@ void main() {
 		color.a = 1.0;
 	}
 
+	if (bool(params.flags & FLAG_SANITIZE_INF_NAN)) {
+		color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isinf(color));
+		color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isnan(color));
+	}
+
 	imageStore(dest_buffer, pos + params.target, color);
 
 #endif // MODE_SIMPLE_COPY
@@ -256,7 +265,7 @@ void main() {
 	imageStore(dest_buffer, pos + params.target, color);
 #endif // MODE_LINEARIZE_DEPTH_COPY
 
-#if defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
+#if defined(MODE_OCTMAP_TO_PANORAMA) || defined(MODE_OCTMAP_ARRAY_TO_PANORAMA)
 
 	const float PI = 3.14159265359;
 	vec2 uv = vec2(pos) / vec2(params.section.zw);
@@ -271,13 +280,13 @@ void main() {
 	normal.y = cos(theta);
 	normal.z = cos(phi) * sin(theta) * -1.0;
 
-#ifdef MODE_CUBEMAP_TO_PANORAMA
-	vec4 color = textureLod(source_color, normal, params.camera_z_far); //the biggest the lod the least the acne
+#ifdef MODE_OCTMAP_TO_PANORAMA
+	vec4 color = textureLod(source_color, vec3_to_oct_with_border(normal, params.octmap_border_size), params.camera_z_far); //the biggest the lod the least the acne
 #else
-	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
+	vec4 color = textureLod(source_color, vec3(vec3_to_oct_with_border(normal, params.octmap_border_size), params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #endif
-	imageStore(dest_buffer, pos + params.target, color);
-#endif // defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
+	imageStore(dest_buffer, pos + params.target, color * params.luminance_multiplier);
+#endif // defined(MODE_OCTMAP_TO_PANORAMA) || defined(MODE_OCTMAP_ARRAY_TO_PANORAMA)
 
 #ifdef MODE_SET_COLOR
 	imageStore(dest_buffer, pos + params.target, params.set_color);

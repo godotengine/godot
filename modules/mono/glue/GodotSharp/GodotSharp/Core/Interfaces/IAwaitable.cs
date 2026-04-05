@@ -5,7 +5,11 @@ namespace Godot
     /// </summary>
     public interface IAwaitable
     {
-        IAwaiter GetAwaiter();
+        /// <summary>
+        /// Gets an Awaiter for this <see cref="IAwaitable"/>.
+        /// </summary>
+        /// <returns>An Awaiter.</returns>
+        public IAwaiter GetAwaiter();
     }
 
     /// <summary>
@@ -14,6 +18,10 @@ namespace Godot
     /// <typeparam name="TResult">A reference to the result to be passed out.</typeparam>
     public interface IAwaitable<out TResult>
     {
-        IAwaiter<TResult> GetAwaiter();
+        /// <summary>
+        /// Gets an Awaiter for this <see cref="IAwaitable{TResult}"/>.
+        /// </summary>
+        /// <returns>An Awaiter.</returns>
+        public IAwaiter<TResult> GetAwaiter();
     }
 }

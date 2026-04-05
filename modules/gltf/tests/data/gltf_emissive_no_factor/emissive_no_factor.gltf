@@ -1,0 +1,36 @@
+{
+  "asset": { "version": "2.0", "generator": "Test for emissiveTexture without emissiveFactor" },
+  "scene": 0,
+  "scenes": [{ "name": "Scene", "nodes": [0] }],
+  "nodes": [{ "name": "Cube", "mesh": 0 }],
+  "meshes": [{
+    "name": "Cube",
+    "primitives": [{
+      "attributes": { "POSITION": 0 },
+      "material": 0
+    }]
+  }],
+  "materials": [{
+    "name": "EmissiveNoFactor",
+    "emissiveTexture": { "index": 0 },
+    "pbrMetallicRoughness": {}
+  }],
+  "textures": [{ "source": 0 }],
+  "images": [{ "uri": "texture.png" }],
+  "accessors": [{
+    "bufferView": 0,
+    "componentType": 5126,
+    "count": 3,
+    "type": "VEC3",
+    "max": [1, 1, 0],
+    "min": [-1, -1, 0]
+  }],
+  "bufferViews": [{
+    "buffer": 0,
+    "byteLength": 36
+  }],
+  "buffers": [{
+    "uri": "data:application/octet-stream;base64,AAAAAAAAgL8AAAAAAAAAAAAAAAAAAIA/AACAvwAAgD8AAAAA",
+    "byteLength": 36
+  }]
+}

@@ -32,18 +32,11 @@
 
 #include "core/io/image.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 
-#include "servers/rendering/rendering_device_binds.h"
-#include "servers/rendering/rendering_server_default.h"
-
-#if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#endif
-#if defined(METAL_ENABLED)
-#include "drivers/metal/rendering_context_driver_metal.h"
-#endif
+class RDShaderFile;
+class RenderingDevice;
+class RenderingContextDriver;
 
 enum BetsyFormat {
 	BETSY_FORMAT_BC1,
@@ -66,6 +59,10 @@ enum BetsyShaderType {
 	BETSY_SHADER_BC6_SIGNED,
 	BETSY_SHADER_BC6_UNSIGNED,
 	BETSY_SHADER_ALPHA_STITCH,
+	BETSY_SHADER_RGB_TO_RGBA_FLOAT,
+	BETSY_SHADER_RGB_TO_RGBA_HALF,
+	BETSY_SHADER_RGB_TO_RGBA_UNORM8,
+	BETSY_SHADER_RGB_TO_RGBA_UNORM16,
 	BETSY_SHADER_MAX,
 };
 
@@ -85,12 +82,20 @@ struct BC4PushConstant {
 	uint32_t padding[3] = { 0 };
 };
 
+struct RGBToRGBAPushConstant {
+	uint32_t width;
+	uint32_t height;
+	uint32_t padding[2];
+};
+
 void free_device();
 
 Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels);
 Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels);
 
 class BetsyCompressor : public Object {
+	GDSOFTCLASS(BetsyCompressor, Object);
+
 	mutable CommandQueueMT command_queue;
 	bool exit = false;
 	WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;

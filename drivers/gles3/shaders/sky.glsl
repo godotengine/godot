@@ -40,7 +40,7 @@ in vec2 uv_interp;
 
 /* clang-format on */
 
-uniform samplerCube radiance; //texunit:-1
+uniform samplerCube radiance; //texunit:-2
 #ifdef USE_CUBEMAP_PASS
 uniform samplerCube half_res; //texunit:-2
 uniform samplerCube quarter_res; //texunit:-3
@@ -59,13 +59,18 @@ layout(std140) uniform GlobalShaderUniformData { //ubo:1
 struct DirectionalLightData {
 	vec4 direction_energy;
 	vec4 color_size;
-	bool enabled;
+	uint enabled_bake_mode;
+	float shadow_opacity;
+	float specular;
+	uint mask;
 };
 
 layout(std140) uniform DirectionalLights { //ubo:4
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
+
+#define DIRECTIONAL_LIGHT_ENABLED uint(1 << 0)
 
 /* clang-format off */
 
@@ -190,7 +195,7 @@ void main() {
 #else
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;
-	cube_normal.y = (-uv_interp.y - projection.z) / projection.w;
+	cube_normal.y = (uv_interp.y + projection.z) / projection.w;
 #endif
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
@@ -260,7 +265,7 @@ void main() {
 
 	color *= exposure;
 #ifdef APPLY_TONEMAPPING
-	color = apply_tonemapping(color, white);
+	color = apply_tonemapping(color);
 #endif
 	color = linear_to_srgb(color);
 

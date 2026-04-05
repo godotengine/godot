@@ -126,10 +126,6 @@ if env["builtin_sdl"]:
             "core/linux/SDL_evdev.c",
             "core/linux/SDL_evdev_capabilities.c",
             "core/linux/SDL_evdev_kbd.c",
-            "core/linux/SDL_fcitx.c",
-            "core/linux/SDL_ibus.c",
-            "core/linux/SDL_ime.c",
-            "core/linux/SDL_system_theme.c",
             "core/linux/SDL_threadprio.c",
             "core/linux/SDL_udev.c",
             "core/unix/SDL_appid.c",
@@ -145,6 +141,7 @@ if env["builtin_sdl"]:
             "thread/pthread/SDL_systls.c",
             "timer/unix/SDL_systimer.c",
         ]
+        env_sdl.Prepend(CPPPATH=[thirdparty_dir + "core/linux"])
 
     elif env["platform"] == "macos":
         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_MACOS"])
@@ -181,6 +178,7 @@ if env["builtin_sdl"]:
             "joystick/windows/SDL_xinputjoystick.c",
             "thread/generic/SDL_syscond.c",
             "thread/generic/SDL_sysrwlock.c",
+            "sensor/windows/SDL_windowssensor.c",
             "thread/windows/SDL_syscond_cv.c",
             "thread/windows/SDL_sysmutex.c",
             "thread/windows/SDL_sysrwlock_srw.c",
@@ -188,6 +186,26 @@ if env["builtin_sdl"]:
             "thread/windows/SDL_systhread.c",
             "thread/windows/SDL_systls.c",
             "timer/windows/SDL_systimer.c",
+        ]
+
+    elif env["platform"] in ["ios", "visionos"]:
+        if env["platform"] == "ios":
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_IOS"])
+        else:
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_VISIONOS"])
+
+        thirdparty_sources += [
+            "core/unix/SDL_appid.c",
+            "core/unix/SDL_poll.c",
+            "haptic/dummy/SDL_syshaptic.c",
+            "joystick/apple/SDL_mfijoystick.m",
+            "thread/pthread/SDL_syscond.c",
+            "thread/pthread/SDL_sysmutex.c",
+            "thread/pthread/SDL_sysrwlock.c",
+            "thread/pthread/SDL_syssem.c",
+            "thread/pthread/SDL_systhread.c",
+            "thread/pthread/SDL_systls.c",
+            "timer/unix/SDL_systimer.c",
         ]
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]

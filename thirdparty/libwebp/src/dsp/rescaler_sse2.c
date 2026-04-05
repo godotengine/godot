@@ -17,8 +17,12 @@
 #include <emmintrin.h>
 
 #include <assert.h>
+#include <stddef.h>
+
+#include "src/dsp/cpu.h"
 #include "src/utils/rescaler_utils.h"
 #include "src/utils/utils.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // Implementations of critical functions ImportRow / ExportRow

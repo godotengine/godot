@@ -162,6 +162,22 @@ void JoltPhysicsDirectBodyState3D::set_sleep_state(bool p_enabled) {
 	body->set_is_sleeping(p_enabled);
 }
 
+void JoltPhysicsDirectBodyState3D::set_collision_layer(uint32_t p_layer) {
+	body->set_collision_layer(p_layer);
+}
+
+uint32_t JoltPhysicsDirectBodyState3D::get_collision_layer() const {
+	return body->get_collision_layer();
+}
+
+void JoltPhysicsDirectBodyState3D::set_collision_mask(uint32_t p_mask) {
+	body->set_collision_mask(p_mask);
+}
+
+uint32_t JoltPhysicsDirectBodyState3D::get_collision_mask() const {
+	return body->get_collision_mask();
+}
+
 int JoltPhysicsDirectBodyState3D::get_contact_count() const {
 	return body->get_contact_count();
 }
@@ -240,6 +256,6 @@ void JoltPhysicsDirectBodyState3D::integrate_forces() {
 	set_angular_velocity(angular_velocity);
 }
 
-PhysicsDirectSpaceState3D *JoltPhysicsDirectBodyState3D::get_space_state() {
+RequiredResult<PhysicsDirectSpaceState3D> JoltPhysicsDirectBodyState3D::get_space_state() {
 	return body->get_space()->get_direct_state();
 }

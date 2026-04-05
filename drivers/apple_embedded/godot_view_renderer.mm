@@ -30,13 +30,13 @@
 
 #import "godot_view_renderer.h"
 
-#import "display_server_apple_embedded.h"
-#import "os_apple_embedded.h"
-
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/os_apple_embedded.h"
 #include "main/main.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <CoreMotion/CoreMotion.h>

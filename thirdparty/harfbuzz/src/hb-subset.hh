@@ -70,5 +70,4 @@ struct hb_subset_context_t :
 			table_tag (table_tag_) {}
 };
 
-
 #endif /* HB_SUBSET_HH */

@@ -58,7 +58,12 @@ struct ValueFormat : HBUINT16
 
   NumType& operator = (uint16_t i) { v = i; return *this; }
 
-  unsigned int get_len () const  { return hb_popcount ((unsigned int) *this); }
+  // Note: spec says skip 2 bytes per bit in the valueformat. But reports
+  // from Microsoft developers indicate that only the fields that are
+  // currently defined are counted. We don't expect any new fields to
+  // be added to ValueFormat. As such, we use the faster hb_popcount8
+  // that only processes the lowest 8 bits.
+  unsigned int get_len () const  { return hb_popcount8 ((uint8_t) *this); }
   unsigned int get_size () const { return get_len () * Value::static_size; }
 
   hb_vector_t<unsigned> get_device_table_indices () const {

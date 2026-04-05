@@ -194,6 +194,7 @@ struct VARC
 		 hb_codepoint_t gid,
 		 hb_glyph_extents_t *extents) const
     {
+#ifndef HB_NO_DRAW
       if (!table->has_data ()) return false;
 
       hb_extents_t<> f_extents;
@@ -207,6 +208,9 @@ struct VARC
 	*extents = f_extents.to_glyph_extents (font->x_scale < 0, font->y_scale < 0);
 
       return ret;
+#else
+      return false;
+#endif
     }
 
     private:

@@ -209,19 +209,22 @@ struct MarkBasePosFormat1_2
     ;
 
     new_coverage.reset ();
-    + base_iter
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-
-    if (!out->baseCoverage.serialize_serialize (c->serializer, new_coverage.iter ()))
-      return_trace (false);
-
     hb_sorted_vector_t<unsigned> base_indexes;
-    for (const unsigned row : + base_iter
-                              | hb_map (hb_second))
+    auto &base_array = (this+baseArray);
+    for (const auto _ : + base_iter)
     {
+      unsigned row = _.second;
+      bool non_empty = + hb_range ((unsigned) classCount)
+                       | hb_filter (klass_mapping)
+                       | hb_map ([&] (const unsigned col) { return !base_array.offset_is_null (row, col, (unsigned) classCount); })
+                       | hb_any
+                       ;
+
+      if (!non_empty) continue;
+      
+      hb_codepoint_t new_g = glyph_map.get ( _.first);
+      new_coverage.push (new_g);
+
       + hb_range ((unsigned) classCount)
       | hb_filter (klass_mapping)
       | hb_map ([&] (const unsigned col) { return row * (unsigned) classCount + col; })
@@ -229,8 +232,12 @@ struct MarkBasePosFormat1_2
       ;
     }
 
+    if (!new_coverage) return_trace (false);
+    if (!out->baseCoverage.serialize_serialize (c->serializer, new_coverage.iter ()))
+      return_trace (false);
+
     return_trace (out->baseArray.serialize_subset (c, baseArray, this,
-						   base_iter.len (),
+						   new_coverage.length,
 						   base_indexes.iter ()));
   }
 };

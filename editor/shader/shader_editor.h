@@ -30,19 +30,24 @@
 
 #pragma once
 
-#include "scene/gui/control.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/shader.h"
 
-class ShaderEditor : public Control {
-	GDCLASS(ShaderEditor, Control);
+class Button;
+class MenuButton;
+
+class ShaderEditor : public MarginContainer {
+	GDCLASS(ShaderEditor, MarginContainer);
 
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) = 0;
 	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) {}
+	virtual void use_menu_bar(MenuButton *p_file_menu) = 0;
 
 	virtual void apply_shaders() = 0;
 	virtual bool is_unsaved() const = 0;
 	virtual void save_external_data(const String &p_str = "") = 0;
+	virtual void set_toggle_list_control(Control *p_toggle_list_control) = 0;
+	virtual void update_toggle_files_button() = 0;
 	virtual void validate_script() = 0;
-	virtual Control *get_top_bar() = 0;
 };

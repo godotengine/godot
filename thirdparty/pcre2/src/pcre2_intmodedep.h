@@ -47,9 +47,16 @@ to have access to the hidden structures at all supported widths.
 
 Some of the mode-dependent macros are required at different widths for
 different parts of the pcre2test code (in particular, the included
-pcre2_printint.c file). We undefine them here so that they can be re-defined for
-multiple inclusions. Not all of these are used in pcre2test, but it's easier
-just to undefine them all. */
+pcre2_printint_inc.h file). We undefine them here so that they can be re-defined
+for multiple inclusions. Not all of these are used in pcre2test, but it's easier
+just to undefine them all.
+
+You can also include pcre2_intmodedep.h with PCRE2_CODE_UNIT_WIDTH defined to
+zero in order to simply clear the previous macros. */
+
+#ifndef PCRE2_CODE_UNIT_WIDTH
+#error PCRE2_CODE_UNIT_WIDTH must be defined
+#endif
 
 #undef ACROSSCHAR
 #undef BACKCHAR
@@ -81,9 +88,14 @@ just to undefine them all. */
 #undef PUTINC
 #undef TABLE_GET
 
+/*************************************************
+*                    MACROS                      *
+*************************************************/
 
+/* Macros may be undefined and re-defined if the same file handles multiple
+bit-widths. */
 
-/* -------------------------- MACROS ----------------------------- */
+#if PCRE2_CODE_UNIT_WIDTH != 0
 
 /* PCRE keeps offsets in its compiled code as at least 16-bit quantities
 (always stored in big-endian order in 8-bit mode) by default. These are used,
@@ -97,11 +109,23 @@ unit string is now handled by the macros that are defined here.
 The macros are controlled by the value of LINK_SIZE. This defaults to 2, but
 values of 3 or 4 are also supported. */
 
+#ifndef CONFIGURED_LINK_SIZE
+#if LINK_SIZE == 2
+#define CONFIGURED_LINK_SIZE 2
+#elif LINK_SIZE == 3
+#define CONFIGURED_LINK_SIZE 3
+#elif LINK_SIZE == 4
+#define CONFIGURED_LINK_SIZE 4
+#else
+#error LINK_SIZE must be 2, 3, or 4
+#endif
+#endif /* CONFIGURED_LINK_SIZE */
+
 /* ------------------- 8-bit support  ------------------ */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
 
-#if LINK_SIZE == 2
+#if CONFIGURED_LINK_SIZE == 2
 #define PUT(a,n,d)   \
   (a[n] = (PCRE2_UCHAR)((d) >> 8)), \
   (a[(n)+1] = (PCRE2_UCHAR)((d) & 255))
@@ -109,7 +133,7 @@ values of 3 or 4 are also supported. */
   (unsigned int)(((a)[n] << 8) | (a)[(n)+1])
 #define MAX_PATTERN_SIZE (1 << 16)
 
-#elif LINK_SIZE == 3
+#elif CONFIGURED_LINK_SIZE == 3
 #define PUT(a,n,d)       \
   (a[n] = (PCRE2_UCHAR)((d) >> 16)),    \
   (a[(n)+1] = (PCRE2_UCHAR)((d) >> 8)), \
@@ -118,7 +142,7 @@ values of 3 or 4 are also supported. */
   (unsigned int)(((a)[n] << 16) | ((a)[(n)+1] << 8) | (a)[(n)+2])
 #define MAX_PATTERN_SIZE (1 << 24)
 
-#elif LINK_SIZE == 4
+#elif CONFIGURED_LINK_SIZE == 4
 #define PUT(a,n,d)        \
   (a[n] = (PCRE2_UCHAR)((d) >> 24)),     \
   (a[(n)+1] = (PCRE2_UCHAR)((d) >> 16)), \
@@ -128,8 +152,6 @@ values of 3 or 4 are also supported. */
   (unsigned int)(((a)[n] << 24) | ((a)[(n)+1] << 16) | ((a)[(n)+2] << 8) | (a)[(n)+3])
 #define MAX_PATTERN_SIZE (1 << 30)   /* Keep it positive */
 
-#else
-#error LINK_SIZE must be 2, 3, or 4
 #endif
 
 
@@ -137,7 +159,7 @@ values of 3 or 4 are also supported. */
 
 #elif PCRE2_CODE_UNIT_WIDTH == 16
 
-#if LINK_SIZE == 2
+#if CONFIGURED_LINK_SIZE == 2
 #undef LINK_SIZE
 #define LINK_SIZE 1
 #define PUT(a,n,d)   \
@@ -146,7 +168,7 @@ values of 3 or 4 are also supported. */
   (a[n])
 #define MAX_PATTERN_SIZE (1 << 16)
 
-#elif LINK_SIZE == 3 || LINK_SIZE == 4
+#elif CONFIGURED_LINK_SIZE == 3 || CONFIGURED_LINK_SIZE == 4
 #undef LINK_SIZE
 #define LINK_SIZE 2
 #define PUT(a,n,d)   \
@@ -156,8 +178,6 @@ values of 3 or 4 are also supported. */
   (unsigned int)(((a)[n] << 16) | (a)[(n)+1])
 #define MAX_PATTERN_SIZE (1 << 30)  /* Keep it positive */
 
-#else
-#error LINK_SIZE must be 2, 3, or 4
 #endif
 
 
@@ -194,7 +214,7 @@ arithmetic results in a signed value. Hence the cast. */
 #define GET2(a,n) (unsigned int)(((a)[n] << 8) | (a)[(n)+1])
 #define PUT2(a,n,d) a[n] = (d) >> 8, a[(n)+1] = (d) & 255
 
-#else  /* Code units are 16 or 32 bits */
+#elif PCRE2_CODE_UNIT_WIDTH == 16 || PCRE2_CODE_UNIT_WIDTH == 32
 #define IMM2_SIZE 1
 #define GET2(a,n) a[n]
 #define PUT2(a,n,d) a[n] = d
@@ -219,7 +239,7 @@ check is needed before accessing these tables. */
 #define CHMAX_255(c) TRUE
 #endif  /* SUPPORT_UNICODE */
 
-#else  /* Code units are 16 or 32 bits */
+#elif PCRE2_CODE_UNIT_WIDTH == 16 || PCRE2_CODE_UNIT_WIDTH == 32
 #define CHMAX_255(c) ((c) <= 255u)
 #define MAX_255(c) ((c) <= 255u)
 #define MAX_MARK ((1u << 16) - 1)
@@ -285,7 +305,7 @@ UTF support is omitted, we don't even define them. */
 
 #define HAS_EXTRALEN(c) HASUTF8EXTRALEN(c)
 
-/* Returns with the additional number of characters if IS_MULTICHAR(c) is TRUE.
+/* Returns with the additional number of characters if HAS_EXTRALEN(c) is TRUE.
 Otherwise it has an undefined behaviour. */
 
 #define GET_EXTRALEN(c) (PRIV(utf8_table4)[(c) & 0x3fu])
@@ -371,7 +391,7 @@ because almost all calls are already within a block of UTF-8 only code. */
 
 #define HAS_EXTRALEN(c) (((c) & 0xfc00u) == 0xd800u)
 
-/* Returns with the additional number of characters if IS_MULTICHAR(c) is TRUE.
+/* Returns with the additional number of characters if HAS_EXTRALEN(c) is TRUE.
 Otherwise it has an undefined behaviour. */
 
 #define GET_EXTRALEN(c) 1
@@ -466,7 +486,7 @@ code. */
 
 /* ------------------- 32-bit support  ------------------ */
 
-#else
+#elif PCRE2_CODE_UNIT_WIDTH == 32
 
 /* These are trivial for the 32-bit library, since all UTF-32 characters fit
 into one PCRE2_UCHAR unit. */
@@ -547,6 +567,32 @@ These are all no-ops since all UTF-32 characters fit into one PCRE2_UCHAR. */
 #define PUTINC(a,n,d)   PUT(a,n,d), a += LINK_SIZE
 #define PUT2INC(a,n,d)  PUT2(a,n,d), a += IMM2_SIZE
 
+#endif /* PCRE2_CODE_UNIT_WIDTH != 0 */
+
+
+
+/*************************************************
+*                 STRUCTURES                     *
+*************************************************/
+
+/* We need a more complex include guard than usual, because the file can be
+included once for each bit-width to define the various structures. */
+
+#if PCRE2_CODE_UNIT_WIDTH == 8 && !defined PCRE2_INTMODEDEP_IDEMPOTENT_GUARD_8
+#define PCRE2_INTMODEDEP_IDEMPOTENT_GUARD_8
+#define PCRE2_INTMODEDEP_CAN_DEFINE
+#endif
+#if PCRE2_CODE_UNIT_WIDTH == 16 && !defined PCRE2_INTMODEDEP_IDEMPOTENT_GUARD_16
+#define PCRE2_INTMODEDEP_IDEMPOTENT_GUARD_16
+#define PCRE2_INTMODEDEP_CAN_DEFINE
+#endif
+#if PCRE2_CODE_UNIT_WIDTH == 32 && !defined PCRE2_INTMODEDEP_IDEMPOTENT_GUARD_32
+#define PCRE2_INTMODEDEP_IDEMPOTENT_GUARD_32
+#define PCRE2_INTMODEDEP_CAN_DEFINE
+#endif
+
+#ifdef PCRE2_INTMODEDEP_CAN_DEFINE
+#undef PCRE2_INTMODEDEP_CAN_DEFINE
 
 /* ----------------------- HIDDEN STRUCTURES ----------------------------- */
 
@@ -624,7 +670,7 @@ have 16-bit arguments in 8-bit and 16-bit modes, so we need no more than a
 #define CODE_BLOCKSIZE_TYPE PCRE2_SIZE
 
 #undef  LOOKBEHIND_MAX
-#define LOOKBEHIND_MAX UINT16_MAX
+#define LOOKBEHIND_MAX ((int)UINT16_MAX)
 
 typedef struct pcre2_real_code {
   pcre2_memctl memctl;            /* Memory control fields */
@@ -672,12 +718,14 @@ typedef struct pcre2_real_match_data {
   struct heapframe *heapframes;      /* Backtracking frames heap memory */
   PCRE2_SIZE       heapframes_size;  /* Malloc-ed size */
   PCRE2_SIZE       subject_length;   /* Subject length */
+  PCRE2_SIZE       start_offset;     /* Offset to start of search */
   PCRE2_SIZE       leftchar;         /* Offset to leftmost code unit */
   PCRE2_SIZE       rightchar;        /* Offset to rightmost code unit */
   PCRE2_SIZE       startchar;        /* Offset to starting code unit */
   uint8_t          matchedby;        /* Type of match (normal, JIT, DFA) */
   uint8_t          flags;            /* Various flags */
   uint16_t         oveccount;        /* Number of pairs */
+  uint32_t         options;          /* Options passed in to the match call */
   int              rc;               /* The return code from the match */
   PCRE2_SIZE       ovector[131072];  /* Must be last in the structure */
 } pcre2_real_match_data;
@@ -718,26 +766,45 @@ typedef struct branch_chain {
 } branch_chain;
 
 /* Structure for building a list of named groups during the first pass of
-compiling. */
+compiling. When a duplicate name is stored in the list, its name is set to
+the name of the first entry with the same name, and its length is set to 0. */
 
 typedef struct named_group {
   PCRE2_SPTR   name;          /* Points to the name in the pattern */
   uint32_t     number;        /* Group number */
   uint16_t     length;        /* Length of the name */
-  uint16_t     isdup;         /* TRUE if a duplicate */
+  uint16_t     hash_dup;      /* A concatenation of a 15 bit hash code and
+                                 a singe bit which represents duplication */
 } named_group;
+
+/* Structure for storing compile time data. */
+
+typedef struct compile_data {
+  struct compile_data *next;      /* Next compile data */
+#ifdef PCRE2_DEBUG
+  uint8_t type;                   /* Debug only type of the data */
+#endif
+} compile_data;
 
 /* Structure for caching sorted ranges. This improves the performance
 of translating META code to byte code. */
 
 typedef struct class_ranges {
-  struct class_ranges *next;       /* Next class ranges */
+  compile_data header;             /* Common header */
   size_t char_lists_size;          /* Total size of encoded char lists */
   size_t char_lists_start;         /* Start offset of encoded char lists */
   uint16_t range_list_size;        /* Size of ranges array */
   uint16_t char_lists_types;       /* The XCL_LIST header of char lists */
   /* Followed by the list of ranges (start/end pairs) */
 } class_ranges;
+
+/* Structure for sorted recurse arguments. */
+
+typedef struct recurse_arguments {
+  compile_data header;             /* Common header */
+  size_t size;                     /* Total size */
+  size_t skip_size;                /* Space consumed by arguments */
+} recurse_arguments;
 
 typedef union class_bits_storage {
   uint8_t classbits[32];
@@ -789,9 +856,9 @@ typedef struct compile_block {
   BOOL had_pruneorskip;            /* (*PRUNE) or (*SKIP) encountered */
   BOOL had_recurse;                /* Had a pattern recursion or subroutine call */
   BOOL dupnames;                   /* Duplicate names exist */
+  compile_data *first_data;        /* First item in the compile data list */
+  compile_data *last_data;         /* Last item in the compile data list */
 #ifdef SUPPORT_WIDE_CHARS
-  class_ranges *cranges;           /* First class range. */
-  class_ranges *next_cranges;      /* Next class range. */
   size_t char_lists_size;          /* Current size of character lists */
 #endif
 } compile_block;
@@ -902,7 +969,9 @@ typedef struct match_block {
   uint32_t match_call_count;      /* Number of times a new frame is created */
   BOOL hitend;                    /* Hit the end of the subject at some point */
   BOOL hasthen;                   /* Pattern contains (*THEN) */
+  BOOL hasbsk;                    /* Pattern contains \K */
   BOOL allowemptypartial;         /* Allow empty hard partial */
+  BOOL allowlookaroundbsk;        /* Allow \K within lookarounds */
   const uint8_t *lcc;             /* Points to lower casing table */
   const uint8_t *fcc;             /* Points to case-flipping table */
   const uint8_t *ctypes;          /* Points to table of type maps */
@@ -969,5 +1038,7 @@ typedef struct dfa_match_block {
 } dfa_match_block;
 
 #endif  /* PCRE2_PCRE2TEST */
+
+#endif /* PCRE2_INTMODEDEP_CAN_DEFINE */
 
 /* End of pcre2_intmodedep.h */

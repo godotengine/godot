@@ -1,0 +1,21 @@
+GH-79308
+--------
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_scroll_ofs
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_zoom_hbox
+Validate extension JSON: API was removed: classes/GraphEdit/methods/is_using_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_scroll_ofs
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_use_snap
+Validate extension JSON: API was removed: classes/GraphEdit/properties/snap_distance
+Validate extension JSON: API was removed: classes/GraphEdit/properties/use_snap
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_comment
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_comment
+Validate extension JSON: API was removed: classes/GraphNode/properties/comment
+Validate extension JSON: Error: Field 'classes/GraphEdit/properties/scroll_offset': getter changed value in new API, from "get_scroll_ofs" to &"get_scroll_offset".
+Validate extension JSON: Error: Field 'classes/GraphEdit/properties/scroll_offset': setter changed value in new API, from "set_scroll_ofs" to &"set_scroll_offset".
+
+Intentional compatibility breakage during refactoring of API marked as experimental.
+
+FIXME: Still a WIP, review this list once the work is completed, especially if compatibility
+code is added.

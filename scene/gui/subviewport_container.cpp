@@ -31,6 +31,7 @@
 #include "subviewport_container.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 
 Size2 SubViewportContainer::get_minimum_size() const {

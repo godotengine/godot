@@ -30,105 +30,15 @@
 
 #pragma once
 
-#include "core/input/input_enums.h"
-#include "core/object/object.h"
-#include "core/os/keyboard.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"
+#include "core/variant/variant_caster.h"
 #include "core/variant/variant_internal.h"
 
 #include <cstdio>
-
-// Variant cannot define an implicit cast operator for every Object subclass, so the
-// casting is done here, to allow binding methods with parameters more specific than Object *
-
-template <typename T>
-struct VariantCaster {
-	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of_v<Object, TStripped>) {
-			return Object::cast_to<TStripped>(p_variant);
-		} else {
-			return p_variant;
-		}
-	}
-};
-
-template <typename T>
-struct VariantCaster<T &> {
-	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of_v<Object, TStripped>) {
-			return Object::cast_to<TStripped>(p_variant);
-		} else {
-			return p_variant;
-		}
-	}
-};
-
-template <typename T>
-struct VariantCaster<const T &> {
-	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of_v<Object, TStripped>) {
-			return Object::cast_to<TStripped>(p_variant);
-		} else {
-			return p_variant;
-		}
-	}
-};
-
-#define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum)
-#define VARIANT_BITFIELD_CAST(m_enum) MAKE_BITFIELD_TYPE_INFO(m_enum)
-
-// Object enum casts must go here
-VARIANT_ENUM_CAST(Object::ConnectFlags);
-
-VARIANT_ENUM_CAST(Vector2::Axis);
-VARIANT_ENUM_CAST(Vector2i::Axis);
-VARIANT_ENUM_CAST(Vector3::Axis);
-VARIANT_ENUM_CAST(Vector3i::Axis);
-VARIANT_ENUM_CAST(Vector4::Axis);
-VARIANT_ENUM_CAST(Vector4i::Axis);
-VARIANT_ENUM_CAST(EulerOrder);
-VARIANT_ENUM_CAST(Projection::Planes);
-
-VARIANT_ENUM_CAST(Error);
-VARIANT_ENUM_CAST(Side);
-VARIANT_ENUM_CAST(ClockDirection);
-VARIANT_ENUM_CAST(Corner);
-VARIANT_ENUM_CAST(HatDir);
-VARIANT_BITFIELD_CAST(HatMask);
-VARIANT_ENUM_CAST(JoyAxis);
-VARIANT_ENUM_CAST(JoyButton);
-
-VARIANT_ENUM_CAST(MIDIMessage);
-VARIANT_ENUM_CAST(MouseButton);
-VARIANT_BITFIELD_CAST(MouseButtonMask);
-VARIANT_ENUM_CAST(Orientation);
-VARIANT_ENUM_CAST(HorizontalAlignment);
-VARIANT_ENUM_CAST(VerticalAlignment);
-VARIANT_ENUM_CAST(InlineAlignment);
-VARIANT_ENUM_CAST(PropertyHint);
-VARIANT_BITFIELD_CAST(PropertyUsageFlags);
-VARIANT_ENUM_CAST(Variant::Type);
-VARIANT_ENUM_CAST(Variant::Operator);
-
-// Key
-
-VARIANT_ENUM_CAST(Key);
-VARIANT_BITFIELD_CAST(KeyModifierMask);
-VARIANT_ENUM_CAST(KeyLocation);
-
-template <>
-struct VariantCaster<char32_t> {
-	static _FORCE_INLINE_ char32_t cast(const Variant &p_variant) {
-		return (char32_t)p_variant.operator int();
-	}
-};
 
 template <>
 struct PtrToArg<char32_t> {
@@ -140,80 +50,6 @@ struct PtrToArg<char32_t> {
 		*(int64_t *)p_ptr = p_val;
 	}
 };
-
-template <typename T>
-struct VariantObjectClassChecker {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of_v<Object, TStripped>) {
-			Object *obj = p_variant;
-			return Object::cast_to<TStripped>(p_variant) || !obj;
-		} else {
-			return true;
-		}
-	}
-};
-
-template <typename T>
-class Ref;
-
-template <typename T>
-struct VariantObjectClassChecker<const Ref<T> &> {
-	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
-		Object *obj = p_variant;
-		const Ref<T> node = p_variant;
-		return node.ptr() || !obj;
-	}
-};
-
-#ifdef DEBUG_ENABLED
-
-template <typename T>
-struct VariantCasterAndValidate {
-	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
-		}
-
-		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
-	}
-};
-
-template <typename T>
-struct VariantCasterAndValidate<T &> {
-	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
-		}
-
-		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
-	}
-};
-
-template <typename T>
-struct VariantCasterAndValidate<const T &> {
-	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
-		}
-
-		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
-	}
-};
-
-#endif // DEBUG_ENABLED
 
 template <typename T, typename... P, size_t... Is>
 void call_with_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
@@ -531,27 +367,27 @@ void call_with_ptr_args_static_method(void (*p_method)(P...), const void **p_arg
 
 template <typename T, typename... P>
 void call_with_validated_variant_args(Variant *base, void (T::*p_method)(P...), const Variant **p_args) {
-	call_with_validated_variant_args_helper<T, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_helper<T, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_ret(Variant *base, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_ret_helper<T, R, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_ret_helper<T, R, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_retc(Variant *base, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_retc_helper<T, R, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename... P>
 void call_with_validated_variant_args_static(Variant *base, void (*p_method)(T *, P...), const Variant **p_args) {
-	call_with_validated_variant_args_static_helper<T, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_helper<T, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename T, typename R, typename... P>
 void call_with_validated_variant_args_static_retc(Variant *base, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_retc_helper<T, R, P...>(VariantGetInternalPtr<T>::get_ptr(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+	call_with_validated_variant_args_static_retc_helper<T, R, P...>(&VariantInternalAccessor<T>::get(base), p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename... P>
@@ -669,9 +505,9 @@ void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), co
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...));
 #endif
 }
 
@@ -680,9 +516,9 @@ void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_ar
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_method)(VariantCaster<P>::cast(*p_args[Is])...));
 #endif // DEBUG_ENABLED
 }
 
@@ -720,9 +556,9 @@ void call_with_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) co
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...));
 #endif // DEBUG_ENABLED
 	(void)p_args;
 }
@@ -786,9 +622,9 @@ void call_with_variant_args_retc_static_helper(T *p_instance, R (*p_method)(T *,
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_method)(p_instance, VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_method)(p_instance, VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_method)(p_instance, VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_method)(p_instance, VariantCaster<P>::cast(*p_args[Is])...));
 #endif // DEBUG_ENABLED
 
 	(void)p_args;

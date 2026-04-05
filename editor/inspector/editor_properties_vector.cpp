@@ -30,6 +30,7 @@
 
 #include "editor_properties_vector.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/settings/editor_settings.h"
@@ -91,10 +92,7 @@ void EditorPropertyVectorN::update_property() {
 			spin_sliders[i]->set_value_no_signal(val.get(i));
 		}
 	}
-
-	if (!is_grabbed) {
-		_update_ratio();
-	}
+	_update_ratio();
 }
 
 void EditorPropertyVectorN::_update_ratio() {
@@ -117,13 +115,6 @@ void EditorPropertyVectorN::_store_link(bool p_linked) {
 	}
 	const String key = vformat("%s:%s", get_edited_object()->get_class(), get_edited_property());
 	EditorSettings::get_singleton()->set_project_metadata("linked_properties", key, p_linked);
-}
-
-void EditorPropertyVectorN::_grab_changed(bool p_grab) {
-	if (p_grab) {
-		_update_ratio();
-	}
-	is_grabbed = p_grab;
 }
 
 void EditorPropertyVectorN::_notification(int p_what) {
@@ -153,17 +144,19 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees, bool p_is_int) {
-	radians_as_degrees = p_radians_as_degrees;
+void EditorPropertyVectorN::setup(const EditorPropertyRangeHint &p_range_hint, bool p_link, bool p_is_int) {
+	radians_as_degrees = p_range_hint.radians_as_degrees;
 
 	for (EditorSpinSlider *spin : spin_sliders) {
-		spin->set_min(p_min);
-		spin->set_max(p_max);
-		spin->set_step(p_step);
-		spin->set_hide_slider(p_hide_slider);
+		spin->set_min(p_range_hint.min);
+		spin->set_max(p_range_hint.max);
+		spin->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
+			spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
+		}
 		spin->set_allow_greater(true);
 		spin->set_allow_lesser(true);
-		spin->set_suffix(p_suffix);
+		spin->set_suffix(p_range_hint.suffix);
 		spin->set_editing_integer(p_is_int);
 	}
 
@@ -227,8 +220,6 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
 		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
-		spin[i]->connect(SNAME("grabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(true));
-		spin[i]->connect(SNAME("ungrabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(false));
 		add_focusable(spin[i]);
 	}
 
@@ -246,6 +237,14 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	add_child(hb);
 	if (!horizontal) {
 		set_label_reference(spin_sliders[0]); // Show text and buttons around this.
+	}
+}
+
+void EditorPropertyVectorN::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+
+	for (int i = 0; i < component_count; i++) {
+		spin_sliders[i]->set_deferred_drag_mode_enabled(p_enabled);
 	}
 }
 

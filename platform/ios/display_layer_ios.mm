@@ -36,13 +36,15 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <GameController/GameController.h>
+#if defined(GLES3_ENABLED)
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
+#endif
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
@@ -69,6 +71,7 @@
 
 @end
 
+#if defined(GLES3_ENABLED)
 @implementation GDTOpenGLLayer {
 	// The pixel dimensions of the backbuffer
 	GLint backingWidth;
@@ -189,3 +192,4 @@
 }
 
 @end
+#endif

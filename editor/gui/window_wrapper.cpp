@@ -30,6 +30,8 @@
 
 #include "window_wrapper.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/progress_dialog.h"
@@ -40,38 +42,9 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/main/window.h"
+#include "servers/display/display_server.h"
 
 // WindowWrapper
-
-// Capture all shortcut events not handled by other nodes.
-class ShortcutBin : public Node {
-	GDCLASS(ShortcutBin, Node);
-
-	virtual void _notification(int what) {
-		switch (what) {
-			case NOTIFICATION_READY:
-				set_process_shortcut_input(true);
-				break;
-		}
-	}
-
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override {
-		if (!get_window()->is_visible()) {
-			return;
-		}
-		Window *grandparent_window = get_window()->get_parent_visible_window();
-		ERR_FAIL_NULL(grandparent_window);
-
-		if (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventShortcut>(p_event.ptr())) {
-			// HACK: Propagate the window input to the editor main window to handle global shortcuts.
-			grandparent_window->push_input(p_event);
-
-			if (grandparent_window->is_input_handled()) {
-				get_viewport()->set_input_as_handled();
-			}
-		}
-	}
-};
 
 Rect2 WindowWrapper::_get_default_window_rect() const {
 	// Assume that the control rect is the desired one for the window.
@@ -236,6 +209,11 @@ void WindowWrapper::restore_window_from_saved_position(const Rect2 p_window_rect
 	int screen = p_screen;
 	Rect2 restored_screen_rect = p_screen_rect;
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
+		window_rect = Rect2i();
+		restored_screen_rect = Rect2i();
+	}
+
 	if (screen < 0 || screen >= DisplayServer::get_singleton()->get_screen_count()) {
 		// Fallback to the main window screen if the saved screen is not available.
 		screen = get_window()->get_window_id();
@@ -364,26 +342,24 @@ WindowWrapper::WindowWrapper() {
 	window = memnew(Window);
 	window_id = window->get_instance_id();
 	window->set_wrap_controls(true);
-
-	add_child(window);
+	window->set_propagate_shortcuts_to_parent(true);
 	window->hide();
 
 	window->connect("close_requested", callable_mp(this, &WindowWrapper::_window_close_request));
 	window->connect("size_changed", callable_mp(this, &WindowWrapper::_window_size_changed));
 
-	ShortcutBin *capturer = memnew(ShortcutBin);
-	window->add_child(capturer);
-
 	window_background = memnew(Panel);
 	window_background->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	window->add_child(window_background);
 
-	ProgressDialog::get_singleton()->add_host_window(window);
+	add_child(window);
+
+	ProgressDialog::get_singleton()->add_host_window(window_id);
 }
 
 WindowWrapper::~WindowWrapper() {
-	if (ObjectDB::get_instance(window_id)) {
-		ProgressDialog::get_singleton()->remove_host_window(window);
+	if (ProgressDialog::get_singleton()) {
+		ProgressDialog::get_singleton()->remove_host_window(window_id);
 	}
 }
 
@@ -488,7 +464,7 @@ void ScreenSelect::pressed() {
 
 ScreenSelect::ScreenSelect() {
 	set_button_mask(MouseButtonMask::RIGHT);
-	set_flat(true);
+	set_theme_type_variation(SceneStringName(FlatButton));
 	set_toggle_mode(true);
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);

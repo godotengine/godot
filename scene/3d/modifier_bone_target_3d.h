@@ -45,6 +45,9 @@ protected:
 	virtual void _process_modification(double p_delta) override;
 
 public:
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const override { return true; }
+#endif
 	void set_bone_name(const String &p_bone_name);
 	String get_bone_name() const;
 	void set_bone(int p_bone);
