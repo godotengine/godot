@@ -143,6 +143,7 @@ private:
 
 	void _notify_body_entered(const JPH::BodyID &p_body_id);
 	void _notify_body_exited(const JPH::BodyID &p_body_id);
+	void _notify_bodies_updated(bool p_priority_changed = false);
 
 	void _remove_all_overlaps();
 
@@ -189,35 +190,35 @@ public:
 
 	virtual bool reports_contacts() const override { return false; }
 
-	bool is_point_gravity() const { return point_gravity; }
-	void set_point_gravity(bool p_enabled) { point_gravity = p_enabled; }
-
 	float get_priority() const { return priority; }
-	void set_priority(float p_priority) { priority = p_priority; }
+	void set_priority(float p_priority);
 
 	float get_gravity() const { return gravity; }
-	void set_gravity(float p_gravity) { gravity = p_gravity; }
+	void set_gravity(float p_gravity);
+
+	bool is_point_gravity() const { return point_gravity; }
+	void set_point_gravity(bool p_enabled);
 
 	float get_point_gravity_distance() const { return point_gravity_distance; }
-	void set_point_gravity_distance(float p_distance) { point_gravity_distance = p_distance; }
+	void set_point_gravity_distance(float p_distance);
 
 	float get_linear_damp() const { return linear_damp; }
-	void set_area_linear_damp(float p_damp) { linear_damp = p_damp; }
+	void set_linear_damp(float p_damp);
 
 	float get_angular_damp() const { return angular_damp; }
-	void set_area_angular_damp(float p_damp) { angular_damp = p_damp; }
+	void set_angular_damp(float p_damp);
 
 	OverrideMode get_gravity_mode() const { return gravity_mode; }
-	void set_gravity_mode(OverrideMode p_mode) { gravity_mode = p_mode; }
+	void set_gravity_mode(OverrideMode p_mode);
 
 	OverrideMode get_linear_damp_mode() const { return linear_damp_mode; }
-	void set_linear_damp_mode(OverrideMode p_mode) { linear_damp_mode = p_mode; }
+	void set_linear_damp_mode(OverrideMode p_mode);
 
 	OverrideMode get_angular_damp_mode() const { return angular_damp_mode; }
-	void set_angular_damp_mode(OverrideMode p_mode) { angular_damp_mode = p_mode; }
+	void set_angular_damp_mode(OverrideMode p_mode);
 
 	Vector3 get_gravity_vector() const { return gravity_vector; }
-	void set_gravity_vector(const Vector3 &p_vector) { gravity_vector = p_vector; }
+	void set_gravity_vector(const Vector3 &p_vector);
 
 	float get_wind_pressure() const { return wind_pressure; }
 	void set_wind_pressure(float p_wind_pressure) { wind_pressure = p_wind_pressure; }
