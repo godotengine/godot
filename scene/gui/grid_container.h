@@ -42,6 +42,9 @@ class GridContainer : public Container {
 		int v_separation = 0;
 	} theme_cache;
 
+private:
+	void _resort();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

@@ -2491,7 +2491,7 @@ RID RichTextLabel::get_focused_accessibility_element() const {
 }
 
 void RichTextLabel::_prepare_scroll_anchor() {
-	scroll_w = vscroll->get_combined_minimum_size().width;
+	scroll_w = vscroll->get_bound_minimum_size().width;
 	vscroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_w);
 }
 
@@ -2695,8 +2695,8 @@ void RichTextLabel::_notification(int p_what) {
 			} else {
 				// Draw loading progress bar.
 				if ((progress_delay > 0) && (OS::get_singleton()->get_ticks_msec() - loading_started >= (uint64_t)progress_delay)) {
-					Vector2 p_size = Vector2(size.width - (theme_cache.normal_style->get_offset().x + vscroll->get_combined_minimum_size().width) * 2, vscroll->get_combined_minimum_size().width);
-					Vector2 p_pos = Vector2(theme_cache.normal_style->get_offset().x, size.height - theme_cache.normal_style->get_offset().y - vscroll->get_combined_minimum_size().width);
+					Vector2 p_size = Vector2(size.width - (theme_cache.normal_style->get_offset().x + vscroll->get_bound_minimum_size().width) * 2, vscroll->get_bound_minimum_size().width);
+					Vector2 p_pos = Vector2(theme_cache.normal_style->get_offset().x, size.height - theme_cache.normal_style->get_offset().y - vscroll->get_bound_minimum_size().width);
 
 					draw_style_box(theme_cache.progress_bg_style, Rect2(p_pos, p_size));
 
@@ -3975,7 +3975,7 @@ _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height,
 	updating_scroll = true;
 
 	float total_height = p_total_height;
-	bool exceeds = scroll_active && p_total_height > p_ctrl_height && p_width > vscroll->get_combined_minimum_size().width;
+	bool exceeds = scroll_active && p_total_height > p_ctrl_height && p_width > vscroll->get_bound_minimum_size().width;
 	if (exceeds != scroll_visible) {
 		if (exceeds) {
 			scroll_visible = true;

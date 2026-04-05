@@ -346,7 +346,7 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
 		int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 		if (scroll_bar_v->is_visible()) {
-			width -= scroll_bar_v->get_combined_minimum_size().width;
+			width -= scroll_bar_v->get_bound_minimum_size().width;
 		}
 		ret.size.width = width - ret.position.x;
 	}
@@ -1400,8 +1400,8 @@ void ItemList::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			force_update_list_size();
 
-			Size2 scroll_bar_h_min = scroll_bar_h->is_visible() ? scroll_bar_h->get_combined_minimum_size() : Size2();
-			Size2 scroll_bar_v_min = scroll_bar_v->is_visible() ? scroll_bar_v->get_combined_minimum_size() : Size2();
+			Size2 scroll_bar_h_min = scroll_bar_h->is_visible() ? scroll_bar_h->get_bound_minimum_size() : Size2();
+			Size2 scroll_bar_v_min = scroll_bar_v->is_visible() ? scroll_bar_v->get_bound_minimum_size() : Size2();
 
 			int left_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_RIGHT) : theme_cache.panel_style->get_margin(SIDE_LEFT);
 			int right_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_LEFT) : theme_cache.panel_style->get_margin(SIDE_RIGHT);

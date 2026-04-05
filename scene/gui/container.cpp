@@ -49,6 +49,7 @@ void Container::add_child_notify(Node *p_child) {
 
 	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->connect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->connect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
@@ -76,6 +77,7 @@ void Container::remove_child_notify(Node *p_child) {
 
 	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->disconnect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
@@ -103,27 +105,36 @@ void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &
 
 	bool rtl = is_layout_rtl();
 	Size2 minsize = p_child->get_combined_minimum_size();
+	Size2 maxsize = p_child->get_combined_maximum_size();
 	Rect2 r = p_rect;
+	BitField<SizeFlags> h_size_flags = p_child->get_h_size_flags();
+	BitField<SizeFlags> v_size_flags = p_child->get_v_size_flags();
 
-	if (!(p_child->get_h_size_flags().has_flag(SIZE_FILL))) {
-		r.size.x = minsize.width;
-		if (p_child->get_h_size_flags().has_flag(SIZE_SHRINK_END)) {
-			r.position.x += rtl ? 0 : (p_rect.size.width - minsize.width);
-		} else if (p_child->get_h_size_flags().has_flag(SIZE_SHRINK_CENTER)) {
-			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
+	if (!h_size_flags.has_flag(SIZE_FILL)) {
+		float final_width = minsize.width;
+		if (maxsize.width >= 0) {
+			final_width = MIN(final_width, maxsize.width);
+		}
+		r.size.x = final_width;
+		if (h_size_flags.has_flag(SIZE_SHRINK_END)) {
+			r.position.x += rtl ? 0 : (p_rect.size.width - final_width);
+		} else if (h_size_flags.has_flag(SIZE_SHRINK_CENTER)) {
+			r.position.x += Math::floor((p_rect.size.x - final_width) / 2);
 		} else {
-			r.position.x += rtl ? (p_rect.size.width - minsize.width) : 0;
+			r.position.x += rtl ? (p_rect.size.width - final_width) : 0;
 		}
 	}
 
-	if (!(p_child->get_v_size_flags().has_flag(SIZE_FILL))) {
-		r.size.y = minsize.y;
-		if (p_child->get_v_size_flags().has_flag(SIZE_SHRINK_END)) {
-			r.position.y += p_rect.size.height - minsize.height;
-		} else if (p_child->get_v_size_flags().has_flag(SIZE_SHRINK_CENTER)) {
-			r.position.y += Math::floor((p_rect.size.y - minsize.height) / 2);
-		} else {
-			r.position.y += 0;
+	if (!v_size_flags.has_flag(SIZE_FILL)) {
+		float final_height = minsize.y;
+		if (maxsize.height >= 0) {
+			final_height = MIN(final_height, maxsize.height);
+		}
+		r.size.y = final_height;
+		if (v_size_flags.has_flag(SIZE_SHRINK_END)) {
+			r.position.y += p_rect.size.height - final_height;
+		} else if (v_size_flags.has_flag(SIZE_SHRINK_CENTER)) {
+			r.position.y += Math::floor((p_rect.size.y - final_height) / 2);
 		}
 	}
 
@@ -257,4 +268,6 @@ void Container::_bind_methods() {
 Container::Container() {
 	// All containers should let mouse events pass by default.
 	set_mouse_filter(MOUSE_FILTER_PASS);
+	// All containers should contain their children within their maximum size by default.
+	set_propagate_maximum_size(true);
 }

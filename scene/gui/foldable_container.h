@@ -138,6 +138,7 @@ public:
 	void remove_title_bar_control(Control *p_control);
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }
 	virtual Vector<int> get_allowed_size_flags_vertical() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }

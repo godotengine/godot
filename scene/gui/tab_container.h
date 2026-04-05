@@ -157,6 +157,8 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
+	void _maximum_size_changed();
+
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
@@ -229,6 +231,7 @@ public:
 	Control *get_current_tab_control() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
