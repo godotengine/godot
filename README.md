@@ -1,7 +1,7 @@
 # Godot Gaussian Splatting (Alpha)
 
 GodotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for importing, rendering, and tuning splat-based scenes in the editor and at runtime.
-
+<video src="https://github.com/user-attachments/assets/71542f8d-ccf6-433c-b920-66fdf9ae8c84" autoplay loop muted playsinline></video>
 ## Current Status
 
 | Area | State |
