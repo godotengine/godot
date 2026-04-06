@@ -334,9 +334,7 @@ void NavigationLink3D::set_enabled(bool p_enabled) {
 	}
 #endif // DEBUG_ENABLED
 
-#ifdef TOOLS_ENABLED
 	update_gizmos();
-#endif // TOOLS_ENABLED
 }
 
 void NavigationLink3D::set_navigation_map(RID p_navigation_map) {
@@ -371,9 +369,7 @@ void NavigationLink3D::set_bidirectional(bool p_bidirectional) {
 	_update_debug_mesh();
 #endif // DEBUG_ENABLED
 
-#ifdef TOOLS_ENABLED
 	update_gizmos();
-#endif // TOOLS_ENABLED
 }
 
 void NavigationLink3D::set_navigation_layers(uint32_t p_navigation_layers) {
@@ -425,9 +421,7 @@ void NavigationLink3D::set_start_position(Vector3 p_position) {
 	_update_debug_mesh();
 #endif // DEBUG_ENABLED
 
-#ifdef TOOLS_ENABLED
 	update_gizmos();
-#endif // TOOLS_ENABLED
 	update_configuration_warnings();
 }
 
@@ -448,9 +442,7 @@ void NavigationLink3D::set_end_position(Vector3 p_position) {
 	_update_debug_mesh();
 #endif // DEBUG_ENABLED
 
-#ifdef TOOLS_ENABLED
 	update_gizmos();
-#endif // TOOLS_ENABLED
 	update_configuration_warnings();
 }
 

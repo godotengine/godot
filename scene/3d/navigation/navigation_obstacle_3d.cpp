@@ -111,11 +111,9 @@ void NavigationObstacle3D::_notification(int p_what) {
 #endif // DEBUG_ENABLED
 		} break;
 
-#ifdef TOOLS_ENABLED
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			update_gizmos();
 		} break;
-#endif // TOOLS_ENABLED
 
 		case NOTIFICATION_EXIT_TREE: {
 			set_physics_process_internal(false);
@@ -228,9 +226,7 @@ NavigationObstacle3D::NavigationObstacle3D() {
 	_update_static_obstacle_debug();
 #endif // DEBUG_ENABLED
 
-#ifdef TOOLS_ENABLED
 	set_notify_transform(true);
-#endif // TOOLS_ENABLED
 }
 
 NavigationObstacle3D::~NavigationObstacle3D() {
@@ -289,9 +285,7 @@ void NavigationObstacle3D::set_vertices(const Vector<Vector3> &p_vertices) {
 #ifdef DEBUG_ENABLED
 	_update_static_obstacle_debug();
 #endif // DEBUG_ENABLED
-#ifdef TOOLS_ENABLED
 	update_gizmos();
-#endif // TOOLS_ENABLED
 }
 
 void NavigationObstacle3D::set_navigation_map(RID p_navigation_map) {
@@ -326,9 +320,7 @@ void NavigationObstacle3D::set_radius(real_t p_radius) {
 #ifdef DEBUG_ENABLED
 	_update_fake_agent_radius_debug();
 #endif // DEBUG_ENABLED
-#ifdef TOOLS_ENABLED
 	update_gizmos();
-#endif // TOOLS_ENABLED
 }
 
 void NavigationObstacle3D::set_height(real_t p_height) {
@@ -344,9 +336,7 @@ void NavigationObstacle3D::set_height(real_t p_height) {
 #ifdef DEBUG_ENABLED
 	_update_static_obstacle_debug();
 #endif // DEBUG_ENABLED
-#ifdef TOOLS_ENABLED
 	update_gizmos();
-#endif // TOOLS_ENABLED
 }
 
 void NavigationObstacle3D::set_avoidance_layers(uint32_t p_layers) {
