@@ -1294,6 +1294,7 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 	texture.depth = 1;
 	texture.format = image->get_format();
 	texture.validated_format = image->get_format();
+	texture.drawable_type = p_format;
 
 	texture.rd_type = RD::TEXTURE_TYPE_2D;
 	texture.rd_format = ret_format.format;
