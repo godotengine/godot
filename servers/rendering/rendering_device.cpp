@@ -2594,6 +2594,10 @@ Error RenderingDevice::texture_copy(RID p_from_texture, RID p_to_texture, const 
 	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
 			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 
+	ERR_FAIL_COND_V(p_size.x == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_size.y == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_size.z == 0, ERR_INVALID_PARAMETER);
+
 	uint32_t src_width, src_height, src_depth;
 	get_image_format_required_size(src_tex->format, src_tex->width, src_tex->height, src_tex->depth, p_src_mipmap + 1, &src_width, &src_height, &src_depth);
 
