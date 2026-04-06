@@ -91,6 +91,7 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # penggrin12 <miner.sidor@gmail.com>, 2025.
 # Marijn Scholtus <linkable@gmail.com>, 2026.
+# Mathias Veldhuizen <mathias.veldhuizen@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
@@ -3905,6 +3906,9 @@ msgstr "Uitvoer"
 
 msgid "Filter Messages"
 msgstr "Filter Berichten"
+
+msgid "Show Non-Matches"
+msgstr "Laat niet-overeenkomende berichten zien"
 
 msgid "Clear Output"
 msgstr "Uitvoer wissen"
