@@ -4785,6 +4785,7 @@ int EditorNode::new_scene() {
 
 	editor_data.clear_editor_states();
 	scene_tabs->update_scene_tabs();
+	EditorDockManager::get_singleton()->focus_dock(SceneTreeDock::get_singleton());
 	return idx;
 }
 

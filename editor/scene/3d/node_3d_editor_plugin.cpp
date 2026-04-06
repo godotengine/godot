@@ -2009,7 +2009,7 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
+	if (k.is_valid() && k->is_pressed() && EDITOR_GET("editors/3d/navigation/emulate_numpad") && get_tree()->get_edited_scene_root() != nullptr) {
 		const Key code = k->get_physical_keycode();
 		if (code >= Key::KEY_0 && code <= Key::KEY_9) {
 			k->set_keycode(code - Key::KEY_0 + Key::KP_0);

@@ -1406,6 +1406,10 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		_update_cursor();
 	}
 
+	if (get_tree()->get_edited_scene_root() == nullptr) {
+		return false;
+	}
+
 	if (panner_active) {
 		return true;
 	}
