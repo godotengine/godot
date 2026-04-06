@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/split_container.h"
+#include "scene/resources/style_box.h"
 
 static float _lerp_fade(int total, int fade, float position) {
 	if (position < fade) {
@@ -85,6 +86,7 @@ void TileMapEditor::_notification(int p_what) {
 
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
+			_update_manual_palette_selection_style();
 
 			PopupMenu *p = options->get_popup();
 			p->set_item_icon(p->get_item_index(OPTION_CUT), get_icon("ActionCut", "EditorIcons"));
@@ -242,6 +244,223 @@ void TileMapEditor::_palette_input(const Ref<InputEvent> &p_event) {
 			size_slider->set_value(size_slider->get_value() - 0.2);
 		}
 	}
+}
+
+void TileMapEditor::_manual_palette_selected(int index) {
+	_sync_manual_palette_brush_preview();
+}
+
+void TileMapEditor::_manual_palette_multi_selected(int index, bool selected) {
+	_sync_manual_palette_brush_preview();
+}
+
+void TileMapEditor::_update_manual_palette_selection_style() {
+	if (!manual_palette || !is_inside_tree()) {
+		return;
+	}
+
+	const Color accent = get_color("accent_color", "Editor");
+
+	Ref<StyleBoxFlat> selected_style;
+	selected_style.instance();
+	selected_style->set_draw_center(true);
+	selected_style->set_bg_color(Color(accent.r, accent.g, accent.b, 0.1));
+	selected_style->set_border_color(accent.lightened(0.35));
+	selected_style->set_border_width_all(MAX(1, int(Math::round(2.0 * EDSCALE))));
+	manual_palette->add_style_override("selected", selected_style);
+	manual_palette->add_style_override("selected_focus", selected_style);
+}
+
+void TileMapEditor::_manual_palette_apply_drag_selection(const Point2i &p_from, const Point2i &p_to) {
+	if (!node || manual_palette->get_item_count() == 0 || manual_palette->get_select_mode() != ItemList::SELECT_MULTI) {
+		return;
+	}
+
+	Point2i begin = p_from;
+	Point2i end = p_to;
+	if (begin.x > end.x) {
+		SWAP(begin.x, end.x);
+	}
+	if (begin.y > end.y) {
+		SWAP(begin.y, end.y);
+	}
+
+	manual_palette->unselect_all();
+
+	int first_selected = -1;
+	int drag_focus_selected = -1;
+	for (int i = 0; i < manual_palette->get_item_count(); i++) {
+		const Point2 coord = manual_palette->get_item_metadata(i);
+		const Point2i coord_i(int(coord.x), int(coord.y));
+		if (coord_i.x >= begin.x && coord_i.x <= end.x && coord_i.y >= begin.y && coord_i.y <= end.y) {
+			manual_palette->select(i, false);
+			if (first_selected == -1) {
+				first_selected = i;
+			}
+			if (coord_i == p_to) {
+				drag_focus_selected = i;
+			}
+		}
+	}
+
+	if (drag_focus_selected >= 0) {
+		manual_palette->set_current(drag_focus_selected);
+	} else if (first_selected >= 0) {
+		manual_palette->set_current(first_selected);
+	}
+
+	_sync_manual_palette_brush_preview();
+}
+
+void TileMapEditor::_manual_palette_input(const Ref<InputEvent> &p_event) {
+	_palette_input(p_event);
+
+	const bool keep_tileset_layout = bool(EDITOR_GET("editors/tile_map/palette_keep_tileset_layout"));
+	if (!keep_tileset_layout || manual_palette->get_select_mode() != ItemList::SELECT_MULTI) {
+		manual_palette_drag_selecting = false;
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->is_pressed()) {
+			if (mb->get_command() || mb->get_shift()) {
+				return;
+			}
+
+			const int item_index = manual_palette->get_item_at_position(mb->get_position(), true);
+			if (item_index < 0) {
+				manual_palette_drag_selecting = false;
+				return;
+			}
+
+			const Point2 coord = manual_palette->get_item_metadata(item_index);
+			manual_palette_drag_begin = Point2i(int(coord.x), int(coord.y));
+			manual_palette_drag_selecting = true;
+			_manual_palette_apply_drag_selection(manual_palette_drag_begin, manual_palette_drag_begin);
+			return;
+		}
+
+		if (manual_palette_drag_selecting) {
+			const int item_index = manual_palette->get_item_at_position(mb->get_position(), true);
+			if (item_index >= 0) {
+				const Point2 coord = manual_palette->get_item_metadata(item_index);
+				_manual_palette_apply_drag_selection(manual_palette_drag_begin, Point2i(int(coord.x), int(coord.y)));
+			}
+			manual_palette_drag_selecting = false;
+		}
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && manual_palette_drag_selecting) {
+		const int item_index = manual_palette->get_item_at_position(mm->get_position(), true);
+		if (item_index < 0) {
+			return;
+		}
+
+		const Point2 coord = manual_palette->get_item_metadata(item_index);
+		_manual_palette_apply_drag_selection(manual_palette_drag_begin, Point2i(int(coord.x), int(coord.y)));
+	}
+}
+
+void TileMapEditor::_sync_manual_palette_brush_preview() {
+	if (!node || manual_palette_tile_id == TileMap::INVALID_CELL || !manual_palette_scroll->is_visible_in_tree()) {
+		return;
+	}
+
+	Ref<TileSet> tileset = node->get_tileset();
+	if (tileset.is_null() || !tileset->has_tile(manual_palette_tile_id)) {
+		return;
+	}
+
+	Vector<int> selected_items = manual_palette->get_selected_items();
+	if (selected_items.size() == 0) {
+		const int current = manual_palette->get_current();
+		if (current >= 0) {
+			selected_items.push_back(current);
+		}
+	}
+
+	if (selected_items.size() == 0) {
+		if (tool == TOOL_PASTING && !copydata.empty()) {
+			copydata.clear();
+			tool = TOOL_NONE;
+			_update_button_tool();
+		}
+		CanvasItemEditor::get_singleton()->update_viewport();
+		return;
+	}
+
+	if (selected_items.size() == 1) {
+		const Point2 coord = manual_palette->get_item_metadata(selected_items[0]);
+		autotile_coord = Point2i(int(coord.x), int(coord.y));
+
+		if (tool == TOOL_PASTING && !copydata.empty()) {
+			copydata.clear();
+			tool = TOOL_NONE;
+			_update_button_tool();
+		}
+
+		CanvasItemEditor::get_singleton()->update_viewport();
+		return;
+	}
+
+	copydata.clear();
+
+	bool initialized_rect = false;
+	Point2i min_coord;
+	Point2i max_coord;
+
+	for (int i = 0; i < selected_items.size(); i++) {
+		const int item_index = selected_items[i];
+		if (item_index < 0 || item_index >= manual_palette->get_item_count()) {
+			continue;
+		}
+
+		const Point2 coord = manual_palette->get_item_metadata(item_index);
+		const Point2i autotile_pos(int(coord.x), int(coord.y));
+
+		TileData tcd;
+		tcd.pos = autotile_pos;
+		tcd.cell = manual_palette_tile_id;
+		tcd.flip_h = flip_h;
+		tcd.flip_v = flip_v;
+		tcd.transpose = transpose;
+		tcd.autotile_coord = autotile_pos;
+		copydata.push_back(tcd);
+
+		if (!initialized_rect) {
+			min_coord = autotile_pos;
+			max_coord = autotile_pos;
+			initialized_rect = true;
+		} else {
+			min_coord.x = MIN(min_coord.x, autotile_pos.x);
+			min_coord.y = MIN(min_coord.y, autotile_pos.y);
+			max_coord.x = MAX(max_coord.x, autotile_pos.x);
+			max_coord.y = MAX(max_coord.y, autotile_pos.y);
+		}
+	}
+
+	if (!initialized_rect || copydata.empty()) {
+		return;
+	}
+
+	rectangle.position = min_coord;
+	rectangle.size = max_coord - min_coord;
+	selection_active = false;
+	tool = TOOL_PASTING;
+	_update_button_tool();
+	CanvasItemEditor::get_singleton()->update_viewport();
+}
+
+bool TileMapEditor::_try_prepare_manual_palette_copydata() {
+	if (!node || !bool(EDITOR_GET("editors/tile_map/palette_keep_tileset_layout"))) {
+		return false;
+	}
+
+	_sync_manual_palette_brush_preview();
+	return tool == TOOL_PASTING && !copydata.empty();
 }
 
 void TileMapEditor::_canvas_mouse_enter() {
@@ -419,6 +638,9 @@ void TileMapEditor::_update_palette() {
 	manual_palette_scroll->set_enable_v_scroll(keep_tileset_layout);
 	palette->set_auto_height(false);
 	manual_palette->set_auto_height(keep_tileset_layout);
+	manual_palette->set_select_mode(keep_tileset_layout ? ItemList::SELECT_MULTI : ItemList::SELECT_SINGLE);
+	manual_palette_tile_id = TileMap::INVALID_CELL;
+	manual_palette_drag_selecting = false;
 
 	// Update the clear button.
 	clear_transform_button->set_disabled(!flip_h && !flip_v && !transpose);
@@ -427,6 +649,20 @@ void TileMapEditor::_update_palette() {
 	Vector<int> selected = get_selected_tiles();
 	int selected_single = palette->get_current();
 	int selected_manual = manual_palette->get_current();
+	Vector<Point2i> selected_manual_coords;
+	Vector<int> selected_manual_items = manual_palette->get_selected_items();
+	selected_manual_coords.resize(selected_manual_items.size());
+	for (int i = 0; i < selected_manual_items.size(); i++) {
+		const Point2 coord = manual_palette->get_item_metadata(selected_manual_items[i]);
+		selected_manual_coords.write[i] = Point2i(int(coord.x), int(coord.y));
+	}
+	Point2i selected_manual_current_coord;
+	bool has_selected_manual_current_coord = false;
+	if (selected_manual >= 0 && selected_manual < manual_palette->get_item_count()) {
+		const Point2 current_coord = manual_palette->get_item_metadata(selected_manual);
+		selected_manual_current_coord = Point2i(int(current_coord.x), int(current_coord.y));
+		has_selected_manual_current_coord = true;
+	}
 	palette->clear();
 	manual_palette->clear();
 	palette->set_custom_minimum_size(Size2());
@@ -563,6 +799,7 @@ void TileMapEditor::_update_palette() {
 	}
 
 	if (sel_tile != TileMap::INVALID_CELL && tileset->has_tile(sel_tile) && ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || (!priority_atlastile && tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE))) {
+		manual_palette_tile_id = sel_tile;
 		const Map<Vector2, uint32_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
 
 		Vector<Vector2> entries2;
@@ -618,14 +855,36 @@ void TileMapEditor::_update_palette() {
 	}
 
 	if (manual_palette->get_item_count() > 0) {
-		// Only show the manual palette if at least tile exists in it.
-		if (selected_manual == -1 || selected_single != palette->get_current()) {
-			selected_manual = 0;
+		bool restored_manual_selection = false;
+		if (selected_single == palette->get_current() && selected_manual_coords.size() > 0) {
+			for (int i = 0; i < selected_manual_coords.size(); i++) {
+				const Point2 coord = Point2(selected_manual_coords[i].x, selected_manual_coords[i].y);
+				const int idx = manual_palette->find_metadata(coord);
+				if (idx >= 0) {
+					manual_palette->select(idx, false);
+					restored_manual_selection = true;
+				}
+			}
+			if (restored_manual_selection && has_selected_manual_current_coord) {
+				const Point2 current_coord = Point2(selected_manual_current_coord.x, selected_manual_current_coord.y);
+				const int current_idx = manual_palette->find_metadata(current_coord);
+				if (current_idx >= 0) {
+					manual_palette->set_current(current_idx);
+				}
+			}
 		}
-		if (selected_manual < manual_palette->get_item_count()) {
-			manual_palette->set_current(selected_manual);
+
+		// Only show the manual palette if at least tile exists in it.
+		if (!restored_manual_selection) {
+			if (selected_manual == -1 || selected_single != palette->get_current()) {
+				selected_manual = 0;
+			}
+			if (selected_manual < manual_palette->get_item_count()) {
+				manual_palette->set_current(selected_manual);
+			}
 		}
 		manual_palette_scroll->show();
+		_sync_manual_palette_brush_preview();
 	}
 
 	if (sel_tile != TileMap::INVALID_CELL && tileset->has_tile(sel_tile) && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
@@ -1240,6 +1499,10 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						_pick_tile(over_tile);
 						_update_button_tool();
 
+						return true;
+					}
+
+					if (_try_prepare_manual_palette_copydata()) {
 						return true;
 					}
 
@@ -1953,6 +2216,9 @@ void TileMapEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_palette_selected"), &TileMapEditor::_palette_selected);
 	ClassDB::bind_method(D_METHOD("_palette_multi_selected"), &TileMapEditor::_palette_multi_selected);
 	ClassDB::bind_method(D_METHOD("_palette_input"), &TileMapEditor::_palette_input);
+	ClassDB::bind_method(D_METHOD("_manual_palette_selected"), &TileMapEditor::_manual_palette_selected);
+	ClassDB::bind_method(D_METHOD("_manual_palette_multi_selected"), &TileMapEditor::_manual_palette_multi_selected);
+	ClassDB::bind_method(D_METHOD("_manual_palette_input"), &TileMapEditor::_manual_palette_input);
 
 	ClassDB::bind_method(D_METHOD("_fill_points"), &TileMapEditor::_fill_points);
 	ClassDB::bind_method(D_METHOD("_erase_points"), &TileMapEditor::_erase_points);
@@ -2061,6 +2327,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	bucket_cache_tile = -1;
 	bucket_cache_visited = nullptr;
+	manual_palette_tile_id = TileMap::INVALID_CELL;
+	manual_palette_drag_selecting = false;
 
 	invalid_cell.resize(1);
 	invalid_cell.write[0] = TileMap::INVALID_CELL;
@@ -2145,6 +2413,10 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	manual_palette->set_max_columns(0);
 	manual_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	manual_palette->set_max_text_lines(2);
+	manual_palette->set_select_mode(ItemList::SELECT_SINGLE);
+	manual_palette->connect("item_selected", this, "_manual_palette_selected");
+	manual_palette->connect("multi_selected", this, "_manual_palette_multi_selected");
+	manual_palette->connect("gui_input", this, "_manual_palette_input");
 	manual_palette_scroll->add_child(manual_palette);
 
 	// Add menu items.

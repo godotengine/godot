@@ -82,6 +82,9 @@ class TileMapEditor : public VBoxContainer {
 	ScrollContainer *manual_palette_scroll;
 	ItemList *palette;
 	ItemList *manual_palette;
+	int manual_palette_tile_id;
+	bool manual_palette_drag_selecting;
+	Point2i manual_palette_drag_begin;
 
 	Label *info_message;
 
@@ -197,6 +200,13 @@ class TileMapEditor : public VBoxContainer {
 	void _palette_selected(int index);
 	void _palette_multi_selected(int index, bool selected);
 	void _palette_input(const Ref<InputEvent> &p_event);
+	void _manual_palette_selected(int index);
+	void _manual_palette_multi_selected(int index, bool selected);
+	void _manual_palette_input(const Ref<InputEvent> &p_event);
+	void _manual_palette_apply_drag_selection(const Point2i &p_from, const Point2i &p_to);
+	void _update_manual_palette_selection_style();
+	void _sync_manual_palette_brush_preview();
+	bool _try_prepare_manual_palette_copydata();
 
 	Dictionary _create_cell_dictionary(int tile, bool flip_x, bool flip_y, bool transpose, Vector2 autotile_coord);
 	void _start_undo(const String &p_action);
