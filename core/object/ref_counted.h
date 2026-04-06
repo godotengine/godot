@@ -112,6 +112,15 @@ public:
 		return reference != p_r.reference;
 	}
 
+	template <typename T_Other>
+	_FORCE_INLINE_ bool operator==(const Ref<T_Other> &p_other) const {
+		return reference == p_other.ptr();
+	}
+	template <typename T_Other>
+	_FORCE_INLINE_ bool operator!=(const Ref<T_Other> &p_other) const {
+		return reference != p_other.ptr();
+	}
+
 	_FORCE_INLINE_ T *operator*() const {
 		return reference;
 	}
