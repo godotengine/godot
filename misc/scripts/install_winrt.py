@@ -35,7 +35,7 @@ if os.path.isfile(winrt_archive):
 
 print(f"Downloading WinRT {winrt_filename} ...")
 urllib.request.urlretrieve(
-    f"https://github.com/bruvzg/winrt_mingw/releases/download/{winrt_version}/{winrt_filename}",
+    f"https://github.com/godotengine/winrt-mingw/releases/download/{winrt_version}/{winrt_filename}",
     winrt_archive,
 )
 if os.path.exists(winrt_folder):
