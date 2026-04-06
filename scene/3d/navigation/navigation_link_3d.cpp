@@ -335,7 +335,7 @@ void NavigationLink3D::set_enabled(bool p_enabled) {
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
-update_gizmos();
+	update_gizmos();
 #endif // TOOLS_ENABLED
 }
 
