@@ -83,16 +83,10 @@ env.add_source_files(sources, common_win)
 
 env_winrt = env.Clone()
 if not env_winrt.msvc:
-    if "-std=gnu++17" in env_winrt["CXXFLAGS"]:
-        env_winrt["CXXFLAGS"].remove("-std=gnu++17")
-    env_winrt.Append(CXXFLAGS=["-std=gnu++20"])
     if "-fno-exceptions" in env_winrt["CXXFLAGS"]:
         env_winrt["CXXFLAGS"].remove("-fno-exceptions")
     env_winrt.Append(CXXFLAGS=["-fexceptions"])
 else:
-    if "/std:c++17" in env_winrt["CXXFLAGS"]:
-        env_winrt["CXXFLAGS"].remove("/std:c++17")
-    env_winrt.Append(CXXFLAGS=["/std:c++20"])
     if "_HAS_EXCEPTIONS" in env_winrt["CPPDEFINES"]:
         env_winrt["CPPDEFINES"].remove("_HAS_EXCEPTIONS")
     env_winrt.Append(CXXFLAGS=["/EHsc"])
