@@ -1573,9 +1573,9 @@ MaterialStorage::MaterialStorage() {
 		ShaderCompiler::DefaultIdentifierActions actions;
 
 		actions.renames["TIME"] = "time";
-		actions.renames["PI"] = _MKSTR(Math_PI);
-		actions.renames["TAU"] = _MKSTR(Math_TAU);
-		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 
