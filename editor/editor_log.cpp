@@ -127,6 +127,7 @@ void EditorLog::_update_theme() {
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
+	show_nonmatches_button->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -205,6 +206,16 @@ void EditorLog::_load_state() {
 	collapse_button->set_pressed(EDITOR_DEF("_editor_log_collapse", false));
 
 	is_loading_state = false;
+}
+
+void EditorLog::_set_show_nonmatches(bool p_state) {
+	show_nonmatches = p_state;
+
+	_rebuild_log();
+}
+
+void EditorLog::_set_show_nonmatches_button_visibility(bool p_visible) {
+	show_nonmatches_button->set_visible(p_visible);
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
@@ -384,9 +395,16 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
-	// Only add the message to the log if it passes the filters.
-	if (!_check_display_message(p_message)) {
+	if (!type_filter_map[p_message.type]->is_active()) {
 		return;
+	}
+
+	if (!_check_display_message(p_message)) {
+		// Either darken or remove the message altogether when it does not fit the filter keytext.
+		if (!show_nonmatches) {
+			return;
+		}
+		log->push_color(Color(1.0, 1.0, 1.0, 0.2));
 	}
 
 	if (p_replace_previous) {
@@ -436,7 +454,30 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (p_message.type == MSG_TYPE_STD_RICH || p_message.type == MSG_TYPE_ERROR || p_message.type == MSG_TYPE_WARNING) {
 		log->append_text(p_message.text);
 	} else {
-		log->add_text(p_message.text);
+		String filter_keytext = search_box->get_text();
+
+		if (_check_display_message(p_message) && !filter_keytext.is_empty()) {
+			// Specific coloring of the line
+
+			int keytext_start = p_message.text.findn(filter_keytext);
+
+			String message_prefix = p_message.text.substr(0, keytext_start); // Part of the message before the filter keytext. This will appear light gray.
+			String keytext_message = p_message.text.substr(keytext_start, filter_keytext.length()); // Filter keytext. This will appear yellow.
+			String message_suffix = p_message.text.substr(keytext_start + filter_keytext.length(), p_message.text.length() - keytext_start + filter_keytext.length()); // Part of the message before the filter keytext. This will appear light gray again.
+
+			log->push_color(theme_cache.message_color);
+			log->add_text(message_prefix);
+
+			log->push_bold();
+			log->push_color(Color(1.0, 1.0, 0.5));
+			log->add_text(keytext_message);
+
+			log->push_normal();
+			log->push_color(theme_cache.message_color);
+			log->add_text(message_suffix);
+		} else {
+			log->add_text(p_message.text);
+		}
 	}
 	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
 		log->pop_all(); // Pop all unclosed tags.
@@ -463,6 +504,8 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 
 void EditorLog::_search_changed(const String &p_text) {
 	_rebuild_log();
+	_set_show_nonmatches_button_visibility(!p_text.is_empty());
+	// It'd be nice to have the output scroll to the first line containing of p_text.
 }
 
 void EditorLog::_reset_message_counts() {
@@ -528,6 +571,17 @@ EditorLog::EditorLog() {
 	search_box->set_clear_button_enabled(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
 	hbox->add_child(search_box);
+
+	//Exclude non-filter matches button
+	show_nonmatches_button = memnew(Button);
+	show_nonmatches_button->set_tooltip_text(TTRC("Show Non-Matches"));
+	show_nonmatches_button->set_accessibility_name(TTRC("Show Non-Matches"));
+	show_nonmatches_button->set_theme_type_variation(SceneStringName(FlatButton));
+	show_nonmatches_button->set_toggle_mode(true);
+	show_nonmatches_button->set_pressed(true);
+	show_nonmatches_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_show_nonmatches));
+	_set_show_nonmatches_button_visibility(false);
+	hbox->add_child(show_nonmatches_button);
 
 	// Clear.
 	clear_button = memnew(Button);

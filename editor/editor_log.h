@@ -133,6 +133,11 @@ private:
 	RichTextLabel *log = nullptr;
 
 	Button *clear_button = nullptr;
+	
+	Button *show_nonmatches_button = nullptr;
+	void _set_show_nonmatches(bool p_state);
+	void _set_show_nonmatches_button_visibility(bool p_visible);
+	bool show_nonmatches = true;
 
 	Button *collapse_button = nullptr;
 	bool collapse = false;
