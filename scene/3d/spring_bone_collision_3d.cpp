@@ -193,10 +193,10 @@ void SpringBoneCollision3D::_notification(int p_what) {
 	}
 }
 
-Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
-	return _collide(p_center, p_bone_radius, p_bone_length, p_current);
+Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
+	return _collide(p_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 }
 
-Vector3 SpringBoneCollision3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
+Vector3 SpringBoneCollision3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
 	return Vector3(0, 0, 0);
 }

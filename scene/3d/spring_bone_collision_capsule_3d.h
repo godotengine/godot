@@ -42,7 +42,7 @@ class SpringBoneCollisionCapsule3D : public SpringBoneCollision3D {
 protected:
 	static void _bind_methods();
 
-	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const override;
+	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const override;
 
 public:
 	void set_radius(float p_radius);
