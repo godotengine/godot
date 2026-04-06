@@ -281,7 +281,13 @@ GaussianImportSettingsDialog::GaussianImportSettingsDialog() {
 
 GaussianImportSettingsDialog::~GaussianImportSettingsDialog() {
 	singleton = nullptr;
+	if (inspector) {
+		inspector->edit(nullptr);
+	}
+	_clear_viewport_scene();
+	loaded_asset.unref();
 	memdelete(settings_data);
+	settings_data = nullptr;
 }
 
 // ---------------------------------------------------------------------------
