@@ -30,6 +30,8 @@
 
 #include "object_view.h"
 
+#include "shared_controls.h"
+
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"

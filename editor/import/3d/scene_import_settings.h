@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/gui/tree_sort_and_filter_line_edit.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
@@ -70,6 +71,10 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Tree *scene_tree = nullptr;
 	Tree *mesh_tree = nullptr;
 	Tree *material_tree = nullptr;
+
+	TreeSortAndFilterBar *scene_tree_filter_bar = nullptr;
+	TreeSortAndFilterBar *mesh_tree_filter_bar = nullptr;
+	TreeSortAndFilterBar *material_tree_filter_bar = nullptr;
 
 	EditorInspector *inspector = nullptr;
 
@@ -198,6 +203,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _on_light_1_switch_pressed();
 	void _on_light_2_switch_pressed();
 	void _on_light_rotate_switch_pressed();
+	void _on_tree_tab_changed(int p_tab_id);
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
