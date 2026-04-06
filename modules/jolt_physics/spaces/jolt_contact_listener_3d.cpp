@@ -37,6 +37,8 @@
 #include "../objects/jolt_soft_body_3d.h"
 #include "jolt_space_3d.h"
 
+#include "core/templates/a_hash_map.h"
+
 #include <Jolt/Physics/Collision/EstimateCollisionResponse.h>
 #include <Jolt/Physics/SoftBody/SoftBodyManifold.h>
 
@@ -432,44 +434,42 @@ void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, con
 }
 
 void JoltContactListener3D::_flush_contacts() {
-	HashSet<JPH::SubShapeIDPair, ShapePairHasher> seen_shape_pairs;
-
-	uint32_t total_manifold_count = 0;
-	for (ThreadLocals *tl : ThreadLocals::instances) {
-		total_manifold_count += tl->manifolds.size();
-	}
-
-	seen_shape_pairs.reserve(total_manifold_count);
+	thread_local AHashMap<JPH::SubShapeIDPair, Manifold *, ShapePairHasher> deepest_manifolds;
 
 	for (ThreadLocals *tl : ThreadLocals::instances) {
 		for (Manifold &manifold : tl->manifolds) {
-			if (seen_shape_pairs.has(manifold.shape_pair)) {
-				// CCD collisions can result in two contact callbacks for the same shape pair, one in the earlier discrete stage and one in the later CCD stage.
-				// Ideally we would want the manifolds from the discrete stage, as the bodies still have their original velocities at that point, but we have
-				// no way to distinguish which is which from here, so we just discard one randomly.
-				continue;
+			Manifold *&deepest_manifold = deepest_manifolds[manifold.shape_pair];
+			if (deepest_manifold == nullptr || manifold.depth > deepest_manifold->depth) {
+				deepest_manifold = &manifold;
 			}
+		}
+	}
 
-			JoltBody3D *body1 = space->try_get_body(manifold.shape_pair.GetBody1ID());
-			ERR_FAIL_NULL(body1);
+	for (const KeyValue<JPH::SubShapeIDPair, Manifold *> &E : deepest_manifolds) {
+		const JPH::SubShapeIDPair &shape_pair = E.key;
+		const Manifold &manifold = *E.value;
 
-			JoltBody3D *body2 = space->try_get_body(manifold.shape_pair.GetBody2ID());
-			ERR_FAIL_NULL(body2);
+		JoltBody3D *body1 = space->try_get_body(shape_pair.GetBody1ID());
+		ERR_FAIL_NULL(body1);
 
-			const int shape_index1 = body1->find_shape_index(manifold.shape_pair.GetSubShapeID1());
-			const int shape_index2 = body2->find_shape_index(manifold.shape_pair.GetSubShapeID2());
+		JoltBody3D *body2 = space->try_get_body(shape_pair.GetBody2ID());
+		ERR_FAIL_NULL(body2);
 
-			for (const Contact &contact : manifold.contacts1) {
-				body1->add_contact(body2, manifold.depth, shape_index1, shape_index2, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
-			}
+		const int shape_index1 = body1->find_shape_index(shape_pair.GetSubShapeID1());
+		const int shape_index2 = body2->find_shape_index(shape_pair.GetSubShapeID2());
 
-			for (const Contact &contact : manifold.contacts2) {
-				body2->add_contact(body1, manifold.depth, shape_index2, shape_index1, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
-			}
-
-			seen_shape_pairs.insert(manifold.shape_pair);
+		for (const Contact &contact : manifold.contacts1) {
+			body1->add_contact(body2, manifold.depth, shape_index1, shape_index2, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
 		}
 
+		for (const Contact &contact : manifold.contacts2) {
+			body2->add_contact(body1, manifold.depth, shape_index2, shape_index1, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
+		}
+	}
+
+	deepest_manifolds.clear();
+
+	for (ThreadLocals *tl : ThreadLocals::instances) {
 		tl->manifolds.clear();
 	}
 }
