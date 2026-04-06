@@ -1,7 +1,11 @@
+#pragma once
+
 #include "test_macros.h"
 
 #include "../interfaces/overflow_auto_tuner.h"
 #include "../interfaces/rasterizer_interfaces.h"
+
+namespace TestGaussianSplatting {
 
 TEST_CASE("[GaussianSplatting][OverflowAutoTuner] Discards stale async overflow snapshots after grace window") {
 	OverflowAutoTuner tuner;
@@ -39,3 +43,5 @@ TEST_CASE("[GaussianSplatting][OverflowAutoTuner] Discards stale async overflow 
 	CHECK(tuner.get_importance_threshold() > importance_before_stale_drop);
 	CHECK(tuner.get_tiny_splat_radius() > tiny_before_stale_drop);
 }
+
+} // namespace TestGaussianSplatting

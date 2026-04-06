@@ -1,3 +1,5 @@
+#pragma once
+
 #include "test_macros.h"
 
 #define private public
@@ -8,6 +10,7 @@
 
 #include <cstring>
 
+namespace TestGaussianSplatting {
 namespace {
 
 struct TestSortResultSink : public ISortResultSink {
@@ -67,7 +70,6 @@ TEST_CASE("[GaussianSplatting][GPU Sort Pipeline] Stale sort readbacks are ignor
 	CHECK_FALSE(pipeline->sort_readback_state.pending);
 	CHECK(pipeline->sort_result_sink == nullptr);
 
-	// Re-arm only the minimal test state needed to verify stale callbacks are ignored.
 	pipeline->sort_readback_state.pending = true;
 	pipeline->sort_readback_state.expected_count = 4;
 	pipeline->sort_readback_state.snapshot_indices.resize(4);
@@ -120,3 +122,5 @@ TEST_CASE("[GaussianSplatting][GPU Sort Pipeline] Instance-count readbacks rejec
 	CHECK(pipeline->last_instance_visible_splat_count_valid);
 	CHECK(pipeline->last_instance_visible_splat_count_frame == 71);
 }
+
+} // namespace TestGaussianSplatting

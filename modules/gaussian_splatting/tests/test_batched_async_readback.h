@@ -1,9 +1,12 @@
+#pragma once
+
 #include "test_macros.h"
 
 #include "../renderer/batched_async_readback.h"
 
 #include "core/object/callable_method_pointer.h"
 
+namespace TestGaussianSplatting {
 namespace {
 bool s_partial_failure_callback_called = false;
 int64_t s_partial_failure_callback_user_data = -1;
@@ -81,3 +84,5 @@ TEST_CASE("[GaussianSplatting][AsyncReadback] Batched readback rejects fully fai
 
 	batched_readback->shutdown();
 }
+
+} // namespace TestGaussianSplatting

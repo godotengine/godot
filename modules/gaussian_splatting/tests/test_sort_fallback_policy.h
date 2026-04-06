@@ -1,6 +1,10 @@
+#pragma once
+
 #include "test_macros.h"
 
 #include "../renderer/sort_fallback_policy.h"
+
+namespace TestGaussianSplatting {
 
 using namespace GaussianSplatting;
 
@@ -77,3 +81,5 @@ TEST_CASE("[GaussianSplatting][SortFallback] orchestrator guards block unsorted 
 	CHECK(allow_unsorted_cpu_fallback_in_orchestrator(true, true));
 	CHECK_FALSE(allow_unsorted_cpu_fallback_in_orchestrator(true, false));
 }
+
+} // namespace TestGaussianSplatting

@@ -9,6 +9,7 @@ This directory contains the test suite for the Gaussian Splatting module.
 The tests are organized using Godot's built-in **doctest** framework:
 
 - `test_gaussian_splatting.h` - Main test header that includes all test suites
+- Registration rule: doctest suites that should survive module static-library linking must be included from `test_gaussian_splatting.h`; standalone `.cpp` compilation alone is not a reliable registration path.
 - `test_gaussian_data.h` - Tests for core Gaussian data structures
 - `test_gpu_streaming.h` - Tests for GPU memory streaming functionality
 - `test_gpu_sorting.h` - Tests for GPU-based sorting algorithms
