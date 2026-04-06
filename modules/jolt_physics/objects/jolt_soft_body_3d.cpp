@@ -229,9 +229,9 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	return settings;
 }
 
-void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt_body) {
+void JoltSoftBody3D::_apply_environmental_forces(float p_step) {
 	// Get approximation of the center of the soft body.
-	Vector3 com_position = to_godot(p_jolt_body.GetCenterOfMassPosition());
+	Vector3 com_position = to_godot(jolt_body->GetCenterOfMassPosition());
 
 	// Calculate gravity and which areas affect the soft body through wind.
 	bool gravity_done = false;
@@ -255,10 +255,10 @@ void JoltSoftBody3D::_apply_environmental_forces(float p_step, JPH::Body &p_jolt
 	}
 
 	// Apply gravity to soft body. Note that this only works so long as vertices have uniform mass (excluding pinned vertices).
-	p_jolt_body.AddForce(to_jolt(gravity) * mass);
+	jolt_body->AddForce(to_jolt(gravity) * mass);
 
 	if (!wind_areas.is_empty()) {
-		JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*p_jolt_body.GetMotionPropertiesUnchecked());
+		JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 		JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
 		for (const JPH::SoftBodySharedSettings::Face &physics_face : motion_properties.GetFaces()) {
@@ -487,8 +487,8 @@ Vector3 JoltSoftBody3D::get_velocity_at_position(const Vector3 &p_position) cons
 	return Vector3();
 }
 
-void JoltSoftBody3D::pre_step(float p_step, JPH::Body &p_jolt_body) {
-	_apply_environmental_forces(p_step, p_jolt_body);
+void JoltSoftBody3D::pre_step(float p_step) {
+	_apply_environmental_forces(p_step);
 }
 
 void JoltSoftBody3D::set_mesh(const RID &p_mesh) {

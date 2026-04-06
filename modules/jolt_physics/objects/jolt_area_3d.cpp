@@ -205,6 +205,14 @@ void JoltArea3D::_notify_body_exited(const JPH::BodyID &p_body_id) {
 	}
 }
 
+void JoltArea3D::_notify_bodies_updated(bool p_priority_changed) {
+	for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
+		if (JoltBody3D *body = space->try_get_body(E.key)) {
+			body->update_area(this, p_priority_changed);
+		}
+	}
+}
+
 void JoltArea3D::_remove_all_overlaps() {
 	for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
 		_notify_body_exited(E.key);
@@ -356,13 +364,13 @@ void JoltArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant
 			set_linear_damp_mode((OverrideMode)(int)p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP: {
-			set_area_linear_damp(p_value);
+			set_linear_damp(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
 			set_angular_damp_mode((OverrideMode)(int)p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP: {
-			set_area_angular_damp(p_value);
+			set_angular_damp(p_value);
 		} break;
 		case PhysicsServer3D::AREA_PARAM_PRIORITY: {
 			set_priority(p_value);
@@ -438,6 +446,106 @@ bool JoltArea3D::can_interact_with(const JoltSoftBody3D &p_other) const {
 
 bool JoltArea3D::can_interact_with(const JoltArea3D &p_other) const {
 	return can_monitor(p_other) || p_other.can_monitor(*this);
+}
+
+void JoltArea3D::set_priority(float p_priority) {
+	if (p_priority == priority) {
+		return;
+	}
+
+	priority = p_priority;
+
+	_notify_bodies_updated(true);
+}
+
+void JoltArea3D::set_gravity(float p_gravity) {
+	if (p_gravity == gravity) {
+		return;
+	}
+
+	gravity = p_gravity;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_point_gravity(bool p_enabled) {
+	if (p_enabled == point_gravity) {
+		return;
+	}
+
+	point_gravity = p_enabled;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_point_gravity_distance(float p_distance) {
+	if (p_distance == point_gravity_distance) {
+		return;
+	}
+
+	point_gravity_distance = p_distance;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_linear_damp(float p_damp) {
+	if (p_damp == linear_damp) {
+		return;
+	}
+
+	linear_damp = p_damp;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_angular_damp(float p_damp) {
+	if (p_damp == angular_damp) {
+		return;
+	}
+
+	angular_damp = p_damp;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_gravity_mode(OverrideMode p_mode) {
+	if (p_mode == gravity_mode) {
+		return;
+	}
+
+	gravity_mode = p_mode;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_linear_damp_mode(OverrideMode p_mode) {
+	if (p_mode == linear_damp_mode) {
+		return;
+	}
+
+	linear_damp_mode = p_mode;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_angular_damp_mode(OverrideMode p_mode) {
+	if (p_mode == angular_damp_mode) {
+		return;
+	}
+
+	angular_damp_mode = p_mode;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_gravity_vector(const Vector3 &p_vector) {
+	if (p_vector == gravity_vector) {
+		return;
+	}
+
+	gravity_vector = p_vector;
+
+	_notify_bodies_updated();
 }
 
 Vector3 JoltArea3D::compute_gravity(const Vector3 &p_position) const {
