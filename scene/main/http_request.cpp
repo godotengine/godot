@@ -390,6 +390,7 @@ bool HTTPRequest::_update_connection() {
 				}
 				if (body_len < 0) {
 					// Chunked transfer is done.
+					download_complete = true;
 					_defer_done(RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
