@@ -5091,6 +5091,12 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), p_id.track_idx, time, (Animation::HandleMode)bezier_key_mode->get_selected_id(), Animation::HANDLE_SET_MODE_AUTO);
 	}
 
+	// Insert key causes index shift, so clear and reselect keys.
+	undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+		undo_redo->add_do_method(this, "_select_at_anim", animation, E.key.track, E.value.pos);
+	}
+
 	if (created) {
 		// Just remove the track.
 		undo_redo->add_undo_method(this, "_clear_selection", false);
@@ -5104,6 +5110,11 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			float trans = animation->track_get_key_transition(p_id.track_idx, existing);
 			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, v, trans);
 		}
+	}
+
+	undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+		undo_redo->add_undo_method(this, "_select_at_anim", animation, E.key.track, E.value.pos);
 	}
 
 	if (create_reset_track) {
@@ -6165,8 +6176,17 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Method Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", insert_key_from_track_call_track, insert_key_from_track_call_ofs, d);
-			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			// Insert key causes index shift, so clear and reselect keys.
+			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+			for (const KeyValue<SelectedKey, KeyInfo> &selected_item : selection) {
+				undo_redo->add_do_method(this, "_select_at_anim", animation, selected_item.key.track, selected_item.value.pos);
+			}
+
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", insert_key_from_track_call_track, insert_key_from_track_call_ofs);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			for (const KeyValue<SelectedKey, KeyInfo> &selected_item : selection) {
+				undo_redo->add_undo_method(this, "_select_at_anim", animation, selected_item.key.track, selected_item.value.pos);
+			}
 			undo_redo->commit_action();
 
 			return;
