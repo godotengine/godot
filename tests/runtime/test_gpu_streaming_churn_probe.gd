@@ -13,11 +13,16 @@ const FRAME_P95_SPIKE_MIN_MS := 20.0
 const FRAME_P95_TO_AVG_SPIKE_FAIL_RATIO := 2.2
 const QUEUE_PRESSURE_STARVATION_MIN_FRAMES := 32
 const QUEUE_PRESSURE_STARVATION_FAIL_RATIO := 0.85
+const QUEUE_PRESSURE_FORWARD_PROGRESS_ACTIVE_RATIO_FAIL := 0.98
+const QUEUE_PRESSURE_FORWARD_PROGRESS_NO_PROGRESS_RATIO_FAIL := 0.90
+const QUEUE_PRESSURE_FORWARD_PROGRESS_SCAN_STARVED_RATIO_FAIL := 0.95
 const SCHEDULER_CPU_P95_TO_FRAME_P95_FAIL_RATIO := 0.85
 const QUEUE_PRESSURE_HIGH_MUTEX_WAIT_MIN_MS := 8.0
 const QUEUE_PRESSURE_HIGH_MUTEX_WAIT_FAIL_MIN_FRAMES := 30
 const QUEUE_PRESSURE_HIGH_MUTEX_WAIT_FAIL_RATIO := 0.80
 const UPLOAD_PROGRESS_EPSILON_MB := 0.01
+const MIN_LOADED_CHUNKS_FOR_STRICT_EVAL := 8
+const MIN_EVICTED_CHUNKS_FOR_STRICT_EVAL := 2
 const CAMERA_PATH_POINTS := [
     Vector3(-180.0, 35.0, -180.0),
     Vector3(180.0, 35.0, -180.0),
@@ -600,6 +605,46 @@ func _run() -> void:
                 "sync_fallback_stall_frames_last": sync_fallback_stalls
             }
         )
+    var strict_eval_ready := \
+        sum_loaded >= MIN_LOADED_CHUNKS_FOR_STRICT_EVAL and \
+        sum_evicted >= MIN_EVICTED_CHUNKS_FOR_STRICT_EVAL
+    if not strict_eval_ready:
+        _record_failure(
+            "Churn probe did not exercise enough load/evict activity for release-gate evaluation",
+            {
+                "sum_chunks_loaded": sum_loaded,
+                "sum_chunks_evicted": sum_evicted,
+                "min_loaded_chunks_for_strict_eval": MIN_LOADED_CHUNKS_FOR_STRICT_EVAL,
+                "min_evicted_chunks_for_strict_eval": MIN_EVICTED_CHUNKS_FOR_STRICT_EVAL,
+                "sample_frames": SAMPLE_FRAMES,
+                "queue_pressure_candidate_frames": queue_pressure_candidate_frames,
+                "queue_pressure_active_ratio": queue_pressure_active_ratio,
+                "max_scheduler_load_candidates": max_scheduler_load_candidates
+            }
+        )
+    if strict_eval_ready and \
+            queue_pressure_candidate_frames >= QUEUE_PRESSURE_STARVATION_MIN_FRAMES and \
+            queue_pressure_active_ratio >= QUEUE_PRESSURE_FORWARD_PROGRESS_ACTIVE_RATIO_FAIL and \
+            queue_pressure_no_progress_ratio >= QUEUE_PRESSURE_FORWARD_PROGRESS_NO_PROGRESS_RATIO_FAIL and \
+            queue_pressure_scan_starved_ratio >= QUEUE_PRESSURE_FORWARD_PROGRESS_SCAN_STARVED_RATIO_FAIL:
+        _record_failure(
+            "Queue pressure remained active with insufficient forward progress during churn probe",
+            {
+                "queue_pressure_candidate_frames": queue_pressure_candidate_frames,
+                "queue_pressure_active_frames": queue_pressure_active_frames,
+                "queue_pressure_active_ratio": queue_pressure_active_ratio,
+                "queue_pressure_no_progress_frames": queue_pressure_no_progress_frames,
+                "queue_pressure_no_progress_ratio": queue_pressure_no_progress_ratio,
+                "queue_pressure_scan_starved_frames": queue_pressure_scan_starved_frames,
+                "queue_pressure_scan_starved_ratio": queue_pressure_scan_starved_ratio,
+                "queue_pressure_forward_progress_active_ratio_fail":
+                    QUEUE_PRESSURE_FORWARD_PROGRESS_ACTIVE_RATIO_FAIL,
+                "queue_pressure_forward_progress_no_progress_ratio_fail":
+                    QUEUE_PRESSURE_FORWARD_PROGRESS_NO_PROGRESS_RATIO_FAIL,
+                "queue_pressure_forward_progress_scan_starved_ratio_fail":
+                    QUEUE_PRESSURE_FORWARD_PROGRESS_SCAN_STARVED_RATIO_FAIL
+            }
+        )
     if queue_pressure_candidate_frames >= QUEUE_PRESSURE_STARVATION_MIN_FRAMES and \
             queue_pressure_scan_starvation_ratio >= QUEUE_PRESSURE_STARVATION_FAIL_RATIO and \
             frame_p95_ms >= FRAME_P95_SPIKE_MIN_MS and \
@@ -687,6 +732,9 @@ func _run() -> void:
         "sum_chunks_loaded": sum_loaded,
         "sum_chunks_evicted": sum_evicted,
         "sum_visible_chunks_evicted": sum_visible_evicted,
+        "strict_eval_ready": strict_eval_ready,
+        "min_loaded_chunks_for_strict_eval": MIN_LOADED_CHUNKS_FOR_STRICT_EVAL,
+        "min_evicted_chunks_for_strict_eval": MIN_EVICTED_CHUNKS_FOR_STRICT_EVAL,
         "churn_ratio_evicted_to_loaded": 0.0 if sum_loaded == 0 else float(sum_evicted) / float(sum_loaded),
         "sum_upload_mb": sum_upload_mb,
         "max_upload_mb_this_frame": max_upload_mb_frame,
@@ -732,6 +780,12 @@ func _run() -> void:
         "queue_pressure_high_mutex_wait_fail_ratio": QUEUE_PRESSURE_HIGH_MUTEX_WAIT_FAIL_RATIO,
         "queue_pressure_starvation_min_frames": QUEUE_PRESSURE_STARVATION_MIN_FRAMES,
         "queue_pressure_starvation_fail_ratio": QUEUE_PRESSURE_STARVATION_FAIL_RATIO,
+        "queue_pressure_forward_progress_active_ratio_fail":
+            QUEUE_PRESSURE_FORWARD_PROGRESS_ACTIVE_RATIO_FAIL,
+        "queue_pressure_forward_progress_no_progress_ratio_fail":
+            QUEUE_PRESSURE_FORWARD_PROGRESS_NO_PROGRESS_RATIO_FAIL,
+        "queue_pressure_forward_progress_scan_starved_ratio_fail":
+            QUEUE_PRESSURE_FORWARD_PROGRESS_SCAN_STARVED_RATIO_FAIL,
         "queue_pressure_reason_source": last_queue_pressure_reason_source,
         "queue_pressure_reason_sources": queue_pressure_reason_sources,
         "pack_queue_latency_max_ms": max_pack_queue_latency_max_ms,
