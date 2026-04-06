@@ -6746,7 +6746,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 
 	if (EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(p_tab))) {
 		if (scene_filename.is_empty()) {
-			unsaved_message = TTR("This scene was never saved.");
+			unsaved_message = vformat(TTR("This scene was never saved (root node: \"%s\")."), scene->get_name());
 		} else {
 			uint32_t time_opened = editor_data.get_scene_time_opened(p_tab);
 			unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, time_opened);
