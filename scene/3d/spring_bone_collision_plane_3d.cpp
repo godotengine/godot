@@ -30,7 +30,7 @@
 
 #include "spring_bone_collision_plane_3d.h"
 
-Vector3 SpringBoneCollisionPlane3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
+Vector3 SpringBoneCollisionPlane3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
 	Transform3D tr = get_transform_from_skeleton(p_center);
 	Vector3 pos = tr.origin;
 	Vector3 normal = tr.basis.get_rotation_quaternion().xform(Vector3::UP);

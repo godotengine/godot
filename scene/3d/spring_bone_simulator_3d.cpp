@@ -1849,7 +1849,9 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 			SpringBoneCollision3D *col = Object::cast_to<SpringBoneCollision3D>(obj);
 			if (col) {
 				// Collider movement should separate from the effect of the center.
-				next_tail = col->collide(p_center_transform, p_joints[i]->radius, verlet->length, next_tail);
+				float origin_radius = p_joints[(i > 0 ? i - 1 : i)]->radius;
+				next_tail = col->collide(p_center_transform, p_joints[i]->radius, verlet->length, current_origin, origin_radius, next_tail);
+				//printf(" tttt %d %f %f %f\n", i, origin_radius, p_joints[i]->radius, verlet->length);
 				// Snap to plane if axis locked.
 				if (p_joints[i]->rotation_axis != ROTATION_AXIS_ALL) {
 					next_tail = current_world_pose.origin + current_world_pose.basis.get_rotation_quaternion().xform(snap_vector_to_plane(p_joints[i]->get_rotation_axis_vector(), current_world_pose.basis.get_rotation_quaternion().xform_inv(next_tail - current_world_pose.origin)));

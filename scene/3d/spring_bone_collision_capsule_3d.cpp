@@ -105,7 +105,7 @@ void SpringBoneCollisionCapsule3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inside"), "set_inside", "is_inside");
 }
 
-Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
+Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
 	Pair<Vector3, Vector3> head_tail = get_head_and_tail(p_center);
 	Vector3 head = head_tail.first;
 	Vector3 tail = head_tail.second;
@@ -113,14 +113,14 @@ Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, floa
 	Vector3 q = p_current - head;
 	float dot = p.dot(q);
 	if (dot <= 0) {
-		return SpringBoneCollisionSphere3D::_collide_sphere(head, radius, inside, p_bone_radius, p_bone_length, p_current);
+		return SpringBoneCollisionSphere3D::_collide_sphere(head, radius, inside, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	}
 	float pls = p.length_squared();
 	if (Math::is_zero_approx(pls)) {
 		return p_current;
 	}
 	if (pls <= dot) {
-		return SpringBoneCollisionSphere3D::_collide_sphere(head + p, radius, inside, p_bone_radius, p_bone_length, p_current);
+		return SpringBoneCollisionSphere3D::_collide_sphere(head + p, radius, inside, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	}
-	return SpringBoneCollisionSphere3D::_collide_sphere(head + p * (dot / pls), radius, inside, p_bone_radius, p_bone_length, p_current);
+	return SpringBoneCollisionSphere3D::_collide_sphere(head + p * (dot / pls), radius, inside, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 }
