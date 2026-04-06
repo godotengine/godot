@@ -684,6 +684,112 @@ def is_apple_clang(env):
     return version.startswith("Apple")
 
 
+_cached_cpp_standards: dict[str, str] = {}
+_cached_c_standards: dict[str, str] = {}
+
+
+def update_cpp_standard(env):
+    if (cpp_std := env["cpp_standard"]) in _cached_cpp_standards:
+        env["CXXSTD"] = _cached_cpp_standards[cpp_std]
+        return
+
+    major, minor, *_ = get_compiler_version(env).values()
+    if cpp_std not in ["17", "20"]:  # TODO: Add validation ranges for c++23/c++26.
+        print_warning(f"Using experimental C++ Standard {cpp_std}; skipping validation checks.")
+
+    elif major == -1:
+        pass  # Can't perform any validation.
+
+    elif using_gcc(env):
+        if cpp_std == "17" and major < 9:
+            print_error(
+                "Detected GCC version older than 9, which does not fully support "
+                "C++17, or has bugs when compiling Godot. Supported versions are 9 "
+                "and later. Use a newer GCC version, or Clang 6 or later by passing "
+                '"use_llvm=yes" to the SCons command line.'
+            )
+            sys.exit(255)
+        elif cpp_std == "20" and major < 11:
+            print_error(
+                "Detected GCC version older than 11, which does not fully support "
+                "C++20. Supported versions are GCC 11 and later. Use a newer GCC "
+                'version, or Clang 13 or later by passing "use_llvm=yes" to the '
+                "SCons command line."
+            )
+            sys.exit(255)
+
+    elif using_clang(env):
+        # Apple LLVM versions differ from upstream LLVM version \o/, compare
+        # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
+        if is_apple_clang(env) and major < 16:
+            print_error(
+                "Detected Apple Clang version older than 16, supported versions are "
+                "Apple Clang 16 (Xcode 16) and later."
+            )
+            sys.exit(255)
+        elif cpp_std == "17" and major < 6:
+            print_error(
+                "Detected Clang version older than 6, which does not fully support "
+                "C++17. Supported versions are Clang 6 and later."
+            )
+            sys.exit(255)
+        elif cpp_std == "20" and major < 13:
+            print_error(
+                "Detected Clang version older than 13, which does not fully support "
+                "C++20. Supported versions are Clang 13 and later."
+            )
+            sys.exit(255)
+
+    elif env.msvc:
+        if cpp_std == "17" and (major, minor) < (15, 9):
+            print_error("Detected Visual Studio older than 2017 version 15.9, which has bugs when compiling Godot.")
+            sys.exit(255)
+        elif cpp_std == "20" and (major, minor) < (16, 11):
+            print_error("Detected Visual Studio older than 2019 version 16.11, which does not support C++20.")
+            sys.exit(255)
+
+    if not env.msvc:
+        # Specifying GNU extensions support explicitly, which are supported by both GCC and Clang.
+        _cached_cpp_standards[cpp_std] = f"-std=gnu++{cpp_std}"
+    else:
+        _cached_cpp_standards[cpp_std] = (
+            f"/std:c++{'latest' if cpp_std == '26' else '23preview' if cpp_std == '23' else cpp_std}"
+        )
+
+    env["CXXSTD"] = _cached_cpp_standards[cpp_std]
+
+
+def update_c_standard(env):
+    if (c_std := env["c_standard"]) in _cached_c_standards:
+        env["CSTD"] = _cached_c_standards[c_std]
+        return
+
+    major, minor, *_ = get_compiler_version(env).values()
+    if c_std not in ["17"]:  # TODO: Add validation ranges for c23.
+        print_warning(f"Using experimental C Standard {c_std}; skipping validation checks.")
+
+    elif major == -1:
+        pass  # Can't perform any validation.
+
+    else:
+        pass  # NOTE: We currently (reasonably) assume a valid C++17 compiler will also support C17.
+
+    if not env.msvc:
+        # Specifying GNU extensions support explicitly, which are supported by both GCC and Clang.
+        _cached_c_standards[c_std] = f"-std=gnu{c_std}"
+    else:
+        # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
+        # of our supported VS2019+ versions; VS2017 can only pass the C++ standard.
+        if (major, minor) < (16, 8):
+            if env.get("CSTD") is None:  # Print once.
+                print_warning("Visual Studio 2017 cannot specify a C standard.")
+            _cached_c_standards[c_std] = ""
+        else:
+            _cached_c_standards[c_std] = f"/std:c{c_std if c_std != '23' else 'latest'}"
+
+    env["CSTD"] = _cached_c_standards[c_std]
+
+
 def get_compiler_version(env):
     """
     Returns a dictionary with various version information:
@@ -696,8 +802,6 @@ def get_compiler_version(env):
     global compiler_version_cache
     if compiler_version_cache is not None:
         return compiler_version_cache
-
-    import shlex
 
     ret = {
         "major": -1,
@@ -729,8 +833,8 @@ def get_compiler_version(env):
                 "Microsoft.Component.MSBuild",
                 "-utf8",
             ]
-            version = subprocess.check_output(args, encoding="utf-8").strip()
-            for line in version.splitlines():
+            out = subprocess.run(args, encoding="utf-8", capture_output=True, check=True)
+            for line in out.stdout.strip().splitlines():
                 split = line.split(":", 1)
                 if split[0] == "catalog_productSemanticVersion":
                     match = re.match(r" ([0-9]*).([0-9]*).([0-9]*)-?([a-z0-9.+]*)", split[1])
@@ -751,12 +855,12 @@ def get_compiler_version(env):
     # Not using -dumpversion as some GCC distros only return major, and
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
-        version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
-        ).strip()
+        out = subprocess.run([env["CXX"], "--version"], encoding="utf-8", capture_output=True, check=True)
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return update_compiler_version_cache(ret)
+
+    version = out.stdout.strip()
 
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
@@ -799,6 +903,14 @@ def get_compiler_version(env):
         "apple_patch3",
     ]:
         ret[key] = int(ret[key] or -1)
+
+    if using_gcc(env) and ret["metadata1"] == "win32":
+        print_error(
+            "Detected mingw version is not using posix threads. Only posix version of mingw is supported. "
+            "Use `update-alternatives --config x86_64-w64-mingw32-g++` to switch to posix threads."
+        )
+        sys.exit(255)
+
     return update_compiler_version_cache(ret)
 
 

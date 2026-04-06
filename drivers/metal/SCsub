@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
+from methods import update_cpp_standard
+
 Import("env")
 
 # If we're using Metal, we need metal-cpp.
@@ -45,9 +47,9 @@ env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env_metal.drivers_sources += thirdparty_obj
 
 # Enable C++20 for the Objective-C++ Metal code, which uses C++20 concepts.
-if "-std=gnu++17" in env_metal["CXXFLAGS"]:
-    env_metal["CXXFLAGS"].remove("-std=gnu++17")
-env_metal.Append(CXXFLAGS=["-std=gnu++20"])
+if env_metal["cpp_standard"] == "17":
+    env_metal["cpp_standard"] = "20"
+    update_cpp_standard(env_metal)
 
 # Enable module support
 env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])

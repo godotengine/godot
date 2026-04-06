@@ -314,6 +314,24 @@ opts.Add(
         ("executable", "static_library", "shared_library"),
     )
 )
+opts.Add(
+    EnumVariable(
+        ["cpp_standard", "cpp_std"],
+        "Set the C++ standard (Experimental)",
+        "17",
+        ("17", "20", "23", "26"),
+        ignorecase=2,
+    )
+)
+opts.Add(
+    EnumVariable(
+        ["c_standard", "c_std"],
+        "Set the C Standard (Experimental)",
+        "17",
+        ("17", "23"),
+        ignorecase=2,
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -708,75 +726,13 @@ print(f'Building for platform "{platform_string}", architecture "{env["arch"]}",
 if env.dev_build:
     print_info("Developer build, with debug optimization level and debug symbols (unless overridden).")
 
-# Enforce our minimal compiler version requirements
-cc_version = methods.get_compiler_version(env)
-cc_version_major = cc_version["major"]
-cc_version_minor = cc_version["minor"]
-cc_version_metadata1 = cc_version["metadata1"]
+# Set our C and C++ standard requirements.
+# This needs to come after `configure`, otherwise we don't have env.msvc.
+methods.update_c_standard(env)
+methods.update_cpp_standard(env)
 
-if cc_version_major == -1:
-    print_warning(
-        "Couldn't detect compiler version, skipping version checks. "
-        "Build may fail if the compiler doesn't support C++17 fully."
-    )
-elif methods.using_gcc(env):
-    if cc_version_major < 9:
-        print_error(
-            "Detected GCC version older than 9, which does not fully support "
-            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
-            "and later. Use a newer GCC version, or Clang 6 or later by passing "
-            '"use_llvm=yes" to the SCons command line.'
-        )
-        Exit(255)
-    elif cc_version_metadata1 == "win32":
-        print_error(
-            "Detected mingw version is not using posix threads. Only posix "
-            "version of mingw is supported. "
-            'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
-            "to switch to posix threads."
-        )
-        Exit(255)
-elif methods.using_clang(env):
-    # Apple LLVM versions differ from upstream LLVM version \o/, compare
-    # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-    if methods.is_apple_clang(env):
-        if cc_version_major < 16:
-            print_error(
-                "Detected Apple Clang version older than 16, supported versions are Apple Clang 16 (Xcode 16) and later."
-            )
-            Exit(255)
-    else:
-        if cc_version_major < 6:
-            print_error(
-                "Detected Clang version older than 6, which does not fully support "
-                "C++17. Supported versions are Clang 6 and later."
-            )
-            Exit(255)
-        elif env["debug_paths_relative"] and cc_version_major < 10:
-            print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-            env["debug_paths_relative"] = False
-
-elif env.msvc:
-    # Ensure latest minor builds of Visual Studio 2017/2019.
-    # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
-    if cc_version_major == 16 and cc_version_minor < 11:
-        print_error(
-            "Detected Visual Studio 2019 version older than 16.11, which has bugs "
-            "when compiling Godot. Use a newer VS2019 version, or VS2022."
-        )
-        Exit(255)
-    if cc_version_major == 15 and cc_version_minor < 9:
-        print_error(
-            "Detected Visual Studio 2017 version older than 15.9, which has bugs "
-            "when compiling Godot. Use a newer VS2017 version, or VS2019/VS2022."
-        )
-        Exit(255)
-    if cc_version_major < 15:
-        print_error(
-            "Detected Visual Studio 2015 or earlier, which is unsupported in Godot. "
-            "Supported versions are Visual Studio 2017 and later."
-        )
-        Exit(255)
+env.Prepend(CFLAGS=["$CSTD"])
+env.Prepend(CXXFLAGS=["$CXXSTD"])
 
 # Set x86 CPU instruction sets to use by the compiler's autovectorization.
 if env["arch"] == "x86_64":
@@ -891,23 +847,7 @@ else:
 if env["lto"] != "none":
     print("Using LTO: " + env["lto"])
 
-# Set our C and C++ standard requirements.
-# C++17 is required as we need guaranteed copy elision as per GH-36436.
-# Prepending to make it possible to override.
-# This needs to come after `configure`, otherwise we don't have env.msvc.
-if not env.msvc:
-    # Specifying GNU extensions support explicitly, which are supported by
-    # both GCC and Clang. Both currently default to gnu17 and gnu++17.
-    env.Prepend(CFLAGS=["-std=gnu17"])
-    env.Prepend(CXXFLAGS=["-std=gnu++17"])
-else:
-    # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
-    # of our supported VS2019 & VS2022 versions; VS2017 will only pass the C++ standard.
-    env.Prepend(CXXFLAGS=["/std:c++17"])
-    if cc_version_major < 16:
-        print_warning("Visual Studio 2017 cannot specify a C-Standard.")
-    else:
-        env.Prepend(CFLAGS=["/std:c17"])
+if env.msvc:
     # MSVC is non-conforming with the C++ standard by default, so we enable more conformance.
     # Note that this is still not complete conformance, as certain Windows-related headers
     # don't compile under complete conformance.
@@ -963,6 +903,7 @@ if env.msvc and not methods.using_clang(env):  # MSVC
         env.AppendUnique(LINKFLAGS=["/WX"])
 
 else:  # GCC, Clang
+    cc_version_major = methods.get_compiler_version(env)["major"]
     common_warnings = []
     if methods.using_gcc(env):
         common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
