@@ -219,7 +219,7 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 		if (ResourceLoader::exists(path)) {
 			const Ref<Resource> res = ResourceLoader::load(path);
 			ScriptEditor::get_singleton()->edit(res, line, 0);
-			InspectorDock::get_singleton()->edit_resource(res);
+			EditorNode::get_singleton()->push_item(res.ptr(), "", true);
 		}
 	} else if (path.has_extension("cpp") || path.has_extension("h") || path.has_extension("mm") || path.has_extension("hpp")) {
 		// Godot source file. Try to open it in external editor.
