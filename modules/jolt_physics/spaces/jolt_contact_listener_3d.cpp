@@ -78,7 +78,7 @@ void JoltContactListener3D::OnSoftBodyContactAdded(const JPH::Body &p_soft_body,
 		// The area is always the first body in the pair, meaning the soft body is always the second.
 		if (shape_pair.GetBody2ID() == p_soft_body.GetID()) {
 			// Assume that all existing area overlaps are exiting, then we erase in `_evaluate_area_overlap` if it's not.
-			tl.area_exits.insert(shape_pair);
+			tl.area_exits.push_back(shape_pair);
 		}
 	}
 
@@ -193,17 +193,13 @@ bool JoltContactListener3D::_try_add_contacts(const JPH::Body &p_jolt_body1, con
 		return false;
 	}
 
-	const JPH::SubShapeIDPair shape_pair(p_jolt_body1.GetID(), p_manifold.mSubShapeID1, p_jolt_body2.GetID(), p_manifold.mSubShapeID2);
-	Manifold &manifold = _get_thread_locals().manifolds[shape_pair];
-
-	if (unlikely(!manifold.contacts1.is_empty())) {
-		// CCD collisions can result in two contact callbacks for the same shape pair, one in the earlier discrete stage and one in the later CCD stage.
-		// We want the manifolds from the discrete stage, as the bodies still have their original velocities at that point, so we early-out if we've already stored something.
-		return false;
-	}
+	LocalVector<Manifold> &manifolds = _get_thread_locals().manifolds;
+	manifolds.resize(manifolds.size() + 1);
+	Manifold &manifold = manifolds[manifolds.size() - 1];
 
 	const JPH::uint contact_count = p_manifold.mRelativeContactPointsOn1.size();
 
+	manifold.shape_pair = JPH::SubShapeIDPair(p_jolt_body1.GetID(), p_manifold.mSubShapeID1, p_jolt_body2.GetID(), p_manifold.mSubShapeID2);
 	manifold.contacts1.reserve((uint32_t)contact_count);
 	manifold.contacts2.reserve((uint32_t)contact_count);
 	manifold.depth = p_manifold.mPenetrationDepth;
@@ -290,11 +286,11 @@ void JoltContactListener3D::_try_remove_area_overlap(const JPH::SubShapeIDPair &
 	const JPH::SubShapeIDPair swapped_shape_pair(p_shape_pair.GetBody2ID(), p_shape_pair.GetSubShapeID2(), p_shape_pair.GetBody1ID(), p_shape_pair.GetSubShapeID1());
 
 	if (area_overlaps.has(p_shape_pair)) {
-		_get_thread_locals().area_exits.insert(p_shape_pair);
+		_get_thread_locals().area_exits.push_back(p_shape_pair);
 	}
 
 	if (area_overlaps.has(swapped_shape_pair)) {
-		_get_thread_locals().area_exits.insert(swapped_shape_pair);
+		_get_thread_locals().area_exits.push_back(swapped_shape_pair);
 	}
 }
 
@@ -393,17 +389,17 @@ bool JoltContactListener3D::_has_shape_shifted(const JoltShapedObject3D &p_objec
 void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, const JoltArea3D &p_other_area, const JPH::SubShapeIDPair &p_shape_pair) {
 	if (p_area.can_monitor(p_other_area)) {
 		if (!area_overlaps.has(p_shape_pair)) {
-			_get_thread_locals().area_enters.insert(p_shape_pair);
+			_get_thread_locals().area_enters.push_back(p_shape_pair);
 		} else if (_has_shape_shifted(p_area, p_shape_pair.GetSubShapeID1()) || _has_shape_shifted(p_other_area, p_shape_pair.GetSubShapeID2())) {
 			// A shape has taken on the `JPH::SubShapeID` value of another shape, likely because of the other shape having been replaced or moved
 			// in some way, so we force the area to refresh its internal mappings by exiting and entering this shape pair.
 			ThreadLocals &tl = _get_thread_locals();
-			tl.area_exits.insert(p_shape_pair);
-			tl.area_enters.insert(p_shape_pair);
+			tl.area_exits.push_back(p_shape_pair);
+			tl.area_enters.push_back(p_shape_pair);
 		}
 	} else {
 		if (area_overlaps.has(p_shape_pair)) {
-			_get_thread_locals().area_exits.insert(p_shape_pair);
+			_get_thread_locals().area_exits.push_back(p_shape_pair);
 		}
 	}
 }
@@ -411,17 +407,17 @@ void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, con
 void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, const JoltBody3D &p_body, const JPH::SubShapeIDPair &p_shape_pair) {
 	if (p_area.can_monitor(p_body)) {
 		if (!area_overlaps.has(p_shape_pair)) {
-			_get_thread_locals().area_enters.insert(p_shape_pair);
+			_get_thread_locals().area_enters.push_back(p_shape_pair);
 		} else if (_has_shape_shifted(p_area, p_shape_pair.GetSubShapeID1()) || _has_shape_shifted(p_body, p_shape_pair.GetSubShapeID2())) {
 			// A shape has taken on the `JPH::SubShapeID` value of another shape, likely because of the other shape having been replaced or moved
 			// in some way, so we force the area to refresh its internal mappings by exiting and entering this shape pair.
 			ThreadLocals &tl = _get_thread_locals();
-			tl.area_exits.insert(p_shape_pair);
-			tl.area_enters.insert(p_shape_pair);
+			tl.area_exits.push_back(p_shape_pair);
+			tl.area_enters.push_back(p_shape_pair);
 		}
 	} else {
 		if (area_overlaps.has(p_shape_pair)) {
-			_get_thread_locals().area_exits.insert(p_shape_pair);
+			_get_thread_locals().area_exits.push_back(p_shape_pair);
 		}
 	}
 }
@@ -429,26 +425,39 @@ void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, con
 void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, const JoltSoftBody3D &p_body, const JPH::SubShapeIDPair &p_shape_pair) {
 	if (p_area.can_monitor(p_body)) {
 		ThreadLocals &tl = _get_thread_locals();
-		if (!tl.area_exits.erase(p_shape_pair)) {
-			tl.area_enters.insert(p_shape_pair);
+		if (!tl.area_exits.erase_unordered(p_shape_pair)) {
+			tl.area_enters.push_back(p_shape_pair);
 		}
 	}
 }
 
 void JoltContactListener3D::_flush_contacts() {
-	for (ThreadLocals *tl : ThreadLocals::instances) {
-		for (KeyValue<JPH::SubShapeIDPair, Manifold> &E : tl->manifolds) {
-			const JPH::SubShapeIDPair &shape_pair = E.key;
-			Manifold &manifold = E.value;
+	HashSet<JPH::SubShapeIDPair, ShapePairHasher> seen_shape_pairs;
 
-			JoltBody3D *body1 = space->try_get_body(shape_pair.GetBody1ID());
+	uint32_t total_manifold_count = 0;
+	for (ThreadLocals *tl : ThreadLocals::instances) {
+		total_manifold_count += tl->manifolds.size();
+	}
+
+	seen_shape_pairs.reserve(total_manifold_count);
+
+	for (ThreadLocals *tl : ThreadLocals::instances) {
+		for (Manifold &manifold : tl->manifolds) {
+			if (seen_shape_pairs.has(manifold.shape_pair)) {
+				// CCD collisions can result in two contact callbacks for the same shape pair, one in the earlier discrete stage and one in the later CCD stage.
+				// Ideally we would want the manifolds from the discrete stage, as the bodies still have their original velocities at that point, but we have
+				// no way to distinguish which is which from here, so we just discard one randomly.
+				continue;
+			}
+
+			JoltBody3D *body1 = space->try_get_body(manifold.shape_pair.GetBody1ID());
 			ERR_FAIL_NULL(body1);
 
-			JoltBody3D *body2 = space->try_get_body(shape_pair.GetBody2ID());
+			JoltBody3D *body2 = space->try_get_body(manifold.shape_pair.GetBody2ID());
 			ERR_FAIL_NULL(body2);
 
-			const int shape_index1 = body1->find_shape_index(shape_pair.GetSubShapeID1());
-			const int shape_index2 = body2->find_shape_index(shape_pair.GetSubShapeID2());
+			const int shape_index1 = body1->find_shape_index(manifold.shape_pair.GetSubShapeID1());
+			const int shape_index2 = body2->find_shape_index(manifold.shape_pair.GetSubShapeID2());
 
 			for (const Contact &contact : manifold.contacts1) {
 				body1->add_contact(body2, manifold.depth, shape_index1, shape_index2, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
@@ -458,8 +467,7 @@ void JoltContactListener3D::_flush_contacts() {
 				body2->add_contact(body1, manifold.depth, shape_index2, shape_index1, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
 			}
 
-			manifold.contacts1.clear();
-			manifold.contacts2.clear();
+			seen_shape_pairs.insert(manifold.shape_pair);
 		}
 
 		tl->manifolds.clear();

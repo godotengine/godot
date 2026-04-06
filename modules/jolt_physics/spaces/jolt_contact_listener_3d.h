@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/os/mutex.h"
-#include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
@@ -78,15 +77,16 @@ class JoltContactListener3D final
 	typedef LocalVector<Contact> Contacts;
 
 	struct Manifold {
+		JPH::SubShapeIDPair shape_pair;
 		Contacts contacts1;
 		Contacts contacts2;
 		float depth = 0.0f;
 	};
 
 	struct ThreadLocals {
-		HashMap<JPH::SubShapeIDPair, Manifold, ShapePairHasher> manifolds;
-		HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_enters;
-		HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_exits;
+		LocalVector<Manifold> manifolds;
+		LocalVector<JPH::SubShapeIDPair> area_enters;
+		LocalVector<JPH::SubShapeIDPair> area_exits;
 
 		inline static TightLocalVector<ThreadLocals *> instances;
 		inline static BinaryMutex instances_mutex;
