@@ -345,7 +345,7 @@ void EditorProperty::_notification(int p_what) {
 			bottom_child_rect = Rect2();
 
 			{
-				int child_room = size.width * (1.0 - split_ratio);
+				int child_room = size.width * (1.0 - split_ratio) - name_fixed_size;
 				int separation = 4 * EDSCALE;
 				int height = theme_cache.inspector_property_height;
 				int half_padding = theme_cache.padding / 2;
@@ -1378,6 +1378,14 @@ float EditorProperty::get_name_split_ratio() const {
 	return split_ratio;
 }
 
+void EditorProperty::set_name_fixed_size(float p_size) {
+	if (name_fixed_size == p_size) {
+		return;
+	}
+	name_fixed_size = p_size;
+	queue_sort();
+}
+
 void EditorProperty::set_favoritable(bool p_favoritable) {
 	can_favorite = p_favoritable;
 }
@@ -1621,7 +1629,6 @@ EditorProperty::EditorProperty() {
 	set_focus_mode(FOCUS_ACCESSIBILITY);
 
 	object = nullptr;
-	split_ratio = 0.5;
 	text_size = 0;
 	property_usage = 0;
 	selected_focusable = -1;
