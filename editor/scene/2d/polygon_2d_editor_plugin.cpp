@@ -31,10 +31,12 @@
 #include "polygon_2d_editor_plugin.h"
 
 #include "core/input/input_event.h"
+#include "core/math/color.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/variant/typed_dictionary.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -59,6 +61,8 @@
 #include "scene/gui/view_panner.h"
 #include "scene/main/scene_tree.h"
 #include "servers/rendering/rendering_server.h"
+
+#include <cstdint>
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
@@ -978,12 +982,14 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 				for (int i = 0; i < editing_points.size(); i++) {
 					if (mtx.xform(rv[i]).distance_to(paint_pos) < radius) {
-						Color oldColor = node->get_vertex_colors().get(i, node->get_color());
+						TypedDictionary<uint32_t, Color> newDict = node->get_vertex_colors().duplicate();
+						Color oldColor = newDict.get(i, node->get_color());
 						Color newColor = oldColor.lerp(pickedColor, strength);
 						if (selected_action == ACTION_CLEAR_VERTEXCOLOR) {
 							newColor = oldColor.lerp(node->get_color(), strength);
 						}
-						node->get_vertex_colors().set(i, newColor);
+						newDict.set(i, newColor);
+						node->set_vertex_colors(newDict);
 					}
 				}
 			}
