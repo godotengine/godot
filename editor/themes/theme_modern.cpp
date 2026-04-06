@@ -2580,6 +2580,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_constant("margin_left", "AnimationTrackMargins", margin);
 		p_theme->set_constant("margin_right", "AnimationTrackMargins", margin);
 
+		p_theme->set_type_variation("AnimationBezierMargin", "MarginContainer");
+		p_theme->set_constant("margin_left", "AnimationBezierMargin", margin);
+
 		// AnimationTimelineEdit.
 		// "primary" is used for integer timeline values, "secondary" for decimals.
 
