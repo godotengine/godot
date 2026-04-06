@@ -606,7 +606,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
 
 			int idx = dnp.nd - nd;
-			array = setup_resources_in_array(paths, *dnp.nd, resources_local_to_scenes, base, dnp.property, idx, ret_nodes, p_edit_state);
+			paths = setup_resources_in_array(paths, *dnp.nd, resources_local_to_scenes, base, dnp.property, idx, ret_nodes, p_edit_state);
 			array.resize(paths.size());
 			bind_deferred_node_paths_in_array(paths, array, base);
 			base->set(dnp.property, array);
@@ -617,6 +617,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Dictionary dict = base->get(dnp.property, &valid);
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
 
+			dict.clear();
 			int idx = dnp.nd - nd;
 			dict_to_scan = setup_resources_in_dictionary(dict_to_scan, *dnp.nd, resources_local_to_scenes, base, dnp.property, idx, ret_nodes, p_edit_state);
 			bind_deferred_node_paths_in_dictionary(dict_to_scan, dict, base);
@@ -729,7 +730,7 @@ Array SceneState::setup_resources_in_array(Array &p_array_to_scan, const SceneSt
 
 void SceneState::bind_deferred_node_paths_in_array(const Array &p_array_to_scan, Array &r_out_array, const Node *p_base_node) const {
 	bool bind_paths = r_out_array.get_typed_builtin() == Variant::OBJECT &&
-			ClassDB::is_parent_class(p_array_to_scan.get_typed_class_name(), "Node");
+			ClassDB::is_parent_class(r_out_array.get_typed_class_name(), "Node");
 	for (int i = 0; i < p_array_to_scan.size(); i++) {
 		Variant var = p_array_to_scan[i];
 		r_out_array.set(i, bind_node_paths(var, p_base_node, bind_paths));
