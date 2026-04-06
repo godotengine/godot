@@ -1170,15 +1170,26 @@ void StreamingPipeline::_streaming_thread_func() {
             }
 
             if (memory_stream.is_valid() && gaussian_data.is_valid()) {
-                const LocalVector<Gaussian> &gaussians = gaussian_data->get_gaussian_storage();
-                const uint64_t end_index = uint64_t(visible_start) + uint64_t(visible_count);
-                if (visible_count > 0 && end_index <= uint64_t(gaussians.size())) {
-                    memory_stream->stream_gaussians_async(gaussians,
-                            visible_start,
+                if (visible_count > 0) {
+                    LocalVector<Gaussian> gaussians_snapshot;
+                    LocalVector<Vector3> sh_snapshot;
+                    uint32_t sh_first_order = 0;
+                    uint32_t sh_high_order = 0;
+                    const bool capture_ok = gaussian_data->capture_chunk_snapshot(visible_start,
                             visible_count,
-                            gaussian_data->get_sh_high_order_coefficients_ptr(),
-                            gaussian_data->get_sh_first_order_count(),
-                            gaussian_data->get_sh_high_order_count());
+                            gaussians_snapshot,
+                            sh_snapshot,
+                            sh_first_order,
+                            sh_high_order);
+                    if (capture_ok && gaussians_snapshot.size() == visible_count) {
+                        const Vector3 *sh_coeffs = sh_snapshot.is_empty() ? nullptr : sh_snapshot.ptr();
+                        memory_stream->stream_gaussians_async(gaussians_snapshot,
+                                0,
+                                visible_count,
+                                sh_coeffs,
+                                sh_first_order,
+                                sh_high_order);
+                    }
                 }
             }
         }

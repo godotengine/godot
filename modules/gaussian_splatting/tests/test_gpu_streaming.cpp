@@ -141,6 +141,41 @@ bool _snapshot_matches_position_pattern(const LocalVector<Gaussian> &p_snapshot,
     return true;
 }
 
+bool _packed_buffer_matches_position_pattern(RenderingDevice *p_rd, RID p_buffer, const PackedVector3Array &p_pattern) {
+    if (p_rd == nullptr || !p_buffer.is_valid()) {
+        return false;
+    }
+
+    const uint32_t splat_count = p_pattern.size();
+    const uint64_t byte_count = uint64_t(splat_count) * sizeof(PackedGaussian);
+    if (byte_count > UINT32_MAX) {
+        return false;
+    }
+
+    Vector<uint8_t> bytes = p_rd->buffer_get_data(p_buffer, 0, static_cast<uint32_t>(byte_count));
+    if (bytes.size() != static_cast<int>(byte_count)) {
+        return false;
+    }
+
+    Vector<PackedGaussian> packed;
+    packed.resize(splat_count);
+    memcpy(packed.ptrw(), bytes.ptr(), static_cast<size_t>(byte_count));
+
+    const PackedGaussian *packed_read = packed.ptr();
+    for (uint32_t i = 0; i < splat_count; i++) {
+        const PackedGaussian &packed_gaussian = packed_read[i];
+        const Vector3 packed_position(
+                packed_gaussian.position[0],
+                packed_gaussian.position[1],
+                packed_gaussian.position[2]);
+        if (!_is_equal_approx_vec3(packed_position, p_pattern[i])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void _snapshot_position_writer_thread(void *p_userdata) {
     SnapshotPositionStressContext *ctx = static_cast<SnapshotPositionStressContext *>(p_userdata);
     if (!ctx || !ctx->data.is_valid() || !ctx->pattern_a || !ctx->pattern_b) {
@@ -985,6 +1020,132 @@ TEST_CASE("[Streaming Pipeline] Chunk snapshot stays coherent under concurrent p
 
     CHECK_FALSE(ctx.writer_failed.load(std::memory_order_acquire));
     CHECK_FALSE(ctx.reader_failed.load(std::memory_order_acquire));
+}
+
+TEST_CASE("[Streaming Pipeline] Worker uploads remain coherent under concurrent position mutations") {
+#ifndef THREADS_ENABLED
+    MESSAGE("Skipping - THREADS_ENABLED is not enabled in this build");
+    return;
+#endif
+
+    RenderingDevice *rd = RenderingDevice::get_singleton();
+    if (!rd) {
+        RenderingServer *rs = RenderingServer::get_singleton();
+        if (rs) {
+            rd = rs->create_local_rendering_device();
+        }
+    }
+
+    if (!rd) {
+        MESSAGE("Skipping - Rendering device unavailable");
+        return;
+    }
+
+    const uint32_t splat_count = 32768;
+
+    Ref<GaussianMemoryStream> stream;
+    stream.instantiate();
+    Error err = stream->initialize(rd, splat_count, 64);
+    CHECK(err == OK);
+    if (err != OK) {
+        return;
+    }
+    stream->set_async_upload(false);
+
+    Ref<StreamingPipeline> pipeline;
+    pipeline.instantiate();
+    Ref<::GaussianData> data = create_test_gaussian_data(splat_count);
+
+    PackedVector3Array pattern_a;
+    PackedVector3Array pattern_b;
+    pattern_a.resize(splat_count);
+    pattern_b.resize(splat_count);
+    Vector3 *pattern_a_write = pattern_a.ptrw();
+    Vector3 *pattern_b_write = pattern_b.ptrw();
+    for (uint32_t i = 0; i < splat_count; i++) {
+        pattern_a_write[i] = Vector3(25.0f, float(i) * 0.5f, -9.0f);
+        pattern_b_write[i] = Vector3(-13.0f, float(i) * 0.5f + 0.125f, 17.0f);
+    }
+    data->set_positions(pattern_a);
+
+    err = pipeline->initialize(stream, data);
+    CHECK(err == OK);
+    if (err != OK) {
+        stream->shutdown();
+        return;
+    }
+
+    pipeline->start_streaming();
+    pipeline->update_visible_range(0, splat_count);
+
+    bool drained = false;
+    for (int i = 0; i < 300; i++) {
+        Dictionary stats = pipeline->get_streaming_stats();
+        if (!bool(stats["is_streaming"])) {
+            drained = true;
+            break;
+        }
+        OS::get_singleton()->delay_usec(1000);
+    }
+    CHECK(drained);
+    stream->wait_for_all_uploads();
+
+    SnapshotPositionStressContext ctx;
+    ctx.data = data;
+    ctx.pattern_a = &pattern_a;
+    ctx.pattern_b = &pattern_b;
+    ctx.splat_count = splat_count;
+
+    Thread writer_thread;
+    const Thread::ID writer_thread_id = writer_thread.start(_snapshot_position_writer_thread, &ctx);
+    CHECK(writer_thread_id != Thread::UNASSIGNED_ID);
+    if (writer_thread_id == Thread::UNASSIGNED_ID) {
+        pipeline->stop_streaming();
+        pipeline->shutdown();
+        return;
+    }
+
+    constexpr uint32_t iterations = 16;
+    for (uint32_t i = 0; i < iterations; i++) {
+        ctx.writer_begin.post();
+        pipeline->set_lod_level((i % 5) + 1);
+        Thread::yield();
+        ctx.writer_done.wait();
+
+        bool iteration_drained = false;
+        for (int poll = 0; poll < 400; poll++) {
+            Dictionary stats = pipeline->get_streaming_stats();
+            if (!bool(stats["is_streaming"])) {
+                iteration_drained = true;
+                break;
+            }
+            OS::get_singleton()->delay_usec(1000);
+        }
+        CHECK(iteration_drained);
+        if (!iteration_drained) {
+            break;
+        }
+
+        stream->wait_for_all_uploads();
+        RID buffer = stream->get_current_gpu_buffer();
+        CHECK(buffer.is_valid());
+        if (!buffer.is_valid()) {
+            break;
+        }
+
+        const bool matches_a = _packed_buffer_matches_position_pattern(rd, buffer, pattern_a);
+        const bool matches_b = _packed_buffer_matches_position_pattern(rd, buffer, pattern_b);
+        CHECK(matches_a || matches_b);
+    }
+
+    ctx.stop.store(true, std::memory_order_release);
+    ctx.writer_begin.post();
+    writer_thread.wait_to_finish();
+
+    CHECK_FALSE(ctx.writer_failed.load(std::memory_order_acquire));
+
+    pipeline->stop_streaming();
+    pipeline->shutdown();
 }
 
 TEST_CASE("[Streaming Pipeline] Chunk snapshot stays coherent under concurrent SH mutations") {
