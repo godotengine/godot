@@ -306,7 +306,8 @@ void NavMapBuilder3D::_build_step_navlink_connections(NavMapIterationBuild3D &r_
 
 		for (const Ref<NavRegionIteration3D> &region : map_iteration->region_iterations) {
 			AABB region_bounds = region->get_bounds().grow(link_connection_radius);
-			if (!region_bounds.has_point(link_start_pos) && !region_bounds.has_point(link_end_pos)) {
+			if ((!region_bounds.has_point(link_start_pos) && !region_bounds.has_point(link_end_pos)) ||
+					((region->navigation_layers & link->navigation_layers) == 0)) {
 				continue;
 			}
 

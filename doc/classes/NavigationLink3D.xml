@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A link between two positions on [NavigationRegion3D]s that agents can be routed through. These positions can be on the same [NavigationRegion3D] or on two different ones. Links are useful to express navigation methods other than traveling along the surface of the navigation mesh, such as ziplines, teleporters, or gaps that can be jumped across.
+		[b]Note:[/b] A link can only connect one region to one other region, or one region to itself. If your map contains multiple overlapping regions, make sure to set the navigation layers such that each link is a one-to-one relation between regions. For example, suppose you have a region on layer 1 for small agents and one on layer 2 for big agents. You can't make a single link on layers 1 and 2 for both agents to use, instead make one link for layer 1 and another link for layer 2.
 	</description>
 	<tutorials>
 		<link title="Using NavigationLinks">$DOCS_URL/tutorials/navigation/navigation_using_navigationlinks.html</link>
