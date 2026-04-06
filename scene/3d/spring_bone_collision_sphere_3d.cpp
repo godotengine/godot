@@ -87,7 +87,7 @@ Vector3 SpringBoneCollisionSphere3D::_collide_sphere_taper(const Vector3 &p_orig
 	if (p_inside || (fabs(taper_fore) >= 1.0)) { 
 		return _collide_sphere(p_origin, p_radius, p_inside, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	}
-	
+
 	Vector3 diff = p_current - p_origin;
 	Vector3 bone_axis = p_current - p_current_origin;  // should be length p_bone_radius due to calls to limit_length()
 	float taper_side = sqrt(1.0 - taper_fore * taper_fore);
@@ -100,6 +100,16 @@ Vector3 SpringBoneCollisionSphere3D::_collide_sphere_taper(const Vector3 &p_orig
 		return p_current;
 	}
 	float bone_axis_length = sqrt(bone_axis_sq);
+
+	// limit contact with the cone close to the root where it gets twitchy
+	float gapdistance = p_bone_radius * 0.5 + p_bone_origin_radius * 0.5 + p_radius * sqrt(0.5);
+	float lamconemin = gapdistance / bone_axis_length * 0.5;
+
+	// case of collide sphere being very large.
+	if (lamconemin > 1.0) {  // apply this case before the beyond origin end to avoid twitchiness
+		return _collide_sphere(p_origin, p_radius, p_inside, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	}
+
 	float lamd = radial_distance * taper_fore / taper_side / bone_axis_length;
 	float lamcone = lam - lamd;
 	if (lamcone <= 0.0) {  // beyond origin end
@@ -119,15 +129,6 @@ Vector3 SpringBoneCollisionSphere3D::_collide_sphere_taper(const Vector3 &p_orig
 	printf(" check %f>0 ", std::min(m0, m2) - m1);
 	*/
 
-	// limit contact with the cone close to the root where it gets twitchy
-	float gapdistance = p_bone_radius * 0.5 + p_bone_origin_radius * 0.5 + p_radius * sqrt(0.5);
-	float lamconemin = gapdistance / bone_axis_length * 0.5;
-
-	// case of collide sphere being very large.
-	if (lamconemin > 1.0) {
-		return _collide_sphere(p_origin, p_radius, p_inside, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
-	}
-	
 	if (lamcone < lamconemin) {
 		lamcone = lamconemin;
 	}
