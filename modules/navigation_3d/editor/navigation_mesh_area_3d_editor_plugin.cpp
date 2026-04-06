@@ -106,27 +106,27 @@ Variant NavigationMeshArea3DGizmoPlugin::get_handle_value(const EditorNode3DGizm
 
 	NavigationMeshAreaCylinder3D *area_cylinder = Object::cast_to<NavigationMeshAreaCylinder3D>(p_gizmo->get_node_3d());
 	if (area_cylinder) {
-		return p_id == 0 ? area_cylinder->get_radius() : area_cylinder->get_height();
+		return Vector2(area_cylinder->get_radius(), area_cylinder->get_height());
 	}
 
 	return Variant();
 }
 
 void NavigationMeshArea3DGizmoPlugin::begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) {
-	if (Object::cast_to<NavigationMeshAreaPolygon3D>(p_gizmo->get_node_3d())) {
+	Node3D *node = p_gizmo->get_node_3d();
+	if (Object::cast_to<NavigationMeshAreaPolygon3D>(node)) {
 		return;
 	}
 
-	NavigationMeshArea3D *area_node = Object::cast_to<NavigationMeshArea3D>(p_gizmo->get_node_3d());
-
+	// NavigationMeshArea3D *area_node = Object::cast_to<NavigationMeshArea3D>(node);
 	//const Vector3 safe_scale = area_node->get_global_basis().get_scale().abs().maxf(0.001);
 	//const Transform3D gt = Transform3D(Basis().scaled(safe_scale), Vector3());
 	//Transform3D gi = gt.affine_inverse();
 	//Transform3D gt = Transform3D(area_node->get_global_basis().inverse(), area_node->get_global_position());
 	//Transform3D gt = area_node->get_global_transform();
-	const Transform3D gbi = Transform3D(area_node->get_global_basis().inverse(), area_node->get_global_position());
+	// const Transform3D gbi = Transform3D(area_node->get_global_basis().inverse(), area_node->get_global_position());
 
-	helper->initialize_handle_action(get_handle_value(p_gizmo, p_id, p_secondary), gbi);
+	helper->initialize_handle_action(get_handle_value(p_gizmo, p_id, p_secondary), node->get_global_transform());
 }
 
 void NavigationMeshArea3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -235,6 +235,11 @@ void NavigationMeshArea3DGizmoPlugin ::redraw(EditorNode3DGizmo *p_gizmo) {
 			xformed_handles_ptrw[i] = gbi.xform(handles_ptr[i]);
 		}
 		p_gizmo->add_handles(xformed_handles, handles_material);
+
+		if (p_gizmo->is_selected()) {
+			NavigationMeshArea3DEditorPlugin::singleton->redraw();
+		}
+		return;
 	}
 
 	NavigationMeshAreaCylinder3D *area_cylinder = Object::cast_to<NavigationMeshAreaCylinder3D>(p_gizmo->get_node_3d());
@@ -314,6 +319,11 @@ void NavigationMeshArea3DGizmoPlugin ::redraw(EditorNode3DGizmo *p_gizmo) {
 			xformed_handles_ptrw[i] = gti.xform(handles_ptr[i]);
 		}
 		p_gizmo->add_handles(xformed_handles, handles_material);
+
+		if (p_gizmo->is_selected()) {
+			NavigationMeshArea3DEditorPlugin::singleton->redraw();
+		}
+		return;
 	}
 
 	NavigationMeshAreaPolygon3D *area_polygon = Object::cast_to<NavigationMeshAreaPolygon3D>(p_gizmo->get_node_3d());
@@ -362,10 +372,11 @@ void NavigationMeshArea3DGizmoPlugin ::redraw(EditorNode3DGizmo *p_gizmo) {
 			p_gizmo->add_lines(lines_mesh_vertices, ns3d->get_debug_area_edge_invalid_material());
 		}
 		p_gizmo->add_collision_segments(lines_mesh_vertices);
-	}
 
-	if (p_gizmo->is_selected()) {
-		NavigationMeshArea3DEditorPlugin::singleton->redraw();
+		if (p_gizmo->is_selected()) {
+			NavigationMeshArea3DEditorPlugin::singleton->redraw();
+		}
+		return;
 	}
 }
 
