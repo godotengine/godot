@@ -82,6 +82,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		ACTION_PAINT_WEIGHT,
 		ACTION_CLEAR_WEIGHT,
 		ACTION_PAINT_VERTEXCOLOR,
+		ACTION_CLEAR_VERTEXCOLOR,
 		ACTION_MAX
 	};
 
@@ -133,7 +134,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector<Vector2> editing_points;
 	Vector<Vector2> previous_uv;
 	Vector<Vector2> previous_polygon;
-	Vector<Color> previous_colors;
+	TypedDictionary<uint32_t, Color> previous_colors;
 	int previous_internal_vertices = 0;
 	Array previous_bones;
 	Array previous_polygons;

@@ -311,19 +311,10 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			Vector<Color> colors;
-			colors.resize(len);
-
-			if (vertex_colors.size() == points.size() && use_vertex_colors) {
-				const Color *color_r = vertex_colors.ptr();
-				for (int i = 0; i < len; i++) {
-					colors.write[i] = color_r[i];
-				}
-			} else {
-				for (int i = 0; i < len; i++) {
-					colors.write[i] = color;
-				}
+			
+			for (int i = 0; i < len; i++) {
+				colors.append(get_vertex_colors().get(i, color));
 			}
-
 			Vector<int> index_array;
 
 			if (invert || polygons.is_empty()) {
@@ -440,9 +431,6 @@ void Polygon2D::_notification(int p_what) {
 void Polygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	rect_cache_dirty = true;
-	if (use_vertex_colors) {
-		vertex_colors.resize(p_polygon.size());
-	}
 	queue_redraw();
 }
 
@@ -485,25 +473,14 @@ Color Polygon2D::get_color() const {
 	return color;
 }
 
-void Polygon2D::set_use_vertex_colors(bool p_vcol_enabled) {
-	use_vertex_colors = p_vcol_enabled;
-	if (p_vcol_enabled) {
-		vertex_colors.resize(polygon.size());
-	}
-	queue_redraw();
-}
-
-bool Polygon2D::get_use_vertex_colors() const {
-	return use_vertex_colors;
-}
-
-void Polygon2D::set_vertex_colors(const Vector<Color> &p_colors) {
+void Polygon2D::set_vertex_colors(const TypedDictionary<uint32_t, Color> &p_colors) {
 	vertex_colors = p_colors;
 	queue_redraw();
 }
 
-Vector<Color> Polygon2D::get_vertex_colors() const {
+TypedDictionary<uint32_t, Color> &Polygon2D::get_vertex_colors() {
 	return vertex_colors;
+	queue_redraw();
 }
 
 void Polygon2D::set_texture(const Ref<Texture2D> &p_texture) {
@@ -701,9 +678,6 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertex_colors", "vertex_colors"), &Polygon2D::set_vertex_colors);
 	ClassDB::bind_method(D_METHOD("get_vertex_colors"), &Polygon2D::get_vertex_colors);
 
-	ClassDB::bind_method(D_METHOD("set_use_vertex_colors", "use_vertex_colors"), &Polygon2D::set_use_vertex_colors);
-	ClassDB::bind_method(D_METHOD("get_use_vertex_colors"), &Polygon2D::get_use_vertex_colors);
-
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Polygon2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Polygon2D::get_texture);
 
@@ -767,7 +741,7 @@ void Polygon2D::_bind_methods() {
 	ADD_GROUP("Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "vertex_colors", PROPERTY_HINT_DICTIONARY_TYPE, vformat("%s/%s:0,2147483647;Color", Variant::INT, PROPERTY_HINT_RANGE)), "set_vertex_colors", "get_vertex_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_TYPE_STRING, "PackedInt32Array"), "set_polygons", "get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_bones", "_get_bones");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "internal_vertex_count", PROPERTY_HINT_RANGE, "0,1000"), "set_internal_vertex_count", "get_internal_vertex_count");

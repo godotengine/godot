@@ -30,7 +30,12 @@
 
 #pragma once
 
+#include "core/math/color.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_dictionary.h"
 #include "scene/2d/node_2d.h"
+
+#include <cstdint>
 
 class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;
@@ -40,7 +45,7 @@ class Polygon2D : public Node2D {
 
 	Vector<Vector2> polygon;
 	Vector<Vector2> uv;
-	Vector<Color> vertex_colors;
+	TypedDictionary<uint32_t, Color> vertex_colors;
 	Array polygons;
 	int internal_vertices = 0;
 
@@ -52,7 +57,6 @@ class Polygon2D : public Node2D {
 	Vector<Bone> bone_weights;
 
 	Color color = Color(1, 1, 1);
-	bool use_vertex_colors = false;
 	Ref<Texture2D> texture;
 
 	Size2 tex_scale = Vector2(1, 1);
@@ -117,11 +121,8 @@ public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_use_vertex_colors(bool p_vcol_enabled);
-	bool get_use_vertex_colors() const;
-
-	void set_vertex_colors(const Vector<Color> &p_colors);
-	Vector<Color> get_vertex_colors() const;
+	void set_vertex_colors(const TypedDictionary<uint32_t, Color> &p_colors);
+	TypedDictionary<uint32_t, Color> &get_vertex_colors();
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
