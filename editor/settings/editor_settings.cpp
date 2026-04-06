@@ -638,6 +638,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	String touch_actions_panel_hints = "Disabled:0,Embedded Panel:1,Floating Panel:2";
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/touchscreen/touch_actions_panel", 1, touch_actions_panel_hints)
 
+	// Virtual Mouse (Only available in the Android editor)
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_virtual_mouse", false, "")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/touchscreen/virtual_mouse_sensitivity", 1.5, "0.1,5.0,0.1")
+
 	// Scene tabs
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);

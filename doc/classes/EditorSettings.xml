@@ -1272,6 +1272,10 @@
 			If [code]true[/code], increases the scrollbar touch area, enables a larger dragger for split containers, and increases PopupMenu vertical separation to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
+		<member name="interface/touchscreen/enable_virtual_mouse" type="bool" setter="" getter="">
+			If [code]true[/code], touch gestures are translated into virtual mouse events, allowing the Android editor to be used without a physical mouse or stylus. The virtual cursor moves trackpad-style — the cursor and finger positions are independent.
+			[b]Note:[/b] Please disable Long Press as Right Click and Pan and Scale Gestures to let this work properly. This setting only applies to the editor — games and the project manager always use normal touch input.
+		</member>
 		<member name="interface/touchscreen/haptic_on_long_press" type="bool" setter="" getter="">
 			If [code]true[/code], the device will vibrate when a long-press gesture triggers a right-click context menu in the editor.
 			[b]Note:[/b] Only has an effect on devices with haptic feedback hardware. Defaults to [code]true[/code] on touchscreen devices.
@@ -1283,6 +1287,10 @@
 		<member name="interface/touchscreen/touch_actions_panel" type="int" setter="" getter="">
 			A touch-friendly panel that provides easy access to common actions such as save, delete, undo, and redo without requiring a keyboard.
 			[b]Note:[/b] Only available in the Android and XR editor.
+		</member>
+		<member name="interface/touchscreen/virtual_mouse_sensitivity" type="float" setter="" getter="">
+			Controls how fast the virtual cursor moves relative to finger movement on the screen, similar to trackpad sensitivity on a laptop. Higher values allow reaching the edges of the screen with smaller finger movements, which is useful on smaller screens or when precision is less important.
+			[b]Note:[/b] Only works if Virtual Mouse is enabled.
 		</member>
 		<member name="network/connection/check_for_updates" type="int" setter="" getter="">
 			Specifies how the engine should check for updates.

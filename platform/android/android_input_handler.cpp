@@ -34,6 +34,7 @@
 #include "display_server_android.h"
 
 #include "core/input/input.h"
+#include "core/os/os.h"
 
 void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_event) {
 	switch (p_event.type) {
@@ -438,6 +439,307 @@ MouseButton AndroidInputHandler::_button_index_from_mask(BitField<MouseButtonMas
 			return MouseButton::MB_XBUTTON2;
 		default:
 			return MouseButton::NONE;
+	}
+}
+
+// Virtual Mouse
+void AndroidInputHandler::_vm_emit_mouse_motion(const Point2 &p_finger_pos) {
+	Vector2 finger_delta = p_finger_pos - vm_primary_last_pos;
+	vm_primary_last_pos = p_finger_pos;
+
+	Vector2 cursor_delta = finger_delta * vm_sensitivity;
+	virtual_cursor_pos += cursor_delta;
+
+	Size2 screen = DisplayServer::get_singleton()->screen_get_size();
+	virtual_cursor_pos.x = CLAMP(virtual_cursor_pos.x, 0.0f, (float)screen.x);
+	virtual_cursor_pos.y = CLAMP(virtual_cursor_pos.y, 0.0f, (float)screen.y);
+
+	Ref<InputEventMouseMotion> ev;
+	ev.instantiate();
+	_set_key_modifier_state(ev, Key::NONE);
+	ev->set_position(virtual_cursor_pos);
+	ev->set_global_position(virtual_cursor_pos);
+	ev->set_relative(cursor_delta);
+	ev->set_relative_screen_position(cursor_delta);
+
+	ev->set_button_mask(buttons_state);
+
+	Input::get_singleton()->parse_input_event(ev);
+}
+
+void AndroidInputHandler::_vm_emit_mouse_click(MouseButton p_button, const Point2 &p_pos, bool p_double_click) {
+	_vm_emit_mouse_button_press(p_button, p_pos, p_double_click);
+	_vm_emit_mouse_button_release(p_button, p_pos);
+}
+
+void AndroidInputHandler::_vm_emit_mouse_button_press(MouseButton p_button, const Point2 &p_pos, bool p_double_click) {
+	MouseButtonMask mask = mouse_button_to_mask(p_button);
+	buttons_state.set_flag(mask);
+
+	Ref<InputEventMouseButton> ev;
+	ev.instantiate();
+	_set_key_modifier_state(ev, Key::NONE);
+	ev->set_position(p_pos);
+	ev->set_global_position(p_pos);
+	ev->set_button_index(p_button);
+	ev->set_button_mask(buttons_state);
+	ev->set_pressed(true);
+	ev->set_double_click(p_double_click);
+	Input::get_singleton()->parse_input_event(ev);
+}
+
+void AndroidInputHandler::_vm_emit_mouse_button_release(MouseButton p_button, const Point2 &p_pos) {
+	MouseButtonMask mask = mouse_button_to_mask(p_button);
+	buttons_state.clear_flag(mask);
+
+	Ref<InputEventMouseButton> ev;
+	ev.instantiate();
+	_set_key_modifier_state(ev, Key::NONE);
+	ev->set_position(p_pos);
+	ev->set_global_position(p_pos);
+	ev->set_button_index(p_button);
+	ev->set_button_mask(buttons_state);
+	ev->set_pressed(false);
+	Input::get_singleton()->parse_input_event(ev);
+}
+
+void AndroidInputHandler::_vm_emit_scroll(float p_delta_x, float p_delta_y) {
+	if (Math::abs(p_delta_y) >= 1.0f) {
+		MouseButton btn = p_delta_y > 0 ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN;
+		float steps = Math::abs(p_delta_y);
+
+		Ref<InputEventMouseButton> ev;
+		ev.instantiate();
+		_set_key_modifier_state(ev, Key::NONE);
+		ev->set_position(virtual_cursor_pos);
+		ev->set_global_position(virtual_cursor_pos);
+		ev->set_button_index(btn);
+		ev->set_button_mask(buttons_state);
+		ev->set_factor(steps);
+		ev->set_pressed(true);
+		Input::get_singleton()->parse_input_event(ev);
+
+		Ref<InputEventMouseButton> ev_up = ev->duplicate();
+		ev_up->set_pressed(false);
+		Input::get_singleton()->parse_input_event(ev_up);
+	}
+	if (Math::abs(p_delta_x) >= 1.0f) {
+		MouseButton btn = p_delta_x > 0 ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT;
+		float steps = Math::abs(p_delta_x);
+
+		Ref<InputEventMouseButton> ev;
+		ev.instantiate();
+		_set_key_modifier_state(ev, Key::NONE);
+		ev->set_position(virtual_cursor_pos);
+		ev->set_global_position(virtual_cursor_pos);
+		ev->set_button_index(btn);
+		ev->set_button_mask(buttons_state);
+		ev->set_factor(steps);
+		ev->set_pressed(true);
+		Input::get_singleton()->parse_input_event(ev);
+
+		Ref<InputEventMouseButton> ev_up = ev->duplicate();
+		ev_up->set_pressed(false);
+		Input::get_singleton()->parse_input_event(ev_up);
+	}
+}
+
+void AndroidInputHandler::process_virtual_mouse_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points) {
+	if (!virtual_mouse_enabled) {
+		process_touch_event(p_event, p_pointer, p_points, false); //If virtual mouse is not enabled fall back to normal touch
+		return;
+	}
+
+	switch (p_event) {
+		case AMOTION_EVENT_ACTION_DOWN: {
+			vm_primary_id = -1;
+			vm_secondary_id = -1;
+			vm_drag_active = false;
+			vm_primary_moved = false;
+			vm_scroll_active = false;
+			vm_scroll_accum_y = 0.0f;
+			vm_scroll_accum_x = 0.0f;
+
+			if (p_points.is_empty()) {
+				break;
+			}
+
+			vm_primary_id = p_points[0].id;
+			vm_primary_start_pos = p_points[0].pos;
+			vm_primary_start_ms = OS::get_singleton()->get_ticks_msec();
+
+			vm_primary_last_pos = p_points[0].pos;
+		} break;
+
+		case AMOTION_EVENT_ACTION_POINTER_DOWN: {
+			if (vm_secondary_id != -1) {
+				break;
+			}
+			if (p_pointer == vm_primary_id) {
+				break;
+			}
+
+			for (int i = 0; i < p_points.size(); i++) {
+				if (p_points[i].id == p_pointer) {
+					vm_secondary_start_pos = p_points[i].pos;
+					vm_scroll_secondary_last = p_points[i].pos;
+					break;
+				}
+			}
+
+			vm_scroll_primary_last = vm_primary_last_pos;
+			vm_scroll_active = false;
+			vm_scroll_accum_y = 0.0f;
+			vm_scroll_accum_x = 0.0f;
+			vm_secondary_id = p_pointer;
+			vm_secondary_start_ms = OS::get_singleton()->get_ticks_msec();
+			vm_secondary_moved = false;
+		} break;
+
+		case AMOTION_EVENT_ACTION_MOVE: {
+			if (vm_secondary_id != -1 && !vm_drag_active) {
+				Point2 new_primary_pos;
+				Point2 new_secondary_pos;
+				bool found_primary = false, found_secondary = false;
+				for (int i = 0; i < p_points.size(); i++) {
+					if (p_points[i].id == vm_primary_id) {
+						new_primary_pos = p_points[i].pos;
+						found_primary = true;
+					}
+					if (p_points[i].id == vm_secondary_id) {
+						new_secondary_pos = p_points[i].pos;
+						found_secondary = true;
+					}
+				}
+				if (found_primary && found_secondary) {
+					Vector2 primary_delta = new_primary_pos - vm_scroll_primary_last;
+					Vector2 secondary_delta = new_secondary_pos - vm_scroll_secondary_last;
+
+					bool same_dir = primary_delta.dot(secondary_delta) > 0;
+
+					if (same_dir) {
+						Vector2 avg_delta = (primary_delta + secondary_delta) * 0.5f;
+
+						if (!vm_scroll_active) {
+							if (avg_delta.length() > SCROLL_THRESHOLD_PX * 0.5f) {
+								vm_scroll_active = true;
+								vm_secondary_moved = true;
+							}
+						}
+
+						if (vm_scroll_active) {
+							vm_scroll_accum_y -= avg_delta.y / SCROLL_PIXELS_PER_STEP;
+							vm_scroll_accum_x += avg_delta.x / SCROLL_PIXELS_PER_STEP;
+							_vm_emit_scroll(
+									(float)(int)vm_scroll_accum_x,
+									(float)(int)vm_scroll_accum_y);
+							vm_scroll_accum_y -= (float)(int)vm_scroll_accum_y;
+							vm_scroll_accum_x -= (float)(int)vm_scroll_accum_x;
+						}
+					}
+
+					vm_scroll_primary_last = new_primary_pos;
+					vm_scroll_secondary_last = new_secondary_pos;
+				}
+			}
+
+			for (int i = 0; i < p_points.size(); i++) {
+				if (p_points[i].id == vm_secondary_id && !vm_secondary_moved) {
+					if (vm_secondary_start_pos.distance_to(p_points[i].pos) > TAP_MOVE_THRESHOLD_PX) {
+						vm_secondary_moved = true;
+					}
+				}
+				if (p_points[i].id != vm_primary_id) {
+					continue;
+				}
+
+				Point2 new_finger_pos = p_points[i].pos;
+
+				if (!vm_primary_moved) {
+					if (vm_primary_start_pos.distance_to(new_finger_pos) > TAP_MOVE_THRESHOLD_PX) {
+						vm_primary_moved = true;
+					}
+				}
+
+				if (vm_secondary_id != -1 && !vm_drag_active && !vm_scroll_active && vm_primary_moved) {
+					vm_drag_active = true;
+					_vm_emit_mouse_button_press(MouseButton::LEFT, virtual_cursor_pos);
+				}
+
+				if (!vm_scroll_active && new_finger_pos != vm_primary_last_pos) {
+					_vm_emit_mouse_motion(new_finger_pos);
+				} else if (vm_scroll_active) {
+					vm_primary_last_pos = new_finger_pos;
+				}
+				break;
+			}
+		} break;
+
+		case AMOTION_EVENT_ACTION_POINTER_UP: {
+			if (p_pointer != vm_secondary_id) {
+				break;
+			}
+
+			if (vm_drag_active) {
+				vm_drag_active = false;
+				_vm_emit_mouse_button_release(MouseButton::LEFT, virtual_cursor_pos);
+			} else if (!vm_secondary_moved) {
+				uint64_t held_ms = OS::get_singleton()->get_ticks_msec() - vm_secondary_start_ms;
+				if (held_ms < TAP_THRESHOLD_MS) {
+					_vm_emit_mouse_click(MouseButton::RIGHT, virtual_cursor_pos);
+				}
+			}
+
+			vm_secondary_id = -1;
+			vm_secondary_moved = false;
+		} break;
+
+		case AMOTION_EVENT_ACTION_UP: {
+			if (vm_primary_id == -1) {
+				break;
+			}
+
+			if (vm_drag_active) {
+				vm_drag_active = false;
+				_vm_emit_mouse_button_release(MouseButton::LEFT, virtual_cursor_pos);
+			}
+
+			if (!vm_primary_moved) {
+				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t elapsed = now - vm_primary_start_ms;
+				if (elapsed < TAP_THRESHOLD_MS) {
+					uint64_t since_last_tap = now - vm_last_tap_ms;
+					float dist_from_last = virtual_cursor_pos.distance_to(vm_last_tap_pos);
+					bool is_double_click = (since_last_tap < DOUBLE_TAP_THRESHOLD_MS &&
+							dist_from_last < DOUBLE_TAP_SLOP_PX);
+
+					_vm_emit_mouse_click(MouseButton::LEFT, virtual_cursor_pos, is_double_click);
+
+					vm_last_tap_ms = now;
+					vm_last_tap_pos = virtual_cursor_pos;
+				}
+			}
+
+			vm_primary_id = -1;
+			vm_primary_moved = false;
+		} break;
+
+		case AMOTION_EVENT_ACTION_CANCEL: {
+			if (vm_drag_active) {
+				vm_drag_active = false;
+				_vm_emit_mouse_button_release(MouseButton::LEFT, virtual_cursor_pos);
+			}
+
+			vm_primary_id = -1;
+			vm_secondary_id = -1;
+			vm_primary_moved = false;
+			vm_scroll_active = false;
+			vm_scroll_accum_y = 0.0f;
+			vm_scroll_accum_x = 0.0f;
+		} break;
+
+		default:
+			break;
 	}
 }
 

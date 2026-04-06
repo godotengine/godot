@@ -35,11 +35,22 @@
 #include "os_android.h"
 #include "tts_android.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#ifdef TOOLS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif
 #include "core/input/input.h"
 #include "core/input/input_event.h"
 #include "core/os/os.h"
+#include "scene/resources/image_texture.h"
 #include "servers/display/native_menu.h"
+#include "servers/rendering/rendering_server.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#include "editor/themes/editor_icons.h"
+#include "scene/resources/dpi_texture.h"
+#endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -645,7 +656,46 @@ void DisplayServerAndroid::window_set_color(const Color &p_color) {
 }
 
 void DisplayServerAndroid::process_events() {
+#ifdef TOOLS_ENABLED
+	// Virtual mouse is only active when in the editor
+	if (EditorNode::get_singleton() != nullptr &&
+			EditorSettings::get_singleton() != nullptr &&
+			Engine::get_singleton()->is_editor_hint()) {
+		bool setting = EDITOR_GET("interface/touchscreen/enable_virtual_mouse");
+		float sensitivity = EDITOR_GET("interface/touchscreen/virtual_mouse_sensitivity");
+		input_handler.set_virtual_mouse_sensitivity(sensitivity);
+		input_handler.set_virtual_mouse_enabled(setting);
+	} else {
+		if (vm_cursor_initialized) {
+			RenderingServer *rs = RenderingServer::get_singleton();
+			if (rs != nullptr) {
+				rs->canvas_item_clear(vm_cursor_item);
+				rs->canvas_item_set_visible(vm_cursor_item, false);
+			}
+		}
+		input_handler.set_virtual_mouse_enabled(false);
+	}
+#endif
+	if (input_handler.is_virtual_mouse_enabled()) {
+		if (!vm_cursor_initialized) {
+			_vm_cursor_init();
+		}
+		if (vm_cursor_initialized) {
+			_vm_cursor_redraw(); // Draw the virtual cursor
+		}
+	} else if (vm_cursor_initialized) {
+		_vm_cursor_hide();
+	}
+
 	Input::get_singleton()->flush_buffered_events();
+}
+
+void DisplayServerAndroid::process_touch_event(int p_event, int p_pointer, const Vector<AndroidInputHandler::TouchPos> &p_points, bool p_double_tap) {
+	if (input_handler.is_virtual_mouse_enabled()) {
+		input_handler.process_virtual_mouse_touch(p_event, p_pointer, p_points);
+	} else {
+		input_handler.process_touch_event(p_event, p_pointer, p_points, p_double_tap);
+	}
 }
 
 Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
@@ -831,6 +881,17 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
+	// Enable virtual mouse based on the editor settings
+	bool vm_enabled = false;
+#ifdef TOOLS_ENABLED
+	if (p_context == DisplayServerEnums::Context::CONTEXT_EDITOR) {
+		if (EditorSettings::get_singleton() != nullptr) {
+			vm_enabled = bool(EDITOR_GET("interface/touchscreen/enable_virtual_mouse"));
+		}
+	}
+#endif
+	input_handler.set_virtual_mouse_enabled(vm_enabled);
+
 	r_error = OK;
 }
 
@@ -838,6 +899,19 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 	if (native_menu) {
 		memdelete(native_menu);
 		native_menu = nullptr;
+	}
+	if (vm_cursor_initialized) {
+		RenderingServer *rs = RenderingServer::get_singleton();
+		if (rs != nullptr) {
+			if (vm_cursor_item.is_valid()) {
+				rs->free_rid(vm_cursor_item);
+			}
+			if (vm_cursor_canvas.is_valid()) {
+				rs->free_rid(vm_cursor_canvas);
+			}
+		}
+		vm_cursor_texture.unref();
+		vm_cursor_initialized = false;
 	}
 
 #if defined(RD_ENABLED)
@@ -1036,4 +1110,68 @@ void DisplayServerAndroid::pip_mode_set_auto_enter_on_background(bool p_auto_ent
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);
 	godot_java->set_auto_enter_pip_mode_on_background(p_auto_enter_on_background);
+}
+
+void DisplayServerAndroid::_vm_cursor_init() {
+#ifdef TOOLS_ENABLED
+	ERR_FAIL_NULL(EditorNode::get_singleton());
+	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+	ERR_FAIL_NULL(gui_base);
+	Ref<Texture2D> theme_icon = gui_base->get_theme_icon("VirtualCursor", "EditorIcons");
+	ERR_FAIL_COND_MSG(!theme_icon.is_valid(),
+			"VirtualMouse: Could not find 'VirtualCursor' in EditorIcons. "
+			"Make sure 'editor/icons/VirtualCursor.svg' exists in the repo.");
+
+	Ref<Image> icon_image = theme_icon->get_image();
+	ERR_FAIL_COND_MSG(!icon_image.is_valid(),
+			"VirtualMouse: Could not get image data from VirtualCursor icon.");
+
+	vm_cursor_texture = ImageTexture::create_from_image(icon_image);
+	ERR_FAIL_COND_MSG(!vm_cursor_texture.is_valid(),
+			"VirtualMouse: Failed to create ImageTexture for cursor.");
+#else
+	ERR_PRINT("VirtualMouse: cursor is only available in editor builds.");
+	return;
+#endif
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	RID vp = rs->viewport_find_from_screen_attachment(DisplayServerEnums::MAIN_WINDOW_ID);
+
+	vm_cursor_canvas = rs->canvas_create();
+	vm_cursor_item = rs->canvas_item_create();
+	rs->canvas_item_set_parent(vm_cursor_item, vm_cursor_canvas);
+	rs->canvas_item_set_transform(vm_cursor_item, Transform2D());
+	rs->viewport_attach_canvas(vp, vm_cursor_canvas);
+	rs->viewport_set_canvas_stacking(vp, vm_cursor_canvas, 2000, 0);
+	rs->canvas_item_set_clip(vm_cursor_item, false);
+
+	vm_cursor_initialized = true;
+}
+
+void DisplayServerAndroid::_vm_cursor_redraw() {
+	if (!vm_cursor_initialized || !vm_cursor_texture.is_valid()) {
+		return;
+	}
+	RenderingServer *rs = RenderingServer::get_singleton();
+	if (rs == nullptr) {
+		return;
+	}
+	rs->canvas_item_clear(vm_cursor_item);
+	rs->canvas_item_set_visible(vm_cursor_item, true);
+
+	Point2 p = input_handler.get_virtual_cursor_pos();
+	Size2 size = vm_cursor_texture->get_size();
+	rs->canvas_item_add_texture_rect(vm_cursor_item, Rect2(p, size), vm_cursor_texture->get_rid());
+}
+
+void DisplayServerAndroid::_vm_cursor_hide() {
+	if (!vm_cursor_initialized) {
+		return;
+	}
+	RenderingServer *rs = RenderingServer::get_singleton();
+	if (rs == nullptr) {
+		return;
+	}
+	rs->canvas_item_clear(vm_cursor_item);
+	rs->canvas_item_set_visible(vm_cursor_item, false);
 }

@@ -96,6 +96,52 @@ private:
 
 	void _cancel_all_touch();
 
+	// Virtual Mouse
+	static const uint64_t TAP_THRESHOLD_MS = 250; // left click
+	static const uint64_t DOUBLE_TAP_THRESHOLD_MS = 400; // double tap
+	static constexpr float TAP_MOVE_THRESHOLD_PX = 20.0f; // drag which still count as a click
+	static constexpr float DOUBLE_TAP_SLOP_PX = 40.0f; // gap between fingers to trigger double tap
+
+	bool virtual_mouse_enabled = false;
+	Point2 virtual_cursor_pos;
+
+	// Primary finger
+	int vm_primary_id = -1;
+	Point2 vm_primary_start_pos;
+	uint64_t vm_primary_start_ms = 0;
+	bool vm_primary_moved = false;
+
+	// Secondary finger
+	int vm_secondary_id = -1;
+	bool vm_drag_active = false;
+	Point2 vm_secondary_start_pos;
+	uint64_t vm_secondary_start_ms = 0;
+	bool vm_secondary_moved = false;
+
+	// Double-click tracking
+	uint64_t vm_last_tap_ms = 0;
+	Point2 vm_last_tap_pos;
+
+	// Two-finger scroll
+	Point2 vm_scroll_primary_last;
+	Point2 vm_scroll_secondary_last;
+	bool vm_scroll_active = false;
+
+	static constexpr float SCROLL_THRESHOLD_PX = 8.0f;
+	static constexpr float SCROLL_PIXELS_PER_STEP = 40.0f;
+	float vm_scroll_accum_y = 0.0f;
+	float vm_scroll_accum_x = 0.0f;
+
+	void _vm_emit_scroll(float p_delta_x, float p_delta_y);
+
+	Point2 vm_primary_last_pos;
+	float vm_sensitivity = 1.5f; // cursor sensitivity
+
+	void _vm_emit_mouse_motion(const Point2 &p_pos);
+	void _vm_emit_mouse_click(MouseButton p_button, const Point2 &p_pos, bool p_double_click = false);
+	void _vm_emit_mouse_button_press(MouseButton p_button, const Point2 &p_pos, bool p_double_click = false);
+	void _vm_emit_mouse_button_release(MouseButton p_button, const Point2 &p_pos);
+
 public:
 	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt);
 	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points, bool p_double_tap);
@@ -103,4 +149,16 @@ public:
 	void process_pan(Point2 p_pos, Vector2 p_delta);
 	void process_joy_event(JoypadEvent p_event);
 	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo);
+
+	void process_virtual_mouse_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
+
+	// Enable / disable the virtual mouse
+	void set_virtual_mouse_enabled(bool p_enabled) { virtual_mouse_enabled = p_enabled; }
+	bool is_virtual_mouse_enabled() const { return virtual_mouse_enabled; }
+
+	// Adjust trackpad sensitivity
+	void set_virtual_mouse_sensitivity(float p_sensitivity) { vm_sensitivity = MAX(0.1f, p_sensitivity); }
+	float get_virtual_mouse_sensitivity() const { return vm_sensitivity; }
+
+	Point2 get_virtual_cursor_pos() const { return virtual_cursor_pos; }
 };

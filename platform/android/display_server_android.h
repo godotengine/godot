@@ -30,10 +30,13 @@
 
 #pragma once
 
+#include "android_input_handler.h"
+
 #include "servers/display/display_server.h"
 
 class InputEvent;
 class NativeMenu;
+class ImageTexture;
 
 #if defined(RD_ENABLED)
 class RenderingContextDriver;
@@ -73,6 +76,10 @@ class DisplayServerAndroid : public DisplayServer {
 	bool mouse_mode_override_enabled = false;
 	void _mouse_update_mode();
 
+	// Handles all input events coming from the Android UI thread.
+	// Exposed via get_input_handler() so the JNI glue layer can call into it directly.
+	AndroidInputHandler input_handler;
+
 	bool keep_screen_on;
 	bool swap_buffers_flag;
 
@@ -102,6 +109,16 @@ class DisplayServerAndroid : public DisplayServer {
 	void _window_callback(const Callable &p_callable, bool p_deferred, const Args &...p_rest_args) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+
+	// Canvas-based cursor drawn on top of all editor UI.
+	bool vm_cursor_initialized = false;
+	RID vm_cursor_canvas;
+	RID vm_cursor_item;
+	Ref<ImageTexture> vm_cursor_texture;
+
+	void _vm_cursor_init();
+	void _vm_cursor_redraw();
+	void _vm_cursor_hide();
 
 public:
 	static DisplayServerAndroid *get_singleton();
@@ -231,6 +248,10 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
+
+	void process_touch_event(int p_event, int p_pointer, const Vector<AndroidInputHandler::TouchPos> &p_points, bool p_double_tap);
+
+	AndroidInputHandler &get_input_handler() { return input_handler; }
 
 	void _cursor_set_shape_helper(DisplayServerEnums::CursorShape p_shape, bool force = false);
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
