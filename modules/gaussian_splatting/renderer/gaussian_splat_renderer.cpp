@@ -116,7 +116,6 @@ static void _initialize_lighting_project_settings_defaults() {
     static const StringName direct_light_scale_path("rendering/gaussian_splatting/lighting/direct_light_scale");
     static const StringName indirect_sh_scale_path("rendering/gaussian_splatting/lighting/indirect_sh_scale");
     static const StringName shadow_strength_path("rendering/gaussian_splatting/lighting/shadow_strength");
-    static const StringName sh_dc_logit_path("rendering/gaussian_splatting/lighting/dc_logit");
     static const StringName shadow_bias_scale_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_scale");
     static const StringName shadow_bias_min_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_min");
     static const StringName shadow_bias_max_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_max");
@@ -135,11 +134,6 @@ static void _initialize_lighting_project_settings_defaults() {
         ps->set_setting(shadow_strength_path, 1.0f); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
     }
     ps->set_initial_value(shadow_strength_path, 1.0f);
-
-    if (!ps->has_setting(sh_dc_logit_path)) {
-        ps->set_setting(sh_dc_logit_path, false); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION
-    }
-    ps->set_initial_value(sh_dc_logit_path, false);
 
     if (!ps->has_setting(shadow_bias_scale_path)) {
         ps->set_setting(shadow_bias_scale_path, 0.2f); // GS_CI_ALLOW_RENDER_PATH_SETTING_MUTATION

@@ -40,8 +40,7 @@ layout(set = 1, binding = 0, std140) uniform RenderParams {
     // x=sh_bands (0-3), y=amortization_divisor, z=amortization_phase, w=force_full_update
     // sh_bands: 0=DC only, 1=1st order, 2=2nd order, 3=3rd order (full)
     vec4 sh_config;
-    // SH decode configuration:
-    // x=dc_logit (1.0=decode DC with sigmoid), yzw=reserved
+    // SH decode configuration (reserved for legacy/debug; runtime decode now comes from per-gaussian metadata).
     vec4 sh_decode_config;
     // Opacity-aware culling (FlashGS optimization):
     // x=enabled (1.0=true), y=visibility_threshold (tau), z=reserved, w=reserved
@@ -123,11 +122,6 @@ bool gs_is_sh_amortization_enabled() {
 // Return whether SH amortization should force an update this frame.
 bool gs_get_sh_amortization_force_update() {
     return params.sh_config.w > 0.5;
-}
-
-// Return whether DC logit decoding is enabled.
-bool gs_is_dc_logit_enabled() {
-    return params.sh_decode_config.x > 0.5;
 }
 
 // Helper to check if opacity-aware culling is enabled

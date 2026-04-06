@@ -36,6 +36,18 @@ void _clear_dirty_flags(LocalVector<uint8_t> &flags) {
 	}
 }
 
+GaussianDCEncoding _resolve_data_dc_encoding(const Ref<GaussianData> &p_data) {
+	if (p_data.is_null() || p_data->get_count() <= 0) {
+		return GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+	}
+	return gaussian_get_dc_encoding(p_data->get_gaussian(0).render_meta);
+}
+
+uint32_t _pack_data_gpu_flags(const Ref<GaussianData> &p_data) {
+	const bool is_2d = p_data.is_valid() && p_data->get_2d_mode();
+	return gs_pack_asset_gpu_flags(is_2d, _resolve_data_dc_encoding(p_data));
+}
+
 bool _ensure_placeholder_buffer(RenderingDevice *p_rd, RID &r_buffer, uint32_t &r_logical_size, const char *p_name) {
 	ERR_FAIL_NULL_V(p_rd, false);
 
@@ -182,7 +194,7 @@ void StreamingGlobalAtlasRegistry::build_cpu_state(GaussianStreamingSystem &syst
 		AssetMetaGPU asset_meta = {};
 		asset_meta.lod_count = MAX(uint32_t(1), asset->lod_count);
 		asset_meta.sh_degree = asset->sh_degree;
-		asset_meta.flags = 0;
+		asset_meta.flags = _pack_data_gpu_flags(asset->data);
 
 		Vector3 asset_center = asset->bounds.get_center();
 		Vector3 asset_half = asset->bounds.size * 0.5f;
@@ -194,8 +206,8 @@ void StreamingGlobalAtlasRegistry::build_cpu_state(GaussianStreamingSystem &syst
 
 		asset_meta.chunk_index_base = asset->chunk_index_base;
 		asset_meta.chunk_index_count = asset->chunk_index_count;
-		asset_meta.quant_chunk_base = system.per_chunk_quantization_enabled ? asset->quant_base : 0;
-		asset_meta.quant_chunk_count = system.per_chunk_quantization_enabled ? asset->quant_count : 0;
+		asset_meta.quant_chunk_base = system.is_per_chunk_quantization_enabled() ? asset->quant_base : 0;
+		asset_meta.quant_chunk_count = system.is_per_chunk_quantization_enabled() ? asset->quant_count : 0;
 		asset_meta.lod_ranges[0].base = asset->chunk_index_base;
 		asset_meta.lod_ranges[0].count = asset->chunk_index_count;
 
@@ -271,7 +283,7 @@ void StreamingGlobalAtlasRegistry::update_chunk_meta_entry(GaussianStreamingSyst
 		meta.atlas_base = 0;
 		meta.splat_count = 0;
 	}
-	if (system.per_chunk_quantization_enabled) {
+	if (system.is_per_chunk_quantization_enabled()) {
 		meta.quant_base = asset->quant_base + chunk_idx;
 		meta.quant_count = 1;
 	} else {
@@ -293,7 +305,7 @@ void StreamingGlobalAtlasRegistry::update_chunk_meta_entry(GaussianStreamingSyst
 
 	meta.asset_id = asset->dense_id;
 	meta.lod_level = chunk.current_lod_level;
-	meta.flags = 0;
+	meta.flags = _pack_data_gpu_flags(asset->data);
 	meta.sh_limit = sh_band_limit;
 
 	chunk_meta_cpu[global_idx] = meta;
@@ -334,18 +346,18 @@ void StreamingGlobalAtlasRegistry::mark_chunk_meta_dirty(GaussianStreamingSystem
 void StreamingGlobalAtlasRegistry::sync_to_gpu(GaussianStreamingSystem &system, RenderingDevice *p_rd) {
 	global_atlas_state.atlas_gaussian_buffer = system.persistent_buffer;
 	global_atlas_state.atlas_gaussian_count = system.get_buffer_capacity_splats();
-	global_atlas_state.quantization_buffer = system.per_chunk_quantization_enabled ? system.quantization_buffer : RID();
+	global_atlas_state.quantization_buffer = system.is_per_chunk_quantization_enabled() ? system.quantization_buffer : RID();
 
 	const bool quantization_rebuild = system.quantization_dirty;
 	const uint32_t quantization_expected_size = uint32_t(system.quantization_gpu_data.size()) * sizeof(ChunkQuantizationGPU);
 	bool atlas_dirty = quantization_rebuild || asset_registry_dirty || asset_meta_dirty ||
 			asset_chunk_index_dirty || chunk_meta_dirty_all || !chunk_meta_dirty_indices.is_empty();
-	if (system.per_chunk_quantization_enabled &&
+	if (system.is_per_chunk_quantization_enabled() &&
 			(system.quantization_dirty || !system.quantization_buffer.is_valid() || system.quantization_buffer_size != quantization_expected_size)) {
 		const bool quantization_resource_changed = system._upload_quantization_buffer(p_rd);
 		atlas_dirty = atlas_dirty || quantization_resource_changed;
 		global_atlas_state.quantization_buffer = system.quantization_buffer;
-	} else if (!system.per_chunk_quantization_enabled) {
+	} else if (!system.is_per_chunk_quantization_enabled()) {
 		if (system._release_quantization_buffer(p_rd, "_sync_global_atlas_state(disabled)", true)) {
 			atlas_dirty = true;
 		}

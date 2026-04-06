@@ -1537,6 +1537,46 @@ TEST_CASE("[Streaming Pipeline] Atlas generation bumps on quantization buffer re
     g_quantization_config = saved_quantization_config;
 }
 
+TEST_CASE("[Streaming Pipeline] Mixed DC encoding disables per-chunk quantization fallback") {
+    RenderingServer *rs = RenderingServer::get_singleton();
+    if (!rs) {
+        MESSAGE("Skipping - Rendering server unavailable");
+        return;
+    }
+
+    RenderingDevice *rd = RenderingDevice::get_singleton();
+    if (!rd) {
+        rd = rs->create_local_rendering_device();
+    }
+    if (!rd) {
+        MESSAGE("Skipping - Rendering device unavailable");
+        return;
+    }
+
+    const QuantizationConfig saved_quantization_config = g_quantization_config;
+    g_quantization_config.per_chunk_quantization = true;
+    g_quantization_config.position_bits = 16;
+    g_quantization_config.scale_bits = 12;
+    g_quantization_config.quantize_scales = false;
+
+    Ref<::GaussianData> mixed_data = create_test_gaussian_data(GaussianStreamingSystem::CHUNK_SIZE);
+    REQUIRE(mixed_data.is_valid());
+    Gaussian linear = mixed_data->get_gaussian(0);
+    linear.render_meta = gaussian_set_dc_encoding(linear.render_meta, GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+    mixed_data->set_gaussian(0, linear);
+
+    Ref<GaussianStreamingSystem> system;
+    system.instantiate();
+    system->initialize_empty(rd);
+
+    const uint32_t asset_id = 23;
+    system->register_asset(asset_id, mixed_data);
+    CHECK_FALSE(system->is_per_chunk_quantization_enabled());
+    CHECK_FALSE(system->get_atlas_quantization_buffer().is_valid());
+
+    g_quantization_config = saved_quantization_config;
+}
+
 TEST_CASE("[Streaming Pipeline] IO layout hints clamp chunk size to CHUNK_SIZE") {
     RenderingServer *rs = RenderingServer::get_singleton();
     if (!rs) {

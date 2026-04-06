@@ -301,7 +301,6 @@ static uint64_t _compute_lighting_signature(const RenderDataRD *p_render_data, u
 	float direct_light_scale = 0.5f;
 	float indirect_sh_scale = 1.0f;
 	float shadow_strength = 1.0f;
-	bool sh_dc_logit = false;
 	float shadow_receiver_bias_scale = 0.2f;
 	float shadow_receiver_bias_min = 0.0f;
 	float shadow_receiver_bias_max = 0.0f;
@@ -322,7 +321,6 @@ static uint64_t _compute_lighting_signature(const RenderDataRD *p_render_data, u
 		static const StringName direct_path("rendering/gaussian_splatting/lighting/direct_light_scale");
 		static const StringName indirect_path("rendering/gaussian_splatting/lighting/indirect_sh_scale");
 		static const StringName shadow_path("rendering/gaussian_splatting/lighting/shadow_strength");
-		static const StringName sh_dc_logit_path("rendering/gaussian_splatting/lighting/dc_logit");
 		static const StringName shadow_bias_scale_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_scale");
 		static const StringName shadow_bias_min_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_min");
 		static const StringName shadow_bias_max_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_max");
@@ -347,7 +345,6 @@ static uint64_t _compute_lighting_signature(const RenderDataRD *p_render_data, u
 		direct_light_scale = _get_float_setting(ps, direct_path, direct_light_scale);
 		indirect_sh_scale = _get_float_setting(ps, indirect_path, indirect_sh_scale);
 		shadow_strength = _get_float_setting(ps, shadow_path, shadow_strength);
-		sh_dc_logit = _get_bool_setting(ps, sh_dc_logit_path, sh_dc_logit);
 		shadow_receiver_bias_scale = _get_float_setting(ps, shadow_bias_scale_path, shadow_receiver_bias_scale);
 		shadow_receiver_bias_min = _get_float_setting(ps, shadow_bias_min_path, shadow_receiver_bias_min);
 		shadow_receiver_bias_max = _get_float_setting(ps, shadow_bias_max_path, shadow_receiver_bias_max);
@@ -374,7 +371,6 @@ static uint64_t _compute_lighting_signature(const RenderDataRD *p_render_data, u
 	seed = _hash_float_bits(direct_light_scale, seed);
 	seed = _hash_float_bits(indirect_sh_scale, seed);
 	seed = _hash_float_bits(shadow_strength, seed);
-	seed = _hash_bool(sh_dc_logit, seed);
 	seed = _hash_float_bits(shadow_receiver_bias_scale, seed);
 	seed = _hash_float_bits(shadow_receiver_bias_min, seed);
 	seed = _hash_float_bits(shadow_receiver_bias_max, seed);
@@ -1661,7 +1657,6 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 	float direct_light_scale = 0.5f;
 	float indirect_sh_scale = 1.0f;
 	float shadow_strength = 1.0f;
-	bool sh_dc_logit = false;
 	float shadow_receiver_bias_scale = 0.2f;
 	float shadow_receiver_bias_min = 0.0f;
 	float shadow_receiver_bias_max = 0.0f;
@@ -1682,7 +1677,6 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 		static const StringName direct_path("rendering/gaussian_splatting/lighting/direct_light_scale");
 		static const StringName indirect_path("rendering/gaussian_splatting/lighting/indirect_sh_scale");
 		static const StringName shadow_path("rendering/gaussian_splatting/lighting/shadow_strength");
-		static const StringName sh_dc_logit_path("rendering/gaussian_splatting/lighting/dc_logit");
 		static const StringName shadow_bias_scale_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_scale");
 		static const StringName shadow_bias_min_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_min");
 		static const StringName shadow_bias_max_path("rendering/gaussian_splatting/lighting/shadow_receiver_bias_max");
@@ -1707,7 +1701,6 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 		direct_light_scale = _get_float_setting(ps, direct_path, direct_light_scale);
 		indirect_sh_scale = _get_float_setting(ps, indirect_path, indirect_sh_scale);
 		shadow_strength = _get_float_setting(ps, shadow_path, shadow_strength);
-		sh_dc_logit = _get_bool_setting(ps, sh_dc_logit_path, sh_dc_logit);
 		shadow_receiver_bias_scale = _get_float_setting(ps, shadow_bias_scale_path, shadow_receiver_bias_scale);
 		shadow_receiver_bias_min = _get_float_setting(ps, shadow_bias_min_path, shadow_receiver_bias_min);
 		shadow_receiver_bias_max = _get_float_setting(ps, shadow_bias_max_path, shadow_receiver_bias_max);
@@ -1732,7 +1725,6 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 	render_params.direct_light_scale = CLAMP(direct_light_scale, 0.0f, 4.0f);
 	render_params.indirect_sh_scale = CLAMP(indirect_sh_scale, 0.0f, 4.0f);
 	render_params.shadow_strength = CLAMP(shadow_strength, 0.0f, 1.0f);
-	render_params.sh_dc_logit = sh_dc_logit;
 	render_params.shadow_receiver_bias_scale = MAX(0.0f, shadow_receiver_bias_scale);
 	render_params.shadow_receiver_bias_min = MAX(0.0f, shadow_receiver_bias_min);
 	render_params.shadow_receiver_bias_max = MAX(0.0f, shadow_receiver_bias_max);

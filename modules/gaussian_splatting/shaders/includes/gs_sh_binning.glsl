@@ -1,6 +1,6 @@
 // gs_sh_binning.glsl — Spherical harmonics evaluation for tile binning.
 //
-// Requires: Gaussian struct, gs_is_dc_logit_enabled() (from gs_render_params.glsl)
+// Requires: Gaussian struct
 // to be defined before inclusion.
 
 #ifndef GS_SH_BINNING_GLSL_INCLUDED
@@ -31,6 +31,10 @@ uint gaussian_get_encoded_count(uint meta) {
 // Read the SH storage format identifier from metadata.
 uint gaussian_get_sh_encoding(uint meta) {
     return (meta & SH_METADATA_ENCODING_MASK) >> 24u;
+}
+
+bool gaussian_get_dc_is_linear_rgb(uint meta) {
+    return (meta & SH_METADATA_DC_ENCODING_MASK) != 0u;
 }
 
 // Decode one RGB9E5-packed SH coefficient triplet to linear RGB.
@@ -131,7 +135,7 @@ void compute_sh_basis_1st_order(vec3 dir, out float basis[4]) {
 vec3 evaluate_sh_with_bands(Gaussian g, vec3 view_dir, uint sh_band_level) {
     // Decode DC term. Some datasets store DC in logit space (original 3DGS),
     // others store linear coefficients (SPZ/converted assets).
-    bool dc_logit = gs_is_dc_logit_enabled();
+    bool dc_logit = !gaussian_get_dc_is_linear_rgb(g.sh_metadata);
     vec3 color;
     if (dc_logit) {
         vec3 dc_logit_val = g.sh_dc.rgb;

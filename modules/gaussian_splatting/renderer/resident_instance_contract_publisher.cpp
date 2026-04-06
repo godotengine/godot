@@ -63,6 +63,13 @@ static AABB _compute_contiguous_chunk_bounds(const LocalVector<Gaussian> &p_gaus
 	return AABB(min_pos, size);
 }
 
+static GaussianDCEncoding _resolve_data_dc_encoding(const Ref<GaussianData> &p_data) {
+	if (p_data.is_null() || p_data->get_count() <= 0) {
+		return GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+	}
+	return gaussian_get_dc_encoding(p_data->get_gaussian(0).render_meta);
+}
+
 template <typename T>
 static bool _upload_typed_storage_buffer(GaussianSplatRenderer *p_renderer, RenderingDevice *p_rd, RID &r_buffer,
 		uint32_t &r_buffer_size, const char *p_label, const Vector<T> &p_data) {
@@ -281,7 +288,7 @@ bool publish(GaussianSplatRenderer *p_renderer, bool p_allow_primary_fallback_in
 		AssetMetaGPU asset_meta = {};
 		asset_meta.lod_count = 1;
 		asset_meta.sh_degree = asset.data->get_sh_degree();
-		asset_meta.flags = asset.data->get_2d_mode() ? GS_INSTANCE_FLAG_IS_2D : 0u;
+		asset_meta.flags = gs_pack_asset_gpu_flags(asset.data->get_2d_mode(), _resolve_data_dc_encoding(asset.data));
 		const AABB asset_bounds = asset.data->get_aabb();
 		const Vector3 asset_center = asset_bounds.get_center();
 		const Vector3 asset_half = asset_bounds.size * 0.5f;

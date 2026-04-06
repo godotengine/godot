@@ -51,6 +51,20 @@ uint32_t _streaming_addressable_chunk_limit() {
     return static_cast<uint32_t>(MIN<uint64_t>(uint64_t(UINT32_MAX) / slot_bytes, uint64_t(UINT32_MAX)));
 }
 
+bool _data_has_uniform_dc_encoding(const Ref<GaussianData> &p_data) {
+    if (p_data.is_null() || p_data->get_count() <= 1) {
+        return true;
+    }
+
+    const GaussianDCEncoding first_encoding = gaussian_get_dc_encoding(p_data->get_gaussian(0).render_meta);
+    for (int i = 1; i < p_data->get_count(); i++) {
+        if (gaussian_get_dc_encoding(p_data->get_gaussian(i).render_meta) != first_encoding) {
+            return false;
+        }
+    }
+    return true;
+}
+
 struct StreamingTierCapPolicy {
     String tier_preset = "custom";
     bool active = false;
@@ -827,6 +841,7 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     scheduler.last_cpu_unattributed_ms = 0.0;
     source_data = p_data;
     if (source_data.is_null()) {
+        per_chunk_quantization_dc_compatible = true;
         GaussianSplatManager *manager = GaussianSplatManager::get_singleton();
         RenderingDevice *rd = primary_device_override ? primary_device_override
                 : (last_upload_device ? last_upload_device
@@ -849,6 +864,7 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
         return;
     }
     _register_primary_asset();
+    _refresh_quantization_dc_compatibility();
 
     // Allocate persistent GPU buffer for maximum loaded chunks
     GaussianSplatManager *manager = GaussianSplatManager::get_singleton();
@@ -910,7 +926,7 @@ void GaussianStreamingSystem::initialize(Ref<::GaussianData> p_data) {
     _load_streaming_tuning_config_from_project_settings();
     _reload_debug_logging_config();
 
-    if (per_chunk_quantization_enabled) {
+    if (is_per_chunk_quantization_enabled()) {
         // Upload quantization buffer to GPU
         if (rd) {
             _upload_quantization_buffer(rd);
@@ -987,6 +1003,7 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
     scheduler.last_cpu_total_attributed_ms = 0.0;
     scheduler.last_cpu_unattributed_ms = 0.0;
     source_data.unref();
+    per_chunk_quantization_dc_compatible = true;
     total_splat_count = 0;
     chunks.clear();
     asset_registry.primary_chunk_source_indices.clear();
@@ -1047,6 +1064,7 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
     streaming_initialized = true;
 
     _load_quantization_config_from_project_settings();
+    _refresh_quantization_dc_compatibility();
     _load_streaming_tuning_config_from_project_settings();
     _reload_debug_logging_config();
 
@@ -1113,6 +1131,7 @@ void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_da
         asset->metadata_dirty = true;
         asset->generation = _advance_asset_generation(PRIMARY_ASSET_ID);
     }
+    _refresh_quantization_dc_compatibility();
 
     visibility.clear_visible_state();
     scheduler.visible_scan_cursor = 0;
@@ -1124,7 +1143,7 @@ void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_da
     scheduler.force_sync_fallback_due_to_async_stall = false;
     frame_data[current_frame_idx].visible_chunks.clear();
 
-    if (per_chunk_quantization_enabled) {
+    if (is_per_chunk_quantization_enabled()) {
         quantization_dirty = true;
     }
     quantization_cpu_cache_valid = false;
@@ -1379,6 +1398,7 @@ void GaussianStreamingSystem::register_asset(uint32_t asset_id, const Ref<Gaussi
         quantization_dirty = true;
     }
     quantization_cpu_cache_valid = false;
+    _refresh_quantization_dc_compatibility();
 
     global_atlas_registry.mark_asset_registry_dirty();
 }
@@ -1433,6 +1453,29 @@ void GaussianStreamingSystem::unregister_asset(uint32_t asset_id) {
     global_atlas_registry.mark_asset_registry_dirty();
     quantization_dirty = true;
     quantization_cpu_cache_valid = false;
+    _refresh_quantization_dc_compatibility();
+}
+
+void GaussianStreamingSystem::_refresh_quantization_dc_compatibility() {
+    bool compatible = true;
+    for (const KeyValue<uint32_t, AtlasAssetState> &E : asset_registry.atlas_assets) {
+        if (!_data_has_uniform_dc_encoding(E.value.data)) {
+            compatible = false;
+            break;
+        }
+    }
+
+    if (per_chunk_quantization_dc_compatible == compatible) {
+        return;
+    }
+
+    per_chunk_quantization_dc_compatible = compatible;
+    quantization_dirty = true;
+    quantization_cpu_cache_valid = false;
+    global_atlas_registry.mark_asset_registry_dirty();
+    if (!compatible) {
+        WARN_PRINT_ONCE("[Quantization] Disabled per-chunk quantization for mixed DC-encoding assets; using the non-quantized upload path.");
+    }
 }
 
 uint32_t GaussianStreamingSystem::get_dense_asset_id(uint32_t asset_id) const {

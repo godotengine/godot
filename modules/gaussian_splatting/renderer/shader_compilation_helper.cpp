@@ -331,7 +331,10 @@ Error ShaderCompilationManager::compile_all_shaders(RenderingDevice *p_device_hi
 	// Legacy per-tile sort pipeline removed; global composite sort is the only supported path.
 	owner.shader_resources.shader_device = device;
 	owner.shader_resources.shader_device_instance = device->get_device_instance_id();
-	owner.shader_resources.quantized_storage_enabled = g_quantization_config.per_chunk_quantization;
+	// Keep the cached compile mode aligned with the effective runtime quantization
+	// state. Mixed-encoding fallback can disable per-chunk quantization even when
+	// the project setting remains enabled.
+	owner.shader_resources.quantized_storage_enabled = owner.instance_pipeline_buffers.quantization_required;
 	owner.shader_resources.shader_defines_hash = owner._compute_shader_defines_hash();
 	owner.config_state.effective_splat_capacity = TileRenderer::MAX_SPLATS_PER_TILE;
 

@@ -1122,6 +1122,24 @@ TEST_CASE("[GaussianSplatting][Renderer] Shader SH metadata masks match host DC 
     CHECK(binning_source.contains("const uint SH_METADATA_DC_ENCODING_MASK = 0x80000000u;"));
 }
 
+TEST_CASE("[GaussianSplatting][Renderer] Quantized SH metadata preserves DC encoding through asset flags") {
+    const uint32_t legacy_flags = gs_pack_asset_gpu_flags(false, GAUSSIAN_DC_ENCODING_LEGACY_BIAS);
+    const uint32_t linear_flags = gs_pack_asset_gpu_flags(false, GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+    const uint32_t is_2d_linear_flags = gs_pack_asset_gpu_flags(true, GAUSSIAN_DC_ENCODING_LINEAR_RGB);
+    CHECK((legacy_flags & GS_GPU_ASSET_FLAG_DC_LINEAR_RGB) == 0u);
+    CHECK((linear_flags & GS_GPU_ASSET_FLAG_DC_LINEAR_RGB) != 0u);
+    CHECK((is_2d_linear_flags & GS_GPU_ASSET_FLAG_IS_2D) != 0u);
+
+    const String instance_layout_source = _load_text_fixture_or_empty("res://modules/gaussian_splatting/shaders/includes/gs_instance_layout.glsl");
+    REQUIRE_MESSAGE(!instance_layout_source.is_empty(), "gs_instance_layout.glsl must be readable in test environment");
+    CHECK(instance_layout_source.contains("const uint GS_ASSET_FLAG_DC_LINEAR_RGB = 1u << 1u;"));
+
+    const String tile_binning_source = _load_text_fixture_or_empty("res://modules/gaussian_splatting/shaders/tile_binning.glsl");
+    REQUIRE_MESSAGE(!tile_binning_source.is_empty(), "tile_binning.glsl must be readable in test environment");
+    CHECK(tile_binning_source.contains("uint gs_build_quantized_sh_metadata(uint encoded_total, bool dc_linear_rgb)"));
+    CHECK(tile_binning_source.contains("chunk_meta.flags & GS_ASSET_FLAG_DC_LINEAR_RGB"));
+}
+
 TEST_CASE("[GaussianSplatting][Importer] populate_from_asset preserves DC encoding metadata") {
     Ref<GaussianSplatAsset> asset = _make_thumbnail_fixture_asset(1);
     REQUIRE_MESSAGE(asset.is_valid(), "Fixture asset must be created");

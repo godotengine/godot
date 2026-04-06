@@ -220,7 +220,7 @@ RID TileRenderer::TileBinningStage::acquire_binning_buffer_uniform_set(Rendering
 		ERR_FAIL_COND_V(!owner.global_sort_resources.indirect_dispatch_buffer.is_valid(), RID());
 	}
 
-	const bool quantization_required = g_quantization_config.per_chunk_quantization;
+		const bool quantization_required = owner.instance_pipeline_buffers.quantization_required;
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.splat_ref_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.instance_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.indirect_count_buffer.is_valid(), RID());
@@ -424,7 +424,7 @@ RID TileRenderer::TileBinningStage::acquire_binning_count_uniform_set(RenderingD
 	ERR_FAIL_COND_V(!owner.subpixel_history_buffers.subpixel_history_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(!owner.subpixel_visibility_buffers.subpixel_visibility_buffer.is_valid(), RID());
 
-	const bool quantization_required = g_quantization_config.per_chunk_quantization;
+		const bool quantization_required = owner.instance_pipeline_buffers.quantization_required;
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.splat_ref_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.instance_buffer.is_valid(), RID());
 	ERR_FAIL_COND_V(!owner.instance_pipeline_buffers.indirect_count_buffer.is_valid(), RID());

@@ -24,6 +24,10 @@ const uint GS_INSTANCE_FLAG_ROTATION_IDENTITY = 1u << 1u;
 const uint GS_INSTANCE_FLAG_SCALE_IDENTITY = 1u << 2u;
 const uint GS_INSTANCE_FLAG_TRANSLATION_ZERO = 1u << 3u;
 
+// Asset/chunk metadata flags.
+const uint GS_ASSET_FLAG_IS_2D = 1u << 0u;
+const uint GS_ASSET_FLAG_DC_LINEAR_RGB = 1u << 1u;
+
 // Instance wind override modes (params.w).
 #ifndef GS_INSTANCE_WIND_MODE_INHERIT
 #define GS_INSTANCE_WIND_MODE_INHERIT 0u
@@ -40,7 +44,7 @@ struct AssetLodRangeGPU {
 struct AssetMetaGPU {
     uint lod_count;
     uint sh_degree;          // max SH bands for asset
-    uint flags;              // include is_2d bit
+    uint flags;              // GS_ASSET_FLAG_* metadata shared with chunk flags
     uint pad0;
 
     vec3 bounds_center_local;

@@ -392,12 +392,14 @@ ChunkQuantizationGPU GaussianStreamingSystem::_create_gpu_quantization_data(
 
 Dictionary GaussianStreamingSystem::get_quantization_stats() const {
     Dictionary stats;
-    stats["enabled"] = per_chunk_quantization_enabled;
+    stats["enabled"] = is_per_chunk_quantization_enabled();
+    stats["configured_enabled"] = per_chunk_quantization_enabled;
+    stats["dc_compatible"] = per_chunk_quantization_dc_compatible;
     stats["position_bits"] = quantization_position_bits;
     stats["scale_bits"] = quantization_scale_bits;
     stats["scales_quantized"] = quantization_scales_enabled;
 
-    if (per_chunk_quantization_enabled && !asset_registry.atlas_asset_order.is_empty()) {
+    if (is_per_chunk_quantization_enabled() && !asset_registry.atlas_asset_order.is_empty()) {
         // Calculate average and max errors across all chunks
         float total_pos_error = 0.0f;
         float max_pos_error = 0.0f;

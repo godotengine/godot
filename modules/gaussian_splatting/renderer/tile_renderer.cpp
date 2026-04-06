@@ -343,15 +343,16 @@ private:
 
 		renderer.instance_pipeline_buffers.instance_buffer = params.instance_buffer;
 		renderer.instance_pipeline_buffers.splat_ref_buffer = params.splat_ref_buffer;
-		renderer.instance_pipeline_buffers.chunk_meta_buffer = params.chunk_meta_buffer;
-		renderer.instance_pipeline_buffers.quantization_buffer = params.quantization_buffer;
-		renderer.instance_pipeline_buffers.indirect_count_buffer = params.instance_indirect_count_buffer;
-		renderer.instance_pipeline_buffers.indirect_dispatch_buffer = params.instance_indirect_dispatch_buffer;
+			renderer.instance_pipeline_buffers.chunk_meta_buffer = params.chunk_meta_buffer;
+			renderer.instance_pipeline_buffers.quantization_buffer = params.quantization_buffer;
+			renderer.instance_pipeline_buffers.quantization_required = params.quantization_buffer.is_valid();
+			renderer.instance_pipeline_buffers.indirect_count_buffer = params.instance_indirect_count_buffer;
+			renderer.instance_pipeline_buffers.indirect_dispatch_buffer = params.instance_indirect_dispatch_buffer;
 
-		const bool quantization_required = g_quantization_config.per_chunk_quantization;
-		const GaussianSplatting::InstancePipelineContract::InvariantViolationReason invariant_reason =
-				GaussianSplatting::InstancePipelineContract::first_tile_runtime_violation(
-						renderer.instance_pipeline_buffers.instance_buffer,
+			const bool quantization_required = renderer.instance_pipeline_buffers.quantization_required;
+			const GaussianSplatting::InstancePipelineContract::InvariantViolationReason invariant_reason =
+					GaussianSplatting::InstancePipelineContract::first_tile_runtime_violation(
+							renderer.instance_pipeline_buffers.instance_buffer,
 						renderer.instance_pipeline_buffers.splat_ref_buffer,
 						renderer.instance_pipeline_buffers.indirect_count_buffer,
 						renderer.instance_pipeline_buffers.indirect_dispatch_buffer,
@@ -1205,7 +1206,6 @@ GaussianSplatting::TileRenderParams::TileRenderParams() {
 	direct_light_scale = 0.5f;
 	indirect_sh_scale = 1.0f;
 	shadow_strength = 1.0f;
-	sh_dc_logit = false;
 	shadow_receiver_bias_scale = 0.2f;
 	shadow_receiver_bias_min = 0.0f;
 	shadow_receiver_bias_max = 0.0f;
@@ -1801,12 +1801,9 @@ Vector<String> TileRenderer::_build_common_shader_defines(bool p_include_dispatc
 	if (render_settings.enable_sh_amortization) {
 		defines.push_back("#define GS_SH_AMORTIZATION 1\n");
 	}
-	if (g_quantization_config.per_chunk_quantization) {
-		defines.push_back("#define USE_QUANTIZED_GAUSSIANS 1\n");
-	}
-	if (g_sh_config.dc_is_logit) {
-		defines.push_back("#define GS_DC_LOGIT 1\n");
-	}
+		if (instance_pipeline_buffers.quantization_required) {
+			defines.push_back("#define USE_QUANTIZED_GAUSSIANS 1\n");
+		}
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	uint32_t max_directional_lights = light_storage ? light_storage->get_max_directional_lights() : 1u;
 	if (max_directional_lights == 0u) {
@@ -1959,7 +1956,7 @@ bool TileRenderer::_check_pipeline_validity(RenderingDevice *p_device, bool p_wa
 	if (p_want_compute_raster) {
 		pipelines_valid = pipelines_valid && shader_resources.tile_raster_compute_shader.is_valid() && shader_resources.tile_raster_compute_pipeline.is_valid();
 	}
-	pipelines_valid = pipelines_valid && shader_resources.quantized_storage_enabled == g_quantization_config.per_chunk_quantization;
+		pipelines_valid = pipelines_valid && shader_resources.quantized_storage_enabled == instance_pipeline_buffers.quantization_required;
 	pipelines_valid = pipelines_valid && shader_resources.shader_defines_hash == _compute_shader_defines_hash();
 	return pipelines_valid;
 }

@@ -134,6 +134,7 @@ private:
 
     // Per-chunk quantization (Unity technique for 4x compression)
     bool per_chunk_quantization_enabled = false;
+    bool per_chunk_quantization_dc_compatible = true;
     RID quantization_buffer;  // GPU buffer for ChunkQuantizationGPU data
     uint32_t quantization_buffer_size = 0;
     LocalVector<ChunkQuantizationGPU> quantization_gpu_data;  // CPU-side copy for upload
@@ -248,7 +249,7 @@ public:
     bool is_asset_registered(uint32_t asset_id) const { return asset_registry.atlas_assets.has(asset_id); }
 
     // Per-chunk quantization (Unity technique for 4x compression)
-    bool is_per_chunk_quantization_enabled() const { return per_chunk_quantization_enabled; }
+    bool is_per_chunk_quantization_enabled() const { return per_chunk_quantization_enabled && per_chunk_quantization_dc_compatible; }
     RID get_quantization_buffer() const { return quantization_buffer; }
     uint32_t get_quantization_position_bits() const { return quantization_position_bits; }
     uint32_t get_quantization_scale_bits() const { return quantization_scale_bits; }
@@ -288,6 +289,7 @@ private:
     bool _resolve_primary_chunk_source_index(const StreamingChunk &chunk, uint32_t p_offset_in_chunk, uint32_t &r_source_index) const;
     void _refresh_primary_chunk_layout_metrics();
     void _register_primary_asset();
+    void _refresh_quantization_dc_compatibility();
     uint32_t _advance_asset_generation(uint32_t asset_id);
     uint32_t _alloc_dense_id(uint32_t asset_id);
     void _release_dense_id(uint32_t dense_id);

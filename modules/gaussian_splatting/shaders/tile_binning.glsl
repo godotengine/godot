@@ -363,10 +363,14 @@ bool gs_tile_intersects_projected_ellipse(vec2 center, vec3 conic, float sigma2,
 #include "includes/gs_culling_utils.glsl"
 
 // Pack quantized spherical-harmonic metadata for the renderer.
-uint gs_build_quantized_sh_metadata(uint encoded_total) {
+uint gs_build_quantized_sh_metadata(uint encoded_total, bool dc_linear_rgb) {
     uint first_count = min(encoded_total, 3u);
     uint high_count = encoded_total > first_count ? (encoded_total - first_count) : 0u;
-    return first_count | (high_count << 8u) | (encoded_total << 16u) | (SH_ENCODING_RGB9E5 << 24u);
+    uint metadata = first_count | (high_count << 8u) | (encoded_total << 16u) | (SH_ENCODING_RGB9E5 << 24u);
+    if (dc_linear_rgb) {
+        metadata |= SH_METADATA_DC_ENCODING_MASK;
+    }
+    return metadata;
 }
 
 // Project a Gaussian into screen space and derive its 2D covariance.
@@ -627,7 +631,8 @@ void main() {
     GaussianQuantized src = atlas_gaussian_buffer.gaussians[gaussian_idx];
     uint quant_id = extract_chunk_id(src.position_chunk);
     ChunkQuantization quant = quantization_buffer.chunks[quant_id];
-    chunk_sh_limit = min(chunk_meta_buffer.chunk_meta[quant_id].sh_limit, 3u);
+    ChunkMetaGPU chunk_meta = chunk_meta_buffer.chunk_meta[quant_id];
+    chunk_sh_limit = min(chunk_meta.sh_limit, 3u);
     vec3 local_position = dequantize_position(extract_quantized_position(src.position_chunk), quant);
     vec3 local_scale = LOAD_SCALE_QUANTIZED(src, quant);
     vec4 local_rotation = extract_rotation(src.rotation_lo, src.rotation_hi);
@@ -635,7 +640,7 @@ void main() {
     Gaussian g;
     g.opacity = src.opacity;
     g.sh_dc = src.sh_dc;
-    g.sh_metadata = gs_build_quantized_sh_metadata(6u);
+    g.sh_metadata = gs_build_quantized_sh_metadata(6u, (chunk_meta.flags & GS_ASSET_FLAG_DC_LINEAR_RGB) != 0u);
     for (int i = 0; i < 12; ++i) {
         g.sh_encoded[i] = 0.0;
     }

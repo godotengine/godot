@@ -338,7 +338,6 @@ struct TileRenderParams {
 	float direct_light_scale = 0.5f;
 	float indirect_sh_scale = 1.0f;
 	float shadow_strength = 1.0f;
-	bool sh_dc_logit = false;
 	float shadow_receiver_bias_scale = 0.2f;
 	float shadow_receiver_bias_min = 0.0f;
 	float shadow_receiver_bias_max = 0.0f;

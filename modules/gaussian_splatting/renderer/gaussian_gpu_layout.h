@@ -16,6 +16,8 @@ static constexpr uint32_t GS_SH_METADATA_ENCODING_MASK = 0x7F000000u;
 static constexpr uint32_t GS_SH_METADATA_DC_ENCODING_MASK = 0x80000000u;
 static constexpr uint32_t GS_SH_ENCODING_RGB9E5 = 1u;
 static constexpr uint32_t GS_SH_ENCODING_F16 = 2u;
+static constexpr uint32_t GS_GPU_ASSET_FLAG_IS_2D = 1u << 0u;
+static constexpr uint32_t GS_GPU_ASSET_FLAG_DC_LINEAR_RGB = 1u << 1u;
 
 inline uint32_t gs_pack_sh_metadata(uint32_t p_stored_first, uint32_t p_stored_high, uint32_t p_encoded_total,
         GaussianDCEncoding p_dc_encoding, uint32_t p_sh_encoding) {
@@ -39,6 +41,14 @@ inline GaussianDCEncoding gs_get_dc_encoding(uint32_t p_metadata) {
     return (p_metadata & GS_SH_METADATA_DC_ENCODING_MASK) != 0u
             ? GAUSSIAN_DC_ENCODING_LINEAR_RGB
             : GAUSSIAN_DC_ENCODING_LEGACY_BIAS;
+}
+
+inline uint32_t gs_pack_asset_gpu_flags(bool p_is_2d, GaussianDCEncoding p_dc_encoding) {
+    uint32_t flags = p_is_2d ? GS_GPU_ASSET_FLAG_IS_2D : 0u;
+    if (p_dc_encoding == GAUSSIAN_DC_ENCODING_LINEAR_RGB) {
+        flags |= GS_GPU_ASSET_FLAG_DC_LINEAR_RGB;
+    }
+    return flags;
 }
 
 // Instance pipeline only: uses SplatRef indirection and asset-local quantization.
@@ -98,7 +108,7 @@ static_assert(offsetof(AssetLodRangeGPU, count) == 4, "AssetLodRangeGPU.count of
 struct alignas(16) AssetMetaGPU {
     uint32_t lod_count;
     uint32_t sh_degree;          // max SH bands for asset
-    uint32_t flags;              // include is_2d bit
+    uint32_t flags;              // GS_GPU_ASSET_FLAG_* metadata shared with chunk flags
     uint32_t pad0;
 
     float bounds_center_local[3];
@@ -383,8 +393,7 @@ struct alignas(16) TileRenderParamsGPU {
     // x=sh_bands (0-3), y=amortization_divisor, z=amortization_phase, w=force_full_update
     // sh_bands: 0=DC only, 1=1st order, 2=2nd order, 3=3rd order (full)
     float sh_config[4];
-    // SH decode configuration:
-    // x=dc_logit (1.0=decode DC with sigmoid), yzw=reserved
+    // SH decode configuration is reserved; runtime decode now comes from per-gaussian metadata.
     float sh_decode_config[4];
     // Opacity-aware culling (FlashGS): x=enabled (bool), y=visibility_threshold (tau), z=reserved, w=reserved
     // When enabled, splat radii are calculated as: r = sqrt(2 * ln(alpha/tau) * lambda_max)

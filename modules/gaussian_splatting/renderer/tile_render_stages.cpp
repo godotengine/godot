@@ -203,9 +203,8 @@ TileRenderParamsGPU TileRenderer::TileRenderParamsBuilder::build_params(const Re
 	params.sh_config[1] = static_cast<float>(sh_divisor);
 	params.sh_config[2] = static_cast<float>(sh_phase);
 	params.sh_config[3] = owner.sh_cache_needs_full_update ? 1.0f : 0.0f;
-	// SH decode configuration:
-	// x=dc_logit (1.0 = decode DC with sigmoid), yzw=reserved
-	params.sh_decode_config[0] = p_params.sh_dc_logit ? 1.0f : 0.0f;
+	// SH decode configuration is reserved; decode now comes from per-gaussian metadata.
+	params.sh_decode_config[0] = 0.0f;
 	params.sh_decode_config[1] = 0.0f;
 	params.sh_decode_config[2] = 0.0f;
 	params.sh_decode_config[3] = 0.0f;

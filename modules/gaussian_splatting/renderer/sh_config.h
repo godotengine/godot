@@ -24,7 +24,6 @@
 // Project settings paths
 #define SH_CONFIG_SECTION "rendering/gaussian_splatting/rendering/"
 #define SH_CONFIG_BANDS_PATH SH_CONFIG_SECTION "sh_bands"
-#define SH_CONFIG_DC_LOGIT_PATH SH_CONFIG_SECTION "dc_is_logit"
 #define SH_CONFIG_PROGRESSIVE_PATH "rendering/gaussian_splatting/streaming/sh_progressive_load"
 
 /**
@@ -50,9 +49,6 @@ struct SHConfig {
     // Enable progressive SH loading (SH0 first, then higher bands)
     bool progressive_load = false;
 
-    // Treat DC as logit and apply sigmoid (legacy compatibility)
-    bool dc_is_logit = false;
-
     // Project settings integration
     void load_from_project_settings();
     void save_to_project_settings() const;
@@ -74,7 +70,6 @@ struct SHConfig {
 
     // Constants for project settings paths
     static const String BANDS_PATH;
-    static const String DC_LOGIT_PATH;
     static const String PROGRESSIVE_PATH;
 
     String sh_bands_source = "code_default";

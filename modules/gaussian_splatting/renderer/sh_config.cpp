@@ -8,7 +8,6 @@
 
 // Project settings paths
 const String SHConfig::BANDS_PATH = SH_CONFIG_BANDS_PATH;
-const String SHConfig::DC_LOGIT_PATH = SH_CONFIG_DC_LOGIT_PATH;
 const String SHConfig::PROGRESSIVE_PATH = SH_CONFIG_PROGRESSIVE_PATH;
 
 // Global instance
@@ -44,9 +43,6 @@ void SHConfig::load_from_project_settings() {
     // Load progressive loading setting
     progressive_load = ps->get_setting(PROGRESSIVE_PATH, false);
 
-    // Load DC encoding mode
-    dc_is_logit = ps->get_setting(DC_LOGIT_PATH, false);
-
     if (GS_LOG_ENABLED(gs_logger::Category::STREAMING, gs_logger::Level::INFO)) {
         print_config_summary();
     }
@@ -59,7 +55,6 @@ void SHConfig::save_to_project_settings() const {
     }
 
     ps->set_setting(BANDS_PATH, static_cast<int>(sh_bands));
-    ps->set_setting(DC_LOGIT_PATH, dc_is_logit);
     ps->set_setting(PROGRESSIVE_PATH, progressive_load);
 
     ps->save();
@@ -70,7 +65,6 @@ void SHConfig::save_to_project_settings() const {
 void SHConfig::reset_to_defaults() {
     sh_bands = SH_BAND_3;
     progressive_load = false;
-    dc_is_logit = false;
 
     GS_LOG_STREAMING_INFO(String("[SH Config] Reset to default configuration (SH3, progressive disabled)"));
 }
@@ -125,8 +119,6 @@ void SHConfig::print_config_summary() const {
             get_memory_multiplier(sh_bands) * 100.0f));
     GS_LOG_STREAMING_INFO(vformat("[SH Config] Progressive Loading: %s",
             progressive_load ? "enabled (SH0 first, then higher bands)" : "disabled"));
-    GS_LOG_STREAMING_INFO(vformat("[SH Config] DC Logit Decode: %s",
-            dc_is_logit ? "enabled (sigmoid)" : "disabled (linear)"));
     GS_LOG_STREAMING_INFO(String("[SH Config] ================================================"));
 }
 
@@ -160,18 +152,6 @@ void initialize_sh_config() {
         SHConfig::BANDS_PATH,
         PROPERTY_HINT_ENUM,
         "Auto (Tier Default):-1,SH0 (DC Only):0,SH1 (1st Order):1,SH2 (2nd Order):2,SH3 (3rd Order):3"
-    ));
-
-    // DC logit decode toggle
-    if (!ps->has_setting(SHConfig::DC_LOGIT_PATH)) {
-        ps->set_setting(SHConfig::DC_LOGIT_PATH, false);
-    }
-    ps->set_initial_value(SHConfig::DC_LOGIT_PATH, false);
-    ps->set_custom_property_info(PropertyInfo(
-        Variant::BOOL,
-        SHConfig::DC_LOGIT_PATH,
-        PROPERTY_HINT_NONE,
-        ""
     ));
 
     // Progressive loading setting
