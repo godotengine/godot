@@ -7928,6 +7928,9 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			tool_mode = (ToolMode)p_option;
 			update_transform_gizmo();
 
+			for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+				viewports[i]->update_transform_gizmo_highlight();
+			}
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 			snap_dialog->popup_centered(Size2(200, 180));
