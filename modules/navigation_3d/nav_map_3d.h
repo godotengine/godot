@@ -121,6 +121,8 @@ class NavMap3D : public NavRid3D {
 	// Performance Monitor
 	Nav3D::PerformanceData performance_data;
 
+	// To keep track of the different sources that can trigger a map iteration.
+	// Is one of the sources to set `iteration_dirty` to true.
 	struct {
 		struct {
 			RWLock rwlock;

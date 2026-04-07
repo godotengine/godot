@@ -117,6 +117,7 @@ public:
 #endif // DISABLE_DEPRECATED
 	virtual void set_owner_id(ObjectID p_owner_id) override;
 
+	// Called by map, see `NavMap3D::sync()`:
 	bool sync();
 	void request_sync();
 	void cancel_sync_request();

@@ -42,9 +42,10 @@ enum PathPostProcessing {
 	PATH_POSTPROCESSING_NONE,
 };
 
+// For navigation queries, to check whether a region can be entered.
 enum PathSegmentType {
 	PATH_SEGMENT_TYPE_REGION = 0,
-	PATH_SEGMENT_TYPE_LINK
+	PATH_SEGMENT_TYPE_LINK // A link can connect 2 different regions.
 };
 
 enum PathMetadataFlags {

@@ -50,6 +50,7 @@ protected:
 public:
 	NavigationEnums3D::PathSegmentType get_type() const { return type; }
 
+	// Only used for region:
 	virtual void set_use_edge_connections(bool p_enabled) {}
 	virtual bool get_use_edge_connections() const { return false; }
 
