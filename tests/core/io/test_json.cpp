@@ -192,6 +192,9 @@ TEST_CASE("[JSON] Parsing single data types") {
 			json.get_error_line() == 0,
 			"Parsing an integer number as JSON should parse successfully.");
 	CHECK_MESSAGE(
+			json.get_data().get_type() == Variant::INT,
+			"Parsing an integer number as JSON should return the expected type.");
+	CHECK_MESSAGE(
 			(int)(json.get_data()) == 123456,
 			"Parsing an integer number as JSON should return the expected value.");
 

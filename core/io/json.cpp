@@ -42,7 +42,8 @@ const char *JSON::tk_name[TK_MAX] = {
 	"']'",
 	"identifier",
 	"string",
-	"number",
+	"int",
+	"double",
 	"':'",
 	"','",
 	"EOF",
@@ -388,12 +389,30 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 				}
 
 				if (p_str[index] == '-' || is_digit(p_str[index])) {
-					//a number
-					const char32_t *rptr;
-					double number = String::to_float(&p_str[index], &rptr);
-					index += (rptr - &p_str[index]);
-					r_token.type = TK_NUMBER;
-					r_token.value = number;
+					// a number
+					bool is_float = false;
+					size_t num_end_index = index + 1;
+					for (; p_str[num_end_index] != '\0'; ++num_end_index) {
+						if (!is_digit(p_str[num_end_index])) {
+							is_float = p_str[num_end_index] == '.' || p_str[num_end_index] == 'e' || p_str[num_end_index] == 'E';
+							break;
+						}
+					}
+
+					if (is_float) {
+						// a float
+						const char32_t *rptr;
+						double number = String::to_float(&p_str[index], &rptr);
+						index += (rptr - &p_str[index]);
+						r_token.type = TK_DOUBLE;
+						r_token.value = number;
+					} else {
+						// an int
+						int64_t number = String::to_int(&p_str[index], num_end_index - index);
+						index = num_end_index;
+						r_token.type = TK_INT;
+						r_token.value = number;
+					}
 					return OK;
 
 				} else if (is_ascii_alphabet_char(p_str[index])) {
@@ -451,7 +470,9 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			r_err_str = vformat("Expected 'true', 'false', or 'null', got '%s'", id);
 			return ERR_PARSE_ERROR;
 		}
-	} else if (token.type == TK_NUMBER) {
+	} else if (token.type == TK_INT) {
+		value = token.value;
+	} else if (token.type == TK_DOUBLE) {
 		value = token.value;
 	} else if (token.type == TK_STRING) {
 		value = token.value;
