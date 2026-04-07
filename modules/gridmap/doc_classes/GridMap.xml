@@ -97,6 +97,20 @@
 				This function returns always the map set on the GridMap node and not the map on the NavigationServer. If the map is changed directly with the NavigationServer API the GridMap node will not be aware of the map change.
 			</description>
 		</method>
+		<method name="get_octant_coords_from_cell_coords" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="cell_coords" type="Vector3i" />
+			<description>
+				Returns the [Vector3i] octant coordinates of the octant that the cell at [param cell_coords] belongs to.
+			</description>
+		</method>
+		<method name="get_octants_in_bounds" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="bounds" type="AABB" />
+			<description>
+				Returns an array of [Vector3i] octant coordinates that are inside the given [param bounds], including octants that have no cells in use.
+			</description>
+		</method>
 		<method name="get_orthogonal_index_from_basis" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="basis" type="Basis" />
@@ -115,6 +129,41 @@
 			<param index="0" name="item" type="int" />
 			<description>
 				Returns an array of all cells with the given item index specified in [param item].
+			</description>
+		</method>
+		<method name="get_used_cells_in_octant" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="octant_coords" type="Vector3i" />
+			<description>
+				Returns an array of [Vector3i]s with the cell coordinates of non-empty cells inside the octant at [param octant_coords].
+			</description>
+		</method>
+		<method name="get_used_cells_in_octant_by_item" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="octant_coords" type="Vector3i" />
+			<param index="1" name="item" type="int" />
+			<description>
+				Returns an array of [Vector3i]s with the cell coordinates of cells inside the octant at [param octant_coords] that use the specified cell [param item].
+			</description>
+		</method>
+		<method name="get_used_octants" qualifiers="const">
+			<return type="Vector3i[]" />
+			<description>
+				Returns an array of [Vector3i]s with the octant coordinates of the non-empty octants in the grid map.
+			</description>
+		</method>
+		<method name="get_used_octants_by_item" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="item" type="int" />
+			<description>
+				Returns an array of [Vector3i]s with the octant coordinates of the octants that use the specified [param item] in the grid map.
+			</description>
+		</method>
+		<method name="get_used_octants_in_bounds" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="bounds" type="AABB" />
+			<description>
+				Returns an array of [Vector3i]s with the octant coordinates of non-empty octants that are inside the local [param bounds].
 			</description>
 		</method>
 		<method name="local_to_map" qualifiers="const">
