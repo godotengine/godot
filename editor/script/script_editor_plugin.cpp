@@ -2345,6 +2345,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			cte->set_zoom_factor(zoom_factor);
 			cte->connect("zoomed", callable_mp(this, &ScriptEditor::_set_script_zoom_factor));
 			cte->connect(SceneStringName(visibility_changed), callable_mp(this, &ScriptEditor::_update_code_editor_zoom_factor).bind(cte));
+			cte->connect("document_edits_requested", callable_mp(this, &ScriptEditor::_on_document_edits_requested));
 		}
 	}
 
@@ -3784,6 +3785,67 @@ void ScriptEditor::_filter_scripts_text_changed(const String &p_newtext) {
 
 void ScriptEditor::_filter_methods_text_changed(const String &p_newtext) {
 	_update_members_overview();
+}
+
+void ScriptEditor::_on_document_edits_requested(const Array &p_doc_edits) {
+	// Get all of the files that need to be opened.
+	// If a file isn't currently opened, then open it and add it to a list.
+	HashMap<String, TextEditorBase *> files_and_editors;
+	Vector<String> files_to_open_editor_for;
+	for (const Variant &d : p_doc_edits) {
+		ScriptLanguage::DocumentEditOperation doc_edit = ScriptLanguage::DocumentEditOperation::from_dict(d);
+		String file_path = doc_edit.file_path;
+
+		// Look to see if this file already has an editor open.
+		bool editor_found = false;
+		for (Variant editor : _get_open_script_editors()) {
+			TextEditorBase *te = Object::cast_to<TextEditorBase>(editor);
+			if (te && file_path == te->edited_file_data.path) {
+				files_and_editors.insert(file_path, te);
+				editor_found = true;
+				break;
+			}
+		}
+
+		// This file doesn't currently have an editor; thus, we need to open the
+		// file and then get its editor.
+		if (!editor_found) {
+			open_file(file_path);
+
+			// Now that the file has been opened (or at least we tried to open it),
+			// try finding its editor again!
+			// (This could probably be simplified if we kept a HashMap of files and
+			// their corresponding editors, for all open files.)
+			for (Variant editor : _get_open_script_editors()) {
+				TextEditorBase *te = Object::cast_to<TextEditorBase>(editor);
+				if (te && file_path == te->edited_file_data.path) {
+					files_and_editors.insert(file_path, te);
+					editor_found = true;
+					break;
+				}
+			}
+
+			// If other files have editors open, the document edits can still be
+			// performed on them.
+			if (!editor_found) {
+				ERR_PRINT(vformat("Even after attempting to open \"%s\", an editor for it could not be found. The requested document edits may still be performed but will not include edits to this file.", file_path));
+			}
+		}
+	}
+
+	for (const Variant &d : p_doc_edits) {
+		ScriptLanguage::DocumentEditOperation doc_edit = ScriptLanguage::DocumentEditOperation::from_dict(d);
+		if (!files_and_editors.has(doc_edit.file_path)) {
+			continue;
+		}
+		CodeEdit *ce = files_and_editors[doc_edit.file_path]->get_code_editor()->get_text_editor();
+		ce->begin_complex_operation();
+		for (const ScriptLanguage::TextEditOperation &text_edit : doc_edit.edits) {
+			ce->select(text_edit.start_line, text_edit.start_col, text_edit.end_line, text_edit.end_col);
+			ce->insert_text_at_caret(text_edit.new_text);
+		}
+		ce->end_complex_operation();
+	}
 }
 
 void ScriptEditor::_bind_methods() {

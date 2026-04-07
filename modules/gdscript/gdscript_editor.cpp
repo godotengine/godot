@@ -47,6 +47,11 @@
 #include "core/object/class_db.h"
 #include "core/variant/container_type_validate.h"
 
+// TODO: We use this to get GodotRange and GodotPosition; perhaps
+// they could be moved out of this language server specific file, and
+// into something more general?
+#include "modules/gdscript/language_server/gdscript_extend_parser.h"
+
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
@@ -143,9 +148,40 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 	}
 }
 
+#ifdef TOOLS_ENABLED
+ScriptLanguage::CodeActionGroup fix_ranges_for_code_actions(const ScriptLanguage::CodeActionGroup &p_group, const Vector<String> &p_lines) {
+	// The GDScript analyzer outputs positions within a line as columns, but the
+	// LSP and text editor need them as numbers of characters. Additionally, there
+	// may be differences with 0-vs-1 for the first line/character.
+	// As such, we have to fix the values here.
+	ScriptLanguage::CodeActionGroup new_group;
+	new_group.title = p_group.title;
+	new_group.actions = p_group.actions.duplicate();
+
+	for (ScriptLanguage::CodeActionOperation &code_action_op : new_group.actions) {
+		for (ScriptLanguage::DocumentEditOperation &doc_edit_op : code_action_op.document_edits) {
+			for (ScriptLanguage::TextEditOperation &text_edit_op : doc_edit_op.edits) {
+				GodotRange godot_range(
+						GodotPosition(text_edit_op.start_line, text_edit_op.start_col),
+						GodotPosition(text_edit_op.end_line, text_edit_op.end_col));
+				LSP::Range lsp_range = godot_range.to_lsp(p_lines);
+
+				text_edit_op.start_line = lsp_range.start.line;
+				text_edit_op.start_col = lsp_range.start.character;
+				text_edit_op.end_line = lsp_range.end.line;
+				text_edit_op.end_col = lsp_range.end.character;
+			}
+		}
+	}
+	return new_group;
+}
+#endif // TOOLS_ENABLED
+
 bool GDScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, HashSet<int> *r_safe_lines) const {
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
+
+	const Vector<String> lines = p_script.split("\n");
 
 	Error err = parser.parse(p_script, p_path, false);
 	if (err == OK) {
@@ -161,6 +197,10 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 			w.code = (int)warn.code;
 			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
 			w.message = warn.get_message();
+
+#ifdef TOOLS_ENABLED
+			w.code_actions = fix_ranges_for_code_actions(warn.code_actions, lines);
+#endif // TOOLS_ENABLED
 			r_warnings->push_back(w);
 		}
 	}
@@ -173,6 +213,9 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 				e.line = pe.start_line;
 				e.column = pe.start_column;
 				e.message = pe.message;
+#ifdef TOOLS_ENABLED
+				e.code_actions = fix_ranges_for_code_actions(pe.code_actions, lines);
+#endif // TOOLS_ENABLED
 				r_errors->push_back(e);
 			}
 
@@ -184,6 +227,9 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 					e.line = pe.start_line;
 					e.column = pe.start_column;
 					e.message = pe.message;
+#ifdef TOOLS_ENABLED
+					e.code_actions = fix_ranges_for_code_actions(pe.code_actions, lines);
+#endif // TOOLS_ENABLED
 					r_errors->push_back(e);
 				}
 			}
@@ -3865,6 +3911,84 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 #endif // TOOLS_ENABLED
 
 //////// END COMPLETION //////////
+#ifdef TOOLS_ENABLED
+::Error GDScriptLanguage::get_code_actions(const String &p_code, const String &p_path, Vector<CodeActionGroupWithDiagnostics> *r_actions) {
+	GDScriptParser parser;
+	GDScriptAnalyzer analyzer(&parser);
+
+	const Vector<String> lines = p_code.split("\n");
+
+	parser.parse(p_code, p_path, true);
+	analyzer.analyze();
+
+	for (const GDScriptWarning &E : parser.get_warnings()) {
+		const GDScriptWarning &warn = E;
+		ScriptLanguage::Warning w;
+		w.start_line = warn.start_line;
+		w.end_line = warn.end_line;
+		w.code = (int)warn.code;
+		w.string_code = GDScriptWarning::get_name_from_code(warn.code);
+		w.message = warn.get_message();
+
+		ScriptLanguage::CodeActionGroup fixed_group = fix_ranges_for_code_actions(warn.code_actions, lines);
+		ScriptLanguage::CodeActionGroupWithDiagnostics new_group;
+		new_group.title = fixed_group.title;
+		for (ScriptLanguage::CodeActionOperation action : fixed_group.actions) {
+			ScriptLanguage::CodeActionAndDiagnostics action_with_diagnostics;
+			action_with_diagnostics.code_action = action;
+			action_with_diagnostics.related_warnings.append(w);
+			new_group.actions.push_back(action_with_diagnostics);
+		}
+		r_actions->push_back(new_group);
+	}
+
+	for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
+		ScriptLanguage::ScriptError e;
+		e.path = p_path;
+		e.line = pe.start_line;
+		e.column = pe.start_column;
+		e.message = pe.message;
+
+		ScriptLanguage::CodeActionGroup fixed_group = fix_ranges_for_code_actions(pe.code_actions, lines);
+		ScriptLanguage::CodeActionGroupWithDiagnostics new_group;
+		new_group.title = fixed_group.title;
+		for (ScriptLanguage::CodeActionOperation action : fixed_group.actions) {
+			ScriptLanguage::CodeActionAndDiagnostics action_with_diagnostics;
+			action_with_diagnostics.code_action = action;
+			action_with_diagnostics.related_errors.append(e);
+			new_group.actions.push_back(action_with_diagnostics);
+		}
+		r_actions->push_back(new_group);
+	}
+
+	for (KeyValue<String, Ref<GDScriptParserRef>> E : parser.get_depended_parsers()) {
+		GDScriptParser *depended_parser = E.value->get_parser();
+		for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
+			ScriptLanguage::ScriptError e;
+			e.path = E.key;
+			e.line = pe.start_line;
+			e.column = pe.start_column;
+			e.message = pe.message;
+
+			ScriptLanguage::CodeActionGroup fixed_group = fix_ranges_for_code_actions(pe.code_actions, lines);
+			ScriptLanguage::CodeActionGroupWithDiagnostics new_group;
+			new_group.title = fixed_group.title;
+			for (ScriptLanguage::CodeActionOperation action : fixed_group.actions) {
+				ScriptLanguage::CodeActionAndDiagnostics action_with_diagnostics;
+				action_with_diagnostics.code_action = action;
+				action_with_diagnostics.related_errors.append(e);
+				new_group.actions.push_back(action_with_diagnostics);
+			}
+			r_actions->push_back(new_group);
+		}
+	}
+	return OK;
+}
+#else
+::Error GDScriptLanguage::get_code_actions(const String &p_code, const String &p_path, Vector<CodeActionGroupWithDiagnostics> *r_actions) {
+	return OK;
+}
+#endif // TOOLS_ENABLED
 
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
