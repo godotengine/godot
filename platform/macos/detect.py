@@ -284,7 +284,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
         if env["angle"]:
             angle_path = env["angle_libs"] + "-" + env["arch"] + "-macos"
-            print(angle_path)
+            if not os.path.exists(angle_path):
+                angle_path = env["angle_libs"]
             if os.path.exists(angle_path):
                 env.Prepend(CPPPATH=["#thirdparty/angle/include"])
                 env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])

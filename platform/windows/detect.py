@@ -496,6 +496,8 @@ def configure_msvc(env: "SConsEnvironment"):
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
         angle_path = env["angle_libs"] + "-" + env["arch"] + "-msvc"
+        if not os.path.exists(angle_path):
+            angle_path = env["angle_libs"]
         if os.path.exists(angle_path):
             env.Prepend(CPPPATH=["#thirdparty/angle/include"])
             env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])
@@ -931,6 +933,8 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
         if env["angle"]:
             angle_path = env["angle_libs"] + "-" + env["arch"] + ("-llvm" if env["use_llvm"] else "-gcc")
+            if not os.path.exists(angle_path):
+                angle_path = env["angle_libs"]
             if os.path.exists(angle_path):
                 env.Prepend(CPPPATH=["#thirdparty/angle/include"])
                 env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])
