@@ -2701,10 +2701,78 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			texture->alloc_height = rt->size.y;
 			texture->active = true;
 		}
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	if (rt->view_count == 1 && rt->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && (config->msaa_supported || config->rt_msaa_supported)) {
+		/* MSAA 2D FBO */
+		GLsizei samples[] = { 1, 2, 4, 8 };
+		rt->msaa_2d.samples = samples[rt->msaa_2d.mode];
+
+		glGenFramebuffers(1, &rt->msaa_2d.fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->msaa_2d.fbo);
+
+#ifdef ANDROID_ENABLED // Only supported on OpenGLES!
+		if (config->rt_msaa_supported) {
+			// If this extension is supported we use this,
+			// MSAA will remain in tile memory and we write out directly into our final buffers
+			rt->msaa_2d.needs_resolve = false;
+
+			glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0, rt->msaa_2d.samples);
+		} else {
+#else
+		{
+#endif
+			// We create separate MSAA buffers and require a resolve when we're done
+			rt->msaa_2d.needs_resolve = true;
+
+			// Create our color buffer
+			glGenRenderbuffers(1, &rt->msaa_2d.color);
+			glBindRenderbuffer(GL_RENDERBUFFER, rt->msaa_2d.color);
+
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, rt->msaa_2d.samples, rt->color_internal_format, rt->size.x, rt->size.y);
+			GLES3::Utilities::get_singleton()->render_buffer_allocated_data(rt->msaa_2d.color, rt->size.x * rt->size.y * 4 * rt->msaa_2d.samples, "MSAA 2D color render buffer");
+
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rt->msaa_2d.color);
+		}
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			// If we couldn't create our framebuffer just fail and disable MSAA.
+			WARN_PRINT("Could not create 2D MSAA render target, status: " + get_framebuffer_error(status));
+
+			glDeleteFramebuffers(1, &rt->msaa_2d.fbo);
+			rt->msaa_2d.fbo = 0;
+
+			if (rt->msaa_2d.color != 0) {
+				GLES3::Utilities::get_singleton()->render_buffer_free_data(rt->msaa_2d.color);
+				rt->msaa_2d.color = 0;
+			}
+
+			rt->msaa_2d.mode = RS::VIEWPORT_MSAA_DISABLED;
+			rt->msaa_2d.samples = 1;
+			rt->msaa_2d.needs_resolve = false;
+		} else {
+			glClearColor(0, 0, 0, 0);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
+
+	} else {
+		if (rt->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+			if (rt->view_count > 1) {
+				// We don't support 2D MSAA in multiview
+				WARN_PRINT_ONCE("MSAA 2D not supported in multiview.");
+			} else if (!config->msaa_supported && !config->rt_msaa_supported) {
+				WARN_PRINT_ONCE("MSAA 2D not supported on this device.");
+			}
+			rt->msaa_2d.mode = RS::VIEWPORT_MSAA_DISABLED;
+		}
+
+		rt->msaa_2d.samples = 1;
+		rt->msaa_2d.needs_resolve = false;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }
 
@@ -2842,6 +2910,15 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	if (rt->fbo) {
 		glDeleteFramebuffers(1, &rt->fbo);
 		rt->fbo = 0;
+	}
+
+	if (rt->msaa_2d.fbo != 0) {
+		glDeleteFramebuffers(1, &rt->msaa_2d.fbo);
+		rt->msaa_2d.fbo = 0;
+	}
+	if (rt->msaa_2d.color != 0) {
+		GLES3::Utilities::get_singleton()->render_buffer_free_data(rt->msaa_2d.color);
+		rt->msaa_2d.color = 0;
 	}
 
 	if (rt->overridden.color.is_null()) {
@@ -3169,6 +3246,7 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 	_clear_render_target(rt);
 	rt->direct_to_screen = p_direct_to_screen;
 	if (rt->direct_to_screen) {
+		rt->msaa_2d.mode = RS::VIEWPORT_MSAA_DISABLED;
 		rt->overridden.color = RID();
 		rt->overridden.depth = RID();
 		rt->overridden.velocity = RID();
@@ -3202,15 +3280,13 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RSE::ViewportMS
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
-	if (p_msaa == rt->msaa) {
+	if (p_msaa == rt->msaa_2d.mode) {
 		return;
 	}
 
-	WARN_PRINT("2D MSAA is not yet supported for GLES3.");
-
 	if (rt->overridden.color.is_null()) {
 		_clear_render_target(rt);
-		rt->msaa = p_msaa;
+		rt->msaa_2d.mode = p_msaa;
 		_update_render_target_color(rt);
 	}
 }
@@ -3219,7 +3295,23 @@ RSE::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) co
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, RSE::VIEWPORT_MSAA_DISABLED);
 
-	return rt->msaa;
+	return rt->msaa_2d.mode;
+}
+
+void TextureStorage::render_target_do_msaa_resolve(RID p_render_target) {
+	RenderTarget *render_target = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(render_target);
+
+	// Blit MSAA 2D buffer to final buffer
+	if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.needs_resolve) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, render_target->msaa_2d.fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_target->fbo);
+
+		glBlitFramebuffer(0, 0, render_target->size.x, render_target->size.y,
+				0, 0, render_target->size.x, render_target->size.y,
+				GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+	}
 }
 
 void TextureStorage::render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) {
@@ -3307,6 +3399,22 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	glClearBufferfv(GL_COLOR, 0, rt->clear_color.components);
 	rt->clear_requested = false;
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+}
+
+void TextureStorage::render_target_prepare_canvas_msaa(RID p_render_target) {
+	RenderTarget *render_target = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(render_target);
+
+	if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+		glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.fbo);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, render_target->color);
+		GLES3::CopyEffects::get_singleton()->copy_to_rect(Rect2(Vector2(0, 0), Vector2(1, 1)), false);
+	}
+}
+
+void TextureStorage::render_target_finalize_canvas_msaa(RID p_render_target) {
+	render_target_do_msaa_resolve(p_render_target);
 }
 
 GLuint TextureStorage::render_target_get_fbo(RID p_render_target) const {
@@ -3670,6 +3778,15 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		if (region.size == Size2i()) {
 			return; //nothing to do
 		}
+	}
+
+	// MSAA 2D: Resolve (part of the) FBO for backbuffer
+	if (rt->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && rt->msaa_2d.needs_resolve) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->msaa_2d.fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->fbo);
+		glBlitFramebuffer(region.position.x, region.position.y, region.position.x + region.size.x, region.position.y + region.size.y,
+				region.position.x, region.position.y, region.position.x + region.size.x, region.position.y + region.size.y,
+				GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	}
 
 	glDisable(GL_BLEND);

@@ -387,6 +387,14 @@ struct RenderTarget {
 
 	Rect2i render_region;
 
+	struct RTmsaa2d {
+		RS::ViewportMSAA mode = RS::VIEWPORT_MSAA_DISABLED;
+		bool needs_resolve = false;
+		GLsizei samples = 1;
+		GLuint fbo = 0;
+		GLuint color = 0;
+	} msaa_2d;
+
 	struct RTOverridden {
 		bool is_overridden = false;
 		bool depth_has_stencil = false;
@@ -683,11 +691,14 @@ public:
 	virtual RSE::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
 	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override {}
 	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override { return false; }
-	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
+	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
 	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override {}
 	virtual bool render_target_is_using_debanding(RID p_render_target) const override { return false; }
+
+	virtual void render_target_prepare_canvas_msaa(RID p_render_target) override;
+	virtual void render_target_finalize_canvas_msaa(RID p_render_target) override;
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
