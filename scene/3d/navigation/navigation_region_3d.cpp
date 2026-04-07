@@ -573,7 +573,6 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 		if (has_polygon_meta && navigation_mesh->get_polygon_meta(polygon_index) != navigation_layers) {
 			// Color faces that were generated because of area meshes differently using vertex colors.
-			// FIXME: does not work if !enabled_geometry_face_random_color.
 			polygon_color = debug_navigation_geometry_face_area_color;
 		} else if (enabled_geometry_face_random_color) {
 			// Generate the polygon color, slightly randomly modified from the settings one.

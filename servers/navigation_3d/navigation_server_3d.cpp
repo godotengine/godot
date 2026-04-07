@@ -346,7 +346,7 @@ NavigationServer3D::NavigationServer3D() {
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
 	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
 	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
-	debug_navigation_geometry_face_area_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_area_color", Color(0.33, 0.66, 0.35, 0.75));
+	debug_navigation_geometry_face_area_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_area_color", Color(1.0, 0.0, 0.8, 0.4));
 	debug_navigation_geometry_edge_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
 	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
 	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
