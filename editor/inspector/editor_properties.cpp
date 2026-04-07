@@ -800,16 +800,7 @@ void EditorPropertyPath::_update_uid_icon() {
 
 void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	const Dictionary drag_data = p_data;
-	if (!drag_data.has("type")) {
-		return;
-	}
-	if (String(drag_data["type"]) != "files") {
-		return;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return;
-	}
 
 	_path_selected(filesPaths[0]);
 }
@@ -819,17 +810,31 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 	if (!drag_data.has("type")) {
 		return false;
 	}
-	if (String(drag_data["type"]) != "files") {
-		return false;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return false;
-	}
+	if (folder) {
+		if (String(drag_data["type"]) != "files_and_dirs") {
+			return false;
+		}
+		if (filesPaths.size() > 1) {
+			for (const String &p : filesPaths) {
+				if (!p.ends_with("/")) {
+					return false;
+				}
+			}
+		}
+		return true;
+	} else {
+		if (String(drag_data["type"]) != "files") {
+			return false;
+		}
+		if (filesPaths.is_empty()) {
+			return false;
+		}
 
-	for (const String &extension : extensions) {
-		if (filesPaths[0].ends_with(extension.substr(1))) {
-			return true;
+		for (const String &extension : extensions) {
+			if (filesPaths[0].ends_with(extension.substr(1))) {
+				return true;
+			}
 		}
 	}
 
