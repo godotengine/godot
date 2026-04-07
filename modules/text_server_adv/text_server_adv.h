@@ -582,7 +582,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 	mutable RID_PtrOwner<FontAdvancedLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontAdvanced> font_owner;
-	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
+	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner{ 65536, 1048576 };
 
 	_FORCE_INLINE_ FontAdvanced *_get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
