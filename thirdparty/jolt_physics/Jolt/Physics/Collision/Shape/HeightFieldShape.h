@@ -33,6 +33,9 @@ namespace HeightFieldShapeConstants
 	/// When height samples are converted to 16 bit:
 	constexpr uint16				cNoCollisionValue16 = 0xffff;				///< This is the magic value for 'no collision'
 	constexpr uint16				cMaxHeightValue16 = 0xfffe;					///< This is the maximum allowed height value
+
+	/// Maximum value for HeightFieldShapeSettings::mBitsPerSample
+	constexpr uint32				cMaxBitsPerSample = 16;
 };
 
 /// Class that constructs a HeightFieldShape
@@ -63,7 +66,7 @@ public:
 
 	/// Given mBlockSize, mSampleCount and mHeightSamples, calculate the amount of bits needed to stay below absolute error inMaxError
 	/// @param inMaxError Maximum allowed error in mHeightSamples after compression (note that this does not take mScale.Y into account)
-	/// @return Needed bits per sample in the range [1, 8].
+	/// @return Needed bits per sample in the range [1, 16].
 	uint32							CalculateBitsPerSampleForError(float inMaxError) const;
 
 	/// The height field is a surface defined by: mOffset + mScale * (x, mHeightSamples[y * mSampleCount + x], y).
@@ -83,12 +86,12 @@ public:
 	uint32							mMaterialsCapacity = 0;
 
 	/// The heightfield is divided in blocks of mBlockSize * mBlockSize * 2 triangles and the acceleration structure culls blocks only,
-	/// bigger block sizes reduce memory consumption but also reduce query performance. Sensible values are [2, 8], does not need to be
+	/// bigger block sizes reduce memory consumption but also reduce query performance. Valid values are [2, 8], does not need to be
 	/// a power of 2. Note that at run-time we'll perform one more grid subdivision, so the effective block size is half of what is provided here.
 	uint32							mBlockSize = 2;
 
-	/// How many bits per sample to use to compress the height field. Can be in the range [1, 8].
-	/// Note that each sample is compressed relative to the min/max value of its block of mBlockSize * mBlockSize pixels so the effective precision is higher.
+	/// How many bits per sample to use to compress the height field. Can be in the range [1, 16].
+	/// Note that each sample is compressed relative to the min/max value of its block of mBlockSize * mBlockSize samples so the effective precision is higher.
 	/// Also note that increasing mBlockSize saves more memory than reducing the amount of bits per sample.
 	uint32							mBitsPerSample = 8;
 
@@ -307,7 +310,7 @@ private:
 	inline void						GetBlockOffsetAndScale(uint inBlockX, uint inBlockY, uint inRangeBlockOffset, uint inRangeBlockStride, float &outBlockOffset, float &outBlockScale) const;
 
 	/// Get the height sample at position (inX, inY)
-	inline uint8					GetHeightSample(uint inX, uint inY) const;
+	inline uint16					GetHeightSample(uint inX, uint inY) const;
 
 	/// Faster version of GetPosition when block offset and scale are already known
 	inline Vec3						GetPosition(uint inX, uint inY, float inBlockOffset, float inBlockScale, bool &outNoCollision) const;
@@ -358,7 +361,7 @@ private:
 	uint32							mRangeBlocksSize = 0;						///< Size of mRangeBlocks in elements
 	uint32							mActiveEdgesSize = 0;						///< Size of mActiveEdges in bytes
 	uint8							mBitsPerSample = 8;							///< See HeightFieldShapeSettings::mBitsPerSample
-	uint8							mSampleMask = 0xff;							///< All bits set for a sample: (1 << mBitsPerSample) - 1, used to indicate that there's no collision
+	uint16							mSampleMask = 0xff;							///< All bits set for a sample: (1 << mBitsPerSample) - 1, used to indicate that there's no collision
 	uint16							mMinSample = HeightFieldShapeConstants::cNoCollisionValue16; ///< Min and max value in mHeightSamples quantized to 16 bit, for calculating bounding box
 	uint16							mMaxSample = HeightFieldShapeConstants::cNoCollisionValue16;
 	RangeBlock *					mRangeBlocks = nullptr;						///< Hierarchical grid of range data describing the height variations within 1 block. The grid for level <level> starts at offset sGridOffsets[<level>]

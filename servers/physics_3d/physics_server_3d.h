@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 
 constexpr int MAX_CONTACTS_REPORTED_3D_MAX = 4096;
 

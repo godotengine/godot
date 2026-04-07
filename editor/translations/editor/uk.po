@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-01 09:45+0000\n"
+"PO-Revision-Date: 2026-01-15 05:04+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -78,16 +78,154 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "Гаразд"
 
+msgid "Failed"
+msgstr "Не вдалося"
+
+msgid "Unavailable"
+msgstr "Недоступно"
+
+msgid "Unconfigured"
+msgstr "Не налаштовано"
+
+msgid "Unauthorized"
+msgstr "Неавторизовано"
+
+msgid "Parameter out of range"
+msgstr "Параметр поза діапазоном"
+
+msgid "Out of memory"
+msgstr "Не вистачає пам'яті"
+
+msgid "File not found"
+msgstr "Файл не знайдено"
+
+msgid "File: Bad drive"
+msgstr "Файл: Пошкоджений диск"
+
+msgid "File: Bad path"
+msgstr "Файл: Неправильний шлях"
+
+msgid "File: Permission denied"
+msgstr "Файл: Доступ заборонено"
+
+msgid "File already in use"
+msgstr "Файл вже використовується"
+
+msgid "Can't open file"
+msgstr "Не вдається відкрити файл"
+
+msgid "Can't write file"
+msgstr "Не вдається записати файл"
+
+msgid "Can't read file"
+msgstr "Не вдається прочитати файл"
+
+msgid "File unrecognized"
+msgstr "Файл не розпізнано"
+
+msgid "File corrupt"
+msgstr "Файл пошкоджено"
+
+msgid "Missing dependencies for file"
+msgstr "Відсутні залежності для файлу"
+
+msgid "End of file"
+msgstr "Кінець файлу"
+
+msgid "Can't open"
+msgstr "Не вдається відкрити"
+
+msgid "Can't create"
+msgstr "Не вдається створити"
+
+msgid "Query failed"
+msgstr "Запит не вдався"
+
+msgid "Already in use"
+msgstr "Вже використовується"
+
 msgid "Locked"
 msgstr "Заблоковано"
 
+msgid "Timeout"
+msgstr "Тайм-аут"
+
+msgid "Can't connect"
+msgstr "Не вдається підключитися"
+
+msgid "Can't resolve"
+msgstr "Не вдається вирішити"
+
+msgid "Connection error"
+msgstr "Помилка підключення"
+
+msgid "Can't acquire resource"
+msgstr "Не вдається отримати ресурс"
+
+msgid "Can't fork"
+msgstr "Не можу розщепитися"
+
+msgid "Invalid data"
+msgstr "Недійсні дані"
+
+msgid "Invalid parameter"
+msgstr "Недійсний параметр"
+
+msgid "Already exists"
+msgstr "Вже існує"
+
+msgid "Does not exist"
+msgstr "Не існує"
+
+msgid "Can't read database"
+msgstr "Не вдається прочитати базу даних"
+
+msgid "Can't write database"
+msgstr "Не вдається записати дані в базу даних"
+
+msgid "Compilation failed"
+msgstr "Компіляція не вдалася"
+
+msgid "Method not found"
+msgstr "Метод не знайдено"
+
+msgid "Link failed"
+msgstr "Помилка зв'язку"
+
+msgid "Script failed"
+msgstr "Помилка скрипта"
+
+msgid "Cyclic link detected"
+msgstr "Виявлено циклічне посилання"
+
+msgid "Invalid declaration"
+msgstr "Недійсна декларація"
+
+msgid "Duplicate symbol"
+msgstr "Дублікат символу"
+
+msgid "Parse error"
+msgstr "Помилка синтаксичного аналізу"
+
+msgid "Busy"
+msgstr "Зайнятий"
+
+msgid "Skip"
+msgstr "Пропущений"
+
 msgid "Help"
 msgstr "Довідка"
+
+msgid "Bug"
+msgstr "Помилка"
+
+msgid "Printer on fire"
+msgstr "Принтер у горінні"
 
 msgid "unset"
 msgstr "не встановлено"
@@ -1539,6 +1677,9 @@ msgstr "Збалансований"
 msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
 msgstr "Дзеркальне"
+
+msgid "Handle mode: %s"
+msgstr "Режим ручки: %s"
 
 msgid "Stream:"
 msgstr "Потік:"
@@ -6633,6 +6774,12 @@ msgstr "Редактор залежностей"
 msgid "Owners of: %s (Total: %d)"
 msgstr "Власник: %s (Загалом: %d)"
 
+msgid "No owners found for: %s"
+msgstr "Не знайдено власників для: %s"
+
+msgid "Owners List"
+msgstr "Список власників"
+
 msgid "Localization remap"
 msgstr "Перевизначення локалізації"
 
@@ -7036,6 +7183,9 @@ msgstr "Виберіть Ресурс"
 
 msgid "Select Scene"
 msgstr "Виберіть Сцена"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "Виявлено рекурсію, не вдалося виконати миттєвий попередній перегляд."
 
 msgid "Instant Preview"
 msgstr "Миттєвий попередній перегляд"
@@ -11556,6 +11706,24 @@ msgstr ""
 "Цей режим відображення налагодження підтримується лише під час використання "
 "рендерера Forward+."
 
+msgid "X: %s"
+msgstr "X: %s"
+
+msgid "Y: %s"
+msgstr "Y: %s"
+
+msgid "Z: %s"
+msgstr "Z: %s"
+
+msgid "Size: %s (%.1fMP)"
+msgstr "Розмір: %s (%.1fMP)"
+
+msgid "Objects: %d"
+msgstr "Об'єкти: %d"
+
+msgid "Primitives: %d"
+msgstr "Примітиви: %d"
+
 msgid "Draw Calls: %d"
 msgstr "Виклики малювання: %d"
 
@@ -11725,6 +11893,16 @@ msgstr "Для видимого ефекту потрібно ввімкнути
 
 msgid "SDFGI Probes"
 msgstr "Зонди SDFGI"
+
+msgid ""
+"Left-click a SDFGI probe to display its occlusion information (white = not "
+"occluded, red = fully occluded).\n"
+"Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"Клацніть лівою кнопкою миші на зонді SDFGI, щоб відобразити інформацію про "
+"його оклюзію (білий = не перекривається, червоний = повністю "
+"перекривається).\n"
+"Для видимого ефекту потрібно, щоб SDFGI було ввімкнено в середовищі."
 
 msgid "Scene Luminance"
 msgstr "Яскравість сцени"
@@ -12985,6 +13163,9 @@ msgstr "Центрувати на вибраному"
 
 msgid "Frame Selection"
 msgstr "Кадрувати вибране"
+
+msgid "Auto Resample CanvasItems"
+msgstr "Автоматичне перерозподіл елементів Canvas"
 
 msgid "Preview Canvas Scale"
 msgstr "Попередній перегляд масштабованого полотна"
@@ -18800,6 +18981,18 @@ msgstr "Посилання на ObjectDB + нативні посилання"
 msgid "Cycles detected in the ObjectDB"
 msgstr "Цикли, виявлені в ObjectDB"
 
+msgid "Native References: %d"
+msgstr "Рідні посилання: %d"
+
+msgid "ObjectDB References: %d"
+msgstr "Посилання на ObjectDB: %d"
+
+msgid "Total References: %d"
+msgstr "Загальна кількість посилань: %d"
+
+msgid "ObjectDB Cycles: %d"
+msgstr "Цикли ObjectDB: %d"
+
 msgid "[center]ObjectDB References[center]"
 msgstr "[center]Посилання на ObjectDB[center]"
 
@@ -18861,6 +19054,27 @@ msgstr "Всього об'єктів:"
 
 msgid "Total Nodes:"
 msgstr "Всього вузлів:"
+
+msgid ""
+"Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')"
+"[/i]"
+msgstr ""
+"Кілька кореневих вузлів [i](можливий виклик 'remove_child' без 'queue_free')[/"
+"i]"
+
+msgid ""
+"RefCounted objects only referenced in cycles [i](cycles often indicate a "
+"memory leaks)[/i]"
+msgstr ""
+"Об'єкти RefCounted, на які посилаються лише в циклах [i](цикли часто вказують "
+"на витік пам'яті)[/i]"
+
+msgid ""
+"Scripted objects not referenced by any other objects [i](unreferenced objects "
+"may indicate a memory leak)[/i]"
+msgstr ""
+"Об'єкти сценаріїв, на які не посилаються інші об'єкти [i](об'єкти, на які не "
+"посилаються, можуть свідчити про витік пам'яті)[/i]"
 
 msgid "Generating Snapshot"
 msgstr "Створення знімка"
@@ -21096,6 +21310,13 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D потребує дочірнього вузла XRCamera3D."
 
 msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr ""
+"Зміна масштабу на вузлі XROrigin3D не підтримується. Натомість змініть "
+"масштаб світу."
+
+msgid ""
 "XR shaders are not enabled in project settings. Stereoscopic output is not "
 "supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
 "stereoscopic output."
@@ -21198,15 +21419,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s не можна скинути сюди. Використайте %s для скасування."
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Будь ласка, зверніть увагу, що GraphEdit і GraphNode зазнають значного "
-"рефакторингу в майбутній версії 4.x, що включає зміни API, які порушують "
-"сумісність."
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -21255,6 +21467,9 @@ msgstr ""
 "керування.\n"
 "Скористайтеся контейнером як дочірнім об'єктом (VBox, HBox тощо) або вузлом "
 "Control і встановіть нетиповий мінімальний розмір вручну."
+
+msgid "Drag to resize"
+msgstr "Перетягніть, щоб змінити розмір"
 
 msgid ""
 "This node doesn't have a SubViewport as child, so it can't display its "
@@ -21635,6 +21850,24 @@ msgstr "Не знайдено відповідної функції для: \"%s
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "Варіація '%s' не може бути передана для параметра '%s' у цьому контексті."
+
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to a custom "
+"function. Consider sampling it in the main function and then passing the "
+"vector result to the custom function."
+msgstr ""
+"Не вдається передати багатовидовий семплер текстури як параметр до "
+"користувацької функції. Розгляньте можливість семплерування в основній "
+"функції, а потім передачі векторного результату до користувацької функції."
+
+msgid ""
+"Unable to pass RADIANCE texture sampler as a parameter to a custom function. "
+"Consider sampling it in the main function and then passing the vector result "
+"to the custom function."
+msgstr ""
+"Неможливо передати семплер текстури RADIANCE як параметр до користувацької "
+"функції. Розгляньте можливість семплерування в основній функції, а потім "
+"передачі векторного результату до користувацької функції."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Невідомий ідентифікатор у виразі: '%s'."

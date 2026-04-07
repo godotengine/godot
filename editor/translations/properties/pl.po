@@ -105,7 +105,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-02 12:57+0000\n"
+"PO-Revision-Date: 2026-01-20 09:04+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -115,7 +115,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -2960,6 +2960,9 @@ msgstr "Regulacja wielkości uchwytu"
 msgid "Manipulator Gizmo Opacity"
 msgstr "Regulacja przezroczystości uchwytu"
 
+msgid "Show Gizmo During Rotation"
+msgstr "Pokaż uchwyt podczas obrotu"
+
 msgid "Grid Color"
 msgstr "Kolor siatki"
 
@@ -3001,6 +3004,9 @@ msgstr "Czynnik szybkości przybliżania"
 
 msgid "Ruler Width"
 msgstr "Grubość linijki"
+
+msgid "Auto Resample Delay"
+msgstr "Automatyczne automatycznego przepróbkowania"
 
 msgid "Bone Mapper"
 msgstr "Mapper kości"
@@ -3439,6 +3445,9 @@ msgstr "XR"
 
 msgid "OpenXR"
 msgstr "OpenXR"
+
+msgid "Target API Version"
+msgstr "Docelowa wersja API"
 
 msgid "Default Action Map"
 msgstr "Domyślna mapa akcji"
@@ -8464,6 +8473,12 @@ msgstr "ID menu systemowego"
 msgid "Prefer Native Menu"
 msgstr "Preferuj menu natywne"
 
+msgid "Shrink Height"
+msgstr "Skurcz wysokość"
+
+msgid "Shrink Width"
+msgstr "Skurcz szerokość"
+
 msgid "Fill Mode"
 msgstr "Tryb Wypełnienia"
 
@@ -11072,6 +11087,12 @@ msgstr "Pionowa wskazówka przewijania"
 msgid "Scroll Hint Horizontal"
 msgstr "Pozioma wskazówka przewijania"
 
+msgid "Scroll Hint Vertical Color"
+msgstr "Kolor pionowej wskazówki przewijania"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Kolor poziomej wskazówki przewijania"
+
 msgid "Embedded Border"
 msgstr "Brzeg osadzenia"
 
@@ -11336,6 +11357,9 @@ msgstr "Kolor podświetlonej linii dzieci"
 msgid "Custom Button Font Highlight"
 msgstr "Podświetlenie czcionki niestandardowego przycisku"
 
+msgid "Scroll Hint Color"
+msgstr "Kolor wskazówki przewijania"
+
 msgid "Item Margin"
 msgstr "Margines elementu"
 
@@ -11350,6 +11374,12 @@ msgstr "Prawy wewnętrzny margines elementu"
 
 msgid "Inner Item Margin Top"
 msgstr "Górny wewnętrzny margines elementu"
+
+msgid "Check H Separation"
+msgstr "Poziomy odstęp znaczka"
+
+msgid "Icon H Separation"
+msgstr "Poziomy odstęp ikony"
 
 msgid "Button Margin"
 msgstr "Margines przycisku"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatformVisionOS" inherits="EditorExportPlatformAppleEmbedded" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatformVisionOS" inherits="EditorExportPlatformAppleEmbedded" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exporter for visionOS.
 	</brief_description>
@@ -120,6 +120,9 @@
 		</member>
 		<member name="icons/icon_1024x1024_tinted" type="String" setter="" getter="">
 			Base application icon used to generate other icons, tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="modules/camera" type="bool" setter="" getter="">
+			If [code]true[/code], [CameraServer] module is added to the exported project.
 		</member>
 		<member name="privacy/active_keyboard_access_reasons" type="int" setter="" getter="">
 			The reasons your app use active keyboard API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].

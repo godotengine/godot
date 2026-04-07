@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "render_scene_buffers.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/storage/render_scene_buffers.h"
 
 class RendererLightStorage {
 public:
@@ -51,7 +51,7 @@ public:
 	virtual void light_free(RID p_rid) = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
-	virtual void light_set_param(RID p_light, RS::LightParam p_param, float p_value) = 0;
+	virtual void light_set_param(RID p_light, RSE::LightParam p_param, float p_value) = 0;
 	virtual void light_set_shadow(RID p_light, bool p_enabled) = 0;
 	virtual void light_set_projector(RID p_light, RID p_texture) = 0;
 	virtual void light_set_negative(RID p_light, bool p_enable) = 0;
@@ -60,30 +60,30 @@ public:
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) = 0;
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const = 0;
-	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) = 0;
+	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
-	virtual void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) = 0;
+	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) = 0;
 
-	virtual void light_directional_set_shadow_mode(RID p_light, RS::LightDirectionalShadowMode p_mode) = 0;
+	virtual void light_directional_set_shadow_mode(RID p_light, RSE::LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual bool light_directional_get_blend_splits(RID p_light) const = 0;
-	virtual void light_directional_set_sky_mode(RID p_light, RS::LightDirectionalSkyMode p_mode) = 0;
-	virtual RS::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const = 0;
+	virtual void light_directional_set_sky_mode(RID p_light, RSE::LightDirectionalSkyMode p_mode) = 0;
+	virtual RSE::LightDirectionalSkyMode light_directional_get_sky_mode(RID p_light) const = 0;
 
-	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
-	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
+	virtual RSE::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
+	virtual RSE::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
 
 	virtual bool light_has_shadow(RID p_light) const = 0;
 
 	virtual bool light_has_projector(RID p_light) const = 0;
 
-	virtual RS::LightType light_get_type(RID p_light) const = 0;
+	virtual RSE::LightType light_get_type(RID p_light) const = 0;
 	virtual AABB light_get_aabb(RID p_light) const = 0;
-	virtual float light_get_param(RID p_light, RS::LightParam p_param) = 0;
+	virtual float light_get_param(RID p_light, RSE::LightParam p_param) = 0;
 	virtual Color light_get_color(RID p_light) = 0;
 	virtual bool light_get_reverse_cull_face_mode(RID p_light) const = 0;
-	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) = 0;
+	virtual RSE::LightBakeMode light_get_bake_mode(RID p_light) = 0;
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
 	virtual uint32_t light_get_cull_mask(RID p_light) const = 0;
@@ -107,11 +107,11 @@ public:
 	virtual void reflection_probe_initialize(RID p_rid) = 0;
 	virtual void reflection_probe_free(RID p_rid) = 0;
 
-	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) = 0;
+	virtual void reflection_probe_set_update_mode(RID p_probe, RSE::ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
 	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) = 0;
-	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) = 0;
+	virtual void reflection_probe_set_ambient_mode(RID p_probe, RSE::ReflectionProbeAmbientMode p_mode) = 0;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) = 0;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) = 0;
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) = 0;
@@ -125,7 +125,7 @@ public:
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) = 0;
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const = 0;
-	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const = 0;
+	virtual RSE::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const = 0;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const = 0;
 	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const = 0;
 	virtual Vector3 reflection_probe_get_size(RID p_probe) const = 0;
@@ -177,8 +177,8 @@ public:
 	virtual float lightmap_get_probe_capture_update_speed() const = 0;
 
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
-	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
-	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) = 0;
+	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) = 0;
 
 	/* LIGHTMAP INSTANCE */
 

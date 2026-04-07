@@ -497,6 +497,13 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 
 	@Override
+	public void onDistractionFreeModeChanged(Boolean enabled) {
+		if (parentHost != null) {
+			parentHost.onDistractionFreeModeChanged(enabled);
+		}
+	}
+
+	@Override
 	public BuildProvider getBuildProvider() {
 		if (parentHost != null) {
 			return parentHost.getBuildProvider();

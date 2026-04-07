@@ -33,6 +33,7 @@
 class EditorExportPlatform;
 
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class EditorExportPreset : public RefCounted {
 	GDCLASS(EditorExportPreset, RefCounted);
@@ -69,7 +70,6 @@ private:
 	String exporter;
 	HashSet<String> selected_files;
 	HashMap<String, FileExportMode> customized_files;
-	bool runnable = false;
 	bool dedicated_server = false;
 
 	Vector<String> patches;

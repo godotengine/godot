@@ -96,7 +96,7 @@
 # atahanacar <atahanacar@gmx.com>, 2023.
 # efella <furkanefe911@gmail.com>, 2023.
 # Black <ebubekir23atalay@gmail.com>, 2023.
-# Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023, 2024, 2025.
+# Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023, 2024, 2025, 2026.
 # ErcanPasha <dayanomerercan@gmail.com>, 2023.
 # Yoldaş Ulaş <yutalas@gmail.com>, 2023.
 # Mertcan YILDIRIM <mertcanyildirim463@gmail.com>, 2023.
@@ -127,13 +127,14 @@
 # Aras Ege Gündüz <araszekeriya@hotmail.com>, 2025.
 # Volkan <vnyz2002@gmail.com>, 2026.
 # KiiVoZin <kiivozin@gmail.com>, 2026.
+# Hasan Kara <hasanbeytullahkara@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-12 20:12+0000\n"
-"Last-Translator: KiiVoZin <kiivozin@gmail.com>\n"
+"PO-Revision-Date: 2026-01-23 01:57+0000\n"
+"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -141,16 +142,142 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "Tamam"
 
+msgid "Failed"
+msgstr "Başarısız"
+
+msgid "Unavailable"
+msgstr "Erişilemez"
+
+msgid "Unconfigured"
+msgstr "Yapılandırılmamış"
+
+msgid "Unauthorized"
+msgstr "Yetkilendirilmemiş"
+
+msgid "Parameter out of range"
+msgstr "Parametre değer aralığı dışında"
+
+msgid "Out of memory"
+msgstr "Yetersiz bellek"
+
+msgid "File not found"
+msgstr "Dosya bulunamadı"
+
+msgid "File: Bad drive"
+msgstr "Dosya: Bozuk sürücü"
+
+msgid "File: Bad path"
+msgstr "Dosya: Geçersiz dizin"
+
+msgid "File: Permission denied"
+msgstr "Dosya: İzin reddedildi"
+
+msgid "File already in use"
+msgstr "Dosya zaten kullanımda"
+
+msgid "Can't open file"
+msgstr "Dosya açılamıyor"
+
+msgid "Can't write file"
+msgstr "Dosya yazılamıyor"
+
+msgid "Can't read file"
+msgstr "Dosya okunamyor"
+
+msgid "File unrecognized"
+msgstr "Dosya tanınamadı"
+
+msgid "File corrupt"
+msgstr "Dosya bozuk"
+
+msgid "Missing dependencies for file"
+msgstr "Dosya için eksik bağımlılıklar"
+
+msgid "End of file"
+msgstr "Dosya sonu"
+
+msgid "Can't open"
+msgstr "Açılamıyor"
+
+msgid "Can't create"
+msgstr "Oluşturulamıyor"
+
+msgid "Query failed"
+msgstr "İstek başarısız"
+
+msgid "Already in use"
+msgstr "Zaten kullanımda"
+
 msgid "Locked"
 msgstr "Kilitli"
 
+msgid "Timeout"
+msgstr "Zaman aşımı"
+
+msgid "Can't connect"
+msgstr "Bağlanamıyor"
+
+msgid "Can't resolve"
+msgstr "Çözümlenemedi"
+
+msgid "Can't acquire resource"
+msgstr "Kaynağa erişilemiyor"
+
+msgid "Invalid data"
+msgstr "Geçersiz veri"
+
+msgid "Invalid parameter"
+msgstr "Geçersiz parametre"
+
+msgid "Already exists"
+msgstr "Zaten var"
+
+msgid "Does not exist"
+msgstr "Mevcut değil"
+
+msgid "Can't read database"
+msgstr "Veritabanı okunamıyor"
+
+msgid "Can't write database"
+msgstr "veritabanına yazılamıyor"
+
+msgid "Compilation failed"
+msgstr "Derleme başarısız oldu"
+
+msgid "Link failed"
+msgstr "Bağlantı başarısız oldu"
+
+msgid "Script failed"
+msgstr "Betik başarısız oldu"
+
+msgid "Invalid declaration"
+msgstr "Hatalı tanımlama"
+
+msgid "Duplicate symbol"
+msgstr "Çakışan sembol"
+
+msgid "Parse error"
+msgstr "Söz dizimi hatası"
+
+msgid "Busy"
+msgstr "Meşgul"
+
+msgid "Skip"
+msgstr "Atla"
+
 msgid "Help"
 msgstr "Yardım"
+
+msgid "Bug"
+msgstr "Hata"
+
+msgid "Printer on fire"
+msgstr "Yazıcı alev aldı"
 
 msgid "unset"
 msgstr "ayarlamayı kaldır"
@@ -703,8 +830,20 @@ msgstr "Ayrık"
 msgid "Capture"
 msgstr "Yakala"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space."
+msgstr ""
+"Noktaları seç ve taşı.\n"
+"Sağ Fare Düğmesi: Tıklanan konuma nokta ekle.\n"
+"Shift + Sol Fare Düğmesi + Sürükle: Boşluk içinde harmanlama noktası ayarla."
+
 msgid "Create points."
 msgstr "Noktalar oluştur."
+
+msgid "Set the blending position within the space."
+msgstr "Alan içindeki harmanlama konumunu ayarla."
 
 msgid "Erase points."
 msgstr "Noktaları sil."
@@ -1282,7 +1421,7 @@ msgid "Transition exists!"
 msgstr "Geçiş zaten var!"
 
 msgid "Cannot transition to self!"
-msgstr "Kendisine dönüşemez!"
+msgstr "Kendine geçiş yapılamaz!"
 
 msgid "Cannot transition to \"Start\"!"
 msgstr "'Start' durumuna geçiş yapılamıyor!"
@@ -1830,6 +1969,12 @@ msgstr ""
 "Canlandırmaları oluşturmak ve düzenlemek için bir CanlandırmaOynatıcı "
 "(AnimationPlayer) düğümü seç."
 
+msgid "Add AnimationPlayer"
+msgstr "AnimationPlayer (Canlandırma Oynatıcısı) Ekle"
+
+msgid "Imported Animation"
+msgstr "İçe Aktarılan Animasyon"
+
 msgid "Warning: Editing imported animation"
 msgstr "Uyarı: İçe aktarılan canlandırma düzenleniyor"
 
@@ -2082,6 +2227,14 @@ msgstr "Yaylanan"
 msgid "Ease Type:"
 msgstr "Yumuşatma Tipi:"
 
+msgctxt "Ease Type"
+msgid "Ease In-Out"
+msgstr "İçe-Dışa Yumuşatma"
+
+msgctxt "Ease Type"
+msgid "Ease Out-In"
+msgstr "Dışa-İçe Yumuşatma"
+
 msgid "FPS:"
 msgstr "FPS:"
 
@@ -2105,6 +2258,12 @@ msgstr "Tümünü Seç / Seçimleri Kaldır"
 
 msgid "Copy Selection"
 msgstr "Seçimi Kopyala"
+
+msgid "Key Insertion Error"
+msgstr "Anahtar Ekleme Hatası"
+
+msgid "Imported Animation cannot be edited!"
+msgstr "İçe Aktarılan Animasyon düzenlenemez!"
 
 msgid "Animation Change Keyframe Time"
 msgstr "Canlandırma Anahtar Kare Zamanını Değiştir"
@@ -2186,6 +2345,9 @@ msgstr "Kök"
 
 msgid "AnimationTree"
 msgstr "CanlandırmaAğacı (AnimationTree)"
+
+msgid "Toggle AnimationTree Dock"
+msgstr "AnimationTree (Canlandırma Ağacı) Yuvasını Aç/Kapat"
 
 msgid "Path:"
 msgstr "Yol:"
@@ -2613,6 +2775,9 @@ msgstr "Ses Veri Yolu Yerleşim Düzenini Aç"
 msgid "Error saving file: %s"
 msgstr "Dosya kaydedilirken hata: %s"
 
+msgid "Toggle Audio Dock"
+msgstr "Ses Yuvasını Aç/Kapat"
+
 msgid "Layout:"
 msgstr "Yerleşim Düzeni:"
 
@@ -2648,6 +2813,9 @@ msgstr "İçine Gir"
 
 msgid "Step Over"
 msgstr "Üstünden Geç"
+
+msgid "Step Out"
+msgstr "Dışına Çık"
 
 msgid "Break"
 msgstr "Duraklat"
@@ -2803,6 +2971,9 @@ msgstr "Uzak %s (%d Seçildi)"
 
 msgid "Debugger"
 msgstr "Hata Ayıklayıcı"
+
+msgid "Toggle Debugger Dock"
+msgstr "Hata Ayıklayıcı Yuvasını Aç/Kapat"
 
 msgid "Session %d"
 msgstr "Oturum %d"
@@ -3583,6 +3754,12 @@ msgstr "Bu yuvayı bir sekme sola taşı."
 
 msgid "Close this dock."
 msgstr "Bu yuvayı kapat."
+
+msgid "This dock can't be closed."
+msgstr "Bu yuva kapatılamaz."
+
+msgid "This dock does not support floating."
+msgstr "Bu yuva serbest pencere olmayı desteklemez."
 
 msgid "Make this dock floating."
 msgstr "Bu yuvayı serbest pencere yap."
@@ -6272,6 +6449,9 @@ msgstr ""
 "Dosyaları/Klasörleri projenin dışında tutmak için filtreler\n"
 "(virgülle-ayrılmış, örnek: *.json, *.txt, docs/*)"
 
+msgid "Enable Delta Encoding"
+msgstr "Artışlı Sıkıştırmayı etkinleştir"
+
 msgid "Base Packs:"
 msgstr "Temel Paketler:"
 
@@ -7690,6 +7870,9 @@ msgstr "Çeviri Ekle"
 
 msgid "Lock/Unlock Component Ratio"
 msgstr "Bileşen Oranını Kilitle/Kilidi Aç"
+
+msgid "Left-click to make it unique."
+msgstr "Benzersiz hale getirmek için Sol-tıklayın."
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
@@ -15635,6 +15818,9 @@ msgstr "Sabit Ayarla: %s"
 msgid "Invalid name for varying."
 msgstr "Değişen için geçersiz isim."
 
+msgid "Varying with that name already exists."
+msgstr "Bu isimle bir değişen zaten var."
+
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Mantıksal tip `%s` değişen modu ile kullanılamaz."
 
@@ -19759,15 +19945,6 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s buraya bırakılamaz. İptal etmek için %s tuşunu kullanın."
-
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Lütfen unutmayın; Grafik Düzenleme (GraphEdit) ve Grafik Düğümü (GraphNode), "
-"gelecekteki 4.x sürümünde, uyumluluğu-bozacak API değişikliklerini içeren "
-"kapsamlı bir yeniden düzenleme işleminden geçecekler."
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "

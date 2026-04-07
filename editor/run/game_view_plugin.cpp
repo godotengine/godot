@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
-#include "core/debugger/engine_debugger.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
+#include "core/os/process_id.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -54,6 +56,8 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
+#include "servers/display/display_server.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	if (!is_feature_enabled) {
@@ -62,6 +66,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 
 	Dictionary settings;
 	settings["debugger/max_node_selection"] = EDITOR_GET("debugger/max_node_selection");
+	settings["editors/2d/selection_rectangle_color"] = EDITOR_GET("editors/2d/selection_rectangle_color");
 	settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
 	settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
 	settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
@@ -70,18 +75,52 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
 	settings["box_selection_fill_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
 	settings["box_selection_stroke_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor));
+#ifndef _3D_DISABLED
 	settings["editors/3d/default_fov"] = EDITOR_GET("editors/3d/default_fov");
 	settings["editors/3d/default_z_near"] = EDITOR_GET("editors/3d/default_z_near");
 	settings["editors/3d/default_z_far"] = EDITOR_GET("editors/3d/default_z_far");
 	settings["editors/3d/navigation/invert_x_axis"] = EDITOR_GET("editors/3d/navigation/invert_x_axis");
 	settings["editors/3d/navigation/invert_y_axis"] = EDITOR_GET("editors/3d/navigation/invert_y_axis");
 	settings["editors/3d/navigation/warped_mouse_panning"] = EDITOR_GET("editors/3d/navigation/warped_mouse_panning");
+	settings["editors/3d/navigation/pan_mouse_button"] = EDITOR_GET("editors/3d/navigation/pan_mouse_button");
+	settings["editors/3d/freelook/freelook_navigation_scheme"] = EDITOR_GET("editors/3d/freelook/freelook_navigation_scheme");
 	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
 	settings["editors/3d/freelook/freelook_sensitivity"] = EDITOR_GET("editors/3d/freelook/freelook_sensitivity");
+	settings["editors/3d/freelook/freelook_inertia"] = EDITOR_GET("editors/3d/freelook/freelook_inertia");
+	settings["editors/3d/freelook/freelook_speed_zoom_link"] = EDITOR_GET("editors/3d/freelook/freelook_speed_zoom_link");
+	settings["editors/3d/freelook/freelook_invert_y_axis"] = EDITOR_GET("editors/3d/freelook/freelook_invert_y_axis");
+	settings["editors/3d/navigation/orbit_mouse_button"] = EDITOR_GET("editors/3d/navigation/orbit_mouse_button");
 	settings["editors/3d/navigation_feel/orbit_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
+	settings["editors/3d/navigation_feel/orbit_inertia"] = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
+	settings["editors/3d/navigation/zoom_style"] = EDITOR_GET("editors/3d/navigation/zoom_style");
+	settings["editors/3d/navigation_feel/zoom_inertia"] = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
+	settings["editors/3d/navigation/zoom_mouse_button"] = EDITOR_GET("editors/3d/navigation/zoom_mouse_button");
 	settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
+	settings["editors/3d/navigation_feel/translation_inertia"] = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
+	settings["editors/3d/navigation_feel/angle_snap_threshold"] = EDITOR_GET("editors/3d/navigation_feel/angle_snap_threshold");
+	settings["editors/3d/navigation/emulate_3_button_mouse"] = EDITOR_GET("editors/3d/navigation/emulate_3_button_mouse");
+	settings["editors/3d/navigation/emulate_numpad"] = EDITOR_GET("editors/3d/navigation/emulate_numpad");
 	settings["editors/3d/selection_box_color"] = EDITOR_GET("editors/3d/selection_box_color");
-	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
+	settings["spatial_editor/decrease_fov"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/decrease_fov"));
+	settings["spatial_editor/increase_fov"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/increase_fov"));
+	settings["spatial_editor/reset_fov"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/reset_fov"));
+	settings["spatial_editor/viewport_pan_modifier_1"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_pan_modifier_1"));
+	settings["spatial_editor/viewport_pan_modifier_2"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_pan_modifier_2"));
+	settings["spatial_editor/viewport_orbit_modifier_1"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_orbit_modifier_1"));
+	settings["spatial_editor/viewport_orbit_modifier_2"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_orbit_modifier_2"));
+	settings["spatial_editor/viewport_orbit_snap_modifier_1"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_orbit_snap_modifier_1"));
+	settings["spatial_editor/viewport_orbit_snap_modifier_2"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_orbit_snap_modifier_2"));
+	settings["spatial_editor/viewport_zoom_modifier_1"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_zoom_modifier_1"));
+	settings["spatial_editor/viewport_zoom_modifier_2"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/viewport_zoom_modifier_2"));
+	settings["spatial_editor/freelook_forward"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_forward"));
+	settings["spatial_editor/freelook_backwards"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_backwards"));
+	settings["spatial_editor/freelook_left"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_left"));
+	settings["spatial_editor/freelook_right"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_right"));
+	settings["spatial_editor/freelook_up"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_up"));
+	settings["spatial_editor/freelook_down"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_down"));
+	settings["spatial_editor/freelook_speed_modifier"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier"));
+	settings["spatial_editor/freelook_slow_modifier"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_slow_modifier"));
+#endif // _3D_DISABLED
 
 	Array setup_data;
 	setup_data.append(settings);
@@ -243,6 +282,17 @@ void GameViewDebugger::set_camera_manipulate_mode(EditorDebuggerNode::CameraOver
 
 	if (EditorDebuggerNode::get_singleton()->get_camera_override() != EditorDebuggerNode::OVERRIDE_NONE) {
 		set_camera_override(true);
+	}
+}
+
+void GameViewDebugger::report_window_focused(bool p_focused) {
+	Array message;
+	message.append(p_focused);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:report_window_focused", message);
+		}
 	}
 }
 
@@ -461,7 +511,7 @@ void GameView::_play_pressed() {
 		return;
 	}
 
-	OS::ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
+	ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
 	if (current_process_id == 0) {
 		return;
 	}
@@ -563,7 +613,9 @@ void GameView::_update_debugger_buttons() {
 	suspend_button->set_disabled(empty);
 	camera_override_button->set_disabled(empty);
 	speed_state_button->set_disabled(empty);
-	reset_speed_button->set_disabled(empty);
+	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
+
+	reset_speed_button->set_disabled(empty || disabled);
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 
@@ -678,12 +730,11 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 }
 
 void GameView::_reset_time_scales() {
-	if (!is_visible_in_tree()) {
-		return;
-	}
 	time_scale_index = DEFAULT_TIME_SCALE_INDEX;
 	debugger->reset_time_scale();
-	_update_speed_buttons();
+	if (is_inside_tree()) {
+		_update_speed_buttons();
+	}
 }
 
 void GameView::_speed_state_menu_pressed(int p_id) {
@@ -723,7 +774,7 @@ void GameView::_update_speed_state_size() {
 }
 
 GameView::EmbedAvailability GameView::_get_embed_available() {
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING)) {
 		return EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED;
 	}
 	if (get_tree()->get_root()->is_embedding_subwindows()) {
@@ -750,14 +801,14 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 		return EMBED_NOT_AVAILABLE_MAXIMIZED;
 	}
 
-	DisplayServer::WindowMode window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED) {
+	DisplayServerEnums::WindowMode window_mode = (DisplayServerEnums::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_MINIMIZED) {
 		return EMBED_NOT_AVAILABLE_MINIMIZED;
 	}
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MAXIMIZED) {
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_MAXIMIZED) {
 		return EMBED_NOT_AVAILABLE_MAXIMIZED;
 	}
-	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServer::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+	if (window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServerEnums::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		return EMBED_NOT_AVAILABLE_FULLSCREEN;
 	}
 
@@ -945,7 +996,7 @@ void GameView::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING)) {
 				// Embedding available.
 				int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
 				switch (game_mode) {
@@ -984,6 +1035,14 @@ void GameView::_notification(int p_what) {
 
 			_update_ui();
 		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			if (embed_on_play) {
+				debugger->report_window_focused(p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN);
+			}
+		} break;
+
 		case NOTIFICATION_WM_POSITION_CHANGED: {
 			if (window_wrapper->get_window_enabled()) {
 				_update_floating_window_settings();
@@ -1099,7 +1158,7 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 	// Add the editor window's native ID so the started game can directly set it as its parent.
 	List<String>::Element *N = r_arguments.insert_before(user_args_element, "--wid");
-	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
+	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, get_window()->get_window_id())));
 
 #if MACOS_ENABLED
 	N = r_arguments.insert_after(N, "--embedded");
@@ -1565,8 +1624,7 @@ GameViewPluginBase::GameViewPluginBase() {
 #endif
 }
 
-GameViewPlugin::GameViewPlugin() :
-		GameViewPluginBase() {
+GameViewPlugin::GameViewPlugin() {
 #ifndef ANDROID_ENABLED
 	Ref<GameViewDebugger> game_view_debugger;
 	game_view_debugger.instantiate();

@@ -32,15 +32,17 @@
 
 #ifdef UNIX_ENABLED
 
-#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
-#include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering/rendering_server.h"
+
+#ifndef UNIX_SOCKET_UNAVAILABLE
+#include "drivers/unix/ip_unix.h"
+#include "drivers/unix/net_socket_unix.h"
+#endif
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -76,9 +78,9 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <cerrno>
 #include <csignal>
-#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -87,7 +89,7 @@
 #define RTLD_DEEPBIND 0
 #endif
 
-#ifndef SANITIZERS_ENABLED
+#ifndef ASAN_ENABLED
 #define GODOT_DLOPEN_MODE RTLD_NOW | RTLD_DEEPBIND
 #else
 #define GODOT_DLOPEN_MODE RTLD_NOW
@@ -711,23 +713,23 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 }
 
 Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
-#define CLEAN_PIPES           \
-	if (pipe_in[0] >= 0) {    \
-		::close(pipe_in[0]);  \
-	}                         \
-	if (pipe_in[1] >= 0) {    \
-		::close(pipe_in[1]);  \
-	}                         \
-	if (pipe_out[0] >= 0) {   \
+#define CLEAN_PIPES \
+	if (pipe_in[0] >= 0) { \
+		::close(pipe_in[0]); \
+	} \
+	if (pipe_in[1] >= 0) { \
+		::close(pipe_in[1]); \
+	} \
+	if (pipe_out[0] >= 0) { \
 		::close(pipe_out[0]); \
-	}                         \
-	if (pipe_out[1] >= 0) {   \
+	} \
+	if (pipe_out[1] >= 0) { \
 		::close(pipe_out[1]); \
-	}                         \
-	if (pipe_err[0] >= 0) {   \
+	} \
+	if (pipe_err[0] >= 0) { \
 		::close(pipe_err[0]); \
-	}                         \
-	if (pipe_err[1] >= 0) {   \
+	} \
+	if (pipe_err[1] >= 0) { \
 		::close(pipe_err[1]); \
 	}
 
@@ -858,8 +860,8 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 		// Thread is still running.
 		return true;
 	}
-
-	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
+	ERR_FAIL_COND_V_MSG(result != 0 && errno == ECHILD, false, vformat("The process %d does not exist or is not a child of the calling process.", (int)p_pid));
+	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("waitpid for process %d failed with errno: %d", (int)p_pid, errno));
 
 	// Thread exited normally.
 	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
@@ -1058,7 +1060,7 @@ Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handl
 		path = get_executable_path().get_base_dir().path_join("../lib").path_join(p_path.get_file());
 	}
 
-	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	ERR_FAIL_COND_V_MSG(!FileAccess::exists(path), ERR_FILE_NOT_FOUND, vformat("Can't open dynamic library, file not found: '%s'.", p_path));
 
 	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
@@ -1206,6 +1208,19 @@ String OS_Unix::get_executable_path() const {
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();
 #endif
+}
+
+String OS_Unix::expand_path(const String &p_path) const {
+	String path = p_path;
+
+	if (path.begins_with("~/") || path == "~") {
+		String home = get_environment("HOME");
+		if (!home.is_empty()) {
+			path = home + path.substr(1);
+		}
+	}
+
+	return path;
 }
 
 void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {

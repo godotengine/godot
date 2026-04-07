@@ -31,7 +31,7 @@
 #include <utility>
 
 using namespace std;
-using namespace spv;
+using namespace SPIRV_CROSS_SPV_HEADER_NAMESPACE;
 using namespace SPIRV_CROSS_NAMESPACE;
 
 Compiler::Compiler(vector<uint32_t> ir_)
@@ -280,6 +280,9 @@ bool Compiler::block_is_pure(const SPIRBlock &block)
 			// This is a global side effect of the function.
 			return false;
 
+		case OpTensorReadARM:
+			return false;
+
 		case OpExtInst:
 		{
 			uint32_t extension_set = ops[2];
@@ -373,6 +376,7 @@ void Compiler::register_global_read_dependencies(const SPIRBlock &block, uint32_
 
 		case OpLoad:
 		case OpCooperativeMatrixLoadKHR:
+		case OpCooperativeVectorLoadNV:
 		case OpImageRead:
 		{
 			// If we're in a storage class which does not get invalidated, adding dependencies here is no big deal.
@@ -624,7 +628,7 @@ bool Compiler::is_immutable(uint32_t id) const
 		return false;
 }
 
-static inline bool storage_class_is_interface(spv::StorageClass storage)
+static inline bool storage_class_is_interface(StorageClass storage)
 {
 	switch (storage)
 	{
@@ -657,8 +661,8 @@ bool Compiler::is_hidden_variable(const SPIRVariable &var, bool include_builtins
 
 	// In SPIR-V 1.4 and up we must also use the active variable interface to disable global variables
 	// which are not part of the entry point.
-	if (ir.get_spirv_version() >= 0x10400 && var.storage != spv::StorageClassGeneric &&
-	    var.storage != spv::StorageClassFunction && !interface_variable_exists_in_entry_point(var.self))
+	if (ir.get_spirv_version() >= 0x10400 && var.storage != StorageClassGeneric &&
+	    var.storage != StorageClassFunction && !interface_variable_exists_in_entry_point(var.self))
 	{
 		return true;
 	}
@@ -736,6 +740,14 @@ bool Compiler::is_pointer(const SPIRType &type) const
 bool Compiler::is_physical_pointer(const SPIRType &type) const
 {
 	return type.op == OpTypePointer && type.storage == StorageClassPhysicalStorageBuffer;
+}
+
+bool Compiler::is_physical_or_buffer_pointer(const SPIRType &type) const
+{
+	return type.op == OpTypePointer &&
+	       (type.storage == StorageClassPhysicalStorageBuffer || type.storage == StorageClassUniform ||
+	        type.storage == StorageClassStorageBuffer || type.storage == StorageClassWorkgroup ||
+	        type.storage == StorageClassPushConstant);
 }
 
 bool Compiler::is_physical_pointer_to_buffer_block(const SPIRType &type) const
@@ -1152,6 +1164,11 @@ ShaderResources Compiler::get_shader_resources(const unordered_set<VariableID> *
 			{
 				res.acceleration_structures.push_back({ var.self, var.basetype, type.self, get_name(var.self) });
 			}
+			// Tensors
+			else if (type.basetype == SPIRType::Tensor)
+			{
+				res.tensors.push_back({ var.self, var.basetype, type.self, get_name(var.self) });
+			}
 			else
 			{
 				res.gl_plain_uniforms.push_back({ var.self, var.basetype, type.self, get_name(var.self) });
@@ -1169,11 +1186,8 @@ bool Compiler::type_is_top_level_block(const SPIRType &type) const
 	return has_decoration(type.self, DecorationBlock) || has_decoration(type.self, DecorationBufferBlock);
 }
 
-bool Compiler::type_is_block_like(const SPIRType &type) const
+bool Compiler::type_is_explicit_layout(const SPIRType &type) const
 {
-	if (type_is_top_level_block(type))
-		return true;
-
 	if (type.basetype == SPIRType::Struct)
 	{
 		// Block-like types may have Offset decorations.
@@ -1183,6 +1197,14 @@ bool Compiler::type_is_block_like(const SPIRType &type) const
 	}
 
 	return false;
+}
+
+bool Compiler::type_is_block_like(const SPIRType &type) const
+{
+	if (type_is_top_level_block(type))
+		return true;
+	else
+		return type_is_explicit_layout(type);
 }
 
 void Compiler::parse_fixup()
@@ -1327,7 +1349,7 @@ const SPIRType &Compiler::get_pointee_type(uint32_t type_id) const
 
 uint32_t Compiler::get_variable_data_type_id(const SPIRVariable &var) const
 {
-	if (var.phi_variable || var.storage == spv::StorageClass::StorageClassAtomicCounter)
+	if (var.phi_variable || var.storage == StorageClassAtomicCounter)
 		return var.basetype;
 	return get_pointee_type_id(var.basetype);
 }
@@ -1364,7 +1386,7 @@ bool Compiler::is_sampled_image_type(const SPIRType &type)
 	       type.image.dim != DimBuffer;
 }
 
-void Compiler::set_member_decoration_string(TypeID id, uint32_t index, spv::Decoration decoration,
+void Compiler::set_member_decoration_string(TypeID id, uint32_t index, Decoration decoration,
                                             const std::string &argument)
 {
 	ir.set_member_decoration_string(id, index, decoration, argument);
@@ -1425,7 +1447,7 @@ void Compiler::unset_member_decoration(TypeID id, uint32_t index, Decoration dec
 	ir.unset_member_decoration(id, index, decoration);
 }
 
-void Compiler::set_decoration_string(ID id, spv::Decoration decoration, const std::string &argument)
+void Compiler::set_decoration_string(ID id, Decoration decoration, const std::string &argument)
 {
 	ir.set_decoration_string(id, decoration, argument);
 }
@@ -1588,7 +1610,7 @@ void Compiler::unset_decoration(ID id, Decoration decoration)
 	ir.unset_decoration(id, decoration);
 }
 
-bool Compiler::get_binary_offset_for_decoration(VariableID id, spv::Decoration decoration, uint32_t &word_offset) const
+bool Compiler::get_binary_offset_for_decoration(VariableID id, Decoration decoration, uint32_t &word_offset) const
 {
 	auto *m = ir.find_meta(id);
 	if (!m)
@@ -1893,6 +1915,15 @@ bool Compiler::traverse_all_reachable_opcodes(const SPIRBlock &block, OpcodeHand
 	handler.set_current_block(block);
 	handler.rearm_current_block(block);
 
+	if (handler.enable_result_types)
+	{
+		for (auto &phi: block.phi_variables)
+		{
+			auto &v = get<SPIRVariable>(phi.function_variable);
+			handler.result_types[phi.function_variable] = v.basetype;
+		}
+	}
+
 	// Ideally, perhaps traverse the CFG instead of all blocks in order to eliminate dead blocks,
 	// but this shouldn't be a problem in practice unless the SPIR-V is doing insane things like recursing
 	// inside dead blocks ...
@@ -1904,11 +1935,24 @@ bool Compiler::traverse_all_reachable_opcodes(const SPIRBlock &block, OpcodeHand
 		if (!handler.handle(op, ops, i.length))
 			return false;
 
+		if (handler.enable_result_types)
+		{
+			// If it has one, keep track of the instruction's result type, mapped by ID
+			uint32_t result_type, result_id;
+			if (instruction_to_result_type(result_type, result_id, op, ops, i.length))
+				handler.result_types[result_id] = result_type;
+		}
+
 		if (op == OpFunctionCall)
 		{
 			auto &func = get<SPIRFunction>(ops[2]);
 			if (handler.follow_function_call(func))
 			{
+				if (handler.enable_result_types)
+					for (auto &arg : func.arguments)
+						if (!arg.alias_global_variable)
+							handler.result_types[arg.id] = arg.type;
+
 				if (!handler.begin_function_scope(ops, i.length))
 					return false;
 				if (!traverse_all_reachable_opcodes(get<SPIRFunction>(ops[2]), handler))
@@ -2443,7 +2487,7 @@ uint32_t Compiler::get_work_group_size_specialization_constants(SpecializationCo
 	return execution.workgroup_size.constant;
 }
 
-uint32_t Compiler::get_execution_mode_argument(spv::ExecutionMode mode, uint32_t index) const
+uint32_t Compiler::get_execution_mode_argument(ExecutionMode mode, uint32_t index) const
 {
 	auto &execution = get_entry_point();
 	switch (mode)
@@ -2629,14 +2673,14 @@ SmallVector<EntryPoint> Compiler::get_entry_points_and_stages() const
 	return entries;
 }
 
-void Compiler::rename_entry_point(const std::string &old_name, const std::string &new_name, spv::ExecutionModel model)
+void Compiler::rename_entry_point(const std::string &old_name, const std::string &new_name, ExecutionModel model)
 {
 	auto &entry = get_entry_point(old_name, model);
 	entry.orig_name = new_name;
 	entry.name = new_name;
 }
 
-void Compiler::set_entry_point(const std::string &name, spv::ExecutionModel model)
+void Compiler::set_entry_point(const std::string &name, ExecutionModel model)
 {
 	auto &entry = get_entry_point(name, model);
 	ir.default_entry_point = entry.self;
@@ -3332,7 +3376,7 @@ void Compiler::analyze_parameter_preservation(
 
 Compiler::AnalyzeVariableScopeAccessHandler::AnalyzeVariableScopeAccessHandler(Compiler &compiler_,
                                                                                SPIRFunction &entry_)
-    : compiler(compiler_)
+    : OpcodeHandler(compiler_)
     , entry(entry_)
 {
 }
@@ -3450,11 +3494,11 @@ bool Compiler::AnalyzeVariableScopeAccessHandler::handle_terminator(const SPIRBl
 	return true;
 }
 
-bool Compiler::AnalyzeVariableScopeAccessHandler::handle(spv::Op op, const uint32_t *args, uint32_t length)
+bool Compiler::AnalyzeVariableScopeAccessHandler::handle(Op op, const uint32_t *args, uint32_t length)
 {
 	// Keep track of the types of temporaries, so we can hoist them out as necessary.
 	uint32_t result_type = 0, result_id = 0;
-	if (compiler.instruction_to_result_type(result_type, result_id, op, args, length))
+	if (instruction_to_result_type(result_type, result_id, op, args, length))
 	{
 		// For some opcodes, we will need to override the result id.
 		// If we need to hoist the temporary, the temporary type is the input, not the result.
@@ -3797,7 +3841,7 @@ bool Compiler::AnalyzeVariableScopeAccessHandler::handle(spv::Op op, const uint3
 }
 
 Compiler::StaticExpressionAccessHandler::StaticExpressionAccessHandler(Compiler &compiler_, uint32_t variable_id_)
-    : compiler(compiler_)
+    : OpcodeHandler(compiler_)
     , variable_id(variable_id_)
 {
 }
@@ -3807,7 +3851,7 @@ bool Compiler::StaticExpressionAccessHandler::follow_function_call(const SPIRFun
 	return false;
 }
 
-bool Compiler::StaticExpressionAccessHandler::handle(spv::Op op, const uint32_t *args, uint32_t length)
+bool Compiler::StaticExpressionAccessHandler::handle(Op op, const uint32_t *args, uint32_t length)
 {
 	switch (op)
 	{
@@ -4338,6 +4382,7 @@ bool Compiler::may_read_undefined_variable_in_block(const SPIRBlock &block, uint
 
 		case OpCopyObject:
 		case OpLoad:
+		case OpCooperativeVectorLoadNV:
 		case OpCooperativeMatrixLoadKHR:
 			if (ops[2] == var)
 				return true;
@@ -4366,7 +4411,7 @@ bool Compiler::may_read_undefined_variable_in_block(const SPIRBlock &block, uint
 	return true;
 }
 
-bool Compiler::GeometryEmitDisocveryHandler::handle(spv::Op opcode, const uint32_t *, uint32_t)
+bool Compiler::GeometryEmitDisocveryHandler::handle(Op opcode, const uint32_t *, uint32_t)
 {
 	if (opcode == OpEmitVertex || opcode == OpEndPrimitive)
 	{
@@ -4384,8 +4429,9 @@ bool Compiler::GeometryEmitDisocveryHandler::begin_function_scope(const uint32_t
 	return true;
 }
 
-bool Compiler::GeometryEmitDisocveryHandler::end_function_scope([[maybe_unused]] const uint32_t *stream, uint32_t)
+bool Compiler::GeometryEmitDisocveryHandler::end_function_scope(const uint32_t *stream, uint32_t)
 {
+	(void)stream;
 	assert(function_stack.back() == &compiler.get<SPIRFunction>(stream[2]));
 	function_stack.pop_back();
 
@@ -4506,7 +4552,7 @@ void Compiler::ActiveBuiltinHandler::add_if_builtin_or_block(uint32_t id)
 	add_if_builtin(id, true);
 }
 
-bool Compiler::ActiveBuiltinHandler::handle(spv::Op opcode, const uint32_t *args, uint32_t length)
+bool Compiler::ActiveBuiltinHandler::handle(Op opcode, const uint32_t *args, uint32_t length)
 {
 	switch (opcode)
 	{
@@ -4701,7 +4747,7 @@ void Compiler::analyze_image_and_sampler_usage()
 			comparison_ids.insert(combined.combined_id);
 }
 
-bool Compiler::CombinedImageSamplerDrefHandler::handle(spv::Op opcode, const uint32_t *args, uint32_t)
+bool Compiler::CombinedImageSamplerDrefHandler::handle(Op opcode, const uint32_t *args, uint32_t)
 {
 	// Mark all sampled images which are used with Dref.
 	switch (opcode)
@@ -4810,11 +4856,11 @@ void Compiler::build_function_control_flow_graphs_and_analyze()
 }
 
 Compiler::CFGBuilder::CFGBuilder(Compiler &compiler_)
-    : compiler(compiler_)
+    : OpcodeHandler(compiler_)
 {
 }
 
-bool Compiler::CFGBuilder::handle(spv::Op, const uint32_t *, uint32_t)
+bool Compiler::CFGBuilder::handle(Op, const uint32_t *, uint32_t)
 {
 	return true;
 }
@@ -4990,7 +5036,7 @@ void Compiler::make_constant_null(uint32_t id, uint32_t type)
 	}
 }
 
-const SmallVector<spv::Capability> &Compiler::get_declared_capabilities() const
+const SmallVector<Capability> &Compiler::get_declared_capabilities() const
 {
 	return ir.declared_capabilities;
 }
@@ -5065,7 +5111,7 @@ bool Compiler::reflection_ssbo_instance_name_is_significant() const
 	return aliased_ssbo_types;
 }
 
-bool Compiler::instruction_to_result_type(uint32_t &result_type, uint32_t &result_id, spv::Op op,
+bool Compiler::instruction_to_result_type(uint32_t &result_type, uint32_t &result_id, Op op,
                                           const uint32_t *args, uint32_t length)
 {
 	if (length < 2)
@@ -5112,7 +5158,7 @@ Bitset Compiler::combined_decoration_for_member(const SPIRType &type, uint32_t i
 	return flags;
 }
 
-bool Compiler::is_desktop_only_format(spv::ImageFormat format)
+bool Compiler::is_desktop_only_format(ImageFormat format)
 {
 	switch (format)
 	{
@@ -5155,7 +5201,7 @@ bool Compiler::is_depth_image(const SPIRType &type, uint32_t id) const
 bool Compiler::type_is_opaque_value(const SPIRType &type) const
 {
 	return !type.pointer && (type.basetype == SPIRType::SampledImage || type.basetype == SPIRType::Image ||
-	                         type.basetype == SPIRType::Sampler);
+	                         type.basetype == SPIRType::Sampler || type.basetype == SPIRType::Tensor);
 }
 
 // Make these member functions so we can easily break on any force_recompile events.
@@ -5182,7 +5228,7 @@ void Compiler::clear_force_recompile()
 }
 
 Compiler::PhysicalStorageBufferPointerHandler::PhysicalStorageBufferPointerHandler(Compiler &compiler_)
-    : compiler(compiler_)
+    : OpcodeHandler(compiler_)
 {
 }
 
@@ -5231,7 +5277,7 @@ bool Compiler::PhysicalStorageBufferPointerHandler::type_is_bda_block_entry(uint
 
 uint32_t Compiler::PhysicalStorageBufferPointerHandler::get_minimum_scalar_alignment(const SPIRType &type) const
 {
-	if (type.storage == spv::StorageClassPhysicalStorageBuffer)
+	if (type.storage == StorageClassPhysicalStorageBuffer)
 		return 8;
 	else if (type.basetype == SPIRType::Struct)
 	{
@@ -5473,6 +5519,7 @@ bool Compiler::InterlockedResourceAccessHandler::handle(Op opcode, const uint32_
 	{
 	case OpLoad:
 	case OpCooperativeMatrixLoadKHR:
+	case OpCooperativeVectorLoadNV:
 	{
 		if (length < 3)
 			return false;
@@ -5551,6 +5598,7 @@ bool Compiler::InterlockedResourceAccessHandler::handle(Op opcode, const uint32_
 	case OpImageWrite:
 	case OpAtomicStore:
 	case OpCooperativeMatrixStoreKHR:
+	case OpCooperativeVectorStoreNV:
 	{
 		if (length < 1)
 			return false;
@@ -5747,3 +5795,13 @@ void Compiler::add_loop_level()
 {
 	current_loop_level++;
 }
+
+const SPIRType *Compiler::OpcodeHandler::get_expression_result_type(uint32_t id) const
+{
+	auto itr = result_types.find(id);
+	if (itr == result_types.end())
+		return nullptr;
+
+	return &compiler.get<SPIRType>(itr->second);
+}
+

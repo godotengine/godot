@@ -101,7 +101,7 @@
 # Janosch Lion <janorico@posteo.de>, 2023.
 # aligator <johannes.hoermann@t-online.de>, 2023.
 # Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
-# Wuzzy <Wuzzy@disroot.org>, 2023, 2024, 2025.
+# Wuzzy <Wuzzy@disroot.org>, 2023, 2024, 2025, 2026.
 # marv1nb <marvin_baumann@outlook.com>, 2023.
 # Joshiy13 <weidanzjoshua@gmail.com>, 2023.
 # Emil Krebs <emil.krebs@typefox.io>, 2023.
@@ -136,8 +136,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-01 16:11+0000\n"
-"Last-Translator: Marek J <marek.workspace@gmail.com>\n"
+"PO-Revision-Date: 2026-01-14 10:15+0000\n"
+"Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -145,16 +145,154 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2-dev\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Fehlgeschlagen"
+
+msgid "Unavailable"
+msgstr "Nicht verfügbar"
+
+msgid "Unconfigured"
+msgstr "Nicht konfiguriert"
+
+msgid "Unauthorized"
+msgstr "Nicht authorisiert"
+
+msgid "Parameter out of range"
+msgstr "Parameter außerhalb des Wertebereichs"
+
+msgid "Out of memory"
+msgstr "Kein Speicher mehr"
+
+msgid "File not found"
+msgstr "Datei nicht gefunden"
+
+msgid "File: Bad drive"
+msgstr "Datei: Schlechtes Laufwerk"
+
+msgid "File: Bad path"
+msgstr "Datei: Schlechter Pfad"
+
+msgid "File: Permission denied"
+msgstr "Datei: Erlaubnis verweigert"
+
+msgid "File already in use"
+msgstr "Datei wird bereits benutzt"
+
+msgid "Can't open file"
+msgstr "Datei kann nicht geöffnet werden"
+
+msgid "Can't write file"
+msgstr "Datei kann nicht geschrieben werden"
+
+msgid "Can't read file"
+msgstr "Datei kann nicht gelesen werden"
+
+msgid "File unrecognized"
+msgstr "Datei nicht erkannt"
+
+msgid "File corrupt"
+msgstr "Datei kaputt"
+
+msgid "Missing dependencies for file"
+msgstr "Fehlende Abhängigkeiten für Datei"
+
+msgid "End of file"
+msgstr "Ende der Datei"
+
+msgid "Can't open"
+msgstr "Kann nicht öffnen"
+
+msgid "Can't create"
+msgstr "Kann nicht erstellen"
+
+msgid "Query failed"
+msgstr "Anfrage fehlgeschlagen"
+
+msgid "Already in use"
+msgstr "Bereits in Benutzung"
+
 msgid "Locked"
 msgstr "Gesperrt"
 
+msgid "Timeout"
+msgstr "Zeitüberschreitung"
+
+msgid "Can't connect"
+msgstr "Kann nicht verbinden"
+
+msgid "Can't resolve"
+msgstr "Kann nicht auflösen"
+
+msgid "Connection error"
+msgstr "Verbindungsfehler"
+
+msgid "Can't acquire resource"
+msgstr "Ressource kann nicht beschafft werden"
+
+msgid "Can't fork"
+msgstr "Kann nicht forken"
+
+msgid "Invalid data"
+msgstr "Ungültige Daten"
+
+msgid "Invalid parameter"
+msgstr "Ungültiger Parameter"
+
+msgid "Already exists"
+msgstr "Existiert bereits"
+
+msgid "Does not exist"
+msgstr "Existiert nicht"
+
+msgid "Can't read database"
+msgstr "Kann Datenbank nicht lesen"
+
+msgid "Can't write database"
+msgstr "Kann Datenbank nicht schreiben"
+
+msgid "Compilation failed"
+msgstr "Kompilierung fehlgeschlagen"
+
+msgid "Method not found"
+msgstr "Methode nicht gefunden"
+
+msgid "Link failed"
+msgstr "Verbindung fehlgeschlagen"
+
+msgid "Script failed"
+msgstr "Skript fehlgeschlagen"
+
+msgid "Cyclic link detected"
+msgstr "Zyklische Verbindung erkannt"
+
+msgid "Invalid declaration"
+msgstr "Ungültige Deklaration"
+
+msgid "Duplicate symbol"
+msgstr "Dupliziertes Symbol"
+
+msgid "Parse error"
+msgstr "Parse-Fehler"
+
+msgid "Busy"
+msgstr "Beschäftigt"
+
+msgid "Skip"
+msgstr "Überspringen"
+
 msgid "Help"
 msgstr "Hilfe"
+
+msgid "Bug"
+msgstr "Fehler"
+
+msgid "Printer on fire"
+msgstr "Drucker brennt"
 
 msgid "unset"
 msgstr "nicht gesetzt"
@@ -1618,6 +1756,9 @@ msgstr "Balanciert"
 msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
 msgstr "Gespiegelt"
+
+msgid "Handle mode: %s"
+msgstr "Griffmodus: %s"
 
 msgid "Stream:"
 msgstr "Stream:"
@@ -6767,6 +6908,12 @@ msgstr "Abhängigkeiteneditor"
 msgid "Owners of: %s (Total: %d)"
 msgstr "Besitzer von: %s (Insgesamt: %d)"
 
+msgid "No owners found for: %s"
+msgstr "Keine Eigentümer gefunden für: %s"
+
+msgid "Owners List"
+msgstr "Eigentümerliste"
+
 msgid "Localization remap"
 msgstr "Lokalisierungs-Neuzuweisung"
 
@@ -7171,6 +7318,9 @@ msgstr "Ressource auswählen"
 
 msgid "Select Scene"
 msgstr "Szene auswählen"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "Rekursion erkannt, Sofortvorschau fehlgeschlagen."
 
 msgid "Instant Preview"
 msgstr "Sofortvorschau"
@@ -11776,6 +11926,24 @@ msgstr ""
 "Dieser Debug-Zeichenmodus wird nur unterstützt, wenn der Forward+-Renderer "
 "benutzt wird."
 
+msgid "X: %s"
+msgstr "X: %s"
+
+msgid "Y: %s"
+msgstr "Y: %s"
+
+msgid "Z: %s"
+msgstr "Z: %s"
+
+msgid "Size: %s (%.1fMP)"
+msgstr "Größe: %s (%.1fMP)"
+
+msgid "Objects: %d"
+msgstr "Objekte: %d"
+
+msgid "Primitives: %d"
+msgstr "Primitiven: %d"
+
 msgid "Draw Calls: %d"
 msgstr "Zeichenaufrufe: %d"
 
@@ -11949,6 +12117,16 @@ msgstr ""
 
 msgid "SDFGI Probes"
 msgstr "SDFGI-Probes"
+
+msgid ""
+"Left-click a SDFGI probe to display its occlusion information (white = not "
+"occluded, red = fully occluded).\n"
+"Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"Ein SDFGI-Probe linksklicken, um seine Occlusion-Information anzuzeigen (weiß "
+"= nicht verdeckt, rot = vollständig verdeckt).\n"
+"Erfordert, dass SDFGI in der Environment aktiviert wurde, um einen sichtbaren "
+"Effekt zu haben."
 
 msgid "Scene Luminance"
 msgstr "Szenenluminanz"
@@ -13231,6 +13409,9 @@ msgstr "Auswahl zentrieren"
 msgid "Frame Selection"
 msgstr "Frame-Auswahl"
 
+msgid "Auto Resample CanvasItems"
+msgstr "CanvasItems automatisch samplen"
+
 msgid "Preview Canvas Scale"
 msgstr "Vorschau Canvas-Skalierung"
 
@@ -14300,7 +14481,7 @@ msgid "Check Item"
 msgstr "Checkbox Element"
 
 msgid "Checked Item"
-msgstr "Markiertes Checkbox Element"
+msgstr "Abgehaktes Element"
 
 msgid "Radio Item"
 msgstr "Auswahlelement"
@@ -19102,6 +19283,18 @@ msgstr "ObjectDB-Referenzen + native Referenzen"
 msgid "Cycles detected in the ObjectDB"
 msgstr "Erkannte Zyklen in der ObjectDB"
 
+msgid "Native References: %d"
+msgstr "Native Referenzen: %d"
+
+msgid "ObjectDB References: %d"
+msgstr "ObjectDB-Referenzen: %d"
+
+msgid "Total References: %d"
+msgstr "Referenzen gesamt: %d"
+
+msgid "ObjectDB Cycles: %d"
+msgstr "ObjectDB-Zyklen: %d"
+
 msgid "[center]ObjectDB References[center]"
 msgstr "[center]ObjectDB-Referenzen[center]"
 
@@ -19167,6 +19360,27 @@ msgstr "Objekte gesamt:"
 
 msgid "Total Nodes:"
 msgstr "Nodes gesamt:"
+
+msgid ""
+"Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')"
+"[/i]"
+msgstr ""
+"Mehrere Root-Nodes ([i](möglicher Aufruf von ‚remove_child‘ ohne ‚queue_free‘)"
+"[/i]"
+
+msgid ""
+"RefCounted objects only referenced in cycles [i](cycles often indicate a "
+"memory leaks)[/i]"
+msgstr ""
+"RefCounted-Objekte, die nur in Zyklen referenziert werden [i](Zyklen weisen "
+"oft auf Memory-Leaks hin)[/i]"
+
+msgid ""
+"Scripted objects not referenced by any other objects [i](unreferenced objects "
+"may indicate a memory leak)[/i]"
+msgstr ""
+"Geskriptete Objekte, die von keinen anderen Objekten referenziert werden [i]"
+"(unreferenzierte Objekte können auf ein Memory-Leak hinweisen)[/i]"
 
 msgid "Generating Snapshot"
 msgstr "Snapshot erzeugen"
@@ -19350,7 +19564,9 @@ msgid "Edit binding modifiers"
 msgstr "Zuweisungsmodifizierer bearbeiten"
 
 msgid "Note: This interaction profile requires extension %s support."
-msgstr "Hinweis: Dieses Interaktionsprofil benötigt die Erweiterung %s."
+msgstr ""
+"Hinweis: Dieses Interaktionsprofil benötigt Unterstützung für die Erweiterung "
+"%s."
 
 msgid "Add binding"
 msgstr "Zuweisung hinzufügen"
@@ -21448,6 +21664,13 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D benötigt ein XRCamera3D-Child-Node."
 
 msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr ""
+"Die Skalierung des XROrigin3D-Nodes wird nicht unterstützt. Stattdessen "
+"sollte die Weltskalierung geändert werden."
+
+msgid ""
 "XR shaders are not enabled in project settings. Stereoscopic output is not "
 "supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
 "stereoscopic output."
@@ -21550,15 +21773,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s kann hier nicht abgelegt werden. %s zum Abbrechen."
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Bitte beachten, dass GraphEdit und GraphNode starker Restrukturierung in "
-"einer zukünftigen Version 4.x unterzogen werden, was kompatibilitätsbrechende "
-"Änderungen der API mit sich bringen kann."
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -21606,6 +21820,9 @@ msgstr ""
 "ScrollContainer soll mit einem einzigen Child-Control arbeiten.\n"
 "Verwenden Sie einen Container als Child-Element (VBox, HBox, etc.) oder ein "
 "Control und legen Sie die benutzerdefinierte Mindestgröße manuell fest."
+
+msgid "Drag to resize"
+msgstr "Ziehen, um Größe anzupassen"
 
 msgid ""
 "This node doesn't have a SubViewport as child, so it can't display its "
@@ -21993,6 +22210,26 @@ msgstr "Keine passende Funktion gefunden für: ‚%s‘."
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "Varying ‚%s‘ darf in diesem Kontext nicht als Parameter ‚%s‘ übergeben werden."
+
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to a custom "
+"function. Consider sampling it in the main function and then passing the "
+"vector result to the custom function."
+msgstr ""
+"Ein Multiview-Textur-Sampler kann nicht als Parameter an eine "
+"benutzerdefinierte Funktion übergeben werden. Es wird empfohlen, in der Main-"
+"Funktion zu samplen und anschließend das Vektor-Ergebnis an die "
+"benutzerdefinierte Funktion zu übergeben."
+
+msgid ""
+"Unable to pass RADIANCE texture sampler as a parameter to a custom function. "
+"Consider sampling it in the main function and then passing the vector result "
+"to the custom function."
+msgstr ""
+"Ein RADIANCE-Textur-Sampler kann nicht als Parameter an eine "
+"benutzerdefinierte Funktion übergeben werden. Es wird empfohlen, in der Main-"
+"Funktion zu samplen und anschließend das Vektorergebnis an die "
+"benutzerdefinierte Funktion zu übergeben."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Unbekannter Bezeichner in Ausdruck: ‚%s‘."

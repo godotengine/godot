@@ -32,6 +32,8 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
@@ -560,7 +562,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	child_classes.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &name : child_classes) {
-		if (String(name).begins_with("Editor") || ClassDB::get_api_type(name) != ClassDB::API_CORE) {
+		if (ClassDB::get_api_type(name) != ClassDB::API_CORE) {
 			continue;
 		}
 		_fill_classes_from(class_item, name, p_selected);

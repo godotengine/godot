@@ -31,6 +31,9 @@
 #include "spring_bone_simulator_3d.h"
 #include "spring_bone_simulator_3d.compat.inc"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/spring_bone_collision_3d.h"
 
 // Original VRM Spring Bone movement logic was distributed by (c) VRM Consortium. Licensed under the MIT license.
@@ -305,13 +308,13 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		props.push_back(PropertyInfo(Variant::INT, path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
 		props.push_back(PropertyInfo(Variant::VECTOR3, path + "rotation_axis_vector"));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "radius/value", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "stiffness/value", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "drag/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 		props.push_back(PropertyInfo(Variant::VECTOR3, path + "gravity/direction"));
 		props.push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {
@@ -458,7 +461,7 @@ void SpringBoneSimulator3D::set_root_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->root_bone <= -1 || settings[p_index]->root_bone >= sk->get_bone_count()) {
-			WARN_PRINT("Root bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Root bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->root_bone = -1;
 		} else {
 			settings[p_index]->root_bone_name = sk->get_bone_name(settings[p_index]->root_bone);
@@ -495,7 +498,7 @@ void SpringBoneSimulator3D::set_end_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->end_bone <= -1 || settings[p_index]->end_bone >= sk->get_bone_count()) {
-			WARN_PRINT("End bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": End bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->end_bone = -1;
 		} else {
 			settings[p_index]->end_bone_name = sk->get_bone_name(settings[p_index]->end_bone);
@@ -591,6 +594,9 @@ SpringBoneSimulator3D::CenterFrom SpringBoneSimulator3D::get_center_from(int p_i
 void SpringBoneSimulator3D::set_center_node(int p_index, const NodePath &p_node_path) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	bool center_changed = settings[p_index]->center_node != p_node_path;
+	if (should_check_node_path() && !p_node_path.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_node_path))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Center node '" + String(p_node_path) + "' not found.");
+	}
 	settings[p_index]->center_node = p_node_path;
 	if (center_changed) {
 		reset();
@@ -623,7 +629,7 @@ void SpringBoneSimulator3D::set_center_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->center_bone <= -1 || settings[p_index]->center_bone >= sk->get_bone_count()) {
-			WARN_PRINT("Center bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Center bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->center_bone = -1;
 		} else {
 			settings[p_index]->center_bone_name = sk->get_bone_name(settings[p_index]->center_bone);
@@ -894,7 +900,7 @@ void SpringBoneSimulator3D::_set_joint_bone(int p_index, int p_joint, int p_bone
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (joints[p_joint]->bone <= -1 || joints[p_joint]->bone >= sk->get_bone_count()) {
-			WARN_PRINT("Joint bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + " : Joint: " + itos(p_joint) + ": bone index '" + itos(p_bone) + "' is out of range!");
 			joints[p_joint]->bone = -1;
 		} else {
 			joints[p_joint]->bone_name = sk->get_bone_name(joints[p_joint]->bone);
@@ -1206,7 +1212,7 @@ LocalVector<ObjectID> SpringBoneSimulator3D::get_valid_collision_instance_ids(in
 	if (collisions_dirty) {
 		_find_collisions();
 	}
-	return settings[p_index]->cached_collisions;
+	return LocalVector<ObjectID>(settings[p_index]->cached_collisions);
 }
 
 void SpringBoneSimulator3D::set_external_force(const Vector3 &p_force) {

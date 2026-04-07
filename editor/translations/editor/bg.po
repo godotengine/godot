@@ -27,13 +27,14 @@
 # Jivko Chterev <Jivko91@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
+# Vladimir Kirov <morbeo@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-06 02:02+0000\n"
-"Last-Translator: Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>\n"
+"PO-Revision-Date: 2026-01-21 18:58+0000\n"
+"Last-Translator: Vladimir Kirov <morbeo@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -41,13 +42,154 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "Добре"
 
+msgid "Failed"
+msgstr "Неуспешно"
+
+msgid "Unavailable"
+msgstr "Неналично"
+
+msgid "Unconfigured"
+msgstr "Ненастроено"
+
+msgid "Unauthorized"
+msgstr "Неоторизирано"
+
+msgid "Parameter out of range"
+msgstr "Параметър извън граници"
+
+msgid "Out of memory"
+msgstr "Липса на свободна памет"
+
+msgid "File not found"
+msgstr "Не е намерен файл"
+
+msgid "File: Bad drive"
+msgstr "Файл: Неизправно устройство"
+
+msgid "File: Bad path"
+msgstr "Файл: Неправилен път"
+
+msgid "File: Permission denied"
+msgstr "Файл: Достъп отказан"
+
+msgid "File already in use"
+msgstr "Файлът вече се използва"
+
+msgid "Can't open file"
+msgstr "Файлът не може да бъде отворен"
+
+msgid "Can't write file"
+msgstr "Файлът не може да бъде записан"
+
+msgid "Can't read file"
+msgstr "Файлът не може да бъде прочетен"
+
+msgid "File unrecognized"
+msgstr "Файлът не може да бъде разпознат"
+
+msgid "File corrupt"
+msgstr "Файлът е повреден"
+
+msgid "Missing dependencies for file"
+msgstr "Липсват зависимости за файл"
+
+msgid "End of file"
+msgstr "Край на файл"
+
+msgid "Can't open"
+msgstr "Не може да се отвори"
+
+msgid "Can't create"
+msgstr "Не може да се създаде"
+
+msgid "Query failed"
+msgstr "Заявката беше неуспешна"
+
+msgid "Already in use"
+msgstr "Вече се използва"
+
 msgid "Locked"
 msgstr "Заключено"
+
+msgid "Timeout"
+msgstr "Срок"
+
+msgid "Can't connect"
+msgstr "Не може да се осъществи връзка"
+
+msgid "Can't resolve"
+msgstr "Действието не може да се извърши"
+
+msgid "Connection error"
+msgstr "Грешка при свързване"
+
+msgid "Can't acquire resource"
+msgstr "Ресурсът не може да бъде достъпен"
+
+msgid "Can't fork"
+msgstr "Не може да се пусне отделен процес"
+
+msgid "Invalid data"
+msgstr "Неправилни данни"
+
+msgid "Invalid parameter"
+msgstr "Неправилен параметър"
+
+msgid "Already exists"
+msgstr "Вече съществува"
+
+msgid "Does not exist"
+msgstr "Не съществува"
+
+msgid "Can't read database"
+msgstr "Базата не може да бъде прочетена"
+
+msgid "Can't write database"
+msgstr "Базата не може да бъде записана"
+
+msgid "Compilation failed"
+msgstr "Компилирането е неуспешно"
+
+msgid "Method not found"
+msgstr "Методът не е намерен"
+
+msgid "Link failed"
+msgstr "Свързването неуспешно"
+
+msgid "Script failed"
+msgstr "Изпълнението на скрипта е неуспешно"
+
+msgid "Cyclic link detected"
+msgstr "Засечена е циклична връзка"
+
+msgid "Invalid declaration"
+msgstr "Неправилно деклариране"
+
+msgid "Duplicate symbol"
+msgstr "Дублиран символ"
+
+msgid "Parse error"
+msgstr "Грешка при обработка"
+
+msgid "Busy"
+msgstr "Зает"
+
+msgid "Skip"
+msgstr "Пропусни"
+
+msgid "Help"
+msgstr "Помощ"
+
+msgid "Bug"
+msgstr "Бъг"
+
+msgid "Printer on fire"
+msgstr "Принтера гори"
 
 msgid "unset"
 msgstr "незададен"
@@ -929,7 +1071,6 @@ msgid ""
 "or import the whole scene as a single AnimationLibrary in the Import dock."
 msgstr ""
 "Избраният файл е импортирана сцена от 3D модел като glTF или FBX. \n"
-"\n"
 "\n"
 "В Godot 3D моделите могат да се импортират като сцени или библиотеки с "
 "анимации, затова се показват тук. \n"

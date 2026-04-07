@@ -34,6 +34,15 @@
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
+// Enable additional LSP related logging.
+//#define DEBUG_LSP
+
+#ifdef DEBUG_LSP
+#define LOG_LSP(...) print_line("[ LSP -", __FILE__, ":", __LINE__, "-", __func__, "] -", ##__VA_ARGS__)
+#else
+#define LOG_LSP(...)
+#endif
+
 namespace LSP {
 
 typedef String DocumentUri;
@@ -310,6 +319,13 @@ struct TextEdit {
 	 * empty string.
 	 */
 	String newText;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["newText"] = newText;
+		dict["range"] = range.to_json();
+		return dict;
+	}
 };
 
 /**
@@ -695,10 +711,12 @@ struct TextDocumentItem {
 		version = p_dict["version"];
 		text = p_dict["text"];
 
-		// Clients should use "gdscript" as language id, but we can't enforce it. The Rider integration
-		// in particular uses "gd" at the time of writing. We normalize the id to make it easier to work with.
+		// Clients should use "gdscript" as language id, but we can't enforce it.
+		// We normalize some known ids to make them easier to work with:
+		// Rider < 2026.1: "gd"
+		// Kate: "godot"
 		String rawLanguageId = p_dict["languageId"];
-		if (rawLanguageId == "gdscript" || rawLanguageId == "gd") {
+		if (rawLanguageId == "gdscript" || rawLanguageId == "gd" || rawLanguageId == "godot") {
 			languageId = LanguageId::GDSCRIPT;
 		} else {
 			languageId = LanguageId::OTHER;
@@ -1065,9 +1083,19 @@ struct CompletionItem {
 		if (!insertText.is_empty()) {
 			dict["insertText"] = insertText;
 		}
+		if (insertTextFormat) {
+			dict["insertTextFormat"] = insertTextFormat;
+		}
+		if (!textEdit.newText.is_empty()) {
+			dict["textEdit"] = textEdit.to_json();
+		}
 		if (resolved) {
-			dict["detail"] = detail;
-			dict["documentation"] = documentation.to_json();
+			if (!detail.is_empty()) {
+				dict["detail"] = detail;
+			}
+			if (!documentation.value.is_empty()) {
+				dict["documentation"] = documentation.to_json();
+			}
 			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
 			if (!sortText.is_empty()) {
@@ -1120,6 +1148,7 @@ struct CompletionItem {
 		if (p_dict.has("insertText")) {
 			insertText = p_dict["insertText"];
 		}
+		insertTextFormat = p_dict.get("insertTextFormat", 0);
 		if (p_dict.has("data")) {
 			data = p_dict["data"];
 		}
@@ -1283,48 +1312,6 @@ struct DocumentSymbol {
 		}
 		return markdown;
 	}
-
-	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		LSP::CompletionItem item;
-		item.label = name;
-
-		if (resolved) {
-			item.documentation = render();
-		}
-
-		switch (kind) {
-			case LSP::SymbolKind::Enum:
-				item.kind = LSP::CompletionItemKind::Enum;
-				break;
-			case LSP::SymbolKind::Class:
-				item.kind = LSP::CompletionItemKind::Class;
-				break;
-			case LSP::SymbolKind::Property:
-				item.kind = LSP::CompletionItemKind::Property;
-				break;
-			case LSP::SymbolKind::Method:
-			case LSP::SymbolKind::Function:
-				item.kind = LSP::CompletionItemKind::Method;
-				break;
-			case LSP::SymbolKind::Event:
-				item.kind = LSP::CompletionItemKind::Event;
-				break;
-			case LSP::SymbolKind::Constant:
-				item.kind = LSP::CompletionItemKind::Constant;
-				break;
-			case LSP::SymbolKind::Variable:
-				item.kind = LSP::CompletionItemKind::Variable;
-				break;
-			case LSP::SymbolKind::File:
-				item.kind = LSP::CompletionItemKind::File;
-				break;
-			default:
-				item.kind = LSP::CompletionItemKind::Text;
-				break;
-		}
-
-		return item;
-	}
 };
 
 struct ApplyWorkspaceEditParams {
@@ -1438,7 +1425,7 @@ struct CompletionContext {
 	/**
 	 * How the completion was triggered.
 	 */
-	int triggerKind = CompletionTriggerKind::TriggerCharacter;
+	int triggerKind = CompletionTriggerKind::Invoked;
 
 	/**
 	 * The trigger character (a single character) that has trigger code complete.
@@ -1461,7 +1448,10 @@ struct CompletionParams : public TextDocumentPositionParams {
 
 	void load(const Dictionary &p_params) {
 		TextDocumentPositionParams::load(p_params);
-		context.load(p_params["context"]);
+
+		if (p_params.has("context")) {
+			context.load(p_params["context"]);
+		}
 	}
 
 	Dictionary to_json() {
@@ -1761,7 +1751,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides document highlight support.
 	 */
-	bool documentHighlightProvider = false;
+	bool documentHighlightProvider = true;
 
 	/**
 	 * The server provides document symbol support.
@@ -2118,4 +2108,26 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
+
+/**
+ * A document highlight is a range inside a text document which deserves
+ * special attention. Usually a document highlight is visualized by changing
+ * the background color of its range.
+ */
+struct DocumentHighlight {
+	/**
+	 * The range this highlight applies to.
+	 */
+	Range range;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		return dict;
+	}
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		range.load(p_params["range"]);
+	}
+};
 } // namespace LSP

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/object.h"
+#include "core/os/thread_safe.h"
 #include "core/templates/rb_map.h"
 
 template <typename T>
@@ -204,7 +205,7 @@ public:
 	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
 	uint64_t get_last_saved_time() { return last_save_time; }
 
-	List<String> get_input_presets() const { return input_presets; }
+	List<String> get_input_presets() const { return List<String>(input_presets); }
 
 	Variant get_setting_with_override(const StringName &p_name) const;
 	Variant get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const;

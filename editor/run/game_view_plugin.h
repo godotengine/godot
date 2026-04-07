@@ -34,7 +34,7 @@
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/editor_main_screen.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/runtime_node_select.h"
 #include "scene/gui/box_container.h"
 
 class EmbeddedProcessBase;
@@ -100,6 +100,8 @@ public:
 
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
+
+	void report_window_focused(bool p_focused);
 
 	void reset_camera_2d_position();
 	void reset_camera_3d_position();

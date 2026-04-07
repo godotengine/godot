@@ -30,23 +30,27 @@
 
 #include "gdscript_language_protocol.h"
 
+#include "godot_lsp.h"
+
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"
-#include "modules/gdscript/language_server/godot_lsp.h"
 
-#define LSP_CLIENT_V(m_ret_val)                                    \
+#define LSP_CLIENT_V(m_ret_val) \
 	ERR_FAIL_COND_V(latest_client_id == LSP_NO_CLIENT, m_ret_val); \
-	ERR_FAIL_COND_V(!clients.has(latest_client_id), m_ret_val);    \
-	Ref<LSPeer> client = clients.get(latest_client_id);            \
+	ERR_FAIL_COND_V(!clients.has(latest_client_id), m_ret_val); \
+	Ref<LSPeer> client = clients.get(latest_client_id); \
 	ERR_FAIL_COND_V(!client.is_valid(), m_ret_val);
 
-#define LSP_CLIENT                                      \
-	ERR_FAIL_COND(latest_client_id == LSP_NO_CLIENT);   \
-	ERR_FAIL_COND(!clients.has(latest_client_id));      \
+#define LSP_CLIENT \
+	ERR_FAIL_COND(latest_client_id == LSP_NO_CLIENT); \
+	ERR_FAIL_COND(!clients.has(latest_client_id)); \
 	Ref<LSPeer> client = clients.get(latest_client_id); \
 	ERR_FAIL_COND(!client.is_valid());
 
@@ -148,6 +152,9 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
+	if (clients.is_empty()) {
+		scene_cache.clear();
+	}
 	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
@@ -171,18 +178,40 @@ String GDScriptLanguageProtocol::format_output(const String &p_text) {
 }
 
 void GDScriptLanguageProtocol::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_text_document"), &GDScriptLanguageProtocol::get_text_document);
+	ClassDB::bind_method(D_METHOD("get_workspace"), &GDScriptLanguageProtocol::get_workspace);
+	ClassDB::bind_method(D_METHOD("is_smart_resolve_enabled"), &GDScriptLanguageProtocol::is_smart_resolve_enabled);
+	ClassDB::bind_method(D_METHOD("is_initialized"), &GDScriptLanguageProtocol::is_initialized);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("initialize", "params"), &GDScriptLanguageProtocol::initialize);
 	ClassDB::bind_method(D_METHOD("initialized", "params"), &GDScriptLanguageProtocol::initialized);
 	ClassDB::bind_method(D_METHOD("on_client_connected"), &GDScriptLanguageProtocol::on_client_connected);
-	ClassDB::bind_method(D_METHOD("on_client_disconnected"), &GDScriptLanguageProtocol::on_client_disconnected);
+	ClassDB::bind_method(D_METHOD("on_client_disconnected", "client_id"), &GDScriptLanguageProtocol::on_client_disconnected);
 	ClassDB::bind_method(D_METHOD("notify_client", "method", "params", "client_id"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("is_smart_resolve_enabled"), &GDScriptLanguageProtocol::is_smart_resolve_enabled);
-	ClassDB::bind_method(D_METHOD("get_text_document"), &GDScriptLanguageProtocol::get_text_document);
-	ClassDB::bind_method(D_METHOD("get_workspace"), &GDScriptLanguageProtocol::get_workspace);
-	ClassDB::bind_method(D_METHOD("is_initialized"), &GDScriptLanguageProtocol::is_initialized);
+#endif // !DISABLE_DEPRECATED
 }
 
-Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
+template <typename T>
+Variant get_deep(Variant p_dict, Variant p_default, T p_key) {
+	if (p_dict.get_type() != Variant::DICTIONARY) {
+		return p_default;
+	}
+	return p_dict.operator Dictionary().get(p_key, p_default);
+}
+
+template <typename T1, typename... T2>
+Variant get_deep(Variant p_dict, Variant p_default, T1 p_key1, T2... p_key2) {
+	if (p_dict.get_type() != Variant::DICTIONARY || !p_dict.operator Dictionary().has(p_key1)) {
+		return p_default;
+	}
+
+	return get_deep(p_dict.operator Dictionary()[p_key1], p_default, p_key2...);
+}
+
+Variant GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
+	LSP_CLIENT_V(Variant());
+
 	LSP::InitializeResult ret;
 
 	{
@@ -239,9 +268,13 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	if (!_initialized) {
 		workspace->initialize();
-		text_document->initialize();
 		_initialized = true;
 	}
+
+	// Handle client capabilities.
+	Dictionary capabilities = p_params["capabilities"];
+	client->behavior.use_snippets_for_brace_completion = get_deep(capabilities, false,
+			"textDocument", "completion", "completionItem", "snippetSupport");
 
 	return ret.to_json();
 }
@@ -269,6 +302,8 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
+
+	scene_cache.poll();
 
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
@@ -316,6 +351,7 @@ void GDScriptLanguageProtocol::stop() {
 		peer->connection->disconnect_from_host();
 	}
 
+	scene_cache.clear();
 	server->stop();
 }
 
@@ -448,6 +484,8 @@ void GDScriptLanguageProtocol::lsp_did_open(const Dictionary &p_params) {
 
 	client->managed_files[path] = document;
 	client->parse_script(path);
+
+	scene_cache.request_load(path);
 }
 
 void GDScriptLanguageProtocol::lsp_did_change(const Dictionary &p_params) {
@@ -493,6 +531,91 @@ void GDScriptLanguageProtocol::lsp_did_close(const Dictionary &p_params) {
 
 	/// A close notification requires a previous open notification to be sent.
 	ERR_FAIL_COND_MSG(!was_opened, "LSP: Client is closing file without opening it.");
+
+	scene_cache.unload(path);
+}
+
+Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
+	Array arr;
+	LSP_CLIENT_V(arr);
+
+	LSP::CompletionParams params;
+	params.load(p_params);
+	Dictionary request_data = params.to_json();
+
+	List<ScriptLanguage::CodeCompletionOption> options;
+	get_workspace()->completion(params, &options);
+
+	const Vector<String> &lines = get_parse_result(workspace->get_file_path(params.textDocument.uri))->get_lines();
+
+	if (!options.is_empty()) {
+		int i = 0;
+		arr.resize(options.size());
+
+		for (const ScriptLanguage::CodeCompletionOption &option : options) {
+			LSP::CompletionItem item;
+			item.label = option.display;
+			item.data = request_data;
+			item.insertText = option.insert_text;
+
+			// LSP clients won't autoclose brackets.
+			if (client->behavior.use_snippets_for_brace_completion) {
+				// Use snippet insert mode to insert closing brace as well.
+				if (item.insertText.ends_with("(")) {
+					item.insertText += "$1)";
+					item.insertTextFormat = LSP::InsertTextFormat::Snippet;
+				}
+			} else {
+				// Trim braces.
+				item.insertText = item.insertText.trim_suffix("(");
+			}
+
+			if (option.text_edit.is_set()) {
+				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
+				item.textEdit.newText = option.text_edit.new_text;
+				item.textEdit.range = range.to_lsp(lines);
+			}
+
+			switch (option.kind) {
+				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
+					item.kind = LSP::CompletionItemKind::Enum;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
+					item.kind = LSP::CompletionItemKind::Class;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
+					item.kind = LSP::CompletionItemKind::Property;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
+					item.kind = LSP::CompletionItemKind::Method;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
+					item.kind = LSP::CompletionItemKind::Event;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
+					item.kind = LSP::CompletionItemKind::Constant;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
+					item.kind = LSP::CompletionItemKind::Variable;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
+					item.kind = LSP::CompletionItemKind::File;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
+					item.kind = LSP::CompletionItemKind::Snippet;
+					break;
+				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
+					item.kind = LSP::CompletionItemKind::Text;
+					break;
+				default: {
+				}
+			}
+
+			arr[i] = item.to_json();
+			i++;
+		}
+	}
+	return arr;
 }
 
 void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPositionParams &p_doc_pos, List<const LSP::DocumentSymbol *> &r_list) {
@@ -558,6 +681,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	SET_DOCUMENT_METHOD(didSave);
 
 	SET_DOCUMENT_METHOD(documentSymbol);
+	SET_DOCUMENT_METHOD(documentHighlight);
 	SET_DOCUMENT_METHOD(completion);
 	SET_DOCUMENT_METHOD(rename);
 	SET_DOCUMENT_METHOD(prepareRename);

@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/object.h"
-#include "core/variant/type_info.h"
 
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
@@ -317,6 +316,12 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
+	enum ColorSpace {
+		COLOR_SPACE_REC709_LINEAR,
+		COLOR_SPACE_REC709_NONLINEAR_SRGB,
+		COLOR_SPACE_MAX,
+	};
+
 	// Breadcrumb markers are useful for debugging GPU crashes (i.e. DEVICE_LOST). Internally
 	// they're just an uint32_t to "tag" a GPU command. These are only used for debugging and do not
 	// (or at least shouldn't) alter the execution behavior in any way.
@@ -438,6 +443,7 @@ public:
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
+		bool is_subsampled = false;
 
 		bool operator==(const TextureFormat &b) const {
 			if (format != b.format) {
@@ -586,12 +592,22 @@ public:
 		SHADER_STAGE_TESSELATION_CONTROL,
 		SHADER_STAGE_TESSELATION_EVALUATION,
 		SHADER_STAGE_COMPUTE,
+		SHADER_STAGE_RAYGEN,
+		SHADER_STAGE_ANY_HIT,
+		SHADER_STAGE_CLOSEST_HIT,
+		SHADER_STAGE_MISS,
+		SHADER_STAGE_INTERSECTION,
 		SHADER_STAGE_MAX,
 		SHADER_STAGE_VERTEX_BIT = (1 << SHADER_STAGE_VERTEX),
 		SHADER_STAGE_FRAGMENT_BIT = (1 << SHADER_STAGE_FRAGMENT),
 		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
 		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
 		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
+		SHADER_STAGE_RAYGEN_BIT = (1 << SHADER_STAGE_RAYGEN),
+		SHADER_STAGE_ANY_HIT_BIT = (1 << SHADER_STAGE_ANY_HIT),
+		SHADER_STAGE_CLOSEST_HIT_BIT = (1 << SHADER_STAGE_CLOSEST_HIT),
+		SHADER_STAGE_MISS_BIT = (1 << SHADER_STAGE_MISS),
+		SHADER_STAGE_INTERSECTION_BIT = (1 << SHADER_STAGE_INTERSECTION),
 	};
 
 	enum ShaderLanguage {
@@ -644,6 +660,7 @@ public:
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
 		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_ACCELERATION_STRUCTURE, // Bounding Volume Hierarchy (Top + Bottom Level acceleration structures), for raytracing only.
 		UNIFORM_TYPE_MAX
 	};
 
@@ -672,6 +689,13 @@ public:
 	/*******************/
 
 	// ----- PIPELINE -----
+
+	// Rendering Shader Container expects this type to be 4 bytes for proper alignment with the shaders.
+	enum PipelineType : uint32_t {
+		PIPELINE_TYPE_RASTERIZATION,
+		PIPELINE_TYPE_COMPUTE,
+		PIPELINE_TYPE_RAYTRACING,
+	};
 
 	enum RenderPrimitive {
 		RENDER_PRIMITIVE_POINTS,
@@ -865,20 +889,38 @@ public:
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
 	};
 
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	enum AccelerationStructureType {
+		ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL,
+		ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL,
+	};
+
+	enum AccelerationStructureFlagBits {
+		ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT = (1 << 1),
+		ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT = (1 << 2),
+		ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT = (1 << 3),
+		ACCELERATION_STRUCTURE_LOW_MEMORY_BIT = (1 << 4),
+	};
+
+	enum AccelerationStructureGeometryFlagBits {
+		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT = (1 << 1),
+	};
+
+	enum AccelerationStructureInstanceFlagBits {
+		ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT = (1 << 1),
+		ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT = (1 << 2),
+		ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT = (1 << 3),
+	};
+
 	/**************/
 	/**** MISC ****/
 	/**************/
-
-	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
-	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
-	enum DeviceType {
-		DEVICE_TYPE_OTHER,
-		DEVICE_TYPE_INTEGRATED_GPU,
-		DEVICE_TYPE_DISCRETE_GPU,
-		DEVICE_TYPE_VIRTUAL_GPU,
-		DEVICE_TYPE_CPU,
-		DEVICE_TYPE_MAX
-	};
 
 	// Defined in an API-agnostic way.
 	// Some may not make sense for the underlying API; in that case, 0 is returned.
@@ -974,6 +1016,9 @@ public:
 		SUPPORTS_VULKAN_MEMORY_MODEL,
 		SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE,
 		SUPPORTS_POINT_SIZE,
+		SUPPORTS_RAY_QUERY,
+		SUPPORTS_RAYTRACING_PIPELINE,
+		SUPPORTS_HDR_OUTPUT,
 	};
 
 	enum SubgroupOperations {
@@ -1081,7 +1126,7 @@ public:
 	struct ShaderReflection {
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
-		bool is_compute = false;
+		PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 		bool has_multiview = false;
 		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};

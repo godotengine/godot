@@ -38,7 +38,9 @@ bool are_spans_equal(const LHS *p_lhs, const RHS *p_rhs, size_t p_size) {
 	if constexpr (std::is_same_v<LHS, RHS> && std::is_fundamental_v<LHS>) {
 		// Optimize trivial type comparison.
 		// is_trivially_equality_comparable would help, but it doesn't exist.
-		return memcmp(p_lhs, p_rhs, p_size * sizeof(LHS)) == 0;
+		// memcmp requires pointer argument to be valid even on size = 0 (C11 §7.24.1(2)).
+		// Span allows ptr arguments to be invalid as long as size = 0, so only call when p_size > 0.
+		return p_size == 0 || memcmp(p_lhs, p_rhs, p_size * sizeof(LHS)) == 0;
 	} else {
 		// Normal case: Need to iterate the array manually.
 		for (size_t j = 0; j < p_size; j++) {

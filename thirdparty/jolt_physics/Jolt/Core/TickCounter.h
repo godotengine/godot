@@ -38,7 +38,7 @@ JPH_INLINE uint64 GetProcessorTickCount()
 	asm volatile("mrs %0, cntvct_el0" : "=r" (val));
 	return val;
 #elif defined(JPH_CPU_LOONGARCH)
-	#if JPH_CPU_ADDRESS_BITS == 64
+	#if JPH_CPU_ARCH_BITS == 64
 		__drdtime_t t = __rdtime_d();
 		return t.dvalue;
 	#else

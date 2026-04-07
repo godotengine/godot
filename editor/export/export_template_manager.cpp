@@ -33,12 +33,16 @@
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
+#include "core/templates/rb_set.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_preset.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/settings/editor_settings.h"
@@ -51,6 +55,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
+#include "servers/display/display_server.h"
 
 enum DownloadsAvailability {
 	DOWNLOADS_AVAILABLE,
@@ -209,6 +214,11 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 
 	set_process(true);
 	_set_current_progress_status(TTR("Connecting to the mirror..."));
+
+	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
+	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
+	indicator->set_value(0);
+	indicator->show();
 }
 
 void ExportTemplateManager::_download_template_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
@@ -255,6 +265,7 @@ void ExportTemplateManager::_download_template_completed(int p_status, int p_cod
 		} break;
 	}
 
+	EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
 	set_process(false);
 }
 
@@ -417,6 +428,9 @@ void ExportTemplateManager::_set_current_progress_status(const String &p_status,
 }
 
 void ExportTemplateManager::_set_current_progress_value(float p_value, const String &p_status) {
+	if (!is_visible()) {
+		return;
+	}
 	download_progress_bar->show();
 	download_progress_bar->set_indeterminate(false);
 	download_progress_bar->set_value(p_value);
@@ -762,6 +776,11 @@ void ExportTemplateManager::popup_manager() {
 	popup_centered(Size2(720, 280) * EDSCALE);
 }
 
+void ExportTemplateManager::stop_download() {
+	download_templates->cancel_request();
+	is_downloading_templates = false;
+}
+
 void ExportTemplateManager::ok_pressed() {
 	if (!is_downloading_templates) {
 		hide();
@@ -925,20 +944,16 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorNode::get_bottom_panel()->get_progress_indicator()->connect("clicked", callable_mp(this, &ExportTemplateManager::popup_manager));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_missing_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			current_installed_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 			mirror_options_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-		} break;
-
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
-				set_process(false);
-			} else if (is_visible() && is_downloading_templates) {
-				set_process(true);
-			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -955,7 +970,9 @@ void ExportTemplateManager::_notification(int p_what) {
 
 			if (downloaded_bytes >= 0) {
 				if (total_bytes > 0) {
-					_set_current_progress_value(float(downloaded_bytes) / total_bytes, status);
+					float progress = float(downloaded_bytes) / total_bytes;
+					EditorNode::get_bottom_panel()->get_progress_indicator()->set_value(progress);
+					_set_current_progress_value(progress, status);
 				} else {
 					_set_current_progress_value(0, status);
 				}
@@ -964,6 +981,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			}
 
 			if (!success) {
+				EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
 				set_process(false);
 			}
 		} break;

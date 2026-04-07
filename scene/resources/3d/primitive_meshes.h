@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/resources/curve.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 #include "servers/text/text_server.h"

@@ -30,7 +30,10 @@
 
 #include "skeleton_3d_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -46,13 +49,14 @@
 #include "scene/3d/physics/physical_bone_simulator_3d.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/surface_tool.h"
 
 void BonePropertiesEditor::create_editors() {
 	section = memnew(EditorInspectorSection);
-	section->setup("trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
+	section->setup("", "trf_properties", label, this, Color(0.0f, 0.0f, 0.0f), true);
 	section->unfold();
 	add_child(section);
 
@@ -78,7 +82,18 @@ void BonePropertiesEditor::create_editors() {
 
 	// Rotation property.
 	rotation_property = memnew(EditorPropertyQuaternion());
-	rotation_property->setup(large_range_hint);
+	// Quaternions are almost never used for human-readable values that need stepifying,
+	// so we should be more precise with their step, as much as the float precision allows.
+#ifdef REAL_T_IS_DOUBLE
+	constexpr double QUATERNION_STEP = 1e-14;
+#else
+	constexpr double QUATERNION_STEP = 1e-6;
+#endif
+	EditorPropertyRangeHint quaternion_range_hint;
+	quaternion_range_hint.min = -1.0;
+	quaternion_range_hint.max = 1.0;
+	quaternion_range_hint.step = QUATERNION_STEP;
+	rotation_property->setup(quaternion_range_hint);
 	rotation_property->set_label("Rotation");
 	rotation_property->set_selectable(false);
 	rotation_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
@@ -96,7 +111,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Transform/Matrix section.
 	rest_section = memnew(EditorInspectorSection);
-	rest_section->setup("trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
+	rest_section->setup("", "trf_properties_transform", "Rest", this, Color(0.0f, 0.0f, 0.0f), true);
 	section->get_vbox()->add_child(rest_section);
 
 	// Transform/Matrix property.
@@ -108,7 +123,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Bone Metadata property
 	meta_section = memnew(EditorInspectorSection);
-	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
+	meta_section->setup("", "bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
 	section->get_vbox()->add_child(meta_section);
 
 	EditorInspectorActionButton *add_metadata_button = memnew(EditorInspectorActionButton(TTRC("Add Bone Metadata"), SNAME("Add")));
@@ -608,7 +623,8 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	const real_t half_height(child_rest.origin.length() * 0.5);
 	const real_t radius(half_height * 0.2);
 
-	CapsuleShape3D *bone_shape_capsule = memnew(CapsuleShape3D);
+	Ref<CapsuleShape3D> bone_shape_capsule;
+	bone_shape_capsule.instantiate();
 	bone_shape_capsule->set_height(half_height * 2);
 	bone_shape_capsule->set_radius(radius);
 
@@ -736,13 +752,18 @@ Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 
 	set_drag_preview(vb);
 	Dictionary drag_data;
-	drag_data["type"] = "nodes";
-	drag_data["node"] = selected;
+	drag_data["type"] = "skeleton_bone";
+	drag_data["source"] = selected->get_instance_id();
 
 	return drag_data;
 }
 
 bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	Dictionary drag_data = p_data;
+	if (!drag_data.has("type") || drag_data["type"] != "skeleton_bone" || !drag_data.has("source")) {
+		return false;
+	}
+
 	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
 	if (!target) {
 		return false;
@@ -753,13 +774,13 @@ bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 		return false;
 	}
 
-	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
-	if (target == selected) {
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
+	if (!selected || selected->get_tree() != joint_tree || target == selected) {
 		return false;
 	}
 
-	const String path2 = target->get_metadata(0);
-	if (!path2.begins_with("bones/")) {
+	const String selected_path = selected->get_metadata(0);
+	if (!selected_path.begins_with("bones/")) {
 		return false;
 	}
 
@@ -771,11 +792,22 @@ void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		return;
 	}
 
-	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
-	TreeItem *selected = Object::cast_to<TreeItem>(Dictionary(p_data)["node"]);
+	Dictionary drag_data = p_data;
 
-	const BoneId target_boneidx = String(target->get_metadata(0)).get_slicec('/', 1).to_int();
-	const BoneId selected_boneidx = String(selected->get_metadata(0)).get_slicec('/', 1).to_int();
+	TreeItem *target = (p_point == Vector2(Math::INF, Math::INF)) ? joint_tree->get_selected() : joint_tree->get_item_at_position(p_point);
+	TreeItem *selected = ObjectDB::get_instance<TreeItem>(drag_data["source"]);
+	if (!target || !selected || selected->get_tree() != joint_tree || !skeleton) {
+		return;
+	}
+
+	const String target_path = target->get_metadata(0);
+	const String selected_path = selected->get_metadata(0);
+	if (!target_path.begins_with("bones/") || !selected_path.begins_with("bones/")) {
+		return;
+	}
+
+	const BoneId target_boneidx = target_path.get_slicec('/', 1).to_int();
+	const BoneId selected_boneidx = selected_path.get_slicec('/', 1).to_int();
 
 	move_skeleton_bone(skeleton->get_path(), selected_boneidx, target_boneidx);
 }
@@ -1150,7 +1182,7 @@ void Skeleton3DEditor::create_editors() {
 
 	// Bone tree.
 	bones_section = memnew(EditorInspectorSection);
-	bones_section->setup("bones", "Bones", skeleton, Color(0.0f, 0.0, 0.0f), true);
+	bones_section->setup("", "bones", "Bones", skeleton, Color(0.0f, 0.0, 0.0f), true);
 	add_child(bones_section);
 	bones_section->unfold();
 
@@ -1162,7 +1194,6 @@ void Skeleton3DEditor::create_editors() {
 	joint_tree = memnew(Tree);
 	joint_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	joint_tree->set_columns(1);
-	joint_tree->set_focus_mode(Control::FOCUS_NONE);
 	joint_tree->set_select_mode(Tree::SELECT_SINGLE);
 	joint_tree->set_hide_root(true);
 	joint_tree->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1515,35 +1546,10 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 
 EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
-	Node3DEditor *ne = Node3DEditor::get_singleton();
 	if (se && se->is_edit_mode()) {
 		const Ref<InputEventMouseButton> mb = p_event;
 		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-			Skeleton3D *skeleton = se->get_skeleton();
-			if (skeleton) {
-				int closest_idx = Skeleton3DGizmoPlugin::skeleton_intersect_ray(skeleton, p_camera, mb->get_position());
-				if (closest_idx >= 0) {
-					se->select_bone(closest_idx);
-					se->update_bone_original();
-
-					Vector<Ref<Node3DGizmo>> gizmos = skeleton->get_gizmos();
-					for (Ref<EditorNode3DGizmo> seg : gizmos) {
-						if (seg.is_valid()) {
-							Transform3D bone_xform = seg->get_subgizmo_transform(closest_idx);
-							ne->call("_set_subgizmo_selection", skeleton, seg, closest_idx, bone_xform);
-							break;
-						}
-					}
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
-			}
-		}
-		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
-			if (ne->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT) {
-				if (!ne->is_gizmo_visible()) {
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
-			}
+			se->update_bone_original();
 		}
 		return EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 	}
@@ -1735,13 +1741,13 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 		}
 	} else {
 		Node3DEditor::ToolMode tool_mode = ne->get_tool_mode();
-		if (tool_mode == Node3DEditor::TOOL_MODE_SELECT || tool_mode == Node3DEditor::TOOL_MODE_MOVE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
+		if (tool_mode == Node3DEditor::TOOL_MODE_MOVE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
 			for (int id : p_ids) {
 				ur->add_do_method(skeleton, "set_bone_pose_position", id, skeleton->get_bone_pose_position(id));
 				ur->add_undo_method(skeleton, "set_bone_pose_position", id, se->get_bone_original_position());
 			}
 		}
-		if (tool_mode == Node3DEditor::TOOL_MODE_SELECT || tool_mode == Node3DEditor::TOOL_MODE_ROTATE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
+		if (tool_mode == Node3DEditor::TOOL_MODE_ROTATE || tool_mode == Node3DEditor::TOOL_MODE_TRANSFORM) {
 			for (int id : p_ids) {
 				ur->add_do_method(skeleton, "set_bone_pose_rotation", id, skeleton->get_bone_pose_rotation(id));
 				ur->add_undo_method(skeleton, "set_bone_pose_rotation", id, se->get_bone_original_rotation());

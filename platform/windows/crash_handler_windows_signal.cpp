@@ -37,50 +37,114 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
-#include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
+#include <thirdparty/libbacktrace/backtrace.h>
+
 #include <cxxabi.h>
+#include <psapi.h>
+
 #include <algorithm>
 #include <csignal>
 #include <cstdlib>
-#include <string>
+#include <iterator>
 #include <vector>
 
-#include <psapi.h>
-
-#include "thirdparty/libbacktrace/backtrace.h"
+// Some versions of imagehlp.dll lack the proper packing directives themselves
+// so we need to do it.
+#pragma pack(push, before_imagehlp, 8)
+#include <imagehlp.h>
+#pragma pack(pop, before_imagehlp)
 
 struct CrashHandlerData {
 	int64_t index = 0;
 	backtrace_state *state = nullptr;
 	int64_t offset = 0;
+	int64_t base = 0;
+	uint64_t pc = 0;
+	HANDLE process = nullptr;
+	bool sym_ok = false;
+};
+
+struct module_data {
+	std::string image_name;
+	std::string module_name;
+	void *base_address = nullptr;
+	DWORD load_size;
+};
+
+class get_mod_info {
+	HANDLE process;
+
+public:
+	get_mod_info(HANDLE h) :
+			process(h) {}
+
+	module_data operator()(HMODULE module) {
+		module_data ret;
+		char temp[4096];
+		MODULEINFO mi;
+
+		GetModuleInformation(process, module, &mi, sizeof(mi));
+		ret.base_address = mi.lpBaseOfDll;
+		ret.load_size = mi.SizeOfImage;
+
+		GetModuleFileNameEx(process, module, temp, sizeof(temp));
+		ret.image_name = temp;
+		GetModuleBaseName(process, module, temp, sizeof(temp));
+		ret.module_name = temp;
+		std::vector<char> img(ret.image_name.begin(), ret.image_name.end());
+		std::vector<char> mod(ret.module_name.begin(), ret.module_name.end());
+		SymLoadModule64(process, nullptr, &img[0], &mod[0], (DWORD64)ret.base_address, ret.load_size);
+		return ret;
+	}
 };
 
 int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, const char *function) {
 	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
-	if (!function) {
-		return 0;
+	uint64_t offset = (uint64_t)ch_data->base;
+	String mod_name = "main";
+	if (ch_data->sym_ok) {
+		IMAGEHLP_MODULE64 mod_info;
+		memset(&mod_info, 0, sizeof(IMAGEHLP_MODULE64));
+		mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+		if (SymGetModuleInfo64(ch_data->process, ch_data->pc, &mod_info)) {
+			offset = mod_info.BaseOfImage;
+			if (offset != (uint64_t)ch_data->base) {
+				if (mod_info.ImageName[0] != 0) {
+					mod_name = String((const char *)mod_info.ImageName).to_lower().get_file();
+				} else if (mod_info.ModuleName[0] != 0) {
+					mod_name = String((const char *)mod_info.ModuleName).to_lower();
+				} else {
+					mod_name = "<unknown module>";
+				}
+			}
+		}
 	}
 
-	char fname[1024];
-	snprintf(fname, 1024, "%s", function);
+	if (function) {
+		char fname[1024];
+		snprintf(fname, 1024, "%s", function);
 
-	if (function[0] == '_') {
-		int status;
-		char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
+		if (function[0] == '_') {
+			int status;
+			char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
 
-		if (status == 0 && demangled) {
-			snprintf(fname, 1024, "%s", demangled);
+			if (status == 0 && demangled) {
+				snprintf(fname, 1024, "%s", demangled);
+			}
+
+			if (demangled) {
+				free(demangled);
+			}
 		}
-
-		if (demangled) {
-			free(demangled);
-		}
+		print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(fname), String::utf8(filename), lineno));
+	} else if ((int64_t)ch_data->pc > 0) {
+		print_error(vformat("[%d] %x (%s+%x) - <couldn't map PC to fn name>", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
+	} else {
+		print_error(vformat("[%d] ???", ch_data->index++));
 	}
-
-	print_error(vformat("[%d] %s (%s:%d)", ch_data->index++, String::utf8(fname), String::utf8(filename), lineno));
 	return 0;
 }
 
@@ -89,12 +153,32 @@ void error_callback(void *data, const char *msg, int errnum) {
 	if (ch_data->index == 0) {
 		print_error(vformat("Error(%d): %s", errnum, String::utf8(msg)));
 	} else {
-		print_error(vformat("[%d] error(%d): %s", ch_data->index++, errnum, String::utf8(msg)));
+		uint64_t offset = (uint64_t)ch_data->base;
+		String mod_name = "main";
+		if (ch_data->sym_ok) {
+			IMAGEHLP_MODULE64 mod_info;
+			memset(&mod_info, 0, sizeof(IMAGEHLP_MODULE64));
+			mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+			if (SymGetModuleInfo64(ch_data->process, ch_data->pc, &mod_info)) {
+				offset = mod_info.BaseOfImage;
+				if (offset != (uint64_t)ch_data->base) {
+					if (mod_info.ImageName[0] != 0) {
+						mod_name = String((const char *)mod_info.ImageName).to_lower().get_file();
+					} else if (mod_info.ModuleName[0] != 0) {
+						mod_name = String((const char *)mod_info.ModuleName).to_lower();
+					} else {
+						mod_name = "<unknown module>";
+					}
+				}
+			}
+		}
+		print_error(vformat("[%d] %x (%s+%x) - %s", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(msg)));
 	}
 }
 
 int trace_callback(void *data, uintptr_t pc) {
 	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
+	ch_data->pc = (uint64_t)pc;
 	backtrace_pcinfo(ch_data->state, pc - ch_data->offset, &symbol_callback, &error_callback, data);
 	return 0;
 }
@@ -169,6 +253,24 @@ extern void CrashHandlerException(int signal) {
 	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
 	int64_t image_file_base = get_image_base(_execpath);
 	data.offset = image_mem_base - image_file_base;
+
+	std::vector<module_data> modules;
+	DWORD cbNeeded;
+	std::vector<HMODULE> module_handles(1);
+
+	data.process = GetCurrentProcess();
+	data.sym_ok = SymInitialize(data.process, nullptr, false);
+
+	if (data.sym_ok) {
+		SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_EXACT_SYMBOLS);
+		EnumProcessModules(data.process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
+		module_handles.resize(cbNeeded / sizeof(HMODULE));
+		EnumProcessModules(data.process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
+		std::transform(module_handles.begin(), module_handles.end(), std::back_inserter(modules), get_mod_info(data.process));
+		data.base = (uint64_t)modules[0].base_address;
+	}
+
+	print_error(vformat("Load address: %x\n", (uint64_t)data.offset));
 
 	if (FileAccess::exists(_execpath + ".debugsymbols")) {
 		_execpath = _execpath + ".debugsymbols";

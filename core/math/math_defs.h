@@ -145,3 +145,16 @@ typedef double real_t;
 #else
 typedef float real_t;
 #endif
+
+/**
+ * Rarely, there will be a scenario where a function/variable expects one of the builtin integral
+ *  types that do NOT utilize the fixed-width constants. In practice, the only discrepancies are
+ *  with `long` or `long long` (and their unsigned equivalents) not being declared when most/all
+ *  other integral constants are. We'll account for this with `int_alt_t` and `uint_alt_t`,
+ *  which assign to the unused fixed-width slot. As this will only be used rarely, keep the types
+ *  scoped to `Math` instead of the global namespace.
+ */
+namespace Math {
+using int_alt_t = std::conditional_t<std::is_same_v<int64_t, long>, long long, long>;
+using uint_alt_t = std::conditional_t<std::is_same_v<uint64_t, unsigned long>, unsigned long long, unsigned long>;
+} //namespace Math

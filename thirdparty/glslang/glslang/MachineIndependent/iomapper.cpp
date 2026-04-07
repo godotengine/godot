@@ -39,6 +39,7 @@
 
 #include "gl_types.h"
 #include "iomapper.h"
+#include "LiveTraverser.h"
 #include "SymbolTable.h"
 
 //
@@ -60,10 +61,112 @@
 
 namespace glslang {
 
+struct TVarEntryInfo {
+    long long id;
+    TIntermSymbol* symbol;
+    bool live;
+    TLayoutPacking upgradedToPushConstantPacking; // ElpNone means it hasn't been upgraded
+    int newBinding;
+    int newSet;
+    int newLocation;
+    int newComponent;
+    int newIndex;
+    EShLanguage stage;
+
+    void clearNewAssignments() {
+        upgradedToPushConstantPacking = ElpNone;
+        newBinding = -1;
+        newSet = -1;
+        newLocation = -1;
+        newComponent = -1;
+        newIndex = -1;
+    }
+
+    struct TOrderById {
+        inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) { return l.id < r.id; }
+    };
+
+    struct TOrderByPriority {
+        // ordering:
+        // 1) has both binding and set
+        // 2) has binding but no set
+        // 3) has no binding but set
+        // 4) has no binding and no set
+        inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) {
+            const TQualifier& lq = l.symbol->getQualifier();
+            const TQualifier& rq = r.symbol->getQualifier();
+
+            // simple rules:
+            // has binding gives 2 points
+            // has set gives 1 point
+            // who has the most points is more important.
+            int lPoints = (lq.hasBinding() ? 2 : 0) + (lq.hasSet() ? 1 : 0);
+            int rPoints = (rq.hasBinding() ? 2 : 0) + (rq.hasSet() ? 1 : 0);
+
+            if (lPoints == rPoints)
+                return l.id < r.id;
+            return lPoints > rPoints;
+        }
+    };
+
+    struct TOrderByPriorityAndLive {
+        // ordering:
+        // 1) do live variables first
+        // 2) has both binding and set
+        // 3) has binding but no set
+        // 4) has no binding but set
+        // 5) has no binding and no set
+        inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) {
+
+            const TQualifier& lq = l.symbol->getQualifier();
+            const TQualifier& rq = r.symbol->getQualifier();
+
+            // simple rules:
+            // has binding gives 2 points
+            // has set gives 1 point
+            // who has the most points is more important.
+            int lPoints = (lq.hasBinding() ? 2 : 0) + (lq.hasSet() ? 1 : 0);
+            int rPoints = (rq.hasBinding() ? 2 : 0) + (rq.hasSet() ? 1 : 0);
+
+            if (l.live != r.live)
+                return l.live > r.live;
+
+            if (lPoints != rPoints)
+                return lPoints > rPoints;
+
+            return l.id < r.id;
+        }
+    };
+};
+
+// override function "operator=", if a vector<const _Kty, _Ty> being sort,
+// when use vc++, the sort function will call :
+// pair& operator=(const pair<_Other1, _Other2>& _Right)
+// {
+//     first = _Right.first;
+//     second = _Right.second;
+//     return (*this);
+// }
+// that will make a const type handing on left.
+// override this function can avoid a compiler error.
+// In the future, if the vc++ compiler can handle such a situation,
+// this part of the code will be removed.
+struct TVarLivePair : std::pair<const TString, TVarEntryInfo> {
+    TVarLivePair(const std::pair<const TString, TVarEntryInfo>& _Right) : pair(_Right.first, _Right.second) {}
+    TVarLivePair& operator=(const TVarLivePair& _Right) {
+        const_cast<TString&>(first) = _Right.first;
+        second = _Right.second;
+        return (*this);
+    }
+    TVarLivePair(const TVarLivePair& src) : pair(src) { }
+};
+typedef std::vector<TVarLivePair> TVarLiveVector;
+
+
 class TVarGatherTraverser : public TLiveTraverser {
 public:
     TVarGatherTraverser(const TIntermediate& i, bool traverseDeadCode, TVarLiveMap& inList, TVarLiveMap& outList, TVarLiveMap& uniformList)
-      : TLiveTraverser(i, traverseDeadCode, true, true, false)
+      : TLiveTraverser(i, traverseDeadCode, true, true, false, false)
       , inputList(inList)
       , outputList(outList)
       , uniformList(uniformList)
@@ -106,7 +209,7 @@ class TVarSetTraverser : public TLiveTraverser
 {
 public:
     TVarSetTraverser(const TIntermediate& i, const TVarLiveMap& inList, const TVarLiveMap& outList, const TVarLiveMap& uniformList)
-      : TLiveTraverser(i, true, true, true, false)
+      : TLiveTraverser(i, true, true, true, false, true)
       , inputList(inList)
       , outputList(outList)
       , uniformList(uniformList)
@@ -143,8 +246,11 @@ public:
             base->getWritableType().getQualifier().layoutComponent = at->second.newComponent;
         if (at->second.newIndex != -1)
             base->getWritableType().getQualifier().layoutIndex = at->second.newIndex;
-        if (at->second.upgradedToPushConstant)
+        if (at->second.upgradedToPushConstantPacking != ElpNone) {
             base->getWritableType().getQualifier().layoutPushConstant = true;
+            base->getWritableType().getQualifier().setBlockStorage(EbsPushConstant);
+            base->getWritableType().getQualifier().layoutPacking = at->second.upgradedToPushConstantPacking;
+        }
     }
 
   private:
@@ -176,7 +282,7 @@ struct TNotifyInOutAdaptor
 {
     EShLanguage stage;
     TIoMapResolver& resolver;
-    inline TNotifyInOutAdaptor(EShLanguage s, TIoMapResolver& r) 
+    inline TNotifyInOutAdaptor(EShLanguage s, TIoMapResolver& r)
       : stage(s)
       , resolver(r)
     {
@@ -913,6 +1019,7 @@ uint32_t TDefaultIoResolverBase::computeTypeLocationSize(const TType& type, EShL
 
 //TDefaultGlslIoResolver
 TResourceType TDefaultGlslIoResolver::getResourceType(const glslang::TType& type) {
+    assert(isValidGlslType(type));
     if (isImageType(type)) {
         return EResImage;
     }
@@ -927,6 +1034,15 @@ TResourceType TDefaultGlslIoResolver::getResourceType(const glslang::TType& type
     }
     if (isUboType(type)) {
         return EResUbo;
+    }
+    if (isCombinedSamplerType(type)) {
+        return EResCombinedSampler;
+    }
+    if (isAsType(type)) {
+        return EResAs;
+    }
+    if (isTensorType(type)) {
+        return EResTensor;
     }
     return EResCount;
 }
@@ -1277,6 +1393,7 @@ struct TDefaultIoResolver : public TDefaultIoResolverBase {
     bool validateBinding(EShLanguage /*stage*/, TVarEntryInfo& /*ent*/) override { return true; }
 
     TResourceType getResourceType(const glslang::TType& type) override {
+        assert(isValidGlslType(type));
         if (isImageType(type)) {
             return EResImage;
         }
@@ -1291,6 +1408,15 @@ struct TDefaultIoResolver : public TDefaultIoResolverBase {
         }
         if (isUboType(type)) {
             return EResUbo;
+        }
+        if (isCombinedSamplerType(type)) {
+            return EResCombinedSampler;
+        }
+        if (isAsType(type)) {
+            return EResAs;
+        }
+        if (isTensorType(type)) {
+            return EResTensor;
         }
         return EResCount;
     }
@@ -1377,6 +1503,11 @@ struct TDefaultHlslIoResolver : public TDefaultIoResolverBase {
         if (isUboType(type)) {
             return EResUbo;
         }
+        // no support for combined samplers in HLSL
+        if (isAsType(type)) {
+            return EResAs;
+        }
+        // no support for tensors in HLSL
         return EResCount;
     }
 
@@ -1495,6 +1626,36 @@ bool TIoMapper::addStage(EShLanguage stage, TIntermediate& intermediate, TInfoSi
         root->traverse(&iter_iomap);
     }
     return !hadError;
+}
+
+TGlslIoMapper::TGlslIoMapper() {
+    memset(inVarMaps,     0, sizeof(TVarLiveMap*)   * EShLangCount);
+    memset(outVarMaps,    0, sizeof(TVarLiveMap*)   * EShLangCount);
+    memset(uniformVarMap, 0, sizeof(TVarLiveMap*)   * EShLangCount);
+    memset(intermediates, 0, sizeof(TIntermediate*) * EShLangCount);
+    profile = ENoProfile;
+    version = 0;
+    autoPushConstantMaxSize = 128;
+    autoPushConstantBlockPacking = ElpStd430;
+}
+
+TGlslIoMapper::~TGlslIoMapper() {
+    for (size_t stage = 0; stage < EShLangCount; stage++) {
+        if (inVarMaps[stage] != nullptr) {
+            delete inVarMaps[stage];
+            inVarMaps[stage] = nullptr;
+        }
+        if (outVarMaps[stage] != nullptr) {
+            delete outVarMaps[stage];
+            outVarMaps[stage] = nullptr;
+        }
+        if (uniformVarMap[stage] != nullptr) {
+            delete uniformVarMap[stage];
+            uniformVarMap[stage] = nullptr;
+        }
+        if (intermediates[stage] != nullptr)
+            intermediates[stage] = nullptr;
+    }
 }
 
 // Map I/O variables to provided offsets, and make bindings for
@@ -1677,7 +1838,8 @@ bool TGlslIoMapper::doMap(TIoMapResolver* resolver, TInfoSink& infoSink) {
                 std::for_each(uniformVector.begin(), uniformVector.end(),
                                        [this](TVarLivePair& p) {
                 if (p.first == autoPushConstantBlockName) {
-                        p.second.upgradedToPushConstant = true;
+                        p.second.upgradedToPushConstantPacking = autoPushConstantBlockPacking;
+                        p.second.newSet = TQualifier::layoutSetEnd;
                     }
                 });
             }
@@ -1690,8 +1852,8 @@ bool TGlslIoMapper::doMap(TIoMapResolver* resolver, TInfoSink& infoSink) {
                 std::for_each(uniformVector.begin(), uniformVector.end(), [pUniformVarMap, stage](TVarLivePair p) {
                     auto at = pUniformVarMap[stage]->find(p.second.symbol->getAccessName());
                     if (at != pUniformVarMap[stage]->end() && at->second.id == p.second.id){
-                        if (p.second.upgradedToPushConstant) {
-                            at->second.upgradedToPushConstant = true;
+                        if (p.second.upgradedToPushConstantPacking != ElpNone) {
+                            at->second.upgradedToPushConstantPacking = p.second.upgradedToPushConstantPacking;
                         } else {
                             int resolvedBinding = at->second.newBinding;
                             at->second = p.second;

@@ -212,13 +212,14 @@
 # Uriel Barbosa Pinheiro <urielbp@gmail.com>, 2025.
 # Felipe Cury <weblate@flpcury.com>, 2025, 2026.
 # kawoshi <gccgamer9@gmail.com>, 2026.
+# Maíra Alves Rodrigues <contato@mairarodrigues.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-01-13 17:12+0000\n"
-"Last-Translator: kawoshi <gccgamer9@gmail.com>\n"
+"PO-Revision-Date: 2026-01-14 17:28+0000\n"
+"Last-Translator: Maíra Alves Rodrigues <contato@mairarodrigues.org>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -226,19 +227,157 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Falhou"
+
+msgid "Unavailable"
+msgstr "Indisponível"
+
+msgid "Unconfigured"
+msgstr "Não configurado"
+
+msgid "Unauthorized"
+msgstr "Não autorizado"
+
+msgid "Parameter out of range"
+msgstr "Parâmetro fora do intervalo"
+
+msgid "Out of memory"
+msgstr "Memória excedida"
+
+msgid "File not found"
+msgstr "Arquivo não encontrado"
+
+msgid "File: Bad drive"
+msgstr "Arquivo: drive incorreto"
+
+msgid "File: Bad path"
+msgstr "Arquivo: caminho incorreto"
+
+msgid "File: Permission denied"
+msgstr "Arquivo: Permissão negada"
+
+msgid "File already in use"
+msgstr "O arquivo em uso"
+
+msgid "Can't open file"
+msgstr "Não foi possível abrir o arquivo"
+
+msgid "Can't write file"
+msgstr "Não foi possível gravar o arquivo"
+
+msgid "Can't read file"
+msgstr "Não foi possível ler o arquivo"
+
+msgid "File unrecognized"
+msgstr "Arquivo não reconhecido"
+
+msgid "File corrupt"
+msgstr "Arquivo corrompido"
+
+msgid "Missing dependencies for file"
+msgstr "Dependências ausentes para o arquivo"
+
+msgid "End of file"
+msgstr "Fim do arquivo"
+
+msgid "Can't open"
+msgstr "Não é possível abrir"
+
+msgid "Can't create"
+msgstr "Não é possível criar"
+
+msgid "Query failed"
+msgstr "Falha na consulta"
+
+msgid "Already in use"
+msgstr "Em uso"
+
 msgid "Locked"
-msgstr "Travado"
+msgstr "Bloqueado"
+
+msgid "Timeout"
+msgstr "Tempo esgotado"
+
+msgid "Can't connect"
+msgstr "Não foi possível conectar"
+
+msgid "Can't resolve"
+msgstr "Não foi possível resolver"
+
+msgid "Connection error"
+msgstr "Erro de conexão"
+
+msgid "Can't acquire resource"
+msgstr "Não foi possível adquirir o recurso"
+
+msgid "Can't fork"
+msgstr "Não é possível bifurcar"
+
+msgid "Invalid data"
+msgstr "Dado inválido"
+
+msgid "Invalid parameter"
+msgstr "Parâmetro inválido"
+
+msgid "Already exists"
+msgstr "Já existe"
+
+msgid "Does not exist"
+msgstr "Não existe"
+
+msgid "Can't read database"
+msgstr "Não foi possível ler o banco de dados"
+
+msgid "Can't write database"
+msgstr "Não é possível gravar no banco de dados"
+
+msgid "Compilation failed"
+msgstr "Falha na compilação"
+
+msgid "Method not found"
+msgstr "Método não encontrado"
+
+msgid "Link failed"
+msgstr "Falha no link"
+
+msgid "Script failed"
+msgstr "Falha no script"
+
+msgid "Cyclic link detected"
+msgstr "Ligação cíclica detectada"
+
+msgid "Invalid declaration"
+msgstr "Declaração inválida"
+
+msgid "Duplicate symbol"
+msgstr "Símbolo duplicado"
+
+msgid "Parse error"
+msgstr "Erro de análise"
+
+msgid "Busy"
+msgstr "Ocupado"
+
+msgid "Skip"
+msgstr "Pular"
 
 msgid "Help"
 msgstr "Ajuda"
 
+msgid "Bug"
+msgstr "Erro"
+
+msgid "Printer on fire"
+msgstr "Impressora ocupada"
+
 msgid "unset"
-msgstr "não definido"
+msgstr "desativar"
 
 msgid "Physical"
 msgstr "Físico"
@@ -280,61 +419,61 @@ msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Movimento do mouse na posição (%s) com velocidade (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Eixo-X Analógico esquerdo, Eixo-X Joystick 0"
+msgstr "Eixo X do joystick esquerdo, eixo X do joystick 0"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Eixo-Y Analógico esquerdo, Eixo-Y Joystick 0"
+msgstr "Eixo Y do joystick esquerdo, eixo Y do joystick 0"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
 msgstr "Eixo-X Analógico direito, Eixo-X Joystick 1"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Eixo-Y Analógico direito, Eixo-Y Joystick 1"
+msgstr "Eixo Y do joystick direito, eixo Y do joystick 1"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Eixo-X Joystick 2, Gatilho esquerdo, Sony L2, Xbox LT"
+msgstr "Joystick 2 no eixo X, gatilho esquerdo, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Eixo-Y Joystick 2, Gatilho direito, Sony R2, Xbox RT"
+msgstr "Joystick 2 Eixo Y, Gatilho Direito, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
-msgstr "Eixo-X Joystick 3"
+msgstr "Joystick 3 Eixo X"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "Eixo-Y Joystick 3"
+msgstr "Joystick 3 Eixo Y"
 
 msgid "Joystick 4 X-Axis"
-msgstr "Eixo-X Joystick 4"
+msgstr "Joystick 4 Eixo X"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "Eixo-Y Joystick 4"
+msgstr "Joystick com 4 eixos Y"
 
 msgid "Unknown Joypad Axis"
-msgstr "Eixo desconhecido do Joypad"
+msgstr "Eixo do joystick desconhecido"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "Movimento do Joypad no Eixo %d (%s) com valor %.2f"
+msgstr "Movimento do joystick no eixo %d (%s) com valor %.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "Botão de Ação inferior, Sony X, Xbox A, Nintendo B"
+msgstr "Ação inferior, Sony Cross, Xbox A, Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "Botão de Ação direito, Sony Círculo, Xbox B, Nintendo A"
+msgstr "Ação direita, Sony círculo, Xbox B, Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "Botão de Ação esquerdo, Sony Quadrado, Xbox X, Nintendo Y"
+msgstr "Ação à esquerda, Sony Square, Xbox X, Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "Botão de Ação superior, Sony Triângulo, Xbox Y, Nintendo X"
+msgstr "Top Action, Sony Triangle, Xbox Y, Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
-msgstr "Voltar, Sony Select, Xbox Back, Nintendo -"
+msgstr "Voltar, Sony Select, Xbox Voltar, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Guia, Sony PS, Xbox Home"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "Iniciar, Xbox Menu, Nintendo +"
+msgstr "Iniciar, Menu Xbox, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Analógico esquerdo, Sony L3, Xbox L/LS"
@@ -355,31 +494,31 @@ msgid "D-pad Down"
 msgstr "D-pad para baixo"
 
 msgid "D-pad Left"
-msgstr "D-pad para esquerda"
+msgstr "D-pad esquerdo"
 
 msgid "D-pad Right"
-msgstr "D-pad para direita"
+msgstr "D-pad direito"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
-msgstr "Xbox Share, PS5 Microfone, Nintendo Capture"
+msgstr "Compartilhamento do Xbox, Microfone do PS5, Captura da Nintendo"
 
 msgid "Xbox Paddle 1"
-msgstr "Xbox Pedal 1"
+msgstr "Controle Xbox 1"
 
 msgid "Xbox Paddle 2"
-msgstr "Xbox Pedal 2"
+msgstr "Controle Xbox 2"
 
 msgid "Xbox Paddle 3"
-msgstr "Xbox Pedal 3"
+msgstr "Controle Xbox 3"
 
 msgid "Xbox Paddle 4"
-msgstr "Xbox Pedal 4"
+msgstr "Controle Xbox 4"
 
 msgid "PS4/5 Touchpad"
 msgstr "Touchpad PS4/5"
 
 msgid "Joypad Button %d"
-msgstr "Botão %d do Joypad"
+msgstr "Botão %d do joystick"
 
 msgid "Pressure:"
 msgstr "Pressão:"
@@ -391,7 +530,7 @@ msgid "touched"
 msgstr "tocado"
 
 msgid "released"
-msgstr "solto"
+msgstr "lançado"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Tela %s em (%s) com %s pontos de toque"
@@ -399,25 +538,25 @@ msgstr "Tela %s em (%s) com %s pontos de toque"
 msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
 msgstr ""
-"Tela arrastada com %s pontos de toque na posição (%s) com velocidade de (%s)"
+"Arrastar a tela com %s pontos de toque na posição (%s) com velocidade (%s)"
 
 msgid "Magnify Gesture at (%s) with factor %s"
-msgstr "Gesto de ampliar em (%s) com fator %s"
+msgstr "Ampliar gesto em (%s) com fator %s"
 
 msgid "Pan Gesture at (%s) with delta (%s)"
-msgstr "Gesto de arrastar em (%s) com delta (%s)"
+msgstr "Gesto de panorâmica em (%s) com delta (%s)"
 
 msgid "MIDI Input on Channel=%s Message=%s"
-msgstr "Entrada MIDI no Canal=%s Mensagem=%s"
+msgstr "Entrada MIDI no canal=%s Mensagem=%s"
 
 msgid "Input Event with Shortcut=%s"
-msgstr "Evento de Entrada com Atalho=%s"
+msgstr "Evento de entrada com atalho=%s"
 
 msgid " or "
-msgstr " ou "
+msgstr " or "
 
 msgid "Action has no bound inputs"
-msgstr "Ação não tem nenhuma entrada relacionada"
+msgstr "A ação não possui entradas vinculadas"
 
 msgid "Accept"
 msgstr "Aceitar"
@@ -429,7 +568,7 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 msgid "Close Dialog"
-msgstr "Fechar Diálogo"
+msgstr "Fechar diálogo"
 
 msgid "Focus Next"
 msgstr "Selecionar próximo"
@@ -450,10 +589,10 @@ msgid "Down"
 msgstr "Baixo"
 
 msgid "Page Up"
-msgstr "Subir página"
+msgstr "Página acima"
 
 msgid "Page Down"
-msgstr "Descer página"
+msgstr "Página abaixo"
 
 msgid "Home"
 msgstr "Início"
@@ -471,7 +610,7 @@ msgid "Paste"
 msgstr "Colar"
 
 msgid "Toggle Tab Focus Mode"
-msgstr "Alternar modo de foco de aba"
+msgstr "Alternar modo de foco da guia"
 
 msgid "Undo"
 msgstr "Desfazer"
@@ -492,13 +631,13 @@ msgid "New Line Above"
 msgstr "Nova linha acima"
 
 msgid "Indent"
-msgstr "Indentar"
+msgstr "Recuar"
 
 msgid "Dedent"
 msgstr "Desindentar"
 
 msgid "Backspace"
-msgstr "Apagar"
+msgstr "Backspace"
 
 msgid "Backspace Word"
 msgstr "Apagar palavra"
@@ -1692,6 +1831,9 @@ msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
 msgstr "Espelhado"
 
+msgid "Handle mode: %s"
+msgstr "Modo de manuseio: %s"
+
 msgid "Stream:"
 msgstr "Transmissão:"
 
@@ -2229,6 +2371,14 @@ msgstr "Mola"
 
 msgid "Ease Type:"
 msgstr "Tipo de Suavização:"
+
+msgctxt "Ease Type"
+msgid "Ease In"
+msgstr "Transição de entrada"
+
+msgctxt "Ease Type"
+msgid "Ease Out"
+msgstr "Transição de saída"
 
 msgctxt "Ease Type"
 msgid "Ease In-Out"
@@ -2816,6 +2966,9 @@ msgstr "Entrar"
 
 msgid "Step Over"
 msgstr "Ignorar"
+
+msgid "Step Out"
+msgstr "Sair"
 
 msgid "Break"
 msgstr "Pausar"
@@ -10465,9 +10618,9 @@ msgid ""
 "animating at the same frame. In \"Random Start Times\" mode, each tile starts "
 "animation with a random offset."
 msgstr ""
-"Determina como a animação será iniciada. No modo \"Padrão\", todos os tiles "
-"começam a ser animados no mesmo quadro. No modo \"Tempos de Início "
-"Aleatórios\", cada tile inicia a animação em um quadro aleatório."
+"Determina como a animação começará. No modo \"Padrão\", todos os blocos "
+"começam a animação no mesmo quadro. No modo \"Tempos de Início Aleatórios\", "
+"cada bloco inicia a animação com um deslocamento aleatório."
 
 msgid "If [code]true[/code], the tile is horizontally flipped."
 msgstr "Se for [code]true[/code], o tile será invertido horizontalmente."
@@ -20580,6 +20733,13 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D requer um nó filho XRCamera3D."
 
 msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr ""
+"Alterar a escala no nó XROrigin3D não é possível. Em vez disso, altere a "
+"escala do mundo."
+
+msgid ""
 "XR shaders are not enabled in project settings. Stereoscopic output is not "
 "supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
 "stereoscopic output."
@@ -20666,15 +20826,6 @@ msgstr "%s pode ser solto aqui. Use %s para soltar, use %s para cancelar."
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s não pode ser solto aqui. Use %s para cancelar."
-
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Esteja ciente de que o GraphEdit e o GraphNode passarão por extensa "
-"reformulação em uma futura versão 4.x envolvendo alterações de API de quebra "
-"de compatibilidade."
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "

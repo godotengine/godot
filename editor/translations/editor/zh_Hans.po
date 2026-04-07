@@ -76,7 +76,7 @@
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
-# suplife <2634557184@qq.com>, 2021, 2022, 2023, 2025.
+# suplife <2634557184@qq.com>, 2021, 2022, 2023, 2025, 2026.
 # luoji <564144019@qq.com>, 2021.
 # zeng haochen <m18621006730@163.com>, 2021.
 # Sam Sun <oppositenormal@outlook.com>, 2021.
@@ -84,7 +84,7 @@
 # nitenook <admin@alterbaum.net>, 2021.
 # jker <cxgmfy@163.com>, 2021.
 # Ankar <1511276198@qq.com>, 2022.
-# 风青山 <idleman@yeah.net>, 2022, 2023, 2025.
+# 风青山 <idleman@yeah.net>, 2022, 2023, 2025, 2026.
 # 1104 EXSPIRAVIT_ <m18621006730@gmail.com>, 2022.
 # ChairC <974833488@qq.com>, 2022.
 # 赵不一 <279631638@qq.com>, 2023.
@@ -103,7 +103,7 @@
 # J_aphasiac <japhasiac@163.com>, 2025.
 # BuddhaGrape <3248882725@qq.com>, 2025.
 # ChenLei <falsecollector@outlook.com>, 2025.
-# Myeongjin Lee <aranet100@gmail.com>, 2025.
+# Myeongjin Lee <aranet100@gmail.com>, 2025, 2026.
 # Jianwen Xu <jianwen-xu@users.noreply.hosted.weblate.org>, 2025.
 # bocai-bca <c3204835842@icloud.com>, 2025.
 # Genius Embroider <aaronblack45@outlook.com>, 2025.
@@ -112,13 +112,14 @@
 # 烟汐忆梦_YM <193446537@qq.com>, 2025.
 # MicroGame0 <MicroGame@petalmail.com>, 2025.
 # Zhen Luo <461652354@qq.com>, 2025, 2026.
+# Owen Wang <owenwangwyx@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-01-01 14:54+0000\n"
-"Last-Translator: Zhen Luo <461652354@qq.com>\n"
+"PO-Revision-Date: 2026-01-24 01:46+0000\n"
+"Last-Translator: 风青山 <idleman@yeah.net>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -126,16 +127,154 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "确定"
 
+msgid "Failed"
+msgstr "失败"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "Unconfigured"
+msgstr "未配置"
+
+msgid "Unauthorized"
+msgstr "未授权"
+
+msgid "Parameter out of range"
+msgstr "形参数量越界"
+
+msgid "Out of memory"
+msgstr "内存不足"
+
+msgid "File not found"
+msgstr "未找到文件"
+
+msgid "File: Bad drive"
+msgstr "文件：坏驱动器"
+
+msgid "File: Bad path"
+msgstr "文件：无效路径"
+
+msgid "File: Permission denied"
+msgstr "文件：权限不足"
+
+msgid "File already in use"
+msgstr "文件已在使用"
+
+msgid "Can't open file"
+msgstr "无法打开文件"
+
+msgid "Can't write file"
+msgstr "无法写入文件"
+
+msgid "Can't read file"
+msgstr "无法读取文件"
+
+msgid "File unrecognized"
+msgstr "文件无法识别"
+
+msgid "File corrupt"
+msgstr "文件损坏"
+
+msgid "Missing dependencies for file"
+msgstr "文件缺少依赖"
+
+msgid "End of file"
+msgstr "文件结束"
+
+msgid "Can't open"
+msgstr "无法打开"
+
+msgid "Can't create"
+msgstr "无法创建"
+
+msgid "Query failed"
+msgstr "查询失败"
+
+msgid "Already in use"
+msgstr "已在使用中"
+
 msgid "Locked"
 msgstr "已锁定"
 
+msgid "Timeout"
+msgstr "超时"
+
+msgid "Can't connect"
+msgstr "无法连接"
+
+msgid "Can't resolve"
+msgstr "无法解析"
+
+msgid "Connection error"
+msgstr "连接出错"
+
+msgid "Can't acquire resource"
+msgstr "无法获取资源"
+
+msgid "Can't fork"
+msgstr "无法分叉"
+
+msgid "Invalid data"
+msgstr "无效数据"
+
+msgid "Invalid parameter"
+msgstr "无效参数"
+
+msgid "Already exists"
+msgstr "已经存在"
+
+msgid "Does not exist"
+msgstr "不存在"
+
+msgid "Can't read database"
+msgstr "无法读取数据库"
+
+msgid "Can't write database"
+msgstr "无法写入数据库"
+
+msgid "Compilation failed"
+msgstr "编译失败"
+
+msgid "Method not found"
+msgstr "方法未找到"
+
+msgid "Link failed"
+msgstr "链接失败"
+
+msgid "Script failed"
+msgstr "脚本失败"
+
+msgid "Cyclic link detected"
+msgstr "检测到循环链接"
+
+msgid "Invalid declaration"
+msgstr "无效声明"
+
+msgid "Duplicate symbol"
+msgstr "符号重复"
+
+msgid "Parse error"
+msgstr "解析错误"
+
+msgid "Busy"
+msgstr "繁忙"
+
+msgid "Skip"
+msgstr "跳过"
+
 msgid "Help"
 msgstr "帮助"
+
+msgid "Bug"
+msgstr "Bug"
+
+msgid "Printer on fire"
+msgstr "打印机起火"
 
 msgid "unset"
 msgstr "未设置"
@@ -1563,6 +1702,9 @@ msgstr "平衡"
 msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
 msgstr "镜像"
+
+msgid "Handle mode: %s"
+msgstr "处理模式：%s"
 
 msgid "Stream:"
 msgstr "流："
@@ -6434,6 +6576,12 @@ msgstr "依赖编辑器"
 msgid "Owners of: %s (Total: %d)"
 msgstr "%s 的所有者（总计：%d）"
 
+msgid "No owners found for: %s"
+msgstr "找不到所有者： %s"
+
+msgid "Owners List"
+msgstr "所有者列表"
+
 msgid "Localization remap"
 msgstr "本地化重映射"
 
@@ -6824,6 +6972,9 @@ msgstr "选择资源"
 
 msgid "Select Scene"
 msgstr "选择场景"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "检测到递归，即时预览失败。"
 
 msgid "Instant Preview"
 msgstr "即时预览"
@@ -11121,6 +11272,24 @@ msgstr "该调试绘图模式仅在使用Forward+或Mobile渲染器时可用。"
 msgid "This debug draw mode is only supported when using the Forward+ renderer."
 msgstr "该调试绘图模式仅在使用Forward+渲染器时可用。"
 
+msgid "X: %s"
+msgstr "X：%s"
+
+msgid "Y: %s"
+msgstr "Y：%s"
+
+msgid "Z: %s"
+msgstr "Z：%s"
+
+msgid "Size: %s (%.1fMP)"
+msgstr "大小：%s（%.1fMP）"
+
+msgid "Objects: %d"
+msgstr "对象数：%d"
+
+msgid "Primitives: %d"
+msgstr "图元：%d"
+
 msgid "Draw Calls: %d"
 msgstr "绘制调用：%d"
 
@@ -11285,6 +11454,14 @@ msgstr "需要在 Environment 中启用 SDFGI，效果才可见。"
 
 msgid "SDFGI Probes"
 msgstr "SDFGI 探针"
+
+msgid ""
+"Left-click a SDFGI probe to display its occlusion information (white = not "
+"occluded, red = fully occluded).\n"
+"Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"左键单击一个SDFGI探针以显示其遮挡信息（白色=未遮挡，红色=完全遮挡）。\n"
+"需要环境中的SDFGI已启用才能看到效果。"
 
 msgid "Scene Luminance"
 msgstr "场景亮度"
@@ -12506,6 +12683,9 @@ msgstr "居中显示所选项"
 
 msgid "Frame Selection"
 msgstr "完整显示所选项"
+
+msgid "Auto Resample CanvasItems"
+msgstr "自动重新采样 CanvasItems"
 
 msgid "Preview Canvas Scale"
 msgstr "预览画布缩放"
@@ -18086,6 +18266,18 @@ msgstr "ObjectDB 引用 + 本地引用"
 msgid "Cycles detected in the ObjectDB"
 msgstr "ObjectDB 中检测出的循环引用"
 
+msgid "Native References: %d"
+msgstr "原生引用： %d"
+
+msgid "ObjectDB References: %d"
+msgstr "ObjectDB 引用： %d"
+
+msgid "Total References: %d"
+msgstr "合计引用： %d"
+
+msgid "ObjectDB Cycles: %d"
+msgstr "ObjectDB 循环引用： %d"
+
 msgid "[center]ObjectDB References[center]"
 msgstr "[center]ObjectDB 引用[center]"
 
@@ -18145,6 +18337,23 @@ msgstr "总对象数："
 
 msgid "Total Nodes:"
 msgstr "总节点数："
+
+msgid ""
+"Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')"
+"[/i]"
+msgstr ""
+"存在多个根节点[i]（可能在没有调用“queue_free”的前提下调用了“remove_child”）[/"
+"i]"
+
+msgid ""
+"RefCounted objects only referenced in cycles [i](cycles often indicate a "
+"memory leaks)[/i]"
+msgstr "只被循环引用的引用计数对象[i]（循环引用通常表示内存泄漏）[/i]"
+
+msgid ""
+"Scripted objects not referenced by any other objects [i](unreferenced objects "
+"may indicate a memory leak)[/i]"
+msgstr "没有被其他对象引用的脚本对象[i](未引用的对象可能表示内存泄漏)[/i]"
 
 msgid "Generating Snapshot"
 msgstr "正在生成快照"
@@ -20109,6 +20318,11 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D 需要 XRCamera3D 子节点。"
 
 msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr "无法更改XROrigin3D节点的比例。请更改世界比例。"
+
+msgid ""
 "XR shaders are not enabled in project settings. Stereoscopic output is not "
 "supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
 "stereoscopic output."
@@ -20198,14 +20412,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s 无法在此处放置。使用 %s 取消。"
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"请注意，GraphEdit 和 GraphNode 将在未来的 4.x 版本中进行重构，会涉及大量破坏兼"
-"容性的 API 更改。"
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -20245,6 +20451,9 @@ msgstr ""
 "ScrollContainer 适用于与单个子控件一起使用。\n"
 "子节点应该是单个容器（VBox、HBox 等）或者使用单个控件并手动设置其自定义最小尺"
 "寸。"
+
+msgid "Drag to resize"
+msgstr "拖动调节尺寸"
 
 msgid ""
 "This node doesn't have a SubViewport as child, so it can't display its "
@@ -20579,6 +20788,22 @@ msgstr "没有找到与之匹配的函数：“%s”。"
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying“%s”在该上下文中无法作为“%s”参数传递。"
+
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to a custom "
+"function. Consider sampling it in the main function and then passing the "
+"vector result to the custom function."
+msgstr ""
+"无法将多视图纹理采样器作为参数传递给自定义函数。建议在主函数中进行采样，然后将"
+"向量结果传递给自定义函数。"
+
+msgid ""
+"Unable to pass RADIANCE texture sampler as a parameter to a custom function. "
+"Consider sampling it in the main function and then passing the vector result "
+"to the custom function."
+msgstr ""
+"无法将 RADIANCE 纹理采样器作为参数传递给自定义函数。建议在主函数中进行采样，然"
+"后将向量结果传递给自定义函数。"
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "表达式中的标识符未知：“%s”。"

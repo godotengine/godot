@@ -62,19 +62,20 @@
 # WerewolfwolfyXD <wer.xd@qq.com>, 2025.
 # Oscar Su <oscar517730@gmail.com>, 2025.
 # codetea <codetea@users.noreply.hosted.weblate.org>, 2025.
-# Myeongjin Lee <aranet100@gmail.com>, 2025.
+# Myeongjin Lee <aranet100@gmail.com>, 2025, 2026.
 # sashimi <kyle2160k@gmail.com>, 2025.
 # 陳間時光（MorningFungame） <morningfungame@gmail.com>, 2025.
 # Stenyin <cbcbccc2003@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # RogerFang <newlag@gmail.com>, 2025.
+# Wei-Fu Chen <410477jimmy@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-08 20:00+0000\n"
-"Last-Translator: RogerFang <newlag@gmail.com>\n"
+"PO-Revision-Date: 2026-01-25 00:39+0000\n"
+"Last-Translator: Wei-Fu Chen <410477jimmy@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -82,16 +83,133 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "好"
 
+msgid "Failed"
+msgstr "失敗"
+
+msgid "Unavailable"
+msgstr "無法使用"
+
+msgid "Unconfigured"
+msgstr "尚未設定"
+
+msgid "Unauthorized"
+msgstr "未經授權"
+
+msgid "Parameter out of range"
+msgstr "參數超出範圍"
+
+msgid "Out of memory"
+msgstr "記憶體不足"
+
+msgid "File not found"
+msgstr "未找到檔案"
+
+msgid "File: Bad drive"
+msgstr "檔案：磁碟錯誤"
+
+msgid "File: Bad path"
+msgstr "檔案：路徑錯誤"
+
+msgid "File: Permission denied"
+msgstr "檔案：權限不足"
+
+msgid "File already in use"
+msgstr "檔案已在使用中"
+
+msgid "Can't open file"
+msgstr "無法開啟檔案"
+
+msgid "Can't write file"
+msgstr "無法寫入檔案"
+
+msgid "Can't read file"
+msgstr "無法讀取檔案"
+
+msgid "File unrecognized"
+msgstr "無法識別檔案"
+
+msgid "File corrupt"
+msgstr "檔案損毀"
+
+msgid "Missing dependencies for file"
+msgstr "缺少檔案所需模組"
+
+msgid "End of file"
+msgstr "檔案結尾"
+
+msgid "Can't open"
+msgstr "無法開啟"
+
+msgid "Can't create"
+msgstr "無法建立"
+
+msgid "Query failed"
+msgstr "要求失敗"
+
+msgid "Already in use"
+msgstr "已在使用中"
+
 msgid "Locked"
 msgstr "已鎖定"
 
+msgid "Timeout"
+msgstr "逾時"
+
+msgid "Can't connect"
+msgstr "無法連線"
+
+msgid "Can't resolve"
+msgstr "無法解析"
+
+msgid "Can't acquire resource"
+msgstr "無法取得資源"
+
+msgid "Already exists"
+msgstr "已存在"
+
+msgid "Does not exist"
+msgstr "不存在"
+
+msgid "Can't read database"
+msgstr "無法讀取資料庫"
+
+msgid "Can't write database"
+msgstr "無法寫入資料庫"
+
+msgid "Link failed"
+msgstr "連接錯誤"
+
+msgid "Script failed"
+msgstr "腳本失敗"
+
+msgid "Cyclic link detected"
+msgstr "偵測到循環連結"
+
+msgid "Invalid declaration"
+msgstr "無效的宣告"
+
+msgid "Parse error"
+msgstr "剖析錯誤"
+
+msgid "Busy"
+msgstr "忙碌中"
+
+msgid "Skip"
+msgstr "跳過"
+
 msgid "Help"
 msgstr "說明"
+
+msgid "Bug"
+msgstr "錯誤"
+
+msgid "Printer on fire"
+msgstr "印表機起火"
 
 msgid "Physical"
 msgstr "實體"
@@ -18860,14 +18978,6 @@ msgstr "可在此放下 %s。按 %s 放下，按 %s 取消。"
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "無法在此放下 %s。按 %s 取消。"
-
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"請注意，GraphEdit 與 GraphNode 將在未來 4.x 版本進行大幅重構，屆時 API 可能不"
-"相容。"
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "

@@ -50,14 +50,14 @@
 # Krissse10 <Kristoffer.kaldani@hotmail.com>, 2025.
 # Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
 # Alshat <gamaltk@gmail.com>, 2025.
-# Lasse Edsvik <lasse@lasseedsvik.se>, 2025.
+# Lasse Edsvik <lasse@lasseedsvik.se>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-20 02:48+0000\n"
+"PO-Revision-Date: 2026-01-14 05:00+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
@@ -66,16 +66,154 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2-dev\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Misslyckade"
+
+msgid "Unavailable"
+msgstr "Otillgänglig"
+
+msgid "Unconfigured"
+msgstr "Okonfigurerad"
+
+msgid "Unauthorized"
+msgstr "Obehörig"
+
+msgid "Parameter out of range"
+msgstr "Parameter utanför intervall"
+
+msgid "Out of memory"
+msgstr "Slut på minne"
+
+msgid "File not found"
+msgstr "Filen hittades inte"
+
+msgid "File: Bad drive"
+msgstr "Fil: Fel på enhet"
+
+msgid "File: Bad path"
+msgstr "Fil: Felaktig sökväg"
+
+msgid "File: Permission denied"
+msgstr "Fil: Åtkomst nekad"
+
+msgid "File already in use"
+msgstr "Filen finns redan"
+
+msgid "Can't open file"
+msgstr "Kan inte öppna filen"
+
+msgid "Can't write file"
+msgstr "Kan inte skriva till fil"
+
+msgid "Can't read file"
+msgstr "Kan inte läsa fil"
+
+msgid "File unrecognized"
+msgstr "Okänt filformat"
+
+msgid "File corrupt"
+msgstr "Korrupt fil"
+
+msgid "Missing dependencies for file"
+msgstr "Saknar beroenden för fi"
+
+msgid "End of file"
+msgstr "Slut på fil"
+
+msgid "Can't open"
+msgstr "Kan inte öppna"
+
+msgid "Can't create"
+msgstr "Kan inte skapa"
+
+msgid "Query failed"
+msgstr "Frågan misslyckades"
+
+msgid "Already in use"
+msgstr "Redan i bruk"
+
 msgid "Locked"
 msgstr "Låst"
 
+msgid "Timeout"
+msgstr "Timeout"
+
+msgid "Can't connect"
+msgstr "Kan inte ansluta"
+
+msgid "Can't resolve"
+msgstr "Kan inte lösas"
+
+msgid "Connection error"
+msgstr "Anslutningsfel"
+
+msgid "Can't acquire resource"
+msgstr "Kan inte hämta resurs"
+
+msgid "Can't fork"
+msgstr "Kan inte forka"
+
+msgid "Invalid data"
+msgstr "Ogiltig data"
+
+msgid "Invalid parameter"
+msgstr "Ogiltig parameter"
+
+msgid "Already exists"
+msgstr "Finns redan"
+
+msgid "Does not exist"
+msgstr "Existerar inte"
+
+msgid "Can't read database"
+msgstr "Kan inte läsa databasen"
+
+msgid "Can't write database"
+msgstr "Kan inte skriva till databasen"
+
+msgid "Compilation failed"
+msgstr "Kompileringen misslyckades"
+
+msgid "Method not found"
+msgstr "Metod hittades inte"
+
+msgid "Link failed"
+msgstr "Länk misslyckades"
+
+msgid "Script failed"
+msgstr "Skript misslyckades"
+
+msgid "Cyclic link detected"
+msgstr "Cyklist länk upptäckt"
+
+msgid "Invalid declaration"
+msgstr "Ogiltig deklaration"
+
+msgid "Duplicate symbol"
+msgstr "Duplicera symbol"
+
+msgid "Parse error"
+msgstr "Tolkningsfel"
+
+msgid "Busy"
+msgstr "Upptagen"
+
+msgid "Skip"
+msgstr "Hoppa över"
+
 msgid "Help"
 msgstr "Hjälp"
+
+msgid "Bug"
+msgstr "Bugg"
+
+msgid "Printer on fire"
+msgstr "Skrivaren brinner"
 
 msgid "unset"
 msgstr "nollställ"
@@ -1524,6 +1662,9 @@ msgstr "Balanserad"
 msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
 msgstr "Speglad"
+
+msgid "Handle mode: %s"
+msgstr "Handtagsläge: %s"
 
 msgid "Stream:"
 msgstr "Ström:"
@@ -6588,6 +6729,12 @@ msgstr "Beroende-redigerare"
 msgid "Owners of: %s (Total: %d)"
 msgstr "Ägare av: %s (Totalt: %d)"
 
+msgid "No owners found for: %s"
+msgstr "Inga ägare hittades för: %s"
+
+msgid "Owners List"
+msgstr "Ägarlista"
+
 msgid "Localization remap"
 msgstr "Lokaliserings-ersättning"
 
@@ -6987,6 +7134,9 @@ msgstr "Välj resurs"
 
 msgid "Select Scene"
 msgstr "Välj scen"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "Rekursion upptäckt, direktförhandsvisning misslyckades."
 
 msgid "Instant Preview"
 msgstr "Direktförhandsvisning"
@@ -11486,6 +11636,24 @@ msgid "This debug draw mode is only supported when using the Forward+ renderer."
 msgstr ""
 "Detta felsökningsritläge stöds endast vid användning av Forward+‑renderaren."
 
+msgid "X: %s"
+msgstr "X: %s"
+
+msgid "Y: %s"
+msgstr "Y: %s"
+
+msgid "Z: %s"
+msgstr "Z: %s"
+
+msgid "Size: %s (%.1fMP)"
+msgstr "Storlek: %s (%.1fMP)"
+
+msgid "Objects: %d"
+msgstr "Objekt: %d"
+
+msgid "Primitives: %d"
+msgstr "Primitiver: %d"
+
 msgid "Draw Calls: %d"
 msgstr "Ritanrop: %d"
 
@@ -11656,6 +11824,15 @@ msgstr ""
 
 msgid "SDFGI Probes"
 msgstr "SDFGI-sonder"
+
+msgid ""
+"Left-click a SDFGI probe to display its occlusion information (white = not "
+"occluded, red = fully occluded).\n"
+"Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"Vänsterklicka på en SDFGI‑prob för att visa dess ocklusionsinformation (vitt "
+"= inte ockluderad, rött = helt ockluderad).\n"
+"Kräver att SDFGI är aktiverat i Environment för att ha synlig effekt."
 
 msgid "Scene Luminance"
 msgstr "Scen-luminans"
@@ -12914,6 +13091,9 @@ msgstr "Centrera markering"
 
 msgid "Frame Selection"
 msgstr "Inrama markering"
+
+msgid "Auto Resample CanvasItems"
+msgstr "Auto‑resampla CanvasItems"
 
 msgid "Preview Canvas Scale"
 msgstr "Förhandsvisa canvas-skala"
@@ -18676,6 +18856,18 @@ msgstr "ObjectDB‑referenser + inbyggda referenser"
 msgid "Cycles detected in the ObjectDB"
 msgstr "Cykler upptäckta i ObjectDB"
 
+msgid "Native References: %d"
+msgstr "Inhemska referenser: %d"
+
+msgid "ObjectDB References: %d"
+msgstr "ObjectDB‑referenser: %d"
+
+msgid "Total References: %d"
+msgstr "Totalt antal referenser: %d"
+
+msgid "ObjectDB Cycles: %d"
+msgstr "ObjectDB-cykler: %d"
+
 msgid "[center]ObjectDB References[center]"
 msgstr "[center]ObjectDB-referenser[center]"
 
@@ -18737,6 +18929,26 @@ msgstr "Totalt antal objekt:"
 
 msgid "Total Nodes:"
 msgstr "Totalt antal noder:"
+
+msgid ""
+"Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')"
+"[/i]"
+msgstr ""
+"Flera rotnoder [i](möjligt anrop till ’remove_child’ utan ’queue_free’)[/i]"
+
+msgid ""
+"RefCounted objects only referenced in cycles [i](cycles often indicate a "
+"memory leaks)[/i]"
+msgstr ""
+"RefCounted‑objekt refereras endast i cykler [i](cykler indikerar ofta "
+"minnesläckor)[/i]"
+
+msgid ""
+"Scripted objects not referenced by any other objects [i](unreferenced objects "
+"may indicate a memory leak)[/i]"
+msgstr ""
+"Scriptade objekt refereras inte av några andra objekt [i](orefererade objekt "
+"kan indikera en minnesläcka)[/i]"
 
 msgid "Generating Snapshot"
 msgstr "Genererar ögonblicksbild"
@@ -20921,6 +21133,13 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D kräver en XRCamera3D‑barnnod."
 
 msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr ""
+"Att ändra skalningen på noden **XROrigin3D** stöds inte. Ändra **World "
+"Scale** i stället."
+
+msgid ""
 "XR shaders are not enabled in project settings. Stereoscopic output is not "
 "supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
 "stereoscopic output."
@@ -21021,15 +21240,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s kan inte släppas här. Använd %s för att avbryta."
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Observera att GraphEdit och GraphNode kommer att genomgå omfattande "
-"omstrukturering i en framtida 4.x‑version, vilket innebär API‑ändringar som "
-"bryter kompatibilitet."
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -21075,6 +21285,9 @@ msgstr ""
 "ScrollContainer är avsedd att fungera med en enda underordnad kontroll.\n"
 "Använd en container som underordnad kontroll (VBox, HBox, etc.) eller en "
 "kontroll och ange den anpassade minimistorleken manuellt."
+
+msgid "Drag to resize"
+msgstr "Dra för att ändra storlek"
 
 msgid ""
 "This node doesn't have a SubViewport as child, so it can't display its "
@@ -21448,6 +21661,24 @@ msgstr "Ingen matchande funktion funnen för: '%s'."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s' kan inte skickas som parameter '%s' i det sammanhanget."
+
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to a custom "
+"function. Consider sampling it in the main function and then passing the "
+"vector result to the custom function."
+msgstr ""
+"Det går inte att skicka en multiview‑texturesampler som parameter till en "
+"anpassad funktion. Överväg att sampla den i huvudfunktionen och sedan skicka "
+"vektorresultatet till den anpassade funktionen."
+
+msgid ""
+"Unable to pass RADIANCE texture sampler as a parameter to a custom function. "
+"Consider sampling it in the main function and then passing the vector result "
+"to the custom function."
+msgstr ""
+"Det går inte att skicka en **RADIANCE‑texturesampler** som parameter till en "
+"anpassad funktion. Överväg att sampla den i huvudfunktionen och sedan skicka "
+"vektorresultatet till den anpassade funktionen."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Okänd identifierare i uttrycket: '%s'."

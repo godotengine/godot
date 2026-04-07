@@ -44,9 +44,6 @@
 #include "servers/rendering/renderer_rd/shaders/effects/octmap_roughness.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/octmap_roughness_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/specular_merge.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
-
-#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 
@@ -237,7 +234,7 @@ private:
 
 	struct CopyToOctmapPushConstant {
 		float border_size;
-		float pad[3];
+		uint32_t pad[3];
 	};
 
 	struct CopyToOctmap {
@@ -282,8 +279,8 @@ private:
 
 	struct OctmapFilterPushConstant {
 		float border_size[2];
-		uint32_t size;
-		uint32_t pad;
+		uint32_t pad1;
+		uint32_t pad2;
 	};
 
 	struct OctmapFilterRasterPushConstant {

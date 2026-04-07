@@ -50,6 +50,9 @@ public:
 		/// Check if this node has any children
 		inline bool			HasChildren() const						{ return mChild[0] != cInvalidNodeIndex || mChild[1] != cInvalidNodeIndex; }
 
+		/// Get child node
+		inline const Node * GetChild(uint inIdx, const Array<Node> &inNodes) const { return mChild[inIdx] != cInvalidNodeIndex? &inNodes[mChild[inIdx]] : nullptr; }
+
 		/// Min depth of tree
 		uint				GetMinDepth(const Array<Node> &inNodes) const;
 
@@ -95,7 +98,7 @@ public:
 	};
 
 	/// Constructor
-							AABBTreeBuilder(TriangleSplitter &inSplitter, uint inMaxTrianglesPerLeaf = 16);
+	explicit				AABBTreeBuilder(TriangleSplitter &inSplitter, uint inMaxTrianglesPerLeaf = 16);
 
 	/// Recursively build tree, returns the root node of the tree
 	Node *					Build(AABBTreeBuilderStats &outStats);

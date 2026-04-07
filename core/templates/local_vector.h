@@ -32,7 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
 
@@ -350,7 +350,7 @@ public:
 			push_back(element);
 		}
 	}
-	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
+	_FORCE_INLINE_ explicit LocalVector(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
 			data[i] = p_from.data[i];

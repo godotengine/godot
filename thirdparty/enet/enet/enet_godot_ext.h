@@ -49,5 +49,7 @@ ENET_API void enet_address_set_ip(ENetAddress * address, const uint8_t * ip, siz
 ENET_API int enet_host_dtls_server_setup (ENetHost *, void *);
 ENET_API int enet_host_dtls_client_setup (ENetHost *, const char *, void *);
 ENET_API void enet_host_refuse_new_connections (ENetHost *, int);
+ENET_API void enet_peer_socket_bind (ENetPeer *);
+ENET_API void enet_peer_socket_destroy (ENetPeer *);
 
 #endif // __ENET_GODOT_EXT_H__

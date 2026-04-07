@@ -30,6 +30,7 @@
 
 #include "audio_stream_randomizer_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "servers/audio/audio_stream.h"

@@ -34,14 +34,14 @@
 # Allan Nordhøy <epost@anotheragency.no>, 2024.
 # Simon Eriksson <redundantinfo@gmail.com>, 2024.
 # Isak Waltin <isak@waltin.se>, 2024, 2025.
-# Lasse Edsvik <lasse@lasseedsvik.se>, 2025.
+# Lasse Edsvik <lasse@lasseedsvik.se>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-20 02:47+0000\n"
+"PO-Revision-Date: 2026-01-22 09:33+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/sv/>\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "Application"
 msgstr "Applikation"
@@ -2894,6 +2894,9 @@ msgstr "Storlek på manipulator‑gizmo"
 msgid "Manipulator Gizmo Opacity"
 msgstr "Opacitet för manipulator‑gizmo"
 
+msgid "Show Gizmo During Rotation"
+msgstr "Visa gizmo under rotation"
+
 msgid "Grid Color"
 msgstr "Rutnätsfärg"
 
@@ -2935,6 +2938,9 @@ msgstr "Zoomhastighetsfaktor"
 
 msgid "Ruler Width"
 msgstr "Linjalbredd"
+
+msgid "Auto Resample Delay"
+msgstr "Automatisk omsamplingsfördröjning"
 
 msgid "Bone Mapper"
 msgstr "Benkartläggare"
@@ -3373,6 +3379,9 @@ msgstr "XR"
 
 msgid "OpenXR"
 msgstr "OpenXR"
+
+msgid "Target API Version"
+msgstr "Målversion för API"
 
 msgid "Default Action Map"
 msgstr "Standardåtgärdskarta"
@@ -8398,6 +8407,12 @@ msgstr "Systemmeny‑ID"
 msgid "Prefer Native Menu"
 msgstr "Föredra inbyggd meny"
 
+msgid "Shrink Height"
+msgstr "Minska höjd"
+
+msgid "Shrink Width"
+msgstr "Minska bredd"
+
 msgid "Fill Mode"
 msgstr "Fyllnadsläge"
 
@@ -11006,6 +11021,12 @@ msgstr "Rullningshint vertikal"
 msgid "Scroll Hint Horizontal"
 msgstr "Horisontell rullningshint"
 
+msgid "Scroll Hint Vertical Color"
+msgstr "Färg för vertikal rullningshint"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Färg för horisontell rullningshint"
+
 msgid "Embedded Border"
 msgstr "Inbäddad ram"
 
@@ -11270,6 +11291,9 @@ msgstr "Barn‑HL‑linjefärg"
 msgid "Custom Button Font Highlight"
 msgstr "Anpassad knapp (typsnitt, markerat)"
 
+msgid "Scroll Hint Color"
+msgstr "Färg för rullningshint"
+
 msgid "Item Margin"
 msgstr "Objektmarginal"
 
@@ -11284,6 +11308,12 @@ msgstr "Inre objektmarginal (höger)"
 
 msgid "Inner Item Margin Top"
 msgstr "Inre objektmarginal (övre)"
+
+msgid "Check H Separation"
+msgstr "Kontrollera horisontell separation"
+
+msgid "Icon H Separation"
+msgstr "Ikonens horisontella separation"
 
 msgid "Button Margin"
 msgstr "Knappmarginal"

@@ -1780,16 +1780,24 @@ static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) {
         // Doesn't have an RGB LED, so don't return SDL_JOYSTICK_CAP_RGB_LED here
         result |= SDL_JOYSTICK_CAP_RUMBLE;
+		// But has the HOME LED, so
+		result |= SDL_JOYSTICK_CAP_MONO_LED;
     } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
         result |= SDL_JOYSTICK_CAP_RUMBLE;
+		if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+			result |= SDL_JOYSTICK_CAP_MONO_LED; // Those types of controllers also have the Home LED.
+		}
     }
+
     return result;
 }
 
 static bool HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    return SDL_Unsupported();
+	SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+	int value = (int)((SDL_max(red, SDL_max(green, blue)) / 255.0f) * 100.0f); // The colors are received between 0-255 and we need them to be 0-100.
+	return SetHomeLED(ctx, (Uint8)value);
 }
 
 static bool HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)

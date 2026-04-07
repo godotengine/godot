@@ -30,11 +30,13 @@
 
 #include "script_language.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/templates/sort_array.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
@@ -45,7 +47,6 @@ thread_local bool ScriptServer::thread_entered = false;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
-ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 // These need to be the last static variables in this file, since we're exploiting the reverse-order destruction of static variables.
 static bool is_program_exiting = false;
@@ -172,6 +173,7 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_global_name"), &Script::get_global_name);
 
+	ClassDB::bind_method(D_METHOD("has_script_method", "method_name"), &Script::has_method);
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
 
 	ClassDB::bind_method(D_METHOD("get_script_property_list"), &Script::_get_script_property_list);
@@ -190,27 +192,12 @@ void Script::_bind_methods() {
 
 void Script::reload_from_file() {
 #ifdef TOOLS_ENABLED
-	// Replicates how the ScriptEditor reloads script resources, which generally handles it.
-	// However, when scripts are to be reloaded but aren't open in the internal editor, we go through here instead.
-	const Ref<Script> rel = ResourceLoader::load(ResourceLoader::path_remap(get_path()), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-	if (rel.is_null()) {
-		return;
+	if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
+		get_language()->reload_tool_script(this, true);
+	} else {
+		Array scripts = { this };
+		get_language()->reload_scripts(scripts, true);
 	}
-
-	set_source_code(rel->get_source_code());
-	set_last_modified_time(rel->get_last_modified_time());
-
-	// Only reload the script when there are no compilation errors to prevent printing the error messages twice.
-	if (rel->is_valid()) {
-		if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
-			get_language()->reload_tool_script(this, true);
-		} else {
-			// It's important to set p_keep_state to true in order to manage reloading scripts
-			// that are currently instantiated.
-			reload(true);
-		}
-	}
-
 #else
 	Resource::reload_from_file();
 #endif
@@ -253,6 +240,13 @@ Error ScriptServer::register_language(ScriptLanguage *p_language) {
 		ERR_FAIL_COND_V_MSG(other_language->get_type() == p_language->get_type(), ERR_ALREADY_EXISTS, vformat("A script language with type '%s' is already registered.", p_language->get_type()));
 	}
 	_languages[_language_count++] = p_language;
+
+	// Make sure the new language is initialized in case languages have already been initialized before
+	// This happens when importing the GDExtension for the first time in the editor
+	if (languages_ready) {
+		p_language->init();
+	}
+
 	return OK;
 }
 
@@ -527,7 +521,7 @@ void ScriptServer::get_global_class_list(LocalVector<StringName> &r_global_class
 	for (const KeyValue<StringName, GlobalScriptClass> &global_class : global_classes) {
 		r_global_classes.push_back(global_class.key);
 	}
-	SortArray<StringName> sorter;
+	SortArray<StringName, StringName::AlphCompare> sorter;
 	sorter.sort(&r_global_classes[r_global_classes.size() - global_classes.size()], global_classes.size());
 }
 

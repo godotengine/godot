@@ -32,6 +32,8 @@
 
 #include "scene/gui/graph_edit.h"
 
+#include <cfloat> // FLT_MIN, FLT_MAX
+
 void GraphEditArranger::arrange_nodes() {
 	ERR_FAIL_NULL(graph_edit);
 
@@ -242,14 +244,17 @@ int GraphEditArranger::_set_operations(SET_OPERATIONS p_operation, HashSet<Strin
 HashMap<int, Vector<StringName>> GraphEditArranger::_layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours) {
 	HashMap<int, Vector<StringName>> l;
 
-	HashSet<StringName> p = r_selected_nodes, q = r_selected_nodes, u, z;
+	HashSet<StringName> p(r_selected_nodes);
+	HashSet<StringName> q(r_selected_nodes);
+	HashSet<StringName> u;
+	HashSet<StringName> z;
 	int current_layer = 0;
 	bool selected = false;
 
 	while (!_set_operations(GraphEditArranger::IS_EQUAL, q, u)) {
 		_set_operations(GraphEditArranger::DIFFERENCE, p, u);
 		for (const StringName &E : p) {
-			HashSet<StringName> n = r_upper_neighbours[E];
+			HashSet<StringName> n(r_upper_neighbours[E]);
 			if (_set_operations(GraphEditArranger::IS_SUBSET, n, z)) {
 				Vector<StringName> t;
 				t.push_back(E);
@@ -426,14 +431,14 @@ void GraphEditArranger::_calculate_inner_shifts(Dictionary &r_inner_shifts, cons
 
 float GraphEditArranger::_calculate_threshold(const StringName &p_v, const StringName &p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions) {
 #define MAX_ORDER 2147483647
-#define ORDER(node, layers)                            \
+#define ORDER(node, layers) \
 	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node);              \
-		if (index > 0) {                               \
-			order = index;                             \
-			break;                                     \
-		}                                              \
-		order = MAX_ORDER;                             \
+		int index = layers[i].find(node); \
+		if (index > 0) { \
+			order = index; \
+			break; \
+		} \
+		order = MAX_ORDER; \
 	}
 
 	int order = MAX_ORDER;
@@ -505,14 +510,14 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 }
 
 void GraphEditArranger::_place_block(const StringName &p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions) {
-#define PRED(node, layers)                             \
+#define PRED(node, layers) \
 	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node);              \
-		if (index > 0) {                               \
-			predecessor = layers[i][index - 1];        \
-			break;                                     \
-		}                                              \
-		predecessor = StringName();                    \
+		int index = layers[i].find(node); \
+		if (index > 0) { \
+			predecessor = layers[i][index - 1]; \
+			break; \
+		} \
+		predecessor = StringName(); \
 	}
 
 	StringName predecessor;

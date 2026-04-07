@@ -123,13 +123,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Pietro Marini <pietromarinivr2006@gmail.com>, 2025.
 # shifenis <dedi.ceka99@gmail.com>, 2026.
+# Mirto <mirtorande@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-05 13:02+0000\n"
-"Last-Translator: shifenis <dedi.ceka99@gmail.com>\n"
+"PO-Revision-Date: 2026-01-14 15:11+0000\n"
+"Last-Translator: Mirto <mirtorande@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -137,16 +138,157 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Fallito"
+
+msgid "Unavailable"
+msgstr "Non disponibile"
+
+msgid "Unconfigured"
+msgstr "Non configurato"
+
+msgid "Unauthorized"
+msgstr "Non autorizzato"
+
+msgid "Parameter out of range"
+msgstr "Parametro fuori intervallo"
+
+msgid "Out of memory"
+msgstr "Memoria esaurita"
+
+msgid "File not found"
+msgstr "File non trovato"
+
+msgid "File: Bad drive"
+msgstr "File: Disco danneggiato"
+
+msgid "File: Bad path"
+msgstr "File: Percorso non valido"
+
+msgid "File: Permission denied"
+msgstr "File: Permesso negato"
+
+msgid "File already in use"
+msgstr "Il file è già in uso"
+
+msgid "Can't open file"
+msgstr "Impossibile aprire il file"
+
+msgid "Can't write file"
+msgstr "Impossibile scrivere il file"
+
+msgid "Can't read file"
+msgstr "Impossibile leggere il file"
+
+msgid "File unrecognized"
+msgstr "File non riconosciuto"
+
+msgid "File corrupt"
+msgstr "File corrotto"
+
+msgid "Missing dependencies for file"
+msgstr "Dipendenze mancanti per il file"
+
+msgid "End of file"
+msgstr "Fine del file"
+
+msgid "Can't open"
+msgstr "Impossibile aprire"
+
+msgid "Can't create"
+msgstr "Impossibile creare"
+
+msgid "Query failed"
+msgstr "Richiesta fallita"
+
+msgid "Already in use"
+msgstr "Già in uso"
+
 msgid "Locked"
 msgstr "Bloccato"
 
+msgid "Timeout"
+msgstr "Tempo scaduto"
+
+msgid "Can't connect"
+msgstr "Impossibile connettersi"
+
+msgid "Can't resolve"
+msgstr "Impossibile risolvere"
+
+msgid "Connection error"
+msgstr "Errore di connessione"
+
+msgid "Can't acquire resource"
+msgstr "Impossibile acquisire la risorsa"
+
+msgid "Can't fork"
+msgstr "Impossibile creare il processo"
+
+msgid "Invalid data"
+msgstr "Dati non validi"
+
+msgid "Invalid parameter"
+msgstr "Parametro non valido"
+
+msgid "Already exists"
+msgstr "Già esistente"
+
+msgid "Does not exist"
+msgstr "Non esistente"
+
+msgid "Can't read database"
+msgstr "Impossibile leggere il database"
+
+msgid "Can't write database"
+msgstr "Impossibile scrivere nel database"
+
+msgid "Compilation failed"
+msgstr "Compilazione fallita"
+
+msgid "Method not found"
+msgstr "Metodo non trovato"
+
+msgid "Link failed"
+msgstr "Link fallito"
+
+msgid "Script failed"
+msgstr "Script fallito"
+
+msgid "Cyclic link detected"
+msgstr "Inclusione ciclica rilevata"
+
+msgid "Invalid declaration"
+msgstr "Dichiarazione non valida"
+
+msgid "Duplicate symbol"
+msgstr "Simbolo duplicato"
+
+msgid "Parse error"
+msgstr "Errore di sintassi"
+
+msgid "Busy"
+msgstr "Occupato"
+
+msgid "Skip"
+msgstr "Salta"
+
 msgid "Help"
 msgstr "Aiuto"
+
+msgid "Bug"
+msgstr "Bug"
+
+msgid "Printer on fire"
+msgstr "Errore critico della stampante"
+
+msgid "unset"
+msgstr "non impostato"
 
 msgid "Physical"
 msgstr "Fisico"
@@ -173,13 +315,13 @@ msgid "Mouse Wheel Right"
 msgstr "Rotellina del mouse a destra"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Pulsante laterale del mouse 1"
+msgstr "Tasto laterale del mouse 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Pulsante laterale del mouse 2"
+msgstr "Tasto laterale del mouse 2"
 
 msgid "Button"
-msgstr "Pulsante"
+msgstr "Tasto"
 
 msgid "Double Click"
 msgstr "Doppio clic"
@@ -188,25 +330,25 @@ msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Movimento del mouse in posizione (%s) con velocità (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Levetta sinistra asse X, joystick 0 asse X"
+msgstr "Levetta sinistra asse X, Joystick 0 asse X"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Levetta sinistra asse Y, joystick 0 asse Y"
+msgstr "Levetta sinistra asse Y, Joystick 0 asse Y"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Levetta destra asse X, joystick 1 asse X"
+msgstr "Levetta destra asse X, Joystick 1 asse X"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Levetta destra asse Y, joystick 1 asse Y"
+msgstr "Levetta destra asse Y, Joystick 1 asse Y"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Asse X del joystick 2, grilletto sinistro, L2 Sony, LT Xbox"
+msgstr "Asse X del Joystick 2, Grilletto sinistro, L2 Sony, LT Xbox"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Asse Y del joystick 2, grilletto destro, R2 Sony, RT Xbox"
+msgstr "Asse Y del Joystick 2, Grilletto destro, R2 Sony, RT Xbox"
 
 msgid "Joystick 3 X-Axis"
-msgstr "Asse X del joystick 3"
+msgstr "Asse X del Joystick 3"
 
 msgid "Joystick 3 Y-Axis"
 msgstr "Asse Y del joystick 3"
@@ -1280,6 +1422,15 @@ msgstr "Sposta un nodo"
 msgid "Transition exists!"
 msgstr "La transizione esiste!"
 
+msgid "Cannot transition to self!"
+msgstr "Impossibile creare una transizione verso lo stesso stato!"
+
+msgid "Cannot transition to \"Start\"!"
+msgstr "Impossibile creare una transizione verso \"Start\"!"
+
+msgid "Cannot transition from \"End\"!"
+msgstr "Impossibile creare una transizione da \"End\"!"
+
 msgid "Play/Travel to %s"
 msgstr "Riproduci/Raggiungi a %s"
 
@@ -1585,6 +1736,9 @@ msgstr "Taglia chiave(i)"
 
 msgid "Copy Key(s)"
 msgstr "Copia chiave(i)"
+
+msgid "Send Key(s) to RESET"
+msgstr "Invia Chiave(i) per il RESET"
 
 msgid "Delete Key(s)"
 msgstr "Elimina chiave(i)"
@@ -3561,8 +3715,14 @@ msgstr "Sposta questo pannello a sinistra di una scheda."
 msgid "Close this dock."
 msgstr "Chiudi questo pannello."
 
+msgid "This dock can't be closed."
+msgstr "Questo pannello non può essere chiuso."
+
+msgid "This dock does not support floating."
+msgstr "Questo pannello non può essere staccato dalla finestra principale."
+
 msgid "Make this dock floating."
-msgstr "Rendi questo pannello mobile."
+msgstr "Stacca questo pannello."
 
 msgid "Move Tab Left"
 msgstr "Sposta scheda a sinistra"
@@ -20227,15 +20387,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s non si può rilasciare qui. Usa %s per annullare."
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Tieni presente che GraphEdit e GraphNode subiranno un'estesa ristrutturazione "
-"in una futura versione 4.x che riguardano modifiche alla API con "
-"incompatibilità."
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -21018,7 +21169,7 @@ msgid "Expected constant expression after '='."
 msgstr "Prevista un'espressione costante dopo '='."
 
 msgid "Can't convert constant to '%s'."
-msgstr "Impossibile convertire la costante in \"%s\"."
+msgstr "Impossibile convertire la costante in '%s'."
 
 msgid "Expected an uniform subgroup identifier."
 msgstr "Previsto un identificatore di sottogruppo per uniformi."

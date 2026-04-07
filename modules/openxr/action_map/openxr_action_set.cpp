@@ -30,6 +30,8 @@
 
 #include "openxr_action_set.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRActionSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_localized_name", "localized_name"), &OpenXRActionSet::set_localized_name);
 	ClassDB::bind_method(D_METHOD("get_localized_name"), &OpenXRActionSet::get_localized_name);
@@ -42,7 +44,7 @@ void OpenXRActionSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_action_count"), &OpenXRActionSet::get_action_count);
 	ClassDB::bind_method(D_METHOD("set_actions", "actions"), &OpenXRActionSet::set_actions);
 	ClassDB::bind_method(D_METHOD("get_actions"), &OpenXRActionSet::get_actions);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "actions", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction", PROPERTY_USAGE_NO_EDITOR), "set_actions", "get_actions");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "actions", PROPERTY_HINT_RESOURCE_TYPE, OpenXRAction::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_actions", "get_actions");
 
 	ClassDB::bind_method(D_METHOD("add_action", "action"), &OpenXRActionSet::add_action);
 	ClassDB::bind_method(D_METHOD("remove_action", "action"), &OpenXRActionSet::remove_action);

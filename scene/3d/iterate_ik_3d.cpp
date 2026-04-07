@@ -30,6 +30,9 @@
 
 #include "iterate_ik_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 bool IterateIK3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -119,7 +122,7 @@ void IterateIK3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			String joint_path = path + "joints/" + itos(j) + "/";
 			props.push_back(PropertyInfo(Variant::INT, joint_path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
 			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "rotation_axis_vector"));
-			props.push_back(PropertyInfo(Variant::OBJECT, joint_path + "limitation", PROPERTY_HINT_RESOURCE_TYPE, "JointLimitation3D"));
+			props.push_back(PropertyInfo(Variant::OBJECT, joint_path + "limitation", PROPERTY_HINT_RESOURCE_TYPE, JointLimitation3D::get_class_static()));
 			props.push_back(PropertyInfo(Variant::INT, joint_path + "limitation/right_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_secondary_direction()));
 			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "limitation/right_axis_vector"));
 			props.push_back(PropertyInfo(Variant::QUATERNION, joint_path + "limitation/rotation_offset"));
@@ -203,6 +206,9 @@ bool IterateIK3D::is_deterministic() const {
 void IterateIK3D::set_target_node(int p_index, const NodePath &p_node_path) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	iterate_settings[p_index]->target_node = p_node_path;
+	if (should_check_node_path() && !p_node_path.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_node_path))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Target node '" + String(p_node_path) + "' not found.");
+	}
 	update_configuration_warnings();
 }
 

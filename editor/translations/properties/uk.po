@@ -38,13 +38,13 @@
 # Максим Горпиніч <mgorpinic2005@gmail.com>, 2024.
 # Максим Горпиніч <maksimgorpinic2005a@gmail.com>, 2025.
 # Максим Горпиніч <maksimgorpinic4@gmail.com>, 2025.
-# Максим Горпиніч <gorpinicmaksim0@gmail.com>, 2025.
+# Максим Горпиніч <gorpinicmaksim0@gmail.com>, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-19 13:25+0000\n"
+"PO-Revision-Date: 2026-01-20 09:04+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
@@ -54,7 +54,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "Application"
 msgstr "Застосування"
@@ -2898,6 +2898,9 @@ msgstr "Розмір гаджета маніпулятора"
 msgid "Manipulator Gizmo Opacity"
 msgstr "Непрозорість гаджета маніпулятора"
 
+msgid "Show Gizmo During Rotation"
+msgstr "Показувати Гізмо під час обертання"
+
 msgid "Grid Color"
 msgstr "Колір сітки"
 
@@ -2939,6 +2942,9 @@ msgstr "Коефіцієнт швидкості масштабування"
 
 msgid "Ruler Width"
 msgstr "Ширина лінійки"
+
+msgid "Auto Resample Delay"
+msgstr "Затримка автоматичного ресемплування"
 
 msgid "Bone Mapper"
 msgstr "Картограф кісток"
@@ -3377,6 +3383,9 @@ msgstr "XR"
 
 msgid "OpenXR"
 msgstr "OpenXR"
+
+msgid "Target API Version"
+msgstr "Цільова версія API"
 
 msgid "Default Action Map"
 msgstr "Карта дій за замовчуванням"
@@ -8402,6 +8411,12 @@ msgstr "Ідентифікатор системного меню"
 msgid "Prefer Native Menu"
 msgstr "Віддавайте перевагу рідному меню"
 
+msgid "Shrink Height"
+msgstr "Висота усадки"
+
+msgid "Shrink Width"
+msgstr "Ширина усадки"
+
 msgid "Fill Mode"
 msgstr "Режим заповнення"
 
@@ -11010,6 +11025,12 @@ msgstr "Підказка прокручування вертикально"
 msgid "Scroll Hint Horizontal"
 msgstr "Підказка прокручування по горизонталі"
 
+msgid "Scroll Hint Vertical Color"
+msgstr "Колір вертикальної підказки прокручування"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Колір горизонтальної підказки прокручування"
+
 msgid "Embedded Border"
 msgstr "Вбудована рамка"
 
@@ -11274,6 +11295,9 @@ msgstr "Діти HL Колір лінії"
 msgid "Custom Button Font Highlight"
 msgstr "Підсвічений шрифт нетипової кнопки"
 
+msgid "Scroll Hint Color"
+msgstr "Колір підказки прокручування"
+
 msgid "Item Margin"
 msgstr "Поле пункту"
 
@@ -11288,6 +11312,12 @@ msgstr "Внутрішнє поле елемента справа"
 
 msgid "Inner Item Margin Top"
 msgstr "Верх внутрішнього поля елемента"
+
+msgid "Check H Separation"
+msgstr "Перевірте розділення H"
+
+msgid "Icon H Separation"
+msgstr "Розділення піктограми H"
 
 msgid "Button Margin"
 msgstr "Поле кнопки"

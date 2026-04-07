@@ -112,6 +112,7 @@ class EditorResourcePicker : public HBoxContainer {
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
 	bool _is_custom_type_script() const;
+	Ref<Resource> _get_dropped_resource(const Variant &p_data) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

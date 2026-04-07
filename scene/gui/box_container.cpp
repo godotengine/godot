@@ -30,6 +30,7 @@
 
 #include "box_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/theme/theme_db.h"

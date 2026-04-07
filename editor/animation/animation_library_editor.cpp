@@ -30,7 +30,10 @@
 
 #include "animation_library_editor.h"
 
-#include "core/string/print_string.h"
+#include "core/io/config_file.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
@@ -43,6 +46,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
 
 void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
@@ -50,7 +55,6 @@ void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
 }
 
 void AnimationLibraryEditor::_add_library() {
-	add_library_dialog->set_title(TTR("Library Name:"));
 	add_library_name->set_text("");
 	add_library_dialog->popup_centered();
 	add_library_name->grab_focus();
@@ -209,7 +213,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 		} break;
 		case FILE_MENU_MAKE_LIBRARY_UNIQUE: {
 			StringName lib_name = file_dialog_library;
-			List<StringName> animation_list;
+			LocalVector<StringName> animation_list;
 
 			Ref<AnimationLibrary> ald = memnew(AnimationLibrary);
 			al->get_animation_list(&animation_list);
@@ -374,7 +378,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 					continue;
 				}
 
-				List<StringName> libs;
+				LocalVector<StringName> libs;
 				mixer->get_animation_library_list(&libs);
 				bool is_already_added = false;
 				for (const StringName &K : libs) {
@@ -420,7 +424,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 					continue;
 				}
 
-				List<StringName> anims;
+				LocalVector<StringName> anims;
 				al->get_animation_list(&anims);
 				bool is_already_added = false;
 				for (const StringName &K : anims) {
@@ -542,7 +546,6 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		Ref<AnimationLibrary> al = mixer->get_animation_library(lib_name);
 		switch (p_id) {
 			case LIB_BUTTON_ADD: {
-				add_library_dialog->set_title(TTR("Animation Name:"));
 				add_library_name->set_text("");
 				add_library_dialog->popup_centered();
 				add_library_name->grab_focus();
@@ -684,8 +687,8 @@ void AnimationLibraryEditor::update_tree() {
 	Color ss_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 
 	TreeItem *root = tree->create_item();
-	List<StringName> libs;
-	Vector<uint64_t> collapsed_lib_ids = _load_mixer_libs_folding();
+	LocalVector<StringName> libs;
+	const Vector<String> collapsed_libs = _load_mixer_libs_folding();
 
 	mixer->get_animation_library_list(&libs);
 
@@ -741,7 +744,7 @@ void AnimationLibraryEditor::update_tree() {
 
 		libitem->set_custom_bg_color(0, ss_color);
 
-		List<StringName> animations;
+		LocalVector<StringName> animations;
 		al->get_animation_list(&animations);
 		for (const StringName &L : animations) {
 			TreeItem *anitem = tree->create_item(libitem);
@@ -779,16 +782,10 @@ void AnimationLibraryEditor::update_tree() {
 
 			anitem->add_button(1, get_editor_theme_icon("Save"), ANIM_BUTTON_FILE, animation_library_is_foreign, TTR("Save animation to resource on disk."));
 			anitem->add_button(1, get_editor_theme_icon("Remove"), ANIM_BUTTON_DELETE, animation_library_is_foreign, TTR("Remove animation from Library."));
+		}
 
-			for (const uint64_t &lib_id : collapsed_lib_ids) {
-				Object *lib_obj = ObjectDB::get_instance(ObjectID(lib_id));
-				AnimationLibrary *cur_lib = Object::cast_to<AnimationLibrary>(lib_obj);
-				StringName M = mixer->get_animation_library_name(cur_lib);
-
-				if (M == K) {
-					libitem->set_collapsed_recursive(true);
-				}
-			}
+		if (collapsed_libs.has(String(K))) {
+			libitem->set_collapsed_recursive(true);
 		}
 	}
 }
@@ -808,65 +805,45 @@ void AnimationLibraryEditor::_save_mixer_lib_folding(TreeItem *p_item) {
 		ERR_PRINT("Error loading lib_folding.cfg: " + itos(err));
 	}
 
-	// Get unique identifier for this scene+mixer combination
-	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + String(mixer->get_path())).md5_text();
+	// Get unique identifier for this scene+mixer combination.
+	const String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + String(mixer->get_path())).md5_text();
 
-	PackedStringArray collapsed_lib_names;
-	PackedStringArray collapsed_lib_ids;
-
-	if (config->has_section(md)) {
-		collapsed_lib_names = String(config->get_value(md, "folding")).split("\n");
-		collapsed_lib_ids = String(config->get_value(md, "id")).split("\n");
+	Vector<String> collapsed_libs;
+	if (config->has_section_key(md, "folding")) {
+		collapsed_libs = config->get_value(md, "folding");
 	}
 
-	String lib_name = p_item->get_text(0);
-
-	// Get library reference and check validity
-	Ref<AnimationLibrary> al;
-	uint64_t lib_id = 0;
-
-	if (mixer->has_animation_library(lib_name)) {
-		al = mixer->get_animation_library(lib_name);
-		ERR_FAIL_COND(al.is_null());
-		lib_id = uint64_t(al->get_instance_id());
-	} else {
-		ERR_PRINT("Library not found: " + lib_name);
+	for (int i = collapsed_libs.size() - 1; i >= 0; i--) {
+		if (!mixer->has_animation_library(collapsed_libs[i])) {
+			collapsed_libs.remove_at(i);
+		}
 	}
 
-	int at = collapsed_lib_names.find(lib_name);
+	const String lib_name = p_item->get_text(0);
 	if (p_item->is_collapsed()) {
-		if (at != -1) {
-			//Entry exists and needs updating
-			collapsed_lib_ids.set(at, String::num_int64(lib_id + INT64_MIN));
-		} else {
-			//Check if it's a rename
-			int id_at = collapsed_lib_ids.find(String::num_int64(lib_id + INT64_MIN));
-			if (id_at != -1) {
-				//It's actually a rename
-				collapsed_lib_names.set(id_at, lib_name);
-			} else {
-				//It's a new entry
-				collapsed_lib_names.append(lib_name);
-				collapsed_lib_ids.append(String::num_int64(lib_id + INT64_MIN));
-			}
+		if (!collapsed_libs.has(lib_name)) {
+			collapsed_libs.append(lib_name);
 		}
 	} else {
-		if (at != -1) {
-			collapsed_lib_names.remove_at(at);
-			collapsed_lib_ids.remove_at(at);
-		}
+		collapsed_libs.erase(lib_name);
 	}
 
-	//Runtime IDs
-	config->set_value(md, "root", uint64_t(mixer->get_tree()->get_edited_scene_root()->get_instance_id()));
-	config->set_value(md, "mixer", uint64_t(mixer->get_instance_id()));
-
-	//Plan B recovery mechanism
+	// Plan B recovery mechanism.
 	config->set_value(md, "mixer_signature", _get_mixer_signature());
 
-	//Save folding state as text and runtime ID
-	config->set_value(md, "folding", String("\n").join(collapsed_lib_names));
-	config->set_value(md, "id", String("\n").join(collapsed_lib_ids));
+	// Save folding state as text and runtime ID.
+	config->set_value(md, "folding", collapsed_libs);
+
+	// Remove deprecated keys.
+	if (config->has_section_key(md, "id")) {
+		config->erase_section_key(md, "id");
+	}
+	if (config->has_section_key(md, "root")) {
+		config->erase_section_key(md, "root");
+	}
+	if (config->has_section_key(md, "mixer")) {
+		config->erase_section_key(md, "mixer");
+	}
 
 	err = config->save(path);
 	if (err != OK) {
@@ -874,47 +851,27 @@ void AnimationLibraryEditor::_save_mixer_lib_folding(TreeItem *p_item) {
 	}
 }
 
-Vector<uint64_t> AnimationLibraryEditor::_load_mixer_libs_folding() {
+Vector<String> AnimationLibraryEditor::_load_mixer_libs_folding() {
 	Ref<ConfigFile> config;
 	config.instantiate();
 
 	String path = EditorPaths::get_singleton()->get_project_settings_dir().path_join("lib_folding.cfg");
 	Error err = config->load(path);
-	if (err != OK && err != ERR_FILE_NOT_FOUND) {
-		ERR_PRINT("Error loading lib_folding.cfg: " + itos(err));
-		return Vector<uint64_t>();
-	}
+	ERR_FAIL_COND_V_MSG(err != OK && err != ERR_FILE_NOT_FOUND, Vector<String>(), "Error loading lib_folding.cfg: " + itos(err));
 
-	// Get unique identifier for this scene+mixer combination
-	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + String(mixer->get_path())).md5_text();
+	// Get unique identifier for this scene+mixer combination.
+	const String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + String(mixer->get_path())).md5_text();
 
-	Vector<uint64_t> collapsed_lib_ids;
-
-	if (config->has_section(md)) {
-		_load_config_libs_folding(collapsed_lib_ids, config.ptr(), md);
-
-	} else {
-		//The scene/mixer combination is no longer valid and we'll try to recover
-		uint64_t current_mixer_id = uint64_t(mixer->get_instance_id());
+	if (!config->has_section(md)) {
+		// The scene/mixer combination is no longer valid and we'll try to recover.
 		String current_mixer_signature = _get_mixer_signature();
-		Vector<String> sections = config->get_sections();
 
-		for (const String &section : sections) {
-			Variant mixer_id = config->get_value(section, "mixer");
-			if ((mixer_id.get_type() == Variant::INT && uint64_t(mixer_id) == current_mixer_id) || config->get_value(section, "mixer_signature") == current_mixer_signature) { // Ensure value exists and is correct type
-				// Found the mixer in a different section!
-				_load_config_libs_folding(collapsed_lib_ids, config.ptr(), section);
+		for (const String &section : config->get_sections()) {
+			if (config->get_value(section, "mixer_signature") == current_mixer_signature) {
+				config->set_value(md, "mixer_signature", current_mixer_signature);
+				config->set_value(md, "folding", config->get_value(section, "folding", PackedStringArray()));
 
-				//Cleanup old entry and copy fold data into new one!
-				String collapsed_lib_names_str = String(config->get_value(section, "folding"));
-				String collapsed_lib_ids_str = String(config->get_value(section, "id"));
 				config->erase_section(section);
-
-				config->set_value(md, "root", uint64_t(mixer->get_tree()->get_edited_scene_root()->get_instance_id()));
-				config->set_value(md, "mixer", uint64_t(mixer->get_instance_id()));
-				config->set_value(md, "mixer_signature", _get_mixer_signature());
-				config->set_value(md, "folding", collapsed_lib_names_str);
-				config->set_value(md, "id", collapsed_lib_ids_str);
 
 				err = config->save(path);
 				if (err != OK) {
@@ -925,33 +882,14 @@ Vector<uint64_t> AnimationLibraryEditor::_load_mixer_libs_folding() {
 		}
 	}
 
-	return collapsed_lib_ids;
-}
-
-void AnimationLibraryEditor::_load_config_libs_folding(Vector<uint64_t> &p_lib_ids, ConfigFile *p_config, String p_section) {
-	if (uint64_t(p_config->get_value(p_section, "root", 0)) != uint64_t(mixer->get_tree()->get_edited_scene_root()->get_instance_id())) {
-		// Root changed - tries to match by library names
-		PackedStringArray collapsed_lib_names = String(p_config->get_value(p_section, "folding", "")).split("\n");
-		for (const String &lib_name : collapsed_lib_names) {
-			if (mixer->has_animation_library(lib_name)) {
-				p_lib_ids.append(mixer->get_animation_library(lib_name)->get_instance_id());
-			} else {
-				print_line("Can't find ", lib_name, " in mixer");
-			}
-		}
-	} else {
-		// Root same - uses saved instance IDs
-		for (const String &saved_id : String(p_config->get_value(p_section, "id")).split("\n")) {
-			p_lib_ids.append(uint64_t(saved_id.to_int() - INT64_MIN));
-		}
-	}
+	return config->get_value(md, "folding", PackedStringArray());
 }
 
 String AnimationLibraryEditor::_get_mixer_signature() const {
 	String signature = String();
 
 	// Get all libraries sorted for consistency
-	List<StringName> libs;
+	LocalVector<StringName> libs;
 	mixer->get_animation_library_list(&libs);
 	libs.sort_custom<StringName::AlphCompare>();
 
@@ -960,7 +898,7 @@ String AnimationLibraryEditor::_get_mixer_signature() const {
 		signature += "::" + String(lib_name);
 		Ref<AnimationLibrary> lib = mixer->get_animation_library(lib_name);
 		if (lib.is_valid()) {
-			List<StringName> anims;
+			LocalVector<StringName> anims;
 			lib->get_animation_list(&anims);
 			anims.sort_custom<StringName::AlphCompare>();
 			for (const StringName &anim_name : anims) {
@@ -982,7 +920,12 @@ void AnimationLibraryEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			new_library_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			load_library_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
-		}
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			tree->set_column_title(0, TTR("Resource"));
+			tree->set_column_title(1, TTR("Storage"));
+		} break;
 	}
 }
 
@@ -1017,7 +960,7 @@ void AnimationLibraryEditor::_bind_methods() {
 }
 
 AnimationLibraryEditor::AnimationLibraryEditor() {
-	set_title(TTR("Edit Animation Libraries"));
+	set_title(TTRC("Edit Animation Libraries"));
 	set_process_shortcut_input(true);
 
 	file_dialog = memnew(EditorFileDialog);
@@ -1026,6 +969,8 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	file_dialog->connect("files_selected", callable_mp(this, &AnimationLibraryEditor::_load_files));
 
 	add_library_dialog = memnew(ConfirmationDialog);
+	add_library_dialog->set_title(TTRC("Library Name:"));
+
 	VBoxContainer *dialog_vb = memnew(VBoxContainer);
 	add_library_name = memnew(LineEdit);
 	dialog_vb->add_child(add_library_name);
@@ -1041,31 +986,33 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_spacer(true);
-	new_library_button = memnew(Button(TTR("New Library")));
-	new_library_button->set_tooltip_text(TTR("Create new empty animation library."));
+	new_library_button = memnew(Button(TTRC("New Library")));
+	new_library_button->set_tooltip_text(TTRC("Create new empty animation library."));
 	new_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_add_library));
 	hb->add_child(new_library_button);
-	load_library_button = memnew(Button(TTR("Load Library")));
-	load_library_button->set_tooltip_text(TTR("Load animation library from disk."));
+	load_library_button = memnew(Button(TTRC("Load Library")));
+	load_library_button->set_tooltip_text(TTRC("Load animation library from disk."));
 	load_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_load_library));
 	hb->add_child(load_library_button);
 	vb->add_child(hb);
-	tree = memnew(Tree);
-	vb->add_child(tree);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	vb->add_child(mc);
+
+	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_theme_type_variation("TreeTable");
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0, TTR("Resource"));
-	tree->set_column_title(1, TTR("Storage"));
 	tree->set_column_expand(0, true);
 	tree->set_column_custom_minimum_width(1, EDSCALE * 250);
 	tree->set_column_expand(1, false);
 	tree->set_hide_root(true);
 	tree->set_hide_folding(false);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+	mc->add_child(tree);
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
 	tree->connect("button_clicked", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
 	tree->connect("item_collapsed", callable_mp(this, &AnimationLibraryEditor::_save_mixer_lib_folding));
@@ -1077,6 +1024,6 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	add_child(vb);
 
 	error_dialog = memnew(AcceptDialog);
-	error_dialog->set_title(TTR("Error:"));
+	error_dialog->set_title(TTRC("Error:"));
 	add_child(error_dialog);
 }

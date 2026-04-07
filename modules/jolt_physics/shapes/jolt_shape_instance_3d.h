@@ -32,9 +32,9 @@
 
 #include "core/math/transform_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Collision/Shape/Shape.h"
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 
 class JoltShapedObject3D;
 class JoltShape3D;

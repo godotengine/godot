@@ -30,7 +30,7 @@
 
 #include "rendering_shader_container_vulkan.h"
 
-#include "thirdparty/misc/smolv.h"
+#include <thirdparty/misc/smolv.h>
 
 // RenderingShaderContainerVulkan
 
@@ -101,7 +101,7 @@ RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatVulk
 }
 
 RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatVulkan::get_shader_spirv_version() const {
-	return SHADER_SPIRV_VERSION_1_3;
+	return SHADER_SPIRV_VERSION_1_4;
 }
 
 void RenderingShaderContainerFormatVulkan::set_debug_info_enabled(bool p_debug_info_enabled) {

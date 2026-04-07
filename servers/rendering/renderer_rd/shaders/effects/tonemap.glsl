@@ -69,7 +69,7 @@ layout(push_constant, std430) uniform Params {
 
 	vec2 pixel_size;
 	uint tonemapper;
-	uint pad;
+	float output_max_value;
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
@@ -92,9 +92,8 @@ layout(location = 0) out vec4 frag_color;
 // Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
 vec3 tonemap_reinhard(vec3 color) {
 	float white_squared = params.tonemapper_params.x;
-	vec3 white_squared_color = white_squared * color;
-	// Equivalent to color * (1 + color / white_squared) / (1 + color)
-	return (white_squared_color + color * color) / (white_squared_color + white_squared);
+	// Updated version of the Reinhard tonemapper supporting HDR rendering.
+	return color * (1.0f + color / white_squared) / (1.0f + color / params.output_max_value);
 }
 
 vec3 tonemap_filmic(vec3 color) {
@@ -148,14 +147,12 @@ vec3 tonemap_aces(vec3 color) {
 // Source and details: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
 // Input must be a non-negative linear scene value.
 vec3 allenwp_curve(vec3 x) {
-	const float output_max_value = 1.0; // SDR always has an output_max_value of 1.0
-
 	// These constants must match the those in the C++ code that calculates the parameters.
 	// 18% "middle gray" is perceptually 50% of the brightness of reference white.
 	const float awp_crossover_point = 0.18;
 	// When output_max_value and/or awp_crossover_point are no longer constant,
 	// awp_shoulder_max can be calculated on the CPU and passed in as params.tonemap_e.
-	const float awp_shoulder_max = output_max_value - awp_crossover_point;
+	const float awp_shoulder_max = params.output_max_value - awp_crossover_point;
 
 	float awp_contrast = params.tonemapper_params.x;
 	float awp_toe_a = params.tonemapper_params.y;
@@ -210,8 +207,6 @@ vec3 tonemap_agx(vec3 color) {
 			-0.855988495690215, 1.32639796461980, -0.238183969428088,
 			-0.108898916004672, -0.0270845997150571, 1.40253671195648);
 
-	const float output_max_value = 1.0; // SDR always has an output_max_value of 1.0
-
 	// Apply inset matrix.
 	color = rec709_to_rec2020_agx_inset_matrix * color;
 
@@ -221,7 +216,7 @@ vec3 tonemap_agx(vec3 color) {
 
 	// Clipping to output_max_value is required to address a cyan colour that occurs
 	// with very bright inputs.
-	color = min(vec3(output_max_value), color);
+	color = min(vec3(params.output_max_value), color);
 
 	// Apply outset to make the result more chroma-laden and then go back to Rec. 709.
 	color = agx_outset_rec2020_to_rec709_matrix * color;

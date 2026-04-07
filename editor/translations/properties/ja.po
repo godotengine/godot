@@ -59,14 +59,14 @@
 # rion <miyachikozin@gmail.com>, 2025.
 # Bagumeon <bagumelon@gmail.com>, 2025.
 # Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
-# Myeongjin <aranet100@gmail.com>, 2025.
+# Myeongjin <aranet100@gmail.com>, 2025, 2026.
 # johann carlo florin <join001re2@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-25 23:00+0000\n"
+"PO-Revision-Date: 2026-01-14 21:31+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
@@ -75,7 +75,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "Application"
 msgstr "アプリ"
@@ -132,7 +132,7 @@ msgid "Auto Accept Quit"
 msgstr "プログラム終了を自動的に受け入れる"
 
 msgid "Quit on Go Back"
-msgstr "戻るボタンで終了 (Android)"
+msgstr "戻るボタンで終了"
 
 msgid "Accessibility"
 msgstr "アクセシビリティ"

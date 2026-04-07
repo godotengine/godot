@@ -31,6 +31,7 @@
 #include "packed_scene_translation_parser_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/resources/packed_scene.h"
 
@@ -229,6 +230,8 @@ PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlug
 	lookup_properties.insert("filters");
 	lookup_properties.insert("script");
 	lookup_properties.insert("item_*/text");
+	lookup_properties.insert("accessibility_name");
+	lookup_properties.insert("accessibility_description");
 
 	// Exception list (to prevent false positives).
 	exception_list.insert("LineEdit", { "text" });

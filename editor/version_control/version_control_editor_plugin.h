@@ -130,8 +130,12 @@ private:
 	Button *refresh_button = nullptr;
 	TextEdit *commit_message = nullptr;
 	Button *commit_button = nullptr;
+	CheckButton *toggle_amend_commit = nullptr;
 
-	VBoxContainer *version_control_dock = nullptr;
+	String amend_commit_message;
+	String previous_commit_message;
+
+	EditorDock *version_control_dock = nullptr;
 	Label *diff_title = nullptr;
 	RichTextLabel *diff = nullptr;
 	OptionButton *diff_view_type_select = nullptr;
@@ -158,6 +162,7 @@ private:
 	void _force_push();
 	void _fetch();
 	void _commit();
+	void _toggle_amend_commit(bool p_toggled);
 	void _confirm_discard_all();
 	void _discard_all();
 	void _refresh_stage_area();

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/templates/safe_refcount.h"
 
 class RefCounted : public Object {
@@ -212,7 +212,9 @@ public:
 
 	template <typename... VarArgs>
 	void instantiate(VarArgs... p_params) {
-		ref(memnew(T(p_params...)));
+		Ref<T> ref = memnew(T(p_params...));
+		// Appropriate the new Ref, and if the previous one was set, free it.
+		SWAP(reference, ref.reference);
 	}
 
 	uint32_t hash() const { return HashMapHasherDefault::hash(reference); }
@@ -223,6 +225,16 @@ public:
 		unref();
 	}
 };
+
+template <typename T>
+struct memnew_result<T, std::enable_if_t<std::is_base_of_v<RefCounted, T>>> {
+	using class_name = Ref<T>;
+};
+
+template <typename T>
+void postinitialize_handler(Ref<T> &p_object) {
+	postinitialize_handler(p_object.ptr());
+}
 
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);
@@ -236,40 +248,6 @@ public:
 	Variant get_ref() const;
 	void set_obj(Object *p_object);
 	void set_ref(const Ref<RefCounted> &p_ref);
-};
-
-template <typename T>
-struct PtrToArg<Ref<T>> {
-	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
-		if (p_ptr == nullptr) {
-			return Ref<T>();
-		}
-		// p_ptr points to a RefCounted object
-		return Ref<T>(*reinterpret_cast<T *const *>(p_ptr));
-	}
-
-	typedef Ref<T> EncodeT;
-
-	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
-		// p_ptr points to an EncodeT object which is a Ref<T> object.
-		*(const_cast<Ref<RefCounted> *>(reinterpret_cast<const Ref<RefCounted> *>(p_ptr))) = p_val;
-	}
-};
-
-template <typename T>
-struct GetTypeInfo<Ref<T>> {
-	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
-	}
-};
-
-template <typename T>
-struct VariantInternalAccessor<Ref<T>> {
-	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
 };
 
 // Zero-constructing Ref initializes reference to nullptr (and thus empty).

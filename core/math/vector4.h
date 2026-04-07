@@ -98,6 +98,8 @@ struct [[nodiscard]] Vector4 {
 	Vector4 normalized() const;
 	bool is_normalized() const;
 
+	void zero() { x = y = z = w = 0; }
+
 	real_t distance_to(const Vector4 &p_to) const;
 	real_t distance_squared_to(const Vector4 &p_to) const;
 	Vector4 direction_to(const Vector4 &p_to) const;

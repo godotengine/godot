@@ -34,6 +34,8 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 
+#include <cstdio>
+
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {
 		bool operator()(const ScriptLanguage::ProfilingInfo &A, const ScriptLanguage::ProfilingInfo &B) const {
@@ -115,6 +117,10 @@ struct LocalDebugger::ScriptsProfiler {
 };
 
 void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+	if (script_debugger->is_ignoring_error_breaks() && p_is_error_breakpoint) {
+		return;
+	}
+
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 
 	if (!target_function.is_empty()) {

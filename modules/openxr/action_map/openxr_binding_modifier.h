@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../action_map/openxr_action.h"
 #include "core/io/resource.h"
 
 // Part of implementation for:

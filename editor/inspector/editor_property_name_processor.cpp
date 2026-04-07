@@ -50,7 +50,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_sty
 	if (!EditorSettings::get_singleton()) {
 		return STYLE_LOCALIZED;
 	}
-	const bool translate = EDITOR_GET("interface/editor/localize_settings");
+	const bool translate = EDITOR_GET("interface/editor/localization/localize_settings");
 	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
 }
 
@@ -167,6 +167,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["bptc"] = "BPTC";
 	capitalize_string_remaps["bvh"] = "BVH";
 	capitalize_string_remaps["ca"] = "CA";
+	capitalize_string_remaps["colr"] = "COLR";
 	capitalize_string_remaps["ccdik"] = "CCDIK";
 	capitalize_string_remaps["cd"] = "CD";
 	capitalize_string_remaps["cpu"] = "CPU";

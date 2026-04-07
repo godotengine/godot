@@ -30,6 +30,7 @@
 
 #include "post_import_plugin_skeleton_rest_fixer.h"
 
+#include "core/io/resource_importer.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/retarget_modifier_3d.h"
@@ -167,9 +168,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
-					for (const StringName &name : anims) {
+					for (const StringName &name : ap->get_sorted_animation_list()) {
 						Ref<Animation> anim = ap->get_animation(name);
 						int track_len = anim->get_track_count();
 						for (int i = 0; i < track_len; i++) {
@@ -235,9 +234,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
-				ap->get_animation_list(&anims);
-				for (const StringName &name : anims) {
+				for (const StringName &name : ap->get_sorted_animation_list()) {
 					if (String(name).contains_char('/')) {
 						continue; // Avoid animation library which may be created by importer dynamically.
 					}
@@ -407,9 +404,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 					while (nodes.size()) {
 						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-						List<StringName> anims;
-						ap->get_animation_list(&anims);
-						for (const StringName &name : anims) {
+						for (const StringName &name : ap->get_sorted_animation_list()) {
 							Ref<Animation> anim = ap->get_animation(name);
 							int track_len = anim->get_track_count();
 							for (int i = 0; i < track_len; i++) {
@@ -579,9 +574,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					String general_skeleton_pathname = UNIQUE_NODE_PREFIX + profile_skeleton->get_name();
 					while (nodes.size()) {
 						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-						List<StringName> anims;
-						ap->get_animation_list(&anims);
-						for (const StringName &name : anims) {
+						for (const StringName &name : ap->get_sorted_animation_list()) {
 							Ref<Animation> anim = ap->get_animation(name);
 							int track_len = anim->get_track_count();
 							for (int i = 0; i < track_len; i++) {
@@ -604,7 +597,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 											Vector<StringName> names = anim->track_get_path(i).get_names();
 											names.remove_at(0);
 											for (int j = 0; j < names.size(); j++) {
-												path_string += "/" + names[i].operator String();
+												path_string += "/" + names[j].operator String();
 											}
 										}
 										if (anim->track_get_path(i).get_subname_count() > 0) {
@@ -715,9 +708,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
 					ERR_CONTINUE(!ap);
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
-					for (const StringName &name : anims) {
+					for (const StringName &name : ap->get_sorted_animation_list()) {
 						Ref<Animation> anim = ap->get_animation(name);
 						int track_len = anim->get_track_count();
 						for (int i = 0; i < track_len; i++) {
@@ -846,9 +837,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
-				ap->get_animation_list(&anims);
-				for (const StringName &name : anims) {
+				for (const StringName &name : ap->get_sorted_animation_list()) {
 					Ref<Animation> anim = ap->get_animation(name);
 					int track_len = anim->get_track_count();
 					for (int i = 0; i < track_len; i++) {

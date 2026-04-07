@@ -30,8 +30,10 @@
 
 #pragma once
 
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
+
+class RenderingServer;
 
 class RendererCanvasRender {
 public:
@@ -66,14 +68,14 @@ public:
 		int item_mask;
 		int item_shadow_mask;
 		float directional_distance;
-		RS::CanvasLightMode mode;
-		RS::CanvasLightBlendMode blend_mode;
+		RSE::CanvasLightMode mode;
+		RSE::CanvasLightBlendMode blend_mode;
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
 		bool use_shadow;
 		int shadow_buffer_size;
-		RS::CanvasLightShadowFilter shadow_filter;
+		RSE::CanvasLightShadowFilter shadow_filter;
 		Color shadow_color;
 		float shadow_smooth;
 
@@ -112,15 +114,15 @@ public:
 			scale = 1.0;
 			energy = 1.0;
 			item_shadow_mask = 1;
-			mode = RS::CANVAS_LIGHT_MODE_POINT;
-			blend_mode = RS::CANVAS_LIGHT_BLEND_MODE_ADD;
+			mode = RSE::CANVAS_LIGHT_MODE_POINT;
+			blend_mode = RSE::CANVAS_LIGHT_BLEND_MODE_ADD;
 			//			texture_cache = nullptr;
 			next_ptr = nullptr;
 			directional_next_ptr = nullptr;
 			filter_next_ptr = nullptr;
 			use_shadow = false;
 			shadow_buffer_size = 2048;
-			shadow_filter = RS::CANVAS_LIGHT_FILTER_NONE;
+			shadow_filter = RSE::CANVAS_LIGHT_FILTER_NONE;
 			shadow_smooth = 0.0;
 			render_index_cache = -1;
 			directional_distance = 10000.0;
@@ -219,8 +221,8 @@ public:
 			float margin[4];
 			bool draw_center;
 			Color color;
-			RS::NinePatchAxisMode axis_x;
-			RS::NinePatchAxisMode axis_y;
+			RSE::NinePatchAxisMode axis_x;
+			RSE::NinePatchAxisMode axis_y;
 
 			RID texture;
 
@@ -231,7 +233,7 @@ public:
 		};
 
 		struct CommandPolygon : public Command {
-			RS::PrimitiveType primitive;
+			RSE::PrimitiveType primitive;
 			Polygon polygon;
 
 			RID texture;
@@ -325,7 +327,7 @@ public:
 		bool use_identity_transform : 1;
 
 		struct CanvasGroup {
-			RS::CanvasGroupMode mode;
+			RSE::CanvasGroupMode mode;
 			bool fit_empty;
 			float fit_margin;
 			bool blur_mipmaps;
@@ -459,8 +461,8 @@ public:
 			light_masked = false;
 		}
 
-		RS::CanvasItemTextureFilter texture_filter;
-		RS::CanvasItemTextureRepeat texture_repeat;
+		RSE::CanvasItemTextureFilter texture_filter;
+		RSE::CanvasItemTextureRepeat texture_repeat;
 
 		Item() {
 			commands = nullptr;
@@ -483,8 +485,8 @@ public:
 			light_masked = false;
 			update_when_visible = false;
 			z_final = 0;
-			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
-			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+			texture_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+			texture_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 			repeat_source = false;
 			on_interpolate_transform_list = false;
 			interpolated = true;
@@ -501,7 +503,7 @@ public:
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RSE::CanvasItemTextureFilter p_default_filter, RSE::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingServerTypes::RenderInfo *r_render_info = nullptr) = 0;
 
 	struct LightOccluderInstance {
 		bool enabled : 1;
@@ -516,7 +518,7 @@ public:
 		Transform2D xform_cache;
 		int light_mask;
 		bool sdf_collision;
-		RS::CanvasOccluderPolygonCullMode cull_cache;
+		RSE::CanvasOccluderPolygonCullMode cull_cache;
 
 		LightOccluderInstance *next = nullptr;
 
@@ -527,7 +529,7 @@ public:
 			sdf_collision = false;
 			next = nullptr;
 			light_mask = 1;
-			cull_cache = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
+			cull_cache = RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 		}
 	};
 
@@ -541,14 +543,14 @@ public:
 
 	virtual RID occluder_polygon_create() = 0;
 	virtual void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) = 0;
-	virtual void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) = 0;
+	virtual void occluder_polygon_set_cull_mode(RID p_occluder, RSE::CanvasOccluderPolygonCullMode p_mode) = 0;
 	virtual void set_shadow_texture_size(int p_size) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 	virtual void update() = 0;
 
 	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) = 0;
-	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) = 0;
+	virtual uint32_t get_pipeline_compilations(RSE::PipelineSource p_source) = 0;
 
 	RendererCanvasRender() {
 		ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCanvasRender singleton already exists.");
