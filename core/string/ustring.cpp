@@ -35,10 +35,10 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/ip_address.h"
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
-#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
@@ -47,7 +47,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
-#include "thirdparty/grisu2/grisu2.h"
+#include <thirdparty/grisu2/grisu2.h>
+
+#include <cstdio>
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -61,6 +63,17 @@ static const int MAX_DECIMALS = 32;
 
 static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
 	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
+}
+
+// Case-insensitive version of are_spans_equal
+template <typename T1, typename T2>
+static bool strings_equal_lower(const T1 *p_lhs_begin, const T2 *p_rhs_begin, size_t p_len) {
+	for (size_t i = 0; i < p_len; ++i) {
+		if (_find_lower(p_lhs_begin[i]) != _find_lower(p_rhs_begin[i])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path, String &r_fragment) const {
@@ -303,28 +316,8 @@ String &String::operator+=(char32_t p_char) {
 }
 
 bool String::operator==(const char *p_str) const {
-	// compare Latin-1 encoded c-string
-	int len = strlen(p_str);
-
-	if (length() != len) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	int l = length();
-
-	const char32_t *dst = get_data();
-
-	// Compare char by char
-	for (int i = 0; i < l; i++) {
-		if ((char32_t)p_str[i] != dst[i]) {
-			return false;
-		}
-	}
-
-	return true;
+	// Compare Latin-1 encoded c-string.
+	return span() == Span(p_str, strlen(p_str)).reinterpret<uint8_t>();
 }
 
 bool String::operator==(const wchar_t *p_str) const {
@@ -338,40 +331,16 @@ bool String::operator==(const wchar_t *p_str) const {
 }
 
 bool String::operator==(const char32_t *p_str) const {
-	const int len = strlen(p_str);
-
-	if (length() != len) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	return memcmp(ptr(), p_str, len * sizeof(char32_t)) == 0;
+	// Compare UTF-32 encoded c-string.
+	return span() == Span(p_str, strlen(p_str));
 }
 
 bool String::operator==(const String &p_str) const {
-	if (length() != p_str.length()) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	return memcmp(ptr(), p_str.ptr(), length() * sizeof(char32_t)) == 0;
+	return span() == p_str.span();
 }
 
 bool String::operator==(const Span<char32_t> &p_str_range) const {
-	const int len = p_str_range.size();
-
-	if (length() != len) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	return memcmp(ptr(), p_str_range.ptr(), len * sizeof(char32_t)) == 0;
+	return span() == p_str_range;
 }
 
 bool operator==(const char *p_chr, const String &p_str) {
@@ -383,8 +352,8 @@ bool operator==(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return p_str == String::utf16((const char16_t *)p_chr);
 #else
-	// wchar_t is 32-bi
-	return p_str == String((const char32_t *)p_chr);
+	// wchar_t is 32-bit
+	return p_str == (const char32_t *)p_chr;
 #endif
 }
 
@@ -397,7 +366,7 @@ bool operator!=(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return !(p_str == String::utf16((const char16_t *)p_chr));
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return !(p_str == String((const char32_t *)p_chr));
 #endif
 }
@@ -1227,6 +1196,9 @@ Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty
 	Vector<double> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1254,6 +1226,9 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 	Vector<float> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1286,6 +1261,9 @@ Vector<int> String::split_ints(const String &p_splitter, bool p_allow_empty) con
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int end = find(p_splitter, from);
@@ -1310,6 +1288,9 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int idx = 0;
@@ -1677,16 +1658,16 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 Vector<uint8_t> String::hex_decode() const {
 	ERR_FAIL_COND_V_MSG(length() % 2 != 0, Vector<uint8_t>(), "Hexadecimal string of uneven length.");
 
-#define HEX_TO_BYTE(m_output, m_index)                                                                                   \
-	uint8_t m_output;                                                                                                    \
-	c = operator[](m_index);                                                                                             \
-	if (is_digit(c)) {                                                                                                   \
-		m_output = c - '0';                                                                                              \
-	} else if (c >= 'a' && c <= 'f') {                                                                                   \
-		m_output = c - 'a' + 10;                                                                                         \
-	} else if (c >= 'A' && c <= 'F') {                                                                                   \
-		m_output = c - 'A' + 10;                                                                                         \
-	} else {                                                                                                             \
+#define HEX_TO_BYTE(m_output, m_index) \
+	uint8_t m_output; \
+	c = operator[](m_index); \
+	if (is_digit(c)) { \
+		m_output = c - '0'; \
+	} else if (c >= 'a' && c <= 'f') { \
+		m_output = c - 'a' + 10; \
+	} else if (c >= 'A' && c <= 'F') { \
+		m_output = c - 'A' + 10; \
+	} else { \
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Invalid hexadecimal character \"" + chr(c) + "\" at index " + m_index + "."); \
 	}
 
@@ -3087,41 +3068,7 @@ int String::find(const char *p_str, int p_from) const {
 		return find_char(*p_str, p_from); // Optimize with single-char find.
 	}
 
-	const char32_t *src = get_data();
-
-	if (str_len == 1) {
-		const char32_t needle = p_str[0];
-
-		for (int i = p_from; i < len; i++) {
-			if (src[i] == needle) {
-				return i;
-			}
-		}
-
-	} else {
-		for (int i = p_from; i <= (len - str_len); i++) {
-			bool found = true;
-			for (int j = 0; j < str_len; j++) {
-				int read_pos = i + j;
-
-				if (read_pos >= len) {
-					ERR_PRINT("read_pos>=length()");
-					return -1;
-				}
-
-				if (src[read_pos] != (char32_t)p_str[j]) {
-					found = false;
-					break;
-				}
-			}
-
-			if (found) {
-				return i;
-			}
-		}
-	}
-
-	return -1;
+	return span().find_sequence(Span((const unsigned char *)p_str, str_len), p_from);
 }
 
 int String::find_char(char32_t p_char, int p_from) const {
@@ -3154,35 +3101,20 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	const char32_t *src = get_data();
 
 	for (int i = p_from; i < len; i++) {
-		bool found = true;
 		for (int k = 0; k < key_count; k++) {
-			found = true;
-			if (r_key) {
-				*r_key = k;
+			const int str_len = keys[k].length();
+
+			if (i + str_len > len) {
+				continue; // Can't find this key here.
 			}
-			const char32_t *cmp = keys[k].get_data();
-			int l = keys[k].length();
 
-			for (int j = 0; j < l; j++) {
-				int read_pos = i + j;
-
-				if (read_pos >= len) {
-					found = false;
-					break;
+			const char32_t *str = keys[k].get_data();
+			if (are_spans_equal(src + i, str, str_len)) {
+				if (r_key) {
+					*r_key = k;
 				}
-
-				if (src[read_pos] != cmp[j]) {
-					found = false;
-					break;
-				}
+				return i;
 			}
-			if (found) {
-				break;
-			}
-		}
-
-		if (found) {
-			return i;
 		}
 	}
 
@@ -3200,28 +3132,11 @@ int String::findn(const String &p_str, int p_from) const {
 		return -1; // Still out of bounds
 	}
 
-	const char32_t *srcd = get_data();
+	const char32_t *src = get_data();
+	const char32_t *str = p_str.get_data();
 
 	for (int i = p_from; i <= (len - str_len); i++) {
-		bool found = true;
-		for (int j = 0; j < str_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos>=length()");
-				return -1;
-			}
-
-			char32_t src = _find_lower(srcd[read_pos]);
-			char32_t dst = _find_lower(p_str[j]);
-
-			if (src != dst) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
+		if (strings_equal_lower(src + i, str, str_len)) {
 			return i;
 		}
 	}
@@ -3240,28 +3155,10 @@ int String::findn(const char *p_str, int p_from) const {
 		return -1; // Still out of bounds
 	}
 
-	const char32_t *srcd = get_data();
+	const char32_t *src = get_data();
 
 	for (int i = p_from; i <= (len - str_len); i++) {
-		bool found = true;
-		for (int j = 0; j < str_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos>=length()");
-				return -1;
-			}
-
-			char32_t src = _find_lower(srcd[read_pos]);
-			char32_t dst = _find_lower(p_str[j]);
-
-			if (src != dst) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
+		if (strings_equal_lower(src + i, p_str, str_len)) {
 			return i;
 		}
 	}
@@ -3299,31 +3196,12 @@ int String::rfind(const char *p_str, int p_from) const {
 		return -1; // Still out of bounds
 	}
 
-	const char32_t *source = get_data();
-
-	for (int i = p_from; i >= 0; i--) {
-		bool found = true;
-		for (int j = 0; j < str_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= length()) {
-				ERR_PRINT("read_pos>=length()");
-				return -1;
-			}
-
-			const char32_t key_needle = p_str[j];
-			if (source[read_pos] != key_needle) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
-			return i;
-		}
+	if (str_len == 1) {
+		// Optimize with single-char implementation.
+		return span().rfind(p_str[0], p_from);
 	}
 
-	return -1;
+	return span().rfind_sequence(Span((const unsigned char *)p_str, str_len), p_from);
 }
 
 int String::rfind_char(char32_t p_char, int p_from) const {
@@ -3348,27 +3226,10 @@ int String::rfindn(const String &p_str, int p_from) const {
 	}
 
 	const char32_t *src = get_data();
+	const char32_t *str = p_str.get_data();
 
 	for (int i = p_from; i >= 0; i--) {
-		bool found = true;
-		for (int j = 0; j < str_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos>=length()");
-				return -1;
-			}
-
-			char32_t srcc = _find_lower(src[read_pos]);
-			char32_t dstc = _find_lower(p_str[j]);
-
-			if (srcc != dstc) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
+		if (strings_equal_lower(src + i, str, str_len)) {
 			return i;
 		}
 	}
@@ -3387,29 +3248,10 @@ int String::rfindn(const char *p_str, int p_from) const {
 		return -1; // Still out of bounds
 	}
 
-	const char32_t *source = get_data();
+	const char32_t *src = get_data();
 
 	for (int i = p_from; i >= 0; i--) {
-		bool found = true;
-		for (int j = 0; j < str_len; j++) {
-			int read_pos = i + j;
-
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos>=length()");
-				return -1;
-			}
-
-			const char32_t key_needle = p_str[j];
-			int srcc = _find_lower(source[read_pos]);
-			int keyc = _find_lower(key_needle);
-
-			if (srcc != keyc) {
-				found = false;
-				break;
-			}
-		}
-
-		if (found) {
+		if (strings_equal_lower(src + i, p_str, str_len)) {
 			return i;
 		}
 	}
@@ -4361,6 +4203,9 @@ String String::simplify_path() const {
 		}
 	}
 	Vector<String> dirs = s.split("/", false);
+	bool absolute_path = is_absolute_path();
+
+	absolute_path = absolute_path && !begins_with("res://"); // FIXME: Some code (GLTF importer) rely on accessing files up from `res://`, this probably should be disabled in the future.
 
 	for (int i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
@@ -4372,6 +4217,9 @@ String String::simplify_path() const {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
+			} else if (absolute_path && i == 0) {
+				dirs.remove_at(i);
+				i--;
 			}
 		}
 	}
@@ -5106,43 +4954,7 @@ String String::validate_filename() const {
 }
 
 bool String::is_valid_ip_address() const {
-	if (find_char(':') >= 0) {
-		Vector<String> ip = split(":");
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (n.is_empty()) {
-				continue;
-			}
-			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int();
-				if (nint < 0 || nint > 0xffff) {
-					return false;
-				}
-				continue;
-			}
-			if (!n.is_valid_ip_address()) {
-				return false;
-			}
-		}
-
-	} else {
-		Vector<String> ip = split(".");
-		if (ip.size() != 4) {
-			return false;
-		}
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (!n.is_valid_int()) {
-				return false;
-			}
-			int val = n.to_int();
-			if (val < 0 || val > 255) {
-				return false;
-			}
-		}
-	}
-
-	return true;
+	return IPAddress::is_valid_ip_address(*this);
 }
 
 bool String::is_resource_file() const {
@@ -5377,10 +5189,13 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 	static const String MINUS("-");
 	static const String PLUS("+");
 
+	LocalVector<bool> used_args;
+	used_args.resize_initialized(values.size());
 	String formatted;
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
 	uint64_t value_index = 0;
+	int selected_index = -1;
 	int min_chars = 0;
 	int min_decimals = 0;
 	bool in_decimals = false;
@@ -5407,15 +5222,16 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				case 'o': // Octal
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
+					if (!values[index].is_num()) {
 						return "a number is required";
 					}
 
-					int64_t value = values[value_index];
+					int64_t value = values[index];
 					int base = 16;
 					bool capitalize = false;
 					switch (c) {
@@ -5434,7 +5250,11 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					// Get basic number.
 					String str;
 					if (!as_unsigned) {
-						str = String::num_int64(Math::abs(value), base, capitalize);
+						if (value == INT64_MIN) { // INT64_MIN can't be represented as positive value.
+							str = String::num_int64(value, base, capitalize).trim_prefix("-");
+						} else {
+							str = String::num_int64(Math::abs(value), base, capitalize);
+						}
 					} else {
 						uint64_t uvalue = *((uint64_t *)&value);
 						// In unsigned hex, if the value fits in 32 bits, trim it down to that.
@@ -5467,21 +5287,25 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 
 					break;
 				}
 				case 'f': { // Float
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
+					if (!values[index].is_num()) {
 						return "a number is required";
 					}
 
-					double value = values[value_index];
+					double value = values[index];
 					bool is_negative = std::signbit(value);
 					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
@@ -5513,17 +5337,21 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
 				case 'v': { // Vector2/3/4/2i/3i/4i
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
 					int count;
-					switch (values[value_index].get_type()) {
+					switch (values[index].get_type()) {
 						case Variant::VECTOR2:
 						case Variant::VECTOR2I: {
 							count = 2;
@@ -5541,7 +5369,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						}
 					}
 
-					Vector4 vec = values[value_index];
+					Vector4 vec = values[index];
 					String str = "(";
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
@@ -5583,16 +5411,20 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					str += ")";
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
 				case 's': { // String
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					String str = values[value_index];
+					String str = values[index];
 					// Padding.
 					if (left_justified) {
 						str = str.rpad(min_chars);
@@ -5601,19 +5433,23 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
 				case 'c': {
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
 					// Convert to character.
 					String str;
-					if (values[value_index].is_num()) {
-						int value = values[value_index];
+					if (values[index].is_num()) {
+						int value = values[index];
 						if (value < 0) {
 							return "unsigned integer is lower than minimum";
 						} else if (value >= 0xd800 && value <= 0xdfff) {
@@ -5621,9 +5457,9 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						} else if (value > 0x10ffff) {
 							return "unsigned integer is greater than maximum";
 						}
-						str = chr(values[value_index]);
-					} else if (values[value_index].get_type() == Variant::STRING) {
-						str = values[value_index];
+						str = chr(values[index]);
+					} else if (values[index].get_type() == Variant::STRING) {
+						str = values[index];
 						if (str.length() != 1) {
 							return "%c requires number or single-character string";
 						}
@@ -5639,7 +5475,10 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
@@ -5683,6 +5522,14 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 					break;
 				}
+				case '$': {
+					if (min_chars > 0) {
+						selected_index = min_chars - 1;
+					}
+					min_chars = 0;
+					pad_with_zeros = false;
+					break;
+				}
 				case '.': { // Float/Vector separator.
 					if (in_decimals) {
 						return "too many decimal points in format";
@@ -5693,27 +5540,30 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 
 				case '*': { // Dynamic width, based on value.
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					Variant::Type value_type = values[value_index].get_type();
-					if (!values[value_index].is_num() &&
+					Variant::Type value_type = values[index].get_type();
+					if (!values[index].is_num() &&
 							value_type != Variant::VECTOR2 && value_type != Variant::VECTOR2I &&
 							value_type != Variant::VECTOR3 && value_type != Variant::VECTOR3I &&
 							value_type != Variant::VECTOR4 && value_type != Variant::VECTOR4I) {
 						return "* wants number or vector";
 					}
 
-					int size = values[value_index];
+					int size = values[index];
 
 					if (in_decimals) {
 						min_decimals = size;
 					} else {
 						min_chars = size;
 					}
-
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					break;
 				}
 
@@ -5732,6 +5582,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					left_justified = false;
 					show_sign = false;
 					in_decimals = false;
+					selected_index = -1;
 					break;
 				default:
 					formatted += c;
@@ -5743,8 +5594,10 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 		return "incomplete format";
 	}
 
-	if (value_index != values.size()) {
-		return "not all arguments converted during string formatting";
+	for (const bool &b : used_args) {
+		if (!b) {
+			return "not all arguments converted during string formatting";
+		}
 	}
 
 	if (error) {

@@ -33,6 +33,7 @@
 #include "../gdscript.h"
 
 #include "core/config/project_settings.h"
+#include "core/doc_data.h"
 
 HashMap<String, String> GDScriptDocGen::singletons;
 
@@ -315,6 +316,11 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 			const GDP::IdentifierNode *id = static_cast<const GDP::IdentifierNode *>(p_expression);
 			return id->name;
 		} break;
+		case GDP::Node::LAMBDA: {
+			const GDP::LambdaNode *lambda = static_cast<const GDP::LambdaNode *>(p_expression);
+			const GDP::IdentifierNode *id = lambda->function->identifier;
+			return id != nullptr ? id->name : "<anonymous lambda>";
+		} break;
 		default: {
 			// Nothing to do.
 		} break;
@@ -433,10 +439,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					method_doc.qualifiers += "static";
 				}
 
-				if (func_name == "_init") {
+				if (func_name == "_init" || func_name == "_static_init") {
 					method_doc.return_type = "void";
-				} else if (m_func->return_type) {
-					// `m_func->return_type->get_datatype()` is a metatype.
+				} else if (!m_func->get_datatype().is_variant()) {
 					_doctype_from_gdtype(m_func->get_datatype(), method_doc.return_type, method_doc.return_enum, true);
 				} else if (!m_func->body->has_return) {
 					// If no `return` statement, then return type is `void`, not `Variant`.

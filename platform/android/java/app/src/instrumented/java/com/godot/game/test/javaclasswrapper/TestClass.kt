@@ -104,6 +104,11 @@ class TestClass {
 		}
 
 		@JvmStatic
+		fun testArgLong(a: Long): String {
+			return "${a}"
+		}
+
+		@JvmStatic
 		fun testArgBoolArray(a: BooleanArray): String {
 			return a.contentToString();
 		}

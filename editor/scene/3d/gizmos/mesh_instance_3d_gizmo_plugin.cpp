@@ -51,12 +51,112 @@ bool MeshInstance3DGizmoPlugin::can_be_hidden() const {
 	return false;
 }
 
+String MeshInstance3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
+
+	if (Object::cast_to<CapsuleMesh>(*mesh->get_mesh())) {
+		return helper->capsule_get_handle_name(p_id);
+	}
+
+	if (Object::cast_to<CylinderMesh>(*mesh->get_mesh())) {
+		return helper->cone_frustum_get_handle_name(p_id);
+	}
+
+	if (Object::cast_to<BoxMesh>(*mesh->get_mesh())) {
+		return helper->box_get_handle_name(p_id);
+	}
+
+	return "";
+}
+
+Variant MeshInstance3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
+
+	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
+	if (capsule_mesh.is_valid()) {
+		return Vector2(capsule_mesh->get_radius(), capsule_mesh->get_height());
+	}
+
+	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
+	if (cylinder_mesh.is_valid()) {
+		return Vector3(cylinder_mesh->get_top_radius(), cylinder_mesh->get_bottom_radius(), cylinder_mesh->get_height());
+	}
+
+	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
+	if (box_mesh.is_valid()) {
+		return box_mesh->get_size();
+	}
+
+	return Variant();
+}
+
+void MeshInstance3DGizmoPlugin::begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) {
+	helper->initialize_handle_action(get_handle_value(p_gizmo, p_id, p_secondary), p_gizmo->get_node_3d()->get_global_transform());
+}
+
+void MeshInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
+	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
+
+	Vector3 segment[2];
+	helper->get_segment(p_camera, p_point, segment);
+
+	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
+	if (capsule_mesh.is_valid()) {
+		real_t height, radius;
+		Vector3 position;
+		helper->capsule_set_handle(segment, p_id, height, radius, position);
+		capsule_mesh->set_height(height);
+		capsule_mesh->set_radius(radius);
+		mesh->set_global_position(position);
+	}
+
+	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
+	if (cylinder_mesh.is_valid()) {
+		real_t height, radius_top, radius_bottom;
+		Vector3 position;
+		helper->cone_frustum_set_handle(segment, p_id, height, radius_top, radius_bottom, position);
+		cylinder_mesh->set_height(height);
+		cylinder_mesh->set_top_radius(radius_top);
+		cylinder_mesh->set_bottom_radius(radius_bottom);
+		mesh->set_global_position(position);
+	}
+
+	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
+	if (box_mesh.is_valid()) {
+		Vector3 box_size, position;
+		helper->box_set_handle(segment, p_id, box_size, position);
+		box_mesh->set_size(box_size);
+		mesh->set_global_position(position);
+	}
+}
+
+void MeshInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
+	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
+
+	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
+	if (capsule_mesh.is_valid()) {
+		helper->cylinder_commit_handle(p_id, TTR("Change Capsule Mesh Radius"), TTR("Change Capsule Mesh Height"), p_cancel, mesh, *capsule_mesh, *capsule_mesh);
+	}
+
+	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
+	if (cylinder_mesh.is_valid()) {
+		helper->cone_frustum_commit_handle(p_id, TTR("Change Cylinder Mesh Radius"), TTR("Change Cylinder Mesh Height"), p_cancel, mesh, *cylinder_mesh, *cylinder_mesh, *cylinder_mesh);
+	}
+
+	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
+	if (box_mesh.is_valid()) {
+		helper->box_commit_handle(TTR("Change Box Mesh Size"), p_cancel, mesh, *box_mesh);
+	}
+}
+
 void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
 
 	Ref<Mesh> m = mesh->get_mesh();
+
+	const Ref<Material> handles_material = get_material("handles");
 
 	if (m.is_null()) {
 		return; //none
@@ -80,5 +180,23 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (tm.is_valid()) {
 		p_gizmo->add_collision_triangles(tm);
+	}
+
+	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
+	if (capsule_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->capsule_get_handles(capsule_mesh->get_height(), capsule_mesh->get_radius());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
+	if (cylinder_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->cone_frustum_get_handles(cylinder_mesh->get_height(), cylinder_mesh->get_top_radius(), cylinder_mesh->get_bottom_radius());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
+	if (box_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->box_get_handles(box_mesh->get_size());
+		p_gizmo->add_handles(handles, handles_material);
 	}
 }

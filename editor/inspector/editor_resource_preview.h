@@ -53,7 +53,8 @@ protected:
 	class DrawRequester : public Object {
 		Semaphore semaphore;
 
-		Variant _post_semaphore();
+		void _post_semaphore();
+		void _prepare_draw(RID p_viewport);
 
 	public:
 		void request_and_wait(RID p_viewport);
@@ -68,6 +69,7 @@ public:
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
+	void request_draw_and_wait(RID viewport) const;
 };
 
 class EditorResourcePreview : public Node {

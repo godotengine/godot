@@ -1,0 +1,12 @@
+GH-110120
+---------
+Validate extension JSON: API was removed: classes/SpringBoneSimulator3D/enums/BoneDirection
+Validate extension JSON: API was removed: classes/SpringBoneSimulator3D/enums/RotationAxis
+Validate extension JSON: Error: Field 'classes/SpringBoneSimulator3D/methods/get_end_bone_direction/return_value': type changed value in new API, from "enum::SpringBoneSimulator3D.BoneDirection" to "enum::SkeletonModifier3D.BoneDirection".
+Validate extension JSON: Error: Field 'classes/SpringBoneSimulator3D/methods/get_joint_rotation_axis/return_value': type changed value in new API, from "enum::SpringBoneSimulator3D.RotationAxis" to "enum::SkeletonModifier3D.RotationAxis".
+Validate extension JSON: Error: Field 'classes/SpringBoneSimulator3D/methods/get_rotation_axis/return_value': type changed value in new API, from "enum::SpringBoneSimulator3D.RotationAxis" to "enum::SkeletonModifier3D.RotationAxis".
+Validate extension JSON: Error: Field 'classes/SpringBoneSimulator3D/methods/set_end_bone_direction/arguments/1': type changed value in new API, from "enum::SpringBoneSimulator3D.BoneDirection" to "enum::SkeletonModifier3D.BoneDirection".
+Validate extension JSON: Error: Field 'classes/SpringBoneSimulator3D/methods/set_joint_rotation_axis/arguments/2': type changed value in new API, from "enum::SpringBoneSimulator3D.RotationAxis" to "enum::SkeletonModifier3D.RotationAxis".
+Validate extension JSON: Error: Field 'classes/SpringBoneSimulator3D/methods/set_rotation_axis/arguments/1': type changed value in new API, from "enum::SpringBoneSimulator3D.RotationAxis" to "enum::SkeletonModifier3D.RotationAxis".
+
+Same enum is defined in SkeletonModifier3D which is a base class of SpringBoneSimulator3D. Compatibility methods registered.

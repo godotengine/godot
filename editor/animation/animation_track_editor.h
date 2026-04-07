@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "editor/editor_data.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/property_selector.h"
@@ -39,6 +40,8 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
+
+#include <cfloat> // FLT_MAX
 
 class AnimationMarkerEdit;
 class AnimationTrackEditor;
@@ -187,6 +190,7 @@ class AnimationTimelineEdit : public Range {
 
 	friend class AnimationBezierTrackEdit;
 	friend class AnimationTrackEditor;
+	friend class AnimationMarkerEdit;
 
 	static constexpr float SCROLL_ZOOM_FACTOR_IN = 1.02f; // Zoom factor per mouse scroll in the animation editor when zooming in. The closer to 1.0, the finer the control.
 	static constexpr float SCROLL_ZOOM_FACTOR_OUT = 0.98f; // Zoom factor when zooming out. Similar to SCROLL_ZOOM_FACTOR_IN but less than 1.0.
@@ -195,6 +199,7 @@ class AnimationTimelineEdit : public Range {
 	bool read_only = false;
 
 	AnimationTrackEdit *track_edit = nullptr;
+	AnimationTrackEditor *editor = nullptr;
 	int name_limit = 0;
 	Range *zoom = nullptr;
 	Range *h_scroll = nullptr;
@@ -225,6 +230,11 @@ class AnimationTimelineEdit : public Range {
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
+	Rect2 timeline_resize_rect;
+	float timeline_resize_from = 0.0f;
+	float timeline_resize_at = 0.0f;
+	bool resizing_timeline = false;
+
 	bool dragging_timeline = false;
 	bool dragging_hsize = false;
 	float dragging_hsize_from = 0.0f;
@@ -236,6 +246,8 @@ class AnimationTimelineEdit : public Range {
 	bool zoom_callback_occurred = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _commit_timeline_resize();
+	void _stop_dragging();
 	void _track_added(int p_track);
 
 	float _get_zoom_scale(double p_zoom_value) const;
@@ -254,6 +266,7 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
+	void set_editor(AnimationTrackEditor *p_editor);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
 	void auto_fit();
@@ -470,6 +483,7 @@ class AnimationTrackEdit : public Control {
 	String path_cache;
 
 	void _menu_selected(int p_index);
+	void _popup_key_context_menu(int p_hovering_key_idx, Vector2 p_popup_pos);
 
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
@@ -509,10 +523,11 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
+	const Ref<Texture2D> &get_key_type_icon() const { return type_icon; }
 	virtual int get_key_height() const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;
-	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
+	virtual void draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
@@ -557,6 +572,8 @@ class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
+	friend class AnimationTrackEditor;
+
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
 	Vector2 icon_size;
@@ -566,6 +583,8 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTimelineEdit *timeline = nullptr;
 	AnimationTrackEditor *editor = nullptr;
 
+	bool hovered = false;
+	LocalVector<AnimationTrackEdit *> track_edits;
 	void _zoom_changed();
 
 protected:
@@ -594,6 +613,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool read_only = false;
 	Node *root = nullptr;
 
+	AcceptDialog *read_only_dialog = nullptr;
+
 	MenuButton *edit = nullptr;
 
 	PanelContainer *main_panel = nullptr;
@@ -602,6 +623,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	VBoxContainer *track_vbox = nullptr;
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
 	VBoxContainer *timeline_vbox = nullptr;
+
+	MarginContainer *timeline_mc = nullptr;
+	void _update_timeline_margins();
 
 	VBoxContainer *info_message_vbox = nullptr;
 	Label *info_message = nullptr;
@@ -664,6 +688,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _new_track_property_selected(const String &p_name);
 
 	void _update_step_spinbox();
+	void _store_snap_states();
 
 	PropertySelector *prop_selector = nullptr;
 	PropertySelector *method_selector = nullptr;
@@ -878,7 +903,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _pick_track_filter_text_changed(const String &p_newtext);
 	void _pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
 
-	double snap_unit;
+	double snap_unit = 0;
 	bool fps_compatible = true;
 	int nearest_fps = 0;
 	void _update_snap_unit();
@@ -888,7 +913,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _clear_selection(bool p_update = false);
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);
@@ -923,7 +948,9 @@ public:
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,
-		EDIT_CLEAN_UP_ANIMATION_CONFIRM
+		EDIT_CLEAN_UP_ANIMATION_CONFIRM,
+		EDIT_GOTO_NEXT_KEYFRAME,
+		EDIT_GOTO_PREV_KEYFRAME,
 	};
 
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
@@ -981,6 +1008,10 @@ public:
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
 	void goto_next_step(bool p_from_mouse_event, bool p_timeline_only = false);
+
+	bool is_read_only() const;
+	bool is_global_library_read_only() const;
+	void popup_read_only_dialog();
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

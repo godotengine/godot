@@ -39,6 +39,8 @@
 
 #include "modules/modules_enabled.gen.h" // For regex.
 
+#include <cstdio>
+
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif // MODULE_REGEX_ENABLED

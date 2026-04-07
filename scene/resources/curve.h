@@ -32,6 +32,7 @@
 
 #include "core/io/resource.h"
 #include "core/templates/rb_map.h"
+#include "scene/property_list_helper.h"
 
 // y(x) curve
 class Curve : public Resource {
@@ -54,8 +55,7 @@ public:
 		TangentMode left_mode = TANGENT_FREE;
 		TangentMode right_mode = TANGENT_FREE;
 
-		Point() {
-		}
+		Point() {}
 
 		Point(const Vector2 &p_position,
 				real_t p_left = 0.0,
@@ -69,6 +69,9 @@ public:
 			right_mode = p_right_mode;
 		}
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	Curve();
 
@@ -140,14 +143,18 @@ public:
 
 	void ensure_default_setup(real_t p_min, real_t p_max);
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
+
 	static void _bind_methods();
 
 private:
+	bool _filter_property(const String &p_name, int p_index) const;
+
 	void mark_dirty();
 	int _add_point(Vector2 p_position,
 			real_t p_left_tangent = 0,
@@ -156,6 +163,7 @@ private:
 			TangentMode p_right_mode = TANGENT_FREE,
 			bool p_mark_dirty = true);
 	void _remove_point(int p_index, bool p_mark_dirty = true);
+	void _set_point_position(int p_index, const Vector2 &p_position);
 
 	LocalVector<Point> _points;
 	mutable bool _baked_cache_dirty = false;
@@ -177,6 +185,9 @@ class Curve2D : public Resource {
 		Vector2 out;
 		Vector2 position;
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	LocalVector<Point> points;
 
@@ -211,16 +222,19 @@ class Curve2D : public Resource {
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
 	void _add_point(const Vector2 &p_position, const Vector2 &p_in = Vector2(), const Vector2 &p_out = Vector2(), int p_atpos = -1);
 	void _remove_point(int p_index);
 
 	Vector<RBMap<real_t, Vector2>> _tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const;
+	bool _filter_property(const String &p_name, int p_index) const;
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
+
 	static void _bind_methods();
 
 public:
@@ -252,6 +266,8 @@ public:
 
 	PackedVector2Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
 	PackedVector2Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 20.0) const; // Useful for baking.
+
+	Curve2D();
 };
 
 class Curve3D : public Resource {
@@ -263,6 +279,9 @@ class Curve3D : public Resource {
 		Vector3 position;
 		real_t tilt = 0.0;
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	LocalVector<Point> points;
 #ifdef TOOLS_ENABLED
@@ -303,16 +322,19 @@ class Curve3D : public Resource {
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
 	void _add_point(const Vector3 &p_position, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
 	void _remove_point(int p_index);
 
 	Vector<RBMap<real_t, Vector3>> _tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const;
+	bool _filter_property(const String &p_name, int p_index) const;
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
+
 	static void _bind_methods();
 
 public:
@@ -353,10 +375,13 @@ public:
 	PackedVector3Array get_baked_points() const; // Useful for going through.
 	Vector<real_t> get_baked_tilts() const; //useful for going through
 	PackedVector3Array get_baked_up_vectors() const;
+	Vector<real_t> get_baked_dist_cache() const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
 	real_t get_closest_offset(const Vector3 &p_to_point) const;
 	PackedVector3Array get_points() const;
 
 	PackedVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; // Useful for display.
 	PackedVector3Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const; // Useful for baking.
+
+	Curve3D();
 };

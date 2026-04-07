@@ -15,10 +15,15 @@
 
 #if defined(WEBP_USE_SSE2)
 
+#include <emmintrin.h>
+#include <string.h>
+
 #include "src/dsp/common_sse2.h"
+#include "src/dsp/cpu.h"
 #include "src/dsp/lossless.h"
 #include "src/dsp/lossless_common.h"
-#include <emmintrin.h>
+#include "src/webp/format_constants.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // Predictor Transform
@@ -462,8 +467,8 @@ static void TransformColorInverse_SSE2(const VP8LMultipliers* const m,
 #define CST(X)  (((int16_t)(m->X << 8)) >> 5)   // sign-extend
 #define MK_CST_16(HI, LO) \
   _mm_set1_epi32((int)(((uint32_t)(HI) << 16) | ((LO) & 0xffff)))
-  const __m128i mults_rb = MK_CST_16(CST(green_to_red_), CST(green_to_blue_));
-  const __m128i mults_b2 = MK_CST_16(CST(red_to_blue_), 0);
+  const __m128i mults_rb = MK_CST_16(CST(green_to_red), CST(green_to_blue));
+  const __m128i mults_b2 = MK_CST_16(CST(red_to_blue), 0);
 #undef MK_CST_16
 #undef CST
   const __m128i mask_ag = _mm_set1_epi32((int)0xff00ff00);  // alpha-green masks
@@ -707,6 +712,15 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LDspInitSSE2(void) {
   VP8LConvertBGRAToRGBA4444 = ConvertBGRAToRGBA4444_SSE2;
   VP8LConvertBGRAToRGB565 = ConvertBGRAToRGB565_SSE2;
   VP8LConvertBGRAToBGR = ConvertBGRAToBGR_SSE2;
+
+  // SSE exports for AVX and above.
+  memcpy(VP8LPredictorsAdd_SSE, VP8LPredictorsAdd, sizeof(VP8LPredictorsAdd));
+
+  VP8LAddGreenToBlueAndRed_SSE = AddGreenToBlueAndRed_SSE2;
+  VP8LTransformColorInverse_SSE = TransformColorInverse_SSE2;
+
+  VP8LConvertBGRAToRGB_SSE = ConvertBGRAToRGB_SSE2;
+  VP8LConvertBGRAToRGBA_SSE = ConvertBGRAToRGBA_SSE2;
 }
 
 #else  // !WEBP_USE_SSE2

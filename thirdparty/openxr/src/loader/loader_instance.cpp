@@ -66,8 +66,8 @@ void Remove() { GetSetCurrentLoaderInstance().reset(nullptr); }
 // Extensions that are supported by the loader, but may not be supported
 // the the runtime.
 const std::array<XrExtensionProperties, 1>& LoaderInstance::LoaderSpecificExtensions() {
-    static const std::array<XrExtensionProperties, 1> extensions = {XrExtensionProperties{
-        XR_TYPE_EXTENSION_PROPERTIES, nullptr, XR_EXT_DEBUG_UTILS_EXTENSION_NAME, XR_EXT_debug_utils_SPEC_VERSION}};
+    static const std::array<XrExtensionProperties, 1> extensions{{XrExtensionProperties{
+        XR_TYPE_EXTENSION_PROPERTIES, nullptr, {XR_EXT_DEBUG_UTILS_EXTENSION_NAME}, XR_EXT_debug_utils_SPEC_VERSION}}};
     return extensions;
 }
 

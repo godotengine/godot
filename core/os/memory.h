@@ -41,7 +41,16 @@ constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment) {
 	return (n_bytes_unaligned == 0) ? p_address : (p_address + p_alignment - n_bytes_unaligned);
 }
 
-// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
+#if defined(__MINGW32__) && !defined(__MINGW64__)
+// Note: Using hardcoded value, since the value can end up different in different compile units on 32-bit windows
+// due to a compiler bug (see GH-113145)
+static constexpr size_t MAX_ALIGN = 16;
+static_assert(MAX_ALIGN % alignof(max_align_t) == 0);
+#else
+static constexpr size_t MAX_ALIGN = alignof(max_align_t);
+#endif
+
+// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ MAX_ALIGN
 //             ┌─────────────────┬──┬────────────────┬──┬───────────...
 //             │ uint64_t        │░░│ uint64_t       │░░│ T[]
 //             │ alloc size      │░░│ element count  │░░│ data
@@ -50,7 +59,7 @@ constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment) {
 
 inline constexpr size_t SIZE_OFFSET = 0;
 inline constexpr size_t ELEMENT_OFFSET = get_aligned_address(SIZE_OFFSET + sizeof(uint64_t), alignof(uint64_t));
-inline constexpr size_t DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), alignof(max_align_t));
+inline constexpr size_t DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), MAX_ALIGN);
 
 template <bool p_ensure_zero = false>
 void *alloc_static(size_t p_bytes, bool p_pad_align = false);
@@ -117,12 +126,21 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
 #define memfree(m_mem) Memory::free_static(m_mem)
 
+template <typename T, typename Enable = void>
+struct memnew_result {
+	using class_name = T *;
+};
+
+template <typename T>
+using memnew_result_t = typename memnew_result<T>::class_name;
+
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
 template <typename T>
-_ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
-	postinitialize_handler(p_obj);
-	return p_obj;
+_ALWAYS_INLINE_ memnew_result_t<T> _post_initialize(T *p_obj) {
+	memnew_result_t<T> result{ p_obj };
+	postinitialize_handler(result);
+	return result;
 }
 
 #define memnew(m_class) _post_initialize(::new ("") m_class)
@@ -159,10 +177,10 @@ void memdelete_allocator(T *p_class) {
 }
 
 #define memdelete_notnull(m_v) \
-	{                          \
-		if (m_v) {             \
-			memdelete(m_v);    \
-		}                      \
+	{ \
+		if (m_v) { \
+			memdelete(m_v); \
+		} \
 	}
 
 #define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count)

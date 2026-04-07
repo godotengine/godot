@@ -30,12 +30,14 @@
 
 #pragma once
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
+class CheckBox;
+class CheckButton;
 class EditorSelection;
+class FilterLineEdit;
+class Label;
 class TextureRect;
 class Timer;
 
@@ -100,7 +102,7 @@ class SceneTreeEditor : public Control {
 		SceneTreeEditor *editor;
 		HashMap<Node *, CachedNode> cache;
 		HashSet<CachedNode *> to_delete;
-		Node *current_scene_node = nullptr;
+		ObjectID current_scene_id;
 		Node *current_pinned_node = nullptr;
 		bool current_has_pin = false;
 		bool force_update = false;
@@ -111,7 +113,6 @@ class SceneTreeEditor : public Control {
 
 	Tree *tree = nullptr;
 	Node *selected = nullptr;
-	ObjectID instance_node;
 
 	String filter;
 	String filter_term_warning;
@@ -146,13 +147,14 @@ class SceneTreeEditor : public Control {
 
 	void _test_update_tree();
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
+	bool _update_filter_helper(TreeItem *p_parent, bool p_scroll_to_selected, TreeItem *&r_last_selected);
 	bool _node_matches_class_term(const Node *p_item_node, const String &p_term);
 	bool _item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms);
 	void _tree_changed();
 	void _tree_process_mode_changed();
 
 	void _move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I);
-	void _move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I);
+	void _move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I, TreeItem *p_correct_prev = nullptr);
 
 	void _node_child_order_changed(Node *p_node);
 	void _node_editor_state_changed(Node *p_node);
@@ -226,7 +228,7 @@ class SceneTreeEditor : public Control {
 	void _revoke_unique_name();
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _update_tree(bool p_scroll_to_selected = false);
 
 	void rename_node(Node *p_node, const String &p_name, TreeItem *p_item = nullptr);
@@ -248,6 +250,7 @@ public:
 
 	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
 	void set_valid_types(const Vector<StringName> &p_valid);
+	void clear_cache();
 
 	inline void update_tree() { _update_tree(); }
 
@@ -271,7 +274,7 @@ class SceneTreeDialog : public ConfirmationDialog {
 
 	VBoxContainer *content = nullptr;
 	SceneTreeEditor *tree = nullptr;
-	LineEdit *filter = nullptr;
+	FilterLineEdit *filter = nullptr;
 	CheckButton *show_all_nodes = nullptr;
 	LocalVector<TextureRect *> valid_type_icons;
 	HBoxContainer *allowed_types_hbox = nullptr;
@@ -280,7 +283,6 @@ class SceneTreeDialog : public ConfirmationDialog {
 	void _cancel();
 	void _selected_changed();
 	void _filter_changed(const String &p_filter);
-	void _on_filter_gui_input(const Ref<InputEvent> &p_event);
 	void _show_all_nodes_changed(bool p_button_pressed);
 
 protected:
@@ -293,7 +295,7 @@ public:
 	void set_valid_types(const Vector<StringName> &p_valid);
 
 	SceneTreeEditor *get_scene_tree() { return tree; }
-	LineEdit *get_filter_line_edit() { return filter; }
+	LineEdit *get_filter_line_edit();
 
 	SceneTreeDialog();
 };

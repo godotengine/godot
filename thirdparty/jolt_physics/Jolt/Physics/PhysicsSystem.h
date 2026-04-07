@@ -247,13 +247,19 @@ public:
 	/// - During the ContactListener::OnContactRemoved callback this function can be used to determine if this is the last contact pair between the bodies (function returns false) or if there are other contacts still present (function returns true).
 	bool						WereBodiesInContact(const BodyID &inBody1ID, const BodyID &inBody2ID) const { return mContactManager.WereBodiesInContact(inBody1ID, inBody2ID); }
 
-	/// Get the bounding box of all bodies in the physics system
+	/// Get the bounding box of all bodies in the physics system.
+	/// Deprecated: Use GetBroadPhaseQuery().GetBounds() instead.
 	AABox						GetBounds() const											{ return mBroadPhase->GetBounds(); }
 
 #ifdef JPH_TRACK_BROADPHASE_STATS
 	/// Trace the accumulated broadphase stats to the TTY
 	void						ReportBroadphaseStats()										{ mBroadPhase->ReportStats(); }
 #endif // JPH_TRACK_BROADPHASE_STATS
+
+#if defined(JPH_TRACK_SIMULATION_STATS) && defined(JPH_PROFILE_ENABLED)
+	/// Dump the per body simulation stats to the TTY
+	void						ReportSimulationStats()										{ mBodyManager.ReportSimulationStats(); }
+#endif
 
 private:
 	using CCDBody = PhysicsUpdateContext::Step::CCDBody;
@@ -282,6 +288,11 @@ private:
 
 	/// Tries to spawn a new FindCollisions job if max concurrency hasn't been reached yet
 	void						TrySpawnJobFindCollisions(PhysicsUpdateContext::Step *ioStep) const;
+
+#ifdef JPH_TRACK_SIMULATION_STATS
+	/// Gather stats from the islands and distribute them over the bodies
+	void						GatherIslandStats();
+#endif
 
 	using ContactAllocator = ContactConstraintManager::ContactAllocator;
 

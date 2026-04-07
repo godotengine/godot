@@ -32,8 +32,11 @@
 
 #include "../../openxr_api.h"
 #include "../../openxr_util.h"
-#include "../openxr_future_extension.h"
+#include "openxr_spatial_entity_extension.h"
+
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "servers/xr/xr_server.h"
 
 ////////////////////////////////////////////////////////////////////////////
@@ -332,7 +335,7 @@ void OpenXRSpatialAnchorCapability::_bind_methods() {
 	BIND_ENUM_CONSTANT(PERSISTENCE_SCOPE_LOCAL_ANCHORS);
 }
 
-HashMap<String, bool *> OpenXRSpatialAnchorCapability::get_requested_extensions() {
+HashMap<String, bool *> OpenXRSpatialAnchorCapability::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enabled") && GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enable_spatial_anchors")) {

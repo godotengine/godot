@@ -30,11 +30,13 @@
 
 #pragma once
 
-#include "../../openxr_util.h"
+#include "../../openxr_structure.h"
 #include "../openxr_extension_wrapper.h"
+#include "../openxr_future_extension.h"
+#include "openxr_spatial_entities.h"
+
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
-#include "openxr_spatial_entities.h"
 
 // Spatial entity extension
 class OpenXRSpatialEntityExtension : public OpenXRExtensionWrapper {
@@ -69,7 +71,7 @@ public:
 	OpenXRSpatialEntityExtension();
 	virtual ~OpenXRSpatialEntityExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;

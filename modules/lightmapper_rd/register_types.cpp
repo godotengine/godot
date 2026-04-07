@@ -33,10 +33,11 @@
 #include "lightmapper_rd.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/3d/lightmapper.h"
 
 #ifndef _3D_DISABLED
-static Lightmapper *create_lightmapper_rd() {
+static Ref<Lightmapper> create_lightmapper_rd() {
 	return memnew(LightmapperRD);
 }
 #endif

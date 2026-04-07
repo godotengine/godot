@@ -30,6 +30,8 @@
 
 #include "script_language_extension.h"
 
+#include "core/object/class_db.h"
+
 void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_editor_can_reload_from_file);
 	GDVIRTUAL_BIND(_placeholder_erased, "placeholder");
@@ -104,8 +106,8 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_validate, "script", "path", "validate_functions", "validate_errors", "validate_warnings", "validate_safe_lines");
 
 	GDVIRTUAL_BIND(_validate_path, "path");
-	GDVIRTUAL_BIND(_create_script);
 #ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_create_script);
 	GDVIRTUAL_BIND(_has_named_classes);
 #endif
 	GDVIRTUAL_BIND(_supports_builtin_mode);

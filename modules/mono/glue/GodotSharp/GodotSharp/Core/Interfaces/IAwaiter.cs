@@ -10,12 +10,12 @@ namespace Godot
         /// <summary>
         /// The completion status of this <see cref="IAwaiter"/>.
         /// </summary>
-        bool IsCompleted { get; }
+        public bool IsCompleted { get; }
 
         /// <summary>
         /// Gets the result of completion for this <see cref="IAwaiter"/>.
         /// </summary>
-        void GetResult();
+        public void GetResult();
     }
 
     /// <summary>
@@ -27,11 +27,11 @@ namespace Godot
         /// <summary>
         /// The completion status of this <see cref="IAwaiter{TResult}"/>.
         /// </summary>
-        bool IsCompleted { get; }
+        public bool IsCompleted { get; }
 
         /// <summary>
         /// Gets the result of completion for this <see cref="IAwaiter{TResult}"/>.
         /// </summary>
-        TResult GetResult();
+        public TResult GetResult();
     }
 }

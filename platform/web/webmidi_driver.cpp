@@ -30,8 +30,10 @@
 
 #include "webmidi_driver.h"
 
+#include "godot_midi.h"
+
 #ifdef PROXY_TO_PTHREAD_ENABLED
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #endif
 
 MIDIDriverWebMidi *MIDIDriverWebMidi::get_singleton() {

@@ -60,6 +60,7 @@ public:
 		NETWORK_ONLINE,
 	};
 
+	// Keep values synced with DisplayServerEnums constants.
 	enum InitialScreen {
 		INITIAL_SCREEN_AUTO = -5, // Remembers last screen position.
 		INITIAL_SCREEN_WITH_MOUSE_FOCUS = -4,
@@ -89,8 +90,10 @@ private:
 	static Ref<EditorSettings> singleton;
 
 	HashSet<String> changed_settings;
+	mutable String auto_language;
 
 	mutable Ref<ConfigFile> project_metadata;
+	bool project_metadata_dirty = false;
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;
 	int last_order;
@@ -122,8 +125,13 @@ private:
 	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED
-	void _remove_deprecated_settings();
+	HashMap<String, String> compat_map;
+	void _handle_setting_compatibility();
+	void _rename_setting(const String &p_old_name, const String &p_new_name);
 #endif
+
+	// Bind helpers.
+	Vector<String> _get_shortcut_list();
 
 protected:
 	static void _bind_methods();
@@ -138,6 +146,7 @@ public:
 	static String get_newest_settings_path();
 
 	static void create();
+	void init_shortcuts();
 	void setup_language(bool p_initial_setup);
 	void setup_network();
 	static void save();
@@ -170,12 +179,16 @@ public:
 
 	void set_project_metadata(const String &p_section, const String &p_key, const Variant &p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
+	void save_project_metadata();
 
-	void set_favorites(const Vector<String> &p_favorites);
+	void set_favorites(const Vector<String> &p_favorites, bool p_update_file_dialog = true);
+	void set_favorites_bind(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
+	Vector<String> get_favorite_folders() const;
 	void set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties);
 	HashMap<String, PackedStringArray> get_favorite_properties() const;
-	void set_recent_dirs(const Vector<String> &p_recent_dirs);
+	void set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog = true);
+	void set_recent_dirs_bind(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();
 
@@ -186,11 +199,14 @@ public:
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
 	static float get_auto_display_scale();
+	String get_language() const;
 
-	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<Shortcut> get_shortcut(const String &p_name) const;
+	void _add_shortcut_default(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void remove_shortcut(const String &p_path);
+	bool is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const;
+	bool has_shortcut(const String &p_path) const;
+	Ref<Shortcut> get_shortcut(const String &p_path) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);
@@ -198,7 +214,9 @@ public:
 
 	void notify_changes();
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	EditorSettings();
 };

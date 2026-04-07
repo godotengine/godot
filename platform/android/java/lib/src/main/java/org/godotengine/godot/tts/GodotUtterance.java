@@ -39,12 +39,12 @@ class GodotUtterance {
 	final int volume;
 	final float pitch;
 	final float rate;
-	final int id;
+	final long id;
 
 	int offset = -1;
 	int start = 0;
 
-	GodotUtterance(String text, String voice, int volume, float pitch, float rate, int id) {
+	GodotUtterance(String text, String voice, int volume, float pitch, float rate, long id) {
 		this.text = text;
 		this.voice = voice;
 		this.volume = volume;

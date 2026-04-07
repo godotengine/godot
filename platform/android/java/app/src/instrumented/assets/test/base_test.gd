@@ -9,8 +9,9 @@ var _test_assert_failures := 0
 
 func __exec_test(test_func: Callable):
 	_test_started += 1
-	test_func.call()
-	_test_completed += 1
+	var ret = test_func.call()
+	if ret == true:
+		_test_completed += 1
 
 func __reset_tests():
 	_test_started = 0
@@ -42,3 +43,10 @@ func assert_equal(actual, expected):
 	else:
 		__assert_fail()
 		print ("    |-> Expected '%s' but got '%s'" % [expected, actual])
+
+func assert_true(value):
+	if value:
+		__assert_pass()
+	else:
+		__assert_fail()
+		print ("    |-> Expected '%s' to be truthy" % value)

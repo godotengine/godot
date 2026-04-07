@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConvertTransformModifier3D" inherits="BoneConstraint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ConvertTransformModifier3D" inherits="BoneConstraint3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [SkeletonModifier3D] that apply transform to the bone which converted from reference.
 	</brief_description>
@@ -14,6 +14,8 @@
 		- Extract reference pose absolutely and add it to the apply bone's pose.
 		[b]Not Relative + Not Additive:[/b]
 		- Extract reference pose absolutely and the apply bone's pose is replaced with it.
+		[b]Note:[/b] Relative option is available only in the case [method BoneConstraint3D.get_reference_type] is [constant BoneConstraint3D.REFERENCE_TYPE_BONE]. See also [enum BoneConstraint3D.ReferenceType].
+		[b]Note:[/b] If there is a rotation greater than [code]180[/code] degrees with constrained axes, flipping may occur.
 	</description>
 	<tutorials>
 	</tutorials>

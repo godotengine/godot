@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "scene_shader_forward_clustered.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
-#include "render_forward_clustered.h"
+#include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
@@ -55,7 +56,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	depth_test_disabledi = 0;
 	depth_test_invertedi = 0;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
-	int cull_modei = RS::CULL_MODE_BACK;
+	int cull_modei = RSE::CULL_MODE_BACK;
 
 	uses_point_size = false;
 	uses_alpha = false;
@@ -111,9 +112,9 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_test_disabledi, 1);
 	actions.render_mode_values["depth_test_inverted"] = Pair<int *, int>(&depth_test_invertedi, 1);
 
-	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_DISABLED);
-	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_FRONT);
-	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_BACK);
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RSE::CULL_MODE_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RSE::CULL_MODE_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, RSE::CULL_MODE_BACK);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
@@ -170,7 +171,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	Error err = OK;
 	{
 		MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
-		err = SceneShaderForwardClustered::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
+		err = SceneShaderForwardClustered::singleton->compiler.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
 	}
 
 	if (err != OK) {
@@ -193,7 +194,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	} else {
 		depth_test = DEPTH_TEST_ENABLED;
 	}
-	cull_mode = RS::CullMode(cull_modei);
+	cull_mode = RSE::CullMode(cull_modei);
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_screen_texture = gen_code.uses_screen_texture;
 	uses_depth_texture = gen_code.uses_depth_texture;
@@ -255,11 +256,11 @@ bool SceneShaderForwardClustered::ShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
-RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {
 	if (version.is_valid()) {
 		return SceneShaderForwardClustered::singleton->shader.version_get_native_source_code(version);
 	} else {
-		return RS::ShaderNativeSourceCode();
+		return RenderingServerTypes::ShaderNativeSourceCode();
 	}
 }
 
@@ -403,7 +404,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 
 	bool depth_pre_pass_enabled = bool(GLOBAL_GET_CACHED(bool, "rendering/driver/depth_prepass/enable"));
 
-	RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
+	RD::RenderPrimitive primitive_rd_table[RSE::PRIMITIVE_MAX] = {
 		RD::RENDER_PRIMITIVE_POINTS,
 		RD::RENDER_PRIMITIVE_LINES,
 		RD::RENDER_PRIMITIVE_LINESTRIPS,
@@ -411,7 +412,14 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 		RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS,
 	};
 
-	RD::RenderPrimitive primitive_rd = uses_point_size ? RD::RENDER_PRIMITIVE_POINTS : primitive_rd_table[p_pipeline_key.primitive_type];
+	bool emulate_point_size_flag = uses_point_size && SceneShaderForwardClustered::singleton->emulate_point_size;
+
+	RD::RenderPrimitive primitive_rd;
+	if (uses_point_size) {
+		primitive_rd = emulate_point_size_flag ? RD::RENDER_PRIMITIVE_TRIANGLES : RD::RENDER_PRIMITIVE_POINTS;
+	} else {
+		primitive_rd = primitive_rd_table[p_pipeline_key.primitive_type];
+	}
 
 	RD::PipelineRasterizationState raster_state;
 	raster_state.cull_mode = p_pipeline_key.cull_mode;
@@ -479,6 +487,13 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 
 	sc.constant_id = 1;
 	sc.int_value = p_pipeline_key.shader_specialization.packed_1;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+	specialization_constants.push_back(sc);
+
+	sc = {}; // Sanitize value bits. "bool_value" only assigns 8 bits and keeps the remaining bits intact.
+	sc.constant_id = 2;
+	sc.bool_value = emulate_point_size_flag;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
 	specialization_constants.push_back(sc);
 
 	RID shader_rid = get_shader_variant(p_pipeline_key.version, p_pipeline_key.color_pass_flags, p_pipeline_key.ubershader);
@@ -566,7 +581,7 @@ RendererRD::MaterialStorage::ShaderData *SceneShaderForwardClustered::_create_sh
 }
 
 void SceneShaderForwardClustered::MaterialData::set_render_priority(int p_priority) {
-	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
+	priority = p_priority - RSE::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
 }
 
 void SceneShaderForwardClustered::MaterialData::set_next_pass(RID p_pass) {
@@ -620,6 +635,8 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 
 void SceneShaderForwardClustered::init(const String p_defines) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	emulate_point_size = !RD::get_singleton()->has_feature(RD::SUPPORTS_POINT_SIZE);
 
 	{
 		Vector<ShaderRD::VariantDefine> shader_versions;
@@ -701,9 +718,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["UV"] = "uv_interp";
 		actions.renames["UV2"] = "uv2_interp";
 		actions.renames["COLOR"] = "color_interp";
-		actions.renames["POINT_SIZE"] = "gl_PointSize";
-		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
-		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
+		actions.renames["POINT_SIZE"] = "point_size";
+		actions.renames["INSTANCE_ID"] = "INSTANCE_INDEX";
+		actions.renames["VERTEX_ID"] = "VERTEX_INDEX";
 		actions.renames["Z_CLIP_SCALE"] = "z_clip_scale";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
@@ -748,7 +765,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["AO"] = "ao";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
 		actions.renames["EMISSION"] = "emission";
-		actions.renames["POINT_COORD"] = "gl_PointCoord";
+		actions.renames["POINT_COORD"] = "point_coord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 		actions.renames["SCREEN_UV"] = "screen_uv";
 		actions.renames["DEPTH"] = "gl_FragDepth";
@@ -769,6 +786,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(read_view_matrix * read_model_matrix)[3].xyz";
 
+		actions.renames["IS_MULTIVIEW"] = "OUTPUT_IS_MULTIVIEW";
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
@@ -829,6 +847,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 		actions.usage_defines["MODEL_MATRIX"] = "#define MODEL_MATRIX_USED\n";
 
+		actions.usage_defines["POINT_SIZE"] = "#define POINT_SIZE_USED\n";
+		actions.usage_defines["POINT_COORD"] = "#define POINT_COORD_USED\n";
+
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
 		actions.render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
@@ -871,7 +892,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 14;
+		actions.base_varying_index = 15;
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
@@ -1013,7 +1034,7 @@ bool SceneShaderForwardClustered::is_advanced_shader_group_enabled(bool p_multiv
 	}
 }
 
-uint32_t SceneShaderForwardClustered::get_pipeline_compilations(RS::PipelineSource p_source) {
+uint32_t SceneShaderForwardClustered::get_pipeline_compilations(RSE::PipelineSource p_source) {
 	MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
 	return pipeline_compilations[p_source];
 }

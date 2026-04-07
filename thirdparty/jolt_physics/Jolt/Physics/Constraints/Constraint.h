@@ -77,7 +77,7 @@ public:
 	/// If this constraint is enabled initially. Use Constraint::SetEnabled to toggle after creation.
 	bool						mEnabled = true;
 
-	/// Priority of the constraint when solving. Higher numbers have are more likely to be solved correctly.
+	/// Priority of the constraint when solving. Higher numbers are more likely to be solved correctly.
 	/// Note that if you want a deterministic simulation and you cannot guarantee the order in which constraints are added/removed, you can make the priority for all constraints unique to get a deterministic ordering.
 	uint32						mConstraintPriority = 0;
 

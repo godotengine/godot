@@ -30,8 +30,11 @@
 
 #include "editor_settings_dialog.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
@@ -45,9 +48,9 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
-#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
@@ -65,13 +68,18 @@ void EditorSettingsDialog::_settings_changed() {
 	timer->start();
 }
 
-void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
-	String full_name = inspector->get_full_item_path(p_name);
+void EditorSettingsDialog::_settings_property_edited() {
+	Vector<String> changed = EditorSettings::get_singleton()->get_changed_settings();
+	if (changed.is_empty()) {
+		return;
+	}
+
+	const String full_name = changed[changed.size() - 1];
 
 	// Set theme presets to Custom when controlled settings change.
 
-	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast" || full_name == "interface/theme/draw_extra_borders") {
-		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom");
+	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast" || full_name == "interface/theme/draw_extra_borders" || full_name == "interface/theme/icon_saturation" || full_name == "interface/theme/draw_relationship_lines" || full_name == "interface/theme/corner_radius") {
+		EditorSettings::get_singleton()->set_manually("interface/theme/color_preset", "Custom");
 	} else if (full_name == "interface/theme/base_spacing" || full_name == "interface/theme/additional_spacing") {
 		EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", "Custom");
 	} else if (full_name.begins_with("text_editor/theme/highlighting")) {
@@ -79,17 +87,18 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 	} else if (full_name.begins_with("editors/visual_editors/connection_colors") || full_name.begins_with("editors/visual_editors/category_colors")) {
 		EditorSettings::get_singleton()->set_manually("editors/visual_editors/color_theme", "Custom");
 	} else if (full_name == "editors/3d/navigation/orbit_mouse_button" || full_name == "editors/3d/navigation/pan_mouse_button" || full_name == "editors/3d/navigation/zoom_mouse_button" || full_name == "editors/3d/navigation/emulate_3_button_mouse") {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
 		update_navigation_preset();
+		_update_shortcuts();
 	}
 }
 
 void EditorSettingsDialog::update_navigation_preset() {
-	Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
-	Node3DEditorViewport::ViewportNavMouseButton set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+	View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	View3DController::NavigationMouseButton set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+	View3DController::NavigationMouseButton set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+	View3DController::NavigationMouseButton set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
 	bool set_3_button_mouse = false;
 	Ref<InputEventKey> orbit_mod_key_1;
 	Ref<InputEventKey> orbit_mod_key_2;
@@ -97,13 +106,15 @@ void EditorSettingsDialog::update_navigation_preset() {
 	Ref<InputEventKey> pan_mod_key_2;
 	Ref<InputEventKey> zoom_mod_key_1;
 	Ref<InputEventKey> zoom_mod_key_2;
+	Ref<InputEventKey> orbit_snap_mod_key_1;
+	Ref<InputEventKey> orbit_snap_mod_key_2;
 	bool set_preset = false;
 
-	if (nav_scheme == Node3DEditorViewport::NAVIGATION_GODOT) {
+	if (nav_scheme == View3DController::NAV_SCHEME_GODOT) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::NONE);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -111,11 +122,13 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA) {
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == View3DController::NAV_SCHEME_MAYA) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_RIGHT_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_RIGHT;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -123,11 +136,13 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) {
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == View3DController::NAV_SCHEME_MODO) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -135,11 +150,13 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::CTRL);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_TABLET) {
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == View3DController::NAV_SCHEME_TABLET) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
 		set_3_button_mouse = true;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -147,6 +164,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 	}
 	// Set settings to the desired preset values.
 	if (set_preset) {
@@ -160,6 +179,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		_set_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2);
 		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1);
 		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2);
+		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_1", orbit_snap_mod_key_1);
+		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_2", orbit_snap_mod_key_2);
 	}
 }
 
@@ -205,14 +226,28 @@ void EditorSettingsDialog::popup_edit_settings() {
 	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+	Rect2 saved_size;
+	if (!_is_in_project_manager()) {
+		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+	}
+
 	if (saved_size != Rect2()) {
 		popup(saved_size);
+	} else if (_is_in_project_manager()) {
+		popup_centered_clamped(Size2(800, 600) * EDSCALE, 0.8); // Make it smaller that the default Project Manager size.
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
 
 	_focus_current_search_box();
+}
+
+void EditorSettingsDialog::set_advanced_mode_enabled(bool p_enabled) {
+	advanced_switch->set_pressed(p_enabled);
+}
+
+void EditorSettingsDialog::set_current_section(const String &p_section) {
+	inspector->set_current_section(p_section);
 }
 
 void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
@@ -222,7 +257,7 @@ void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_nam
 void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
+			if (!is_visible() && !_is_in_project_manager()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
 				set_process_shortcut_input(false);
 			}
@@ -231,6 +266,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			EditorSettingsPropertyWrapper::restart_request_callback = callable_mp(this, &EditorSettingsDialog::_editor_restart_request);
 
+			if (_is_in_project_manager()) {
+				return;
+			}
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_method_notify_callback(EditorDebuggerNode::_methods_changed, nullptr);
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_property_notify_callback(EditorDebuggerNode::_properties_changed, nullptr);
@@ -263,8 +301,12 @@ void EditorSettingsDialog::_notification(int p_what) {
 				inspector->get_inspector()->update_tree();
 			}
 
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				inspector->update_category_list();
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				inspector->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 			}
 		} break;
 	}
@@ -275,17 +317,19 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
-		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			EditorNode::get_singleton()->undo();
-			handled = true;
+		if (EditorNode::get_singleton()) {
+			if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+				EditorNode::get_singleton()->undo();
+				handled = true;
+			}
+
+			if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+				EditorNode::get_singleton()->redo();
+				handled = true;
+			}
 		}
 
-		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			EditorNode::get_singleton()->redo();
-			handled = true;
-		}
-
-		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			_focus_current_search_box();
 			handled = true;
 		}
@@ -327,49 +371,69 @@ void EditorSettingsDialog::_event_config_confirmed() {
 	}
 }
 
+bool EditorSettingsDialog::_is_in_project_manager() const {
+	return !ProjectSettings::get_singleton()->is_project_loaded();
+}
+
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 	if (old_input_array.is_empty()) {
-		List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier];
+		List<Ref<InputEvent>> defaults(InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier]);
 		old_input_array = _event_list_to_array_helper(defaults);
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
-	undo_redo->add_do_method(this, "_update_shortcuts");
-	undo_redo->add_undo_method(this, "_update_shortcuts");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
+	if (_is_in_project_manager()) {
+		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
+		EditorSettings::get_singleton()->mark_setting_changed("builtin_action_overrides");
+		EditorSettings::get_singleton()->set_builtin_action_override(p_name, p_events);
+		_update_shortcuts();
+		_settings_changed();
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+	}
 }
 
 void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const Array &p_events) {
 	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
-	// History must be fixed based on the EditorSettings object because current_sc would
-	// incorrectly make this action use the scene history.
-	undo_redo->force_fixed_history();
-	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
-	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
-	undo_redo->add_do_method(this, "_update_shortcuts");
-	undo_redo->add_undo_method(this, "_update_shortcuts");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
+	if (_is_in_project_manager()) {
+		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
+		current_sc->set_events(p_events);
+		EditorSettings::get_singleton()->mark_setting_changed("shortcuts");
+		_update_shortcuts();
+		_settings_changed();
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
+		// History must be fixed based on the EditorSettings object because current_sc would
+		// incorrectly make this action use the scene history.
+		undo_redo->force_fixed_history();
+		undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
+		undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+	}
 
 	bool path_is_orbit_mod = p_path == "spatial_editor/viewport_orbit_modifier_1" || p_path == "spatial_editor/viewport_orbit_modifier_2";
 	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
 	bool path_is_zoom_mod = p_path == "spatial_editor/viewport_zoom_modifier_1" || p_path == "spatial_editor/viewport_zoom_modifier_2";
 	if (path_is_orbit_mod || path_is_pan_mod || path_is_zoom_mod) {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	}
 }
 
@@ -391,6 +455,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	TreeItem *shortcut_item = shortcuts->create_item(p_parent);
 	shortcut_item->set_collapsed(p_is_collapsed);
 	shortcut_item->set_text(0, p_display);
+	shortcut_item->set_tooltip_text(0, p_shortcut_identifier);
 
 	Ref<InputEvent> primary = p_events.size() > 0 ? Ref<InputEvent>(p_events[0]) : Ref<InputEvent>();
 	Ref<InputEvent> secondary = p_events.size() > 1 ? Ref<InputEvent>(p_events[1]) : Ref<InputEvent>();
@@ -455,7 +520,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	return shortcut_item;
 }
 
-bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const {
+bool EditorSettingsDialog::_should_display_shortcut(const String &p_path, const Array &p_events, const String &p_name) const {
 	const Ref<InputEvent> search_ev = shortcut_search_bar->get_event();
 	if (search_ev.is_valid()) {
 		bool event_match = false;
@@ -478,7 +543,10 @@ bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const 
 	if (search_text.is_subsequence_ofn(p_name)) {
 		return true;
 	}
-	if (p_match_localized_name && search_text.is_subsequence_ofn(TTR(p_name))) {
+	if (search_text.is_subsequence_ofn(TTR(p_name))) {
+		return true;
+	}
+	if (search_text.is_subsequence_ofn(p_path)) {
 		return true;
 	}
 
@@ -550,7 +618,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
 		Array action_events = _event_list_to_array_helper(action.inputs);
-		if (!_should_display_shortcut(action_name, action_events, false)) {
+		if (!_should_display_shortcut(action_name, action_events)) {
 			continue;
 		}
 
@@ -613,7 +681,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		String section_name = E.get_slicec('/', 0);
 		TreeItem *section = sections[section_name];
 
-		if (!_should_display_shortcut(sc->get_name(), sc->get_events(), true)) {
+		if (!_should_display_shortcut(E, sc->get_events(), sc->get_name())) {
 			continue;
 		}
 
@@ -694,7 +762,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		case EditorSettingsDialog::SHORTCUT_REVERT: {
 			// Only for "shortcut" types
 			if (is_editing_action) {
-				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier];
+				List<Ref<InputEvent>> defaults(InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier]);
 				Array events = _event_list_to_array_helper(defaults);
 
 				_update_builtin_action(current_edited_identifier, events);
@@ -753,7 +821,7 @@ Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p
 		return Variant();
 	}
 
-	String label_text = vformat(TTRC("Event %d"), selected->get_meta("event_index"));
+	String label_text = vformat(TTR("Event %d"), selected->get_meta("event_index"));
 	Label *label = memnew(Label(label_text));
 	label->set_modulate(Color(1, 1, 1, 1.0f));
 	shortcuts->set_drag_preview(label);
@@ -842,6 +910,10 @@ PropertyInfo EditorSettingsDialog::_create_mouse_shortcut_property_info(const St
 String EditorSettingsDialog::_get_shortcut_button_string(const String &p_shortcut_name) {
 	String button_string;
 	Ref<Shortcut> shortcut_ref = EditorSettings::get_singleton()->get_shortcut(p_shortcut_name);
+	if (shortcut_ref.is_null()) {
+		return String();
+	}
+
 	Array events = shortcut_ref->get_events();
 	for (Ref<InputEvent> input_event : events) {
 		button_string += input_event->as_text() + " + ";
@@ -869,8 +941,7 @@ void EditorSettingsDialog::_advanced_toggled(bool p_button_pressed) {
 }
 
 void EditorSettingsDialog::_editor_restart() {
-	EditorNode::get_singleton()->save_all_scenes();
-	EditorNode::get_singleton()->restart_editor();
+	emit_signal("restart_requested");
 }
 
 void EditorSettingsDialog::_editor_restart_request() {
@@ -884,10 +955,13 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+
+	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
 	set_title(TTRC("Editor Settings"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
 	tabs = memnew(TabContainer);
@@ -926,7 +1000,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->register_advanced_toggle(advanced_switch);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(inspector);
-	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 	inspector->get_inspector()->connect("restart_requested", callable_mp(this, &EditorSettingsDialog::_editor_restart_request));
 
 	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
@@ -942,7 +1015,11 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
 	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	restart_label->set_text(TTRC("The editor must be restarted for changes to take effect."));
+	if (_is_in_project_manager()) {
+		restart_label->set_text(TTRC("The Project Manager must be restarted for changes to take effect."));
+	} else {
+		restart_label->set_text(TTRC("The editor must be restarted for changes to take effect."));
+	}
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
@@ -956,6 +1033,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
 
+	// Needs to be done via the signal instead of the notification, otherwise it happens too late.
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
+
 	// Shortcuts Tab
 
 	tab_shortcuts = memnew(VBoxContainer);
@@ -967,9 +1047,14 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_bar->connect(SceneStringName(value_changed), callable_mp(this, &EditorSettingsDialog::_update_shortcuts));
 	tab_shortcuts->add_child(shortcut_search_bar);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	tab_shortcuts->add_child(mc);
+
 	shortcuts = memnew(Tree);
 	shortcuts->set_accessibility_name(TTRC("Shortcuts"));
-	shortcuts->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	shortcuts->set_theme_type_variation("TreeTable");
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);
 	shortcuts->set_column_titles_visible(true);
@@ -977,7 +1062,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(1, TTRC("Binding"));
 	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
-	tab_shortcuts->add_child(shortcuts);
+	mc->add_child(shortcuts);
 
 	SET_DRAG_FORWARDING_GCD(shortcuts, EditorSettingsDialog);
 
@@ -1003,22 +1088,61 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	EditorInspector::add_inspector_plugin(plugin);
 }
 
+void EditorSettingsPropertyWrapper::_setup_override_info() {
+	override_container = memnew(HBoxContainer);
+
+	override_icon = memnew(TextureRect);
+	override_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	override_container->add_child(override_icon);
+
+	Variant::Type type = ProjectSettings::get_singleton()->get_editor_setting_override(property).get_type();
+	override_editor_property = get_parent_inspector()->instantiate_property_editor(ProjectSettings::get_singleton(), type, ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property, hint, hint_text, usage);
+	override_editor_property->set_object_and_property(ProjectSettings::get_singleton(), ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property);
+	override_editor_property->set_read_only(true);
+	override_editor_property->set_label(TTR("Overridden in project"));
+	override_editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
+	override_container->add_child(override_editor_property);
+
+	goto_button = memnew(Button);
+	goto_button->set_tooltip_text(TTRC("Go to the override in the Project Settings."));
+	override_container->add_child(goto_button);
+	if (EditorNode::get_singleton()) {
+		goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
+	}
+
+	remove_button = memnew(Button);
+	remove_button->set_tooltip_text(TTRC("Remove this override."));
+	override_container->add_child(remove_button);
+	remove_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsPropertyWrapper::_remove_override));
+
+	add_child(override_container);
+
+	if (is_ready()) {
+		// Setup icons.
+		_notification(NOTIFICATION_THEME_CHANGED);
+	}
+}
+
 void EditorSettingsPropertyWrapper::_update_override() {
 	// Don't allow overriding theme properties, because it causes problems. Overriding Project Manager settings makes no sense.
 	// TODO: Find a better way to define exception prefixes (if the list happens to grow).
-	if (property.begins_with("interface/theme") || property.begins_with("project_manager")) {
+	if (property.begins_with("interface/theme") || property.begins_with("project_manager") || Engine::get_singleton()->is_project_manager_hint()) {
 		can_override = false;
 		return;
 	}
 
-	const bool has_override = ProjectSettings::get_singleton()->has_editor_setting_override(property);
+	const bool has_override = ProjectSettings::get_singleton()->is_project_loaded() && ProjectSettings::get_singleton()->has_editor_setting_override(property);
 	if (has_override) {
-		const Variant override_value = EDITOR_GET(property);
-		override_label->set_text(vformat(TTR("Overridden in project: %s"), override_value));
-		// In case the text is too long and trimmed.
-		override_label->set_tooltip_text(override_value);
+		if (!override_container) {
+			_setup_override_info();
+		}
+		override_editor_property->update_property();
+		set_bottom_editor(override_container);
+		override_container->show();
+	} else if (override_container) {
+		override_container->hide();
+		set_bottom_editor(nullptr);
 	}
-	override_info->set_visible(has_override);
 	can_override = !has_override;
 }
 
@@ -1035,13 +1159,14 @@ void EditorSettingsPropertyWrapper::_remove_override() {
 	EditorNode::get_singleton()->notify_settings_overrides_changed();
 	_update_override();
 
-	if (requires_restart) {
+	if (usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
 		restart_request_callback.call();
 	}
 }
 
 void EditorSettingsPropertyWrapper::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
+	if (override_container && p_what == NOTIFICATION_THEME_CHANGED) {
+		override_icon->set_texture(get_editor_theme_icon(SNAME("Hierarchy")));
 		goto_button->set_button_icon(get_editor_theme_icon(SNAME("MethodOverride")));
 		remove_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 	}
@@ -1051,38 +1176,15 @@ void EditorSettingsPropertyWrapper::update_property() {
 	editor_property->update_property();
 }
 
-void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProperty *p_editor_property, bool p_requires_restart) {
-	requires_restart = p_requires_restart;
+void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProperty *p_editor_property, PropertyHint p_hint, const String &p_hint_text, uint32_t p_usage) {
+	hint = p_hint;
+	hint_text = p_hint_text;
+	usage = p_usage;
 
 	property = p_property;
-	container = memnew(VBoxContainer);
-
 	editor_property = p_editor_property;
-	editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
-	container->add_child(editor_property);
+	add_child(editor_property);
 
-	override_info = memnew(HBoxContainer);
-	override_info->hide();
-	container->add_child(override_info);
-
-	override_label = memnew(Label);
-	override_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	override_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	override_label->set_mouse_filter(MOUSE_FILTER_STOP); // For tooltip.
-	override_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	override_info->add_child(override_label);
-
-	goto_button = memnew(Button);
-	goto_button->set_tooltip_text(TTRC("Go to the override in the Project Settings."));
-	override_info->add_child(goto_button);
-	goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
-
-	remove_button = memnew(Button);
-	remove_button->set_tooltip_text(TTRC("Remove this override."));
-	override_info->add_child(remove_button);
-	remove_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsPropertyWrapper::_remove_override));
-
-	add_child(container);
 	_update_override();
 
 	connect(SNAME("property_overridden"), callable_mp(this, &EditorSettingsPropertyWrapper::_create_override));
@@ -1107,8 +1209,9 @@ bool EditorSettingsInspectorPlugin::parse_property(Object *p_object, const Varia
 	EditorSettingsPropertyWrapper *editor = memnew(EditorSettingsPropertyWrapper);
 	EditorProperty *real_property = inspector->get_inspector()->instantiate_property_editor(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 	real_property->set_object_and_property(p_object, p_path);
+	real_property->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	real_property->set_name_split_ratio(0.0);
-	editor->setup(property, real_property, bool(p_usage & PROPERTY_USAGE_RESTART_IF_CHANGED));
+	editor->setup(property, real_property, p_hint, p_hint_text, p_usage);
 
 	add_property_editor(p_path, editor);
 	current_object = nullptr;

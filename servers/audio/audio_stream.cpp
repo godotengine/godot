@@ -31,6 +31,7 @@
 #include "audio_stream.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
 	GDVIRTUAL_CALL(_start, p_from_pos);
@@ -442,14 +443,9 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 		return;
 	}
 
-	if (!GLOBAL_GET_CACHED(bool, "audio/driver/enable_input")) {
-		WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
-		return;
-	}
-
 	input_ofs = 0;
 
-	if (AudioDriver::get_singleton()->input_start() == OK) {
+	if (AudioServer::get_singleton()->set_input_device_active(true) == OK) {
 		active = true;
 		begin_resample();
 	}
@@ -457,7 +453,7 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 
 void AudioStreamPlaybackMicrophone::stop() {
 	if (active) {
-		AudioDriver::get_singleton()->input_stop();
+		AudioServer::get_singleton()->set_input_device_active(false);
 		active = false;
 	}
 }
@@ -566,6 +562,14 @@ void AudioStreamRandomizer::set_random_pitch(float p_pitch) {
 
 float AudioStreamRandomizer::get_random_pitch() const {
 	return random_pitch_scale;
+}
+
+void AudioStreamRandomizer::set_random_pitch_semitones(float p_semitones) {
+	random_pitch_scale = powf(2, p_semitones * 0.08333333f);
+}
+
+float AudioStreamRandomizer::get_random_pitch_semitones() const {
+	return 12.0f * log2f(MAX(1.0f, random_pitch_scale));
 }
 
 void AudioStreamRandomizer::set_random_volume_offset_db(float p_volume_offset_db) {
@@ -752,6 +756,9 @@ void AudioStreamRandomizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_random_pitch", "scale"), &AudioStreamRandomizer::set_random_pitch);
 	ClassDB::bind_method(D_METHOD("get_random_pitch"), &AudioStreamRandomizer::get_random_pitch);
 
+	ClassDB::bind_method(D_METHOD("set_random_pitch_semitones", "semitones"), &AudioStreamRandomizer::set_random_pitch_semitones);
+	ClassDB::bind_method(D_METHOD("get_random_pitch_semitones"), &AudioStreamRandomizer::get_random_pitch_semitones);
+
 	ClassDB::bind_method(D_METHOD("set_random_volume_offset_db", "db_offset"), &AudioStreamRandomizer::set_random_volume_offset_db);
 	ClassDB::bind_method(D_METHOD("get_random_volume_offset_db"), &AudioStreamRandomizer::get_random_volume_offset_db);
 
@@ -759,7 +766,8 @@ void AudioStreamRandomizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_playback_mode"), &AudioStreamRandomizer::get_playback_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_mode", PROPERTY_HINT_ENUM, "Random (Avoid Repeats),Random,Sequential"), "set_playback_mode", "get_playback_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_random_pitch", "get_random_pitch");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch_semitones", PROPERTY_HINT_RANGE, "0,24,0.001,or_greater,suffix:Semitones", PROPERTY_USAGE_EDITOR), "set_random_pitch_semitones", "get_random_pitch_semitones");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0.01,suffix:dB"), "set_random_volume_offset_db", "get_random_volume_offset_db");
 	ADD_ARRAY("streams", "stream_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "streams_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_streams_count", "get_streams_count");
@@ -772,9 +780,9 @@ void AudioStreamRandomizer::_bind_methods() {
 
 	base_property_helper.set_prefix("stream_");
 	base_property_helper.set_array_length_getter(&AudioStreamRandomizer::get_streams_count);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 AudioStreamRandomizer::AudioStreamRandomizer() {

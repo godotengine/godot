@@ -31,20 +31,17 @@
 #include "path_utils.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 
 #include <cstdlib>
 
 #ifdef WINDOWS_ENABLED
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #define ENV_PATH_SEP ";"
 #else
 #include <unistd.h>
-#include <climits>
 
 #define ENV_PATH_SEP ":"
 #endif

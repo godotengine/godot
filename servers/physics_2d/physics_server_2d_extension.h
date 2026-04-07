@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
 #include "servers/physics_2d/physics_server_2d.h"
@@ -109,7 +109,7 @@ public:
 	EXBIND0RC(real_t, get_step)
 	EXBIND0(integrate_forces)
 
-	EXBIND0R(PhysicsDirectSpaceState2D *, get_space_state)
+	EXBIND0R(RequiredResult<PhysicsDirectSpaceState2D>, get_space_state)
 
 	PhysicsDirectBodyState2DExtension();
 };
@@ -198,6 +198,10 @@ protected:
 	GDVIRTUAL9R_REQUIRED(bool, _shape_collide, RID, const Transform2D &, const Vector2 &, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
 
 	GDVIRTUAL8R_REQUIRED(bool, _body_collide_shape, RID, int, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL4_COMPAT(_body_set_shape_as_one_way_collision_bind_compat_104736, _body_set_shape_as_one_way_collision, RID, int, bool, real_t)
+#endif
 
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
@@ -305,7 +309,7 @@ public:
 	EXBIND2RC(Transform2D, body_get_shape_transform, RID, int)
 
 	EXBIND3(body_set_shape_disabled, RID, int, bool)
-	EXBIND4(body_set_shape_as_one_way_collision, RID, int, bool, real_t)
+	EXBIND5(body_set_shape_as_one_way_collision, RID, int, bool, real_t, const Vector2 &)
 
 	EXBIND2(body_remove_shape, RID, int)
 	EXBIND1(body_clear_shapes, RID)

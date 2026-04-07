@@ -31,12 +31,14 @@
 #include "shader.h"
 #include "shader.compat.inc"
 
-#include "core/io/file_access.h"
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
-#include "texture.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/editor_help.h"
@@ -118,6 +120,8 @@ void Shader::set_code(const String &p_code) {
 		mode = MODE_SKY;
 	} else if (type == "fog") {
 		mode = MODE_FOG;
+	} else if (type == "texture_blit") {
+		mode = MODE_TEXTURE_BLIT;
 	} else {
 		mode = MODE_SPATIAL;
 	}
@@ -156,8 +160,12 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 
 #ifdef TOOLS_ENABLED
 	DocData::ClassDoc class_doc;
-	class_doc.name = get_path();
-	class_doc.is_script_doc = true;
+	bool generate_doc = Engine::get_singleton()->is_editor_hint() && !get_path().is_empty();
+	if (generate_doc) {
+		class_doc.name = get_path().trim_prefix("res://").quote();
+		class_doc.is_script_doc = true;
+		class_doc.inherits = "Shader";
+	}
 #endif
 
 	for (PropertyInfo &pi : local) {
@@ -176,10 +184,9 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 				pi.type = Variant::OBJECT;
 			}
 #ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint()) {
+			if (generate_doc) {
 				DocData::PropertyDoc prop_doc;
 				prop_doc.name = "shader_parameter/" + pi.name;
-#ifdef MODULE_REGEX_ENABLED
 				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
 				Ref<RegExMatch> pattern_ref = pattern.search(code);
 				if (pattern_ref.is_valid()) {
@@ -189,16 +196,17 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 					RegExMatch *match_tip = pattern_tip_ref.ptr();
 					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
 					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+
+					pi.class_name = class_doc.name;
+					class_doc.properties.push_back(prop_doc);
 				}
-#endif
-				class_doc.properties.push_back(prop_doc);
 			}
 #endif
 			p_params->push_back(pi);
 		}
 	}
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !class_doc.name.is_empty() && p_params) {
+	if (generate_doc && class_doc.properties.size() > 0) {
 		EditorHelp::add_doc(class_doc);
 	}
 #endif
@@ -286,6 +294,7 @@ void Shader::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_PARTICLES);
 	BIND_ENUM_CONSTANT(MODE_SKY);
 	BIND_ENUM_CONSTANT(MODE_FOG);
+	BIND_ENUM_CONSTANT(MODE_TEXTURE_BLIT);
 }
 
 Shader::Shader() {
@@ -297,81 +306,4 @@ Shader::~Shader() {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free_rid(shader_rid);
 	}
-}
-
-////////////
-
-Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_FILE_CANT_OPEN;
-	}
-
-	Error error = OK;
-	Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(p_path, &error);
-	ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot load shader: " + p_path);
-
-	String str;
-	if (buffer.size() > 0) {
-		error = str.append_utf8((const char *)buffer.ptr(), buffer.size());
-		ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot parse shader: " + p_path);
-	}
-
-	Ref<Shader> shader;
-	shader.instantiate();
-
-	shader->set_include_path(p_path);
-	shader->set_code(str);
-
-	if (r_error) {
-		*r_error = OK;
-	}
-
-	return shader;
-}
-
-void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gdshader");
-}
-
-bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
-	return (p_type == "Shader");
-}
-
-String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "gdshader") {
-		return "Shader";
-	}
-	return "";
-}
-
-Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	Ref<Shader> shader = p_resource;
-	ERR_FAIL_COND_V(shader.is_null(), ERR_INVALID_PARAMETER);
-
-	String source = shader->get_code();
-
-	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-	ERR_FAIL_COND_V_MSG(err, err, "Cannot save shader '" + p_path + "'.");
-
-	file->store_string(source);
-	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		return ERR_CANT_CREATE;
-	}
-
-	return OK;
-}
-
-void ResourceFormatSaverShader::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
-	if (const Shader *shader = Object::cast_to<Shader>(*p_resource)) {
-		if (shader->is_text_shader()) {
-			p_extensions->push_back("gdshader");
-		}
-	}
-}
-
-bool ResourceFormatSaverShader::recognize(const Ref<Resource> &p_resource) const {
-	return p_resource->get_class_name() == "Shader"; //only shader, not inherited
 }

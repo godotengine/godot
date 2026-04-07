@@ -979,6 +979,8 @@ XrResult ApiLayerManifestFile::FindManifestFiles(const std::string &openxr_comma
             registry_location = OPENXR_EXPLICIT_API_LAYER_REGISTRY_LOCATION;
 #endif
             break;
+        case MANIFEST_TYPE_UNDEFINED:
+        case MANIFEST_TYPE_RUNTIME:
         default:
             LoaderLogger::LogErrorMessage(openxr_command,
                                           "ApiLayerManifestFile::FindManifestFiles - unknown manifest file requested");

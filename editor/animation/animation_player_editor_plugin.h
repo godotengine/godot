@@ -32,19 +32,19 @@
 
 #include "editor/animation/animation_library_editor.h"
 #include "editor/animation/animation_track_editor.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/material.h"
 
 class AnimationPlayerEditorPlugin;
 class ImageTexture;
 
-class AnimationPlayerEditor : public VBoxContainer {
-	GDCLASS(AnimationPlayerEditor, VBoxContainer);
+class AnimationPlayerEditor : public EditorDock {
+	GDCLASS(AnimationPlayerEditor, EditorDock);
 
 	friend AnimationPlayerEditorPlugin;
 
@@ -179,7 +179,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _select_anim_by_name(const String &p_anim);
 	float _get_editor_step() const;
-	void _go_to_nearest_keyframe(bool p_backward);
 	void _play_pressed();
 	void _play_from_pressed();
 	void _play_bw_pressed();
@@ -212,6 +211,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _set_controls_disabled(bool p_disabled);
 	void _update_animation_list_icons();
 	void _update_name_dialog_library_dropdown();
+	void _update_playback_tooltips();
 	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);
@@ -271,6 +271,7 @@ public:
 	void clear();
 
 	void ensure_visibility();
+	void go_to_nearest_keyframe(bool p_backward);
 
 	void edit(AnimationMixer *p_node, AnimationPlayer *p_player, bool p_is_dummy);
 	void forward_force_draw_over_viewport(Control *p_overlay);
@@ -304,7 +305,6 @@ public:
 	virtual void clear() override { anim_editor->clear(); }
 
 	virtual String get_plugin_name() const override { return "Anim"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -331,10 +331,9 @@ public:
 class AnimationTrackKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTrackKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationTrackKeyEdit *atk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationTrackKeyEdit> atk_plugin;
 
 public:
-	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
 	virtual String get_plugin_name() const override { return "AnimationTrackKeyEdit"; }
@@ -357,10 +356,9 @@ public:
 class AnimationMarkerKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationMarkerKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationMarkerKeyEdit *amk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationMarkerKeyEdit> amk_plugin;
 
 public:
-	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
 	virtual String get_plugin_name() const override { return "AnimationMarkerKeyEdit"; }

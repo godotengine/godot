@@ -34,6 +34,7 @@
 
 class CheckBox;
 class ColorPickerButton;
+class ConfirmationDialog;
 class CreateDialog;
 class EditorFileDialog;
 class EditorLocaleDialog;
@@ -41,7 +42,6 @@ class EditorResourcePicker;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
 class MenuButton;
-class PropertySelector;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
@@ -81,6 +81,7 @@ class EditorPropertyVariant : public EditorProperty {
 
 	void _change_type(int p_to_type);
 	void _popup_edit_menu();
+	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -95,12 +96,16 @@ class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty);
 	LineEdit *text = nullptr;
 
+	bool monospaced = false;
 	bool updating = false;
 	bool string_name = false;
 	void _text_changed(const String &p_string);
 	void _text_submitted(const String &p_string);
+	void _update_theme();
 
 protected:
+	void _notification(int p_what);
+
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
@@ -108,21 +113,27 @@ public:
 	virtual void update_property() override;
 	void set_placeholder(const String &p_string);
 	void set_secret(bool p_enabled);
+	void set_monospaced(bool p_monospaced);
 	EditorPropertyText();
 };
 
 class EditorPropertyMultilineText : public EditorProperty {
 	GDCLASS(EditorPropertyMultilineText, EditorProperty);
+
 	TextEdit *text = nullptr;
 
 	AcceptDialog *big_text_dialog = nullptr;
 	TextEdit *big_text = nullptr;
 	Button *open_big_text = nullptr;
 
+	bool expression = false;
+	bool monospaced = false;
+	bool wrap_lines = true;
+
 	void _big_text_changed();
 	void _text_changed();
 	void _open_big_text();
-	bool expression = false;
+	void _update_theme();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -130,6 +141,13 @@ protected:
 
 public:
 	virtual void update_property() override;
+
+	void set_monospaced(bool p_monospaced);
+	bool get_monospaced();
+
+	void set_wrap_lines(bool p_wrap_lines);
+	bool get_wrap_lines();
+
 	EditorPropertyMultilineText(bool p_expression = false);
 };
 
@@ -272,6 +290,7 @@ public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
 	void set_option_button_clip(bool p_enable);
+	OptionButton *get_option_button(); // Hack to allow setting icons.
 	EditorPropertyEnum();
 };
 
@@ -303,7 +322,10 @@ private:
 	bool expand_hovered = false;
 	bool expanded = false;
 	int expansion_rows = 0;
-	uint32_t hovered_index = INT32_MAX; // Nothing is hovered.
+	const uint32_t HOVERED_INDEX_NONE = UINT32_MAX;
+	uint32_t hovered_index = HOVERED_INDEX_NONE;
+	bool dragging = false;
+	bool dragging_value_to_set = false;
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;
@@ -383,6 +405,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyInteger();
@@ -392,6 +415,8 @@ class EditorPropertyObjectID : public EditorProperty {
 	GDCLASS(EditorPropertyObjectID, EditorProperty);
 	Button *edit = nullptr;
 	String base_type;
+
+	ObjectID _get_object_id() const;
 	void _edit_pressed();
 
 protected:
@@ -434,6 +459,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	void setup(const EditorPropertyRangeHint &p_range_hint);
 	EditorPropertyFloat();
@@ -648,7 +674,6 @@ class EditorPropertyColor : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
-	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;
@@ -726,6 +751,7 @@ class EditorPropertyResource : public EditorProperty {
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
 
+	Node *_get_base_node();
 	void _viewport_selected(const NodePath &p_path);
 
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool p_advance);
@@ -744,6 +770,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(Object *p_object, const String &p_path, const String &p_base_type);
+	EditorResourcePicker *get_resource_picker() const { return resource_picker; }
 
 	void collapse_all_folding() override;
 	void expand_all_folding() override;
@@ -752,6 +779,8 @@ public:
 	void set_use_sub_inspector(bool p_enable);
 	void set_use_filter(bool p_use);
 	void fold_resource();
+
+	virtual void set_keying(bool p_keying) override;
 
 	virtual bool is_colored(ColorationMode p_mode) override;
 

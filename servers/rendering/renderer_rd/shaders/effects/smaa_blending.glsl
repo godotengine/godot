@@ -67,7 +67,7 @@ layout(location = 0) out vec4 out_color;
 
 layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
-	uint flags;
+	uint use_debanding;
 	float pad;
 }
 params;
@@ -75,8 +75,6 @@ params;
 #define textureLinear(tex, uv) srgb_to_linear(textureLod(tex, uv, 0.0).rgb)
 
 vec3 linear_to_srgb(vec3 color) {
-	// If going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -140,11 +138,8 @@ void main() {
 		out_color.rgb = linear_to_srgb(out_color.rgb);
 		out_color.a = texture(color_tex, tex_coord).a;
 	}
-	if (bool(params.flags & FLAG_USE_8_BIT_DEBANDING)) {
+	if (bool(params.use_debanding)) {
 		// Divide by 255 to align to 8-bit quantization.
 		out_color.rgb += screen_space_dither(gl_FragCoord.xy, 255.0);
-	} else if (bool(params.flags & FLAG_USE_10_BIT_DEBANDING)) {
-		// Divide by 1023 to align to 10-bit quantization.
-		out_color.rgb += screen_space_dither(gl_FragCoord.xy, 1023.0);
 	}
 }

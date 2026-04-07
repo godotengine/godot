@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include "../openxr_extension_wrapper.h"
+#include "../openxr_future_extension.h"
 #include "openxr_spatial_entities.h"
-#include "openxr_spatial_entity_extension.h"
+
 #include "scene/resources/3d/shape_3d.h"
 
 // Plane tracking capability configuration
@@ -219,7 +221,7 @@ public:
 	OpenXRSpatialPlaneTrackingCapability();
 	virtual ~OpenXRSpatialPlaneTrackingCapability() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_session_created(const XrSession p_session) override;
 	virtual void on_session_destroyed() override;

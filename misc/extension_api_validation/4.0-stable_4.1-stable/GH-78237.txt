@@ -1,0 +1,3 @@
+GH-78237
+--------
+Validate extension JSON: Error: Field 'classes/WebRTCPeerConnectionExtension/methods/_create_data_channel/return_value': type changed value in new API, from "Object" to "WebRTCDataChannel".

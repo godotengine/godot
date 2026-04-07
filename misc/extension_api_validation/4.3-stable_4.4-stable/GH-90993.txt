@@ -1,0 +1,10 @@
+GH-90993
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments': size changed value in new API, from 9 to 10.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "Array" to "int".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': default_value changed value in new API, from "Array[RID]([])" to "0".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "typedarray::RID" to "int".
+
+draw_list_begin added a new optional debug argument called breadcrumb.
+There used to be an Array argument as arg #9 initially, then changed to typedarray::RID in 4.1, and finally removed in 4.3.
+Since we're adding a new one at the same location, we need to silence those warnings for 4.1 and 4.3.

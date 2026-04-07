@@ -30,6 +30,7 @@
 
 #include "multiplayer_peer.h"
 
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 uint32_t MultiplayerPeer::generate_unique_id() const {

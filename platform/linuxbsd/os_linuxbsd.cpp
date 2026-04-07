@@ -34,12 +34,15 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
-#ifdef SDL_ENABLED
-#include "drivers/sdl/joypad_sdl.h"
-#endif
+#include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 
 #ifdef X11_ENABLED
 #include "x11/detect_prime_x11.h"
@@ -77,6 +80,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -86,6 +90,14 @@
 
 #if defined(__FreeBSD__)
 #include <sys/sysctl.h>
+#endif
+
+#ifdef FONTCONFIG_ENABLED
+#ifdef SOWRAP_ENABLED
+#include "fontconfig-so_wrap.h"
+#else
+#include <fontconfig/fontconfig.h>
+#endif
 #endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
@@ -531,40 +543,41 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 }
 
 Error OS_LinuxBSD::shell_open(const String &p_uri) {
-	Error ok;
-	int err_code;
 	List<String> args;
 	args.push_back(p_uri);
 
-	// Agnostic
-	ok = execute("xdg-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	// Use create_process() instead of execute() to avoid blocking the main thread.
+	// This prevents the UI from freezing when opening file managers or other applications.
+	Error ok = create_process("xdg-open", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// GNOME
 	args.push_front("open"); // The command is `gio open`, so we need to add it to args
-	ok = execute("gio", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("gio", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	args.pop_front();
-	ok = execute("gvfs-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("gvfs-open", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// KDE
-	ok = execute("kde-open5", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("kde-open5", args);
+	if (ok == OK) {
 		return OK;
 	}
-	ok = execute("kde-open", args, nullptr, &err_code);
-	return !err_code ? ok : FAILED;
+	ok = create_process("kde-open", args);
+	if (ok == OK) {
+		return OK;
+	}
+	// XFCE
+	ok = create_process("exo-open", args);
+	if (ok == OK) {
+		return OK;
+	}
+	return FAILED;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
@@ -982,6 +995,8 @@ void OS_LinuxBSD::run() {
 	//uint64_t frame=0;
 
 	while (true) {
+		GodotProfileFrameMark;
+		GodotProfileZone("OS_LinuxBSD::run");
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 #ifdef SDL_ENABLED
 		if (joypad_sdl) {

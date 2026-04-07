@@ -1,14 +1,14 @@
 PCRE2 Authorship and Contributors
 =================================
 
-COPYRIGHT
+Copyright
 ---------
 
 Please see the file [LICENCE](./LICENCE.md) in the PCRE2 distribution for
 copyright details.
 
 
-MAINTAINERS
+Maintainers
 -----------
 
 The PCRE and PCRE2 libraries were authored and maintained by Philip Hazel.
@@ -62,7 +62,7 @@ Both administrators are volunteers acting in a personal capacity.
 </table>
 
 
-CONTRIBUTORS
+Contributors
 ------------
 
 Many others have participated and contributed to PCRE2 over its history.
@@ -77,7 +77,7 @@ All names listed alphabetically.
 
 ### Contributors to PCRE2
 
-This list includes names up until the PCRE2 10.44 release. New names will be
+This list includes names up until the PCRE2 10.47 release. New names will be
 added from the Git history on each release.
 
     Scott Bell
@@ -93,13 +93,16 @@ added from the Git history on each release.
     Addison Crump
     Alex Dowad
     Daniel Engberg
+    Marco Feuerstein
     Daniel Richard G
+    Isaac Oscar Gariano
     David Gaussmann
     Andrey Gorbachev
     Jordan Griege
     Jason Hood
     Bumsu Hyeon
     Roy Ivy
+    Nobuhiro Iwamatsu
     Martin Joerg
     Guillem Jover
     Ralf Junker
@@ -114,13 +117,17 @@ added from the Git history on each release.
     Kai Lu
     Behzod Mansurov
     B. Scott Michel
+    Greg Minshall
     Nathan Moinvaziri
     Mike Munday
     Marc Mutz
     Fabio Pagani
     Christian Persch
+    Alex Reinking
+    Joshua Rogers
     Tristan Ross
     William A Rowe Jr
+    Rocco Ruscitti
     David Seifert
     Yaakov Selkowitz
     Rich Siegel
@@ -131,6 +138,7 @@ added from the Git history on each release.
     Greg Thain
     Lucas Trzesniewski
     Theodore Tsirpanis
+    Aaron M. Ucko
     Matthew Vernon
     Rémi Verschelde
     Thomas Voss

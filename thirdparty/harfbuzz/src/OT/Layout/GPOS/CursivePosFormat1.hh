@@ -50,8 +50,9 @@ struct EntryExitRecord
   DEFINE_SIZE_STATIC (4);
 };
 
-static void
-reverse_cursive_minor_offset (hb_glyph_position_t *pos, unsigned int i, hb_direction_t direction, unsigned int new_parent) {
+static inline void
+reverse_cursive_minor_offset (hb_glyph_position_t *pos, unsigned int i, hb_direction_t direction, unsigned int new_parent)
+{
   int chain = pos[i].attach_chain(), type = pos[i].attach_type();
   if (likely (!chain || 0 == (type & ATTACH_TYPE_CURSIVE)))
     return;
@@ -229,8 +230,13 @@ struct CursivePosFormat1
      */
     reverse_cursive_minor_offset (pos, child, c->direction, parent);
 
-    pos[child].attach_type() = ATTACH_TYPE_CURSIVE;
     pos[child].attach_chain() = (int) parent - (int) child;
+    if (pos[child].attach_chain() != (int) parent - (int) child)
+    {
+      pos[child].attach_chain() = 0;
+      goto overflow;
+    }
+    pos[child].attach_type() = ATTACH_TYPE_CURSIVE;
     buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
     if (likely (HB_DIRECTION_IS_HORIZONTAL (c->direction)))
       pos[child].y_offset = y_offset;
@@ -256,6 +262,7 @@ struct CursivePosFormat1
 			  i, j);
     }
 
+  overflow:
     buffer->idx++;
     return_trace (true);
   }

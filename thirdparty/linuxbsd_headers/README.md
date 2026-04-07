@@ -34,7 +34,7 @@ Patches:
 ## libdecor
 
 - Upstream: https://gitlab.freedesktop.org/libdecor/libdecor/
-- Version: 0.2.2
+- Version: 0.2.5
 - License: MIT
 
 

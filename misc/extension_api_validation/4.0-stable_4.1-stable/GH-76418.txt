@@ -1,0 +1,17 @@
+GH-76418
+--------
+Validate extension JSON: Error: Hash changed for 'classes/AnimationNodeStateMachinePlayback/methods/get_travel_path', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Object/methods/get_meta_list', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RDShaderFile/methods/get_version_list', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/methods/global_shader_parameter_get_list', from 43F252E9 to EE2D1D98. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/AnimationNodeStateMachinePlayback/methods/get_travel_path/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/Object/methods/get_meta_list/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/RDShaderFile/methods/get_version_list/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/global_shader_parameter_get_list/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+
+Validate extension JSON: Error: Field 'classes/Geometry3D/methods/segment_intersects_convex/arguments/2': type changed value in new API, from "Array" to "typedarray::Plane".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments/9': type changed value in new API, from "Array" to "typedarray::RID".
+Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/add_triangle_fan/arguments/5': default_value changed value in new API, from "[]" to "Array[Plane]([])".
+Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/add_triangle_fan/arguments/5': type changed value in new API, from "Array" to "typedarray::Plane".
+
+Return types change, fixed some internal type issues and unnecessarily changed the public type in the process.

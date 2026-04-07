@@ -46,7 +46,7 @@ public:
 		WMR_MAX_CONTROLLERS
 	};
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available(WMRControllers p_type);
 

@@ -177,8 +177,8 @@ public:
 	real_t get_drag_coefficient();
 
 	TypedArray<PhysicsBody3D> get_collision_exceptions();
-	void add_collision_exception_with(Node *p_node);
-	void remove_collision_exception_with(Node *p_node);
+	void add_collision_exception_with(RequiredParam<Node> rp_node);
+	void remove_collision_exception_with(RequiredParam<Node> rp_node);
 
 	Vector3 get_point_transform(int p_point_index);
 

@@ -46,7 +46,7 @@
 // ***********************************************************************************
 
 #include "core/object/object.h"
-#include "core/variant/type_info.h"
+#include "core/templates/paged_allocator.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
 
@@ -98,28 +98,28 @@ public:
 				id(p_id) {}
 	};
 
-#define DEFINE_ID(m_name)                                                         \
-	struct m_name##ID : public ID {                                               \
-		_ALWAYS_INLINE_ explicit operator bool() const {                          \
-			return id != 0;                                                       \
-		}                                                                         \
-		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {               \
-			id = p_other.id;                                                      \
-			return *this;                                                         \
-		}                                                                         \
-		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const {         \
-			return id < p_other.id;                                               \
-		}                                                                         \
-		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const {        \
-			return id == p_other.id;                                              \
-		}                                                                         \
-		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const {        \
-			return id != p_other.id;                                              \
-		}                                                                         \
+#define DEFINE_ID(m_name) \
+	struct m_name##ID : public ID { \
+		_ALWAYS_INLINE_ explicit operator bool() const { \
+			return id != 0; \
+		} \
+		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) { \
+			id = p_other.id; \
+			return *this; \
+		} \
+		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const { \
+			return id < p_other.id; \
+		} \
+		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const { \
+			return id == p_other.id; \
+		} \
+		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const { \
+			return id != p_other.id; \
+		} \
 		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {} \
-		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}        \
+		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {} \
 		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {} \
-		_ALWAYS_INLINE_ m_name##ID() = default;                                   \
+		_ALWAYS_INLINE_ m_name##ID() = default; \
 	};
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
@@ -140,6 +140,8 @@ public:
 	DEFINE_ID(QueryPool);
 	DEFINE_ID(Fence);
 	DEFINE_ID(Semaphore);
+	DEFINE_ID(AccelerationStructure);
+	DEFINE_ID(RaytracingPipeline);
 
 public:
 	/*****************/
@@ -170,7 +172,10 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		BUFFER_USAGE_SHADER_BINDING_TABLE_BIT = (1 << 10),
 		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
+		BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT = (1 << 19),
+		BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT = (1 << 20),
 		// There are no Vulkan-equivalent. Try to use unused/unclaimed bits.
 		BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT = (1 << 31),
 	};
@@ -194,6 +199,7 @@ public:
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) = 0;
+	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) = 0;
 	virtual void buffer_flush(BufferID p_buffer) {}
 	// Only for a buffer with BUFFER_USAGE_DEVICE_ADDRESS_BIT.
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) = 0;
@@ -267,11 +273,8 @@ public:
 	};
 
 	struct TextureCopyableLayout {
-		uint64_t offset = 0;
 		uint64_t size = 0;
 		uint64_t row_pitch = 0;
-		uint64_t depth_pitch = 0;
-		uint64_t layer_pitch = 0;
 	};
 
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) = 0;
@@ -281,11 +284,11 @@ public:
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
+	// Returns a texture layout for buffer <-> texture copies. If you are copying multiple texture subresources to/from the same buffer,
+	// you are responsible for correctly aligning the start offset for every buffer region. See API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT.
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
 	// Returns the data of a texture layer for a CPU texture that was created with TEXTURE_USAGE_CPU_READ_BIT.
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) = 0;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) = 0;
-	virtual void texture_unmap(TextureID p_texture) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) = 0;
 
@@ -301,7 +304,7 @@ public:
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	virtual VertexFormatID vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) = 0;
+	virtual VertexFormatID vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) = 0;
 	virtual void vertex_format_free(VertexFormatID p_vertex_format) = 0;
 
 	/******************/
@@ -327,8 +330,10 @@ public:
 		PIPELINE_STAGE_ALL_GRAPHICS_BIT = (1 << 15),
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
 		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
+		PIPELINE_STAGE_RAY_TRACING_SHADER_BIT = (1 << 21),
 		PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT = (1 << 22),
 		PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT = (1 << 23),
+		PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT = (1 << 25),
 	};
 
 	enum BarrierAccessBits {
@@ -349,6 +354,8 @@ public:
 		BARRIER_ACCESS_HOST_WRITE_BIT = (1 << 14),
 		BARRIER_ACCESS_MEMORY_READ_BIT = (1 << 15),
 		BARRIER_ACCESS_MEMORY_WRITE_BIT = (1 << 16),
+		BARRIER_ACCESS_ACCELERATION_STRUCTURE_READ_BIT = (1 << 21),
+		BARRIER_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT = (1 << 22),
 		BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT = (1 << 23),
 		BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT = (1 << 24),
 		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 25),
@@ -379,13 +386,22 @@ public:
 		TextureSubresourceRange subresources;
 	};
 
+	struct AccelerationStructureBarrier {
+		AccelerationStructureID acceleration_structure;
+		BitField<BarrierAccessBits> src_access;
+		BitField<BarrierAccessBits> dst_access;
+		uint64_t offset = 0;
+		uint64_t size = 0;
+	};
+
 	virtual void command_pipeline_barrier(
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
 			VectorView<MemoryAccessBarrier> p_memory_barriers,
 			VectorView<BufferBarrier> p_buffer_barriers,
-			VectorView<TextureBarrier> p_texture_barriers) = 0;
+			VectorView<TextureBarrier> p_texture_barriers,
+			VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) = 0;
 
 	/****************/
 	/**** FENCES ****/
@@ -464,6 +480,9 @@ public:
 
 	// Retrieve the format used by the swap chain's framebuffers.
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) = 0;
+
+	// Retrieve the color space used by the swap chain's framebuffers.
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) = 0;
 
 	// Tells the swapchain the max_fps so it can use the proper frame pacing.
 	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.
@@ -546,7 +565,8 @@ public:
 
 	struct BufferTextureCopyRegion {
 		uint64_t buffer_offset = 0;
-		TextureSubresourceLayers texture_subresources;
+		uint64_t row_pitch = 0;
+		TextureSubresource texture_subresource;
 		Vector3i texture_offset;
 		Vector3i texture_region_size;
 	};
@@ -557,6 +577,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) = 0;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) = 0;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) = 0;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) = 0;
 
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) = 0;
 	virtual void command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) = 0;
@@ -617,6 +638,7 @@ public:
 		LocalVector<AttachmentReference> input_references;
 		LocalVector<AttachmentReference> color_references;
 		AttachmentReference depth_stencil_reference;
+		AttachmentReference depth_resolve_reference;
 		LocalVector<AttachmentReference> resolve_references;
 		LocalVector<uint32_t> preserve_attachments;
 		AttachmentReference fragment_shading_rate_reference;
@@ -673,7 +695,7 @@ public:
 	virtual void command_render_draw_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) = 0;
 
 	// Buffer binding.
-	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) = 0;
+	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) = 0;
 	virtual void command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) = 0;
 
 	// Dynamic state.
@@ -713,6 +735,54 @@ public:
 	// ----- PIPELINE -----
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) = 0;
+
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	// ----- ACCELERATION STRUCTURE -----
+
+	struct AccelerationStructureGeometry {
+		BitField<AccelerationStructureGeometryFlagBits> flags = {};
+		BufferID vertex_buffer;
+		uint32_t vertex_offset = 0;
+		uint32_t vertex_stride = 0;
+		uint32_t vertex_count = 0;
+		DataFormat vertex_format = DATA_FORMAT_MAX;
+		BufferID index_buffer;
+		uint32_t index_offset = 0;
+		uint32_t index_count = 0;
+		IndexBufferFormat index_format = {};
+	};
+
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) = 0;
+
+	struct AccelerationStructureInstance {
+		Transform3D transform;
+		uint32_t id = 0;
+		uint8_t mask = 0;
+		BitField<AccelerationStructureInstanceFlagBits> flags = {};
+		AccelerationStructureID blas;
+	};
+
+	virtual AccelerationStructureID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) = 0;
+	virtual void acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) = 0;
+
+	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) = 0;
+	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) = 0;
+
+	// ----- PIPELINE -----
+
+	virtual RaytracingPipelineID raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) = 0;
+	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) = 0;
+
+	// ----- COMMANDS -----
+
+	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) = 0;
+	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) = 0;
+	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) = 0;
+	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) = 0;
 
 	/******************/
 	/**** CALLBACK ****/
@@ -766,6 +836,8 @@ public:
 		OBJECT_TYPE_SHADER,
 		OBJECT_TYPE_UNIFORM_SET,
 		OBJECT_TYPE_PIPELINE,
+		OBJECT_TYPE_ACCELERATION_STRUCTURE,
+		OBJECT_TYPE_RAYTRACING_PIPELINE,
 	};
 
 	struct MultiviewCapabilities {
@@ -805,6 +877,8 @@ public:
 		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
 		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
+		API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS,
+		API_TRAIT_ACCELERATION_STRUCTURE_INSTANCE_SIZE,
 	};
 
 	enum ShaderChangeInvalidation {

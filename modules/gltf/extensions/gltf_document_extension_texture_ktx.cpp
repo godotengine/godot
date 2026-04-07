@@ -31,7 +31,7 @@
 #include "gltf_document_extension_texture_ktx.h"
 
 // Import process.
-Error GLTFDocumentExtensionTextureKTX::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtensionTextureKTX::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	if (!p_extensions.has("KHR_texture_basisu")) {
 		return ERR_SKIP;
 	}

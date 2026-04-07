@@ -16,9 +16,13 @@
 
 #include <assert.h>
 #include <stdlib.h>
+
 #include "src/dec/vp8i_dec.h"
 #include "src/dec/vp8li_dec.h"
+#include "src/webp/format_constants.h"
 #include "src/webp/mux.h"
+#include "src/webp/mux_types.h"
+#include "src/webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,47 +32,47 @@ extern "C" {
 // Defines and constants.
 
 #define MUX_MAJ_VERSION 1
-#define MUX_MIN_VERSION 5
+#define MUX_MIN_VERSION 6
 #define MUX_REV_VERSION 0
 
 // Chunk object.
 typedef struct WebPChunk WebPChunk;
 struct WebPChunk {
-  uint32_t        tag_;
-  int             owner_;  // True if *data_ memory is owned internally.
+  uint32_t        tag;
+  int             owner;   // True if *data memory is owned internally.
                            // VP8X, ANIM, and other internally created chunks
                            // like ANMF are always owned.
-  WebPData        data_;
-  WebPChunk*      next_;
+  WebPData        data;
+  WebPChunk*      next;
 };
 
 // MuxImage object. Store a full WebP image (including ANMF chunk, ALPH
 // chunk and VP8/VP8L chunk),
 typedef struct WebPMuxImage WebPMuxImage;
 struct WebPMuxImage {
-  WebPChunk*  header_;      // Corresponds to WEBP_CHUNK_ANMF.
-  WebPChunk*  alpha_;       // Corresponds to WEBP_CHUNK_ALPHA.
-  WebPChunk*  img_;         // Corresponds to WEBP_CHUNK_IMAGE.
-  WebPChunk*  unknown_;     // Corresponds to WEBP_CHUNK_UNKNOWN.
-  int         width_;
-  int         height_;
-  int         has_alpha_;   // Through ALPH chunk or as part of VP8L.
-  int         is_partial_;  // True if only some of the chunks are filled.
-  WebPMuxImage* next_;
+  WebPChunk*  header;      // Corresponds to WEBP_CHUNK_ANMF.
+  WebPChunk*  alpha;       // Corresponds to WEBP_CHUNK_ALPHA.
+  WebPChunk*  img;         // Corresponds to WEBP_CHUNK_IMAGE.
+  WebPChunk*  unknown;     // Corresponds to WEBP_CHUNK_UNKNOWN.
+  int         width;
+  int         height;
+  int         has_alpha;   // Through ALPH chunk or as part of VP8L.
+  int         is_partial;  // True if only some of the chunks are filled.
+  WebPMuxImage* next;
 };
 
 // Main mux object. Stores data chunks.
 struct WebPMux {
-  WebPMuxImage*   images_;
-  WebPChunk*      iccp_;
-  WebPChunk*      exif_;
-  WebPChunk*      xmp_;
-  WebPChunk*      anim_;
-  WebPChunk*      vp8x_;
+  WebPMuxImage*   images;
+  WebPChunk*      iccp;
+  WebPChunk*      exif;
+  WebPChunk*      xmp;
+  WebPChunk*      anim;
+  WebPChunk*      vp8x;
 
-  WebPChunk*      unknown_;
-  int             canvas_width_;
-  int             canvas_height_;
+  WebPChunk*      unknown;
+  int             canvas_width;
+  int             canvas_height;
 };
 
 // CHUNK_INDEX enum: used for indexing within 'kChunks' (defined below) only.
@@ -136,10 +140,10 @@ WebPMuxError ChunkSetHead(WebPChunk* const chunk, WebPChunk** const chunk_list);
 // *chunk_list.
 WebPMuxError ChunkAppend(WebPChunk* const chunk, WebPChunk*** const chunk_list);
 
-// Releases chunk and returns chunk->next_.
+// Releases chunk and returns chunk->next.
 WebPChunk* ChunkRelease(WebPChunk* const chunk);
 
-// Deletes given chunk & returns chunk->next_.
+// Deletes given chunk & returns chunk->next.
 WebPChunk* ChunkDelete(WebPChunk* const chunk);
 
 // Deletes all chunks in the given chunk list.
@@ -153,7 +157,7 @@ static WEBP_INLINE size_t SizeWithPadding(size_t chunk_size) {
 
 // Size of a chunk including header and padding.
 static WEBP_INLINE size_t ChunkDiskSize(const WebPChunk* chunk) {
-  const size_t data_size = chunk->data_.size;
+  const size_t data_size = chunk->data.size;
   return SizeWithPadding(data_size);
 }
 

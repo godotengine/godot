@@ -44,7 +44,7 @@ class RemoteDebuggerPeerWebSocket : public RemoteDebuggerPeer {
 	int max_queued_messages;
 
 public:
-	static RemoteDebuggerPeer *create(const String &p_uri);
+	static Ref<RemoteDebuggerPeer> create(const String &p_uri);
 
 	Error connect_to_host(const String &p_uri);
 

@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class UndoRedo : public Object {
 	GDCLASS(UndoRedo, Object);
@@ -145,7 +145,6 @@ public:
 	void set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud);
 	void set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud);
 
-	UndoRedo() {}
 	~UndoRedo();
 };
 

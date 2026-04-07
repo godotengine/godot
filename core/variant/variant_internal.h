@@ -30,15 +30,21 @@
 
 #pragma once
 
-#include "type_info.h"
-#include "variant.h"
-
 #include "core/templates/simple_type.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_pools.h"
 
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
 
 class RefCounted;
+
+template <typename T>
+struct GDExtensionConstPtr;
+
+template <typename T>
+struct GDExtensionPtr;
 
 class VariantInternal {
 	friend class Variant;
@@ -235,7 +241,7 @@ public:
 		v->type = Variant::STRING;
 	}
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
-		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
+		v->_data._transform2d = VariantPools::alloc<Transform2D>();
 		memnew_placement(v->_data._transform2d, Transform2D);
 		v->type = Variant::TRANSFORM2D;
 	}
@@ -244,22 +250,22 @@ public:
 		v->type = Variant::QUATERNION;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
-		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
+		v->_data._aabb = VariantPools::alloc<AABB>();
 		memnew_placement(v->_data._aabb, AABB);
 		v->type = Variant::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._basis = VariantPools::alloc<Basis>();
 		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform3d(Variant *v) {
-		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._transform3d = VariantPools::alloc<Transform3D>();
 		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_projection(Variant *v) {
-		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
+		v->_data._projection = VariantPools::alloc<Projection>();
 		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
 	}
@@ -355,6 +361,16 @@ public:
 	template <typename T>
 	_FORCE_INLINE_ static void object_assign(Variant *v, const Ref<T> &r) {
 		v->_get_obj().ref(r);
+	}
+
+	// This should be used with extreme caution, as it does not increment the reference count in the
+	// case where the object is `RefCounted`. You *must* ensure that the destructor of this
+	// `Variant` is never called, and that the assigned object always outlives the `Variant`.
+	_FORCE_INLINE_ static void object_assign_without_ref_unsafe(Variant *v, Object *o) {
+		v->type = Variant::OBJECT;
+		Variant::ObjData &obj_data = v->_get_obj();
+		obj_data.id = o->get_instance_id();
+		obj_data.obj = o;
 	}
 
 	_FORCE_INLINE_ static void object_reset_data(Variant *v) {
@@ -539,6 +555,29 @@ public:
 		}
 		ERR_FAIL_V(nullptr);
 	}
+
+	// Used internally in GDExtension and Godot's binding system when converting to Variant
+	// from values that may include RequiredParam<T> or RequiredResult<T>.
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const T &v) {
+		return Variant(v);
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const GDExtensionConstPtr<T> &v) {
+		return v.operator Variant();
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const GDExtensionPtr<T> &v) {
+		return v.operator Variant();
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const RequiredParam<T> &v) {
+		return Variant(v._internal_ptr_dont_use());
+	}
+	template <typename T>
+	_FORCE_INLINE_ static Variant make(const RequiredResult<T> &v) {
+		return Variant(v._internal_ptr_dont_use());
+	}
 };
 
 template <typename T, typename = void>
@@ -606,6 +645,36 @@ template <>
 struct VariantInternalAccessor<Object *> {
 	static _FORCE_INLINE_ Object *get(const Variant *v) { return const_cast<Object *>(*VariantInternal::get_object(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, const Object *p_value) { VariantInternal::object_assign(v, p_value); }
+};
+
+template <typename T>
+struct VariantInternalAccessor<Ref<T>> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(const_cast<Object *>(*VariantInternal::get_object(v))); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
+};
+
+template <class T>
+struct VariantInternalAccessor<RequiredParam<T>> {
+	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *v) { return RequiredParam<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(v)))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredParam<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const RequiredParam<T> &> {
+	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *v) { return RequiredParam<T>(Object::cast_to<T>(*VariantInternal::get_object(v))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredParam<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<RequiredResult<T>> {
+	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *v) { return RequiredResult<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(v)))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredResult<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const RequiredResult<T> &> {
+	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *v) { return RequiredResult<T>(Object::cast_to<T>(*VariantInternal::get_object(v))); }
+	static _FORCE_INLINE_ void set(Variant *v, const RequiredResult<T> &p_value) { VariantInternal::object_assign(v, p_value.ptr()); }
 };
 
 template <>

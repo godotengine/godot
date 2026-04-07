@@ -30,6 +30,8 @@
 
 #include "editor_debugger_plugin.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/debugger/script_editor_debugger.h"
 
 void EditorDebuggerSession::_breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump) {
@@ -113,17 +115,11 @@ void EditorDebuggerSession::detach_debugger() {
 	debugger->disconnect("started", callable_mp(this, &EditorDebuggerSession::_started));
 	debugger->disconnect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
 	debugger->disconnect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
-	debugger->disconnect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away));
 	for (Control *tab : tabs) {
 		debugger->remove_debugger_tab(tab);
 	}
 	tabs.clear();
 	debugger = nullptr;
-}
-
-void EditorDebuggerSession::_debugger_gone_away() {
-	debugger = nullptr;
-	tabs.clear();
 }
 
 EditorDebuggerSession::EditorDebuggerSession(ScriptEditorDebugger *p_debugger) {
@@ -132,7 +128,6 @@ EditorDebuggerSession::EditorDebuggerSession(ScriptEditorDebugger *p_debugger) {
 	debugger->connect("started", callable_mp(this, &EditorDebuggerSession::_started));
 	debugger->connect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
 	debugger->connect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
-	debugger->connect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away), CONNECT_ONE_SHOT);
 }
 
 EditorDebuggerSession::~EditorDebuggerSession() {

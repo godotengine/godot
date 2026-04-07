@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/string/node_path.h"
 #include "core/string/string_name.h"
 
 class SceneStringNames {
@@ -53,6 +52,7 @@ public:
 	const StringName input_event = "input_event";
 	const StringName gui_input = "gui_input";
 	const StringName window_input = "window_input";
+	const StringName nonclient_window_input = "nonclient_window_input";
 
 	const StringName tree_entered = "tree_entered";
 	const StringName tree_exiting = "tree_exiting";
@@ -124,8 +124,6 @@ public:
 	const StringName autoplay = "autoplay";
 	const StringName blend_times = "blend_times";
 	const StringName speed = "speed";
-
-	const NodePath path_pp = NodePath("..");
 
 	const StringName default_ = "default"; // default would conflict with C++ keyword.
 	const StringName output = "output";

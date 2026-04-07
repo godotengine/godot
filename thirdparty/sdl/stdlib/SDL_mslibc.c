@@ -95,6 +95,39 @@ void _ftol2()
     _ftol();
 }
 
+void __declspec(naked) _ftoul2_legacy()
+{
+    static const Uint64 LLONG_MAX_PLUS_ONE = 0x43e0000000000000ULL;
+    /* *INDENT-OFF* */
+    __asm {
+        fld qword ptr [LLONG_MAX_PLUS_ONE]
+        fcom
+        fnstsw ax
+        test ah, 41h
+        jnp greater_than_int64
+
+        fstp st(0)
+        jmp _ftol
+
+greater_than_int64:
+        fsub st(1), st(0)
+        fcomp
+        fnstsw ax
+        test ah, 41h
+        jnz greater_than_uint64
+
+        call _ftol
+        add edx, 80000000h
+        ret
+
+greater_than_uint64:
+        xor eax, eax
+        mov edx, 80000000h
+        ret
+    }
+    /* *INDENT-ON* */
+}
+
 // 64-bit math operators for 32-bit systems
 void __declspec(naked) _allmul()
 {

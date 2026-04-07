@@ -34,7 +34,11 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
@@ -45,7 +49,9 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
@@ -127,6 +133,11 @@ String EditorFileSystemDirectory::get_path() const {
 
 String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	return get_path().path_join(get_file(p_idx));
+}
+
+ResourceUID::ID EditorFileSystemDirectory::get_file_uid(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), ResourceUID::INVALID_ID);
+	return files[p_idx]->uid;
 }
 
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
@@ -232,6 +243,12 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 	for (EditorFileSystemDirectory *dir : subdirs) {
 		memdelete(dir);
 	}
+}
+
+void EditorFileSystemImportFormatSupportQuery::_bind_methods() {
+	GDVIRTUAL_BIND(_is_active);
+	GDVIRTUAL_BIND(_get_file_extensions);
+	GDVIRTUAL_BIND(_query);
 }
 
 EditorFileSystem::ScannedDirectory::~ScannedDirectory() {
@@ -2539,7 +2556,7 @@ void EditorFileSystem::_notify_filesystem_changed() {
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
-	return valid_extensions;
+	return HashSet<String>(valid_extensions);
 }
 
 void EditorFileSystem::_register_global_class_script(const String &p_search_path, const String &p_target_path, const ScriptClassInfoUpdate &p_script_update) {
@@ -2785,7 +2802,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	//try to obtain existing params
 
-	HashMap<StringName, Variant> params = p_custom_options;
+	HashMap<StringName, Variant> params(p_custom_options);
 	String importer_name; //empty by default though
 
 	if (!p_custom_importer.is_empty()) {
@@ -2794,6 +2811,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	ResourceUID::ID uid = ResourceUID::INVALID_ID;
 	Variant generator_parameters;
+	String group_file;
 	if (p_generator_parameters) {
 		generator_parameters = *p_generator_parameters;
 	}
@@ -2821,6 +2839,10 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 				if (cf->has_section_key("remap", "uid")) {
 					String uidt = cf->get_value("remap", "uid");
 					uid = ResourceUID::get_singleton()->text_to_id(uidt);
+				}
+
+				if (cf->has_section_key("remap", "group_file")) {
+					group_file = cf->get_value("remap", "group_file");
 				}
 
 				if (!p_generator_parameters) {
@@ -2918,6 +2940,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 
 		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
+		if (!group_file.is_empty()) {
+			f->store_line("group_file=\"" + group_file + "\"");
+		}
 
 		if (err == OK) {
 			if (importer->get_save_extension().is_empty()) {
@@ -3085,13 +3110,19 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 			return err;
 		}
 
-		// Roll a new uid for this copied .import file to avoid conflict.
-		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id();
-
 		// Save the new .import file
 		Ref<ConfigFile> cfg;
 		cfg.instantiate();
 		cfg->load(p_from + ".import");
+		String importer_name = cfg->get_value("remap", "importer");
+
+		if (importer_name == "keep" || importer_name == "skip") {
+			err = da->copy(p_from + ".import", p_to + ".import");
+			return err;
+		}
+
+		// Roll a new uid for this copied .import file to avoid conflict.
+		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
 		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
 		err = cfg->save(p_to + ".import");
 		if (err != OK) {
@@ -3111,7 +3142,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		Error err = OK;
 		Ref<Resource> res = ResourceCache::get_ref(p_from);
 		if (res.is_null()) {
-			res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+			res = ResourceLoader::load(p_from, "", ResourceLoaderConstants::CACHE_MODE_REUSE, &err);
 		} else {
 			bool edited = false;
 			List<Ref<Resource>> cached;
@@ -3216,9 +3247,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	// this could lead to a slow import process, especially when the editor is unfocused.
 	// Temporarily disabling VSync and low_processor_usage_mode while reimporting fixes this.
 	const bool old_low_processor_usage_mode = OS::get_singleton()->is_in_low_processor_usage_mode();
-	const DisplayServer::VSyncMode old_vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
+	const DisplayServerEnums::VSyncMode old_vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
 	OS::get_singleton()->set_low_processor_usage_mode(false);
-	DisplayServer::get_singleton()->window_set_vsync_mode(DisplayServer::VSyncMode::VSYNC_DISABLED);
+	DisplayServer::get_singleton()->window_set_vsync_mode(DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 
 	Vector<ImportFile> reimport_files;
 
@@ -3271,7 +3302,12 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	// Emit the resource_reimporting signal for the single file before the actual importation.
 	emit_signal(SNAME("resources_reimporting"), reloads);
 
-#ifdef THREADS_ENABLED
+#ifdef WEB_ENABLED
+	// On web, busy-wait loops on the main thread block the JavaScript event loop,
+	// causing the browser tab to appear frozen. Disable threaded imports entirely.
+	// See GH-112072 for details.
+	bool use_multiple_threads = false;
+#elif defined(THREADS_ENABLED)
 	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
 #else
 	bool use_multiple_threads = false;
@@ -3407,31 +3443,24 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 	return OK;
 }
 
-Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode) {
+Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceLoaderConstants::CacheMode p_cache_mode) {
 	ERR_FAIL_NULL_V(p_importer, Ref<Resource>());
 
 	if (!FileAccess::exists(p_path)) {
 		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed loading resource: %s. The file doesn't seem to exist.", p_path));
 	}
 
-	Ref<Resource> res;
-	bool can_retry = true;
-	bool retry = true;
-	while (retry) {
-		retry = false;
-
-		res = p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, can_retry);
-
-		if (res.is_null() && can_retry) {
-			can_retry = false;
-			Error err = singleton->_reimport_file(p_path, HashMap<StringName, Variant>(), "", nullptr, false);
-			if (err == OK) {
-				retry = true;
-			}
-		}
+	// Fail silently. Hopefully the resource is not yet imported.
+	Ref<Resource> res = p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, true);
+	if (res.is_valid()) {
+		return res;
 	}
 
-	return res;
+	// Retry after importing the resource.
+	if (singleton->_reimport_file(p_path, HashMap<StringName, Variant>(), "", nullptr, false) != OK) {
+		return Ref<Resource>();
+	}
+	return p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, false);
 }
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
@@ -3548,7 +3577,10 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 }
 
 Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
-	_copy_file(p_from, p_to);
+	Error err = _copy_file(p_from, p_to);
+	if (err != OK) {
+		return err;
+	}
 
 	EditorFileSystemDirectory *parent = get_filesystem_path(p_to.get_base_dir());
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
@@ -3669,6 +3701,7 @@ bool EditorFileSystem::_scan_extensions() {
 void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filesystem"), &EditorFileSystem::get_filesystem);
 	ClassDB::bind_method(D_METHOD("is_scanning"), &EditorFileSystem::is_scanning);
+	ClassDB::bind_method(D_METHOD("is_importing"), &EditorFileSystem::is_importing);
 	ClassDB::bind_method(D_METHOD("get_scanning_progress"), &EditorFileSystem::get_scanning_progress);
 	ClassDB::bind_method(D_METHOD("scan"), &EditorFileSystem::scan);
 	ClassDB::bind_method(D_METHOD("scan_sources"), &EditorFileSystem::scan_changes);
@@ -3740,7 +3773,9 @@ void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemIm
 }
 
 EditorFileSystem::EditorFileSystem() {
-#ifdef THREADS_ENABLED
+#if defined(THREADS_ENABLED) && !defined(WEB_ENABLED)
+	// On web, threaded scanning blocks the browser's event loop, causing freezes.
+	// See GH-112072 for details.
 	use_threads = true;
 #endif
 

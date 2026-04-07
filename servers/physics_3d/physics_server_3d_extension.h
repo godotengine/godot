@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/extension/ext_wrappers.gen.inc"
+#include "core/extension/ext_wrappers.gen.h"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
@@ -111,7 +111,7 @@ public:
 	EXBIND0RC(real_t, get_step)
 
 	EXBIND0(integrate_forces)
-	EXBIND0R(PhysicsDirectSpaceState3D *, get_space_state)
+	EXBIND0R(RequiredResult<PhysicsDirectSpaceState3D>, get_space_state)
 
 	PhysicsDirectBodyState3DExtension();
 };
@@ -411,7 +411,7 @@ public:
 
 	EXBIND0R(RID, soft_body_create)
 
-	EXBIND2(soft_body_update_rendering_server, RID, PhysicsServer3DRenderingServerHandler *)
+	EXBIND2(soft_body_update_rendering_server, RID, RequiredParam<PhysicsServer3DRenderingServerHandler>)
 
 	EXBIND2(soft_body_set_space, RID, RID)
 	EXBIND1RC(RID, soft_body_get_space, RID)

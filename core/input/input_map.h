@@ -87,13 +87,13 @@ public:
 
 	float action_get_deadzone(const StringName &p_action);
 	void action_set_deadzone(const StringName &p_action, float p_deadzone);
-	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
-	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
-	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	void action_add_event(const StringName &p_action, RequiredParam<InputEvent> rp_event);
+	bool action_has_event(const StringName &p_action, RequiredParam<InputEvent> rp_event);
+	void action_erase_event(const StringName &p_action, RequiredParam<InputEvent> rp_event);
 	void action_erase_events(const StringName &p_action);
 
 	const List<Ref<InputEvent>> *action_get_events(const StringName &p_action);
-	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false) const;
+	bool event_is_action(RequiredParam<InputEvent> rp_event, const StringName &p_action, bool p_exact_match = false) const;
 	int event_get_index(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false) const;
 	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr, int *r_event_index = nullptr) const;
 

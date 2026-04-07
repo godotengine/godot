@@ -31,8 +31,11 @@
 #include "editor_interface.h"
 #include "editor_interface.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -59,8 +62,11 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/theme.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -148,7 +154,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	RID scenario = RS::get_singleton()->scenario_create();
 
 	RID viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, size, size);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -442,6 +448,10 @@ float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
 
+String EditorInterface::get_editor_language() const {
+	return EditorSettings::get_singleton()->get_language();
+}
+
 bool EditorInterface::is_node_3d_snap_enabled() const {
 	return Node3DEditor::get_singleton()->is_snap_enabled();
 }
@@ -701,6 +711,16 @@ void EditorInterface::reload_scene_from_path(const String &scene_path) {
 	EditorNode::get_singleton()->reload_scene(scene_path);
 }
 
+void EditorInterface::set_object_edited(Object *p_object, bool p_edited) {
+	ERR_FAIL_NULL_MSG(p_object, "Cannot change edited status on a null object.");
+	p_object->set_edited(p_edited);
+}
+
+bool EditorInterface::is_object_edited(Object *p_object) const {
+	ERR_FAIL_NULL_V_MSG(p_object, false, "Cannot check edit status on a null object.");
+	return p_object->is_edited();
+}
+
 Node *EditorInterface::get_edited_scene_root() const {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
@@ -710,10 +730,19 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	for (EditorData::EditedScene &edited_scene : scenes) {
-		if (edited_scene.root == nullptr) {
-			continue;
+		ret.push_back(edited_scene.path);
+	}
+	return ret;
+}
+
+PackedStringArray EditorInterface::get_unsaved_scenes() const {
+	PackedStringArray ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (int i = 0; i < scenes.size(); i++) {
+		if (EditorNode::get_singleton()->is_scene_unsaved(i)) {
+			ret.push_back(scenes[i].path);
 		}
-		ret.push_back(edited_scene.root->get_scene_file_path());
 	}
 	return ret;
 }
@@ -846,6 +875,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
+	ClassDB::bind_method(D_METHOD("get_editor_language"), &EditorInterface::get_editor_language);
 
 	ClassDB::bind_method(D_METHOD("is_node_3d_snap_enabled"), &EditorInterface::is_node_3d_snap_enabled);
 	ClassDB::bind_method(D_METHOD("get_node_3d_translate_snap"), &EditorInterface::get_node_3d_translate_snap);
@@ -890,7 +920,11 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath", "set_inherited"), &EditorInterface::open_scene_from_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 
+	ClassDB::bind_method(D_METHOD("set_object_edited", "object", "edited"), &EditorInterface::set_object_edited);
+	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
+
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_unsaved_scenes"), &EditorInterface::get_unsaved_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 

@@ -36,19 +36,18 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
-#include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
 // Backtrace code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
+
+#include <psapi.h>
 
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
 #include <string>
 #include <vector>
-
-#include <psapi.h>
 
 // Some versions of imagehlp.dll lack the proper packing directives themselves
 // so we need to do it.
@@ -167,6 +166,8 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	std::transform(module_handles.begin(), module_handles.end(), std::back_inserter(modules), get_mod_info(process));
 	void *base = modules[0].base_address;
 
+	print_error(vformat("Load address: %x\n", (uint64_t)base));
+
 	// Setup stuff:
 	CONTEXT *context = ep->ContextRecord;
 	STACKFRAME64 frame;
@@ -209,10 +210,27 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			if (frame.AddrPC.Offset != 0) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
+				IMAGEHLP_MODULE64 mod_info;
+				memset(&mod_info, 0, sizeof(IMAGEHLP_MODULE64));
+				mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+				uint64_t offset = (uint64_t)base;
+				String mod_name = "main";
+				if (SymGetModuleInfo64(process, frame.AddrPC.Offset, &mod_info)) {
+					offset = mod_info.BaseOfImage;
+					if (offset != (uint64_t)base) {
+						if (mod_info.ImageName[0] != 0) {
+							mod_name = String((const char *)mod_info.ImageName).to_lower().get_file();
+						} else if (mod_info.ModuleName[0] != 0) {
+							mod_name = String((const char *)mod_info.ModuleName).to_lower();
+						} else {
+							mod_name = "<unknown module>";
+						}
+					}
+				}
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+					print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
 				} else {
-					print_error(vformat("[%d] %s", n, fnName.c_str()));
+					print_error(vformat("[%d] %x (%s+%x) - %s", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str()));
 				}
 			} else {
 				print_error(vformat("[%d] ???", n));

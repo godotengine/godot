@@ -342,7 +342,9 @@ std::shared_ptr<CsgLeafNode> BatchBoolean(
   std::vector<std::shared_ptr<CsgLeafNode>> tmp;
 #if MANIFOLD_PAR == 1
   tbb::task_group group;
-  std::mutex mutex;
+  // make sure the order of result is deterministic
+  std::vector<std::shared_ptr<CsgLeafNode>> parallelTmp;
+  for (int i = 0; i < 4; i++) parallelTmp.push_back(nullptr);
 #endif
   while (results.size() > 1) {
     for (size_t i = 0; i < 4 && results.size() > 1; i++) {
@@ -353,11 +355,8 @@ std::shared_ptr<CsgLeafNode> BatchBoolean(
       auto b = std::move(results.back());
       results.pop_back();
 #if MANIFOLD_PAR == 1
-      group.run([&, a, b]() {
-        auto result = SimpleBoolean(*a->GetImpl(), *b->GetImpl(), operation);
-        mutex.lock();
-        tmp.push_back(result);
-        mutex.unlock();
+      group.run([&, i, a, b]() {
+        parallelTmp[i] = SimpleBoolean(*a->GetImpl(), *b->GetImpl(), operation);
       });
 #else
       auto result = SimpleBoolean(*a->GetImpl(), *b->GetImpl(), operation);
@@ -366,6 +365,8 @@ std::shared_ptr<CsgLeafNode> BatchBoolean(
     }
 #if MANIFOLD_PAR == 1
     group.wait();
+    for (int i = 0; i < 4 && parallelTmp[i]; i++)
+      tmp.emplace_back(std::move(parallelTmp[i]));
 #endif
     for (auto result : tmp) {
       results.push_back(result);
@@ -617,33 +618,35 @@ std::shared_ptr<CsgLeafNode> CsgOpNode::ToLeafNode() const {
     std::shared_ptr<CsgStackFrame> frame = stack.back();
     auto impl = frame->op_node->impl_.GetGuard();
     if (frame->finalize) {
-      switch (frame->op_node->op_) {
-        case OpType::Add:
-          *impl = {BatchUnion(frame->positive_children)};
-          break;
-        case OpType::Intersect: {
-          *impl = {BatchBoolean(OpType::Intersect, frame->positive_children)};
-          break;
-        };
-        case OpType::Subtract:
-          if (frame->positive_children.empty()) {
-            // nothing to subtract from, so the result is empty.
-            *impl = {std::make_shared<CsgLeafNode>()};
-          } else {
-            auto positive = BatchUnion(frame->positive_children);
-            if (frame->negative_children.empty()) {
-              // nothing to subtract, result equal to the LHS.
-              *impl = {frame->positive_children[0]};
+      if (!frame->op_node->cache_) {
+        switch (frame->op_node->op_) {
+          case OpType::Add:
+            *impl = {BatchUnion(frame->positive_children)};
+            break;
+          case OpType::Intersect: {
+            *impl = {BatchBoolean(OpType::Intersect, frame->positive_children)};
+            break;
+          };
+          case OpType::Subtract:
+            if (frame->positive_children.empty()) {
+              // nothing to subtract from, so the result is empty.
+              *impl = {std::make_shared<CsgLeafNode>()};
             } else {
-              auto negative = BatchUnion(frame->negative_children);
-              *impl = {SimpleBoolean(*positive->GetImpl(), *negative->GetImpl(),
-                                     OpType::Subtract)};
+              auto positive = BatchUnion(frame->positive_children);
+              if (frame->negative_children.empty()) {
+                // nothing to subtract, result equal to the LHS.
+                *impl = {frame->positive_children[0]};
+              } else {
+                auto negative = BatchUnion(frame->negative_children);
+                *impl = {SimpleBoolean(*positive->GetImpl(),
+                                       *negative->GetImpl(), OpType::Subtract)};
+              }
             }
-          }
-          break;
+            break;
+        }
+        frame->op_node->cache_ = std::static_pointer_cast<CsgLeafNode>(
+            (*impl)[0]->Transform(frame->op_node->transform_));
       }
-      frame->op_node->cache_ = std::static_pointer_cast<CsgLeafNode>(
-          (*impl)[0]->Transform(frame->op_node->transform_));
       if (frame->positive_dest != nullptr)
         frame->positive_dest->push_back(std::static_pointer_cast<CsgLeafNode>(
             frame->op_node->cache_->Transform(frame->transform)));

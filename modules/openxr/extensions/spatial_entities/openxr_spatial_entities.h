@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "../../openxr_structure.h"
-#include "../openxr_future_extension.h"
 #include "scene/resources/mesh.h"
 #include "servers/xr/xr_positional_tracker.h"
+
+#include <openxr/openxr.h>
 
 #define XR_NULL_ENTITY 0x7FFFFFFF
 

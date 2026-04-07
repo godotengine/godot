@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderingDevice" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RenderingDevice" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstraction for working with modern low-level graphics APIs.
 	</brief_description>
@@ -20,6 +20,22 @@
 			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
 				This method does nothing.
+			</description>
+		</method>
+		<method name="blas_build">
+			<return type="int" enum="Error" />
+			<param index="0" name="blas" type="RID" />
+			<description>
+				Builds the [param blas].
+			</description>
+		</method>
+		<method name="blas_create">
+			<return type="RID" />
+			<param index="0" name="geometries" type="RDAccelerationStructureGeometry[]" />
+			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
+			<description>
+				Creates a new Bottom-Level Acceleration Structure (BLAS). It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="buffer_clear">
@@ -198,6 +214,7 @@
 			<description>
 				Creates a new compute pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="compute_pipeline_is_valid">
@@ -334,6 +351,17 @@
 				Binds [param vertex_array] to the specified [param draw_list].
 			</description>
 		</method>
+		<method name="draw_list_bind_vertex_buffers_format">
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="vertex_format" type="int" />
+			<param index="2" name="vertex_count" type="int" />
+			<param index="3" name="vertex_buffers" type="RID[]" />
+			<param index="4" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
+			<description>
+				Binds a set of [param vertex_buffers] directly to the specified [param draw_list] using [param vertex_format] without creating a vertex array RID. Provide the number of vertices in [param vertex_count]; optional per-buffer byte [param offsets] may also be supplied.
+			</description>
+		</method>
 		<method name="draw_list_disable_scissor">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
@@ -416,6 +444,7 @@
 			<description>
 				Creates a new framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_create_empty">
@@ -437,6 +466,7 @@
 			<description>
 				Creates a new multipass framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_format_create">
@@ -695,6 +725,7 @@
 			<description>
 				Creates a new index array. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param index_buffer] is freed.
 			</description>
 		</method>
 		<method name="index_buffer_create">
@@ -717,6 +748,114 @@
 				Limits for various graphics hardware can be found in the [url=https://vulkan.gpuinfo.org/]Vulkan Hardware Database[/url].
 			</description>
 		</method>
+		<method name="raytracing_list_begin">
+			<return type="int" />
+			<description>
+				Starts a list of raytracing commands. The returned value should be passed to other [code]raytracing_list_*[/code] functions.
+				Multiple raytracing lists cannot be created at the same time; you must finish the previous raytracing list first using [method raytracing_list_end].
+				A simple raytracing operation might look like this (code is not a complete example):
+				[codeblocks]
+				[gdscript]
+				var rd = RenderingDevice.new()
+				assert(rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE))
+
+				# Create a BLAS for a mesh.
+				var geometry = RDAccelerationStructureGeometry.new()
+				geometry.flags = RenderingDevice.ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT
+				geometry.vertex_buffer = vertex_buffer
+				geometry.vertex_stride = 12
+				geometry.vertex_format = RenderingDevice.DATA_FORMAT_R32G32B32_SFLOAT
+				geometry.vertex_count = 3
+				geometry.index_buffer = index_buffer
+				geometry.index_count = 3
+				geometries.push_back(geometry)
+
+				blas = rd.blas_create([geometry], 0)
+
+				# Create TLAS.
+				tlas = rd.tlas_create(1, 0)
+
+				# Build acceleration structures.
+				rd.blas_build(blas)
+
+				var instance = RDAccelerationStructureInstance.new()
+				instance.blas = blas
+				rd.tlas_build(tlas, [instance])
+
+				var raylist = rd.raytracing_list_begin()
+
+				# Bind pipeline and uniforms.
+				rd.raytracing_list_bind_raytracing_pipeline(raylist, raytracing_pipeline)
+				rd.raytracing_list_bind_uniform_set(raylist, uniform_set, 0)
+
+				# Trace rays.
+				var width = get_viewport().size.x
+				var height = get_viewport().size.y
+				rd.raytracing_list_trace_rays(raylist, width, height)
+
+				rd.raytracing_list_end()
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="raytracing_list_bind_raytracing_pipeline">
+			<return type="void" />
+			<param index="0" name="raytracing_list" type="int" />
+			<param index="1" name="raytracing_pipeline" type="RID" />
+			<description>
+				Binds [param raytracing_pipeline] to the specified [param raytracing_list].
+			</description>
+		</method>
+		<method name="raytracing_list_bind_uniform_set">
+			<return type="void" />
+			<param index="0" name="raytracing_list" type="int" />
+			<param index="1" name="uniform_set" type="RID" />
+			<param index="2" name="set_index" type="int" />
+			<description>
+				Binds the [param uniform_set] to this [param raytracing_list].
+			</description>
+		</method>
+		<method name="raytracing_list_end">
+			<return type="void" />
+			<description>
+				Finishes a list of raytracing commands created with the [code]raytracing_*[/code] methods.
+			</description>
+		</method>
+		<method name="raytracing_list_set_push_constant">
+			<return type="void" />
+			<param index="0" name="raytracing_list" type="int" />
+			<param index="1" name="buffer" type="PackedByteArray" />
+			<param index="2" name="size_bytes" type="int" />
+			<description>
+				Sets the push constant data to [param buffer] for the specified [param raytracing_list]. The shader determines how this binary data is used. The buffer's size in bytes must also be specified in [param size_bytes] (this can be obtained by calling the [method PackedByteArray.size] method on the passed [param buffer]).
+			</description>
+		</method>
+		<method name="raytracing_list_trace_rays">
+			<return type="void" />
+			<param index="0" name="raytracing_list" type="int" />
+			<param index="1" name="width" type="int" />
+			<param index="2" name="height" type="int" />
+			<description>
+				Initializes a ray tracing dispatch for the specified [param raytracing_list] assembling a group of [param width] x [param height] rays.
+			</description>
+		</method>
+		<method name="raytracing_pipeline_create">
+			<return type="RID" />
+			<param index="0" name="shader" type="RID" />
+			<param index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
+			<description>
+				Creates a new raytracing pipeline. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				[b]Note:[/b]: Recursive raytracing is not permitted.
+			</description>
+		</method>
+		<method name="raytracing_pipeline_is_valid">
+			<return type="bool" />
+			<param index="0" name="raytracing_pipeline" type="RID" />
+			<description>
+				Returns [code]true[/code] if the raytracing pipeline specified by the [param raytracing_pipeline] RID is valid, [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="render_pipeline_create">
 			<return type="RID" />
 			<param index="0" name="shader" type="RID" />
@@ -733,6 +872,7 @@
 			<description>
 				Creates a new render pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="render_pipeline_is_valid">
@@ -944,6 +1084,7 @@
 			<param index="1" name="with_texture" type="RID" />
 			<description>
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture].
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_create_shared_from_slice">
@@ -958,6 +1099,7 @@
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared].
 				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
 				[b]Note:[/b] Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_get_data">
@@ -1071,6 +1213,26 @@
 				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
 			</description>
 		</method>
+		<method name="tlas_build">
+			<return type="int" enum="Error" />
+			<param index="0" name="tlas" type="RID" />
+			<param index="1" name="instances" type="RDAccelerationStructureInstance[]" />
+			<description>
+				Builds the [param tlas]. The contents of previous builds are discarded.
+				Any BLAS provided through the [member RDAccelerationStructureInstance.blas] member must already have been built using the [method blas_build] method.
+				The number of instances can be equal to or smaller than the maximum instance count provided in the [method tlas_create] method.
+				[b]Note:[/b] Freeing or rebuilding any of the provided BLASes after this method invalidates the TLAS and requires it to be rebuilt.
+			</description>
+		</method>
+		<method name="tlas_create">
+			<return type="RID" />
+			<param index="0" name="max_instance_count" type="int" />
+			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
+			<description>
+				Creates a new Top-Level Acceleration Structure (TLAS). It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+			</description>
+		</method>
 		<method name="uniform_buffer_create">
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
@@ -1089,6 +1251,7 @@
 			<description>
 				Creates a new uniform set. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] or any of the RIDs in the [param uniforms] is freed.
 			</description>
 		</method>
 		<method name="uniform_set_is_valid">
@@ -1106,6 +1269,8 @@
 			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
 			<description>
 				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param src_buffers] is freed.
 			</description>
 		</method>
 		<method name="vertex_buffer_create">
@@ -1993,6 +2158,9 @@
 		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits" is_bitfield="true">
 			Texture can be used as a depth/stencil attachment in a framebuffer.
 		</constant>
+		<constant name="TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT" value="4096" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a depth/stencil resolve attachment in a framebuffer.
+		</constant>
 		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits" is_bitfield="true">
 			Texture can be used as a [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-storageimage]storage image[/url].
 		</constant>
@@ -2121,6 +2289,50 @@
 		<constant name="BUFFER_CREATION_AS_STORAGE_BIT" value="2" enum="BufferCreationBits" is_bitfield="true">
 			Set this flag so that it is created as storage. This is useful if Compute Shaders need access (for reading or writing) to the buffer, e.g. skeletal animations are processed in Compute Shaders which need access to vertex buffers, to be later consumed by vertex shaders as part of the regular rasterization pipeline.
 		</constant>
+		<constant name="BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT" value="8" enum="BufferCreationBits" is_bitfield="true">
+			Allows usage of this buffer as input data for an acceleration structure build operation. You must first check that the GPU supports it:
+			[codeblocks]
+			[gdscript]
+			rd = RenderingServer.get_rendering_device()
+
+			if rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE):
+			    storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)
+			[/gdscript]
+			[/codeblocks]
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT" value="1" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Allows the acceleration structure to be updated after it has been built.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT" value="2" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Allows the acceleration structure to be compacted to reduce memory usage after it has been built.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT" value="4" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Prioritizes ray traversal performance over build performance when building the acceleration structure.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT" value="8" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Prioritizes build performance over ray traversal performance when building the acceleration structure.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_LOW_MEMORY_BIT" value="16" enum="AccelerationStructureFlagBits" is_bitfield="true">
+			Reduces the memory usage of the acceleration structure, potentially at the cost of reduced ray traversal performance.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
+			An opaque geometry does not invoke the any hit shaders.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT" value="2" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
+			This geometry only calls the any hit shader a single time for each primitive.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT" value="1" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Disables triangle face culling for this instance during ray traversal.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT" value="2" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Flips the triangle facing direction for this instance during ray traversal.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT" value="4" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Forces all geometries in this instance to be treated as opaque, preventing any hit shaders from being invoked.
+		</constant>
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT" value="8" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+			Forces all geometries in this instance to be treated as non-opaque, allowing any hit shaders to be invoked.
+		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 			Sampler uniform.
 		</constant>
@@ -2161,7 +2373,10 @@
 			[b]Note:[/b] This flag is not available to GD users due to being too dangerous (i.e. wrong usage can result in visual glitches).
 			It's exposed in case GD users receive a buffer created with such flag from Godot.
 		</constant>
-		<constant name="UNIFORM_TYPE_MAX" value="12" enum="UniformType">
+		<constant name="UNIFORM_TYPE_ACCELERATION_STRUCTURE" value="12" enum="UniformType">
+			Acceleration structure uniform.
+		</constant>
+		<constant name="UNIFORM_TYPE_MAX" value="13" enum="UniformType">
 			Represents the size of the [enum UniformType] enum.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">
@@ -2469,7 +2684,22 @@
 		<constant name="SHADER_STAGE_COMPUTE" value="4" enum="ShaderStage">
 			Compute shader stage. This can be used to run arbitrary computing tasks in a shader, performing them on the GPU instead of the CPU.
 		</constant>
-		<constant name="SHADER_STAGE_MAX" value="5" enum="ShaderStage">
+		<constant name="SHADER_STAGE_RAYGEN" value="5" enum="ShaderStage">
+			Ray generation shader stage. This can be used to generate primary rays.
+		</constant>
+		<constant name="SHADER_STAGE_ANY_HIT" value="6" enum="ShaderStage">
+			Any hit shader stage. Invoked when ray intersections are not opaque. This can be used to specify what happens when a ray hits any of the geometry in the scene.
+		</constant>
+		<constant name="SHADER_STAGE_CLOSEST_HIT" value="7" enum="ShaderStage">
+			Closest hit shader stage. This can be used to specify what happens when a ray hits the closest geometry in the scene.
+		</constant>
+		<constant name="SHADER_STAGE_MISS" value="8" enum="ShaderStage">
+			Miss shader stage. This can be used to specify what happens if a ray does not hit anything in the scene.
+		</constant>
+		<constant name="SHADER_STAGE_INTERSECTION" value="9" enum="ShaderStage">
+			Intersection shader stage. The intersection shader for triangles is built-in. This can be used to compute ray intersections with primitives that are not triangles.
+		</constant>
+		<constant name="SHADER_STAGE_MAX" value="10" enum="ShaderStage">
 			Represents the size of the [enum ShaderStage] enum.
 		</constant>
 		<constant name="SHADER_STAGE_VERTEX_BIT" value="1" enum="ShaderStage">
@@ -2486,6 +2716,21 @@
 		</constant>
 		<constant name="SHADER_STAGE_COMPUTE_BIT" value="16" enum="ShaderStage">
 			Compute shader stage bit (see also [constant SHADER_STAGE_COMPUTE]).
+		</constant>
+		<constant name="SHADER_STAGE_RAYGEN_BIT" value="32" enum="ShaderStage">
+			Ray generation shader stage bit (see also [constant SHADER_STAGE_RAYGEN]).
+		</constant>
+		<constant name="SHADER_STAGE_ANY_HIT_BIT" value="64" enum="ShaderStage">
+			Any hit shader stage bit (see also [constant SHADER_STAGE_ANY_HIT]).
+		</constant>
+		<constant name="SHADER_STAGE_CLOSEST_HIT_BIT" value="128" enum="ShaderStage">
+			Closest hit shader stage bit (see also [constant SHADER_STAGE_CLOSEST_HIT]).
+		</constant>
+		<constant name="SHADER_STAGE_MISS_BIT" value="256" enum="ShaderStage">
+			Miss shader stage bit (see also [constant SHADER_STAGE_MISS]).
+		</constant>
+		<constant name="SHADER_STAGE_INTERSECTION_BIT" value="512" enum="ShaderStage">
+			Intersection shader stage bit (see also [constant SHADER_STAGE_INTERSECTION]).
 		</constant>
 		<constant name="SHADER_LANGUAGE_GLSL" value="0" enum="ShaderLanguage">
 			Khronos' GLSL shading language (used natively by OpenGL and Vulkan). This is the language used for core Godot shaders.
@@ -2513,6 +2758,19 @@
 		</constant>
 		<constant name="SUPPORTS_IMAGE_ATOMIC_32_BIT" value="7" enum="Features">
 			Support for 32-bit image atomic operations.
+		</constant>
+		<constant name="SUPPORTS_RAY_QUERY" value="11" enum="Features">
+			Support for ray query extension.
+
+			[b]Note:[/b] This is currently only supported when using Vulkan. This is not supported on macOS and iOS (even on hardware supporting raytracing) due to MoltenVK limitations.
+		</constant>
+		<constant name="SUPPORTS_RAYTRACING_PIPELINE" value="12" enum="Features">
+			Support for raytracing pipeline extension.
+
+			[b]Note:[/b] This is currently only supported when using Vulkan. This is not supported on macOS and iOS (even on hardware supporting raytracing) due to MoltenVK limitations.
+		</constant>
+		<constant name="SUPPORTS_HDR_OUTPUT" value="13" enum="Features">
+			Support for high dynamic range (HDR) output.
 		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
 			Maximum number of uniform sets that can be bound at a given time.

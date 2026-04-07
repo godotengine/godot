@@ -2386,7 +2386,7 @@ png_handle_tIME(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 static png_handle_result_code /* PRIVATE */
 png_handle_tEXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
-   png_text  text_info;
+   png_text text_info;
    png_bytep buffer;
    png_charp key;
    png_charp text;
@@ -2411,10 +2411,6 @@ png_handle_tEXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       }
    }
 #endif
-
-   /* TODO: this doesn't work and shouldn't be necessary. */
-   if ((png_ptr->mode & PNG_HAVE_IDAT) != 0)
-      png_ptr->mode |= PNG_AFTER_IDAT;
 
    buffer = png_read_buffer(png_ptr, length+1);
 
@@ -2463,8 +2459,8 @@ static png_handle_result_code /* PRIVATE */
 png_handle_zTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
    png_const_charp errmsg = NULL;
-   png_bytep       buffer;
-   png_uint_32     keyword_length;
+   png_bytep buffer;
+   png_uint_32 keyword_length;
 
    png_debug(1, "in png_handle_zTXt");
 
@@ -2485,10 +2481,6 @@ png_handle_zTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       }
    }
 #endif
-
-   /* TODO: should not be necessary. */
-   if ((png_ptr->mode & PNG_HAVE_IDAT) != 0)
-      png_ptr->mode |= PNG_AFTER_IDAT;
 
    /* Note, "length" is sufficient here; we won't be adding
     * a null terminator later.  The limit check in png_handle_chunk should be
@@ -2605,10 +2597,6 @@ png_handle_iTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       }
    }
 #endif
-
-   /* TODO: should not be necessary. */
-   if ((png_ptr->mode & PNG_HAVE_IDAT) != 0)
-      png_ptr->mode |= PNG_AFTER_IDAT;
 
    buffer = png_read_buffer(png_ptr, length+1);
 

@@ -19,11 +19,11 @@ msgstr ""
 "|| n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "Wszystkie rozpoznane"
-
 msgid "New Code Region"
 msgstr "Nowa region kodu"
+
+msgid "Linear"
+msgstr "Liniowy"
 
 msgid "Pick a color from the screen."
 msgstr "Pobierz kolor z ekranu."
@@ -31,14 +31,56 @@ msgstr "Pobierz kolor z ekranu."
 msgid "Pick a color from the application window."
 msgstr "Pobierz kolor z okna aplikacji."
 
+msgid "Alpha"
+msgstr "Alfa"
+
+msgid "Intensity"
+msgstr "Intensywność"
+
+msgid "Expr"
+msgstr "Wyr."
+
+msgid "Hex"
+msgstr "Heks."
+
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Wprowadź kod szesnastkowy (\"#ff0000\") lub nazwany kolor (\"red\")."
+
+msgid "Load Color Palette"
+msgstr "Wczytaj paletę kolorów"
+
+msgid "Save Color Palette"
+msgstr "Zapisz paletę kolorów"
+
+msgid "The changes to this palette have not been saved to a file."
+msgstr "Zmiany w tej palecie nie zostały zapisane do pliku."
 
 msgid "Save"
 msgstr "Zapisz"
 
+msgid "Save the current color palette to reuse later."
+msgstr "Zapisz aktualną paletę kolorów, żeby użyć jej ponownie później."
+
+msgid "Save As"
+msgstr "Zapisz jako"
+
+msgid "Save the current color palette as a new to reuse later."
+msgstr "Zapisz aktualną paletę kolorów, by użyć jej ponownie później."
+
+msgid "Load"
+msgstr "Wczytaj"
+
+msgid "Load existing color palette."
+msgstr "Wczytaj istniejącą paletę kolorów."
+
 msgid "Clear"
 msgstr "Wyczyść"
+
+msgid "Clear the currently loaded color palettes in the picker."
+msgstr "Wyczyść aktualnie wczytaną w próbniku paletę kolorów."
+
+msgid "Pick"
+msgstr "Pobierz"
 
 msgid "Select a picker shape."
 msgstr "Wybierz kształt próbnika."
@@ -46,11 +88,87 @@ msgstr "Wybierz kształt próbnika."
 msgid "Select a picker mode."
 msgstr "Wybierz tryb próbnika."
 
+msgid "Colorized Sliders"
+msgstr "Kolorowe suwaki"
+
+msgid "Hexadecimal Values"
+msgstr "Wartości szesnastkowe"
+
 msgid "Hex code or named color"
 msgstr "Kod szesnastkowy lub nazwany kolor"
 
+msgid "Swatches"
+msgstr "Próbki"
+
+msgid "Show all options available."
+msgstr "Pokaż wszystkie dostępne opcje."
+
+msgid "Recent Colors"
+msgstr "Ostatnie kolory"
+
 msgid "Add current color as a preset."
 msgstr "Dodaj bieżący kolor do zapisanych."
+
+msgid "Screen Recording permission missing!"
+msgstr "Brakuje uprawnienia do nagrywania ekranu!"
+
+msgid ""
+"Screen Recording permission is required to pick colors from the other "
+"application windows.\n"
+"Click here to request access..."
+msgstr ""
+"Uprawnienie do nagrywania ekranu jest wymagane, by pobierać kolory z okien "
+"innych aplikacji.\n"
+"Kliknij tutaj, aby zażądać dostępu..."
+
+msgid ""
+"Color: %s\n"
+"LMB: Apply color"
+msgstr ""
+"Kolor: %s\n"
+"LPM: Ustaw ten kolor"
+
+msgid ""
+"Color: %s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"Kolor: %s\n"
+"LPM: Ustaw ten kolor\n"
+"PPM: Usuń próbkę"
+
+msgid "Color: %s"
+msgstr "Kolor: %s"
+
+msgid "HSV Rectangle"
+msgstr "Prostokąt HSV"
+
+msgid "OK HS Rectangle"
+msgstr "Prostokąt OK HS"
+
+msgid "OK HL Rectangle"
+msgstr "Prostokąt OK HL"
+
+msgid "HSV Wheel"
+msgstr "Koło HSV"
+
+msgid "VHS Circle"
+msgstr "Koło VHS"
+
+msgid "OKHSL Circle"
+msgstr "Koło OKHSL"
+
+msgid "Cancel"
+msgstr "Anuluj"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Alert!"
+msgstr "Uwaga!"
+
+msgid "Please Confirm..."
+msgstr "Proszę potwierdzić..."
 
 msgid "Network"
 msgstr "Sieć"
@@ -71,8 +189,32 @@ msgstr "Wybierz bieżący katalog"
 msgid "Select This Folder"
 msgstr "Wybierz ten folder"
 
+msgid "Copy Path"
+msgstr "Skopiuj ścieżkę"
+
+msgid "Delete"
+msgstr "Usuń"
+
+msgid "New Folder..."
+msgstr "Nowy folder..."
+
+msgid "Refresh"
+msgstr "Odśwież"
+
+msgid "Open in File Manager"
+msgstr "Otwórz w menedżerze plików"
+
+msgid "Show in File Manager"
+msgstr "Pokaż w menedżerze plików"
+
+msgid "Show Package Contents"
+msgstr "Pokaż zawartość paczki"
+
 msgid "You don't have permission to access contents of this folder."
 msgstr "Nie masz uprawnień, by uzyskać dostęp do tego folderu."
+
+msgid "All Recognized"
+msgstr "Wszystkie rozpoznane"
 
 msgid "All Files"
 msgstr "Wszystkie pliki"
@@ -104,8 +246,23 @@ msgstr "Przejdź folder wyżej."
 msgid "Path:"
 msgstr "Ścieżka:"
 
+msgid "Drive"
+msgstr "Napęd"
+
 msgid "Refresh files."
 msgstr "Odśwież pliki."
+
+msgid "(Un)favorite current folder."
+msgstr "Dodaj/usuń aktualny folder do ulubionych."
+
+msgid "Create a new folder."
+msgstr "Utwórz nowy folder."
+
+msgid "Favorites:"
+msgstr "Ulubione:"
+
+msgid "Recent:"
+msgstr "Ostatnie:"
 
 msgid "Directories & Files:"
 msgstr "Katalogi i pliki:"
@@ -113,8 +270,53 @@ msgstr "Katalogi i pliki:"
 msgid "Toggle the visibility of hidden files."
 msgstr "Przełącz widoczność ukrytych plików."
 
+msgid "View items as a grid of thumbnails."
+msgstr "Pokaż elementy jako siatkę miniatur."
+
+msgid "View items as a list."
+msgstr "Pokaż elementy jako listę."
+
+msgid "Toggle the visibility of the filter for file names."
+msgstr "Przełącz widoczność filtru dla nazw plików."
+
+msgid "Sort files"
+msgstr "Sortuj pliki"
+
+msgid "Sort by Name (Ascending)"
+msgstr "Sortuj po nazwie (rosnąco)"
+
+msgid "Sort by Name (Descending)"
+msgstr "Sortuj po nazwie (malejąco)"
+
+msgid "Sort by Type (Ascending)"
+msgstr "Sortuj po typie (rosnąco)"
+
+msgid "Sort by Type (Descending)"
+msgstr "Sortuj po typie (malejąco)"
+
+msgid "Sort by Modified Time (Newest First)"
+msgstr "Sortuj po czasie modyfikacji (najpierw nowe)"
+
+msgid "Sort by Modified Time (Oldest First)"
+msgstr "Sortuj po czasie modyfikacji (najpierw stare)"
+
+msgid "Filter:"
+msgstr "Filtr:"
+
+msgid "Filename Filter:"
+msgstr "Filtr nazwy pliku:"
+
 msgid "File:"
 msgstr "Plik:"
+
+msgid ""
+"Delete the selected file?\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"Usunąć wybrany plik?\n"
+"W zależności od konfiguracji twojego systemu plików, pliki zostaną albo "
+"przeniesione do kosza systemowego, albo usunięte bezpowrotnie."
 
 msgid "Create Folder"
 msgstr "Utwórz katalog"
@@ -127,6 +329,12 @@ msgstr "Nie można utworzyć katalogu."
 
 msgid "Invalid extension, or empty filename."
 msgstr "Niepoprawne rozszerzenie lub pusta nazwa pliku."
+
+msgid "connection to %s (%s) port %d"
+msgstr "połączenie do %s (%s) port %d"
+
+msgid "connection from %s (%s) port %d"
+msgstr "połączenie z %s (%s) port %d"
 
 msgid "Zoom Out"
 msgstr "Oddal"
@@ -151,6 +359,48 @@ msgstr "Przełącz minimapę grafu."
 
 msgid "Automatically arrange selected nodes."
 msgstr "Automatycznie ułóż zaznaczone węzły."
+
+msgid "graph node %s (%s)"
+msgstr "węzeł grafu %s (%s)"
+
+msgid "slot %d of %d"
+msgstr "slot %d z %d"
+
+msgid "input port, type: %s"
+msgstr "port wejściowy, typ: %s"
+
+msgid "input port, type: %d"
+msgstr "port wejściowy, typ: %d"
+
+msgid "no connections"
+msgstr "brak połączeń"
+
+msgid "output port, type: %s"
+msgstr "port wyjściowy, typ: %s"
+
+msgid "output port, type: %d"
+msgstr "port wyjściowy, typ: %d"
+
+msgid "currently selecting target port"
+msgstr "wybieranie docelowego portu"
+
+msgid "has %d slots"
+msgstr "ma %d slotów"
+
+msgid "Edit Input Port Connection"
+msgstr "Edytuj połączenie portu wejściowego"
+
+msgid "Edit Output Port Connection"
+msgstr "Edytuj połączenie portu wyjściowego"
+
+msgid "Follow Input Port Connection"
+msgstr "Podążaj za połączeniem portu wejściowego"
+
+msgid "Follow Output Port Connection"
+msgstr "Podążaj za połączeniem portu wyjściowego"
+
+msgid ", in slot %d of graph node %s (%s)"
+msgstr ", w slocie %d węzła grafu %s (%s)"
 
 msgid "Same as Layout Direction"
 msgstr "Tak samo jak kierunek układu"
@@ -211,6 +461,9 @@ msgstr "Łącznik wyrazów (WJ)"
 
 msgid "Soft Hyphen (SHY)"
 msgstr "Miękki łącznik (SHY)"
+
+msgid "Emoji & Symbols"
+msgstr "Emoji i symbole"
 
 msgid "Cut"
 msgstr "Wytnij"

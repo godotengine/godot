@@ -457,6 +457,7 @@ private:
 
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
+	void _set_caret_pos_dirty(bool p_dirty);
 
 	int multicaret_edit_count = 0;
 	bool multicaret_edit_merge_queued = false;
@@ -642,9 +643,12 @@ private:
 		int line_spacing = 1;
 		int wrap_offset = 10;
 
-		Color background_color = Color(1, 1, 1);
 		Color current_line_color = Color(1, 1, 1);
 		Color word_highlighted_color = Color(1, 1, 1);
+
+#ifndef DISABLE_DEPRECATED
+		Color background_color = Color(1, 1, 1);
+#endif // DISABLE_DEPRECATED
 	} theme_cache;
 
 	bool window_has_focus = true;
@@ -655,8 +659,6 @@ private:
 	bool draw_control_chars = false;
 	bool draw_tabs = false;
 	bool draw_spaces = false;
-
-	RID accessibility_text_root_element_nl;
 
 	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
 	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
@@ -705,6 +707,8 @@ protected:
 
 	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
+
+	virtual String _get_accessibility_name() const override;
 
 	/* Internal API for CodeEdit, pending public API. */
 	// Brace matching.
@@ -852,6 +856,7 @@ public:
 	// Text manipulation
 	void clear();
 
+	void _set_text(const String &p_text, bool p_emit_signal = false);
 	void set_text(const String &p_text);
 	String get_text() const;
 
@@ -1091,6 +1096,7 @@ public:
 	int get_total_visible_line_count() const;
 
 	// Auto Adjust
+	bool is_line_in_viewport(int p_line) const;
 	void adjust_viewport_to_caret(int p_caret = 0);
 	void center_viewport_to_caret(int p_caret = 0);
 
