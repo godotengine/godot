@@ -55,7 +55,7 @@ void NavRegionBuilder3D::build_iteration(NavRegionIterationBuild3D &r_build) {
 }
 
 void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuild3D &r_build) {
-	// Reading pending data:
+	// Reading unaltered source data:
 	Vector<Vector3> _navmesh_vertices = r_build.navmesh_data.vertices;
 	Vector<Vector<int>> _navmesh_polygons = r_build.navmesh_data.polygons;
 	Vector<uint32_t> _navmesh_polygons_meta = r_build.navmesh_data.polygons_meta;
@@ -65,10 +65,13 @@ void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuil
 	}
 
 	PerformanceData &performance_data = r_build.performance_data;
+	// Read the potential changes from `r_build.region_iteration`:
 	Ref<NavRegionIteration3D> region_iteration = r_build.region_iteration;
 
 	const uint32_t navigation_layers = region_iteration->navigation_layers;
 	const Transform3D &region_transform = region_iteration->transform;
+
+	// Write the new state into `navmesh_polygons`:
 	LocalVector<Nav3D::Polygon> &navmesh_polygons = region_iteration->navmesh_polygons;
 
 	const int vertex_count = _navmesh_vertices.size();

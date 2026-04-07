@@ -35,6 +35,7 @@
 #include "core/object/ref_counted.h"
 #include "servers/navigation_3d/navigation_constants_3d.h"
 
+// Holds the available changes applicable in an iteration - to affect queries.
 class NavBaseIteration3D : public RefCounted {
 	GDCLASS(NavBaseIteration3D, RefCounted);
 

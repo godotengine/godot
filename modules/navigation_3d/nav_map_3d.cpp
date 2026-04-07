@@ -389,6 +389,7 @@ void NavMap3D::_build_iteration() {
 	uint32_t region_id_count = 0;
 	uint32_t link_id_count = 0;
 
+	// The dirty children got their iterations built beforehand, so they are ready to be processed:
 	for (NavRegion3D *region : regions) {
 		const Ref<NavRegionIteration3D> region_iteration = region->get_iteration();
 		next_map_iteration.region_iterations[region_id_count++] = region_iteration;
@@ -448,6 +449,7 @@ void NavMap3D::sync() {
 
 	_sync_async_tasks();
 
+	// All dirty children (regions, navlinks) should build their iteration.
 	_sync_dirty_map_update_requests();
 
 	if (iteration_dirty && !iteration_building && !iteration_ready) {
