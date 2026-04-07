@@ -41,6 +41,10 @@
 #include <Jolt/Physics/SoftBody/SoftBodyManifold.h>
 
 void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
+	if (unlikely(p_body1.IsSoftBody() || p_body2.IsSoftBody())) {
+		return;
+	}
+
 	_try_override_collision_response(p_body1, p_body2, p_settings);
 	_try_apply_surface_velocities(p_body1, p_body2, p_settings);
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
