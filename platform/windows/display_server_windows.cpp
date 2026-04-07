@@ -36,6 +36,7 @@
 #include "os_windows.h"
 #include "tts_windows.h"
 #include "wgl_detect_version.h"
+#include "winrt_utils.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -4062,24 +4063,26 @@ Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const 
 }
 
 void DisplayServerWindows::show_emoji_and_symbol_picker() const {
-	// Send Win + Period shortcut, there's no non-WinRT public API.
+	if (!WinRTUtils::try_show_onecore_emoji_picker()) {
+		// Send Win + Period shortcut.
 
-	INPUT input[4] = {};
-	input[0].type = INPUT_KEYBOARD; // Win down.
-	input[0].ki.wVk = VK_LWIN;
+		INPUT input[4] = {};
+		input[0].type = INPUT_KEYBOARD; // Win down.
+		input[0].ki.wVk = VK_LWIN;
 
-	input[1].type = INPUT_KEYBOARD; // Period down.
-	input[1].ki.wVk = VK_OEM_PERIOD;
+		input[1].type = INPUT_KEYBOARD; // Period down.
+		input[1].ki.wVk = VK_OEM_PERIOD;
 
-	input[2].type = INPUT_KEYBOARD; // Win up.
-	input[2].ki.wVk = VK_LWIN;
-	input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+		input[2].type = INPUT_KEYBOARD; // Win up.
+		input[2].ki.wVk = VK_LWIN;
+		input[2].ki.dwFlags = KEYEVENTF_KEYUP;
 
-	input[3].type = INPUT_KEYBOARD; // Period up.
-	input[3].ki.wVk = VK_OEM_PERIOD;
-	input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+		input[3].type = INPUT_KEYBOARD; // Period up.
+		input[3].ki.wVk = VK_OEM_PERIOD;
+		input[3].ki.dwFlags = KEYEVENTF_KEYUP;
 
-	SendInput(4, input, sizeof(INPUT));
+		SendInput(4, input, sizeof(INPUT));
+	}
 }
 
 String DisplayServerWindows::_get_keyboard_layout_display_name(const String &p_klid) const {
