@@ -310,8 +310,6 @@ void EditorLog::_rebuild_log() {
 		return;
 	}
 
-	log->clear();
-
 	int line_count = 0;
 	int start_message_index = 0;
 	int initial_skip = 0;
@@ -339,6 +337,7 @@ void EditorLog::_rebuild_log() {
 			break;
 		}
 	}
+	log->clear();
 
 	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
@@ -465,6 +464,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			String keytext_message = p_message.text.substr(keytext_start, filter_keytext.length()); // Filter keytext. This will appear yellow.
 			String message_suffix = p_message.text.substr(keytext_start + filter_keytext.length(), p_message.text.length() - keytext_start + filter_keytext.length()); // Part of the message before the filter keytext. This will appear light gray again.
 
+			log->push_normal();
 			log->push_color(theme_cache.message_color);
 			log->add_text(message_prefix);
 
@@ -503,9 +503,20 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 }
 
 void EditorLog::_search_changed(const String &p_text) {
+	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
+
+	int previous_scroll_value = log->get_v_scroll_bar()->get_value();
+
 	_rebuild_log();
 	_set_show_nonmatches_button_visibility(!p_text.is_empty());
-	// It'd be nice to have the output scroll to the first line containing of p_text.
+
+	_set_scroll(previous_scroll_value); // Retain scroll position
+
+	log->set_scroll_follow(true);
+}
+
+void EditorLog::_set_scroll(int p_scroll) {
+	log->get_v_scroll_bar()->set_value(p_scroll);
 }
 
 void EditorLog::_reset_message_counts() {

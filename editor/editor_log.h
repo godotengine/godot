@@ -35,6 +35,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_bar.h"
 
 class Timer;
 class UndoRedo;
@@ -133,7 +134,7 @@ private:
 	RichTextLabel *log = nullptr;
 
 	Button *clear_button = nullptr;
-	
+
 	Button *show_nonmatches_button = nullptr;
 	void _set_show_nonmatches(bool p_state);
 	void _set_show_nonmatches_button_visibility(bool p_visible);
@@ -162,6 +163,8 @@ private:
 	void _rebuild_log();
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
 	bool _check_display_message(LogMessage &p_message);
+
+	void _set_scroll(int p_scroll);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _search_changed(const String &p_text);
