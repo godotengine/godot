@@ -247,6 +247,14 @@ void DockTabContainer::show_drag_hint() {
 	drag_hint->show();
 }
 
+Rect2 DockTabContainer::get_default_floating_dock_rect(EditorDock *p_dock) {
+	Size2 borders = Size2(4, 4) * EDSCALE;
+	Rect2 ret;
+	ret.position = p_dock->get_screen_position();
+	ret.size = p_dock->get_size() + borders * 2;
+	return ret;
+}
+
 DockTabContainer::DockTabContainer(EditorDock::DockSlot p_slot) {
 	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
 	dock_slot = p_slot;
@@ -264,12 +272,28 @@ DockTabContainer::DockTabContainer(EditorDock::DockSlot p_slot) {
 	get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &DockTabContainer::_tab_rmb_clicked));
 }
 
+Rect2 SideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {
+	if (p_dock->is_visible_in_tree()) {
+		return DockTabContainer::get_default_floating_dock_rect(p_dock);
+	}
+	const float tab_bar_height = get_tab_bar()->get_size().y;
+	return Rect2(get_screen_position() + Vector2(0, tab_bar_height), get_size() - Vector2(0, tab_bar_height));
+}
+
 SideDockTabContainer::SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
 		DockTabContainer(p_slot) {
 	grid_rect = p_slot_rect;
 	set_custom_minimum_size(Size2(170 * EDSCALE, 0));
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	set_use_hidden_tabs_for_min_size(true);
+}
+
+Rect2 BottomSideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {
+	if (p_dock->is_visible_in_tree()) {
+		return DockTabContainer::get_default_floating_dock_rect(p_dock);
+	}
+	const float tab_bar_height = get_tab_bar()->get_size().y;
+	return Rect2(get_screen_position() + Vector2(0, tab_bar_height), get_size() - Vector2(0, tab_bar_height));
 }
 
 BottomSideDockTabContainer::BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
