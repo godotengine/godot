@@ -82,22 +82,24 @@ env.Depends(res_obj, "#core/version_generated.gen.h")
 env.add_source_files(sources, common_win)
 
 env_winrt = env.Clone()
-if not env_winrt.msvc:
-    if "-std=gnu++17" in env_winrt["CXXFLAGS"]:
-        env_winrt["CXXFLAGS"].remove("-std=gnu++17")
-    env_winrt.Append(CXXFLAGS=["-std=gnu++20"])
-    if "-fno-exceptions" in env_winrt["CXXFLAGS"]:
-        env_winrt["CXXFLAGS"].remove("-fno-exceptions")
-    env_winrt.Append(CXXFLAGS=["-fexceptions"])
-else:
-    if "/std:c++17" in env_winrt["CXXFLAGS"]:
-        env_winrt["CXXFLAGS"].remove("/std:c++17")
-    env_winrt.Append(CXXFLAGS=["/std:c++20"])
-    if "_HAS_EXCEPTIONS" in env_winrt["CPPDEFINES"]:
-        env_winrt["CPPDEFINES"].remove("_HAS_EXCEPTIONS")
-    env_winrt.Append(CXXFLAGS=["/EHsc"])
 tts_sources = ["tts_windows.cpp", "tts_driver_sapi.cpp"]
-if env_winrt["winrt_path"] != "" or env_winrt.msvc:
+if env["winrt"]:
+    if not env_winrt.msvc:
+        if "-std=gnu++17" in env_winrt["CXXFLAGS"]:
+            env_winrt["CXXFLAGS"].remove("-std=gnu++17")
+        env_winrt.Append(CXXFLAGS=["-std=gnu++20"])
+        if "-fno-exceptions" in env_winrt["CXXFLAGS"]:
+            env_winrt["CXXFLAGS"].remove("-fno-exceptions")
+        env_winrt.Append(CXXFLAGS=["-fexceptions"])
+    else:
+        if not env["use_llvm"]:
+            env_winrt.Append(CXXFLAGS=["/await"])
+        if "/std:c++17" in env_winrt["CXXFLAGS"]:
+            env_winrt["CXXFLAGS"].remove("/std:c++17")
+        env_winrt.Append(CXXFLAGS=["/std:c++20"])
+        if "_HAS_EXCEPTIONS" in env_winrt["CPPDEFINES"]:
+            env_winrt["CPPDEFINES"].remove("_HAS_EXCEPTIONS")
+        env_winrt.Append(CXXFLAGS=["/EHsc"])
     if not env_winrt.msvc:
         env_winrt.Append(CPPPATH=[env["winrt_path"]])
     env_winrt.AppendUnique(CPPDEFINES=["WINRT_ENABLED"])
