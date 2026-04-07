@@ -114,7 +114,7 @@
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="order" type="int" default="2" />
+			<param index="0" name="order" type="int" enum="EulerOrder" default="2" />
 			<description>
 				Returns this quaternion's rotation as a [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians.
 				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): Z (roll) is calculated first, then X (pitch), and lastly Y (yaw). When using the opposite method [method from_euler], this order is reversed.
