@@ -38,10 +38,6 @@
 #include "main/main.h"
 #include "servers/audio/audio_server.h"
 
-#import <AudioToolbox/AudioServices.h>
-#import <CoreMotion/CoreMotion.h>
-#import <GameController/GameController.h>
-#import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
 @implementation GDTViewRenderer

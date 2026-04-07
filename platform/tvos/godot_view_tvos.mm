@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  godot_view_tvos.mm                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "godot_view_tvos.h"
 
-#ifdef TVOS_ENABLED
+#import "display_layer_tvos.h"
+
+#include "core/error/error_macros.h"
+
+#define Key GC_Key_
 #import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
+#undef Key
 
-@class GDTView;
-@class GDTKeyboardInputView;
+@interface GDTViewTVOS ()
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
-
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wobjc-property-synthesis")
+@property(strong, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
+GODOT_CLANG_WARNING_POP
 
 @end
+
+@implementation GDTViewTVOS
+
+- (void)godot_commonInit {
+	[super godot_commonInit];
+}
+
+- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName {
+	if (self.renderingLayer) {
+		return self.renderingLayer;
+	}
+
+	CALayer<GDTDisplayLayer> *layer = [GDTMetalLayer layer];
+
+	layer.frame = self.bounds;
+	layer.contentsScale = self.contentScaleFactor;
+
+	[self.layer addSublayer:layer];
+	self.renderingLayer = layer;
+
+	[layer initializeDisplayLayer];
+
+	return self.renderingLayer;
+}
+
+@end
+
+GDTView *GDTViewCreate() {
+	GDTViewTVOS *view = [GDTViewTVOS new];
+	view.preferredFrameRate = 60;
+	return view;
+}

@@ -188,9 +188,11 @@ if env["builtin_sdl"]:
             "timer/windows/SDL_systimer.c",
         ]
 
-    elif env["platform"] in ["ios", "visionos"]:
+    elif env["platform"] in ["ios", "tvos", "visionos"]:
         if env["platform"] == "ios":
             env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_IOS"])
+        elif env["platform"] == "tvos":
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_TVOS"])
         else:
             env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_VISIONOS"])
 

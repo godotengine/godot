@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  export.cpp                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "export.h"
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
+#include "export_plugin.h"
 
-@class GDTView;
-@class GDTKeyboardInputView;
+#include "core/object/class_db.h"
+#include "editor/export/editor_export.h"
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
+#ifdef MACOS_ENABLED
+#include "editor/settings/editor_settings.h"
 #endif
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+void register_tvos_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformTVOS);
+}
 
-@end
+void register_tvos_exporter() {
+	// TODO: Move to editor_settings.cpp
+#ifdef MACOS_ENABLED
+	EDITOR_DEF("export/tvos/tvos_deploy", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/tvos/tvos_deploy", PROPERTY_HINT_GLOBAL_FILE, "*"));
+#endif
+
+	Ref<EditorExportPlatformTVOS> platform;
+	platform.instantiate();
+
+	EditorExport::get_singleton()->add_export_platform(platform);
+}

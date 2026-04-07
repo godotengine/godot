@@ -219,6 +219,8 @@
 /platform/linuxbsd/doc_classes/               @godotengine/linux-bsd @godotengine/documentation
 /platform/macos/                              @godotengine/macos
 /platform/macos/doc_classes/                  @godotengine/macos @godotengine/documentation
+/platform/tvos/                               @godotengine/ios
+/platform/tvos/doc_classes/                   @godotengine/ios @godotengine/documentation
 /platform/visionos/                           @godotengine/xr
 /platform/visionos/doc_classes/               @godotengine/xr @godotengine/documentation
 /platform/web/                                @godotengine/web

@@ -37,13 +37,19 @@
 #import "drivers/apple_embedded/display_server_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_renderer.h"
 
+#ifndef TVOS_ENABLED
 #import <CoreMotion/CoreMotion.h>
+#endif
 
+#ifndef TVOS_ENABLED
 static const int max_touches = 32;
 static const float earth_gravity = 9.80665;
+#endif
 
 @interface GDTView () {
+#ifndef TVOS_ENABLED
 	UITouch *godot_touches[max_touches];
+#endif
 	CGFloat last_edr_headroom;
 }
 
@@ -58,7 +64,9 @@ static const float earth_gravity = 9.80665;
 
 @property(strong, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
 
+#ifndef TVOS_ENABLED
 @property(strong, nonatomic) CMMotionManager *motionManager;
+#endif
 
 @property(assign, nonatomic) BOOL delegateDidFinishSetUp;
 
@@ -102,10 +110,12 @@ static const float earth_gravity = 9.80665;
 		self.renderingLayer = nil;
 	}
 
+#ifndef TVOS_ENABLED
 	if (self.motionManager) {
 		[self.motionManager stopDeviceMotionUpdates];
 		self.motionManager = nil;
 	}
+#endif
 
 	if (self.displayLink) {
 		[self.displayLink invalidate];
@@ -123,7 +133,9 @@ static const float earth_gravity = 9.80665;
 	self.useCADisplayLink = bool(GLOBAL_DEF("display.AppleEmbedded/use_cadisplaylink", true)) ? YES : NO;
 	last_edr_headroom = 0.0;
 
-#if !defined(VISIONOS_ENABLED)
+#ifdef TVOS_ENABLED
+	self.contentScaleFactor = self.window.windowScene.screen.scale;
+#elif !defined(VISIONOS_ENABLED)
 	self.contentScaleFactor = [UIScreen mainScreen].scale;
 #endif
 
@@ -131,6 +143,7 @@ static const float earth_gravity = 9.80665;
 		[self registerForTraitChanges:@[ [UITraitUserInterfaceStyle class] ] withTarget:self action:@selector(traitCollectionDidChangeWithView:previousTraitCollection:)];
 	}
 
+#ifndef TVOS_ENABLED
 	[self initTouches];
 
 	self.multipleTouchEnabled = YES;
@@ -145,6 +158,7 @@ static const float earth_gravity = 9.80665;
 			self.motionManager = nil;
 		}
 	}
+#endif
 }
 
 - (void)system_theme_changed {
@@ -156,7 +170,7 @@ static const float earth_gravity = 9.80665;
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
 	if (@available(iOS 13.0, *)) {
-#if !defined(VISIONOS_ENABLED)
+#if !defined(VISIONOS_ENABLED) && !defined(TVOS_ENABLED)
 		[super traitCollectionDidChange:previousTraitCollection];
 #endif
 		[self traitCollectionDidChangeWithView:self
@@ -189,7 +203,9 @@ static const float earth_gravity = 9.80665;
 		self.animationTimer = nil;
 	}
 
+#ifndef TVOS_ENABLED
 	[self clearTouches];
+#endif
 }
 
 - (void)startRendering {
@@ -249,11 +265,17 @@ static const float earth_gravity = 9.80665;
 		}
 	}
 
+#ifndef TVOS_ENABLED
 	[self handleMotion];
+#endif
 
 #if !defined(VISIONOS_ENABLED)
 	if (@available(iOS 16.0, *)) {
+#ifdef TVOS_ENABLED
+		CGFloat edr_headroom = self.window.windowScene.screen.currentEDRHeadroom;
+#else
 		CGFloat edr_headroom = UIScreen.mainScreen.currentEDRHeadroom;
+#endif
 		if (last_edr_headroom != edr_headroom) {
 			last_edr_headroom = edr_headroom;
 			if (DisplayServerAppleEmbedded::get_singleton()) {
@@ -305,6 +327,8 @@ static const float earth_gravity = 9.80665;
 // MARK: - Input
 
 // MARK: Touches
+
+#ifndef TVOS_ENABLED
 
 - (void)initTouches {
 	for (int i = 0; i < max_touches; i++) {
@@ -466,5 +490,7 @@ static const float earth_gravity = 9.80665;
 		} break;
 	}
 }
+
+#endif // TVOS_ENABLED
 
 @end

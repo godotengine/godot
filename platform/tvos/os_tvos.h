@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  os_tvos.h                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,20 +31,17 @@
 #pragma once
 
 #ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
 
-@class GDTView;
-@class GDTKeyboardInputView;
+#import "drivers/apple_embedded/os_apple_embedded.h"
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
+class OS_TVOS : public OS_AppleEmbedded {
+public:
+	static OS_TVOS *get_singleton();
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+	OS_TVOS();
+	~OS_TVOS();
 
-@end
+	virtual String get_name() const override;
+};
+
+#endif // TVOS_ENABLED

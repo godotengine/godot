@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  api.cpp                                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "api.h"
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
+#if defined(TVOS_ENABLED)
 
-@class GDTView;
-@class GDTKeyboardInputView;
+void register_tvos_api() {
+	godot_apple_embedded_plugins_initialize();
+}
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
+void unregister_tvos_api() {
+	godot_apple_embedded_plugins_deinitialize();
+}
+
 #else
-@interface GDTViewController : UIViewController
-#endif
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+void register_tvos_api() {}
+void unregister_tvos_api() {}
 
-@end
+#endif // TVOS_ENABLED

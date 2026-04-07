@@ -409,6 +409,8 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 	}
 }
 
+#ifndef TVOS_ENABLED
+
 - (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL succeeded))completionHandler {
 	for (GDTAppDelegateServiceProtocol *service in services) {
 		if (![service respondsToSelector:_cmd]) {
@@ -418,6 +420,8 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 		[service application:application performActionForShortcutItem:shortcutItem completionHandler:completionHandler];
 	}
 }
+
+#endif
 
 // MARK: WatchKit
 

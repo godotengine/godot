@@ -153,6 +153,10 @@
 
 - (void)godot_commonInit {
 	// Initialize view controller values.
+#ifdef TVOS_ENABLED
+	// Don't pass presses like the B button as regular events.
+	// self.controllerUserInteractionEnabled = NO;
+#endif
 }
 
 - (void)didReceiveMemoryWarning {
@@ -163,10 +167,14 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 
+#ifndef TVOS_ENABLED
 	[self observeKeyboard];
+#endif
 	[self displayLoadingOverlay];
 
+#ifndef TVOS_ENABLED
 	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+#endif
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -182,6 +190,7 @@
 	[super viewDidDisappear:animated];
 }
 
+#ifndef TVOS_ENABLED
 - (void)observeKeyboard {
 	print_verbose("Setting up keyboard input view.");
 	self.keyboardView = [GDTKeyboardInputView new];
@@ -199,6 +208,7 @@
 				   name:UIKeyboardDidHideNotification
 				 object:nil];
 }
+#endif
 
 - (void)displayLoadingOverlay {
 #if !defined(VISIONOS_ENABLED)
@@ -300,6 +310,7 @@
 }
 #endif
 
+#ifndef TVOS_ENABLED
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {
 		return UIRectEdgeAll;
@@ -369,9 +380,11 @@
 		return NO;
 	}
 }
+#endif // TVOS_ENABLED
 
 // MARK: Keyboard
 
+#ifndef TVOS_ENABLED
 - (void)keyboardOnScreen:(NSNotification *)notification {
 	NSDictionary *info = notification.userInfo;
 	NSValue *value = info[UIKeyboardFrameEndUserInfoKey];
@@ -389,5 +402,6 @@
 		DisplayServerAppleEmbedded::get_singleton()->virtual_keyboard_set_height(0);
 	}
 }
+#endif
 
 @end

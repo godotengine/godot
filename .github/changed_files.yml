@@ -25,5 +25,5 @@ clangd:
   - "!editor/shader/shader_baker/shader_baker_export_plugin_platform_{d3d12,metal}.{h,cpp}"
   - "!modules/camera/camera_{android,macos,win}.{h,cpp}"
   - "!modules/openxr/extensions/platform/openxr_{android,metal}_extension.{h,cpp}"
-  - "!platform/{android,ios,macos,visionos,web,windows}/**"
-  - "platform/{android,ios,macos,visionos,web,windows}/{api,export}/*.{h,hpp,hxx,hh,c,cpp,cxx,cc}"
+  - "!platform/{android,ios,macos,tvos,visionos,web,windows}/**"
+  - "platform/{android,ios,macos,tvos,visionos,web,windows}/{api,export}/*.{h,hpp,hxx,hh,c,cpp,cxx,cc}"
