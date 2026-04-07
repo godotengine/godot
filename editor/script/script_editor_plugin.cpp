@@ -411,7 +411,6 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 			}
 		}
 
-
 		Ref<Script> scr = seb->get_edited_resource();
 		if (scr.is_valid()) {
 			notify_script_changed(scr);
