@@ -2094,6 +2094,21 @@ PackedInt32Array CodeEdit::get_folded_lines() const {
 	return folded_lines;
 }
 
+void CodeEdit::fold_all_regions() {
+	bool any_line_folded = false;
+
+	for (int i = 0; i < get_line_count(); i++) {
+		if (is_line_code_region_start(i) && !is_line_folded(i)) {
+			_fold_line(i);
+			any_line_folded = true;
+		}
+	}
+
+	if (any_line_folded) {
+		emit_signal(SNAME("_fold_line_updated"));
+	}
+}
+
 /* Code region */
 void CodeEdit::create_code_region() {
 	// Abort if there is no selected text.
