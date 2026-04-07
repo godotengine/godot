@@ -456,7 +456,7 @@ class TextServerFallback : public TextServerExtension {
 
 	mutable RID_PtrOwner<FontFallbackLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontFallback> font_owner;
-	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner;
+	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner{ 65536, 1048576 };
 
 	_FORCE_INLINE_ FontFallback *_get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
