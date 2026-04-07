@@ -2284,7 +2284,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_3d_get", "texture"), &RenderingServer::_texture_3d_get);
 
 	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture"), &RenderingServer::texture_drawable_generate_mipmaps);
-	ClassDB::bind_method(D_METHOD("texture_drawable_get_default_material"), &RenderingServer::texture_drawable_get_default_material);
+	ClassDB::bind_method(D_METHOD("texture_drawable_get_default_blit_material"), &RenderingServer::texture_drawable_get_default_blit_material);
+	ClassDB::bind_method(D_METHOD("texture_drawable_get_default_blend_material"), &RenderingServer::texture_drawable_get_default_blend_material);
 
 	ClassDB::bind_method(D_METHOD("texture_replace", "texture", "by_texture"), &RenderingServer::texture_replace);
 	ClassDB::bind_method(D_METHOD("texture_set_size_override", "texture", "width", "height"), &RenderingServer::texture_set_size_override);
