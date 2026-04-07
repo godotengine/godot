@@ -401,7 +401,7 @@ private:
 	Color debug_navigation_edge_connection_color = Color(1.0, 0.0, 1.0, 1.0);
 	Color debug_navigation_geometry_edge_color = Color(0.5, 1.0, 1.0, 1.0);
 	Color debug_navigation_geometry_face_color = Color(0.5, 1.0, 1.0, 0.4);
-	Color debug_navigation_geometry_face_area_color = Color(0.33, 0.66, 0.35, 0.75);
+	Color debug_navigation_geometry_face_area_color = Color(1.0, 0.0, 0.8, 0.4);
 	Color debug_navigation_geometry_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
 	Color debug_navigation_geometry_face_disabled_color = Color(0.5, 0.5, 0.5, 0.4);
 	Color debug_navigation_link_connection_color = Color(1.0, 0.5, 1.0, 1.0);

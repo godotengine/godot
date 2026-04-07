@@ -911,7 +911,7 @@
 		<member name="debug/shapes/navigation/3d/geometry_edge_disabled_color" type="Color" setter="" getter="" default="Color(0.5, 0.5, 0.5, 1)">
 			Color to display disabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/3d/geometry_face_area_color" type="Color" setter="" getter="" default="Color(0.33, 0.66, 0.35, 0.75)">
+		<member name="debug/shapes/navigation/3d/geometry_face_area_color" type="Color" setter="" getter="" default="Color(1, 0, 0.8, 0.4)">
 			Color to display enabled navigation mesh polygon area faces, that changed the regions default navigation layers, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/3d/geometry_face_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 0.4)">
