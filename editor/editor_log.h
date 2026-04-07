@@ -125,6 +125,13 @@ private:
 		}
 	};
 
+	struct LogLineStyling {
+		Color regular_color;
+		Color suppressed_color;
+		Color highlighted_color;
+		Ref<Texture2D> icon;
+	};
+
 	int line_limit = 10000;
 
 	Vector<LogMessage> messages;
@@ -161,10 +168,9 @@ private:
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
+	void _append_styled_log_line(Color p_color_regular, Color p_color_highlighted, String p_line, String p_keytext);
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
 	bool _check_display_message(LogMessage &p_message);
-
-	void _set_scroll(int p_scroll);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _search_changed(const String &p_text);

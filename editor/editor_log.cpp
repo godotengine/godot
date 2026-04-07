@@ -383,6 +383,33 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 	return filter_active && search_match;
 }
 
+void EditorLog::_append_styled_log_line(Color p_color_regular, Color p_color_highlighted, String p_line, String p_keytext) {
+	if (p_keytext.is_empty() || !p_line.containsn(p_keytext)) {
+		log->push_color(p_color_regular);
+		log->add_text(p_line);
+		return;
+	}
+
+	int keytext_start = p_line.findn(p_keytext);
+
+	String message_prefix = p_line.substr(0, keytext_start); // Part of the message before the filter keytext.
+	String keytext_message = p_line.substr(keytext_start, p_keytext.length()); // Filter keytext.
+	String message_suffix = p_line.substr(keytext_start + p_keytext.length(), p_line.length() - keytext_start + p_keytext.length()); // Part of the message before the filter keytext.
+
+	log->push_normal();
+	log->push_color(p_color_regular);
+	log->add_text(message_prefix);
+
+	log->push_bold();
+	log->push_color(p_color_highlighted);
+	log->add_text(keytext_message);
+
+	log->push_normal();
+	log->push_color(p_color_regular);
+	log->add_text(message_suffix);
+	log->pop();
+}
+
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
@@ -449,33 +476,21 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
+	String filter_keytext = search_box->get_text();
+
 	// Note that errors and warnings only support BBCode in the file part of the message.
-	if (p_message.type == MSG_TYPE_STD_RICH || p_message.type == MSG_TYPE_ERROR || p_message.type == MSG_TYPE_WARNING) {
+	if (p_message.type == MSG_TYPE_STD_RICH) {
 		log->append_text(p_message.text);
-	} else {
-		String filter_keytext = search_box->get_text();
-
+	} else { // For all other message types
 		if (_check_display_message(p_message) && !filter_keytext.is_empty()) {
-			// Specific coloring of the line
-
-			int keytext_start = p_message.text.findn(filter_keytext);
-
-			String message_prefix = p_message.text.substr(0, keytext_start); // Part of the message before the filter keytext. This will appear light gray.
-			String keytext_message = p_message.text.substr(keytext_start, filter_keytext.length()); // Filter keytext. This will appear yellow.
-			String message_suffix = p_message.text.substr(keytext_start + filter_keytext.length(), p_message.text.length() - keytext_start + filter_keytext.length()); // Part of the message before the filter keytext. This will appear light gray again.
-
-			log->push_normal();
-			log->push_color(theme_cache.message_color);
-			log->add_text(message_prefix);
-
-			log->push_bold();
-			log->push_color(Color(1.0, 1.0, 0.5));
-			log->add_text(keytext_message);
-
-			log->push_normal();
-			log->push_color(theme_cache.message_color);
-			log->add_text(message_suffix);
-		} else {
+			if (p_message.type == MSG_TYPE_ERROR) {
+				_append_styled_log_line(theme_cache.error_color * Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
+			} else if (p_message.type == MSG_TYPE_WARNING) {
+				_append_styled_log_line(theme_cache.warning_color * Color(0.8, 0.8, 0.8), Color(1.0, 0.35, 0.35), p_message.text, filter_keytext);
+			} else {
+				_append_styled_log_line(theme_cache.message_color, Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
+			}
+		} else { // If we aren't doing anything special with filtering, just print it as normal
 			log->add_text(p_message.text);
 		}
 	}
@@ -497,26 +512,22 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
+	log->set_scroll_follow(false);
+
 	type_filter_map[p_message_type]->set_active(p_active);
 	_start_state_save_timer();
 	_rebuild_log();
+
+	log->set_scroll_follow(true);
 }
 
 void EditorLog::_search_changed(const String &p_text) {
 	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
 
-	int previous_scroll_value = log->get_v_scroll_bar()->get_value();
-
 	_rebuild_log();
 	_set_show_nonmatches_button_visibility(!p_text.is_empty());
 
-	_set_scroll(previous_scroll_value); // Retain scroll position
-
 	log->set_scroll_follow(true);
-}
-
-void EditorLog::_set_scroll(int p_scroll) {
-	log->get_v_scroll_bar()->set_value(p_scroll);
 }
 
 void EditorLog::_reset_message_counts() {
