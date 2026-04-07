@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		[Skeleton2D] parents a hierarchy of [Bone2D] nodes. It holds a reference to each [Bone2D]'s rest pose and acts as a single point of access to its bones.
+		A single [SkeletonModificationStack2D] resource can be shared by multiple [Skeleton2D] nodes. Per-skeleton runtime state is stored on each [Skeleton2D], so [member Resource.resource_local_to_scene] is not required for this use case.
 		To set up different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. The inverse kinematics be applied by increasing [member SkeletonModificationStack2D.modification_count] and creating the desired number of modifications.
 	</description>
 	<tutorials>
@@ -17,6 +18,7 @@
 			<param index="1" name="execution_mode" type="int" />
 			<description>
 				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton2D has one assigned.
+				This method ensures the stack is synchronized with this node's local runtime state before executing modifications.
 			</description>
 		</method>
 		<method name="get_bone">
@@ -68,6 +70,7 @@
 			<param index="0" name="modification_stack" type="SkeletonModificationStack2D" />
 			<description>
 				Sets the [SkeletonModificationStack2D] attached to this skeleton.
+				The same stack resource can be shared across multiple [Skeleton2D] nodes. In this case, [member Resource.resource_local_to_scene] does not need to be [code]true[/code].
 			</description>
 		</method>
 	</methods>

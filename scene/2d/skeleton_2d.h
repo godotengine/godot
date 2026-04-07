@@ -135,6 +135,7 @@ class Skeleton2D : public Node2D {
 	RID skeleton;
 
 	Ref<SkeletonModificationStack2D> modification_stack;
+	SkeletonModificationStackState2D modification_stack_state;
 
 	///////////////////////////////////////////////////////
 	// INTERPOLATION

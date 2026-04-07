@@ -725,7 +725,7 @@ void Skeleton2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				if (modification_stack.is_valid()) {
-					modification_stack->draw_editor_gizmos();
+					modification_stack->draw_editor_gizmos_with_state(modification_stack_state);
 				}
 			}
 		} break;
@@ -751,16 +751,17 @@ Transform2D Skeleton2D::get_bone_local_pose_override(int p_bone_idx) {
 
 void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack) {
 	if (modification_stack.is_valid()) {
-		modification_stack->is_setup = false;
 		modification_stack->set_skeleton(nullptr);
 	}
+
+	modification_stack_state = SkeletonModificationStackState2D();
 	modification_stack = p_stack;
 	if (modification_stack.is_valid() && is_inside_tree()) {
-		modification_stack->set_skeleton(this);
-		modification_stack->setup();
+		modification_stack_state.skeleton = this;
+		modification_stack->setup_with_state(modification_stack_state, this);
 
 #ifdef TOOLS_ENABLED
-		modification_stack->set_editor_gizmos_dirty(true);
+		modification_stack->set_editor_gizmos_dirty_with_state(modification_stack_state, true);
 #endif // TOOLS_ENABLED
 	}
 	_update_process_mode();
@@ -780,11 +781,16 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 		bones[i].bone->copy_transform_to_cache = false;
 	}
 
-	if (modification_stack->skeleton != this) {
-		modification_stack->set_skeleton(this);
+	if (modification_stack_state.skeleton != this) {
+		modification_stack_state.skeleton = this;
+		modification_stack_state.is_setup = false;
 	}
 
-	modification_stack->execute(p_delta, p_execution_mode);
+	if (!modification_stack_state.is_setup) {
+		modification_stack->setup_with_state(modification_stack_state, this);
+	}
+
+	modification_stack->execute_with_state(modification_stack_state, p_delta, p_execution_mode);
 
 	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
 	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
@@ -814,7 +820,7 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 	}
 
 #ifdef TOOLS_ENABLED
-	modification_stack->set_editor_gizmos_dirty(true);
+	modification_stack->set_editor_gizmos_dirty_with_state(modification_stack_state, true);
 #endif // TOOLS_ENABLED
 }
 

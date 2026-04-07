@@ -81,11 +81,17 @@ void SkeletonModification2DStackHolder::_get_property_list(List<PropertyInfo> *p
 }
 
 void SkeletonModification2DStackHolder::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->get_skeleton() == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 
 	if (held_modification_stack.is_valid()) {
-		held_modification_stack->execute(p_delta, execution_mode);
+		if (held_stack_state.skeleton != stack->get_skeleton()) {
+			held_stack_state = SkeletonModificationStackState2D();
+			held_stack_state.skeleton = stack->get_skeleton();
+			held_modification_stack->setup_with_state(held_stack_state, held_stack_state.skeleton);
+		}
+
+		held_modification_stack->execute_with_state(held_stack_state, p_delta, execution_mode);
 	}
 }
 
@@ -96,8 +102,9 @@ void SkeletonModification2DStackHolder::_setup_modification(SkeletonModification
 		is_setup = true;
 
 		if (held_modification_stack.is_valid()) {
-			held_modification_stack->set_skeleton(stack->get_skeleton());
-			held_modification_stack->setup();
+			held_stack_state = SkeletonModificationStackState2D();
+			held_stack_state.skeleton = stack->get_skeleton();
+			held_modification_stack->setup_with_state(held_stack_state, held_stack_state.skeleton);
 		}
 	}
 }
@@ -105,17 +112,24 @@ void SkeletonModification2DStackHolder::_setup_modification(SkeletonModification
 void SkeletonModification2DStackHolder::_draw_editor_gizmo() {
 	if (stack) {
 		if (held_modification_stack.is_valid()) {
-			held_modification_stack->draw_editor_gizmos();
+			if (held_stack_state.skeleton != stack->get_skeleton()) {
+				held_stack_state = SkeletonModificationStackState2D();
+				held_stack_state.skeleton = stack->get_skeleton();
+				held_modification_stack->setup_with_state(held_stack_state, held_stack_state.skeleton);
+			}
+
+			held_modification_stack->draw_editor_gizmos_with_state(held_stack_state);
 		}
 	}
 }
 
 void SkeletonModification2DStackHolder::set_held_modification_stack(Ref<SkeletonModificationStack2D> p_held_stack) {
 	held_modification_stack = p_held_stack;
+	held_stack_state = SkeletonModificationStackState2D();
 
-	if (is_setup && held_modification_stack.is_valid()) {
-		held_modification_stack->set_skeleton(stack->get_skeleton());
-		held_modification_stack->setup();
+	if (is_setup && held_modification_stack.is_valid() && stack != nullptr) {
+		held_stack_state.skeleton = stack->get_skeleton();
+		held_modification_stack->setup_with_state(held_stack_state, held_stack_state.skeleton);
 	}
 }
 

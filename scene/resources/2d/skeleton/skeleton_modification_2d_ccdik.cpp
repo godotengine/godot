@@ -157,7 +157,7 @@ void SkeletonModification2DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 }
 
 void SkeletonModification2DCCDIK::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->get_skeleton() == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
 		return;
@@ -193,12 +193,12 @@ void SkeletonModification2DCCDIK::_execute(float p_delta) {
 
 void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *p_target, Node2D *p_tip) {
 	CCDIK_Joint_Data2D ccdik_data = ccdik_data_chain[p_joint_idx];
-	if (ccdik_data.bone_idx < 0 || ccdik_data.bone_idx > stack->skeleton->get_bone_count()) {
+	if (ccdik_data.bone_idx < 0 || ccdik_data.bone_idx > stack->get_skeleton()->get_bone_count()) {
 		ERR_PRINT_ONCE("2D CCDIK joint: bone index not found!");
 		return;
 	}
 
-	Bone2D *operation_bone = stack->skeleton->get_bone(ccdik_data.bone_idx);
+	Bone2D *operation_bone = stack->get_skeleton()->get_bone(ccdik_data.bone_idx);
 	Transform2D operation_transform = operation_bone->get_global_transform();
 
 	if (ccdik_data.rotate_from_joint) {
@@ -232,7 +232,7 @@ void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *
 	}
 
 	// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
-	stack->skeleton->set_bone_local_pose_override(ccdik_data.bone_idx, operation_transform, stack->strength, true);
+	stack->get_skeleton()->set_bone_local_pose_override(ccdik_data.bone_idx, operation_transform, stack->strength, true);
 	operation_bone->set_transform(operation_transform);
 	operation_bone->notification(operation_bone->NOTIFICATION_TRANSFORM_CHANGED);
 }
@@ -260,7 +260,7 @@ void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
 			continue;
 		}
 
-		Bone2D *operation_bone = stack->skeleton->get_bone(ccdik_data_chain[i].bone_idx);
+		Bone2D *operation_bone = stack->get_skeleton()->get_bone(ccdik_data_chain[i].bone_idx);
 		editor_draw_angle_constraints(operation_bone, ccdik_data_chain[i].constraint_angle_min, ccdik_data_chain[i].constraint_angle_max,
 				ccdik_data_chain[i].enable_constraint, ccdik_data_chain[i].constraint_in_localspace, ccdik_data_chain[i].constraint_angle_invert);
 	}
@@ -275,11 +275,11 @@ void SkeletonModification2DCCDIK::update_target_cache() {
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(target_node)) {
+				Node *node = stack->get_skeleton()->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in the scene tree!");
@@ -298,11 +298,11 @@ void SkeletonModification2DCCDIK::update_tip_cache() {
 	}
 
 	tip_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(tip_node)) {
-				Node *node = stack->skeleton->get_node(tip_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(tip_node)) {
+				Node *node = stack->get_skeleton()->get_node(tip_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update tip cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update tip cache: node is not in the scene tree!");
@@ -322,11 +322,11 @@ void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_id
 	}
 
 	ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(ccdik_data_chain[p_joint_idx].bone2d_node)) {
-				Node *node = stack->skeleton->get_node(ccdik_data_chain[p_joint_idx].bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(ccdik_data_chain[p_joint_idx].bone2d_node)) {
+				Node *node = stack->get_skeleton()->get_node(ccdik_data_chain[p_joint_idx].bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: node is not in the scene tree!");
@@ -388,11 +388,11 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, in
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (stack->get_skeleton()) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->get_skeleton()->get_bone_count(), "Passed-in Bone index is out of range!");
 			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			ccdik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->get_skeleton()->get_bone(p_bone_idx)->get_instance_id();
+			ccdik_data_chain.write[p_joint_idx].bone2d_node = stack->get_skeleton()->get_path_to(stack->get_skeleton()->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the CCDIK joint " + itos(p_joint_idx) + " bone index for this modification...");
 			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;

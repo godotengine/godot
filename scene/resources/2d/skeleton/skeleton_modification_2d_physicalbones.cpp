@@ -104,7 +104,7 @@ void SkeletonModification2DPhysicalBones::_get_property_list(List<PropertyInfo> 
 }
 
 void SkeletonModification2DPhysicalBones::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->get_skeleton() == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
 		return;
@@ -127,15 +127,15 @@ void SkeletonModification2DPhysicalBones::_execute(float p_delta) {
 			ERR_PRINT_ONCE("PhysicalBone2D not found at index " + itos(i) + "!");
 			return;
 		}
-		if (physical_bone->get_bone2d_index() < 0 || physical_bone->get_bone2d_index() > stack->skeleton->get_bone_count()) {
+		if (physical_bone->get_bone2d_index() < 0 || physical_bone->get_bone2d_index() > stack->get_skeleton()->get_bone_count()) {
 			ERR_PRINT_ONCE("PhysicalBone2D at index " + itos(i) + " has invalid Bone2D!");
 			return;
 		}
-		Bone2D *bone_2d = stack->skeleton->get_bone(physical_bone->get_bone2d_index());
+		Bone2D *bone_2d = stack->get_skeleton()->get_bone(physical_bone->get_bone2d_index());
 
 		if (physical_bone->get_simulate_physics() && !physical_bone->get_follow_bone_when_simulating()) {
 			bone_2d->set_global_transform(physical_bone->get_global_transform());
-			stack->skeleton->set_bone_local_pose_override(physical_bone->get_bone2d_index(), bone_2d->get_transform(), stack->strength, true);
+			stack->get_skeleton()->set_bone_local_pose_override(physical_bone->get_bone2d_index(), bone_2d->get_transform(), stack->strength, true);
 		}
 	}
 }
@@ -146,7 +146,7 @@ void SkeletonModification2DPhysicalBones::_setup_modification(SkeletonModificati
 	if (stack) {
 		is_setup = true;
 
-		if (stack->skeleton) {
+		if (stack->get_skeleton()) {
 			for (int i = 0; i < physical_bone_chain.size(); i++) {
 				_physical_bone_update_cache(i);
 			}
@@ -164,11 +164,11 @@ void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_join
 	}
 
 	physical_bone_chain.write[p_joint_idx].physical_bone_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(physical_bone_chain[p_joint_idx].physical_bone_node)) {
-				Node *node = stack->skeleton->get_node(physical_bone_chain[p_joint_idx].physical_bone_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(physical_bone_chain[p_joint_idx].physical_bone_node)) {
+				Node *node = stack->get_skeleton()->get_node(physical_bone_chain[p_joint_idx].physical_bone_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update Physical Bone2D " + itos(p_joint_idx) + " cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update Physical Bone2D " + itos(p_joint_idx) + " cache: node is not in scene tree!");
@@ -190,12 +190,12 @@ void SkeletonModification2DPhysicalBones::set_physical_bone_chain_length(int p_l
 
 void SkeletonModification2DPhysicalBones::fetch_physical_bones() {
 	ERR_FAIL_NULL_MSG(stack, "No modification stack found! Cannot fetch physical bones!");
-	ERR_FAIL_NULL_MSG(stack->skeleton, "No skeleton found! Cannot fetch physical bones!");
+	ERR_FAIL_NULL_MSG(stack->get_skeleton(), "No skeleton found! Cannot fetch physical bones!");
 
 	physical_bone_chain.clear();
 
 	List<Node *> node_queue = List<Node *>();
-	node_queue.push_back(stack->skeleton);
+	node_queue.push_back(stack->get_skeleton());
 
 	while (node_queue.size() > 0) {
 		Node *node_to_process = node_queue.front()->get();
@@ -205,7 +205,7 @@ void SkeletonModification2DPhysicalBones::fetch_physical_bones() {
 			PhysicalBone2D *potential_bone = Object::cast_to<PhysicalBone2D>(node_to_process);
 			if (potential_bone) {
 				PhysicalBone_Data2D new_data = PhysicalBone_Data2D();
-				new_data.physical_bone_node = stack->skeleton->get_path_to(potential_bone);
+				new_data.physical_bone_node = stack->get_skeleton()->get_path_to(potential_bone);
 				new_data.physical_bone_node_cache = potential_bone->get_instance_id();
 				physical_bone_chain.push_back(new_data);
 			}
@@ -244,7 +244,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 
 	if (_simulation_state_dirty_names.is_empty()) {
 		for (int i = 0; i < physical_bone_chain.size(); i++) {
-			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(stack->skeleton->get_node(physical_bone_chain[i].physical_bone_node));
+			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(stack->get_skeleton()->get_node(physical_bone_chain[i].physical_bone_node));
 			if (!physical_bone) {
 				continue;
 			}

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This resource provides an interface that can be expanded so code that operates on [Bone2D] nodes in a [Skeleton2D] can be mixed and matched together to create complex interactions.
+		During execution, modifications run in the context provided by [SkeletonModificationStack2D], so runtime data is handled per [Skeleton2D] instance.
 		This is used to provide Godot with a flexible and powerful Inverse Kinematics solution that can be adapted for many different uses.
 	</description>
 	<tutorials>

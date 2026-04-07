@@ -101,7 +101,7 @@ void SkeletonModification2DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 }
 
 void SkeletonModification2DFABRIK::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->get_skeleton() == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
 		return;
@@ -210,7 +210,7 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 
 		// Apply to the bone, and to the override
 		joint_bone2d_node->set_global_transform(chain_trans);
-		stack->skeleton->set_bone_local_pose_override(fabrik_data_chain[i].bone_idx, joint_bone2d_node->get_transform(), stack->strength, true);
+		stack->get_skeleton()->set_bone_local_pose_override(fabrik_data_chain[i].bone_idx, joint_bone2d_node->get_transform(), stack->strength, true);
 	}
 }
 
@@ -288,7 +288,7 @@ void SkeletonModification2DFABRIK::_setup_modification(SkeletonModificationStack
 	if (stack != nullptr) {
 		is_setup = true;
 
-		if (stack->skeleton) {
+		if (stack->get_skeleton()) {
 			for (int i = 0; i < fabrik_data_chain.size(); i++) {
 				fabrik_joint_update_bone2d_cache(i);
 			}
@@ -306,11 +306,11 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(target_node)) {
+				Node *node = stack->get_skeleton()->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in scene tree!");
@@ -330,11 +330,11 @@ void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_
 	}
 
 	fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(fabrik_data_chain[p_joint_idx].bone2d_node)) {
-				Node *node = stack->skeleton->get_node(fabrik_data_chain[p_joint_idx].bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(fabrik_data_chain[p_joint_idx].bone2d_node)) {
+				Node *node = stack->get_skeleton()->get_node(fabrik_data_chain[p_joint_idx].bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update FABRIK joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update FABRIK joint " + itos(p_joint_idx) + " Bone2D cache: node is not in scene tree!");
@@ -387,11 +387,11 @@ void SkeletonModification2DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, 
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (stack->get_skeleton()) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->get_skeleton()->get_bone_count(), "Passed-in Bone index is out of range!");
 			fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			fabrik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->get_skeleton()->get_bone(p_bone_idx)->get_instance_id();
+			fabrik_data_chain.write[p_joint_idx].bone2d_node = stack->get_skeleton()->get_path_to(stack->get_skeleton()->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the FABRIK joint " + itos(p_joint_idx) + " bone index for this modification...");
 			fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;

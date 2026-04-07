@@ -40,6 +40,12 @@ class Skeleton2D;
 class SkeletonModification2D;
 class Bone2D;
 
+struct SkeletonModificationStackState2D {
+	Skeleton2D *skeleton = nullptr;
+	bool is_setup = false;
+	bool editor_gizmo_dirty = false;
+};
+
 class SkeletonModificationStack2D : public Resource {
 	GDCLASS(SkeletonModificationStack2D, Resource);
 	friend class Skeleton2D;
@@ -52,8 +58,6 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 
 public:
-	Skeleton2D *skeleton = nullptr;
-	bool is_setup = false;
 	bool enabled = false;
 	float strength = 1.0;
 
@@ -64,10 +68,15 @@ public:
 
 	Vector<Ref<SkeletonModification2D>> modifications;
 
+	void setup_with_state(SkeletonModificationStackState2D &r_state, Skeleton2D *p_skeleton);
+	void execute_with_state(SkeletonModificationStackState2D &r_state, float p_delta, int p_execution_mode);
+
+	void draw_editor_gizmos_with_state(SkeletonModificationStackState2D &r_state);
+	void set_editor_gizmos_dirty_with_state(SkeletonModificationStackState2D &r_state, bool p_dirty);
+
 	void setup();
 	void execute(float p_delta, int p_execution_mode);
 
-	bool editor_gizmo_dirty = false;
 	void draw_editor_gizmos();
 	void set_editor_gizmos_dirty(bool p_dirty);
 
@@ -82,6 +91,8 @@ public:
 
 	void set_skeleton(Skeleton2D *p_skeleton);
 	Skeleton2D *get_skeleton() const;
+	SkeletonModificationStackState2D *get_active_state();
+	const SkeletonModificationStackState2D *get_active_state() const;
 
 	bool get_is_setup() const;
 
@@ -92,4 +103,7 @@ public:
 	float get_strength() const;
 
 	SkeletonModificationStack2D();
+
+private:
+	SkeletonModificationStackState2D *active_state = nullptr;
 };

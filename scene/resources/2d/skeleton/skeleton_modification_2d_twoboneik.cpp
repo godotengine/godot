@@ -106,7 +106,7 @@ void SkeletonModification2DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_l
 }
 
 void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->get_skeleton() == nullptr,
 			"Modification is not setup and therefore cannot execute!");
 	if (!enabled) {
 		return;
@@ -133,13 +133,13 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		return;
 	}
 
-	Bone2D *joint_one_bone = stack->skeleton->get_bone(joint_one_bone_idx);
+	Bone2D *joint_one_bone = stack->get_skeleton()->get_bone(joint_one_bone_idx);
 	if (joint_one_bone == nullptr) {
 		ERR_PRINT_ONCE("Joint one bone_idx does not point to a valid bone! Cannot execute modification!");
 		return;
 	}
 
-	Bone2D *joint_two_bone = stack->skeleton->get_bone(joint_two_bone_idx);
+	Bone2D *joint_two_bone = stack->get_skeleton()->get_bone(joint_two_bone_idx);
 	if (joint_two_bone == nullptr) {
 		ERR_PRINT_ONCE("Joint two bone_idx does not point to a valid bone! Cannot execute modification!");
 		return;
@@ -204,8 +204,8 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		}
 	}
 
-	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
-	stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, joint_two_bone->get_transform(), stack->strength, true);
+	stack->get_skeleton()->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
+	stack->get_skeleton()->set_bone_local_pose_override(joint_two_bone_idx, joint_two_bone->get_transform(), stack->strength, true);
 }
 
 void SkeletonModification2DTwoBoneIK::_setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -224,13 +224,13 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 		return;
 	}
 
-	Bone2D *operation_bone_one = stack->skeleton->get_bone(joint_one_bone_idx);
+	Bone2D *operation_bone_one = stack->get_skeleton()->get_bone(joint_one_bone_idx);
 	if (!operation_bone_one) {
 		return;
 	}
-	stack->skeleton->draw_set_transform(
-			stack->skeleton->to_local(operation_bone_one->get_global_position()),
-			operation_bone_one->get_global_rotation() - stack->skeleton->get_global_rotation(),
+	stack->get_skeleton()->draw_set_transform(
+			stack->get_skeleton()->to_local(operation_bone_one->get_global_position()),
+			operation_bone_one->get_global_rotation() - stack->get_skeleton()->get_global_rotation(),
 			operation_bone_one->get_global_scale());
 
 	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
@@ -242,10 +242,10 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 
 	if (flip_bend_direction) {
 		float angle = -(Math::PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
+		stack->get_skeleton()->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	} else {
 		float angle = (Math::PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
+		stack->get_skeleton()->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	}
 
 #ifdef TOOLS_ENABLED
@@ -254,14 +254,14 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 			if (target_maximum_distance != 0.0 || target_minimum_distance != 0.0) {
 				Vector2 target_direction = Vector2(0, 1);
 				if (target_node_cache.is_valid()) {
-					stack->skeleton->draw_set_transform(Vector2(0, 0), 0.0);
+					stack->get_skeleton()->draw_set_transform(Vector2(0, 0), 0.0);
 					Node2D *target = ObjectDB::get_instance<Node2D>(target_node_cache);
 					target_direction = operation_bone_one->get_global_position().direction_to(target->get_global_position());
 				}
 
-				stack->skeleton->draw_circle(target_direction * target_minimum_distance, 8, bone_ik_color);
-				stack->skeleton->draw_circle(target_direction * target_maximum_distance, 8, bone_ik_color);
-				stack->skeleton->draw_line(target_direction * target_minimum_distance, target_direction * target_maximum_distance, bone_ik_color, 2.0);
+				stack->get_skeleton()->draw_circle(target_direction * target_minimum_distance, 8, bone_ik_color);
+				stack->get_skeleton()->draw_circle(target_direction * target_maximum_distance, 8, bone_ik_color);
+				stack->get_skeleton()->draw_line(target_direction * target_minimum_distance, target_direction * target_maximum_distance, bone_ik_color, 2.0);
 			}
 		}
 	}
@@ -277,11 +277,11 @@ void SkeletonModification2DTwoBoneIK::update_target_cache() {
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(target_node)) {
+				Node *node = stack->get_skeleton()->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in the scene tree!");
@@ -300,11 +300,11 @@ void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 	}
 
 	joint_one_bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(joint_one_bone2d_node)) {
-				Node *node = stack->skeleton->get_node(joint_one_bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(joint_one_bone2d_node)) {
+				Node *node = stack->get_skeleton()->get_node(joint_one_bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update joint one Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update joint one Bone2D cache: node is not in the scene tree!");
@@ -330,11 +330,11 @@ void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 	}
 
 	joint_two_bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(joint_two_bone2d_node)) {
-				Node *node = stack->skeleton->get_node(joint_two_bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (stack->get_skeleton()) {
+		if (stack->get_skeleton()->is_inside_tree()) {
+			if (stack->get_skeleton()->has_node(joint_two_bone2d_node)) {
+				Node *node = stack->get_skeleton()->get_node(joint_two_bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->get_skeleton() == node,
 						"Cannot update joint two Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update joint two Bone2D cache: node is not in scene tree!");
@@ -416,11 +416,11 @@ void SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (stack->get_skeleton()) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->get_skeleton()->get_bone_count(), "Passed-in Bone index is out of range!");
 			joint_one_bone_idx = p_bone_idx;
-			joint_one_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			joint_one_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			joint_one_bone2d_node_cache = stack->get_skeleton()->get_bone(p_bone_idx)->get_instance_id();
+			joint_one_bone2d_node = stack->get_skeleton()->get_path_to(stack->get_skeleton()->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
 			joint_one_bone_idx = p_bone_idx;
@@ -440,11 +440,11 @@ void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (stack->get_skeleton()) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->get_skeleton()->get_bone_count(), "Passed-in Bone index is out of range!");
 			joint_two_bone_idx = p_bone_idx;
-			joint_two_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			joint_two_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			joint_two_bone2d_node_cache = stack->get_skeleton()->get_bone(p_bone_idx)->get_instance_id();
+			joint_two_bone2d_node = stack->get_skeleton()->get_path_to(stack->get_skeleton()->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
 			joint_two_bone_idx = p_bone_idx;
