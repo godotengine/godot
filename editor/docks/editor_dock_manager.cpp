@@ -272,10 +272,12 @@ EditorDock *EditorDockManager::_close_window(WindowWrapper *p_wrapper) {
 void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_window, bool p_reset_size) {
 	ERR_FAIL_NULL(p_dock);
 
-	Size2 borders = Size2(4, 4) * EDSCALE;
-	// Remember size and position before removing it from the main window.
-	Size2 dock_size = p_dock->get_size() + borders * 2;
-	Point2 dock_screen_pos = p_dock->get_screen_position();
+	DockTabContainer *parent_container = p_dock->get_parent_container();
+	const Rect2 floating_rect = parent_container
+			? parent_container->get_floating_dock_rect(p_dock)
+			: DockTabContainer::get_default_floating_dock_rect(p_dock);
+	Size2 dock_size = floating_rect.size;
+	Point2 dock_screen_pos = floating_rect.position;
 
 	WindowWrapper *wrapper = memnew(WindowWrapper);
 	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR(p_dock->get_display_title())));
