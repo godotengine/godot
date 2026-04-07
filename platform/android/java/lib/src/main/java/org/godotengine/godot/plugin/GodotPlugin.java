@@ -236,6 +236,11 @@ public abstract class GodotPlugin {
 	public void onGodotMainLoopStarted() {}
 
 	/**
+	 * Invoked on the render thread when the Godot engine is terminating.
+	 */
+	public void onGodotTerminating() {}
+
+	/**
 	 * When using the OpenGL renderer, this is invoked once per frame on the GL thread after the
 	 * frame is drawn.
 	 */
@@ -414,7 +419,7 @@ public abstract class GodotPlugin {
 				Object signalArg = signalArgs[i];
 				if (signalArg != null && !signalParamTypes[i].isInstance(signalArg)) {
 					throw new IllegalArgumentException(
-							"Invalid type for argument #" + i + ". Should be of type " + signalParamTypes[i].getName());
+							"Invalid type for argument #" + i + ". Should be of type '" + signalParamTypes[i].getName() + "' but is of type '" + signalArg.getClass().getName() + "'.");
 				}
 			}
 
