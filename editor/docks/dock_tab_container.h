@@ -99,6 +99,7 @@ public:
 	virtual void update_visibility();
 	virtual TabStyle get_tab_style() const;
 	virtual bool can_switch_dock() const;
+	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) { return DockTabContainer::get_default_floating_dock_rect(p_dock); }
 
 	// There is no equivalent load method, because loading needs to handle floating and closing.
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
@@ -111,6 +112,8 @@ public:
 	EditorDock *get_dock(int p_idx) const;
 	void show_drag_hint();
 
+	static Rect2 get_default_floating_dock_rect(EditorDock *p_dock);
+
 	DockTabContainer(EditorDock::DockSlot p_slot);
 };
 
@@ -118,6 +121,8 @@ class SideDockTabContainer : public DockTabContainer {
 	GDCLASS(SideDockTabContainer, DockTabContainer);
 
 public:
+	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) override;
+
 	SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
 };
 
@@ -125,5 +130,7 @@ class BottomSideDockTabContainer : public DockTabContainer {
 	GDCLASS(BottomSideDockTabContainer, DockTabContainer);
 
 public:
+	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) override;
+
 	BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect);
 };
