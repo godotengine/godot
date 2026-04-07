@@ -1,6 +1,7 @@
 <Project>
   <ItemGroup>
-    <TrimmerRootAssembly Include="GodotSharp" />
+    <TrimmerRootAssembly Include="GodotSharp" Condition="'$(EnableGodotDotNetPreview)' != 'true' and '$(DisableImplicitGodotSharpReferences)' != 'true'" />
+    <TrimmerRootAssembly Include="Godot.Bindings" Condition="'$(EnableGodotDotNetPreview)' == 'true'" />
     <TrimmerRootAssembly Include="$(TargetName)" />
     <LinkerArg Include="-install_name '@rpath/$(TargetName)$(NativeBinaryExt)'" />
   </ItemGroup>
@@ -51,7 +52,7 @@
 
     <RemoveDir Directories="$(PublishDir)$(TargetName).framework.dSYM"/>
 
-    <!-- create-xcframework (called from the export plugin wants the symbol files in a directory
+    <!-- create-xcframework (called from the export plugin) wants the symbol files in a directory
     with a slightly different name from the one created by dotnet publish, so we copy them over
     to the correctly-named directory -->
     <ItemGroup>
