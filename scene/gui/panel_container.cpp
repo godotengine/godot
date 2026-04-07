@@ -34,8 +34,8 @@
 
 Size2 PanelContainer::get_minimum_size() const {
 	Size2 ms;
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}
@@ -83,8 +83,8 @@ void PanelContainer::_notification(int p_what) {
 				ofs += theme_cache.panel_style->get_offset();
 			}
 
-			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = as_sortable_control(get_child(i));
+			for (Node *child : iterate_children()) {
+				Control *c = as_sortable_control(child);
 				if (!c) {
 					continue;
 				}

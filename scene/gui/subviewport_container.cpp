@@ -39,8 +39,8 @@ Size2 SubViewportContainer::get_minimum_size() const {
 		return Size2();
 	}
 	Size2 ms;
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+	for (Node *child : iterate_children()) {
+		SubViewport *c = Object::cast_to<SubViewport>(child);
 		if (!c) {
 			continue;
 		}
@@ -86,8 +86,8 @@ void SubViewportContainer::recalc_force_viewport_sizes() {
 	}
 
 	// If stretch is enabled, make sure that all child SubViwewports have the correct size.
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+	for (Node *child : iterate_children()) {
+		SubViewport *c = Object::cast_to<SubViewport>(child);
 		if (!c) {
 			continue;
 		}
@@ -116,8 +116,8 @@ void SubViewportContainer::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			for (int i = 0; i < get_child_count(); i++) {
-				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+			for (Node *child : iterate_children()) {
+				SubViewport *c = Object::cast_to<SubViewport>(child);
 				if (!c) {
 					continue;
 				}
@@ -133,8 +133,8 @@ void SubViewportContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			for (int i = 0; i < get_child_count(); i++) {
-				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+			for (Node *child : iterate_children()) {
+				SubViewport *c = Object::cast_to<SubViewport>(child);
 				if (!c) {
 					continue;
 				}
@@ -162,8 +162,8 @@ void SubViewportContainer::_notification(int p_what) {
 }
 
 void SubViewportContainer::_notify_viewports(int p_notification) {
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+	for (Node *child : iterate_children()) {
+		SubViewport *c = Object::cast_to<SubViewport>(child);
 		if (!c) {
 			continue;
 		}
@@ -228,8 +228,8 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void SubViewportContainer::_send_event_to_viewports(const Ref<InputEvent> &p_event) {
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+	for (Node *child : iterate_children()) {
+		SubViewport *c = Object::cast_to<SubViewport>(child);
 		if (!c || c->is_input_disabled()) {
 			continue;
 		}
@@ -271,8 +271,8 @@ PackedStringArray SubViewportContainer::get_configuration_warnings() const {
 	PackedStringArray warnings = Container::get_configuration_warnings();
 
 	bool has_viewport = false;
-	for (int i = 0; i < get_child_count(); i++) {
-		if (Object::cast_to<SubViewport>(get_child(i))) {
+	for (Node *child : iterate_children()) {
+		if (Object::cast_to<SubViewport>(child)) {
 			has_viewport = true;
 			break;
 		}
