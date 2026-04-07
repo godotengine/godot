@@ -31,6 +31,7 @@
 #include "core_bind.h"
 #include "core_bind.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
@@ -39,8 +40,11 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
@@ -53,10 +57,12 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
-	float progress = 0;
-	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, &progress);
+	// Progress being the default array indicates the user hasn't requested for it to be computed.
 	// Default array should never be modified, it causes the hash of the method to change.
-	if (!ClassDB::is_default_array_arg(r_progress)) {
+	const bool return_progress = !ClassDB::is_default_array_arg(r_progress);
+	float progress = 0;
+	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, return_progress ? &progress : nullptr);
+	if (return_progress) {
 		r_progress.resize(1);
 		r_progress[0] = progress;
 	}
@@ -165,7 +171,7 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
+Error ResourceSaver::save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
@@ -423,7 +429,7 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_instance(args, &pid);
 	if (err != OK) {
 		return -1;
@@ -444,7 +450,7 @@ int OS::create_process(const String &p_path, const Vector<String> &p_arguments, 
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
 	if (err != OK) {
 		return -1;
@@ -1699,14 +1705,8 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
 
-	for (const MethodInfo &E : methods) {
-#ifdef DEBUG_ENABLED
-		ret.push_back(E.operator Dictionary());
-#else
-		Dictionary dict;
-		dict["name"] = E.name;
-		ret.push_back(dict);
-#endif // DEBUG_ENABLED
+	for (const MethodInfo &method : methods) {
+		ret.push_back(method.operator Dictionary());
 	}
 
 	return ret;

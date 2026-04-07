@@ -38,10 +38,6 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 #include "core/templates/safe_refcount.h"
 #include "core/variant/container_type_validate.h"
 #include "core/variant/variant.h"
-// required in this order by VariantInternal, do not remove this comment.
-#include "core/object/class_db.h"
-#include "core/object/object.h"
-#include "core/variant/type_info.h"
 #include "core/variant/variant_internal.h"
 
 struct DictionaryPrivate {
@@ -133,7 +129,7 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 	} else {
 		static Variant empty;
 		const Variant *value = _p->variant_map.getptr(key);
-		ERR_FAIL_COND_V_MSG(!value, empty, "Bug: Dictionary::operator[] used when there was no value for the given key, please report.");
+		ERR_FAIL_COND_V_MSG(!value, empty, vformat(R"(Bug: Dictionary::operator[] used when there was no value for the given key "%s". Please report.)", key));
 		return *value;
 	}
 }

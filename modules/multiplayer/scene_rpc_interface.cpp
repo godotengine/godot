@@ -34,8 +34,10 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 // The RPC meta is composed by a single byte that contains (starting from the least significant bit):
@@ -84,6 +86,7 @@ void SceneRPCInterface::_parse_rpc_config(const Variant &p_config, bool p_for_no
 		ERR_CONTINUE(config[name].get_type() != Variant::DICTIONARY);
 		ERR_CONTINUE(!config[name].operator Dictionary().has("rpc_mode"));
 		Dictionary dict = config[name];
+		// Default values should match GDScript `@rpc` annotation registration and `rpc_annotation()`.
 		RPCConfig cfg;
 		cfg.name = name;
 		cfg.rpc_mode = ((MultiplayerAPI::RPCMode)dict.get("rpc_mode", MultiplayerAPI::RPC_MODE_AUTHORITY).operator int());
@@ -345,7 +348,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 	// Create base packet, lots of hardcode because it must be tight.
 	int ofs = 0;
 
-#define MAKE_ROOM(m_amount)             \
+#define MAKE_ROOM(m_amount) \
 	if (packet_cache.size() < m_amount) \
 		packet_cache.resize(m_amount);
 

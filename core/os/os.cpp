@@ -38,10 +38,11 @@
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>
+#include <cstdio>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#include <thirdparty/mingw-std-threads/mingw.thread.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>
@@ -53,6 +54,16 @@ uint64_t OS::target_ticks = 0;
 
 OS *OS::get_singleton() {
 	return singleton;
+}
+
+bool OS::prefer_meta_over_ctrl() {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	return true;
+#elif defined(WEB_ENABLED)
+	return singleton->has_feature("web_macos") || singleton->has_feature("web_ios");
+#else
+	return false;
+#endif
 }
 
 uint64_t OS::get_ticks_msec() const {
@@ -352,6 +363,10 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
+String OS::expand_path(const String &p_path) const {
+	return p_path;
+}
+
 void OS::create_lock_file() {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
 		return;
@@ -396,6 +411,10 @@ uint64_t OS::get_static_memory_peak_usage() const {
 
 Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
+}
+
+String OS::get_cwd() const {
+	return ".";
 }
 
 Dictionary OS::get_memory_info() const {
@@ -640,7 +659,7 @@ bool OS::is_restart_on_exit_set() const {
 }
 
 List<String> OS::get_restart_on_exit_arguments() const {
-	return restart_commandline;
+	return List<String>(restart_commandline);
 }
 
 PackedStringArray OS::get_connected_midi_inputs() {

@@ -55,7 +55,7 @@ OpenXRHandTrackingExtension::~OpenXRHandTrackingExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	unobstructed_data_source = GLOBAL_GET("xr/openxr/extensions/hand_tracking_unobstructed_data_source");

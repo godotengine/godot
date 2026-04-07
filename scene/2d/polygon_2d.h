@@ -56,7 +56,6 @@ class Polygon2D : public Node2D {
 
 	Size2 tex_scale = Vector2(1, 1);
 	Vector2 tex_ofs;
-	bool tex_tile = true;
 	real_t tex_rot = 0.0;
 	bool invert = false;
 	real_t invert_border = 100.0;
@@ -75,6 +74,11 @@ class Polygon2D : public Node2D {
 	void _skeleton_bone_setup_changed();
 
 	RID mesh;
+	int last_len = 0;
+	int last_index_count = 0;
+	bool last_has_uv = false;
+	bool last_has_color = false;
+	bool last_has_bones = false;
 
 protected:
 	void _notification(int p_what);

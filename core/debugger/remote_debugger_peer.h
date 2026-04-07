@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "core/io/stream_peer_tcp.h"
-#include "core/io/stream_peer_uds.h"
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
+
+class StreamPeerSocket;
 
 class RemoteDebuggerPeer : public RefCounted {
 	GDSOFTCLASS(RemoteDebuggerPeer, RefCounted);
@@ -82,8 +82,8 @@ private:
 	static Error _try_connect(Ref<StreamPeerSocket> p_stream);
 
 public:
-	static RemoteDebuggerPeer *create_tcp(const String &p_uri);
-	static RemoteDebuggerPeer *create_unix(const String &p_uri);
+	static Ref<RemoteDebuggerPeer> create_tcp(const String &p_uri);
+	static Ref<RemoteDebuggerPeer> create_unix(const String &p_uri);
 
 	bool is_peer_connected() override;
 	int get_max_message_size() const override;

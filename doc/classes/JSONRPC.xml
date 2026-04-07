@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JSONRPC" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="JSONRPC" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A helper to handle dictionaries which look like JSONRPC documents.
 	</brief_description>
@@ -75,8 +75,8 @@
 			<param index="1" name="callback" type="Callable" />
 			<description>
 				Registers a callback for the given method name.
-				- [param name] The name that clients can use to access the callback.
-				- [param callback] The callback which will handle the specific method.
+				- [param name]: The name that clients can use to access the callback.
+				- [param callback]: The callback which will handle the specified method.
 			</description>
 		</method>
 	</methods>

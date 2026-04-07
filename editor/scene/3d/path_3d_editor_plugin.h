@@ -59,7 +59,6 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
-	mutable float disk_size = 0.8;
 
 	// Index that should have swapped control points for achieving an outwards curve.
 	int swapped_control_points_idx = -1;
@@ -77,13 +76,11 @@ public:
 	virtual void commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 
 	virtual void redraw() override;
-	Path3DGizmo(Path3D *p_path = nullptr, float p_disk_size = 0.8);
+	Path3DGizmo(Path3D *p_path = nullptr);
 };
 
 class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Path3DGizmoPlugin, EditorNode3DGizmoPlugin);
-
-	float disk_size = 0.8;
 
 	// Locking basis is meant to ensure a predictable behavior during translation of the curve points in "local space transform mode".
 	// Without the locking, the gizmo/point, in "local space transform mode", wouldn't follow a straight path and would curve and twitch in an unpredictable way.
@@ -105,7 +102,7 @@ public:
 	virtual void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel = false) override;
 
 	int get_priority() const override;
-	Path3DGizmoPlugin(float p_disk_size);
+	Path3DGizmoPlugin();
 };
 
 class Path3DEditorPlugin : public EditorPlugin {
@@ -131,8 +128,6 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *create_curve_button = nullptr;
 	ConfirmationDialog *clear_points_dialog = nullptr;
 
-	float disk_size = 0.8;
-
 	enum Mode {
 		MODE_CREATE,
 		MODE_EDIT,
@@ -153,6 +148,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	bool handle_clicked = false;
 	bool mirror_handle_angle = true;
 	bool mirror_handle_length = true;
+	bool snap_to_collider = true;
 
 	void _create_curve();
 	void _confirm_clear_points();
@@ -162,20 +158,23 @@ class Path3DEditorPlugin : public EditorPlugin {
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
-		HANDLE_OPTION_LENGTH
+		HANDLE_OPTION_LENGTH,
+		HANDLE_OPTION_SNAP_COLLIDER,
 	};
 
 protected:
+	virtual void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	Path3D *get_edited_path() { return path; }
 
+	void update_handles();
+
 	inline static Path3DEditorPlugin *singleton = nullptr;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	virtual String get_plugin_name() const override { return "Path3D"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -186,4 +185,20 @@ public:
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	Path3DEditorPlugin();
+
+private:
+	struct EditData {
+		Vector3 click_ray_dir;
+		Vector3 click_ray_pos;
+		Vector3 origin;
+		Point2 mouse_pos;
+		bool show_rotation_line = false;
+		Ref<Path3DGizmo> gizmo;
+		int gizmo_handle = 0;
+		bool gizmo_handle_secondary = false;
+		Camera3D *gizmo_camera;
+		bool waiting_point_physics = false;
+		bool waiting_handle_physics = false;
+		bool in_physics_frame = false;
+	} _edit;
 };

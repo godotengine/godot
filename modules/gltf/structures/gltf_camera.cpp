@@ -31,6 +31,8 @@
 #include "gltf_camera.h"
 
 #include "gltf_object_model_property.h"
+
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 
 void GLTFCamera::_bind_methods() {
@@ -99,7 +101,7 @@ Camera3D *GLTFCamera::to_node() const {
 	return camera;
 }
 
-Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFCamera>(), "Failed to parse glTF camera, missing required field 'type'.");
 	Ref<GLTFCamera> camera;
 	camera.instantiate();

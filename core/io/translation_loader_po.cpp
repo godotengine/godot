@@ -364,11 +364,11 @@ void TranslationLoaderPO::get_recognized_extensions(List<String> *p_extensions) 
 }
 
 bool TranslationLoaderPO::handles_type(const String &p_type) const {
-	return (p_type == "Translation") || (p_type == "TranslationPO");
+	return p_type == "Translation";
 }
 
 String TranslationLoaderPO::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "po" || p_path.get_extension().to_lower() == "mo") {
+	if (p_path.has_extension("po") || p_path.has_extension("mo")) {
 		return "Translation";
 	}
 	return "";

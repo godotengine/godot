@@ -30,11 +30,11 @@
 
 #include "openxr_eye_gaze_interaction.h"
 
-#include "core/config/project_settings.h"
-#include "core/os/os.h"
-
 #include "../action_map/openxr_interaction_profile_metadata.h"
 #include "../openxr_api.h"
+
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
 
 OpenXREyeGazeInteractionExtension *OpenXREyeGazeInteractionExtension::singleton = nullptr;
 
@@ -51,7 +51,7 @@ OpenXREyeGazeInteractionExtension::~OpenXREyeGazeInteractionExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Only enable this extension when requested.

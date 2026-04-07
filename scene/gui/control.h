@@ -30,23 +30,24 @@
 
 #pragma once
 
-#include "core/math/transform_2d.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
+#include "servers/display/accessibility_server_enums.h"
 
-class Viewport;
 class Label;
 class Panel;
-class ThemeOwner;
 class ThemeContext;
+class ThemeOwner;
+class Viewport;
+struct Transform2D;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::CONTROL;
@@ -97,6 +98,7 @@ public:
 		MOUSE_BEHAVIOR_ENABLED,
 	};
 
+	// Keep synced with InputClassEnums and DisplayServerEnums enums.
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
@@ -183,6 +185,25 @@ private:
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
+		struct OffsetTransform {
+			static constexpr Vector2 DEFAULT_TRANSLATION_ABSOLUTE = Vector2();
+			static constexpr Vector2 DEFAULT_TRANSLATION_RELATIVE = Vector2();
+			static constexpr Vector2 DEFAULT_SCALE = Vector2(1, 1);
+			static constexpr real_t DEFAULT_ROTATION = 0.0;
+			static constexpr Vector2 DEFAULT_PIVOT_ABSOLUTE = Vector2();
+			static constexpr Vector2 DEFAULT_PIVOT_RELATIVE = Vector2(0.5, 0.5);
+			static constexpr bool DEFAULT_VISUAL_ONLY = true;
+
+			bool enabled = false;
+			Vector2 translation_absolute = DEFAULT_TRANSLATION_ABSOLUTE;
+			Vector2 translation_relative = DEFAULT_TRANSLATION_RELATIVE;
+			Vector2 scale = DEFAULT_SCALE;
+			real_t rotation = DEFAULT_ROTATION;
+			Vector2 pivot_absolute = DEFAULT_PIVOT_ABSOLUTE;
+			Vector2 pivot_relative = DEFAULT_PIVOT_RELATIVE;
+			bool visual_only = DEFAULT_VISUAL_ONLY;
+		};
+
 		bool initialized = false;
 
 		// Global relations.
@@ -214,6 +235,8 @@ private:
 		Vector2 pivot_offset;
 		Vector2 pivot_offset_ratio;
 
+		OffsetTransform *offset_transform = nullptr;
+
 		Point2 pos_cache;
 		Size2 size_cache;
 		mutable Size2 minimum_size_cache;
@@ -222,6 +245,8 @@ private:
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
 		bool block_minimum_size_adjust = false;
+
+		bool layout_pending = false;
 
 		bool size_warning = true;
 
@@ -256,7 +281,7 @@ private:
 
 		String accessibility_name;
 		String accessibility_description;
-		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
+		AccessibilityServerEnums::AccessibilityLiveMode accessibility_live = AccessibilityServerEnums::AccessibilityLiveMode::LIVE_OFF;
 
 		TypedArray<NodePath> accessibility_controls_nodes;
 		TypedArray<NodePath> accessibility_described_by_nodes;
@@ -362,6 +387,8 @@ private:
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
 
+	void _ensure_allocated_offset_transform();
+
 	// Extra properties.
 
 	static int root_layout_direction;
@@ -408,16 +435,19 @@ protected:
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
+	GDVIRTUAL1RC(AutoTranslateMode, _get_tooltip_auto_translate_mode_at, Vector2)
 
 	GDVIRTUAL1R(Variant, _get_drag_data, Vector2)
 	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
 	GDVIRTUAL2(_drop_data, Vector2, Variant)
 	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
 
-	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
-	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
+	GDVIRTUAL1RC(int, _get_cursor_shape, Vector2)
 
-	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
+	GDVIRTUAL0RC(String, _accessibility_get_contextual_info);
+	GDVIRTUAL1RC(String, _get_accessibility_container_name, RequiredParam<const Node>)
+
+	GDVIRTUAL1(_gui_input, RequiredParam<InputEvent>)
 
 public:
 	enum {
@@ -465,7 +495,7 @@ public:
 	virtual bool _edit_use_rect() const override;
 #endif // DEBUG_ENABLED
 
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
 
@@ -552,6 +582,13 @@ public:
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
 
+	bool is_layout_pending() const;
+	bool is_layout_pending_in_tree() const;
+	void layout_pending_start();
+	void layout_pending_finish();
+	Control *get_layout_pending_control_in_tree() const;
+	void call_on_all_layout_pending_finished(const Callable &p_callable);
+
 	// Container sizing.
 
 	void set_h_size_flags(BitField<SizeFlags> p_flags);
@@ -560,6 +597,26 @@ public:
 	BitField<SizeFlags> get_v_size_flags() const;
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
+
+	// Offset transform.
+
+	void set_offset_transform_enabled(bool p_enabled);
+	bool is_offset_transform_enabled() const;
+	void set_offset_transform_position(const Vector2 &p_offset);
+	Vector2 get_offset_transform_position() const;
+	void set_offset_transform_position_ratio(const Vector2 &p_offset);
+	Vector2 get_offset_transform_position_ratio() const;
+	void set_offset_transform_scale(const Vector2 &p_scale);
+	Vector2 get_offset_transform_scale() const;
+	void set_offset_transform_rotation(real_t p_rotation);
+	real_t get_offset_transform_rotation() const;
+	void set_offset_transform_pivot(const Vector2 &p_pivot);
+	Vector2 get_offset_transform_pivot() const;
+	void set_offset_transform_pivot_ratio(const Vector2 &p_pivot);
+	Vector2 get_offset_transform_pivot_ratio() const;
+	void set_offset_transform_visual_only(bool p_enabled);
+	bool is_offset_transform_visual_only() const;
+	Transform2D get_offset_transform() const;
 
 	// Input events.
 
@@ -627,11 +684,13 @@ public:
 	void set_accessibility_name(const String &p_name);
 	String get_accessibility_name() const;
 
+	virtual String _get_accessibility_name() const;
+
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
 
-	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
-	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
+	void set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode p_mode);
+	AccessibilityServerEnums::AccessibilityLiveMode get_accessibility_live() const;
 
 	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_controls_nodes() const;
@@ -649,7 +708,7 @@ public:
 
 	void set_default_cursor_shape(CursorShape p_shape);
 	CursorShape get_default_cursor_shape() const;
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2()) const;
 
 	void set_clip_contents(bool p_clip);
 	bool is_clipping_contents();
@@ -674,9 +733,9 @@ public:
 	void begin_bulk_theme_override();
 	void end_bulk_theme_override();
 
-	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
-	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
-	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon);
+	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style);
+	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
@@ -734,6 +793,7 @@ public:
 
 	void set_tooltip_auto_translate_mode(AutoTranslateMode p_mode);
 	AutoTranslateMode get_tooltip_auto_translate_mode() const;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Vector2 &p_at) const;
 
 	// Extra properties.
 

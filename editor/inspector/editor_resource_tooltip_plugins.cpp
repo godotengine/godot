@@ -30,6 +30,9 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -84,6 +87,12 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 		String type = ResourceLoader::get_resource_type(p_resource_path);
 		Label *label = memnew(Label(vformat(TTR("Type: %s"), type)));
 		vb->add_child(label);
+	}
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->is_link(p_resource_path)) {
+		Label *link = memnew(Label(vformat(TTR("Link to: %s"), da->read_link(p_resource_path))));
+		vb->add_child(link);
 	}
 	return vb;
 }

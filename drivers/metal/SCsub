@@ -3,12 +3,16 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+# If we're using Metal, we need metal-cpp.
+env.Prepend(CPPPATH=["#thirdparty/metal-cpp/"])
+
 env_metal = env.Clone()
 
 # Thirdparty source files
 
 thirdparty_obj = []
 
+thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers/"
 thirdparty_dir = "#thirdparty/spirv-cross/"
 thirdparty_sources = [
     "spirv_cfg.cpp",
@@ -18,10 +22,17 @@ thirdparty_sources = [
     "spirv_reflect.cpp",
     "spirv_glsl.cpp",
     "spirv_cross_parsed_ir.cpp",
+    "spirv_cross_util.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
+# Include metal-cpp
+thirdparty_sources += [
+    "#thirdparty/metal-cpp/metal_cpp.cpp",
+]
+
 env_metal.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
+env_metal.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "include/spirv/unified1"])
 
 # Must enable exceptions for SPIRV-Cross; otherwise, it will abort the process on errors.
 if "-fno-exceptions" in env_metal["CXXFLAGS"]:
@@ -45,7 +56,7 @@ env_metal.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
 driver_obj = []
 
-env_metal.add_source_files(driver_obj, "*.mm")
+env_metal.add_source_files(driver_obj, "*.cpp")
 env.drivers_sources += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty library is updated.

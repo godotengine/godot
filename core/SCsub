@@ -47,7 +47,9 @@ if env["brotli"] and env["builtin_brotli"]:
         "dec/bit_reader.c",
         "dec/decode.c",
         "dec/huffman.c",
+        "dec/prefix.c",
         "dec/state.c",
+        "dec/static_init.c",
     ]
     thirdparty_brotli_sources = [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
 
@@ -201,7 +203,7 @@ env.add_source_files(env.core_sources, gen_encrypt)
 # Certificates
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
-    ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
+    ["#thirdparty/certs/ca-bundle.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
     env.Run(core_builders.make_certs_header),
 )
 
@@ -217,6 +219,7 @@ env.CommandNoCache(
 )
 
 # Chain load SCsubs
+SConscript("profiling/SCsub")
 SConscript("os/SCsub")
 SConscript("math/SCsub")
 SConscript("crypto/SCsub")

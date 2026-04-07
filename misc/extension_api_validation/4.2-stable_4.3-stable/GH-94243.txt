@@ -1,0 +1,6 @@
+GH-94243
+--------
+Validate extension JSON: Error: Field 'classes/Image/methods/get_mipmap_offset/return_value': meta changed value in new API, from "int32" to "int64".
+
+Type changed to int64_t to support baking large lightmaps.
+No compatibility method needed, both GDExtension and C# generate it as int64_t anyway.

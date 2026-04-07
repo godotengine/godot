@@ -4,7 +4,7 @@
  *
  *   FreeType Glyph Image (FT_Glyph) cache (body).
  *
- * Copyright (C) 2000-2024 by
+ * Copyright (C) 2000-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

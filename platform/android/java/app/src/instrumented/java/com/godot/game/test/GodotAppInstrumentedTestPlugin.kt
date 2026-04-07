@@ -49,6 +49,7 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 		private const val MAIN_LOOP_STARTED_LATCH_KEY = "main_loop_started_latch"
 
 		private const val JAVACLASSWRAPPER_TESTS = "javaclasswrapper_tests"
+		private const val FILE_ACCESS_TESTS = "file_access_tests"
 
 		private val LAUNCH_TESTS_SIGNAL = SignalInfo("launch_tests", String::class.java)
 
@@ -92,6 +93,13 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 	 */
 	internal fun runJavaClassWrapperTests(): Result<Any>? {
 		return launchTests(JAVACLASSWRAPPER_TESTS)
+	}
+
+	/**
+	 * Launches the FileAccess tests, and wait until the tests are complete before returning.
+	 */
+	internal fun runFileAccessTests(): Result<Any>? {
+		return launchTests(FILE_ACCESS_TESTS)
 	}
 
 	private fun launchTests(testLabel: String): Result<Any>? {

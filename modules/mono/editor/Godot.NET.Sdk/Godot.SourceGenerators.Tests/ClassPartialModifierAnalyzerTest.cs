@@ -13,7 +13,7 @@ public class ClassPartialModifierTest
     }
 
     [Fact]
-    public async void OuterClassPartialModifierAnalyzerTest()
+    public async Task OuterClassPartialModifierAnalyzerTest()
     {
         await CSharpAnalyzerVerifier<ClassPartialModifierAnalyzer>.Verify("OuterClassPartialModifierAnalyzer.GD0002.cs");
     }

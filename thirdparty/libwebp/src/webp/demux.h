@@ -48,6 +48,8 @@
 #ifndef WEBP_WEBP_DEMUX_H_
 #define WEBP_WEBP_DEMUX_H_
 
+#include <stddef.h>
+
 #include "./decode.h"     // for WEBP_CSP_MODE
 #include "./mux_types.h"
 #include "./types.h"

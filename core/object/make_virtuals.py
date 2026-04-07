@@ -147,11 +147,9 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
             callptrargsptr += ", "
         argtext += f"m_type{i + 1}"
         callargtext += f"m_type{i + 1} arg{i + 1}"
-        callsiargs += f"arg{i + 1}"
+        callsiargs += f"VariantInternal::make(arg{i + 1})"
         callsiargptrs += f"&vargs[{i}]"
-        callptrargs += (
-            f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1} = (PtrToArg<m_type{i + 1}>::EncodeT)arg{i + 1};\\\n"
-        )
+        callptrargs += f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1}; PtrToArg<m_type{i + 1}>::encode(arg{i + 1}, &argval{i + 1});\\\n"
         callptrargsptr += f"&argval{i + 1}"
 
     if argcount:
@@ -198,7 +196,12 @@ def run(target, source, env):
     txt = """/* THIS FILE IS GENERATED DO NOT EDIT */
 #pragma once
 
+// IWYU pragma: begin_keep
 #include "core/object/script_instance.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/variant_caster.h"
+#include "core/variant/variant_internal.h"
+// IWYU pragma: end_keep
 
 inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
 

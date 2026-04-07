@@ -29,6 +29,9 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d_twoboneik.h"
+
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/2d/skeleton_2d.h"
 
 #ifdef TOOLS_ENABLED
@@ -217,7 +220,7 @@ void SkeletonModification2DTwoBoneIK::_setup_modification(SkeletonModificationSt
 }
 
 void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+	if (!enabled || !is_setup || joint_one_bone_idx < 0) {
 		return;
 	}
 

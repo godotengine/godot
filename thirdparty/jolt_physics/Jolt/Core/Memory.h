@@ -8,13 +8,20 @@ JPH_NAMESPACE_BEGIN
 
 #ifndef JPH_DISABLE_CUSTOM_ALLOCATOR
 
-// Normal memory allocation, must be at least 8 byte aligned on 32 bit platform and 16 byte aligned on 64 bit platform
+/// Normal memory allocation, must be at least 8 byte aligned on 32 bit platform and 16 byte aligned on 64 bit platform.
+/// Note that you can override JPH_DEFAULT_ALLOCATE_ALIGNMENT if your allocator's alignment is different from the alignment as defined by `__STDCPP_DEFAULT_NEW_ALIGNMENT__`.
 using AllocateFunction = void *(*)(size_t inSize);
+
+/// Reallocate memory. inBlock can be nullptr in which case it must behave as a memory allocation.
 using ReallocateFunction = void *(*)(void *inBlock, size_t inOldSize, size_t inNewSize);
+
+/// Free memory. inBlock can be nullptr in which case it must do nothing.
 using FreeFunction = void (*)(void *inBlock);
 
-// Aligned memory allocation
+/// Aligned memory allocation.
 using AlignedAllocateFunction = void *(*)(size_t inSize, size_t inAlignment);
+
+/// Free aligned memory. inBlock can be nullptr in which case it must do nothing.
 using AlignedFreeFunction = void (*)(void *inBlock);
 
 // User defined allocation / free functions
@@ -31,7 +38,7 @@ JPH_EXPORT void RegisterDefaultAllocator();
 // It uses the non-aligned version, which on 32 bit platforms usually returns an 8 byte aligned block.
 // We therefore default to 16 byte aligned allocations when the regular new operator is used.
 // See: https://github.com/godotengine/godot/issues/105455#issuecomment-2824311547
-#if defined(JPH_COMPILER_MINGW) && JPH_CPU_ADDRESS_BITS == 32
+#if defined(JPH_COMPILER_MINGW) && JPH_CPU_ARCH_BITS == 32
 	#define JPH_INTERNAL_DEFAULT_ALLOCATE(size) JPH::AlignedAllocate(size, 16)
 	#define JPH_INTERNAL_DEFAULT_FREE(pointer) JPH::AlignedFree(pointer)
 #else
@@ -43,12 +50,16 @@ JPH_EXPORT void RegisterDefaultAllocator();
 #define JPH_OVERRIDE_NEW_DELETE \
 	JPH_INLINE void *operator new (size_t inCount)												{ return JPH_INTERNAL_DEFAULT_ALLOCATE(inCount); } \
 	JPH_INLINE void operator delete (void *inPointer) noexcept									{ JPH_INTERNAL_DEFAULT_FREE(inPointer); } \
+	JPH_INLINE void operator delete (void *inPointer, [[maybe_unused]] size_t inSize) noexcept	{ JPH_INTERNAL_DEFAULT_FREE(inPointer); } \
 	JPH_INLINE void *operator new[] (size_t inCount)											{ return JPH_INTERNAL_DEFAULT_ALLOCATE(inCount); } \
 	JPH_INLINE void operator delete[] (void *inPointer) noexcept								{ JPH_INTERNAL_DEFAULT_FREE(inPointer); } \
+	JPH_INLINE void operator delete[] (void *inPointer, [[maybe_unused]] size_t inSize) noexcept{ JPH_INTERNAL_DEFAULT_FREE(inPointer); } \
 	JPH_INLINE void *operator new (size_t inCount, std::align_val_t inAlignment)				{ return JPH::AlignedAllocate(inCount, static_cast<size_t>(inAlignment)); } \
-	JPH_INLINE void operator delete (void *inPointer, [[maybe_unused]] std::align_val_t inAlignment) noexcept	{ JPH::AlignedFree(inPointer); } \
+	JPH_INLINE void operator delete (void *inPointer, [[maybe_unused]] std::align_val_t inAlignment) noexcept { JPH::AlignedFree(inPointer); } \
+	JPH_INLINE void operator delete (void *inPointer, [[maybe_unused]] size_t inSize, [[maybe_unused]] std::align_val_t inAlignment) noexcept { JPH::AlignedFree(inPointer); } \
 	JPH_INLINE void *operator new[] (size_t inCount, std::align_val_t inAlignment)				{ return JPH::AlignedAllocate(inCount, static_cast<size_t>(inAlignment)); } \
 	JPH_INLINE void operator delete[] (void *inPointer, [[maybe_unused]] std::align_val_t inAlignment) noexcept	{ JPH::AlignedFree(inPointer); } \
+	JPH_INLINE void operator delete[] (void *inPointer, [[maybe_unused]] size_t inSize, [[maybe_unused]] std::align_val_t inAlignment) noexcept { JPH::AlignedFree(inPointer); } \
 	JPH_INLINE void *operator new ([[maybe_unused]] size_t inCount, void *inPointer) noexcept	{ return inPointer; } \
 	JPH_INLINE void operator delete ([[maybe_unused]] void *inPointer, [[maybe_unused]] void *inPlace) noexcept { /* Do nothing */ } \
 	JPH_INLINE void *operator new[] ([[maybe_unused]] size_t inCount, void *inPointer) noexcept	{ return inPointer; } \

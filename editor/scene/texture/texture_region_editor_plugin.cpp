@@ -31,6 +31,8 @@
 #include "texture_region_editor_plugin.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -45,8 +47,10 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/style_box_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 Transform2D TextureRegionEditor::_get_offset_transform() const {
 	Transform2D mtx;
@@ -841,7 +845,7 @@ void TextureRegionEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-				panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+				panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 			}
 		} break;
 
@@ -854,7 +858,7 @@ void TextureRegionEditor::_notification(int p_what) {
 			}
 
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -908,18 +912,23 @@ void TextureRegionEditor::_node_removed(Node *p_node) {
 void TextureRegionEditor::_clear_edited_object() {
 	if (node_sprite_2d) {
 		node_sprite_2d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite_2d->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (node_sprite_3d) {
 		node_sprite_3d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_sprite_3d->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (node_ninepatch) {
 		node_ninepatch->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+		node_ninepatch->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (res_stylebox.is_valid()) {
 		res_stylebox->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
+		res_stylebox->disconnect_changed(callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 	if (res_atlas_texture.is_valid()) {
 		res_atlas_texture->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
+		res_atlas_texture->disconnect_changed(callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 
 	node_sprite_2d = nullptr;
@@ -949,8 +958,10 @@ void TextureRegionEditor::edit(Object *p_obj) {
 
 		if (is_resource) {
 			Object::cast_to<Resource>(p_obj)->connect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
+			Object::cast_to<Resource>(p_obj)->connect_changed(callable_mp(this, &TextureRegionEditor::_edit_region));
 		} else {
 			p_obj->connect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
+			p_obj->connect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 		}
 		_edit_region();
 	}
@@ -1160,6 +1171,7 @@ void TextureRegionEditor::_bind_methods() {
 
 TextureRegionEditor::TextureRegionEditor() {
 	set_title(TTR("Region Editor"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_process_shortcut_input(true);
 	set_ok_button_text(TTR("Close"));
 	// Handled manually, to allow canceling dragging.

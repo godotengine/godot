@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "gdextension.h"
+
+#include "core/object/class_db.h"
+
 Error GDExtension::_open_library_bind_compat_88418(const String &p_path, const String &p_entry_symbol) {
 	return ERR_UNAVAILABLE;
 }
@@ -46,4 +50,4 @@ void GDExtension::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("initialize_library", "level"), &GDExtension::_initialize_library_bind_compat_88418);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

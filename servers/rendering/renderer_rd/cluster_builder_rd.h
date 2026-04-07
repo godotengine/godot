@@ -76,10 +76,6 @@ class ClusterBuilderSharedDataRD {
 		enum ShaderVariant {
 			SHADER_NORMAL,
 			SHADER_USE_ATTACHMENT,
-			SHADER_NORMAL_MOLTENVK,
-			SHADER_USE_ATTACHMENT_MOLTENVK,
-			SHADER_NORMAL_NO_ATOMICS,
-			SHADER_USE_ATTACHMENT_NO_ATOMICS,
 		};
 
 		enum PipelineVersion {
@@ -193,14 +189,7 @@ private:
 	};
 
 	uint32_t cluster_size = 32;
-#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
-	// Results in visual artifacts on macOS and iOS/visionOS when using MSAA and subgroups.
-	// Using subgroups and disabling MSAA is the optimal solution for now and also works
-	// with MoltenVK.
-	bool use_msaa = false;
-#else
 	bool use_msaa = true;
-#endif
 	Divisor divisor = DIVISOR_4;
 
 	Size2i screen_size;
@@ -301,11 +290,11 @@ public:
 			// Approximate, probably better to use a cone support function.
 			float max_d = -1e20;
 			float min_d = 1e20;
-#define CONE_MINMAX(m_x, m_y)                                             \
-	{                                                                     \
+#define CONE_MINMAX(m_x, m_y) \
+	{ \
 		float d = -xform.xform(Vector3(len * m_x, len * m_y, -radius)).z; \
-		min_d = MIN(d, min_d);                                            \
-		max_d = MAX(d, max_d);                                            \
+		min_d = MIN(d, min_d); \
+		max_d = MAX(d, max_d); \
 	}
 
 			CONE_MINMAX(1, 1);

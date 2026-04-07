@@ -30,11 +30,30 @@
 
 #pragma once
 
+#include "../gdscript_cache.h"
 #include "gdscript_test_runner.h"
 
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "tests/test_macros.h"
+#include "tests/test_utils.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/os/os.h"
+#endif
 
 namespace GDScriptTests {
+
+class TestGDScriptCacheAccessor {
+public:
+	static bool has_shallow(String p_path) {
+		return GDScriptCache::singleton->shallow_gdscript_cache.has(p_path);
+	}
+
+	static bool has_full(String p_path) {
+		return GDScriptCache::singleton->full_gdscript_cache.has(p_path);
+	}
+};
 
 // TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
 #ifdef TOOLS_ENABLED
@@ -70,6 +89,26 @@ func _init():
 	Ref<RefCounted> ref_counted = memnew(RefCounted);
 	ref_counted->set_script(gdscript);
 	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
+}
+
+TEST_CASE("[Modules][GDScript] Loading keeps ResourceCache and GDScriptCache in sync") {
+	const String path = TestUtils::get_temp_path("gdscript_load_test.gd");
+
+	{
+		Ref<FileAccess> fa = FileAccess::open(path, FileAccess::ModeFlags::WRITE);
+		fa->store_string("extends Node\n");
+		fa->close();
+	}
+
+	CHECK(!ResourceCache::has(path));
+	CHECK(!TestGDScriptCacheAccessor::has_shallow(path));
+	CHECK(!TestGDScriptCacheAccessor::has_full(path));
+
+	Ref<GDScript> loaded = ResourceLoader::load(path);
+
+	CHECK(ResourceCache::has(path));
+	CHECK(!TestGDScriptCacheAccessor::has_shallow(path));
+	CHECK(TestGDScriptCacheAccessor::has_full(path));
 }
 
 TEST_CASE("[Modules][GDScript] Validate built-in API") {

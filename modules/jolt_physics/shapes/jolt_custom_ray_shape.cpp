@@ -32,12 +32,14 @@
 
 #include "../spaces/jolt_query_collectors.h"
 
-#include "Jolt/Physics/Collision/CastResult.h"
-#include "Jolt/Physics/Collision/RayCast.h"
-#include "Jolt/Physics/Collision/TransformedShape.h"
+#include "core/error/error_macros.h"
+
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/TransformedShape.h>
 
 #ifdef JPH_DEBUG_RENDERER
-#include "Jolt/Renderer/DebugRenderer.h"
+#include <Jolt/Renderer/DebugRenderer.h>
 #endif
 
 namespace {

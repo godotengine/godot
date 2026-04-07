@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "audio_effect_filter.h"
+
+#include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
 template <int S>

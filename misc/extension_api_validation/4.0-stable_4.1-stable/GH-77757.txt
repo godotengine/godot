@@ -1,0 +1,6 @@
+GH-77757
+--------
+Validate extension JSON: Error: Field 'classes/Viewport/methods/gui_get_focus_owner': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Hash changed for 'classes/Viewport/methods/gui_get_focus_owner', from 31757941 to A5E188F5. This means that the function has changed and no compatibility function was provided.
+
+This method does not affect the state of Viewport so it should be const.

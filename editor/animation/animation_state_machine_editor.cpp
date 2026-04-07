@@ -32,6 +32,8 @@
 
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -42,6 +44,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -758,7 +761,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (closest_for_tooltip >= 0) {
 				String from = transition_lines[closest_for_tooltip].from_node;
 				String to = transition_lines[closest_for_tooltip].to_node;
-				String tooltip = from + " -> " + to;
+				String tooltip = from + U" → " + to;
 				state_machine_draw->set_tooltip_text(tooltip);
 			} else {
 				state_machine_draw->set_tooltip_text("");
@@ -821,8 +824,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	animations_menu->clear();
 	animations_to_add.clear();
 
-	List<StringName> animation_names;
-	tree->get_animation_list(&animation_names);
+	LocalVector<StringName> animation_names = tree->get_sorted_animation_list();
 	menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 	if (animation_names.is_empty()) {
 		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);
@@ -970,6 +972,8 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
 	connecting_to_node = name;
 	_add_transition(true);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -982,7 +986,7 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 
 	anim->set_animation(animations_to_add[p_index]);
 
-	String base_name = animations_to_add[p_index].validate_node_name();
+	String base_name = String(animations_to_add[p_index]).validate_node_name();
 	int base = 1;
 	String name = base_name;
 	while (state_machine->has_node(name)) {
@@ -997,6 +1001,8 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
 	connecting_to_node = name;
 	_add_transition(true);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -1010,8 +1016,20 @@ void AnimationNodeStateMachineEditor::_connect_to(int p_index) {
 
 void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action) {
 	if (connecting_from != StringName() && connecting_to_node != StringName()) {
+		if (connecting_to_node == SceneStringName(Start)) {
+			EditorNode::get_singleton()->show_warning(TTR("Cannot transition to \"Start\"!"));
+			connecting = false;
+			return;
+		}
+
+		if (connecting_from == SceneStringName(End)) {
+			EditorNode::get_singleton()->show_warning(TTR("Cannot transition from \"End\"!"));
+			connecting = false;
+			return;
+		}
+
 		if (state_machine->has_transition(connecting_from, connecting_to_node)) {
-			EditorNode::get_singleton()->show_warning("Transition exists!");
+			EditorNode::get_singleton()->show_warning(TTR("Transition already exists!"));
 			connecting = false;
 			return;
 		}
@@ -1039,11 +1057,13 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 
 		_select_transition(connecting_from, connecting_to_node);
 
-		if (!state_machine->is_transition_across_group(selected_transition_index)) {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-		} else {
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-			EditorNode::get_singleton()->push_item(nullptr, "", true);
+		if (selected_transition_index >= 0) {
+			if (!state_machine->is_transition_across_group(selected_transition_index)) {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+			} else {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+				EditorNode::get_singleton()->push_item(nullptr, "", true);
+			}
 		}
 		_update_mode();
 	}
@@ -1646,7 +1666,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
-			error_label->add_theme_color_override(SceneStringName(font_color), theme_cache.error_color);
+			error_label->add_theme_color_override(SNAME("default_color"), theme_cache.error_color);
 
 			tool_select->set_button_icon(theme_cache.tool_icon_select);
 			tool_create->set_button_icon(theme_cache.tool_icon_create);
@@ -1677,24 +1697,14 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 			if (error_time > 0) {
-				error = error_text;
 				error_time -= get_process_delta_time();
-			} else {
-				error = tree->get_editor_error_message();
 			}
 
-			if (error.is_empty() && playback.is_null()) {
+			if (playback.is_null()) {
 				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 			}
 
-			if (error != error_label->get_text()) {
-				error_label->set_text(error);
-				if (!error.is_empty()) {
-					error_panel->show();
-				} else {
-					error_panel->hide();
-				}
-			}
+			update_error_message(tree, error_panel, error_label, &error);
 
 			for (int i = 0; i < transition_lines.size(); i++) {
 				int tidx = -1;
@@ -1760,8 +1770,8 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				fading_from_node = playback->get_fading_from_node();
 				current_play_pos = playback->get_current_play_pos();
 				current_length = playback->get_current_length();
-				fade_from_current_play_pos = playback->get_fade_from_play_pos();
-				fade_from_length = playback->get_fade_from_length();
+				fade_from_current_play_pos = playback->get_fading_from_play_pos();
+				fade_from_length = playback->get_fading_from_length();
 				fading_time = playback->get_fading_time();
 				fading_pos = playback->get_fading_pos();
 			}
@@ -2149,8 +2159,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
-	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label = create_error_label_node();
 	error_panel->add_child(error_label);
 	error_panel->hide();
 
@@ -2222,7 +2231,7 @@ bool EditorAnimationMultiTransitionEdit::_get(const StringName &p_name, Variant 
 	StringName prop = String(p_name).get_slicec('/', 1);
 
 	if (prop == "transition_path") {
-		r_property = String(transitions[index].from) + " -> " + transitions[index].to;
+		r_property = String(transitions[index].from) + U" → " + transitions[index].to;
 		return true;
 	}
 

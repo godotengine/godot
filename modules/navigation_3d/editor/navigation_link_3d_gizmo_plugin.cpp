@@ -96,21 +96,21 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		// Draw axis-aligned circle.
 		switch (up_axis) {
 			case Vector3::AXIS_X:
-#define PUSH_OCTANT(_position, a, b)                          \
-	lines_ptrw[index++] = _position + Vector3(0, a.x, a.y);   \
-	lines_ptrw[index++] = _position + Vector3(0, x, y);       \
-	lines_ptrw[index++] = _position + Vector3(0, -a.x, a.y);  \
-	lines_ptrw[index++] = _position + Vector3(0, x, y);       \
-	lines_ptrw[index++] = _position + Vector3(0, a.x, -a.y);  \
-	lines_ptrw[index++] = _position + Vector3(0, x, -y);      \
+#define PUSH_OCTANT(_position, a, b) \
+	lines_ptrw[index++] = _position + Vector3(0, a.x, a.y); \
+	lines_ptrw[index++] = _position + Vector3(0, x, y); \
+	lines_ptrw[index++] = _position + Vector3(0, -a.x, a.y); \
+	lines_ptrw[index++] = _position + Vector3(0, x, y); \
+	lines_ptrw[index++] = _position + Vector3(0, a.x, -a.y); \
+	lines_ptrw[index++] = _position + Vector3(0, x, -y); \
 	lines_ptrw[index++] = _position + Vector3(0, -a.x, -a.y); \
-	lines_ptrw[index++] = _position + Vector3(0, x, y);       \
-	lines_ptrw[index++] = _position + Vector3(0, a.y, a.x);   \
-	lines_ptrw[index++] = _position + Vector3(0, y, x);       \
-	lines_ptrw[index++] = _position + Vector3(0, -a.y, a.x);  \
-	lines_ptrw[index++] = _position + Vector3(0, -y, x);      \
-	lines_ptrw[index++] = _position + Vector3(0, a.y, -a.x);  \
-	lines_ptrw[index++] = _position + Vector3(0, y, -x);      \
+	lines_ptrw[index++] = _position + Vector3(0, x, y); \
+	lines_ptrw[index++] = _position + Vector3(0, a.y, a.x); \
+	lines_ptrw[index++] = _position + Vector3(0, y, x); \
+	lines_ptrw[index++] = _position + Vector3(0, -a.y, a.x); \
+	lines_ptrw[index++] = _position + Vector3(0, -y, x); \
+	lines_ptrw[index++] = _position + Vector3(0, a.y, -a.x); \
+	lines_ptrw[index++] = _position + Vector3(0, y, -x); \
 	lines_ptrw[index++] = _position + Vector3(0, -a.y, -a.x); \
 	lines_ptrw[index++] = _position + Vector3(0, -y, -x);
 
@@ -119,21 +119,21 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef PUSH_OCTANT
 				break;
 			case Vector3::AXIS_Y:
-#define PUSH_OCTANT(_position, a, b)                          \
-	lines_ptrw[index++] = _position + Vector3(a.x, 0, a.y);   \
-	lines_ptrw[index++] = _position + Vector3(x, 0, y);       \
-	lines_ptrw[index++] = _position + Vector3(-a.x, 0, a.y);  \
-	lines_ptrw[index++] = _position + Vector3(-x, 0, y);      \
-	lines_ptrw[index++] = _position + Vector3(a.x, 0, -a.y);  \
-	lines_ptrw[index++] = _position + Vector3(x, 0, -y);      \
+#define PUSH_OCTANT(_position, a, b) \
+	lines_ptrw[index++] = _position + Vector3(a.x, 0, a.y); \
+	lines_ptrw[index++] = _position + Vector3(x, 0, y); \
+	lines_ptrw[index++] = _position + Vector3(-a.x, 0, a.y); \
+	lines_ptrw[index++] = _position + Vector3(-x, 0, y); \
+	lines_ptrw[index++] = _position + Vector3(a.x, 0, -a.y); \
+	lines_ptrw[index++] = _position + Vector3(x, 0, -y); \
 	lines_ptrw[index++] = _position + Vector3(-a.x, 0, -a.y); \
-	lines_ptrw[index++] = _position + Vector3(-x, 0, -y);     \
-	lines_ptrw[index++] = _position + Vector3(a.y, 0, a.x);   \
-	lines_ptrw[index++] = _position + Vector3(y, 0, x);       \
-	lines_ptrw[index++] = _position + Vector3(-a.y, 0, a.x);  \
-	lines_ptrw[index++] = _position + Vector3(-y, 0, x);      \
-	lines_ptrw[index++] = _position + Vector3(a.y, 0, -a.x);  \
-	lines_ptrw[index++] = _position + Vector3(y, 0, -x);      \
+	lines_ptrw[index++] = _position + Vector3(-x, 0, -y); \
+	lines_ptrw[index++] = _position + Vector3(a.y, 0, a.x); \
+	lines_ptrw[index++] = _position + Vector3(y, 0, x); \
+	lines_ptrw[index++] = _position + Vector3(-a.y, 0, a.x); \
+	lines_ptrw[index++] = _position + Vector3(-y, 0, x); \
+	lines_ptrw[index++] = _position + Vector3(a.y, 0, -a.x); \
+	lines_ptrw[index++] = _position + Vector3(y, 0, -x); \
 	lines_ptrw[index++] = _position + Vector3(-a.y, 0, -a.x); \
 	lines_ptrw[index++] = _position + Vector3(-y, 0, -x);
 
@@ -142,21 +142,21 @@ void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef PUSH_OCTANT
 				break;
 			case Vector3::AXIS_Z:
-#define PUSH_OCTANT(_position, a, b)                          \
-	lines_ptrw[index++] = _position + Vector3(a.x, a.y, 0);   \
-	lines_ptrw[index++] = _position + Vector3(x, y, 0);       \
-	lines_ptrw[index++] = _position + Vector3(-a.x, a.y, 0);  \
-	lines_ptrw[index++] = _position + Vector3(-x, y, 0);      \
-	lines_ptrw[index++] = _position + Vector3(a.x, -a.y, 0);  \
-	lines_ptrw[index++] = _position + Vector3(x, -y, 0);      \
+#define PUSH_OCTANT(_position, a, b) \
+	lines_ptrw[index++] = _position + Vector3(a.x, a.y, 0); \
+	lines_ptrw[index++] = _position + Vector3(x, y, 0); \
+	lines_ptrw[index++] = _position + Vector3(-a.x, a.y, 0); \
+	lines_ptrw[index++] = _position + Vector3(-x, y, 0); \
+	lines_ptrw[index++] = _position + Vector3(a.x, -a.y, 0); \
+	lines_ptrw[index++] = _position + Vector3(x, -y, 0); \
 	lines_ptrw[index++] = _position + Vector3(-a.x, -a.y, 0); \
-	lines_ptrw[index++] = _position + Vector3(-x, -y, 0);     \
-	lines_ptrw[index++] = _position + Vector3(a.y, a.x, 0);   \
-	lines_ptrw[index++] = _position + Vector3(y, x, 0);       \
-	lines_ptrw[index++] = _position + Vector3(-a.y, a.x, 0);  \
-	lines_ptrw[index++] = _position + Vector3(-y, x, 0);      \
-	lines_ptrw[index++] = _position + Vector3(a.y, -a.x, 0);  \
-	lines_ptrw[index++] = _position + Vector3(y, -x, 0);      \
+	lines_ptrw[index++] = _position + Vector3(-x, -y, 0); \
+	lines_ptrw[index++] = _position + Vector3(a.y, a.x, 0); \
+	lines_ptrw[index++] = _position + Vector3(y, x, 0); \
+	lines_ptrw[index++] = _position + Vector3(-a.y, a.x, 0); \
+	lines_ptrw[index++] = _position + Vector3(-y, x, 0); \
+	lines_ptrw[index++] = _position + Vector3(a.y, -a.x, 0); \
+	lines_ptrw[index++] = _position + Vector3(y, -x, 0); \
 	lines_ptrw[index++] = _position + Vector3(-a.y, -a.x, 0); \
 	lines_ptrw[index++] = _position + Vector3(-y, -x, 0);
 

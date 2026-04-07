@@ -32,12 +32,16 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
 
 #include <initializer_list>
 #include <type_traits>
+
+#ifdef ASAN_ENABLED
+#include <sanitizer/asan_interface.h>
+#endif
 
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
@@ -60,7 +64,7 @@ public:
 	static constexpr USize MAX_INT = INT64_MAX;
 
 private:
-	// Alignment:  ↓ max_align_t           ↓ USize          ↓ USize            ↓ max_align_t
+	// Alignment:  ↓ max_align_t           ↓ USize          ↓ USize            ↓ MAX_ALIGN
 	//             ┌────────────────────┬──┬───────────────┬──┬─────────────┬──┬───────────...
 	//             │ SafeNumeric<USize> │░░│ USize         │░░│ USize       │░░│ T[]
 	//             │ ref. count         │░░│ data capacity │░░│ data size   │░░│ data
@@ -70,7 +74,7 @@ private:
 	static constexpr size_t REF_COUNT_OFFSET = 0;
 	static constexpr size_t CAPACITY_OFFSET = Memory::get_aligned_address(REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>), alignof(USize));
 	static constexpr size_t SIZE_OFFSET = Memory::get_aligned_address(CAPACITY_OFFSET + sizeof(USize), alignof(USize));
-	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), alignof(max_align_t));
+	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), Memory::MAX_ALIGN);
 
 	mutable T *_ptr = nullptr;
 
@@ -206,8 +210,8 @@ public:
 
 	_FORCE_INLINE_ void remove_at(Size p_index);
 
-	Error insert(Size p_pos, const T &p_val);
-	Error push_back(const T &p_val);
+	Error insert(Size p_pos, T &&p_val);
+	Error push_back(T &&p_val);
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
 	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
@@ -246,17 +250,21 @@ void CowData<T>::_unref() {
 	T *prev_ptr = _ptr;
 	_ptr = nullptr;
 
-	destruct_arr_placement(prev_ptr, current_size);
+#ifdef ASAN_ENABLED
+	// Access during destruction is illegal in C++, and results in undefined behavior.
+	// In address sanitizer builds, we can poison ourselves (_ptr) to catch this.
+	__asan_poison_memory_region(this, sizeof(CowData));
+#endif
 
-	// Safety check; none of the destructors should have added elements during destruction.
-	DEV_ASSERT(!_ptr);
+	destruct_arr_placement(prev_ptr, current_size);
 
 	// Free Memory.
 	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
 
-#ifdef DEBUG_ENABLED
-	// If any destructors access us through pointers, it is a bug.
-	// We can't really test for that, but we can at least check no items have been added.
+#ifdef ASAN_ENABLED
+	__asan_unpoison_memory_region(this, sizeof(CowData));
+#elif defined(DEBUG_ENABLED)
+	// In a non-asan build, the best we can do is catch if elements were added during destruction.
 	ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
 #endif
 }
@@ -296,7 +304,7 @@ void CowData<T>::remove_at(Size p_index) {
 }
 
 template <typename T>
-Error CowData<T>::insert(Size p_pos, const T &p_val) {
+Error CowData<T>::insert(Size p_pos, T &&p_val) {
 	const Size new_size = size() + 1;
 	ERR_FAIL_INDEX_V(p_pos, new_size, ERR_INVALID_PARAMETER);
 
@@ -326,13 +334,13 @@ Error CowData<T>::insert(Size p_pos, const T &p_val) {
 	}
 
 	// Create the new element at the given index.
-	memnew_placement(_ptr + p_pos, T(p_val));
+	memnew_placement(_ptr + p_pos, T(std::move(p_val)));
 
 	return OK;
 }
 
 template <typename T>
-Error CowData<T>::push_back(const T &p_val) {
+Error CowData<T>::push_back(T &&p_val) {
 	const Size new_size = size() + 1;
 
 	if (!_ptr) {
@@ -361,7 +369,7 @@ Error CowData<T>::push_back(const T &p_val) {
 	}
 
 	// Create the new element at the given index.
-	memnew_placement(_ptr + new_size - 1, T(p_val));
+	memnew_placement(_ptr + new_size - 1, T(std::move(p_val)));
 
 	return OK;
 }

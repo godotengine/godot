@@ -75,6 +75,7 @@ private:
 
 	int resources_total = 0;
 	int resource_current = 0;
+
 	String resource_type;
 	String script_class;
 
@@ -97,6 +98,7 @@ private:
 
 	Error _parse_sub_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	Error _parse_ext_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
+	void _count_resources();
 
 	struct DummyReadData {
 		bool no_placeholders = false;

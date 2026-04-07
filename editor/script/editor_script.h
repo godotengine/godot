@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 
 class EditorInterface;
@@ -47,7 +47,9 @@ protected:
 
 public:
 	void add_root_node(Node *p_node);
+#ifndef DISABLE_DEPRECATED
 	Node *get_scene() const;
+#endif // DISABLE_DEPRECATED
 	EditorInterface *get_editor_interface() const;
 
 	virtual void run();

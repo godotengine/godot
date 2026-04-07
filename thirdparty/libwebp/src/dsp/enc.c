@@ -13,9 +13,13 @@
 
 #include <assert.h>
 #include <stdlib.h>  // for abs()
+#include <string.h>
 
+#include "src/dsp/cpu.h"
 #include "src/dsp/dsp.h"
 #include "src/enc/vp8i_enc.h"
+#include "src/utils/utils.h"
+#include "src/webp/types.h"
 
 static WEBP_INLINE uint8_t clip_8b(int v) {
   return (!(v & ~0xff)) ? v : (v < 0) ? 0 : 255;
@@ -688,11 +692,11 @@ static int QuantizeBlock_C(int16_t in[16], int16_t out[16],
   for (n = 0; n < 16; ++n) {
     const int j = kZigzag[n];
     const int sign = (in[j] < 0);
-    const uint32_t coeff = (sign ? -in[j] : in[j]) + mtx->sharpen_[j];
-    if (coeff > mtx->zthresh_[j]) {
-      const uint32_t Q = mtx->q_[j];
-      const uint32_t iQ = mtx->iq_[j];
-      const uint32_t B = mtx->bias_[j];
+    const uint32_t coeff = (sign ? -in[j] : in[j]) + mtx->sharpen[j];
+    if (coeff > mtx->zthresh[j]) {
+      const uint32_t Q = mtx->q[j];
+      const uint32_t iQ = mtx->iq[j];
+      const uint32_t B = mtx->bias[j];
       int level = QUANTDIV(coeff, iQ, B);
       if (level > MAX_LEVEL) level = MAX_LEVEL;
       if (sign) level = -level;

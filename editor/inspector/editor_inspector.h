@@ -38,14 +38,11 @@
 
 class AddMetadataDialog;
 class AcceptDialog;
-class ConfirmationDialog;
 class EditorInspector;
-class EditorValidationPanel;
 class HSeparator;
 class LineEdit;
 class MarginContainer;
 class OptionButton;
-class PanelContainer;
 class PopupMenu;
 class SpinBox;
 class StyleBoxFlat;
@@ -75,6 +72,7 @@ class EditorProperty : public Container {
 
 	friend class EditorInspector;
 
+protected:
 	struct ThemeCache {
 		Ref<Font> font;
 
@@ -105,6 +103,7 @@ class EditorProperty : public Container {
 		int horizontal_separation = 0;
 		int vertical_separation = 0;
 		int padding = 0;
+		int inspector_property_height = 0;
 
 		Color property_color;
 		Color readonly_property_color;
@@ -136,6 +135,11 @@ public:
 		COLORATION_EXTERNAL,
 	};
 
+	enum InlineControlSide {
+		INLINE_CONTROL_LEFT,
+		INLINE_CONTROL_RIGHT
+	};
+
 private:
 	String label;
 	int text_size;
@@ -158,6 +162,7 @@ private:
 	bool draw_prop_warning = false;
 	bool keying = false;
 	bool deletable = false;
+	bool label_overlayed = false;
 
 	Rect2 right_child_rect;
 	Rect2 bottom_child_rect;
@@ -191,13 +196,17 @@ private:
 	bool selectable = true;
 	bool selected = false;
 	int selected_focusable;
+	bool deferred_drag_mode = false;
 
-	float split_ratio;
+	float split_ratio = 0.5;
+	float name_fixed_size = 0.0;
 
 	Vector<Control *> focusables;
 	Control *label_reference = nullptr;
 	Control *bottom_editor = nullptr;
 	PopupMenu *menu = nullptr;
+	HBoxContainer *left_container = nullptr;
+	HBoxContainer *right_container = nullptr;
 
 	HashMap<StringName, Variant> cache;
 
@@ -271,7 +280,7 @@ public:
 	void set_draw_warning(bool p_draw_warning);
 	bool is_draw_warning() const;
 
-	void set_keying(bool p_keying);
+	virtual void set_keying(bool p_keying);
 	bool is_keying() const;
 
 	virtual bool is_colored(ColorationMode p_mode) { return false; }
@@ -283,6 +292,10 @@ public:
 	void select(int p_focusable = -1);
 	void deselect();
 	bool is_selected() const;
+
+	void add_inline_control(Control *p_control, InlineControlSide p_side);
+	HBoxContainer *get_inline_container(InlineControlSide p_side);
+	void set_label_overlayed(bool p_overlay);
 
 	void set_label_reference(Control *p_control);
 	void set_bottom_editor(Control *p_control);
@@ -298,11 +311,15 @@ public:
 	virtual void update_cache();
 	virtual bool is_cache_valid() const;
 
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true);
+	bool is_deferred_drag_mode_enabled() const;
+
 	void set_selectable(bool p_selectable);
 	bool is_selectable() const;
 
 	void set_name_split_ratio(float p_ratio);
 	float get_name_split_ratio() const;
+	void set_name_fixed_size(float p_size);
 
 	void set_favoritable(bool p_favoritable);
 	bool is_favoritable() const;
@@ -367,6 +384,8 @@ class EditorInspectorCategory : public Control {
 
 	// Right-click context menu options.
 	enum ClassMenuOption {
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
 		MENU_OPEN_DOCS,
 		MENU_UNFAVORITE_ALL,
 	};
@@ -381,6 +400,8 @@ class EditorInspectorCategory : public Control {
 		Ref<Font> bold_font;
 		int bold_font_size = 0;
 
+		Ref<Texture2D> icon_copy;
+		Ref<Texture2D> icon_paste;
 		Ref<Texture2D> icon_favorites;
 		Ref<Texture2D> icon_unfavorite;
 		Ref<Texture2D> icon_help;
@@ -397,9 +418,12 @@ class EditorInspectorCategory : public Control {
 	bool is_favorite = false;
 	bool menu_icon_dirty = true;
 
+	LocalVector<EditorProperty *> category_properties;
+
 	void _handle_menu_option(int p_option);
 	void _popup_context_menu(const Point2i &p_position);
 	void _update_icon();
+	void _theme_changed();
 
 protected:
 	static void _bind_methods();
@@ -414,6 +438,8 @@ public:
 	void set_property_info(const PropertyInfo &p_info);
 	void set_doc_class_name(const String &p_name);
 
+	void register_property(EditorProperty *p_property) { category_properties.push_back(p_property); }
+
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
@@ -425,8 +451,14 @@ class EditorInspectorSection : public Container {
 
 	friend class EditorInspector;
 
+	enum MenuItems {
+		MENU_COPY_VALUE,
+		MENU_PASTE_VALUE,
+	};
+
 	String label;
 	String section;
+	String inspector_path;
 	Color bg_color;
 	bool vbox_added = false; // Optimization.
 	bool foldable = false;
@@ -440,6 +472,8 @@ class EditorInspectorSection : public Container {
 	Timer *dropping_unfold_timer = nullptr;
 	bool dropping_for_unfold = false;
 
+	Rect2 revert_rect;
+	bool revert_hover = false;
 	Rect2 check_rect;
 	bool check_hover = false;
 	Rect2 keying_rect;
@@ -448,7 +482,12 @@ class EditorInspectorSection : public Container {
 
 	bool checkbox_only = false;
 
+	PopupMenu *menu = nullptr;
+
 	HashSet<StringName> revertable_properties;
+	bool can_revert = false;
+
+	LocalVector<EditorProperty *> section_properties;
 
 	void _test_unfold();
 	int _get_header_height();
@@ -462,7 +501,7 @@ class EditorInspectorSection : public Container {
 		int vertical_separation = 0;
 		int inspector_margin = 0;
 		int indent_size = 0;
-		int key_padding_size = 0;
+		int padding_size = 0;
 
 		Color warning_color;
 		Color prop_subsection;
@@ -471,6 +510,7 @@ class EditorInspectorSection : public Container {
 		Color font_hover_color;
 		Color font_pressed_color;
 		Color font_hover_pressed_color;
+		Color font_hover_mono_color;
 
 		Ref<Font> font;
 		int font_size = 0;
@@ -482,12 +522,15 @@ class EditorInspectorSection : public Container {
 		Ref<Texture2D> arrow;
 		Ref<Texture2D> arrow_collapsed;
 		Ref<Texture2D> arrow_collapsed_mirrored;
+		Ref<Texture2D> icon_gui_revert;
 		Ref<Texture2D> icon_gui_checked;
 		Ref<Texture2D> icon_gui_unchecked;
 		Ref<Texture2D> icon_gui_animation_key;
+		Ref<Texture2D> icon_copy;
+		Ref<Texture2D> icon_paste;
 
 		Ref<StyleBoxFlat> indent_box;
-		Ref<StyleBoxFlat> key_hover;
+		Ref<StyleBoxFlat> icon_hover;
 	} theme_cache;
 
 protected:
@@ -505,9 +548,10 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
+	void setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
 	String get_section() const;
 	String get_label() const { return label; }
+	String get_inspector_path() const { return inspector_path; }
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
@@ -522,6 +566,11 @@ public:
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
 	void _property_edited(const String &p_property);
 	void update_property();
+
+	void _update_popup();
+	void menu_option(int p_option) const;
+
+	void register_property(EditorProperty *p_property) { section_properties.push_back(p_property); }
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
@@ -642,8 +691,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_is_const = false, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
-	void setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_is_const = false, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
+	void setup_with_move_element_function(Object *p_object, const String &p_category, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_is_const = false, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
+	void setup_with_count_property(Object *p_object, const String &p_category, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_is_const = false, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
 
 	void show_menu(int p_index, const Vector2 &p_offset);
@@ -684,6 +733,21 @@ class EditorInspector : public ScrollContainer {
 
 	friend class EditorPropertyResource;
 
+public:
+	struct PropertyClipboard {
+		enum class Type {
+			EMPTY,
+			PROPERTY,
+			SECTION,
+			CATEGORY,
+		};
+		Type type = Type::EMPTY;
+		Variant value;
+
+		PropertyClipboard() {}
+	};
+
+private:
 	enum {
 		MAX_PLUGINS = 1024
 	};
@@ -691,9 +755,7 @@ class EditorInspector : public ScrollContainer {
 	static int inspector_plugin_count;
 
 	struct ThemeCache {
-		int vertical_separation = 0;
 		Color prop_subsection;
-		Ref<Texture2D> icon_add;
 	} theme_cache;
 
 	EditorInspectorSection::ThemeCache section_theme_cache;
@@ -766,7 +828,7 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; // Used for sectioned inspector.
 	String object_class;
-	Variant property_clipboard;
+	static inline PropertyClipboard property_clipboard;
 
 	bool restrict_to_basic = false;
 
@@ -800,7 +862,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _keying_changed();
 
-	void _parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped);
+	void _parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin);
 
 	void _vscroll_changed(double);
 
@@ -811,9 +873,6 @@ class EditorInspector : public ScrollContainer {
 	void _section_toggled_by_user(const String &p_path, bool p_value);
 
 	AddMetadataDialog *add_meta_dialog = nullptr;
-	LineEdit *add_meta_name = nullptr;
-	OptionButton *add_meta_type = nullptr;
-	EditorValidationPanel *validation_panel = nullptr;
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
@@ -836,6 +895,10 @@ public:
 	static void initialize_section_theme(EditorInspectorSection::ThemeCache &p_cache, Control *p_control);
 	static void initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control);
 	static void initialize_property_theme(EditorProperty::ThemeCache &p_cache, Control *p_control);
+
+	static void set_property_clipboard(PropertyClipboard::Type p_type, const Variant &p_value);
+	static PropertyClipboard::Type get_property_clipboard_type() { return property_clipboard.type; }
+	static Variant get_property_clipboard_value() { return property_clipboard.value; }
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
@@ -895,8 +958,6 @@ public:
 	void set_use_deletable_properties(bool p_enabled);
 
 	void set_restrict_to_basic_settings(bool p_restrict);
-	void set_property_clipboard(const Variant &p_value);
-	Variant get_property_clipboard() const;
 
 	EditorInspector();
 };

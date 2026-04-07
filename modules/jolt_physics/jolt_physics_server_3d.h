@@ -40,6 +40,7 @@ class JoltJoint3D;
 class JoltShape3D;
 class JoltSoftBody3D;
 class JoltSpace3D;
+class JoltTempAllocator;
 
 class JoltPhysicsServer3D final : public PhysicsServer3D {
 	GDCLASS(JoltPhysicsServer3D, PhysicsServer3D)
@@ -56,6 +57,7 @@ class JoltPhysicsServer3D final : public PhysicsServer3D {
 	HashSet<JoltSpace3D *> active_spaces;
 
 	JoltJobSystem *job_system = nullptr;
+	JoltTempAllocator *temp_allocator = nullptr;
 
 	bool on_separate_thread = false;
 	bool active = true;
@@ -300,7 +302,7 @@ public:
 
 	virtual RID soft_body_create() override;
 
-	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) override;
+	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
 	virtual RID soft_body_get_space(RID p_body) const override;

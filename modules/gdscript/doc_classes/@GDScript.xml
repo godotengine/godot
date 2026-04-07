@@ -133,7 +133,7 @@
 				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
-				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need to check the type dynamically.
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays and dictionaries). Use the operator instead of this method if you do not need to check the type dynamically.
 				[b]Examples:[/b]
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
@@ -142,7 +142,7 @@
 				print(is_instance_of(a, MyClass.InnerClass))
 				[/codeblock]
 				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise a runtime error.
-				See also [method @GlobalScope.typeof], [method type_exists], [method Array.is_same_typed] (and other [Array] methods).
+				See also [method @GlobalScope.typeof], [method Object.is_class], [method Object.get_script], [method Array.is_same_typed] (and other [Array] methods), [method Dictionary.is_same_typed] (and other [Dictionary] methods).
 			</description>
 		</method>
 		<method name="len">
@@ -266,7 +266,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="type_exists">
+		<method name="type_exists" deprecated="Use [method ClassDB.class_exists] instead.">
 			<return type="bool" />
 			<param index="0" name="type" type="StringName" />
 			<description>
@@ -621,14 +621,16 @@
 				[/codeblock]
 			</description>
 		</annotation>
-		<annotation name="@export_multiline">
+		<annotation name="@export_multiline" qualifiers="vararg">
 			<return type="void" />
+			<param index="0" name="hint" type="String" default="&quot;&quot;" />
 			<description>
 				Export a [String], [Array][lb][String][rb], [PackedStringArray], [Dictionary] or [Array][lb][Dictionary][rb] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
 				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
 				[codeblock]
 				@export_multiline var character_biography
 				@export_multiline var npc_dialogs: Array[String]
+				@export_multiline("monospace", "no_wrap") var favorite_ascii_art: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -786,7 +788,7 @@
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
 			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
-			<param index="2" name="transfer_mode" type="String" default="&quot;unreliable&quot;" />
+			<param index="2" name="transfer_mode" type="String" default="&quot;reliable&quot;" />
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
@@ -802,7 +804,7 @@
 				@rpc("any_peer", "unreliable_ordered")
 				func fn_update_pos(): pass
 
-				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
+				@rpc("authority", "call_remote", "reliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
 				[b]Note:[/b] Methods annotated with [annotation @rpc] cannot receive objects which define required parameters in [method Object._init]. See [method Object._init] for more details.

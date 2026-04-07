@@ -541,6 +541,11 @@ static RGB okhsl_to_srgb(HSL hsl)
 
 static HSL srgb_to_okhsl(RGB rgb)
 {
+	// Fixes some precision errors.
+	if (rgb.r == 0.0f && rgb.g == 0.0f && rgb.b == 0.0f) {
+		return { 0.0f, 0.0f, 0.0f };
+	}
+
 	Lab lab = linear_srgb_to_oklab({
 		srgb_transfer_function_inv(rgb.r),
 		srgb_transfer_function_inv(rgb.g),

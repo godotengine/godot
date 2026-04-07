@@ -16,6 +16,7 @@ layout(rgba16f, set = 0, binding = 6) uniform restrict writeonly image2D output_
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
+	ivec2 pad;
 }
 params;
 

@@ -24,6 +24,14 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#define SLJIT_GET_LABEL_INDEX(label) \
+	((label)->u.index < SLJIT_LABEL_ALIGNED ? (label)->u.index : ((struct sljit_extended_label*)(label))->index)
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_uw sljit_get_label_index(struct sljit_label *label)
+{
+	return SLJIT_GET_LABEL_INDEX(label);
+}
+
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_jump_has_label(struct sljit_jump *jump)
 {
 	return !(jump->flags & JUMP_ADDR) && (jump->u.label != NULL);
@@ -48,6 +56,7 @@ struct sljit_serialized_compiler {
 
 	sljit_uw buf_segment_count;
 	sljit_uw label_count;
+	sljit_uw aligned_label_count;
 	sljit_uw jump_count;
 	sljit_uw const_count;
 
@@ -94,6 +103,11 @@ struct sljit_serialized_label {
 	sljit_uw size;
 };
 
+struct sljit_serialized_aligned_label {
+	sljit_uw size;
+	sljit_uw data;
+};
+
 struct sljit_serialized_jump {
 	sljit_uw addr;
 	sljit_uw flags;
@@ -122,6 +136,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_uw* sljit_serialize_compiler(struct sljit_compile
 	struct sljit_const *const_;
 	struct sljit_serialized_compiler *serialized_compiler;
 	struct sljit_serialized_label *serialized_label;
+	struct sljit_serialized_aligned_label *serialized_aligned_label;
 	struct sljit_serialized_jump *serialized_jump;
 	struct sljit_serialized_const *serialized_const;
 #if (defined SLJIT_ARGUMENT_CHECKS && SLJIT_ARGUMENT_CHECKS) \
@@ -155,7 +170,16 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_uw* sljit_serialize_compiler(struct sljit_compile
 		buf = buf->next;
 	}
 
-	serialized_size += compiler->label_count * sizeof(struct sljit_serialized_label);
+	label = compiler->labels;
+	while (label != NULL) {
+		used_size = sizeof(struct sljit_serialized_label);
+
+		if (label->u.index >= SLJIT_LABEL_ALIGNED)
+			used_size += sizeof(struct sljit_serialized_aligned_label);
+
+		serialized_size += used_size;
+		label = label->next;
+	}
 
 	jump = compiler->jumps;
 	while (jump != NULL) {
@@ -229,12 +253,23 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_uw* sljit_serialize_compiler(struct sljit_compile
 	serialized_compiler->buf_segment_count = counter;
 
 	label = compiler->labels;
+	counter = 0;
 	while (label != NULL) {
 		serialized_label = (struct sljit_serialized_label*)ptr;
-		serialized_label->size = label->size;
+		serialized_label->size = (label->u.index < SLJIT_LABEL_ALIGNED) ? label->size : label->u.index;
 		ptr += sizeof(struct sljit_serialized_label);
+
+		if (label->u.index >= SLJIT_LABEL_ALIGNED) {
+			serialized_aligned_label = (struct sljit_serialized_aligned_label*)ptr;
+			serialized_aligned_label->size = label->size;
+			serialized_aligned_label->data = ((struct sljit_extended_label*)label)->data;
+			ptr += sizeof(struct sljit_serialized_aligned_label);
+			counter++;
+		}
+
 		label = label->next;
 	}
+	serialized_compiler->aligned_label_count = counter;
 
 	jump = compiler->jumps;
 	counter = 0;
@@ -246,7 +281,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_uw* sljit_serialize_compiler(struct sljit_compile
 		if (jump->flags & JUMP_ADDR)
 			serialized_jump->value = jump->u.target;
 		else if (jump->u.label != NULL)
-			serialized_jump->value = jump->u.label->u.index;
+			serialized_jump->value = SLJIT_GET_LABEL_INDEX(jump->u.label);
 		else
 			serialized_jump->value = SLJIT_MAX_ADDRESS;
 
@@ -291,6 +326,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_compiler *sljit_deserialize_compiler(sljit
 	struct sljit_compiler *compiler;
 	struct sljit_serialized_compiler *serialized_compiler;
 	struct sljit_serialized_label *serialized_label;
+	struct sljit_serialized_aligned_label *serialized_aligned_label;
 	struct sljit_serialized_jump *serialized_jump;
 	struct sljit_serialized_const *serialized_const;
 #if (defined SLJIT_ARGUMENT_CHECKS && SLJIT_ARGUMENT_CHECKS) \
@@ -302,13 +338,15 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_compiler *sljit_deserialize_compiler(sljit
 	struct sljit_label *label;
 	struct sljit_label *last_label;
 	struct sljit_label **label_list = NULL;
+	struct sljit_label **label_list_ptr = NULL;
 	struct sljit_jump *jump;
 	struct sljit_jump *last_jump;
 	struct sljit_const *const_;
 	struct sljit_const *last_const;
 	sljit_u8 *ptr = (sljit_u8*)buffer;
 	sljit_u8 *end = ptr + size;
-	sljit_uw i, used_size, aligned_size, label_count;
+	sljit_uw i, type, used_size, aligned_size;
+	sljit_uw label_count, aligned_label_count;
 	SLJIT_UNUSED_ARG(options);
 
 	if (size < sizeof(struct sljit_serialized_compiler) || (size & (sizeof(sljit_uw) - 1)) != 0)
@@ -403,22 +441,31 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_compiler *sljit_deserialize_compiler(sljit
 
 	last_label = NULL;
 	label_count = serialized_compiler->label_count;
-	if ((sljit_uw)(end - ptr) < label_count * sizeof(struct sljit_serialized_label))
+	aligned_label_count = serialized_compiler->aligned_label_count;
+	i = (label_count * sizeof(struct sljit_serialized_label)) + (aligned_label_count * sizeof(struct sljit_serialized_aligned_label));
+
+	if ((sljit_uw)(end - ptr) < i)
 		goto error;
 
 	label_list = (struct sljit_label **)SLJIT_MALLOC(label_count * sizeof(struct sljit_label*), allocator_data);
 	if (label_list == NULL)
 		goto error;
 
+	label_list_ptr = label_list;
 	for (i = 0; i < label_count; i++) {
-		label = (struct sljit_label*)ensure_abuf(compiler, sizeof(struct sljit_label));
+		serialized_label = (struct sljit_serialized_label*)ptr;
+		type = serialized_label->size;
+
+		if (type < SLJIT_LABEL_ALIGNED) {
+			label = (struct sljit_label*)ensure_abuf(compiler, sizeof(struct sljit_label));
+		} else {
+			label = (struct sljit_label*)ensure_abuf(compiler, sizeof(struct sljit_extended_label));
+		}
+
 		if (label == NULL)
 			goto error;
 
-		serialized_label = (struct sljit_serialized_label*)ptr;
 		label->next = NULL;
-		label->u.index = i;
-		label->size = serialized_label->size;
 
 		if (last_label != NULL)
 			last_label->next = label;
@@ -426,10 +473,32 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_compiler *sljit_deserialize_compiler(sljit
 			compiler->labels = label;
 		last_label = label;
 
-		label_list[i] = label;
+		*label_list_ptr++ = label;
+
 		ptr += sizeof(struct sljit_serialized_label);
+
+		if (type < SLJIT_LABEL_ALIGNED) {
+			label->u.index = i;
+			label->size = type;
+		} else {
+			if (aligned_label_count == 0)
+				goto error;
+
+			aligned_label_count--;
+
+			serialized_aligned_label = (struct sljit_serialized_aligned_label*)ptr;
+			label->u.index = type;
+			label->size = serialized_aligned_label->size;
+
+			((struct sljit_extended_label*)label)->index = i;
+			((struct sljit_extended_label*)label)->data = serialized_aligned_label->data;
+			ptr += sizeof(struct sljit_serialized_aligned_label);
+		}
 	}
 	compiler->last_label = last_label;
+
+	if (aligned_label_count != 0)
+		goto error;
 
 	last_jump = NULL;
 	i = serialized_compiler->jump_count;

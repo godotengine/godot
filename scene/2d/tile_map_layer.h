@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/resources/2d/tile_set.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 class NavigationMeshSourceGeometryData2D;
@@ -492,6 +493,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _scenes_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
+	void _set_scene_transform_with_alternative(Node2D *p_scene, const Vector2 &p_cell_position, const int p_alternative_id);
 
 	// Terrains.
 	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;
@@ -516,8 +518,8 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
-	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) override;
-	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) override;
+	virtual void _update_self_texture_filter(RSE::CanvasItemTextureFilter p_texture_filter) override;
+	virtual void _update_self_texture_repeat(RSE::CanvasItemTextureRepeat p_texture_repeat) override;
 
 public:
 #ifdef TOOLS_ENABLED

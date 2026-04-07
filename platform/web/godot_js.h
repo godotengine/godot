@@ -83,7 +83,7 @@ extern void godot_js_input_drop_files_cb(void (*p_callback)(const char **p_filev
 extern int godot_js_tts_is_speaking();
 extern int godot_js_tts_is_paused();
 extern int godot_js_tts_get_voices(void (*p_callback)(int p_size, const char **p_voices));
-extern void godot_js_tts_speak(const char *p_text, const char *p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, void (*p_callback)(int p_event, int p_id, int p_pos));
+extern void godot_js_tts_speak(const char *p_text, const char *p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, void (*p_callback)(int p_event, int64_t p_id, int p_pos));
 extern void godot_js_tts_pause();
 extern void godot_js_tts_resume();
 extern void godot_js_tts_stop();

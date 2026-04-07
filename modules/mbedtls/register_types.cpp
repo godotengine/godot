@@ -36,13 +36,10 @@
 #include "stream_peer_mbedtls.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 
 #if MBEDTLS_VERSION_MAJOR >= 3
 #include <psa/crypto.h>
-#endif
-
-#ifdef TESTS_ENABLED
-#include "tests/test_crypto_mbedtls.h"
 #endif
 
 #ifdef GODOT_MBEDTLS_THREADING_ALT

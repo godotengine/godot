@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "luminance.h"
-#include "../framebuffer_cache_rd.h"
-#include "../uniform_set_cache_rd.h"
+
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 using namespace RendererRD;
 
@@ -162,7 +163,7 @@ void Luminance::luminance_reduction(RID p_source_texture, const Size2i p_source_
 	ERR_FAIL_NULL(material_storage);
 
 	// setup our uniforms
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	if (prefer_raster_effects) {
 		LuminanceReduceRasterPushConstant push_constant;

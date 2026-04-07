@@ -72,6 +72,7 @@ struct joystick_hwdata
     int instance_id;
     SDL_GUID guid;
     int steam_virtual_gamepad_slot;
+    bool nacon_revolution_x_unlimited;
 
     struct joystick_hwdata *pNext; // next device
 };

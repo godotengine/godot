@@ -30,9 +30,12 @@
 
 #include "tts_android.h"
 
-#include "java_godot_wrapper.h"
-#include "os_android.h"
+#include "jni_utils.h"
 #include "thread_jandroid.h"
+
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
+#include "servers/display/display_server.h"
 
 bool TTS_Android::initialized = false;
 jobject TTS_Android::tts = nullptr;
@@ -52,7 +55,7 @@ jmethodID TTS_Android::_pause_speaking = nullptr;
 jmethodID TTS_Android::_resume_speaking = nullptr;
 jmethodID TTS_Android::_stop_speaking = nullptr;
 
-HashMap<int, Char16String> TTS_Android::ids;
+HashMap<int64_t, Char16String> TTS_Android::ids;
 
 void TTS_Android::_thread_function(void *self) {
 	JNIEnv *env = get_jni_env();
@@ -117,7 +120,7 @@ void TTS_Android::setup(jobject p_tts) {
 	_is_paused = env->GetMethodID(cls, "isPaused", "()Z");
 	_get_state = env->GetMethodID(cls, "getState", "()I");
 	_get_voices = env->GetMethodID(cls, "getVoices", "()[Ljava/lang/String;");
-	_speak = env->GetMethodID(cls, "speak", "(Ljava/lang/String;Ljava/lang/String;IFFIZ)V");
+	_speak = env->GetMethodID(cls, "speak", "(Ljava/lang/String;Ljava/lang/String;IFFJZ)V");
 	_pause_speaking = env->GetMethodID(cls, "pauseSpeaking", "()V");
 	_resume_speaking = env->GetMethodID(cls, "resumeSpeaking", "()V");
 	_stop_speaking = env->GetMethodID(cls, "stopSpeaking", "()V");
@@ -145,14 +148,14 @@ void TTS_Android::terminate() {
 	}
 }
 
-void TTS_Android::_java_utterance_callback(int p_event, int p_id, int p_pos) {
+void TTS_Android::_java_utterance_callback(int p_event, int64_t p_id, int p_pos) {
 	if (unlikely(!initialized)) {
 		initialize_tts();
 	}
 	ERR_FAIL_COND_MSG(!initialized || tts == nullptr, "Text to Speech not initialized.");
 	if (ids.has(p_id)) {
 		int pos = 0;
-		if ((DisplayServer::TTSUtteranceEvent)p_event == DisplayServer::TTS_UTTERANCE_BOUNDARY) {
+		if ((DisplayServerEnums::TTSUtteranceEvent)p_event == DisplayServerEnums::TTS_UTTERANCE_BOUNDARY) {
 			// Convert position from UTF-16 to UTF-32.
 			const Char16String &string = ids[p_id];
 			for (int i = 0; i < MIN(p_pos, string.length()); i++) {
@@ -162,10 +165,10 @@ void TTS_Android::_java_utterance_callback(int p_event, int p_id, int p_pos) {
 				}
 				pos++;
 			}
-		} else if ((DisplayServer::TTSUtteranceEvent)p_event != DisplayServer::TTS_UTTERANCE_STARTED) {
+		} else if ((DisplayServerEnums::TTSUtteranceEvent)p_event != DisplayServerEnums::TTS_UTTERANCE_STARTED) {
 			ids.erase(p_id);
 		}
-		DisplayServer::get_singleton()->tts_post_utterance_event((DisplayServer::TTSUtteranceEvent)p_event, p_id, pos);
+		DisplayServer::get_singleton()->tts_post_utterance_event((DisplayServerEnums::TTSUtteranceEvent)p_event, p_id, pos);
 	}
 }
 
@@ -230,7 +233,7 @@ Array TTS_Android::get_voices() {
 	return list;
 }
 
-void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (unlikely(!initialized)) {
 		initialize_tts();
 	}
@@ -240,7 +243,7 @@ void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volum
 	}
 
 	if (p_text.is_empty()) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, p_utterance_id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, p_utterance_id);
 		return;
 	}
 
@@ -289,8 +292,8 @@ void TTS_Android::stop() {
 		initialize_tts();
 	}
 	ERR_FAIL_COND_MSG(!initialized || tts == nullptr, "Text to Speech not initialized.");
-	for (const KeyValue<int, Char16String> &E : ids) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
+	for (const KeyValue<int64_t, Char16String> &E : ids) {
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, E.key);
 	}
 	ids.clear();
 

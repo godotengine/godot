@@ -30,6 +30,9 @@
 
 #include "modifier_bone_target_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 void ModifierBoneTarget3D::_validate_bone_names() {
 	// Prior bone name.
 	if (!bone_name.is_empty()) {
@@ -56,7 +59,7 @@ void ModifierBoneTarget3D::set_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone <= -1 || bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range!");
+			WARN_PRINT_ED("Bone index '" + itos(p_bone) + "' is out of range!");
 			bone = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone);
@@ -78,7 +81,7 @@ void ModifierBoneTarget3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {
-			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint = PROPERTY_HINT_ENUM_SUGGESTION;
 			p_property.hint_string = skeleton->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
@@ -98,10 +101,6 @@ void ModifierBoneTarget3D::_bind_methods() {
 }
 
 void ModifierBoneTarget3D::_process_modification(double p_delta) {
-	if (!is_inside_tree()) {
-		return;
-	}
-
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton || bone < 0 || bone >= skeleton->get_bone_count()) {
 		return;

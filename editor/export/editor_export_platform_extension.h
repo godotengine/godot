@@ -30,8 +30,12 @@
 
 #pragma once
 
-#include "editor_export_platform.h"
-#include "editor_export_preset.h"
+#include "core/object/gdvirtual.gen.h"
+#include "core/variant/typed_array.h"
+#include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_preset.h"
+
+class ImageTexture;
 
 class EditorExportPlatformExtension : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformExtension, EditorExportPlatform);

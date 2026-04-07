@@ -34,7 +34,9 @@
 #define GLES_API_ENABLED // Allow using GLES.
 #endif
 
+// IWYU pragma: begin_exports.
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
+// IWYU pragma: end_exports.

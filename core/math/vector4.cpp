@@ -79,15 +79,23 @@ real_t Vector4::length() const {
 }
 
 void Vector4::normalize() {
-	real_t lengthsq = length_squared();
-	if (lengthsq == 0) {
-		x = y = z = w = 0;
+	if (!is_finite()) {
+#ifdef MATH_CHECKS
+		WARN_PRINT("Vector4 cannot be normalized, the elements must be finite. Making (0, 0, 0, 0) as a fallback.");
+#endif // MATH_CHECKS
+		zero();
+		return;
+	}
+
+	real_t l = length_squared();
+	if (l == 0) {
+		zero();
 	} else {
-		real_t length = Math::sqrt(lengthsq);
-		x /= length;
-		y /= length;
-		z /= length;
-		w /= length;
+		l = Math::sqrt(l);
+		x /= l;
+		y /= l;
+		z /= l;
+		w /= l;
 	}
 }
 

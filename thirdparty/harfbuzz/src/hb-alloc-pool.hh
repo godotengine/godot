@@ -67,7 +67,7 @@ struct hb_alloc_pool_t
       return ret;
     }
 
-    unsigned pad = (unsigned)(-(uintptr_t) current_chunk.arrayZ) & (alignment - 1);
+    unsigned pad = (unsigned) ((alignment - ((uintptr_t) current_chunk.arrayZ & (alignment - 1))) & (alignment - 1));
 
     // Small chunk, allocate from the last chunk.
     if (current_chunk.length < pad + size)
@@ -77,7 +77,7 @@ struct hb_alloc_pool_t
       hb_vector_t<char> &chunk = chunks.arrayZ[chunks.length - 1];
       if (unlikely (!chunk.resize (ChunkSize))) return nullptr;
       current_chunk = chunk;
-      pad = (unsigned)(-(uintptr_t) current_chunk.arrayZ) & (alignment - 1);
+      pad = (unsigned) ((alignment - ((uintptr_t) current_chunk.arrayZ & (alignment - 1))) & (alignment - 1));
     }
 
     current_chunk += pad;

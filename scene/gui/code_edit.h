@@ -111,6 +111,7 @@ private:
 	/* Line numbers */
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
+	int line_numbers_min_digits = 3;
 	String line_number_padding = " ";
 	HashMap<int, RID> line_number_text_cache;
 	void _clear_line_number_text_cache();
@@ -212,6 +213,9 @@ private:
 	bool is_code_completion_scroll_pressed = false;
 	bool is_code_completion_drag_started = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
+	Vector<RID> code_completion_ac_items;
+	RID code_completion_ac_scroll_element;
+	RID code_completion_ac_root_element;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
 	int code_completion_force_item_center = -1;
@@ -335,6 +339,8 @@ protected:
 	virtual void _backspace_internal(int p_caret) override;
 	virtual void _cut_internal(int p_caret) override;
 
+	virtual RID get_focused_accessibility_element() const override;
+
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _filter_code_completion_candidates, TypedArray<Dictionary>)
@@ -413,6 +419,8 @@ public:
 	bool is_draw_line_numbers_enabled() const;
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 	bool is_line_numbers_zero_padded() const;
+	void set_line_numbers_min_digits(int p_count);
+	int get_line_numbers_min_digits() const;
 
 	/* Fold gutter */
 	void set_draw_fold_gutter(bool p_draw);
@@ -520,6 +528,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
+	void join_lines(const String &p_line_ending = " ");
 	void duplicate_selection();
 	void duplicate_lines();
 

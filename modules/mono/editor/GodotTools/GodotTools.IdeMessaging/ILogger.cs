@@ -4,10 +4,10 @@ namespace GodotTools.IdeMessaging
 {
     public interface ILogger
     {
-        void LogDebug(string message);
-        void LogInfo(string message);
-        void LogWarning(string message);
-        void LogError(string message);
-        void LogError(string message, Exception e);
+        public void LogDebug(string message);
+        public void LogInfo(string message);
+        public void LogWarning(string message);
+        public void LogError(string message);
+        public void LogError(string message, Exception e);
     }
 }

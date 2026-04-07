@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ImageTexture" inherits="Texture2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Texture2D] based on an [Image].
 	</brief_description>
@@ -34,12 +34,6 @@
 			<param index="0" name="image" type="Image" />
 			<description>
 				Creates a new [ImageTexture] and initializes it by allocating and setting the data from an [Image].
-			</description>
-		</method>
-		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format" />
-			<description>
-				Returns the format of the texture.
 			</description>
 		</method>
 		<method name="set_image">

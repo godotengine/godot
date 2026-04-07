@@ -47,6 +47,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -69,6 +70,16 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	private static final int ROTARY_INPUT_VERTICAL_AXIS = 1;
 	private static final int ROTARY_INPUT_HORIZONTAL_AXIS = 0;
+
+	private static final String[] JOYPAD_IGNORE_LIST = new String[] {
+		// Ignore fingerprint scanners.
+		"uinput-fpc",
+		"uinput-goodix",
+		"uinput-synaptics",
+		"uinput-elan",
+		"uinput-vfs",
+		"uinput-atrus",
+	};
 
 	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
 	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<>(4);
@@ -121,6 +132,23 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	 */
 	public void disableScrollDeadzone(boolean disable) {
 		this.godotGestureHandler.setScrollDeadzoneDisabled(disable);
+	}
+
+	/**
+	 * Enable haptic feedback (vibration) when a long-press right-click is triggered.
+	 */
+	public void enableHapticFeedback(boolean enable) {
+		this.godotGestureHandler.setHapticFeedbackEnabled(enable);
+	}
+
+	/**
+	 * Perform haptic feedback on the render view.
+	 */
+	void performHapticFeedback() {
+		GodotRenderView view = godot.getRenderView();
+		if (view != null) {
+			view.getView().performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+		}
 	}
 
 	/**
@@ -357,6 +385,13 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		if (!device.supportsSource(InputDevice.SOURCE_GAMEPAD) &&
 				!device.supportsSource(InputDevice.SOURCE_JOYSTICK)) {
 			return;
+		}
+
+		for (String name : JOYPAD_IGNORE_LIST) {
+			if (device.getName().equals(name)) {
+				Log.i(TAG, "=== Input Device ignored: " + device.getName());
+				return;
+			}
 		}
 
 		// Assign first available number. Reuse numbers where possible.

@@ -82,7 +82,9 @@ public:
 	}
 
 	~PipelineDeferredRD() {
-		free();
+#ifdef DEV_ENABLED
+		ERR_FAIL_COND_MSG(pipeline.is_valid(), "'free()' must be called manually before deconstruction and before the corresponding shader is freed.");
+#endif
 	}
 
 	void create_render_pipeline(RID p_shader, RD::FramebufferFormatID p_framebuffer_format, RD::VertexFormatID p_vertex_format, RD::RenderPrimitive p_render_primitive, const RD::PipelineRasterizationState &p_rasterization_state, const RD::PipelineMultisampleState &p_multisample_state, const RD::PipelineDepthStencilState &p_depth_stencil_state, const RD::PipelineColorBlendState &p_blend_state, BitField<RD::PipelineDynamicStateFlags> p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0, const Vector<RD::PipelineSpecializationConstant> &p_specialization_constants = Vector<RD::PipelineSpecializationConstant>()) {
@@ -119,6 +121,9 @@ public:
 		_wait();
 
 		if (pipeline.is_valid()) {
+#ifdef DEV_ENABLED
+			ERR_FAIL_COND_MSG(!(RD::get_singleton()->render_pipeline_is_valid(pipeline) || RD::get_singleton()->compute_pipeline_is_valid(pipeline)), "`free()` must be called  manually before the dependent shader is freed.");
+#endif
 			RD::get_singleton()->free_rid(pipeline);
 			pipeline = RID();
 		}

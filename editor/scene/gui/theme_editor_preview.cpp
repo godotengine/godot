@@ -31,6 +31,9 @@
 #include "theme_editor_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -201,12 +204,14 @@ void ThemeEditorPreview::_reset_picker_overlay() {
 
 void ThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (is_visible_in_tree()) {
 				set_process(true);
 			}
-
-			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -251,7 +256,6 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	picker_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
-	preview_body->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	preview_body->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(preview_body);
 
@@ -292,7 +296,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
+			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
 		} break;
 	}
 }

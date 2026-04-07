@@ -47,6 +47,8 @@ protected:
 	StringName pose_name = SceneStringName(default_);
 	Ref<XRPositionalTracker> tracker;
 
+	void _validate_property(PropertyInfo &p_property) const;
+
 	void _bind_tracker();
 	void _unbind_tracker();
 	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);

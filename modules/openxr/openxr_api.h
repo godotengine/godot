@@ -41,10 +41,14 @@
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/vector.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_pose.h"
 
 #include <openxr/openxr.h>
+
+// Name we add to our extensions if OpenXR 1.1 context is available.
+#define XR_OPENXR_1_1_NAME "OPENXR_1_1"
+
+#define XR_API_VERSION_1_1_0 XR_MAKE_VERSION(1, 1, 0)
 
 // forward declarations, we don't want to include these fully
 class OpenXRInterface;
@@ -91,7 +95,7 @@ private:
 
 	// extensions
 	LocalVector<XrExtensionProperties> supported_extensions;
-	Vector<CharString> enabled_extensions;
+	LocalVector<CharString> enabled_extensions;
 
 	// composition layer providers
 	Vector<OpenXRExtensionWrapper *> composition_layer_providers;
@@ -101,6 +105,9 @@ private:
 
 	// frame info extensions
 	Vector<OpenXRExtensionWrapper *> frame_info_extensions;
+
+	// projection layer extensions
+	Vector<OpenXRExtensionWrapper *> projection_layer_extensions;
 
 	// view configuration
 	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
@@ -112,6 +119,7 @@ private:
 	PackedInt64Array supported_swapchain_formats;
 
 	// system info
+	XrVersion openxr_version;
 	String runtime_name;
 	String runtime_version;
 
@@ -180,7 +188,13 @@ private:
 	bool load_layer_properties();
 	bool load_supported_extensions();
 	bool is_extension_supported(const String &p_extension) const;
-	bool is_extension_enabled(const String &p_extension) const;
+	bool is_any_extension_enabled(const String &p_extensions) const;
+
+	struct RequestExtension {
+		String name;
+		bool *enabled;
+	};
+	XrResult attempt_create_instance(XrVersion p_version);
 
 	bool openxr_loader_init();
 	bool resolve_instance_openxr_symbols();
@@ -299,6 +313,7 @@ private:
 
 	struct InteractionProfile { // Interaction profiles define suggested bindings between the physical inputs on controller types and our actions
 		String name; // Name of the interaction profile (i.e. "/interaction_profiles/valve/index_controller")
+		CharString internal_name; // Internal name of the interaction profile (translated if required)
 		XrPath path; // OpenXR path for this profile
 		Vector<XrActionSuggestedBinding> bindings; // OpenXR action bindings
 		Vector<PackedByteArray> modifiers; // Array of modifiers we'll add into XrBindingModificationsKHR
@@ -306,6 +321,9 @@ private:
 	RID_Owner<InteractionProfile, true> interaction_profile_owner;
 	RID get_interaction_profile_rid(XrPath p_path);
 	XrPath get_interaction_profile_path(RID p_interaction_profile);
+
+	CharString get_interaction_profile_internal_name(const String &p_interaction_profile_name) const;
+	const char *check_profile_path(const CharString &p_interaction_profile_name, const char *p_path) const;
 
 	struct OrderedCompositionLayer {
 		const XrCompositionLayerBaseHeader *composition_layer;
@@ -346,6 +364,7 @@ private:
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
 		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
+		bool use_subsampled_images = true; // We need to default to true for the warning to be shown if we fallback immediately at startup.
 		bool view_pose_valid = false;
 
 		double z_near = 0.0;
@@ -371,63 +390,20 @@ private:
 	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
 	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
+	static void _update_main_swapchain_size_rt();
 
-	_FORCE_INLINE_ void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers_rt).bind(p_view_count, p_submit_depth_buffer));
-	}
-
-	_FORCE_INLINE_ void set_render_session_running(bool p_is_running) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running_rt).bind(p_is_running));
-	}
-
-	_FORCE_INLINE_ void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info_rt).bind(p_predicted_display_time, p_should_render));
-	}
-
-	_FORCE_INLINE_ void set_render_play_space(XrSpace p_play_space) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space_rt).bind(uint64_t(p_play_space)));
-	}
-
-	_FORCE_INLINE_ void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_environment_blend_mode_rt).bind((int32_t)p_mode));
-	}
-
-	_FORCE_INLINE_ void set_render_state_multiplier(double p_render_target_size_multiplier) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier_rt).bind(p_render_target_size_multiplier));
-	}
-
-	_FORCE_INLINE_ void set_render_state_render_region(const Rect2i &p_render_region) {
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region_rt).bind(p_render_region));
-	}
+	void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer);
+	void set_render_session_running(bool p_is_running);
+	void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
+	void set_render_play_space(XrSpace p_play_space);
+	void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode);
+	void set_render_state_multiplier(double p_render_target_size_multiplier);
+	void set_render_state_render_region(const Rect2i &p_render_region);
 
 public:
+	void update_main_swapchain_size();
+
+	XrVersion get_openxr_version() const { return openxr_version; }
 	XrInstance get_instance() const { return instance; }
 	XrSystemId get_system_id() const { return system_id; }
 	XrSession get_session() const { return session; }
@@ -472,12 +448,12 @@ public:
 	static const Vector<OpenXRExtensionWrapper *> &get_registered_extension_wrappers();
 	static void register_extension_metadata();
 	static void cleanup_extension_wrappers();
-	static PackedStringArray get_all_requested_extensions();
+	static PackedStringArray get_all_requested_extensions(XrVersion p_xr_version);
 
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
-	uint32_t get_view_count();
+	uint32_t get_view_count() const;
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
@@ -496,6 +472,7 @@ public:
 	void finish();
 
 	_FORCE_INLINE_ XrSpace get_play_space() const { return play_space; }
+	_FORCE_INLINE_ XrSpace get_view_space() const { return view_space; }
 	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
 	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	_FORCE_INLINE_ bool can_render() {
@@ -547,6 +524,9 @@ public:
 
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
+
+	bool get_foveation_with_subsampled_images() const;
+	void set_foveation_with_subsampled_images(bool p_enabled);
 
 	// Play space.
 	Size2 get_play_space_bounds() const;
@@ -606,7 +586,11 @@ public:
 	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 
+	void register_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+
 	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
+
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
 	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }

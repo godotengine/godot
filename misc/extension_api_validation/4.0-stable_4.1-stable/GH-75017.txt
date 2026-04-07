@@ -1,0 +1,6 @@
+GH-75017
+--------
+Validate extension JSON: Error: Hash changed for 'classes/RichTextLabel/methods/push_list', from 8593DF77 to F0951C19. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_list/arguments': size changed value in new API, from 3 to 4.
+
+Added an optional parameter with a default value. No adjustments should be necessary.

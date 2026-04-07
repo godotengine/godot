@@ -36,6 +36,7 @@ class Container : public Control {
 	GDCLASS(Container, Control);
 
 	bool pending_sort = false;
+	bool accessibility_region = false;
 	void _sort_children();
 	void _child_minsize_changed();
 
@@ -65,12 +66,15 @@ public:
 		NOTIFICATION_SORT_CHILDREN = 51,
 	};
 
-	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
+	void fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect);
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const;
 	virtual Vector<int> get_allowed_size_flags_vertical() const;
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	void set_accessibility_region(bool p_region);
+	bool is_accessibility_region() const;
 
 	Container();
 };

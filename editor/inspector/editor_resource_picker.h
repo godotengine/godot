@@ -49,12 +49,14 @@ class EditorResourcePicker : public HBoxContainer {
 
 	bool editable = true;
 	bool dropping = false;
+	bool force_allow_unique = false;
 
 	Vector<String> inheritors_array;
 	mutable HashSet<StringName> allowed_types_without_convert;
 	mutable HashSet<StringName> allowed_types_with_convert;
 
 	Button *assign_button = nullptr;
+	Button *make_unique_button = nullptr;
 	TextureRect *preview_rect = nullptr;
 	Button *edit_button = nullptr;
 	Button *quick_load_button = nullptr;
@@ -102,6 +104,7 @@ class EditorResourcePicker : public HBoxContainer {
 
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
+	void _on_unique_button_pressed();
 
 	String _get_owner_path() const;
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
@@ -109,6 +112,7 @@ class EditorResourcePicker : public HBoxContainer {
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
 	bool _is_custom_type_script() const;
+	Ref<Resource> _get_dropped_resource(const Variant &p_data) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -117,6 +121,8 @@ class EditorResourcePicker : public HBoxContainer {
 	void _ensure_resource_menu();
 	void _gather_resources_to_duplicate(const Ref<Resource> p_resource, TreeItem *p_item, const String &p_property_name = "") const;
 	void _duplicate_selected_resources();
+	bool _is_uniqueness_enabled(bool p_check_recursive = false);
+	Ref<Resource> _has_parent_resource();
 
 protected:
 	virtual void _update_resource();
@@ -135,9 +141,11 @@ public:
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
 
+	bool is_resource_allowed(const Ref<Resource> &p_resource);
 	void set_edited_resource(Ref<Resource> p_resource);
 	void set_edited_resource_no_check(Ref<Resource> p_resource);
 	Ref<Resource> get_edited_resource();
+	void set_force_allow_unique(bool p_force) { force_allow_unique = p_force; }
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;

@@ -1,0 +1,10 @@
+GH-80214
+--------
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersRD/methods/get_color_layer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersRD/methods/get_depth_layer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersRD/methods/get_velocity_layer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderSceneBuffersRD/methods/get_color_texture': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderSceneBuffersRD/methods/get_depth_texture': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderSceneBuffersRD/methods/get_velocity_texture': arguments
+
+MSAA flag was added, compatibility functions exist for these.

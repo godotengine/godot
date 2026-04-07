@@ -29,9 +29,12 @@
 /**************************************************************************/
 
 #include "openxr_valve_analog_threshold_extension.h"
+
 #include "../action_map/openxr_action_set.h"
 #include "../action_map/openxr_interaction_profile.h"
 #include "../openxr_api.h"
+
+#include "core/object/class_db.h"
 
 // Implementation for:
 // https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_VALVE_analog_threshold
@@ -53,7 +56,7 @@ OpenXRValveAnalogThresholdExtension::~OpenXRValveAnalogThresholdExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRValveAnalogThresholdExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRValveAnalogThresholdExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Note, we're dependent on the binding modifier extension, this may be requested by multiple extension wrappers.
@@ -81,11 +84,11 @@ void OpenXRAnalogThresholdModifier::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_on_haptic", "haptic"), &OpenXRAnalogThresholdModifier::set_on_haptic);
 	ClassDB::bind_method(D_METHOD("get_on_haptic"), &OpenXRAnalogThresholdModifier::get_on_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRHapticBase"), "set_on_haptic", "get_on_haptic");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_on_haptic", "get_on_haptic");
 
 	ClassDB::bind_method(D_METHOD("set_off_haptic", "haptic"), &OpenXRAnalogThresholdModifier::set_off_haptic);
 	ClassDB::bind_method(D_METHOD("get_off_haptic"), &OpenXRAnalogThresholdModifier::get_off_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRHapticBase"), "set_off_haptic", "get_off_haptic");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_off_haptic", "get_off_haptic");
 }
 
 OpenXRAnalogThresholdModifier::OpenXRAnalogThresholdModifier() {

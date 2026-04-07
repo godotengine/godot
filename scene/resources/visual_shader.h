@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/string/string_builder.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
@@ -53,6 +54,7 @@ public:
 		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
 		TYPE_FOG,
+		TYPE_TEXTURE_BLIT,
 		TYPE_MAX
 	};
 
@@ -161,7 +163,7 @@ private:
 	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
-	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
+	bool has_func_name(RSE::ShaderMode p_mode, const String &p_func_name) const;
 
 	bool _check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
 
@@ -597,6 +599,7 @@ public:
 		QUAL_NONE,
 		QUAL_GLOBAL,
 		QUAL_INSTANCE,
+		QUAL_INSTANCE_INDEX,
 		QUAL_MAX,
 	};
 
@@ -604,6 +607,7 @@ private:
 	String parameter_name = "";
 	Qualifier qualifier = QUAL_NONE;
 	bool global_code_generated = false;
+	int instance_index = 0;
 
 protected:
 	static void _bind_methods();
@@ -622,6 +626,9 @@ public:
 
 	void set_global_code_generated(bool p_enabled);
 	bool is_global_code_generated() const;
+
+	void set_instance_index(int p_index);
+	int get_instance_index() const;
 
 	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
 	virtual bool is_convertible_to_constant() const = 0;

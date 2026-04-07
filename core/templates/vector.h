@@ -71,8 +71,8 @@ private:
 
 public:
 	// Must take a copy instead of a reference (see GH-31736).
-	_FORCE_INLINE_ bool push_back(T p_elem) { return _cowdata.push_back(p_elem); }
-	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
+	_FORCE_INLINE_ bool push_back(T p_elem) { return _cowdata.push_back(std::move(p_elem)); }
+	_FORCE_INLINE_ bool append(T p_elem) { return _cowdata.push_back(std::move(p_elem)); } //alias
 	void fill(T p_elem);
 
 	void remove_at(Size p_index) { _cowdata.remove_at(p_index); }
@@ -114,18 +114,28 @@ public:
 		return _cowdata.template resize<true>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and keep memory uninitialized.
+	/// This means that any newly added elements have an unknown value, and are expected to be set after the `resize_uninitialized` call.
 	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
 	_FORCE_INLINE_ Error resize_uninitialized(Size p_size) {
 		// resize() statically asserts that T is compatible, no need to do it ourselves.
 		return _cowdata.template resize<false>(p_size);
 	}
 
+	/// Reserves capacity for at least p_size total elements.
+	/// You can use `reserve` before repeated insertions to improve performance.
+	/// The capacity grows in 1.5x increments when possible, and uses `p_size`
+	/// exactly otherwise.
 	Error reserve(Size p_size) {
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 		return _cowdata.reserve(p_size);
 	}
 
+	/// Reserves capacity for exactly p_size total elements.
+	/// This can be useful to reduce RAM use of large vectors, but wastes CPU
+	/// time if more than p_size elements are added after the `reserve_exact` call.
+	/// Prefer using `reserve`, unless the vector (or copies of it) will never
+	/// grow again after p_size elements are inserted.
 	Error reserve_exact(Size p_size) {
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 		return _cowdata.reserve_exact(p_size);
@@ -133,7 +143,7 @@ public:
 
 	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
 	// Must take a copy instead of a reference (see GH-31736).
-	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
+	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, std::move(p_val)); }
 	Size find(const T &p_val, Size p_from = 0) const {
 		if (p_from < 0) {
 			p_from = size() + p_from;
@@ -175,16 +185,16 @@ public:
 		sorter.sort(data, len);
 	}
 
-	Size bsearch(const T &p_value, bool p_before) {
+	Size bsearch(const T &p_value, bool p_before) const {
 		return bsearch_custom<Comparator<T>>(p_value, p_before);
 	}
 
 	template <typename Comparator, typename Value, typename... Args>
-	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) {
+	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) const {
 		return span().bisect(p_value, p_before, Comparator{ args... });
 	}
 
-	Vector<T> duplicate() {
+	Vector<T> duplicate() const {
 		return *this;
 	}
 
@@ -242,31 +252,8 @@ public:
 		return result;
 	}
 
-	bool operator==(const Vector<T> &p_arr) const {
-		Size s = size();
-		if (s != p_arr.size()) {
-			return false;
-		}
-		for (Size i = 0; i < s; i++) {
-			if (operator[](i) != p_arr[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	bool operator!=(const Vector<T> &p_arr) const {
-		Size s = size();
-		if (s != p_arr.size()) {
-			return true;
-		}
-		for (Size i = 0; i < s; i++) {
-			if (operator[](i) != p_arr[i]) {
-				return true;
-			}
-		}
-		return false;
-	}
+	bool operator==(const Vector<T> &p_arr) const { return span() == p_arr.span(); }
+	bool operator!=(const Vector<T> &p_arr) const { return span() != p_arr.span(); }
 
 	struct Iterator {
 		_FORCE_INLINE_ T &operator*() const {
@@ -337,8 +324,6 @@ public:
 			_cowdata(p_init) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
 	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
-
-	_FORCE_INLINE_ ~Vector() {}
 };
 
 template <typename T>

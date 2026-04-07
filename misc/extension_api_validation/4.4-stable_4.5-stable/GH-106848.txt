@@ -1,0 +1,5 @@
+GH-106848
+---------
+Validate extension JSON: API was removed: classes/Node/methods/get_rpc_config
+
+Change Node `get_rpc_config` to `get_node_rpc_config`. Compatibility method registered.

@@ -49,7 +49,7 @@ protected:
 	Ref<Skin> skin;
 	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
-	NodePath skeleton_path = NodePath("..");
+	NodePath skeleton_path;
 
 	LocalVector<float> blend_shape_tracks;
 	HashMap<StringName, int> blend_shape_properties;
@@ -72,6 +72,11 @@ protected:
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
+
+#ifndef DISABLE_DEPRECATED
+	static inline bool use_parent_skeleton_compat = false;
+	static inline bool upgrading_skeleton_compat = false;
+#endif
 
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
@@ -127,6 +132,7 @@ public:
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
 #endif // NAVIGATION_3D_DISABLED
 
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	MeshInstance3D();
-	~MeshInstance3D();
 };
