@@ -716,6 +716,10 @@ private:
 	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
 	Rect2 _get_text_rect();
+	int _get_wrap_width(const Rect2 &p_text_rect) const;
+
+	void _maximum_size_changed();
+
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 

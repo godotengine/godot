@@ -3819,8 +3819,8 @@ Rect2 Tree::_get_content_rect() const {
 	const Rect2 content_rect = Rect2(background->get_offset(), Size2(width, height));
 
 	// Scrollbars won't affect Tree's content rect if they're not visible or placed inside the stylebox margin area.
-	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_combined_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
-	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_combined_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
+	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_bound_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
+	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_bound_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
 	const Point2 scroll_begin = _get_scrollbar_layout_rect().get_end() - Vector2(v_size, h_size);
 	const Size2 offset = (content_rect.get_end() - scroll_begin).maxf(0);
 
@@ -4641,8 +4641,8 @@ void Tree::update_scrollbars() {
 	const real_t height = control_size.y - background->get_margin(SIDE_TOP) - background->get_margin(SIDE_BOTTOM);
 	const Rect2 content_rect = Rect2(background->get_offset(), Size2(width, height));
 
-	const Size2 hmin = h_scroll->get_combined_minimum_size();
-	const Size2 vmin = v_scroll->get_combined_minimum_size();
+	const Size2 hmin = h_scroll->get_bound_minimum_size();
+	const Size2 vmin = v_scroll->get_bound_minimum_size();
 
 	const Size2 internal_min_size = get_internal_min_size();
 	const int title_button_height = _get_title_button_height();
@@ -5562,10 +5562,10 @@ Size2 Tree::get_minimum_size() const {
 	Vector2 content_min_size = get_internal_min_size();
 	if (h_scroll_enabled) {
 		content_min_size.x = 0;
-		min_size.y += h_scroll->get_combined_minimum_size().height;
+		min_size.y += h_scroll->get_bound_minimum_size().height;
 	}
 	if (v_scroll_enabled) {
-		min_size.x += v_scroll->get_combined_minimum_size().width;
+		min_size.x += v_scroll->get_bound_minimum_size().width;
 		content_min_size.y = 0;
 	}
 

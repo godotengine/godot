@@ -49,6 +49,7 @@
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether horizontal scrollbar can be used and when it should be visible.
 		</member>
+		<member name="propagate_maximum_size" type="bool" setter="set_propagate_maximum_size" getter="is_propagating_maximum_size" overrides="Control" default="false" />
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 			Deadzone for touch scrolling. Lower deadzone makes the scrolling more sensitive.
 		</member>
@@ -118,6 +119,9 @@
 		</constant>
 		<constant name="SCROLL_MODE_RESERVE" value="4" enum="ScrollMode">
 			Combines [constant SCROLL_MODE_AUTO] and [constant SCROLL_MODE_SHOW_ALWAYS]. The scrollbar is only visible if necessary, but the content size is adjusted as if it was always visible. It's useful for ensuring that content size stays the same regardless if the scrollbar is visible.
+		</constant>
+		<constant name="SCROLL_MODE_MAXIMIZE_FIRST" value="5" enum="ScrollMode">
+			Behaves like [constant SCROLL_MODE_AUTO], but makes the [ScrollContainer] report a minimum size based on its content (limited by [member Control.custom_maximum_size] when set on the corresponding axis). This allows it to grow first and only start scrolling once constrained.
 		</constant>
 		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
 			Scroll hints will never be shown.
