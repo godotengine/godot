@@ -446,6 +446,7 @@ void JoltBody3D::_space_changed() {
 	_update_group_filter();
 	_update_joint_constraints();
 	_update_sleep_allowed();
+	_update_environmental_properties();
 }
 
 void JoltBody3D::_areas_changed() {
