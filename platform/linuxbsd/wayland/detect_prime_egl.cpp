@@ -38,6 +38,12 @@
 #include "core/string/ustring.h"
 #include "core/variant/variant.h" // IWYU pragma: keep. Needed for print_verbose.
 
+#ifdef GLAD_ENABLED
+#include <platform_gl.h>
+#else
+#include <GL/glcorearb.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
