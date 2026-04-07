@@ -321,7 +321,7 @@ public:
 
 	FUNCRIDSPLIT(material)
 
-	virtual RID material_create_from_shader(RID p_next_pass, int p_render_priority, RID p_shader) override {
+	virtual RID material_create_from_shader(RID p_next_pass, float p_depth_bias_clamp, float p_depth_bias_slope_factor, float p_depth_bias_constant_factor, int p_render_priority, RID p_shader) override {
 		RID material = RSG::material_storage->material_allocate();
 		bool using_server_thread = Thread::get_caller_id() == server_thread;
 		if (using_server_thread || RSG::rasterizer->can_create_resources_async()) {
@@ -331,11 +331,17 @@ public:
 
 			RSG::material_storage->material_initialize(material);
 			RSG::material_storage->material_set_next_pass(material, p_next_pass);
+			RSG::material_storage->material_set_depth_bias_clamp(material, p_depth_bias_clamp);
+			RSG::material_storage->material_set_depth_bias_slope_factor(material, p_depth_bias_slope_factor);
+			RSG::material_storage->material_set_depth_bias_constant_factor(material, p_depth_bias_constant_factor);
 			RSG::material_storage->material_set_render_priority(material, p_render_priority);
 			RSG::material_storage->material_set_shader(material, p_shader);
 		} else {
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_initialize, material);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_next_pass, material, p_next_pass);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_depth_bias_clamp, material, p_depth_bias_clamp);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_depth_bias_slope_factor, material, p_depth_bias_slope_factor);
+			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_depth_bias_constant_factor, material, p_depth_bias_constant_factor);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_render_priority, material, p_render_priority);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::material_set_shader, material, p_shader);
 		}
@@ -349,6 +355,9 @@ public:
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
 
 	FUNC2(material_set_render_priority, RID, int)
+	FUNC2(material_set_depth_bias_constant_factor, RID, float)
+	FUNC2(material_set_depth_bias_slope_factor, RID, float)
+	FUNC2(material_set_depth_bias_clamp, RID, float)
 	FUNC2(material_set_next_pass, RID, RID)
 
 	/* MESH API */

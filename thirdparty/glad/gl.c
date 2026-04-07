@@ -42,9 +42,11 @@ int GLAD_GL_ES_VERSION_3_2 = 0;
 int GLAD_GL_ARB_debug_output = 0;
 int GLAD_GL_ARB_framebuffer_object = 0;
 int GLAD_GL_ARB_get_program_binary = 0;
+int GLAD_GL_ARB_polygon_offset_clamp = 0;
 int GLAD_GL_EXT_framebuffer_blit = 0;
 int GLAD_GL_EXT_framebuffer_multisample = 0;
 int GLAD_GL_EXT_framebuffer_object = 0;
+int GLAD_GL_EXT_polygon_offset_clamp = 0;
 int GLAD_GL_OVR_multiview = 0;
 int GLAD_GL_OVR_multiview2 = 0;
 
@@ -484,6 +486,8 @@ PFNGLPOINTPARAMETERIVPROC glad_glPointParameteriv = NULL;
 PFNGLPOINTSIZEPROC glad_glPointSize = NULL;
 PFNGLPOLYGONMODEPROC glad_glPolygonMode = NULL;
 PFNGLPOLYGONOFFSETPROC glad_glPolygonOffset = NULL;
+PFNGLPOLYGONOFFSETCLAMPPROC glad_glPolygonOffsetClamp = NULL;
+PFNGLPOLYGONOFFSETCLAMPEXTPROC glad_glPolygonOffsetClampEXT = NULL;
 PFNGLPOLYGONSTIPPLEPROC glad_glPolygonStipple = NULL;
 PFNGLPOPATTRIBPROC glad_glPopAttrib = NULL;
 PFNGLPOPCLIENTATTRIBPROC glad_glPopClientAttrib = NULL;
@@ -2077,6 +2081,10 @@ static void glad_gl_load_GL_ARB_get_program_binary( GLADuserptrloadfunc load, vo
     glad_glProgramBinary = (PFNGLPROGRAMBINARYPROC) load(userptr, "glProgramBinary");
     glad_glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC) load(userptr, "glProgramParameteri");
 }
+static void glad_gl_load_GL_ARB_polygon_offset_clamp( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_GL_ARB_polygon_offset_clamp) return;
+    glad_glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPPROC) load(userptr, "glPolygonOffsetClamp");
+}
 static void glad_gl_load_GL_EXT_framebuffer_blit( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GL_EXT_framebuffer_blit) return;
     glad_glBlitFramebufferEXT = (PFNGLBLITFRAMEBUFFEREXTPROC) load(userptr, "glBlitFramebufferEXT");
@@ -2104,6 +2112,10 @@ static void glad_gl_load_GL_EXT_framebuffer_object( GLADuserptrloadfunc load, vo
     glad_glIsFramebufferEXT = (PFNGLISFRAMEBUFFEREXTPROC) load(userptr, "glIsFramebufferEXT");
     glad_glIsRenderbufferEXT = (PFNGLISRENDERBUFFEREXTPROC) load(userptr, "glIsRenderbufferEXT");
     glad_glRenderbufferStorageEXT = (PFNGLRENDERBUFFERSTORAGEEXTPROC) load(userptr, "glRenderbufferStorageEXT");
+}
+static void glad_gl_load_GL_EXT_polygon_offset_clamp( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_GL_EXT_polygon_offset_clamp) return;
+    glad_glPolygonOffsetClampEXT = (PFNGLPOLYGONOFFSETCLAMPEXTPROC) load(userptr, "glPolygonOffsetClampEXT");
 }
 static void glad_gl_load_GL_OVR_multiview( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GL_OVR_multiview) return;
@@ -2224,6 +2236,8 @@ static int glad_gl_find_extensions_gl( int version) {
     GLAD_GL_EXT_framebuffer_object = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_framebuffer_object");
     GLAD_GL_OVR_multiview = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview");
     GLAD_GL_OVR_multiview2 = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview2");
+	GLAD_GL_ARB_polygon_offset_clamp = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_ARB_polygon_offset_clamp");
+	GLAD_GL_EXT_polygon_offset_clamp = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_polygon_offset_clamp");
 
     glad_gl_free_extensions(exts_i, num_exts_i);
 
@@ -2295,9 +2309,11 @@ int gladLoadGLUserPtr( GLADuserptrloadfunc load, void *userptr) {
     glad_gl_load_GL_ARB_debug_output(load, userptr);
     glad_gl_load_GL_ARB_framebuffer_object(load, userptr);
     glad_gl_load_GL_ARB_get_program_binary(load, userptr);
+    glad_gl_load_GL_ARB_polygon_offset_clamp(load, userptr);
     glad_gl_load_GL_EXT_framebuffer_blit(load, userptr);
     glad_gl_load_GL_EXT_framebuffer_multisample(load, userptr);
     glad_gl_load_GL_EXT_framebuffer_object(load, userptr);
+    glad_gl_load_GL_EXT_polygon_offset_clamp(load, userptr);
     glad_gl_load_GL_OVR_multiview(load, userptr);
 
 
@@ -2318,6 +2334,7 @@ static int glad_gl_find_extensions_gles2( int version) {
 
     GLAD_GL_OVR_multiview = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview");
     GLAD_GL_OVR_multiview2 = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview2");
+	GLAD_GL_EXT_polygon_offset_clamp = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_polygon_offset_clamp");
 
     glad_gl_free_extensions(exts_i, num_exts_i);
 
@@ -2370,6 +2387,7 @@ int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
     glad_gl_load_GL_ES_VERSION_3_2(load, userptr);
 
     if (!glad_gl_find_extensions_gles2(version)) return 0;
+    glad_gl_load_GL_EXT_polygon_offset_clamp(load, userptr);
     glad_gl_load_GL_OVR_multiview(load, userptr);
 
 

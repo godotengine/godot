@@ -67,6 +67,42 @@ Ref<Material> Material::get_next_pass() const {
 	return next_pass;
 }
 
+void Material::set_depth_bias_clamp(float p_clamp) {
+	depth_bias_clamp = p_clamp;
+
+	if (material.is_valid()) {
+		RS::get_singleton()->material_set_depth_bias_clamp(material, depth_bias_clamp);
+	}
+}
+
+float Material::get_depth_bias_clamp() const {
+	return depth_bias_clamp;
+}
+
+void Material::set_depth_bias_slope_factor(float p_slope_factor) {
+	depth_bias_slope_factor = p_slope_factor;
+
+	if (material.is_valid()) {
+		RS::get_singleton()->material_set_depth_bias_slope_factor(material, depth_bias_slope_factor);
+	}
+}
+
+float Material::get_depth_bias_slope_factor() const {
+	return depth_bias_slope_factor;
+}
+
+void Material::set_depth_bias_constant_factor(float p_constant_factor) {
+	depth_bias_constant_factor = p_constant_factor;
+
+	if (material.is_valid()) {
+		RS::get_singleton()->material_set_depth_bias_constant_factor(material, depth_bias_constant_factor);
+	}
+}
+
+float Material::get_depth_bias_constant_factor() const {
+	return depth_bias_constant_factor;
+}
+
 void Material::set_render_priority(int p_priority) {
 	ERR_FAIL_COND(p_priority < RENDER_PRIORITY_MIN);
 	ERR_FAIL_COND(p_priority > RENDER_PRIORITY_MAX);
@@ -88,6 +124,12 @@ RID Material::get_rid() const {
 
 void Material::_validate_property(PropertyInfo &p_property) const {
 	if (!_can_do_next_pass() && p_property.name == "next_pass") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (!_can_use_depth_bias() && p_property.name == "depth_bias_constant_factor") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (!_can_use_depth_bias() && p_property.name == "depth_bias_slope_factor") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (!_can_use_depth_bias() && p_property.name == "depth_bias_clamp") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (!_can_use_render_priority() && p_property.name == "render_priority") {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -145,6 +187,12 @@ bool Material::_can_do_next_pass() const {
 	return ret;
 }
 
+bool Material::_can_use_depth_bias() const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_can_use_depth_bias, ret);
+	return ret;
+}
+
 bool Material::_can_use_render_priority() const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_can_use_render_priority, ret);
@@ -161,6 +209,15 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass"), &Material::set_next_pass);
 	ClassDB::bind_method(D_METHOD("get_next_pass"), &Material::get_next_pass);
 
+	ClassDB::bind_method(D_METHOD("set_depth_bias_clamp", "depth_bias"), &Material::set_depth_bias_clamp);
+	ClassDB::bind_method(D_METHOD("get_depth_bias_clamp"), &Material::get_depth_bias_clamp);
+
+	ClassDB::bind_method(D_METHOD("set_depth_bias_slope_factor", "depth_bias"), &Material::set_depth_bias_slope_factor);
+	ClassDB::bind_method(D_METHOD("get_depth_bias_slope_factor"), &Material::get_depth_bias_slope_factor);
+
+	ClassDB::bind_method(D_METHOD("set_depth_bias_constant_factor", "depth_bias"), &Material::set_depth_bias_constant_factor);
+	ClassDB::bind_method(D_METHOD("get_depth_bias_constant_factor"), &Material::get_depth_bias_constant_factor);
+
 	ClassDB::bind_method(D_METHOD("set_render_priority", "priority"), &Material::set_render_priority);
 	ClassDB::bind_method(D_METHOD("get_render_priority"), &Material::get_render_priority);
 
@@ -170,6 +227,10 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Material::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+	ADD_GROUP("Depth Bias", "depth_bias_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_bias_constant_factor"), "set_depth_bias_constant_factor", "get_depth_bias_constant_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_bias_slope_factor"), "set_depth_bias_slope_factor", "get_depth_bias_slope_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_bias_clamp"), "set_depth_bias_clamp", "get_depth_bias_clamp");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, Material::get_class_static()), "set_next_pass", "get_next_pass");
 
 	BIND_CONSTANT(RENDER_PRIORITY_MAX);
@@ -178,11 +239,15 @@ void Material::_bind_methods() {
 	GDVIRTUAL_BIND(_get_shader_rid)
 	GDVIRTUAL_BIND(_get_shader_mode)
 	GDVIRTUAL_BIND(_can_do_next_pass)
+	GDVIRTUAL_BIND(_can_use_depth_bias)
 	GDVIRTUAL_BIND(_can_use_render_priority)
 }
 
 Material::Material() {
 	render_priority = 0;
+	depth_bias_constant_factor = 0.0f;
+	depth_bias_slope_factor = 0.0f;
+	depth_bias_clamp = 0.0f;
 }
 
 Material::~Material() {
@@ -397,7 +462,7 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 			return true;
 		}
 		const String sname = p_name;
-		return sname == "render_priority" || sname == "next_pass";
+		return sname == "render_priority" || sname == "depth_bias_constant_factor" || sname == "depth_bias_slope_factor" || sname == "depth_bias_clamp" || sname == "next_pass";
 	}
 	return false;
 }
@@ -410,6 +475,15 @@ bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_p
 			return true;
 		} else if (p_name == "render_priority") {
 			r_property = 0;
+			return true;
+		} else if (p_name == "depth_bias_constant_factor") {
+			r_property = 0.0f;
+			return true;
+		} else if (p_name == "depth_bias_slope_factor") {
+			r_property = 0.0f;
+			return true;
+		} else if (p_name == "depth_bias_clamp") {
+			r_property = 0.0f;
 			return true;
 		} else if (p_name == "next_pass") {
 			r_property = Variant();
@@ -506,7 +580,7 @@ void ShaderMaterial::_check_material_rid() const {
 			next_pass_rid = get_next_pass()->get_rid();
 		}
 
-		_set_material(RS::get_singleton()->material_create_from_shader(next_pass_rid, get_render_priority(), shader_rid));
+		_set_material(RS::get_singleton()->material_create_from_shader(next_pass_rid, get_depth_bias_clamp(), get_depth_bias_slope_factor(), get_depth_bias_constant_factor(), get_render_priority(), shader_rid));
 
 		for (KeyValue<StringName, Variant> param : param_cache) {
 			if (param.value.get_type() == Variant::OBJECT) {
@@ -549,6 +623,10 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 #endif
 
 bool ShaderMaterial::_can_do_next_pass() const {
+	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
+}
+
+bool ShaderMaterial::_can_use_depth_bias() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
 }
 
@@ -2108,7 +2186,7 @@ void BaseMaterial3D::_check_material_rid() {
 			next_pass_rid = get_next_pass()->get_rid();
 		}
 
-		_set_material(RS::get_singleton()->material_create_from_shader(next_pass_rid, get_render_priority(), shader_rid));
+		_set_material(RS::get_singleton()->material_create_from_shader(next_pass_rid, get_depth_bias_clamp(), get_depth_bias_slope_factor(), get_depth_bias_constant_factor(), get_render_priority(), shader_rid));
 
 		for (KeyValue<StringName, Variant> param : pending_params) {
 			RS::get_singleton()->material_set_param(_get_material(), param.key, param.value);
