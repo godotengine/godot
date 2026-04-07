@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  os_tvos.mm                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "os_tvos.h"
+
+#import "display_server_tvos.h"
 
 #ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
 
-@class GDTView;
-@class GDTKeyboardInputView;
+OS_TVOS *OS_TVOS::get_singleton() {
+	return (OS_TVOS *)OS_AppleEmbedded::get_singleton();
+}
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
+OS_TVOS::OS_TVOS() :
+		OS_AppleEmbedded() {
+	DisplayServerTVOS::register_tvos_driver();
+}
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+OS_TVOS::~OS_TVOS() {}
 
-@end
+String OS_TVOS::get_name() const {
+	return "tvOS";
+}
+
+#endif // TVOS_ENABLED

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  main_tvos.mm                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "os_tvos.h"
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
+#include "core/profiling/profiling.h"
+#import "drivers/apple_embedded/godot_app_delegate_apple_embedded.h"
+#import "drivers/apple_embedded/main_utilities.h"
+#include "main/main.h"
+
 #import <UIKit/UIKit.h>
 
-@class GDTView;
-@class GDTKeyboardInputView;
+#include <cstdio>
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
+static OS_TVOS *os = nullptr;
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+int apple_embedded_main(int argc, char **argv) {
+	change_to_launch_dir(argv);
 
-@end
+	os = new OS_TVOS();
+
+	// We must override main when testing is enabled
+	TEST_MAIN_OVERRIDE
+
+	char *fargv[64];
+	argc = process_args(argc, argv, fargv);
+
+	godot_init_profiler();
+
+	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
+
+	if (err != OK) {
+		if (err == ERR_HELP) { // Returned by --help and --version, so success.
+			return EXIT_SUCCESS;
+		}
+		return EXIT_FAILURE;
+	}
+
+	os->initialize_modules();
+
+	return os->get_exit_code();
+}
+
+void apple_embedded_finish() {
+	Main::cleanup();
+	godot_cleanup_profiler();
+	delete os;
+}

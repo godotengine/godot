@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  platform_config.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,21 +30,4 @@
 
 #pragma once
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
-
-@class GDTView;
-@class GDTKeyboardInputView;
-
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
-
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
-
-@end
+#import "drivers/apple_embedded/platform_config.h"

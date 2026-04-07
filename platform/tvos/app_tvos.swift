@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  app_tvos.swift                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+import SwiftUI
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
+@main
+struct SwiftUIApp: App {
+	@UIApplicationDelegateAdaptor(GDTAppDelegateTVOS.self) var appDelegate
+	@Environment(\.scenePhase) private var scenePhase
 
-@class GDTView;
-@class GDTKeyboardInputView;
-
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
-
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
-
-@end
+	var body: some Scene {
+		GodotWindowScene()
+	}
+}

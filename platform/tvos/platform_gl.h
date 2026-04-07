@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  platform_gl.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,21 +30,10 @@
 
 #pragma once
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
-
-@class GDTView;
-@class GDTKeyboardInputView;
-
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
+#ifdef GLES3_ENABLED
+#ifndef GLES_API_ENABLED
+#define GLES_API_ENABLED // Allow using GLES.
 #endif
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
-
-@end
+#include <ES3/gl.h> // IWYU pragma: export.
+#endif

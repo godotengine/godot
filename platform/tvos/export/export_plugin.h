@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  export_plugin.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,21 +30,39 @@
 
 #pragma once
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
+#include "editor/export/editor_export_platform_apple_embedded.h"
 
-@class GDTView;
-@class GDTKeyboardInputView;
+class EditorExportPlatformTVOS : public EditorExportPlatformAppleEmbedded {
+	GDCLASS(EditorExportPlatformTVOS, EditorExportPlatformAppleEmbedded);
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
+	static Vector<String> device_types;
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+	virtual String get_platform_name() const override { return "tvos"; }
+	virtual String get_sdk_name() const override { return "appletvos"; }
+	virtual const Vector<String> get_device_types() const override { return device_types; }
 
-@end
+	virtual String get_minimum_deployment_target() const override { return "26.0"; }
+
+	virtual Vector<EditorExportPlatformAppleEmbedded::IconInfo> get_icon_infos() const override;
+
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
+
+	virtual Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) override;
+	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) override;
+	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const override;
+
+	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;
+
+public:
+	virtual String get_name() const override { return "tvOS"; }
+	virtual String get_os_name() const override { return "tvOS"; }
+
+	virtual void get_platform_features(List<String> *r_features) const override {
+		EditorExportPlatformAppleEmbedded::get_platform_features(r_features);
+		r_features->push_back("tvos");
+	}
+
+	virtual void initialize() override;
+	~EditorExportPlatformTVOS();
+};

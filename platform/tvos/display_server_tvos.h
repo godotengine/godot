@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_controller.h                                               */
+/*  display_server_tvos.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,21 +30,34 @@
 
 #pragma once
 
-#ifdef TVOS_ENABLED
-#import <GameController/GameController.h>
-#endif
-#import <UIKit/UIKit.h>
+#include "drivers/apple_embedded/display_server_apple_embedded.h"
 
-@class GDTView;
-@class GDTKeyboardInputView;
+@class UIScreen;
 
-#ifdef TVOS_ENABLED
-@interface GDTViewController : GCEventViewController
-#else
-@interface GDTViewController : UIViewController
-#endif
+class DisplayServerTVOS final : public DisplayServerAppleEmbedded {
+	GDSOFTCLASS(DisplayServerTVOS, DisplayServerAppleEmbedded);
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+	_THREAD_SAFE_CLASS_
 
-@end
+	DisplayServerTVOS(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
+	~DisplayServerTVOS();
+
+	UIScreen *_get_ui_screen(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const;
+
+public:
+	static DisplayServerTVOS *get_singleton();
+
+	static void register_tvos_driver();
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
+
+	virtual String get_name() const override;
+
+	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+
+protected:
+	virtual bool _screen_hdr_is_supported() const override;
+	virtual float _screen_potential_edr_headroom() const override;
+	virtual float _screen_current_edr_headroom() const override;
+};

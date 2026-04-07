@@ -994,7 +994,7 @@ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const
 			p_font_data->face_init = true;
 		}
 
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(TVOS_ENABLED)
 		if (p_font_data->font_name == ".Apple Color Emoji UI" || p_font_data->font_name == "Apple Color Emoji") {
 			// The baseline offset is missing from the Apple Color Emoji UI font data, so add it manually.
 			// This issue doesn't occur with other system emoji fonts.
