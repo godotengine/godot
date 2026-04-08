@@ -30,6 +30,8 @@
 
 #include "convert_transform_modifier_3d.h"
 
+#include "core/object/class_db.h"
+
 constexpr const char *HINT_POSITION = "-10,10,0.01,or_greater,or_less,suffix:m";
 constexpr const char *HINT_ROTATION = "-180,180,0.01,radians_as_degrees";
 constexpr const char *HINT_SCALE = "0,10,0.01,or_greater";
@@ -285,7 +287,7 @@ void ConvertTransformModifier3D::set_relative(int p_index, bool p_enabled) {
 }
 
 bool ConvertTransformModifier3D::is_relative(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
 	return setting->is_relative();
 }
@@ -297,7 +299,7 @@ void ConvertTransformModifier3D::set_additive(int p_index, bool p_enabled) {
 }
 
 bool ConvertTransformModifier3D::is_additive(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	ConvertTransform3DSetting *setting = static_cast<ConvertTransform3DSetting *>(settings[p_index]);
 	return setting->additive;
 }

@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "rendering_device.h"
+
+#include "core/object/class_db.h"
+
 RID RenderingDevice::_shader_create_from_bytecode_bind_compat_79606(const Vector<uint8_t> &p_shader_binary) {
 	return shader_create_from_bytecode(p_shader_binary, RID());
 }
@@ -140,7 +144,7 @@ Error RenderingDevice::_texture_resolve_multisample_bind_compat_84976(RID p_from
 }
 
 RenderingDevice::FramebufferFormatID RenderingDevice::_screen_get_framebuffer_format_bind_compat_87340() const {
-	return screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID);
+	return screen_get_framebuffer_format(DisplayServerEnums::MAIN_WINDOW_ID);
 }
 
 RID RenderingDevice::_uniform_buffer_create_bind_compat_101561(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
@@ -195,4 +199,4 @@ void RenderingDevice::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers"), &RenderingDevice::_texture_create_from_extension_compat_105570);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

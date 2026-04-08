@@ -31,6 +31,8 @@
 #include "run_instances_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
@@ -378,6 +380,8 @@ RunInstancesDialog::RunInstancesDialog() {
 
 	instance_tree = memnew(Tree);
 	instance_tree->set_h_scroll_enabled(false);
+	instance_tree->set_theme_type_variation("TreeTable");
+	instance_tree->set_hide_folding(true);
 	instance_tree->set_columns(4);
 	instance_tree->set_column_titles_visible(true);
 	instance_tree->set_column_title(COLUMN_OVERRIDE_ARGS, TTR("Override Main Run Args"));

@@ -291,6 +291,13 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 	&& (unsigned int) (arrayZ + length - (const char *) p) >= size;
   }
 
+  template <unsigned P = sizeof (Type),
+	    hb_enable_if (P == 1)>
+  bool check_end (const void *p) const
+  {
+    return (uintptr_t) (((const char *) p) - arrayZ) <= length;
+  }
+
   /* Only call if you allocated the underlying array using hb_malloc() or similar. */
   void fini ()
   { hb_free ((void *) arrayZ); arrayZ = nullptr; length = 0; }

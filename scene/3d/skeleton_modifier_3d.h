@@ -31,7 +31,6 @@
 #pragma once
 
 #include "scene/3d/node_3d.h"
-
 #include "scene/3d/skeleton_3d.h"
 
 class SkeletonModifier3D : public Node3D {
@@ -113,6 +112,8 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0(_process_modification);
 #endif
+
+	bool should_check_node_path();
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;

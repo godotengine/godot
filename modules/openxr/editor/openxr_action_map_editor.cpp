@@ -32,11 +32,15 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/separator.h"
 
 HashMap<String, String> OpenXRActionMapEditor::interaction_profile_editors;
 HashMap<String, String> OpenXRActionMapEditor::binding_modifier_editors;
@@ -437,7 +441,7 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	set_name(TTRC("OpenXR Action Map"));
 	set_icon_name("OpenXRActionMap");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_custom_minimum_size(Size2(0.0, 300.0 * EDSCALE));
 

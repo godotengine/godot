@@ -56,6 +56,10 @@ if env["builtin_zstd"]:
 env_thirdparty = env_basisu.Clone()
 env_thirdparty.disable_warnings()
 
+if not env.msvc:
+    # Required by upstream for GCC. Enabling also for LLVM-based compilers to be consistent.
+    env_thirdparty.Append(CCFLAGS=["-fno-strict-aliasing"])
+
 # Disable unneeded features to reduce binary size.
 # <https://github.com/BinomialLLC/basis_universal/wiki/How-to-Use-and-Configure-the-Transcoder>
 env_thirdparty.Append(

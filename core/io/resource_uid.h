@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/object/ref_counted.h"
-#include "core/string/string_name.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 
 class FileAccess;
@@ -88,6 +88,7 @@ public:
 	Error save_to_cache();
 	Error update_cache();
 	static String get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string);
+	static Vector<uint8_t> encode_binary_cache(const Vector<Pair<ID, String>> &p_entries);
 
 	void enable_reverse_cache() { use_reverse_cache = true; }
 	void clear();

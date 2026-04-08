@@ -82,9 +82,7 @@ elif sys.platform.startswith("win"):
         host_subpath = "windows"
 
 if lib_arch_dir != "" and host_subpath != "":
-    if env.dev_build:
-        lib_type_dir = "dev"
-    elif env.debug_features:
+    if env.debug_features:
         if env.editor_build and env["store_release"]:
             lib_type_dir = "release"
         else:

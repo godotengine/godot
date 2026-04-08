@@ -246,6 +246,7 @@ private:
 
 	Button *text_type = nullptr;
 	LineEdit *c_text = nullptr;
+	Button *text_copy = nullptr;
 
 	HSlider *alpha_slider = nullptr;
 	SpinBox *alpha_value = nullptr;
@@ -340,11 +341,13 @@ private:
 		Ref<Texture2D> color_hue;
 
 		Ref<Texture2D> color_script;
+		Ref<Texture2D> color_copy;
 
 		/* Mode buttons */
 		Ref<StyleBox> mode_button_normal;
 		Ref<StyleBox> mode_button_pressed;
 		Ref<StyleBox> mode_button_hover;
+		Ref<StyleBox> mode_button_hover_pressed;
 	} theme_cache;
 
 	void _copy_normalized_to_hsv_okhsl();
@@ -366,6 +369,7 @@ private:
 #ifdef TOOLS_ENABLED
 	void _text_type_toggled();
 #endif // TOOLS_ENABLED
+	void _text_copy_pressed();
 	void _sample_input(const Ref<InputEvent> &p_event);
 	void _sample_draw();
 	void _slider_draw(int p_which);

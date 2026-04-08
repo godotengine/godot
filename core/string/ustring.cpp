@@ -35,10 +35,10 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/ip_address.h"
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
-#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
@@ -47,7 +47,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
-#include "thirdparty/grisu2/grisu2.h"
+#include <thirdparty/grisu2/grisu2.h>
+
+#include <cstdio>
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -350,7 +352,7 @@ bool operator==(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return p_str == String::utf16((const char16_t *)p_chr);
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return p_str == (const char32_t *)p_chr;
 #endif
 }
@@ -364,7 +366,7 @@ bool operator!=(const wchar_t *p_chr, const String &p_str) {
 	// wchar_t is 16-bit
 	return !(p_str == String::utf16((const char16_t *)p_chr));
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return !(p_str == String((const char32_t *)p_chr));
 #endif
 }
@@ -1194,6 +1196,9 @@ Vector<double> String::split_floats(const String &p_splitter, bool p_allow_empty
 	Vector<double> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1221,6 +1226,9 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 	Vector<float> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	String buffer = *this;
 	while (true) {
@@ -1253,6 +1261,9 @@ Vector<int> String::split_ints(const String &p_splitter, bool p_allow_empty) con
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int end = find(p_splitter, from);
@@ -1277,6 +1288,9 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	Vector<int> ret;
 	int from = 0;
 	int len = length();
+	if (len == 0) {
+		return ret;
+	}
 
 	while (true) {
 		int idx = 0;
@@ -1644,16 +1658,16 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 Vector<uint8_t> String::hex_decode() const {
 	ERR_FAIL_COND_V_MSG(length() % 2 != 0, Vector<uint8_t>(), "Hexadecimal string of uneven length.");
 
-#define HEX_TO_BYTE(m_output, m_index)                                                                                   \
-	uint8_t m_output;                                                                                                    \
-	c = operator[](m_index);                                                                                             \
-	if (is_digit(c)) {                                                                                                   \
-		m_output = c - '0';                                                                                              \
-	} else if (c >= 'a' && c <= 'f') {                                                                                   \
-		m_output = c - 'a' + 10;                                                                                         \
-	} else if (c >= 'A' && c <= 'F') {                                                                                   \
-		m_output = c - 'A' + 10;                                                                                         \
-	} else {                                                                                                             \
+#define HEX_TO_BYTE(m_output, m_index) \
+	uint8_t m_output; \
+	c = operator[](m_index); \
+	if (is_digit(c)) { \
+		m_output = c - '0'; \
+	} else if (c >= 'a' && c <= 'f') { \
+		m_output = c - 'a' + 10; \
+	} else if (c >= 'A' && c <= 'F') { \
+		m_output = c - 'A' + 10; \
+	} else { \
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Invalid hexadecimal character \"" + chr(c) + "\" at index " + m_index + "."); \
 	}
 
@@ -4940,43 +4954,7 @@ String String::validate_filename() const {
 }
 
 bool String::is_valid_ip_address() const {
-	if (find_char(':') >= 0) {
-		Vector<String> ip = split(":");
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (n.is_empty()) {
-				continue;
-			}
-			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int();
-				if (nint < 0 || nint > 0xffff) {
-					return false;
-				}
-				continue;
-			}
-			if (!n.is_valid_ip_address()) {
-				return false;
-			}
-		}
-
-	} else {
-		Vector<String> ip = split(".");
-		if (ip.size() != 4) {
-			return false;
-		}
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (!n.is_valid_int()) {
-				return false;
-			}
-			int val = n.to_int();
-			if (val < 0 || val > 255) {
-				return false;
-			}
-		}
-	}
-
-	return true;
+	return IPAddress::is_valid_ip_address(*this);
 }
 
 bool String::is_resource_file() const {
@@ -5211,10 +5189,13 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 	static const String MINUS("-");
 	static const String PLUS("+");
 
+	LocalVector<bool> used_args;
+	used_args.resize_initialized(values.size());
 	String formatted;
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
 	uint64_t value_index = 0;
+	int selected_index = -1;
 	int min_chars = 0;
 	int min_decimals = 0;
 	bool in_decimals = false;
@@ -5241,15 +5222,16 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				case 'o': // Octal
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
+					if (!values[index].is_num()) {
 						return "a number is required";
 					}
 
-					int64_t value = values[value_index];
+					int64_t value = values[index];
 					int base = 16;
 					bool capitalize = false;
 					switch (c) {
@@ -5305,21 +5287,25 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 
 					break;
 				}
 				case 'f': { // Float
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
+					if (!values[index].is_num()) {
 						return "a number is required";
 					}
 
-					double value = values[value_index];
+					double value = values[index];
 					bool is_negative = std::signbit(value);
 					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
@@ -5351,17 +5337,21 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
 				case 'v': { // Vector2/3/4/2i/3i/4i
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
 					int count;
-					switch (values[value_index].get_type()) {
+					switch (values[index].get_type()) {
 						case Variant::VECTOR2:
 						case Variant::VECTOR2I: {
 							count = 2;
@@ -5379,7 +5369,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						}
 					}
 
-					Vector4 vec = values[value_index];
+					Vector4 vec = values[index];
 					String str = "(";
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
@@ -5421,16 +5411,20 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					str += ")";
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
 				case 's': { // String
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					String str = values[value_index];
+					String str = values[index];
 					// Padding.
 					if (left_justified) {
 						str = str.rpad(min_chars);
@@ -5439,19 +5433,23 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
 				case 'c': {
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
 					// Convert to character.
 					String str;
-					if (values[value_index].is_num()) {
-						int value = values[value_index];
+					if (values[index].is_num()) {
+						int value = values[index];
 						if (value < 0) {
 							return "unsigned integer is lower than minimum";
 						} else if (value >= 0xd800 && value <= 0xdfff) {
@@ -5459,9 +5457,9 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						} else if (value > 0x10ffff) {
 							return "unsigned integer is greater than maximum";
 						}
-						str = chr(values[value_index]);
-					} else if (values[value_index].get_type() == Variant::STRING) {
-						str = values[value_index];
+						str = chr(values[index]);
+					} else if (values[index].get_type() == Variant::STRING) {
+						str = values[index];
 						if (str.length() != 1) {
 							return "%c requires number or single-character string";
 						}
@@ -5477,7 +5475,10 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 
 					formatted += str;
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
@@ -5521,6 +5522,14 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					}
 					break;
 				}
+				case '$': {
+					if (min_chars > 0) {
+						selected_index = min_chars - 1;
+					}
+					min_chars = 0;
+					pad_with_zeros = false;
+					break;
+				}
 				case '.': { // Float/Vector separator.
 					if (in_decimals) {
 						return "too many decimal points in format";
@@ -5531,27 +5540,30 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 
 				case '*': { // Dynamic width, based on value.
-					if (value_index >= values.size()) {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					Variant::Type value_type = values[value_index].get_type();
-					if (!values[value_index].is_num() &&
+					Variant::Type value_type = values[index].get_type();
+					if (!values[index].is_num() &&
 							value_type != Variant::VECTOR2 && value_type != Variant::VECTOR2I &&
 							value_type != Variant::VECTOR3 && value_type != Variant::VECTOR3I &&
 							value_type != Variant::VECTOR4 && value_type != Variant::VECTOR4I) {
 						return "* wants number or vector";
 					}
 
-					int size = values[value_index];
+					int size = values[index];
 
 					if (in_decimals) {
 						min_decimals = size;
 					} else {
 						min_chars = size;
 					}
-
-					++value_index;
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					break;
 				}
 
@@ -5570,6 +5582,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 					left_justified = false;
 					show_sign = false;
 					in_decimals = false;
+					selected_index = -1;
 					break;
 				default:
 					formatted += c;
@@ -5581,8 +5594,10 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 		return "incomplete format";
 	}
 
-	if (value_index != values.size()) {
-		return "not all arguments converted during string formatting";
+	for (const bool &b : used_args) {
+		if (!b) {
+			return "not all arguments converted during string formatting";
+		}
 	}
 
 	if (error) {

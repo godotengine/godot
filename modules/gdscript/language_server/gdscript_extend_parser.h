@@ -42,14 +42,6 @@
 #define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column) - 1)
 #endif
 
-#ifndef SYMBOL_SEPARATOR
-#define SYMBOL_SEPARATOR "::"
-#endif
-
-#ifndef JOIN_SYMBOLS
-#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPARATOR + (name))
-#endif
-
 typedef HashMap<String, const LSP::DocumentSymbol *> ClassMembers;
 
 /**
@@ -133,8 +125,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 	Dictionary dump_class_api(const GDScriptParser::ClassNode *p_class) const;
 
 	const LSP::DocumentSymbol *search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
-
-	Array member_completions;
 
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }

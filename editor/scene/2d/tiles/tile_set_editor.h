@@ -30,13 +30,13 @@
 
 #pragma once
 
-#include "atlas_merging_dialog.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/scene/2d/tiles/atlas_merging_dialog.h"
+#include "editor/scene/2d/tiles/tile_proxies_manager_dialog.h"
+#include "editor/scene/2d/tiles/tile_set_atlas_source_editor.h"
+#include "editor/scene/2d/tiles/tile_set_scenes_collection_source_editor.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/resources/2d/tile_set.h"
-#include "tile_proxies_manager_dialog.h"
-#include "tile_set_atlas_source_editor.h"
-#include "tile_set_scenes_collection_source_editor.h"
 
 class AcceptDialog;
 class SpinBox;
@@ -93,6 +93,7 @@ private:
 	bool first_edit = true;
 
 	// Patterns.
+	MarginContainer *patterns_mc = nullptr;
 	ItemList *patterns_item_list = nullptr;
 	Label *patterns_help_label = nullptr;
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);

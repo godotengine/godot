@@ -31,10 +31,17 @@
 #include "editor_inspector.h"
 #include "editor_inspector.compat.inc"
 
+#include "core/input/input.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/variant/typed_dictionary.h" // IWYU pragma: keep. For EditorDebuggerRemoteObjects.
 #include "editor/debugger/editor_debugger_inspector.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/docks/inspector_dock.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -43,6 +50,7 @@
 #include "editor/inspector/add_metadata_dialog.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_property_name_processor.h"
+#include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
@@ -52,11 +60,15 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/scene_string_names.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void EditorInspectorActionButton::_notification(int p_what) {
 	switch (p_what) {
@@ -287,18 +299,40 @@ void EditorProperty::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Property: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Property: %s"), label));
+			bool use_help_bit = EDITOR_GET("interface/accessibility/property_descriptions");
+			String tooltip = get_tooltip_text();
+			if (use_help_bit && !tooltip.is_empty()) {
+				if (has_doc_tooltip) {
+					String symbol = tooltip;
+					String prologue;
+					const EditorInspector *inspector = get_parent_inspector();
+					if (inspector) {
+						const String custom_description = inspector->get_custom_property_description(tooltip);
+						if (!custom_description.is_empty()) {
+							if (!prologue.is_empty()) {
+								prologue += '\n';
+							}
+							prologue += custom_description;
+						}
+					}
+					AccessibilityServer::get_singleton()->update_set_description(ae, EditorHelpBit::get_as_plain_text(symbol, prologue));
+				} else {
+					AccessibilityServer::get_singleton()->update_set_description(ae, tooltip);
+				}
+			}
 
-			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorProperty::_accessibility_action_menu));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &EditorProperty::_accessibility_action_click));
+			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Property: %s"), label));
+			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Property: %s"), label));
 
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_READONLY, read_only);
+			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorProperty::_accessibility_action_menu));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &EditorProperty::_accessibility_action_click));
+
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, read_only);
 			if (checkable) {
-				DisplayServer::get_singleton()->accessibility_update_set_checked(ae, checked);
+				AccessibilityServer::get_singleton()->update_set_checked(ae, checked);
 			}
 		} break;
 
@@ -311,7 +345,7 @@ void EditorProperty::_notification(int p_what) {
 			bottom_child_rect = Rect2();
 
 			{
-				int child_room = size.width * (1.0 - split_ratio);
+				int child_room = size.width * (1.0 - split_ratio) - name_fixed_size;
 				int separation = 4 * EDSCALE;
 				int height = theme_cache.inspector_property_height;
 				int half_padding = theme_cache.padding / 2;
@@ -467,7 +501,7 @@ void EditorProperty::_notification(int p_what) {
 			// Only draw the label if it's not empty.
 			if (label.is_empty()) {
 				size.height = 0;
-			} else if (sub_inspector_color_level >= 0) {
+			} else if (sub_inspector_color_level >= 0 && theme_cache.sub_inspector_background[sub_inspector_color_level].is_valid()) {
 				draw_style_box(theme_cache.sub_inspector_background[sub_inspector_color_level], Rect2(Vector2(), size));
 			} else {
 				draw_style_box(selected ? theme_cache.background_selected : theme_cache.background, Rect2(Vector2(), size));
@@ -691,6 +725,28 @@ void EditorProperty::_notification(int p_what) {
 				get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
 				_update_property_bg();
 			}
+
+			Node *parent = get_parent();
+			Node *prev_parent = nullptr;
+			while (parent && parent != inspector) {
+				if (prev_parent && parent->get_meta(SNAME("_has_categories"), false).operator bool()) {
+					for (int i = prev_parent->get_index() - 1; i >= 0; i--) {
+						EditorInspectorCategory *category = Object::cast_to<EditorInspectorCategory>(parent->get_child(i));
+						if (category) {
+							category->register_property(this);
+							break;
+						}
+					}
+					break;
+				}
+
+				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(parent);
+				if (section) {
+					section->register_property(this);
+				}
+				prev_parent = parent;
+				parent = parent->get_parent();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -732,7 +788,8 @@ StringName EditorProperty::get_edited_property() const {
 Variant EditorProperty::get_edited_property_display_value() const {
 	ERR_FAIL_NULL_V(object, Variant());
 	Control *control = Object::cast_to<Control>(object);
-	if (checkable && !checked && control && String(property).begins_with("theme_override_")) {
+	// If checked but it's empty, it means that the set value has just been undone, and should show the default value as well.
+	if (control && checkable && (!checked || get_edited_property_value() == Variant()) && String(property).begins_with("theme_override_")) {
 		return control->get_used_theme_item(property);
 	} else {
 		return get_edited_property_value();
@@ -1249,6 +1306,7 @@ bool EditorProperty::is_cache_valid() const {
 	}
 	return true;
 }
+
 void EditorProperty::update_cache() {
 	cache.clear();
 	if (object && property != StringName()) {
@@ -1259,6 +1317,15 @@ void EditorProperty::update_cache() {
 		}
 	}
 }
+
+void EditorProperty::set_deferred_drag_mode_enabled(bool p_enabled) {
+	deferred_drag_mode = p_enabled;
+}
+
+bool EditorProperty::is_deferred_drag_mode_enabled() const {
+	return deferred_drag_mode;
+}
+
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	if (property == StringName()) {
 		return Variant();
@@ -1309,6 +1376,14 @@ void EditorProperty::set_name_split_ratio(float p_ratio) {
 
 float EditorProperty::get_name_split_ratio() const {
 	return split_ratio;
+}
+
+void EditorProperty::set_name_fixed_size(float p_size) {
+	if (name_fixed_size == p_size) {
+		return;
+	}
+	name_fixed_size = p_size;
+	queue_sort();
 }
 
 void EditorProperty::set_favoritable(bool p_favoritable) {
@@ -1414,10 +1489,21 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			EditorInspector::set_property_clipboard(object->get(property));
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::PROPERTY, object->get(property));
 		} break;
 		case MENU_PASTE_VALUE: {
-			emit_changed(property, EditorInspector::get_property_clipboard());
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY) {
+				return;
+			}
+
+			EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(this);
+			if (epr) {
+				const Ref<Resource> res = EditorInspector::get_property_clipboard_value();
+				if (res.is_valid() && !epr->get_resource_picker()->is_resource_allowed(res)) {
+					return;
+				}
+			}
+			emit_changed(property, EditorInspector::get_property_clipboard_value());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
@@ -1529,7 +1615,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_favorited", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "favorited")));
 	ADD_SIGNAL(MethodInfo("property_pinned", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "pinned")));
 	ADD_SIGNAL(MethodInfo("property_can_revert_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "can_revert")));
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
@@ -1543,7 +1629,6 @@ EditorProperty::EditorProperty() {
 	set_focus_mode(FOCUS_ACCESSIBILITY);
 
 	object = nullptr;
-	split_ratio = 0.5;
 	text_size = 0;
 	property_usage = 0;
 	selected_focusable = -1;
@@ -1572,9 +1657,9 @@ void EditorProperty::_update_popup() {
 	}
 	menu->add_icon_shortcut(theme_cache.copy_icon, ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
 	menu->add_icon_shortcut(theme_cache.paste_icon, ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
+	menu->set_item_disabled(-1, read_only || EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY);
 	menu->add_icon_shortcut(theme_cache.copy_node_path_icon, ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
-	menu->set_item_disabled(MENU_PASTE_VALUE, is_read_only());
-	menu->set_item_disabled(MENU_COPY_PROPERTY_PATH, internal);
+	menu->set_item_disabled(-1, internal);
 
 	if (can_favorite || !pin_hidden) {
 		menu->add_separator();
@@ -1706,17 +1791,36 @@ void EditorInspectorCategory::_notification(int p_what) {
 			connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspectorCategory::_theme_changed));
 		} break;
 
+		case NOTIFICATION_ENTER_TREE: {
+			VBoxContainer *parent_vbox = Object::cast_to<VBoxContainer>(get_parent());
+			if (parent_vbox) {
+				parent_vbox->set_meta(SNAME("_has_categories"), true);
+			}
+		} break;
+
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Category: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Category: %s"), label));
+			bool use_help_bit = EDITOR_GET("interface/accessibility/property_descriptions");
+			String tooltip = get_tooltip_text();
+			if (use_help_bit && !tooltip.is_empty()) {
+				if (!doc_class_name.is_empty()) {
+					String symbol = tooltip;
+					String prologue;
+					AccessibilityServer::get_singleton()->update_set_description(ae, EditorHelpBit::get_as_plain_text(symbol, prologue));
+				} else {
+					AccessibilityServer::get_singleton()->update_set_description(ae, tooltip);
+				}
+			}
 
-			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorInspectorCategory::_accessibility_action_menu));
+			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Category: %s"), label));
+			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Category: %s"), label));
+
+			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorInspectorCategory::_accessibility_action_menu));
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1835,6 +1939,35 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 
 void EditorInspectorCategory::_handle_menu_option(int p_option) {
 	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			Dictionary clipboard;
+			for (const EditorProperty *property : category_properties) {
+				clipboard[property->get_edited_property()] = property->get_edited_property_value();
+			}
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::CATEGORY, clipboard);
+		} break;
+
+		case MENU_PASTE_VALUE: {
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::CATEGORY) {
+				break;
+			}
+			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
+
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			ur->create_action(TTR("Paste category properties"));
+			for (EditorProperty *property : category_properties) {
+				if (property->is_read_only()) {
+					continue;
+				}
+				const StringName &property_name = property->get_edited_property();
+				if (clipboard.has(property_name)) {
+					ur->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
+					ur->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
+				}
+			}
+			ur->commit_action();
+		} break;
+
 		case MENU_OPEN_DOCS: {
 			ScriptEditor::get_singleton()->goto_help("class:" + doc_class_name);
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
@@ -1857,12 +1990,19 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 		if (is_favorite) {
 			menu->add_item(TTRC("Unfavorite All"), MENU_UNFAVORITE_ALL);
 		} else {
+			menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Category Values"), MENU_COPY_VALUE);
+			menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Category Values"), MENU_PASTE_VALUE);
+
 			menu->add_item(TTRC("Open Documentation"), MENU_OPEN_DOCS);
 			menu->set_item_disabled(-1, !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
 		}
 
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
 		add_child(menu);
+	}
+
+	if (!is_favorite) {
+		menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::CATEGORY);
 	}
 
 	if (menu_icon_dirty) {
@@ -1977,12 +2117,34 @@ void EditorInspectorSection::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Section: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Section: %s"), label));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &EditorInspectorSection::_accessibility_action_collapse));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &EditorInspectorSection::_accessibility_action_expand));
+			bool use_help_bit = EDITOR_GET("interface/accessibility/property_descriptions");
+			String tooltip = get_tooltip_text();
+			if (use_help_bit && !tooltip.is_empty()) {
+				if (checkable) {
+					String symbol = tooltip;
+					String prologue;
+					const EditorInspector *inspector = _get_parent_inspector();
+					if (inspector) {
+						const String custom_description = inspector->get_custom_property_description(tooltip);
+						if (!custom_description.is_empty()) {
+							if (!prologue.is_empty()) {
+								prologue += '\n';
+							}
+							prologue += custom_description;
+						}
+					}
+					AccessibilityServer::get_singleton()->update_set_description(ae, EditorHelpBit::get_as_plain_text(symbol, prologue));
+				} else {
+					AccessibilityServer::get_singleton()->update_set_description(ae, tooltip);
+				}
+			}
+
+			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Section: %s"), label));
+			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Section: %s"), label));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &EditorInspectorSection::_accessibility_action_collapse));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &EditorInspectorSection::_accessibility_action_expand));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -2065,7 +2227,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
 					if (can_click_unfold) {
-						draw_texture(arrow, arrow_position);
+						draw_texture(arrow, arrow_position, Color(1, 1, 1, header_hover ? 1.0 : 0.85));
 					}
 					margin_start += arrow->get_width() + theme_cache.horizontal_separation;
 				}
@@ -2081,8 +2243,8 @@ void EditorInspectorSection::_notification(int p_what) {
 				Ref<Texture2D> key = theme_cache.icon_gui_animation_key;
 				if (keying && key.is_valid()) {
 					Point2 key_position;
-					key_position.x = (rtl ? margin_end : (get_size().width - key->get_width() - margin_end)) - theme_cache.key_padding_size / 2;
-					keying_rect = Rect2(key_position.x - theme_cache.key_padding_size / 2, 0, key->get_width() + theme_cache.key_padding_size, header_height);
+					key_position.x = (rtl ? margin_end : (get_size().width - key->get_width() - margin_end)) - theme_cache.padding_size / 2;
+					keying_rect = Rect2(key_position.x - theme_cache.padding_size / 2, 0, key->get_width() + theme_cache.padding_size, header_height);
 
 					Color key_color(1, 1, 1);
 					if (keying_hover) {
@@ -2090,8 +2252,7 @@ void EditorInspectorSection::_notification(int p_what) {
 						key_color.g *= 1.2;
 						key_color.b *= 1.2;
 
-						Ref<StyleBox> sb_hover = theme_cache.key_hover;
-						draw_style_box(sb_hover, keying_rect);
+						draw_style_box(theme_cache.icon_hover, keying_rect);
 					}
 					key_position.y = (header_height - key->get_height()) / 2;
 
@@ -2116,7 +2277,7 @@ void EditorInspectorSection::_notification(int p_what) {
 						checkbox_position.x = label_position.x - checkbox->get_width() - 2 * EDSCALE;
 					}
 					checkbox_position.y = (header_height - checkbox->get_height()) / 2;
-					label_position.y = light_font->get_ascent(light_font_size) + (header_height - label_size.height) / 2.0;
+					label_position.y = light_font->get_ascent(light_font_size) + (header_height - light_font->get_height(light_font_size)) / 2;
 
 					check_rect = Rect2(checkbox_position.x, 0, checkbox->get_width() + label_size.width + 2 * EDSCALE, header_height);
 
@@ -2136,6 +2297,30 @@ void EditorInspectorSection::_notification(int p_what) {
 					margin_end += label_size.width + checkbox->get_width() + 6 * EDSCALE;
 				} else {
 					check_rect = Rect2();
+				}
+
+				// - Revert.
+				const Ref<Texture2D> &revert = theme_cache.icon_gui_revert;
+				if (can_revert && revert.is_valid()) {
+					Point2 revert_position;
+					revert_position.x = (rtl ? margin_end : (get_size().width - revert->get_width() - margin_end)) - theme_cache.padding_size / 2;
+					revert_rect = Rect2(revert_position.x - theme_cache.padding_size / 2, 0, revert->get_width() + theme_cache.padding_size, header_height);
+
+					Color revert_color(1, 1, 1);
+					if (revert_hover) {
+						revert_color.r *= 1.2;
+						revert_color.g *= 1.2;
+						revert_color.b *= 1.2;
+
+						draw_style_box(theme_cache.icon_hover, revert_rect);
+					}
+
+					revert_position.y = (header_height - revert->get_height()) / 2;
+
+					draw_texture(revert, revert_position, revert_color);
+					margin_end += revert_rect.size.width + theme_cache.horizontal_separation;
+				} else {
+					revert_rect = Rect2();
 				}
 
 				int available = get_size().width - (margin_start + margin_end);
@@ -2176,8 +2361,9 @@ void EditorInspectorSection::_notification(int p_what) {
 				if (object->has_method("_get_property_warning") && !String(object->call("_get_property_warning", related_enable_property)).is_empty()) {
 					font_color = theme_cache.warning_color;
 				}
+				const Color string_color = header_hover ? theme_cache.font_hover_mono_color : font_color;
 				HorizontalAlignment text_align = rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT;
-				draw_string(font, text_offset, label, text_align, available, font_size, theme_cache.font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+				draw_string(font, text_offset, label, text_align, available, font_size, string_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 			}
 
 			// Draw section indentation.
@@ -2213,8 +2399,9 @@ void EditorInspectorSection::_notification(int p_what) {
 				dropping_unfold_timer->stop();
 			}
 
-			if (header_hover || check_hover || keying_hover) {
+			if (header_hover || revert_hover || check_hover || keying_hover) {
 				header_hover = false;
+				revert_hover = false;
 				check_hover = false;
 				keying_hover = false;
 				queue_redraw();
@@ -2222,8 +2409,8 @@ void EditorInspectorSection::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
-				dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/dragging_hover_wait_seconds"));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/timers")) {
+				dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds"));
 			}
 		} break;
 	}
@@ -2302,9 +2489,10 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	return nullptr;
 }
 
-void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
+void EditorInspectorSection::setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
+	inspector_path = p_inspector_path;
 	object = p_object;
 	bg_color = p_bg_color;
 	foldable = p_foldable;
@@ -2329,6 +2517,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		Vector2 mpos = mm->get_position();
+
+		bool new_revert_hover = revert_rect.has_point(mpos);
+		if (new_revert_hover != revert_hover) {
+			revert_hover = new_revert_hover;
+			queue_redraw();
+		}
 
 		bool new_check_hover = check_rect.has_point(mpos);
 		if (new_check_hover != check_hover) {
@@ -2377,7 +2571,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 		accept_event();
 
-		if (checkable && check_rect.has_point(pos)) {
+		bool is_valid_revert = false;
+		if (can_revert && revert_rect.has_point(pos)) {
+			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
+			ERR_FAIL_COND(!is_valid_revert);
+		}
+		if (is_valid_revert || (checkable && check_rect.has_point(pos))) {
 			checked = !checked;
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
 			if (checked) {
@@ -2395,6 +2594,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
+	} else if ((!checkable || checked) && !inspector_path.is_empty() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		accept_event();
+		_update_popup();
+		menu->set_position(get_screen_position() + get_local_mouse_position());
+		menu->reset_size();
+		menu->popup();
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
@@ -2535,6 +2740,57 @@ void EditorInspectorSection::update_property() {
 
 	if (valid) {
 		set_checked(value_checked.operator bool());
+
+		bool new_can_revert = EditorPropertyRevert::can_property_revert(object, related_enable_property, &value_checked);
+		if (new_can_revert != can_revert) {
+			can_revert = new_can_revert;
+			queue_redraw();
+		}
+	}
+}
+
+void EditorInspectorSection::_update_popup() {
+	if (!menu) {
+		menu = memnew(PopupMenu);
+		add_child(menu);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorSection::menu_option));
+
+		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_VALUE);
+		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
+	}
+	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
+}
+
+void EditorInspectorSection::menu_option(int p_option) const {
+	switch (p_option) {
+		case MENU_COPY_VALUE: {
+			Dictionary clipboard;
+			for (const EditorProperty *property : section_properties) {
+				clipboard[property->get_edited_property()] = property->get_edited_property_value();
+			}
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::SECTION, clipboard);
+		} break;
+
+		case MENU_PASTE_VALUE: {
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION) {
+				break;
+			}
+			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
+
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			ur->create_action(TTR("Paste section properties"));
+			for (EditorProperty *property : section_properties) {
+				if (property->is_read_only()) {
+					continue;
+				}
+				const StringName &property_name = property->get_edited_property();
+				if (clipboard.has(property_name)) {
+					ur->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
+					ur->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
+				}
+			}
+			ur->commit_action();
+		} break;
 	}
 }
 
@@ -2555,7 +2811,7 @@ EditorInspectorSection::EditorInspectorSection() {
 	vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 
 	dropping_unfold_timer = memnew(Timer);
-	dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/dragging_hover_wait_seconds"));
+	dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds"));
 	dropping_unfold_timer->set_one_shot(true);
 	add_child(dropping_unfold_timer);
 	dropping_unfold_timer->connect("timeout", callable_mp(this, &EditorInspectorSection::unfold));
@@ -3254,13 +3510,13 @@ void ArrayPanelContainer::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_meta("text"));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, get_meta("text"));
+			AccessibilityServer::get_singleton()->update_set_name(ae, get_meta("text"));
+			AccessibilityServer::get_singleton()->update_set_value(ae, get_meta("text"));
 
-			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &ArrayPanelContainer::_accessibility_action_menu));
+			AccessibilityServer::get_singleton()->update_set_popup_type(ae, AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU);
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &ArrayPanelContainer::_accessibility_action_menu));
 		} break;
 	}
 }
@@ -3275,8 +3531,8 @@ void EditorInspectorArray::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, vformat(TTR("Array: %s"), get_label()));
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, vformat(TTR("Array: %s"), get_label()));
+			AccessibilityServer::get_singleton()->update_set_name(ae, vformat(TTR("Array: %s"), get_label()));
+			AccessibilityServer::get_singleton()->update_set_value(ae, vformat(TTR("Array: %s"), get_label()));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -3329,7 +3585,7 @@ void EditorInspectorArray::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("page_change_request"));
 }
 
-void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text) {
+void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_category, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text) {
 	count_property = "";
 	mode = MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION;
 	array_element_prefix = p_array_element_prefix;
@@ -3339,12 +3595,12 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, co
 	page_length = p_page_length;
 	numbered = p_numbered;
 
-	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup(p_category + "/" + p_label.to_lower(), String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
 
-void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
+void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_category, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
 	count_property = p_count_property;
 	mode = MODE_USE_COUNT_PROPERTY;
 	array_element_prefix = p_array_element_prefix;
@@ -3356,7 +3612,7 @@ void EditorInspectorArray::setup_with_count_property(Object *p_object, const Str
 	swap_method = p_swap_method;
 
 	add_button->set_text(p_add_item_text);
-	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
+	EditorInspectorSection::setup(p_category + "/" + p_label.to_lower(), String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
 }
@@ -3567,7 +3823,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("separation"), SNAME("EditorPropertyContainer"));
 	p_cache.inspector_margin = p_control->get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
 	p_cache.indent_size = p_control->get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
-	p_cache.key_padding_size = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
+	p_cache.padding_size = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
 
 	p_cache.warning_color = p_control->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	p_cache.prop_subsection = p_control->get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
@@ -3576,6 +3832,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.font_hover_color = p_control->get_theme_color(SNAME("font_hover_color"), EditorStringName(Editor));
 	p_cache.font_pressed_color = p_control->get_theme_color(SNAME("font_pressed_color"), EditorStringName(Editor));
 	p_cache.font_hover_pressed_color = p_control->get_theme_color(SNAME("font_hover_pressed_color"), EditorStringName(Editor));
+	p_cache.font_hover_mono_color = p_control->get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.925);
 
 	p_cache.font = p_control->get_theme_font(SceneStringName(font), SNAME("Tree"));
 	p_cache.font_size = p_control->get_theme_font_size(SceneStringName(font_size), SNAME("Tree"));
@@ -3587,12 +3844,15 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.arrow = p_control->get_theme_icon(SNAME("arrow"), SNAME("Tree"));
 	p_cache.arrow_collapsed = p_control->get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
 	p_cache.arrow_collapsed_mirrored = p_control->get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
+	p_cache.icon_gui_revert = p_control->get_editor_theme_icon(SNAME("ReloadSmall"));
 	p_cache.icon_gui_checked = p_control->get_editor_theme_icon(SNAME("GuiChecked"));
 	p_cache.icon_gui_unchecked = p_control->get_editor_theme_icon(SNAME("GuiUnchecked"));
 	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
+	p_cache.icon_copy = p_control->get_editor_theme_icon(SNAME("ActionCopy"));
+	p_cache.icon_paste = p_control->get_editor_theme_icon(SNAME("ActionPaste"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
-	p_cache.key_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
+	p_cache.icon_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
 }
 
 void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control) {
@@ -3610,6 +3870,9 @@ void EditorInspector::initialize_category_theme(EditorInspectorCategory::ThemeCa
 
 	p_cache.bold_font = p_control->get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 	p_cache.bold_font_size = p_control->get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+
+	p_cache.icon_copy = p_control->get_editor_theme_icon(SNAME("ActionCopy"));
+	p_cache.icon_paste = p_control->get_editor_theme_icon(SNAME("ActionPaste"));
 
 	p_cache.icon_favorites = p_control->get_editor_theme_icon(SNAME("Favorites"));
 	p_cache.icon_unfavorite = p_control->get_editor_theme_icon(SNAME("Unfavorite"));
@@ -3717,15 +3980,15 @@ String EditorInspector::get_selected_path() const {
 	return property_selected;
 }
 
-void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped) {
-	for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
+void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin) {
+	for (const EditorInspectorPlugin::AddedEditor &F : p_plugin->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 
 		if (ep && !F.properties.is_empty() && current_favorites.has(F.properties[0])) {
 			ep->favorited = true;
 			favorites_vbox->add_child(F.property_editor);
 		} else {
-			current_vbox->add_child(F.property_editor);
+			p_current_vbox->add_child(F.property_editor);
 		}
 
 		if (ep) {
@@ -3785,7 +4048,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 			ep->update_cache();
 		}
 	}
-	ped->added_editors.clear();
+	p_plugin->added_editors.clear();
 }
 
 bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName &p_property) {
@@ -3831,6 +4094,11 @@ void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VB
 
 void EditorInspector::update_tree() {
 	if (!object) {
+		return;
+	}
+
+	if (!is_visible_in_tree()) {
+		update_tree_pending = true;
 		return;
 	}
 
@@ -3905,6 +4173,11 @@ void EditorInspector::update_tree() {
 	}
 
 	String filter = search_box ? search_box->get_text() : "";
+	// If the inspector filter is active, make everything unfold.
+	bool old_use_folding_state = use_folding;
+	if (!filter.is_empty()) {
+		use_folding = false;
+	}
 	String group;
 	String group_base;
 	EditorInspectorSection *group_togglable_property = nullptr;
@@ -4285,7 +4558,7 @@ void EditorInspector::update_tree() {
 
 				Color c = sscolor;
 				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth, level);
+				section->setup((doc_name.is_empty() ? acc_path : String(doc_name) + (acc_path.is_empty() ? "" : "/" + acc_path)), acc_path, label, object, c, use_folding, section_depth, level);
 				section->set_tooltip_text(tooltip);
 
 				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
@@ -4352,7 +4625,7 @@ void EditorInspector::update_tree() {
 				String array_label = path.contains_char('/') ? path.substr(path.rfind_char('/') + 1) : path;
 				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style, p.name, doc_name);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
-				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
+				editor_inspector_array->setup_with_move_element_function(object, p.hint_string, array_label, array_element_prefix, page, c, use_folding);
 				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
 			} else if (p.type == Variant::INT) {
 				// Setup the array to use the count property and built-in functions to create/move/delete elements.
@@ -4361,7 +4634,7 @@ void EditorInspector::update_tree() {
 					editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
 					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 
-					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, is_const, numbered, page_size, add_button_text, swap_method);
+					editor_inspector_array->setup_with_count_property(object, p.hint_string, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, is_const, numbered, page_size, add_button_text, swap_method);
 					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
 				}
 			}
@@ -4429,7 +4702,7 @@ void EditorInspector::update_tree() {
 			bool found = false;
 
 			// Small hack for theme_overrides. They are listed under Control, but come from another class.
-			if (classname == "Control" && p.name.begins_with("theme_override_")) {
+			if ((classname == "Control" || classname == "Window") && p.name.begins_with("theme_override_")) {
 				classname = get_edited_object()->get_class();
 			}
 
@@ -4601,11 +4874,15 @@ void EditorInspector::update_tree() {
 				}
 
 				if (p.name.begins_with("metadata/")) {
-					Variant _default = Variant();
-					if (node != nullptr) {
-						_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
+					if (property_read_only || all_read_only) {
+						ep->set_deletable(false);
+					} else {
+						Variant _default = Variant();
+						if (node != nullptr) {
+							_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
+						}
+						ep->set_deletable(_default == Variant());
 					}
-					ep->set_deletable(_default == Variant());
 				} else {
 					ep->set_deletable(deletable_properties);
 				}
@@ -4708,7 +4985,8 @@ void EditorInspector::update_tree() {
 				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
-				section->setup("", section_name, object, sscolor, false);
+
+				section->setup("", "", section_name, object, sscolor, false);
 				section->set_tooltip_text(tooltip);
 
 				if (togglable_editor_inspector_sections.has(section_name)) {
@@ -4747,7 +5025,7 @@ void EditorInspector::update_tree() {
 					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
-					section->setup("", section_name, object, sscolor, false);
+					section->setup("", "", section_name, object, sscolor, false);
 					section->set_tooltip_text(tooltip);
 
 					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
@@ -4852,6 +5130,7 @@ void EditorInspector::update_tree() {
 	if (root_inspector_was_following_focus) {
 		get_root_inspector()->set_follow_focus(true);
 	}
+	use_folding = old_use_folding_state;
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -4935,7 +5214,7 @@ void EditorInspector::edit(Object *p_object) {
 		}
 		object->connect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 
-		can_favorite = Object::cast_to<Node>(object) || Object::cast_to<Resource>(object);
+		can_favorite = Object::cast_to<Node>(object) || Object::cast_to<Resource>(object) || Object::cast_to<MultiNodeEdit>(object);
 		_update_current_favorites();
 
 		update_tree();
@@ -5531,7 +5810,8 @@ void EditorInspector::_update_current_favorites() {
 	}
 
 	// Fetch built-in properties.
-	StringName class_name = object->get_class_name();
+	const MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(object);
+	StringName class_name = multi_node_edit ? multi_node_edit->get_edited_class_name() : object->get_class_name();
 	for (const KeyValue<String, PackedStringArray> &KV : favorites) {
 		if (ClassDB::is_parent_class(class_name, KV.key)) {
 			current_favorites.append_array(KV.value);
@@ -5544,7 +5824,8 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 		return;
 	}
 
-	StringName validate_name = object->get_class_name();
+	const MultiNodeEdit *mne = Object::cast_to<MultiNodeEdit>(object);
+	StringName validate_name = mne ? mne->get_edited_class_name() : object->get_class_name();
 	StringName class_name;
 
 	String theme_property;
@@ -5749,7 +6030,7 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
 				if (property_name_style != style) {
 					property_name_style = style;
@@ -5798,7 +6079,7 @@ void EditorInspector::add_custom_property_description(const String &p_class, con
 String EditorInspector::get_custom_property_description(const String &p_property) const {
 	HashMap<String, String>::ConstIterator E = custom_property_descriptions.find(p_property);
 	if (E) {
-		return E->value;
+		return TTR(E->value);
 	}
 	return "";
 }
@@ -5824,12 +6105,9 @@ void EditorInspector::set_restrict_to_basic_settings(bool p_restrict) {
 	update_tree();
 }
 
-void EditorInspector::set_property_clipboard(const Variant &p_value) {
-	property_clipboard = p_value;
-}
-
-Variant EditorInspector::get_property_clipboard() {
-	return property_clipboard;
+void EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type p_type, const Variant &p_value) {
+	property_clipboard.type = p_type;
+	property_clipboard.value = p_value;
 }
 
 void EditorInspector::_show_add_meta_dialog() {
@@ -5891,7 +6169,7 @@ void EditorInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING, "property")));
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("property_edited", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_toggled", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::BOOL, "checked")));
@@ -5900,8 +6178,6 @@ void EditorInspector::_bind_methods() {
 }
 
 EditorInspector::EditorInspector() {
-	object = nullptr;
-
 	base_vbox = memnew(VBoxContainer);
 	base_vbox->set_theme_type_variation(SNAME("EditorInspectorContainer"));
 	base_vbox->set_h_size_flags(SIZE_EXPAND_FILL);

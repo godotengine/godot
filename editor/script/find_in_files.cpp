@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -48,6 +50,7 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+#include "scene/main/scene_tree.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 
@@ -1322,7 +1325,7 @@ FindInFilesContainer::FindInFilesContainer() {
 	set_name(TTRC("Search Results"));
 	set_icon_name("Search");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Search Results Bottom Panel")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_global(false);
 	set_transient(true);

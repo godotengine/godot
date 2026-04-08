@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Core/TempAllocator.h"
+#include <Jolt/Core/TempAllocator.h>
 
 #include <cstdint>
 

@@ -30,12 +30,14 @@
 
 #include "fbx_document.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
+#include "core/io/resource_loader.h"
 #include "core/math/color.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"

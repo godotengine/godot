@@ -69,7 +69,7 @@
 # gio <toktegar28@gmail.com>, 2025.
 # Fungki <fungki4444@gmail.com>, 2025.
 # Muhammad Affan Fahrozi <m.affanfahrozi@protonmail.com>, 2025.
-# Belang Sumerlang <belangsumerlang@gmail.com>, 2025.
+# Belang Sumerlang <belangsumerlang@gmail.com>, 2025, 2026.
 # Wahyu Azizi <wahyuazizi03@gmail.com>, 2025.
 # Agung Adhinata <adhi0asta@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
@@ -79,8 +79,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-22 04:02+0000\n"
-"Last-Translator: Dandihk <n00b38d@gmail.com>\n"
+"PO-Revision-Date: 2026-01-05 13:02+0000\n"
+"Last-Translator: Belang Sumerlang <belangsumerlang@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -88,7 +88,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "Oke"
+
+msgid "Locked"
+msgstr "Terkunci"
+
+msgid "Help"
+msgstr "Bantuan"
 
 msgid "Physical"
 msgstr "Fisik"
@@ -3855,9 +3864,6 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Putar ketika jendela editor digambar ulang."
 
-msgid "OK"
-msgstr "Oke"
-
 msgid ""
 "This resource can't be saved because it was imported from another file. Make "
 "it unique first."
@@ -4332,9 +4338,6 @@ msgstr "Buka Editor Sebelumnya"
 
 msgid "Project"
 msgstr "Proyek"
-
-msgid "Help"
-msgstr "Bantuan"
 
 msgid "Update Continuously"
 msgstr "Perbarui Terus-menerus"
@@ -6100,6 +6103,9 @@ msgstr "Mulai ulang Sekarang"
 msgid "Language"
 msgstr "Bahasa"
 
+msgid "Style"
+msgstr "Gaya"
+
 msgid "Play a custom scene."
 msgstr "Memainkan adegan khusus."
 
@@ -7063,9 +7069,6 @@ msgstr "Perspektif Belakang"
 msgid "[auto]"
 msgstr "[otomatis]"
 
-msgid "Locked"
-msgstr "Terkunci"
-
 msgid "Grouped"
 msgstr "Terkelompok"
 
@@ -7086,24 +7089,6 @@ msgstr "Penguncian dinonaktifkan (tidak ada kunci yang dimasukkan)."
 
 msgid "Animation Key Inserted."
 msgstr "Kunci Animasi Dimasukkan."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Ukuran: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Objek: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "Primitif: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Menarik Panggilan: %d"
@@ -8952,9 +8937,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Pasca Proses"
-
-msgid "Style"
-msgstr "Gaya"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase ke snake_case"

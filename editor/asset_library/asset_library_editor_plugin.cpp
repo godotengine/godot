@@ -30,10 +30,14 @@
 
 #include "asset_library_editor_plugin.h"
 
+#include "core/config/engine.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer_tls.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -736,7 +740,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 			if (no_downloads == downloads_scroll->is_visible()) {
 				downloads_scroll->set_visible(!no_downloads);
 
-				library_mc->set_theme_type_variation(no_downloads ? "NoBorderHorizontalBottom" : "NoBorderHorizontal");
+				library_mc->set_theme_type_variation(no_downloads ? (Engine::get_singleton()->is_project_manager_hint() ? "NoBorderAssetLibProjectManager" : "NoBorderAssetLib") : "NoBorderHorizontal");
 				library_scroll->set_scroll_hint_mode(no_downloads ? ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT : ScrollContainer::SCROLL_HINT_MODE_ALL);
 			}
 
@@ -787,7 +791,7 @@ void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
-		if (key->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F)) && is_visible_in_tree()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event) && is_visible_in_tree()) {
 			filter->grab_focus();
 			filter->select_all();
 			accept_event();
@@ -1735,7 +1739,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	/////////
 
 	library_mc = memnew(MarginContainer);
-	library_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	library_mc->set_theme_type_variation(Engine::get_singleton()->is_project_manager_hint() ? "NoBorderAssetLibProjectManager" : "NoBorderAssetLib");
 	library_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	library_main->add_child(library_mc);
 

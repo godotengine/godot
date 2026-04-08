@@ -18,7 +18,7 @@ public:
 							SphereShapeSettings() = default;
 
 	/// Create a sphere with radius inRadius
-							SphereShapeSettings(float inRadius, const PhysicsMaterial *inMaterial = nullptr)	: ConvexShapeSettings(inMaterial), mRadius(inRadius) { }
+	explicit				SphereShapeSettings(float inRadius, const PhysicsMaterial *inMaterial = nullptr)	: ConvexShapeSettings(inMaterial), mRadius(inRadius) { }
 
 	// See: ShapeSettings
 	virtual ShapeResult		Create() const override;
@@ -38,7 +38,7 @@ public:
 							SphereShape(const SphereShapeSettings &inSettings, ShapeResult &outResult);
 
 	/// Create a sphere with radius inRadius
-							SphereShape(float inRadius, const PhysicsMaterial *inMaterial = nullptr)			: ConvexShape(EShapeSubType::Sphere, inMaterial), mRadius(inRadius) { JPH_ASSERT(inRadius > 0.0f); }
+	explicit				SphereShape(float inRadius, const PhysicsMaterial *inMaterial = nullptr)			: ConvexShape(EShapeSubType::Sphere, inMaterial), mRadius(inRadius) { JPH_ASSERT(inRadius > 0.0f); }
 
 	/// Radius of the sphere
 	float					GetRadius() const																	{ return mRadius; }

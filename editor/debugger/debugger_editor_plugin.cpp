@@ -30,14 +30,15 @@
 
 #include "debugger_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/debugger/editor_file_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/run/run_instances_dialog.h"
 #include "editor/script/script_editor_plugin.h"
-#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/popup_menu.h"
 

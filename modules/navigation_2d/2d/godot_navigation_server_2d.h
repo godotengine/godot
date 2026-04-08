@@ -48,11 +48,11 @@
 #define MERGE_INTERNAL(A, B) A##B
 #define MERGE(A, B) MERGE_INTERNAL(A, B)
 
-#define COMMAND_1(F_NAME, T_0, D_0)        \
+#define COMMAND_1(F_NAME, T_0, D_0) \
 	virtual void F_NAME(T_0 D_0) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)       \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
 	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 

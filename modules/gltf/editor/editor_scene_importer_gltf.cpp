@@ -33,6 +33,8 @@
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
 
+#include "core/io/resource_importer.h"
+
 void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
 	r_extensions->push_back("glb");
@@ -86,14 +88,6 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 	if (p_path.is_empty() || file_extension == "gltf" || file_extension == "glb") {
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES));
-	}
-}
-
-void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
-	if (!p_import_params.has("gltf/naming_version")) {
-		// If an existing import file is missing the glTF
-		// compatibility version, we need to use version 0.
-		p_import_params["gltf/naming_version"] = 0;
 	}
 }
 

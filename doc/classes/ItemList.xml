@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ItemList" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A vertical list of selectable items with one or multiple columns.
 	</brief_description>
@@ -32,6 +32,15 @@
 				If [param selectable] is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
+		<method name="center_on_current">
+			<return type="void" />
+			<param index="0" name="center_verically" type="bool" default="true" />
+			<param index="1" name="center_horizontally" type="bool" default="true" />
+			<description>
+				Ensures the currently selected item (the first selected item if multiple selection is enabled) is visible, adjusting the scroll position as necessary to place the item at the center of the list if possible. See also [method ensure_current_is_visible].
+				Fails and prints an error if both arguments are [code]false[/code].
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -54,7 +63,7 @@
 		<method name="ensure_current_is_visible">
 			<return type="void" />
 			<description>
-				Ensure current selection is visible, adjusting the scroll position as necessary.
+				Ensures the currently selected item (the first selected item if multiple selection is enabled) is visible, adjusting the scroll position as necessary. See also [method center_on_current].
 			</description>
 		</method>
 		<method name="force_update_list_size">
@@ -240,7 +249,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="single" type="bool" default="true" />
 			<description>
-				Select the item at the specified index.
+				Selects the item at the specified index.
 				[b]Note:[/b] This method does not trigger the item selection signal.
 			</description>
 		</method>
@@ -408,6 +417,22 @@
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
+		<member name="item_{index}/disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is disabled.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/icon" type="Texture2D" setter="" getter="">
+			The icon of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/selectable" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the item at [code]index[/code] is selectable.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/text" type="String" setter="" getter="" default="&quot;&quot;">
+			The text of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
 			Maximum columns the list will have.
 			If greater than zero, the content will be split among the specified columns.
@@ -524,6 +549,9 @@
 		</theme_item>
 		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.25)">
 			[Color] of the guideline. The guideline is a line drawn between each row of items.
+		</theme_item>
+		<theme_item name="scroll_hint_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			[Color] used to modulate the [theme_item scroll_hint] texture.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal spacing between items.

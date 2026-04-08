@@ -30,8 +30,6 @@
 
 #include "register_types.h"
 
-#include "modules/modules_enabled.gen.h"
-
 #include "action_map/openxr_action.h"
 #include "action_map/openxr_action_map.h"
 #include "action_map/openxr_action_set.h"
@@ -41,20 +39,18 @@
 #include "openxr_api_extension.h"
 #include "openxr_interface.h"
 
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+
+#include "modules/modules_enabled.gen.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "extensions/openxr_extension_wrapper_extension.h"
+
 #include "scene/openxr_hand.h"
 #endif // DISABLE_DEPRECATED
-
-#include "scene/openxr_composition_layer.h"
-#include "scene/openxr_composition_layer_cylinder.h"
-#include "scene/openxr_composition_layer_equirect.h"
-#include "scene/openxr_composition_layer_quad.h"
-#ifdef MODULE_GLTF_ENABLED
-#include "scene/openxr_render_model.h"
-#include "scene/openxr_render_model_manager.h"
-#endif
-#include "scene/openxr_visibility_mask.h"
 
 #include "extensions/openxr_android_thread_settings_extension.h"
 #include "extensions/openxr_composition_layer_depth_extension.h"
@@ -70,6 +66,7 @@
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
+#include "extensions/openxr_khr_generic_controller_extension.h"
 #include "extensions/openxr_local_floor_extension.h"
 #include "extensions/openxr_meta_controller_extension.h"
 #include "extensions/openxr_ml2_controller_extension.h"
@@ -77,18 +74,28 @@
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
-#ifdef MODULE_GLTF_ENABLED
-#include "extensions/openxr_render_model_extension.h"
-#endif
+#include "extensions/openxr_user_presence_extension.h"
 #include "extensions/openxr_valve_analog_threshold_extension.h"
 #include "extensions/openxr_valve_controller_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
-#include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
-
 #include "extensions/spatial_entities/openxr_spatial_anchor.h"
+#include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
 #include "extensions/spatial_entities/openxr_spatial_marker_tracking.h"
 #include "extensions/spatial_entities/openxr_spatial_plane_tracking.h"
+
+#include "scene/openxr_composition_layer.h"
+#include "scene/openxr_composition_layer_cylinder.h"
+#include "scene/openxr_composition_layer_equirect.h"
+#include "scene/openxr_composition_layer_quad.h"
+#include "scene/openxr_visibility_mask.h"
+
+#ifdef MODULE_GLTF_ENABLED
+#include "extensions/openxr_render_model_extension.h"
+
+#include "scene/openxr_render_model.h"
+#include "scene/openxr_render_model_manager.h"
+#endif
 
 #ifdef TOOLS_ENABLED
 #include "editor/openxr_editor_plugin.h"
@@ -98,15 +105,11 @@
 #include "extensions/platform/openxr_android_extension.h"
 #endif
 
-#include "core/config/project_settings.h"
-#include "main/main.h"
-
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-
 #include "editor/openxr_binding_modifier_editor.h"
 #include "editor/openxr_interaction_profile_editor.h"
-
+//
+#include "editor/editor_node.h"
 #endif
 
 static OpenXRAPI *openxr_api = nullptr;
@@ -174,6 +177,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRKHRGenericController));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
@@ -214,6 +218,10 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(android_thread_settings);
 			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRAndroidThreadSettingsExtension", android_thread_settings));
 
+			// Register user presence extension as a singleton
+			OpenXRUserPresenceExtension *user_presence_extension = memnew(OpenXRUserPresenceExtension);
+			OpenXRAPI::register_extension_wrapper(user_presence_extension);
+
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
 				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDebugUtilsExtension));
@@ -237,12 +245,16 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			openxr_api = memnew(OpenXRAPI);
 			ERR_FAIL_NULL(openxr_api);
 
-			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+			if (!openxr_api->initialize(OS::get_singleton()->get_current_rendering_driver_name())) {
 				const char *init_error_message =
 						"OpenXR was requested but failed to start.\n"
-						"Please check if your HMD is connected.\n"
+						"HMD was not detected or a required feature was not supported.\n\n"
+#ifdef TOOLS_ENABLED
+						// Editor only message - this is useful for app developer, but not user
+						"Check logged errors in debugger for more details.\n\n"
+#endif
 #ifdef WINDOWS_ENABLED
-						"When using Windows Mixed Reality, note that WMR only has DirectX support. Make sure SteamVR is your default OpenXR runtime.\n"
+						"When using Windows Mixed Reality, note that WMR only has DirectX support. Make sure SteamVR is your default OpenXR runtime.\n\n"
 #endif
 						"Godot will start in normal mode.\n";
 
@@ -341,8 +353,8 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_ABSTRACT_CLASS(OpenXRInteractionProfileEditorBase);
-		GDREGISTER_CLASS(OpenXRInteractionProfileEditor);
-		GDREGISTER_CLASS(OpenXRBindingModifierEditor);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRInteractionProfileEditor);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRBindingModifierEditor);
 
 		EditorNode::add_init_callback(_editor_init);
 	}

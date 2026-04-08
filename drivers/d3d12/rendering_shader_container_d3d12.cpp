@@ -31,46 +31,18 @@
 #include "rendering_shader_container_d3d12.h"
 
 #include "core/templates/sort_array.h"
+#include "drivers/d3d12/dxil_hash.h"
 
-#include "dxil_hash.h"
-
+#include <drivers/d3d12/godot_d3d12ma.h>
+#include <drivers/d3d12/godot_d3dx12.h>
+#include <drivers/d3d12/godot_nir.h>
+#include <wrl/client.h>
 #include <zlib.h>
 
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-GODOT_MSVC_WARNING_PUSH
-GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
-GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
-
-#include <dxgi1_6.h>
-#include <thirdparty/directx_headers/include/directx/d3dx12.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <thirdparty/d3d12ma/D3D12MemAlloc.h>
-
-#include <wrl/client.h>
-
-#include <nir_spirv.h>
-#include <nir_to_dxil.h>
-#include <spirv_to_dxil.h>
 extern "C" {
-#include <dxil_spirv_nir.h>
+void dxil_reassign_driver_locations(nir_shader *s, nir_variable_mode modes,
+		uint64_t other_stage_mask, const BITSET_WORD *other_stage_frac_mask);
 }
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-GODOT_MSVC_WARNING_POP
 
 // SPIR-V to DXIL does way too many allocations, which causes worker threads
 // to bottleneck each other due to sharing the same global process heap.
@@ -430,6 +402,10 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				break;
 			}
 		}
+		if (prev_shader) {
+			dxil_spirv_metadata dxil_metadata = {};
+			dxil_spirv_nir_link(shader, prev_shader, &dxil_runtime_conf, &dxil_metadata);
+		}
 		// There is a bug in the Direct3D runtime during creation of a PSO with view instancing. If a fragment
 		// shader uses front/back face detection (SV_IsFrontFace), its signature must include the pixel position
 		// builtin variable (SV_Position), otherwise an Internal Runtime error will occur.
@@ -448,11 +424,12 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				nir_variable *const pos = nir_variable_create(shader, nir_var_shader_in, glsl_vec4_type(), "gl_FragCoord");
 				pos->data.location = VARYING_SLOT_POS;
 				shader->info.inputs_read |= VARYING_BIT_POS;
+
+				if (prev_shader) {
+					dxil_reassign_driver_locations(shader, nir_var_shader_in, prev_shader->info.outputs_written, nullptr);
+					dxil_reassign_driver_locations(prev_shader, nir_var_shader_out, shader->info.inputs_read, nullptr);
+				}
 			}
-		}
-		if (prev_shader) {
-			dxil_spirv_metadata dxil_metadata = {};
-			dxil_spirv_nir_link(shader, prev_shader, &dxil_runtime_conf, &dxil_metadata);
 		}
 	}
 
@@ -562,7 +539,7 @@ bool RenderingShaderContainerD3D12::_generate_root_signature(BitField<RenderingD
 
 	// NIR-DXIL runtime data.
 	if (reflection_data_d3d12.nir_runtime_data_root_param_idx == 1) { // Set above to 1 when discovering runtime data is needed.
-		DEV_ASSERT(!reflection_data.is_compute); // Could be supported if needed, but it's pointless as of now.
+		DEV_ASSERT(reflection_data.pipeline_type != RDC::PIPELINE_TYPE_COMPUTE); // Could be supported if needed, but it's pointless as of now.
 		reflection_data_d3d12.nir_runtime_data_root_param_idx = root_params.size();
 		CD3DX12_ROOT_PARAMETER1 nir_runtime_data;
 		nir_runtime_data.InitAsConstants(
@@ -757,9 +734,7 @@ bool RenderingShaderContainerD3D12::_generate_root_signature(BitField<RenderingD
 	D3D12_ROOT_SIGNATURE_FLAGS root_sig_flags =
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
 	if (!p_stages_processed.has_flag(RenderingDeviceCommons::SHADER_STAGE_VERTEX_BIT)) {
 		root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;

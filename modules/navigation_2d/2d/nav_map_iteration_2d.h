@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "../nav_rid_2d.h"
 #include "../nav_utils_2d.h"
 #include "nav_mesh_queries_2d.h"
 
 #include "core/math/math_defs.h"
+#include "core/os/rw_lock.h"
 #include "core/os/semaphore.h"
 
 class NavLinkIteration2D;

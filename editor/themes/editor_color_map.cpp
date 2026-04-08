@@ -218,6 +218,8 @@ void EditorColorMap::create() {
 	add_conversion_exception("GuiGraphNodePort");
 	add_conversion_exception("GuiResizer");
 	add_conversion_exception("GuiMiniCheckerboard");
+	add_conversion_exception("PickerCursorBg");
+	add_conversion_exception("CenterView");
 
 	/// Code Editor.
 	add_conversion_exception("GuiTab");

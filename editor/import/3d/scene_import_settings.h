@@ -204,7 +204,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	HashMap<StringName, Variant> defaults;
 
 	SceneImportSettingsData *scene_import_settings_data = nullptr;
-	ResourceImporterScene *_resource_importer_scene = nullptr;
+	Ref<ResourceImporterScene> _resource_importer_scene;
 
 	void _re_import();
 
@@ -244,7 +244,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	ResourceImporterScene *get_resource_importer_scene() const { return _resource_importer_scene; }
+	const Ref<ResourceImporterScene> &get_resource_importer_scene() const { return _resource_importer_scene; }
 	void request_generate_collider();
 	void update_view();
 	void open_settings(const String &p_path, const String &p_scene_import_type = "PackedScene");

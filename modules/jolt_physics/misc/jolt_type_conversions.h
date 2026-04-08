@@ -37,14 +37,14 @@
 #include "core/math/transform_3d.h"
 #include "core/string/ustring.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Core/Color.h"
-#include "Jolt/Geometry/AABox.h"
-#include "Jolt/Geometry/Plane.h"
-#include "Jolt/Math/Mat44.h"
-#include "Jolt/Math/Quat.h"
-#include "Jolt/Math/Vec3.h"
+#include <Jolt/Core/Color.h>
+#include <Jolt/Geometry/AABox.h>
+#include <Jolt/Geometry/Plane.h>
+#include <Jolt/Math/Mat44.h>
+#include <Jolt/Math/Quat.h>
+#include <Jolt/Math/Vec3.h>
 
 _FORCE_INLINE_ Vector3 to_godot(const JPH::Vec3 &p_vec) {
 	return Vector3((real_t)p_vec.GetX(), (real_t)p_vec.GetY(), (real_t)p_vec.GetZ());

@@ -57,11 +57,11 @@
 // Gotta flush as we're doing this mess from a thread without any
 // synchronization. It's awful, I know, but the `print_*` utilities hang for
 // some reason during editor startup and I need some quick and dirty debugging.
-#define DEBUG_LOG_WAYLAND_EMBED(...)                               \
-	if (1) {                                                       \
+#define DEBUG_LOG_WAYLAND_EMBED(...) \
+	if (1) { \
 		printf("[PROXY] %s\n", vformat(__VA_ARGS__).utf8().ptr()); \
-		fflush(stdout);                                            \
-	} else                                                         \
+		fflush(stdout); \
+	} else \
 		((void)0)
 
 #else
@@ -1115,11 +1115,13 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 				}
 
 				if (new_interface == nullptr) {
+#ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
 					if (last_str_len > 0) {
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Unknown interface %s, marking packet as invalid.", (char *)(body + last_str_buf_idx + 1)));
 					} else {
 						DEBUG_LOG_WAYLAND_EMBED("Unknown interface, marking packet as invalid.");
 					}
+#endif
 					valid = false;
 					break;
 				}
@@ -2349,12 +2351,9 @@ void WaylandEmbedder::shutdown() {
 	}
 }
 
-Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
+Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, LocalVector<int> &r_sent_fds) {
 	ERR_FAIL_NULL_V(info, ERR_BUG);
-	ERR_FAIL_NULL_V(fds_requested, ERR_BUG);
 	ERR_FAIL_NULL_V_MSG(info->direction == ProxyDirection::COMPOSITOR && client, ERR_BUG, "Wait, where did this message come from?");
-
-	*fds_requested = 0;
 
 	WaylandObject *object = nullptr;
 
@@ -2408,17 +2407,15 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 	}
 	ERR_FAIL_NULL_V(message, ERR_BUG);
 
-	*fds_requested = String(message->signature).count("h");
-	LocalVector<int> sent_fds;
-
-	if (*fds_requested > 0) {
-		DEBUG_LOG_WAYLAND_EMBED(vformat("Requested %d FDs.", *fds_requested));
+	int fds_requested = String(message->signature).count("h");
+	if (fds_requested > 0) {
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Requested %d FDs.", fds_requested));
 
 		List<int> &fd_queue = info->direction == ProxyDirection::COMPOSITOR ? client->fds : compositor_fds;
-		for (int i = 0; i < *fds_requested; ++i) {
+		for (int i = 0; i < fds_requested; ++i) {
 			ERR_FAIL_COND_V_MSG(fd_queue.is_empty(), ERR_BUG, "Out of FDs.");
 			DEBUG_LOG_WAYLAND_EMBED(vformat("Fetching FD %d.", fd_queue.front()->get()));
-			sent_fds.push_back(fd_queue.front()->get());
+			r_sent_fds.push_back(fd_queue.front()->get());
 			fd_queue.pop_front();
 		}
 
@@ -2427,6 +2424,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 
 	if (object->destroyed) {
 		DEBUG_LOG_WAYLAND_EMBED("Ignoring message for inert object.");
+
 		// Inert object.
 		return OK;
 	}
@@ -2449,7 +2447,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 		DEBUG_LOG_WAYLAND_EMBED("Falling back to generic handler.");
 
 		if (handle_generic_msg(client, object, message, info, buf)) {
-			send_raw_message(compositor_socket, { { buf, info->size } }, sent_fds);
+			send_raw_message(compositor_socket, { { buf, info->size } }, r_sent_fds);
 		}
 	} else {
 		uint32_t global_name = 0;
@@ -2520,7 +2518,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 						buf[0] = instance_id;
 
 						if (handle_generic_msg(&c, local_obj.get(), message, info, buf, instance_id)) {
-							send_raw_message(c.socket, { { buf, info->size } }, sent_fds);
+							send_raw_message(c.socket, { { buf, info->size } }, r_sent_fds);
 						}
 
 						handled = true;
@@ -2556,7 +2554,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 					DEBUG_LOG_WAYLAND_EMBED("Falling back to generic handler.");
 
 					if (handle_generic_msg(&c, local_obj.get(), message, info, buf)) {
-						send_raw_message(c.socket, { { buf, info->size } }, sent_fds);
+						send_raw_message(c.socket, { { buf, info->size } }, r_sent_fds);
 					}
 
 					handled = true;
@@ -2592,18 +2590,13 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 				buf[0] = local_id;
 
 				if (handle_generic_msg(client, local_obj.get(), message, info, buf)) {
-					send_raw_message(client->socket, { { buf, info->size } }, sent_fds);
+					send_raw_message(client->socket, { { buf, info->size } }, r_sent_fds);
 				}
 			} else {
 				WARN_PRINT_ONCE(vformat("[Wayland Embedder] Unexpected client-less event from %s#g0x%x. Object has probably leaked.", object->interface->name, global_id));
 				handle_generic_msg(nullptr, object, message, info, buf);
 			}
 		}
-	}
-
-	for (int fd : sent_fds) {
-		DEBUG_LOG_WAYLAND_EMBED(vformat("Closing fd %d.", fd));
-		close(fd);
 	}
 
 	return OK;
@@ -2728,8 +2721,6 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 	full_msg.msg_control = nullptr;
 	full_msg.msg_controllen = 0;
 
-	int fds_requested = 0;
-
 	Client *client = nullptr;
 	if (p_fd == compositor_socket) {
 		// Let's figure out the recipient of the message.
@@ -2745,11 +2736,19 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 		client = &clients[p_fd];
 	}
 
-	if (handle_msg_info(client, &info, msg_buf.ptr(), &fds_requested) != OK) {
-		return ERR_BUG;
+	LocalVector<int> sent_fds;
+	Error err = handle_msg_info(client, &info, msg_buf.ptr(), sent_fds);
+
+	for (int fd : sent_fds) {
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Closing fd %d.", fd));
+		close(fd);
 	}
 
 	DEBUG_LOG_WAYLAND_EMBED(" === END PACKET === ");
+
+	if (err != OK) {
+		return ERR_BUG;
+	}
 
 	return OK;
 }

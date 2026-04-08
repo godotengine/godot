@@ -30,15 +30,17 @@
 
 #include "curve_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
@@ -127,14 +129,6 @@ void CurveEdit::_notification(int p_what) {
 			tangent_radius = Math::round(BASE_TANGENT_RADIUS * get_theme_default_base_scale() * gizmo_scale);
 			tangent_hover_radius = Math::round(BASE_TANGENT_HOVER_RADIUS * get_theme_default_base_scale() * gizmo_scale);
 			tangent_length = Math::round(BASE_TANGENT_LENGTH * get_theme_default_base_scale());
-		} break;
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			//TODO
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Curve editor")));
 		} break;
 		case NOTIFICATION_DRAW: {
 			_redraw();

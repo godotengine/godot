@@ -31,8 +31,11 @@
 #include "multi_node_edit.h"
 
 #include "core/math/math_fieldwise.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/property_utils.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
@@ -201,7 +204,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, "Script"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()));
 }
 
 String MultiNodeEdit::_get_editor_name() const {
@@ -241,7 +244,16 @@ bool MultiNodeEdit::_property_get_revert(const StringName &p_name, Variant &r_pr
 			continue;
 		}
 
-		r_property = ClassDB::class_get_default_property_value(node->get_class_name(), p_name);
+		// Check if property can revert before using class default.
+		if (node->property_can_revert(p_name)) {
+			r_property = node->property_get_revert(p_name);
+		} else {
+			bool is_valid = false;
+			r_property = PropertyUtils::get_property_default_value(node, p_name, &is_valid);
+			if (!is_valid) {
+				r_property = ClassDB::class_get_default_property_value(node->get_class_name(), p_name);
+			}
+		}
 		return true;
 	}
 

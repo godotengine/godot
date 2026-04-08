@@ -132,13 +132,13 @@ class CryptoMbedTLS : public Crypto {
 private:
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
-	static X509CertificateMbedTLS *default_certs;
+	static Ref<X509CertificateMbedTLS> default_certs;
 
 public:
 	static Crypto *create(bool p_notify_postinitialize = true);
 	static void initialize_crypto();
 	static void finalize_crypto();
-	static X509CertificateMbedTLS *get_default_certificates();
+	static Ref<X509CertificateMbedTLS> get_default_certificates();
 	static void load_default_certificates(const String &p_path);
 	static mbedtls_md_type_t md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 

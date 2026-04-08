@@ -29,6 +29,22 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
+    # Dependencies folder.
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except Exception:  # Give up.
+            deps_folder = ""
+
     return [
         EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
@@ -51,6 +67,12 @@ def get_opts():
         BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
+        # Screen reader support.
+        (
+            "accesskit_sdk_path",
+            "Path to the AccessKit C SDK",
+            os.path.join(deps_folder, "accesskit"),
+        ),
     ]
 
 
@@ -144,9 +166,9 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
-        env.Append(CPPDEFINES=["SANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
+            env.Append(CPPDEFINES=["UBSAN_ENABLED"])
             env.Append(
                 CCFLAGS=[
                     "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
@@ -163,18 +185,22 @@ def configure(env: "SConsEnvironment"):
                 env.Append(CCFLAGS=["-fsanitize=bounds-strict"])
 
         if env["use_asan"]:
+            env.Append(CPPDEFINES=["ASAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
         if env["use_lsan"]:
+            env.Append(CPPDEFINES=["LSAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=leak"])
             env.Append(LINKFLAGS=["-fsanitize=leak"])
 
         if env["use_tsan"]:
+            env.Append(CPPDEFINES=["TSAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
         if env["use_msan"] and env["use_llvm"]:
+            env.Append(CPPDEFINES=["MSAN_ENABLED"])
             env.Append(CCFLAGS=["-fsanitize=memory"])
             env.Append(CCFLAGS=["-fsanitize-memory-track-origins"])
             env.Append(CCFLAGS=["-fsanitize-recover=memory"])
@@ -491,7 +517,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
     if env["accesskit"]:
-        if env["accesskit_sdk_path"] != "":
+        if os.path.exists(env["accesskit_sdk_path"]):
             env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["arch"] == "arm64":
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
@@ -504,9 +530,16 @@ def configure(env: "SConsEnvironment"):
             elif env["arch"] == "x86_32":
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
             env.Append(LIBS=["accesskit"])
+            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
         else:
-            env.Append(CPPDEFINES=["ACCESSKIT_DYNAMIC"])
-        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            print_warning(
+                "The screen reader support driver requires dependencies to be installed.\n"
+                f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html\n"
+                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            env["accesskit"] = False
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
@@ -514,7 +547,7 @@ def configure(env: "SConsEnvironment"):
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
             # No pkgconfig file so far, hardcode expected lib name.
-            env.Append(LIBS=["glslang", "SPIRV"])
+            env.Append(LIBS=["glslang", "SPIRV", "glslang-default-resource-limits"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])

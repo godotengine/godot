@@ -32,7 +32,7 @@
 
 #include "scene/resources/surface_tool.h"
 
-#include "thirdparty/meshoptimizer/meshoptimizer.h"
+#include <thirdparty/meshoptimizer/meshoptimizer.h>
 
 void initialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {

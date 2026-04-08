@@ -33,6 +33,7 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/material.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 

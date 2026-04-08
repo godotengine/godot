@@ -114,18 +114,28 @@ public:
 		return _cowdata.template resize<true>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and keep memory uninitialized.
+	/// This means that any newly added elements have an unknown value, and are expected to be set after the `resize_uninitialized` call.
 	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
 	_FORCE_INLINE_ Error resize_uninitialized(Size p_size) {
 		// resize() statically asserts that T is compatible, no need to do it ourselves.
 		return _cowdata.template resize<false>(p_size);
 	}
 
+	/// Reserves capacity for at least p_size total elements.
+	/// You can use `reserve` before repeated insertions to improve performance.
+	/// The capacity grows in 1.5x increments when possible, and uses `p_size`
+	/// exactly otherwise.
 	Error reserve(Size p_size) {
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 		return _cowdata.reserve(p_size);
 	}
 
+	/// Reserves capacity for exactly p_size total elements.
+	/// This can be useful to reduce RAM use of large vectors, but wastes CPU
+	/// time if more than p_size elements are added after the `reserve_exact` call.
+	/// Prefer using `reserve`, unless the vector (or copies of it) will never
+	/// grow again after p_size elements are inserted.
 	Error reserve_exact(Size p_size) {
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 		return _cowdata.reserve_exact(p_size);

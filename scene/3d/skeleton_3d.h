@@ -54,7 +54,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _skin_changed();
 
 	RID get_skeleton() const;
@@ -114,6 +114,13 @@ private:
 		Transform3D global_pose;
 		int nested_set_offset = 0; // Offset in nested set of bone hierarchy.
 		int nested_set_span = 0; // Subtree span in nested set of bone hierarchy.
+
+		bool modifier_applied = false;
+		Transform3D modifier_pose_cache;
+		void make_bone_modified() {
+			modifier_applied = true;
+			modifier_pose_cache = pose_cache;
+		}
 
 		void update_pose_cache() {
 			if (pose_cache_dirty) {
@@ -188,6 +195,7 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
+	bool modifier_updating = false; // Is modifier updating now?
 
 	// Global bone pose calculation.
 	mutable LocalVector<int> nested_set_offset_to_bone_index; // Map from Bone::nested_set_offset to bone index.

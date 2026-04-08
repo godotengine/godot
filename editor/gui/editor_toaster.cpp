@@ -30,6 +30,9 @@
 
 #include "editor_toaster.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -37,6 +40,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/display/display_server.h"
 
 EditorToaster *EditorToaster::singleton = nullptr;
 
@@ -164,7 +168,7 @@ void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const 
 	bool in_dev = false;
 #endif
 
-	int show_all_setting = EDITOR_GET("interface/editor/show_internal_errors_in_toast_notifications");
+	int show_all_setting = EDITOR_GET("interface/editor/behavior/show_internal_errors_in_toast_notifications");
 
 	if (p_editor_notify || (show_all_setting == 0 && in_dev) || show_all_setting == 1) {
 		String err_str = !p_errorexp.is_empty() ? p_errorexp : p_error;
@@ -183,10 +187,18 @@ void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const 
 	}
 }
 
+// This is kind of a workaround because it's hard to keep the VBox anchored to the bottom.
 void EditorToaster::_update_vbox_position() {
-	// This is kind of a workaround because it's hard to keep the VBox anchroed to the bottom.
 	vbox_container->set_size(Vector2());
-	vbox_container->set_position(get_global_position() - vbox_container->get_size() + Vector2(get_size().x, -5 * EDSCALE));
+
+	Point2 pos = get_global_position();
+	Size2 vbox_size = vbox_container->get_size();
+	pos.y -= vbox_size.y + 5 * EDSCALE;
+	if (!is_layout_rtl()) {
+		pos.x = pos.x - vbox_size.x + get_size().x;
+	}
+
+	vbox_container->set_position(pos);
 }
 
 void EditorToaster::_update_disable_notifications_button() {
@@ -202,7 +214,18 @@ void EditorToaster::_update_disable_notifications_button() {
 		disable_notifications_panel->hide();
 	} else {
 		disable_notifications_panel->show();
-		disable_notifications_panel->set_position(get_global_position() + Vector2(5 * EDSCALE, -disable_notifications_panel->get_minimum_size().y) + Vector2(get_size().x, -5 * EDSCALE));
+
+		Point2 pos = get_global_position();
+		int sep = 5 * EDSCALE;
+		Size2 disable_panel_size = disable_notifications_panel->get_minimum_size();
+		pos.y -= disable_panel_size.y + sep;
+		if (is_layout_rtl()) {
+			pos.x = pos.x - disable_panel_size.x - sep;
+		} else {
+			pos.x += get_size().x + sep;
+		}
+
+		disable_notifications_panel->set_position(pos);
 	}
 }
 
@@ -289,9 +312,6 @@ void EditorToaster::_draw_button() {
 
 void EditorToaster::_draw_progress(Control *panel) {
 	if (toasts.has(panel) && toasts[panel].remaining_time > 0 && toasts[panel].duration > 0) {
-		Size2 size = panel->get_size();
-		size.x *= MIN(1, Math::remap(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
-
 		Ref<StyleBoxFlat> stylebox;
 		switch (toasts[panel].severity) {
 			case SEVERITY_INFO:
@@ -306,7 +326,15 @@ void EditorToaster::_draw_progress(Control *panel) {
 			default:
 				break;
 		}
-		panel->draw_style_box(stylebox, Rect2(Vector2(), size));
+
+		Size2 size = panel->get_size();
+		Size2 progress = size;
+		progress.width *= MIN(1, Math::remap(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
+		if (is_layout_rtl()) {
+			panel->draw_style_box(stylebox, Rect2(size - progress, progress));
+		} else {
+			panel->draw_style_box(stylebox, Rect2(Vector2(), progress));
+		}
 	}
 }
 
@@ -552,16 +580,18 @@ EditorToaster::EditorToaster() {
 	vbox_container->connect(SceneStringName(resized), callable_mp(this, &EditorToaster::_update_vbox_position));
 	add_child(vbox_container);
 
+	Side border_side = is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT;
+
 	// Theming (background).
 	info_panel_style_background.instantiate();
 	info_panel_style_background->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	warning_panel_style_background.instantiate();
-	warning_panel_style_background->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	warning_panel_style_background->set_border_width(border_side, stylebox_radius * EDSCALE);
 	warning_panel_style_background->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	error_panel_style_background.instantiate();
-	error_panel_style_background->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	error_panel_style_background->set_border_width(border_side, stylebox_radius * EDSCALE);
 	error_panel_style_background->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	Ref<StyleBoxFlat> boxes[] = { info_panel_style_background, warning_panel_style_background, error_panel_style_background };
@@ -574,11 +604,11 @@ EditorToaster::EditorToaster() {
 	info_panel_style_progress->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	warning_panel_style_progress.instantiate();
-	warning_panel_style_progress->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	warning_panel_style_progress->set_border_width(border_side, stylebox_radius * EDSCALE);
 	warning_panel_style_progress->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	error_panel_style_progress.instantiate();
-	error_panel_style_progress->set_border_width(SIDE_LEFT, stylebox_radius * EDSCALE);
+	error_panel_style_progress->set_border_width(border_side, stylebox_radius * EDSCALE);
 	error_panel_style_progress->set_corner_radius_all(stylebox_radius * EDSCALE);
 
 	// Main button.

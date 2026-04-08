@@ -32,7 +32,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/string/ustring.h"
 

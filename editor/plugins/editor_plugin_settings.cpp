@@ -30,14 +30,15 @@
 
 #include "editor_plugin_settings.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
@@ -115,15 +116,18 @@ void EditorPluginSettings::update_plugins() {
 
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(COLUMN_NAME, name);
+				item->set_auto_translate_mode(COLUMN_NAME, AUTO_TRANSLATE_MODE_DISABLED);
 				if (!is_enabled) {
 					item->set_custom_color(COLUMN_NAME, disabled_color);
 				}
 				item->set_tooltip_text(COLUMN_NAME, vformat(TTR("Name: %s\nPath: %s\nMain Script: %s\n\n%s"), name, path, scr, wrapped_description));
 				item->set_metadata(COLUMN_NAME, path);
 				item->set_text(COLUMN_VERSION, version);
+				item->set_auto_translate_mode(COLUMN_VERSION, AUTO_TRANSLATE_MODE_DISABLED);
 				item->set_custom_font(COLUMN_VERSION, get_theme_font("source", EditorStringName(EditorFonts)));
 				item->set_metadata(COLUMN_VERSION, scr);
 				item->set_text(COLUMN_AUTHOR, author);
+				item->set_auto_translate_mode(COLUMN_AUTHOR, AUTO_TRANSLATE_MODE_DISABLED);
 				item->set_metadata(COLUMN_AUTHOR, description);
 				item->set_cell_mode(COLUMN_STATUS, TreeItem::CELL_MODE_CHECK);
 				item->set_text(COLUMN_STATUS, TTRC("On"));
@@ -248,6 +252,8 @@ EditorPluginSettings::EditorPluginSettings() {
 
 	plugin_list = memnew(Tree);
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	plugin_list->set_theme_type_variation("TreeTable");
+	plugin_list->set_hide_folding(true);
 	plugin_list->set_columns(COLUMN_MAX);
 	plugin_list->set_column_titles_visible(true);
 	plugin_list->set_column_title(COLUMN_STATUS, TTRC("Enabled"));

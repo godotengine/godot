@@ -30,6 +30,7 @@
 
 #include "skeleton_2d_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -97,7 +98,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	options->set_text(TTR("Skeleton2D"));
 	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Skeleton2D"), EditorStringName(EditorIcons)));
 	options->set_flat(false);
-	options->set_theme_type_variation("FlatMenuButton");
+	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CodeEdit" inherits="TextEdit" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CodeEdit" inherits="TextEdit" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A multiline text editor designed for editing code.
 	</brief_description>
@@ -389,6 +389,13 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Returns [code]true[/code] if the given line is folded. See [method fold_line].
+			</description>
+		</method>
+		<method name="join_lines">
+			<return type="void" />
+			<param index="0" name="line_ending" type="String" default="&quot; &quot;" />
+			<description>
+				Joins all selected lines or lines containing a caret with their next line. Whitespace in between will be removed. If the next line has content, the [param line_ending] will be inserted in between.
 			</description>
 		</method>
 		<method name="move_lines_down">

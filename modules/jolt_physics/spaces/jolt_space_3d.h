@@ -32,15 +32,15 @@
 
 #include "servers/physics_3d/physics_server_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Core/JobSystem.h"
-#include "Jolt/Core/TempAllocator.h"
-#include "Jolt/Physics/Body/BodyInterface.h"
-#include "Jolt/Physics/Collision/BroadPhase/BroadPhaseQuery.h"
-#include "Jolt/Physics/Collision/NarrowPhaseQuery.h"
-#include "Jolt/Physics/Constraints/Constraint.h"
-#include "Jolt/Physics/PhysicsSystem.h"
+#include <Jolt/Core/JobSystem.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseQuery.h>
+#include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
+#include <Jolt/Physics/Constraints/Constraint.h>
+#include <Jolt/Physics/PhysicsSystem.h>
 
 class JoltArea3D;
 class JoltBody3D;
@@ -85,7 +85,7 @@ class JoltSpace3D {
 	void _post_step(float p_step);
 
 public:
-	explicit JoltSpace3D(JPH::JobSystem *p_job_system);
+	explicit JoltSpace3D(JPH::JobSystem *p_job_system, JPH::TempAllocator *p_temp_allocator);
 	~JoltSpace3D();
 
 	void step(float p_step);
@@ -127,7 +127,7 @@ public:
 	JoltPhysicsDirectSpaceState3D *get_direct_state();
 
 	JoltArea3D *get_default_area() const { return default_area; }
-	void set_default_area(JoltArea3D *p_area);
+	void set_default_area(JoltArea3D *p_area) { default_area = p_area; }
 
 	float get_last_step() const { return last_step; }
 

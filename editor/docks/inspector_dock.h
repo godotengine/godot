@@ -34,7 +34,6 @@
 #include "editor/editor_data.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/inspector/editor_inspector.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"

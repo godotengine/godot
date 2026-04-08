@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
 
@@ -179,6 +178,8 @@ public:
 	bool is_object_edited(Object *p_object) const;
 
 	PackedStringArray get_open_scenes() const;
+	PackedStringArray get_unsaved_scenes() const;
+
 	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
 
@@ -202,7 +203,9 @@ public:
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	// Base.
 	static void create();

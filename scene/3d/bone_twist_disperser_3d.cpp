@@ -30,6 +30,9 @@
 
 #include "bone_twist_disperser_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 bool BoneTwistDisperser3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -153,7 +156,7 @@ void BoneTwistDisperser3D::_get_property_list(List<PropertyInfo> *p_list) const 
 		props.push_back(PropertyInfo(Variant::QUATERNION, path + "twist_from"));
 		props.push_back(PropertyInfo(Variant::INT, path + "disperse_mode", PROPERTY_HINT_ENUM, "Even,Weighted,Custom"));
 		props.push_back(PropertyInfo(Variant::FLOAT, path + "weight_position", PROPERTY_HINT_RANGE, "0,1,0.001"));
-		props.push_back(PropertyInfo(Variant::OBJECT, path + "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
+		props.push_back(PropertyInfo(Variant::OBJECT, path + "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 
 		props.push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {
@@ -264,7 +267,7 @@ void BoneTwistDisperser3D::set_root_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->root_bone.bone <= -1 || settings[p_index]->root_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("Root bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Root bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->root_bone.bone = -1;
 		} else {
 			settings[p_index]->root_bone.name = sk->get_bone_name(settings[p_index]->root_bone.bone);
@@ -301,7 +304,7 @@ void BoneTwistDisperser3D::set_end_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->end_bone.bone <= -1 || settings[p_index]->end_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("End bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": End bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->end_bone.bone = -1;
 		} else {
 			settings[p_index]->end_bone.name = sk->get_bone_name(settings[p_index]->end_bone.bone);
@@ -467,7 +470,7 @@ void BoneTwistDisperser3D::_set_joint_bone(int p_index, int p_joint, int p_bone)
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (joints[p_joint].joint.bone <= -1 || joints[p_joint].joint.bone >= sk->get_bone_count()) {
-			WARN_PRINT("Joint bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + " : Joint: " + itos(p_joint) + ": bone index '" + itos(p_bone) + "' is out of range!");
 			joints[p_joint].joint.bone = -1;
 		} else {
 			joints[p_joint].joint.name = sk->get_bone_name(joints[p_joint].joint.bone);

@@ -31,6 +31,7 @@
 #include "openxr_valve_controller_extension.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
+#include "../openxr_api.h"
 
 // Not yet part of the published OpenXR spec
 #ifndef XR_VALVE_FRAME_CONTROLLER_INTERACTION_EXTENSION_NAME
@@ -54,12 +55,12 @@ void OpenXRValveControllerExtension::on_register_metadata() {
 	ERR_FAIL_NULL(openxr_metadata);
 
 	{ // Valve Steam Frame controller
-		const String profile_path = "/interaction_profiles/valve/frame_controller";
+		const String profile_path = "/interaction_profiles/valve/frame_controller_valve";
 		openxr_metadata->register_interaction_profile("Valve Steam Frame controller", profile_path, XR_VALVE_FRAME_CONTROLLER_INTERACTION_EXTENSION_NAME);
 		for (const String user_path : { "/user/hand/left", "/user/hand/right" }) {
 			openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-			openxr_metadata->register_io_path(profile_path, "Palm pose", user_path, user_path + "/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+			openxr_metadata->register_io_path(profile_path, "Grip surface pose", user_path, user_path + "/input/grip_surface/pose", XR_EXT_PALM_POSE_EXTENSION_NAME "," XR_KHR_MAINTENANCE1_EXTENSION_NAME "," XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 
 			openxr_metadata->register_io_path(profile_path, "System touch", user_path, user_path + "/input/system/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 			openxr_metadata->register_io_path(profile_path, "System click", user_path, user_path + "/input/system/click", "", OpenXRAction::OPENXR_ACTION_BOOL);

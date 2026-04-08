@@ -269,7 +269,10 @@ public:
 		// };
 		// Type type = NO_ERROR;
 		String message;
-		int line = 0, column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -337,8 +340,10 @@ public:
 		};
 
 		Type type = NONE;
-		int start_line = 0, end_line = 0;
-		int start_column = 0, end_column = 0;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
@@ -1042,6 +1047,7 @@ public:
 	struct ReturnNode : public Node {
 		ExpressionNode *return_value = nullptr;
 		bool void_return = false;
+		bool use_conversion = false;
 
 		ReturnNode() {
 			type = RETURN;
@@ -1108,8 +1114,10 @@ public:
 			StringName name;
 			FunctionNode *source_function = nullptr;
 
-			int start_line = 0, end_line = 0;
-			int start_column = 0, end_column = 0;
+			int start_line = 0;
+			int start_column = 0;
+			int end_line = 0;
+			int end_column = 0;
 
 			DataType get_datatype() const;
 			String get_name() const;
@@ -1290,7 +1298,7 @@ public:
 		COMPLETION_ATTRIBUTE_METHOD, // After id.| to look for methods.
 		COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
 		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
-		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
+		COMPLETION_DECLARATION, // Potential declaration (var, const, class, etc.).
 		COMPLETION_GET_NODE, // Get node with $ notation.
 		COMPLETION_IDENTIFIER, // List available identifiers in scope.
 		COMPLETION_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.

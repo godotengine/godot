@@ -27,6 +27,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.14-dev\n"
 
+msgid "OK"
+msgstr "Olgu"
+
+msgid "Locked"
+msgstr "Lukustatud"
+
+msgid "Help"
+msgstr "Abi"
+
 msgid "Left Mouse Button"
 msgstr "Vasak hiire klahv"
 
@@ -2294,9 +2303,6 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Keerutab redaktoriakna taasjoonistamisel."
 
-msgid "OK"
-msgstr "Olgu"
-
 msgid ""
 "This resource can't be saved because it was imported from another file. Make "
 "it unique first."
@@ -2693,9 +2699,6 @@ msgstr "Ava Eelmine Redaktor"
 
 msgid "Project"
 msgstr "Projekt"
-
-msgid "Help"
-msgstr "Abi"
 
 msgid "Update Continuously"
 msgstr "Värskenda Pidevalt"
@@ -5145,9 +5148,6 @@ msgstr "Tagantvaade (Ortograafiline)"
 msgid "Rear Perspective"
 msgstr "Tagantvaade (Perspektiiv)"
 
-msgid "Locked"
-msgstr "Lukustatud"
-
 msgid "Grouped"
 msgstr "Grupeeritud"
 
@@ -5168,24 +5168,6 @@ msgstr "Võtmete loomine on keelatud (Võtit ei sisestatud)."
 
 msgid "Animation Key Inserted."
 msgstr "Animatisooni Võti Sisestatud."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Suurus: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Objektid: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "Primitiivid: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Joonistamise Kutsung: %d"

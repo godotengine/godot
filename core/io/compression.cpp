@@ -30,10 +30,9 @@
 
 #include "compression.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/zip_io.h"
 
-#include "thirdparty/misc/fastlz.h"
+#include <thirdparty/misc/fastlz.h>
 
 #include <zstd.h>
 

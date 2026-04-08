@@ -43,6 +43,8 @@
 #endif
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 
 #ifndef DISABLE_DEPRECATED

@@ -214,7 +214,7 @@
                                     }
                                 }
                             },
-                            "required": ["name", "kind", "return_value", "arguments"]
+                            "required": ["name", "kind", "arguments"]
                         }
                     }
                 ]
@@ -306,7 +306,6 @@
                 },
                 "required": [
                     "name",
-                    "return_value",
                     "arguments",
                     "description",
                     "since"

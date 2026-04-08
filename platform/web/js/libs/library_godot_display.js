@@ -95,34 +95,34 @@ const GodotDisplayVK = {
 
 			let elem = GodotDisplayVK.textinput;
 			switch (type) {
-			case 0: // KEYBOARD_TYPE_DEFAULT
+			case 0: // DisplayServerEnums::KEYBOARD_TYPE_DEFAULT
 				elem.type = 'text';
 				elem.inputmode = '';
 				break;
-			case 1: // KEYBOARD_TYPE_MULTILINE
+			case 1: // DisplayServerEnums::KEYBOARD_TYPE_MULTILINE
 				elem = GodotDisplayVK.textarea;
 				break;
-			case 2: // KEYBOARD_TYPE_NUMBER
+			case 2: // DisplayServerEnums::KEYBOARD_TYPE_NUMBER
 				elem.type = 'text';
 				elem.inputmode = 'numeric';
 				break;
-			case 3: // KEYBOARD_TYPE_NUMBER_DECIMAL
+			case 3: // DisplayServerEnums::KEYBOARD_TYPE_NUMBER_DECIMAL
 				elem.type = 'text';
 				elem.inputmode = 'decimal';
 				break;
-			case 4: // KEYBOARD_TYPE_PHONE
+			case 4: // DisplayServerEnums::KEYBOARD_TYPE_PHONE
 				elem.type = 'tel';
 				elem.inputmode = '';
 				break;
-			case 5: // KEYBOARD_TYPE_EMAIL_ADDRESS
+			case 5: // DisplayServerEnums::KEYBOARD_TYPE_EMAIL_ADDRESS
 				elem.type = 'email';
 				elem.inputmode = '';
 				break;
-			case 6: // KEYBOARD_TYPE_PASSWORD
+			case 6: // DisplayServerEnums::KEYBOARD_TYPE_PASSWORD
 				elem.type = 'password';
 				elem.inputmode = '';
 				break;
-			case 7: // KEYBOARD_TYPE_URL
+			case 7: // DisplayServerEnums::KEYBOARD_TYPE_URL
 				elem.type = 'url';
 				elem.inputmode = '';
 				break;
@@ -403,19 +403,19 @@ const GodotDisplay = {
 		const func = GodotRuntime.get_func(p_callback);
 
 		function listener_end(evt) {
-			evt.currentTarget.cb(1 /* TTS_UTTERANCE_ENDED */, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(1 /* DisplayServerEnums::TTS_UTTERANCE_ENDED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_start(evt) {
-			evt.currentTarget.cb(0 /* TTS_UTTERANCE_STARTED */, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(0 /* DisplayServerEnums::TTS_UTTERANCE_STARTED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_error(evt) {
-			evt.currentTarget.cb(2 /* TTS_UTTERANCE_CANCELED */, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(2 /* DisplayServerEnums::TTS_UTTERANCE_CANCELED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_bound(evt) {
-			evt.currentTarget.cb(3 /* TTS_UTTERANCE_BOUNDARY */, evt.currentTarget.id, evt.charIndex);
+			evt.currentTarget.cb(3 /* DisplayServerEnums::TTS_UTTERANCE_BOUNDARY */, evt.currentTarget.id, evt.charIndex);
 		}
 
 		const utterance = new SpeechSynthesisUtterance(GodotRuntime.parseString(p_text));

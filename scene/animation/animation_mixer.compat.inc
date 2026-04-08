@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "animation_mixer.h"
+
+#include "core/object/class_db.h"
+
 Variant AnimationMixer::_post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx) {
 	if (!p_object) {
 		return Variant();

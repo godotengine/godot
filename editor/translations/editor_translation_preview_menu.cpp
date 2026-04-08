@@ -30,6 +30,7 @@
 
 #include "editor_translation_preview_menu.h"
 
+#include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 

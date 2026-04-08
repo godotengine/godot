@@ -406,7 +406,7 @@ int gladLoaderLoadEGL(EGLDisplay display) {
 }
 
 
-void gladLoaderUnloadEGL() {
+void gladLoaderUnloadEGL(void) {
     if (_egl_handle != NULL) {
         glad_close_dlopen_handle(_egl_handle);
         _egl_handle = NULL;

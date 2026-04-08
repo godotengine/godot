@@ -31,6 +31,9 @@
 #include "scene_import_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -45,7 +48,9 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/display/display_server.h"
 
 class SceneImportSettingsData : public Object {
 	GDCLASS(SceneImportSettingsData, Object)
@@ -76,7 +81,7 @@ class SceneImportSettingsData : public Object {
 				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
 			}
 
-			ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+			Ref<ResourceImporterScene> resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 				if (resource_importer_scene->get_option_visibility(path, p_name, current)) {
 					SceneImportSettingsDialog::get_singleton()->update_view();
@@ -139,10 +144,10 @@ class SceneImportSettingsData : public Object {
 						hint_string = anim->get_name();
 					}
 					if (library.is_valid()) {
-						List<StringName> anim_names;
+						LocalVector<StringName> anim_names;
 						library->get_animation_list(&anim_names);
 						if (anim_names.size() == 1) {
-							(*settings)["rest_pose/selected_animation"] = String(anim_names.front()->get());
+							(*settings)["rest_pose/selected_animation"] = String(anim_names[0]);
 						}
 						for (StringName anim_name : anim_names) {
 							hint_string += "," + anim_name; // Include preceding, as a catch-all.
@@ -161,7 +166,7 @@ class SceneImportSettingsData : public Object {
 		if (hide_options) {
 			return;
 		}
-		ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+		Ref<ResourceImporterScene> resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
 		for (const ResourceImporter::ImportOption &E : options) {
 			PropertyInfo option = E.option;
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
@@ -462,9 +467,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	AnimationPlayer *anim_node = Object::cast_to<AnimationPlayer>(p_node);
 	if (anim_node) {
 		Vector<String> animation_list;
-		List<StringName> animations;
-		anim_node->get_animation_list(&animations);
-		for (const StringName &E : animations) {
+		for (const StringName &E : anim_node->get_sorted_animation_list()) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
 			animation_list.append(E);
 		}
@@ -1022,7 +1025,7 @@ void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name)
 		if (!animation_map.has(selected_id)) {
 			return;
 		}
-		HashMap<StringName, Variant> settings = animation_map[selected_id].settings;
+		HashMap<StringName, Variant> settings(animation_map[selected_id].settings);
 		if (settings.has(p_name)) {
 			animation_loop_mode = static_cast<Animation::LoopMode>((int)settings[p_name]);
 		} else {
@@ -1106,7 +1109,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		animation_pingpong = false;
 
 		if (animation_map.has(p_animation_name)) {
-			HashMap<StringName, Variant> settings = animation_map[p_animation_name].settings;
+			HashMap<StringName, Variant> settings(animation_map[p_animation_name].settings);
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
 			}
@@ -1257,8 +1260,8 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 		(*rot_x) = CLAMP((*rot_x), -Math::PI / 2, Math::PI / 2);
 		_update_camera();
 	}
-	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
-		DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CursorShape::CURSOR_ARROW);
+	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+		DisplayServer::get_singleton()->cursor_set_shape(DisplayServerEnums::CursorShape::CURSOR_ARROW);
 	}
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
@@ -1375,12 +1378,6 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			action_menu->begin_bulk_theme_override();
-			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
-			action_menu->end_bulk_theme_override();
-
 			if (animation_player != nullptr && animation_player->is_playing()) {
 				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {
@@ -1999,9 +1996,10 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	update_view_timer->set_one_shot(true);
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
+
+	EditorNode::get_singleton()->register_hdr_viewport(base_viewport);
 }
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {
 	memdelete(scene_import_settings_data);
-	memdelete(_resource_importer_scene);
 }

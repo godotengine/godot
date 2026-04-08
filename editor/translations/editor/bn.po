@@ -35,6 +35,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Weblate 5.14-dev\n"
 
+msgid "OK"
+msgstr "সঠিক"
+
+msgid "Help"
+msgstr "হেল্প"
+
 msgid "Physical"
 msgstr "শারীরিক"
 
@@ -2220,9 +2226,6 @@ msgstr "নামহীন প্রকল্প"
 msgid "Spins when the editor window redraws."
 msgstr "এডিটরের পুন-অঙ্কনে এটি ঘূর্ণন করে।"
 
-msgid "OK"
-msgstr "সঠিক"
-
 msgid "Error saving resource!"
 msgstr "সম্পদ সংরক্ষণে ত্রুটি!"
 
@@ -2481,9 +2484,6 @@ msgstr "Godot সম্পর্কে…"
 
 msgid "Project"
 msgstr "প্রজেক্ট"
-
-msgid "Help"
-msgstr "হেল্প"
 
 msgid "Don't Save"
 msgstr "সংরক্ষণ করবেন না"
@@ -3283,6 +3283,9 @@ msgstr "সমস্যা/ভুল"
 msgid "Restart Now"
 msgstr "এখন রিস্টার্ট করুন"
 
+msgid "Style"
+msgstr "স্টাইল"
+
 msgid "Play a custom scene."
 msgstr "একটি কাস্টম দৃশ্য প্লে করুন।"
 
@@ -3745,9 +3748,6 @@ msgstr "চাবিসংযোক নিষ্ক্রিয় আছে (ক�
 
 msgid "Animation Key Inserted."
 msgstr "অ্যানিমেশনের চাবি সন্নিবেশিত হয়েছে।"
-
-msgid "Objects: %d\n"
-msgstr "অবজেক্ট: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "ড্র কলস:%d"
@@ -4494,9 +4494,6 @@ msgstr "ধাপ"
 
 msgid "Post-Process"
 msgstr "পোষ্ট-প্রসেস"
-
-msgid "Style"
-msgstr "স্টাইল"
 
 msgid "Regular Expression Error:"
 msgstr "রেগুলার এক্সপ্রেশন ত্রুটি:"

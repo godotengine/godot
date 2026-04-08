@@ -140,7 +140,7 @@ class EmbeddedGodotGame : GodotGame() {
 
 	override fun isMenuBarCollapsable() = false
 
-	override fun isAlwaysOnTopSupported() = hasPiPSystemFeature()
+	override fun isAlwaysOnTopSupported() = isPiPModeSupported()
 
 	override fun onFullScreenUpdated(enabled: Boolean) {
 		godot?.enableImmersiveMode(enabled)

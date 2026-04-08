@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
 from methods import generate_copyright_header
 
-URL: Final[str] = "https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt"
+URL: Final[str] = "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt"
 
 
 lower_to_upper: list[tuple[str, str]] = []
