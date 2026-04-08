@@ -557,6 +557,7 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 			item.label = option.display;
 			item.data = request_data;
 			item.insertText = option.insert_text;
+			item.deprecated = option.deprecated;
 
 			// LSP clients won't autoclose brackets.
 			if (client->behavior.use_snippets_for_brace_completion) {
