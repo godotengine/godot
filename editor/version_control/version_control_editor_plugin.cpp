@@ -82,12 +82,12 @@ void VersionControlEditorPlugin::_notification(int p_what) {
 }
 
 void VersionControlEditorPlugin::_update_theme() {
-	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_NEW] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("success_color"), EditorStringName(Editor));
-	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_MODIFIED] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor));
-	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_RENAMED] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor));
-	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_DELETED] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor));
+	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_NEW] = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(success_color), EditorStringName(Editor));
+	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_MODIFIED] = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(warning_color), EditorStringName(Editor));
+	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_RENAMED] = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(warning_color), EditorStringName(Editor));
+	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_DELETED] = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(error_color), EditorStringName(Editor));
 	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_TYPECHANGE] = EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor));
-	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_UNMERGED] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor));
+	change_type_to_color[EditorVCSInterface::CHANGE_TYPE_UNMERGED] = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(warning_color), EditorStringName(Editor));
 
 	change_type_to_icon[EditorVCSInterface::CHANGE_TYPE_NEW] = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("StatusSuccess"), EditorStringName(EditorIcons));
 	change_type_to_icon[EditorVCSInterface::CHANGE_TYPE_MODIFIED] = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("StatusWarning"), EditorStringName(EditorIcons));
@@ -217,7 +217,7 @@ void VersionControlEditorPlugin::_update_set_up_warning(const String &p_new_text
 			set_up_ssh_passphrase->get_text().is_empty();
 
 	if (empty_settings) {
-		set_up_warning_text->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor)));
+		set_up_warning_text->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(warning_color), EditorStringName(Editor)));
 		set_up_warning_text->set_text(TTR("Remote settings are empty. VCS features that use the network may not work."));
 	} else {
 		set_up_warning_text->set_text("");
@@ -640,7 +640,7 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 		String commit_date_string = meta_data[SNAME("commit_date_string")];
 
 		diff->push_font(EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("doc_bold"), EditorStringName(EditorFonts)));
-		diff->push_color(EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor)));
+		diff->push_color(EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(accent_color), EditorStringName(Editor)));
 		diff->add_text(TTR("Commit:") + " " + commit_id);
 		diff->add_newline();
 		diff->add_text(TTR("Author:") + " " + commit_author);
@@ -658,7 +658,7 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 
 	for (const EditorVCSInterface::DiffFile &diff_file : diff_content) {
 		diff->push_font(EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("doc_bold"), EditorStringName(EditorFonts)));
-		diff->push_color(EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor)));
+		diff->push_color(EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(accent_color), EditorStringName(Editor)));
 		diff->add_text(TTR("File:") + " " + diff_file.new_file);
 		diff->pop();
 		diff->pop();
@@ -743,8 +743,8 @@ void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterfac
 		EditorVCSInterface::DiffLine diff_line = parsed_diff[i];
 
 		bool has_change = diff_line.status != " ";
-		static const Color red = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor));
-		static const Color green = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("success_color"), EditorStringName(Editor));
+		static const Color red = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(error_color), EditorStringName(Editor));
+		static const Color green = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(success_color), EditorStringName(Editor));
 		static const Color white = EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), SNAME("Label")) * Color(1, 1, 1, 0.6);
 
 		if (diff_line.old_line_no >= 0) {
@@ -824,9 +824,9 @@ void VersionControlEditorPlugin::_display_diff_unified_view(List<EditorVCSInterf
 
 		Color color;
 		if (diff_line.status == "+") {
-			color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("success_color"), EditorStringName(Editor));
+			color = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(success_color), EditorStringName(Editor));
 		} else if (diff_line.status == "-") {
-			color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor));
+			color = EditorNode::get_singleton()->get_editor_theme()->get_color(EditorStringName(error_color), EditorStringName(Editor));
 		} else {
 			color = EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), SNAME("Label"));
 			color *= Color(1, 1, 1, 0.6);

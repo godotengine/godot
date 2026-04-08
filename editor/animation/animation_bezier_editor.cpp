@@ -599,7 +599,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				}
 			}
 
-			const Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			const Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 
 			// Guides.
 			{
@@ -992,7 +992,7 @@ void AnimationBezierTrackEdit::_play_position_draw() {
 	int px = (-timeline->get_value() + play_position_pos) * scale + limit;
 
 	if (px >= limit && px < (get_size().width)) {
-		const Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		const Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }

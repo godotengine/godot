@@ -1859,7 +1859,7 @@ void EditorPropertyEasing::_draw_easing() {
 	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
 	Color line_color;
 	if (dragging) {
-		line_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		line_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 	} else {
 		line_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit")) * Color(1, 1, 1, 0.9);
 	}
@@ -2374,7 +2374,7 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 			edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			euler_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 			warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-			warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -3057,7 +3057,7 @@ void EditorPropertyNodePath::_node_assign() {
 
 void EditorPropertyNodePath::_assign_draw() {
 	if (dropping) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		assign->draw_rect(Rect2(Point2(), assign->get_size()), color, false);
 	}
 }

@@ -143,7 +143,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		return;
 	}
 
-	Color accent = get_theme_color("accent_color", EditorStringName(Editor));
+	Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 
 	_sheet_sort_frames();
 

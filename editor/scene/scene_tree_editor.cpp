@@ -444,7 +444,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	}
 
 	if (connect_to_script_mode) {
-		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 
 		Ref<Script> scr = p_node->get_script();
 		bool has_custom_script = scr.is_valid() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr;
@@ -465,7 +465,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		}
 	} else if (p_part_of_subscene) {
 		if (valid_types.is_empty()) {
-			_set_item_custom_color(p_item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			_set_item_custom_color(p_item, get_theme_color(EditorStringName(warning_color), EditorStringName(Editor)));
 		}
 	} else if (marked.has(p_node)) {
 		String node_name = p_node->get_name();
@@ -474,7 +474,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		}
 		p_item->set_text(0, node_name);
 		p_item->set_selectable(0, marked_selectable);
-		_set_item_custom_color(p_item, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		_set_item_custom_color(p_item, get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 	} else if (is_scene_tree_dock && !p_node->can_process()) {
 		_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else if (!marked_selectable && !marked_children_selectable) {
@@ -482,7 +482,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		while (node) {
 			if (marked.has(node)) {
 				p_item->set_selectable(0, false);
-				_set_item_custom_color(p_item, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				_set_item_custom_color(p_item, get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 				break;
 			}
 			node = node->get_parent();
@@ -592,10 +592,10 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			if (scr->is_tool()) {
 				if (Engine::get_singleton()->is_recovery_mode_hint()) {
 					additional_notes += "\n" + TTR("This script can run in the editor.\nIt is currently disabled due to recovery mode.");
-					button_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+					button_color = get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
 				} else {
 					additional_notes += "\n" + TTR("This script is currently running in the editor.");
-					button_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+					button_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				}
 			}
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {

@@ -165,11 +165,11 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_WARNING: {
 					icon = p_log->get_editor_theme_icon(SNAME("Warning"));
-					color = p_log->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+					color = p_log->get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_ERROR: {
 					icon = p_log->get_editor_theme_icon(SNAME("Error"));
-					color = p_log->get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+					color = p_log->get_theme_color(EditorStringName(error_color), EditorStringName(Editor));
 				} break;
 				default:
 					break;
@@ -198,7 +198,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		p_log->set_table_column_expand(1, true);
 
 		{
-			Color color = p_log->get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+			Color color = p_log->get_theme_color(EditorStringName(error_color), EditorStringName(Editor));
 			Ref<Texture> icon = p_log->get_editor_theme_icon(SNAME("Error"));
 
 			p_log->push_cell();

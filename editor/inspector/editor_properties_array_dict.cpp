@@ -587,14 +587,14 @@ void EditorPropertyArray::_remove_pressed(int p_slot_index) {
 
 void EditorPropertyArray::_button_draw() {
 	if (dropping) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		edit->draw_rect(Rect2(Point2(), edit->get_size()), color, false);
 	}
 }
 
 void EditorPropertyArray::_button_add_item_draw() {
 	if (dropping) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		button_add_item->draw_rect(Rect2(Point2(), button_add_item->get_size()), color, false);
 	}
 }

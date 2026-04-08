@@ -390,7 +390,7 @@ void ScreenSelect::_build_advanced_menu() {
 		button->set_tooltip_text(vformat(TTR("Make this panel floating in the screen %d."), i));
 
 		if (i == current_screen) {
-			Color accent_color = get_theme_color("accent_color", EditorStringName(Editor));
+			Color accent_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 			button->add_theme_color_override(SceneStringName(font_color), accent_color);
 		}
 

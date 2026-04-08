@@ -321,7 +321,7 @@ void AudioStreamImportSettingsDialog::_draw_indicator() {
 		return;
 	}
 
-	const Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	const Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 	_indicator->draw_line(Point2(ofs_x, rect.position.y), Point2(ofs_x, rect.position.y + rect.size.height), color, Math::round(2 * EDSCALE));
 	_indicator->draw_texture(
 			get_editor_theme_icon(SNAME("TimelineIndicator")),

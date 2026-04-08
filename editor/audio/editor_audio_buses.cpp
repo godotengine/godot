@@ -146,7 +146,7 @@ void EditorAudioBus::_notification(int p_what) {
 			}
 
 			if (get_index() != 0 && hovering_drop) {
-				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				accent.a *= 0.7;
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}
@@ -1036,7 +1036,7 @@ void EditorAudioBusDrop::_notification(int p_what) {
 			draw_style_box(get_theme_stylebox(CoreStringName(normal), SNAME("Button")), Rect2(Vector2(), get_size()));
 
 			if (hovering_drop) {
-				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				Color accent = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 				accent.a *= 0.7;
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}

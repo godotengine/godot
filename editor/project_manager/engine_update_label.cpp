@@ -266,8 +266,8 @@ void EngineUpdateLabel::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			theme_cache.default_color = get_theme_color(SceneStringName(font_color), "Button");
 			theme_cache.disabled_color = get_theme_color("font_disabled_color", "Button");
-			theme_cache.error_color = get_theme_color("error_color", EditorStringName(Editor));
-			theme_cache.update_color = get_theme_color("warning_color", EditorStringName(Editor));
+			theme_cache.error_color = get_theme_color(EditorStringName(error_color), EditorStringName(Editor));
+			theme_cache.update_color = get_theme_color(EditorStringName(warning_color), EditorStringName(Editor));
 		} break;
 
 		case NOTIFICATION_READY: {

@@ -291,7 +291,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	Size2 s = blend_space_draw->get_size();
 
 	if (blend_space_draw->has_focus()) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
 	}
 
@@ -352,7 +352,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 			Vector2 text_size = font->get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 			Vector2 text_pos = Vector2(CLAMP(point - text_size.x / 2.0, 0, s.width - text_size.x), gui_point.y - 4 * EDSCALE);
 
-			Color name_color = i == selected_point ? get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) : linecolor;
+			Color name_color = i == selected_point ? get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)) : linecolor;
 			blend_space_draw->draw_string(font, text_pos, name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
 
 			if (text_rects.size() <= i) {
@@ -367,7 +367,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	{
 		Color color;
 		if (tool_blend->is_pressed()) {
-			color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		} else {
 			color = linecolor;
 			color.a *= 0.5;
@@ -740,7 +740,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
@@ -815,9 +815,9 @@ void AnimationNodeBlendSpace1DEditor::_start_inline_edit(int p_point) {
 	inline_editor = memnew(LineEdit);
 	blend_space_draw->add_child(inline_editor);
 
-	inline_editor->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+	inline_editor->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 	inline_editor->add_theme_color_override("font_selected_color", Color::named("white"));
-	inline_editor->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+	inline_editor->add_theme_color_override("selection_color", get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 	Ref<StyleBoxEmpty> empty_style = memnew(StyleBoxEmpty);
 	empty_style->set_content_margin_all(0);
 	inline_editor->add_theme_style_override(CoreStringName(normal), empty_style);

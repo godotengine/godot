@@ -3404,7 +3404,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		const String &lang = _get_locale();
 		const TranslationServer *ts = TranslationServer::get_singleton();
 
-		Color ruler_primary_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color ruler_primary_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		Color ruler_secondary_color = ruler_primary_color;
 		ruler_secondary_color.a = 0.5;
 
@@ -3996,12 +3996,12 @@ void CanvasItemEditor::_draw_selection() {
 		viewport->draw_line(
 				transform.xform(drag_rotation_center),
 				transform.xform(drag_to),
-				get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6),
+				get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6),
 				Math::round(2 * EDSCALE));
 	}
 
 	if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
-		viewport->draw_texture(pivot_icon, (temp_pivot - view_offset) * zoom - (pivot_icon->get_size() / 2).floor(), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		viewport->draw_texture(pivot_icon, (temp_pivot - view_offset) * zoom - (pivot_icon->get_size() / 2).floor(), get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 	}
 }
 
@@ -6519,7 +6519,7 @@ void CanvasItemEditorViewport::_show_tooltip(const String &p_title, const String
 	tooltip_panel->set_text(
 			vformat("[font_size=%s][b][color=%s]%s[/color][/b][/font_size]\n%s",
 					get_theme_default_font_size() + 2,
-					get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).to_html(false),
+					get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)).to_html(false),
 					p_title, p_description));
 	tooltip_panel->show();
 }

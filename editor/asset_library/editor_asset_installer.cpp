@@ -97,7 +97,7 @@ bool EditorAssetInstaller::_fix_conflicted_indeterminate_state(TreeItem *p_item,
 		p_item->set_checked(p_column, false);
 	}
 	if (has_conflict_child) {
-		p_item->set_custom_color(p_column, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		p_item->set_custom_color(p_column, get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 	} else {
 		p_item->clear_custom_color(p_column);
 	}
@@ -278,7 +278,7 @@ bool EditorAssetInstaller::_update_source_item_status(TreeItem *p_item, const St
 
 	bool target_exists = FileAccess::exists(target_path);
 	if (target_exists) {
-		p_item->set_custom_color(0, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		p_item->set_custom_color(0, get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		p_item->set_tooltip_text(0, vformat(TTR("%s (already exists)"), target_path));
 		p_item->set_checked(0, false);
 	} else {
@@ -610,7 +610,7 @@ void EditorAssetInstaller::_notification(int p_what) {
 			} else {
 				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
-			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 
 			generic_extension_icon = get_editor_theme_icon(SNAME("Object"));
 

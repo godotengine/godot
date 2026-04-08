@@ -105,7 +105,7 @@ void HistoryDock::refresh_history() {
 	for (const EditorUndoRedoManager::Action &E : full_history) {
 		action_list->add_item(E.action_name);
 		if (E.history_id == EditorUndoRedoManager::GLOBAL_HISTORY) {
-			action_list->set_item_custom_fg_color(-1, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+			action_list->set_item_custom_fg_color(-1, get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 		}
 	}
 

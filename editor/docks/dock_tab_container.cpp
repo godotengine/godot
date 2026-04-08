@@ -95,7 +95,7 @@ void EditorDockDragHint::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			valid_drop_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			valid_drop_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER:

@@ -279,8 +279,8 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			create_tag_btn->set_button_icon(get_editor_theme_icon("Add"));
 			donate_btn->set_button_icon(get_editor_theme_icon("Heart"));
 
-			tag_error->add_theme_color_override(SceneStringName(font_color), get_theme_color("error_color", EditorStringName(Editor)));
-			tag_edit_error->add_theme_color_override(SceneStringName(font_color), get_theme_color("error_color", EditorStringName(Editor)));
+			tag_error->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
+			tag_edit_error->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 
 			const int h_separation = get_theme_constant("sidebar_button_icon_separation", "ProjectManager");
 			create_btn->add_theme_constant_override("h_separation", h_separation);

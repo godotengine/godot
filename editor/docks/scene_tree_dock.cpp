@@ -107,7 +107,7 @@ void SceneTreeDock::_inspect_hovered_node() {
 	tree_item_inspected = item;
 
 	if (item) {
-		Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		Color accent_color = get_theme_color(EditorStringName(accent_color), EditorStringName(Editor));
 		tree_item_inspected->set_custom_color(0, accent_color);
 	}
 

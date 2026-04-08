@@ -125,7 +125,7 @@ void MaterialEditor::_notification(int p_what) {
 			box_switch->set_button_icon(theme_cache.box_icon);
 			quad_switch->set_button_icon(theme_cache.quad_icon);
 
-			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(EditorStringName(error_color), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_DRAW: {

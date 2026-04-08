@@ -344,7 +344,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_as_cursor(0);
 			}
 			if (main_scene_path == file_metadata) {
-				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+				file_item->set_custom_color(0, get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 			}
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, file_item->get_instance_id()));
 		}
@@ -1230,7 +1230,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 
 		if (fpath == main_scene_path) {
-			files->set_item_custom_fg_color(item_index, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+			files->set_item_custom_fg_color(item_index, get_theme_color(EditorStringName(accent_color), EditorStringName(Editor)));
 		}
 
 		// Generate the preview.
