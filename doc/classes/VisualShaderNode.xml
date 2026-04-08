@@ -4,7 +4,7 @@
 		Base class for [VisualShader] nodes. Not related to scene nodes.
 	</brief_description>
 	<description>
-		Visual shader graphs consist of various nodes. Each node in the graph is a separate object and they are represented as a rectangular boxes with title and a set of properties. Each node also has connection ports that allow to connect it to another nodes and control the flow of the shader.
+		A visual shader graph consists of various nodes. Each node in a graph is an individual resource, represented as a rectangular box containing a title and several related properties. Each node can also be connected to other nodes through their connection ports in order to control the shader's flow.
 	</description>
 	<tutorials>
 		<link title="Using VisualShaders">$DOCS_URL/tutorials/shaders/visual_shaders.html</link>
