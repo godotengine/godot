@@ -39,6 +39,8 @@
 #include "tests/test_utils.h"
 
 #ifdef TOOLS_ENABLED
+#include "../editor/gdscript_editor_language.h"
+
 #include "core/os/os.h"
 #endif
 
@@ -141,5 +143,21 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 		}
 	}
 }
+
+#ifdef TOOLS_ENABLED
+TEST_CASE("[Modules][GDScript] find_function") {
+	SUBCASE("[Modules][GDScript] Over-indented dictionary") {
+		const String code = "var dictionary = {\n"
+							"		\"foo\": \"bar\"\n"
+							"	}\n"
+							"\n"
+							"func button_pressed():\n"
+							"	print(\"pressed!\")\n"
+							"\n";
+
+		CHECK_EQ(GDScriptEditorLanguage::get_singleton()->find_function("button_pressed", code, "res://my_script.gd"), 4);
+	}
+}
+#endif // TOOLS_ENABLED
 
 } // namespace GDScriptTests

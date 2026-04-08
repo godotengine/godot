@@ -117,7 +117,7 @@ public:
 	 *
 	 * @return The zero-based line number of the function or `-1` if not found.
 	 */
-	virtual int32_t find_function(const String &p_function, const String &p_code) const { return -1; }
+	virtual int32_t find_function(const String &p_function, const String &p_code, const String &p_path) const { return -1; }
 
 	virtual ~EditorLanguage() = default;
 };
