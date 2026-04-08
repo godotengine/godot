@@ -4134,16 +4134,16 @@ void Node3DEditorViewport::_draw() {
 					edge_color,
 					Math::round(2 * EDSCALE),
 					true);
+		}
 
-			if (_edit.show_rotation_line) {
-				handle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.25, 1.0, handle_color.a);
-				RenderingServer::get_singleton()->canvas_item_add_line(
-						ci,
-						_edit.mouse_pos,
-						center,
-						handle_color,
-						Math::round(2 * EDSCALE));
-			}
+		if (_edit.show_rotation_line) {
+			handle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.25, 1.0, handle_color.a);
+			RenderingServer::get_singleton()->canvas_item_add_line(
+					ci,
+					_edit.mouse_pos,
+					center,
+					handle_color,
+					Math::round(2 * EDSCALE));
 		}
 	}
 	if (previewing) {
