@@ -14,12 +14,37 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="collapse_all_folding">
+			<return type="void" />
+			<description>
+				Collapses all foldable sections.
+			</description>
+		</method>
+		<method name="create_default_inspector" qualifiers="static">
+			<return type="EditorInspector" />
+			<param index="0" name="filter_line_edit" type="LineEdit" default="null" />
+			<description>
+				Creates an inspector with the same configuration as the one used in the editor's Inspector dock. When passing a [LineEdit] into [param filter_line_edit], the inspector will filter its properties based on [member LineEdit.text] whenever [signal LineEdit.text_changed] is emitted.
+			</description>
+		</method>
 		<method name="edit">
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
 			<description>
 				Shows the properties of the given [param object] in this inspector for editing. To clear the inspector, call this method with [code]null[/code].
 				[b]Note:[/b] If you want to edit an object in the editor's main inspector, use the [code]edit_*[/code] methods in [EditorInterface] instead.
+			</description>
+		</method>
+		<method name="expand_all_folding">
+			<return type="void" />
+			<description>
+				Expands all foldable sections.
+			</description>
+		</method>
+		<method name="expand_revertable">
+			<return type="void" />
+			<description>
+				Expands only the foldable sections that contain a revertable (i.e. non-default) property.
 			</description>
 		</method>
 		<method name="get_edited_object">
