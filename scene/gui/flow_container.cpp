@@ -36,10 +36,10 @@
 
 struct _LineData {
 	int child_count = 0;
-	int min_line_height = 0;
-	int min_line_length = 0;
-	int stretch_avail = 0;
-	float stretch_ratio_total = 0;
+	float min_line_height = 0.0f;
+	float min_line_length = 0.0f;
+	float stretch_avail = 0.0f;
+	float stretch_ratio_total = 0.0f;
 	bool is_filled = false;
 };
 
@@ -51,17 +51,15 @@ void FlowContainer::_resort() {
 
 	bool rtl = is_layout_rtl();
 
-	HashMap<Control *, Size2i> children_minsize_cache;
-	HashMap<Control *, Size2i> children_maxsize_cache;
-	HashMap<Control *, int> children_stretch_cache;
+	HashMap<Control *, Size2> children_minsize_cache;
 
 	Vector<_LineData> lines_data;
 
-	Vector2i ofs;
-	int line_height = 0;
-	int line_length = 0;
-	float line_stretch_ratio_total = 0;
-	int current_container_size = vertical ? get_size().y : get_size().x;
+	Vector2 ofs;
+	float line_height = 0.0f;
+	float line_length = 0.0f;
+	float line_stretch_ratio_total = 0.0f;
+	float current_container_size = vertical ? get_size().y : get_size().x;
 	int children_in_current_line = 0;
 	Control *last_child = nullptr;
 
@@ -72,8 +70,7 @@ void FlowContainer::_resort() {
 			continue;
 		}
 
-		Size2i child_msc = child->get_combined_minimum_size();
-		Size2i child_max_size = child->get_combined_maximum_size();
+		Size2 child_msc = child->get_combined_minimum_size();
 
 		if (vertical) { /* VERTICAL */
 			if (children_in_current_line > 0) {
@@ -145,7 +142,7 @@ void FlowContainer::_resort() {
 		if (!child) {
 			continue;
 		}
-		Size2i child_size = children_minsize_cache[child];
+		Size2 child_size = children_minsize_cache[child];
 
 		_LineData line_data = lines_data[current_line_idx];
 		if (child_idx_in_line >= lines_data[current_line_idx].child_count) {
@@ -240,9 +237,9 @@ void FlowContainer::_resort() {
 		}
 
 		// The first child of each line adds the offset caused by the alignment,
-		// but only if there is remaining space after expansion/capping.
-		if (child_idx_in_line == 0 && line_data.stretch_avail > 0) {
-			int alignment_ofs = 0;
+		// but only if the line doesn't contain a child that expands.
+		if (child_idx_in_line == 0 && Math::is_equal_approx(line_data.stretch_ratio_total, 0)) {
+			float alignment_ofs = 0.0f;
 			bool is_not_first_line_and_not_filled = current_line_idx != 0 && !line_data.is_filled;
 			float prior_stretch_avail = is_not_first_line_and_not_filled ? lines_data[current_line_idx - 1].stretch_avail : 0.0;
 			switch (alignment) {
@@ -309,7 +306,7 @@ void FlowContainer::_resort() {
 			}
 
 			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
-				int stretch = children_stretch_cache.has(child) ? children_stretch_cache[child] : 0;
+				float stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
 				child_size.height += stretch;
 			}
 
@@ -319,7 +316,7 @@ void FlowContainer::_resort() {
 			}
 
 			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
-				int stretch = children_stretch_cache.has(child) ? children_stretch_cache[child] : 0;
+				float stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
 				child_size.width += stretch;
 			}
 		}
@@ -348,7 +345,7 @@ void FlowContainer::_resort() {
 }
 
 Size2 FlowContainer::get_minimum_size() const {
-	Size2i minimum;
+	Size2 minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
@@ -356,7 +353,7 @@ Size2 FlowContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_bound_minimum_size();
+		Size2 size = c->get_combined_minimum_size();
 
 		if (vertical) { /* VERTICAL */
 			minimum.height = MAX(minimum.height, size.height);

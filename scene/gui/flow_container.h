@@ -49,7 +49,7 @@ public:
 	};
 
 private:
-	int cached_size = 0;
+	float cached_size = 0.0f;
 	int cached_line_count = 0;
 	int cached_line_max_child_count = 0;
 
