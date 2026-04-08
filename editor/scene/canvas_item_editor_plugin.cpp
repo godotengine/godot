@@ -558,13 +558,24 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 				Vector<SelectResult> currently_hovered;
 				_get_canvas_items_at_pos(transform.affine_inverse().xform(viewport->get_local_mouse_position()), currently_hovered, true);
 
-				TypedArray<Node> nodes;
-				nodes.reserve(currently_hovered.size());
+				TypedArray<Node> items;
+				items.reserve(currently_hovered.size());
 				for (const SelectResult &result : currently_hovered) {
-					nodes.append(result.item);
+					items.append(result.item);
 				}
-				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, nodes);
 
+#ifndef DISABLE_DEPRECATED
+				if (p_ev->get_meta("_legacy", false)) {
+					EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, items);
+					accept_event();
+					return;
+				}
+#endif
+
+				EditorContextMenuPlugin::OptionsData context_data;
+				context_data["hovered_nodes"] = items;
+				context_data["mouse_position"] = transform.affine_inverse().xform(viewport->get_local_mouse_position());
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 				accept_event();
 			}
 		}
@@ -1047,15 +1058,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 		} break;
 		default: {
 			if (p_result >= EditorContextMenuPlugin::BASE_ID) {
-				TypedArray<Node> nodes;
-				nodes.resize(selection_results.size());
-
-				int i = 0;
-				for (const SelectResult &result : selection_results) {
-					nodes[i] = result.item;
-					i++;
-				}
-				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, p_result, nodes);
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, p_result);
 			}
 		}
 	}
@@ -2508,19 +2511,29 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			// Context menu plugin receives paths of nodes under cursor. It's a complex operation, so perform it only when necessary.
 			if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR)) {
-				selection_results.clear();
-				_get_canvas_items_at_pos(transform.affine_inverse().xform(viewport->get_local_mouse_position()), selection_results, true);
+				Vector<SelectResult> currently_hovered;
+				_get_canvas_items_at_pos(transform.affine_inverse().xform(b->get_position()), currently_hovered, true);
 
-				PackedStringArray paths;
-				paths.resize(selection_results.size());
-				String *paths_write = paths.ptrw();
-
-				for (int i = 0; i < paths.size(); i++) {
-					paths_write[i] = String(selection_results[i].item->get_path());
+				TypedArray<CanvasItem *> items;
+				items.reserve(currently_hovered.size());
+				for (const SelectResult &result : currently_hovered) {
+					items.push_back(result.item);
 				}
-				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths);
+
+				EditorContextMenuPlugin::OptionsData context_data;
+				context_data["hovered_nodes"] = items;
+				context_data["mouse_position"] = transform.affine_inverse().xform(b->get_position());
+				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, context_data);
+
+#ifndef DISABLE_DEPRECATED
+				PackedStringArray paths;
+				paths.reserve_exact(currently_hovered.size());
+				for (const SelectResult &result : currently_hovered) {
+					paths.append((String)result.item->get_path());
+				}
+				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths, 500);
+#endif
 			}
 
 			add_node_menu->reset_size();

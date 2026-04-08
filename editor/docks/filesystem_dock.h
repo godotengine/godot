@@ -284,6 +284,7 @@ private:
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
+	bool _handle_custom_context_callback(Ref<InputEvent> p_event, const PackedStringArray &p_selected);
 
 	HashSet<String> _get_valid_conversions_for_file_paths(const Vector<String> &p_paths);
 

@@ -36,9 +36,23 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/resources/texture.h"
 
-void EditorContextMenuPlugin::get_options(const Vector<String> &p_paths) {
-	GDVIRTUAL_CALL(_popup_menu, p_paths);
+void EditorContextMenuPlugin::get_options(const OptionsData &p_data) {
+	context_data = p_data;
+	GDVIRTUAL_CALL(_get_menu_options, p_data);
 }
+
+#ifndef DISABLE_DEPRECATED
+void EditorContextMenuPlugin::get_options(const Vector<String> &p_paths) {
+	legacy_data = p_paths;
+	legacy_mode = true;
+	GDVIRTUAL_CALL(_popup_menu, p_paths);
+	legacy_mode = false;
+}
+
+bool EditorContextMenuPlugin::has_legacy_shortcuts() const {
+	return GDVIRTUAL_IS_OVERRIDDEN(_popup_menu);
+}
+#endif
 
 void EditorContextMenuPlugin::add_menu_shortcut(const Ref<Shortcut> &p_shortcut, const Callable &p_callable) {
 	context_menu_shortcuts.insert(p_shortcut, p_callable);
@@ -52,6 +66,9 @@ void EditorContextMenuPlugin::add_context_menu_item(const String &p_name, const 
 	item.item_name = p_name;
 	item.callable = p_callable;
 	item.icon = p_texture;
+#ifndef DISABLE_DEPRECATED
+	item.legacy = legacy_mode;
+#endif
 	context_menu_items.insert(p_name, item);
 }
 
@@ -64,6 +81,9 @@ void EditorContextMenuPlugin::add_context_menu_item_from_shortcut(const String &
 	item.callable = *callback;
 	item.icon = p_texture;
 	item.shortcut = p_shortcut;
+#ifndef DISABLE_DEPRECATED
+	item.legacy = legacy_mode;
+#endif
 	context_menu_items.insert(p_name, item);
 }
 
@@ -83,7 +103,10 @@ void EditorContextMenuPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_context_menu_item_from_shortcut", "name", "shortcut", "icon"), &EditorContextMenuPlugin::add_context_menu_item_from_shortcut, DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("add_context_submenu_item", "name", "menu", "icon"), &EditorContextMenuPlugin::add_context_submenu_item, DEFVAL(Ref<Texture2D>()));
 
+	GDVIRTUAL_BIND(_get_menu_options, "data");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_popup_menu, "paths");
+#endif
 
 	BIND_ENUM_CONSTANT(CONTEXT_SLOT_SCENE_TREE);
 	BIND_ENUM_CONSTANT(CONTEXT_SLOT_FILESYSTEM);
@@ -119,7 +142,7 @@ bool EditorContextMenuPluginManager::has_plugins_for_slot(ContextMenuSlot p_slot
 	return false;
 }
 
-void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths, int p_id_offset) {
+void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const EditorContextMenuPlugin::OptionsData &p_data, int p_id_offset) {
 	bool separator_added = false;
 	const int icon_size = p_popup->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 	int id = EditorContextMenuPlugin::BASE_ID + p_id_offset;
@@ -129,10 +152,10 @@ void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup
 			continue;
 		}
 		plugin->context_menu_items.clear();
-		plugin->get_options(p_paths);
+		plugin->get_options(p_data);
 
 		HashMap<String, EditorContextMenuPlugin::ContextMenuItem> &items = plugin->context_menu_items;
-		if (items.size() > 0 && !separator_added) {
+		if (!separator_added && !items.is_empty()) {
 			separator_added = true;
 			p_popup->add_separator();
 		}
@@ -160,6 +183,51 @@ void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
+void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths, int p_id_offset) {
+	bool separator_added = false;
+	const int icon_size = p_popup->get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	int id = EditorContextMenuPlugin::BASE_ID + p_id_offset;
+
+	for (Ref<EditorContextMenuPlugin> &plugin : plugin_list) {
+		if (plugin->slot != p_slot) {
+			continue;
+		}
+		plugin->get_options(p_paths);
+
+		HashMap<String, EditorContextMenuPlugin::ContextMenuItem> &items = plugin->context_menu_items;
+		for (KeyValue<String, EditorContextMenuPlugin::ContextMenuItem> &E : items) {
+			EditorContextMenuPlugin::ContextMenuItem &item = E.value;
+			if (!item.legacy) {
+				continue;
+			}
+
+			if (!separator_added) {
+				separator_added = true;
+				p_popup->add_separator();
+			}
+			item.id = id;
+
+			if (item.submenu) {
+				p_popup->add_submenu_node_item(item.item_name, item.submenu, id);
+			} else {
+				p_popup->add_item(item.item_name, id);
+			}
+
+			if (item.icon.is_valid()) {
+				p_popup->set_item_icon(-1, item.icon);
+				p_popup->set_item_icon_max_width(-1, icon_size);
+			}
+
+			if (item.shortcut.is_valid()) {
+				p_popup->set_item_shortcut(-1, item.shortcut, true);
+			}
+			id++;
+		}
+	}
+}
+#endif
+
 Callable EditorContextMenuPluginManager::match_custom_shortcut(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<InputEvent> &p_event) {
 	for (Ref<EditorContextMenuPlugin> &plugin : plugin_list) {
 		if (plugin->slot != p_slot) {
@@ -168,6 +236,11 @@ Callable EditorContextMenuPluginManager::match_custom_shortcut(EditorContextMenu
 
 		for (KeyValue<Ref<Shortcut>, Callable> &E : plugin->context_menu_shortcuts) {
 			if (E.key->matches_event(p_event)) {
+#ifndef DISABLE_DEPRECATED
+				if (plugin->has_legacy_shortcuts()) {
+					p_event->set_meta("_legacy_shortcut", true); // Sorry :(
+				}
+#endif
 				return E.value;
 			}
 		}
@@ -175,7 +248,7 @@ Callable EditorContextMenuPluginManager::match_custom_shortcut(EditorContextMenu
 	return Callable();
 }
 
-bool EditorContextMenuPluginManager::activate_custom_option(ContextMenuSlot p_slot, int p_option, const Variant &p_arg) {
+bool EditorContextMenuPluginManager::activate_custom_option(ContextMenuSlot p_slot, int p_option) {
 	for (Ref<EditorContextMenuPlugin> &plugin : plugin_list) {
 		if (plugin->slot != p_slot) {
 			continue;
@@ -183,7 +256,13 @@ bool EditorContextMenuPluginManager::activate_custom_option(ContextMenuSlot p_sl
 
 		for (KeyValue<String, EditorContextMenuPlugin::ContextMenuItem> &E : plugin->context_menu_items) {
 			if (E.value.id == p_option) {
-				invoke_callback(E.value.callable, p_arg);
+#ifndef DISABLE_DEPRECATED
+				if (E.value.legacy) {
+					invoke_callback(E.value.callable, plugin->legacy_data);
+					return true;
+				}
+#endif
+				invoke_callback(E.value.callable, plugin->context_data);
 				return true;
 			}
 		}

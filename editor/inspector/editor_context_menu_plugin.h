@@ -32,6 +32,7 @@
 
 #include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
+#include "core/variant/typed_dictionary.h"
 
 class InputEvent;
 class PopupMenu;
@@ -44,6 +45,11 @@ class EditorContextMenuPlugin : public RefCounted {
 	friend class EditorContextMenuPluginManager;
 
 	static constexpr int MAX_ITEMS = 100;
+
+	int slot = -1;
+#ifndef DISABLE_DEPRECATED
+	bool legacy_mode = false;
+#endif
 
 public:
 	enum ContextMenuSlot {
@@ -58,10 +64,8 @@ public:
 	};
 	static constexpr int BASE_ID = 2000;
 
-private:
-	int slot = -1;
+	using OptionsData = TypedDictionary<StringName, Variant>;
 
-public:
 	struct ContextMenuItem {
 		int id = 0;
 		String item_name;
@@ -69,17 +73,34 @@ public:
 		Ref<Texture2D> icon;
 		Ref<Shortcut> shortcut;
 		PopupMenu *submenu = nullptr;
+#ifndef DISABLE_DEPRECATED
+		bool legacy = false;
+#endif
 	};
+
+private:
 	HashMap<String, ContextMenuItem> context_menu_items;
 	HashMap<Ref<Shortcut>, Callable> context_menu_shortcuts;
+
+	OptionsData context_data;
+#ifndef DISABLE_DEPRECATED
+	PackedStringArray legacy_data;
+#endif
 
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL1(_get_menu_options, const OptionsData &);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL1(_popup_menu, Vector<String>);
+#endif
 
 public:
+	virtual void get_options(const OptionsData &p_data);
+#ifndef DISABLE_DEPRECATED
 	virtual void get_options(const Vector<String> &p_paths);
+	bool has_legacy_shortcuts() const;
+#endif
 
 	void add_menu_shortcut(const Ref<Shortcut> &p_shortcut, const Callable &p_callable);
 	void add_context_menu_item(const String &p_name, const Callable &p_callable, const Ref<Texture2D> &p_texture);
@@ -104,9 +125,10 @@ public:
 	void remove_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
 
 	bool has_plugins_for_slot(ContextMenuSlot p_slot);
+	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const EditorContextMenuPlugin::OptionsData &p_data, int p_id_offset = 0);
 	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths, int p_id_offset = 0);
 	Callable match_custom_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
-	bool activate_custom_option(ContextMenuSlot p_slot, int p_option, const Variant &p_arg);
+	bool activate_custom_option(ContextMenuSlot p_slot, int p_option);
 
 	void invoke_callback(const Callable &p_callback, const Variant &p_arg);
 

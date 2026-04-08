@@ -5,16 +5,23 @@
 	</brief_description>
 	<description>
 		[EditorContextMenuPlugin] allows for the addition of custom options in the editor's context menu.
-		Currently, context menus are supported for three commonly used areas: the file system, scene tree, and editor script list panel.
+		see [enum ContextMenuSlot] for the list of available areas where context menu plugins are supported.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_popup_menu" qualifiers="virtual">
+		<method name="_get_menu_options" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="data" type="Dictionary[StringName, Variant]" />
+			<description>
+				Called when creating a context menu, custom options can be added by using the [method add_context_menu_item] or [method add_context_menu_item_from_shortcut] functions. [param data] contains the context data, which differs depending on the context menu slot. See the descriptions of [enum ContextMenuSlot] for more information.
+			</description>
+		</method>
+		<method name="_popup_menu" qualifiers="virtual" deprecated="Use [method _get_menu_options] instead.">
 			<return type="void" />
 			<param index="0" name="paths" type="PackedStringArray" />
 			<description>
-				Called when creating a context menu, custom options can be added by using the [method add_context_menu_item] or [method add_context_menu_item_from_shortcut] functions. [param paths] contains currently selected paths (depending on menu), which can be used to conditionally add options.
+				[b]Note:[/b] Implementing this method makes the shortcut callbacks receive legacy data (for compatibility reasons).
 			</description>
 		</method>
 		<method name="add_context_menu_item">
@@ -23,9 +30,9 @@
 			<param index="1" name="callback" type="Callable" />
 			<param index="2" name="icon" type="Texture2D" default="null" />
 			<description>
-				Add custom option to the context menu of the plugin's specified slot. When the option is activated, [param callback] will be called. Callback should take single [Array] argument; array contents depend on context menu slot.
+				Add custom option to the context menu of the plugin's specified slot. [param callback] should be a method that takes a single argument of type [Dictionary]. It will be called when the option is activated and the data received in the callback is the same as in [method _get_menu_options].
 				[codeblock]
-				func _popup_menu(paths):
+				func _get_menu_options(data):
 					add_context_menu_item("File Custom options", handle, ICON)
 				[/codeblock]
 				If you want to assign shortcut to the menu item, use [method add_context_menu_item_from_shortcut] instead.
@@ -42,7 +49,7 @@
 				func _init():
 					add_menu_shortcut(SHORTCUT, handle)
 
-				func _popup_menu(paths):
+				func _get_menu_options(paths):
 					add_context_menu_item_from_shortcut("File Custom options", SHORTCUT, ICON)
 				[/codeblock]
 			</description>
@@ -55,7 +62,7 @@
 			<description>
 				Add a submenu to the context menu of the plugin's specified slot. The submenu is not automatically handled, you need to connect to its signals yourself. Also the submenu is freed on every popup, so provide a new [PopupMenu] every time.
 				[codeblock]
-				func _popup_menu(paths):
+				func _get_menu_options(data):
 					var popup_menu = PopupMenu.new()
 					popup_menu.add_item("Blue")
 					popup_menu.add_item("White")
@@ -70,7 +77,7 @@
 			<param index="0" name="shortcut" type="Shortcut" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Registers a shortcut associated with the plugin's context menu. This method should be called once (e.g. in plugin's [method Object._init]). [param callback] will be called when user presses the specified [param shortcut] while the menu's context is in effect (e.g. FileSystem dock is focused). Callback should take single [Array] argument; array contents depend on context menu slot.
+				Registers a shortcut associated with the plugin's context menu. This method should be called once (e.g. in the plugin's [method Object._init]). [param callback] will be called when user presses the specified [param shortcut] while the menu's context is in effect (e.g. FileSystem dock is focused). Callback should take single data [Dictionary], same as in [method add_context_menu_item].
 				[codeblock]
 				func _init():
 					add_menu_shortcut(SHORTCUT, handle)
@@ -80,45 +87,48 @@
 	</methods>
 	<constants>
 		<constant name="CONTEXT_SLOT_SCENE_TREE" value="0" enum="ContextMenuSlot">
-			Context menu of Scene dock. [method _popup_menu] will be called with a list of paths to currently selected nodes, while option callback will receive the list of currently selected nodes.
+			Context menu of Scene dock. The data [Dictionary] contains:
+			[code]&amp;"selected_nodes": Array[Node][/code] - The list of currently selected nodes (same as [method EditorSelection.get_top_selected_nodes]).
 		</constant>
 		<constant name="CONTEXT_SLOT_FILESYSTEM" value="1" enum="ContextMenuSlot">
-			Context menu of FileSystem dock. [method _popup_menu] and option callback will be called with list of paths of the currently selected files.
+			Context menu of FileSystem dock. The data [Dictionary] contains:
+			[code]&amp;"selected_files": PackedStringArray[/code] - The list of selected files.
 		</constant>
 		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR" value="2" enum="ContextMenuSlot">
-			Context menu of Script editor's script tabs. [method _popup_menu] will be called with the path to the currently edited script, while option callback will receive reference to that script.
+			Context menu of Script editor's script tabs. The data [Dictionary] contains:
+			[code]&amp;"selected_script": Script[/code] - The currently selected script. Can be [code]null[/code].
 		</constant>
 		<constant name="CONTEXT_SLOT_FILESYSTEM_CREATE" value="3" enum="ContextMenuSlot">
-			The "Create..." submenu of FileSystem dock's context menu, or the "New" section of the main context menu when empty space is clicked. [method _popup_menu] and option callback will be called with the path of the currently selected folder. When clicking the empty space, the list of paths for popup method will be empty.
+			The "Create..." submenu of FileSystem dock's context menu, or the "New" section of the main context menu when empty space is clicked. The data [Dictionary] contains:
+			[code]&amp;"base_directory": String[/code] - Path to the base directory where a file should be created.
+			[code]&amp;"needs_prefix": bool[/code] - Whether the option needs a "New" prefix (for consistency with native options).
 			[codeblock]
-			func _popup_menu(paths):
-			    if paths.is_empty():
+			func _get_menu_options(data):
+			    if data["needs_prefix"]:
 			        add_context_menu_item("New Image File...", create_image)
 			    else:
 			        add_context_menu_item("Image File...", create_image)
 			[/codeblock]
 		</constant>
 		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR_CODE" value="4" enum="ContextMenuSlot">
-			Context menu of Script editor's code editor. [method _popup_menu] will be called with the path to the [CodeEdit] node. You can fetch it using this code:
-			[codeblock]
-			func _popup_menu(paths):
-				var code_edit = Engine.get_main_loop().root.get_node(paths[0]);
-			[/codeblock]
-			The option callback will receive reference to that node. You can use [CodeEdit] methods to perform symbol lookups etc.
+			Context menu of Script editor's code editor. The data [Dictionary] contains:
+			[code]&amp;"code_edit": CodeEdit[/code] - The code editor instance.
+			[code]&amp;"file_path": String[/code] - Path to the currently edited file.
 		</constant>
 		<constant name="CONTEXT_SLOT_SCENE_TABS" value="5" enum="ContextMenuSlot">
-			Context menu of scene tabs. [method _popup_menu] will be called with the path of the clicked scene, or empty [PackedStringArray] if the menu was opened on empty space. The option callback will receive the path of the clicked scene, or empty [String] if none was clicked.
+			Context menu of scene tabs. The data [Dictionary] contains:
+			[code]&amp;"selected_scene": String[/code] - Scene path of the selected/clicked scene tab. Empty if empty space was clicked.
 		</constant>
 		<constant name="CONTEXT_SLOT_2D_EDITOR" value="6" enum="ContextMenuSlot">
-			Context menu of 2D editor's basic right-click menu. [method _popup_menu] will be called with paths to all [CanvasItem] nodes under the cursor. You can fetch them using this code:
-			[codeblock]
-			func _popup_menu(paths):
-				var canvas_item = Engine.get_main_loop().root.get_node(paths[0]); # Replace 0 with the desired index.
-			[/codeblock]
-			The paths array is empty if there weren't any nodes under cursor. The option callback will receive a typed array of [CanvasItem] nodes.
+			Context menu of the 2D editor's viewport. The data [Dictionary] contains:
+			[code]&amp;"hovered_nodes": Array[CanvasItem][/code] - The [CanvasItem] nodes under the cursor.
+			[code]&amp;"mouse_position": Vector2[/code] - The local mouse position in the 2D scene.
 		</constant>
 		<constant name="CONTEXT_SLOT_INSPECTOR_PROPERTY" value="7" enum="ContextMenuSlot">
-			Context menu of the inspectors right-click menu. [method _popup_menu] will be called with an array of two items: The first will be the object's ID, the second will be the property name. An object can be retrieved from it's ID via [method @GlobalScope.instance_from_id] after converting it to an int. The option callback will receive the EditorProperty directly.
+			Context menu of an editor property in the inspector. The data [Dictionary] contains:
+			[code]&amp;"property": EditorProperty[/code] - The clicked [EditorProperty] object.
+			[code]&amp;"object": Object[/code] - The object edited by the inspector.
+			[code]&amp;"property_name": StringName[/code] - The name of the object's property that was clicked.
 		</constant>
 	</constants>
 </class>
