@@ -127,7 +127,8 @@ void EditorLog::_update_theme() {
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
-	show_nonmatches_button->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+	show_non_search_matches_button->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+	search_case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -208,14 +209,21 @@ void EditorLog::_load_state() {
 	is_loading_state = false;
 }
 
-void EditorLog::_set_show_nonmatches(bool p_state) {
-	show_nonmatches = p_state;
+void EditorLog::_set_show_non_search_matches(bool p_state) {
+	show_non_search_matches = p_state;
 
 	_rebuild_log();
 }
 
-void EditorLog::_set_show_nonmatches_button_visibility(bool p_visible) {
-	show_nonmatches_button->set_visible(p_visible);
+void EditorLog::_set_search_case_sensitive(bool p_state) {
+	search_case_sensitive = p_state;
+
+	_rebuild_log();
+}
+
+void EditorLog::_set_search_buttons_visibility(bool p_visible) {
+	show_non_search_matches_button->set_visible(p_visible);
+	search_case_sensitive_button->set_visible(p_visible);
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
@@ -363,7 +371,7 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 		return filter_active;
 	}
 
-	bool search_match = p_message.text.containsn(search_text);
+	bool search_match = _contains_case_sensitive(p_message.text, search_text);
 
 	// If not found and message contains BBCode tags, also check the parsed text
 	if (!search_match && p_message.text.contains_char('[')) {
@@ -377,14 +385,23 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 		bbcode_parser->clear();
 		bbcode_parser->parse_bbcode(p_message.text);
 		String parsed_text = bbcode_parser->get_parsed_text();
-		search_match = parsed_text.containsn(search_text);
+
+		search_match = _contains_case_sensitive(parsed_text, search_text);
 	}
 
 	return filter_active && search_match;
 }
 
+bool EditorLog::_contains_case_sensitive(String p_base, String p_contains) {
+	if (search_case_sensitive) {
+		return p_base.contains(p_contains);
+	} else {
+		return p_base.containsn(p_contains);
+	}
+}
+
 void EditorLog::_append_styled_log_line(Color p_color_regular, Color p_color_highlighted, String p_line, String p_keytext) {
-	if (p_keytext.is_empty() || !p_line.containsn(p_keytext)) {
+	if (p_keytext.is_empty() || !_contains_case_sensitive(p_line, p_keytext)) {
 		log->push_color(p_color_regular);
 		log->add_text(p_line);
 		return;
@@ -404,7 +421,7 @@ void EditorLog::_append_styled_log_line(Color p_color_regular, Color p_color_hig
 	}
 
 	// Map which segments of p_line contain the target string. Every uneven pair of ints will be a non-match, and every even pair will be a match.
-	while (iterator_line.containsn(p_keytext)) {
+	while (_contains_case_sensitive(iterator_line, p_keytext)) {
 		int keytext_pos = iterator_line.findn(p_keytext);
 
 		if (keytext_pos == 0) {
@@ -471,7 +488,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	if (!_check_display_message(p_message)) {
 		// Either darken or remove the message altogether when it does not fit the filter keytext.
-		if (!show_nonmatches) {
+		if (!show_non_search_matches) {
 			return;
 		}
 		log->push_color(Color(1.0, 1.0, 1.0, 0.2));
@@ -569,7 +586,7 @@ void EditorLog::_search_changed(const String &p_text) {
 	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
 
 	_rebuild_log();
-	_set_show_nonmatches_button_visibility(!p_text.is_empty());
+	_set_search_buttons_visibility(!p_text.is_empty());
 
 	log->set_scroll_follow(true);
 }
@@ -639,15 +656,24 @@ EditorLog::EditorLog() {
 	hbox->add_child(search_box);
 
 	//Exclude non-filter matches button
-	show_nonmatches_button = memnew(Button);
-	show_nonmatches_button->set_tooltip_text(TTRC("Show Non-Matches"));
-	show_nonmatches_button->set_accessibility_name(TTRC("Show Non-Matches"));
-	show_nonmatches_button->set_theme_type_variation(SceneStringName(FlatButton));
-	show_nonmatches_button->set_toggle_mode(true);
-	show_nonmatches_button->set_pressed(true);
-	show_nonmatches_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_show_nonmatches));
-	_set_show_nonmatches_button_visibility(false);
-	hbox->add_child(show_nonmatches_button);
+	show_non_search_matches_button = memnew(Button);
+	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matches"));
+	show_non_search_matches_button->set_accessibility_name(TTRC("Show Non-Matches"));
+	show_non_search_matches_button->set_theme_type_variation(SceneStringName(FlatButton));
+	show_non_search_matches_button->set_toggle_mode(true);
+	show_non_search_matches_button->set_pressed(true);
+	show_non_search_matches_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_show_non_search_matches));
+	hbox->add_child(show_non_search_matches_button);
+
+	// Case sensitive button
+	search_case_sensitive_button = memnew(Button);
+	search_case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
+	search_case_sensitive_button->set_toggle_mode(true);
+	search_case_sensitive_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_case_sensitive));
+	hbox->add_child(search_case_sensitive_button);
+
+	// Make show_non_search_matches_button and search_case_sensitive_button invisible
+	_set_search_buttons_visibility(false);
 
 	// Clear.
 	clear_button = memnew(Button);
