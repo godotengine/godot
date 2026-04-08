@@ -337,12 +337,12 @@ public:
 			ClassDB::bind_method(D_METHOD("set_subres_sl", "subres"), &m_class_name::set_subres_sl); \
 			ClassDB::bind_method(D_METHOD("get_subres_sl"), &m_class_name::get_subres_sl); \
 \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "obj", PROPERTY_HINT_NONE, "", m_property_usage), "set_obj", "get_obj"); \
+			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "obj", PROPERTY_HINT_RESOURCE_TYPE, "Object", m_property_usage), "set_obj", "get_obj"); \
 			ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "arr", PROPERTY_HINT_NONE, "", m_property_usage), "set_arr", "get_arr"); \
 			ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "dict", PROPERTY_HINT_NONE, "", m_property_usage), "set_dict", "get_dict"); \
-			ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packed", PROPERTY_HINT_NONE, "", m_property_usage), "set_packed", "get_packed"); \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres", "get_subres"); \
-			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres_sl", PROPERTY_HINT_NONE, "", m_property_usage), "set_subres_sl", "get_subres_sl"); \
+			ADD_PROPERTY(PropertyInfo(Variant::NIL, "packed", PROPERTY_HINT_NONE, "", m_property_usage | PROPERTY_USAGE_NIL_IS_VARIANT), "set_packed", "get_packed"); \
+			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres", PROPERTY_HINT_RESOURCE_TYPE, "Resource", m_property_usage), "set_subres", "get_subres"); \
+			ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subres_sl", PROPERTY_HINT_RESOURCE_TYPE, "Resource", m_property_usage), "set_subres_sl", "get_subres_sl"); \
 \
 			ClassDB::bind_method(D_METHOD("set_defaults"), &m_class_name::set_defaults); \
 			ClassDB::bind_method(D_METHOD("get_data"), &m_class_name::get_data); \

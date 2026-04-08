@@ -57,7 +57,7 @@ protected:
 		ClassDB::bind_method(D_METHOD("set_reference_property", "reference_property"), &_TestInstancePlaceholderNode::set_reference_property);
 		ClassDB::bind_method(D_METHOD("get_reference_property"), &_TestInstancePlaceholderNode::get_reference_property);
 
-		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "reference_property", PROPERTY_HINT_NODE_TYPE), "set_reference_property", "get_reference_property");
+		ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "reference_property", PROPERTY_HINT_NODE_TYPE, "Node", PROPERTY_USAGE_DEFAULT, "Node"), "set_reference_property", "get_reference_property");
 
 		ClassDB::bind_method(D_METHOD("set_reference_array_property", "reference_array_property"), &_TestInstancePlaceholderNode::set_reference_array_property);
 		ClassDB::bind_method(D_METHOD("get_reference_array_property"), &_TestInstancePlaceholderNode::get_reference_array_property);
@@ -79,12 +79,12 @@ public:
 
 	Variant reference_property;
 
-	void set_reference_property(const Variant &p_node) {
+	void set_reference_property(Node *p_node) {
 		reference_property = p_node;
 	}
 
-	Variant get_reference_property() const {
-		return reference_property;
+	Node *get_reference_property() const {
+		return Object::cast_to<Node>(reference_property.get_validated_object());
 	}
 
 	Array reference_array_property;
@@ -154,8 +154,8 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with no
 		REQUIRE(created != nullptr);
 		CHECK(created->get_name() == "TestScene");
 		CHECK(created->get_child_count() == 1);
-		CHECK(created->get_reference_property().identity_compare(created->get_child(0, false)));
-		CHECK_FALSE(created->get_reference_property().identity_compare(referenced));
+		CHECK(Variant(created->get_reference_property()).identity_compare(created->get_child(0, false)));
+		CHECK_FALSE(Variant(created->get_reference_property()).identity_compare(referenced));
 
 		root->queue_free();
 		memdelete(scene);
@@ -264,8 +264,8 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 		REQUIRE(created != nullptr);
 		CHECK(created->get_name() == "TestScene");
 		CHECK(created->get_child_count() == 1);
-		CHECK(created->get_reference_property().identity_compare(overriding));
-		CHECK_FALSE(created->get_reference_property().identity_compare(referenced));
+		CHECK(Variant(created->get_reference_property()).identity_compare(overriding));
+		CHECK_FALSE(Variant(created->get_reference_property()).identity_compare(referenced));
 
 		root->queue_free();
 		memdelete(scene);
@@ -405,7 +405,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	_TestInstancePlaceholderNode *final_node = Object::cast_to<_TestInstancePlaceholderNode>(instanced_placeholder->create_instance(true));
 	REQUIRE(final_node != nullptr);
 	REQUIRE(final_node->get_child_count() == 1);
-	REQUIRE(final_node->get_reference_property().identity_compare(final_node->get_child(0, true)));
+	REQUIRE(Variant(final_node->get_reference_property()).identity_compare(final_node->get_child(0, true)));
 
 	instanced_main_node->queue_free();
 	memdelete(overriding);
@@ -506,7 +506,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	_TestInstancePlaceholderNode *final_node = Object::cast_to<_TestInstancePlaceholderNode>(instanced_placeholder->create_instance(true));
 	REQUIRE(final_node != nullptr);
 	REQUIRE(final_node->get_child_count() == 3);
-	REQUIRE(final_node->get_reference_property().identity_compare(instanced_main_node->get_child(1, true)));
+	REQUIRE(Variant(final_node->get_reference_property()).identity_compare(instanced_main_node->get_child(1, true)));
 	Array final_array = final_node->get_reference_array_property();
 	REQUIRE(final_array.size() == 3);
 	Array wanted_node_array = {
