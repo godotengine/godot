@@ -201,6 +201,7 @@ void TabContainer::_notification(int p_what) {
 			}
 
 			updating_visibility = false;
+			_maximum_size_changed();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -342,6 +343,7 @@ void TabContainer::_update_margins() {
 	if (get_tab_count() == 0) {
 		internal_container->set_offset(SIDE_LEFT, left_margin);
 		internal_container->set_offset(SIDE_RIGHT, -right_margin);
+		_maximum_size_changed();
 		return;
 	}
 
@@ -361,6 +363,7 @@ void TabContainer::_update_margins() {
 
 			if (has_popup) {
 				internal_container->set_offset(SIDE_RIGHT, -right_margin);
+				_maximum_size_changed();
 				return;
 			}
 
@@ -379,6 +382,8 @@ void TabContainer::_update_margins() {
 		case TabBar::ALIGNMENT_MAX:
 			break; // Can't happen, but silences warning.
 	}
+
+	_maximum_size_changed();
 }
 
 Vector<Control *> TabContainer::_get_tab_controls() const {
@@ -1011,7 +1016,7 @@ Size2 TabContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 cms = c->get_combined_minimum_size();
+		Size2 cms = c->get_bound_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(cms);
 	}
 	ms.height += largest_child_min_size.height;
@@ -1022,6 +1027,52 @@ Size2 TabContainer::get_minimum_size() const {
 	ms.height += panel_ms.height;
 
 	return ms;
+}
+
+Size2 TabContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (tabs_visible && tab_bar) {
+		Size2 tab_bar_ms = tab_bar->get_minimum_size();
+		ms.height -= tab_bar_ms.height;
+
+		if (theme_cache.tabbar_style.is_valid()) {
+			ms.height -= theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+		}
+	}
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
+}
+
+void TabContainer::_maximum_size_changed() {
+	if (!tab_bar) {
+		return;
+	}
+
+	Size2 ms = get_combined_maximum_size();
+	if (theme_cache.tabbar_style.is_valid()) {
+		if (ms.width >= 0) {
+			ms.width -= theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
+			if (get_popup() && popup_button) {
+				ms.width -= popup_button->get_minimum_size().x;
+			}
+			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
+					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
+				ms.width -= theme_cache.side_margin;
+			}
+			ms.width = MAX(ms.width, 0);
+		}
+		if (ms.height >= 0) {
+			ms.height -= theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+			ms.height = MAX(ms.height, 0);
+		}
+	}
+	internal_container->set_parent_maximum_size_cache(Size2(-1, -1));
+	tab_bar->set_custom_maximum_size(ms);
 }
 
 void TabContainer::set_popup(Node *p_popup) {
@@ -1256,6 +1307,8 @@ void TabContainer::_bind_methods() {
 }
 
 TabContainer::TabContainer() {
+	connect(SceneStringName(maximum_size_changed), callable_mp(this, &TabContainer::_maximum_size_changed));
+
 	internal_container = memnew(HBoxContainer);
 	internal_container->add_theme_constant_override(SNAME("separation"), 0);
 	internal_container->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -75,6 +76,7 @@
 void SceneTreeDock::_nodes_drag_begin() {
 	pending_click_select = nullptr;
 	edited_object_at_drag_start = InspectorDock::get_inspector_singleton()->get_edited_object();
+	scene_tree_drag_active = true;
 }
 
 void SceneTreeDock::_quick_open(const String &p_file_path) {
@@ -1819,6 +1821,11 @@ void SceneTreeDock::_notification(int p_what) {
 				_restore_treeitem_custom_color(tree_item_inspected);
 				tree_item_inspected = nullptr;
 			}
+
+			if (!scene_tree_drag_active) {
+				return;
+			}
+			scene_tree_drag_active = false;
 
 			InspectorDock *inspector_dock = InspectorDock::get_singleton();
 			if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {

@@ -42,7 +42,4 @@
 #define GLAD_GLES2
 #endif
 
-// IWYU pragma: begin_exports.
-#include <thirdparty/glad/glad/egl.h>
-#include <thirdparty/glad/glad/gl.h>
-// IWYU pragma: end_exports.
+#include <thirdparty/glad/glad/gl.h> // IWYU pragma: export.

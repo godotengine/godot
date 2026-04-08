@@ -305,10 +305,27 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column;
+		int end_line;
+		int end_column;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+	};
+
 	struct CodeCompletionOption {
 		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
 		String display;
 		String insert_text;
+		/**
+		 * Optional server side calculated insertion.
+		 *
+		 * In contrast to `insert_text`, the editor must not do matching of preexisting text on `text_edit`.
+		 * Note: This is used by the language server, there is no support in the builtin editor for this property at the moment.
+		 */
+		TextEdit text_edit;
 		Color font_color;
 		Ref<Resource> icon;
 		Variant default_value;

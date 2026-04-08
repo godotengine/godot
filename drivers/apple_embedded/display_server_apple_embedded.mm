@@ -823,27 +823,33 @@ DisplayServerEnums::VSyncMode DisplayServerAppleEmbedded::window_get_vsync_mode(
 
 // MARK: - HDR / EDR
 
-void DisplayServerAppleEmbedded::_update_hdr_output() {
+void DisplayServerAppleEmbedded::_update_hdr_output(bool edr_headroom_changed) {
 #ifdef RD_ENABLED
 	if (!rendering_context) {
 		return;
 	}
 
 	bool desired = edr_requested && _screen_hdr_is_supported();
-	if (rendering_context->window_get_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID) != desired) {
+	bool hdr_state_changed = rendering_context->window_get_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID) != desired;
+	if (hdr_state_changed) {
 		rendering_context->window_set_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID, desired);
 	}
 
 	float reference_luminance = _calculate_current_reference_luminance();
 	rendering_context->window_set_hdr_output_reference_luminance(DisplayServerEnums::MAIN_WINDOW_ID, reference_luminance);
+	rendering_context->window_set_hdr_output_linear_luminance_scale(DisplayServerEnums::MAIN_WINDOW_ID, reference_luminance);
 
 	float max_luminance = _screen_potential_edr_headroom() * hardware_reference_luminance_nits;
 	rendering_context->window_set_hdr_output_max_luminance(DisplayServerEnums::MAIN_WINDOW_ID, max_luminance);
+
+	if (hdr_state_changed || edr_headroom_changed) {
+		send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
+	}
 #endif
 }
 
 void DisplayServerAppleEmbedded::current_edr_headroom_changed() {
-	_update_hdr_output();
+	_update_hdr_output(true);
 }
 
 bool DisplayServerAppleEmbedded::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
@@ -861,7 +867,7 @@ void DisplayServerAppleEmbedded::window_request_hdr_output(const bool p_enabled,
 #endif
 
 	edr_requested = p_enabled;
-	_update_hdr_output();
+	_update_hdr_output(false);
 }
 
 bool DisplayServerAppleEmbedded::window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window) const {

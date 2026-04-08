@@ -1273,6 +1273,13 @@ void DisplayServerWayland::window_set_mode(DisplayServerEnums::WindowMode p_mode
 	wayland_thread.window_try_set_mode(p_window_id, p_mode);
 }
 
+void DisplayServerWayland::window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	wayland_thread.set_icon(p_icon, p_window_id);
+}
+
 DisplayServerEnums::WindowMode DisplayServerWayland::window_get_mode(DisplayServerEnums::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1496,6 +1503,7 @@ void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
 
 		if (rendering_context->window_get_hdr_output_enabled(window_id) != hdr_desired) {
 			rendering_context->window_set_hdr_output_enabled(window_id, hdr_desired);
+			_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, window_id);
 		}
 
 		if (hdr_desired) {
@@ -1873,6 +1881,9 @@ void DisplayServerWayland::process_events() {
 				if (pair.value.visible) {
 					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
 				}
+
+				rendering_context->window_set_hdr_output_enabled(pair.key, false);
+				_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, pair.key);
 			} else if (dirty_linear) {
 				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
 				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
@@ -1880,6 +1891,9 @@ void DisplayServerWayland::process_events() {
 				if (pair.value.visible) {
 					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
 				}
+
+				rendering_context->window_set_hdr_output_enabled(pair.key, true);
+				_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, pair.key);
 			}
 		}
 	}
@@ -2039,6 +2053,7 @@ void DisplayServerWayland::process_events() {
 			wd.color_profile = color_profile_msg->color_profile;
 
 			_window_update_hdr_state(wd);
+			_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, wd.id);
 			continue;
 		}
 	}
@@ -2143,7 +2158,8 @@ void DisplayServerWayland::swap_buffers() {
 
 void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
 	MutexLock mutex_lock(wayland_thread.mutex);
-	wayland_thread.set_icon(p_icon);
+
+	wayland_thread.set_default_icon(p_icon);
 }
 
 void DisplayServerWayland::set_context(DisplayServerEnums::Context p_context) {

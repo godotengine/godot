@@ -74,10 +74,39 @@ void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path
 	data.resize(len);
 	f->get_buffer(data.ptrw(), len);
 
+	uint64_t time = FileAccess::get_modified_time(p_path);
+	if (time == 0) {
+		time = Time::get_singleton()->get_unix_time_from_system();
+	}
+	Dictionary tz = Time::get_singleton()->get_time_zone_from_system();
+	time += tz["bias"].operator int() * 60;
+	Dictionary dt = Time::get_singleton()->get_datetime_dict_from_unix_time(time);
+
+	zip_fileinfo zipfi;
+	zipfi.tmz_date.tm_year = dt["year"];
+	zipfi.tmz_date.tm_mon = dt["month"].operator int() - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
+	zipfi.tmz_date.tm_mday = dt["day"];
+	zipfi.tmz_date.tm_hour = dt["hour"];
+	zipfi.tmz_date.tm_min = dt["minute"];
+	zipfi.tmz_date.tm_sec = dt["second"];
+	zipfi.dosDate = 0;
+
+	// 0100000: regular file type
+	// 0000755: permissions rwxr-xr-x
+	// 0000644: permissions rw-r--r--
+	uint32_t _mode = FileAccess::get_unix_permissions(p_path);
+	if (_mode == 0) {
+		_mode = 0100644;
+	} else {
+		_mode |= 0100000;
+	}
+	zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
+	zipfi.internal_fa = 0;
+
 	String path = p_path.trim_prefix(p_base_path);
 	zipOpenNewFileInZip4(p_zip,
 			path.utf8().get_data(),
-			nullptr,
+			&zipfi,
 			nullptr,
 			0,
 			nullptr,

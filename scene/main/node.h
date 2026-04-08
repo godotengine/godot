@@ -487,6 +487,7 @@ public:
 		NOTIFICATION_VP_MOUSE_ENTER = 1010,
 		NOTIFICATION_VP_MOUSE_EXIT = 1011,
 		NOTIFICATION_WM_POSITION_CHANGED = 1012,
+		NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED = 1013,
 
 		// Keep these in sync with MainLoop.
 		NOTIFICATION_OS_MEMORY_WARNING = 2009,
@@ -512,7 +513,7 @@ public:
 	/* NODE/TREE */
 
 	StringName get_name() const;
-	String get_description() const;
+	String get_description(bool p_show_not_in_tree = false) const;
 	void set_name(const StringName &p_name);
 
 	InternalMode get_internal_mode() const;

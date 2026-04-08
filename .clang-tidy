@@ -3,6 +3,7 @@
 
 Checks:
   - -*
+  - performance-move-const-arg
   - bugprone-use-after-move
   - modernize-deprecated-headers
   - modernize-redundant-void-arg

@@ -75,7 +75,7 @@ private:
 	Vector3 constant_torque;
 	Vector3 linear_surface_velocity;
 	Vector3 angular_surface_velocity;
-	Vector3 gravity;
+	Vector3 total_gravity;
 
 	Callable state_sync_callback;
 	Callable custom_integration_callback;
@@ -102,6 +102,7 @@ private:
 	bool sleep_initially = false;
 	bool custom_center_of_mass = false;
 	bool custom_integrator = false;
+	bool has_point_gravity = false;
 
 	virtual JPH::BroadPhaseLayer _get_broad_phase_layer() const override;
 	virtual JPH::ObjectLayer _get_object_layer() const override;
@@ -114,8 +115,8 @@ private:
 	void _enqueue_call_queries();
 	void _dequeue_call_queries();
 
-	void _integrate_forces(float p_step, JPH::Body &p_jolt_body);
-	void _move_kinematic(float p_step, JPH::Body &p_jolt_body);
+	void _integrate_forces(float p_step);
+	void _move_kinematic(float p_step);
 
 	JPH::EAllowedDOFs _calculate_allowed_dofs() const;
 
@@ -125,8 +126,7 @@ private:
 	void _on_wake_up();
 
 	void _update_mass_properties();
-	void _update_gravity(JPH::Body &p_jolt_body);
-	void _update_damp();
+	void _update_environmental_properties();
 	void _update_kinematic_transform();
 	void _update_group_filter();
 	void _update_joint_constraints();
@@ -240,13 +240,14 @@ public:
 
 	void add_area(JoltArea3D *p_area);
 	void remove_area(JoltArea3D *p_area);
+	void update_area(JoltArea3D *p_area, bool p_priority_changed = false);
 
 	void add_joint(JoltJoint3D *p_joint);
 	void remove_joint(JoltJoint3D *p_joint);
 
 	void call_queries();
 
-	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) override;
+	virtual void pre_step(float p_step) override;
 
 	JoltPhysicsDirectBodyState3D *get_direct_state();
 
@@ -278,7 +279,7 @@ public:
 	float get_gravity_scale() const;
 	void set_gravity_scale(float p_scale);
 
-	Vector3 get_gravity() const { return gravity; }
+	Vector3 get_total_gravity() const { return total_gravity; }
 
 	float get_linear_damp() const { return linear_damp; }
 	void set_linear_damp(float p_damp);

@@ -40,6 +40,8 @@
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
@@ -573,8 +575,20 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.status = GDTEST_ANALYZER_ERROR;
 		result.output = get_text_for_status(result.status) + "\n";
 
+		// Errors are stored in the order they were added, which may not match the source code.
+		// Here we sort only by lines, preserving the original order for columns.
+		// So, within a single line, the primary error is printed first, not cascading ones.
+		struct SortErrors {
+			_FORCE_INLINE_ bool operator()(const GDScriptParser::ParserError &p_a, const GDScriptParser::ParserError &p_b) const {
+				return p_a.start_line < p_b.start_line;
+			}
+		};
+
+		List<GDScriptParser::ParserError> errors = List<GDScriptParser::ParserError>(parser.get_errors());
+		errors.sort_custom<SortErrors>();
+
 		StringBuilder error_string;
-		for (const GDScriptParser::ParserError &error : parser.get_errors()) {
+		for (const GDScriptParser::ParserError &error : errors) {
 			error_string.append(vformat(">> ERROR at line %d: %s\n", error.start_line, error.message));
 		}
 		result.output += error_string.as_string();

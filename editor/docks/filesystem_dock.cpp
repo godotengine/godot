@@ -34,7 +34,9 @@
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
@@ -2025,7 +2027,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			overwrite_dialog_footer->set_text(
 					p_copy ? TTRC("Do you wish to overwrite them or rename the copied files?")
 						   : TTRC("Do you wish to overwrite them or rename the moved files?"));
-			overwrite_dialog->popup_centered();
+			overwrite_dialog->popup_centered_ratio(0.6);
 			return;
 		}
 	}
@@ -2540,7 +2542,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 			if (to_move.size() > 0) {
 				move_dialog->config(p_selected);
-				move_dialog->popup_centered_ratio(0.4);
+				move_dialog->popup_centered_ratio(0.5);
 			}
 		} break;
 
@@ -4531,7 +4533,8 @@ FileSystemDock::FileSystemDock() {
 
 	overwrite_dialog_scroll = memnew(ScrollContainer);
 	overwrite_dialog_vb->add_child(overwrite_dialog_scroll);
-	overwrite_dialog_scroll->set_custom_minimum_size(Vector2(400, 600) * EDSCALE);
+	overwrite_dialog_scroll->set_custom_minimum_size(Vector2(50, 50) * EDSCALE);
+	overwrite_dialog_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	overwrite_dialog_file_list = memnew(Label);
 	overwrite_dialog_scroll->add_child(overwrite_dialog_file_list);

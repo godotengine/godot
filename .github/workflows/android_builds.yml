@@ -26,7 +26,7 @@ jobs:
           - name: Editor (target=editor)
             cache-name: android-editor
             target: editor
-            instrumented_tests: false
+            instrumented_tests: true
             scons-flags: >-
               arch=arm64
               production=yes
@@ -127,7 +127,11 @@ jobs:
         if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
         run: |
           cd platform/android/java
-          ./gradlew :app:assembleAndroidTest :app:assembleInstrumentedDebug -Pperform_signing=true
+          if [ "${{ matrix.target }}" = "editor" ]; then
+            ./gradlew :editor:assembleAndroidAndroidTest :editor:assembleAndroidDebug -Pperform_signing=true
+          else
+            ./gradlew :app:assembleAndroidTest :app:assembleInstrumentedDebug -Pperform_signing=true
+          fi
           cd ../../..
 
       - name: Create credentials file
@@ -144,10 +148,19 @@ jobs:
         if: matrix.instrumented_tests && github.repository == 'godotengine/godot' && github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
         run: |
           set +e
+
+          if [ "${{ matrix.target }}" = "editor" ]; then
+            APP_APK="platform/android/java/editor/build/outputs/apk/android/debug/android_editor-android-debug.apk"
+            TEST_APK="platform/android/java/editor/build/outputs/apk/androidTest/android/debug/android_editor-android-debug-androidTest.apk"
+          else
+            APP_APK="platform/android/java/app/build/outputs/apk/instrumented/debug/android_debug.apk"
+            TEST_APK="platform/android/java/app/build/outputs/apk/androidTest/instrumented/debug/app-instrumented-debug-androidTest.apk"
+          fi
+
           output=$(gcloud firebase test android run \
             --type instrumentation \
-            --app platform/android/java/app/build/outputs/apk/instrumented/debug/android_debug.apk \
-            --test platform/android/java/app/build/outputs/apk/androidTest/instrumented/debug/app-instrumented-debug-androidTest.apk \
+            --app "$APP_APK" \
+            --test "$TEST_APK" \
             --device model=pa3q,version=35,orientation=landscape \
             --device model=java,version=30,orientation=landscape \
             --device model=MediumPhone.arm,version=26,orientation=landscape \

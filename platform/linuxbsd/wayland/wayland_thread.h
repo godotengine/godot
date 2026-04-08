@@ -312,6 +312,10 @@ public:
 		bool can_maximize = true;
 		bool can_fullscreen = true;
 
+		xdg_toplevel_icon_v1 *xdg_icon = nullptr;
+		wl_buffer *icon_buffer = nullptr;
+		bool icon_set = false;
+
 		HashSet<struct wl_output *> wl_outputs;
 
 		// NOTE: If for whatever reason this callback is destroyed _while_ the event
@@ -708,6 +712,8 @@ private:
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;
 #endif // LIBDECOR_ENABLED
+
+	static void _clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd);
 
 	// Main polling method.
 	static void _poll_events_thread(void *p_data);
@@ -1218,7 +1224,8 @@ public:
 
 	void beep() const;
 
-	void set_icon(const Ref<Image> &p_icon);
+	void set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id);
+	void set_default_icon(const Ref<Image> &p_icon);
 
 	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);

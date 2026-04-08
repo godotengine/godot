@@ -44,6 +44,7 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
+#include "core/io/resource_loader.h"
 #include "core/io/stream_peer.h"
 #include "core/object/class_db.h"
 #include "core/object/object_id.h"

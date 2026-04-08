@@ -446,7 +446,7 @@ void GLTFState::set_filename(const String &p_filename) {
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) const {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {

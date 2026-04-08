@@ -742,20 +742,32 @@ public:
 
 	// ----- ACCELERATION STRUCTURE -----
 
-	enum AccelerationStructureType {
-		ACCELERATION_STRUCTURE_TYPE_BLAS,
-		ACCELERATION_STRUCTURE_TYPE_TLAS,
+	struct AccelerationStructureGeometry {
+		BitField<AccelerationStructureGeometryFlagBits> flags = {};
+		BufferID vertex_buffer;
+		uint32_t vertex_offset = 0;
+		uint32_t vertex_stride = 0;
+		uint32_t vertex_count = 0;
+		DataFormat vertex_format = DATA_FORMAT_MAX;
+		BufferID index_buffer;
+		uint32_t index_offset = 0;
+		uint32_t index_count = 0;
+		IndexBufferFormat index_format = {};
 	};
 
-	enum AccelerationStructureGeometryBits {
-		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE = 1 << 0,
-		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION = 1 << 1,
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) = 0;
+
+	struct AccelerationStructureInstance {
+		Transform3D transform;
+		uint32_t id = 0;
+		uint8_t mask = 0;
+		BitField<AccelerationStructureInstanceFlagBits> flags = {};
+		AccelerationStructureID blas;
 	};
 
-	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) = 0;
-	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) = 0;
-	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) = 0;
-	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) = 0;
+	virtual AccelerationStructureID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) = 0;
+	virtual void acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) = 0;
+
 	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) = 0;
 	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) = 0;
 
@@ -766,7 +778,8 @@ public:
 
 	// ----- COMMANDS -----
 
-	virtual void command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) = 0;
+	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) = 0;
+	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) = 0;
 	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) = 0;
 	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
 	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) = 0;
@@ -865,6 +878,7 @@ public:
 		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
 		API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS,
+		API_TRAIT_ACCELERATION_STRUCTURE_INSTANCE_SIZE,
 	};
 
 	enum ShaderChangeInvalidation {

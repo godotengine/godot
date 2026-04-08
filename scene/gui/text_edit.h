@@ -708,6 +708,8 @@ protected:
 	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
 
+	virtual String _get_accessibility_name() const override;
+
 	/* Internal API for CodeEdit, pending public API. */
 	// Brace matching.
 	struct BraceMatchingData {
