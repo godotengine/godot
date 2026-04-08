@@ -77,7 +77,7 @@ public:
 		static inline uint32_t VERSION = 1; // Increase on format changes.
 
 		Vector<float> vertices; // Used by POLYGON only.
-		AABB aabb;
+		AABB aabb; // Bounds.
 		Vector3 position; // Used by BOX and CYLINDER as position. Unused by POLYGON.
 		float radius = 0.0; // Used by CYLINDER only.
 		float elevation = 0.0; // Used by POLYGON only. // FIXME: is the area height min. this + height is the height max. Could be merged into position.y.
