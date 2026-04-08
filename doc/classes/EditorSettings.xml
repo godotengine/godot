@@ -1448,6 +1448,9 @@
 		<member name="text_editor/appearance/lines/code_folding" type="bool" setter="" getter="">
 			If [code]true[/code], displays the folding arrows next to indented code sections and allows code folding. If [code]false[/code], hides the folding arrows next to indented code sections and disallows code folding.
 		</member>
+		<member name="text_editor/appearance/lines/collapse_regions_on_start" type="int" setter="" getter="">
+			If [code]true[/code], code regions will be automatically collapsed when a script is first loaded in the editor.
+		</member>
 		<member name="text_editor/appearance/lines/word_wrap" type="int" setter="" getter="">
 			If [code]true[/code], wraps long lines over multiple lines to avoid horizontal scrolling. This is a display-only feature; it does not actually insert line breaks in your scripts.
 		</member>
