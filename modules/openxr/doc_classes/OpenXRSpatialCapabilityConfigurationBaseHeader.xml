@@ -21,6 +21,13 @@
 				Return [code]true[/code] if this object contains a valid configuration that can be retrieved when calling [method _get_configuration].
 			</description>
 		</method>
+		<method name="get_configuration">
+			<return type="int" />
+			<description>
+				Gets a pointer to the [code]XrSpatialCapabilityConfigurationBaseHeaderEXT[/code] struct.
+				[b]Note:[/b] This method is intended to be used from GDExtensions.
+			</description>
+		</method>
 		<method name="has_valid_configuration" qualifiers="const">
 			<return type="bool" />
 			<description>

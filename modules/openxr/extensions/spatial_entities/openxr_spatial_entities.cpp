@@ -43,6 +43,7 @@
 
 void OpenXRSpatialCapabilityConfigurationBaseHeader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_valid_configuration"), &OpenXRSpatialCapabilityConfigurationBaseHeader::has_valid_configuration);
+	ClassDB::bind_method(D_METHOD("get_configuration"), &OpenXRSpatialCapabilityConfigurationBaseHeader::_get_configurationgd);
 
 	GDVIRTUAL_BIND(_has_valid_configuration);
 	GDVIRTUAL_BIND(_get_configuration);
@@ -56,6 +57,11 @@ bool OpenXRSpatialCapabilityConfigurationBaseHeader::has_valid_configuration() c
 	}
 
 	return false;
+}
+
+// For exposing this to GDExtension
+uint64_t OpenXRSpatialCapabilityConfigurationBaseHeader::_get_configurationgd() {
+	return (uint64_t)get_configuration();
 }
 
 XrSpatialCapabilityConfigurationBaseHeaderEXT *OpenXRSpatialCapabilityConfigurationBaseHeader::get_configuration() {
@@ -72,6 +78,9 @@ XrSpatialCapabilityConfigurationBaseHeaderEXT *OpenXRSpatialCapabilityConfigurat
 // OpenXRSpatialEntityTracker
 
 void OpenXRSpatialEntityTracker::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_spatial_context", "spatial_context"), &OpenXRSpatialEntityTracker::set_spatial_context);
+	ClassDB::bind_method(D_METHOD("get_spatial_context"), &OpenXRSpatialEntityTracker::get_spatial_context);
+
 	ClassDB::bind_method(D_METHOD("set_entity", "entity"), &OpenXRSpatialEntityTracker::set_entity);
 	ClassDB::bind_method(D_METHOD("get_entity"), &OpenXRSpatialEntityTracker::get_entity);
 
@@ -80,6 +89,11 @@ void OpenXRSpatialEntityTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spatial_tracking_state", "spatial_tracking_state"), &OpenXRSpatialEntityTracker::_set_spatial_tracking_state);
 	ClassDB::bind_method(D_METHOD("get_spatial_tracking_state"), &OpenXRSpatialEntityTracker::_get_spatial_tracking_state);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spatial_tracking_state"), "set_spatial_tracking_state", "get_spatial_tracking_state");
+
+	ClassDB::bind_method(D_METHOD("get_next"), &OpenXRSpatialEntityTracker::get_next);
+	ClassDB::bind_method(D_METHOD("add_next", "next"), &OpenXRSpatialEntityTracker::add_next);
+	ClassDB::bind_method(D_METHOD("remove_next", "next"), &OpenXRSpatialEntityTracker::remove_next);
+	ADD_SIGNAL(MethodInfo("next_changed"));
 
 	ADD_SIGNAL(MethodInfo("spatial_tracking_state_changed", PropertyInfo(Variant::INT, "spatial_tracking_state")));
 
@@ -100,6 +114,16 @@ OpenXRSpatialEntityTracker::~OpenXRSpatialEntityTracker() {
 			spatial_entity = RID();
 		}
 	}
+}
+
+void OpenXRSpatialEntityTracker::set_spatial_context(const RID &p_spatial_context) {
+	// Trackers shouldn't be switching spatial contexts; always create a new tracker for new contexts
+	ERR_FAIL_COND(spatial_context.is_valid() && spatial_context != p_spatial_context);
+	spatial_context = p_spatial_context;
+}
+
+RID OpenXRSpatialEntityTracker::get_spatial_context() const {
+	return spatial_context;
 }
 
 void OpenXRSpatialEntityTracker::set_entity(const RID &p_entity) {
@@ -154,19 +178,67 @@ OpenXRSpatialEntityTracker::EntityTrackingState OpenXRSpatialEntityTracker::_get
 	return (EntityTrackingState)get_spatial_tracking_state();
 }
 
+void OpenXRSpatialEntityTracker::add_next(Ref<OpenXRStructureBase> p_next) {
+	// Prepend p_next to next
+	if (p_next.is_valid()) {
+		if (next.is_valid()) {
+			p_next->set_next(next);
+		}
+
+		next = p_next;
+		emit_signal(SNAME("next_changed"));
+	}
+}
+
+void OpenXRSpatialEntityTracker::remove_next(Ref<OpenXRStructureBase> p_next) {
+	if (p_next.is_null()) {
+		return;
+	}
+
+	Ref<OpenXRStructureBase> prev;
+	for (Ref<OpenXRStructureBase> n = next; n.is_valid(); n = n->get_next()) {
+		if (n == p_next) {
+			if (prev.is_null()) {
+				next = p_next->get_next();
+			} else {
+				prev->set_next(p_next->get_next());
+			}
+
+			p_next->set_next(nullptr);
+			emit_signal(SNAME("next_changed"));
+			break;
+		}
+
+		prev = n;
+	}
+}
+
+Ref<OpenXRStructureBase> OpenXRSpatialEntityTracker::get_next() const {
+	return next;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialComponentData
 
 void OpenXRSpatialComponentData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_capacity", "capacity"), &OpenXRSpatialComponentData::set_capacity);
+	ClassDB::bind_method(D_METHOD("get_component_type"), &OpenXRSpatialComponentData::_get_component_typegd);
 
 	GDVIRTUAL_BIND(_set_capacity, "capacity");
 	GDVIRTUAL_BIND(_get_component_type);
 	GDVIRTUAL_BIND(_get_structure_data, "next");
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_get_structure_data_bind_compat_118128, "next");
+#endif
 }
 
 void OpenXRSpatialComponentData::set_capacity(uint32_t p_capacity) {
 	GDVIRTUAL_CALL(_set_capacity, p_capacity);
+}
+
+// For exposing this to GDExtension
+int64_t OpenXRSpatialComponentData::_get_component_typegd() const {
+	return (int64_t)get_component_type();
 }
 
 XrSpatialComponentTypeEXT OpenXRSpatialComponentData::get_component_type() const {
@@ -185,6 +257,12 @@ void *OpenXRSpatialComponentData::get_structure_data(void *p_next) {
 	if (GDVIRTUAL_CALL(_get_structure_data, (uint64_t)p_next, pointer)) {
 		return reinterpret_cast<void *>(pointer);
 	}
+
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_get_structure_data_bind_compat_118128, (uint64_t)p_next, pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+#endif
 
 	return p_next;
 }

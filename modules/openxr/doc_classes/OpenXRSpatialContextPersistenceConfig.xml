@@ -16,6 +16,12 @@
 				Adds a persistence context to this configuration. You must add at least one persistence context to create a valid configuration. You can create a persistence context by calling [method OpenXRSpatialAnchorCapability.create_persistence_context].
 			</description>
 		</method>
+		<method name="get_persistence_contexts" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Gets the persistence context(s) (as [RID]s) received by [method add_persistence_context].
+			</description>
+		</method>
 		<method name="remove_persistence_context">
 			<return type="void" />
 			<param index="0" name="persistence_context" type="RID" />
