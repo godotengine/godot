@@ -843,7 +843,13 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			next_features = &storage_feature;
 		}
 
-		if (enabled_device_extension_names.has(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+		// VK_KHR_multiview was promoted to core in Vulkan 1.1. Some drivers (including
+		// SteamVR's virtual device) no longer enumerate it as a device extension, so
+		// checking only enabled_device_extension_names misses it on Vulkan 1.1+ devices.
+		// Always query via the feature struct when the physical device is Vulkan 1.1+.
+		const bool use_multiview = enabled_device_extension_names.has(VK_KHR_MULTIVIEW_EXTENSION_NAME) ||
+				physical_device_properties.apiVersion >= VK_API_VERSION_1_1;
+		if (use_multiview) {
 			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
 			multiview_features.pNext = next_features;
 			next_features = &multiview_features;
@@ -909,7 +915,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		// choose one at creation time and only report one of them as available.
 		_choose_vrs_capabilities();
 
-		if (enabled_device_extension_names.has(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+		if (use_multiview) {
 			multiview_capabilities.is_supported = multiview_features.multiview;
 			multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 			multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
