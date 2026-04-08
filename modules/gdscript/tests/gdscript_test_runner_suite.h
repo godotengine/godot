@@ -141,4 +141,20 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 	}
 }
 
+TEST_CASE("[Modules][GDScript] find_function") {
+	GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
+
+	SUBCASE("[Modules][GDScript] Over-indented dictionary") {
+		const String code = "var dictionary = {\n"
+							"		\"foo\": \"bar\"\n"
+							"	}\n"
+							"\n"
+							"func button_pressed():\n"
+							"	print(\"pressed!\")\n"
+							"\n";
+
+		CHECK_EQ(lang->find_function("button_pressed", code, "res://my_script.gd"), 4);
+	}
+}
+
 } // namespace GDScriptTests

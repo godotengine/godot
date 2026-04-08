@@ -512,7 +512,7 @@ public:
 	}
 	String validate_path(const String &p_path) const override;
 	bool supports_builtin_mode() const override;
-	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
+	/* TODO? */ int find_function(const String &p_function, const String &p_code, const String &p_path) const override {
 		return -1;
 	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
