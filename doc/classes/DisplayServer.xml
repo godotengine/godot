@@ -80,7 +80,7 @@
 			<return type="int" />
 			<description>
 				Returns [code]1[/code] if a screen reader, Braille display or other assistive app is active, [code]0[/code] otherwise. Returns [code]-1[/code] if status is unknown.
-				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps and will not affect this value. To test your project with these tools, set [member ProjectSettings.accessibility/general/accessibility_support] to [code]1[/code].
 			</description>
 		</method>
@@ -109,14 +109,14 @@
 			<return type="int" />
 			<description>
 				Returns [code]1[/code] if a high-contrast user interface theme should be used, [code]0[/code] otherwise. Returns [code]-1[/code] if status is unknown.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland, GNOME), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux (X11/Wayland, GNOME), macOS, and Windows.
 			</description>
 		</method>
 		<method name="accessibility_should_reduce_animation" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns [code]1[/code] if flashing, blinking, and other moving content that can cause seizures in users with photosensitive epilepsy should be disabled, [code]0[/code] otherwise. Returns [code]-1[/code] if status is unknown.
-				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, macOS and Windows.
 			</description>
 		</method>
 		<method name="accessibility_should_reduce_transparency" qualifiers="const">

@@ -4,6 +4,8 @@
 		A server interface for screen reader support.
 	</brief_description>
 	<description>
+		[AccessibilityServer] handles screen reader support.
+		[b]Note:[/b] [AccessibilityServer] is implemented on Android, Linux, macOS, and Windows.
 	</description>
 	<tutorials>
 	</tutorials>

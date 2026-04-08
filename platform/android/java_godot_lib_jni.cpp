@@ -53,6 +53,7 @@
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/camera/camera_server.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifndef XR_DISABLED
@@ -279,6 +280,53 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *env, jclass clazz, jint event, jlong id, jint pos) {
 	TTS_Android::_java_utterance_callback(event, id, pos);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_acCreateAccessKitAdapter(JNIEnv *env, jclass clazz, jlong p_window_id) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac && ac->is_supported()) {
+		return ac->window_create((DisplayServerEnums::WindowID)p_window_id, nullptr);
+	}
+	return false;
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_acFreeAccessKitAdapter(JNIEnv *env, jclass clazz, jlong p_window_id) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		ac->window_destroy((DisplayServerEnums::WindowID)p_window_id);
+	}
+}
+
+JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_acCreateAccessibilityNodeInfo(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_virtual_view_id) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return (jobject)ac->native_create_node_info((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_virtual_view_id);
+	}
+	return nullptr;
+}
+
+JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_acFindFocus(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_focus_type) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return (jobject)ac->native_find_focus((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_focus_type);
+	}
+	return nullptr;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_acPerformAction(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_virtual_view_id, jint p_action, jobject p_arguments) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return ac->native_perform_action((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_virtual_view_id, p_action, (void *)p_arguments);
+	}
+	return false;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_acOnHoverEvent(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_action, jfloat p_x, jfloat p_y) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return ac->native_on_hover((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_action, p_x, p_y);
+	}
+	return false;
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {

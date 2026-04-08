@@ -30,6 +30,7 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.vulkan.VkRenderer;
 import org.godotengine.godot.vulkan.VkSurfaceView;
@@ -39,12 +40,16 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeProvider;
 
 import androidx.annotation.Keep;
 
@@ -56,18 +61,64 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
+	private boolean mAccessKitAdapter = false;
+	private long mWindowID = 0;
+
 	public GodotVulkanRenderView(Godot godot, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
 		super(godot.getContext());
 
+		this.mAccessKitAdapter = GodotLib.acCreateAccessKitAdapter(mWindowID);
 		this.godot = godot;
 		mInputHandler = inputHandler;
 		mRenderer = new VkRenderer();
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		setFocusableInTouchMode(true);
+		setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 		setClickable(false);
 
 		if (shouldBeTranslucent) {
 			this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		}
+	}
+
+	@Override
+	public boolean onHoverEvent(MotionEvent event) {
+		if (mAccessKitAdapter && GodotLib.acOnHoverEvent(mWindowID, this, event.getAction(), event.getX(), event.getY())) {
+			return true;
+		}
+		return super.onHoverEvent(event);
+	}
+
+	@Override
+	public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+		if (!mAccessKitAdapter) {
+			return super.getAccessibilityNodeProvider();
+		}
+		return new AccessibilityNodeProvider() {
+			@Override
+			public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
+				return GodotLib.acCreateAccessibilityNodeInfo(mWindowID, getView(), virtualViewId);
+			}
+
+			@Override
+			public AccessibilityNodeInfo findFocus(int focusType) {
+				return GodotLib.acFindFocus(mWindowID, getView(), focusType);
+			}
+
+			@Override
+			public boolean performAction(int virtualViewId, int action, Bundle arguments) {
+				return GodotLib.acPerformAction(mWindowID, getView(), virtualViewId, action, arguments);
+			}
+		};
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			GodotLib.acFreeAccessKitAdapter(mWindowID);
+			mAccessKitAdapter = false;
+		} finally {
+			super.finalize();
 		}
 	}
 

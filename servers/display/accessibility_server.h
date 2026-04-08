@@ -154,6 +154,11 @@ public:
 	virtual void update_set_background_color(const RID &p_id, const Color &p_color) = 0;
 	virtual void update_set_foreground_color(const RID &p_id, const Color &p_color) = 0;
 
+	virtual void *native_create_node_info(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id) = 0;
+	virtual void *native_find_focus(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_focus_type) = 0;
+	virtual bool native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) = 0;
+	virtual bool native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) = 0;
+
 	static void register_create_function(const char *p_name, CreateFunction p_function);
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
