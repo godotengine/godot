@@ -1429,7 +1429,7 @@ void SpriteFramesEditor::_animation_remove_undo_redo(const StringName &p_action_
 	undo_redo->add_undo_method(frames.ptr(), "add_animation", edited_anim);
 	_rename_node_animation(undo_redo, true, edited_anim, edited_anim, edited_anim);
 	undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop_mode", edited_anim, frames->get_animation_loop_mode(edited_anim));
 	for (int i = 0; i < frame_count; i++) {
 		Ref<Texture2D> texture;
 		float duration;
