@@ -1080,6 +1080,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		min_value->set_step(STEP_UNIT);
 		min_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 		min_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+		min_value->set_button_alignment(SpinBox::BUTTON_ALIGNMENT_RIGHT);
 		min_value->set_accessibility_name(TTRC("Min"));
 
 		max_value = memnew(SpinBox);
@@ -1088,6 +1089,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		max_value->set_step(STEP_UNIT);
 		max_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 		max_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		max_value->set_button_alignment(SpinBox::BUTTON_ALIGNMENT_LEFT);
 		max_value->set_accessibility_name(TTRC("Max"));
 
 		label_value = memnew(LineEdit);

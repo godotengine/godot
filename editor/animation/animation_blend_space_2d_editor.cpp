@@ -1339,6 +1339,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		max_y_value->set_accessibility_name(TTRC("Max Y"));
 		max_y_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 		max_y_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		max_y_value->set_button_alignment(SpinBox::BUTTON_ALIGNMENT_LEFT);
 		left_vbox->add_child(max_y_value);
 		left_vbox->add_spacer();
 		label_y = memnew(LineEdit);
@@ -1351,6 +1352,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		min_y_value->set_accessibility_name(TTRC("Min Y"));
 		min_y_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 		min_y_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		min_y_value->set_button_alignment(SpinBox::BUTTON_ALIGNMENT_LEFT);
 		left_vbox->add_child(min_y_value);
 
 		max_y_value->set_max(ABS_MAX);
@@ -1385,6 +1387,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		min_x_value->set_accessibility_name(TTRC("Min X"));
 		min_x_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 		min_x_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+		min_x_value->set_button_alignment(SpinBox::BUTTON_ALIGNMENT_RIGHT);
 		bottom_vbox->add_child(min_x_value);
 		bottom_vbox->add_spacer();
 		label_x = memnew(LineEdit);
@@ -1397,6 +1400,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		max_x_value->set_accessibility_name(TTRC("Max X"));
 		max_x_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 		max_x_value->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		max_x_value->set_button_alignment(SpinBox::BUTTON_ALIGNMENT_LEFT);
 		bottom_vbox->add_child(max_x_value);
 
 		max_x_value->set_max(ABS_MAX);
