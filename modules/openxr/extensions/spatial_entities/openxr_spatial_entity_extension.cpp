@@ -58,6 +58,7 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("spatial_discovery_recommended", PropertyInfo(Variant::RID, "spatial_context")));
 
 	// Component_types should be an int array typed to ComponentType(XrSpatialComponentTypeEXT), but we currently don't support that.
+	ClassDB::bind_method(D_METHOD("discover_spatial_entities_with_component_data", "spatial_context", "component_data", "next", "user_callback"), &OpenXRSpatialEntityExtension::discover_spatial_entities_with_component_data, DEFVAL(Variant()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("discover_spatial_entities", "spatial_context", "component_types", "next", "user_callback"), &OpenXRSpatialEntityExtension::_discover_spatial_entities, DEFVAL(Variant()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("update_spatial_entities", "spatial_context", "entities", "component_types", "next"), &OpenXRSpatialEntityExtension::_update_spatial_entities, DEFVAL(Variant()));
 
@@ -493,6 +494,27 @@ uint64_t OpenXRSpatialEntityExtension::_get_spatial_context_handle(RID p_spatial
 ////////////////////////////////////////////////////////////////////////////
 // Discovery queries
 
+Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::discover_spatial_entities_with_component_data(RID p_spatial_context, const TypedArray<OpenXRSpatialComponentData> &p_component_data, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback) {
+	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+	ERR_FAIL_NULL_V(se_extension, nullptr);
+	ERR_FAIL_COND_V(p_component_data.is_empty(), nullptr);
+
+	// The first should be OpenXRSpatialQueryResultData
+	Ref<OpenXRSpatialQueryResultData> query_result_data = p_component_data[0];
+	ERR_FAIL_COND_V_MSG(query_result_data.is_null(), nullptr, "OpenXR: The first component must be of type OpenXRSpatialQueryResultData");
+
+	// Skip OpenXRSpatialQueryResultData and copy the other component types
+	Vector<XrSpatialComponentTypeEXT> component_types;
+	component_types.resize(p_component_data.size() - 1);
+	XrSpatialComponentTypeEXT *dst = component_types.ptrw();
+	for (int i = 0; i < component_types.size(); ++i) {
+		Ref<OpenXRSpatialComponentData> ele = p_component_data[i + 1];
+		dst[i] = ele->get_component_type();
+	}
+
+	return discover_spatial_entities(p_spatial_context, component_types, p_next, p_user_callback);
+}
+
 Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::discover_spatial_entities(RID p_spatial_context, const Vector<XrSpatialComponentTypeEXT> &p_component_types, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback) {
 	if (!get_active()) {
 		return nullptr;
@@ -749,6 +771,8 @@ bool OpenXRSpatialEntityExtension::query_snapshot(RID p_spatial_snapshot, const 
 	query_condition.componentTypes = component_types.ptr();
 
 	XrSpatialComponentDataQueryResultEXT *query_result = (XrSpatialComponentDataQueryResultEXT *)query_result_data->get_structure_data(nullptr);
+	query_result->entityIdCapacityInput = 0;
+	query_result->entityStateCapacityInput = 0;
 	XrResult result = xrQuerySpatialComponentDataEXT(snapshot_data->spatial_snapshot, &query_condition, query_result);
 	if (XR_FAILED(result)) {
 		ERR_FAIL_V_MSG(false, "OpenXR: Failed to query snapshot count [" + openxr_api->get_error_string(result) + "]");
@@ -756,6 +780,13 @@ bool OpenXRSpatialEntityExtension::query_snapshot(RID p_spatial_snapshot, const 
 
 	// Nothing to do?
 	if (query_result->entityIdCountOutput == 0) {
+		// Ensure the component data reflects this result.
+		for (Ref<OpenXRSpatialComponentData> component_data : p_component_data) {
+			if (component_data.is_valid()) {
+				component_data->set_capacity(0);
+			}
+		}
+
 		return true;
 	}
 

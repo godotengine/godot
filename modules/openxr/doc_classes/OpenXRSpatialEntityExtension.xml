@@ -41,6 +41,16 @@
 				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the discovery process. On success [param user_callback] will be called if specified. The result data for this function is the [RID] for our snapshot.
 			</description>
 		</method>
+		<method name="discover_spatial_entities_with_component_data">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="component_data" type="OpenXRSpatialComponentData[]" />
+			<param index="2" name="next" type="OpenXRStructureBase" default="null" />
+			<param index="3" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Convenience method when the caller only has an [Array] of [OpenXRSpatialComponentData] and needs to discover spatial entities.
+			</description>
+		</method>
 		<method name="find_spatial_entity">
 			<return type="RID" />
 			<param index="0" name="entity_id" type="int" />
