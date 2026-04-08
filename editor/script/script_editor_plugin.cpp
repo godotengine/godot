@@ -360,20 +360,34 @@ void DocumentList::_show_context_menu() {
 		return;
 	}
 
-	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(script_editor->tab_container->get_tab_control(selected));
 	script_editor->_setup_popup_menu(context_menu, true);
 	script_editor->_prepare_popup_menu(context_menu, true);
 
 	// Context menu plugin.
-	PackedStringArray selected_paths;
-	if (seb) {
-		Ref<Resource> res = seb->get_edited_resource();
-		if (res.is_valid()) {
-			String path = res->get_path();
-			selected_paths.push_back(path);
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR)) {
+		Ref<Resource> current_resource;
+		String res_path;
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(script_editor->tab_container->get_tab_control(selected));
+		if (seb) {
+			current_resource = seb->get_edited_resource();
+			if (current_resource.is_valid()) {
+				res_path = current_resource->get_path();
+			}
 		}
+
+		EditorContextMenuPlugin::OptionsData context_data;
+		context_data["selected_resource"] = current_resource;
+		context_data["resource_path"] = res_path;
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, context_data);
+
+#ifndef DISABLE_DEPRECATED
+		Vector<String> selected_paths;
+		if (current_resource.is_valid()) {
+			selected_paths.push_back(current_resource->get_path());
+		}
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, selected_paths, current_resource, 500);
+#endif
 	}
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, selected_paths);
 
 	context_menu->set_position(get_screen_position() + get_local_mouse_position());
 	context_menu->reset_size();
@@ -1791,11 +1805,7 @@ void ScriptEditor::_menu_option(int p_option) {
 	}
 
 	if (p_option >= EditorContextMenuPlugin::BASE_ID) {
-		Ref<Resource> resource;
-		if (seb) {
-			resource = seb->get_edited_resource();
-		}
-		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_option, resource);
+		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_option);
 		return;
 	}
 
@@ -3162,11 +3172,25 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 	const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_event);
 	if (custom_callback.is_valid()) {
-		Ref<Resource> resource;
+		Ref<Resource> current_resource;
 		if (ScriptEditorBase *current = _get_current_editor()) {
-			resource = current->get_edited_resource();
+			current_resource = current->get_edited_resource();
 		}
-		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, resource);
+
+#ifndef DISABLE_DEPRECATED
+		if (p_event->get_meta("_legacy_shortcut", false)) {
+			Ref<Script> current_script = current_resource;
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, current_script);
+			accept_event();
+			return;
+		}
+#endif
+
+		EditorContextMenuPlugin::OptionsData context_data;
+		context_data["selected_resource"] = current_resource;
+		context_data["resource_path"] = current_resource.is_valid() ? current_resource->get_path() : String();
+		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
+
 		accept_event();
 	}
 }
