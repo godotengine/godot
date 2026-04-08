@@ -320,8 +320,12 @@ void EmbeddedProcess::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_VISIBILITY_CHANGED:
 		case NOTIFICATION_WM_POSITION_CHANGED: {
+			// Update immediately for responsive resize/move rather than
+			// deferring to the next NOTIFICATION_PROCESS frame.
+			_update_embedded_process();
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
