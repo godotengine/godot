@@ -2861,7 +2861,7 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 	}
 	const String s = p_text.to_lower();
 	for (const String &t : searched_tokens) {
-		if (!s.contains(t)) {
+		if (!s.containsn(t)) {
 			return false;
 		}
 	}
