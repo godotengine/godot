@@ -1856,8 +1856,10 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			// wl_subcompositor::get_subsurface
 			send_wayland_message(compositor_socket, wl_subcompositor_id, 1, { new_sub_id, xdg_surf_data->wl_surface_id, parent_xdg_surf_data->wl_surface_id });
 
-			// wl_subsurface::set_desync
-			send_wayland_message(compositor_socket, new_sub_id, 5, {});
+			// wl_subsurface::set_sync — synchronize position changes with the
+			// parent surface commit to prevent black flicker when the subsurface
+			// moves (resizing from top/left or moving the window).
+			send_wayland_message(compositor_socket, new_sub_id, 4, {});
 
 			return MessageStatus::HANDLED;
 		} else if (p_opcode == GODOT_EMBEDDED_CLIENT_FOCUS_WINDOW) {
