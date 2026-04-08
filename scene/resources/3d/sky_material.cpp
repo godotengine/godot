@@ -330,44 +330,48 @@ void sky() {
 	if (LIGHT0_ENABLED) {
 		float sun_angle = dot(LIGHT0_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT0_SIZE);
+		vec3 color = LIGHT0_COLOR * max(LIGHT0_ENERGY, 1.0);
 		if (sun_angle > sun_size) {
-			sky = LIGHT0_COLOR * LIGHT0_ENERGY;
+			sky = color;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT0_COLOR * LIGHT0_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, color, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
 	if (LIGHT1_ENABLED) {
 		float sun_angle = dot(LIGHT1_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT1_SIZE);
+		vec3 color = LIGHT1_COLOR * max(LIGHT1_ENERGY, 1.0);
 		if (sun_angle > sun_size) {
-			sky = LIGHT1_COLOR * LIGHT1_ENERGY;
+			sky = color;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT1_COLOR * LIGHT1_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, color, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
 	if (LIGHT2_ENABLED) {
 		float sun_angle = dot(LIGHT2_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT2_SIZE);
+		vec3 color = LIGHT2_COLOR * max(LIGHT2_ENERGY, 1.0);
 		if (sun_angle > sun_size) {
-			sky = LIGHT2_COLOR * LIGHT2_ENERGY;
+			sky = color;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT2_COLOR * LIGHT2_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, color, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
 	if (LIGHT3_ENABLED) {
 		float sun_angle = dot(LIGHT3_DIRECTION, EYEDIR);
 		float sun_size = cos(LIGHT3_SIZE);
+		vec3 color = LIGHT3_COLOR * max(LIGHT3_ENERGY, 1.0);
 		if (sun_angle > sun_size) {
-			sky = LIGHT3_COLOR * LIGHT3_ENERGY;
+			sky = color;
 		} else if (sun_angle > sun_angle_max) {
 			float c2 = (sun_size - sun_angle) / (sun_size - sun_angle_max);
-			sky = mix(sky, LIGHT3_COLOR * LIGHT3_ENERGY, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
+			sky = mix(sky, color, clamp(pow(1.0 - c2, inv_sun_curve), 0.0, 1.0));
 		}
 	}
 
