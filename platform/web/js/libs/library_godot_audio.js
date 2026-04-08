@@ -103,7 +103,7 @@ class Sample {
 	constructor(params, options = {}) {
 		/** @type {string} */
 		this.id = params.id;
-		/** @type {AudioBuffer} */
+		/** @type {AudioBuffer?} */
 		this._audioBuffer = null;
 		/** @type {number} */
 		this.numberOfChannels = options.numberOfChannels ?? 2;
@@ -122,14 +122,20 @@ class Sample {
 	/**
 	 * Gets the audio buffer of the sample.
 	 * @returns {AudioBuffer}
+	 * @throws {Error} When the sample no longer has an audio buffer.
 	 */
 	getAudioBuffer() {
-		return this._duplicateAudioBuffer();
+		if (this._audioBuffer == null) {
+			throw new Error(`Sample "${this.id}" AudioBuffer is null; it may have already been cleared`);
+		}
+		// AudioBuffer can be shared by multiple AudioBufferSourceNode instances.
+		// Duplicating it on every playback causes large browser-side allocations.
+		return this._audioBuffer;
 	}
 
 	/**
 	 * Sets the audio buffer of the sample.
-	 * @param {AudioBuffer} val The audio buffer to set.
+	 * @param {AudioBuffer?} val The audio buffer to set.
 	 * @returns {void}
 	 */
 	setAudioBuffer(val) {
@@ -143,31 +149,6 @@ class Sample {
 	clear() {
 		this.setAudioBuffer(null);
 		GodotAudio.Sample.delete(this.id);
-	}
-
-	/**
-	 * Returns a duplicate of the stored audio buffer.
-	 * @returns {AudioBuffer}
-	 */
-	_duplicateAudioBuffer() {
-		if (this._audioBuffer == null) {
-			throw new Error('couldn\'t duplicate a null audioBuffer');
-		}
-		/** @type {Array<Float32Array>} */
-		const channels = new Array(this._audioBuffer.numberOfChannels);
-		for (let i = 0; i < this._audioBuffer.numberOfChannels; i++) {
-			const channel = new Float32Array(this._audioBuffer.getChannelData(i));
-			channels[i] = channel;
-		}
-		const buffer = GodotAudio.ctx.createBuffer(
-			this.numberOfChannels,
-			this._audioBuffer.length,
-			this._audioBuffer.sampleRate
-		);
-		for (let i = 0; i < channels.length; i++) {
-			buffer.copyToChannel(channels[i], i, 0);
-		}
-		return buffer;
 	}
 }
 
