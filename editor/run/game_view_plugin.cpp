@@ -51,7 +51,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
-#include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
@@ -1282,7 +1281,8 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	add_child(toolbar_margin);
 
-	FlowContainer *main_menu_fc = memnew(FlowContainer);
+	// FIXME: Turn this back into a FlowContainer once GH-115523 is fixed.
+	HBoxContainer *main_menu_fc = memnew(HBoxContainer);
 	toolbar_margin->add_child(main_menu_fc);
 
 	HBoxContainer *process_hb = memnew(HBoxContainer);
