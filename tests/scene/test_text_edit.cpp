@@ -8045,6 +8045,46 @@ TEST_CASE("[SceneTree][TextEdit] small height value") {
 	memdelete(text_edit);
 }
 
+TEST_CASE("[SceneTree][TextEdit] fit content scrollbar behavior") {
+	TextEdit *text_edit = memnew(TextEdit);
+	SceneTree::get_singleton()->get_root()->add_child(text_edit);
+
+	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+	text_edit->set_fit_content_width_enabled(true);
+	text_edit->set_fit_content_height_enabled(true);
+
+	const String long_line = "0123456789012345678901234567890123456789012345678901234567890123456789";
+	String content;
+	for (int i = 0; i < 40; i++) {
+		if (i > 0) {
+			content += "\n";
+		}
+		content += long_line;
+	}
+	text_edit->set_text(content);
+	MessageQueue::get_singleton()->flush();
+
+	SUBCASE("[TextEdit] fit content without maximum size") {
+		text_edit->set_custom_maximum_size(Size2(-1, -1));
+		text_edit->set_size(text_edit->get_combined_minimum_size());
+		MessageQueue::get_singleton()->flush();
+
+		CHECK_FALSE(text_edit->get_h_scroll_bar()->is_visible());
+		CHECK_FALSE(text_edit->get_v_scroll_bar()->is_visible());
+	}
+
+	SUBCASE("[TextEdit] fit content with maximum size") {
+		text_edit->set_custom_maximum_size(Size2(180, 120));
+		text_edit->set_size(text_edit->get_combined_maximum_size());
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(text_edit->get_h_scroll_bar()->is_visible());
+		CHECK(text_edit->get_v_scroll_bar()->is_visible());
+	}
+
+	memdelete(text_edit);
+}
+
 TEST_CASE("[SceneTree][TextEdit] setter getters") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
