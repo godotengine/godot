@@ -1908,7 +1908,7 @@ void fragment_shader(in SceneData scene_data) {
 			bool use_specular = true;
 			float blend;
 			vec3 diffuse, specular;
-			sdfgi_process(cascade, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse, specular, blend);
+			sdfgi_process(cascade, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, ambient_light, indirect_specular_light, diffuse, specular, blend);
 
 			if (blend > 0.0) {
 				//blend
@@ -1921,7 +1921,7 @@ void fragment_shader(in SceneData scene_data) {
 					vec3 diffuse2, specular2;
 					float blend2;
 					cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_probe;
-					sdfgi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse2, specular2, blend2);
+					sdfgi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, ambient_light, indirect_specular_light, diffuse2, specular2, blend2);
 					diffuse = mix(diffuse, diffuse2, blend);
 					if (use_specular) {
 						specular = mix(specular, specular2, blend);
