@@ -1219,30 +1219,25 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 }
 
 void GameView::_window_close_request() {
-	// Close the embedded game BEFORE closing the parent floating window.
-	// On Wayland, closing the parent window triggers wl_display_roundtrip() which
-	// synchronously destroys the embedding surfaces. If the close request hasn't been
-	// buffered yet, the embedded client may disconnect during the roundtrip, preventing
-	// the close request from ever reaching the game process.
 	if (EditorRunBar::get_singleton()->is_playing() && (embedded_process->is_embedding_completed() || embedded_process->is_embedding_in_progress())) {
-		// When the embedding is not complete, we need to kill the process.
-		// If the game is paused, the close request will not be processed by the game, so it's better to kill the process.
-		if (paused || embedded_process->is_embedding_in_progress()) {
-			// Call deferred to prevent the _stop_pressed callback to be executed before the wrapper window
-			// actually closes.
-			embedded_process->reset();
+		// Must check before reset() clears the embedding state.
+		bool should_force_stop = paused || embedded_process->is_embedding_in_progress();
+		// Reset detaches the embedded process from the parent window and sends a
+		// close request to the game. On Wayland, the detach prevents the game's
+		// subsurface from being implicitly destroyed when the floating window is
+		// closed below, ensuring the close request reaches the game process.
+		embedded_process->reset();
+		if (should_force_stop) {
+			// When the embedding is not complete, we need to kill the process.
+			// If the game is paused, the close request will not be processed by
+			// the game, so it's better to kill the process.
+			// Call deferred to prevent the _stop_pressed callback to be executed
+			// before the wrapper window actually closes.
 			callable_mp(EditorRunBar::get_singleton(), &EditorRunBar::stop_playing).call_deferred();
-		} else {
-			// Try to gracefully close the window. That way, the NOTIFICATION_WM_CLOSE_REQUEST
-			// notification should be propagated in the game process.
-			embedded_process->request_close();
 		}
 	}
 
 	if (window_wrapper->get_window_enabled()) {
-		// Stop the embedded process timer before closing the window wrapper,
-		// so the signal to focus EDITOR_GAME isn't sent when the window is not enabled.
-		embedded_process->reset_timers();
 		window_wrapper->set_window_enabled(false);
 	}
 }

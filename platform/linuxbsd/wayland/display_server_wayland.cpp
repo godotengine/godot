@@ -1756,7 +1756,29 @@ Error DisplayServerWayland::request_close_embedded_process(ProcessID p_pid) {
 }
 
 Error DisplayServerWayland::remove_embedded_process(ProcessID p_pid) {
-	return request_close_embedded_process(p_pid);
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	struct godot_embedding_compositor *ec = wayland_thread.get_embedding_compositor();
+	ERR_FAIL_NULL_V_MSG(ec, ERR_BUG, "Missing embedded compositor interface");
+
+	struct WaylandThread::EmbeddingCompositorState *ecs = WaylandThread::godot_embedding_compositor_get_state(ec);
+	ERR_FAIL_NULL_V(ecs, ERR_BUG);
+
+	if (!ecs->mapped_clients.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	struct godot_embedded_client *embedded_client = ecs->mapped_clients[p_pid];
+	WaylandThread::EmbeddedClientState *client_data = (WaylandThread::EmbeddedClientState *)godot_embedded_client_get_user_data(embedded_client);
+	ERR_FAIL_NULL_V(client_data, ERR_BUG);
+
+	// Detach the embedded window's subsurface from the parent window surface
+	// before sending the close request. This prevents the subsurface from being
+	// implicitly destroyed when the parent window is subsequently destroyed,
+	// which would break the game's connection before it processes the close event.
+	godot_embedded_client_set_embedded_window_parent(embedded_client, nullptr);
+	godot_embedded_client_embedded_window_request_close(embedded_client);
+	return OK;
 }
 
 ProcessID DisplayServerWayland::get_focused_process_id() {
