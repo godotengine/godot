@@ -3625,6 +3625,17 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 		}
 	}
 
+	// TEXTURE_FUNC
+	{
+		VisualShaderNodeTextureFunc *tex_func = Object::cast_to<VisualShaderNodeTextureFunc>(p_node);
+
+		if (tex_func) {
+			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
+			tex_func->set_function((VisualShaderNodeTextureFunc::Function)(int)p_ops[0]);
+			return;
+		}
+	}
+
 	// VECTOR_COMPOSE
 	{
 		VisualShaderNodeVectorCompose *vec_compose = Object::cast_to<VisualShaderNodeVectorCompose>(p_node);
@@ -7518,7 +7529,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	}
 
 	// TEXTURES
-
+	add_options.push_back(AddOption("TextureFunc", "Textures/Common", "VisualShaderNodeTextureFunc", TTR("Function to be applied on texture sampler.")));
 	add_options.push_back(AddOption("UVFunc", "Textures/Common", "VisualShaderNodeUVFunc", TTR("Function to be applied on texture coordinates."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("UVPolarCoord", "Textures/Common", "VisualShaderNodeUVPolarCoord", TTR("Polar coordinates conversion applied on texture coordinates."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 
@@ -7539,6 +7550,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Texture2DArray", "Textures/Functions", "VisualShaderNodeTexture2DArray", TTR("Perform the 2D-array texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 	texture3d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture3D", "Textures/Functions", "VisualShaderNodeTexture3D", TTR("Perform the 3D texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption("TextureQueryLevels", "Textures/Functions", "VisualShaderNodeTextureFunc", TTR("Compute the number of accessible mipmap levels of a texture."), { VisualShaderNodeTextureFunc::FUNC_QUERY_LEVELS }, VisualShaderNode::PORT_TYPE_SCALAR_INT, -1, -1, true));
+	add_options.push_back(AddOption("TextureQueryLod", "Textures/Functions", "VisualShaderNodeTextureFunc", TTR("Compute the level-of-detail that would be used to sample from a texture."), { VisualShaderNodeTextureFunc::FUNC_QUERY_LOD }, VisualShaderNode::PORT_TYPE_VECTOR_2D, -1, -1, true));
+	add_options.push_back(AddOption("TextureSize", "Textures/Functions", "VisualShaderNodeTextureFunc", TTR("Retrieve the dimensions of a level of a texture."), { VisualShaderNodeTextureFunc::FUNC_SIZE }));
 	add_options.push_back(AddOption("UVPanning", "Textures/Functions", "VisualShaderNodeUVFunc", TTR("Apply panning function on texture coordinates."), { VisualShaderNodeUVFunc::FUNC_PANNING }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("UVScaling", "Textures/Functions", "VisualShaderNodeUVFunc", TTR("Apply scaling function on texture coordinates."), { VisualShaderNodeUVFunc::FUNC_SCALING }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 
