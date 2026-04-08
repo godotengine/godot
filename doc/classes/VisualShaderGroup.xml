@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderGroup" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A reusable group of [VisualShaderNode]s similar to a function in programming.
+	</brief_description>
+	<description>
+		A [VisualShaderGroup] encapsulates a graph of [VisualShaderNode]s into a reusable component. It defines its own input and output ports, which become the interface when the group is used as a [VisualShaderNodeGroup] node inside a [VisualShader] or another [VisualShaderGroup].
+		Since an actual shader function is created for each [VisualShaderGroup], you can only use global built-in variables.
+		Parameter and Varying related nodes are not allowed.
+		If the group contains nodes that are incompatible with the shader context it is used in (e.g. particle nodes in a spatial shader), the group's outputs will silently fall back to default values.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_node">
+			<return type="void" />
+			<param index="0" name="node" type="VisualShaderNode" />
+			<param index="1" name="position" type="Vector2" />
+			<param index="2" name="id" type="int" />
+			<description>
+				Adds the specified [param node] to the group.
+			</description>
+		</method>
+		<method name="attach_node_to_frame">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="frame" type="int" />
+			<description>
+				Attaches the given node to the given frame.
+			</description>
+		</method>
+		<method name="can_connect_nodes" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
+			<description>
+				Returns [code]true[/code] if the specified nodes and ports can be connected.
+			</description>
+		</method>
+		<method name="connect_nodes">
+			<return type="int" enum="Error" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
+			<description>
+				Connects the specified nodes and ports.
+			</description>
+		</method>
+		<method name="connect_nodes_forced">
+			<return type="void" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
+			<description>
+				Connects the specified nodes and ports, even if they can't be connected.
+			</description>
+		</method>
+		<method name="detach_node_from_frame">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Detaches the given node from the frame it is attached to.
+			</description>
+		</method>
+		<method name="disconnect_nodes">
+			<return type="void" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
+			<description>
+				Disconnects the specified nodes and ports.
+			</description>
+		</method>
+		<method name="get_input_port_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of input ports defined for this group.
+			</description>
+		</method>
+		<method name="get_input_port_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the name of the input port at the given [param id].
+			</description>
+		</method>
+		<method name="get_input_port_type" qualifiers="const">
+			<return type="int" enum="VisualShaderNode.PortType" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the type of the input port at the given [param id].
+			</description>
+		</method>
+		<method name="get_node" qualifiers="const">
+			<return type="VisualShaderNode" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the shader node instance with the specified [param id].
+			</description>
+		</method>
+		<method name="get_node_connections" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns the list of connected nodes.
+			</description>
+		</method>
+		<method name="get_node_list" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the list of all nodes in the group.
+			</description>
+		</method>
+		<method name="get_node_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the position of the specified node within the shader graph.
+			</description>
+		</method>
+		<method name="get_output_port_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of output ports defined for this group.
+			</description>
+		</method>
+		<method name="get_output_port_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the name of the output port at the given [param id].
+			</description>
+		</method>
+		<method name="get_output_port_type" qualifiers="const">
+			<return type="int" enum="VisualShaderNode.PortType" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the type of the output port at the given [param id].
+			</description>
+		</method>
+		<method name="get_valid_node_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next valid node ID that can be added to the shader graph.
+			</description>
+		</method>
+		<method name="insert_input_port">
+			<return type="String" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<param index="2" name="name" type="String" />
+			<description>
+				Inserts an input port at the given [param id] with the specified [param type] and [param name].
+				Returns the validated port name, which may differ from [param name] if a port with the same name already exists. Port names must be unique across both input and output ports.
+			</description>
+		</method>
+		<method name="insert_output_port">
+			<return type="String" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<param index="2" name="name" type="String" />
+			<description>
+				Inserts an output port at the given [param id] with the specified [param type] and [param name].
+				Returns the validated port name, which may differ from [param name] if a port with the same name already exists. Port names must be unique across both input and output ports.
+			</description>
+		</method>
+		<method name="is_node_connection" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="from_node" type="int" />
+			<param index="1" name="from_port" type="int" />
+			<param index="2" name="to_node" type="int" />
+			<param index="3" name="to_port" type="int" />
+			<description>
+				Returns [code]true[/code] if the specified node and port connection exists.
+			</description>
+		</method>
+		<method name="move_input_port">
+			<return type="void" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="to" type="int" />
+			<description>
+				Moves the input port at index [param from] to index [param to]. Connections from input nodes inside the group will be updated accordingly.
+			</description>
+		</method>
+		<method name="move_output_port">
+			<return type="void" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="to" type="int" />
+			<description>
+				Moves the output port at index [param from] to index [param to]. Connections to output nodes inside the group will be updated accordingly.
+			</description>
+		</method>
+		<method name="remove_input_port">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes the input port at the given [param id].
+			</description>
+		</method>
+		<method name="remove_node">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes the specified node from the group.
+			</description>
+		</method>
+		<method name="remove_output_port">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes the output port at the given [param id].
+			</description>
+		</method>
+		<method name="replace_node">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="new_class" type="StringName" />
+			<description>
+				Replaces the specified node with a node of the new class type.
+			</description>
+		</method>
+		<method name="set_input_port_name">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the name of the input port at the given [param id].
+			</description>
+		</method>
+		<method name="set_input_port_type">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<description>
+				Sets the type of the input port at the given [param id].
+			</description>
+		</method>
+		<method name="set_node_position">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="position" type="Vector2" />
+			<description>
+				Sets the position of the specified node.
+			</description>
+		</method>
+		<method name="set_output_port_name">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the name of the output port at the given [param id].
+			</description>
+		</method>
+		<method name="set_output_port_type">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<description>
+				Sets the type of the output port at the given [param id].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="group_name" type="String" setter="set_group_name" getter="get_group_name" default="&quot;Node group&quot;">
+			The display name of this group. This name is shown as the caption of the [VisualShaderNodeGroup] node in the editor.
+		</member>
+	</members>
+</class>
