@@ -108,6 +108,7 @@ public:
 			SCRIPT,
 			CLASS, // GDScript.
 			ENUM, // Enumeration.
+			BITFIELD, // BitField[T]
 			VARIANT, // Can be any type.
 			RESOLVING, // Currently resolving.
 			UNRESOLVED,
@@ -212,6 +213,7 @@ public:
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
+				case BITFIELD:
 				case ENUM: // Enums use native_type to identify the enum and its base class.
 					return native_type == p_other.native_type;
 				case SCRIPT:
