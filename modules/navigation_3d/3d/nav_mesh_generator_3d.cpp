@@ -535,14 +535,15 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	// to cells first and properties get overridden by high-priority areas later.
 	projected_areas.sort_custom<AreaPrioritySort>();
 
+	// Here, `area_id` is a unique internal ID, where 0 means unusable, 1-62 represent unique layer-bitmasks for special use, 63 means usable.
 	HashMap<uint32_t, uint32_t> navigation_layers_to_area_id;
 	HashMap<uint32_t, uint32_t> area_id_to_navigation_layers;
 
-	navigation_layers_to_area_id[0] = RC_NULL_AREA;
+	navigation_layers_to_area_id[0] = RC_NULL_AREA; // Recast unsigned char RC_NULL_AREA = 0.
 	navigation_layers_to_area_id[1] = RC_WALKABLE_AREA;
 
 	area_id_to_navigation_layers[static_cast<uint32_t>(RC_NULL_AREA)] = 0;
-	area_id_to_navigation_layers[static_cast<uint32_t>(RC_WALKABLE_AREA)] = 1;
+	area_id_to_navigation_layers[static_cast<uint32_t>(RC_WALKABLE_AREA)] = 1; // Default navigation layer for polygons not affected by areas.
 
 	uint32_t next_free_area_id = 1;
 	uint32_t AREA_ID_MAX = RC_WALKABLE_AREA; // Recast unsigned char RC_WALKABLE_AREA = 63 is maximum allowed area id.
@@ -687,7 +688,10 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 		}
 	}
 
+	print_line("START");
+	// int poly_count = 0;
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
+		// If the polygon is not affected by an area, it gets the RC_WALKABLE_AREA area id, i.e. we get the default navigation layers set above.
 		uint32_t navigation_layers = area_id_to_navigation_layers[static_cast<uint32_t>(poly_mesh->areas[i])];
 
 		const unsigned int *detail_mesh_m = &detail_mesh->meshes[i * 4];
@@ -709,8 +713,41 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 
 			nav_polygons.push_back(nav_indices);
 			nav_polygons_meta.push_back(navigation_layers);
+			if (navigation_layers != 1) {
+				// poly_count++;
+				const float *v1 = &detail_mesh->verts[index1 * 3];
+				const float *v2 = &detail_mesh->verts[index2 * 3];
+				const float *v3 = &detail_mesh->verts[index3 * 3];
+				const Vector<Vector3> vertices = {Vector3(v1[0], v1[1], v1[2]), Vector3(v2[0], v2[1], v2[2]), Vector3(v3[0], v3[1], v3[2])};
+				bool match = false;
+				float grow = 1.0;
+				const float grow_incr = 0.05;
+				while (!match) {
+					int pai = 0;
+					for (const NavigationMeshSourceGeometryData3D::ProjectedArea &area : projected_areas) {
+						if (navigation_layers != area.navigation_layers) {
+							continue;
+						}
+						AABB bounds = area.aabb.grow(grow);
+						for (const Vector3 vertex : vertices) {
+							if (bounds.has_point(vertex)) {
+								print_line("found you in index: ", pai, " with aabb-grow:", grow);
+								match = true;
+								break;
+							}
+						}
+						if (match)
+							break;
+						pai++;
+					}
+					grow += grow_incr; // Usually only happens for cylinder.
+				}
+			}
 		}
 	}
+
+	// print_line("polys: ", poly_count);
+	print_line("END\n");
 
 	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_meta);
 	//print_line("Polygon Meta:");
