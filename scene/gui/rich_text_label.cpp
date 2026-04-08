@@ -4622,6 +4622,7 @@ bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 			if (!erase_list.has(it->parent)) {
 				it->E->erase();
 			}
+			it->subitems.clear();
 			memdelete(it);
 		}
 		main->lines.remove_at(p_paragraph);
