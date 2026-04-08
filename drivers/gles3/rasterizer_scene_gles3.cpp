@@ -676,6 +676,21 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 	ERR_FAIL_NULL(shader_data);
 
 	if (sky) {
+		RSE::SkyMode sky_mode = sky->mode;
+
+		if (sky_mode == RSE::SKY_MODE_AUTOMATIC) {
+			bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
+
+			if (shader_data->uses_time || shader_data->uses_position) {
+				sky_mode = RSE::SKY_MODE_REALTIME;
+			} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
+				sky_mode = RSE::SKY_MODE_INCREMENTAL;
+			} else {
+				sky_mode = RSE::SKY_MODE_QUALITY;
+			}
+		}
+		sky->internal_mode = sky_mode;
+
 		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
 			sky->prev_time = time;
 			sky->reflection_dirty = true;
@@ -938,23 +953,8 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 
 	ERR_FAIL_NULL(shader_data);
 
-	bool update_single_frame = sky->mode == RSE::SKY_MODE_REALTIME || sky->mode == RSE::SKY_MODE_QUALITY;
-	RSE::SkyMode sky_mode = sky->mode;
-
-	if (sky_mode == RSE::SKY_MODE_AUTOMATIC) {
-		bool sun_scatter_enabled = environment_get_fog_enabled(p_env) && environment_get_fog_sun_scatter(p_env) > 0.001;
-
-		if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == 256) {
-			update_single_frame = true;
-			sky_mode = RSE::SKY_MODE_REALTIME;
-		} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
-			update_single_frame = false;
-			sky_mode = RSE::SKY_MODE_INCREMENTAL;
-		} else {
-			update_single_frame = true;
-			sky_mode = RSE::SKY_MODE_QUALITY;
-		}
-	}
+	RSE::SkyMode sky_mode = sky->internal_mode;
+	bool update_single_frame = sky_mode == RSE::SKY_MODE_REALTIME || sky_mode == RSE::SKY_MODE_QUALITY;
 
 	if (sky->processing_layer == 0 && sky_mode == RSE::SKY_MODE_INCREMENTAL) {
 		// On the first frame after creating sky, rebuild in single frame
