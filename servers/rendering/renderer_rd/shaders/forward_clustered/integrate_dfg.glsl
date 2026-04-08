@@ -146,11 +146,10 @@ void integrate_brdfs(float n_dot_v, float roughness, out vec2 brdf, out float cl
 
 void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-	float roughness = float(pos.y + 0.5f) / SIZE;
+	float roughness = float(SIZE - pos.y + 0.5f) / SIZE;
 	float NdotV = float(pos.x + 0.5f) / SIZE;
 	vec2 brdf;
 	float cloth_brdf;
 	integrate_brdfs(NdotV, roughness, brdf, cloth_brdf);
-	ivec2 out_pos = ivec2(pos.x, (SIZE - 1) - pos.y);
-	imageStore(current_image, out_pos, vec4(brdf, cloth_brdf, 1.0));
+	imageStore(current_image, pos, vec4(brdf, cloth_brdf, 1.0));
 }

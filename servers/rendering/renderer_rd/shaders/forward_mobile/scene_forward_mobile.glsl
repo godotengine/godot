@@ -1148,6 +1148,9 @@ void main() {
 	float roughness_highp = 1.0;
 	float rim_highp = 0.0;
 	float rim_tint_highp = 0.0;
+	float sheen_highp = 0.0;
+	float sheen_roughness_highp = 0.0;
+	vec3 sheen_color_highp = vec3(1.0);
 	float clearcoat_highp = 0.0;
 	float clearcoat_roughness_highp = 0.0;
 	float anisotropy_highp = 0.0;
@@ -1282,6 +1285,9 @@ void main() {
 	half roughness = half(roughness_highp);
 	half rim = half(rim_highp);
 	half rim_tint = half(rim_tint_highp);
+	half sheen = half(sheen_highp);
+	half sheen_roughness = half(sheen_roughness_highp);
+	hvec3 sheen_color = hvec3(sheen_color_highp);
 	half clearcoat = half(clearcoat_highp);
 	half clearcoat_roughness = half(clearcoat_roughness_highp);
 	half anisotropy = half(anisotropy_highp);
@@ -1553,6 +1559,7 @@ void main() {
 	/////////////////////// LIGHTING //////////////////////////////
 
 #ifdef NORMAL_USED
+	half kernelRoughness2 = half(0.0);
 	if (sc_scene_roughness_limiter_enabled()) {
 		//https://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
 		// SPIR-V Validation claims that derivatives of FP16 vectors are not valid code generation (see #108009).
@@ -1560,10 +1567,19 @@ void main() {
 		vec3 dndu = dFdx(dn), dndv = dFdy(dn);
 		half roughness2 = roughness * roughness;
 		half variance = half(scene_data.roughness_limiter_amount) * half(dot(dndu, dndu) + dot(dndv, dndv));
-		half kernelRoughness2 = min(half(2.0) * variance, half(scene_data.roughness_limiter_limit));
+		kernelRoughness2 = min(half(2.0) * variance, half(scene_data.roughness_limiter_limit));
 		half filteredRoughness2 = min(half(1.0), roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
 	}
+
+#ifdef LIGHT_SHEEN_USED
+	sheen_roughness = max(sheen_roughness, 0.045); // to avoid artifacts
+	if (sc_scene_roughness_limiter_enabled()) {
+		half sheen_roughness2 = sheen_roughness * sheen_roughness;
+		half filteredSheenRoughness2 = min(half(1.0), sheen_roughness2 + kernelRoughness2);
+		sheen_roughness = sqrt(filteredSheenRoughness2);
+	}
+#endif
 #endif // NORMAL_USED
 	//apply energy conservation
 
@@ -1572,6 +1588,7 @@ void main() {
 	hvec3 diffuse_light = hvec3(0.0);
 	hvec3 ambient_light = hvec3(0.0);
 
+	half s_attenuation = half(1.0);
 #ifndef MODE_UNSHADED
 	// Used in regular draw pass and when drawing SDFs for SDFGI and materials for VoxelGI.
 	emission *= half(scene_data.emissive_exposure_normalization);
@@ -1679,6 +1696,32 @@ void main() {
 		cc_specular_light += clearcoat_light * half(scene_data.IBL_exposure_normalization) * half(scene_data.ambient_light_color_energy.a);
 	}
 #endif // LIGHT_CLEARCOAT_USED
+
+#ifdef LIGHT_SHEEN_USED
+	hvec3 s_specular_light = hvec3(0.0);
+	hvec3 s_ref_vec = hvec3(0.0);
+
+	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
+		s_ref_vec = reflect(-view, normal);
+		s_ref_vec = mix(s_ref_vec, normal, sheen_roughness * sheen_roughness);
+
+		hvec3 s_radiance_ref_vec = scene_data.radiance_inverse_xform * s_ref_vec;
+		float roughness_lod = sqrt(sheen_roughness) * MAX_ROUGHNESS_LOD;
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+
+		float lod;
+		half blend = modf(roughness_lod, lod);
+		hvec3 sheen_sample_a = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(s_radiance_ref_vec, lod)).rgb);
+		hvec3 sheen_sample_b = hvec3(texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(s_radiance_ref_vec, lod + 1)).rgb);
+		hvec3 sheen_light = mix(sheen_sample_a, sheen_sample_b, blend);
+
+#else
+		hvec3 sheen_light = hvec3(textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(s_radiance_ref_vec), roughness_lod).rgb);
+
+#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		s_specular_light += sheen_light * half(scene_data.IBL_exposure_normalization) * half(scene_data.ambient_light_color_energy.a);
+	}
+#endif // LIGHT_SHEEN_USED
 #endif // !AMBIENT_LIGHT_DISABLED
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -1772,6 +1815,10 @@ void main() {
 		hvec3 cc_reflection_accum = hvec3(0.0);
 #endif
 
+#ifdef LIGHT_SHEEN_USED
+		hvec3 s_reflection_accum = hvec3(0.0);
+#endif
+
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
 		hvec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
@@ -1800,6 +1847,10 @@ void main() {
 #ifdef LIGHT_CLEARCOAT_USED
 					cc_specular_light, cc_ref_vec, mix(half(0.001), half(0.1), clearcoat_roughness), cc_reflection_accum,
 #endif
+
+#ifdef LIGHT_SHEEN_USED
+					s_specular_light, s_ref_vec, sheen_roughness, s_reflection_accum,
+#endif
 					ambient_accum, reflection_accum);
 		}
 
@@ -1815,6 +1866,10 @@ void main() {
 			indirect_specular_light = reflection_accum.rgb;
 #ifdef LIGHT_CLEARCOAT_USED
 			cc_specular_light = cc_reflection_accum.rgb;
+#endif
+
+#ifdef LIGHT_SHEEN_USED
+			s_specular_light = s_reflection_accum;
 #endif
 		}
 
@@ -1897,6 +1952,21 @@ void main() {
 		// We don't need a BRDF approximation for clearcoat, so we can use the fresnel directly.
 		indirect_specular_light += cc_specular_light * F;
 #endif
+
+#ifdef LIGHT_SHEEN_USED
+		half c = half(1.0) - ndotv;
+		half c3 = c * c * c;
+		half sheen_env = half(0.65584461) * c3 + half(1.0) / (half(4.16526551) + exp(half(-7.97291361) * sqrt(sheen_roughness) + half(6.33516894)));
+		// Albedo scaling of the base layer before we layer sheen on top
+		s_attenuation = half(1.0) - sheen * max(sheen_color.x, max(sheen_color.y, sheen_color.z)) * sheen_env;
+
+		ambient_light *= s_attenuation;
+		indirect_specular_light *= s_attenuation;
+
+		// Sheen Layer
+		vec3 reflectance = sheen_env * sheen_color;
+		indirect_specular_light += s_specular_light * (reflectance * sheen);
+#endif // LIGHT_SHEEN_USED
 
 #endif // DIFFUSE_TOON
 	}
@@ -2122,7 +2192,7 @@ void main() {
 			light_compute(normal, hvec3(directional_lights.data[i].direction), view, saturateHalf(size_A),
 					hvec3(directional_lights.data[i].color * directional_lights.data[i].energy * tint),
 					true, shadow, f0, roughness, metallic, half(directional_lights.data[i].specular), albedo, alpha,
-					screen_uv, hvec3(1.0),
+					screen_uv, hvec3(1.0), 1.0,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2136,6 +2206,9 @@ void main() {
 */
 #ifdef LIGHT_RIM_USED
 					rim, rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+					sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 					clearcoat, clearcoat_roughness, geo_normal,
@@ -2158,7 +2231,7 @@ void main() {
 			break;
 		}
 
-		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, hvec3(1.0),
+		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, hvec3(1.0), 1.0,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -2172,6 +2245,9 @@ void main() {
 #ifdef LIGHT_RIM_USED
 				rim,
 				rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+				sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 				clearcoat, clearcoat_roughness, geo_normal,
@@ -2190,7 +2266,7 @@ void main() {
 			break;
 		}
 
-		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, hvec3(1.0),
+		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, hvec3(1.0), 1.0,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -2204,6 +2280,9 @@ void main() {
 #ifdef LIGHT_RIM_USED
 				rim,
 				rim_tint,
+#endif
+#ifdef LIGHT_SHEEN_USED
+				sheen, sheen_roughness, sheen_color,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 				clearcoat, clearcoat_roughness, geo_normal,
