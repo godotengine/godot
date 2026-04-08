@@ -390,24 +390,68 @@ void EditorLog::_append_styled_log_line(Color p_color_regular, Color p_color_hig
 		return;
 	}
 
-	int keytext_start = p_line.findn(p_keytext);
+	int keytext_length = p_keytext.length();
 
-	String message_prefix = p_line.substr(0, keytext_start); // Part of the message before the filter keytext.
-	String keytext_message = p_line.substr(keytext_start, p_keytext.length()); // Filter keytext.
-	String message_suffix = p_line.substr(keytext_start + p_keytext.length(), p_line.length() - keytext_start + p_keytext.length()); // Part of the message before the filter keytext.
+	String iterator_line = p_line;
+	int cursor_position = 0;
 
-	log->push_normal();
-	log->push_color(p_color_regular);
-	log->add_text(message_prefix);
+	Vector<int> positions; // Array of substring positions. Every pair will be cut into a substring from p_line.
+	positions.append(0);
 
-	log->push_bold();
-	log->push_color(p_color_highlighted);
-	log->add_text(keytext_message);
+	if (iterator_line.findn(p_keytext) == 0) {
+		positions.append(0);
+		positions.append(0); // This last zero will be replaced in a few lines, which fixes the order in case the first characters are immediately matches.
+	}
 
-	log->push_normal();
-	log->push_color(p_color_regular);
-	log->add_text(message_suffix);
-	log->pop();
+	// Map which segments of p_line contain the target string. Every uneven pair of ints will be a non-match, and every even pair will be a match.
+	while (iterator_line.containsn(p_keytext)) {
+		int keytext_pos = iterator_line.findn(p_keytext);
+
+		if (keytext_pos == 0) {
+			int last_pos = positions[positions.size() - 1];
+			positions.remove_at(positions.size() - 1);
+			positions.append(last_pos + keytext_length);
+		} else {
+			positions.append(keytext_pos + cursor_position);
+			positions.append(keytext_pos + cursor_position + keytext_length);
+		}
+
+		cursor_position += keytext_pos + keytext_length;
+
+		iterator_line = p_line.substr(cursor_position, p_line.length());
+	}
+
+	// Imagine p_line "Lullaby" and p_keytext "l".
+	// positions will be [0,0,1,2,4].
+	// - The pair 0,0 was inserted due to 20 lines up and is considered not a match.
+	// - The pair 0,1 ("L") is a match
+	// - The pair 1,2 ("u") is not a match
+	// - The pair 2,4 ("ll") is a match once again
+
+	// The last pair always describes a match and in the case p_line does not end with a match, that would cut off p_line after the last match...
+	if (positions[positions.size() - 1] != p_line.size() - 1) {
+		positions.append(p_line.size() - 1); // ...so we add a final position. In the case of "Lullaby", it'd append 6 so that positions becomes [0,0,1,2,4,6]. That prevents the mistake described 2 lines up.
+	}
+
+	// Iterate through map in pairs. That's why we start at index 1.
+	for (int i = 1; i < positions.size(); i++) {
+		String substring = p_line.substr(positions[i - 1], positions[i] - positions[i - 1]);
+
+		// Even index means this segment is a match, uneven means the segment is not a match.
+		if (i % 2 == 1) {
+			log->push_color(p_color_regular);
+			log->push_normal();
+			log->add_text(substring);
+		} else {
+			log->push_color(p_color_highlighted);
+			log->push_bold();
+			log->add_text(substring);
+		}
+	}
+
+	log->pop(); // To finish off, we break off the most recently pushed tag. In the case that was push_bold(), the boldening effect is removed.
+
+	// That's it!
 }
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
