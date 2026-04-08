@@ -72,6 +72,22 @@ directional_lights;
 
 #define DIRECTIONAL_LIGHT_ENABLED uint(1 << 0)
 
+// mat4 is a waste of space, but we don't have an easy way to set a mat3 uniform for now
+uniform mat4 orientation;
+uniform vec4 projection;
+uniform vec3 position;
+uniform float time;
+uniform float sky_energy_multiplier;
+uniform float luminance_multiplier;
+
+uniform float fog_aerial_perspective;
+uniform vec4 fog_light_color;
+uniform float fog_sun_scatter;
+uniform bool fog_enabled;
+uniform float fog_density;
+uniform float fog_sky_affect;
+uniform uint directional_light_count;
+
 /* clang-format off */
 
 #ifdef MATERIAL_UNIFORMS_USED
@@ -101,22 +117,6 @@ layout(std140) uniform MaterialUniforms{ //ubo:3
 #else
 #define AT_QUARTER_RES_PASS false
 #endif
-
-// mat4 is a waste of space, but we don't have an easy way to set a mat3 uniform for now
-uniform mat4 orientation;
-uniform vec4 projection;
-uniform vec3 position;
-uniform float time;
-uniform float sky_energy_multiplier;
-uniform float luminance_multiplier;
-
-uniform float fog_aerial_perspective;
-uniform vec4 fog_light_color;
-uniform float fog_sun_scatter;
-uniform bool fog_enabled;
-uniform float fog_density;
-uniform float fog_sky_affect;
-uniform uint directional_light_count;
 
 #ifdef USE_MULTIVIEW
 layout(std140) uniform MultiviewData { // ubo:11
@@ -218,24 +218,24 @@ void main() {
 
 #ifdef USE_CUBEMAP_PASS
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal);
+	half_res_color = texture(half_res, cube_normal);
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal);
+	quarter_res_color = texture(quarter_res, cube_normal);
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
 #ifdef USE_MULTIVIEW
-	half_res_color = textureLod(sampler2DArray(half_res, SAMPLER_LINEAR_CLAMP), vec3(uv, ViewIndex), 0.0);
+	half_res_color = textureLod(half_res, vec3(uv, ViewIndex), 0.0);
 #else
-	half_res_color = textureLod(sampler2D(half_res, SAMPLER_LINEAR_CLAMP), uv, 0.0);
+	half_res_color = textureLod(half_res, uv, 0.0);
 #endif
 #endif
 #ifdef USES_QUARTER_RES_COLOR
 #ifdef USE_MULTIVIEW
-	quarter_res_color = textureLod(sampler2DArray(quarter_res, SAMPLER_LINEAR_CLAMP), vec3(uv, ViewIndex), 0.0);
+	quarter_res_color = textureLod(quarter_res, vec3(uv, ViewIndex), 0.0);
 #else
-	quarter_res_color = textureLod(sampler2D(quarter_res, SAMPLER_LINEAR_CLAMP), uv, 0.0);
+	quarter_res_color = textureLod(quarter_res, uv, 0.0);
 #endif
 #endif
 #endif
