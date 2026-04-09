@@ -50,11 +50,15 @@ struct NavRegionIterationBuild3D {
 		Vector<Vector3> vertices;
 		Vector<Vector<int>> polygons;
 		Vector<uint32_t> polygons_meta; // Will be stored in `Nav3D::Polygon` later on.
+		Vector<uint16_t> polygons_meta_ids;
+		Vector<Vector<int>> polygons_meta_indices;
 
 		void clear() {
 			vertices.clear();
 			polygons.clear();
 			polygons_meta.clear();
+			polygons_meta_ids.clear();
+			polygons_meta_indices.clear();
 		}
 	} navmesh_data;
 

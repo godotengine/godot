@@ -32,10 +32,28 @@
 
 #include "nav_map_3d.h"
 
-NavArea3D::NavArea3D() {
+NavArea3D::NavArea3D() :
+		sync_dirty_request_list_element(this) {
+	iteration = 0;
 }
 
 NavArea3D::~NavArea3D() {
+	cancel_sync_request();
+
+	iteration = 0;
+}
+
+
+void NavArea3D::set_id(uint16_t p_id) {
+	if (id == p_id) {
+		return;
+	}
+
+	id = p_id;
+	print_line("NavArea3D::set_id");
+	// iteration_dirty = true;
+
+	// request_sync();
 }
 
 void NavArea3D::set_map(NavMap3D *p_map) {
@@ -43,14 +61,18 @@ void NavArea3D::set_map(NavMap3D *p_map) {
 		return;
 	}
 
+	cancel_sync_request();
+
 	if (map) {
 		map->remove_area(this);
 	}
 
 	map = p_map;
+	iteration_dirty = true;
 
 	if (map) {
 		map->add_area(this);
+		request_sync();
 	}
 }
 
@@ -81,9 +103,46 @@ void NavArea3D::set_navigation_layers(uint32_t p_navigation_layers) {
 		return;
 	}
 	navigation_layers = p_navigation_layers;
-	// iteration_dirty = true; // FIXME: makes sense, because this affects only queries after baking.
+	iteration_dirty = true;
+	print_line("NavArea3D::set_navigation_layers");
 
-	// request_sync();
+	request_sync();
+}
+
+void NavArea3D::request_sync() {
+	if (map && !sync_dirty_request_list_element.in_list()) {
+		map->add_area_sync_dirty_request(&sync_dirty_request_list_element);
+	}
+}
+
+void NavArea3D::cancel_sync_request() {
+	if (map && sync_dirty_request_list_element.in_list()) {
+		map->remove_area_sync_dirty_request(&sync_dirty_request_list_element);
+	}
+}
+
+bool NavArea3D::sync() {
+	bool requires_map_update = false;
+	if (!map) {
+		return requires_map_update;
+	}
+
+	if (iteration_dirty) {
+		print_line("NavArea3D::sync");
+		// build iteration:
+		iteration_dirty = false;
+		RWLockWrite write_lock(iteration_rwlock);
+		iteration = get_navigation_layers();
+		requires_map_update = true;
+	}
+
+	return requires_map_update;
+}
+
+
+uint32_t NavArea3D::get_iteration() const {
+	RWLockRead read_lock(iteration_rwlock);
+	return iteration;
 }
 
 void NavArea3D::set_bake_priority(int p_priority) {

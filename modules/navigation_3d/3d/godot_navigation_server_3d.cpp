@@ -655,6 +655,21 @@ RID GodotNavigationServer3D::area_get_map(const RID p_area) const {
 	return RID();
 }
 
+COMMAND_2(area_set_id, RID, p_area, uint16_t, p_id) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	print_line("COMMAND_2(area_set_id)");
+	area->set_id(p_id);
+}
+
+uint16_t GodotNavigationServer3D::area_get_id(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_id();
+}
+
 COMMAND_2(area_set_enabled, RID, p_area, bool, p_enabled) {
 	NavArea3D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL(area);
@@ -699,6 +714,7 @@ real_t GodotNavigationServer3D::area_get_height(const RID p_area) const {
 
 COMMAND_2(area_set_navigation_layers, RID, p_area, uint32_t, p_navigation_layers) {
 	NavArea3D *area = area_owner.get_or_null(p_area);
+	print_line("COMMAND_2(area_set_navigation_layers)");
 	ERR_FAIL_NULL(area);
 
 	area->set_navigation_layers(p_navigation_layers);

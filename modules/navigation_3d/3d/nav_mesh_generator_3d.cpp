@@ -331,13 +331,16 @@ void NavMeshGenerator3D::generator_parse_map_geometry_meta_data(Ref<NavigationMe
 				vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
 				vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
 				AABB bounds = NavigationMeshArea3D::_xform_bounds(vertices, Transform3D(Basis(), area->get_position()), size.y);
-				p_source_geometry_data->add_projected_area_box(bounds, area->get_navigation_layers(), area->get_bake_priority());
+				uint16_t id = p_source_geometry_data->add_projected_area_box(bounds, area->get_navigation_layers(), area->get_bake_priority());
+				area->set_id(id);
 			} break;
 			case NavigationMeshSourceGeometryData3D::ProjectedArea::CYLINDER: {
-				p_source_geometry_data->add_projected_area_cylinder(area->get_position(), area->get_radius(), area->get_height(), area->get_navigation_layers(), area->get_bake_priority());
+				uint16_t id = p_source_geometry_data->add_projected_area_cylinder(area->get_position(), area->get_radius(), area->get_height(), area->get_navigation_layers(), area->get_bake_priority());
+				area->set_id(id);
 			} break;
 			case NavigationMeshSourceGeometryData3D::ProjectedArea::POLYGON: {
-				p_source_geometry_data->add_projected_area_polygon(area->get_vertices(), area->get_elevation(), area->get_height(), area->get_navigation_layers(), area->get_bake_priority());
+				uint16_t id = p_source_geometry_data->add_projected_area_polygon(area->get_vertices(), area->get_elevation(), area->get_height(), area->get_navigation_layers(), area->get_bake_priority());
+				area->set_id(id);
 			} break;
 			default:
 				break;
@@ -545,29 +548,34 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	area_id_to_navigation_layers[static_cast<uint32_t>(RC_NULL_AREA)] = 0;
 	area_id_to_navigation_layers[static_cast<uint32_t>(RC_WALKABLE_AREA)] = 1; // Default navigation layer for polygons not affected by areas.
 
-	uint32_t next_free_area_id = 1;
+	uint32_t next_free_area_config_id = 1; // ID for unique bitmask configuration, i.e. some areas can share the same ID.
 	uint32_t AREA_ID_MAX = RC_WALKABLE_AREA; // Recast unsigned char RC_WALKABLE_AREA = 63 is maximum allowed area id.
 
+	Vector<uint16_t> nav_polygons_meta_ids;
+
 	if (!projected_areas.is_empty()) {
+		nav_polygons_meta_ids.resize(projected_areas.size());
+
 		for (const NavigationMeshSourceGeometryData3D::ProjectedArea &projected_area : projected_areas) {
 			uint32_t area_navigation_layers = projected_area.navigation_layers;
+			nav_polygons_meta_ids.push_back(projected_area.id);
 
 			unsigned char recast_areaId = RC_WALKABLE_AREA;
 
 			HashMap<uint32_t, uint32_t>::Iterator existing_layer = navigation_layers_to_area_id.find(area_navigation_layers);
 			if (!existing_layer) {
-				uint32_t area_id = next_free_area_id;
-				if (area_id >= AREA_ID_MAX) {
+				uint32_t area_config_id = next_free_area_config_id;
+				if (area_config_id >= AREA_ID_MAX) {
 					ERR_PRINT("Navigation mesh area id limit reached. The excess area was ignored. Lower the number of unique 'navigation_layers' used by baked navigation mesh areas to stay below the limit of " + itos(AREA_ID_MAX) + " unique ids");
 					continue;
 				}
 
-				navigation_layers_to_area_id.insert(area_navigation_layers, area_id);
-				area_id_to_navigation_layers.insert(area_id, area_navigation_layers);
+				navigation_layers_to_area_id.insert(area_navigation_layers, area_config_id);
+				area_id_to_navigation_layers.insert(area_config_id, area_navigation_layers);
 
-				recast_areaId = static_cast<unsigned char>(area_id);
+				recast_areaId = static_cast<unsigned char>(area_config_id);
 
-				next_free_area_id++;
+				next_free_area_config_id++;
 
 			} else {
 				recast_areaId = static_cast<unsigned char>(existing_layer->value);
@@ -688,7 +696,10 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 		}
 	}
 
-	print_line("START");
+	Vector<Vector<int>> nav_polygons_meta_indices;
+	nav_polygons_meta_indices.resize(nav_polygons_meta_ids.size());
+
+	// print_line("START");
 	// int poly_count = 0;
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		// If the polygon is not affected by an area, it gets the RC_WALKABLE_AREA area id, i.e. we get the default navigation layers set above.
@@ -718,38 +729,46 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float *v1 = &detail_mesh->verts[index1 * 3];
 				const float *v2 = &detail_mesh->verts[index2 * 3];
 				const float *v3 = &detail_mesh->verts[index3 * 3];
-				const Vector<Vector3> vertices = {Vector3(v1[0], v1[1], v1[2]), Vector3(v2[0], v2[1], v2[2]), Vector3(v3[0], v3[1], v3[2])};
+				const Vector<Vector3> vertices = { Vector3(v1[0], v1[1], v1[2]), Vector3(v2[0], v2[1], v2[2]), Vector3(v3[0], v3[1], v3[2])} ;
 				bool match = false;
-				float grow = 1.0;
+				float grow = 1.0; // Necessary for vertices created by cylinder shape.
 				const float grow_incr = 0.05;
 				while (!match) {
-					int pai = 0;
-					for (const NavigationMeshSourceGeometryData3D::ProjectedArea &area : projected_areas) {
+					int area_index = 0;
+					for (NavigationMeshSourceGeometryData3D::ProjectedArea &area : projected_areas) {
 						if (navigation_layers != area.navigation_layers) {
+							area_index++;
 							continue;
 						}
 						AABB bounds = area.aabb.grow(grow);
+						bool contains_tris = true;
 						for (const Vector3 vertex : vertices) {
-							if (bounds.has_point(vertex)) {
-								print_line("found you in index: ", pai, " with aabb-grow:", grow);
-								match = true;
+							if (!bounds.has_point(vertex)) {
+								contains_tris = false;
 								break;
 							}
 						}
-						if (match)
+						if (contains_tris) {
+							match = true;
+							nav_polygons_meta_indices.write[area_index].push_back(nav_polygons_meta.size() - 1);
+							// print_line("found you in poly-index: ", nav_polygons_meta.size() - 1);
 							break;
-						pai++;
+						}
+
+						// try for cylinder sth. else in aabb?
+						// .intersects_segment
+						area_index++;
 					}
-					grow += grow_incr; // Usually only happens for cylinder.
+					grow += grow_incr;
 				}
 			}
 		}
 	}
 
 	// print_line("polys: ", poly_count);
-	print_line("END\n");
+	// print_line("END\n");
 
-	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_meta);
+	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_meta, nav_polygons_meta_ids, nav_polygons_meta_indices);
 	//print_line("Polygon Meta:");
 	//print_line(nav_polygons.size());
 	//print_line(nav_polygons_meta.size());

@@ -194,6 +194,8 @@ public:
 	virtual AreaShapeType3D area_get_shape_type(RID p_area) const override;
 	COMMAND_2(area_set_map, RID, p_area, RID, p_map);
 	virtual RID area_get_map(RID p_area) const override;
+	COMMAND_2(area_set_id, RID, p_area, uint16_t, p_id);
+	virtual uint16_t area_get_id(RID p_area) const override;
 	COMMAND_2(area_set_enabled, RID, p_area, bool, p_enabled);
 	virtual bool area_get_enabled(RID p_area) const override;
 	COMMAND_2(area_set_position, RID, p_area, Vector3, p_position);

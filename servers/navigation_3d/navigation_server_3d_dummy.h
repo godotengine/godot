@@ -109,6 +109,8 @@ public:
 	AreaShapeType3D area_get_shape_type(RID p_area) const override { return AreaShapeType3D::AREA_SHAPE_NONE; }
 	void area_set_map(RID p_area, RID p_map) override {}
 	RID area_get_map(RID p_area) const override { return RID(); }
+	void area_set_id(RID p_area, uint16_t p_id) override {}
+	uint16_t area_get_id(RID p_area) const override { return 0; }
 	void area_set_enabled(RID p_area, bool p_enabled) override {}
 	bool area_get_enabled(RID p_area) const override { return false; }
 	void area_set_position(RID p_area, Vector3 p_position) override {}

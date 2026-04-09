@@ -169,6 +169,8 @@ public:
 	virtual AreaShapeType3D area_get_shape_type(RID p_area) const = 0;
 	virtual void area_set_map(RID p_area, RID p_map) = 0;
 	virtual RID area_get_map(RID p_area) const = 0;
+	virtual void area_set_id(RID p_area, uint16_t p_id) = 0;
+	virtual uint16_t area_get_id(RID p_area) const = 0;
 	virtual void area_set_enabled(RID p_area, bool p_enabled) = 0;
 	virtual bool area_get_enabled(RID p_area) const = 0;
 	virtual void area_set_position(RID p_area, Vector3 p_position) = 0;

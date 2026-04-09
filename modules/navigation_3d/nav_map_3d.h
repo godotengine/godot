@@ -130,7 +130,7 @@ class NavMap3D : public NavRid3D {
 		} regions;
 		struct {
 			RWLock rwlock;
-			SelfList<NavRegion3D>::List list;
+			SelfList<NavArea3D>::List list;
 		} areas;
 		struct {
 			RWLock rwlock;
@@ -286,11 +286,13 @@ public:
 	void add_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request);
 	void add_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request);
 	void add_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request);
+	void add_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 
 	void remove_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_request);
 	void remove_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request);
 	void remove_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request);
 	void remove_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request);
+	void remove_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 
 	void set_use_async_iterations(bool p_enabled);
 	bool get_use_async_iterations() const;
