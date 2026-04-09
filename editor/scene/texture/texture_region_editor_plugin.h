@@ -35,6 +35,7 @@
 #include "scene/gui/dialogs.h"
 
 class AtlasTexture;
+class NinePatchSprite;
 class NinePatchRect;
 class OptionButton;
 class PanelContainer;
@@ -86,6 +87,7 @@ class TextureRegionEditor : public AcceptDialog {
 	Sprite2D *node_sprite_2d = nullptr;
 	Sprite3D *node_sprite_3d = nullptr;
 	NinePatchRect *node_ninepatch = nullptr;
+	NinePatchSprite *node_ninepatch_sprite = nullptr;
 	Ref<StyleBoxTexture> res_stylebox;
 	Ref<AtlasTexture> res_atlas_texture;
 
