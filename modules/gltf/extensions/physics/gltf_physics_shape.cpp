@@ -284,11 +284,31 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary &p_dict
 	} else {
 		properties = p_dictionary;
 	}
-	if (properties.has("radius")) {
-		gltf_shape->set_radius(properties["radius"]);
-	}
-	if (properties.has("height")) {
-		gltf_shape->set_height(properties["height"]);
+	const String extension = p_dictionary.get("extension", "");
+	if (extension != "OMI_collider" && (shape_type == "capsule" || shape_type == "cylinder")) {
+		real_t radius = properties.get("radius", gltf_shape->get_radius());
+		real_t radius_top = properties.get("radiusTop", radius);
+		real_t radius_bottom = properties.get("radiusBottom", radius);
+		if (!Math::is_equal_approx(radius_top, radius_bottom)) {
+			WARN_PRINT("GLTFPhysicsShape: The " + shape_type + " shape has different radiusTop and radiusBottom values. Using the average radius as an approximation.");
+			radius_top = (radius_top + radius_bottom) * real_t(0.5);
+			radius_bottom = radius_top;
+		}
+		gltf_shape->set_radius(radius_top);
+		if (shape_type == "capsule") {
+			real_t mid_height = properties.get("height", real_t(1.0));
+			gltf_shape->set_height(mid_height + radius_top + radius_bottom);
+		} else { // cylinder
+			real_t total_height = properties.get("height", real_t(2.0));
+			gltf_shape->set_height(total_height);
+		}
+	} else {
+		if (properties.has("radius")) {
+			gltf_shape->set_radius(properties["radius"]);
+		}
+		if (properties.has("height")) {
+			gltf_shape->set_height(properties["height"]);
+		}
 	}
 	if (properties.has("size")) {
 		const Array &arr = properties["size"];
@@ -322,10 +342,12 @@ Dictionary GLTFPhysicsShape::to_dictionary() const {
 		size_array[2] = size.z;
 		sub["size"] = size_array;
 	} else if (shape_type == "capsule") {
-		sub["radius"] = get_radius();
-		sub["height"] = get_height();
+		sub["radiusTop"] = get_radius();
+		sub["radiusBottom"] = get_radius();
+		sub["height"] = MAX(get_height() - (get_radius() * real_t(2.0)), real_t(0.0));
 	} else if (shape_type == "cylinder") {
-		sub["radius"] = get_radius();
+		sub["radiusTop"] = get_radius();
+		sub["radiusBottom"] = get_radius();
 		sub["height"] = get_height();
 	} else if (shape_type == "sphere") {
 		sub["radius"] = get_radius();
