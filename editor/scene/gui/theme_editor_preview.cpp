@@ -214,7 +214,9 @@ void ThemeEditorPreview::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_READY: {
+		// Due to NOTIFICATION_READY being called only once, and theme contexts being destroyed on node removal,
+		// this is the notification needed, as it can be triggered indefinitely.
+		case NOTIFICATION_POST_ENTER_TREE: {
 			Vector<Ref<Theme>> preview_themes;
 			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
