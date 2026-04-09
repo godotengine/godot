@@ -1104,6 +1104,9 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 			tex = get_editor_theme_icon(SNAME("BoxMesh"));
 			break;
+		case ScriptLanguage::CODE_COMPLETION_KIND_USER_SNIPPET:
+			tex = get_editor_theme_icon(SNAME("UserSnippet"));
+			break;
 		default:
 			tex = get_editor_theme_icon(SNAME("String"));
 			break;

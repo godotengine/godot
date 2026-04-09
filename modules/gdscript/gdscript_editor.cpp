@@ -3446,6 +3446,10 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 		completion_context.base = p_owner;
 	}
 	bool is_function = false;
+	Vector<String> snippet_completion = EDITOR_GET("text_editor/completion/snippets");
+	for (const String &completion : snippet_completion) {
+		options.insert(completion, ScriptLanguage::CodeCompletionOption{ completion, ScriptLanguage::CODE_COMPLETION_KIND_USER_SNIPPET, ScriptLanguage::CodeCompletionLocation::LOCATION_OTHER, "", true });
+	}
 
 	switch (completion_context.type) {
 		case GDScriptParser::COMPLETION_NONE:

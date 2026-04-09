@@ -294,6 +294,7 @@ public:
 		CODE_COMPLETION_KIND_NODE_PATH,
 		CODE_COMPLETION_KIND_FILE_PATH,
 		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_USER_SNIPPET,
 		CODE_COMPLETION_KIND_MAX
 	};
 
@@ -333,15 +334,17 @@ public:
 		bool matches_dirty = true; // Must be set when mutating `matches`, so that sorting characteristics are recalculated.
 		int location = LOCATION_OTHER;
 		String theme_color_name;
+		bool is_user_snippet;
 
 		CodeCompletionOption() {}
 
-		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER, const String &p_theme_color_name = "") {
+		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER, const String &p_theme_color_name = "", bool p_is_user_snippet = false) {
 			display = p_text;
 			insert_text = p_text;
 			kind = p_kind;
 			location = p_location;
 			theme_color_name = p_theme_color_name;
+			is_user_snippet = p_is_user_snippet;
 		}
 
 		TypedArray<int> get_option_characteristics(const String &p_base);

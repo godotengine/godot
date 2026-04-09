@@ -50,6 +50,7 @@ public:
 		KIND_NODE_PATH,
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
+		KIND_USER_SNIPPET,
 	};
 
 	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
