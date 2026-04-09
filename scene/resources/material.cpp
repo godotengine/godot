@@ -249,16 +249,10 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<PropertyInfo> list;
 		shader->get_shader_uniform_list(&list, true);
 
-		HashMap<String, HashMap<String, List<PropertyInfo>>> groups;
-		LocalVector<Pair<String, LocalVector<String>>> vgroups;
-		{
-			HashMap<String, List<PropertyInfo>> none_subgroup;
-			none_subgroup.insert("<None>", List<PropertyInfo>());
-			groups.insert("<None>", none_subgroup);
-		}
+		HashMap<String, List<PropertyInfo>> groups;
+		LocalVector<String> vgroups;
 
 		String last_group = "<None>";
-		String last_subgroup = "<None>";
 
 		bool is_none_group_undefined = true;
 		bool is_none_group = true;
@@ -266,13 +260,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 		for (const PropertyInfo &pi : list) {
 			if (pi.usage == PROPERTY_USAGE_GROUP) {
 				if (!pi.name.is_empty()) {
-					Vector<String> vgroup = pi.name.split("::");
-					last_group = vgroup[0];
-					if (vgroup.size() > 1) {
-						last_subgroup = vgroup[1];
-					} else {
-						last_subgroup = "<None>";
-					}
+					last_group = pi.name;
 					is_none_group = false;
 
 					if (!groups.has(last_group)) {
@@ -281,36 +269,14 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 						info.name = last_group.capitalize();
 						info.hint_string = "shader_parameter/";
 
-						List<PropertyInfo> none_subgroup;
-						none_subgroup.push_back(info);
+						List<PropertyInfo> props;
+						props.push_back(info);
 
-						HashMap<String, List<PropertyInfo>> subgroup_map;
-						subgroup_map.insert("<None>", none_subgroup);
-
-						groups.insert(last_group, subgroup_map);
-						vgroups.push_back(Pair<String, LocalVector<String>>(last_group, { "<None>" }));
-					}
-
-					if (!groups[last_group].has(last_subgroup)) {
-						PropertyInfo info;
-						info.usage = PROPERTY_USAGE_SUBGROUP;
-						info.name = last_subgroup.capitalize();
-						info.hint_string = "shader_parameter/";
-
-						List<PropertyInfo> subgroup;
-						subgroup.push_back(info);
-
-						groups[last_group].insert(last_subgroup, subgroup);
-						for (Pair<String, LocalVector<String>> &group : vgroups) {
-							if (group.first == last_group) {
-								group.second.push_back(last_subgroup);
-								break;
-							}
-						}
+						groups.insert(last_group, props);
+						vgroups.push_back(last_group);
 					}
 				} else {
 					last_group = "<None>";
-					last_subgroup = "<None>";
 					is_none_group = true;
 				}
 				continue; // Pass group.
@@ -323,9 +289,12 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				info.usage = PROPERTY_USAGE_GROUP;
 				info.name = "Shader Parameters";
 				info.hint_string = "shader_parameter/";
-				groups["<None>"]["<None>"].push_back(info);
 
-				vgroups.push_back(Pair<String, LocalVector<String>>("<None>", { "<None>" }));
+				List<PropertyInfo> props;
+				props.push_back(info);
+
+				groups.insert("<None>", props);
+				vgroups.push_back("<None>");
 			}
 
 			const bool is_uniform_cached = param_cache.has(pi.name);
@@ -375,16 +344,13 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				param_cache.insert(pi.name, default_value);
 				remap_cache.insert(info.name, pi.name);
 			}
-			groups[last_group][last_subgroup].push_back(info);
+			groups[last_group].push_back(info);
 		}
 
-		for (const Pair<String, LocalVector<String>> &group_pair : vgroups) {
-			String group = group_pair.first;
-			for (const String &subgroup : group_pair.second) {
-				List<PropertyInfo> &prop_infos = groups[group][subgroup];
-				for (const PropertyInfo &item : prop_infos) {
-					p_list->push_back(item);
-				}
+		for (const String &group : vgroups) {
+			List<PropertyInfo> &prop_infos = groups[group];
+			for (const PropertyInfo &item : prop_infos) {
+				p_list->push_back(item);
 			}
 		}
 	}

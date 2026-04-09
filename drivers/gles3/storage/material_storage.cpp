@@ -601,9 +601,6 @@ void ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const
 		const ShaderLanguage::ShaderNode::Uniform &uniform = uniforms[uniform_name];
 
 		String group = uniform.group;
-		if (!uniform.subgroup.is_empty()) {
-			group += "::" + uniform.subgroup;
-		}
 
 		if (group != last_group) {
 			PropertyInfo pi;
