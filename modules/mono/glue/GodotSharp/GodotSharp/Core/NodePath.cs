@@ -80,7 +80,7 @@ namespace Godot
         }
 
         // Explicit name to make it very clear
-        internal static NodePath CreateTakingOwnershipOfDisposableValue(godot_node_path nativeValueToOwn)
+        internal static NodePath CreateConsuming(godot_node_path nativeValueToOwn)
             => new NodePath(nativeValueToOwn);
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace Godot
             godot_node_path propertyPath = default;
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_as_property_path(self, ref propertyPath);
-            return CreateTakingOwnershipOfDisposableValue(propertyPath);
+            return CreateConsuming(propertyPath);
         }
 
         /// <summary>

@@ -252,7 +252,7 @@ namespace Godot.NativeInterop
             if (from == null)
                 return default;
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            return CreateFromArray((godot_array)fromGodot.UnsafeArray.NativeValue);
         }
 
         public static godot_variant CreateFromSystemArrayOfNodePath(scoped Span<NodePath> from)
@@ -260,7 +260,7 @@ namespace Godot.NativeInterop
             if (from == null)
                 return default;
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            return CreateFromArray((godot_array)fromGodot.UnsafeArray.NativeValue);
         }
 
         public static godot_variant CreateFromSystemArrayOfRid(scoped Span<Rid> from)
@@ -268,7 +268,7 @@ namespace Godot.NativeInterop
             if (from == null)
                 return default;
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            return CreateFromArray((godot_array)fromGodot.UnsafeArray.NativeValue);
         }
 
         public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
@@ -276,7 +276,7 @@ namespace Godot.NativeInterop
             if (from == null)
                 return default; // Nil
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            return CreateFromArray((godot_array)fromGodot.UnsafeArray.NativeValue);
         }
 
         public static godot_variant CreateFromArray(scoped in godot_array from)
@@ -287,11 +287,11 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromArray(Collections.Array? from)
-            => from != null ? CreateFromArray((godot_array)from.NativeValue) : default;
+            => from != null ? CreateFromArray((godot_array)from.UnsafeArray.NativeValue) : default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromArray<[MustBeVariant] T>(Array<T>? from)
-            => from != null ? CreateFromArray((godot_array)((Collections.Array)from).NativeValue) : default;
+            => from != null ? CreateFromArray((godot_array)((Collections.Array)from).UnsafeArray.NativeValue) : default;
 
         public static godot_variant CreateFromDictionary(scoped in godot_dictionary from)
         {
@@ -301,11 +301,11 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromDictionary(Dictionary? from)
-            => from != null ? CreateFromDictionary((godot_dictionary)from.NativeValue) : default;
+            => from != null ? CreateFromDictionary((godot_dictionary)from.UnsafeDict.NativeValue) : default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromDictionary<[MustBeVariant] TKey, [MustBeVariant] TValue>(Dictionary<TKey, TValue>? from)
-            => from != null ? CreateFromDictionary((godot_dictionary)((Dictionary)from).NativeValue) : default;
+            => from != null ? CreateFromDictionary((godot_dictionary)((Dictionary)from).UnsafeDict.NativeValue) : default;
 
         public static godot_variant CreateFromStringName(scoped in godot_string_name from)
         {
@@ -434,12 +434,12 @@ namespace Godot.NativeInterop
                 p_var.Vector3I :
                 NativeFuncs.godotsharp_variant_as_vector3i(p_var);
 
-        public static unsafe Vector4 ConvertToVector4(in godot_variant p_var)
+        public static Vector4 ConvertToVector4(in godot_variant p_var)
             => p_var.Type == Variant.Type.Vector4 ?
                 p_var.Vector4 :
                 NativeFuncs.godotsharp_variant_as_vector4(p_var);
 
-        public static unsafe Vector4I ConvertToVector4I(in godot_variant p_var)
+        public static Vector4I ConvertToVector4I(in godot_variant p_var)
             => p_var.Type == Variant.Type.Vector4I ?
                 p_var.Vector4I :
                 NativeFuncs.godotsharp_variant_as_vector4i(p_var);
@@ -524,7 +524,7 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static StringName ConvertToStringName(in godot_variant p_var)
-            => StringName.CreateTakingOwnershipOfDisposableValue(ConvertToNativeStringName(p_var));
+            => StringName.CreateConsuming(ConvertToNativeStringName(p_var));
 
         public static godot_node_path ConvertToNativeNodePath(scoped in godot_variant p_var)
             => p_var.Type == Variant.Type.NodePath ?
@@ -533,7 +533,7 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NodePath ConvertToNodePath(in godot_variant p_var)
-            => NodePath.CreateTakingOwnershipOfDisposableValue(ConvertToNativeNodePath(p_var));
+            => NodePath.CreateConsuming(ConvertToNativeNodePath(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_callable ConvertToNativeCallable(scoped in godot_variant p_var)
@@ -564,11 +564,11 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Collections.Array ConvertToArray(in godot_variant p_var)
-            => Collections.Array.CreateTakingOwnershipOfDisposableValue(ConvertToNativeArray(p_var));
+            => Collections.Array.CreateConsuming(ConvertToNativeArray(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Array<T> ConvertToArray<[MustBeVariant] T>(in godot_variant p_var)
-            => Array<T>.CreateTakingOwnershipOfDisposableValue(ConvertToNativeArray(p_var));
+            => Array<T>.CreateConsuming(ConvertToNativeArray(p_var));
 
         public static godot_dictionary ConvertToNativeDictionary(scoped in godot_variant p_var)
             => p_var.Type == Variant.Type.Dictionary ?
@@ -577,11 +577,11 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary ConvertToDictionary(in godot_variant p_var)
-            => Dictionary.CreateTakingOwnershipOfDisposableValue(ConvertToNativeDictionary(p_var));
+            => Dictionary.CreateConsuming(ConvertToNativeDictionary(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<TKey, TValue> ConvertToDictionary<[MustBeVariant] TKey, [MustBeVariant] TValue>(in godot_variant p_var)
-            => Dictionary<TKey, TValue>.CreateTakingOwnershipOfDisposableValue(ConvertToNativeDictionary(p_var));
+            => Dictionary<TKey, TValue>.CreateConsuming(ConvertToNativeDictionary(p_var));
 
         public static byte[] ConvertAsPackedByteArrayToSystemArray(in godot_variant p_var)
         {

@@ -4890,7 +4890,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null StringName to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5return %0.CreateConsuming(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_string_name";
 	itype.c_type_in = itype.c_type;
@@ -4908,7 +4908,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null NodePath to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5return %0.CreateConsuming(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_node_path";
 	itype.c_type_in = itype.c_type;
@@ -4936,7 +4936,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "Variant";
 	itype.cs_type = itype.proxy_name;
 	itype.c_in = "%5%0 %1_in = (%0)%1.NativeVar;\n";
-	itype.c_out = "%5return Variant.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5return Variant.CreateConsuming(%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_variant";
 	itype.c_type_in = itype.cs_type;
@@ -5030,8 +5030,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = itype.name;
 	itype.type_parameter_count = 1;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
-	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.cs_in_expr = "(%1)(%0 ?? new()).UnsafeArray.NativeValue";
+	itype.c_out = "%5return %0.CreateConsuming(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_array";
 	itype.c_type_in = itype.c_type;
@@ -5057,8 +5057,8 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = itype.name;
 	itype.type_parameter_count = 2;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
-	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.cs_in_expr = "(%1)(%0 ?? new()).UnsafeDict.NativeValue";
+	itype.c_out = "%5return %0.CreateConsuming(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_dictionary";
 	itype.c_type_in = itype.c_type;

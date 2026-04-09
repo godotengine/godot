@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Godot.NativeInterop;
+using Godot.NativeInterop.UnsafeCollections;
 using JetBrains.Annotations;
 
 namespace Godot.Bridge
@@ -191,7 +192,7 @@ namespace Godot.Bridge
         {
             try
             {
-                using var stringName = StringName.CreateTakingOwnershipOfDisposableValue(
+                using var stringName = StringName.CreateConsuming(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(nativeTypeName)));
                 string nativeTypeNameStr = stringName.ToString();
 
@@ -944,6 +945,22 @@ namespace Godot.Bridge
             }
         }
 
+        private static class PropertyInfoNameCache
+        {
+            public static readonly Variant Name = "name";
+            public static readonly Variant Type = "type";
+            public static readonly Variant Usage = "usage";
+            public static readonly Variant ClassName = "class_name";
+        }
+
+        private static class MethodInfoNameCache
+        {
+            public static readonly Variant Name = "name";
+            public static readonly Variant ReturnVal = "return_val";
+            public static readonly Variant Params = "params";
+            public static readonly Variant Flags = "flags";
+        }
+
         [UnmanagedCallersOnly]
         internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_csharp_type_info* outTypeInfo,
             godot_array* outMethodsDest, godot_dictionary* outRpcFunctionsDest, godot_dictionary* outEventSignalsDest,
@@ -967,12 +984,10 @@ namespace Godot.Bridge
 
                 Type native = scriptTypeMeta.NativeType;
 
-                // TODO: While this is init/after-reload only, there's some room for improvement
-                //       (like Array/Dictionary GC allocations, or native allocations all together).
-
                 // Methods
 
-                using var methods = new Collections.Array();
+                *outMethodsDest = NativeFuncs.godotsharp_array_new();
+                var methods = UnsafeGodotArray.CreateBorrowing(*outMethodsDest);
 
                 if (scriptType != native)
                 {
@@ -982,55 +997,52 @@ namespace Godot.Bridge
                     {
                         foreach (var method in methodList)
                         {
-                            var methodInfo = new Collections.Dictionary();
+                            using var methodInfo = UnsafeGodotDictionary.Create();
 
-                            methodInfo.Add("name", method.Name);
+                            methodInfo.Add(MethodInfoNameCache.Name, method.Name);
 
-                            var returnVal = new Collections.Dictionary()
-                            {
-                                { "name", method.ReturnVal.Name },
-                                { "type", (int)method.ReturnVal.Type },
-                                { "usage", (int)method.ReturnVal.Usage }
-                            };
+                            using var returnVal = UnsafeGodotDictionary.Create();
+
+                            returnVal.Add(PropertyInfoNameCache.Name, method.ReturnVal.Name);
+                            returnVal.Add(PropertyInfoNameCache.Type, (int)method.ReturnVal.Type);
+                            returnVal.Add(PropertyInfoNameCache.Usage, (int)method.ReturnVal.Usage);
+
                             if (method.ReturnVal.ClassName != null)
                             {
-                                returnVal["class_name"] = method.ReturnVal.ClassName;
+                                returnVal[PropertyInfoNameCache.ClassName] = method.ReturnVal.ClassName;
                             }
 
-                            methodInfo.Add("return_val", returnVal);
+                            methodInfo.Add(MethodInfoNameCache.ReturnVal, returnVal.BorrowDisposable());
 
-                            var methodParams = new Collections.Array();
+                            using var methodParams = UnsafeGodotArray.Create();
 
                             if (method.Arguments != null)
                             {
                                 foreach (var param in method.Arguments)
                                 {
-                                    var pinfo = new Collections.Dictionary()
-                                    {
-                                        { "name", param.Name },
-                                        { "type", (int)param.Type },
-                                        { "usage", (int)param.Usage }
-                                    };
+                                    using var pinfo = UnsafeGodotDictionary.Create();
+
+                                    pinfo.Add(PropertyInfoNameCache.Name, param.Name);
+                                    pinfo.Add(PropertyInfoNameCache.Type, (int)param.Type);
+                                    pinfo.Add(PropertyInfoNameCache.Usage, (int)param.Usage);
+
                                     if (param.ClassName != null)
                                     {
-                                        pinfo["class_name"] = param.ClassName;
+                                        pinfo[PropertyInfoNameCache.ClassName] = param.ClassName;
                                     }
 
-                                    methodParams.Add(pinfo);
+                                    methodParams.Add(pinfo.BorrowDisposable());
                                 }
                             }
 
-                            methodInfo.Add("params", methodParams);
+                            methodInfo.Add(MethodInfoNameCache.Params, methodParams.BorrowDisposable());
 
-                            methodInfo.Add("flags", (int)method.Flags);
+                            methodInfo.Add(MethodInfoNameCache.Flags, (int)method.Flags);
 
-                            methods.Add(methodInfo);
+                            methods.Target.Add(methodInfo.BorrowDisposable());
                         }
                     }
                 }
-
-                *outMethodsDest = NativeFuncs.godotsharp_array_new_copy(
-                    (godot_array)methods.NativeValue);
 
                 // RPC functions
 
@@ -1047,7 +1059,8 @@ namespace Godot.Bridge
 
                 // Event signals
 
-                using var signals = new Collections.Dictionary();
+                *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new();
+                var signals = UnsafeGodotDictionary.CreateBorrowing(*outEventSignalsDest);
 
                 if (scriptType != native)
                 {
@@ -1059,37 +1072,34 @@ namespace Godot.Bridge
                         {
                             string signalName = signal.Name;
 
-                            if (signals.ContainsKey(signalName))
+                            if (signals.Target.ContainsKey(signalName))
                                 continue;
 
-                            var signalParams = new Collections.Array();
+                            using var signalParams = UnsafeGodotArray.Create();
 
                             if (signal.Arguments != null)
                             {
                                 foreach (var param in signal.Arguments)
                                 {
-                                    var pinfo = new Collections.Dictionary()
-                                    {
-                                        { "name", param.Name },
-                                        { "type", (int)param.Type },
-                                        { "usage", (int)param.Usage }
-                                    };
+                                    using var pinfo = UnsafeGodotDictionary.Create();
+
+                                    pinfo.Add(PropertyInfoNameCache.Name, param.Name);
+                                    pinfo.Add(PropertyInfoNameCache.Type, (int)param.Type);
+                                    pinfo.Add(PropertyInfoNameCache.Usage, (int)param.Usage);
+
                                     if (param.ClassName != null)
                                     {
-                                        pinfo["class_name"] = param.ClassName;
+                                        pinfo[PropertyInfoNameCache.ClassName] = param.ClassName;
                                     }
 
-                                    signalParams.Add(pinfo);
+                                    signalParams.Add(pinfo.BorrowDisposable());
                                 }
                             }
 
-                            signals.Add(signalName, signalParams);
+                            signals.Target.Add(signalName, signalParams.BorrowDisposable());
                         }
                     }
                 }
-
-                *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new_copy(
-                    (godot_dictionary)signals.NativeValue);
 
                 // Base script
 
@@ -1287,7 +1297,7 @@ namespace Godot.Bridge
 
                     foreach (var pair in defaultValuesLegacy)
                     {
-                        defaultValues[pair.Key] = Variant.CreateTakingOwnershipOfDisposableValue(
+                        defaultValues[pair.Key] = Variant.CreateConsuming(
                             DelegateUtils.RuntimeTypeConversionHelper.ConvertToVariant(pair.Value));
                     }
                 }

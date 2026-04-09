@@ -138,6 +138,8 @@
     <Compile Include="Core\NativeInterop\NativeFuncs.extended.cs" />
     <Compile Include="Core\NativeInterop\NativeProxyRegistry.cs" />
     <Compile Include="Core\NativeInterop\NativeVariantPtrArgs.cs" />
+    <Compile Include="Core\NativeInterop\UnsafeCollections\UnsafeGodotArray.cs" />
+    <Compile Include="Core\NativeInterop\UnsafeCollections\UnsafeGodotDictionary.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.generic.cs" />
     <Compile Include="Core\NodePath.cs" />

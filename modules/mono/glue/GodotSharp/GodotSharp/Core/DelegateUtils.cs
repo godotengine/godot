@@ -347,7 +347,7 @@ namespace Godot
             {
                 try
                 {
-                    var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                    var serializedData = Collections.Array.CreateConsuming(
                         NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
 
                     var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
@@ -375,7 +375,7 @@ namespace Godot
             {
                 try
                 {
-                    var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                    var serializedData = Collections.Array.CreateConsuming(
                         NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
 
                     if (TryDeserializeDelegate(serializedData, out Delegate? @delegate))
@@ -892,7 +892,7 @@ namespace Godot
                 {
                     static GodotObject[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
                     {
-                        var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                        var array = Collections.Array.CreateConsuming(
                             NativeFuncs.godotsharp_array_new_copy(nativeArray));
 
                         int length = array.Count;

@@ -18,8 +18,8 @@ public sealed class GodotSerializationInfo : IDisposable
 
     private GodotSerializationInfo(in godot_dictionary properties, in godot_dictionary signalEvents)
     {
-        _properties = Collections.Dictionary.CreateTakingOwnershipOfDisposableValue(properties);
-        _signalEvents = Collections.Dictionary.CreateTakingOwnershipOfDisposableValue(signalEvents);
+        _properties = Collections.Dictionary.CreateConsuming(properties);
+        _signalEvents = Collections.Dictionary.CreateConsuming(signalEvents);
     }
 
     internal static GodotSerializationInfo CreateCopyingBorrowed(

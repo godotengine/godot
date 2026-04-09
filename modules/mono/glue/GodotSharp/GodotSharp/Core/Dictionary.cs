@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 using System.Diagnostics;
 using JetBrains.Annotations;
+using Godot.NativeInterop.UnsafeCollections;
 
 #nullable enable
 
@@ -23,30 +24,31 @@ namespace Godot.Collections
         IReadOnlyDictionary<Variant, Variant>,
         IDisposable
     {
-        internal godot_dictionary.movable NativeValue;
+        internal UnsafeGodotDictionary UnsafeDict;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private readonly WeakReference<IDisposable>? _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.
         /// </summary>
         public Dictionary()
         {
-            NativeValue = (godot_dictionary.movable)NativeFuncs.godotsharp_dictionary_new();
+            UnsafeDict = UnsafeGodotDictionary.Create();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         private Dictionary(godot_dictionary nativeValueToOwn)
         {
-            NativeValue = (godot_dictionary.movable)(nativeValueToOwn.IsAllocated
-                ? nativeValueToOwn
-                : NativeFuncs.godotsharp_dictionary_new());
+            UnsafeDict = UnsafeGodotDictionary.CreateConsuming(nativeValueToOwn).Target;
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         // Explicit name to make it very clear
-        internal static Dictionary CreateTakingOwnershipOfDisposableValue(godot_dictionary nativeValueToOwn)
-            => new Dictionary(nativeValueToOwn);
+        internal static Dictionary CreateConsuming(godot_dictionary nativeValueToOwn)
+            => new(nativeValueToOwn);
+
+        internal static Dictionary CreateConsuming(UnsafeGodotDictionary.Consuming unsafeDict)
+            => new((godot_dictionary)unsafeDict.Target.NativeValue);
 
         ~Dictionary()
         {
@@ -65,7 +67,7 @@ namespace Godot.Collections
         public void Dispose(bool disposing)
         {
             // Always dispose `NativeValue` even if disposing is true
-            NativeValue.DangerousSelfRef.Dispose();
+            UnsafeDict.Dispose();
 
             if (_weakReferenceToSelf != null)
             {
@@ -86,13 +88,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
         /// <returns>A new Godot Dictionary.</returns>
-        public Dictionary Duplicate(bool deep = false)
-        {
-            godot_dictionary newDictionary;
-            var self = (godot_dictionary)NativeValue;
-            NativeFuncs.godotsharp_dictionary_duplicate(ref self, deep.ToGodotBool(), out newDictionary);
-            return CreateTakingOwnershipOfDisposableValue(newDictionary);
-        }
+        public Dictionary Duplicate(bool deep = false) => CreateConsuming(UnsafeDict.Duplicate(deep));
 
         /// <summary>
         /// Adds entries from <paramref name="dictionary"/> to this dictionary.
@@ -105,13 +101,7 @@ namespace Godot.Collections
         /// <param name="dictionary">Dictionary to copy entries from.</param>
         /// <param name="overwrite">If duplicate keys should be copied over as well.</param>
         public void Merge(Dictionary dictionary, bool overwrite = false)
-        {
-            ThrowIfReadOnly();
-
-            var self = (godot_dictionary)NativeValue;
-            var other = (godot_dictionary)dictionary.NativeValue;
-            NativeFuncs.godotsharp_dictionary_merge(ref self, in other, overwrite.ToGodotBool());
-        }
+            => UnsafeDict.Merge(dictionary.UnsafeDict.BorrowDisposable(), overwrite);
 
         /// <summary>
         /// Compares this <see cref="Dictionary"/> against the <paramref name="other"/>
@@ -126,11 +116,7 @@ namespace Godot.Collections
         /// <see langword="false"/> otherwise.
         /// </returns>
         public bool RecursiveEqual(Dictionary other)
-        {
-            var self = (godot_dictionary)NativeValue;
-            var otherVariant = (godot_dictionary)other.NativeValue;
-            return NativeFuncs.godotsharp_dictionary_recursive_equal(ref self, otherVariant).ToBool();
-        }
+            => UnsafeDict.RecursiveEqual(other.UnsafeDict.BorrowDisposable());
 
         // IDictionary
 
@@ -141,10 +127,9 @@ namespace Godot.Collections
         {
             get
             {
-                godot_array keysArray;
-                var self = (godot_dictionary)NativeValue;
-                NativeFuncs.godotsharp_dictionary_keys(ref self, out keysArray);
-                return Array.CreateTakingOwnershipOfDisposableValue(keysArray);
+                var self = (godot_dictionary)UnsafeDict.NativeValue;
+                NativeFuncs.godotsharp_dictionary_keys(ref self, out godot_array keysArray);
+                return Array.CreateConsuming(keysArray);
             }
         }
 
@@ -155,33 +140,15 @@ namespace Godot.Collections
         {
             get
             {
-                godot_array valuesArray;
-                var self = (godot_dictionary)NativeValue;
-                NativeFuncs.godotsharp_dictionary_values(ref self, out valuesArray);
-                return Array.CreateTakingOwnershipOfDisposableValue(valuesArray);
+                var self = (godot_dictionary)UnsafeDict.NativeValue;
+                NativeFuncs.godotsharp_dictionary_values(ref self, out godot_array valuesArray);
+                return Array.CreateConsuming(valuesArray);
             }
         }
 
         IEnumerable<Variant> IReadOnlyDictionary<Variant, Variant>.Keys => Keys;
 
         IEnumerable<Variant> IReadOnlyDictionary<Variant, Variant>.Values => Values;
-
-        private (Array keys, Array values, int count) GetKeyValuePairs()
-        {
-            var self = (godot_dictionary)NativeValue;
-
-            godot_array keysArray;
-            NativeFuncs.godotsharp_dictionary_keys(ref self, out keysArray);
-            var keys = Array.CreateTakingOwnershipOfDisposableValue(keysArray);
-
-            godot_array valuesArray;
-            NativeFuncs.godotsharp_dictionary_values(ref self, out valuesArray);
-            var values = Array.CreateTakingOwnershipOfDisposableValue(valuesArray);
-
-            int count = NativeFuncs.godotsharp_dictionary_count(ref self);
-
-            return (keys, values, count);
-        }
 
         /// <summary>
         /// Returns the value at the given <paramref name="key"/>.
@@ -196,32 +163,12 @@ namespace Godot.Collections
         /// <value>The value at the given <paramref name="key"/>.</value>
         public Variant this[Variant key]
         {
-            get
-            {
-                var self = (godot_dictionary)NativeValue;
-
-                if (NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
-                        (godot_variant)key.NativeVar, out godot_variant value).ToBool())
-                {
-                    return Variant.CreateTakingOwnershipOfDisposableValue(value);
-                }
-                else
-                {
-                    throw new KeyNotFoundException();
-                }
-            }
-            set
-            {
-                ThrowIfReadOnly();
-
-                var self = (godot_dictionary)NativeValue;
-                NativeFuncs.godotsharp_dictionary_set_value(ref self,
-                    (godot_variant)key.NativeVar, (godot_variant)value.NativeVar);
-            }
+            get => UnsafeDict[key];
+            set => UnsafeDict[key] = value;
         }
 
         /// <summary>
-        /// Adds an value <paramref name="value"/> at key <paramref name="key"/>
+        /// Adds a value <paramref name="value"/> at key <paramref name="key"/>
         /// to this <see cref="Dictionary"/>.
         /// </summary>
         /// <exception cref="InvalidOperationException">
@@ -232,19 +179,7 @@ namespace Godot.Collections
         /// </exception>
         /// <param name="key">The key at which to add the value.</param>
         /// <param name="value">The value to add.</param>
-        public void Add(Variant key, Variant value)
-        {
-            ThrowIfReadOnly();
-
-            var variantKey = (godot_variant)key.NativeVar;
-            var self = (godot_dictionary)NativeValue;
-
-            if (NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool())
-                throw new ArgumentException("An element with the same key already exists.", nameof(key));
-
-            godot_variant variantValue = (godot_variant)value.NativeVar;
-            NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);
-        }
+        public void Add(Variant key, Variant value) => UnsafeDict.Add(key, value);
 
         void ICollection<KeyValuePair<Variant, Variant>>.Add(KeyValuePair<Variant, Variant> item)
             => Add(item.Key, item.Value);
@@ -255,41 +190,17 @@ namespace Godot.Collections
         /// <exception cref="InvalidOperationException">
         /// The dictionary is read-only.
         /// </exception>
-        public void Clear()
-        {
-            ThrowIfReadOnly();
-
-            var self = (godot_dictionary)NativeValue;
-            NativeFuncs.godotsharp_dictionary_clear(ref self);
-        }
+        public void Clear() => UnsafeDict.Clear();
 
         /// <summary>
         /// Checks if this <see cref="Dictionary"/> contains the given key.
         /// </summary>
         /// <param name="key">The key to look for.</param>
-        /// <returns>Whether or not this dictionary contains the given key.</returns>
-        public bool ContainsKey(Variant key)
-        {
-            var self = (godot_dictionary)NativeValue;
-            return NativeFuncs.godotsharp_dictionary_contains_key(ref self, (godot_variant)key.NativeVar).ToBool();
-        }
+        /// <returns>Whether this dictionary contains the given key.</returns>
+        public bool ContainsKey(Variant key) => UnsafeDict.ContainsKey(key);
 
         bool ICollection<KeyValuePair<Variant, Variant>>.Contains(KeyValuePair<Variant, Variant> item)
-        {
-            godot_variant variantKey = (godot_variant)item.Key.NativeVar;
-            var self = (godot_dictionary)NativeValue;
-            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
-                variantKey, out godot_variant retValue).ToBool();
-
-            using (retValue)
-            {
-                if (!found)
-                    return false;
-
-                godot_variant variantValue = (godot_variant)item.Value.NativeVar;
-                return NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool();
-            }
-        }
+            => UnsafeDict.Contains(item);
 
         /// <summary>
         /// Removes an element from this <see cref="Dictionary"/> by key.
@@ -298,75 +209,30 @@ namespace Godot.Collections
         /// The dictionary is read-only.
         /// </exception>
         /// <param name="key">The key of the element to remove.</param>
-        public bool Remove(Variant key)
-        {
-            ThrowIfReadOnly();
-
-            var self = (godot_dictionary)NativeValue;
-            return NativeFuncs.godotsharp_dictionary_remove_key(ref self, (godot_variant)key.NativeVar).ToBool();
-        }
+        public bool Remove(Variant key) => UnsafeDict.Remove(key);
 
         bool ICollection<KeyValuePair<Variant, Variant>>.Remove(KeyValuePair<Variant, Variant> item)
-        {
-            ThrowIfReadOnly();
-
-            godot_variant variantKey = (godot_variant)item.Key.NativeVar;
-            var self = (godot_dictionary)NativeValue;
-            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
-                variantKey, out godot_variant retValue).ToBool();
-
-            using (retValue)
-            {
-                if (!found)
-                    return false;
-
-                godot_variant variantValue = (godot_variant)item.Value.NativeVar;
-                if (NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool())
-                {
-                    return NativeFuncs.godotsharp_dictionary_remove_key(
-                        ref self, variantKey).ToBool();
-                }
-
-                return false;
-            }
-        }
+            => UnsafeDict.Remove(item);
 
         /// <summary>
         /// Returns the number of elements in this <see cref="Dictionary"/>.
         /// This is also known as the size or length of the dictionary.
         /// </summary>
         /// <returns>The number of elements.</returns>
-        public int Count
-        {
-            get
-            {
-                var self = (godot_dictionary)NativeValue;
-                return NativeFuncs.godotsharp_dictionary_count(ref self);
-            }
-        }
+        public int Count => UnsafeDict.Count;
 
         /// <summary>
         /// Returns <see langword="true"/> if the dictionary is read-only.
         /// See <see cref="MakeReadOnly"/>.
         /// </summary>
-        public bool IsReadOnly => NativeValue.DangerousSelfRef.IsReadOnly;
+        public bool IsReadOnly => UnsafeDict.IsReadOnly;
 
         /// <summary>
-        /// Makes the <see cref="Dictionary"/> read-only, i.e. disabled modying of the
+        /// Makes the <see cref="Dictionary"/> read-only, i.e. disabled modifying of the
         /// dictionary's elements. Does not apply to nested content, e.g. content of
         /// nested dictionaries.
         /// </summary>
-        public void MakeReadOnly()
-        {
-            if (IsReadOnly)
-            {
-                // Avoid interop call when the dictionary is already read-only.
-                return;
-            }
-
-            var self = (godot_dictionary)NativeValue;
-            NativeFuncs.godotsharp_dictionary_make_read_only(ref self);
-        }
+        public void MakeReadOnly() => UnsafeDict.MakeReadOnly();
 
         /// <summary>
         /// Gets the value for the given <paramref name="key"/> in the dictionary.
@@ -377,15 +243,7 @@ namespace Godot.Collections
         /// <param name="value">The value at the given <paramref name="key"/>.</param>
         /// <returns>If an entry was found for the given <paramref name="key"/>.</returns>
         public bool TryGetValue(Variant key, out Variant value)
-        {
-            var self = (godot_dictionary)NativeValue;
-            bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
-                (godot_variant)key.NativeVar, out godot_variant retValue).ToBool();
-
-            value = found ? Variant.CreateTakingOwnershipOfDisposableValue(retValue) : default;
-
-            return found;
-        }
+            => UnsafeDict.TryGetValue(key, out value);
 
         /// <summary>
         /// Copies the elements of this <see cref="Dictionary"/> to the given untyped
@@ -403,26 +261,7 @@ namespace Godot.Collections
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
         void ICollection<KeyValuePair<Variant, Variant>>.CopyTo(KeyValuePair<Variant, Variant>[] array, int arrayIndex)
-        {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array), "Value cannot be null.");
-
-            if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
-                    "Number was less than the array's lower bound in the first dimension.");
-
-            var (keys, values, count) = GetKeyValuePairs();
-
-            if (array.Length < (arrayIndex + count))
-                throw new ArgumentException(
-                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
-
-            for (int i = 0; i < count; i++)
-            {
-                array[arrayIndex] = new(keys[i], values[i]);
-                arrayIndex++;
-            }
-        }
+            => UnsafeDict.CopyTo(array, arrayIndex);
 
         // IEnumerable
 
@@ -441,14 +280,7 @@ namespace Godot.Collections
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private KeyValuePair<Variant, Variant> GetKeyValuePair(int index)
-        {
-            var self = (godot_dictionary)NativeValue;
-            NativeFuncs.godotsharp_dictionary_key_value_pair_at(ref self, index,
-                out godot_variant key,
-                out godot_variant value);
-            return new KeyValuePair<Variant, Variant>(Variant.CreateTakingOwnershipOfDisposableValue(key),
-                Variant.CreateTakingOwnershipOfDisposableValue(value));
-        }
+            => UnsafeDict.GetKeyValuePair(index);
 
         /// <summary>
         /// Converts this <see cref="Dictionary"/> to a string.
@@ -456,18 +288,10 @@ namespace Godot.Collections
         /// <returns>A string representation of this dictionary.</returns>
         public override string ToString()
         {
-            var self = (godot_dictionary)NativeValue;
+            var self = (godot_dictionary)UnsafeDict.NativeValue;
             NativeFuncs.godotsharp_dictionary_to_string(ref self, out godot_string str);
             using (str)
                 return Marshaling.ConvertStringToManaged(str);
-        }
-
-        private void ThrowIfReadOnly()
-        {
-            if (IsReadOnly)
-            {
-                throw new InvalidOperationException("Dictionary instance is read-only.");
-            }
         }
     }
 
@@ -479,7 +303,7 @@ namespace Godot.Collections
     /// <summary>
     /// Typed wrapper around Godot's Dictionary class, a dictionary of <typeparamref name="TKey"/>
     /// and <typeparamref name="TValue"/> annotated, Variant typed elements allocated in the engine in C++.
-    /// Useful when interfacing with the engine. Otherwise prefer .NET collections
+    /// Useful when interfacing with the engine. Otherwise, prefer .NET collections
     /// such as <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
@@ -541,7 +365,7 @@ namespace Godot.Collections
                 _valueCachedType, _valueNativeProxyMeta, _valueScriptTypeMeta,
                 out var valueVariantType, out var borrowedValueClassName, out var consumingValueScriptRef);
 
-            var self = (godot_dictionary)NativeValue;
+            var self = (godot_dictionary)UnsafeDict.NativeValue;
 
             using (consumingKeyScriptRef)
             using (consumingValueScriptRef)
@@ -568,10 +392,10 @@ namespace Godot.Collections
 
         Dictionary IGenericGodotDictionary.UnderlyingDictionary => _underlyingDict;
 
-        internal ref godot_dictionary.movable NativeValue
+        internal ref UnsafeGodotDictionary UnsafeDict
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref _underlyingDict.NativeValue;
+            get => ref _underlyingDict.UnsafeDict;
         }
 
         /// <summary>
@@ -619,9 +443,9 @@ namespace Godot.Collections
         }
 
         // Explicit name to make it very clear
-        internal static Dictionary<TKey, TValue> CreateTakingOwnershipOfDisposableValue(
+        internal static Dictionary<TKey, TValue> CreateConsuming(
             godot_dictionary nativeValueToOwn)
-            => new Dictionary<TKey, TValue>(Dictionary.CreateTakingOwnershipOfDisposableValue(nativeValueToOwn));
+            => new Dictionary<TKey, TValue>(Dictionary.CreateConsuming(nativeValueToOwn));
 
         /// <summary>
         /// Converts this typed <see cref="Dictionary{TKey, TValue}"/> to an untyped <see cref="Dictionary"/>.
@@ -701,7 +525,7 @@ namespace Godot.Collections
             get
             {
                 using var variantKey = VariantUtils.CreateFrom(key);
-                var self = (godot_dictionary)_underlyingDict.NativeValue;
+                var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
 
                 if (NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                         variantKey, out godot_variant value).ToBool())
@@ -720,7 +544,7 @@ namespace Godot.Collections
 
                 using var variantKey = VariantUtils.CreateFrom(key);
                 using var variantValue = VariantUtils.CreateFrom(value);
-                var self = (godot_dictionary)_underlyingDict.NativeValue;
+                var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
                 NativeFuncs.godotsharp_dictionary_set_value(ref self,
                     variantKey, variantValue);
             }
@@ -733,10 +557,9 @@ namespace Godot.Collections
         {
             get
             {
-                godot_array keyArray;
-                var self = (godot_dictionary)_underlyingDict.NativeValue;
-                NativeFuncs.godotsharp_dictionary_keys(ref self, out keyArray);
-                return Array<TKey>.CreateTakingOwnershipOfDisposableValue(keyArray);
+                var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
+                NativeFuncs.godotsharp_dictionary_keys(ref self, out godot_array keyArray);
+                return Array<TKey>.CreateConsuming(keyArray);
             }
         }
 
@@ -747,10 +570,9 @@ namespace Godot.Collections
         {
             get
             {
-                godot_array valuesArray;
-                var self = (godot_dictionary)_underlyingDict.NativeValue;
-                NativeFuncs.godotsharp_dictionary_values(ref self, out valuesArray);
-                return Array<TValue>.CreateTakingOwnershipOfDisposableValue(valuesArray);
+                var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
+                NativeFuncs.godotsharp_dictionary_values(ref self, out godot_array valuesArray);
+                return Array<TValue>.CreateConsuming(valuesArray);
             }
         }
 
@@ -760,7 +582,7 @@ namespace Godot.Collections
 
         private KeyValuePair<TKey, TValue> GetKeyValuePair(int index)
         {
-            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
             NativeFuncs.godotsharp_dictionary_key_value_pair_at(ref self, index,
                 out godot_variant key,
                 out godot_variant value);
@@ -790,7 +612,7 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             using var variantKey = VariantUtils.CreateFrom(key);
-            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
 
             if (NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool())
                 throw new ArgumentException("An element with the same key already exists.", nameof(key));
@@ -803,11 +625,11 @@ namespace Godot.Collections
         /// Checks if this <see cref="Dictionary{TKey, TValue}"/> contains the given key.
         /// </summary>
         /// <param name="key">The key to look for.</param>
-        /// <returns>Whether or not this dictionary contains the given key.</returns>
+        /// <returns>Whether this dictionary contains the given key.</returns>
         public bool ContainsKey(TKey key)
         {
             using var variantKey = VariantUtils.CreateFrom(key);
-            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
             return NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool();
         }
 
@@ -823,7 +645,7 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             using var variantKey = VariantUtils.CreateFrom(key);
-            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
             return NativeFuncs.godotsharp_dictionary_remove_key(ref self, variantKey).ToBool();
         }
 
@@ -838,7 +660,7 @@ namespace Godot.Collections
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             using var variantKey = VariantUtils.CreateFrom(key);
-            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
 
@@ -865,7 +687,7 @@ namespace Godot.Collections
 
         /// <summary>
         /// Makes the <see cref="Dictionary{TKey, TValue}"/> read-only, i.e. disabled
-        /// modying of the dictionary's elements. Does not apply to nested content,
+        /// modifying of the dictionary's elements. Does not apply to nested content,
         /// e.g. content of nested dictionaries.
         /// </summary>
         public void MakeReadOnly()
@@ -887,7 +709,7 @@ namespace Godot.Collections
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
             using var variantKey = VariantUtils.CreateFrom(item.Key);
-            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
 
@@ -943,7 +765,7 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             using var variantKey = VariantUtils.CreateFrom(item.Key);
-            var self = (godot_dictionary)_underlyingDict.NativeValue;
+            var self = (godot_dictionary)_underlyingDict.UnsafeDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
 
@@ -995,9 +817,7 @@ namespace Godot.Collections
         private void ThrowIfReadOnly()
         {
             if (IsReadOnly)
-            {
                 throw new InvalidOperationException("Dictionary instance is read-only.");
-            }
         }
     }
 }
