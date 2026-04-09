@@ -3449,6 +3449,18 @@ DisplayServerWindows::ScreenHdrData DisplayServerWindows::_get_screen_hdr_data(i
 	return data;
 }
 
+void DisplayServerWindows::_winrt_adv_color_info_cb(DisplayServerEnums::WindowID p_id) {
+	WindowData &wd = windows[p_id];
+
+	//if (WinRTUtils::window_has_display_info(wd.wrt_wd)) {
+	//	print_line(WinRTUtils::window_get_advanced_color_info(wd.wrt_wd));
+	//}
+
+	int screen = window_get_current_screen(p_id);
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen, true);
+	_update_hdr_output_for_window(p_id, wd, data);
+}
+
 void DisplayServerWindows::_update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data) {
 #ifdef RD_ENABLED
 	if (rendering_context) {
@@ -3497,6 +3509,9 @@ void DisplayServerWindows::_update_hdr_output_for_window(DisplayServerEnums::Win
 void DisplayServerWindows::_update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level) {
 	hdr_output_cache.clear();
 	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (WinRTUtils::window_has_display_info(E.value.wrt_wd)) {
+			continue; // Updated by "_winrt_adv_color_info_cb" callback.
+		}
 		if (E.value.hdr_output_requested) {
 			int screen = window_get_current_screen(E.key);
 
@@ -7036,6 +7051,10 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 
 		wd.parent_hwnd = p_parent_hwnd;
 
+		if (has_winrt_queue) {
+			wd.wrt_wd = WinRTUtils::create_wd(wd.hWnd, callable_mp(this, &DisplayServerWindows::_winrt_adv_color_info_cb), wd.id);
+		}
+
 		// Detach the input queue from the parent window.
 		// This prevents the embedded window from waiting on the main window's input queue,
 		// causing lags input lags when resizing or moving the main window.
@@ -7228,6 +7247,9 @@ void DisplayServerWindows::_destroy_window(DisplayServerEnums::WindowID p_window
 		wd.icon_small = nullptr;
 	}
 
+	if (has_winrt_queue) {
+		WinRTUtils::destroy_wd(wd.wrt_wd);
+	}
 	DestroyWindow(wd.hWnd);
 	windows.erase(p_window_id);
 }
@@ -7564,6 +7586,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		initialize_tts();
 	}
 	native_menu = memnew(NativeMenuWindows);
+
+	has_winrt_queue = WinRTUtils::create_queue();
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -8237,6 +8261,10 @@ DisplayServerWindows::~DisplayServerWindows() {
 	touch_state.clear();
 
 	cursors_cache.clear();
+
+	if (has_winrt_queue) {
+		WinRTUtils::destroy_queue();
+	}
 
 	// Destroy all status indicators.
 	for (HashMap<DisplayServerEnums::IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
