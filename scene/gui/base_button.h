@@ -63,7 +63,8 @@ private:
 		bool pressing_inside = false;
 		bool pressed_down_with_focus = false;
 		bool disabled = false;
-
+		int touch_index = -1;
+		int device_id = InputEvent::DEVICE_ID_EMULATION;
 	} status;
 
 	Ref<ButtonGroup> button_group;
