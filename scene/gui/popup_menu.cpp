@@ -399,7 +399,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	const Point2 panel_offset_end = Point2(-panel->get_offset(SIDE_RIGHT), -panel->get_offset(SIDE_BOTTOM)) * win_scale;
 	const Vector2 scaled_this_size = this_rect.size * win_scale;
 	const float scaled_theme_v_separation = theme_cache.v_separation * win_scale;
-	const float scroll_offset = control->get_position().y;
+	const float scroll_offset = control->get_position().y + scroll_container->get_position().y;
 	const float scaled_ofs_cache = items[p_over]._ofs_cache * win_scale;
 	const float scaled_height_cache = items[p_over]._height_cache * win_scale;
 
