@@ -431,6 +431,10 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			_open_command_palette();
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
 			bottom_panel->toggle_last_opened_bottom_panel();
+		} else if (ED_IS_SHORTCUT("editor/focus_scene_tree_filter", p_event)) {
+			SceneTreeDock::get_singleton()->focus_filter();
+		} else if (ED_IS_SHORTCUT("editor/focus_inspector_filter", p_event)) {
+			InspectorDock::get_singleton()->focus_search();
 		} else if (ED_IS_SHORTCUT("editor/toggle_selected_nodes_visibility", p_event)) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Toggle Selected Node(s) Visibility"));
@@ -8946,6 +8950,9 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/editor_script", TTRC("Open Script Editor"), KeyModifierMask::CTRL | Key::F3);
 	ED_SHORTCUT_AND_COMMAND("editor/editor_game", TTRC("Open Game View"), KeyModifierMask::CTRL | Key::F4);
 	ED_SHORTCUT_AND_COMMAND("editor/editor_assetlib", TTRC("Open Asset Library"), KeyModifierMask::CTRL | Key::F5);
+
+	ED_SHORTCUT_AND_COMMAND("editor/focus_scene_tree_filter", TTRC("Focus Scene Tree Filter"), KeyModifierMask::ALT | Key::U);
+	ED_SHORTCUT_AND_COMMAND("editor/focus_inspector_filter", TTRC("Focus Inspector Filter"), KeyModifierMask::ALT | Key::I);
 
 	ED_SHORTCUT_OVERRIDE("editor/editor_2d", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::KEY_1);
 	ED_SHORTCUT_OVERRIDE("editor/editor_3d", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::KEY_2);

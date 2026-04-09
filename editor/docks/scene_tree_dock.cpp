@@ -273,8 +273,7 @@ void SceneTreeDock::_scene_tree_gui_input(Ref<InputEvent> p_event) {
 	}
 
 	if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
-		filter->grab_focus();
-		filter->select_all();
+		focus_filter();
 		accept_event();
 	} else if (ED_IS_SHORTCUT("scene_tree/open_scene_in_editor", p_event)) {
 		_tool_selected(TOOL_SCENE_OPEN);
@@ -4217,6 +4216,11 @@ void SceneTreeDock::_append_filter_options_to(PopupMenu *p_menu) {
 
 String SceneTreeDock::get_filter() {
 	return filter->get_text();
+}
+
+void SceneTreeDock::focus_filter() {
+	filter->grab_focus();
+	filter->select_all();
 }
 
 void SceneTreeDock::set_filter(const String &p_filter) {
