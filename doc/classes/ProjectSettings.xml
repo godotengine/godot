@@ -1203,6 +1203,23 @@
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
+		<member name="editor/steam/library_path" type="String" setter="" getter="" default="&quot;&quot;">
+			Path to the [code]libsteam_api[/code] library, leave empty to use default version.
+			[b]Note:[/b] This project setting is only effective in Steam version of the engine (built with [code]steamapi=yes[/code].).
+		</member>
+		<member name="editor/steam/library_path.linuxbsd" type="String" setter="" getter="" default="&quot;&quot;">
+			Linux/BSD override for [member editor/steam/library_path].
+		</member>
+		<member name="editor/steam/library_path.macos" type="String" setter="" getter="" default="&quot;&quot;">
+			macOS override for [member editor/steam/library_path].
+		</member>
+		<member name="editor/steam/library_path.windows" type="String" setter="" getter="" default="&quot;&quot;">
+			Windows override for [member editor/steam/library_path].
+		</member>
+		<member name="editor/steam/time_tracker" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], loads Steam API library to track running time when project is opened in the editor.
+			[b]Note:[/b] This project setting is only effective in Steam version of the engine (built with [code]steamapi=yes[/code].).
+		</member>
 		<member name="editor/version_control/autoload_on_startup" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="editor/version_control/plugin_name" type="String" setter="" getter="" default="&quot;&quot;">
