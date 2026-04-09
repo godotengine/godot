@@ -113,6 +113,7 @@ private:
 	int previous = -1;
 	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
 	bool clip_tabs = true;
+	bool vertical = false;
 	int rb_hover = -1;
 	bool rb_pressing = false;
 	bool tab_style_v_flip = false;
@@ -274,6 +275,9 @@ public:
 	bool get_clip_tabs() const;
 
 	void set_tab_style_v_flip(bool p_tab_style_v_flip);
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
 
 	void move_tab(int p_from, int p_to);
 
