@@ -979,6 +979,9 @@
 		<member name="interface/editor/behavior/automatically_open_screenshots" type="bool" setter="" getter="">
 			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
 		</member>
+		<member name="interface/editor/behavior/copy_properties_as_json_to_os_clipboard_as_well" type="bool" setter="" getter="">
+			If [code]true[/code], clicking [b]Copy Value[/b] in the right click menu on an inspector option will copy the value as JSON to the OS clipboard, in addition to the Inspector clipboard. When clicking [b]Paste Value[/b], the value on the OS clipboard will attempt to be pasted. If this fails, the Inspector clipboard is pasted instead.
+		</member>
 		<member name="interface/editor/behavior/import_resources_when_unfocused" type="bool" setter="" getter="">
 			If [code]true[/code], (re)imports resources even if the editor window is unfocused or minimized. If [code]false[/code], resources are only (re)imported when the editor window is focused. This can be set to [code]true[/code] to speed up iteration by starting the import process earlier when saving files in the project folder. This also allows getting visual feedback on changes without having to click the editor window, which is useful with multi-monitor setups. The downside of setting this to [code]true[/code] is that it increases idle CPU usage and may steal CPU time from other applications when importing resources.
 		</member>
