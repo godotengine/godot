@@ -49,6 +49,8 @@ public:
 	};
 
 private:
+	inline static StringName TAB_CONTAINER_META;
+
 	HBoxContainer *internal_container = nullptr;
 	TabBar *tab_bar = nullptr;
 	Button *popup_button = nullptr;
@@ -123,6 +125,7 @@ private:
 
 	HashMap<Node *, RID> tab_panels;
 
+	bool _is_tab_bar_owned() const;
 	int _get_tab_height() const;
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
@@ -166,9 +169,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	static TabContainer *get_tab_bar_container(TabBar *p_tab_bar);
+
 	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
 
-	HBoxContainer *get_internal_container() { return internal_container; }
+	HBoxContainer *get_internal_container() const { return internal_container; }
 	TabBar *get_tab_bar() const;
 
 	int get_tab_idx_at_point(const Point2 &p_point) const;

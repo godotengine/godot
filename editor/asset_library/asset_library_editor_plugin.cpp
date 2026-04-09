@@ -39,6 +39,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -717,7 +718,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
 				// or switching to the AssetLib tab (in the editor).
 				// The Project Manager's project filter box is automatically focused in the project manager code.
-				filter->grab_focus();
+				callable_mp((Control *)filter, &Control::grab_focus).call_deferred(false);
 #endif
 
 				if (initial_loading) {
@@ -1635,6 +1636,14 @@ void EditorAssetLibrary::_bind_methods() {
 }
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
+	set_name(TTRC("AssetLib"));
+	set_icon_name("AssetLib");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
+	if (!Engine::get_singleton()->is_project_manager_hint()) {
+		set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_assetlib"));
+	}
+
 	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
 	loading_blocked = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
@@ -1853,7 +1862,7 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(addon_library);
+	EditorDockManager::get_singleton()->add_dock(addon_library);
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }

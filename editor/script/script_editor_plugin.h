@@ -32,10 +32,10 @@
 
 #include "core/error/error_list.h"
 #include "core/object/script_language.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/script/script_editor_base.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/panel_container.h"
 #include "scene/resources/text_file.h"
 
 class CodeTextEditor;
@@ -50,8 +50,8 @@ class TabContainer;
 class TextureRect;
 class Tree;
 class VSplitContainer;
-class WindowWrapper;
 class EditorSyntaxHighlighter;
+class PanelContainer;
 class ScriptEditorBase;
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
@@ -81,8 +81,8 @@ class EditorScriptCodeCompletionCache;
 class FindInFilesContainer;
 class FindInFilesDialog;
 
-class ScriptEditor : public PanelContainer {
-	GDCLASS(ScriptEditor, PanelContainer);
+class ScriptEditor : public EditorDock {
+	GDCLASS(ScriptEditor, EditorDock);
 
 	enum MenuOptions {
 		// File.
@@ -149,6 +149,7 @@ class ScriptEditor : public PanelContainer {
 		DISPLAY_FULL_PATH,
 	};
 
+	PanelContainer *content_panel = nullptr;
 	HBoxContainer *menu_hb = nullptr;
 	MenuButton *file_menu = nullptr;
 	MenuButton *script_search_menu = nullptr;
@@ -162,8 +163,6 @@ class ScriptEditor : public PanelContainer {
 
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
-	Button *make_floating = nullptr;
-	bool is_floating = false;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
 	ItemList *script_list = nullptr;
@@ -200,8 +199,6 @@ class ScriptEditor : public PanelContainer {
 	FindInFilesDialog *find_in_files_dialog = nullptr;
 	FindInFilesContainer *find_in_files = nullptr;
 
-	WindowWrapper *window_wrapper = nullptr;
-
 #ifdef ANDROID_ENABLED
 	Control *virtual_keyboard_spacer = nullptr;
 	int last_kb_height = -1;
@@ -228,6 +225,8 @@ class ScriptEditor : public PanelContainer {
 	List<int> script_close_queue;
 
 	List<String> _get_recognized_extensions();
+
+	Ref<Shortcut> make_floating_shortcut;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
@@ -392,8 +391,6 @@ class ScriptEditor : public PanelContainer {
 	void _set_script_zoom_factor(float p_zoom_factor);
 	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);
 
-	void _window_changed(bool p_visible);
-
 	void _close_builtin_scripts_from_scene(const String &p_scene);
 
 	static ScriptEditor *script_editor;
@@ -401,6 +398,8 @@ class ScriptEditor : public PanelContainer {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
 
 public:
 	static ScriptEditor *get_singleton() { return script_editor; }
@@ -416,8 +415,6 @@ public:
 	Error close_file(const String &p_file);
 
 	void ensure_select_current();
-
-	bool is_editor_floating();
 
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
@@ -463,34 +460,23 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor(WindowWrapper *p_wrapper);
+	ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor = nullptr;
-	WindowWrapper *window_wrapper = nullptr;
-
-	String last_editor;
-
-	void _focus_another_editor();
-
-	void _save_last_editor(const String &p_editor);
-	void _window_visibility_changed(bool p_visible);
-
-protected:
-	void _notification(int p_what);
+	bool skip_visible = false;
 
 public:
 	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
 
-	virtual String get_plugin_name() const override { return TTRC("Script"); }
-	bool has_main_screen() const override { return true; }
+	virtual String get_plugin_name() const override { return "Script"; }
+	bool has_main_screen() const override { return script_editor->get_current_layout() == EditorDock::DOCK_LAYOUT_MAIN_SCREEN; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
-	virtual void selected_notify() override;
 
 	virtual String get_unsaved_status(const String &p_for_scene) const override;
 	virtual void save_external_data() override;

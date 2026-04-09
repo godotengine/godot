@@ -38,6 +38,7 @@
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -47,6 +48,7 @@
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/embedded_process.h"
 #include "editor/run/run_instances_dialog.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -516,7 +518,7 @@ void GameView::_play_pressed() {
 	}
 
 	if (!window_wrapper->get_window_enabled()) {
-		screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index();
+		screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_current_tab();
 	}
 
 	if (embed_on_play && _get_embed_available() == EMBED_AVAILABLE) {
@@ -526,7 +528,7 @@ void GameView::_play_pressed() {
 		EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(false);
 		_update_embed_window_size();
 		if (!window_wrapper->get_window_enabled()) {
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+			game_dock->make_visible();
 			// Reset the normal size of the bottom panel when fully expanded.
 			EditorNode::get_singleton()->get_bottom_panel()->set_expanded(false);
 
@@ -555,9 +557,9 @@ void GameView::_stop_pressed() {
 		window_wrapper->set_window_enabled(false);
 	}
 
-	if (screen_index_before_start >= 0 && EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index() == EditorMainScreen::EDITOR_GAME) {
+	if (screen_index_before_start >= 0 && EditorNode::get_singleton()->get_editor_main_screen()->get_current_tab_control() == game_dock) {
 		// We go back to the screen where the user was before starting the game.
-		EditorNode::get_singleton()->get_editor_main_screen()->select(screen_index_before_start);
+		EditorNode::get_singleton()->get_editor_main_screen()->set_current_tab(screen_index_before_start);
 	}
 
 	screen_index_before_start = -1;
@@ -584,7 +586,7 @@ void GameView::_embedded_process_updated() {
 
 void GameView::_embedded_process_focused() {
 	if (embed_on_play && !window_wrapper->get_window_enabled()) {
-		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+		game_dock->make_visible();
 	}
 }
 
@@ -1102,8 +1104,8 @@ void GameView::_detach_script_debugger() {
 	embedded_process->set_script_debugger(nullptr);
 }
 
-void GameView::_remote_window_title_changed(String title) {
-	window_wrapper->set_window_title(title);
+void GameView::_remote_window_title_changed(const String &p_title) {
+	window_wrapper->set_window_title(p_title);
 }
 
 void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_arguments) {
@@ -1186,7 +1188,7 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 		Size2 old_min_size = embedded_process->get_custom_minimum_size();
 		embedded_process->set_custom_minimum_size(Size2i());
 
-		Control *container = EditorNode::get_singleton()->get_editor_main_screen()->get_control();
+		Control *container = game_dock;
 		rect = container->get_global_rect();
 
 		Size2 wrapped_min_size = window_wrapper->get_minimum_size();
@@ -1272,6 +1274,16 @@ void GameView::_feature_profile_changed() {
 
 GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper) {
 	singleton = this;
+
+	game_dock = memnew(EditorDock);
+	game_dock->set_name(TTRC("Game"));
+	game_dock->set_icon_name("Game");
+	game_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN);
+	game_dock->set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
+	game_dock->set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_game"));
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+	add_child(vb);
 
 	debugger = p_debugger;
 	window_wrapper = p_wrapper;
@@ -1529,26 +1541,28 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 ///////
 
-void GameViewPluginBase::selected_notify() {
-	if (_is_window_wrapper_enabled()) {
-#ifdef ANDROID_ENABLED
-		notify_main_screen_changed(get_plugin_name());
-#else
-		window_wrapper->grab_window_focus();
+void GameViewPluginBase::make_visible(bool p_visible) {
+	if (p_visible) {
+#ifndef ANDROID_ENABLED
+		window_wrapper->show();
 #endif // ANDROID_ENABLED
-		_focus_another_editor();
+
+		if (_is_window_wrapper_enabled()) {
+#ifdef ANDROID_ENABLED
+			notify_main_screen_changed(get_plugin_name());
+#else
+			window_wrapper->grab_window_focus();
+#endif // ANDROID_ENABLED
+			_focus_another_editor();
+		}
+	} else {
+#ifndef ANDROID_ENABLED
+		window_wrapper->hide();
+#endif // ANDROID_ENABLED
 	}
 }
 
 #ifndef ANDROID_ENABLED
-void GameViewPluginBase::make_visible(bool p_visible) {
-	if (p_visible) {
-		window_wrapper->show();
-	} else {
-		window_wrapper->hide();
-	}
-}
-
 void GameViewPluginBase::set_window_layout(Ref<ConfigFile> p_layout) {
 	game_view->set_window_layout(p_layout);
 }
@@ -1568,9 +1582,10 @@ void GameViewPluginBase::setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcess
 
 	window_wrapper->set_wrapped_control(game_view, nullptr);
 
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(window_wrapper);
+	GameView::get_dock()->add_child(window_wrapper);
+
+	EditorDockManager::get_singleton()->add_dock(GameView::get_dock());
 	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	window_wrapper->hide();
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_focus_another_editor).unbind(1));
 }
 
@@ -1603,7 +1618,7 @@ void GameViewPluginBase::_save_last_editor(const String &p_editor) {
 void GameViewPluginBase::_focus_another_editor() {
 	if (_is_window_wrapper_enabled()) {
 		if (last_editor.is_empty()) {
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_2D);
+			CanvasItemEditor::get_singleton()->make_visible();
 		} else {
 			EditorInterface::get_singleton()->set_main_screen_editor(last_editor);
 		}

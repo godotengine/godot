@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/asset_library/editor_asset_installer.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/grid_container.h"
@@ -182,8 +183,8 @@ public:
 	EditorAssetLibraryItemDownload();
 };
 
-class EditorAssetLibrary : public PanelContainer {
-	GDCLASS(EditorAssetLibrary, PanelContainer);
+class EditorAssetLibrary : public EditorDock {
+	GDCLASS(EditorAssetLibrary, EditorDock);
 
 	String host;
 
@@ -340,19 +341,16 @@ public:
 class AssetLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
-	EditorAssetLibrary *addon_library = nullptr;
+	static inline EditorAssetLibrary *addon_library = nullptr;
 
 public:
 	static bool is_available();
+	static EditorAssetLibrary *get_library() { return addon_library; }
 
-	virtual String get_plugin_name() const override { return TTRC("AssetLib"); }
-	bool has_main_screen() const override { return true; }
+	virtual String get_plugin_name() const override { return "AssetLib"; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
 	virtual void make_visible(bool p_visible) override;
-	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
-	//virtual Dictionary get_state() const;
-	//virtual void set_state(const Dictionary& p_state);
 
 	AssetLibraryEditorPlugin();
 };

@@ -142,8 +142,11 @@
 		<constant name="DOCK_LAYOUT_FLOATING" value="4" enum="DockLayout" is_bitfield="true">
 			Allows making the dock floating (opened as a separate window).
 		</constant>
+		<constant name="DOCK_LAYOUT_MAIN_SCREEN" value="8" enum="DockLayout" is_bitfield="true">
+			Allows using the dock as main screen.
+		</constant>
 		<constant name="DOCK_LAYOUT_ALL" value="7" enum="DockLayout" is_bitfield="true">
-			Allows placing the dock in all available slots.
+			Allows placing the dock in all available slots, except main screen.
 		</constant>
 		<constant name="DOCK_SLOT_NONE" value="-1" enum="DockSlot">
 			The dock is closed.
@@ -181,7 +184,10 @@
 		<constant name="DOCK_SLOT_BOTTOM_R" value="10" enum="DockSlot">
 			Dock slot at the bottom, below bottom panel, on the right side.
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="11" enum="DockSlot">
+		<constant name="DOCK_SLOT_MAIN_SCREEN" value="11" enum="DockSlot">
+			The editor's main screen.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="12" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 	</constants>

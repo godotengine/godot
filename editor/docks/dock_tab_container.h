@@ -99,6 +99,7 @@ public:
 	virtual void update_visibility();
 	virtual TabStyle get_tab_style() const;
 	virtual bool can_switch_dock() const;
+	virtual Rect2 get_drag_hint_rect() const { return get_global_rect(); }
 
 	// There is no equivalent load method, because loading needs to handle floating and closing.
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
@@ -109,6 +110,7 @@ public:
 
 	void set_dock_context_popup(DockContextPopup *p_popup);
 	EditorDock *get_dock(int p_idx) const;
+	EditorDock *get_dock_by_name(const String &p_name) const;
 	void show_drag_hint();
 
 	DockTabContainer(EditorDock::DockSlot p_slot);

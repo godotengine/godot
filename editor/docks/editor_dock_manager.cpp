@@ -34,6 +34,7 @@
 #include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/window_wrapper.h"
@@ -149,14 +150,7 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 	const String tab_type = dock_drop_data.get("tab_type", "");
 	if (tab_type == "tab_container_tab") {
 		Node *source_tab_bar = EditorNode::get_singleton()->get_node(dock_drop_data["from_path"]);
-		if (!source_tab_bar) {
-			return nullptr;
-		}
-		HBoxContainer *parent = Object::cast_to<HBoxContainer>(source_tab_bar->get_parent()); // The internal container.
-		if (!parent) {
-			return nullptr;
-		}
-		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(parent->get_parent());
+		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(TabContainer::get_tab_bar_container(Object::cast_to<TabBar>(source_tab_bar)));
 		if (!source_tab_container) {
 			return nullptr;
 		}
@@ -996,17 +990,6 @@ void DockSlotGrid::_update_rect_cache() {
 		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
 		rect_cache[i] = rect;
 	}
-
-	// Temporarily hard-coded, until main screen is registered as a slot.
-	{
-		Rect2 rect = Rect2i(2, 0, 4, 4);
-		if (is_layout_rtl()) {
-			rect.position.x = GRID_SIZE.x - rect.position.x - rect.size.x;
-		}
-		rect.position = rect.position * CELL_SIZE * EDSCALE + (rect.position + Vector2i(0, 1)) * MARGINS * EDSCALE;
-		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
-		main_screen_rect = rect;
-	}
 }
 
 void DockSlotGrid::_bind_methods() {
@@ -1079,7 +1062,6 @@ void DockSlotGrid::_notification(int p_what) {
 					}
 				}
 			}
-			draw_rect(main_screen_rect, unusable_dock_color);
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
