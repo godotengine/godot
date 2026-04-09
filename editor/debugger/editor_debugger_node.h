@@ -161,6 +161,8 @@ protected:
 	void _update_debug_options();
 
 protected:
+	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

@@ -120,6 +120,16 @@ void ConfigFile::erase_section_key(const String &p_section, const String &p_key)
 	}
 }
 
+void ConfigFile::erase_section_key_if_exists(const String &p_section, const String &p_key) {
+	if (!values.has(p_section) || !values[p_section].has(p_key)) {
+		return;
+	}
+	values[p_section].erase(p_key);
+	if (values[p_section].is_empty()) {
+		values.erase(p_section);
+	}
+}
+
 String ConfigFile::encode_to_text() const {
 	StringBuilder sb;
 	bool first = true;

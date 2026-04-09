@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  config_file.h                                                         */
+/*  floating_dock_container.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,49 +30,34 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/object/ref_counted.h"
-#include "core/templates/hash_map.h"
-#include "core/variant/variant_parser.h"
+#include "editor/docks/dock_tab_container.h"
 
-class ConfigFile : public RefCounted {
-	GDCLASS(ConfigFile, RefCounted);
+class FloatingDockContainer : public DockTabContainer {
+	GDCLASS(FloatingDockContainer, DockTabContainer);
 
-	HashMap<String, HashMap<String, Variant>> values;
+	friend class EditorDockManager;
 
-	Error _internal_load(const String &p_path, Ref<FileAccess> f);
-	Error _internal_save(Ref<FileAccess> file);
+	Window *window = nullptr;
+	HashSet<EditorDock *> owned_docks;
 
-	Error _parse(const String &p_path, VariantParser::Stream *p_stream);
+	void _update_window_title();
 
 protected:
-	static void _bind_methods();
+	void _notification(int p_what);
+
+	virtual void dock_added(EditorDock *p_dock) override;
+	virtual void dock_removed(EditorDock *p_dock) override;
+	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible) override;
+	virtual void update_visibility() override;
+	virtual Rect2 get_drag_hint_rect() const override;
+
+	virtual bool can_dock_float(EditorDock *p_dock, String &r_float_info) override;
+
+	virtual void add_child_notify(Node *p_child) override;
 
 public:
-	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
-	Variant get_value(const String &p_section, const String &p_key, const Variant &p_default = Variant()) const;
+	Dictionary get_window_layout() const;
+	static Rect2i get_window_rect_from_layout(const Dictionary &p_layout);
 
-	bool has_section(const String &p_section) const;
-	bool has_section_key(const String &p_section, const String &p_key) const;
-
-	Vector<String> get_sections() const;
-	Vector<String> get_section_keys(const String &p_section) const;
-
-	void erase_section(const String &p_section);
-	void erase_section_key(const String &p_section, const String &p_key);
-	void erase_section_key_if_exists(const String &p_section, const String &p_key);
-
-	Error save(const String &p_path);
-	Error load(const String &p_path);
-	Error parse(const String &p_data);
-
-	String encode_to_text() const; // used by exporter
-
-	void clear();
-
-	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
-	Error load_encrypted_pass(const String &p_path, const String &p_pass);
-
-	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
-	Error save_encrypted_pass(const String &p_path, const String &p_pass);
+	FloatingDockContainer(int p_slot);
 };

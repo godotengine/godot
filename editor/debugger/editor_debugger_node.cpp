@@ -335,6 +335,14 @@ void EditorDebuggerNode::stop(bool p_force) {
 	set_process(false);
 }
 
+void EditorDebuggerNode::update_layout(EditorDock::DockLayout p_layout) {
+	const StringName variation = (p_layout == DOCK_LAYOUT_FLOATING ? StringName("TabContainerInner") : StringName());
+
+	_for_all(tabs, [&](ScriptEditorDebugger *p_debugger) {
+		p_debugger->get_tabs()->set_theme_type_variation(variation);
+	});
+}
+
 void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
