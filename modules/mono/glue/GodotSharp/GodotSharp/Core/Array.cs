@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 using System.Diagnostics;
 using System.ComponentModel;
+using Godot.NativeInterop.UnsafeCollections;
 using JetBrains.Annotations;
 
 #nullable enable
@@ -16,11 +17,12 @@ namespace Godot.Collections
     /// <summary>
     /// Wrapper around Godot's Array class, an array of Variant
     /// typed elements allocated in the engine in C++. Useful when
-    /// interfacing with the engine. Otherwise prefer .NET collections
+    /// interfacing with the engine. Otherwise, prefer .NET collections
     /// such as <see cref="System.Array"/> or <see cref="List{T}"/>.
     /// </summary>
     [DebuggerTypeProxy(typeof(ArrayDebugView<Variant>))]
     [DebuggerDisplay("Count = {Count}")]
+    [PublicAPI]
 #pragma warning disable CA1710 // Identifiers should have correct suffix
     public sealed class Array :
 #pragma warning restore CA1710
@@ -29,16 +31,16 @@ namespace Godot.Collections
         ICollection,
         IDisposable
     {
-        internal godot_array.movable NativeValue;
+        internal UnsafeGodotArray UnsafeArray;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private readonly WeakReference<IDisposable>? _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new empty <see cref="Array"/>.
         /// </summary>
         public Array()
         {
-            NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            UnsafeArray = UnsafeGodotArray.Create();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
@@ -70,7 +72,7 @@ namespace Godot.Collections
         {
             ArgumentNullException.ThrowIfNull(array);
 
-            NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            UnsafeArray = UnsafeGodotArray.Create();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
             int length = array.Length;
@@ -90,7 +92,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Array.</returns>
         public Array(scoped ReadOnlySpan<StringName> span)
         {
-            NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            UnsafeArray = UnsafeGodotArray.Create();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
             int length = span.Length;
@@ -101,7 +103,7 @@ namespace Godot.Collections
                 this[i] = span[i];
         }
 
-        /// <inheritdoc cref="Array(ReadOnlySpan{StringName})"/>
+        /// <inheritdoc cref="Collections.Array(ReadOnlySpan{StringName})"/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Array(scoped Span<StringName> span) : this((ReadOnlySpan<StringName>)span)
         {
@@ -116,7 +118,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Array.</returns>
         public Array(scoped ReadOnlySpan<NodePath> span)
         {
-            NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            UnsafeArray = UnsafeGodotArray.Create();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
             int length = span.Length;
@@ -127,7 +129,7 @@ namespace Godot.Collections
                 this[i] = span[i];
         }
 
-        /// <inheritdoc cref="Array(ReadOnlySpan{NodePath})"/>
+        /// <inheritdoc cref="Collections.Array(ReadOnlySpan{NodePath})"/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Array(scoped Span<NodePath> span) : this((ReadOnlySpan<NodePath>)span)
         {
@@ -142,7 +144,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Array.</returns>
         public Array(scoped ReadOnlySpan<Rid> span)
         {
-            NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            UnsafeArray = UnsafeGodotArray.Create();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
             int length = span.Length;
@@ -153,7 +155,7 @@ namespace Godot.Collections
                 this[i] = span[i];
         }
 
-        /// <inheritdoc cref="Array(ReadOnlySpan{Rid})"/>
+        /// <inheritdoc cref="Collections.Array(ReadOnlySpan{Rid})"/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Array(scoped Span<Rid> span) : this((ReadOnlySpan<Rid>)span)
         {
@@ -168,7 +170,7 @@ namespace Godot.Collections
         /// <returns>A new Godot Array.</returns>
         public Array(scoped ReadOnlySpan<GodotObject> span)
         {
-            NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            UnsafeArray = UnsafeGodotArray.Create();
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
             int length = span.Length;
@@ -181,15 +183,15 @@ namespace Godot.Collections
 
         private Array(godot_array nativeValueToOwn)
         {
-            NativeValue = (godot_array.movable)(nativeValueToOwn.IsAllocated
-                ? nativeValueToOwn
-                : NativeFuncs.godotsharp_array_new());
+            UnsafeArray = UnsafeGodotArray.CreateConsuming(nativeValueToOwn).Target;
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
-        // Explicit name to make it very clear
-        internal static Array CreateTakingOwnershipOfDisposableValue(godot_array nativeValueToOwn)
-            => new Array(nativeValueToOwn);
+        internal static Array CreateConsuming(godot_array nativeValueToOwn)
+            => new(nativeValueToOwn);
+
+        internal static Array CreateConsuming(UnsafeGodotArray.Consuming unsafeArray)
+            => new((godot_array)unsafeArray.Target.NativeValue);
 
         ~Array()
         {
@@ -208,7 +210,7 @@ namespace Godot.Collections
         public void Dispose(bool disposing)
         {
             // Always dispose `NativeValue` even if disposing is true
-            NativeValue.DangerousSelfRef.Dispose();
+            UnsafeArray.Dispose();
 
             if (_weakReferenceToSelf != null)
             {
@@ -230,12 +232,7 @@ namespace Godot.Collections
         /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
         /// <returns>A new Godot Array.</returns>
         public Array Duplicate(bool deep = false)
-        {
-            godot_array newArray;
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_duplicate(ref self, deep.ToGodotBool(), out newArray);
-            return CreateTakingOwnershipOfDisposableValue(newArray);
-        }
+            => CreateConsuming(UnsafeArray.Duplicate());
 
         /// <summary>
         /// Assigns the given value to all elements in the array. This can typically be
@@ -257,14 +254,7 @@ namespace Godot.Collections
         /// The array is read-only.
         /// </exception>
         /// <param name="value">The value to fill the array with.</param>
-        public void Fill(Variant value)
-        {
-            ThrowIfReadOnly();
-
-            godot_variant variantValue = (godot_variant)value.NativeVar;
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_fill(ref self, variantValue);
-        }
+        public void Fill(Variant value) => UnsafeArray.Fill(value);
 
         /// <summary>
         /// Returns the maximum value contained in the array if all elements are of
@@ -272,13 +262,7 @@ namespace Godot.Collections
         /// is returned.
         /// </summary>
         /// <returns>The maximum value contained in the array.</returns>
-        public Variant Max()
-        {
-            godot_variant resVariant;
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_max(ref self, out resVariant);
-            return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
-        }
+        public Variant Max() => UnsafeArray.Max();
 
         /// <summary>
         /// Returns the minimum value contained in the array if all elements are of
@@ -286,13 +270,7 @@ namespace Godot.Collections
         /// is returned.
         /// </summary>
         /// <returns>The minimum value contained in the array.</returns>
-        public Variant Min()
-        {
-            godot_variant resVariant;
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_min(ref self, out resVariant);
-            return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
-        }
+        public Variant Min() => UnsafeArray.Min();
 
         /// <summary>
         /// Returns a random value from the target array.
@@ -304,13 +282,7 @@ namespace Godot.Collections
         /// </code>
         /// </example>
         /// <returns>A random element from the array.</returns>
-        public Variant PickRandom()
-        {
-            godot_variant resVariant;
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_pick_random(ref self, out resVariant);
-            return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
-        }
+        public Variant PickRandom() => UnsafeArray.PickRandom();
 
         /// <summary>
         /// Compares this <see cref="Array"/> against the <paramref name="other"/>
@@ -324,11 +296,7 @@ namespace Godot.Collections
         /// <see langword="false"/> otherwise.
         /// </returns>
         public bool RecursiveEqual(Array other)
-        {
-            var self = (godot_array)NativeValue;
-            var otherVariant = (godot_array)other.NativeValue;
-            return NativeFuncs.godotsharp_array_recursive_equal(ref self, otherVariant).ToBool();
-        }
+            => UnsafeArray.RecursiveEqual(other.UnsafeArray.BorrowDisposable());
 
         /// <summary>
         /// Resizes the array to contain a different number of elements. If the array
@@ -340,13 +308,7 @@ namespace Godot.Collections
         /// </exception>
         /// <param name="newSize">The new size of the array.</param>
         /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
-        public Error Resize(int newSize)
-        {
-            ThrowIfReadOnly();
-
-            var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_resize(ref self, newSize);
-        }
+        public Error Resize(int newSize) => UnsafeArray.Resize(newSize);
 
         /// <summary>
         /// Reverses the order of the elements in the array.
@@ -354,13 +316,7 @@ namespace Godot.Collections
         /// <exception cref="InvalidOperationException">
         /// The array is read-only.
         /// </exception>
-        public void Reverse()
-        {
-            ThrowIfReadOnly();
-
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_reverse(ref self);
-        }
+        public void Reverse() => UnsafeArray.Reverse();
 
         /// <summary>
         /// Shuffles the array such that the items will have a random order.
@@ -372,13 +328,7 @@ namespace Godot.Collections
         /// <exception cref="InvalidOperationException">
         /// The array is read-only.
         /// </exception>
-        public void Shuffle()
-        {
-            ThrowIfReadOnly();
-
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_shuffle(ref self);
-        }
+        public void Shuffle() => UnsafeArray.Shuffle();
 
         /// <summary>
         /// Creates a shallow copy of a range of elements in the source <see cref="Array"/>.
@@ -388,13 +338,7 @@ namespace Godot.Collections
         /// </exception>
         /// <param name="start">The zero-based index at which the range starts.</param>
         /// <returns>A new array that contains the elements inside the slice range.</returns>
-        public Array Slice(int start)
-        {
-            if (start < 0 || start > Count)
-                throw new ArgumentOutOfRangeException(nameof(start));
-
-            return GetSliceRange(start, Count, step: 1, deep: false);
-        }
+        public Array Slice(int start) => CreateConsuming(UnsafeArray.Slice(start));
 
         /// <summary>
         /// Creates a shallow copy of a range of elements in the source <see cref="Array"/>.
@@ -408,16 +352,7 @@ namespace Godot.Collections
         /// <param name="length">The length of the range.</param>
         /// <returns>A new array that contains the elements inside the slice range.</returns>
         // The Slice method must have this signature to get implicit Range support.
-        public Array Slice(int start, int length)
-        {
-            if (start < 0 || start > Count)
-                throw new ArgumentOutOfRangeException(nameof(start));
-
-            if (length < 0 || length > Count)
-                throw new ArgumentOutOfRangeException(nameof(start));
-
-            return GetSliceRange(start, start + length, step: 1, deep: false);
-        }
+        public Array Slice(int start, int length) => CreateConsuming(UnsafeArray.Slice(start, length));
 
         /// <summary>
         /// Returns the slice of the <see cref="Array"/>, from <paramref name="start"/>
@@ -440,12 +375,7 @@ namespace Godot.Collections
         /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
         /// <returns>A new array that contains the elements inside the slice range.</returns>
         public Array GetSliceRange(int start, int end, int step = 1, bool deep = false)
-        {
-            godot_array newArray;
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_slice(ref self, start, end, step, deep.ToGodotBool(), out newArray);
-            return CreateTakingOwnershipOfDisposableValue(newArray);
-        }
+            => CreateConsuming(UnsafeArray.GetSliceRange(start, end, step, deep));
 
         /// <summary>
         /// Sorts the array.
@@ -467,13 +397,7 @@ namespace Godot.Collections
         /// <exception cref="InvalidOperationException">
         /// The array is read-only.
         /// </exception>
-        public void Sort()
-        {
-            ThrowIfReadOnly();
-
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_sort(ref self);
-        }
+        public void Sort() => UnsafeArray.Sort();
 
         /// <summary>
         /// Concatenates two <see cref="Array"/>s together, with the <paramref name="right"/>
@@ -518,26 +442,12 @@ namespace Godot.Collections
         /// <paramref name="index"/> is less than 0 or greater than the array's size.
         /// </exception>
         /// <value>The <see cref="Variant"/> item at the given <paramref name="index"/>.</value>
-        public unsafe Variant this[int index]
+        public Variant this[int index]
         {
-            get
-            {
-                GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return Variant.CreateCopyingBorrowed(borrowElem);
-            }
-            set
-            {
-                ThrowIfReadOnly();
-
-                if (index < 0 || index >= Count)
-                    throw new ArgumentOutOfRangeException(nameof(index));
-
-                var self = (godot_array)NativeValue;
-                godot_variant* ptrw = NativeFuncs.godotsharp_array_ptrw(ref self);
-                godot_variant* itemPtr = &ptrw[index];
-                (*itemPtr).Dispose();
-                *itemPtr = value.CopyNativeVariant();
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => UnsafeArray[index];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => UnsafeArray[index] = value;
         }
 
         /// <summary>
@@ -548,14 +458,8 @@ namespace Godot.Collections
         /// The array is read-only.
         /// </exception>
         /// <param name="item">The <see cref="Variant"/> item to add.</param>
-        public void Add(Variant item)
-        {
-            ThrowIfReadOnly();
-
-            godot_variant variantValue = (godot_variant)item.NativeVar;
-            var self = (godot_array)NativeValue;
-            _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Add(Variant item) => UnsafeArray.Add(item);
 
         /// <summary>
         /// Adds the elements of the specified collection to the end of this <see cref="Array"/>.
@@ -578,16 +482,16 @@ namespace Godot.Collections
             // with a single interop call.
             if (collection is Array array)
             {
-                var self = (godot_array)NativeValue;
-                var collectionNative = (godot_array)array.NativeValue;
+                var self = (godot_array)UnsafeArray.NativeValue;
+                var collectionNative = (godot_array)array.UnsafeArray.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
                 return;
             }
 
             if (collection is Array<T> typedArray)
             {
-                var self = (godot_array)NativeValue;
-                var collectionNative = (godot_array)typedArray.NativeValue;
+                var self = (godot_array)UnsafeArray.NativeValue;
+                var collectionNative = (godot_array)typedArray.UnsafeArray.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
                 return;
             }
@@ -678,24 +582,7 @@ namespace Godot.Collections
         /// there is no larger element, the bitwise complement of <see cref="Count"/>.
         /// </returns>
         public int BinarySearch(int index, int count, Variant item)
-        {
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), "index cannot be negative.");
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count), "count cannot be negative.");
-            if (Count - index < count)
-                throw new ArgumentException("length is out of bounds or count is greater than the number of elements.");
-
-            if (Count == 0)
-            {
-                // Special case for empty array to avoid an interop call.
-                return -1;
-            }
-
-            godot_variant variantValue = (godot_variant)item.NativeVar;
-            var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_binary_search(ref self, index, count, variantValue);
-        }
+            => UnsafeArray.BinarySearch(index, count, item);
 
         /// <summary>
         /// Finds the index of an existing value using binary search.
@@ -711,10 +598,7 @@ namespace Godot.Collections
         /// of the next element that is larger than <paramref name="item"/> or, if
         /// there is no larger element, the bitwise complement of <see cref="Count"/>.
         /// </returns>
-        public int BinarySearch(Variant item)
-        {
-            return BinarySearch(0, Count, item);
-        }
+        public int BinarySearch(Variant item) => BinarySearch(0, Count, item);
 
         /// <summary>
         /// Returns <see langword="true"/> if the array contains the given value.
@@ -729,7 +613,7 @@ namespace Godot.Collections
         /// </code>
         /// </example>
         /// <param name="item">The <see cref="Variant"/> item to look for.</param>
-        /// <returns>Whether or not this array contains the given item.</returns>
+        /// <returns>Whether this array contains the given item.</returns>
         public bool Contains(Variant item) => IndexOf(item) != -1;
 
         /// <summary>
@@ -746,18 +630,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="item">The <see cref="Variant"/> item to search for.</param>
         /// <returns>The index of the item, or -1 if not found.</returns>
-        public int IndexOf(Variant item)
-        {
-            if (Count == 0)
-            {
-                // Special case for empty array to avoid an interop call.
-                return -1;
-            }
-
-            godot_variant variantValue = (godot_variant)item.NativeVar;
-            var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
-        }
+        public int IndexOf(Variant item) => UnsafeArray.IndexOf(item);
 
         /// <summary>
         /// Searches the array for a value and returns its index or <c>-1</c> if not found.
@@ -768,21 +641,7 @@ namespace Godot.Collections
         /// <param name="item">The <see cref="Variant"/> item to search for.</param>
         /// <param name="index">The initial search index to start from.</param>
         /// <returns>The index of the item, or -1 if not found.</returns>
-        public int IndexOf(Variant item, int index)
-        {
-            if (index < 0 || index > Count)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            if (Count == 0)
-            {
-                // Special case for empty array to avoid an interop call.
-                return -1;
-            }
-
-            godot_variant variantValue = (godot_variant)item.NativeVar;
-            var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_index_of(ref self, variantValue, index);
-        }
+        public int IndexOf(Variant item, int index) => UnsafeArray.IndexOf(item, index);
 
         /// <summary>
         /// Searches the array for a value in reverse order and returns its index
@@ -790,18 +649,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="item">The <see cref="Variant"/> item to search for.</param>
         /// <returns>The index of the item, or -1 if not found.</returns>
-        public int LastIndexOf(Variant item)
-        {
-            if (Count == 0)
-            {
-                // Special case for empty array to avoid an interop call.
-                return -1;
-            }
-
-            godot_variant variantValue = (godot_variant)item.NativeVar;
-            var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, Count - 1);
-        }
+        public int LastIndexOf(Variant item) => UnsafeArray.LastIndexOf(item);
 
         /// <summary>
         /// Searches the array for a value in reverse order and returns its index
@@ -813,21 +661,7 @@ namespace Godot.Collections
         /// <param name="item">The <see cref="Variant"/> item to search for.</param>
         /// <param name="index">The initial search index to start from.</param>
         /// <returns>The index of the item, or -1 if not found.</returns>
-        public int LastIndexOf(Variant item, int index)
-        {
-            if (index < 0 || index >= Count)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            if (Count == 0)
-            {
-                // Special case for empty array to avoid an interop call.
-                return -1;
-            }
-
-            godot_variant variantValue = (godot_variant)item.NativeVar;
-            var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, index);
-        }
+        public int LastIndexOf(Variant item, int index) => UnsafeArray.LastIndexOf(item, index);
 
         /// <summary>
         /// Inserts a new element at a given position in the array. The position
@@ -842,17 +676,7 @@ namespace Godot.Collections
         /// </exception>
         /// <param name="index">The index to insert at.</param>
         /// <param name="item">The <see cref="Variant"/> item to insert.</param>
-        public void Insert(int index, Variant item)
-        {
-            ThrowIfReadOnly();
-
-            if (index < 0 || index > Count)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            godot_variant variantValue = (godot_variant)item.NativeVar;
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
-        }
+        public void Insert(int index, Variant item) => UnsafeArray.Insert(index, item);
 
         /// <summary>
         /// Removes the first occurrence of the specified <paramref name="item"/>
@@ -862,19 +686,7 @@ namespace Godot.Collections
         /// The array is read-only.
         /// </exception>
         /// <param name="item">The value to remove.</param>
-        public bool Remove(Variant item)
-        {
-            ThrowIfReadOnly();
-
-            int index = IndexOf(item);
-            if (index >= 0)
-            {
-                RemoveAt(index);
-                return true;
-            }
-
-            return false;
-        }
+        public bool Remove(Variant item) => UnsafeArray.Remove(item);
 
         /// <summary>
         /// Removes an element from the array by index.
@@ -888,16 +700,7 @@ namespace Godot.Collections
         /// <paramref name="index"/> is less than 0 or greater than the array's size.
         /// </exception>
         /// <param name="index">The index of the element to remove.</param>
-        public void RemoveAt(int index)
-        {
-            ThrowIfReadOnly();
-
-            if (index < 0 || index > Count)
-                throw new ArgumentOutOfRangeException(nameof(index));
-
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_remove_at(ref self, index);
-        }
+        public void RemoveAt(int index) => UnsafeArray.RemoveAt(index);
 
         // ICollection
 
@@ -906,7 +709,7 @@ namespace Godot.Collections
         /// This is also known as the size or length of the array.
         /// </summary>
         /// <returns>The number of elements.</returns>
-        public int Count => NativeValue.DangerousSelfRef.Size;
+        public int Count => UnsafeArray.Count;
 
         bool ICollection.IsSynchronized => false;
 
@@ -916,24 +719,14 @@ namespace Godot.Collections
         /// Returns <see langword="true"/> if the array is read-only.
         /// See <see cref="MakeReadOnly"/>.
         /// </summary>
-        public bool IsReadOnly => NativeValue.DangerousSelfRef.IsReadOnly;
+        public bool IsReadOnly => UnsafeArray.IsReadOnly;
 
         /// <summary>
-        /// Makes the <see cref="Array"/> read-only, i.e. disabled modying of the
+        /// Makes the <see cref="Array"/> read-only, i.e. disabled modifying of the
         /// array's elements. Does not apply to nested content, e.g. content of
         /// nested arrays.
         /// </summary>
-        public void MakeReadOnly()
-        {
-            if (IsReadOnly)
-            {
-                // Avoid interop call when the array is already read-only.
-                return;
-            }
-
-            var self = (godot_array)NativeValue;
-            NativeFuncs.godotsharp_array_make_read_only(ref self);
-        }
+        public void MakeReadOnly() => UnsafeArray.MakeReadOnly();
 
         /// <summary>
         /// Copies the elements of this <see cref="Array"/> to the given
@@ -950,64 +743,9 @@ namespace Godot.Collections
         /// </exception>
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
-        public void CopyTo(Variant[] array, int arrayIndex)
-        {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array), "Value cannot be null.");
+        public void CopyTo(Variant[] array, int arrayIndex) => UnsafeArray.CopyTo(array, arrayIndex);
 
-            if (arrayIndex < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex),
-                    "Number was less than the array's lower bound in the first dimension.");
-            }
-
-            int count = Count;
-
-            if (array.Length < (arrayIndex + count))
-            {
-                throw new ArgumentException(
-                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
-            }
-
-            unsafe
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    array[arrayIndex] = Variant.CreateCopyingBorrowed(NativeValue.DangerousSelfRef.Elements[i]);
-                    arrayIndex++;
-                }
-            }
-        }
-
-        void ICollection.CopyTo(System.Array array, int index)
-        {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array), "Value cannot be null.");
-
-            if (index < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index),
-                    "Number was less than the array's lower bound in the first dimension.");
-            }
-
-            int count = Count;
-
-            if (array.Length < (index + count))
-            {
-                throw new ArgumentException(
-                    "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
-            }
-
-            unsafe
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    object boxedVariant = Variant.CreateCopyingBorrowed(NativeValue.DangerousSelfRef.Elements[i]);
-                    array.SetValue(boxedVariant, index);
-                    index++;
-                }
-            }
-        }
+        void ICollection.CopyTo(System.Array array, int index) => UnsafeArray.CopyTo(array, index);
 
         // IEnumerable
 
@@ -1033,7 +771,7 @@ namespace Godot.Collections
         /// <returns>A string representation of this array.</returns>
         public override string ToString()
         {
-            var self = (godot_array)NativeValue;
+            var self = (godot_array)UnsafeArray.NativeValue;
             NativeFuncs.godotsharp_array_to_string(ref self, out godot_string str);
             using (str)
                 return Marshaling.ConvertStringToManaged(str);
@@ -1046,26 +784,18 @@ namespace Godot.Collections
         /// <paramref name="index"/> is less than 0 or greater than the array's size.
         /// </exception>
         internal void GetVariantBorrowElementAt(int index, out godot_variant elem)
-        {
-            if (index < 0 || index >= Count)
-                throw new ArgumentOutOfRangeException(nameof(index));
-            GetVariantBorrowElementAtUnchecked(index, out elem);
-        }
+            => UnsafeArray.GetVariantBorrowElementAt(index, out elem);
 
         /// <summary>
         /// The variant returned via the <paramref name="elem"/> parameter is owned by the Array and must not be disposed.
         /// </summary>
-        internal unsafe void GetVariantBorrowElementAtUnchecked(int index, out godot_variant elem)
-        {
-            elem = NativeValue.DangerousSelfRef.Elements[index];
-        }
+        internal void GetVariantBorrowElementAtUnchecked(int index, out godot_variant elem)
+            => UnsafeArray.GetVariantBorrowElementAtUnchecked(index, out elem);
 
         private void ThrowIfReadOnly()
         {
             if (IsReadOnly)
-            {
                 throw new InvalidOperationException("Array instance is read-only.");
-            }
         }
     }
 
@@ -1077,7 +807,7 @@ namespace Godot.Collections
     /// <summary>
     /// Typed wrapper around Godot's Array class, an array of <typeparamref name="T"/>
     /// annotated, Variant typed elements allocated in the engine in C++.
-    /// Useful when interfacing with the engine. Otherwise prefer .NET collections
+    /// Useful when interfacing with the engine. Otherwise, prefer .NET collections
     /// such as arrays or <see cref="List{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of the array.</typeparam>
@@ -1092,6 +822,7 @@ namespace Godot.Collections
     [SuppressMessage("Design", "CA1001", MessageId = "Types that own disposable fields should be disposable",
         Justification = "Known issue. Requires explicit refcount management to not dispose untyped collections.")]
     [SuppressMessage("Naming", "CA1710", MessageId = "Identifiers should have correct suffix")]
+    [PublicAPI]
     public sealed class Array<[MustBeVariant] T> :
         IList<T>,
         IReadOnlyList<T>,
@@ -1129,7 +860,7 @@ namespace Godot.Collections
                 _elemCachedType, _elemNativeProxyMeta, _elemScriptTypeMeta,
                 out var elemVariantType, out var borrowedElemClassName, out var consumingElemScriptRef);
 
-            var self = (godot_array)NativeValue;
+            var self = (godot_array)UnsafeArray.NativeValue;
 
             using (consumingElemScriptRef)
             {
@@ -1152,10 +883,10 @@ namespace Godot.Collections
 
         Array IGenericGodotArray.UnderlyingArray => _underlyingArray;
 
-        internal ref godot_array.movable NativeValue
+        internal ref UnsafeGodotArray UnsafeArray
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref _underlyingArray.NativeValue;
+            get => ref _underlyingArray.UnsafeArray;
         }
 
         /// <summary>
@@ -1222,8 +953,8 @@ namespace Godot.Collections
         }
 
         // Explicit name to make it very clear
-        internal static Array<T> CreateTakingOwnershipOfDisposableValue(godot_array nativeValueToOwn)
-            => new Array<T>(Array.CreateTakingOwnershipOfDisposableValue(nativeValueToOwn));
+        internal static Array<T> CreateConsuming(godot_array nativeValueToOwn)
+            => new Array<T>(Array.CreateConsuming(nativeValueToOwn));
 
         /// <summary>
         /// Converts this typed <see cref="Array{T}"/> to an untyped <see cref="Array"/>.
@@ -1271,7 +1002,7 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             godot_variant variantValue = VariantUtils.CreateFrom(value);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             NativeFuncs.godotsharp_array_fill(ref self, variantValue);
         }
 
@@ -1283,9 +1014,8 @@ namespace Godot.Collections
         /// <returns>The maximum value contained in the array.</returns>
         public T Max()
         {
-            godot_variant resVariant;
-            var self = (godot_array)_underlyingArray.NativeValue;
-            NativeFuncs.godotsharp_array_max(ref self, out resVariant);
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
+            NativeFuncs.godotsharp_array_max(ref self, out godot_variant resVariant);
             return VariantUtils.ConvertTo<T>(resVariant);
         }
 
@@ -1297,9 +1027,8 @@ namespace Godot.Collections
         /// <returns>The minimum value contained in the array.</returns>
         public T Min()
         {
-            godot_variant resVariant;
-            var self = (godot_array)_underlyingArray.NativeValue;
-            NativeFuncs.godotsharp_array_min(ref self, out resVariant);
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
+            NativeFuncs.godotsharp_array_min(ref self, out godot_variant resVariant);
             return VariantUtils.ConvertTo<T>(resVariant);
         }
 
@@ -1315,9 +1044,8 @@ namespace Godot.Collections
         /// <returns>A random element from the array.</returns>
         public T PickRandom()
         {
-            godot_variant resVariant;
-            var self = (godot_array)_underlyingArray.NativeValue;
-            NativeFuncs.godotsharp_array_pick_random(ref self, out resVariant);
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
+            NativeFuncs.godotsharp_array_pick_random(ref self, out godot_variant resVariant);
             return VariantUtils.ConvertTo<T>(resVariant);
         }
 
@@ -1506,7 +1234,7 @@ namespace Godot.Collections
                 if (index < 0 || index >= Count)
                     throw new ArgumentOutOfRangeException(nameof(index));
 
-                var self = (godot_array)_underlyingArray.NativeValue;
+                var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
                 godot_variant* ptrw = NativeFuncs.godotsharp_array_ptrw(ref self);
                 godot_variant* itemPtr = &ptrw[index];
                 (*itemPtr).Dispose();
@@ -1528,7 +1256,7 @@ namespace Godot.Collections
             }
 
             using var variantValue = VariantUtils.CreateFrom(item);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
         }
 
@@ -1553,7 +1281,7 @@ namespace Godot.Collections
             }
 
             godot_variant variantValue = VariantUtils.CreateFrom(item);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             return NativeFuncs.godotsharp_array_index_of(ref self, variantValue, index);
         }
 
@@ -1572,7 +1300,7 @@ namespace Godot.Collections
             }
 
             godot_variant variantValue = VariantUtils.CreateFrom(item);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, Count - 1);
         }
 
@@ -1598,7 +1326,7 @@ namespace Godot.Collections
             }
 
             godot_variant variantValue = VariantUtils.CreateFrom(item);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, index);
         }
 
@@ -1623,7 +1351,7 @@ namespace Godot.Collections
                 throw new ArgumentOutOfRangeException(nameof(index));
 
             using var variantValue = VariantUtils.CreateFrom(item);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
         }
 
@@ -1660,7 +1388,7 @@ namespace Godot.Collections
         public bool IsReadOnly => _underlyingArray.IsReadOnly;
 
         /// <summary>
-        /// Makes the <see cref="Array{T}"/> read-only, i.e. disabled modying of the
+        /// Makes the <see cref="Array{T}"/> read-only, i.e. disabled modifying of the
         /// array's elements. Does not apply to nested content, e.g. content of
         /// nested arrays.
         /// </summary>
@@ -1682,7 +1410,7 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             using var variantValue = VariantUtils.CreateFrom(item);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
         }
 
@@ -1707,16 +1435,16 @@ namespace Godot.Collections
             // with a single interop call.
             if (collection is Array array)
             {
-                var self = (godot_array)_underlyingArray.NativeValue;
-                var collectionNative = (godot_array)array.NativeValue;
+                var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
+                var collectionNative = (godot_array)array.UnsafeArray.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
                 return;
             }
 
             if (collection is Array<T> typedArray)
             {
-                var self = (godot_array)_underlyingArray.NativeValue;
-                var collectionNative = (godot_array)typedArray._underlyingArray.NativeValue;
+                var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
+                var collectionNative = (godot_array)typedArray._underlyingArray.UnsafeArray.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
                 return;
             }
@@ -1827,7 +1555,7 @@ namespace Godot.Collections
             }
 
             using var variantValue = VariantUtils.CreateFrom(item);
-            var self = (godot_array)_underlyingArray.NativeValue;
+            var self = (godot_array)_underlyingArray.UnsafeArray.NativeValue;
             return NativeFuncs.godotsharp_array_binary_search(ref self, index, count, variantValue);
         }
 
@@ -1875,7 +1603,7 @@ namespace Godot.Collections
         /// </code>
         /// </example>
         /// <param name="item">The item to look for.</param>
-        /// <returns>Whether or not this array contains the given item.</returns>
+        /// <returns>Whether this array contains the given item.</returns>
         public bool Contains(T item) => IndexOf(item) != -1;
 
         /// <summary>
@@ -1975,9 +1703,7 @@ namespace Godot.Collections
         private void ThrowIfReadOnly()
         {
             if (IsReadOnly)
-            {
                 throw new InvalidOperationException("Array instance is read-only.");
-            }
         }
     }
 }

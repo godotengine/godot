@@ -328,7 +328,7 @@ namespace Godot.NativeInterop
 
                 return new Callable(
                     InteropUtils.UnmanagedGetManaged(godotObject),
-                    StringName.CreateTakingOwnershipOfDisposableValue(name));
+                    StringName.CreateConsuming(name));
             }
 
             // Some other unsupported callable
@@ -358,7 +358,7 @@ namespace Godot.NativeInterop
         public static Signal ConvertSignalToManaged(in godot_signal p_signal)
         {
             var owner = GodotObject.InstanceFromId(p_signal.ObjectId);
-            var name = StringName.CreateTakingOwnershipOfDisposableValue(
+            var name = StringName.CreateConsuming(
                 NativeFuncs.godotsharp_string_name_new_copy(p_signal.Name));
             return new Signal(owner, name);
         }
@@ -368,7 +368,7 @@ namespace Godot.NativeInterop
         internal static T[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType<T>(in godot_array p_array)
             where T : GodotObject
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -382,7 +382,7 @@ namespace Godot.NativeInterop
 
         internal static StringName[] ConvertNativeGodotArrayToSystemArrayOfStringName(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -396,7 +396,7 @@ namespace Godot.NativeInterop
 
         internal static NodePath[] ConvertNativeGodotArrayToSystemArrayOfNodePath(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
@@ -410,7 +410,7 @@ namespace Godot.NativeInterop
 
         internal static Rid[] ConvertNativeGodotArrayToSystemArrayOfRid(in godot_array p_array)
         {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+            var array = Collections.Array.CreateConsuming(
                 NativeFuncs.godotsharp_array_new_copy(p_array));
 
             int length = array.Count;
