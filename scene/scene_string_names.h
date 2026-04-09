@@ -59,6 +59,7 @@ public:
 	const StringName tree_exited = "tree_exited";
 	const StringName ready = "ready";
 	const StringName _ready = "_ready";
+	const StringName _scene_instantiated = "_scene_instantiated";
 
 	const StringName item_rect_changed = "item_rect_changed";
 	const StringName size_flags_changed = "size_flags_changed";

@@ -1464,6 +1464,11 @@ void GDScript::clear() {
 		implicit_initializer = nullptr;
 	}
 
+	if (implicit_scene_instantiated) {
+		functions_to_clear.insert(implicit_scene_instantiated);
+		implicit_scene_instantiated = nullptr;
+	}
+
 	if (implicit_ready) {
 		functions_to_clear.insert(implicit_ready);
 		implicit_ready = nullptr;
@@ -1901,6 +1906,17 @@ int GDScriptInstance::get_method_argument_count(const StringName &p_method, bool
 	return 0;
 }
 
+void GDScriptInstance::_call_implicit_scene_instantiated_recursively(GDScript *p_script) {
+	// Call base class first.
+	if (p_script->base.ptr()) {
+		_call_implicit_scene_instantiated_recursively(p_script->base.ptr());
+	}
+	if (likely(p_script->valid) && p_script->implicit_scene_instantiated) {
+		Callable::CallError err;
+		p_script->implicit_scene_instantiated->call(this, nullptr, 0, err);
+	}
+}
+
 void GDScriptInstance::_call_implicit_ready_recursively(GDScript *p_script) {
 	// Call base class first.
 	if (p_script->base.ptr()) {
@@ -1915,8 +1931,11 @@ void GDScriptInstance::_call_implicit_ready_recursively(GDScript *p_script) {
 Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *sptr = script.ptr();
 	if (unlikely(p_method == SceneStringName(_ready))) {
-		// Call implicit ready first, including for the super classes recursively.
+		// Call `@implicit_ready()` first, including for the super classes recursively.
 		_call_implicit_ready_recursively(sptr);
+	} else if (unlikely(p_method == SceneStringName(_scene_instantiated))) {
+		// Call `@implicit_scene_instantiated()` first, including for the super classes recursively.
+		_call_implicit_scene_instantiated_recursively(sptr);
 	}
 	while (sptr) {
 		if (likely(sptr->valid)) {

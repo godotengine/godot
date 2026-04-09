@@ -431,6 +431,7 @@ protected:
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
+	GDVIRTUAL0(_scene_instantiated)
 	GDVIRTUAL0RC(Vector<String>, _get_accessibility_configuration_warnings)
 	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 

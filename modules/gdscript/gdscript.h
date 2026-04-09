@@ -163,11 +163,11 @@ private:
 	void _clear_doc();
 #endif
 
-	GDScriptFunction *initializer = nullptr; // Direct pointer to `new()`/`_init()` member function, faster to locate.
-
-	GDScriptFunction *implicit_initializer = nullptr; // `@implicit_new()` special function.
-	GDScriptFunction *implicit_ready = nullptr; // `@implicit_ready()` special function.
 	GDScriptFunction *static_initializer = nullptr; // `@static_initializer()` special function.
+	GDScriptFunction *initializer = nullptr; // Direct pointer to `new()`/`_init()` member function, faster to locate.
+	GDScriptFunction *implicit_initializer = nullptr; // `@implicit_new()` special function.
+	GDScriptFunction *implicit_scene_instantiated = nullptr; // `@implicit_scene_instantiated()` special function.
+	GDScriptFunction *implicit_ready = nullptr; // `@implicit_ready()` special function.
 
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
@@ -364,6 +364,7 @@ class GDScriptInstance : public ScriptInstance {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+	void _call_implicit_scene_instantiated_recursively(GDScript *p_script);
 	void _call_implicit_ready_recursively(GDScript *p_script);
 
 public:

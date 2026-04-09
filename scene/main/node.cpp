@@ -281,6 +281,10 @@ void Node::_notification(int p_notification) {
 			GDVIRTUAL_CALL(_ready);
 		} break;
 
+		case NOTIFICATION_SCENE_INSTANTIATED: {
+			GDVIRTUAL_CALL(_scene_instantiated);
+		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			if (data.tree && !Thread::is_main_thread()) {
 				cancel_free();
@@ -4062,6 +4066,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_enter_tree);
 	GDVIRTUAL_BIND(_exit_tree);
 	GDVIRTUAL_BIND(_ready);
+	GDVIRTUAL_BIND(_scene_instantiated);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
 	GDVIRTUAL_BIND(_get_accessibility_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
