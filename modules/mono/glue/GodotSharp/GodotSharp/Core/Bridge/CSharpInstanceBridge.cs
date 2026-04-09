@@ -66,7 +66,7 @@ namespace Godot.Bridge
                     return godot_bool.False;
                 }
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                var nameManaged = StringName.CreateConsuming(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 Variant valueManaged = Variant.CreateCopyingBorrowed(*value);
@@ -121,7 +121,7 @@ namespace Godot.Bridge
                     return godot_bool.False;
                 }
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                var nameManaged = StringName.CreateConsuming(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 Variant ret = godotObject._Get(nameManaged);

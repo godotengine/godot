@@ -51,7 +51,7 @@ namespace Godot
         }
 
         // Explicit name to make it very clear
-        internal static StringName CreateTakingOwnershipOfDisposableValue(godot_string_name nativeValueToOwn)
+        internal static StringName CreateConsuming(godot_string_name nativeValueToOwn)
             => new StringName(nativeValueToOwn);
 
         /// <summary>

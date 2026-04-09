@@ -1,5 +1,6 @@
 using System;
 using Godot.NativeInterop;
+using Godot.NativeInterop.UnsafeCollections;
 using JetBrains.Annotations;
 
 namespace Godot.Bridge;
@@ -17,13 +18,22 @@ using PropertyTrampolines = (PropertyGetterTrampoline getterTramp, PropertySette
 [PublicAPI]
 public class RpcMethodCollector
 {
-    internal Collections.Dictionary RpcMethodsDict { get; private set; }
+    internal UnsafeGodotDictionary? RpcMethodsDict { get; private set; }
+
+    ~RpcMethodCollector()
+    {
+        if (RpcMethodsDict != null)
+        {
+            RpcMethodsDict.Value.Dispose();
+            RpcMethodsDict = null;
+        }
+    }
 
     internal RpcMethodCollector()
     {
     }
 
-    internal void Reset() => RpcMethodsDict = null;
+    internal void Reset() => RpcMethodsDict?.Clear();
 
     /// <summary>
     /// Whether RPC methods from ancestor classes should also be collected.
@@ -36,39 +46,10 @@ public class RpcMethodCollector
 
     private static class RpcConfigKeys
     {
-        private static readonly Collections.Array _rpcConfigKeyCache =
-        [
-            "rpc_mode",
-            "call_local",
-            "transfer_mode",
-            "channel"
-        ];
-
-        private static godot_variant BorrowElementAt(int index)
-        {
-            _rpcConfigKeyCache.GetVariantBorrowElementAtUnchecked(index, out var elem);
-            return elem;
-        }
-
-        /// <summary>
-        /// The returned <see cref="Godot.NativeInterop.godot_variant"/> is borrowed. Do not free it.
-        /// </summary>
-        public static godot_variant RpcMode => BorrowElementAt(0);
-
-        /// <summary>
-        /// The returned <see cref="Godot.NativeInterop.godot_variant"/> is borrowed. Do not free it.
-        /// </summary>
-        public static godot_variant CallLocal => BorrowElementAt(1);
-
-        /// <summary>
-        /// The returned <see cref="Godot.NativeInterop.godot_variant"/> is borrowed. Do not free it.
-        /// </summary>
-        public static godot_variant TransferMode => BorrowElementAt(2);
-
-        /// <summary>
-        /// The returned <see cref="Godot.NativeInterop.godot_variant"/> is borrowed. Do not free it.
-        /// </summary>
-        public static godot_variant Channel => BorrowElementAt(3);
+        public static readonly Variant RpcMode = "rpc_mode";
+        public static readonly Variant CallLocal = "call_local";
+        public static readonly Variant TransferMode = "transfer_mode";
+        public static readonly Variant Channel = "channel";
     }
 
     /// <summary>
@@ -80,31 +61,15 @@ public class RpcMethodCollector
         if (RpcMethodsDict?.ContainsKey(methodName) ?? false)
             return;
 
-        RpcMethodsDict ??= new();
+        RpcMethodsDict ??= UnsafeGodotDictionary.Create();
 
-        // No-GC version of:
-        // var rpcConfig = new Collections.Dictionary();
-        // rpcConfig[...] = ...;
-        // _rpcFunctionsDict.Add(methodName, rpcConfig);
+        var rpcConfig = UnsafeGodotDictionary.Create();
+        rpcConfig[RpcConfigKeys.RpcMode] = (long)(rpcMode ?? MultiplayerApi.RpcMode.Authority);
+        rpcConfig[RpcConfigKeys.CallLocal] = callLocal ?? false;
+        rpcConfig[RpcConfigKeys.TransferMode] = (long)(transferMode ?? MultiplayerPeer.TransferModeEnum.Reliable);
+        rpcConfig[RpcConfigKeys.Channel] = transferChannel ?? 0;
 
-        var rpcConfig = NativeFuncs.godotsharp_dictionary_new();
-        ref var rpcConfigSelf = ref rpcConfig; // To avoid CS0728 warning.
-        using (rpcConfig)
-        {
-            NativeFuncs.godotsharp_dictionary_set_value(ref rpcConfigSelf, RpcConfigKeys.RpcMode,
-                VariantUtils.CreateFromInt((long)(rpcMode ?? MultiplayerApi.RpcMode.Authority)));
-            NativeFuncs.godotsharp_dictionary_set_value(ref rpcConfigSelf, RpcConfigKeys.CallLocal,
-                VariantUtils.CreateFromBool(callLocal ?? false));
-            NativeFuncs.godotsharp_dictionary_set_value(ref rpcConfigSelf, RpcConfigKeys.TransferMode,
-                VariantUtils.CreateFromInt((long)(transferMode ?? MultiplayerPeer.TransferModeEnum.Reliable)));
-            NativeFuncs.godotsharp_dictionary_set_value(ref rpcConfigSelf, RpcConfigKeys.Channel,
-                VariantUtils.CreateFromInt(transferChannel ?? 0));
-
-            var rpcFunctionsSelf = (godot_dictionary)RpcMethodsDict.NativeValue;
-            NativeFuncs.godotsharp_dictionary_set_value(ref rpcFunctionsSelf,
-                VariantUtils.CreateFromStringName(methodName),
-                VariantUtils.CreateFromDictionary(rpcConfig));
-        }
+        RpcMethodsDict.Value.Add(methodName, rpcConfig.BorrowDisposable());
     }
 }
 
