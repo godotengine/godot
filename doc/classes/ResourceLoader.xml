@@ -139,8 +139,7 @@
 			<description>
 				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
 				The [param cache_mode] parameter defines whether and how the cache should be used or updated when loading the resource.
-				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources" and [member EditorExportPlatformWeb.variant/thread_support] is [code]false[/code], [method load_threaded_get_status] starts to download and install the resource without using threads. Also, the [param use_sub_threads] parameter is ignored entirely.
-				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources" and [member EditorExportPlatformWeb.variant/thread_support] is [code]true[/code], [method load_threaded_get_status] starts to download and install the resource. After the download is complete, it will load the resource using threads as usual.
+				[b]Note:[/b] On Web, if [member EditorExportPlatformWeb.async/initial_install_mode] is set to "Only Install Required Resources", calling this method will start downloading and installing the resource, before loading it as usual. If [member EditorExportPlatformWeb.variant/thread_support] is [code]false[/code], the [param use_sub_threads] parameter is ignored as threads aren't used.
 			</description>
 		</method>
 		<method name="remove_resource_format_loader">

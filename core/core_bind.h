@@ -317,6 +317,7 @@ public:
 
 	bool async_pck_is_supported() const;
 	bool async_pck_is_file_installable(const String &p_path) const;
+	bool async_pck_is_file_installed(const String &p_path) const;
 	Error async_pck_install_file(const String &p_path) const;
 	Dictionary async_pck_install_file_get_status(const String &p_path) const;
 

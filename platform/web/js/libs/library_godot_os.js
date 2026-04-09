@@ -297,7 +297,7 @@ class AsyncPCKFile {
 			this._size = progress;
 		}
 		if (this._size > 0) {
-			this._progressRatio = this._size / progress;
+			this._progressRatio = progress / this._size;
 		}
 	}
 

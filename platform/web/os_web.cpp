@@ -161,7 +161,7 @@ int OS_Web::get_default_thread_pool_size() const {
 
 bool OS_Web::async_pck_is_file_installed(const String &p_path) const {
 	String path = ResourceUID::ensure_path(p_path);
-	ERR_FAIL_COND_V_MSG(!path.begins_with("res://"), ERR_FILE_BAD_PATH, vformat(R"*(Not able to install "%s" from a ".asyncpck".)*", path));
+	ERR_FAIL_COND_V_MSG(!path.begins_with("res://"), false, vformat(R"*(Not able to install "%s" from a ".asyncpck".)*", path));
 
 	if (!OS::get_singleton()->async_pck_is_file_installable(path)) {
 		return false;
@@ -206,7 +206,6 @@ Dictionary OS_Web::async_pck_install_file_get_status(const String &p_path) const
 		status["progress_ratio"] = 1;
 		status["status"] = "STATUS_INSTALLED";
 		return status;
-		return Dictionary();
 	}
 
 	Error err;

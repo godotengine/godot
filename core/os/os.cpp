@@ -855,7 +855,7 @@ String OS::async_pck_get_async_pck_path(const String &p_path, Error *r_error) co
 
 	RETURN_ERROR;
 
-#undef _ERR_COND
+#undef _ERR_FAIL_COND
 #undef RETURN_ERROR
 }
 
