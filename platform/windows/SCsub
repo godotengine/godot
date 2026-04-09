@@ -8,7 +8,7 @@ from pathlib import Path
 
 import platform_windows_builders
 
-from methods import redirect_emitter
+from methods import get_compiler_version, redirect_emitter
 
 sources = []
 
@@ -92,8 +92,13 @@ if env["winrt"]:
             env_winrt["CXXFLAGS"].remove("-fno-exceptions")
         env_winrt.Append(CXXFLAGS=["-fexceptions"])
     else:
+        cc_version = get_compiler_version(env)
+        cc_version_major = cc_version["major"]
         if not env["use_llvm"]:
-            env_winrt.Append(CXXFLAGS=["/await"])
+            if cc_version_major >= 18:
+                env_winrt.Append(CXXFLAGS=["/await:strict"])  # /await is deprecated in MSVC 2026+
+            else:
+                env_winrt.Append(CXXFLAGS=["/await"])
         if "/std:c++17" in env_winrt["CXXFLAGS"]:
             env_winrt["CXXFLAGS"].remove("/std:c++17")
         env_winrt.Append(CXXFLAGS=["/std:c++20"])

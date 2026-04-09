@@ -184,6 +184,7 @@ typedef struct {
 class DropTargetWindows;
 class NativeMenuWindows;
 class TTS_Windows;
+class WinRTWindowData;
 
 #ifndef WDA_EXCLUDEFROMCAPTURE
 #define WDA_EXCLUDEFROMCAPTURE 0x00000011
@@ -282,9 +283,13 @@ class DisplayServerWindows : public DisplayServer {
 	NativeMenuWindows *native_menu = nullptr;
 	ITaskbarList3 *taskbar = nullptr;
 
+	bool has_winrt_queue = false;
+	void _winrt_adv_color_info_cb(DisplayServerEnums::WindowID p_id);
+
 	struct WindowData {
 		HWND hWnd;
 		DisplayServerEnums::WindowID id;
+		WinRTWindowData *wrt_wd = nullptr;
 
 		Vector<Vector2> mpath;
 		DisplayServerEnums::ProgressState progress_state = DisplayServerEnums::PROGRESS_STATE_NOPROGRESS;
@@ -556,9 +561,9 @@ class DisplayServerWindows : public DisplayServer {
 	};
 	AHashMap<int, ScreenHdrData> hdr_output_cache;
 
-	ScreenHdrData _get_screen_hdr_data(int p_screen, bool p_include_sdr_white_level) const;
+	ScreenHdrData _get_screen_hdr_data(DisplayServerEnums::WindowID p_window, bool p_include_sdr_white_level) const;
 	void _update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data);
-	void _update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level);
+	void _legacy_update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
