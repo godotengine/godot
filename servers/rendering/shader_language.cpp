@@ -1316,7 +1316,6 @@ void ShaderLanguage::clear() {
 	last_name = StringName();
 	last_type = IDENTIFIER_MAX;
 	current_uniform_group_name = "";
-	current_uniform_subgroup_name = "";
 	current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
 	current_uniform_filter = FILTER_DEFAULT;
 	current_uniform_repeat = REPEAT_DEFAULT;
@@ -9767,7 +9766,6 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					uniform.precision = precision;
 					uniform.array_size = array_size;
 					uniform.group = current_uniform_group_name;
-					uniform.subgroup = current_uniform_subgroup_name;
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
@@ -10301,22 +10299,22 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					current_uniform_group_name = tk.text;
-					current_uniform_subgroup_name = "";
+
 					tk = _get_token();
-					if (tk.type == TK_PERIOD) {
+					while (tk.type == TK_PERIOD) {
 						tk = _get_token();
+
 						if (tk.type == TK_IDENTIFIER) {
-							current_uniform_subgroup_name = tk.text;
-							tk = _get_token();
-							if (tk.type != TK_SEMICOLON) {
-								_set_expected_error(";");
-								return ERR_PARSE_ERROR;
-							}
+							current_uniform_group_name += "/" + tk.text;
 						} else {
 							_set_error(RTR("Expected an uniform subgroup identifier."));
 							return ERR_PARSE_ERROR;
 						}
-					} else if (tk.type != TK_SEMICOLON) {
+
+						tk = _get_token();
+					}
+
+					if (tk.type != TK_SEMICOLON) {
 						_set_expected_error(";", ".");
 						return ERR_PARSE_ERROR;
 					}
@@ -10333,7 +10331,6 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						return ERR_PARSE_ERROR;
 					} else {
 						current_uniform_group_name = "";
-						current_uniform_subgroup_name = "";
 					}
 				}
 			} break;
