@@ -101,7 +101,6 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceLoader {
-	friend class Main;
 	friend class LoadToken;
 	friend class CoreBind::ResourceLoader;
 
@@ -153,8 +152,6 @@ private:
 	static void _load_threaded_request_setup_user_token(LoadToken *p_token, const String &p_path);
 
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
-
-	static void _poll_async_pck_install();
 
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
@@ -318,6 +315,8 @@ public:
 	static bool is_cleaning_tasks();
 
 	static Vector<String> list_directory(const String &p_directory);
+
+	static void poll_async_pck_install();
 
 	static void initialize();
 	static void finalize();

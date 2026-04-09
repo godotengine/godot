@@ -587,12 +587,13 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		return false;
 	}
 
-	String pack = p_pack.trim_suffix("/");
-
+	String pack = p_pack;
 	if (pack == "res://") {
 		// Loading the resource directory as a pack source is reserved for internal use only.
 		return false;
 	}
+
+	pack = pack.trim_suffix("/");
 
 	if (pack.ends_with(".asyncpck")) {
 		PackedData::get_singleton()->add_pack_source(memnew(PackedSourceAsyncPCK));

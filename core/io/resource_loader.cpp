@@ -983,14 +983,14 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 	return resource;
 }
 
-void ResourceLoader::_poll_async_pck_install() {
+void ResourceLoader::poll_async_pck_install() {
 	for (KeyValue<String, ThreadLoadTask> &KV : thread_load_tasks) {
 		if (!KV.value.is_async_pck || !KV.value.is_async_pck_installing) {
 			continue;
 		}
 
 		Dictionary status = OS::get_singleton()->async_pck_install_file_get_status(KV.value.local_path);
-		KV.value.progress_async_pck_install = (float)status["progress_ratio"];
+		KV.value.progress_async_pck_install = status["progress_ratio"];
 
 		if (status["status"] == "STATUS_ERROR") {
 			KV.value.is_async_pck_installing = false;

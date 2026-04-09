@@ -96,6 +96,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	RichTextLabel *result_dialog_log = nullptr;
 	AcceptDialog *result_dialog = nullptr;
 	ConfirmationDialog *delete_confirm = nullptr;
+	Button *copy_to_clipboard_button = nullptr;
 
 	OptionButton *export_filter = nullptr;
 	LineEdit *include_filters = nullptr;
@@ -227,7 +228,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	void _tab_changed(int);
 
-	void _on_result_dialog_custom_action(const StringName &p_action);
+	void _on_result_dialog_copy_to_clipboard();
 
 protected:
 	void _notification(int p_what);

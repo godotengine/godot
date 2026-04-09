@@ -504,14 +504,9 @@ void ProjectExportDialog::_tab_changed(int) {
 	_update_feature_list();
 }
 
-void ProjectExportDialog::_on_result_dialog_custom_action(const StringName &p_action) {
-	if (p_action == SNAME("copy_to_clipboard")) {
-		const String log_text = result_dialog_log->get_parsed_text();
-		DisplayServer::get_singleton()->clipboard_set(log_text);
-		return;
-	}
-
-	ERR_FAIL_MSG(vformat(R"*(Could not find any action bound to "%s" for `ProjectExportDialog`.)*", p_action));
+void ProjectExportDialog::_on_result_dialog_copy_to_clipboard() {
+	const String log_text = result_dialog_log->get_parsed_text();
+	DisplayServer::get_singleton()->clipboard_set(log_text);
 }
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
@@ -2033,8 +2028,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	result_dialog_log->set_selection_enabled(true);
 	result_dialog->add_child(result_dialog_log);
 
-	result_dialog->add_button(TTRC("Copy to clipboard"), false, "copy_to_clipboard");
-	result_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_on_result_dialog_custom_action));
+	copy_to_clipboard_button = result_dialog->add_button(TTRC("Copy to clipboard"), false, "copy_to_clipboard");
+	copy_to_clipboard_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_on_result_dialog_copy_to_clipboard));
 
 	main_vb->add_child(result_dialog);
 	result_dialog->hide();

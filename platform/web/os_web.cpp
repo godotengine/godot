@@ -174,7 +174,7 @@ bool OS_Web::async_pck_is_file_installed(const String &p_path) const {
 	}
 
 	String pck_base_dir = pck_path.get_base_dir().get_base_dir();
-	return static_cast<Error>(godot_js_os_async_pck_is_file_installed(pck_base_dir.utf8().get_data(), path.utf8().get_data()));
+	return godot_js_os_async_pck_is_file_installed(pck_base_dir.utf8().get_data(), path.utf8().get_data());
 }
 
 Error OS_Web::async_pck_install_file(const String &p_path) const {

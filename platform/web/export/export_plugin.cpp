@@ -118,10 +118,10 @@ HashSet<String> EditorExportPlatformWeb::ExportData::get_features_set() const {
 
 	String custom = preset->get_custom_features();
 	Vector<String> custom_list = custom.split(",");
-	for (int i = 0; i < custom_list.size(); i++) {
-		String f = custom_list[i].strip_edges();
-		if (!f.is_empty()) {
-			features_list.push_back(f);
+	for (const String &custom_list_element : custom_list) {
+		String custom_list_element_stripped = custom_list_element.strip_edges();
+		if (!custom_list_element_stripped.is_empty()) {
+			features_list.push_back(custom_list_element_stripped);
 		}
 	}
 
