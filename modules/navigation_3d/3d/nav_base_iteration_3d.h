@@ -67,6 +67,7 @@ public:
 	const LocalVector<LocalVector<Nav3D::Connection>> &get_internal_connections() const { return internal_connections; }
 
 	virtual ~NavBaseIteration3D() {
+		// Only used by region:
 		navmesh_polygons.clear();
 		internal_connections.clear();
 	}

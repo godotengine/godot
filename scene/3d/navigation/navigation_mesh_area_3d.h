@@ -39,6 +39,10 @@ class NavigationMeshArea3D : public Node3D {
 	GDCLASS(NavigationMeshArea3D, Node3D);
 
 protected:
+	// A valid `id` sets this area up as a handler for dynamic `navigation_layers` changes at runtime.
+	uint16_t id; // Only usable if dynamic = true. For finding each other again, through source geometry, over baked navmesh, into the server, and back again.
+	bool dynamic = true; // The last NavigationMeshSourceGeometryData3D used on this area will give it its final `id`.
+
 	RID area;
 	RID map_override;
 
@@ -53,6 +57,9 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	void set_id(uint16_t p_id);
+	uint16_t get_id() const;
+
 #ifdef DEBUG_ENABLED
 	RID debug_instance_rid;
 	RID debug_mesh_rid;
@@ -66,6 +73,9 @@ public:
 	~NavigationMeshArea3D();
 
 	RID get_rid() const;
+
+	void set_dynamic(bool p_dynamic);
+	bool is_dynamic() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;

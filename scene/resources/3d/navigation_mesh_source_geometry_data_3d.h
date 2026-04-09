@@ -33,6 +33,7 @@
 #include "core/os/rw_lock.h"
 #include "scene/resources/mesh.h"
 
+// Stores geometry data required for the navigation mesh baking.
 class NavigationMeshSourceGeometryData3D : public Resource {
 	GDCLASS(NavigationMeshSourceGeometryData3D, Resource);
 	RWLock geometry_rwlock;
@@ -42,6 +43,8 @@ class NavigationMeshSourceGeometryData3D : public Resource {
 
 	AABB bounds;
 	bool bounds_dirty = true;
+
+	uint16_t next_free_area_id = 1; // See ProjectedArea::id.
 
 public:
 	struct ProjectedObstruction;
@@ -75,6 +78,8 @@ public:
 	// ProjectedArea is the source geometry for overwriting navigation layers in polygons. Affects baked polygon result.
 	struct ProjectedArea {
 		static inline uint32_t VERSION = 1; // Increase on format changes.
+
+		int id; // Random ID assigned during parsing process, to help connect to a server RID afterwards. And an area node, if existant.
 
 		Vector<float> vertices; // Used by POLYGON only.
 		AABB aabb; // Bounds.
@@ -132,9 +137,9 @@ public:
 	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
 	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
 
-	void add_projected_area_box(const AABB &p_aabb, uint32_t p_navigation_layers, int p_priority = 0);
-	void add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
-	void add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
+	uint16_t add_projected_area_box(const AABB &p_aabb, uint32_t p_navigation_layers, int p_priority = 0);
+	uint16_t add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
+	uint16_t add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
 
 	AABB get_bounds();
 

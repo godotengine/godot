@@ -24,7 +24,7 @@
 			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
-				[b]NOTE[/b]: When running a query against this area, the cost of the first matching navigation layer is taken.
+				[b]Note:[/b] When running a query against this area, the cost of the first matching navigation layer is taken.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -45,7 +45,9 @@
 	<members>
 		<member name="bake_priority" type="int" setter="set_bake_priority" getter="get_bake_priority" default="0">
 			The priority of the area. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins.
-			[b]NOTE[/b]: This affects the baking of the [NavigationMesh] only, not queries.
+			[b]Note:[/b] This affects the baking of the [NavigationMesh] only, not queries.
+		</member>
+		<member name="dynamic" type="bool" setter="set_dynamic" getter="is_dynamic" default="true">
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationMeshArea3D] is enabled or disabled. Requires a navigation mesh rebake to take any real effect.
@@ -54,7 +56,7 @@
 			A bitfield determining all navigation layers the area applies to its affecting polygons. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins. These navigation layers can be checked upon when doing path queries with [method NavigationServer3D.query_path] using a [NavigationPathQueryParameters3D] object.
 			States which layers should be considered for the cost calculation during a path query.
 			A query takes the first matching layer between the query parameter and the polygon. This means if the area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
-			[b]NOTE[/b]: Changing this at runtime requires a sync of the navigation map, which may cause performance problems.
+			[b]Note:[/b] Changing this at runtime requires a sync of the navigation map, which may cause performance problems.
 		</member>
 	</members>
 </class>

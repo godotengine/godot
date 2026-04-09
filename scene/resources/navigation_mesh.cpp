@@ -342,6 +342,8 @@ void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
 	RWLockWrite write_lock(rwlock);
 	polygons = p_polygons;
 	polygons_meta = Vector<uint32_t>();
+	polygons_meta_ids = Vector<uint16_t>();
+	polygons_meta_indices = Vector<Vector<int>>();
 	notify_property_list_changed();
 }
 
@@ -371,6 +373,8 @@ void NavigationMesh::clear_polygons() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	polygons_meta.clear();
+	polygons_meta_ids.clear();
+	polygons_meta_indices.clear();
 }
 
 int NavigationMesh::get_polygon_meta_count() const {
@@ -409,6 +413,8 @@ void NavigationMesh::clear() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	polygons_meta.clear();
+	polygons_meta_ids.clear();
+	polygons_meta_indices.clear();
 	vertices.clear();
 }
 
@@ -417,20 +423,26 @@ void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Ve
 	vertices = p_vertices;
 	polygons = p_polygons;
 	polygons_meta = Vector<uint32_t>();
+	polygons_meta_ids = Vector<uint16_t>();
+	polygons_meta_indices = Vector<Vector<int>>();
 }
 
-void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta) {
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_polygons_meta_ids, const Vector<Vector<int>> &p_polygons_meta_indices) {
 	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	polygons = p_polygons;
 	polygons_meta = p_polygons_meta;
+	polygons_meta_ids = p_polygons_meta_ids;
+	polygons_meta_indices = p_polygons_meta_indices;
 }
 
-void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta) {
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_polygons_meta_ids, Vector<Vector<int>> &r_polygons_meta_indices) {
 	RWLockRead read_lock(rwlock);
 	r_vertices = vertices;
 	r_polygons = polygons;
 	r_polygons_meta = polygons_meta;
+	r_polygons_meta_ids = polygons_meta_ids;
+	r_polygons_meta_indices = polygons_meta_indices;
 }
 
 #ifdef DEBUG_ENABLED

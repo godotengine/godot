@@ -41,7 +41,10 @@ class NavMap3D;
 // Lives inside a NavMap.
 // Variant of NavigationMeshSourceGeometryData3D::ProjectedArea.
 class NavArea3D : public NavRid3D {
+	// For map and region syncs:
+	uint16_t id; // See NavigationMeshSourceGeometryData3D::ProjectedArea::id.
 	NavMap3D *map = nullptr;
+
 	Vector3 position;
 	// Channel-packing Legend:
 	// For AreaBox only: xyz means `size`.
@@ -57,9 +60,17 @@ class NavArea3D : public NavRid3D {
 	uint32_t navigation_layers = 1;
 	int priority = 0;
 
+	SelfList<NavArea3D> sync_dirty_request_list_element;
+	mutable RWLock iteration_rwlock;
+	uint32_t iteration; // The only syncable change is `navigations_layer`.
+	bool iteration_dirty = false;
+
 public:
 	NavArea3D();
 	~NavArea3D();
+
+	void set_id(uint16_t p_id);
+	uint16_t get_id() const { return id; }
 
 	void set_map(NavMap3D *p_map);
 	NavMap3D *get_map() const { return map; }
@@ -93,4 +104,10 @@ public:
 
 	void set_vertices(const Vector<Vector3> &p_vertices);
 	const Vector<Vector3> &get_vertices() const { return vertices; }
+
+	void request_sync();
+	void cancel_sync_request();
+	bool sync();
+
+	uint32_t get_iteration() const; // Returns `navigation_layers` of latest iteration.
 };

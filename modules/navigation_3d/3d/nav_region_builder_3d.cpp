@@ -94,7 +94,7 @@ void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuil
 		polygon.surface_area = 0.0;
 		polygon.navigation_layers = navigation_layers;
 		if (use_polygon_meta) {
-			// Setting the layer as defined in the affecting NavigationArea:
+			// Setting the layer as defined in the affecting NavigationArea (can be changed at runtime):
 			polygon.navigation_layers = _navmesh_polygons_meta[i];
 		}
 

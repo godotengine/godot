@@ -42,6 +42,14 @@
 Callable NavigationMeshArea3D::_navmesh_source_geometry_parsing_callback;
 RID NavigationMeshArea3D::_navmesh_source_geometry_parser;
 
+void NavigationMeshArea3D::set_dynamic(bool p_dynamic) {
+	dynamic = p_dynamic;
+}
+
+bool NavigationMeshArea3D::is_dynamic() const {
+	return dynamic;
+}
+
 void NavigationMeshArea3D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 
@@ -64,6 +72,7 @@ void NavigationMeshArea3D::set_navigation_map(RID p_navigation_map) {
 
 	map_override = p_navigation_map;
 
+	print_line("NavigationMeshArea3D::set_navigation_map");
 	NavigationServer3D::get_singleton()->area_set_map(area, map_override);
 }
 
@@ -83,6 +92,7 @@ void NavigationMeshArea3D::set_navigation_layers(uint32_t p_navigation_layers) {
 
 	navigation_layers = p_navigation_layers;
 
+	print_line("NavigationMeshArea3D::set_navigation_layers");
 	NavigationServer3D::get_singleton()->area_set_navigation_layers(area, navigation_layers);
 }
 
@@ -127,6 +137,10 @@ AABB NavigationMeshArea3D::get_bounds() {
 void NavigationMeshArea3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			NavigationServer3D::get_singleton()->area_set_map(get_rid(), get_navigation_map());
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -255,7 +269,10 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 			vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
 			vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
 			AABB bounds = _xform_bounds(vertices, gt, size.y);
-			p_source_geometry_data->add_projected_area_box(bounds, area_navigation_layers, area_priority);
+			uint16_t area_id = p_source_geometry_data->add_projected_area_box(bounds, area_navigation_layers, area_priority);
+			if (area->is_dynamic()) {
+				area->set_id(area_id);
+			}
 			return;
 		}
 	}
@@ -272,7 +289,10 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 				safe_scale.x = safe_scale.z;
 			}
 
-			p_source_geometry_data->add_projected_area_cylinder(position, safe_scale.x * node->get_radius(), safe_scale.y * node->get_height(), area_navigation_layers, area_priority);
+			uint16_t area_id = p_source_geometry_data->add_projected_area_cylinder(position, safe_scale.x * node->get_radius(), safe_scale.y * node->get_height(), area_navigation_layers, area_priority);
+			if (area->is_dynamic()) {
+				area->set_id(area_id);
+			}
 			return;
 		}
 	}
@@ -300,7 +320,11 @@ void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 				xformed_area_vertices_ptrw[i] = node_xform.xform(area_vertices_ptr[i]);
 				xformed_area_vertices_ptrw[i].y = 0.0;
 			}
-			p_source_geometry_data->add_projected_area_polygon(xformed_area_vertices, elevation, safe_scale.y * node->get_height(), area_navigation_layers, area_priority);
+
+			uint16_t area_id = p_source_geometry_data->add_projected_area_polygon(xformed_area_vertices, elevation, safe_scale.y * node->get_height(), area_navigation_layers, area_priority);
+			if (area->is_dynamic()) {
+				area->set_id(area_id);
+			}
 			return;
 		}
 	}
@@ -318,8 +342,26 @@ void NavigationMeshArea3D::_clear_debug() {
 }
 #endif // DEBUG_ENABLED
 
+void NavigationMeshArea3D::set_id(const uint16_t p_id) {
+	if (id == p_id) {
+		return;
+	}
+
+	id = p_id;
+	print_line("NavigationMeshArea3D::set_id");
+
+	NavigationServer3D::get_singleton()->area_set_id(area, id);
+}
+
+uint16_t NavigationMeshArea3D::get_id() const {
+	return id;
+}
+
 void NavigationMeshArea3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationMeshArea3D::get_rid);
+
+	ClassDB::bind_method(D_METHOD("set_dynamic", "dynamic"), &NavigationMeshArea3D::set_dynamic);
+	ClassDB::bind_method(D_METHOD("is_dynamic"), &NavigationMeshArea3D::is_dynamic);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationMeshArea3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationMeshArea3D::is_enabled);
@@ -335,6 +377,7 @@ void NavigationMeshArea3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshArea3D::get_bounds);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic"), "set_dynamic", "is_dynamic");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_priority", PROPERTY_HINT_RANGE, "0,100000,1,or_greater,or_less"), "set_bake_priority", "get_bake_priority");

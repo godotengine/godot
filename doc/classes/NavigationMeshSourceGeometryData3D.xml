@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Container for parsed source geometry data used in navigation mesh baking.
+		[b]Note:[/b] After the navigation mesh is baked, this resource can be safely freed from memory.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,7 +35,7 @@
 			</description>
 		</method>
 		<method name="add_projected_area_box">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="aabb" type="AABB" />
 			<param index="1" name="navigation_layers" type="int" />
 			<param index="2" name="priority" type="int" />
@@ -43,7 +44,7 @@
 			</description>
 		</method>
 		<method name="add_projected_area_cylinder">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="position" type="Vector3" />
 			<param index="1" name="radius" type="float" />
 			<param index="2" name="height" type="float" />
@@ -54,7 +55,7 @@
 			</description>
 		</method>
 		<method name="add_projected_area_polygon">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="vertices" type="PackedVector3Array" />
 			<param index="1" name="elevation" type="float" />
 			<param index="2" name="height" type="float" />

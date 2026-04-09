@@ -750,6 +750,15 @@ void NavMap3D::add_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_r
 	sync_dirty_requests.obstacles.list.add(p_sync_request);
 }
 
+void NavMap3D::add_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request) {
+	if (p_sync_request->in_list()) {
+		return;
+	}
+	RWLockWrite write_lock(sync_dirty_requests.areas.rwlock);
+	sync_dirty_requests.areas.list.add(p_sync_request);
+	print_line("NavMap3D::add_area_sync_dirty_request");
+}
+
 void NavMap3D::remove_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_request) {
 	if (!p_sync_request->in_list()) {
 		return;
@@ -780,6 +789,14 @@ void NavMap3D::remove_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_syn
 	sync_dirty_requests.obstacles.list.remove(p_sync_request);
 }
 
+void NavMap3D::remove_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request) {
+	if (!p_sync_request->in_list()) {
+		return;
+	}
+	RWLockWrite write_lock(sync_dirty_requests.areas.rwlock);
+	sync_dirty_requests.areas.list.remove(p_sync_request);
+}
+
 void NavMap3D::_sync_dirty_map_update_requests() {
 	// If entire map settings changed make all regions dirty.
 	if (map_settings_dirty) {
@@ -788,6 +805,18 @@ void NavMap3D::_sync_dirty_map_update_requests() {
 		}
 		iteration_dirty = true;
 	}
+
+	// Sync NavAreas: needs to happen before region, because region's navmesh polygon meta data needs to be updated in region->sync().
+	RWLockWrite write_lock_areas(sync_dirty_requests.areas.rwlock);
+	for (SelfList<NavArea3D> *element = sync_dirty_requests.areas.list.first(); element; element = element->next()) {
+		bool requires_map_update = element->self()->sync();
+		if (requires_map_update) {
+			print_line("dirty map");
+			// FIXME: this does not make the region dirty…
+			iteration_dirty = true;
+		}
+	}
+	sync_dirty_requests.areas.list.clear();
 
 	// Sync NavRegions.
 	RWLockWrite write_lock_regions(sync_dirty_requests.regions.rwlock);

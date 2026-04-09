@@ -32,10 +32,8 @@
 
 #include "3d/nav_region_iteration_3d.h"
 #include "nav_base_3d.h"
-#include "nav_utils_3d.h"
 
 #include "core/object/worker_thread_pool.h"
-#include "core/os/rw_lock.h"
 #include "scene/resources/navigation_mesh.h"
 
 // Handles iterations and syncs of NavigationRegion3D in case something changed - does not cover baking a navmesh.
