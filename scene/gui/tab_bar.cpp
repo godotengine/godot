@@ -87,16 +87,18 @@ Size2 TabBar::get_minimum_size() const {
 		}
 		tab_w += style->get_minimum_size().width;
 
-		if (tabs[i].icon.is_valid()) {
+		if (tabs[i].icon.is_valid() && !hide_icons) {
 			const Size2 icon_size = _get_tab_icon_size(i);
 			tab_h = MAX(tab_h, (int)icon_size.height + y_margin);
 			tab_w += icon_size.width + theme_cache.h_separation;
 		}
 
-		if (!tabs[i].text.is_empty()) {
+		if (!tabs[i].text.is_empty() && !hide_text) {
 			tab_w += tabs[i].size_text + theme_cache.h_separation;
 		}
-		tab_h = MAX(tab_h, (int)tabs[i].text_buf->get_size().y + y_margin);
+		if (!hide_text) {
+			tab_h = MAX(tab_h, (int)tabs[i].text_buf->get_size().y + y_margin);
+		}
 
 		bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current);
 
@@ -793,7 +795,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 
 	// Draw the icon.
 	Ref<Texture2D> icon = tabs[p_index].icon;
-	if (icon.is_valid()) {
+	if (icon.is_valid() && !hide_icons) {
 		const Size2 icon_size = _get_tab_icon_size(p_index);
 		const Point2 icon_pos = Point2i(rtl ? p_offset - icon_size.width : p_offset, y_base + p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon_size.height) / 2);
 		icon->draw_rect(ci, Rect2(icon_pos, icon_size), false, p_icon_color);
@@ -802,7 +804,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 	}
 
 	// Draw the text.
-	if (!tabs[p_index].text.is_empty()) {
+	if (!tabs[p_index].text.is_empty() && !hide_text) {
 		Point2i text_pos = Point2i(rtl ? p_offset - tabs[p_index].size_text : p_offset,
 				y_base + p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
 
@@ -1335,15 +1337,15 @@ void TabBar::_update_cache(bool p_update_hover) {
 
 	for (int i = 0; i < tabs.size(); i++) {
 		tabs.write[i].text_buf->set_width(-1);
-		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
+		tabs.write[i].size_text = hide_text ? 0 : Math::ceil(tabs[i].text_buf->get_size().x);
 		tabs.write[i].accessibility_item_dirty = true;
 
 		if (vertical && !tabs[i].hidden) {
 			int content_h = 0;
-			if (tabs[i].icon.is_valid()) {
+			if (tabs[i].icon.is_valid() && !hide_icons) {
 				content_h = MAX(content_h, (int)_get_tab_icon_size(i).height);
 			}
-			if (!tabs[i].text.is_empty()) {
+			if (!tabs[i].text.is_empty() && !hide_text) {
 				content_h = MAX(content_h, (int)tabs[i].text_buf->get_size().y);
 			}
 			uniform_height = MAX(uniform_height, content_h + y_margin);
@@ -1652,7 +1654,7 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 
 	HBoxContainer *drag_preview = memnew(HBoxContainer);
 
-	if (tabs[tab_over].icon.is_valid()) {
+	if (tabs[tab_over].icon.is_valid() && !hide_icons) {
 		const Size2 icon_size = _get_tab_icon_size(tab_over);
 
 		TextureRect *tf = memnew(TextureRect);
@@ -1906,6 +1908,7 @@ void TabBar::set_vertical(bool p_vertical) {
 		return;
 	}
 	vertical = p_vertical;
+
 	_update_cache();
 	queue_redraw();
 	update_minimum_size();
@@ -1913,6 +1916,36 @@ void TabBar::set_vertical(bool p_vertical) {
 
 bool TabBar::is_vertical() const {
 	return vertical;
+}
+
+void TabBar::set_hide_text(bool p_hide_text) {
+	if (hide_text == p_hide_text) {
+		return;
+	}
+	hide_text = p_hide_text;
+
+	_update_cache();
+	queue_redraw();
+	update_minimum_size();
+}
+
+bool TabBar::is_hide_text() const {
+	return hide_text;
+}
+
+void TabBar::set_hide_icons(bool p_hide_icons) {
+	if (hide_icons == p_hide_icons) {
+		return;
+	}
+	hide_icons = p_hide_icons;
+
+	_update_cache();
+	queue_redraw();
+	update_minimum_size();
+}
+
+bool TabBar::is_hide_icons() const {
+	return hide_icons;
 }
 
 void TabBar::move_tab(int p_from, int p_to) {
@@ -1972,12 +2005,12 @@ int TabBar::get_tab_width(int p_idx) const {
 	}
 	int x = style->get_minimum_size().width;
 
-	if (tabs[p_idx].icon.is_valid()) {
+	if (tabs[p_idx].icon.is_valid() && !hide_icons) {
 		const Size2 icon_size = _get_tab_icon_size(p_idx);
 		x += icon_size.width + theme_cache.h_separation;
 	}
 
-	if (!tabs[p_idx].text.is_empty()) {
+	if (!tabs[p_idx].text.is_empty() && !hide_text) {
 		x += tabs[p_idx].size_text + theme_cache.h_separation;
 	}
 
@@ -2317,6 +2350,10 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_deselect_enabled"), &TabBar::get_deselect_enabled);
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &TabBar::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &TabBar::is_vertical);
+	ClassDB::bind_method(D_METHOD("set_hide_text", "hide_text"), &TabBar::set_hide_text);
+	ClassDB::bind_method(D_METHOD("is_hide_text"), &TabBar::is_hide_text);
+	ClassDB::bind_method(D_METHOD("set_hide_icons", "hide_icons"), &TabBar::set_hide_icons);
+	ClassDB::bind_method(D_METHOD("is_hide_icons"), &TabBar::is_hide_icons);
 	ClassDB::bind_method(D_METHOD("clear_tabs"), &TabBar::clear_tabs);
 
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
@@ -2342,6 +2379,8 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_text"), "set_hide_text", "is_hide_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_icons"), "set_hide_icons", "is_hide_icons");
 
 	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
 

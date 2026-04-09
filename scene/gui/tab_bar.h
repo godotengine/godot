@@ -106,6 +106,8 @@ private:
 	int offset = 0;
 	int max_drawn_tab = 0;
 	int highlight_arrow = -1;
+	bool hide_text = false;
+	bool hide_icons = false;
 	bool buttons_visible = false;
 	bool missing_right = false;
 	Vector<Tab> tabs;
@@ -278,6 +280,12 @@ public:
 
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
+
+	void set_hide_text(bool p_hide_text);
+	bool is_hide_text() const;
+
+	void set_hide_icons(bool p_hide_icons);
+	bool is_hide_icons() const;
 
 	void move_tab(int p_from, int p_to);
 
