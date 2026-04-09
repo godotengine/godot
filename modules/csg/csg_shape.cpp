@@ -2396,15 +2396,27 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							Vector3 last_point = curve->sample_baked(curve->get_baked_length());
 							direction = next_point - last_point;
 						}
+						if (path_rotation == PATH_ROTATION_PATH_FOLLOW) {
+							current_up = curve->sample_baked_up_vector(0, true);
+						}
 					} else {
 						Transform3D current_sample_xform = curve->sample_baked_with_rotation(0);
+						// correct 'up' to be local Vector3.UP similar to PathFollow3D::correct_posture() with rotation_mode=Oriented
+						Vector3 tangent = -current_sample_xform.basis.get_column(2);
+						// what if tangent == Vector3.UP ? (bad things)
+						current_sample_xform.basis = Basis::looking_at(tangent);
+
 						current_point = current_sample_xform.get_origin();
 						direction = current_sample_xform.get_basis().xform(Vector3(0, 0, -1));
+						if (path_rotation == PATH_ROTATION_PATH_FOLLOW) {
+							Basis basis = current_sample_xform.basis;
+							real_t tilt = curve->sample_baked_tilt(0);
+							Basis twist(tangent, tilt);
+							basis = twist * basis;
+							current_up = basis.get_column(1); //curve->sample_baked_up_vector(0, true);
+						}
 					}
 
-					if (path_rotation == PATH_ROTATION_PATH_FOLLOW) {
-						current_up = curve->sample_baked_up_vector(0, true);
-					}
 					break;
 			}
 
@@ -2471,6 +2483,11 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					Vector3 current_extrusion_dir = (current_point - previous_point).normalized();
 					Vector3 direction;
 
+					Vector3 tangent = -current_sample_xform.basis.get_column(2);
+					// correct 'up' to be local Vector3.UP similar to PathFollow3D::correct_posture() with rotation_mode=Oriented
+					// what if tangent == Vector3.UP though? (bad things)
+					current_sample_xform.basis = Basis::looking_at(tangent);
+
 					// If the angles are similar, remove the previous face and replace it with this one.
 					if (path_simplify_angle > 0.0 && x0 > 0 && previous_simplify_dir.dot(current_extrusion_dir) > angle_simplify_dot) {
 						faces_combined += 1;
@@ -2500,8 +2517,14 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							}
 
 							if (path_rotation == PATH_ROTATION_PATH_FOLLOW) {
-								current_up = curve->sample_baked_up_vector(current_offset, true);
+								Basis basis = current_sample_xform.basis;
+								real_t tilt = curve->sample_baked_tilt(current_offset);
+								Basis twist(tangent, tilt);
+								basis = twist * basis;
+
+								current_up = basis.get_column(1);
 							}
+
 							break;
 					}
 
