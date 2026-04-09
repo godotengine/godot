@@ -47,6 +47,13 @@
 #include "core/variant/array.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/debugger/scene_debugger_object.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
+#include "scene/gui/separator.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h" // SceneTree:get_root()
@@ -63,6 +70,416 @@
 #ifdef DEBUG_ENABLED
 #include "scene/debugger/runtime_node_select.h"
 #endif
+
+#ifdef TOOLS_ENABLED
+void SceneDebuggerToolbar::_update_debugger_buttons() {
+	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
+	reset_speed_button->set_disabled(disabled);
+
+	PopupMenu *menu = camera_override_menu->get_popup();
+
+	bool disable_camera_reset = !camera_override_button->is_pressed() || !menu->is_item_checked(menu->get_item_index(CAMERA_MODE_INGAME));
+	menu->set_item_disabled(CAMERA_RESET_2D, disable_camera_reset);
+	menu->set_item_disabled(CAMERA_RESET_3D, disable_camera_reset);
+
+	next_frame_button->set_disabled(!suspend_button->is_pressed());
+}
+
+void SceneDebuggerToolbar::_toggle_suspend_button() {
+	const bool new_pressed = !suspend_button->is_pressed();
+	suspend_button->set_pressed(new_pressed);
+	_suspend_button_toggled(new_pressed);
+}
+
+void SceneDebuggerToolbar::_suspend_button_toggled(bool p_pressed) {
+	_update_debugger_buttons();
+
+	Array message;
+	message.append(p_pressed);
+	SceneDebugger::_msg_suspend_changed(message);
+}
+
+void SceneDebuggerToolbar::_node_type_pressed(int p_option) {
+	RuntimeNodeSelect::NodeType node_type = (RuntimeNodeSelect::NodeType)p_option;
+	for (int i = 0; i < RuntimeNodeSelect::NODE_TYPE_MAX; i++) {
+		node_type_button[i]->set_pressed_no_signal(i == node_type);
+	}
+
+	_update_debugger_buttons();
+
+	Array message;
+	message.append(node_type);
+	SceneDebugger::_msg_runtime_node_select_set_type(message);
+}
+
+void SceneDebuggerToolbar::_select_mode_pressed(int p_option) {
+	RuntimeNodeSelect::SelectMode sel_mode = (RuntimeNodeSelect::SelectMode)p_option;
+	if (!select_mode_button[sel_mode]->is_visible()) {
+		return;
+	}
+
+	for (int i = 0; i < RuntimeNodeSelect::SELECT_MODE_MAX; i++) {
+		select_mode_button[i]->set_pressed_no_signal(i == sel_mode);
+	}
+
+	Array message;
+	message.append(sel_mode);
+	SceneDebugger::_msg_runtime_node_select_set_mode(message);
+}
+
+void SceneDebuggerToolbar::_selection_options_menu_id_pressed(int p_id) {
+	switch (p_id) {
+		case SELECTION_AVOID_LOCKED: {
+			selection_avoid_locked = !selection_avoid_locked;
+			Array message;
+			message.append(selection_avoid_locked);
+			SceneDebugger::_msg_runtime_node_select_set_avoid_locked(message);
+		} break;
+		case SELECTION_PREFER_GROUP: {
+			selection_prefer_group = !selection_prefer_group;
+			Array message;
+			message.append(selection_prefer_group);
+			SceneDebugger::_msg_runtime_node_select_set_prefer_group(message);
+		} break;
+	}
+
+	PopupMenu *menu = selection_options_menu->get_popup();
+	menu->set_item_checked(menu->get_item_index(SELECTION_AVOID_LOCKED), selection_avoid_locked);
+	menu->set_item_checked(menu->get_item_index(SELECTION_PREFER_GROUP), selection_prefer_group);
+}
+
+void SceneDebuggerToolbar::_reset_time_scales() {
+	time_scale_index = DEFAULT_TIME_SCALE_INDEX;
+
+	Array message;
+	message.append(1.0);
+	SceneDebugger::_msg_speed_changed(message);
+	if (is_inside_tree()) {
+		_update_speed_buttons();
+	}
+}
+
+void SceneDebuggerToolbar::_speed_state_menu_pressed(int p_id) {
+	time_scale_index = p_id;
+	Array message;
+	message.append(time_scale_range[time_scale_index]);
+	SceneDebugger::_msg_speed_changed(message);
+	_update_speed_buttons();
+}
+
+void SceneDebuggerToolbar::_update_speed_buttons() {
+	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
+	reset_speed_button->set_disabled(disabled);
+	speed_state_button->set_text(vformat(U"%s×", time_scale_label[time_scale_index]));
+	_update_speed_state_color();
+}
+
+void SceneDebuggerToolbar::_update_speed_state_color() {
+	//TODO
+}
+
+void SceneDebuggerToolbar::_update_speed_state_size() {
+	if (!speed_state_button) {
+		return;
+	}
+	float sp_min_size = 0;
+	for (const String lbl : time_scale_label) {
+		sp_min_size = MAX(speed_state_button->get_minimum_size_for_text_and_icon(vformat(U"%s×", lbl), Ref<Texture2D>()).x, sp_min_size);
+	}
+	speed_state_button->set_custom_minimum_size(Vector2(sp_min_size, 0));
+}
+
+void SceneDebuggerToolbar::_hide_selection_toggled(bool p_pressed) {
+	hide_selection->set_button_icon(get_theme_icon(p_pressed ? SNAME("dbg_visibility_hidden") : SNAME("dbg_visibility_visible")));
+
+	Array message;
+	message.append(!p_pressed);
+	SceneDebugger::_msg_runtime_node_select_set_visible(message);
+}
+
+void SceneDebuggerToolbar::_debug_mute_audio_button_pressed() {
+	debug_mute_audio = !debug_mute_audio;
+	debug_mute_audio_button->set_button_icon(get_theme_icon(debug_mute_audio ? SNAME("dbg_audio_mute") : SNAME("dbg_audio_play")));
+	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
+	Array message;
+	message.append(debug_mute_audio);
+	SceneDebugger::_msg_debug_mute_audio(message);
+}
+
+void SceneDebuggerToolbar::_camera_override_button_toggled(bool p_pressed) {
+	_update_debugger_buttons();
+
+	CameraOverride cam_override = p_pressed ? camera_override_mode : CameraOverride::OVERRIDE_NONE;
+	Array message = {
+		cam_override != CameraOverride::OVERRIDE_NONE,
+		cam_override == CameraOverride::OVERRIDE_EDITORS
+	};
+	SceneDebugger::_msg_override_cameras(message);
+}
+
+void SceneDebuggerToolbar::_camera_override_menu_id_pressed(int p_id) {
+	PopupMenu *menu = camera_override_menu->get_popup();
+	if (p_id != CAMERA_RESET_2D && p_id != CAMERA_RESET_3D) {
+		for (int i = 0; i < menu->get_item_count(); i++) {
+			menu->set_item_checked(i, false);
+		}
+	}
+
+	switch (p_id) {
+		case CAMERA_RESET_2D: {
+			SceneDebugger::_msg_runtime_node_select_reset_camera_2d(Array());
+		} break;
+		case CAMERA_RESET_3D: {
+			SceneDebugger::_msg_runtime_node_select_reset_camera_3d(Array());
+		} break;
+		case CAMERA_MODE_INGAME: {
+			camera_override_mode = OVERRIDE_INGAME;
+			menu->set_item_checked(menu->get_item_index(p_id), true);
+			_update_debugger_buttons();
+		} break;
+		case CAMERA_MODE_EDITORS: {
+			camera_override_mode = OVERRIDE_EDITORS;
+			menu->set_item_checked(menu->get_item_index(p_id), true);
+			_update_debugger_buttons();
+		} break;
+	}
+}
+
+void SceneDebuggerToolbar::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(vformat(TTR("%s+Alt+RMB: Show list of all nodes at position clicked."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)));
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			_update_speed_state_size();
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			suspend_button->set_button_icon(get_theme_icon(SNAME("dbg_suspend")));
+			next_frame_button->set_button_icon(get_theme_icon(SNAME("dbg_next_frame")));
+			reset_speed_button->set_button_icon(get_theme_icon(SNAME("dbg_reload")));
+
+			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_button_icon(get_theme_icon(SNAME("dbg_input")));
+			node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_button_icon(get_theme_icon(SNAME("dbg_node_2d")));
+			node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_button_icon(get_theme_icon(SNAME("dbg_node_3d")));
+
+			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_button_icon(get_theme_icon(SNAME("dbg_tool_select")));
+			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_theme_icon(SNAME("dbg_list_select")));
+
+			hide_selection->set_button_icon(get_theme_icon(hide_selection->is_pressed() ? SNAME("dbg_visibility_hidden") : SNAME("dbg_visibility_visible")));
+			selection_options_menu->set_button_icon(get_theme_icon(SNAME("dbg_tab_menu")));
+
+			debug_mute_audio_button->set_button_icon(get_theme_icon(debug_mute_audio ? SNAME("dbg_audio_mute") : SNAME("dbg_audio_play")));
+
+			camera_override_button->set_button_icon(get_theme_icon(SNAME("dbg_camera")));
+			camera_override_menu->set_button_icon(get_theme_icon(SNAME("dbg_tab_menu")));
+
+			_update_speed_state_size();
+			_update_speed_state_color();
+		} break;
+	}
+}
+
+void SceneDebuggerToolbar::_drag_handle_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		Window *w = Object::cast_to<Window>(get_viewport());
+		if (w) {
+			DisplayServer::get_singleton()->window_start_drag(w->get_window_id());
+		}
+	}
+}
+
+SceneDebuggerToolbar::SceneDebuggerToolbar() {
+	set_visible(false);
+
+	set_flag(Window::FLAG_BORDERLESS, true);
+	set_flag(Window::FLAG_RESIZE_DISABLED, true);
+	set_flag(Window::FLAG_MAXIMIZE_DISABLED, true);
+	set_flag(Window::FLAG_MINIMIZE_DISABLED, true);
+	set_flag(Window::FLAG_EXCLUDE_FROM_CAPTURE, true);
+
+	set_min_size(Size2i(100, 10));
+	reset_size();
+	set_transient(true);
+	set_debugger_node(true);
+	set_wrap_controls(true);
+	set_force_native(true);
+
+	MarginContainer *toolbar_margin = memnew(MarginContainer);
+	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
+	add_child(toolbar_margin);
+
+	HBoxContainer *main_menu_fc = memnew(HBoxContainer);
+	toolbar_margin->add_child(main_menu_fc);
+
+	Panel *drag_handle = memnew(Panel);
+	main_menu_fc->add_child(drag_handle);
+	drag_handle->set_custom_minimum_size(Size2(20, 20));
+	drag_handle->connect(SceneStringName(gui_input), callable_mp(this, &SceneDebuggerToolbar::_drag_handle_gui_input));
+
+	HBoxContainer *process_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(process_hb);
+	suspend_button = memnew(Button);
+	process_hb->add_child(suspend_button);
+	suspend_button->set_toggle_mode(true);
+	suspend_button->set_theme_type_variation(SceneStringName(FlatButton));
+	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &SceneDebuggerToolbar::_suspend_button_toggled));
+	suspend_button->set_accessibility_name(TTRC("Suspend"));
+	suspend_button->set_tooltip_text(TTRC("Force pause at SceneTree level. Stops all processing, but you can still interact with the project."));
+
+	next_frame_button = memnew(Button);
+	process_hb->add_child(next_frame_button);
+	next_frame_button->set_theme_type_variation(SceneStringName(FlatButton));
+	next_frame_button->connect(SceneStringName(pressed), callable_mp_static(&SceneDebugger::_next_frame));
+	next_frame_button->set_accessibility_name(TTRC("Next Frame"));
+
+	speed_state_button = memnew(MenuButton);
+	process_hb->add_child(speed_state_button);
+	speed_state_button->set_text(U"1.0×");
+	speed_state_button->set_flat(false);
+	speed_state_button->set_theme_type_variation("FlatMenuButton");
+	speed_state_button->set_tooltip_text(TTRC("Change the game speed."));
+	speed_state_button->set_accessibility_name(TTRC("Speed State"));
+
+	PopupMenu *menu = speed_state_button->get_popup();
+	menu->set_force_native(true);
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneDebuggerToolbar::_speed_state_menu_pressed));
+	for (String lbl : time_scale_label) {
+		menu->add_item(vformat(U"%s×", lbl));
+	}
+
+	reset_speed_button = memnew(Button);
+	process_hb->add_child(reset_speed_button);
+	reset_speed_button->set_theme_type_variation(SceneStringName(FlatButton));
+	reset_speed_button->set_tooltip_text(TTRC("Reset the game speed."));
+	reset_speed_button->set_accessibility_name(TTRC("Reset Speed"));
+	reset_speed_button->connect(SceneStringName(pressed), callable_mp(this, &SceneDebuggerToolbar::_reset_time_scales));
+
+	process_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *input_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(input_hb);
+
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE] = memnew(Button);
+	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]);
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_text(TTRC("Input"));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_toggle_mode(true);
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_pressed(true);
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_theme_type_variation("FlatButtonNoIconTint");
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->connect(SceneStringName(pressed), callable_mp(this, &SceneDebuggerToolbar::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_NONE));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_tooltip_text(TTRC("Allow game input."));
+
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D] = memnew(Button);
+	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]);
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_text(TTRC("2D"));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_toggle_mode(true);
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_theme_type_variation("FlatButtonNoIconTint");
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->connect(SceneStringName(pressed), callable_mp(this, &SceneDebuggerToolbar::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_2D));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_tooltip_text(TTRC("Disable game input and allow to select Node2Ds, Controls, and manipulate the 2D camera."));
+
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D] = memnew(Button);
+	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_text(TTRC("3D"));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_toggle_mode(true);
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation("FlatButtonNoIconTint");
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &SceneDebuggerToolbar::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTRC("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
+
+	input_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *selection_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(selection_hb);
+
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE] = memnew(Button);
+	selection_hb->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]);
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_toggle_mode(true);
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_pressed(true);
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_theme_type_variation(SceneStringName(FlatButton));
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->connect(SceneStringName(pressed), callable_mp(this, &SceneDebuggerToolbar::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_SINGLE));
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_shortcut_context(this);
+
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST] = memnew(Button);
+	selection_hb->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]);
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_toggle_mode(true);
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_theme_type_variation(SceneStringName(FlatButton));
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->connect(SceneStringName(pressed), callable_mp(this, &SceneDebuggerToolbar::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_LIST));
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_tooltip_text(TTRC("Show list of selectable nodes at position clicked."));
+
+	_select_mode_pressed(0);
+
+	hide_selection = memnew(Button);
+	selection_hb->add_child(hide_selection);
+	hide_selection->set_toggle_mode(true);
+	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
+	hide_selection->set_tooltip_text(TTRC("Toggle Selection Visibility"));
+	hide_selection->set_pressed(false);
+	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &SceneDebuggerToolbar::_hide_selection_toggled));
+
+	selection_options_menu = memnew(MenuButton);
+	selection_hb->add_child(selection_options_menu);
+	selection_options_menu->set_flat(false);
+	selection_options_menu->set_theme_type_variation("FlatMenuButton");
+	selection_options_menu->set_h_size_flags(Control::SIZE_SHRINK_END);
+	selection_options_menu->set_tooltip_text(TTRC("Selection Options"));
+
+	PopupMenu *selection_menu = selection_options_menu->get_popup();
+	selection_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneDebuggerToolbar::_selection_options_menu_id_pressed));
+	selection_menu->add_check_item(TTRC("Don't Select Locked Nodes"), SELECTION_AVOID_LOCKED);
+	selection_menu->add_check_item(TTRC("Select Group Over Children"), SELECTION_PREFER_GROUP);
+	selection_menu->set_force_native(true);
+
+	selection_avoid_locked = false;
+	selection_prefer_group = false;
+	selection_menu->set_item_checked(selection_menu->get_item_index(SELECTION_AVOID_LOCKED), selection_avoid_locked);
+	selection_menu->set_item_checked(selection_menu->get_item_index(SELECTION_PREFER_GROUP), selection_prefer_group);
+
+	selection_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *audio_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(audio_hb);
+
+	debug_mute_audio_button = memnew(Button);
+	audio_hb->add_child(debug_mute_audio_button);
+	debug_mute_audio_button->set_theme_type_variation(SceneStringName(FlatButton));
+	debug_mute_audio_button->connect(SceneStringName(pressed), callable_mp(this, &SceneDebuggerToolbar::_debug_mute_audio_button_pressed));
+	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
+
+	audio_hb->add_child(memnew(VSeparator));
+
+	HBoxContainer *camera_hb = memnew(HBoxContainer);
+	main_menu_fc->add_child(camera_hb);
+
+	camera_override_button = memnew(Button);
+	camera_hb->add_child(camera_override_button);
+	camera_override_button->set_toggle_mode(true);
+	camera_override_button->set_theme_type_variation(SceneStringName(FlatButton));
+	camera_override_button->set_tooltip_text(TTRC("Override the in-game camera."));
+	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &SceneDebuggerToolbar::_camera_override_button_toggled));
+
+	camera_override_menu = memnew(MenuButton);
+	camera_hb->add_child(camera_override_menu);
+	camera_override_menu->set_flat(false);
+	camera_override_menu->set_theme_type_variation("FlatMenuButton");
+	camera_override_menu->set_h_size_flags(Control::SIZE_SHRINK_END);
+	camera_override_menu->set_tooltip_text(TTRC("Camera Override Options"));
+
+	menu = camera_override_menu->get_popup();
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneDebuggerToolbar::_camera_override_menu_id_pressed));
+	menu->add_item(TTRC("Reset 2D Camera"), CAMERA_RESET_2D);
+	menu->add_item(TTRC("Reset 3D Camera"), CAMERA_RESET_3D);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("Manipulate In-Game"), CAMERA_MODE_INGAME);
+	menu->set_item_checked(menu->get_item_index(CAMERA_MODE_INGAME), true);
+	menu->add_radio_check_item(TTRC("Manipulate From Editors"), CAMERA_MODE_EDITORS);
+	menu->set_force_native(true);
+	camera_hb->add_child(memnew(VSeparator));
+
+	_camera_override_menu_id_pressed(0);
+	_update_debugger_buttons();
+}
+#endif // TOOLS_ENABLED
 
 SceneDebugger::SceneDebugger() {
 	singleton = this;
@@ -139,6 +556,22 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void SceneDebugger::create_debug_menu(float p_ed_scale) {
+	if (!Engine::get_singleton()->is_embedded_in_editor()) {
+		Window *main_window = SceneTree::get_singleton()->get_root();
+
+		toolbar = memnew(SceneDebuggerToolbar);
+		toolbar->set_content_scale_factor(p_ed_scale);
+		toolbar->set_position(main_window->get_position_with_decorations() - Size2(0, 30) * p_ed_scale);
+
+		main_window->add_child(toolbar);
+		toolbar->set_visible(true);
+		main_window->grab_focus();
+	}
+}
+#endif // TOOLS_ENABLED
+
 void SceneDebugger::_on_window_size_changed() {
 	_msg_window_request_size(Array());
 }
@@ -148,7 +581,12 @@ void SceneDebugger::_on_output_max_linear_value_changed(float max_linear_value) 
 }
 
 Error SceneDebugger::_msg_setup_scene(const Array &p_args) {
-	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
+	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args[0])));
+
+#ifdef TOOLS_ENABLED
+	callable_mp_static(SceneDebugger::create_debug_menu).call_deferred(p_args[1]);
+#endif // TOOLS_ENABLED
 	return OK;
 }
 

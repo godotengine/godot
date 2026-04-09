@@ -889,7 +889,9 @@ void Window::_event_callback(DisplayServerEnums::WindowEvent p_event) {
 					if (w->exclusive_child) {
 						w = w->exclusive_child;
 					} else {
-						w->grab_focus();
+						if (!w->is_debugger_node()) {
+							w->grab_focus();
+						}
 						break;
 					}
 				}
@@ -904,7 +906,7 @@ void Window::_event_callback(DisplayServerEnums::WindowEvent p_event) {
 			emit_signal(SceneStringName(focus_exited));
 		} break;
 		case DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST: {
-			if (exclusive_child != nullptr) {
+			if (exclusive_child != nullptr && !exclusive_child->is_debugger_node()) {
 				break; //has an exclusive child, can't get events until child is closed
 			}
 			_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
@@ -1990,13 +1992,13 @@ void Window::_update_child_controls() {
 }
 
 bool Window::_can_consume_input_events() const {
-	return exclusive_child == nullptr;
+	return exclusive_child == nullptr || exclusive_child->is_debugger_node();
 }
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	ERR_MAIN_THREAD_GUARD;
 
-	if (exclusive_child != nullptr) {
+	if (exclusive_child != nullptr && !exclusive_child->is_debugger_node()) {
 		if (nonclient_area.has_area() && is_inside_tree()) {
 			Ref<InputEventMouse> me = p_ev;
 			if (me.is_valid() && nonclient_area.has_point(me->get_position())) {

@@ -906,8 +906,22 @@ bool Node::can_process_notification(int p_what) const {
 	return true;
 }
 
+#ifdef TOOLS_ENABLED
+void Node::set_debugger_node(bool p_enabled) {
+	data.is_debugger_node = p_enabled;
+}
+
+bool Node::is_debugger_node() const {
+	return data.is_debugger_node;
+}
+#endif
+
 bool Node::can_process() const {
+#ifdef TOOLS_ENABLED
+	return is_inside_tree() && ((!data.tree->is_suspended() && _can_process(data.tree->is_paused())) || data.is_debugger_node);
+#else
 	return is_inside_tree() && !data.tree->is_suspended() && _can_process(data.tree->is_paused());
+#endif
 }
 
 bool Node::_can_process(bool p_paused) const {
@@ -1691,6 +1705,9 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	}
 
 	p_child->data.parent = this;
+#ifdef TOOLS_ENABLED
+	p_child->data.is_debugger_node = data.is_debugger_node;
+#endif
 
 	if (!data.children_cache_dirty && can_push_back) {
 		data.children_cache.push_back(p_child);
@@ -1775,6 +1792,9 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
 	p_child->data.parent = nullptr;
+#ifdef TOOLS_ENABLED
+	p_child->data.is_debugger_node = false;
+#endif
 	p_child->data.index = -1;
 
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
@@ -4116,6 +4136,9 @@ Node::Node() {
 
 	data.ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
 	data.ready_first = true;
+#ifdef TOOLS_ENABLED
+	data.is_debugger_node = false;
+#endif
 
 	data.auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 	data.is_auto_translating = true;
