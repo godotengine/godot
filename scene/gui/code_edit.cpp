@@ -2539,15 +2539,40 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	begin_complex_operation();
 	begin_multicaret_edit();
 
+	const String move_caret_here_indicator = "$0";
+	int pos_to_move_caret_to_in_insert_text = -1;
 	for (int i = 0; i < get_caret_count(); i++) {
 		if (multicaret_edit_ignore_caret(i)) {
 			continue;
 		}
 		int caret_line = get_caret_line(i);
 
-		const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
+		String insert_text = code_completion_options[code_completion_current_selected].insert_text;
 		const String &display_text = code_completion_options[code_completion_current_selected].display;
+		// Find the spot "$0" that the user wants to move their caret to.
+		if (code_completion_options[code_completion_current_selected].is_user_snippet) {
+			StringBuilder text_without_escaped;
+			String previous_char = "";
+			for (int j = 0; j < insert_text.length(); j++) {
+				String new_char = insert_text.substr(j, 1);
+				if (new_char == "\\") {
+					String escaped_char = insert_text.substr(j + 1, 1);
+					text_without_escaped.append(escaped_char);
+					// Previous char only matters for escaping, and so we clear it.
+					previous_char = "";
+					j += 1;
+					continue;
+				}
+				text_without_escaped.append(new_char);
+				if ((previous_char + new_char) == move_caret_here_indicator && pos_to_move_caret_to_in_insert_text == -1) {
+					pos_to_move_caret_to_in_insert_text = text_without_escaped.get_string_length() - move_caret_here_indicator.length();
+				}
+				previous_char = new_char;
+			}
+			insert_text = text_without_escaped.as_string();
+		}
 
+		int starting_position_of_snippet_insert = 0;
 		if (p_replace) {
 			// Find end of current section.
 			const String line = get_line(caret_line);
@@ -2575,6 +2600,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 			// Replace.
 			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_remove_line, caret_col);
+			starting_position_of_snippet_insert = get_caret_column(i);
 			insert_text_at_caret(insert_text, i);
 		} else {
 			// Get first non-matching char.
@@ -2592,6 +2618,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_line, get_caret_column(i));
 
 			// Merge with text.
+			starting_position_of_snippet_insert = get_caret_column(i);
 			insert_text_at_caret(insert_text.substr(0, code_completion_base.length()), i);
 			set_caret_column(caret_col, false, i);
 			insert_text_at_caret(insert_text.substr(matching_chars), i);
@@ -2610,6 +2637,12 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		bool last_char_matches = (last_completion_char == next_char || last_completion_char_display == next_char);
 		int pre_brace_pair = get_caret_column(i) > 0 ? _get_auto_brace_pair_open_at_pos(caret_line, get_caret_column(i)) : -1;
 		int post_brace_pair = get_caret_column(i) < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column(i)) : -1;
+
+		// If this was a user made snippet, check if they wanted their caret to be moved to a certain position.
+		if (code_completion_options[code_completion_current_selected].is_user_snippet && pos_to_move_caret_to_in_insert_text != -1) {
+			set_caret_column(starting_position_of_snippet_insert + pos_to_move_caret_to_in_insert_text, i == 0, i);
+			remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + move_caret_here_indicator.length());
+		}
 
 		// Strings do not nest like brackets, so ensure we don't add an additional closing pair.
 		if (has_string_delimiter(String::chr(last_completion_char))) {
