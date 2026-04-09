@@ -747,6 +747,24 @@ public:
 		PropertyClipboard() {}
 	};
 
+	enum TabPropertyMode {
+		TAB_PROPERTY_MODE_TABBED,
+		TAB_PROPERTY_MODE_JUMP_SCROLL,
+	};
+
+	enum TabStyle {
+		TAB_STYLE_TEXT_ONLY,
+		TAB_STYLE_ICON_ONLY,
+		TAB_STYLE_TEXT_AND_ICON,
+	};
+
+	enum TabVerticalSide {
+		TAB_VERTICAL_SIDE_LEFT,
+		TAB_VERTICAL_SIDE_RIGHT,
+		TAB_VERTICAL_SIDE_INSIDE,
+		TAB_VERTICAL_SIDE_OUTSIDE,
+	};
+
 private:
 	enum {
 		MAX_PLUGINS = 1024
@@ -798,6 +816,29 @@ private:
 	bool autoclear = false;
 	bool use_folding = false;
 	int changing;
+
+	// Inspector tabs.
+	struct InspectorTab {
+		String class_name;
+		String label;
+		Ref<Texture2D> icon;
+	};
+
+	bool use_inspector_tabs = false;
+	int tab_property_mode = TAB_PROPERTY_MODE_TABBED;
+	int horizontal_tab_style = TAB_STYLE_TEXT_AND_ICON;
+	int vertical_tab_style = TAB_STYLE_ICON_ONLY;
+	int vertical_tab_side = TAB_VERTICAL_SIDE_OUTSIDE;
+	int tab_layout = 0; // 0 = Horizontal, 1 = Vertical.
+	bool merge_abstract_class_tabs = true;
+	int current_inspector_tab = 0;
+	String current_tab_class_name;
+	LocalVector<InspectorTab> inspector_tabs;
+	bool ignore_scroll_tab_sync = false;
+
+	void _collect_inspector_tabs();
+	void _apply_tab_filter();
+	void _update_tab_from_scroll();
 	bool update_all_pending = false;
 	bool read_only = false;
 	bool keying = false;
@@ -958,6 +999,18 @@ public:
 	void set_use_deletable_properties(bool p_enabled);
 
 	void set_restrict_to_basic_settings(bool p_restrict);
+
+	// Inspector tabs.
+	int get_inspector_tab_count() const;
+	String get_inspector_tab_name(int p_idx) const;
+	Ref<Texture2D> get_inspector_tab_icon(int p_idx) const;
+	int get_current_inspector_tab() const;
+	void set_current_inspector_tab(int p_tab);
+	void scroll_to_inspector_tab(int p_tab);
+	bool are_inspector_tabs_enabled() const { return use_inspector_tabs; }
+	int get_tab_layout() const { return tab_layout; }
+	int get_tab_style() const { return (tab_layout == 1) ? vertical_tab_style : horizontal_tab_style; }
+	int get_vertical_tab_side() const { return vertical_tab_side; }
 
 	EditorInspector();
 };

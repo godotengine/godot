@@ -5127,6 +5127,12 @@ void EditorInspector::update_tree() {
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
 
+	// Collect and apply inspector tabs.
+	_collect_inspector_tabs();
+	_apply_tab_filter();
+	set_current_inspector_tab(0);
+	emit_signal("inspector_tabs_updated");
+
 	if (root_inspector_was_following_focus) {
 		get_root_inspector()->set_follow_focus(true);
 	}
@@ -5218,6 +5224,11 @@ void EditorInspector::edit(Object *p_object) {
 		_update_current_favorites();
 
 		update_tree();
+	} else {
+		inspector_tabs.clear();
+		current_inspector_tab = 0;
+		current_tab_class_name = String();
+		emit_signal("inspector_tabs_updated");
 	}
 
 	// Keep it available until the end so it works with both main and sub inspectors.
@@ -5962,6 +5973,16 @@ void EditorInspector::_notification(int p_what) {
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
+			// Initialize inspector tab settings.
+			if (is_main_editor_inspector() && EditorSettings::get_singleton()) {
+				use_inspector_tabs = EDITOR_GET("interface/inspector/tabs/use_inspector_tabs");
+				tab_property_mode = EDITOR_GET("interface/inspector/tabs/tab_property_mode");
+				horizontal_tab_style = EDITOR_GET("interface/inspector/tabs/horizontal_tab_style");
+				vertical_tab_style = EDITOR_GET("interface/inspector/tabs/vertical_tab_style");
+				vertical_tab_side = EDITOR_GET("interface/inspector/tabs/vertical_tab_side");
+				tab_layout = EDITOR_GET("interface/inspector/tabs/tab_layout");
+				merge_abstract_class_tabs = EDITOR_GET("interface/inspector/tabs/merge_abstract_class_tabs");
+			}
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -6040,6 +6061,17 @@ void EditorInspector::_notification(int p_what) {
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
 				update_tree_pending = true;
+
+				// Update inspector tab settings.
+				if (is_main_editor_inspector()) {
+					use_inspector_tabs = EDITOR_GET("interface/inspector/tabs/use_inspector_tabs");
+					tab_property_mode = EDITOR_GET("interface/inspector/tabs/tab_property_mode");
+					horizontal_tab_style = EDITOR_GET("interface/inspector/tabs/horizontal_tab_style");
+					vertical_tab_style = EDITOR_GET("interface/inspector/tabs/vertical_tab_style");
+					vertical_tab_side = EDITOR_GET("interface/inspector/tabs/vertical_tab_side");
+					tab_layout = EDITOR_GET("interface/inspector/tabs/tab_layout");
+					merge_abstract_class_tabs = EDITOR_GET("interface/inspector/tabs/merge_abstract_class_tabs");
+				}
 			}
 		} break;
 	}
@@ -6061,6 +6093,13 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 	if (object) {
 		scroll_cache[object->get_instance_id()] = p_offset;
 	}
+
+	if (ignore_scroll_tab_sync) {
+		ignore_scroll_tab_sync = false;
+		return;
+	}
+
+	_update_tab_from_scroll();
 }
 
 void EditorInspector::set_property_prefix(const String &p_prefix) {
@@ -6158,6 +6197,241 @@ EditorInspector *EditorInspector::_get_control_parent_inspector(Control *p_contr
 	return nullptr;
 }
 
+// Inspector tabs.
+
+void EditorInspector::_collect_inspector_tabs() {
+	inspector_tabs.clear();
+
+	if (!use_inspector_tabs || !is_main_editor_inspector()) {
+		return;
+	}
+
+	bool first_category = true;
+
+	for (int i = 0; i < main_vbox->get_child_count(); i++) {
+		EditorInspectorCategory *category = Object::cast_to<EditorInspectorCategory>(main_vbox->get_child(i));
+		if (!category || category->is_favorite) {
+			continue;
+		}
+
+		// Skip custom categories (from @export_category).
+		if (category->info.hint_string.is_empty()) {
+			continue;
+		}
+
+		String class_name = category->info.name;
+
+		// Check if this should be merged with previous tab (abstract class).
+		if (merge_abstract_class_tabs && !first_category) {
+			if (ClassDB::class_exists(class_name) && !ClassDB::can_instantiate(class_name)) {
+				continue;
+			}
+		}
+		first_category = false;
+
+		InspectorTab tab;
+		tab.class_name = class_name;
+		tab.label = category->label;
+		tab.icon = category->icon;
+		inspector_tabs.push_back(tab);
+	}
+
+	// Restore current tab by class name.
+	int restored_tab = 0;
+	if (!current_tab_class_name.is_empty()) {
+		for (int i = 0; i < (int)inspector_tabs.size(); i++) {
+			if (inspector_tabs[i].class_name == current_tab_class_name) {
+				restored_tab = i;
+				break;
+			}
+		}
+	}
+	current_inspector_tab = CLAMP(restored_tab, 0, MAX((int)inspector_tabs.size() - 1, 0));
+	if (!inspector_tabs.is_empty()) {
+		current_tab_class_name = inspector_tabs[current_inspector_tab].class_name;
+	}
+}
+
+void EditorInspector::_apply_tab_filter() {
+	if (!use_inspector_tabs || inspector_tabs.is_empty() || !is_main_editor_inspector()) {
+		return;
+	}
+
+	// Don't filter when searching.
+	String filter = search_box ? search_box->get_text() : "";
+	if (!filter.is_empty()) {
+		return;
+	}
+
+	if (tab_property_mode != TAB_PROPERTY_MODE_TABBED) {
+		return;
+	}
+
+	// Tabbed mode - show only the current tab's content.
+	int tab_idx = -1;
+	bool first_standard_category = true;
+
+	for (int i = 0; i < main_vbox->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(main_vbox->get_child(i));
+		if (!child) {
+			continue;
+		}
+
+		EditorInspectorCategory *category = Object::cast_to<EditorInspectorCategory>(child);
+		if (category && !category->is_favorite && !category->info.hint_string.is_empty()) {
+			String class_name = category->info.name;
+			bool is_new_tab = true;
+
+			if (merge_abstract_class_tabs && !first_standard_category) {
+				if (ClassDB::class_exists(class_name) && !ClassDB::can_instantiate(class_name)) {
+					is_new_tab = false;
+				}
+			}
+			first_standard_category = false;
+
+			if (is_new_tab) {
+				tab_idx++;
+			}
+		} else if (tab_idx == -1 && !category) {
+			// Content before the first standard category - assign to first tab.
+			tab_idx = 0;
+		}
+
+		child->set_visible(tab_idx == current_inspector_tab);
+	}
+}
+
+void EditorInspector::_update_tab_from_scroll() {
+	if (!use_inspector_tabs || tab_property_mode != TAB_PROPERTY_MODE_JUMP_SCROLL || inspector_tabs.is_empty()) {
+		return;
+	}
+
+	float scroll_value = get_v_scroll_bar()->get_value();
+	int tab_idx = -1;
+	int best_tab = 0;
+	bool first_standard_category = true;
+
+	if (scroll_value <= 1) {
+		if (current_inspector_tab != 0) {
+			current_inspector_tab = 0;
+			if (!inspector_tabs.is_empty()) {
+				current_tab_class_name = inspector_tabs[0].class_name;
+			}
+			emit_signal("inspector_tabs_updated");
+		}
+		return;
+	}
+
+	for (int i = 0; i < main_vbox->get_child_count(); i++) {
+		EditorInspectorCategory *category = Object::cast_to<EditorInspectorCategory>(main_vbox->get_child(i));
+		if (!category || category->is_favorite || category->info.hint_string.is_empty()) {
+			continue;
+		}
+
+		String class_name = category->info.name;
+		bool is_new_tab = true;
+		if (merge_abstract_class_tabs && !first_standard_category) {
+			if (ClassDB::class_exists(class_name) && !ClassDB::can_instantiate(class_name)) {
+				is_new_tab = false;
+			}
+		}
+		first_standard_category = false;
+
+		if (is_new_tab) {
+			tab_idx++;
+		}
+
+		// Keep the active tab in sync with the top edge of the viewport.
+		float category_global_y = category->get_global_position().y;
+		float inspector_global_y = get_global_position().y;
+		float relative_y = category_global_y - inspector_global_y;
+
+		if (relative_y <= 0.0) {
+			best_tab = tab_idx;
+		} else {
+			break;
+		}
+	}
+
+	if (best_tab != current_inspector_tab && best_tab >= 0 && best_tab < (int)inspector_tabs.size()) {
+		current_inspector_tab = best_tab;
+		current_tab_class_name = inspector_tabs[best_tab].class_name;
+		emit_signal("inspector_tabs_updated");
+	}
+}
+
+int EditorInspector::get_inspector_tab_count() const {
+	return (int)inspector_tabs.size();
+}
+
+String EditorInspector::get_inspector_tab_name(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, (int)inspector_tabs.size(), String());
+	return inspector_tabs[p_idx].label;
+}
+
+Ref<Texture2D> EditorInspector::get_inspector_tab_icon(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, (int)inspector_tabs.size(), Ref<Texture2D>());
+	return inspector_tabs[p_idx].icon;
+}
+
+int EditorInspector::get_current_inspector_tab() const {
+	return current_inspector_tab;
+}
+
+void EditorInspector::set_current_inspector_tab(int p_tab) {
+	if (p_tab < 0 || p_tab >= (int)inspector_tabs.size()) {
+		return;
+	}
+	if (current_inspector_tab == p_tab) {
+		return;
+	}
+
+	current_inspector_tab = p_tab;
+	current_tab_class_name = inspector_tabs[p_tab].class_name;
+
+	if (tab_property_mode == TAB_PROPERTY_MODE_TABBED) {
+		_apply_tab_filter();
+	} else {
+		emit_signal("inspector_tabs_updated");
+		scroll_to_inspector_tab(p_tab);
+	}
+}
+
+void EditorInspector::scroll_to_inspector_tab(int p_tab) {
+	int tab_idx = -1;
+	bool first_standard_category = true;
+
+	for (int i = 0; i < main_vbox->get_child_count(); i++) {
+		EditorInspectorCategory *category = Object::cast_to<EditorInspectorCategory>(main_vbox->get_child(i));
+		if (!category || category->is_favorite || category->info.hint_string.is_empty()) {
+			continue;
+		}
+
+		String class_name = category->info.name;
+		bool is_new_tab = true;
+		if (merge_abstract_class_tabs && !first_standard_category) {
+			if (ClassDB::class_exists(class_name) && !ClassDB::can_instantiate(class_name)) {
+				is_new_tab = false;
+			}
+		}
+		first_standard_category = false;
+
+		if (is_new_tab) {
+			tab_idx++;
+		}
+
+		if (tab_idx == p_tab) {
+			// Align the target category with the top of the inspector viewport as much as possible.
+			float current_scroll = get_v_scroll_bar()->get_value();
+			float relative_y = category->get_global_position().y - get_global_position().y;
+			float target_scroll = CLAMP(current_scroll + relative_y, get_v_scroll_bar()->get_min(), get_v_scroll_bar()->get_max());
+			ignore_scroll_tab_sync = !Math::is_equal_approx(target_scroll, current_scroll);
+			get_v_scroll_bar()->set_value(target_scroll);
+			break;
+		}
+	}
+}
+
 void EditorInspector::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("edit", "object"), &EditorInspector::edit);
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
@@ -6175,6 +6449,7 @@ void EditorInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("property_toggled", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::BOOL, "checked")));
 	ADD_SIGNAL(MethodInfo("edited_object_changed"));
 	ADD_SIGNAL(MethodInfo("restart_requested"));
+	ADD_SIGNAL(MethodInfo("inspector_tabs_updated"));
 }
 
 EditorInspector::EditorInspector() {

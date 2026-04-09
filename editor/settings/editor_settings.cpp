@@ -600,6 +600,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,OK HS Rectangle:5,OK HL Rectangle") // `SHAPE_NONE` is 4.
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/color_picker_show_intensity", true, "");
 
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/tabs/use_inspector_tabs", true, "")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/tabs/tab_layout", 0, "Horizontal,Vertical")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/tabs/horizontal_tab_style", 2, "Text Only,Icon Only,Text and Icon")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/tabs/vertical_tab_style", 1, "Text Only,Icon Only,Text and Icon")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/tabs/vertical_tab_side", 0, "Left,Right,Inside,Outside")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/tabs/tab_property_mode", 0, "Tabbed, Jump Scroll")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/tabs/merge_abstract_class_tabs", true, "")
+
 	// Theme
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_ENUM, "interface/theme/follow_system_theme", false, "")
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/style", "Modern", "Modern,Classic")

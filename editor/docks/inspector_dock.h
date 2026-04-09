@@ -34,10 +34,12 @@
 #include "editor/editor_data.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/tab_bar.h"
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
@@ -92,6 +94,16 @@ class InspectorDock : public EditorDock {
 	Button *open_docs_button = nullptr;
 	MenuButton *object_menu = nullptr;
 	EditorObjectSelector *object_selector = nullptr;
+
+	// Inspector tab bar.
+	TabBar *inspector_tab_bar = nullptr;
+	Control *tab_bar_container = nullptr;
+	BoxContainer *inspector_with_tabs = nullptr;
+	bool tab_bar_updating = false;
+
+	void _on_inspector_tab_selected(int p_tab);
+	void _update_inspector_tab_bar();
+	void _update_tab_bar_layout();
 
 	bool info_is_warning = false; // Display in yellow and use warning icon if true.
 	Button *info = nullptr;
