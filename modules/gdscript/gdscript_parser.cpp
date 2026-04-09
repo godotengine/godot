@@ -5398,6 +5398,35 @@ String GDScriptParser::DataType::to_string() const {
 	ERR_FAIL_V_MSG("<unresolved type>", "Kind set outside the enum range.");
 }
 
+String GDScriptParser::DataType::to_property_info_hint_string() const {
+	switch (kind) {
+		case BUILTIN:
+			return Variant::get_type_name(builtin_type);
+		case NATIVE:
+			return native_type;
+		case SCRIPT:
+			if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
+				return script_type->get_global_name();
+			} else {
+				return native_type;
+			}
+		case CLASS:
+			if (class_type != nullptr && class_type->get_global_name() != StringName()) {
+				return class_type->get_global_name();
+			} else {
+				return native_type;
+			}
+		case ENUM:
+			return String(native_type).replace("::", ".");
+		case VARIANT:
+			return "Variant";
+		case RESOLVING:
+		case UNRESOLVED:
+			break;
+	}
+	ERR_FAIL_V_MSG("Variant", "GDScript bug: Unexpected type kind.");
+}
+
 PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) const {
 	PropertyInfo result;
 	result.name = p_name;
@@ -5413,106 +5442,21 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 			result.type = builtin_type;
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
 				const DataType elem_type = get_container_element_type(0);
-				switch (elem_type.kind) {
-					case BUILTIN:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						result.hint_string = Variant::get_type_name(elem_type.builtin_type);
-						break;
-					case NATIVE:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						result.hint_string = elem_type.native_type;
-						break;
-					case SCRIPT:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						if (elem_type.script_type.is_valid() && elem_type.script_type->get_global_name() != StringName()) {
-							result.hint_string = elem_type.script_type->get_global_name();
-						} else {
-							result.hint_string = elem_type.native_type;
-						}
-						break;
-					case CLASS:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						if (elem_type.class_type != nullptr && elem_type.class_type->get_global_name() != StringName()) {
-							result.hint_string = elem_type.class_type->get_global_name();
-						} else {
-							result.hint_string = elem_type.native_type;
-						}
-						break;
-					case ENUM:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						result.hint_string = String(elem_type.native_type).replace("::", ".");
-						break;
-					case VARIANT:
-					case RESOLVING:
-					case UNRESOLVED:
-						break;
+				if (elem_type.is_variant()) {
+					break;
 				}
+
+				result.hint = PROPERTY_HINT_ARRAY_TYPE;
+				result.hint_string = elem_type.to_property_info_hint_string();
 			} else if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
 				const DataType key_type = get_container_element_type_or_variant(0);
 				const DataType value_type = get_container_element_type_or_variant(1);
-				if ((key_type.kind == VARIANT && value_type.kind == VARIANT) || key_type.kind == RESOLVING ||
-						key_type.kind == UNRESOLVED || value_type.kind == RESOLVING || value_type.kind == UNRESOLVED) {
+				if (key_type.is_variant() && value_type.is_variant()) {
 					break;
 				}
-				String key_hint, value_hint;
-				switch (key_type.kind) {
-					case BUILTIN:
-						key_hint = Variant::get_type_name(key_type.builtin_type);
-						break;
-					case NATIVE:
-						key_hint = key_type.native_type;
-						break;
-					case SCRIPT:
-						if (key_type.script_type.is_valid() && key_type.script_type->get_global_name() != StringName()) {
-							key_hint = key_type.script_type->get_global_name();
-						} else {
-							key_hint = key_type.native_type;
-						}
-						break;
-					case CLASS:
-						if (key_type.class_type != nullptr && key_type.class_type->get_global_name() != StringName()) {
-							key_hint = key_type.class_type->get_global_name();
-						} else {
-							key_hint = key_type.native_type;
-						}
-						break;
-					case ENUM:
-						key_hint = String(key_type.native_type).replace("::", ".");
-						break;
-					default:
-						key_hint = "Variant";
-						break;
-				}
-				switch (value_type.kind) {
-					case BUILTIN:
-						value_hint = Variant::get_type_name(value_type.builtin_type);
-						break;
-					case NATIVE:
-						value_hint = value_type.native_type;
-						break;
-					case SCRIPT:
-						if (value_type.script_type.is_valid() && value_type.script_type->get_global_name() != StringName()) {
-							value_hint = value_type.script_type->get_global_name();
-						} else {
-							value_hint = value_type.native_type;
-						}
-						break;
-					case CLASS:
-						if (value_type.class_type != nullptr && value_type.class_type->get_global_name() != StringName()) {
-							value_hint = value_type.class_type->get_global_name();
-						} else {
-							value_hint = value_type.native_type;
-						}
-						break;
-					case ENUM:
-						value_hint = String(value_type.native_type).replace("::", ".");
-						break;
-					default:
-						value_hint = "Variant";
-						break;
-				}
+
 				result.hint = PROPERTY_HINT_DICTIONARY_TYPE;
-				result.hint_string = key_hint + ";" + value_hint;
+				result.hint_string = key_type.to_property_info_hint_string() + ";" + value_type.to_property_info_hint_string();
 			}
 			break;
 		case NATIVE:

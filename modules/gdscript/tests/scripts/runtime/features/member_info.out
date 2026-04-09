@@ -15,7 +15,11 @@ var test_var_hard_variant_type: Variant.Type
 var test_var_hard_variant_type_exported: Variant.Type
 var test_var_hard_node_process_mode: Node.ProcessMode
 var test_var_hard_my_enum: TestMemberInfo.MyEnum
+var test_var_hard_resource: Resource
+var test_var_hard_this: TestMemberInfo
+var test_var_hard_my_class: RefCounted
 var test_var_hard_array: Array
+var test_var_hard_array_variant: Array
 var test_var_hard_array_int: Array[int]
 var test_var_hard_array_variant_type: Array[Variant.Type]
 var test_var_hard_array_node_process_mode: Array[Node.ProcessMode]
@@ -24,6 +28,7 @@ var test_var_hard_array_resource: Array[Resource]
 var test_var_hard_array_this: Array[TestMemberInfo]
 var test_var_hard_array_my_class: Array[RefCounted]
 var test_var_hard_dictionary: Dictionary
+var test_var_hard_dictionary_variant_variant: Dictionary
 var test_var_hard_dictionary_int_variant: Dictionary[int, Variant]
 var test_var_hard_dictionary_variant_int: Dictionary[Variant, int]
 var test_var_hard_dictionary_int_int: Dictionary[int, int]
@@ -33,9 +38,6 @@ var test_var_hard_dictionary_my_enum: Dictionary[TestMemberInfo.MyEnum, TestMemb
 var test_var_hard_dictionary_resource: Dictionary[Resource, Resource]
 var test_var_hard_dictionary_this: Dictionary[TestMemberInfo, TestMemberInfo]
 var test_var_hard_dictionary_my_class: Dictionary[RefCounted, RefCounted]
-var test_var_hard_resource: Resource
-var test_var_hard_this: TestMemberInfo
-var test_var_hard_my_class: RefCounted
 static func test_static_func() -> void
 func test_func_implicit_void() -> void
 func test_func_explicit_void() -> void
