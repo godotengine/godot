@@ -1177,13 +1177,36 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	undo_redo->create_action(TTR("Node Renamed"));
 	undo_redo->add_do_method(blend_tree.ptr(), "rename_node", prev_name, name);
 	undo_redo->add_undo_method(blend_tree.ptr(), "rename_node", name, prev_name);
-	undo_redo->add_do_method(this, "update_graph");
 	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 	updating = false;
-	gn->set_name(new_name);
-	gn->set_meta(animation_node_name_meta, new_name);
+
+	// Update the node in place without destroying the graph
+	gn->set_name(name);
+	gn->set_meta(animation_node_name_meta, name);
 	gn->set_size(gn->get_minimum_size());
+
+	// Update LineEdit text and connections
+	for (int i = 0; i < gn->get_child_count(); i++) {
+		LineEdit *le = Object::cast_to<LineEdit>(gn->get_child(i));
+		if (le) {
+			le->set_text(name);
+			// Disconnect old connections
+			le->disconnect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(p_node, prev_name));
+			le->disconnect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(p_node, prev_name));
+			le->disconnect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed));
+			// Reconnect with new name
+			le->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(p_node, name), CONNECT_DEFERRED);
+			le->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(p_node, name), CONNECT_DEFERRED);
+			le->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
+			break;
+		}
+	}
+
+	// Disconnect old dragged signal
+	gn->disconnect(SNAME("dragged"), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_dragged).bind(prev_name));
+	// Reconnect with new name
+	gn->connect(SNAME("dragged"), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_dragged).bind(name));
 
 	//change editors accordingly
 	for (int i = 0; i < visible_properties.size(); i++) {
@@ -1211,13 +1234,12 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	//update animations
 	for (const KeyValue<StringName, ProgressBar *> &E : animations) {
 		if (E.key == prev_name) {
-			animations[new_name] = animations[prev_name];
+			animations[name] = animations[prev_name];
 			animations.erase(prev_name);
 			break;
 		}
 	}
 
-	update_graph(); // Needed to update the signal connections with the new name.
 	current_node_rename_text = String();
 }
 
