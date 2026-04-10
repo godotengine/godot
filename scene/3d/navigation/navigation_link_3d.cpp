@@ -253,7 +253,7 @@ void NavigationLink3D::_notification(int p_what) {
 			_link_enter_navigation_map();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			set_physics_process_internal(true);
 		} break;
 
@@ -284,7 +284,7 @@ NavigationLink3D::NavigationLink3D() {
 	NavigationServer3D::get_singleton()->link_set_bidirectional(link, bidirectional);
 	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
 
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 }
 
 NavigationLink3D::~NavigationLink3D() {
