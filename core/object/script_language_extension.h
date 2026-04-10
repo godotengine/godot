@@ -369,7 +369,12 @@ public:
 	EXBIND0RC(bool, supports_documentation)
 	EXBIND0RC(bool, can_inherit_from_file)
 
-	EXBIND2RC(int, find_function, const String &, const String &)
+	GDVIRTUAL2RC_REQUIRED(int, _find_function, const String &, const String &)
+	virtual int find_function(const String &p_function, const String &p_code, const String &p_path) const override {
+		int ret = -1;
+		GDVIRTUAL_CALL(_find_function, p_function, p_code, ret);
+		return ret;
+	}
 	EXBIND3RC(String, make_function, const String &, const String &, const PackedStringArray &)
 	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)

@@ -31,7 +31,6 @@
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_parser.h"
-#include "gdscript_tokenizer.h"
 #include "gdscript_utility_functions.h"
 
 #ifdef TOOLS_ENABLED
@@ -222,28 +221,14 @@ bool GDScriptLanguage::supports_documentation() const {
 	return true;
 }
 
-int GDScriptLanguage::find_function(const String &p_function, const String &p_code) const {
-	GDScriptTokenizerText tokenizer;
-	tokenizer.set_source_code(p_code);
-	int indent = 0;
-	GDScriptTokenizer::Token current = tokenizer.scan();
-	while (current.type != GDScriptTokenizer::Token::TK_EOF && current.type != GDScriptTokenizer::Token::ERROR) {
-		if (current.type == GDScriptTokenizer::Token::INDENT) {
-			indent++;
-		} else if (current.type == GDScriptTokenizer::Token::DEDENT) {
-			indent--;
-		}
-		if (indent == 0 && current.type == GDScriptTokenizer::Token::FUNC) {
-			current = tokenizer.scan();
-			if (current.is_identifier()) {
-				String identifier = current.get_identifier();
-				if (identifier == p_function) {
-					return current.start_line;
-				}
-			}
-		}
-		current = tokenizer.scan();
+int GDScriptLanguage::find_function(const String &p_function, const String &p_code, const String &p_path) const {
+	GDScriptParser parser;
+	parser.parse(p_code, p_path, false);
+
+	if (parser.get_tree() && parser.get_tree()->has_function(p_function)) {
+		return parser.get_tree()->get_member(p_function).get_line() - 1;
 	}
+
 	return -1;
 }
 

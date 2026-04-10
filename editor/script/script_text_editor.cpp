@@ -453,7 +453,7 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	code_editor->get_text_editor()->remove_secondary_carets();
 	code_editor->get_text_editor()->deselect();
 	String code = code_editor->get_text_editor()->get_text();
-	int pos = language->find_function(p_function, code);
+	int pos = language->find_function(p_function, code, script->get_path());
 	if (pos == -1) {
 		// Function does not exist, create it at the end of the file.
 		int last_line = code_editor->get_text_editor()->get_line_count() - 1;

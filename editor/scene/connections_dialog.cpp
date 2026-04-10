@@ -1020,7 +1020,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 
 	if (scr.is_valid() && !ClassDB::has_method(target->get_class(), cd.method)) {
 		// Check in target's own script.
-		int line = scr->get_language()->find_function(cd.method, scr->get_source_code());
+		int line = scr->get_language()->find_function(cd.method, scr->get_source_code(), scr->get_path());
 		if (line != -1) {
 			add_script_function_request = EDITOR_GET("text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method");
 		} else {
@@ -1028,7 +1028,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 			bool found_inherited_function = false;
 			Ref<Script> inherited_scr = scr->get_base_script();
 			while (inherited_scr.is_valid()) {
-				int inherited_line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
+				int inherited_line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code(), inherited_scr->get_path());
 				if (inherited_line != -1) {
 					found_inherited_function = true;
 					break;
