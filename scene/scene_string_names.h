@@ -107,6 +107,7 @@ public:
 	const StringName screen_entered = "screen_entered";
 	const StringName screen_exited = "screen_exited";
 
+	const StringName _canvas_item_editor_group = "_canvas_item_editor_group";
 	const StringName _spatial_editor_group = "_spatial_editor_group";
 	const StringName _request_gizmo = "_request_gizmo";
 
