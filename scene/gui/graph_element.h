@@ -56,6 +56,8 @@ protected:
 
 #ifdef TOOLS_ENABLED
 	void _edit_set_position(const Point2 &p_position) override;
+	Dictionary _edit_get_state() const override;
+	void _edit_set_state(const Dictionary &p_state) override;
 #endif
 
 protected:
