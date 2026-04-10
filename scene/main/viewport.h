@@ -36,6 +36,8 @@
 #include "servers/rendering/rendering_server_enums.h"
 
 class AudioListener2D;
+class AudioStream;
+class AudioStreamPlayer;
 class Camera2D;
 class CanvasItem;
 class CanvasLayer;
@@ -697,6 +699,8 @@ public:
 	void gui_perform_drop_at(const Point2 &p_pos, Control *p_control = nullptr);
 
 	Control *gui_find_control(const Point2 &p_global);
+
+	void play_theme_sound(const Ref<AudioStream> &p_stream);
 
 	void set_sdf_oversize(SDFOversize p_sdf_oversize);
 	SDFOversize get_sdf_oversize() const;

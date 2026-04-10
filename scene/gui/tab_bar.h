@@ -180,6 +180,11 @@ private:
 		Ref<Texture2D> close_icon;
 		Ref<StyleBox> button_pressed_style;
 		Ref<StyleBox> button_hl_style;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> hover_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
 	} theme_cache;
 
 	Timer *hover_switch_delay = nullptr;
@@ -200,6 +205,9 @@ private:
 
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
+
+	bool _select_previous_available(bool p_play_sound);
+	bool _select_next_available(bool p_play_sound);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

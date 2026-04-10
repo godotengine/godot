@@ -1365,6 +1365,9 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 		if (rect_old.has_point(mb->get_position())) {
 			// Revert to the old color when left-clicking the old color sample.
+			if (!old_color.is_equal_approx(color)) {
+				play_theme_sound(theme_cache.pressed_sound);
+			}
 			set_pick_color(old_color);
 
 			sample->set_focus_mode(FOCUS_NONE);
@@ -1373,6 +1376,9 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		if (!old_color.is_equal_approx(color)) {
+			play_theme_sound(theme_cache.pressed_sound);
+		}
 		set_pick_color(old_color);
 		emit_signal(SNAME("color_changed"), color);
 	}
@@ -2081,6 +2087,10 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover_pressed, "tab_selected", "TabContainer");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, ColorPicker, pressed_sound, "pressed_sound", "BaseButton");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, ColorPicker, drag_started_sound, "drag_started_sound", "Slider");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, ColorPicker, drag_ended_sound, "drag_ended_sound", "Slider");
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 	ADD_CLASS_DEPENDENCY("MenuButton");

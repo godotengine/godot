@@ -139,6 +139,13 @@ class SpinBox : public Range {
 		int buttons_vertical_separation = 0;
 		int field_and_buttons_separation = 0;
 		int buttons_width = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+
 #ifndef DISABLE_DEPRECATED
 		Ref<Texture2D> updown_icon;
 		bool is_updown_assigned = false;
