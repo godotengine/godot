@@ -289,6 +289,61 @@ Error SceneDebugger::_msg_live_node_prop_res(const Array &p_args) {
 	LiveEditor::get_singleton()->_node_set_res_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
+Error SceneDebugger::_msg_live_node_prop_data(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
+	LiveEditor::get_singleton()->_node_set_data_func(p_args[0], p_args[1], p_args[2], p_args[3]);
+	return OK;
+}
+
+Error SceneDebugger::_msg_live_res_prop_data(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
+	LiveEditor::get_singleton()->_res_set_data_func(p_args[0], p_args[1], p_args[2], p_args[3]);
+	return OK;
+}
+
+Error SceneDebugger::_msg_set_object_property_data(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
+	String path = p_args[2];
+	String class_name = p_args[3];
+
+	Ref<Resource> r;
+	if (!path.is_empty()) {
+		r = ResourceCache::get_ref(path);
+	}
+
+	if (r.is_null()) {
+		r = Object::cast_to<Resource>(ClassDB::instantiate(class_name));
+		if (r.is_valid() && !path.is_empty()) {
+			r->set_path(path);
+		}
+	}
+
+	_set_object_property(p_args[0], p_args[1], r);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
+	return OK;
+}
+
+Error SceneDebugger::_msg_set_object_property_field_data(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 5, ERR_INVALID_DATA);
+	String path = p_args[2];
+	String class_name = p_args[3];
+
+	Ref<Resource> r;
+	if (!path.is_empty()) {
+		r = ResourceCache::get_ref(path);
+	}
+
+	if (r.is_null()) {
+		r = Object::cast_to<Resource>(ClassDB::instantiate(class_name));
+		if (r.is_valid() && !path.is_empty()) {
+			r->set_path(path);
+		}
+	}
+
+	_set_object_property(p_args[0], p_args[1], r, p_args[4]);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
+	return OK;
+}
 
 Error SceneDebugger::_msg_live_node_prop(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
@@ -552,6 +607,10 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["request_scene_tree"] = _msg_request_scene_tree;
 	message_handlers["save_node"] = _msg_save_node;
 	message_handlers["inspect_objects"] = _msg_inspect_objects;
+	message_handlers["live_node_prop_data"] = _msg_live_node_prop_data;
+	message_handlers["live_res_prop_data"] = _msg_live_res_prop_data;
+	message_handlers["set_object_property_data"] = _msg_set_object_property_data;
+	message_handlers["set_object_property_field_data"] = _msg_set_object_property_field_data;
 #ifndef DISABLE_DEPRECATED
 	message_handlers["inspect_object"] = _msg_inspect_object;
 #endif // DISABLE_DEPRECATED
@@ -945,6 +1004,39 @@ void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant
 	}
 
 	r->set(p_prop, p_value);
+}
+void LiveEditor::_node_set_data_func(int p_id, const StringName &p_prop, const String &p_res_path, const String &p_class_name) {
+	Ref<Resource> r = ResourceCache::get_ref(p_res_path);
+
+	if (r.is_null()) {
+		r = Object::cast_to<Resource>(ClassDB::instantiate(p_class_name));
+		if (r.is_valid() && !p_res_path.is_empty()) {
+			r->set_path(p_res_path);
+		}
+	}
+
+	if (r.is_null()) {
+		return;
+	}
+
+	_node_set_func(p_id, p_prop, r);
+}
+
+void LiveEditor::_res_set_data_func(int p_id, const StringName &p_prop, const String &p_res_path, const String &p_class_name) {
+	Ref<Resource> r = ResourceCache::get_ref(p_res_path);
+
+	if (r.is_null()) {
+		r = Object::cast_to<Resource>(ClassDB::instantiate(p_class_name));
+		if (r.is_valid() && !p_res_path.is_empty()) {
+			r->set_path(p_res_path);
+		}
+	}
+
+	if (r.is_null()) {
+		return;
+	}
+
+	_res_set_func(p_id, p_prop, r);
 }
 
 void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {

@@ -87,6 +87,10 @@ private:
 	static Error _msg_live_node_path(const Array &p_args);
 	static Error _msg_live_res_path(const Array &p_args);
 	static Error _msg_live_node_prop_res(const Array &p_args);
+	static Error _msg_live_node_prop_data(const Array &p_args);
+	static Error _msg_live_res_prop_data(const Array &p_args);
+	static Error _msg_set_object_property_data(const Array &p_args);
+	static Error _msg_set_object_property_field_data(const Array &p_args);
 	static Error _msg_live_node_prop(const Array &p_args);
 	static Error _msg_live_res_prop_res(const Array &p_args);
 	static Error _msg_live_res_prop(const Array &p_args);
@@ -137,7 +141,8 @@ private:
 	HashMap<Node *, HashMap<ObjectID, Node *>> live_edit_remove_list;
 
 	void _send_tree();
-
+	void _node_set_data_func(int p_id, const StringName &p_prop, const String &p_res_path, const String &p_class_name);
+	void _res_set_data_func(int p_id, const StringName &p_prop, const String &p_res_path, const String &p_class_name);
 	void _node_path_func(const NodePath &p_path, int p_id);
 	void _res_path_func(const String &p_path, int p_id);
 
