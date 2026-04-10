@@ -62,6 +62,12 @@
 				Emitted when the tip moved outside the deadzone and the joystick is released. The [param input_vector] contains the last input direction and strength before release. Its length is between [code]0.0[/code] and [code]1.0[/code].
 			</description>
 		</signal>
+		<signal name="motion">
+			<param index="0" name="input_vector" type="Vector2" />
+			<description>
+				Emitted when the joystick is moved. The [param input_vector] contains the current input direction and strength. Its length is between [code]0.0[/code] and [code]1.0[/code].
+			</description>
+		</signal>
 		<signal name="pressed">
 			<description>
 				Emitted when the joystick is pressed.
