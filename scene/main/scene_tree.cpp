@@ -849,6 +849,8 @@ void SceneTree::process_tweens(double p_delta, bool p_physics) {
 }
 
 void SceneTree::finalize() {
+	emit_signal("_finalizing");
+
 	_flush_delete_queue();
 
 	_flush_ugc();
@@ -1972,6 +1974,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
+	ADD_SIGNAL(MethodInfo("_finalizing"));
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
@@ -2239,9 +2242,10 @@ SceneTree::~SceneTree() {
 		}
 		pending_new_scene_id = ObjectID();
 	}
+
 	if (root) {
-		root->_set_tree(nullptr);
-		root->_propagate_after_exit_tree();
+		// If root is inside the tree then `finalize` was not called.
+		DEV_ASSERT(!root->is_inside_tree());
 		memdelete(root);
 	}
 
