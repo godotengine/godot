@@ -3415,21 +3415,21 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				if (i == option_tab) {
 					continue;
 				}
-				tabs_to_close.push_back(editor_data.get_scene_path(i));
+				tabs_to_close.push_back(i);
 			}
 			_proceed_closing_scene_tabs();
 		} break;
 		case EditorSceneTabs::SCENE_CLOSE_RIGHT: {
 			tab_closing_menu_option = -1;
 			for (int i = scene_tabs->get_option_tab() + 1; i < editor_data.get_edited_scene_count(); i++) {
-				tabs_to_close.push_back(editor_data.get_scene_path(i));
+				tabs_to_close.push_back(i);
 			}
 			_proceed_closing_scene_tabs();
 		} break;
 		case SCENE_CLOSE_ALL: {
 			tab_closing_menu_option = -1;
 			for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-				tabs_to_close.push_back(editor_data.get_scene_path(i));
+				tabs_to_close.push_back(i);
 			}
 			_proceed_closing_scene_tabs();
 		} break;
@@ -3813,7 +3813,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				if (save_each) {
 					tab_closing_menu_option = current_menu_option;
 					for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-						tabs_to_close.push_back(editor_data.get_scene_path(i));
+						tabs_to_close.push_back(i);
 					}
 					_proceed_closing_scene_tabs();
 				} else {
@@ -6654,7 +6654,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 }
 
 void EditorNode::_proceed_closing_scene_tabs() {
-	List<String>::Element *E = tabs_to_close.front();
+	List<int>::Element *E = tabs_to_close.front();
 	if (!E) {
 		if (_is_closing_editor()) {
 			current_menu_option = tab_closing_menu_option;
@@ -6665,16 +6665,9 @@ void EditorNode::_proceed_closing_scene_tabs() {
 		}
 		return;
 	}
-	String scene_to_close = E->get();
+	int tab_idx = E->get();
 	tabs_to_close.pop_front();
-
-	int tab_idx = -1;
-	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		if (editor_data.get_scene_path(i) == scene_to_close) {
-			tab_idx = i;
-			break;
-		}
-	}
+	
 	ERR_FAIL_COND(tab_idx < 0);
 
 	_scene_tab_closed(tab_idx);
@@ -6750,7 +6743,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 
 	if (EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(p_tab))) {
 		if (scene_filename.is_empty()) {
-			unsaved_message = TTR("This scene was never saved.");
+			unsaved_message = vformat(TTR("This scene was never saved (root node: \"%s\")."), editor_data.get_edited_scene_root(p_tab)->get_name());
 		} else {
 			uint32_t time_opened = editor_data.get_scene_time_opened(p_tab);
 			unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, time_opened);
