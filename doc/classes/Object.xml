@@ -669,6 +669,7 @@
 				- [code]id[/code] is the method's internal identifier [int];
 				- [code]return[/code] is the returned value, as a [Dictionary];
 				[b]Note:[/b] The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.
+				[b]Note:[/b] In exported release builds the debug info is not available, so the returned dictionaries will contain only method names.
 			</description>
 		</method>
 		<method name="get_property_list" qualifiers="const">
