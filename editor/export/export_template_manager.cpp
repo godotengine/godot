@@ -55,6 +55,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
+#include "scene/main/timer.h"
 #include "servers/display/display_server.h"
 
 enum DownloadsAvailability {
@@ -189,6 +190,7 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 		return;
 	}
 	is_downloading_templates = true;
+	download_url = p_url;
 
 	install_options_vb->hide();
 	download_progress_hb->show();
@@ -197,22 +199,46 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 
 	_set_current_progress_status(TTR("Starting the download..."));
 
-	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz"));
+	String download_path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz");
+	download_templates->set_download_file(download_path);
 	download_templates->set_use_threads(true);
+	download_templates->set_keep_partial_download(true);
 
 	const String proxy_host = EDITOR_GET("network/http_proxy/host");
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
 	download_templates->set_http_proxy(proxy_host, proxy_port);
 	download_templates->set_https_proxy(proxy_host, proxy_port);
 
-	Error err = download_templates->request(p_url);
+	Vector<String> custom_headers;
+	if (resume_offset == 0 && FileAccess::exists(download_path)) {
+		Ref<FileAccess> f = FileAccess::open(download_path, FileAccess::READ);
+		if (f.is_valid()) {
+			uint64_t existing_size = f->get_length();
+			f.unref();
+			if (existing_size > 0) {
+				resume_offset = existing_size;
+			}
+		}
+	}
+
+	if (resume_offset > 0) {
+		custom_headers.push_back("Range: bytes=" + itos(resume_offset) + "-");
+		download_templates->set_append_to_download_file(true);
+	}
+
+	Error err = download_templates->request(p_url, custom_headers);
 	if (err != OK) {
 		_set_current_progress_status(TTR("Error requesting URL:") + " " + p_url, true);
 		download_progress_hb->hide();
+		is_downloading_templates = false;
 		return;
 	}
 
 	set_process(true);
+	last_downloaded_bytes = -1;
+	stall_elapsed = 0;
+	download_stalled = false;
+	retry_button->hide();
 	_set_current_progress_status(TTR("Connecting to the mirror..."));
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
@@ -222,19 +248,20 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 }
 
 void ExportTemplateManager::_download_template_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
+	bool is_retryable = false;
+
 	switch (p_status) {
 		case HTTPRequest::RESULT_CANT_RESOLVE: {
 			_set_current_progress_status(TTR("Can't resolve the requested address."), true);
 		} break;
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
-		case HTTPRequest::RESULT_CONNECTION_ERROR:
 		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+		case HTTPRequest::RESULT_CONNECTION_ERROR:
 		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
-		case HTTPRequest::RESULT_CANT_CONNECT: {
-			_set_current_progress_status(TTR("Can't connect to the mirror."), true);
-		} break;
-		case HTTPRequest::RESULT_NO_RESPONSE: {
-			_set_current_progress_status(TTR("No response from the mirror."), true);
+		case HTTPRequest::RESULT_CANT_CONNECT:
+		case HTTPRequest::RESULT_NO_RESPONSE:
+		case HTTPRequest::RESULT_TIMEOUT: {
+			is_retryable = true;
 		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
 			_set_current_progress_status(TTR("Request failed."), true);
@@ -243,13 +270,14 @@ void ExportTemplateManager::_download_template_completed(int p_status, int p_cod
 			_set_current_progress_status(TTR("Request ended up in a redirect loop."), true);
 		} break;
 		default: {
-			if (p_code != 200) {
-				_set_current_progress_status(TTR("Request failed:") + " " + itos(p_code), true);
-			} else {
+			if (p_code == 200 || p_code == 206) {
 				_set_current_progress_status(TTR("Download complete; extracting templates..."));
 				String path = download_templates->get_download_file();
 
 				is_downloading_templates = false;
+				retry_count = 0;
+				resume_offset = 0;
+
 				bool ret = _install_file_selected(path, true);
 				if (ret) {
 					// Clean up downloaded file.
@@ -261,8 +289,48 @@ void ExportTemplateManager::_download_template_completed(int p_status, int p_cod
 				} else {
 					EditorNode::get_singleton()->add_io_error(vformat(TTR("Templates installation failed.\nThe problematic templates archives can be found at '%s'."), path));
 				}
+			} else if (p_code == 416) {
+				String path = download_templates->get_download_file();
+				if (!path.is_empty() && FileAccess::exists(path)) {
+					DirAccess::remove_absolute(path);
+				}
+				resume_offset = 0;
+				if (retry_count >= MAX_DOWNLOAD_RETRIES) {
+					_set_current_progress_status(TTR("Download failed: server rejected range request."), true);
+					retry_count = 0;
+					break; // Fall through to hide progress.
+				}
+				retry_count++;
+				is_downloading_templates = false;
+				_download_template(download_url, true);
+				return;
+			} else {
+				_set_current_progress_status(TTR("Request failed:") + " " + itos(p_code), true);
 			}
 		} break;
+	}
+
+	if (is_retryable && retry_count < MAX_DOWNLOAD_RETRIES) {
+		retry_count++;
+		_set_current_progress_status(vformat(TTR("Connection lost. Retrying (%d/%d)..."), retry_count, MAX_DOWNLOAD_RETRIES));
+		String path = download_templates->get_download_file();
+		if (!path.is_empty() && FileAccess::exists(path)) {
+			Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
+			if (f.is_valid()) {
+				resume_offset = f->get_length();
+				f.unref();
+			}
+		}
+		retry_timer->start(2.0);
+		return;
+	} else if (is_retryable) {
+		_set_current_progress_status(TTR("Can't connect to the mirror. Download failed after multiple retries."), true);
+		retry_count = 0;
+		resume_offset = 0;
+		String path = download_templates->get_download_file();
+		if (!path.is_empty() && FileAccess::exists(path)) {
+			DirAccess::remove_absolute(path);
+		}
 	}
 
 	EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
@@ -274,10 +342,67 @@ void ExportTemplateManager::_cancel_template_download() {
 		return;
 	}
 
-	download_templates->cancel_request();
+	retry_timer->stop();
+
+	if (download_stalled) {
+		download_templates->disconnect("request_completed", callable_mp(this, &ExportTemplateManager::_download_template_completed));
+		download_templates = memnew(HTTPRequest);
+		add_child(download_templates);
+		download_templates->connect("request_completed", callable_mp(this, &ExportTemplateManager::_download_template_completed));
+	} else {
+		download_templates->cancel_request();
+	}
+
+	String path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz");
+	if (FileAccess::exists(path)) {
+		DirAccess::remove_absolute(path);
+	}
+
 	download_progress_hb->hide();
+	retry_button->hide();
 	install_options_vb->show();
 	is_downloading_templates = false;
+	download_stalled = false;
+	retry_count = 0;
+	resume_offset = 0;
+	download_url = "";
+	stall_elapsed = 0;
+	last_downloaded_bytes = -1;
+}
+
+void ExportTemplateManager::_attempt_resume_download() {
+	if (download_url.is_empty()) {
+		_set_current_progress_status(TTR("Can't retry: no download URL available."), true);
+		return;
+	}
+	_download_template(download_url, true);
+}
+
+void ExportTemplateManager::_reconnect_download() {
+	if (download_url.is_empty()) {
+		return;
+	}
+
+	download_templates->disconnect("request_completed", callable_mp(this, &ExportTemplateManager::_download_template_completed));
+	download_templates = memnew(HTTPRequest);
+	add_child(download_templates);
+	download_templates->connect("request_completed", callable_mp(this, &ExportTemplateManager::_download_template_completed));
+
+	String path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz");
+	if (FileAccess::exists(path)) {
+		Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
+		if (f.is_valid()) {
+			resume_offset = f->get_length();
+			f.unref();
+		}
+	}
+
+	download_stalled = false;
+	stall_elapsed = 0;
+	last_downloaded_bytes = -1;
+	retry_button->hide();
+	is_downloading_templates = false;
+	_download_template(download_url, true);
 }
 
 void ExportTemplateManager::_refresh_mirrors() {
@@ -777,8 +902,29 @@ void ExportTemplateManager::popup_manager() {
 }
 
 void ExportTemplateManager::stop_download() {
-	download_templates->cancel_request();
+	retry_timer->stop();
+
+	if (download_stalled) {
+		download_templates->disconnect("request_completed", callable_mp(this, &ExportTemplateManager::_download_template_completed));
+		download_templates = memnew(HTTPRequest);
+		add_child(download_templates);
+		download_templates->connect("request_completed", callable_mp(this, &ExportTemplateManager::_download_template_completed));
+	} else {
+		download_templates->cancel_request();
+	}
+
+	String path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz");
+	if (FileAccess::exists(path)) {
+		DirAccess::remove_absolute(path);
+	}
+
 	is_downloading_templates = false;
+	download_stalled = false;
+	retry_count = 0;
+	resume_offset = 0;
+	download_url = "";
+	stall_elapsed = 0;
+	last_downloaded_bytes = -1;
 }
 
 void ExportTemplateManager::ok_pressed() {
@@ -969,10 +1115,37 @@ void ExportTemplateManager::_notification(int p_what) {
 			bool success = _humanize_http_status(download_templates, &status, &downloaded_bytes, &total_bytes);
 
 			if (downloaded_bytes >= 0) {
-				if (total_bytes > 0) {
-					float progress = float(downloaded_bytes) / total_bytes;
+				if (downloaded_bytes == last_downloaded_bytes && last_downloaded_bytes > 0) {
+					stall_elapsed += 0.5;
+					if (stall_elapsed >= STALL_TIMEOUT_SEC && !download_stalled) {
+						download_stalled = true;
+						retry_button->show();
+					}
+					if (download_stalled) {
+						status = TTR("Download stalled. Click \"Retry Now\" to reconnect.");
+					}
+				} else {
+					last_downloaded_bytes = downloaded_bytes;
+					stall_elapsed = 0;
+					if (download_stalled) {
+						download_stalled = false;
+						retry_button->hide();
+					}
+				}
+
+				int64_t effective_downloaded = (int64_t)downloaded_bytes + resume_offset;
+				int64_t effective_total = (total_bytes > 0) ? ((int64_t)total_bytes + resume_offset) : 0;
+
+				if (effective_total > 0) {
+					if (stall_elapsed < STALL_TIMEOUT_SEC) {
+						status = TTR("Downloading") + " " + String::humanize_size(effective_downloaded) + "/" + String::humanize_size(effective_total);
+					}
+					float progress = float(effective_downloaded) / effective_total;
 					EditorNode::get_bottom_panel()->get_progress_indicator()->set_value(progress);
 					_set_current_progress_value(progress, status);
+				} else if (resume_offset > 0) {
+					status = TTR("Downloading") + " " + String::humanize_size(effective_downloaded);
+					_set_current_progress_value(0, status);
 				} else {
 					_set_current_progress_value(0, status);
 				}
@@ -1147,9 +1320,21 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_progress_hb->add_child(download_cancel_button);
 	download_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_cancel_template_download));
 
+	retry_button = memnew(Button);
+	retry_button->set_text(TTR("Retry Now"));
+	retry_button->set_tooltip_text(TTR("Abandon the stalled connection and retry the download."));
+	retry_button->hide();
+	download_progress_hb->add_child(retry_button);
+	retry_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_reconnect_download));
+
 	download_templates = memnew(HTTPRequest);
 	install_templates_hb->add_child(download_templates);
 	download_templates->connect("request_completed", callable_mp(this, &ExportTemplateManager::_download_template_completed));
+
+	retry_timer = memnew(Timer);
+	retry_timer->set_one_shot(true);
+	retry_timer->connect("timeout", callable_mp(this, &ExportTemplateManager::_attempt_resume_download));
+	add_child(retry_timer);
 
 	main_vb->add_child(memnew(HSeparator));
 

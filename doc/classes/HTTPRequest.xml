@@ -233,6 +233,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="append_to_download_file" type="bool" setter="set_append_to_download_file" getter="get_append_to_download_file" default="false">
+			If [code]true[/code] and the server responds with HTTP status code [code]206 Partial Content[/code], the response body will be appended to the existing [member download_file] instead of overwriting it. If the server responds with [code]200 OK[/code] (e.g., if it does not support range requests), the file will be overwritten as usual.
+			This is useful for resuming interrupted downloads when used together with an HTTP [code skip-lint]Range[/code] header in the request. See also [member keep_partial_download].
+		</member>
 		<member name="accept_gzip" type="bool" setter="set_accept_gzip" getter="is_accepting_gzip" default="true">
 			If [code]true[/code], this header will be added to each request: [code]Accept-Encoding: gzip, deflate[/code] telling servers that it's okay to compress response bodies.
 			Any Response body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [signal request_completed].
@@ -248,6 +252,10 @@
 		</member>
 		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
 			The file to download into. Will output any received file into it.
+		</member>
+		<member name="keep_partial_download" type="bool" setter="set_keep_partial_download" getter="get_keep_partial_download" default="false">
+			If [code]true[/code], the partially downloaded file set via [member download_file] will not be deleted when the request fails or is cancelled. This allows resuming an interrupted download later by sending a new request with an HTTP [code skip-lint]Range[/code] header and [member append_to_download_file] set to [code]true[/code].
+			If [code]false[/code] (the default), incomplete download files are automatically deleted on failure or cancellation.
 		</member>
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
