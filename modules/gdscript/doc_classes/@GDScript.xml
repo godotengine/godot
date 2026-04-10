@@ -573,6 +573,30 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_flags_grid">
+			<return type="void" />
+			<param index="0" name="count" type="int" />
+			<description>
+				Export an integer property as a bit flag field displayed in a compact, numbered grid. The [param count] parameter specifies the number of flags to display.
+				See also [constant PROPERTY_HINT_FLAGS_GRID].
+				[codeblock]
+				@export_flags_grid(8) var spell_elements = 0
+				@export_flags_grid(8) var phase_elements: Array[int]
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@export_flags_grid_named" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="names" type="String" />
+			<description>
+				Export an integer property as a bit flag field displayed in a compact, numbered grid. Each name corresponds to a bit flag, and will be shown as a tooltip when hovering over the grid cell.
+				See also [constant PROPERTY_HINT_FLAGS_GRID_NAMED].
+				[codeblock]
+				@export_flags_grid_named("Fire", "Water", "Earth", "Wind") var spell_elements = 0
+				@export_flags_grid_named("Fire", "Water", "Earth", "Wind") var phase_elements: Array[int]
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
