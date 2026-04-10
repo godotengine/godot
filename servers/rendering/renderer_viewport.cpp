@@ -267,7 +267,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				jitter_phase_count = uint32_t(8.0f * std::pow(float(target_width) / render_width, 2.0f));
 			} else if (use_taa) {
 				// Default jitter count for TAA.
-				jitter_phase_count = 16;
+				jitter_phase_count = 2;
 			}
 
 			p_viewport->internal_size = Size2(render_width, render_height);
