@@ -53,10 +53,11 @@
 		<method name="_update_layout" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="layout" type="int" />
+			<param index="1" name="slot" type="int" />
 			<description>
-				Implement this method to handle the layout switching for this dock. [param layout] is one of the [enum DockLayout] constants.
+				Implement this method to handle the layout/slot switching for this dock. [param layout] is one of the [enum DockLayout] constants, and [param slot] is one of the [enum DockSlot] ones.
 				[codeblock]
-				func _update_layout(layout):
+				func _update_layout(layout, slot):
 					box_container.vertical = (layout == DOCK_LAYOUT_VERTICAL)
 				[/codeblock]
 			</description>

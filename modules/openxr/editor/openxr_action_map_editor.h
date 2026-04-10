@@ -64,6 +64,7 @@ private:
 	Button *save_as = nullptr;
 	Button *_default = nullptr;
 	TabContainer *tabs = nullptr;
+	MarginContainer *actionsets_mc = nullptr;
 	ScrollContainer *actionsets_scroll = nullptr;
 	VBoxContainer *actionsets_vb = nullptr;
 	OpenXRSelectInteractionProfileDialog *select_interaction_profile_dialog = nullptr;
@@ -94,6 +95,8 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
 
 	void _clear_action_map();
 
