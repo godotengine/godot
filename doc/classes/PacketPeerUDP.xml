@@ -127,6 +127,21 @@
 				[b]Note:[/b] [method set_broadcast_enabled] must be enabled before sending packets to a broadcast address (e.g. [code]255.255.255.255[/code]).
 			</description>
 		</method>
+		<method name="set_reuse_address_enabled">
+			<return type="void" />
+			<param index="0" name="reuse_address" type="bool" />
+			<description>
+				Enable or disable [code]SO_REUSEADDR[/code] on the underlying socket. This option is disabled by default.
+			</description>
+		</method>
+		<method name="set_reuse_port_enabled">
+			<return type="void" />
+			<param index="0" name="reuse_port" type="bool" />
+			<description>
+				Enable or disable [code]SO_REUSEPORT[/code] on the underlying socket. This option is disabled by default.
+				[b]Note:[/b] Not supported on Windows, use [method set_reuse_address_enabled] instead.
+			</description>
+		</method>
 		<method name="wait">
 			<return type="int" enum="Error" />
 			<description>
