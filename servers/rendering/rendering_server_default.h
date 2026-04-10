@@ -493,6 +493,7 @@ public:
 	FUNC2(light_set_shadow_caster_mask, RID, uint32_t)
 	FUNC2(light_set_bake_mode, RID, RSE::LightBakeMode)
 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
+	FUNC2(light_set_extra_cull_margin, RID, float)
 
 	FUNC2(light_omni_set_shadow_mode, RID, RSE::LightOmniShadowMode)
 
