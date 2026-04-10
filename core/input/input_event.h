@@ -261,6 +261,8 @@ public:
 	virtual String as_text() const override;
 	virtual String _to_string() override;
 
+	static Ref<InputEventMouseButton> create_reference(MouseButton p_button);
+
 	InputEventType get_type() const final override { return InputEventType::MOUSE_BUTTON; }
 };
 

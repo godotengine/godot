@@ -424,6 +424,8 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_graph_follow_left",                          TTRC("Follow Input Port Connection") },
 	{ "ui_graph_follow_right",                         TTRC("Follow Output Port Connection") },
 	{ "ui_filedialog_delete",                          TTRC("Delete") },
+	{ "ui_filedialog_previous",                        TTRC("Go to Previous") },
+	{ "ui_filedialog_next",                            TTRC("Go to Next") },
 	{ "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
 	{ "ui_filedialog_refresh",                         TTRC("Refresh") },
 	{ "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
@@ -842,6 +844,17 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE));
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::ALT));
+	inputs.push_back(InputEventMouseButton::create_reference(MouseButton::MB_XBUTTON1));
+	default_builtin_cache.insert("ui_filedialog_previous", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::ALT));
+	inputs.push_back(InputEventMouseButton::create_reference(MouseButton::MB_XBUTTON2));
+	default_builtin_cache.insert("ui_filedialog_next", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_filedialog_up_one_level", inputs);
 
 	inputs = List<Ref<InputEvent>>();
