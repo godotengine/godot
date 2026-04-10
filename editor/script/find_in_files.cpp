@@ -32,12 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -216,6 +218,7 @@ void FindInFiles::_iterate() {
 		_current_dir = "";
 		_searching = false;
 		emit_signal(SceneStringName(finished));
+		ScriptEditor::get_singleton()->clear_symbol_rename();
 	}
 }
 
@@ -977,8 +980,39 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 	_result_items[item] = r;
 
 	if (_with_replace) {
+		ScriptLanguage::LookupResult *symbol_rename = ScriptEditor::get_singleton()->get_symbol_rename();
+
+		bool check_item = false;
+		if (symbol_rename) {
+			if (ResourceLoader::exists(fpath, "Script")) {
+				Ref<Script> source_script = ResourceLoader::load(fpath);
+				if (source_script.is_valid()) {
+					PackedStringArray lines = source_script->get_source_code().split("\n");
+					const String current_line = lines[line_number - 1];
+					lines.write[line_number - 1] = current_line.insert(begin, String::chr(0xFFFF));
+
+					ScriptLanguage::LookupResult result;
+					Error err = source_script->get_language()->lookup_code(String("\n").join(lines), current_line.substr(begin, end - begin), source_script->get_path(), nullptr, result);
+					if (err == OK) {
+						check_item = result.type == symbol_rename->type &&
+								result.class_name == symbol_rename->class_name &&
+								result.class_member == symbol_rename->class_member &&
+								result.description == symbol_rename->description &&
+								result.doc_type == symbol_rename->doc_type &&
+								result.enumeration == symbol_rename->enumeration &&
+								result.is_bitfield == symbol_rename->is_bitfield &&
+								result.value == symbol_rename->value &&
+								result.script_path == symbol_rename->script_path &&
+								result.location == symbol_rename->location;
+					}
+				}
+			}
+		} else {
+			check_item = true;
+		}
+
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_checked(0, true);
+		item->set_checked(0, check_item);
 		item->set_editable(0, true);
 		item->add_button(1, replace_texture, FIND_BUTTON_REPLACE, false, TTR("Replace"));
 		item->add_button(1, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));

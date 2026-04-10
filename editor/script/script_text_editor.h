@@ -60,6 +60,11 @@ class ScriptTextEditor : public CodeEditorBase {
 	Variant pending_state;
 	bool script_is_valid = false;
 
+	String symbol_to_rename;
+	ScriptLanguage::LookupResult rename_lookup_cache;
+	Popup *rename_popup = nullptr;
+	LineEdit *rename_input = nullptr;
+
 	RichTextLabel *errors_panel = nullptr;
 	Label *drag_info_label = nullptr;
 
@@ -118,6 +123,7 @@ class ScriptTextEditor : public CodeEditorBase {
 		SHOW_TOOLTIP_AT_CARET,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		RENAME_SYMBOL,
 	};
 
 	enum COLOR_MODE {
@@ -154,6 +160,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	Vector<ObjectID> _get_objects_for_export_assignment() const;
 	String _get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, const Vector<ObjectID> &p_script_instance_obj_ids);
 	void _assign_dragged_export_variables();
+	void _confirm_rename(const String &p_new_name);
 
 	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
 

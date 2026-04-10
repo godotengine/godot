@@ -49,11 +49,13 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/script/find_in_files.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
@@ -1857,6 +1859,57 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->get_caret_line(0), tx->get_caret_column(0));
 			}
 		} break;
+		case RENAME_SYMBOL: {
+			String text = tx->get_word_under_caret(0);
+			if (text.is_empty()) {
+				text = tx->get_selected_text(0);
+			}
+			if (text.is_empty()) {
+				break;
+			}
+			Ref<Script> script = edited_res;
+
+			ScriptLanguage::LookupResult result;
+			String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(tx->get_caret_line(0), tx->get_caret_column(0));
+			if (script->get_language()->lookup_code(code_text, text, script->get_path(), nullptr, result) != OK) {
+				break;
+			}
+
+			if (result.script.is_null()) {
+				// Don't allow renaming native symbols.
+				break;
+			}
+
+			rename_lookup_cache = result;
+			symbol_to_rename = text;
+
+			if (!rename_popup) {
+				rename_popup = memnew(Popup);
+				add_child(rename_popup);
+
+				rename_input = memnew(LineEdit);
+				rename_input->set_select_all_on_focus(true);
+				rename_input->set_theme_type_variation("TreeLineEdit");
+				rename_input->set_custom_minimum_size(Vector2(200 * EDSCALE, 0));
+				rename_popup->add_child(rename_input);
+				rename_input->connect("text_submitted", callable_mp(this, &ScriptTextEditor::_confirm_rename));
+			}
+			rename_input->set_text(text);
+
+			Vector2 pos = tx->get_screen_position();
+			// Set popup at the beginning of the word.
+			const PackedInt32Array words = TS->shaped_text_get_word_breaks(tx->get_line_data(tx->get_caret_line(0))->get_rid());
+			for (int i = 0; i < words.size(); i = i + 2) {
+				if ((words[i] <= tx->get_caret_column(0) && words[i + 1] >= tx->get_caret_column(0)) || (i == words.size() - 2 && tx->get_caret_column(0) == words[i + 1])) {
+					pos += tx->get_rect_at_line_column(tx->get_caret_line(), words[i] + 1).position;
+					break;
+				}
+			}
+			rename_popup->popup(Rect2i(pos, Vector2i()));
+
+			rename_input->grab_focus(false);
+		} break;
+
 		default: {
 			if (TextEditorBase::_edit_option(p_op)) {
 				return true;
@@ -2428,6 +2481,13 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 	}
 }
 
+void ScriptTextEditor::_confirm_rename(const String &p_new_name) {
+	if (p_new_name != symbol_to_rename) {
+		ScriptEditor::get_singleton()->rename_symbol(symbol_to_rename, p_new_name, rename_lookup_cache);
+	}
+	rename_popup->hide();
+}
+
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	Ref<InputEventKey> k = p_ev;
@@ -2603,6 +2663,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_separator();
 		if (p_open_docs) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/rename_symbol"), RENAME_SYMBOL);
 		}
 		if (p_color) {
 			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
@@ -2675,6 +2736,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_line", "macos", KeyModifierMask::CMD_OR_CTRL | Key::L);
 	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
+	ED_SHORTCUT("script_text_editor/rename_symbol", TTRC("Rename Symbol"), Key::F2);
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
