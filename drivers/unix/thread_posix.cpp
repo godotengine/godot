@@ -74,8 +74,44 @@ static Error set_name(const String &p_name) {
 #endif // PTHREAD_NO_RENAME
 }
 
+static bool get_stack_limits(void **r_bottom, void **r_top, void **r_frame) {
+	pthread_t pth_self = pthread_self();
+	pthread_attr_t pth_attr;
+	uint8_t *stack_addr = nullptr;
+	uint8_t *frame_addr = (uint8_t *)__builtin_frame_address(0);
+	size_t stack_size = 0;
+	size_t guard_size = 0;
+
+	if (pthread_getattr_np(pth_self, &pth_attr) == 0) {
+		pthread_attr_getstack(&pth_attr, (void **)&stack_addr, &stack_size);
+		pthread_attr_getguardsize(&pth_attr, &guard_size);
+		pthread_attr_destroy(&pth_attr);
+		if (frame_addr > stack_addr) {
+			if (r_bottom) {
+				*r_bottom = stack_addr + stack_size - MAX(guard_size, (size_t)(4 * 1024));
+			}
+			if (r_top) {
+				*r_top = stack_addr;
+			}
+		} else {
+			if (r_bottom) {
+				*r_bottom = stack_addr;
+			}
+			if (r_top) {
+				*r_top = stack_addr - stack_size + MAX(guard_size, (size_t)(4 * 1024));
+			}
+		}
+		if (r_frame) {
+			*r_frame = frame_addr;
+		}
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void init_thread_posix() {
-	Thread::_set_platform_functions({ .set_name = set_name });
+	Thread::_set_platform_functions({ .set_name = set_name, .get_stack_limits = get_stack_limits });
 }
 
 #endif // PLATFORM_THREAD_OVERRIDE && __APPLE__
