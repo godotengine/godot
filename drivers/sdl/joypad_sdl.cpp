@@ -203,12 +203,29 @@ void JoypadSDL::process_events() {
 						joypads[joy_id].guid,
 						joypad_info);
 
+				// Querying more information about the joypad
+
+				int joy_battery_percent;
+				SDL_PowerState joy_power_state = SDL_GetJoystickPowerInfo(joy, &joy_battery_percent);
+				SDL_JoystickConnectionState joy_connection_state = SDL_GetJoystickConnectionState(joy);
+				if (joy_power_state == SDL_POWERSTATE_ERROR) {
+					joy_power_state = SDL_POWERSTATE_UNKNOWN;
+				}
+				if (joy_connection_state == SDL_JOYSTICK_CONNECTION_INVALID) {
+					joy_connection_state = SDL_JOYSTICK_CONNECTION_UNKNOWN;
+				}
+
 				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
 
 				if (joypads[joy_id].supports_motion_sensors) {
 					// Data rate for all sensors should be the same.
 					Input::get_singleton()->set_joy_motion_sensors_rate(joy_id, SDL_GetGamepadSensorDataRate(gamepad, SDL_SENSOR_ACCEL));
 				}
+
+				// Godot constants are intentionally the same as SDL's
+				Input::get_singleton()->set_joy_power_state(joy_id, static_cast<JoyPowerState>(joy_power_state));
+				Input::get_singleton()->set_joy_battery_percent(joy_id, joy_battery_percent);
+				Input::get_singleton()->set_joy_connection_state(joy_id, static_cast<JoyConnectionState>(joy_connection_state));
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
@@ -253,6 +270,17 @@ void JoypadSDL::process_events() {
 							(HatMask)sdl_event.jhat.value // Godot hat masks are identical to SDL hat masks, so we can just use them as-is.
 					);
 					break;
+
+				case SDL_EVENT_JOYSTICK_BATTERY_UPDATED: {
+					// Gamepads also can have battery, so no SKIP_EVENT_FOR_GAMEPAD here
+
+					SDL_PowerState joy_power_state = sdl_event.jbattery.state;
+					if (joy_power_state == SDL_POWERSTATE_ERROR) {
+						joy_power_state = SDL_POWERSTATE_UNKNOWN;
+					}
+					Input::get_singleton()->set_joy_power_state(joy_id, static_cast<JoyPowerState>(sdl_event.jbattery.state)); // Godot constants are intentionally the same as SDL's
+					Input::get_singleton()->set_joy_battery_percent(joy_id, sdl_event.jbattery.percent);
+				} break;
 
 				case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
 					float axis_value;

@@ -183,6 +183,9 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_power_state", "device"), &Input::get_joy_power_state);
+	ClassDB::bind_method(D_METHOD("get_joy_battery_percent", "device"), &Input::get_joy_battery_percent);
+	ClassDB::bind_method(D_METHOD("get_joy_connection_state", "device"), &Input::get_joy_connection_state);
 	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
 	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
@@ -798,6 +801,33 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
+JoyPowerState Input::get_joy_power_state(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyPowerState::UNKNOWN;
+	}
+	return joypad->power_state;
+}
+
+int Input::get_joy_battery_percent(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return -1;
+	}
+	return joypad->battery_percent;
+}
+
+JoyConnectionState Input::get_joy_connection_state(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyConnectionState::UNKNOWN;
+	}
+	return joypad->connection_state;
+}
+
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// This function does the final delivery of the input event to user land.
 	// Regardless where the event came from originally, this has to happen on the main thread.
@@ -1354,6 +1384,33 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
 
 	gyroscope = p_gyroscope;
+}
+
+void Input::set_joy_power_state(int p_device, JoyPowerState p_state) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return;
+	}
+	joypad->power_state = p_state;
+}
+
+void Input::set_joy_battery_percent(int p_device, int p_percent) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || p_percent < -1 || p_percent > 100) {
+		return;
+	}
+	joypad->battery_percent = p_percent;
+}
+
+void Input::set_joy_connection_state(int p_device, JoyConnectionState p_state) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return;
+	}
+	joypad->connection_state = p_state;
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {
