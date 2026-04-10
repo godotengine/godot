@@ -97,6 +97,25 @@
 				[/codeblocks]
 			</description>
 		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="rgb" type="Vector3" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="rgb" type="Vector3" />
+			<param index="1" name="a" type="float" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="rgba" type="Vector4" />
+			<description>
+			</description>
+		</constructor>
 	</constructors>
 	<methods>
 		<method name="blend" qualifiers="const">
@@ -530,6 +549,10 @@
 		</member>
 		<member name="r8" type="int" setter="" getter="" default="0">
 			Wrapper for [member r] that uses the range 0 to 255, instead of 0 to 1.
+		</member>
+		<member name="rgb" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
+		</member>
+		<member name="rgba" type="Vector4" setter="" getter="" default="Vector4(0, 0, 0, 1)">
 		</member>
 		<member name="s" type="float" setter="" getter="" default="0.0">
 			The HSV saturation of this color, on the range 0 to 1.
