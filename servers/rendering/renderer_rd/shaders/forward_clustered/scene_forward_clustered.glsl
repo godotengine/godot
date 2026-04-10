@@ -6,7 +6,6 @@
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
-
 #include "scene_forward_clustered_inc.glsl"
 
 #define SHADER_IS_SRGB false
@@ -877,7 +876,6 @@ void main() {
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
-
 #include "scene_forward_clustered_inc.glsl"
 
 /* Varyings */
@@ -1080,9 +1078,8 @@ layout(location = 2) out vec2 motion_vector;
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#include "../scene_forward_lights_inc.glsl"
-
 #include "../scene_forward_gi_inc.glsl"
+#include "../scene_forward_lights_inc.glsl"
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -1346,11 +1343,24 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 point_coord = vec2(0.5);
 #endif
 #endif
+	vec2 user_motion_v = vec2(0.);
+#ifdef MOTION_VECTORS
+	vec2 position_clip = (screen_position.xy / screen_position.w) - scene_data.taa_jitter;
+	vec2 prev_position_clip = (prev_screen_position.xy / prev_screen_position.w) - scene_data_block.prev_data.taa_jitter;
 
+	vec2 position_uv = position_clip * vec2(0.5, 0.5);
+	vec2 prev_position_uv = prev_position_clip * vec2(0.5, 0.5);
+
+	motion_vector = prev_position_uv - position_uv;
+	user_motion_v = motion_vector;
+#endif
 	{
 #CODE : FRAGMENT
 	}
 
+#ifdef MOTION_VECTORS
+	motion_vector = user_motion_v;
+#endif
 	float roughness = roughness_highp;
 	float metallic = metallic_highp;
 	vec3 albedo = albedo_highp;
@@ -3018,15 +3028,6 @@ void fragment_shader(in SceneData scene_data) {
 #endif //MODE_SEPARATE_SPECULAR
 
 #endif //MODE_RENDER_DEPTH
-#ifdef MOTION_VECTORS
-	vec2 position_clip = (screen_position.xy / screen_position.w) - scene_data.taa_jitter;
-	vec2 prev_position_clip = (prev_screen_position.xy / prev_screen_position.w) - scene_data_block.prev_data.taa_jitter;
-
-	vec2 position_uv = position_clip * vec2(0.5, 0.5);
-	vec2 prev_position_uv = prev_position_clip * vec2(0.5, 0.5);
-
-	motion_vector = prev_position_uv - position_uv;
-#endif
 }
 
 void main() {
