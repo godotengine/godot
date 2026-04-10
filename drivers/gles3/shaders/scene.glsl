@@ -2373,7 +2373,20 @@ void main() {
 #endif // USE_LIGHTMAP_CAPTURE
 #endif // !DISABLE_LIGHTMAP
 
+#ifndef MULTI_BOUNCE_OCCLUSION_DISABLED
+	// Apply multi-bounce ambient-occlusion approximation to ambient light:
+	// https://blog.selfshadow.com/publications/s2016-shading-course/activision/s2016_pbs_activision_occlusion.pdf#page=78
+	{
+		vec3 a = vec3(2.0404) * albedo - vec3(0.3324);
+		vec3 b = vec3(-4.7951) * albedo + vec3(0.6417);
+		vec3 c = vec3(2.7552) * albedo + vec3(0.6903);
+		vec3 x = vec3(ao);
+		vec3 bounce_occlusion = max(x, ((x * a + b) * x + c) * x);
+		ambient_light *= bounce_occlusion;
+	}
+#else // MULTI_BOUNCE_OCCLUSION_DISABLED
 	ambient_light *= ao;
+#endif // MULTI_BOUNCE_OCCLUSION_DISABLED
 #ifndef SPECULAR_OCCLUSION_DISABLED
 #ifdef BENT_NORMAL_MAP_USED
 	float cos_b = max(dot(reflect(-view, normal), bent_normal_vector), 0.0);
