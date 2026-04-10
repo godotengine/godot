@@ -98,7 +98,7 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	double step = get_step();
-	String value = String::num(get_value(), Math::range_step_decimals(step));
+	String value = String::num(get_value(), Math::count_decimals(step));
 	if (is_localizing_numeral_system()) {
 		value = TranslationServer::get_singleton()->format_number(value, _get_locale());
 	}
