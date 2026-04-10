@@ -23,6 +23,14 @@ public:
 		mHasContact = false;
 	}
 
+	/// Mark this vertex as being in contact with inBodyID
+	inline void		MarkCCDContact(const BodyID &inBodyID, const Plane &inContactPlane)
+	{
+		mCollisionPlane = inContactPlane;
+		mCollidingShapeIndex = int(inBodyID.GetIndexAndSequenceNumber() | BodyID::cBroadPhaseBit); // We reuse the broad phase bit to indicate this is a CCD contact
+		mHasContact = true;
+	}
+
 	Vec3			mPreviousPosition;					///< Internal use only. Position at the previous time step
 	Vec3			mPosition;							///< Position, relative to the center of mass of the soft body
 	Vec3			mVelocity;							///< Velocity, relative to the center of mass of the soft body
