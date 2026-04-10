@@ -24,21 +24,24 @@ layout(push_constant, std430) uniform Params {
 	ivec2 target;
 	uint flags;
 	float luminance_multiplier;
+
+	uint lod;
 	// Glow.
 	float glow_strength;
 	float glow_bloom;
 	float glow_hdr_threshold;
-	float glow_hdr_scale;
 
+	float glow_hdr_scale;
 	float glow_exposure;
 	float glow_white;
 	float glow_luminance_cap;
+
 	float glow_auto_exposure_scale;
-	// DOF.
-	float camera_z_far;
-	float camera_z_near;
+	float padding;
 	// Octmap.
 	vec2 octmap_border_size;
+	// DOF.
+	mat2 proj_zw; // Bottom-right 2x2 corner of the projection matrix
 
 	vec4 set_color;
 }
@@ -254,15 +257,13 @@ void main() {
 #ifdef MODE_LINEARIZE_DEPTH_COPY
 
 	float depth = texelFetch(source_color, pos + params.section.xy, 0).r;
-	depth = depth * 2.0 - 1.0;
-	depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
-	vec4 color = vec4(depth / params.camera_z_far);
+	depth = (params.proj_zw[1][0] - params.proj_zw[1][1] * depth) / (params.proj_zw[0][1] * depth - params.proj_zw[0][0]);
 
 	if (bool(params.flags & FLAG_FLIP_Y)) {
 		pos.y = params.section.w - pos.y - 1;
 	}
 
-	imageStore(dest_buffer, pos + params.target, color);
+	imageStore(dest_buffer, pos + params.target, vec4(depth));
 #endif // MODE_LINEARIZE_DEPTH_COPY
 
 #if defined(MODE_OCTMAP_TO_PANORAMA) || defined(MODE_OCTMAP_ARRAY_TO_PANORAMA)
@@ -281,9 +282,9 @@ void main() {
 	normal.z = cos(phi) * sin(theta) * -1.0;
 
 #ifdef MODE_OCTMAP_TO_PANORAMA
-	vec4 color = textureLod(source_color, vec3_to_oct_with_border(normal, params.octmap_border_size), params.camera_z_far); //the biggest the lod the least the acne
+	vec4 color = textureLod(source_color, vec3_to_oct_with_border(normal, params.octmap_border_size), params.lod); //the biggest the lod the least the acne
 #else
-	vec4 color = textureLod(source_color, vec3(vec3_to_oct_with_border(normal, params.octmap_border_size), params.camera_z_far), 0.0); //the biggest the lod the least the acne
+	vec4 color = textureLod(source_color, vec3(vec3_to_oct_with_border(normal, params.octmap_border_size), params.lod), 0.0); //the biggest the lod the least the acne
 #endif
 	imageStore(dest_buffer, pos + params.target, color * params.luminance_multiplier);
 #endif // defined(MODE_OCTMAP_TO_PANORAMA) || defined(MODE_OCTMAP_ARRAY_TO_PANORAMA)

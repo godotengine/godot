@@ -144,21 +144,24 @@ private:
 		int32_t target[2];
 		uint32_t flags;
 		float luminance_multiplier;
+
+		float lod;
 		// Glow.
 		float glow_strength;
 		float glow_bloom;
 		float glow_hdr_threshold;
-		float glow_hdr_scale;
 
+		float glow_hdr_scale;
 		float glow_exposure;
 		float glow_white;
 		float glow_luminance_cap;
+
 		float glow_auto_exposure_scale;
-		// DOF.
-		float camera_z_far;
-		float camera_z_near;
+		float padding;
 		// Octmap.
 		float octmap_border_size[2];
+		// DOF.
+		float proj_zw[2][2]; // Bottom-right 2x2 corner of the projection matrix
 		//SET color
 		float set_color[4];
 	};
@@ -219,8 +222,9 @@ private:
 	// Copy to DP
 
 	struct CopyToDPPushConstant {
+		float proj_zw[2][2]; // Bottom-right 2x2 corner of the projection matrix in OpenGL format (no reverse-z, no Y-flip, no z-remap)
 		float z_far;
-		float z_near;
+		uint32_t pad;
 		float texel_size[2];
 	};
 
@@ -369,7 +373,7 @@ public:
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false, bool p_alpha_to_one = false, bool p_sanitize_inf_nan = false);
 	void copy_octmap_to_panorama(RID p_source_octmap, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array, const Size2 &p_source_octmap_border_size);
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
-	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
+	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, const Projection &p_projection);
 	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false, bool p_normal = false, const Rect2 &p_src_rect = Rect2(), float p_linear_luminance_multiplier = 1.0);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void copy_to_drawlist(RD::DrawListID p_draw_list, RD::FramebufferFormatID p_fb_format, RID p_source_rd_texture, bool p_linear = false, float p_linear_luminance_multiplier = 1.0);
@@ -387,7 +391,7 @@ public:
 	void set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst = false);
 	void set_color_raster(RID p_dest_texture, const Color &p_color, const Rect2i &p_region);
 
-	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip);
+	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, const Projection &p_projection, float p_z_far, bool p_dp_flip);
 	void copy_cubemap_to_octmap(RID p_source_rd_texture, RID p_dst_framebuffer, float p_border_size);
 	void octmap_downsample(RID p_source_octmap, RID p_dest_octmap, const Size2i &p_size, float p_border_size);
 	void octmap_downsample_raster(RID p_source_octmap, RID p_dest_framebuffer, const Size2i &p_size, float p_border_size);
