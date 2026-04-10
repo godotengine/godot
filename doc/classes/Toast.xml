@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Toast" inherits="PanelContainer" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		TODO: Update brief.
+	</brief_description>
+	<description>
+		TODO: Update description
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="close">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="copy" qualifiers="const">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_message" qualifiers="const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_severity" qualifiers="const">
+			<return type="int" enum="EditorToaster.Severity" />
+			<description>
+			</description>
+		</method>
+		<method name="instant_close">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="set_action">
+			<return type="Toast" />
+			<param index="0" name="action" type="String" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="icon" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

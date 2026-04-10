@@ -1,0 +1,5 @@
+GH-117700
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorToaster/methods/push_toast': return_value
+
+Function now returns a Toast instance, instead of void. Compatibility methods registered.

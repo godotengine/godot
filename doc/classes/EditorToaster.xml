@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="push_toast">
-			<return type="void" />
+			<return type="Toast" />
 			<param index="0" name="message" type="String" />
 			<param index="1" name="severity" type="int" enum="EditorToaster.Severity" default="0" />
 			<param index="2" name="tooltip" type="String" default="&quot;&quot;" />
@@ -22,13 +22,13 @@
 	</methods>
 	<constants>
 		<constant name="SEVERITY_INFO" value="0" enum="Severity">
-			Toast will display with an INFO severity.
+			Toast will display with INFO severity.
 		</constant>
 		<constant name="SEVERITY_WARNING" value="1" enum="Severity">
-			Toast will display with a WARNING severity and have a corresponding color.
+			Toast will display with WARNING severity and have a corresponding color.
 		</constant>
 		<constant name="SEVERITY_ERROR" value="2" enum="Severity">
-			Toast will display with an ERROR severity and have a corresponding color.
+			Toast will display with ERROR severity and have a corresponding color.
 		</constant>
 	</constants>
 </class>
