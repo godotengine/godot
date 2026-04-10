@@ -235,7 +235,8 @@
 					for x in my_range:
 						print(x) # Prints 2, 3, 4.
 				[/codeblock]
-				[b]Note:[/b] Alternatively, you can ignore [param iter] and use the object's state instead, see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url] for an example. Note that in this case you will not be able to reuse the same iterator instance in nested loops. Also, make sure you reset the iterator state in this method if you want to reuse the same instance multiple times.
+				[b]Note:[/b] Avoid storing iterator state in a member variable, use the [param iter] parameter instead. Otherwise, you won't be able to reuse the same iterator instance in nested loops.
+				See also [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url].
 			</description>
 		</method>
 		<method name="_iter_next" qualifiers="virtual">
