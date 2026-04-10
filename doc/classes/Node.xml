@@ -294,7 +294,7 @@
 				Finds the first descendant of this node whose [member name] matches [param pattern], returning [code]null[/code] if no match is found. The matching is done against node names, [i]not[/i] their paths, through [method String.match]. As such, it is case-sensitive, [code]"*"[/code] matches zero or more characters, and [code]"?"[/code] matches any single character.
 				If [param recursive] is [code]false[/code], only this node's direct children are checked. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. Internal children are also included in the search (see [code]internal[/code] parameter in [method add_child]).
 				If [param owned] is [code]true[/code], only descendants with a valid [member owner] node are checked.
-				[b]Note:[/b] This method can be very slow. Consider storing a reference to the found node in a variable. Alternatively, use [method get_node] with unique names (see [member unique_name_in_owner]).
+				[b]Note:[/b] This method can be very slow. Consider storing a reference to the found node in a variable. Alternatively, use [method get_unique_node] with unique names (see [member unique_name_in_owner]).
 				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
 			</description>
 		</method>
@@ -587,6 +587,32 @@
 				    ┖╴SplashScreen
 				       ┖╴Camera2D
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_unique_node" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the unique node whose [member name] matches the specified [param name], within the current [member owner]. If the unique node does not exist, generates an error and [code]null[/code] is returned. Attempts to access methods on the return value will result in an [i]"Attempt to call &lt;method&gt; on a null instance."[/i] error.
+				This method is the equivalent of [method get_node], when using the unique name accessor [code]%[/code] to fetch a single node.
+				[b]Example:[/b] Assume Hero has been set with an unique name in the following scene:
+				[codeblock]
+				/Town
+				/Town/Tree
+				/Town/House
+				/Town/House/Hero
+				[/codeblock]
+				The following methods will safely return Hero, so long as its owner is the scene root:
+				[codeblocks]
+				[gdscript]
+				get_node("%Hero")
+				get_unique_node("Hero")
+				[/gdscript]
+				[csharp]
+				getNode("%Hero");
+				getUniqueNode("Hero");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_viewport" qualifiers="const">
