@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  text_shader_editor.cpp                                                */
+/*  shader_text_editor.cpp                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "text_shader_editor.h"
+#include "shader_text_editor.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
