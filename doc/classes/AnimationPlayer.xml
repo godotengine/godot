@@ -348,6 +348,12 @@
 				Emitted when [member current_animation] changes.
 			</description>
 		</signal>
+		<signal name="seeked">
+			<param index="0" name="time" type="float" />
+			<description>
+				Emitted when [method seek] is called.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
