@@ -1517,6 +1517,28 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	return BAKE_ERROR_OK;
 }
 
+bool LightmapGI::_callable_bake_func_step(float p_progress, const String &p_description, void *p_callable_ptr, bool p_refresh) {
+	const Callable &callable = *(const Callable *)p_callable_ptr;
+	if (!callable.is_valid()) {
+		return false;
+	}
+	Variant arg0 = p_progress;
+	Variant arg1 = p_description;
+	Variant arg2 = p_refresh;
+	const Variant *argptr[3] = { &arg0, &arg1, &arg2 };
+	Variant result;
+	Callable::CallError ce;
+	callable.callp(argptr, 3, result, ce);
+	if (ce.error == Callable::CallError::CALL_OK && result.get_type() == Variant::BOOL) {
+		return (bool)result;
+	}
+	return false;
+}
+
+LightmapGI::BakeError LightmapGI::bake_(Node *p_from_node, const String &p_image_data_path, const Callable &p_bake_step_callable) {
+	return bake(p_from_node, p_image_data_path, _callable_bake_func_step, const_cast<Callable *>(&p_bake_step_callable));
+}
+
 void LightmapGI::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
@@ -1935,7 +1957,7 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &LightmapGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &LightmapGI::get_camera_attributes);
 
-	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &LightmapGI::bake, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("bake", "from_node", "image_data_path", "progress_cb"), &LightmapGI::bake_, DEFVAL(""), DEFVAL(Callable()));
 
 	ADD_GROUP("Tweaks", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
