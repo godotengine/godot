@@ -88,9 +88,6 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 
 	Control *blend_space_draw = nullptr;
 
-	PanelContainer *error_panel = nullptr;
-	RichTextLabel *error_label = nullptr;
-
 	bool updating;
 
 	static AnimationNodeBlendSpace2DEditor *singleton;
