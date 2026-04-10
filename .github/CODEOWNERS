@@ -92,6 +92,8 @@
 /modules/theora/editor/                       @godotengine/audio @godotengine/editor
 /modules/vorbis/                              @godotengine/audio
 /modules/vorbis/doc_classes/                  @godotengine/audio @godotengine/documentation
+/modules/opus/                                @godotengine/audio
+/modules/opus/doc_classes/                    @godotengine/audio @godotengine/documentation
 
 ## Import
 /modules/astcenc/                             @godotengine/asset-pipeline
