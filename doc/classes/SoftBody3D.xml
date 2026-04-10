@@ -77,6 +77,12 @@
 				Returns the internal [RID] used by the [PhysicsServer3D] for this body.
 			</description>
 		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total number of points (vertices) on the given soft body.
+			</description>
+		</method>
 		<method name="get_point_transform">
 			<return type="Vector3" />
 			<param index="0" name="point_index" type="int" />
