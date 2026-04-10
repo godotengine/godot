@@ -94,16 +94,19 @@
 		</method>
 		<method name="_get_script_method_list" qualifiers="virtual required const">
 			<return type="Dictionary[]" />
+			<param index="0" name="no_inheritance" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_script_property_list" qualifiers="virtual required const">
 			<return type="Dictionary[]" />
+			<param index="0" name="no_inheritance" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_script_signal_list" qualifiers="virtual required const">
 			<return type="Dictionary[]" />
+			<param index="0" name="no_inheritance" type="bool" />
 			<description>
 			</description>
 		</method>
