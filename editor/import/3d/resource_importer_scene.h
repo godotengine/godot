@@ -82,6 +82,8 @@ public:
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
 };
 
+VARIANT_BITFIELD_CAST(EditorSceneFormatImporter::ImportFlags)
+
 class EditorScenePostImport : public RefCounted {
 	GDCLASS(EditorScenePostImport, RefCounted);
 
