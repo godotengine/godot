@@ -37,13 +37,16 @@
 #include <initializer_list>
 
 /**
- * Generic Templatized Linked List Implementation.
+ * @brief A generic linked list implementation.
+ *
+ * Generally slower than other array/vector types. Prefer using other types
+ * in new code, unless using `List` avoids the need for type conversions.
+ *
  * The implementation differs from the STL one because
  * a compatible preallocated linked list can be written
  * using the same API, or features such as erasing an element
  * from the iterator.
  */
-
 template <typename T, typename A = DefaultAllocator>
 class List {
 	struct _Data;
