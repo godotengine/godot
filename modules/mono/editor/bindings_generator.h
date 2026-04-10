@@ -792,6 +792,15 @@ class BindingsGenerator {
 
 	String bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype);
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
+	String _translate_doc_string(const String &p_text);
+	String _get_localized_doc_summary_xml(const String &p_text, const TypeInterface *p_itype, bool p_is_signal = false);
+	String _get_xml_doc_type_name(const TypeReference &p_typeref);
+	String _get_xml_doc_method_name(const TypeInterface &p_itype, const MethodInterface &p_imethod);
+	void _append_xml_doc_member(StringBuilder &p_output, const String &p_member_name, const String &p_summary);
+	void _append_xml_doc_global_members(StringBuilder &p_output);
+	void _append_xml_doc_type_members(StringBuilder &p_output, const TypeInterface &p_itype);
+	Error _generate_localized_xml_doc(ClassDB::APIType p_api_type, const String &p_assembly_name, const String &p_output_file);
+	Error _generate_localized_xml_docs(const String &p_output_dir, const Vector<String> &p_locales);
 
 	void _append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
@@ -858,7 +867,7 @@ class BindingsGenerator {
 public:
 	Error generate_cs_core_project(const String &p_proj_dir);
 	Error generate_cs_editor_project(const String &p_proj_dir);
-	Error generate_cs_api(const String &p_output_dir);
+	Error generate_cs_api(const String &p_output_dir, const Vector<String> &p_localized_doc_locales = Vector<String>());
 
 	_FORCE_INLINE_ bool is_log_print_enabled() { return log_print_enabled; }
 	_FORCE_INLINE_ void set_log_print_enabled(bool p_enabled) { log_print_enabled = p_enabled; }

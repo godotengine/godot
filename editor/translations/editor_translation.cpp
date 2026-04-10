@@ -50,6 +50,17 @@ Vector<String> get_editor_locales() {
 	return locales;
 }
 
+Vector<String> get_doc_locales() {
+	Vector<String> locales;
+
+	for (const EditorTranslationList *etl = _doc_translations; etl->data; etl++) {
+		const String &locale = etl->lang;
+		locales.push_back(locale);
+	}
+
+	return locales;
+}
+
 static void _load(const Ref<TranslationDomain> p_domain, const String &p_locale, const EditorTranslationList *p_etl) {
 	for (const EditorTranslationList *etl = p_etl; etl->data; etl++) {
 		if (etl->lang == p_locale) {
