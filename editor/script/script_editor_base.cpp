@@ -40,6 +40,8 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/resources/shader.h"
+#include "scene/resources/shader_include.h"
 #include "servers/display/display_server.h"
 
 void ScriptEditorBase::_bind_methods() {
@@ -95,7 +97,10 @@ void ScriptEditorBase::tag_saved_version() {
 //// TextEditorBase
 
 TextEditorBase *TextEditorBase::EditMenus::_get_active_editor() {
-	return Object::cast_to<TextEditorBase>(ScriptEditor::get_singleton()->get_current_editor());
+	if (se) {
+		return Object::cast_to<TextEditorBase>(se->get_current_editor());
+	}
+	return nullptr;
 }
 
 void TextEditorBase::EditMenus::_edit_option(int p_op) {
@@ -178,7 +183,9 @@ void TextEditorBase::EditMenus::_bookmark_item_pressed(int p_idx) {
 	}
 }
 
-TextEditorBase::EditMenus::EditMenus() {
+TextEditorBase::EditMenus::EditMenus(ScriptEditor *p_se) {
+	se = p_se;
+
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_flat(false);
 	edit_menu->set_theme_type_variation("FlatMenuButton");
@@ -596,6 +603,16 @@ void TextEditorBase::reload_text() {
 		te->set_text(script->get_source_code());
 	}
 
+	Ref<ShaderInclude> shader_inc = edited_res;
+	if (shader_inc.is_valid()) {
+		te->set_text(shader_inc->get_code());
+	}
+
+	Ref<Shader> shader = edited_res;
+	if (shader.is_valid()) {
+		te->set_text(shader->get_code());
+	}
+
 	te->set_caret_line(row);
 	te->set_caret_column(column);
 	te->set_h_scroll(h);
@@ -679,6 +696,12 @@ TextEditorBase::~TextEditorBase() {
 
 //// CodeEditorBase
 
+CodeEditorBase::EditMenusCEB::EditMenusCEB(ScriptEditor *p_se) : EditMenus(p_se) {
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
+	_popup_move_item(EDIT_TRIM_TRAILING_WHITESAPCE, edit_menu->get_popup(), false);
+	edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+}
+
 bool CodeEditorBase::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		goto_line_centered(p_line.operator int64_t());
@@ -687,13 +710,25 @@ bool CodeEditorBase::_warning_clicked(const Variant &p_line) {
 	return false;
 }
 
-CodeEditorBase::EditMenusCEB::EditMenusCEB() {
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
-	_popup_move_item(EDIT_TRIM_TRAILING_WHITESAPCE, edit_menu->get_popup(), false);
-	edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+void CodeEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
+	TextEditorBase::_make_context_menu(p_selection, p_foldable, p_position, false);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+	_popup_move_item(EDIT_UNINDENT, context_menu);
+
+	if (p_show) {
+		_show_context_menu(p_position);
+	}
+}
+
+void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+	CodeEditorBase *ste = (CodeEditorBase *)p_ud;
+	ste->_code_complete_script(p_code, r_options, r_force);
 }
 
 CodeEditorBase::CodeEditorBase() {
+	code_editor->set_code_complete_func(_code_complete_scripts, this);
+	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
+
 	warnings_panel = memnew(RichTextLabel);
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -708,6 +743,5 @@ CodeEditorBase::CodeEditorBase() {
 	add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	editor_box->add_child(code_editor);
 	editor_box->add_child(warnings_panel);
 }

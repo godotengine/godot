@@ -30,31 +30,15 @@
 
 #pragma once
 
-#include "editor/gui/code_editor.h"
-#include "editor/shader/shader_editor.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/rich_text_label.h"
+#include "editor/script/script_editor_base.h"
 #include "servers/rendering/shader_warnings.h"
 
 class MaterialEditor;
 class Environment;
 class ShaderMaterial;
 class Timer;
-
-class GDShaderSyntaxHighlighter : public CodeHighlighter {
-	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
-
-private:
-	Vector<Point2i> disabled_branch_regions;
-	Color disabled_branch_color;
-
-public:
-	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
-
-	void add_disabled_branch_region(const Point2i &p_region);
-	void clear_disabled_branch_regions();
-	void set_disabled_branch_color(const Color &p_color);
-};
+class Shader;
+class ShaderInclude;
 
 class TextShaderPreview : public VBoxContainer {
 	GDCLASS(TextShaderPreview, VBoxContainer);
@@ -121,8 +105,32 @@ public:
 	TextShaderPreviewLineLayer();
 };
 
-class ShaderTextEditor : public CodeTextEditor {
-	GDCLASS(ShaderTextEditor, CodeTextEditor);
+class ShaderTextEditor : public CodeEditorBase {
+	GDCLASS(ShaderTextEditor, CodeEditorBase);
+
+	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
+
+	HashMap<int, TextShaderPreview *> previews;
+	TextShaderPreviewLineLayer *preview_line_layer = nullptr;
+	VBoxContainer *preview_box = nullptr;
+	VBoxContainer *preview_box_child = nullptr;
+	Timer *preview_timer = nullptr;
+	ScrollContainer *preview_sbox = nullptr;
+
+	bool pending_update_shader_previews = false;
+
+	Error last_compile_result = Error::OK;
+	bool compilation_success = true;
+
+	void _check_shader_mode();
+
+	virtual bool _edit_option(int p_option) override;
+
+	void _update_warning_panel();
+	void _show_warnings_panel(bool p_show);
+	void _update_warnings(bool p_validate);
+
+	bool dependencies_changed = true;
 
 	Color marked_line_color = Color(1, 1, 1);
 
@@ -130,50 +138,64 @@ class ShaderTextEditor : public CodeTextEditor {
 		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
 	};
 
-	Ref<GDShaderSyntaxHighlighter> syntax_highlighter;
-	RichTextLabel *warnings_panel = nullptr;
-	Ref<Shader> shader;
-	Ref<ShaderInclude> shader_inc;
 	List<ShaderWarning> warnings;
-	Error last_compile_result = Error::OK;
-	HashMap<int, TextShaderPreview *> previews;
-	Control *preview_box = nullptr;
-	TextShaderPreviewLineLayer *preview_line_layer = nullptr;
-
-	void _check_shader_mode();
-	void _update_warning_panel();
 
 	bool block_shader_changed = false;
 	void _shader_changed();
 
-	uint32_t dependencies_version = 0; // Incremented if deps changed
-
 protected:
-	void _notification(int p_what);
+	enum {
+		PREVIEW_TOGGLE = CODE_ENUM_COUNT,
+		PREVIEW_REMOVE_ALL,
+		PREVIEW_GOTO_NEXT,
+		PREVIEW_GOTO_PREV,
+	};
+
+	class EditMenusShTE : public EditMenusCEB {
+		GDCLASS(EditMenusShTE, EditMenusCEB);
+
+	protected:
+		PopupMenu *previews_menu = nullptr;
+
+		void _shader_preview_item_pressed(int p_idx);
+		void _update_shader_preview_list();
+
+	public:
+		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<ShaderTextEditor>(p_seb); }
+
+		EditMenusShTE(ScriptEditor *p_se);
+	};
+
 	static void _bind_methods();
-	virtual void _load_theme_settings() override;
 
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
-
-public:
-	void set_block_shader_changed(bool p_block) { block_shader_changed = p_block; }
-	uint32_t get_dependencies_version() const { return dependencies_version; }
+	void _notification(int p_what);
 
 	virtual void _validate_script() override;
 
-	void reload_text();
-	void set_warnings_panel(RichTextLabel *p_warnings_panel);
+	virtual void _load_theme_settings() override;
 
-	Ref<Shader> get_edited_shader() const;
-	Ref<ShaderInclude> get_edited_shader_include() const;
 	TextShaderPreviewLineLayer *get_preview_line_layer() const;
 	TextShaderPreview *get_preview(int p_line) const;
+	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;
 
-	void set_edited_shader(const Ref<Shader> &p_shader);
-	void set_edited_shader(const Ref<Shader> &p_shader, const String &p_code);
-	void set_edited_shader_include(const Ref<ShaderInclude> &p_include);
-	void set_edited_shader_include(const Ref<ShaderInclude> &p_include, const String &p_code);
-	void set_edited_code(const String &p_code);
+	void _on_shader_preview_toggled(int p_line);
+	void _update_shader_previews();
+
+public:
+	virtual String get_doc_url_path() override { return "/tutorials/shaders/shader_reference/index.html"; }
+
+	virtual bool show_members_overview() override { return false; }
+
+	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
+	virtual void set_edited_resource(const Ref<Resource> &p_res, const String &p_code);
+
+	virtual void apply_code() override;
+
+	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) override { return memnew(EditMenusShTE(p_se)); }
+
+	void focus_preview_line(int p_line);
+
+	static void register_editor();
 
 	void toggle_shader_preview(int p_line);
 	void remove_shader_preview(int p_line);
@@ -185,127 +207,4 @@ public:
 	void update_parameters();
 
 	ShaderTextEditor();
-};
-
-class TextShaderEditor : public ShaderEditor {
-	GDCLASS(TextShaderEditor, ShaderEditor);
-
-	enum {
-		EDIT_UNDO,
-		EDIT_REDO,
-		EDIT_CUT,
-		EDIT_COPY,
-		EDIT_PASTE,
-		EDIT_SELECT_ALL,
-		EDIT_MOVE_LINE_UP,
-		EDIT_MOVE_LINE_DOWN,
-		EDIT_INDENT,
-		EDIT_UNINDENT,
-		EDIT_DELETE_LINE,
-		EDIT_DUPLICATE_SELECTION,
-		EDIT_DUPLICATE_LINES,
-		EDIT_TOGGLE_WORD_WRAP,
-		EDIT_TOGGLE_COMMENT,
-		EDIT_COMPLETE,
-		SEARCH_FIND,
-		SEARCH_FIND_NEXT,
-		SEARCH_FIND_PREV,
-		SEARCH_REPLACE,
-		SEARCH_GOTO_LINE,
-		BOOKMARK_TOGGLE,
-		BOOKMARK_GOTO_NEXT,
-		BOOKMARK_GOTO_PREV,
-		BOOKMARK_REMOVE_ALL,
-		PREVIEW_TOGGLE,
-		PREVIEW_REMOVE_ALL,
-		PREVIEW_GOTO_NEXT,
-		PREVIEW_GOTO_PREV,
-		HELP_DOCS,
-		EDIT_EMOJI_AND_SYMBOL,
-		EDIT_JOIN_LINES,
-	};
-
-	HBoxContainer *menu_bar_hbox = nullptr;
-	VBoxContainer *preview_box = nullptr;
-	MenuButton *edit_menu = nullptr;
-	MenuButton *search_menu = nullptr;
-	PopupMenu *bookmarks_menu = nullptr;
-	PopupMenu *previews_menu = nullptr;
-	Button *site_search = nullptr;
-	PopupMenu *context_menu = nullptr;
-	RichTextLabel *warnings_panel = nullptr;
-	Timer *preview_timer = nullptr;
-	ScrollContainer *preview_sbox = nullptr;
-
-	GotoLinePopup *goto_line_popup = nullptr;
-	ConfirmationDialog *disk_changed = nullptr;
-
-	ShaderTextEditor *code_editor = nullptr;
-	bool compilation_success = true;
-
-	void _menu_option(int p_option);
-	void _prepare_edit_menu();
-	mutable Ref<Shader> shader;
-	mutable Ref<ShaderInclude> shader_inc;
-
-	void _apply_editor_settings();
-	void _project_settings_changed();
-
-	void _check_for_external_edit();
-	void _reload_shader_from_disk();
-	void _reload_shader_include_from_disk();
-	void _reload();
-	void _show_warnings_panel(bool p_show);
-	void _warning_clicked(const Variant &p_line);
-	void _update_warnings(bool p_validate);
-	void _focus_preview_line(int p_line);
-
-	void _script_validated(bool p_valid) {
-		compilation_success = p_valid;
-		emit_signal(SNAME("validation_changed"));
-	}
-
-	uint32_t dependencies_version = 0xFFFFFFFF;
-
-	bool trim_trailing_whitespace_on_save = false;
-	bool trim_final_newlines_on_save = false;
-	bool pending_update_shader_previews = false;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	void _make_context_menu(bool p_selection, Vector2 p_position);
-	void _text_edit_gui_input(const Ref<InputEvent> &p_ev);
-	void _on_shader_preview_toggled(int p_line);
-	void _update_shader_previews();
-
-	void _update_bookmark_list();
-	void _bookmark_item_pressed(int p_idx);
-	void _update_shader_preview_list();
-	void _shader_preview_item_pressed(int p_idx);
-
-public:
-	virtual void edit_shader(const Ref<Shader> &p_shader) override;
-	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) override;
-	virtual void use_menu_bar(MenuButton *p_file_menu) override;
-
-	virtual void apply_shaders() override;
-	virtual bool is_unsaved() const override;
-	virtual void save_external_data(const String &p_str = "") override;
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
-	virtual void update_toggle_files_button() override;
-	virtual void validate_script() override;
-
-	bool was_compilation_successful() const { return compilation_success; }
-	bool get_trim_trailing_whitespace_on_save() const { return trim_trailing_whitespace_on_save; }
-	bool get_trim_final_newlines_on_save() const { return trim_final_newlines_on_save; }
-	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void trim_trailing_whitespace();
-	void trim_final_newlines();
-	void tag_saved_version();
-	ShaderTextEditor *get_code_editor() { return code_editor; }
-
-	static void register_editor();
-
-	TextShaderEditor();
 };
