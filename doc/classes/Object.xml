@@ -640,7 +640,7 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata value for the given entry [param name]. If the entry does not exist, returns [param default]. If [param default] is [code]null[/code], an error is also generated.
-				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_ascii_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
@@ -726,7 +726,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
-				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_ascii_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
