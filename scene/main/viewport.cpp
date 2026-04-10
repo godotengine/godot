@@ -563,7 +563,7 @@ void Viewport::_update_viewport_path() {
 
 	for (ViewportTexture *E : viewport_textures) {
 		Node *loc_scene = E->get_local_scene();
-		if (loc_scene) {
+		if (loc_scene && loc_scene->is_inside_tree()) {
 			E->path = loc_scene->get_path_to(this);
 		}
 	}
