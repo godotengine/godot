@@ -40,6 +40,7 @@ struct _MinSizeCache {
 	int max_size = -1;
 	bool will_stretch = false;
 	int final_size = 0;
+	float stretch_ratio = 0.0;
 };
 
 void BoxContainer::_resort() {
@@ -90,7 +91,17 @@ void BoxContainer::_resort() {
 
 		if (msc.will_stretch) {
 			stretch_avail += msc.min_size;
-			stretch_ratio_total += c->get_stretch_ratio();
+			msc.stretch_ratio = c->get_stretch_ratio();
+			if (vertical) { /* VERTICAL */
+				if (c->get_v_size_flags().has_flag(SIZE_MAXIMIZE)) {
+					msc.stretch_ratio *= MAXIMIZE_STRETCH_FACTOR;
+				}
+			} else { /* HORIZONTAL */
+				if (c->get_h_size_flags().has_flag(SIZE_MAXIMIZE)) {
+					msc.stretch_ratio *= MAXIMIZE_STRETCH_FACTOR;
+				}
+			}
+			stretch_ratio_total += msc.stretch_ratio;
 		}
 		msc.final_size = msc.min_size;
 		min_size_cache[c] = msc;
@@ -135,15 +146,14 @@ void BoxContainer::_resort() {
 
 			if (msc.will_stretch) { //wants to stretch
 				//let's see if it can really stretch
-				float stretch_ratio = c->get_stretch_ratio();
-				float final_pixel_size = stretch_avail * stretch_ratio / stretch_ratio_total;
+				float final_pixel_size = stretch_avail * msc.stretch_ratio / stretch_ratio_total;
 				// Add leftover fractional pixels to error accumulator
 				error += final_pixel_size - (int)final_pixel_size;
 				if (final_pixel_size < msc.min_size) {
 					//if available stretching area is too small for widget,
 					//then remove it from stretching area
 					msc.will_stretch = false;
-					stretch_ratio_total -= stretch_ratio;
+					stretch_ratio_total -= msc.stretch_ratio;
 					refit_successful = false;
 					stretch_avail -= msc.min_size;
 					msc.final_size = msc.min_size;
@@ -152,7 +162,7 @@ void BoxContainer::_resort() {
 					// If stretching would exceed the Control's maximum size,
 					// cap it and redistribute its unused share.
 					msc.will_stretch = false;
-					stretch_ratio_total -= stretch_ratio;
+					stretch_ratio_total -= msc.stretch_ratio;
 					refit_successful = false;
 					stretch_avail -= msc.max_size;
 					msc.final_size = msc.max_size;
@@ -289,38 +299,36 @@ void BoxContainer::_resort() {
 }
 
 Size2 BoxContainer::get_minimum_size() const {
-	/* Calculate MINIMUM SIZE */
+	const int axis = vertical ? 1 : 0;
+	const int other_axis = vertical ? 0 : 1;
 
-	Size2i minimum;
+	Size2 minimum;
 
-	bool first = true;
-
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+	List<Control *> children;
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}
+		children.push_back(c);
+	}
 
-		Size2i size = c->get_bound_minimum_size();
+	for (Control *c : children) {
+		const Size2 min_size = c->get_bound_minimum_size();
+		const Size2 max_size = c->get_custom_maximum_size();
 
-		if (vertical) { /* VERTICAL */
+		const bool maximize_axis = vertical ? c->get_v_size_flags().has_flag(SIZE_MAXIMIZE) : c->get_h_size_flags().has_flag(SIZE_MAXIMIZE);
+		const bool maximize_other_axis = vertical ? c->get_h_size_flags().has_flag(SIZE_MAXIMIZE) : c->get_v_size_flags().has_flag(SIZE_MAXIMIZE);
 
-			if (size.width > minimum.width) {
-				minimum.width = size.width;
-			}
+		const real_t axis_size = maximize_axis && max_size[axis] >= 0 ? max_size[axis] : min_size[axis];
+		const real_t other_axis_size = maximize_other_axis && max_size[other_axis] >= 0 ? max_size[other_axis] : min_size[other_axis];
 
-			minimum.height += size.height + (first ? 0 : theme_cache.separation);
+		minimum[axis] += axis_size;
+		minimum[other_axis] = MAX(minimum[other_axis], other_axis_size);
+	}
 
-		} else { /* HORIZONTAL */
-
-			if (size.height > minimum.height) {
-				minimum.height = size.height;
-			}
-
-			minimum.width += size.width + (first ? 0 : theme_cache.separation);
-		}
-
-		first = false;
+	if (children.size() > 0) {
+		minimum[axis] += theme_cache.separation * (children.size() - 1);
 	}
 
 	return minimum;
@@ -399,6 +407,7 @@ Vector<int> BoxContainer::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
@@ -411,6 +420,7 @@ Vector<int> BoxContainer::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 

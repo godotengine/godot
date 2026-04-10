@@ -1553,6 +1553,11 @@
 		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
+		<constant name="SIZE_MAXIMIZE" value="16" enum="SizeFlags" is_bitfield="true">
+			Tells the parent [Container] to use the node's [member custom_maximum_size] when doing minimum size calculations. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			[b]Note:[/b] Setting this flag does not necessarily mean the node will be resized to its maximum size, as the parent container may not have enough space to do so.
+			[b]Note:[/b] If this node is a child of a Container that enables the [member size_flags_stretch_ratio] property on its children for layout, nodes with this flag set will be given priority in stretching. If multiple nodes have this flag set, their relative stretch ratios will still be respected.
+		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
 			The control will receive mouse movement input events and mouse button input events if clicked on through [method _gui_input]. The control will also receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.
 		</constant>
