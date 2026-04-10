@@ -64,6 +64,10 @@ DisplayServer *DisplayServer::singleton = nullptr;
 bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
 
+String DisplayServer::session_path = "";
+Ref<ConfigFile> DisplayServer::window_metadata = Ref<ConfigFile>();
+bool DisplayServer::window_metadata_dirty = false;
+
 DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
 	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
 };
@@ -505,6 +509,47 @@ void DisplayServer::set_early_window_clear_color_override(bool p_enabled, Color 
 	window_early_clear_override_color = p_color;
 }
 
+void DisplayServer::set_session_path(const String &p_path) {
+	session_path = p_path;
+}
+
+void DisplayServer::set_window_metadata(const String &p_section, const String &p_key, const Variant &p_data) {
+	if (window_metadata.is_null()) {
+		window_metadata.instantiate();
+
+		Error err = window_metadata->load(session_path);
+		if (err != OK && err != ERR_FILE_NOT_FOUND) {
+			ERR_PRINT("Cannot load window metadata from file '" + session_path + "'.");
+		}
+	}
+
+	window_metadata->set_value(p_section, p_key, p_data);
+	window_metadata_dirty = true;
+}
+
+Variant DisplayServer::get_window_metadata(const String &p_section, const String &p_key, const Variant &p_default) const {
+	if (window_metadata.is_null()) {
+		window_metadata.instantiate();
+
+		Error err = window_metadata->load(session_path);
+		if (err != OK && err != ERR_FILE_NOT_FOUND) {
+			ERR_PRINT("Cannot load window metadata from file '" + session_path + "'.");
+		}
+	}
+
+	return window_metadata->get_value(p_section, p_key, p_default);
+}
+
+void DisplayServer::save_window_metadata() {
+	if (!window_metadata_dirty) {
+		return;
+	}
+
+	Error err = window_metadata->save(session_path);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save project metadata to file '" + session_path + "'.");
+	window_metadata_dirty = false;
+}
+
 void DisplayServer::mouse_set_mode(DisplayServerEnums::MouseMode p_mode) {
 	WARN_PRINT("Mouse is not supported by this display server.");
 }
@@ -623,6 +668,10 @@ void DisplayServer::delete_sub_window(DisplayServerEnums::WindowID p_id) {
 
 void DisplayServer::window_set_exclusive(DisplayServerEnums::WindowID p_window, bool p_exclusive) {
 	// Do nothing, if not supported.
+}
+
+void DisplayServer::window_set_session_id(const String &p_session_id, DisplayServerEnums::WindowID p_window) {
+	// Do nothing, if the DisplayServer does not use this
 }
 
 void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window) {
@@ -1497,6 +1546,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_title", "title", "window_id"), &DisplayServer::window_set_title, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_title_size", "title", "window_id"), &DisplayServer::window_get_title_size, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_session_id", "session_id", "window_id"), &DisplayServer::window_set_session_id, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("window_set_mouse_passthrough", "region", "window_id"), &DisplayServer::window_set_mouse_passthrough, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_get_current_screen", "window_id"), &DisplayServer::window_get_current_screen, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
@@ -2267,5 +2318,7 @@ DisplayServer::DisplayServer() {
 }
 
 DisplayServer::~DisplayServer() {
+	// TODO: find better locations
+	singleton->save_window_metadata();
 	singleton = nullptr;
 }
