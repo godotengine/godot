@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/resource_importer.h"
 #include "core/variant/dictionary.h"
+#include "editor/scene/3d/mesh_instance_3d_editor_plugin.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -231,6 +232,9 @@ class ResourceImporterScene : public ResourceImporter {
 
 	String _scene_import_type = "PackedScene";
 
+	Callable _fit_mesh_callable;
+	void _fit_primitive_to_mesh();
+
 public:
 	static const String material_extension[3];
 
@@ -298,7 +302,7 @@ public:
 	ResourceImporterScene(const String &p_scene_import_type = "PackedScene");
 
 	template <typename M>
-	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);
+	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, M &p_options, float p_applied_root_scale, bool p_fit_to_mesh);
 
 	template <typename M>
 	static Transform3D get_collision_shapes_transform(const M &p_options);
@@ -313,7 +317,7 @@ public:
 };
 
 template <typename M>
-Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
+Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh> &p_mesh, M &p_options, float p_applied_root_scale, bool p_fit_to_mesh) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
 
 	ShapeType generate_shape_type = SHAPE_TYPE_AUTOMATIC;
@@ -419,61 +423,77 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 	} else if (generate_shape_type == SHAPE_TYPE_BOX) {
 		Ref<BoxShape3D> box;
 		box.instantiate();
-		if (p_options.has(SNAME("primitive/size"))) {
+		if (p_options.has(SNAME("primitive/size")) && !p_fit_to_mesh) {
 			box->set_size(p_options[SNAME("primitive/size")].operator Vector3() * p_applied_root_scale);
 		} else {
-			box->set_size(Vector3(2, 2, 2) * p_applied_root_scale);
+			Transform3D transform;
+			box = MeshInstance3DEditor::create_box_shape(p_mesh, transform);
+			Vector3 euler_angles = transform.get_basis().get_euler();
+			euler_angles.x = Math::rad_to_deg(euler_angles.x);
+			euler_angles.y = Math::rad_to_deg(euler_angles.y);
+			euler_angles.z = Math::rad_to_deg(euler_angles.z);
+			p_options[SNAME("primitive/rotation")] = euler_angles;
+			p_options[SNAME("primitive/size")] = box->get_size();
+			p_options[SNAME("primitive/position")] = transform.get_origin();
 		}
-
-		Vector<Ref<Shape3D>> shapes;
-		shapes.push_back(box);
+		Vector<Ref<Shape3D>> shapes = { box };
 		return shapes;
 
 	} else if (generate_shape_type == SHAPE_TYPE_SPHERE) {
 		Ref<SphereShape3D> sphere;
 		sphere.instantiate();
-		if (p_options.has(SNAME("primitive/radius"))) {
+		if (p_options.has(SNAME("primitive/radius")) && !p_fit_to_mesh) {
 			sphere->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
 		} else {
-			sphere->set_radius(1.0f * p_applied_root_scale);
+			Transform3D transform;
+			sphere = MeshInstance3DEditor::create_sphere_shape(p_mesh, transform);
+			p_options[SNAME("primitive/position")] = transform.get_origin();
+			p_options[SNAME("primitive/radius")] = sphere->get_radius();
 		}
 
-		Vector<Ref<Shape3D>> shapes;
-		shapes.push_back(sphere);
+		Vector<Ref<Shape3D>> shapes = { sphere };
 		return shapes;
+
 	} else if (generate_shape_type == SHAPE_TYPE_CYLINDER) {
 		Ref<CylinderShape3D> cylinder;
 		cylinder.instantiate();
-		if (p_options.has(SNAME("primitive/height"))) {
+		if (p_options.has(SNAME("primitive/height")) && p_options.has(SNAME("primitive/radius")) && !p_fit_to_mesh) {
 			cylinder->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
-		} else {
-			cylinder->set_height(1.0f * p_applied_root_scale);
-		}
-		if (p_options.has(SNAME("primitive/radius"))) {
 			cylinder->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
 		} else {
-			cylinder->set_radius(1.0f * p_applied_root_scale);
+			Transform3D transform;
+			cylinder = MeshInstance3DEditor::create_cylinder_shape(p_mesh, transform, MeshInstance3DEditor::SHAPE_AXIS_LONGEST);
+			Vector3 euler_angles = transform.get_basis().get_euler();
+			euler_angles.x = Math::rad_to_deg(euler_angles.x);
+			euler_angles.y = Math::rad_to_deg(euler_angles.y);
+			euler_angles.z = Math::rad_to_deg(euler_angles.z);
+			p_options[SNAME("primitive/rotation")] = euler_angles;
+			p_options[SNAME("primitive/position")] = transform.get_origin();
+			p_options[SNAME("primitive/height")] = cylinder->get_height();
+			p_options[SNAME("primitive/radius")] = cylinder->get_radius();
 		}
-
-		Vector<Ref<Shape3D>> shapes;
-		shapes.push_back(cylinder);
+		Vector<Ref<Shape3D>> shapes = { cylinder };
 		return shapes;
+
 	} else if (generate_shape_type == SHAPE_TYPE_CAPSULE) {
 		Ref<CapsuleShape3D> capsule;
 		capsule.instantiate();
-		if (p_options.has(SNAME("primitive/height"))) {
+		if (p_options.has(SNAME("primitive/height")) && p_options.has(SNAME("primitive/radius")) && !p_fit_to_mesh) {
 			capsule->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
-		} else {
-			capsule->set_height(1.0f * p_applied_root_scale);
-		}
-		if (p_options.has(SNAME("primitive/radius"))) {
 			capsule->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
 		} else {
-			capsule->set_radius(1.0f * p_applied_root_scale);
+			Transform3D transform;
+			capsule = MeshInstance3DEditor::create_capsule_shape(p_mesh, transform, MeshInstance3DEditor::SHAPE_AXIS_LONGEST);
+			Vector3 euler_angles = transform.get_basis().get_euler();
+			euler_angles.x = Math::rad_to_deg(euler_angles.x);
+			euler_angles.y = Math::rad_to_deg(euler_angles.y);
+			euler_angles.z = Math::rad_to_deg(euler_angles.z);
+			p_options[SNAME("primitive/rotation")] = euler_angles;
+			p_options[SNAME("primitive/position")] = transform.get_origin();
+			p_options[SNAME("primitive/height")] = capsule->get_height();
+			p_options[SNAME("primitive/radius")] = capsule->get_radius();
 		}
-
-		Vector<Ref<Shape3D>> shapes;
-		shapes.push_back(capsule);
+		Vector<Ref<Shape3D>> shapes = { capsule };
 		return shapes;
 	}
 	return Vector<Ref<Shape3D>>();

@@ -36,8 +36,12 @@
 
 class AcceptDialog;
 class AspectRatioContainer;
+class BoxShape3D;
+class CapsuleShape3D;
 class ConfirmationDialog;
+class CylinderShape3D;
 class MenuButton;
+class SphereShape3D;
 class SpinBox;
 
 class MeshInstance3DEditor : public Control {
@@ -68,13 +72,6 @@ class MeshInstance3DEditor : public Control {
 		SHAPE_TYPE_CYLINDER,
 		SHAPE_TYPE_SPHERE,
 		SHAPE_TYPE_PRIMITIVE,
-	};
-
-	enum ShapeAxis {
-		SHAPE_AXIS_X,
-		SHAPE_AXIS_Y,
-		SHAPE_AXIS_Z,
-		SHAPE_AXIS_LONGEST,
 	};
 
 	MeshInstance3D *node = nullptr;
@@ -119,7 +116,19 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum ShapeAxis {
+		SHAPE_AXIS_X,
+		SHAPE_AXIS_Y,
+		SHAPE_AXIS_Z,
+		SHAPE_AXIS_LONGEST,
+	};
+
 	void edit(MeshInstance3D *p_mesh);
+	static Ref<BoxShape3D> create_box_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform);
+	static Ref<CapsuleShape3D> create_capsule_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform, ShapeAxis p_axis);
+	static Ref<SphereShape3D> create_sphere_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform);
+	static Ref<CylinderShape3D> create_cylinder_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform, ShapeAxis p_axis);
+
 	MeshInstance3DEditor();
 };
 
