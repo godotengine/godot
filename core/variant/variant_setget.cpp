@@ -91,6 +91,8 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Vector4i, z);
 	REGISTER_MEMBER(Vector4i, w);
 
+	SETGET_SWIZZLING_MEMBERS()
+
 	REGISTER_MEMBER(Rect2, position);
 	REGISTER_MEMBER(Rect2, size);
 	REGISTER_MEMBER(Rect2, end);

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/variant/method_ptrcall.h"
+#include "core/variant/swizzling_setget.gen.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
@@ -207,6 +208,39 @@
 		} \
 	};
 
+#define SETGET_STRUCT_FUNC_VAR_ARGS(m_base_type, m_member_type, m_member, m_setter, m_getter, ...) \
+	struct VariantSetGet_##m_base_type##_##m_member { \
+		static void get(const Variant *base, Variant *member) { \
+			VariantTypeAdjust<m_member_type>::adjust(member); \
+			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(__VA_ARGS__); \
+		} \
+		static inline void validated_get(const Variant *base, Variant *member) { \
+			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(__VA_ARGS__); \
+		} \
+		static void ptr_get(const void *base, void *member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(__VA_ARGS__), member); \
+		} \
+		static void set(Variant *base, const Variant *value, bool &valid) { \
+			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
+				VariantInternalAccessor<m_base_type>::get(base).m_setter(__VA_ARGS__, VariantInternalAccessor<m_member_type>::get(value)); \
+				valid = true; \
+			} else { \
+				valid = false; \
+			} \
+		} \
+		static inline void validated_set(Variant *base, const Variant *value) { \
+			VariantInternalAccessor<m_base_type>::get(base).m_setter(__VA_ARGS__, VariantInternalAccessor<m_member_type>::get(value)); \
+		} \
+		static void ptr_set(void *base, const void *member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(base); \
+			b.m_setter(__VA_ARGS__, PtrToArg<m_member_type>::convert(member)); \
+			PtrToArg<m_base_type>::encode(b, base); \
+		} \
+		static Variant::Type get_type() { \
+			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
+		} \
+	};
+
 #define SETGET_NUMBER_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
 		static void get(const Variant *base, Variant *member) { \
@@ -299,6 +333,8 @@ SETGET_NUMBER_STRUCT(Vector4i, int64_t, x)
 SETGET_NUMBER_STRUCT(Vector4i, int64_t, y)
 SETGET_NUMBER_STRUCT(Vector4i, int64_t, z)
 SETGET_NUMBER_STRUCT(Vector4i, int64_t, w)
+
+SETGET_SWIZZLING_STRUCTS()
 
 SETGET_STRUCT(Rect2, Vector2, position)
 SETGET_STRUCT(Rect2, Vector2, size)
