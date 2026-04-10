@@ -1031,7 +1031,7 @@ void EditorHelp::_update_doc() {
 
 		String inherits = cd.inherits;
 		while (!inherits.is_empty()) {
-			_add_type_icon(inherits, theme_cache.doc_font_size, "ArrowRight");
+			_add_type_icon(inherits, theme_cache.doc_font_size, "Object");
 			class_desc->add_text(nbsp); // Otherwise icon borrows hyperlink from `_add_type()`.
 			_add_type(inherits);
 
@@ -1060,7 +1060,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text(" , ");
 			}
 
-			_add_type_icon(itr->get(), theme_cache.doc_font_size, "ArrowRight");
+			_add_type_icon(itr->get(), theme_cache.doc_font_size, "Object");
 			class_desc->add_text(nbsp); // Otherwise icon borrows hyperlink from `_add_type()`.
 			_add_type(itr->get());
 		}
