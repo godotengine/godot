@@ -1079,10 +1079,18 @@ Vector3 GodotConvexPolygonShape3D::get_moment_of_inertia(real_t p_mass) const {
 }
 
 void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
-	Error err = ConvexHullComputer::convex_hull(p_vertices, mesh);
-	if (err != OK) {
-		ERR_PRINT("Failed to build convex hull");
+	if (!p_vertices.is_empty()) {
+		// Don't try to create a convex hull if the mesh has no vertices.
+		// This prevents errors from being printed when using `ConvexPolygonShape3D.new()` then setting the points afterwards,
+		// which matches Jolt Physics behavior.
+		Error err = ConvexHullComputer::convex_hull(p_vertices, mesh);
+		if (err != OK) {
+			ERR_PRINT(vformat("Failed to build convex hull for mesh with %d vertices.", p_vertices.size()));
+		}
+	} else {
+		mesh = Geometry3D::MeshData();
 	}
+
 	extreme_vertices.resize(0);
 	vertex_neighbors.resize(0);
 
