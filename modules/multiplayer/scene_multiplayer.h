@@ -139,8 +139,8 @@ private:
 protected:
 	static void _bind_methods();
 
-	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len, int p_channel);
+	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len, int p_channel);
 	void _process_sys(int p_from, const uint8_t *p_packet, int p_packet_len, MultiplayerPeer::TransferMode p_mode, int p_channel);
 
 	void _add_peer(int p_id);
