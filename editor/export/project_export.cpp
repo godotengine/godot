@@ -768,7 +768,6 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_enc_directory(current->get_enc_directory());
 	preset->set_script_encryption_key(current->get_script_encryption_key());
 	preset->set_script_export_mode(current->get_script_export_mode());
-
 	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
 		preset->set(E.key, E.value);
 	}
@@ -1920,6 +1919,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);
 	script_mode->add_item(TTR("Compressed binary tokens (smaller files)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
+	script_mode->add_item(TTR("Compiled bytecode (experimental)"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED_BYTECODE);
 	script_mode->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
 
 	sections->add_child(script_vb);

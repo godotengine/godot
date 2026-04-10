@@ -61,6 +61,9 @@ public:
 	StringName native_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
+	// Bytecode deserialization resolves script refs after the full script graph is rebuilt.
+	String serialized_script_path;
+	String serialized_script_fqcn;
 
 	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
@@ -124,6 +127,8 @@ public:
 				builtin_type == p_other.builtin_type &&
 				native_type == p_other.native_type &&
 				(script_type == p_other.script_type || script_type_ref == p_other.script_type_ref) &&
+				serialized_script_path == p_other.serialized_script_path &&
+				serialized_script_fqcn == p_other.serialized_script_fqcn &&
 				container_element_types == p_other.container_element_types;
 	}
 
@@ -137,6 +142,8 @@ public:
 		native_type = p_other.native_type;
 		script_type = p_other.script_type;
 		script_type_ref = p_other.script_type_ref;
+		serialized_script_path = p_other.serialized_script_path;
+		serialized_script_fqcn = p_other.serialized_script_fqcn;
 		container_element_types = p_other.container_element_types;
 	}
 
@@ -342,6 +349,55 @@ private:
 	friend class GDScriptCompiler;
 	friend class GDScriptByteCodeGenerator;
 	friend class GDScriptLanguage;
+	friend class GDScriptBytecodeSerializer;
+
+public:
+	// Import table for bytecode serialization - symbolic references to resolve function pointers at load time.
+	struct ImportTable {
+		struct MethodBindRef {
+			StringName class_name;
+			StringName method_name;
+		};
+		struct OperatorRef {
+			Variant::Operator op = Variant::OP_EQUAL;
+			Variant::Type left_type = Variant::NIL;
+			Variant::Type right_type = Variant::NIL;
+		};
+		struct SetterGetterRef {
+			Variant::Type type = Variant::NIL;
+			StringName member;
+		};
+		struct TypeOnlyRef {
+			Variant::Type type = Variant::NIL;
+		};
+		struct BuiltinMethodRef {
+			Variant::Type type = Variant::NIL;
+			StringName method;
+		};
+		struct ConstructorRef {
+			Variant::Type type = Variant::NIL;
+			int constructor_idx = 0;
+		};
+		struct UtilityRef {
+			StringName name;
+		};
+
+		Vector<MethodBindRef> methods;
+		Vector<OperatorRef> operators;
+		Vector<SetterGetterRef> setters;
+		Vector<SetterGetterRef> getters;
+		Vector<TypeOnlyRef> keyed_setters;
+		Vector<TypeOnlyRef> keyed_getters;
+		Vector<TypeOnlyRef> indexed_setters;
+		Vector<TypeOnlyRef> indexed_getters;
+		Vector<BuiltinMethodRef> builtin_methods;
+		Vector<ConstructorRef> constructors;
+		Vector<UtilityRef> utilities;
+		Vector<UtilityRef> gds_utilities;
+	};
+
+private:
+	ImportTable import_table;
 
 	StringName name;
 	StringName source;

@@ -135,6 +135,7 @@ void EditorExportPreset::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_SCRIPT_TEXT);
 	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS);
 	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_COMPILED_BYTECODE);
 }
 
 String EditorExportPreset::_get_property_warning(const StringName &p_name) const {

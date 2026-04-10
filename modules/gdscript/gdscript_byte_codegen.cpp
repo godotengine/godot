@@ -411,6 +411,29 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	function->gds_utilities_names = gds_utilities_names;
 #endif
 
+	// Copy import table refs for bytecode serialization.
+	function->import_table.operators = operator_refs;
+	function->import_table.setters = setter_refs;
+	function->import_table.getters = getter_refs;
+	function->import_table.keyed_setters = keyed_setter_refs;
+	function->import_table.keyed_getters = keyed_getter_refs;
+	function->import_table.indexed_setters = indexed_setter_refs;
+	function->import_table.indexed_getters = indexed_getter_refs;
+	function->import_table.builtin_methods = builtin_method_refs;
+	function->import_table.constructors = constructor_refs;
+	function->import_table.utilities = utility_refs;
+	function->import_table.gds_utilities = gds_utility_refs;
+
+	// Derive method bind refs from MethodBind pointers.
+	function->import_table.methods.resize(function->methods.size());
+	for (int i = 0; i < function->methods.size(); i++) {
+		MethodBind *mb = function->methods[i];
+		GDScriptFunction::ImportTable::MethodBindRef ref;
+		ref.class_name = mb->get_instance_class();
+		ref.method_name = mb->get_name();
+		function->import_table.methods.write[i] = ref;
+	}
+
 	ended = true;
 	return function;
 }
@@ -564,6 +587,7 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 		append(Address());
 		append(p_target);
 		append(op_func);
+		add_import_ref(operator_refs, get_operation_pos(op_func), OperatorRef{ p_operator, p_left_operand.type.builtin_type, Variant::NIL });
 #ifdef DEBUG_ENABLED
 		add_debug_name(operator_names, get_operation_pos(op_func), Variant::get_operator_name(p_operator));
 #endif
@@ -621,6 +645,7 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 		append(p_right_operand);
 		append(p_target);
 		append(op_func);
+		add_import_ref(operator_refs, get_operation_pos(op_func), OperatorRef{ p_operator, p_left_operand.type.builtin_type, p_right_operand.type.builtin_type });
 #ifdef DEBUG_ENABLED
 		add_debug_name(operator_names, get_operation_pos(op_func), Variant::get_operator_name(p_operator));
 #endif
@@ -800,6 +825,7 @@ void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address
 			append(p_index);
 			append(p_source);
 			append(setter);
+			add_import_ref(indexed_setter_refs, get_indexed_setter_pos(setter), TypeOnlyRef{ p_target.type.builtin_type });
 			return;
 		} else if (Variant::get_member_validated_keyed_setter(p_target.type.builtin_type)) {
 			Variant::ValidatedKeyedSetter setter = Variant::get_member_validated_keyed_setter(p_target.type.builtin_type);
@@ -808,6 +834,7 @@ void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address
 			append(p_index);
 			append(p_source);
 			append(setter);
+			add_import_ref(keyed_setter_refs, get_keyed_setter_pos(setter), TypeOnlyRef{ p_target.type.builtin_type });
 			return;
 		}
 	}
@@ -828,6 +855,7 @@ void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address
 			append(p_index);
 			append(p_target);
 			append(getter);
+			add_import_ref(indexed_getter_refs, get_indexed_getter_pos(getter), TypeOnlyRef{ p_source.type.builtin_type });
 			return;
 		} else if (Variant::get_member_validated_keyed_getter(p_source.type.builtin_type)) {
 			Variant::ValidatedKeyedGetter getter = Variant::get_member_validated_keyed_getter(p_source.type.builtin_type);
@@ -836,6 +864,7 @@ void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address
 			append(p_index);
 			append(p_target);
 			append(getter);
+			add_import_ref(keyed_getter_refs, get_keyed_getter_pos(getter), TypeOnlyRef{ p_source.type.builtin_type });
 			return;
 		}
 	}
@@ -853,6 +882,7 @@ void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const S
 		append(p_target);
 		append(p_source);
 		append(setter);
+		add_import_ref(setter_refs, get_setter_pos(setter), SetterGetterRef{ p_target.type.builtin_type, p_name });
 #ifdef DEBUG_ENABLED
 		add_debug_name(setter_names, get_setter_pos(setter), p_name);
 #endif
@@ -871,6 +901,7 @@ void GDScriptByteCodeGenerator::write_get_named(const Address &p_target, const S
 		append(p_source);
 		append(p_target);
 		append(getter);
+		add_import_ref(getter_refs, get_getter_pos(getter), SetterGetterRef{ p_source.type.builtin_type, p_name });
 #ifdef DEBUG_ENABLED
 		add_debug_name(getter_names, get_getter_pos(getter), p_name);
 #endif
@@ -1132,6 +1163,7 @@ void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_tar
 	append(p_arguments.size());
 	append(gds_function);
 	ct.cleanup();
+	add_import_ref(gds_utility_refs, get_gds_utility_pos(gds_function), UtilityRef{ p_function });
 #ifdef DEBUG_ENABLED
 	add_debug_name(gds_utilities_names, get_gds_utility_pos(gds_function), p_function);
 #endif
@@ -1168,6 +1200,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		append(p_arguments.size());
 		append(Variant::get_validated_utility_function(p_function));
 		ct.cleanup();
+		add_import_ref(utility_refs, get_utility_pos(Variant::get_validated_utility_function(p_function)), UtilityRef{ p_function });
 #ifdef DEBUG_ENABLED
 		add_debug_name(utilities_names, get_utility_pos(Variant::get_validated_utility_function(p_function)), p_function);
 #endif
@@ -1238,6 +1271,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 	append(p_arguments.size());
 	append(Variant::get_validated_builtin_method(p_type, p_method));
 	ct.cleanup();
+	add_import_ref(builtin_method_refs, get_builtin_method_pos(Variant::get_validated_builtin_method(p_type, p_method)), BuiltinMethodRef{ p_type, p_method });
 
 #ifdef DEBUG_ENABLED
 	add_debug_name(builtin_methods_names, get_builtin_method_pos(Variant::get_validated_builtin_method(p_type, p_method)), p_method);
@@ -1433,6 +1467,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 			append(p_arguments.size());
 			append(Variant::get_validated_constructor(p_type, valid_constructor));
 			ct.cleanup();
+			add_import_ref(constructor_refs, get_constructor_pos(Variant::get_validated_constructor(p_type, valid_constructor)), ConstructorRef{ p_type, valid_constructor });
 #ifdef DEBUG_ENABLED
 			add_debug_name(constructors_names, get_constructor_pos(Variant::get_validated_constructor(p_type, valid_constructor)), Variant::get_type_name(p_type));
 #endif

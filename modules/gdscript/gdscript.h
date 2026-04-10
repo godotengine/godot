@@ -60,6 +60,7 @@ class GDScript : public Script {
 	bool tool = false;
 	bool valid = false;
 	bool reloading = false;
+	bool loaded_from_bytecode = false;
 	bool _is_abstract = false;
 
 	struct MemberInfo {
@@ -83,6 +84,8 @@ class GDScript : public Script {
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
+	friend class GDScriptBytecodeSerializer;
+	friend class GDScriptCache;
 	friend class GDScriptDocGen;
 	friend class GDScriptLambdaCallable;
 	friend class GDScriptLambdaSelfCallable;

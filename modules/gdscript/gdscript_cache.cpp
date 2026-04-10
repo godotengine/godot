@@ -32,6 +32,7 @@
 
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
+#include "gdscript_bytecode_serializer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 
@@ -318,8 +319,42 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 	Ref<GDScript> script;
 	script.instantiate();
 
+	auto has_static_data = [&](const GDScript *p_script, const auto &p_has_static_data) -> bool {
+		if (p_script->static_variables_indices.size() > 0 || p_script->static_initializer != nullptr) {
+			return true;
+		}
+
+		for (const KeyValue<StringName, Ref<GDScript>> &E : p_script->subclasses) {
+			if (p_has_static_data(E.value.ptr(), p_has_static_data)) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
 	script->set_path_cache(p_path);
-	if (remapped_path.has_extension("gdc")) {
+	if (remapped_path.get_extension() == "gdb") {
+		script->loaded_from_bytecode = true;
+		singleton->shallow_gdscript_cache[p_path] = script;
+
+		// Compiled bytecode: deserialize directly, no parsing needed.
+		Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(remapped_path);
+		if (buffer.is_empty()) {
+			r_error = ERR_FILE_CANT_READ;
+		} else {
+			r_error = GDScriptBytecodeSerializer::deserialize_script(buffer, script.ptr());
+			if (r_error == OK) {
+				script->_static_default_init();
+				if (ScriptServer::is_scripting_enabled() || script->is_tool()) {
+					r_error = script->_static_init();
+				}
+				if (r_error == OK && has_static_data(script.ptr(), has_static_data)) {
+					GDScriptCache::add_static_script(script);
+				}
+			}
+		}
+	} else if (remapped_path.has_extension("gdc")) {
 		Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 		if (buffer.is_empty()) {
 			r_error = ERR_FILE_CANT_READ;
@@ -330,15 +365,22 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 	}
 
 	if (r_error) {
+		if (script->loaded_from_bytecode) {
+			singleton->shallow_gdscript_cache.erase(p_path);
+		}
 		return Ref<GDScript>(); // Returns null and does not cache when the script fails to load.
 	}
 
-	Ref<GDScriptParserRef> parser_ref = get_parser(p_path, GDScriptParserRef::PARSED, r_error);
-	if (r_error == OK) {
-		GDScriptCompiler::make_scripts(script.ptr(), parser_ref->get_parser()->get_tree(), true);
+	if (!script->loaded_from_bytecode) {
+		Ref<GDScriptParserRef> parser_ref = get_parser(p_path, GDScriptParserRef::PARSED, r_error);
+		if (r_error == OK) {
+			GDScriptCompiler::make_scripts(script.ptr(), parser_ref->get_parser()->get_tree(), true);
+		}
 	}
 
-	singleton->shallow_gdscript_cache[p_path] = script;
+	if (!script->loaded_from_bytecode) {
+		singleton->shallow_gdscript_cache[p_path] = script;
+	}
 
 	return script;
 }
@@ -370,7 +412,23 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	const String remapped_path = ResourceLoader::path_remap(p_path);
 
 	if (p_update_from_disk) {
-		if (remapped_path.has_extension("gdc")) {
+		if (remapped_path.has_extension("gdb")) {
+			// Compiled bytecode: deserialize directly.
+			Vector<uint8_t> buffer = FileAccess::get_file_as_bytes(remapped_path);
+			if (buffer.is_empty()) {
+				r_error = ERR_FILE_CANT_READ;
+				goto finish;
+			}
+			r_error = GDScriptBytecodeSerializer::deserialize_script(buffer, script.ptr());
+			if (r_error == OK) {
+				script->loaded_from_bytecode = true;
+				script->_static_default_init();
+				if (ScriptServer::is_scripting_enabled() || script->is_tool()) {
+					script->_static_init();
+				}
+			}
+			goto finish;
+		} else if (remapped_path.has_extension("gdc")) {
 			Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 			if (buffer.is_empty()) {
 				r_error = ERR_FILE_CANT_READ;

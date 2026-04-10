@@ -744,6 +744,12 @@ Error GDScript::reload(bool p_keep_state) {
 	if (reloading) {
 		return OK;
 	}
+
+	// Scripts loaded from compiled bytecode (.gdb) are already fully populated.
+	if (loaded_from_bytecode) {
+		return OK;
+	}
+
 	reloading = true;
 
 	bool has_instances;
@@ -1385,7 +1391,7 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 #endif
 
 String GDScript::canonicalize_path(const String &p_path) {
-	if (p_path.get_extension() == "gdc") {
+	if (p_path.get_extension() == "gdc" || p_path.get_extension() == "gdb") {
 		return p_path.get_basename() + ".gd";
 	}
 	return p_path;

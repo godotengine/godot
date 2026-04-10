@@ -123,6 +123,34 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
 
+	// Import table symbolic references (parallel to function pointer maps, for bytecode serialization).
+	typedef GDScriptFunction::ImportTable::OperatorRef OperatorRef;
+	typedef GDScriptFunction::ImportTable::SetterGetterRef SetterGetterRef;
+	typedef GDScriptFunction::ImportTable::TypeOnlyRef TypeOnlyRef;
+	typedef GDScriptFunction::ImportTable::BuiltinMethodRef BuiltinMethodRef;
+	typedef GDScriptFunction::ImportTable::ConstructorRef ConstructorRef;
+	typedef GDScriptFunction::ImportTable::UtilityRef UtilityRef;
+
+	Vector<OperatorRef> operator_refs;
+	Vector<SetterGetterRef> setter_refs;
+	Vector<SetterGetterRef> getter_refs;
+	Vector<TypeOnlyRef> keyed_setter_refs;
+	Vector<TypeOnlyRef> keyed_getter_refs;
+	Vector<TypeOnlyRef> indexed_setter_refs;
+	Vector<TypeOnlyRef> indexed_getter_refs;
+	Vector<BuiltinMethodRef> builtin_method_refs;
+	Vector<ConstructorRef> constructor_refs;
+	Vector<UtilityRef> utility_refs;
+	Vector<UtilityRef> gds_utility_refs;
+
+	template <typename T>
+	void add_import_ref(Vector<T> &refs, int index, const T &ref) {
+		if (index >= refs.size()) {
+			refs.resize(index + 1);
+		}
+		refs.write[index] = ref;
+	}
+
 #ifdef DEBUG_ENABLED
 	// Keep method and property names for pointer and validated operations.
 	// Used when disassembling the bytecode.

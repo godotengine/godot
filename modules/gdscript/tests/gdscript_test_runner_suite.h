@@ -30,11 +30,13 @@
 
 #pragma once
 
+#include "../gdscript_bytecode_serializer.h"
 #include "../gdscript_cache.h"
 #include "gdscript_test_runner.h"
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
@@ -54,6 +56,20 @@ public:
 		return GDScriptCache::singleton->full_gdscript_cache.has(p_path);
 	}
 };
+
+static void write_text_file(const String &p_path, const String &p_text) {
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
+	REQUIRE_MESSAGE(file.is_valid(), vformat("Failed to open '%s' for writing.", p_path));
+	file->store_string(p_text);
+	file->close();
+}
+
+static void write_binary_file(const String &p_path, const Vector<uint8_t> &p_bytes) {
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
+	REQUIRE_MESSAGE(file.is_valid(), vformat("Failed to open '%s' for writing.", p_path));
+	file->store_buffer(p_bytes.ptr(), p_bytes.size());
+	file->close();
+}
 
 // TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
 #ifdef TOOLS_ENABLED
@@ -139,6 +155,222 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 			}
 		}
 	}
+}
+
+TEST_CASE("[Modules][GDScript] Bytecode remap preserves self refs and static typed arrays") {
+	GDScriptLanguage::get_singleton()->init();
+
+	const String script_path = TestUtils::get_temp_path("gdscript_bytecode_regression.gd");
+	const String bytecode_path = script_path.get_basename() + ".gdb";
+	const String remap_path = script_path + ".remap";
+
+	String source = R"(
+extends RefCounted
+class_name BytecodeRegression
+const SELF = preload("__SELF_PATH__")
+
+static var registry := []
+static var typed_registry: Array[String] = []
+static var scripted_registry: Array[BytecodeRegression] = []
+
+static func registry_size() -> int:
+	return typed_registry.size()
+
+static func builtin_typed_array_roundtrip() -> bool:
+	var actions: Array[String] = []
+	actions.append("jump")
+	var copy: Array[String] = actions
+	return copy.size() == 1 and copy[0] == "jump"
+
+static func builtin_object_typed_array_roundtrip() -> bool:
+	var events: Array[InputEvent] = []
+	events.append(InputEventKey.new())
+	var copy: Array[InputEvent] = events
+	return copy.size() == 1 and copy[0] is InputEventKey
+
+static func self_class_name_roundtrip() -> bool:
+	var instance = BytecodeRegression.new()
+	return instance.get_script() == SELF
+
+static func script_typed_array_roundtrip() -> bool:
+	var entries: Array[BytecodeRegression] = []
+	entries.append(BytecodeRegression.new())
+	var copy: Array[BytecodeRegression] = entries
+	return copy.size() == 1 and copy[0].get_script() == SELF
+
+static func typed_array_roundtrip() -> bool:
+	var instance = SELF.new()
+	return instance.get_script() == SELF
+
+static func add_self() -> bool:
+	registry.append(SELF.new())
+	scripted_registry.append(BytecodeRegression.new())
+	typed_registry.append("ok")
+	return registry.size() == 1 and registry[0].get_script() == SELF and scripted_registry.size() == 1 and scripted_registry[0].get_script() == SELF and typed_registry.size() == 1
+)";
+	source = source.replace("__SELF_PATH__", script_path.c_escape());
+
+	write_text_file(script_path, source);
+	ScriptServer::remove_global_class_by_path(script_path);
+
+	struct GlobalClassCleanup {
+		String path;
+
+		~GlobalClassCleanup() {
+			if (!path.is_empty()) {
+				ScriptServer::remove_global_class_by_path(path);
+			}
+		}
+	} global_class_cleanup { script_path };
+
+	String base_type;
+	bool is_abstract = false;
+	bool is_tool = false;
+	String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(script_path, &base_type, nullptr, &is_abstract, &is_tool);
+	REQUIRE_MESSAGE(!class_name.is_empty(), "Temp bytecode regression script should expose a global class name.");
+	ScriptServer::add_global_class(class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), script_path, is_abstract, is_tool);
+
+	GDScriptCache::remove_script(script_path);
+
+	Error err = OK;
+	Ref<GDScript> source_script = ResourceLoader::load(script_path, "GDScript", ResourceFormatLoader::CACHE_MODE_IGNORE, &err);
+	REQUIRE_MESSAGE(err == OK, "Source script should load before bytecode export.");
+	REQUIRE(source_script.is_valid());
+	REQUIRE(source_script->is_valid());
+
+	const Vector<uint8_t> bytecode = GDScriptBytecodeSerializer::serialize_script(source_script.ptr());
+	REQUIRE_MESSAGE(!bytecode.is_empty(), "Bytecode export should produce data.");
+
+	write_binary_file(bytecode_path, bytecode);
+	write_text_file(remap_path, vformat("[remap]\npath=\"%s\"\n", bytecode_path));
+
+	GDScriptCache::remove_script(script_path);
+	if (Ref<Resource> cached = ResourceCache::get_ref(script_path); cached.is_valid()) {
+		cached->set_path(String());
+	}
+
+	Ref<GDScript> bytecode_script = ResourceLoader::load(script_path, "GDScript", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
+	REQUIRE_MESSAGE(err == OK, "Bytecode-remapped script should load successfully.");
+	REQUIRE(bytecode_script.is_valid());
+	REQUIRE(bytecode_script->is_valid());
+
+	Array no_args;
+	Variant result = bytecode_script->callv("registry_size", no_args);
+	REQUIRE(result.get_type() == Variant::INT);
+	CHECK(int(result) == 0);
+
+	result = bytecode_script->callv("builtin_typed_array_roundtrip", no_args);
+	REQUIRE(result.get_type() == Variant::BOOL);
+	CHECK(bool(result));
+
+	result = bytecode_script->callv("builtin_object_typed_array_roundtrip", no_args);
+	REQUIRE(result.get_type() == Variant::BOOL);
+	CHECK(bool(result));
+
+	result = bytecode_script->callv("self_class_name_roundtrip", no_args);
+	REQUIRE(result.get_type() == Variant::BOOL);
+	CHECK(bool(result));
+
+	result = bytecode_script->callv("script_typed_array_roundtrip", no_args);
+	REQUIRE(result.get_type() == Variant::BOOL);
+	CHECK(bool(result));
+
+	result = bytecode_script->callv("typed_array_roundtrip", no_args);
+	REQUIRE(result.get_type() == Variant::BOOL);
+	CHECK(bool(result));
+
+	result = bytecode_script->callv("add_self", no_args);
+	REQUIRE(result.get_type() == Variant::BOOL);
+	CHECK(bool(result));
+
+	result = bytecode_script->callv("registry_size", no_args);
+	REQUIRE(result.get_type() == Variant::INT);
+	CHECK(int(result) == 1);
+
+	GDScriptCache::remove_script(script_path);
+	if (bytecode_script.is_valid()) {
+		bytecode_script->set_path(String());
+	}
+	if (source_script.is_valid()) {
+		source_script->set_path(String());
+	}
+	if (Ref<Resource> cached = ResourceCache::get_ref(script_path); cached.is_valid()) {
+		cached->set_path(String());
+	}
+}
+
+TEST_CASE("[Modules][GDScript] Bytecode serializer roundtrip preserves runtime and dump") {
+	GDScriptLanguage::get_singleton()->init();
+
+	const String script_path = TestUtils::get_temp_path("gdscript_bytecode_roundtrip.gd");
+	const String roundtrip_script_path = TestUtils::get_temp_path("gdscript_bytecode_roundtrip_copy.gd");
+
+	const String source = R"(
+extends RefCounted
+
+func helper(value: int) -> int:
+	return value * 2
+
+func exercise(seed: int = 2) -> Dictionary:
+	var total := seed
+	var history: Array[String] = []
+	for i in range(3):
+		total += helper(i)
+
+	if total > 3:
+		history.append(str(total))
+	else:
+		total -= 1
+
+	var adder := func(extra: int) -> int:
+		return total + extra
+
+	return {
+		"total": total,
+		"lambda": adder.call(1),
+		"history": history.duplicate()
+	}
+)";
+
+	write_text_file(script_path, source);
+	GDScriptCache::remove_script(script_path);
+
+	Error err = OK;
+	Ref<GDScript> source_script = ResourceLoader::load(script_path, "GDScript", ResourceFormatLoader::CACHE_MODE_IGNORE, &err);
+	REQUIRE_MESSAGE(err == OK, "Source script should load before bytecode roundtrip.");
+	REQUIRE(source_script.is_valid());
+	REQUIRE(source_script->is_valid());
+
+	const String source_dump = GDScriptBytecodeSerializer::dump_script_text(source_script.ptr());
+	const Vector<uint8_t> bytecode = GDScriptBytecodeSerializer::serialize_script(source_script.ptr());
+	REQUIRE_MESSAGE(!bytecode.is_empty(), "Bytecode roundtrip should produce serialized data.");
+
+	Ref<GDScript> roundtrip_script = memnew(GDScript);
+	roundtrip_script->set_path(roundtrip_script_path);
+	const Error deserialize_error = GDScriptBytecodeSerializer::deserialize_script(bytecode, roundtrip_script.ptr());
+	REQUIRE(deserialize_error == OK);
+	REQUIRE(roundtrip_script->is_valid());
+
+	const String roundtrip_dump = GDScriptBytecodeSerializer::dump_script_text(roundtrip_script.ptr()).replace(roundtrip_script_path, script_path);
+	CHECK(source_dump == roundtrip_dump);
+
+	Ref<RefCounted> source_instance = memnew(RefCounted);
+	source_instance->set_script(source_script);
+
+	Ref<RefCounted> roundtrip_instance = memnew(RefCounted);
+	roundtrip_instance->set_script(roundtrip_script);
+
+	Array args;
+	args.push_back(5);
+
+	const Variant source_result = source_instance->callv("exercise", args);
+	const Variant roundtrip_result = roundtrip_instance->callv("exercise", args);
+	REQUIRE(source_result.get_type() == Variant::DICTIONARY);
+	REQUIRE(roundtrip_result.get_type() == Variant::DICTIONARY);
+	CHECK(Dictionary(source_result) == Dictionary(roundtrip_result));
+
+	source_script->set_path(String());
+	roundtrip_script->set_path(String());
 }
 
 } // namespace GDScriptTests
