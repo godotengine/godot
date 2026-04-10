@@ -46,6 +46,12 @@ class InterpolatedProperty {
 	// Only needs interpolating / updating the servers when
 	// curr and prev are different.
 	bool _needs_interpolating = false;
+
+	// Each time we hit a physics tick, curr = prev,
+	// BUT the server may be out of date, and needs an update
+	// on the next frame, OR taking the node off the property update list.
+	bool _server_stale = false;
+
 	T _interpolated;
 	T curr;
 	T prev;
@@ -57,6 +63,7 @@ public:
 	void pump() {
 		prev = curr;
 		_needs_interpolating = false;
+		_server_stale = true;
 	}
 	void reset() { pump(); }
 
@@ -64,11 +71,16 @@ public:
 		_interpolated = p_val;
 	}
 	const T &interpolated() const { return _interpolated; }
-	bool needs_interpolating() const { return _needs_interpolating; }
 
+	// Returns true if an update to the server is needed.
 	bool interpolate(float p_interpolation_fraction) {
 		if (_needs_interpolating) {
 			_interpolated = InterpolatedPropertyFuncs::lerp(prev, curr, p_interpolation_fraction);
+			return true;
+		}
+		if (_server_stale) {
+			_interpolated = curr;
+			_server_stale = false;
 			return true;
 		}
 		return false;
