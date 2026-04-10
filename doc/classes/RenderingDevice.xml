@@ -22,14 +22,14 @@
 				This method does nothing.
 			</description>
 		</method>
-		<method name="blas_build">
+		<method name="blas_build" experimental="">
 			<return type="int" enum="Error" />
 			<param index="0" name="blas" type="RID" />
 			<description>
 				Builds the [param blas].
 			</description>
 		</method>
-		<method name="blas_create">
+		<method name="blas_create" experimental="">
 			<return type="RID" />
 			<param index="0" name="geometries" type="RDAccelerationStructureGeometry[]" />
 			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
@@ -717,7 +717,7 @@
 				Returns [code]true[/code] if the [param feature] is supported by the GPU.
 			</description>
 		</method>
-		<method name="hit_sbt_create">
+		<method name="hit_sbt_create" experimental="">
 			<return type="RID" />
 			<param index="0" name="raytracing_pipeline" type="RID" />
 			<param index="1" name="initial_hit_group_capacity" type="int" />
@@ -728,7 +728,7 @@
 				The hit SBT resizes itself as needed. [param initial_hit_group_capacity] is used to allocate the initial backing memory.
 			</description>
 		</method>
-		<method name="hit_sbt_range_alloc">
+		<method name="hit_sbt_range_alloc" experimental="">
 			<return type="int" />
 			<param index="0" name="hit_sbt" type="RID" />
 			<param index="1" name="hit_group_count" type="int" />
@@ -746,7 +746,7 @@
 				The allocated range is uninitialized and must be filled using [method hit_sbt_range_update].
 			</description>
 		</method>
-		<method name="hit_sbt_range_free">
+		<method name="hit_sbt_range_free" experimental="">
 			<return type="int" enum="Error" />
 			<param index="0" name="hit_sbt" type="RID" />
 			<param index="1" name="range" type="int" />
@@ -755,7 +755,7 @@
 				The range must not be in use by any acceleration structure after being freed.
 			</description>
 		</method>
-		<method name="hit_sbt_range_update">
+		<method name="hit_sbt_range_update" experimental="">
 			<return type="int" enum="Error" />
 			<param index="0" name="hit_sbt" type="RID" />
 			<param index="1" name="range" type="int" />
@@ -767,7 +767,7 @@
 				The [param offset] parameter specifies where within the allocated range the writing begins. This allows partial updates of a range. However, the complete range must be fully initialized before it is used in a raytracing dispatch.
 			</description>
 		</method>
-		<method name="hit_sbt_set_pipeline">
+		<method name="hit_sbt_set_pipeline" experimental="">
 			<return type="int" enum="Error" />
 			<param index="0" name="hit_sbt" type="RID" />
 			<param index="1" name="raytracing_pipeline" type="RID" />
@@ -808,7 +808,7 @@
 				Limits for various graphics hardware can be found in the [url=https://vulkan.gpuinfo.org/]Vulkan Hardware Database[/url].
 			</description>
 		</method>
-		<method name="raytracing_list_begin">
+		<method name="raytracing_list_begin" experimental="">
 			<return type="int" />
 			<description>
 				Starts a list of raytracing commands. The returned value should be passed to other [code]raytracing_list_*[/code] functions.
@@ -862,7 +862,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="raytracing_list_bind_raytracing_pipeline">
+		<method name="raytracing_list_bind_raytracing_pipeline" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="raytracing_pipeline" type="RID" />
@@ -870,7 +870,7 @@
 				Binds [param raytracing_pipeline] to the specified [param raytracing_list].
 			</description>
 		</method>
-		<method name="raytracing_list_bind_uniform_set">
+		<method name="raytracing_list_bind_uniform_set" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="uniform_set" type="RID" />
@@ -879,13 +879,13 @@
 				Binds the [param uniform_set] to this [param raytracing_list].
 			</description>
 		</method>
-		<method name="raytracing_list_end">
+		<method name="raytracing_list_end" experimental="">
 			<return type="void" />
 			<description>
 				Finishes a list of raytracing commands created with the [code]raytracing_*[/code] methods.
 			</description>
 		</method>
-		<method name="raytracing_list_set_push_constant">
+		<method name="raytracing_list_set_push_constant" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="buffer" type="PackedByteArray" />
@@ -894,7 +894,7 @@
 				Sets the push constant data to [param buffer] for the specified [param raytracing_list]. The shader determines how this binary data is used. The buffer's size in bytes must also be specified in [param size_bytes] (this can be obtained by calling the [method PackedByteArray.size] method on the passed [param buffer]).
 			</description>
 		</method>
-		<method name="raytracing_list_trace_rays">
+		<method name="raytracing_list_trace_rays" experimental="">
 			<return type="void" />
 			<param index="0" name="raytracing_list" type="int" />
 			<param index="1" name="raygen_shader_index" type="int" />
@@ -908,7 +908,7 @@
 				[param hit_sbt] must use the same pipeline bound to [param raytracing_list].
 			</description>
 		</method>
-		<method name="raytracing_pipeline_create">
+		<method name="raytracing_pipeline_create" experimental="">
 			<return type="RID" />
 			<param index="0" name="raygen_shaders" type="RDPipelineShader[]" />
 			<param index="1" name="miss_shaders" type="RDPipelineShader[]" />
@@ -924,7 +924,7 @@
 				- [param hit_groups] is indexed in [method hit_sbt_range_update].
 			</description>
 		</method>
-		<method name="raytracing_pipeline_is_valid">
+		<method name="raytracing_pipeline_is_valid" experimental="">
 			<return type="bool" />
 			<param index="0" name="raytracing_pipeline" type="RID" />
 			<description>
@@ -1288,7 +1288,7 @@
 				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
 			</description>
 		</method>
-		<method name="tlas_build">
+		<method name="tlas_build" experimental="">
 			<return type="int" enum="Error" />
 			<param index="0" name="tlas" type="RID" />
 			<param index="1" name="instances" type="RDAccelerationStructureInstance[]" />
@@ -1299,7 +1299,7 @@
 				[b]Note:[/b] Freeing or rebuilding any of the provided BLASes after this method invalidates the TLAS and requires it to be rebuilt.
 			</description>
 		</method>
-		<method name="tlas_create">
+		<method name="tlas_create" experimental="">
 			<return type="RID" />
 			<param index="0" name="max_instance_count" type="int" />
 			<param index="1" name="flags" type="int" enum="RenderingDevice.AccelerationStructureFlagBits" is_bitfield="true" />
@@ -2364,7 +2364,7 @@
 		<constant name="BUFFER_CREATION_AS_STORAGE_BIT" value="2" enum="BufferCreationBits" is_bitfield="true">
 			Set this flag so that it is created as storage. This is useful if Compute Shaders need access (for reading or writing) to the buffer, e.g. skeletal animations are processed in Compute Shaders which need access to vertex buffers, to be later consumed by vertex shaders as part of the regular rasterization pipeline.
 		</constant>
-		<constant name="BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT" value="8" enum="BufferCreationBits" is_bitfield="true">
+		<constant name="BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT" value="8" enum="BufferCreationBits" is_bitfield="true" experimental="">
 			Allows usage of this buffer as input data for an acceleration structure build operation. You must first check that the GPU supports it:
 			[codeblocks]
 			[gdscript]
@@ -2375,37 +2375,37 @@
 			[/gdscript]
 			[/codeblocks]
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT" value="1" enum="AccelerationStructureFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT" value="1" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
 			Allows the acceleration structure to be updated after it has been built.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT" value="2" enum="AccelerationStructureFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT" value="2" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
 			Allows the acceleration structure to be compacted to reduce memory usage after it has been built.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT" value="4" enum="AccelerationStructureFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT" value="4" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
 			Prioritizes ray traversal performance over build performance when building the acceleration structure.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT" value="8" enum="AccelerationStructureFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT" value="8" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
 			Prioritizes build performance over ray traversal performance when building the acceleration structure.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_LOW_MEMORY_BIT" value="16" enum="AccelerationStructureFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_LOW_MEMORY_BIT" value="16" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
 			Reduces the memory usage of the acceleration structure, potentially at the cost of reduced ray traversal performance.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true" experimental="">
 			An opaque geometry does not invoke the any hit shaders.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT" value="2" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT" value="2" enum="AccelerationStructureGeometryFlagBits" is_bitfield="true" experimental="">
 			This geometry only calls the any hit shader a single time for each primitive.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT" value="1" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT" value="1" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
 			Disables triangle face culling for this instance during ray traversal.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT" value="2" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT" value="2" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
 			Flips the triangle facing direction for this instance during ray traversal.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT" value="4" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT" value="4" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
 			Forces all geometries in this instance to be treated as opaque, preventing any hit shaders from being invoked.
 		</constant>
-		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT" value="8" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+		<constant name="ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT" value="8" enum="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
 			Forces all geometries in this instance to be treated as non-opaque, allowing any hit shaders to be invoked.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
