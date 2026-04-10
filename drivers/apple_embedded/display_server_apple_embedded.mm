@@ -710,6 +710,9 @@ void DisplayServerAppleEmbedded::virtual_keyboard_show(const String &p_existing_
 
 	GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
 	GDTAppDelegateService.viewController.keyboardView.textContentType = nil;
+	GDTAppDelegateService.viewController.keyboardView.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+	GDTAppDelegateService.viewController.keyboardView.autocorrectionType = UITextAutocorrectionTypeDefault;
+	GDTAppDelegateService.viewController.keyboardView.secureTextEntry = NO;
 	switch (p_type) {
 		case DisplayServerEnums::KEYBOARD_TYPE_DEFAULT: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
@@ -730,14 +733,17 @@ void DisplayServerAppleEmbedded::virtual_keyboard_show(const String &p_existing_
 		case DisplayServerEnums::KEYBOARD_TYPE_EMAIL_ADDRESS: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeEmailAddress;
 			GDTAppDelegateService.viewController.keyboardView.textContentType = UITextContentTypeEmailAddress;
+			GDTAppDelegateService.viewController.keyboardView.autocapitalizationType = UITextAutocapitalizationTypeNone;
 		} break;
 		case DisplayServerEnums::KEYBOARD_TYPE_PASSWORD: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
 			GDTAppDelegateService.viewController.keyboardView.textContentType = UITextContentTypePassword;
+			GDTAppDelegateService.viewController.keyboardView.autocapitalizationType = UITextAutocapitalizationTypeNone;
 		} break;
 		case DisplayServerEnums::KEYBOARD_TYPE_URL: {
 			GDTAppDelegateService.viewController.keyboardView.keyboardType = UIKeyboardTypeWebSearch;
 			GDTAppDelegateService.viewController.keyboardView.textContentType = UITextContentTypeURL;
+			GDTAppDelegateService.viewController.keyboardView.autocapitalizationType = UITextAutocapitalizationTypeNone;
 		} break;
 	}
 
