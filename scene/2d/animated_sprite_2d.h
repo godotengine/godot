@@ -37,8 +37,7 @@ class AnimatedSprite2D : public Node2D {
 	GDCLASS(AnimatedSprite2D, Node2D);
 
 public:
-	enum OffsetOrigin
-	{
+	enum OffsetOrigin {
 		OFFSET_ORIGIN_TOP_LEFT,
 		OFFSET_ORIGIN_TOP_CENTER,
 		OFFSET_ORIGIN_TOP_RIGHT,
