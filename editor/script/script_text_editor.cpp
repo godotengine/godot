@@ -1305,7 +1305,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		// Check for Autoload scenes.
 		const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(p_symbol);
 		if (info.is_singleton) {
-			EditorNode::get_singleton()->load_scene(info.path);
+			EditorNode::get_singleton()->open_scene(info.path);
 		}
 	} else if (p_symbol.is_relative_path()) {
 		// Every symbol other than absolute path is relative path so keep this condition at last.

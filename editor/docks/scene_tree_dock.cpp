@@ -1903,7 +1903,7 @@ void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
 }
 
 void SceneTreeDock::_load_request(const String &p_path) {
-	EditorNode::get_singleton()->load_scene(p_path);
+	EditorNode::get_singleton()->open_scene(p_path);
 	_local_tree_selected();
 }
 
