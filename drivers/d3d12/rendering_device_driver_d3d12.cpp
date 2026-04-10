@@ -381,6 +381,7 @@ Error RenderingDeviceDriverD3D12::DescriptorHeap::allocate(uint32_t p_descriptor
 	ERR_FAIL_COND_V_MSG(FAILED(hr), ERR_CANT_CREATE, "Allocate failed with error " + vformat("0x%08ux", (uint64_t)hr) + ".");
 
 	r_allocation.virtual_alloc_handle = virtual_alloc.AllocHandle;
+	r_allocation.offset = offset;
 	r_allocation.cpu_handle = get_cpu_handle(cpu_handle, offset, increment_size);
 	r_allocation.gpu_handle = get_gpu_handle(gpu_handle, offset, increment_size);
 
@@ -875,7 +876,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	}
 
 	CD3DX12_RESOURCE_DESC1 resource_desc = CD3DX12_RESOURCE_DESC1::Buffer(p_size);
-	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)) {
+	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT) || p_usage.has_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT)) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	} else {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
@@ -940,6 +941,31 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
+	// If device address usage is requested, create a UAV descriptor expected by spirv2dxil.
+	DescriptorHeap::Allocation device_address_uav_alloc = {};
+	if (p_usage.has_flag(BUFFER_USAGE_DEVICE_ADDRESS_BIT)) {
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(1, device_address_uav_alloc);
+		}
+
+		if (unlikely(err != OK)) {
+			ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, BufferID(), "Cannot create buffer because there's not enough room in the RESOURCES descriptor heap.\n"
+																	  "Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors project setting.");
+
+			ERR_FAIL_V_MSG(BufferID(), "Failed to allocate buffer descriptor.");
+		}
+
+		D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
+		uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+		uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+		uav_desc.Buffer.NumElements = p_size / 4;
+		device->CreateUnorderedAccessView(buffer.Get(), nullptr, &uav_desc, device_address_uav_alloc.cpu_handle);
+	}
+
 	// Bookkeep.
 
 	BufferInfo *buf_info;
@@ -965,6 +991,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	buf_info->states_ptr = &buf_info->owner_info.states;
 	buf_info->gpu_virtual_address = buffer->GetGPUVirtualAddress();
 	buf_info->size = original_size;
+	buf_info->device_address_uav_alloc = device_address_uav_alloc;
 	buf_info->flags.is_dynamic = p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT);
 
 	return BufferID(buf_info);
@@ -978,6 +1005,13 @@ bool RenderingDeviceDriverD3D12::buffer_set_texel_format(BufferID p_buffer, Data
 
 void RenderingDeviceDriverD3D12::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
+
+	if (buf_info->device_address_uav_alloc.virtual_alloc_handle != 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		resource_descriptor_heap.free(buf_info->device_address_uav_alloc);
+	}
+
 	if (buf_info->is_dynamic()) {
 		buf_info->resource->Unmap(0, &VOID_RANGE);
 		VersatileResource::free(resources_allocator, (BufferDynamicInfo *)buf_info);
@@ -1035,7 +1069,8 @@ uint64_t RenderingDeviceDriverD3D12::buffer_get_dynamic_offsets(Span<BufferID> p
 
 uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	return buf_info->gpu_virtual_address;
+	// This is the format expected by spirv2dxil. The descriptor is loaded via ResourceDescriptorHeap using the index in the high 32 bits of the device address.
+	return (buf_info->device_address_uav_alloc.offset << 32ull) | (0xD3ull << 56);
 }
 
 /*****************/
@@ -3384,7 +3419,13 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 	// Allocate range for resource descriptors.
 	if (uniform_set.resource_descriptor_count > 0) {
-		Error err = resource_descriptor_heap.allocate(uniform_set.resource_descriptor_count, uniform_set_info->resource_descriptor_heap_alloc);
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(uniform_set.resource_descriptor_count, uniform_set_info->resource_descriptor_heap_alloc);
+		}
+
 		if (unlikely(err != OK)) {
 			VersatileResource::free(resources_allocator, uniform_set_info);
 
@@ -3419,6 +3460,8 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 		}
 		sampler_key = hash_fmix32(sampler_key);
 
+		MutexLock lock(sampler_descriptor_heap_mutex);
+
 		RBMap<uint32_t, SamplerDescriptorHeapAllocation>::Iterator find_result = sampler_descriptor_heap_allocations.find(sampler_key);
 		if (find_result != sampler_descriptor_heap_allocations.end()) {
 			uniform_set_info->sampler_descriptor_heap_alloc = &find_result->value;
@@ -3429,7 +3472,12 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 			Error err = sampler_descriptor_heap.allocate(uniform_set.sampler_descriptor_count, *uniform_set_info->sampler_descriptor_heap_alloc);
 			if (unlikely(err != OK)) {
-				resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+				{
+					MutexLock resource_descriptor_heap_mutex_lock(resource_descriptor_heap_mutex);
+
+					resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+				}
+
 				VersatileResource::free(resources_allocator, uniform_set_info);
 
 				ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, UniformSetID(), "Cannot create uniform set because there's not enough room in the SAMPLERS descriptors heap.\n"
@@ -3620,9 +3668,15 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 void RenderingDeviceDriverD3D12::uniform_set_free(UniformSetID p_uniform_set) {
 	UniformSetInfo *uniform_set_info = (UniformSetInfo *)p_uniform_set.id;
 
-	resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	if (uniform_set_info->resource_descriptor_heap_alloc.virtual_alloc_handle != 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	}
 
 	if (uniform_set_info->sampler_descriptor_heap_alloc != nullptr) {
+		MutexLock lock(sampler_descriptor_heap_mutex);
+
 		if ((--uniform_set_info->sampler_descriptor_heap_alloc->use_count) == 0) {
 			sampler_descriptor_heap.free(*uniform_set_info->sampler_descriptor_heap_alloc);
 			sampler_descriptor_heap_allocations.erase(uniform_set_info->sampler_descriptor_heap_alloc->key);
@@ -3810,7 +3864,13 @@ RenderingDeviceDriverD3D12::DescriptorHeap::Allocation RenderingDeviceDriverD3D1
 	} else {
 		DescriptorHeap::Allocation descriptor_allocation = {};
 
-		Error err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		}
+
 		ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, DescriptorHeap::Allocation(), "Cannot allocate per frame descriptor because there's not enough room in the RESOURCES descriptor heap.\n"
 																					"Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors project setting.");
 
@@ -5662,10 +5722,15 @@ void RenderingDeviceDriverD3D12::end_segment() {
 	FrameInfo &f = frames[frame_idx];
 
 	// Free leftover descriptors.
-	for (uint32_t i = f.descriptor_allocation_count; i < f.descriptor_allocations.size(); i++) {
-		resource_descriptor_heap.free(f.descriptor_allocations[i]);
+	if (f.descriptor_allocation_count < f.descriptor_allocations.size()) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		for (uint32_t i = f.descriptor_allocation_count; i < f.descriptor_allocations.size(); i++) {
+			resource_descriptor_heap.free(f.descriptor_allocations[i]);
+		}
+
+		f.descriptor_allocations.resize(f.descriptor_allocation_count);
 	}
-	f.descriptor_allocations.resize(f.descriptor_allocation_count);
 
 	segment_begun = false;
 }
@@ -5864,7 +5929,7 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
-			return true;
+			return shader_capabilities.shader_model >= D3D_SHADER_MODEL_6_6;
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return true;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
@@ -5928,9 +5993,13 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(RenderingContextDriverD3D
 RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	rtv_descriptor_heap_pool.free(null_rtv_alloc);
 
-	for (FrameInfo &f : frames) {
-		for (DescriptorHeap::Allocation &alloc : f.descriptor_allocations) {
-			resource_descriptor_heap.free(alloc);
+	{
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		for (FrameInfo &f : frames) {
+			for (DescriptorHeap::Allocation &alloc : f.descriptor_allocations) {
+				resource_descriptor_heap.free(alloc);
+			}
 		}
 	}
 

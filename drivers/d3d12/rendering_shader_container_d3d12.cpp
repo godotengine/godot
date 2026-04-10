@@ -469,6 +469,11 @@ bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_
 		nir_to_dxil_options.validator_version_max = NO_DXIL_VALIDATION;
 		nir_to_dxil_options.godot_nir_callbacks = &godot_nir_callbacks;
 
+		// For buffer device address, minimum 6.6 is required.
+		if (reflection_data.has_physical_storage_buffer_addresses) {
+			nir_to_dxil_options.shader_model_max = MAX(nir_to_dxil_options.shader_model_max, SHADER_MODEL_6_6);
+		}
+
 		dxil_logger logger = {};
 		logger.log = [](void *p_priv, const char *p_msg) {
 #ifdef DEBUG_ENABLED
@@ -746,6 +751,10 @@ bool RenderingShaderContainerD3D12::_generate_root_signature(BitField<RenderingD
 
 	if (reflection_data.vertex_input_mask) {
 		root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	}
+
+	if (reflection_data.has_physical_storage_buffer_addresses) {
+		root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
 	}
 
 	root_sig_desc.Init_1_1(root_params.size(), root_params.ptr(), 0, nullptr, root_sig_flags);
