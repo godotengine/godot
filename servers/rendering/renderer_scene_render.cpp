@@ -591,6 +591,52 @@ float RendererSceneRender::environment_get_ssr_depth_tolerance(RID p_env) const 
 	return environment_storage.environment_get_ssr_depth_tolerance(p_env);
 }
 
+// SSCS
+
+void RendererSceneRender::environment_set_sscs(RID p_env, bool p_enable, int p_max_steps, float p_bilinear_threshold, float p_shadow_contrast, float p_surface_thickness, bool p_use_precision_offset, bool p_ignore_edge_pixels, bool p_bilinear_sampling_offset_mode, bool p_debug_enabled, int p_debug_type) {
+	environment_storage.environment_set_sscs(p_env, p_enable, p_max_steps, p_bilinear_threshold, p_shadow_contrast, p_surface_thickness, p_use_precision_offset, p_ignore_edge_pixels, p_bilinear_sampling_offset_mode, p_debug_enabled, p_debug_type);
+}
+
+bool RendererSceneRender::environment_get_sscs_enabled(RID p_env) const {
+	return environment_storage.environment_get_sscs_enabled(p_env);
+}
+
+bool RendererSceneRender::environment_get_sscs_debug_enabled(RID p_env) const {
+	return environment_storage.environment_get_sscs_debug_enabled(p_env);
+}
+
+int RendererSceneRender::environment_get_sscs_debug_type(RID p_env) const {
+	return environment_storage.environment_get_sscs_debug_type(p_env);
+}
+
+int RendererSceneRender::environment_get_sscs_max_steps(RID p_env) const {
+	return environment_storage.environment_get_sscs_max_steps(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_bilinear_threshold(RID p_env) const {
+	return environment_storage.environment_get_sscs_bilinear_threshold(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_shadow_contrast(RID p_env) const {
+	return environment_storage.environment_get_sscs_shadow_contrast(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_surface_thickness(RID p_env) const {
+	return environment_storage.environment_get_sscs_surface_thickness(p_env);
+}
+
+bool RendererSceneRender::environment_get_sscs_use_precision_offset(RID p_env) const {
+	return environment_storage.environment_get_sscs_use_precision_offset(p_env);
+}
+
+bool RendererSceneRender::environment_get_sscs_ignore_edge_pixels(RID p_env) const {
+	return environment_storage.environment_get_sscs_ignore_edge_pixels(p_env);
+}
+
+bool RendererSceneRender::environment_get_sscs_bilinear_sampling_offset_mode(RID p_env) const {
+	return environment_storage.environment_get_sscs_bilinear_sampling_offset_mode(p_env);
+}
+
 // SSAO
 
 void RendererSceneRender::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {

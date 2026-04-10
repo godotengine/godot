@@ -113,6 +113,7 @@ public:
 			RendererRD::SSEffects::SSILRenderBuffers ssil;
 			RendererRD::SSEffects::SSAORenderBuffers ssao;
 			RendererRD::SSEffects::SSRRenderBuffers ssr;
+			RendererRD::SSEffects::SSCSRenderBuffers sscs;
 		} ss_effects_data;
 
 		enum DepthFrameBufferType {
@@ -284,6 +285,16 @@ private:
 		INSTANCE_DATA_FLAGS_PARTICLE_TRAIL_MASK = 0xFF,
 		INSTANCE_DATA_FLAGS_FADE_SHIFT = 24,
 		INSTANCE_DATA_FLAGS_FADE_MASK = 0xFFUL << INSTANCE_DATA_FLAGS_FADE_SHIFT
+	};
+
+	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
+	enum {
+		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO = (1 << 0),
+		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL = (1 << 1),
+		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR = (1 << 2),
+		SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR = (1 << 3),
+		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS = (1 << 4),
+		SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS_DEBUG = (1 << 5)
 	};
 
 	struct SceneState {
@@ -771,8 +782,9 @@ private:
 	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections);
 	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections, const Transform3D &p_transform);
 	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_slices, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform);
+	void _process_sscs(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const Projection *p_projections, const Transform3D &p_transform, const LocalVector<int> &p_contact_shadows, const RenderShadowData *p_render_shadows);
 	void _copy_framebuffer_to_ss_effects(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr);
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
 	void _process_sss(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection &p_camera);
 
 	/* Debug */

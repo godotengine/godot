@@ -2535,6 +2535,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_directional_set_shadow_mode", "light", "mode"), &RenderingServer::light_directional_set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("light_directional_set_blend_splits", "light", "enable"), &RenderingServer::light_directional_set_blend_splits);
 	ClassDB::bind_method(D_METHOD("light_directional_set_sky_mode", "light", "mode"), &RenderingServer::light_directional_set_sky_mode);
+	ClassDB::bind_method(D_METHOD("light_directional_set_screen_space_contact_shadows", "light", "enable"), &RenderingServer::light_directional_set_screen_space_contact_shadows);
 
 	ClassDB::bind_method(D_METHOD("light_projectors_set_filter", "filter"), &RenderingServer::light_projectors_set_filter);
 	ClassDB::bind_method(D_METHOD("lightmaps_set_bicubic_filter", "enable"), &RenderingServer::lightmaps_set_bicubic_filter);

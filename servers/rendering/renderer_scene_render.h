@@ -208,9 +208,21 @@ public:
 	float environment_get_ssr_fade_in(RID p_env) const;
 	float environment_get_ssr_fade_out(RID p_env) const;
 	float environment_get_ssr_depth_tolerance(RID p_env) const;
-
 	virtual void environment_set_ssr_half_size(bool p_half_size) = 0;
 	virtual void environment_set_ssr_roughness_quality(RSE::EnvironmentSSRRoughnessQuality p_quality) = 0;
+
+	// SSCS
+	void environment_set_sscs(RID p_env, bool p_enable, int p_max_steps, float p_bilinear_threshold, float p_shadow_contrast, float p_surface_thickness, bool p_use_precision_offset, bool p_ignore_edge_pixels, bool p_bilinear_sampling_offset_mode, bool p_debug_enabled, int p_debug_type);
+	bool environment_get_sscs_enabled(RID p_env) const;
+	bool environment_get_sscs_debug_enabled(RID p_env) const;
+	int environment_get_sscs_debug_type(RID p_env) const;
+	int environment_get_sscs_max_steps(RID p_env) const;
+	float environment_get_sscs_bilinear_threshold(RID p_env) const;
+	float environment_get_sscs_shadow_contrast(RID p_env) const;
+	float environment_get_sscs_surface_thickness(RID p_env) const;
+	bool environment_get_sscs_use_precision_offset(RID p_env) const;
+	bool environment_get_sscs_ignore_edge_pixels(RID p_env) const;
+	bool environment_get_sscs_bilinear_sampling_offset_mode(RID p_env) const;
 
 	// SSAO
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
