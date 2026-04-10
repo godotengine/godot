@@ -368,6 +368,37 @@ public:
 	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
 };
 
+class InputEventJoypadButtonEcho : public InputEvent {
+	GDCLASS(InputEventJoypadButtonEcho, InputEvent);
+
+	JoyButton button_index = (JoyButton)0;
+	float pressure = 0; //0 to 1
+protected:
+	static void _bind_methods();
+
+public:
+	void set_button_index(JoyButton p_index);
+	JoyButton get_button_index() const;
+
+	void set_pressed(bool p_pressed);
+
+	void set_pressure(float p_pressure);
+	float get_pressure() const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
+
+	virtual bool is_action_type() const override { return true; }
+
+	virtual String as_text() const override;
+	virtual String _to_string() override;
+
+	// The default device ID is `InputMap::ALL_DEVICES`.
+	static Ref<InputEventJoypadButtonEcho> create_reference(JoyButton p_btn_index, int p_device = -1);
+
+	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
+};
+
 class InputEventScreenTouch : public InputEventFromWindow {
 	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
 	int index = 0;
