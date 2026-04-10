@@ -116,6 +116,9 @@ struct [[nodiscard]] Projection {
 	Vector2 get_viewport_half_extents() const;
 	Vector2 get_far_plane_half_extents() const;
 
+	// Used for generic ray picking in any matrix.
+	void project_origin_and_ray(const Vector2 &p_screen_pos, const Vector2 &p_screen_size, Vector3 &r_origin, Vector3 &r_ray) const;
+
 	void invert();
 	Projection inverse() const;
 
