@@ -390,10 +390,44 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 				if (p_str[index] == '-' || is_digit(p_str[index])) {
 					//a number
 					const char32_t *rptr;
-					double number = String::to_float(&p_str[index], &rptr);
-					index += (rptr - &p_str[index]);
+					const double number = String::to_float(&p_str[index], &rptr);
+					const int len = rptr - &p_str[index];
+					const int64_t number_int = String::to_int(&p_str[index], len, true);
+
+					// Treat the number as an int if it is formatted as an int.
+					bool is_int = true;
+					for (int i = index; i < index + len; i++) {
+						const char32_t c = p_str[i];
+						if (c == '.' || c == 'e' || c == 'E') {
+							is_int = false;
+							break;
+						}
+					}
+					// Only allow ints within [INT64_MIN, INT64_MAX].
+					if (is_int && (number_int == INT64_MAX || number_int == INT64_MIN)) {
+						if (number > (double)INT64_MAX || number < (double)INT64_MIN) {
+							is_int = false;
+						} else if (number == (double)INT64_MAX) {
+							// `String::to_int` clamps and double precision isn't enough to know if the value is out of the bounds, so compare the number without the first digit.
+							const int64_t number_no_first_digit = String::to_int(&p_str[index + 1], len, true);
+							if (number_no_first_digit != 223372036854775807) {
+								is_int = false;
+							}
+						} else if (number == (double)INT64_MIN) {
+							const int64_t number_no_first_digit = String::to_int(&p_str[index + 2], len, true);
+							if (number_no_first_digit != 223372036854775808) {
+								is_int = false;
+							}
+						}
+					}
+
+					index += len;
 					r_token.type = TK_NUMBER;
-					r_token.value = number;
+					if (is_int) {
+						r_token.value = number_int;
+					} else {
+						r_token.value = number;
+					}
 					return OK;
 
 				} else if (is_ascii_alphabet_char(p_str[index])) {
