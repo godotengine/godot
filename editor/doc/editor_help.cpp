@@ -58,6 +58,8 @@
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/animation/tween.h"
+#include "scene/gui/color_rect.h"
 #include "scene/gui/line_edit.h"
 #include "servers/display/display_server.h"
 
@@ -268,9 +270,53 @@ void EditorHelp::_search(bool p_search_previous) {
 	}
 }
 
+void EditorHelp::_update_search_highlight() {
+	float start_y = class_desc->get_paragraph_offset(line_to_highlight + 1);
+	float end_y = class_desc->get_paragraph_offset(line_to_highlight_end);
+	float scroll_y = class_desc->get_v_scroll_bar()->get_value();
+	float highlight_position_y = start_y - scroll_y;
+	float highlight_size_y = end_y - start_y;
+
+	search_highlight->set_position(Vector2(0, highlight_position_y));
+	search_highlight->set_size(Vector2(class_desc->get_size().x, highlight_size_y));
+}
+
+void EditorHelp::_start_search_highlight_tweener() {
+	if (search_highlight_tween.is_valid() && search_highlight_tween->is_running()) {
+		search_highlight_tween->kill();
+	}
+
+	search_highlight_tween = class_desc->create_tween();
+	search_highlight->set_modulate(Color(1.0, 1.0, 1.0, 1.0));
+	search_highlight_tween->tween_interval(0.5);
+	search_highlight_tween->tween_property(search_highlight, NodePath("modulate:a"), 0.0, 2.0);
+}
+
+int EditorHelp::_calculate_search_highlight_end(const HashMap<String, int> *p_query_table) {
+	if (!p_query_table || p_query_table->is_empty()) {
+		return line_to_highlight;
+	}
+
+	for (const KeyValue<String, int> &E : *p_query_table) {
+		if (E.value > line_to_highlight) {
+			return E.value;
+		}
+	}
+
+	for (const Pair<String, int> &E : section_line) {
+		if (E.second > line_to_highlight) {
+			return E.second;
+		}
+	}
+
+	return class_desc->get_paragraph_count() - 1;
+}
+
 void EditorHelp::_class_desc_finished() {
 	if (scroll_to >= 0) {
 		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(scroll_to), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		_update_search_highlight();
+		_start_search_highlight_tweener();
 	}
 	scroll_to = -1;
 }
@@ -344,9 +390,13 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		// Case order is important here to correctly handle edge cases like `Variant.Type` in `@GlobalScope`.
 		if (table->has(link)) {
 			// Found in the current page.
+			line_to_highlight = (*table)[link];
+			line_to_highlight_end = _calculate_search_highlight_end(table);
 			if (class_desc->is_finished()) {
 				emit_signal(SNAME("request_save_history"));
 				class_desc->scroll_to_paragraph((*table)[link]);
+				_update_search_highlight();
+				_start_search_highlight_tweener();
 			} else {
 				scroll_to = (*table)[link];
 			}
@@ -2380,47 +2430,58 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	_request_help(clss); // First go to class.
 
 	int line = 0;
+	const HashMap<String, int> *query_table = nullptr;
 
 	if (what == "class_desc") {
 		line = description_line;
 	} else if (what == "class_signal") {
 		if (signal_line.has(name)) {
 			line = signal_line[name];
+			query_table = &signal_line;
 		}
 	} else if (what == "class_method" || what == "class_method_desc") {
 		if (method_line.has(name)) {
 			line = method_line[name];
+			query_table = &method_line;
 		}
 	} else if (what == "class_property") {
 		if (property_line.has(name)) {
 			line = property_line[name];
+			query_table = &property_line;
 		}
 	} else if (what == "class_enum") {
 		if (enum_line.has(name)) {
 			line = enum_line[name];
+			query_table = &enum_line;
 		}
 	} else if (what == "class_theme_item") {
 		if (theme_property_line.has(name)) {
 			line = theme_property_line[name];
+			query_table = &theme_property_line;
 		}
 	} else if (what == "class_constant") {
 		if (constant_line.has(name)) {
 			line = constant_line[name];
+			query_table = &constant_line;
 		}
 	} else if (what == "class_annotation") {
 		if (annotation_line.has(name)) {
 			line = annotation_line[name];
+			query_table = &annotation_line;
 		}
 	} else if (what == "class_global") { // Deprecated.
 		if (constant_line.has(name)) {
 			line = constant_line[name];
+			query_table = &constant_line;
 		} else if (method_line.has(name)) {
 			line = method_line[name];
+			query_table = &method_line;
 		} else {
 			HashMap<String, HashMap<String, int>>::Iterator iter = enum_values_line.begin();
 			while (true) {
 				if (iter->value.has(name)) {
 					line = iter->value[name];
+					query_table = &(iter->value);
 					break;
 				} else if (iter == enum_values_line.last()) {
 					break;
@@ -2431,8 +2492,13 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		}
 	}
 
+	line_to_highlight = line;
+	line_to_highlight_end = _calculate_search_highlight_end(query_table);
+
 	if (class_desc->is_finished()) {
 		class_desc->scroll_to_paragraph(line);
+		_update_search_highlight();
+		_start_search_highlight_tweener();
 	} else {
 		scroll_to = line;
 	}
@@ -3448,6 +3514,7 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
 	class_desc->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelp::_class_desc_input));
 	class_desc->connect(SceneStringName(resized), callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
+	class_desc->connect(SceneStringName(draw), callable_mp(this, &EditorHelp::_update_search_highlight));
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
@@ -3459,6 +3526,13 @@ EditorHelp::EditorHelp() {
 	add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
+
+	search_highlight = memnew(ColorRect);
+	search_highlight->set_color(Color(0.4, 0.7, 1.0, 0.25));
+	search_highlight->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	search_highlight->set_size(Vector2(0, 0));
+	search_highlight->set_position(Vector2(0, 0));
+	class_desc->add_child(search_highlight);
 
 	toggle_files_button = memnew(Button);
 	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
