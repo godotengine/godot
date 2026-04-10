@@ -798,7 +798,12 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	if (name == registry->wl_shm_name) {
 		if (registry->wl_shm) {
-			wl_shm_destroy(registry->wl_shm);
+			if (wl_shm_get_version(registry->wl_shm) >= WL_SHM_RELEASE_SINCE_VERSION) {
+				wl_shm_release(registry->wl_shm);
+			} else {
+				wl_shm_destroy(registry->wl_shm);
+			}
+
 			registry->wl_shm = nullptr;
 		}
 
@@ -855,7 +860,12 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 			ERR_FAIL_NULL(ss);
 
 			if (ss->wl_data_device) {
-				wl_data_device_destroy(ss->wl_data_device);
+				if (wl_data_device_get_version(ss->wl_data_device) >= WL_DATA_DEVICE_RELEASE_SINCE_VERSION) {
+					wl_data_device_release(ss->wl_data_device);
+				} else {
+					wl_data_device_destroy(ss->wl_data_device);
+				}
+
 				ss->wl_data_device = nullptr;
 			}
 
@@ -1199,12 +1209,23 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 			ERR_FAIL_NULL(ss);
 
 			if (ss->wl_seat_name == name) {
+				// Destroy all capabilities (pointer, keyboard, touch).
+				_wl_seat_on_capabilities(wl_seat_get_user_data(wl_seat), wl_seat, 0);
+
 				if (wl_seat) {
-					wl_seat_destroy(wl_seat);
+					if (wl_seat_get_version(wl_seat) >= WL_SEAT_RELEASE_SINCE_VERSION) {
+						wl_seat_release(wl_seat);
+					} else {
+						wl_seat_destroy(wl_seat);
+					}
 				}
 
 				if (ss->wl_data_device) {
-					wl_data_device_destroy(ss->wl_data_device);
+					if (wl_data_device_get_version(ss->wl_data_device) >= WL_DATA_DEVICE_RELEASE_SINCE_VERSION) {
+						wl_data_device_release(ss->wl_data_device);
+					} else {
+						wl_data_device_destroy(ss->wl_data_device);
+					}
 				}
 
 				if (ss->wp_tablet_seat) {
@@ -1245,7 +1266,12 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 				registry->wl_outputs.erase(it);
 
 				memdelete(ss);
-				wl_output_destroy(wl_output);
+
+				if (wl_output_get_version(wl_output) >= WL_OUTPUT_RELEASE_SINCE_VERSION) {
+					wl_output_release(wl_output);
+				} else {
+					wl_output_destroy(wl_output);
+				}
 
 				return;
 			}
@@ -1787,7 +1813,12 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 		}
 
 		if (ss->wl_pointer) {
-			wl_pointer_destroy(ss->wl_pointer);
+			if (wl_pointer_get_version(ss->wl_pointer) >= WL_POINTER_RELEASE_SINCE_VERSION) {
+				wl_pointer_release(ss->wl_pointer);
+			} else {
+				wl_pointer_destroy(ss->wl_pointer);
+			}
+
 			ss->wl_pointer = nullptr;
 		}
 
@@ -1848,7 +1879,12 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 		}
 
 		if (ss->wl_keyboard) {
-			wl_keyboard_destroy(ss->wl_keyboard);
+			if (wl_keyboard_get_version(ss->wl_keyboard) >= WL_KEYBOARD_RELEASE_SINCE_VERSION) {
+				wl_keyboard_release(ss->wl_keyboard);
+			} else {
+				wl_keyboard_destroy(ss->wl_keyboard);
+			}
+
 			ss->wl_keyboard = nullptr;
 		}
 	}
