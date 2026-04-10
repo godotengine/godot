@@ -1449,6 +1449,7 @@ void GridMapEditor::_update_cursor_instance() {
 				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 				RSE::ShadowCastingSetting cast_shadows = (RSE::ShadowCastingSetting)node->get_mesh_library()->get_item_mesh_cast_shadow(selected_palette);
 				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, cast_shadows);
+				RS::get_singleton()->instance_set_layer_mask(cursor_instance, node->get_mesh_library()->get_item_render_layers(selected_palette));
 			}
 		}
 	} else if (mode_buttons_group->get_pressed_button() == select_mode_button) {
