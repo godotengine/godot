@@ -3407,8 +3407,8 @@ void Control::set_default_cursor_shape(CursorShape p_shape) {
 		return;
 	}
 
-	// Display the new cursor shape instantly.
-	get_viewport()->update_mouse_cursor_state();
+	// Defer to avoid interrupting the current input event flow.
+	callable_mp(get_viewport(), &Viewport::update_mouse_cursor_state).call_deferred();
 }
 
 Control::CursorShape Control::get_default_cursor_shape() const {
