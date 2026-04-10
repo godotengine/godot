@@ -124,6 +124,43 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09 22:10:30"), true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE with spaces works as expected.");
 }
 
+TEST_CASE("[Time] Duration dict from raw duration") {
+	const Time *time = Time::get_singleton();
+
+	const uint64_t pump_up_the_jam = time->get_unix_time_from_datetime_string("1989-07-18T00:00:00.000Z");
+	const uint64_t godot_is_open_source = time->get_unix_time_from_datetime_string("2014-02-10T01:10:00.000Z");
+	const uint64_t godot_4_5 = time->get_unix_time_from_datetime_string("2025-09-15T01:30:02.000Z");
+
+	const uint64_t pump_jam_to_godot_open_source_secs = godot_is_open_source - pump_up_the_jam;
+	const uint64_t godot_open_source_to_godot_4_5_secs = godot_4_5 - godot_is_open_source;
+
+	// Using
+	// https://www.calculator.net/time-duration-calculator.html?today=07%2F18%2F1989&starthour2=0&startmin2=0&startsec2=0&startunit2=a&ageat=02%2F10%2F2014&endhour2=01&endmin2=10&endsec2=0&endunit2=a&ctype=2&x=Calculate#twodates
+	// as a baseline
+	const Dictionary pump_jam_to_godot_open_source = time->get_duration_dict_from_duration(
+			pump_jam_to_godot_open_source_secs,
+			(DurationComponent)(DURATION_DAYS | DURATION_HOURS | DURATION_MINUTES | DURATION_SECONDS));
+
+	CHECK_MESSAGE((double)pump_jam_to_godot_open_source["days"] == 8973.0, "Time get_duration_dict_from_duration: The number of whole days from the release of Belgian techno anthem Pump Up The Jam to GODOT IS OPEN SOURCE is 8,973 days.");
+	CHECK_MESSAGE((double)pump_jam_to_godot_open_source["hours"] == 1.0, "Time get_duration_dict_from_duration: The number of whole hours (excluding days) from the release of Belgian techno anthem Pump Up The Jam to GODOT IS OPEN SOURCE is 1 hour.");
+	CHECK_MESSAGE((double)pump_jam_to_godot_open_source["minutes"] == 10.0, "Time get_duration_dict_from_duration: The number of whole minutes (excluding days and hours) from the release of Belgian techno anthem Pump Up The Jam to GODOT IS OPEN SOURCE is 10 minutes.");
+
+	const Dictionary pump_jam_to_godot_open_source_mins_only = time->get_duration_dict_from_duration(
+			pump_jam_to_godot_open_source_secs,
+			(DurationComponent)(DURATION_MINUTES));
+	CHECK_MESSAGE((double)pump_jam_to_godot_open_source_mins_only["minutes"] == 12921190, "Time get_duration_dict_from_duration: The number of minutes from the release of Belgian techno anthem Pump Up The Jam to GODOT IS OPEN SOURCE is 12,921,190 minutes.");
+
+	// Using
+	// https://www.calculator.net/time-duration-calculator.html?today=02%2F10%2F2014&starthour2=01&startmin2=10&startsec2=0&startunit2=a&ageat=09%2F15%2F2025&endhour2=01&endmin2=30&endsec2=02&endunit2=a&ctype=2&x=Calculate#twodates
+	// as a baseline
+	const Dictionary godot_open_source_to_godot_4_5 = time->get_duration_dict_from_duration(
+			godot_open_source_to_godot_4_5_secs,
+			(DurationComponent)(DURATION_DAYS | DURATION_MINUTES));
+	CHECK_MESSAGE((double)godot_open_source_to_godot_4_5["days"] == 4235.0, "Time get_duration_dict_from_duration: The number of minutes from GODOT IS OPEN SOURCE to Godot 4.5 is 4,235 days.");
+	CHECK_MESSAGE((double)godot_open_source_to_godot_4_5["minutes"] == 20.0, "Time get_duration_dict_from_duration: The number of full minutes (excluding days) from GODOT IS OPEN SOURCE to Godot 4.5 is 20 minutes.");
+	CHECK_MESSAGE((double)godot_open_source_to_godot_4_5["remaining_seconds"] == 2.0, "Time get_duration_dict_from_duration: The number of seconds after full days and minutes have been removed from GODOT IS OPEN SOURCE to Godot 4.5 is 2 seconds.");
+}
+
 TEST_CASE("[Time] System time methods") {
 	const Time *time = Time::get_singleton();
 
