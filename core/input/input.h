@@ -301,6 +301,7 @@ private:
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
 	void _update_joypad_features(int p_device);
+	void _get_action_axis_joy_separate(const StringName &p_negative, const StringName &p_positive, real_t &r_out_joy, real_t &r_out_other) const;
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
