@@ -334,6 +334,15 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 		first_slide = false;
 	}
 }
+
+void CharacterBody2D::teleport(const Vector2 &p_pos) {
+	PhysicsServer2D::get_singleton()->body_teleport(get_rid());
+
+	Transform2D gt = get_global_transform();
+	gt.columns[2] = p_pos;
+	set_global_transform(gt);
+}
+
 void CharacterBody2D::apply_floor_snap() {
 	_apply_floor_snap();
 }
@@ -684,6 +693,7 @@ void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
 
 void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody2D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("teleport", "p_pos"), &CharacterBody2D::teleport);
 	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody2D::apply_floor_snap);
 
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody2D::set_velocity);

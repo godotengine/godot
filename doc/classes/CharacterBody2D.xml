@@ -148,6 +148,15 @@
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
 			</description>
 		</method>
+		<method name="teleport">
+			<return type="void" />
+			<param index="0" name="p_pos" type="Vector2" />
+			<description>
+				Let CharacterBody2D teleport to target_pos directly.
+				If we update position directly, it will solve as moving original position to new position, and it makes one frame delay on collision detecting at least.
+				We can use teleport to prevent collection detecting delay.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
