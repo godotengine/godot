@@ -1,0 +1,14 @@
+GH-118171
+---------
+
+Validate extension JSON: Error: Field 'classes/Geometry2D/methods/merge_polygons/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Geometry2D/methods/clip_polygons/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Geometry2D/methods/intersect_polygons/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Geometry2D/methods/exclude_polygons/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Geometry2D/methods/clip_polyline_with_polygon/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Geometry2D/methods/intersect_polyline_with_polygon/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "fill_rule" argument to all polygon clipping functions (merge_polygons, clip_polygons, intersect_polygons and exclude_polygons),
+as well as all the polyline clipping functions (clip_polyline_with_polygon, intersect_polyline_with_polygon).
+Default value of optional argument guarantees previous behavior.
+Compatibility methods registered.

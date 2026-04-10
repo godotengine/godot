@@ -981,8 +981,8 @@ TypedArray<PackedVector2Array> Geometry2D::decompose_polygon_in_convex(const Vec
 	return ret;
 }
 
-TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
+TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule) {
+	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b, ::Geometry2D::PolyFillRule(p_fill_rule));
 
 	TypedArray<PackedVector2Array> ret;
 
@@ -992,8 +992,8 @@ TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> 
 	return ret;
 }
 
-TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polygons(p_polygon_a, p_polygon_b);
+TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule) {
+	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polygons(p_polygon_a, p_polygon_b, ::Geometry2D::PolyFillRule(p_fill_rule));
 
 	TypedArray<PackedVector2Array> ret;
 
@@ -1003,8 +1003,8 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &
 	return ret;
 }
 
-TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b);
+TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule) {
+	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b, ::Geometry2D::PolyFillRule(p_fill_rule));
 
 	TypedArray<PackedVector2Array> ret;
 
@@ -1014,8 +1014,8 @@ TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vecto
 	return ret;
 }
 
-TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b);
+TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b, PolyFillRule p_fill_rule) {
+	Vector<Vector<Point2>> polys = ::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b, ::Geometry2D::PolyFillRule(p_fill_rule));
 
 	TypedArray<PackedVector2Array> ret;
 
@@ -1025,8 +1025,8 @@ TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2
 	return ret;
 }
 
-TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
+TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon, PolyFillRule p_fill_rule) {
+	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon, ::Geometry2D::PolyFillRule(p_fill_rule));
 
 	TypedArray<PackedVector2Array> ret;
 
@@ -1036,8 +1036,8 @@ TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vect
 	return ret;
 }
 
-TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon);
+TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon, PolyFillRule p_fill_rule) {
+	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon, ::Geometry2D::PolyFillRule(p_fill_rule));
 
 	TypedArray<PackedVector2Array> ret;
 
@@ -1127,13 +1127,13 @@ void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("convex_hull", "points"), &Geometry2D::convex_hull);
 	ClassDB::bind_method(D_METHOD("decompose_polygon_in_convex", "polygon"), &Geometry2D::decompose_polygon_in_convex);
 
-	ClassDB::bind_method(D_METHOD("merge_polygons", "polygon_a", "polygon_b"), &Geometry2D::merge_polygons);
-	ClassDB::bind_method(D_METHOD("clip_polygons", "polygon_a", "polygon_b"), &Geometry2D::clip_polygons);
-	ClassDB::bind_method(D_METHOD("intersect_polygons", "polygon_a", "polygon_b"), &Geometry2D::intersect_polygons);
-	ClassDB::bind_method(D_METHOD("exclude_polygons", "polygon_a", "polygon_b"), &Geometry2D::exclude_polygons);
+	ClassDB::bind_method(D_METHOD("merge_polygons", "polygon_a", "polygon_b", "fill_rule"), &Geometry2D::merge_polygons, DEFVAL(FILL_EVEN_ODD));
+	ClassDB::bind_method(D_METHOD("clip_polygons", "polygon_a", "polygon_b", "fill_rule"), &Geometry2D::clip_polygons, DEFVAL(FILL_EVEN_ODD));
+	ClassDB::bind_method(D_METHOD("intersect_polygons", "polygon_a", "polygon_b", "fill_rule"), &Geometry2D::intersect_polygons, DEFVAL(FILL_EVEN_ODD));
+	ClassDB::bind_method(D_METHOD("exclude_polygons", "polygon_a", "polygon_b", "fill_rule"), &Geometry2D::exclude_polygons, DEFVAL(FILL_EVEN_ODD));
 
-	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon", "polyline", "polygon"), &Geometry2D::clip_polyline_with_polygon);
-	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon", "polyline", "polygon"), &Geometry2D::intersect_polyline_with_polygon);
+	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon", "polyline", "polygon", "fill_rule"), &Geometry2D::clip_polyline_with_polygon, DEFVAL(FILL_EVEN_ODD));
+	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon", "polyline", "polygon", "fill_rule"), &Geometry2D::intersect_polyline_with_polygon, DEFVAL(FILL_EVEN_ODD));
 
 	ClassDB::bind_method(D_METHOD("offset_polygon", "polygon", "delta", "join_type"), &Geometry2D::offset_polygon, DEFVAL(JOIN_SQUARE));
 	ClassDB::bind_method(D_METHOD("offset_polyline", "polyline", "delta", "join_type", "end_type"), &Geometry2D::offset_polyline, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
@@ -1156,6 +1156,11 @@ void Geometry2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(END_BUTT);
 	BIND_ENUM_CONSTANT(END_SQUARE);
 	BIND_ENUM_CONSTANT(END_ROUND);
+
+	BIND_ENUM_CONSTANT(FILL_EVEN_ODD);
+	BIND_ENUM_CONSTANT(FILL_NON_ZERO);
+	BIND_ENUM_CONSTANT(FILL_POSITIVE);
+	BIND_ENUM_CONSTANT(FILL_NEGATIVE);
 }
 
 ////// Geometry3D //////
