@@ -262,6 +262,7 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	}
 
 	unlock_callback();
+	_on_physics_callback();
 }
 
 void RigidBody2D::_apply_body_mode() {
