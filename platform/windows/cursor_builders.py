@@ -1,0 +1,34 @@
+"""Functions used to generate source files during build time"""
+
+import os
+
+import methods
+
+
+def make_cursors_action(target, source, env):
+    icons_names = []
+    icons_raw = []
+
+    for src in map(str, source):
+        with open(src, encoding="utf-8", newline="\n") as file:
+            icons_raw.append(methods.to_raw_cstring(file.read()))
+
+        name = os.path.splitext(os.path.basename(src))[0]
+        icons_names.append(f'"{name}"')
+
+    icons_names_str = ",\n\t".join(icons_names)
+    icons_raw_str = ",\n\t".join(icons_raw)
+
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+#include "modules/modules_enabled.gen.h"
+
+inline constexpr int cursor_count = {len(icons_names)};
+inline constexpr const char *cursor_sources[] = {{
+	{icons_raw_str}
+}};
+
+inline constexpr const char *cursor_names[] = {{
+	{icons_names_str}
+}};
+""")
