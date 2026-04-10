@@ -33,41 +33,64 @@
 #include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
+#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 
-void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
-	Ref<InputEventKey> k = p_event;
+void EditorLayoutsDialog::_validate_name() {
+	const String layout_name = name->get_text().strip_edges();
 
-	if (k.is_valid()) {
-		if (k->is_action_pressed(SNAME("ui_text_submit"), false, true)) {
-			if (get_hide_on_ok()) {
-				hide();
-			}
-			ok_pressed();
-			set_input_as_handled();
-		} else if (k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
-			hide();
-			set_input_as_handled();
+	String error;
+	if (!layout_names->is_anything_selected()) {
+		if (layout_name.is_empty()) {
+			error = TTRC("Layout name can't be empty.");
+		} else if (layout_name.contains_char('/') || layout_name.contains_char(':') || layout_name.contains_char(',') || layout_name.contains_char('[')) {
+			error = TTRC("Layout name contains invalid characters: '/', ':', ',' or '['.");
 		}
 	}
-}
 
-void EditorLayoutsDialog::_update_ok_disable_state() {
-	if (layout_names->is_anything_selected()) {
-		get_ok_button()->set_disabled(false);
+	if (error != "") {
+		validation->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		validation->set_text(error);
+		get_ok_button()->set_disabled(true);
+
 	} else {
-		get_ok_button()->set_disabled(!name->is_visible() || name->get_text().strip_edges().is_empty());
+		if (layout_names->is_anything_selected()) {
+			validation->set_text(TTRC("Selected layout will be overridden."));
+
+		} else {
+			bool name_in_use = false;
+			for (int i = 0; i < layout_names->get_item_count(); i++) {
+				if (layout_names->get_item_metadata(i) == layout_name) {
+					name_in_use = true;
+					break;
+				}
+			}
+			validation->set_text(name_in_use ? TTRC("Layout already exists and will be overridden.") : TTRC("Layout name is valid."));
+		}
+
+		validation->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		get_ok_button()->set_disabled(false);
 	}
 }
 
 void EditorLayoutsDialog::_deselect_layout_names() {
 	// The deselect method does not emit any signal, therefore we need update the disable state as well.
 	layout_names->deselect_all();
-	_update_ok_disable_state();
+	_validate_name();
+}
+
+void EditorLayoutsDialog::_item_activated() {
+	if (layout_names->is_anything_selected()) {
+		for (const int item : layout_names->get_selected_items()) {
+			emit_signal(SNAME("name_confirmed"), layout_names->get_item_metadata(item));
+		}
+
+		hide();
+	}
 }
 
 void EditorLayoutsDialog::_bind_methods() {
@@ -76,9 +99,8 @@ void EditorLayoutsDialog::_bind_methods() {
 
 void EditorLayoutsDialog::ok_pressed() {
 	if (layout_names->is_anything_selected()) {
-		Vector<int> const selected_items = layout_names->get_selected_items();
-		for (int i = 0; i < selected_items.size(); ++i) {
-			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));
+		for (const int item : layout_names->get_selected_items()) {
+			emit_signal(SNAME("name_confirmed"), layout_names->get_item_metadata(item));
 		}
 	} else if (name->is_visible() && !name->get_text().strip_edges().is_empty()) {
 		emit_signal(SNAME("name_confirmed"), name->get_text().strip_edges());
@@ -90,20 +112,30 @@ void EditorLayoutsDialog::_post_popup() {
 	layout_names->clear();
 	name->clear();
 
+	if (save_mode) {
+		layout_names->add_item(TTR("Default"));
+		layout_names->set_item_metadata(0, "Default");
+	}
+
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
-	if (err != OK) {
-		return;
-	}
+	if (err == OK) {
+		Vector<String> layouts = config->get_sections();
 
-	Vector<String> layouts = config->get_sections();
+		if (!save_mode && layouts.has("Default")) {
+			layout_names->add_item(TTR("Default (Restore)"));
+			layout_names->set_item_metadata(0, "Default");
+		}
 
-	for (const String &E : layouts) {
-		if (!E.contains_char('/')) {
-			layout_names->add_item(E);
+		for (const String &E : layouts) {
+			if (!E.contains_char('/') && E != "Default") {
+				layout_names->add_item(E);
+				layout_names->set_item_metadata(-1, E);
+			}
 		}
 	}
+
 	if (name->is_visible()) {
 		name->grab_focus();
 	} else {
@@ -117,10 +149,11 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 
 	layout_names = memnew(ItemList);
 	layout_names->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
 	layout_names->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
-	layout_names->connect("multi_selected", callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(2));
+	layout_names->connect(SceneStringName(item_selected), callable_mp(this, &EditorLayoutsDialog::_validate_name).unbind(1));
+	layout_names->connect("multi_selected", callable_mp(this, &EditorLayoutsDialog::_validate_name).unbind(2)); // For deletion mode.
+	layout_names->connect("item_activated", callable_mp(this, &EditorLayoutsDialog::_item_activated).unbind(1));
 
 	MarginContainer *mc = makevb->add_margin_child(TTRC("Select Existing Layout:"), layout_names);
 	mc->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
@@ -131,11 +164,23 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	makevb->add_child(name);
 	name->set_placeholder(TTRC("Or enter new layout name."));
 	name->set_accessibility_name(TTRC("New layout name"));
-	name->connect(SceneStringName(gui_input), callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
+	register_text_enter(name);
 	name->connect(SceneStringName(focus_entered), callable_mp(this, &EditorLayoutsDialog::_deselect_layout_names));
-	name->connect(SceneStringName(text_changed), callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(1));
+	name->connect(SceneStringName(text_changed), callable_mp(this, &EditorLayoutsDialog::_validate_name).unbind(1));
+
+	validation = memnew(Label);
+	makevb->add_child(validation);
+
+	set_save_mode_enabled(save_mode);
 }
 
-void EditorLayoutsDialog::set_name_line_enabled(bool p_enabled) {
+void EditorLayoutsDialog::set_save_mode_enabled(bool p_enabled) {
+	save_mode = p_enabled;
+
+	set_title(p_enabled ? TTRC("Save Layout") : TTRC("Delete Layout"));
+	set_ok_button_text(p_enabled ? TTRC("Save") : TTRC("Delete"));
+
+	layout_names->set_select_mode(p_enabled ? ItemList::SELECT_SINGLE : ItemList::SELECT_MULTI);
 	name->set_visible(p_enabled);
+	validation->set_visible(p_enabled);
 }
