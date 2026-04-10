@@ -82,6 +82,9 @@ public:
 
 	bool add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect);
 
+	void window_request_size();
+	void hdr_output_request_state();
+
 	void set_suspend(bool p_enabled);
 	void next_frame();
 
@@ -97,6 +100,8 @@ public:
 	void set_selection_prefer_group(bool p_enabled);
 
 	void set_debug_mute_audio(bool p_enabled);
+
+	void toggle_hdr_output_requested();
 
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
@@ -119,10 +124,16 @@ class GameView : public VBoxContainer {
 		CAMERA_RESET_3D,
 		CAMERA_MODE_INGAME,
 		CAMERA_MODE_EDITORS,
-		EMBED_RUN_GAME_EMBEDDED,
-		EMBED_MAKE_FLOATING_ON_PLAY,
 		SELECTION_AVOID_LOCKED,
 		SELECTION_PREFER_GROUP,
+		WINDOW_RUN_GAME_EMBEDDED,
+		WINDOW_MAKE_FLOATING_ON_PLAY,
+		WINDOW_SIZE_MODE_FIXED,
+		WINDOW_SIZE_MODE_KEEP_ASPECT,
+		WINDOW_SIZE_MODE_STRETCH,
+		WINDOW_SEPARATOR_DYNAMIC_RANGE,
+		WINDOW_REQUEST_HDR_OUTPUT,
+		WINDOW_HDR_OUTPUT_ERROR,
 	};
 
 	enum EmbedSizeMode {
@@ -181,8 +192,9 @@ class GameView : public VBoxContainer {
 	MenuButton *camera_override_menu = nullptr;
 
 	HBoxContainer *embedding_hb = nullptr;
-	MenuButton *embed_options_menu = nullptr;
+	MenuButton *game_window_options_menu = nullptr;
 	Label *game_size_label = nullptr;
+	Control *game_size_placeholder = nullptr;
 	Panel *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
@@ -191,6 +203,14 @@ class GameView : public VBoxContainer {
 	Array time_scale_range = { 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 4.0f, 8.0f, 16.0f };
 	Array time_scale_label = { "1/16", "1/8", "1/4", "1/2", "3/4", "1.0", "1.25", "1.5", "1.75", "2.0", "4.0", "8.0", "16.0" };
 	int time_scale_index = DEFAULT_TIME_SCALE_INDEX;
+
+	Size2i game_window_size = Size2i(-1, -1);
+	bool hdr_output_enabled = false;
+	float current_max_luminance = 0.0f;
+	float current_reference_luminance = 0.0f;
+	float output_max_linear_value = 1.0f;
+	bool display_server_supports_hdr_output = false;
+	bool renderer_supports_hdr_output = false;
 
 	MenuButton *speed_state_button = nullptr;
 	Button *reset_speed_button = nullptr;
@@ -206,7 +226,7 @@ class GameView : public VBoxContainer {
 	void _node_type_pressed(int p_option);
 	void _select_mode_pressed(int p_option);
 	void _selection_options_menu_id_pressed(int p_id);
-	void _embed_options_menu_menu_id_pressed(int p_id);
+	void _game_window_options_menu_menu_id_pressed(int p_id);
 
 	void _reset_time_scales();
 	void _speed_state_menu_pressed(int p_id);
@@ -222,13 +242,13 @@ class GameView : public VBoxContainer {
 	void _stop_pressed();
 	void _embedding_completed();
 	void _embedding_failed();
-	void _embedded_process_updated();
 	void _embedded_process_focused();
 	void _editor_or_project_settings_changed();
 
 	EmbedAvailability _get_embed_available();
 	void _update_ui();
 	void _update_embed_menu_options();
+	void _update_game_window_size_label();
 	void _update_embed_window_size();
 	void _update_arguments_for_instance(int p_idx, List<String> &r_arguments);
 	void _show_update_window_wrapper();
@@ -236,6 +256,9 @@ class GameView : public VBoxContainer {
 	void _hide_selection_toggled(bool p_pressed);
 
 	void _debug_mute_audio_button_pressed();
+	void _setup_complete();
+	void _game_window_size_received(const Array &p_state);
+	void _hdr_state_received(const Array &p_state);
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
