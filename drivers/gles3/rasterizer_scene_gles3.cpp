@@ -711,6 +711,11 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			sky->prev_position = p_transform.origin;
 			sky->reflection_dirty = true;
 		}
+
+		// Trigger updating radiance buffers every frame when in real-time mode.
+		if (sky->mode == RS::SKY_MODE_REALTIME) {
+			sky->reflection_dirty = true;
+		}
 	}
 
 	bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
