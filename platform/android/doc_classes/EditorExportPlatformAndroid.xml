@@ -11,16 +11,6 @@
 		<link title="Android plugins documentation index">$DOCS_URL/tutorials/platform/index.html</link>
 	</tutorials>
 	<members>
-		<member name="apk_expansion/SALT" type="String" setter="" getter="">
-			Array of random bytes that the licensing policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
-		</member>
-		<member name="apk_expansion/enable" type="bool" setter="" getter="">
-			If [code]true[/code], project resources are stored in the separate APK expansion file, instead of the APK.
-			[b]Note:[/b] APK expansion should be enabled to use PCK encryption. See [url=https://developer.android.com/google/play/expansion-files]APK Expansion Files[/url]
-		</member>
-		<member name="apk_expansion/public_key" type="String" setter="" getter="">
-			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Google Play Console".
-		</member>
 		<member name="architectures/arm64-v8a" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
 		</member>

@@ -207,6 +207,16 @@ public abstract class GodotPlugin {
 	public void onMainPause() {}
 
 	/**
+	 * @see Activity#onStop()
+	 */
+	public void onMainStop() {}
+
+	/**
+	 * @see Activity#onStart()
+	 */
+	public void onMainStart() {}
+
+	/**
 	 * @see Activity#onResume()
 	 */
 	public void onMainResume() {}
@@ -275,6 +285,26 @@ public abstract class GodotPlugin {
 	 * created or recreated.
 	 */
 	public void onVkSurfaceCreated(Surface surface) {}
+
+	/**
+	 * Return the list of command line parameters that should be passed to Godot.
+	 * <p>
+	 * When invoking this method, the engine passes the original set of command line params it was started with,
+	 * which can be used by the plugin to enable / disable its own feature(s).
+	 * The given set of command line params is unmodifiable and does not include command line parameters passed by other plugins.
+	 *
+	 * @param unmodifiableOriginalCommandLineParams Original set of command line params the engine was started with.
+	 * @return a new set of command line parameters to be passed to the engine.
+	 */
+	@NonNull
+	public List<String> getCommandLineParams(List<String> unmodifiableOriginalCommandLineParams) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public String toString() {
+		return getPluginName();
+	}
 
 	/**
 	 * Returns the name of the plugin.
