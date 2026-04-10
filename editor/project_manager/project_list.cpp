@@ -1220,26 +1220,6 @@ void ProjectList::_list_item_input(const Ref<InputEvent> &p_ev, Control *p_hb) {
 			_open_menu(mb->get_position(), p_hb);
 		}
 	}
-
-	Ref<InputEventKey> kev = p_ev;
-
-	if (kev.is_valid() && kev->is_pressed()) {
-		switch (kev->get_keycode()) {
-			case Key::E: {
-				_on_explore_pressed(clicked_project.path);
-				accept_event();
-			} break;
-			case Key::F: {
-				if (kev->is_command_or_control_pressed()) {
-					return; // Focus the search box by the ProjectManager.
-				}
-				_on_favorite_pressed(p_hb);
-				accept_event();
-			} break;
-			default: {
-			} break;
-		}
-	}
 }
 
 void ProjectList::_on_favorite_pressed(Node *p_hb) {
