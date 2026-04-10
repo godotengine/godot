@@ -4765,11 +4765,10 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_localizing_numeral_system"), &Control::is_localizing_numeral_system);
 
 	ADD_GROUP("Layout", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "propagate_maximum_size"), "set_propagate_maximum_size", "is_propagating_maximum_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_maximum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_maximum_size", "get_custom_maximum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale"), "set_layout_direction", "get_layout_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_maximum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_maximum_size", "get_custom_maximum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "propagate_maximum_size"), "set_propagate_maximum_size", "is_propagating_maximum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
 
@@ -4851,6 +4850,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Localization", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "localize_numeral_system"), "set_localize_numeral_system", "is_localizing_numeral_system");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale"), "set_layout_direction", "get_layout_direction");
 
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
