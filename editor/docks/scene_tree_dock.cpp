@@ -3716,14 +3716,18 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 void SceneTreeDock::_normalize_drop_on_exposed_node(Node *&to_node, int &to_pos, int p_type) {
 	to_pos = -1;
 
-	if (p_type == -1 || p_type == 1) {
+	if (p_type == -1 || p_type == 1 || p_type == 2) {
 		// Climb the tree until we find this exposed node's visible parent, insert as last child.
 		Node *parent = to_node->get_parent();
+		if (p_type == 2) {
+			parent = to_node;
+		}
 		while (parent != nullptr) {
 			if (_is_node_visible(parent)) {
 				to_node = parent;
 
 				if (!parent->has_exposed_nodes()) {
+					to_pos = 0;
 					break;
 				}
 
@@ -3733,6 +3737,7 @@ void SceneTreeDock::_normalize_drop_on_exposed_node(Node *&to_node, int &to_pos,
 					Node *c = parent->get_child(i, false);
 					if (_is_node_visible(c) && !c->has_meta(META_EXPOSED_IN_INSTANCE)) {
 						lower_sibling = c;
+						break;
 					}
 				}
 				if (lower_sibling) {

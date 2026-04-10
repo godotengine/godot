@@ -324,7 +324,7 @@ void SceneTreeEditor::_update_node_path(Node *p_node, bool p_recursive) {
 }
 
 void SceneTreeEditor::_update_exposed_nodes(Node *p_node, TreeItem *p_parent, bool p_force, TreeItem *&p_last_inserted) {
-	int cc = p_node->get_child_count();
+	int cc = p_node->get_child_count(true);
 
 	for (int i = 0; i < cc; i++) {
 		Node *child = p_node->get_child(i);
@@ -442,13 +442,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			part_of_subscene = true;
 			// Allow.
 		} else if (p_node->has_exposed_nodes()) {
-			HashMap<Node *, CachedNode>::Iterator I = node_cache.get(p_node);
-			if (!I) {
-				node_cache.add(p_node, tree->create_item(p_parent, 0));
-			}
 			TreeItem *last_inserted = get_last_exposed_tree_item(p_parent);
-			_update_exposed_nodes(p_node, p_parent, p_force, last_inserted);
-			node_cache.remove(p_node, p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder());
+			_update_exposed_nodes(p_node, p_parent, true, last_inserted);
 			return;
 		} else {
 			// Stale node, remove recursively.
