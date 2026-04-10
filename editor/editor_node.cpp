@@ -482,8 +482,9 @@ void EditorNode::_update_from_settings() {
 		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
 		scene_root->set_default_canvas_item_texture_repeat(tr);
 	}
+	bool allow_fallback = GLOBAL_GET("internationalization/locale/allow_fallback");
 	String current_fallback_locale = GLOBAL_GET("internationalization/locale/fallback");
-	if (current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
+	if (allow_fallback && current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
 		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
 		Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_main_domain();
 		if (!domain->is_enabled()) {
