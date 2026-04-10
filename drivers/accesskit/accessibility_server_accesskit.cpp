@@ -1087,7 +1087,23 @@ void AccessibilityServerAccessKit::update_add_action(const RID &p_id, Accessibil
 
 	ae->actions[_accessibility_action(p_action)] = p_callable;
 
-	accesskit_node_add_action(ae->node, _accessibility_action(p_action));
+	if (!accesskit_node_supports_action(ae->node, _accessibility_action(p_action))) {
+		accesskit_node_add_action(ae->node, _accessibility_action(p_action));
+	}
+}
+
+void AccessibilityServerAccessKit::update_remove_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	ae->actions[_accessibility_action(p_action)] = Callable();
+
+	if (accesskit_node_supports_action(ae->node, _accessibility_action(p_action))) {
+		accesskit_node_remove_action(ae->node, _accessibility_action(p_action));
+	}
 }
 
 void AccessibilityServerAccessKit::update_add_custom_action(const RID &p_id, int p_action_id, const String &p_action_description) {
@@ -1241,17 +1257,20 @@ void AccessibilityServerAccessKit::update_set_popup_type(const RID &p_id, Access
 		case AccessibilityServerEnums::AccessibilityPopupType::POPUP_DIALOG: {
 			accesskit_node_set_has_popup(ae->node, ACCESSKIT_HAS_POPUP_DIALOG);
 		} break;
+		default: {
+			WARN_PRINT(vformat("Invalid popup type %d.", p_popup));
+		} break;
 	}
 }
 
-void AccessibilityServerAccessKit::update_set_checked(const RID &p_id, bool p_checekd) {
+void AccessibilityServerAccessKit::update_set_checked(const RID &p_id, bool p_checked) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	if (p_checekd) {
+	if (p_checked) {
 		accesskit_node_set_toggled(ae->node, ACCESSKIT_TOGGLED_TRUE);
 	} else {
 		accesskit_node_set_toggled(ae->node, ACCESSKIT_TOGGLED_FALSE);
@@ -1525,6 +1544,9 @@ void AccessibilityServerAccessKit::update_set_flag(const RID &p_id, Accessibilit
 				accesskit_node_clear_clips_children(ae->node);
 			}
 		} break;
+		default: {
+			WARN_PRINT(vformat("Invalid accessibility flag %d.", p_flag));
+		} break;
 	}
 }
 
@@ -1563,7 +1585,11 @@ void AccessibilityServerAccessKit::update_set_language(const RID &p_id, const St
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_language(ae->node, p_language.utf8().ptr());
+	if (!p_language.is_empty()) {
+		accesskit_node_set_language(ae->node, p_language.utf8().ptr());
+	} else {
+		accesskit_node_clear_language(ae->node);
+	}
 }
 
 void AccessibilityServerAccessKit::update_set_text_orientation(const RID &p_id, bool p_vertical) {

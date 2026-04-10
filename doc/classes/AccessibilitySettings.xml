@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AccessibilitySettings" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides settings to override and customize [Node] accessibility properties.
+	</brief_description>
+	<description>
+		[AccessibilitySettings] is a resource that provides settings to override and customize [Node] accessibility properties. It will take priority over the properties and built-in accessibility notification handlers defined in [Control].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_invalidate" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				If implemented, called when accessibility elements are invalidated. Eqvivalent to the [constant Node.NOTIFICATION_ACCESSIBILITY_INVALIDATE] notification.
+			</description>
+		</method>
+		<method name="_update" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				If implemented, called when an accessibility information update is required. Eqvivalent to the [constant Node.NOTIFICATION_ACCESSIBILITY_UPDATE] notification.
+			</description>
+		</method>
+		<method name="add_custom_action">
+			<return type="bool" />
+			<param index="0" name="description" type="String" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Adds a custom action. [signal action_custom] is emitted with [param id] when the action is triggered.
+			</description>
+		</method>
+		<method name="add_subelement">
+			<return type="bool" />
+			<param index="0" name="settings" type="AccessibilitySettings" />
+			<param index="1" name="bounds" type="Rect2" />
+			<description>
+				Adds [param settings] as a sub-element. Can be used to add sub-elements such as list items or table cells without adding a child node. Use [method grab_subelement_focus] to control sub-element focus.
+			</description>
+		</method>
+		<method name="get_custom_action_description" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the custom action description at index [param idx].
+			</description>
+		</method>
+		<method name="get_custom_action_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the custom action ID at index [param idx].
+			</description>
+		</method>
+		<method name="get_subelement" qualifiers="const">
+			<return type="AccessibilitySettings" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the sub-element at index [param idx].
+			</description>
+		</method>
+		<method name="get_subelement_bounds" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the sub-element bounds at index [param idx].
+			</description>
+		</method>
+		<method name="grab_subelement_focus">
+			<return type="void" />
+			<description>
+				Steals the focus from another sub-element and becomes the focused sub-element. This has an effect only if the owner [Node] has accessibility focus, and will not change the global [Control] focus.
+			</description>
+		</method>
+		<method name="remove_custom_action">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Removes the custom action at index [param idx].
+			</description>
+		</method>
+		<method name="remove_subelement">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Removes the sub-elements at index [param idx].
+			</description>
+		</method>
+		<method name="set_custom_action_description">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="description" type="String" />
+			<description>
+				Sets the custom action description at index [param idx].
+			</description>
+		</method>
+		<method name="set_custom_action_id">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Sets the custom action ID at index [param idx].
+			</description>
+		</method>
+		<method name="set_subelement">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="settings" type="AccessibilitySettings" />
+			<description>
+				Sets the sub-element [AccessibilitySettings] at index [param idx].
+			</description>
+		</method>
+		<method name="set_subelement_bounds">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="bounds" type="Rect2" />
+			<description>
+				Sets the sub-element bounds at index [param idx].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
+			Human-readable node description.
+		</member>
+		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="AccessibilityServer.AccessibilityLiveMode" default="0">
+			Priority of the live region updates.
+		</member>
+		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
+			Human-readable node name.
+		</member>
+		<member name="background_color" type="Color" setter="set_background_color" getter="get_background_color" default="Color(0, 0, 0, 0)">
+			Background color of the text.
+		</member>
+		<member name="custom_action_count" type="int" setter="set_custom_action_count" getter="get_custom_action_count" default="0">
+			Number of custom actions.
+		</member>
+		<member name="extra_info" type="String" setter="set_extra_info" getter="get_extra_info" default="&quot;&quot;">
+			Extra information added to the node name.
+		</member>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="AccessibilityServer.AccessibilityFlagsBit" is_bitfield="true" default="0">
+			Node accessibility flags.
+		</member>
+		<member name="foreground_color" type="Color" setter="set_foreground_color" getter="get_foreground_color" default="Color(0, 0, 0, 1)">
+			Foreground color of the text.
+		</member>
+		<member name="list_item_count" type="int" setter="set_list_item_count" getter="get_list_item_count">
+			Number of items in the list, tab bar, or menu.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TREE], [constant DisplayServer.ROLE_LIST], [constant DisplayServer.ROLE_LIST_BOX], [constant DisplayServer.ROLE_TAB_BAR], or [constant DisplayServer.ROLE_MENU].
+		</member>
+		<member name="list_item_expanded" type="bool" setter="set_list_item_expanded" getter="get_list_item_expanded">
+			If [code]true[/code], list item is expanded.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TREE_ITEM], [constant DisplayServer.ROLE_LIST_ITEM], [constant DisplayServer.ROLE_LIST_BOX_OPTION], [constant DisplayServer.ROLE_TAB], [constant DisplayServer.ROLE_MENU_ITEM], [constant DisplayServer.ROLE_MENU_ITEM_CHECK_BOX], or [constant DisplayServer.ROLE_MENU_ITEM_RADIO].
+		</member>
+		<member name="list_item_index" type="int" setter="set_list_item_index" getter="get_list_item_index">
+			Index of the list item.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TREE_ITEM], [constant DisplayServer.ROLE_LIST_ITEM], [constant DisplayServer.ROLE_LIST_BOX_OPTION], [constant DisplayServer.ROLE_TAB], [constant DisplayServer.ROLE_MENU_ITEM], [constant DisplayServer.ROLE_MENU_ITEM_CHECK_BOX], or [constant DisplayServer.ROLE_MENU_ITEM_RADIO].
+		</member>
+		<member name="list_item_level" type="int" setter="set_list_item_level" getter="get_list_item_level">
+			Hierarchical level of the list item.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TREE_ITEM], [constant DisplayServer.ROLE_LIST_ITEM], [constant DisplayServer.ROLE_LIST_BOX_OPTION], [constant DisplayServer.ROLE_TAB], [constant DisplayServer.ROLE_MENU_ITEM], [constant DisplayServer.ROLE_MENU_ITEM_CHECK_BOX], or [constant DisplayServer.ROLE_MENU_ITEM_RADIO].
+		</member>
+		<member name="list_item_selected" type="bool" setter="set_list_item_selected" getter="get_list_item_selected">
+			If [code]true[/code], list item is selected.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TREE_ITEM], [constant DisplayServer.ROLE_LIST_ITEM], [constant DisplayServer.ROLE_LIST_BOX_OPTION], [constant DisplayServer.ROLE_TAB], [constant DisplayServer.ROLE_MENU_ITEM], [constant DisplayServer.ROLE_MENU_ITEM_CHECK_BOX], or [constant DisplayServer.ROLE_MENU_ITEM_RADIO].
+		</member>
+		<member name="list_vertical" type="bool" setter="set_list_vertical" getter="get_list_vertical">
+			If [code]true[/code], list is vertical (e.g., menu or list box), otherwise horizontal (e.g. tab bar).
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TREE], [constant DisplayServer.ROLE_LIST], [constant DisplayServer.ROLE_LIST_BOX], [constant DisplayServer.ROLE_TAB_BAR], or [constant DisplayServer.ROLE_MENU].
+		</member>
+		<member name="overridden_actions" type="int" setter="set_overridden_actions" getter="get_overridden_actions" enum="AccessibilityServer.AccessibilityActionBit" is_bitfield="true" default="0">
+			List of default actions overridden by [AccessibilitySettings]. Enabled actions will emit their corresponding signals when triggered.
+		</member>
+		<member name="placeholder" type="String" setter="set_placeholder" getter="get_placeholder" default="&quot;&quot;">
+			Placeholder text of the node.
+		</member>
+		<member name="role" type="int" setter="set_role" getter="get_role" enum="AccessibilityServer.AccessibilityRole" default="5">
+			Accessibility role of the node.
+		</member>
+		<member name="role_description" type="String" setter="set_role_description" getter="get_role_description" default="&quot;&quot;">
+			Human-readable description of the custom accessibility role.
+		</member>
+		<member name="scroll_position" type="Vector2" setter="set_scroll_position" getter="get_scroll_position">
+			Current scroll position of scrollable node.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_SCROLL_BAR] or [constant DisplayServer.ROLE_SCROLL_VIEW].
+		</member>
+		<member name="scroll_x_range" type="Vector2" setter="set_scroll_x_range" getter="get_scroll_x_range">
+			Horizontal scrolling range.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_SCROLL_BAR] or [constant DisplayServer.ROLE_SCROLL_VIEW].
+		</member>
+		<member name="scroll_y_range" type="Vector2" setter="set_scroll_y_range" getter="get_scroll_y_range">
+			Vertical scrolling range.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_SCROLL_BAR] or [constant DisplayServer.ROLE_SCROLL_VIEW].
+		</member>
+		<member name="shortcut" type="InputEventKey" setter="set_shortcut" getter="get_shortcut">
+			Keyboard shortcut for the default action.
+		</member>
+		<member name="state_checked" type="bool" setter="set_state_checked" getter="get_state_checked" default="false">
+			If [code]true[/code], node is in checked or pressed state.
+		</member>
+		<member name="state_description" type="String" setter="set_state_description" getter="get_state_description" default="&quot;&quot;">
+			Human-readable of the current custom node state.
+		</member>
+		<member name="subelement_count" type="int" setter="set_subelement_count" getter="get_subelement_count" default="0">
+			Number of sub-elements. Sub-elements can be used to add list items or table cells without adding a child node.
+		</member>
+		<member name="supported_actions" type="int" setter="set_supported_actions" getter="get_supported_actions" enum="AccessibilityServer.AccessibilityActionBit" is_bitfield="true" default="0">
+			List of supported default actions. If an action is marked as supported, but not overridden, the default node action handler is called.
+		</member>
+		<member name="table_cell_position" type="Vector2i" setter="set_table_cell_position" getter="get_table_cell_position">
+			Row and column of the table cell element.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_CELL], [constant DisplayServer.ROLE_ROW_GROUP], [constant DisplayServer.ROLE_ROW_HEADER], or [constant DisplayServer.ROLE_COLUMN_HEADER].
+		</member>
+		<member name="table_cell_span" type="Vector2i" setter="set_table_cell_span" getter="get_table_cell_span">
+			Row and column span of the table cell element.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_CELL].
+		</member>
+		<member name="table_column_count" type="int" setter="set_table_column_count" getter="get_table_column_count">
+			Number of columns in the table.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TABLE].
+		</member>
+		<member name="table_row_count" type="int" setter="set_table_row_count" getter="get_table_row_count">
+			Number of rows in the table.
+			[b]Note:[/b] Used if [member role] is set to [constant DisplayServer.ROLE_TABLE].
+		</member>
+		<member name="text_alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" enum="HorizontalAlignment" default="0">
+			Text horizontal alignment.
+		</member>
+		<member name="text_orientation" type="int" setter="set_text_orientation" getter="get_text_orientation" enum="TextServer.Orientation" default="0">
+			Text orientation.
+		</member>
+		<member name="tooltip" type="String" setter="set_tooltip" getter="get_tooltip" default="&quot;&quot;">
+			Tooltip text.
+		</member>
+		<member name="url" type="String" setter="set_url" getter="get_url" default="&quot;&quot;">
+			URL.
+		</member>
+		<member name="value" type="String" setter="set_value" getter="get_value">
+			String value. Used only if [member value_type] has the [constant VALUE_STRING] flag set.
+		</member>
+		<member name="value_color" type="Color" setter="set_value_color" getter="get_value_color">
+			Color value. Used only if [member value_type] has [constant VALUE_COLOR] flag set.
+		</member>
+		<member name="value_num" type="float" setter="set_value_num" getter="get_value_num">
+			Numeric value. Used only if [member value_type] has [constant VALUE_NUMBER] flag set.
+		</member>
+		<member name="value_num_jump" type="float" setter="set_value_num_jump" getter="get_value_num_jump">
+			Numeric value jump. Used only if [member value_type] has [constant VALUE_NUMBER] flag set.
+		</member>
+		<member name="value_num_range" type="Vector2" setter="set_value_num_range" getter="get_value_num_range">
+			Numeric value range. Used only if [member value_type] has [constant VALUE_NUMBER] flag set.
+		</member>
+		<member name="value_num_step" type="float" setter="set_value_num_step" getter="get_value_num_step">
+			Numeric value step. Used only if [member value_type] has [constant VALUE_NUMBER] flag set.
+		</member>
+		<member name="value_type" type="int" setter="set_value_type" getter="get_value_type" enum="AccessibilitySettings.ValueType" is_bitfield="true" default="0">
+			Value used by node, multiple types can be selected.
+		</member>
+	</members>
+	<signals>
+		<signal name="action_blur">
+			<description>
+				Blur action (node loses focus).
+			</description>
+		</signal>
+		<signal name="action_click">
+			<description>
+				Single click action.
+			</description>
+		</signal>
+		<signal name="action_collapse">
+			<description>
+				Item collapse action.
+			</description>
+		</signal>
+		<signal name="action_custom">
+			<param index="0" name="id" type="int" />
+			<description>
+				Custom action with [param id].
+			</description>
+		</signal>
+		<signal name="action_decrement">
+			<description>
+				Numeric value decrement action.
+			</description>
+		</signal>
+		<signal name="action_expand">
+			<description>
+				Item expand action.
+			</description>
+		</signal>
+		<signal name="action_focus">
+			<description>
+				Focus action.
+			</description>
+		</signal>
+		<signal name="action_increment">
+			<description>
+				Numeric value increment action.
+			</description>
+		</signal>
+		<signal name="action_scroll_down">
+			<param index="0" name="value" type="float" />
+			<description>
+				Scroll down action.
+			</description>
+		</signal>
+		<signal name="action_scroll_into_view">
+			<description>
+				Scroll into view action.
+			</description>
+		</signal>
+		<signal name="action_scroll_left">
+			<param index="0" name="value" type="float" />
+			<description>
+				Scroll left action.
+			</description>
+		</signal>
+		<signal name="action_scroll_right">
+			<param index="0" name="value" type="float" />
+			<description>
+				Scroll right action.
+			</description>
+		</signal>
+		<signal name="action_scroll_set_offset">
+			<param index="0" name="offset" type="Vector2" />
+			<description>
+				Set scroll offset action.
+			</description>
+		</signal>
+		<signal name="action_scroll_to_point">
+			<param index="0" name="pos" type="Vector2" />
+			<description>
+				Scroll to point action.
+			</description>
+		</signal>
+		<signal name="action_scroll_up">
+			<param index="0" name="value" type="float" />
+			<description>
+				Scroll up action.
+			</description>
+		</signal>
+		<signal name="action_set_value">
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Set value action.
+			</description>
+		</signal>
+		<signal name="show_context_menu">
+			<description>
+				Show context menu action.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="VALUE_STRING" value="1" enum="ValueType" is_bitfield="true">
+			String value.
+		</constant>
+		<constant name="VALUE_NUMBER" value="2" enum="ValueType" is_bitfield="true">
+			Numeric value.
+		</constant>
+		<constant name="VALUE_COLOR" value="4" enum="ValueType" is_bitfield="true">
+			Color value.
+		</constant>
+	</constants>
+</class>
