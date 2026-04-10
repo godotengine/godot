@@ -306,7 +306,7 @@ Error AudioDriverPulseAudio::init() {
 	active.clear();
 	exit_thread.clear();
 
-	mix_rate = _get_configured_mix_rate();
+	mix_rate = get_configured_mix_rate();
 
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_NULL_V(pa_ml, ERR_CANT_OPEN);

@@ -36,6 +36,7 @@
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/sndio/audio_driver_sndio.h"
 #include "drivers/unix/os_unix.h"
 
 class JoypadSDL;
@@ -71,6 +72,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
+#ifdef SNDIO_ENABLED
+	AudioDriverSndio driver_sndio;
 #endif
 
 	CrashHandler crash_handler;

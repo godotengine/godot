@@ -1304,6 +1304,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	AudioDriverManager::add_driver(&driver_alsa);
 #endif
 
+#ifdef SNDIO_ENABLED
+	AudioDriverManager::add_driver(&driver_sndio);
+#endif
+
 #ifdef X11_ENABLED
 	DisplayServerX11::register_x11_driver();
 #endif

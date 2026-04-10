@@ -58,6 +58,7 @@ def get_opts():
         BoolVariable("use_sowrap", "Dynamically load system libraries", True),
         BoolVariable("alsa", "Use ALSA", True),
         BoolVariable("pulseaudio", "Use PulseAudio", True),
+        BoolVariable("sndio", "Use sndio", True),
         BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
         BoolVariable("speechd", "Use Speech Dispatcher for Text-to-Speech support", True),
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
@@ -374,6 +375,17 @@ def configure(env: "SConsEnvironment"):
                 env["pulseaudio"] = False
         else:
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
+
+    if env["sndio"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists sndio") == 0:  # 0 means found
+                env.ParseConfig("pkg-config --cflags --libs sndio")
+                env.Append(CPPDEFINES=["SNDIO_ENABLED"])
+            else:
+                print_warning("sndio development libraries not found. Disabling the sndio audio driver.")
+                env["sndio"] = False
+        else:
+            env.Append(CPPDEFINES=["SNDIO_ENABLED"])
 
     if env["dbus"] and env["threads"]:  # D-Bus functionality expects threads.
         if not env["use_sowrap"]:
