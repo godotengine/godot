@@ -55,6 +55,10 @@ class Resource : public RefCounted {
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::RESOURCE;
 
+	enum {
+		NOTIFICATION_RESOURCE_DESERIALIZED = 3200,
+	};
+
 	static void register_custom_data_to_otdb();
 	virtual String get_base_extension() const { return "res"; }
 

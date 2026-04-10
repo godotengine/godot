@@ -882,6 +882,10 @@ Error ResourceLoaderBinary::load() {
 			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
 
+		if (res.is_valid()) {
+			res->notification(Resource::NOTIFICATION_RESOURCE_DESERIALIZED);
+		}
+
 #ifdef TOOLS_ENABLED
 		res->set_edited(false);
 #endif
