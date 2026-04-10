@@ -149,6 +149,8 @@ protected:
 	virtual void finalize() override;
 	virtual void finalize_core() override;
 
+	virtual void print_stack_trace(int p_skip_called = 0, int p_skip_callers = 0) override;
+
 	virtual String get_stdin_string(int64_t p_buffer_size = 1024) override;
 	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) override;
 	virtual StdHandleType get_stdin_type() const override;

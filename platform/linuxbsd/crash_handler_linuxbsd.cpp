@@ -30,6 +30,8 @@
 
 #include "crash_handler_linuxbsd.h"
 
+#include "stack_trace_linuxbsd.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
@@ -37,6 +39,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
+#include "drivers/unix/stack_trace_unix.h"
 #include "main/main.h"
 
 #ifndef DEBUG_ENABLED
@@ -44,13 +47,9 @@
 #endif
 
 #ifdef CRASH_HANDLER_ENABLED
-#include <cxxabi.h>
 #include <dlfcn.h>
-#include <execinfo.h>
-#include <link.h>
 
 #include <csignal>
-#include <cstdio>
 #include <cstdlib>
 
 static void handle_crash(int sig) {
@@ -66,8 +65,11 @@ static void handle_crash(int sig) {
 		std::_Exit(0);
 	}
 
-	void *bt_buffer[256];
-	size_t size = backtrace(bt_buffer, 256);
+	void *bt_buffer[StackTraceUnix::MAX_FRAMES];
+	int size = backtrace(bt_buffer, StackTraceUnix::MAX_FRAMES);
+	if (size <= 0) {
+		abort();
+	}
 	String _execpath = OS::get_singleton()->get_executable_path();
 
 	if (FileAccess::exists(_execpath + ".debugsymbols")) {
@@ -95,88 +97,37 @@ static void handle_crash(int sig) {
 		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
-	char **strings = backtrace_symbols(bt_buffer, size);
-	// PIE executable relocation, zero for non-PIE executables
-#ifdef __GLIBC__
-	// This is a glibc only thing apparently.
-	uintptr_t relocation = _r_debug.r_map->l_addr;
-#else
-	// Non glibc systems apparently don't give PIE relocation info.
-	uintptr_t relocation = 0;
-#endif //__GLIBC__
+	const Vector<String> symbols = StackTraceUnix::collect_symbol_strings(bt_buffer, size);
+	const uintptr_t relocation = StackTraceLinuxBSD::get_relocation_offset();
 
 	print_error(vformat("Load address: %x\n", (uint64_t)relocation));
 
-	if (strings) {
-		int ret;
+	const String addr2line_exe = StackTraceLinuxBSD::select_addr2line_executable(OS::get_singleton());
+	const Vector<uint64_t> addresses = StackTraceUnix::collect_addresses(bt_buffer, size);
+	const Vector<String> addr2line_results = StackTraceLinuxBSD::symbolize_with_addr2line(OS::get_singleton(), addr2line_exe, addresses, relocation, _execpath);
 
-		List<String> args;
-		args.push_back("--version");
-		String exe_name;
-
-		if (exe_name.is_empty()) {
-			String output;
-			// Faster implementation from gimli-rs/addr2line.
-			Error err = OS::get_singleton()->execute(OS::get_singleton()->get_environment("HOME").path_join(String("/.cargo/bin/addr2line")), args, &output, &ret);
-			if (err == OK && ret == 0) {
-				exe_name = OS::get_singleton()->get_environment("HOME").path_join(String("/.cargo/bin/addr2line"));
-			}
-		}
-		if (exe_name.is_empty()) {
-			String output;
-			Error err = OS::get_singleton()->execute(String("llvm-addr2line"), args, &output, &ret);
-			if (err == OK && ret == 0) {
-				exe_name = String("llvm-addr2line");
-			}
-		}
-		if (exe_name.is_empty()) {
-			exe_name = String("addr2line");
-		}
-
-		args.clear();
-		for (size_t i = 0; i < size; i++) {
-			char str[1024];
-			snprintf(str, 1024, "%p", (void *)((uintptr_t)bt_buffer[i] - relocation));
-			args.push_back(str);
-		}
-		args.push_back("-e");
-		args.push_back(_execpath);
-
-		// Try to get the file/line number using addr2line
-		String output;
-		Error err = OS::get_singleton()->execute(exe_name, args, &output, &ret);
-		Vector<String> addr2line_results;
-		if (err == OK) {
-			addr2line_results = output.substr(0, output.length() - 1).split("\n", false);
-		}
-
-		for (size_t i = 1; i < size; i++) {
-			char fname[1024];
-			Dl_info info;
-
-			snprintf(fname, 1024, "%s", strings[i]);
-
-			// Try to demangle the function name to provide a more readable one
-			if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
-				if (info.dli_sname[0] == '_') {
-					int status = 0;
-					char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
-
-					if (status == 0 && demangled) {
-						snprintf(fname, 1024, "%s", demangled);
-					}
-
-					if (demangled) {
-						free(demangled);
-					}
+	for (int i = 1; i < size; i++) {
+		String symbol_name = i < symbols.size() ? symbols[i] : String("<unknown symbol>");
+		Dl_info info = {};
+		// Try to use a better symbol name if available, but only if it adds new information compared to the one from backtrace_symbols.
+		if (dladdr(bt_buffer[i], &info) != 0 && info.dli_sname != nullptr) {
+			const String demangled_name = StackTraceUnix::demangle_symbol_name(info.dli_sname);
+			if (!demangled_name.is_empty()) {
+				// If demangling changed the name, it was a mangled C++ symbol: replace the raw text.
+				// If unchanged (C-style name), preserve the raw text unless it's unhelpful, to keep library context.
+				const bool was_mangled = demangled_name != String(info.dli_sname);
+				if (symbol_name.is_empty() || symbol_name.contains("??") || was_mangled) {
+					symbol_name = demangled_name;
+				} else if (!symbol_name.contains(demangled_name)) {
+					symbol_name = vformat("%s [%s]", symbol_name, demangled_name);
 				}
 			}
-
-			// Simplify printed file paths to remove redundant `/./` sections (e.g. `/opt/godot/./core` -> `/opt/godot/core`).
-			print_error(vformat("[%d] %x - %s (%s)", (int64_t)i, (uint64_t)bt_buffer[i], fname, err == OK ? addr2line_results[i].replace("/./", "/") : ""));
 		}
-
-		free(strings);
+		String location;
+		if (i < addr2line_results.size()) {
+			location = addr2line_results[i].replace("/./", "/");
+		}
+		print_error(vformat("[%s] %x - %s (%s)", String::num_int64(i).lpad(2), (uint64_t)bt_buffer[i], symbol_name, location));
 	}
 	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");

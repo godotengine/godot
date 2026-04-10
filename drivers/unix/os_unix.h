@@ -87,6 +87,11 @@ public:
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 
+#if defined(__APPLE__) || defined(LINUXBSD_ENABLED)
+	// Unix-style stack trace printing works on macOS, iOS, Linux, and BSDs, but does NOT work on Android or Web.
+	virtual void print_stack_trace(int p_skip_called = 0, int p_skip_callers = 0) override;
+#endif
+
 	virtual String get_stdin_string(int64_t p_buffer_size = 1024) override;
 	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) override;
 	virtual StdHandleType get_stdin_type() const override;
