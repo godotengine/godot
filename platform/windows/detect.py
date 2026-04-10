@@ -235,6 +235,9 @@ def get_opts():
             "Path to the PIX runtime distribution (optional for D3D12)",
             os.path.join(deps_folder, "pix"),
         ),
+        BoolVariable(
+            "prefer_high_performance_gpu", "Prefer high-performance GPU on NVIDIA Optimus/AMD PowerXpress systems", True
+        ),
     ]
 
 
@@ -998,6 +1001,9 @@ def configure(env: "SConsEnvironment"):
 
     # At this point the env has been set up with basic tools/compilers.
     env.Prepend(CPPPATH=["#platform/windows"])
+
+    if not env["prefer_high_performance_gpu"]:
+        env.Append(CPPDEFINES=["DISABLE_PREFER_HIGH_PERFORMANCE_GPU"])
 
     env.msvc = "mingw" not in env["TOOLS"]
     if env.msvc:
