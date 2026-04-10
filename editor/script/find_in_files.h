@@ -62,15 +62,15 @@ public:
 	float get_progress() const;
 
 protected:
-	void _notification(int p_what);
+	virtual void _scan_file(const String &fpath);
 
+	void _notification(int p_what);
 	static void _bind_methods();
 
 private:
 	void _process();
 	void _iterate();
 	void _scan_dir(const String &path, PackedStringArray &out_folders, PackedStringArray &out_files_to_scan);
-	void _scan_file(const String &fpath);
 
 	bool _is_file_matched(const HashSet<String> &p_wildcards, const String &p_file_path, bool p_case_sensitive) const;
 
@@ -89,6 +89,24 @@ private:
 	Vector<PackedStringArray> _folders_stack;
 	Vector<String> _files_to_scan;
 	int _initial_files_count = 0;
+};
+
+class FindAllReferencesInFiles : public FindInFiles {
+	GDCLASS(FindAllReferencesInFiles, Node);
+
+public:
+	void initialize(const String &p_pattern, const String &p_origin_path, const int p_type, const int p_location);
+
+protected:
+	Ref<Script> _origin_script;
+	String _origin_script_path;
+	int _lookup_type;
+	int _lookup_location;
+
+	void _scan_file(const String &p_path) override;
+	bool _is_lookup_return_back(Ref<Script> p_target, const String &p_path, const PackedStringArray &p_code_lines, const int p_row, const int p_column);
+
+	static void _bind_methods();
 };
 
 class LineEdit;
@@ -177,6 +195,7 @@ public:
 
 	FindInFilesPanel();
 
+	void set_finder(FindInFiles *p_finder);
 	FindInFiles *get_finder() const { return _finder; }
 
 	void set_with_replace(bool with_replace);
@@ -261,6 +280,8 @@ class TabContainer;
 class FindInFilesContainer : public EditorDock {
 	GDCLASS(FindInFilesContainer, EditorDock);
 
+	static const char *FIND_ALL_REFERENCES_META;
+
 	enum {
 		PANEL_CLOSE,
 		PANEL_CLOSE_OTHERS,
@@ -279,8 +300,11 @@ class FindInFilesContainer : public EditorDock {
 	bool _update_bar = true;
 	PopupMenu *_tabs_context_menu = nullptr;
 
-	FindInFilesPanel *_create_new_panel();
+	FindInFilesPanel *_create_new_panel(bool p_for_references_search = false);
 	FindInFilesPanel *_get_current_panel();
+
+	FindInFiles *_create_new_find_in_files(bool p_for_references_search = false);
+	bool _can_return_panel(const FindInFilesPanel *p_panel, bool p_for_references_search = false);
 
 protected:
 	static void _bind_methods();
@@ -295,5 +319,5 @@ protected:
 public:
 	FindInFilesContainer();
 
-	FindInFilesPanel *get_panel_for_results(const String &p_label);
+	FindInFilesPanel *get_panel_for_results(const String &p_label, bool p_for_references_search = false);
 };

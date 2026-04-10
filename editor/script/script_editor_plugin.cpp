@@ -2350,6 +2350,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		teb->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 		teb->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
 		teb->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog));
+		teb->connect("search_references_in_files_requested", callable_mp(this, &ScriptEditor::_start_find_all_references_in_files));
 		teb->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 		teb->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
@@ -2601,6 +2602,22 @@ void ScriptEditor::_auto_format_text(ScriptEditorBase *p_seb) {
 			teb->convert_indent();
 		}
 	}
+}
+
+void ScriptEditor::_start_find_all_references_in_files(const String &p_text, const String &p_origin_script_path, const int p_lookup_type, const int p_lookup_location) {
+	FindInFilesPanel *panel = find_in_files->get_panel_for_results(TTR("Find All References:") + " " + p_text, true);
+	FindInFiles *f = panel->get_finder();
+	FindAllReferencesInFiles *ff = Object::cast_to<FindAllReferencesInFiles>(f);
+
+	if (!ff) {
+		return;
+	}
+
+	ff->initialize(p_text, p_origin_script_path, p_lookup_type, p_lookup_location);
+	panel->set_with_replace(false);
+
+	panel->start_search();
+	find_in_files->make_visible();
 }
 
 void ScriptEditor::open_find_in_files_dialog(const String &text) {
