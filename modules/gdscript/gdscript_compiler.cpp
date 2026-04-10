@@ -2122,6 +2122,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				codegen.start_block(); // Add an extra block, since we use custom logic to clear block locals.
 
 				gen->start_while_condition();
+				gen->write_newline(while_n->condition->start_line);
 
 				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, while_n->condition);
 				if (err) {
