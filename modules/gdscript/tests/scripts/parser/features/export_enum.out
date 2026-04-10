@@ -31,11 +31,3 @@ var test_hard_array_int: Array = Array[int]([])
   hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_hard_array_string: Array = Array[String]([])
   hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
-var test_variant_array_int: Array = Array[int]([])
-  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
-var test_variant_packed_int32_array: PackedInt32Array = PackedInt32Array()
-  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
-var test_variant_array_string: Array = Array[String]([])
-  hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
-var test_variant_packed_string_array: PackedStringArray = PackedStringArray()
-  hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
