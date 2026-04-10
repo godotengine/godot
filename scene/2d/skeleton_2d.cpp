@@ -436,6 +436,14 @@ void Bone2D::calculate_length_and_rotation() {
 	// If there is at least a single child Bone2D node, we can calculate
 	// the length and direction. We will always just use the first Bone2D for this.
 	int child_count = get_child_count();
+
+	Transform2D global_trans = get_global_transform();
+
+	if(global_trans.determinant() == 0) {
+		WARN_PRINT("Cannot calculate bone length and angle: bone has zero scale.");
+		bone_angle = get_transform().get_rotation();
+		return;
+	}
 	Transform2D global_inv = get_global_transform().affine_inverse();
 
 	for (int i = 0; i < child_count; i++) {
@@ -447,9 +455,6 @@ void Bone2D::calculate_length_and_rotation() {
 			return; // Finished!
 		}
 	}
-
-	WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle.");
-	bone_angle = get_transform().get_rotation();
 }
 
 void Bone2D::set_autocalculate_length_and_angle(bool p_autocalculate) {
@@ -560,7 +565,13 @@ void Skeleton2D::_update_bone_setup() {
 	bones.sort(); //sorting so that they are always in the same order/index
 
 	for (uint32_t i = 0; i < bones.size(); i++) {
-		bones[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
+		Transform2D skeleton_rest = bones[i].bone->get_skeleton_rest();
+		if (skeleton_rest.determinant() == 0) {
+			bones[i].rest_inverse = Transform2D();
+			ERR_PRINT(vformat("Bone2D '%s' has zero scale in rest pose.", bones[i].bone->get_name()));
+		} else {
+			bones[i].rest_inverse = skeleton_rest.affine_inverse();
+		}
 		bones[i].bone->skeleton_index = i;
 		Bone2D *parent_bone = Object::cast_to<Bone2D>(bones[i].bone->get_parent());
 		if (parent_bone) {
