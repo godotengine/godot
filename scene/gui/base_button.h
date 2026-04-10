@@ -100,6 +100,7 @@ public:
 		DRAW_HOVER,
 		DRAW_DISABLED,
 		DRAW_HOVER_PRESSED,
+		DRAW_FOCUS_PRESSED,
 	};
 
 	DrawMode get_draw_mode() const;
