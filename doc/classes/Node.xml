@@ -113,6 +113,7 @@
 				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]@onready[/code] annotation for variables.
 				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _enter_tree].
 				[b]Note:[/b] This method may be called only once for each node. After removing a node from the scene tree and adding it again, [method _ready] will [b]not[/b] be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
+				[b]Note:[/b] Note that when adding a node with a custom [code]@tool[/code] [code]class_name[/code] script via the "Create New Node" dialog, the node's respective [Object] parent class initialization happens [b]before[/b] the node gets "ready", which means methods like [method Object._validate_property] and [method Object._get_property_list] may get called [b]before[/b] the node gets "ready", so be careful if you override them in your code.
 			</description>
 		</method>
 		<method name="_shortcut_input" qualifiers="virtual">
