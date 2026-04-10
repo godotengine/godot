@@ -285,7 +285,6 @@ private:
 	ObjectID physics_last_id;
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
-	bool handle_input_locally = true;
 	bool local_input_handled = false;
 	bool propagate_shortcuts_to_parent = false;
 	bool shortcut_use_focus_owner = true;
@@ -685,8 +684,10 @@ public:
 	void set_input_as_handled();
 	bool is_input_handled() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_handle_input_locally(bool p_enable);
 	bool is_handling_input_locally() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_propagate_shortcuts_to_parent(bool p_enable);
 	bool gui_shortcut_use_focus_owner() const;
