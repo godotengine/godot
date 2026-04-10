@@ -22,6 +22,7 @@
 /drivers/alsamidi/                            @godotengine/audio
 /drivers/coreaudio/                           @godotengine/audio
 /drivers/coremidi/                            @godotengine/audio
+/drivers/pipewire/                            @godotengine/audio
 /drivers/pulseaudio/                          @godotengine/audio
 /drivers/wasapi/                              @godotengine/audio
 /drivers/winmidi/                             @godotengine/audio
