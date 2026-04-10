@@ -34,12 +34,12 @@
 #include "servers/audio/audio_server.h"
 
 bool AudioEffectCapture::can_get_buffer(int p_frames) const {
-	return buffer.data_left() >= p_frames;
+	return int(buffer.data_left()) >= p_frames;
 }
 
 PackedVector2Array AudioEffectCapture::get_buffer(int p_frames) {
 	ERR_FAIL_COND_V(!buffer_initialized, PackedVector2Array());
-	ERR_FAIL_INDEX_V(p_frames, buffer.size(), PackedVector2Array());
+	ERR_FAIL_INDEX_V(p_frames, int(buffer.size()), PackedVector2Array());
 	int data_left = buffer.data_left();
 	if (data_left < p_frames || p_frames == 0) {
 		return PackedVector2Array();
@@ -126,7 +126,7 @@ void AudioEffectCaptureInstance::process(const AudioFrame *p_src_frames, AudioFr
 		p_dst_frames[i] = p_src_frames[i];
 	}
 
-	if (buffer.space_left() >= p_frame_count) {
+	if (int(buffer.space_left()) >= p_frame_count) {
 		// Add incoming audio frames to the IO ring buffer
 		int32_t ret = buffer.write(p_src_frames, p_frame_count);
 		ERR_FAIL_COND_MSG(ret != p_frame_count, "Failed to add data to effect capture ring buffer despite sufficient space.");
