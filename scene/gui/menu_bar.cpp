@@ -36,6 +36,58 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
+void MenuBar::input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+	if (is_native_menu()) {
+		// Handled by OS.
+		return;
+	}
+	if (has_focus() || !is_visible_in_tree()) {
+		return;
+	}
+	Ref<InputEventMouse> me = p_event;
+	if (me.is_valid()) {
+		return;
+	}
+
+	if (p_event->is_action("ui_show_menu", true)) {
+		if (p_event->is_pressed()) {
+			menu_action_pressed = true;
+		} else if (menu_action_pressed) {
+			menu_action_pressed = false;
+			should_return_focus = false;
+
+			last_focus = ObjectID();
+			Control *c = get_viewport()->gui_get_focus_owner();
+			if (c) {
+				last_focus = c->get_instance_id();
+			}
+
+			set_focus_mode(FOCUS_ALL);
+			grab_focus();
+			opened_by_shortcut = true;
+
+			if (c) {
+				should_return_focus = true;
+			}
+
+			accept_event();
+		}
+	} else {
+		menu_action_pressed = false;
+	}
+}
+
+void MenuBar::_return_focus() {
+	if (last_focus.is_valid()) {
+		Control *c = ObjectDB::get_instance<Control>(last_focus);
+		if (c) {
+			c->grab_focus(true);
+		}
+	}
+	last_focus = ObjectID();
+}
+
 void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 	if (is_native_menu()) {
@@ -44,6 +96,30 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	MutexLock lock(mutex);
+	Ref<InputEventKey> k = p_event;
+	if (opened_by_shortcut && k.is_valid() && k->get_unicode() && k->is_pressed()) {
+		int new_sel = selected_menu;
+		int old_sel = (selected_menu < 0) ? menu_cache.size() - 1 : selected_menu;
+		String search = String::chr(k->get_unicode());
+		do {
+			new_sel++;
+			if (new_sel >= menu_cache.size()) {
+				new_sel = 0;
+			}
+			if (!menu_cache[new_sel].hidden && !menu_cache[new_sel].disabled && menu_cache[new_sel].name.to_lower().begins_with(search)) {
+				if (selected_menu != new_sel) {
+					selected_menu = new_sel;
+					focused_menu = selected_menu;
+
+					queue_accessibility_update();
+					queue_redraw();
+					accept_event();
+				}
+				return;
+			}
+		} while (new_sel != old_sel);
+	}
+
 	if (p_event->is_action("ui_left", true) && p_event->is_pressed()) {
 		int new_sel = selected_menu;
 		int old_sel = (selected_menu < 0) ? 0 : selected_menu;
@@ -60,10 +136,17 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (selected_menu != new_sel) {
 			selected_menu = new_sel;
 			focused_menu = selected_menu;
+			pending_menu = focused_menu;
 			if (active_menu >= 0) {
 				get_menu_popup(active_menu)->hide();
 			}
-			_open_popup(selected_menu, true);
+			if (!opened_by_shortcut) {
+				_open_popup(selected_menu, true);
+			} else {
+				queue_accessibility_update();
+				queue_redraw();
+			}
+			accept_event();
 		}
 		return;
 	} else if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
@@ -82,21 +165,36 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (selected_menu != new_sel) {
 			selected_menu = new_sel;
 			focused_menu = selected_menu;
+			pending_menu = focused_menu;
 			if (active_menu >= 0) {
 				get_menu_popup(active_menu)->hide();
 			}
-			_open_popup(selected_menu, true);
+			if (!opened_by_shortcut) {
+				_open_popup(selected_menu, true);
+			} else {
+				queue_accessibility_update();
+				queue_redraw();
+			}
+			accept_event();
 		}
 		return;
-	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
+	} else if ((p_event->is_action("ui_accept", true) || p_event->is_action("ui_down", true)) && p_event->is_pressed()) {
 		if (focused_menu == -1) {
 			focused_menu = 0;
 		}
 		selected_menu = focused_menu;
+		pending_menu = focused_menu;
 		if (active_menu >= 0) {
 			get_menu_popup(active_menu)->hide();
 		}
+		set_focus_mode(FOCUS_ACCESSIBILITY);
+		opened_by_shortcut = false;
 		_open_popup(selected_menu, true);
+		accept_event();
+	} else if (opened_by_shortcut && p_event->is_action("ui_cancel", true) && p_event->is_pressed()) {
+		set_focus_mode(FOCUS_ACCESSIBILITY);
+		opened_by_shortcut = false;
+		_return_focus();
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -113,6 +211,9 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
+		opened_by_shortcut = false;
+		should_return_focus = false;
+		pending_menu = -1;
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
 			int index = _get_index_at_point(mb->get_position());
 			if (index >= 0) {
@@ -188,8 +289,13 @@ void MenuBar::_popup_visibility_changed(bool p_visible) {
 		active_menu = -1;
 		focused_menu = -1;
 		set_process_internal(false);
+		if (should_return_focus && pending_menu == -1) {
+			_return_focus();
+		}
 		queue_redraw();
 		return;
+	} else {
+		pending_menu = -1;
 	}
 
 	if (switch_on_hover) {
@@ -289,13 +395,42 @@ void MenuBar::unbind_global_menu() {
 	global_menu_tag = String();
 }
 
+RID MenuBar::get_focused_accessibility_element() const {
+	if (selected_menu == -1) {
+		return get_accessibility_element();
+	} else {
+		const Menu &item = menu_cache[selected_menu];
+		return item.accessibility_item_element;
+	}
+}
+
 void MenuBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			for (int i = 0; i < menu_cache.size(); i++) {
+				menu_cache.write[i].accessibility_item_element = RID();
+			}
+		} break;
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_BAR);
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, menu_cache.size());
+
+			for (int i = 0; i < menu_cache.size(); i++) {
+				const Menu &item = menu_cache[i];
+				if (item.accessibility_item_element.is_null()) {
+					item.accessibility_item_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_ITEM);
+				}
+				AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, i);
+				AccessibilityServer::get_singleton()->update_set_list_item_level(item.accessibility_item_element, 0);
+				AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, i == selected_menu);
+				AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, atr(item.name));
+				AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
+				AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, item.hidden);
+				AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
+			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (get_menu_count() > 0) {
@@ -351,6 +486,22 @@ void MenuBar::_notification(int p_what) {
 					unbind_global_menu();
 				}
 			}
+			set_process_input(is_visible_in_tree());
+		} break;
+		case NOTIFICATION_FOCUS_ENTER: {
+			should_return_focus = false;
+			pending_menu = -1;
+		} break;
+		case NOTIFICATION_FOCUS_EXIT: {
+			if (opened_by_shortcut) {
+				focused_menu = -1;
+				selected_menu = -1;
+				_return_focus();
+			}
+			set_focus_mode(FOCUS_ACCESSIBILITY);
+			opened_by_shortcut = false;
+			queue_accessibility_update();
+			queue_redraw();
 		} break;
 		case NOTIFICATION_DRAW: {
 			if (is_native_menu()) {
@@ -657,6 +808,10 @@ void MenuBar::move_child_notify(Node *p_child) {
 		}
 	}
 	Menu menu = menu_cache[old_idx];
+	if (menu.accessibility_item_element.is_valid()) {
+		AccessibilityServer::get_singleton()->free_element(menu.accessibility_item_element);
+		menu.accessibility_item_element = RID();
+	}
 	menu_cache.remove_at(old_idx);
 	int new_idx = get_menu_idx_from_control(pm);
 	menu_cache.insert(new_idx, menu);
@@ -705,6 +860,10 @@ void MenuBar::remove_child_notify(Node *p_child) {
 	}
 
 	pm->disconnect("title_changed", callable_mp(this, &MenuBar::_popup_changed));
+	if (menu_cache[idx].accessibility_item_element.is_valid()) {
+		AccessibilityServer::get_singleton()->free_element(menu_cache[idx].accessibility_item_element);
+		menu_cache[idx].accessibility_item_element = RID();
+	}
 	menu_cache.remove_at(idx);
 
 	p_child->remove_meta("_menu_name");
