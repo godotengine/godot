@@ -42,6 +42,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
@@ -808,6 +809,7 @@ void DockContextPopup::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (make_float_button) {
 				make_float_button->set_button_icon(get_editor_theme_icon(SNAME("MakeFloating")));
+				screen_select_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			}
 			if (is_layout_rtl()) {
 				tab_move_left_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
@@ -867,6 +869,11 @@ void DockContextPopup::_float_dock() {
 	dock_manager->_open_dock_in_window(context_dock);
 }
 
+void DockContextPopup::_float_dock_on_screen(int p_screen) {
+	_float_dock();
+	context_dock->get_window()->set_current_screen(p_screen);
+}
+
 void DockContextPopup::_update_buttons() {
 	if (context_dock->global || context_dock->closable) {
 		close_button->set_tooltip_text(TTRC("Close this dock."));
@@ -895,6 +902,16 @@ void DockContextPopup::_update_buttons() {
 		tab_move_right_button->set_disabled(context_tab_index >= context_tab_container->get_tab_count() - 1);
 	}
 	reset_size();
+}
+
+void DockContextPopup::_update_screen_menu() {
+	PopupMenu *pm = screen_select_button->get_popup();
+	pm->clear();
+
+	int screen_count = DisplayServer::get_singleton()->get_screen_count();
+	for (int i = 0; i < screen_count; i++) {
+		pm->add_item(vformat(TTR("Screen %d"), i + 1), i);
+	}
 }
 
 void DockContextPopup::set_dock(EditorDock *p_dock) {
@@ -947,6 +964,9 @@ DockContextPopup::DockContextPopup() {
 	separator->set_custom_minimum_size(Vector2(0, 8 * EDSCALE));
 	dock_select_popup_vb->add_child(separator);
 
+	HBoxContainer *float_hb = memnew(HBoxContainer);
+	dock_select_popup_vb->add_child(float_hb);
+
 	make_float_button = memnew(Button);
 	make_float_button->set_text(TTRC("Make Floating"));
 	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
@@ -956,7 +976,13 @@ DockContextPopup::DockContextPopup() {
 	make_float_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	make_float_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	make_float_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_float_dock));
-	dock_select_popup_vb->add_child(make_float_button);
+	float_hb->add_child(make_float_button);
+
+	screen_select_button = memnew(MenuButton);
+	screen_select_button->set_theme_type_variation("FlatMenuButton");
+	float_hb->add_child(screen_select_button);
+	screen_select_button->connect("about_to_popup", callable_mp(this, &DockContextPopup::_update_screen_menu));
+	screen_select_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &DockContextPopup::_float_dock_on_screen));
 
 	close_button = memnew(Button);
 	close_button->set_text(TTRC("Close"));
