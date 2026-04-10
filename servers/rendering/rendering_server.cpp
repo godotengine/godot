@@ -2373,6 +2373,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_surface_set_material", "mesh", "surface", "material"), &RenderingServer::mesh_surface_set_material);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_material", "mesh", "surface"), &RenderingServer::mesh_surface_get_material);
 	ClassDB::bind_method(D_METHOD("mesh_get_surface", "mesh", "surface"), &RenderingServer::_mesh_get_surface);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_rd_data", "mesh", "surface", "input_mask"), &RenderingServer::mesh_surface_get_rd_data, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_arrays", "mesh", "surface"), &RenderingServer::mesh_surface_get_arrays);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_blend_shape_arrays", "mesh", "surface"), &RenderingServer::mesh_surface_get_blend_shape_arrays);
 	ClassDB::bind_method(D_METHOD("mesh_get_surface_count", "mesh"), &RenderingServer::mesh_get_surface_count);
@@ -2385,6 +2386,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_attribute_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_attribute_region);
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_skin_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_skin_region);
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_index_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_index_region);
+	ClassDB::bind_method(D_METHOD("mesh_surface_set_active_range", "mesh", "surface", "vertex_count", "index_count"), &RenderingServer::mesh_surface_set_active_range);
+	ClassDB::bind_method(D_METHOD("mesh_surface_set_indirect_buffer", "mesh", "surface", "indirect_buffer", "offset"), &RenderingServer::mesh_surface_set_indirect_buffer, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("mesh_surface_mark_dirty", "mesh", "surface"), &RenderingServer::mesh_surface_mark_dirty);
 
 	ClassDB::bind_method(D_METHOD("mesh_set_shadow_mesh", "mesh", "shadow_mesh"), &RenderingServer::mesh_set_shadow_mesh);
 

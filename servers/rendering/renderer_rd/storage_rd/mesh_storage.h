@@ -80,14 +80,18 @@ private:
 			uint64_t format = 0;
 
 			uint32_t vertex_count = 0;
+			uint32_t active_vertex_count = 0;
 			RID vertex_buffer;
 			uint32_t vertex_buffer_size = 0;
+			bool owns_vertex_buffer = true;
 
 			RID attribute_buffer;
 			uint32_t attribute_buffer_size = 0;
+			bool owns_attribute_buffer = true;
 
 			RID skin_buffer;
 			uint32_t skin_buffer_size = 0;
+			bool owns_skin_buffer = true;
 
 			// A different pipeline needs to be allocated
 			// depending on the inputs available in the
@@ -114,6 +118,11 @@ private:
 			uint32_t index_buffer_size = 0;
 			RID index_array;
 			uint32_t index_count = 0;
+			uint32_t active_index_count = 0;
+			bool owns_index_buffer = true;
+
+			RID indirect_buffer;
+			uint32_t indirect_buffer_offset = 0;
 
 			struct LOD {
 				float edge_length = 0.0;
@@ -138,6 +147,7 @@ private:
 
 			RID blend_shape_buffer;
 			uint32_t blend_shape_buffer_size = 0;
+			bool owns_blend_shape_buffer = true;
 
 			RID material;
 
@@ -210,8 +220,12 @@ private:
 				weight_update_list(this), array_update_list(this) {}
 	};
 
+	Vector<RD::VertexAttribute> _mesh_surface_generate_vertex_attributes(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride) const;
+	void _mesh_surface_generate_buffers_for_input_mask(Mesh::Surface *s, uint64_t p_input_mask, uint32_t p_position_stride, Vector<RID> &r_buffers, Vector<uint64_t> &r_offsets, MeshInstance::Surface *mis = nullptr, uint32_t p_current_buffer = 0, uint32_t p_previous_buffer = 0, bool p_input_motion_vectors = false) const;
 	RD::VertexFormatID _mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride);
 	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *mis = nullptr, uint32_t p_current_buffer = 0, uint32_t p_previous_buffer = 0);
+	void _mesh_surface_invalidate_vertex_versions(Mesh *p_mesh, int p_surface);
+	void _mesh_surface_recreate_index_array(Mesh::Surface *p_surface);
 	void _mesh_surface_clear(Mesh *p_mesh, int p_surface);
 
 	void _mesh_instance_clear(MeshInstance *mi);
@@ -377,6 +391,8 @@ public:
 	/// Return stride
 	virtual void mesh_add_surface(RID p_mesh, const RenderingServerTypes::SurfaceData &p_surface) override;
 
+	virtual void mesh_add_surface_rd(RID p_mesh, const RenderingServerTypes::SurfaceDataRD &p_surface) override;
+
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override;
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, RSE::BlendShapeMode p_mode) override;
@@ -387,10 +403,16 @@ public:
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 
+	virtual void mesh_surface_set_active_range(RID p_mesh, int p_surface, int p_vertex_count, int p_index_count) override;
+	virtual void mesh_surface_set_indirect_buffer(RID p_mesh, int p_surface, RID p_indirect_buffer, int p_offset) override;
+	virtual void mesh_surface_mark_dirty(RID p_mesh, int p_surface) override;
+
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
 
 	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
+
+	virtual Ref<SurfaceDataRD> mesh_surface_get_rd_data(RID p_mesh, int p_surface, uint64_t p_input_mask = 0) const override;
 
 	virtual int mesh_get_surface_count(RID p_mesh) const override;
 
@@ -449,7 +471,7 @@ public:
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_vertex_count(void *p_surface) {
 		Mesh::Surface *surface = reinterpret_cast<Mesh::Surface *>(p_surface);
-		return surface->vertex_count;
+		return surface->active_vertex_count;
 	}
 
 	_FORCE_INLINE_ bool mesh_surface_has_lod(void *p_surface) const {
@@ -459,7 +481,7 @@ public:
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_vertices_drawn_count(void *p_surface) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
-		return s->index_count ? s->index_count : s->vertex_count;
+		return s->index_buffer.is_valid() ? s->active_index_count : s->active_vertex_count;
 	}
 
 	_FORCE_INLINE_ AABB mesh_surface_get_aabb(void *p_surface) {
@@ -477,11 +499,41 @@ public:
 		return s->uv_scale;
 	}
 
+	_FORCE_INLINE_ RID mesh_surface_get_vertex_buffer(void *p_surface) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->vertex_buffer;
+	}
+
+	_FORCE_INLINE_ RID mesh_surface_get_attribute_buffer(void *p_surface) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->attribute_buffer;
+	}
+
+	_FORCE_INLINE_ RID mesh_surface_get_index_buffer(void *p_surface, uint32_t p_lod = 0) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		if (p_lod == 0) {
+			return s->index_buffer;
+		} else {
+			ERR_FAIL_UNSIGNED_INDEX_V(p_lod - 1, s->lod_count, RID());
+			return s->lods[p_lod - 1].index_buffer;
+		}
+	}
+
+	_FORCE_INLINE_ uint32_t mesh_surface_get_index_count(void *p_surface, uint32_t p_lod = 0) {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		if (p_lod == 0) {
+			return s->active_index_count;
+		} else {
+			ERR_FAIL_UNSIGNED_INDEX_V(p_lod - 1, s->lod_count, 0);
+			return s->lods[p_lod - 1].index_count;
+		}
+	}
+
 	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t &r_index_count) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
-		r_index_count = s->index_count;
+		r_index_count = s->active_index_count;
 		for (uint32_t i = 0; i < s->lod_count; i++) {
 			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
 			if (screen_size > p_mesh_lod_threshold) {
@@ -505,6 +557,21 @@ public:
 		} else {
 			return s->lods[p_lod - 1].index_array;
 		}
+	}
+
+	_FORCE_INLINE_ RID mesh_surface_get_indirect_buffer(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->indirect_buffer;
+	}
+
+	_FORCE_INLINE_ uint32_t mesh_surface_get_indirect_buffer_offset(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->indirect_buffer_offset;
+	}
+
+	_FORCE_INLINE_ bool mesh_surface_has_indirect_buffer(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->indirect_buffer.is_valid();
 	}
 
 	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {

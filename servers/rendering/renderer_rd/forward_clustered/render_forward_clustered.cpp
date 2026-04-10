@@ -599,13 +599,17 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 				instance_count /= surf->owner->trail_steps;
 			}
 
+			RID surface_indirect_buffer = mesh_storage->mesh_surface_get_indirect_buffer(mesh_surface);
+			uint32_t surface_indirect_offset = mesh_storage->mesh_surface_get_indirect_buffer_offset(mesh_surface);
 			bool indirect = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT);
 
 			if (emulate_point_size) {
-				if (indirect) {
+				if (indirect || surface_indirect_buffer.is_valid()) {
 					WARN_PRINT("Indirect draws are not supported when emulating point size.");
 				}
 				RD::get_singleton()->draw_list_draw(draw_list, false, mesh_storage->mesh_surface_get_vertex_count(mesh_surface), instance_count * 6);
+			} else if (surface_indirect_buffer.is_valid()) {
+				RD::get_singleton()->draw_list_draw_indirect(draw_list, index_array_rd.is_valid(), surface_indirect_buffer, surface_indirect_offset, 1, 0);
 			} else if (indirect) {
 				RD::get_singleton()->draw_list_draw_indirect(draw_list, index_array_rd.is_valid(), mesh_storage->_multimesh_get_command_buffer_rd_rid(surf->owner->data->base), surf->surface_index * sizeof(uint32_t) * mesh_storage->INDIRECT_MULTIMESH_COMMAND_STRIDE, 1, 0);
 			} else {
