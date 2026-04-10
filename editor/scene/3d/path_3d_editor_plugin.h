@@ -34,6 +34,7 @@
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
+#include "scene/gui/spin_box.h"
 
 class HBoxContainer;
 class MenuButton;
@@ -123,6 +124,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_del = nullptr;
 	Button *curve_closed = nullptr;
 	Button *curve_clear_points = nullptr;
+	Button *curve_auto_tangent = nullptr;
+	SpinBox *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
 	Button *create_curve_button = nullptr;
@@ -153,6 +156,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	void _create_curve();
 	void _confirm_clear_points();
 	void _clear_points();
+	void _auto_tangent();
 	void _clear_curve_points();
 	void _restore_curve_points(const PackedVector3Array &p_points);
 
