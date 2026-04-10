@@ -131,12 +131,15 @@
 		</method>
 		<method name="move_and_slide">
 			<return type="bool" />
+			<param index="0" name="delta" type="float" default="-1.0" />
 			<description>
 				Moves the body based on [member velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				Modifies [member velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for more detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
+				By default, the time delta used for motion depends on the context the method is called from. When called from [method Node._physics_process], the delta is the time passed between the current and last [i]physics[/i] frame. When called from [method Node._process], the delta is the time passed between the current and last [i]render[/i] frame. This can be overridden by passing a custom [param delta] value to the method.
+				[b]Note:[/b] [param delta] must be a positive number. Zero or negative values will treated as if no value was passed.
 			</description>
 		</method>
 	</methods>
