@@ -60,11 +60,11 @@ enum class QuickOpenDisplayMode {
 };
 
 struct QuickOpenResultCandidate {
-	ResourceUID::ID uid;
+	ResourceUID::ID id;
 	Ref<Texture2D> thumbnail;
 	const FuzzySearchResult *result = nullptr;
 
-	static QuickOpenResultCandidate from_uid(const ResourceUID::ID &p_uid, bool &r_success);
+	static QuickOpenResultCandidate from_id(const ResourceUID::ID &p_id, bool &r_success);
 	static QuickOpenResultCandidate from_result(const FuzzySearchResult &p_result, bool &r_success);
 };
 
@@ -103,7 +103,7 @@ public:
 	const Vector<StringName> &get_base_types() const;
 
 	bool is_instant_preview_enabled() const;
-	void set_instant_preview_toggle_visible(bool p_visible);
+	void set_instant_preview_toggle_visible(bool p_visible) const;
 
 	void save_selected_item();
 	void cleanup();
@@ -118,12 +118,13 @@ private:
 
 	Vector<FuzzySearchResult> search_results;
 	Vector<StringName> base_types;
-	LocalVector<ResourceUID::ID> uids;
+	LocalVector<ResourceUID::ID> ids;
 	AHashMap<ResourceUID::ID, StringName> filetypes;
 	Vector<QuickOpenResultCandidate> candidates;
-	HashSet<ResourceUID::ID> candidates_uids;
+	HashSet<ResourceUID::ID> candidates_ids;
 
 	AHashMap<StringName, Vector<ResourceUID::ID>> selected_history;
+	LocalVector<ResourceUID::ID> visible_history;
 	HashSet<ResourceUID::ID> history_set;
 
 	String query;
@@ -157,11 +158,11 @@ private:
 	static QuickOpenDisplayMode get_adaptive_display_mode(const Vector<StringName> &p_base_types);
 
 	void _ensure_result_vector_capacity();
-	void _sort_uids(int p_max_results);
+	void _sort_ids(int p_max_results);
 	void _create_initial_results();
-	void _find_uids_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
+	void _find_ids_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
 
-	Vector<ResourceUID::ID> *_get_history();
+	void _update_history();
 	void _add_candidate(QuickOpenResultCandidate &p_candidate);
 	void _update_fuzzy_search_results();
 	void _use_default_candidates();
@@ -291,5 +292,5 @@ private:
 	void _finish_dialog_setup(const Vector<StringName> &p_base_types);
 
 	void preview_property();
-	void update_property();
+	void update_property() const;
 };
