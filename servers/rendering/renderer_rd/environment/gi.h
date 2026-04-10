@@ -761,7 +761,7 @@ public:
 		uint32_t blend_ambient; // 4 - 92
 		uint32_t mipmaps; // 4 - 96
 
-		float pad[3]; // 12 - 108
+		float octree_size[3]; // 12 - 108
 		float exposure_normalization; // 4 - 112
 	};
 
