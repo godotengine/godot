@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "effects/motion_blur.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
@@ -61,6 +62,7 @@ class RendererSceneRenderRD : public RendererSceneRender, public RenderingShader
 protected:
 	RendererRD::ForwardIDStorage *forward_id_storage = nullptr;
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
+	RendererRD::MotionBlur *motion_blur = nullptr;
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::DebugEffects *debug_effects = nullptr;
 	RendererRD::Luminance *luminance = nullptr;

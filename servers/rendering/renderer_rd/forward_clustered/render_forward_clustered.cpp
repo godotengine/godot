@@ -1778,10 +1778,13 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	bool using_upscaling = scale_type != SCALE_NONE;
+	bool using_motion_blur = RSG::camera_attributes->camera_attributes_uses_motion_blur(p_render_data->camera_attributes);
 
 	// check if we need motion vectors
 	bool motion_vectors_required;
 	if (using_debug_mvs) {
+		motion_vectors_required = true;
+	} else if (using_motion_blur) {
 		motion_vectors_required = true;
 	} else if (ce_needs_motion_vectors) {
 		motion_vectors_required = true;
@@ -2405,7 +2408,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 
 	if (rb_data.is_valid() && use_msaa) {
-		bool resolve_velocity_buffer = (using_taa || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
+		bool resolve_velocity_buffer = (using_taa || using_motion_blur || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
 			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
