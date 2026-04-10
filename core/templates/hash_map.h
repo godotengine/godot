@@ -317,6 +317,25 @@ public:
 		return nullptr;
 	}
 
+	TValue &get(const TKey &p_key, const TValue &p_default) {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+		if (unlikely(!exists)) {
+			return _insert(p_key, p_default)->data.value;
+		}
+		return elements[pos]->data.value;
+	}
+
+	TValue *getptr(const TKey &p_key, const TValue &p_default) {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (likely(exists)) {
+			return &elements[pos]->data.value;
+		}
+		return &_insert(p_key, p_default)->data.value;
+	}
+
 	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		uint32_t _idx = 0;
 		return _lookup_idx(p_key, _idx);
