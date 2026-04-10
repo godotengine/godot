@@ -282,6 +282,16 @@
 				Set/clear individual bits on the rendering layer mask. This simplifies editing this [Viewport]'s layers.
 			</description>
 		</method>
+		<method name="set_custom_tooltip">
+			<return type="void" />
+			<param index="0" name="custom_tooltip_scene" type="PackedScene" />
+			<description>
+				Sets a custom tooltip scene to be used for any tooltips if no custom tooltip was already set using [method Control._make_custom_tooltip].
+				[b]Note:[/b] The root class of the scene provided must be a [Control] or Control-derived node.
+				Tooltip text will be passed to the custom scene by setting the root node's [member Control.tooltip_text] property directly.
+				Setting this will override the [member ProjectSettings.gui/common/custom_tooltip_scene] property for this [Viewport].
+			</description>
+		</method>
 		<method name="set_input_as_handled">
 			<return type="void" />
 			<description>
