@@ -53,7 +53,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" default="1">
+		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" default="0">
 			Determines which [Area2D] layers affect the sound for reverb and audio bus effects. Areas can be used to redirect [AudioStream]s so that they play in a certain audio bus. An example of how you might use this is making a "water" area so that sounds played in the water are redirected through an audio bus to make them sound like they are being played underwater.
 		</member>
 		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" default="1.0">
