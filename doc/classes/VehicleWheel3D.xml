@@ -75,7 +75,7 @@
 			The stiffness of the suspension, measured in Newtons per millimeter (N/mm), or megagrams per second squared (Mg/s²). Use a value lower than 50 for an off-road car, a value between 50 and 100 for a race car and try something around 200 for something like a Formula 1 car.
 		</member>
 		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" default="0.2">
-			This is the distance the suspension can travel. As Godot units are equivalent to meters, keep this setting relatively low. Try a value between 0.1 and 0.3 depending on the type of car.
+			The distance the suspension can travel. As Godot uses meters, keep this setting relatively low. Try a value between [code]0.1[/code] and [code]0.3[/code] depending on the type of car.
 		</member>
 		<member name="use_as_steering" type="bool" setter="set_use_as_steering" getter="is_used_as_steering" default="false">
 			If [code]true[/code], this wheel will be turned when the car steers. This value is used in conjunction with [member VehicleBody3D.steering] and ignored if you are using the per-wheel [member steering] value instead.
