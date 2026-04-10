@@ -461,8 +461,12 @@ JoltPhysicsDirectSpaceState3D::JoltPhysicsDirectSpaceState3D(JoltSpace3D *p_spac
 		space(p_space) {
 }
 
-bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
-	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_ray must not be called while the physics space is being stepped.");
+int JoltPhysicsDirectSpaceState3D::intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) {
+	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_ray_multiple must not be called while the physics space is being stepped.");
+
+	if (p_result_max == 0) {
+		return 0;
+	}
 
 	space->flush_pending_objects();
 
@@ -479,49 +483,55 @@ bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_paramet
 	settings.mTreatConvexAsSolid = p_parameters.hit_from_inside;
 	settings.mBackFaceModeTriangles = back_face_mode;
 
-	JoltQueryCollectorClosest<JPH::CastRayCollector> collector;
+	JoltQueryCollectorClosestMulti<JPH::CastRayCollector, 32> collector(p_result_max);
 	space->get_narrow_phase_query().CastRay(ray, settings, collector, query_filter, query_filter, query_filter);
 
-	if (!collector.had_hit()) {
-		return false;
-	}
+	const int hit_count = collector.get_hit_count();
 
-	const JPH::RayCastResult &hit = collector.get_hit();
+	for (int i = 0; i < hit_count; ++i) {
+		const JPH::RayCastResult &hit = collector.get_hit(i);
 
-	const JPH::BodyID &body_id = hit.mBodyID;
-	const JPH::SubShapeID &sub_shape_id = hit.mSubShapeID2;
+		const JPH::BodyID &body_id = hit.mBodyID;
+		const JPH::SubShapeID &sub_shape_id = hit.mSubShapeID2;
 
-	const JoltObject3D *object = space->try_get_object(body_id);
-	ERR_FAIL_NULL_V(object, false);
+		const JoltObject3D *object = space->try_get_object(body_id);
+		ERR_FAIL_NULL_V(object, false);
 
-	const JPH::RVec3 position = ray.GetPointOnRay(hit.mFraction);
+		const JPH::RVec3 position = ray.GetPointOnRay(hit.mFraction);
 
-	JPH::Vec3 normal = JPH::Vec3::sZero();
+		JPH::Vec3 normal = JPH::Vec3::sZero();
 
-	if (!p_parameters.hit_from_inside || hit.mFraction > 0.0f) {
-		normal = object->get_jolt_body()->GetWorldSpaceSurfaceNormal(sub_shape_id, position);
+		if (!p_parameters.hit_from_inside || hit.mFraction > 0.0f) {
+			normal = object->get_jolt_body()->GetWorldSpaceSurfaceNormal(sub_shape_id, position);
 
-		// If we got a back-face normal we need to flip it.
-		if (normal.Dot(vector) > 0) {
-			normal = -normal;
+			// If we got a back-face normal we need to flip it.
+			if (normal.Dot(vector) > 0) {
+				normal = -normal;
+			}
+		}
+
+		RayResult &r_result = *r_results++;
+		r_result.position = to_godot(position);
+		r_result.normal = to_godot(normal);
+		r_result.rid = object->get_rid();
+		r_result.collider_id = object->get_instance_id();
+		r_result.collider = object->get_instance();
+		r_result.shape = 0;
+
+		if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
+			const int shape_index = shaped_object->find_shape_index(sub_shape_id);
+			ERR_FAIL_COND_V(shape_index == -1, false);
+			r_result.shape = shape_index;
+			r_result.face_index = _try_get_face_index(*object->get_jolt_body(), sub_shape_id);
 		}
 	}
 
-	r_result.position = to_godot(position);
-	r_result.normal = to_godot(normal);
-	r_result.rid = object->get_rid();
-	r_result.collider_id = object->get_instance_id();
-	r_result.collider = object->get_instance();
-	r_result.shape = 0;
+	return hit_count;
+}
 
-	if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
-		const int shape_index = shaped_object->find_shape_index(sub_shape_id);
-		ERR_FAIL_COND_V(shape_index == -1, false);
-		r_result.shape = shape_index;
-		r_result.face_index = _try_get_face_index(*object->get_jolt_body(), sub_shape_id);
-	}
-
-	return true;
+bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+	int n_hits = intersect_ray_multiple(p_parameters, &r_result, 1);
+	return n_hits > 0;
 }
 
 int JoltPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
