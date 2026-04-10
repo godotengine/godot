@@ -1426,7 +1426,7 @@ void EditorProperty::_update_flags() {
 	}
 
 	if (Node *node = Object::cast_to<Node>(object)) {
-		// Avoid errors down the road by ignoring nodes which are not part of a scene
+		// Avoid errors down the road by ignoring nodes which are not part of a scene.
 		if (!node->get_owner()) {
 			bool is_scene_root = false;
 			for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); ++i) {
@@ -2333,6 +2333,13 @@ void EditorInspectorSection::_notification(int p_what) {
 
 				int available = get_size().width - (margin_start + margin_end);
 
+				// Calculate the area of the pin indicator, if present.
+				const Ref<Texture2D> &pin = theme_cache.icon_gui_pin;
+				int pin_area = 0;
+				if (!pin_hidden && pinned && pin.is_valid()) {
+					pin_area = pin->get_width() + theme_cache.horizontal_separation;
+				}
+
 				// - Count of revertable properties.
 				String num_revertable_str;
 				int num_revertable_width = 0;
@@ -2344,7 +2351,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					// Can we fit the long version of the revertable count text?
 					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
 					num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
-					if (label_width + outer_margin + num_revertable_width > available) {
+					if (label_width + outer_margin + num_revertable_width + pin_area > available) {
 						// We'll have to use the short version.
 						num_revertable_str = vformat("(%d)", revertable_properties.size());
 						num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
@@ -2358,6 +2365,18 @@ void EditorInspectorSection::_notification(int p_what) {
 					draw_string(light_font, text_offset, num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, theme_cache.font_disabled_color, TextServer::JUSTIFICATION_NONE);
 					margin_end += num_revertable_width + outer_margin;
 					available -= num_revertable_width + outer_margin;
+				}
+
+				// - Pin.
+				if (pin_area > 0) {
+					int label_width = theme_cache.bold_font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available - pin_area, theme_cache.bold_font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
+
+					Point2 pin_position;
+					pin_position.x = rtl ? margin_end + (available - label_width) - pin->get_width() - theme_cache.padding_size / 2 : (margin_start + label_width + theme_cache.padding_size / 2);
+					pin_position.y = (header_height - pin->get_height()) / 2;
+					draw_texture(pin, pin_position);
+					margin_end += pin_area;
+					available -= pin_area;
 				}
 
 				// - Label.
@@ -2462,6 +2481,42 @@ EditorInspector *EditorInspectorSection::_get_parent_inspector() const {
 	return nullptr;
 }
 
+void EditorInspectorSection::_update_flags() {
+	can_pin = false;
+	pin_hidden = true;
+
+	if (!checkable) {
+		return;
+	}
+
+	if (Node *node = Object::cast_to<Node>(object)) {
+		// Avoid errors down the road by ignoring nodes which are not part of a scene.
+		if (!node->get_owner()) {
+			bool is_scene_root = false;
+			for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); ++i) {
+				if (EditorNode::get_editor_data().get_edited_scene_root(i) == node) {
+					is_scene_root = true;
+					break;
+				}
+			}
+			if (!is_scene_root) {
+				return;
+			}
+		}
+		if (!_is_value_potential_override(node, related_enable_property)) {
+			return;
+		}
+		pin_hidden = false;
+		{
+			HashSet<StringName> storable_properties;
+			node->get_storable_properties(storable_properties);
+			if (storable_properties.has(node->get_property_store_alias(related_enable_property))) {
+				can_pin = true;
+			}
+		}
+	}
+}
+
 Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const {
 	if (!checkable) {
 		return Container::make_custom_tooltip(p_text);
@@ -2508,6 +2563,7 @@ void EditorInspectorSection::setup(const String &p_inspector_path, const String 
 	level = p_level;
 
 	_test_unfold();
+	_update_flags();
 
 	if (foldable) {
 		if (object->editor_is_section_unfolded(section)) {
@@ -2602,7 +2658,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
-	} else if ((!checkable || checked) && !inspector_path.is_empty() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+	} else if (!inspector_path.is_empty() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
@@ -2698,6 +2754,7 @@ void EditorInspectorSection::set_checkable(const String &p_related_check_propert
 		vbox->hide();
 	}
 
+	_update_flags();
 	queue_redraw();
 }
 
@@ -2747,10 +2804,18 @@ void EditorInspectorSection::update_property() {
 	Variant value_checked = object->get(related_enable_property, &valid);
 
 	if (valid) {
-		set_checked(value_checked.operator bool());
+		bool new_pinned = false;
+		if (can_pin) {
+			Node *node = Object::cast_to<Node>(object);
+			CRASH_COND(!node);
+			new_pinned = node->is_property_pinned(related_enable_property);
+		}
 
+		set_checked(value_checked.operator bool());
 		bool new_can_revert = EditorPropertyRevert::can_property_revert(object, related_enable_property, &value_checked);
-		if (new_can_revert != can_revert) {
+
+		if (new_can_revert != can_revert || new_pinned != pinned) {
+			pinned = new_pinned;
 			can_revert = new_can_revert;
 			queue_redraw();
 		}
@@ -2758,18 +2823,33 @@ void EditorInspectorSection::update_property() {
 }
 
 void EditorInspectorSection::_update_popup() {
-	if (!menu) {
+	if (menu) {
+		menu->clear();
+	} else {
 		menu = memnew(PopupMenu);
 		add_child(menu);
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorSection::menu_option));
-
-		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_VALUE);
-		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
 	}
+
+	menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_VALUE);
+	menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
 	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
+
+	if (!pin_hidden) {
+		menu->add_separator();
+
+		if (can_pin) {
+			menu->add_icon_check_item(theme_cache.icon_gui_pin, TTR("Pin Value"), MENU_PIN_VALUE);
+			menu->set_item_checked(menu->get_item_index(MENU_PIN_VALUE), pinned);
+		} else {
+			menu->add_icon_check_item(theme_cache.icon_gui_pin, vformat(TTR("Pin Value [Disabled because '%s' is editor-only]"), related_enable_property), MENU_PIN_VALUE);
+			menu->set_item_disabled(menu->get_item_index(MENU_PIN_VALUE), true);
+		}
+		menu->set_item_tooltip(menu->get_item_index(MENU_PIN_VALUE), TTR("Pinning a value forces it to be saved even if it's equal to the default."));
+	}
 }
 
-void EditorInspectorSection::menu_option(int p_option) const {
+void EditorInspectorSection::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
 			Dictionary clipboard;
@@ -2799,6 +2879,11 @@ void EditorInspectorSection::menu_option(int p_option) const {
 			}
 			ur->commit_action();
 		} break;
+
+		case MENU_PIN_VALUE: {
+			emit_signal(SNAME("property_pinned"), related_enable_property, !pinned);
+			queue_redraw();
+		} break;
 	}
 }
 
@@ -2809,6 +2894,7 @@ void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
 
 	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
+	ADD_SIGNAL(MethodInfo("property_pinned", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "pinned")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING_NAME, "property")));
 }
 
@@ -3852,6 +3938,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.arrow = p_control->get_theme_icon(SNAME("arrow"), SNAME("Tree"));
 	p_cache.arrow_collapsed = p_control->get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
 	p_cache.arrow_collapsed_mirrored = p_control->get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
+	p_cache.icon_gui_pin = p_control->get_editor_theme_icon(SNAME("Pin"));
 	p_cache.icon_gui_revert = p_control->get_editor_theme_icon(SNAME("ReloadSmall"));
 	p_cache.icon_gui_checked = p_control->get_editor_theme_icon(SNAME("GuiChecked"));
 	p_cache.icon_gui_unchecked = p_control->get_editor_theme_icon(SNAME("GuiUnchecked"));
@@ -4590,6 +4677,7 @@ void EditorInspector::update_tree() {
 				section->set_tooltip_text(tooltip);
 
 				section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+				section->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 				section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 
 				// Add editors at the start of a group.
@@ -5031,6 +5119,7 @@ void EditorInspector::update_tree() {
 						}
 
 						section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+						section->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 						section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 						sections.push_back(section);
 					}
@@ -5070,6 +5159,7 @@ void EditorInspector::update_tree() {
 							}
 
 							section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+							section->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 							section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 							sections.push_back(section);
 						}
