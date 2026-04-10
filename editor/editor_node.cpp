@@ -82,6 +82,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_caption_buttons.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_title_bar.h"
@@ -1635,6 +1636,7 @@ void EditorNode::_viewport_resized() {
 	if (w) {
 		was_window_windowed_last = w->get_mode() == Window::MODE_WINDOWED;
 	}
+	_titlebar_resized();
 }
 
 void EditorNode::_titlebar_resized() {
@@ -1645,12 +1647,50 @@ void EditorNode::_titlebar_resized() {
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (right_menu_spacer) {
-		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
-		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		if (window_buttons) {
+			right_menu_spacer->set_custom_minimum_size(Size2());
+		} else {
+			int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
+			right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		}
 	}
 	if (title_bar) {
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
+	if (window_buttons && title_bar) {
+		window_buttons->update_for_window(get_window());
+		const Size2 buttons_size = window_buttons->get_expected_size();
+		const Rect2 global_rect = title_bar->get_global_rect();
+		window_buttons->set_global_position(global_rect.position + Vector2(global_rect.size.x - buttons_size.x, 0));
+		window_buttons->set_size(Size2(buttons_size.x, global_rect.size.y));
+		title_bar->set_window_buttons_width((int)Math::ceil(buttons_size.x));
+	} else if (title_bar) {
+		title_bar->set_window_buttons_width(0);
+	}
+}
+
+void EditorNode::_titlebar_minimize_requested() {
+	Window *window = get_window();
+	if (window) {
+		window->set_mode(Window::MODE_MINIMIZED);
+	}
+}
+
+void EditorNode::_titlebar_toggle_maximize_requested() {
+	Window *window = get_window();
+	if (!window) {
+		return;
+	}
+
+	if (window->get_mode() == Window::MODE_MAXIMIZED) {
+		window->set_mode(Window::MODE_WINDOWED);
+	} else {
+		window->set_mode(Window::MODE_MAXIMIZED);
+	}
+}
+
+void EditorNode::_titlebar_close_requested() {
+	callable_mp(this, &EditorNode::trigger_menu_option).call_deferred((int)EditorNode::SCENE_QUIT, false);
 }
 
 void EditorNode::_update_undo_redo_allowed() {
@@ -9025,6 +9065,10 @@ EditorNode::EditorNode() {
 	editor_main_screen->set_button_container(main_editor_button_hb);
 	title_bar->add_child(main_editor_button_hb);
 	title_bar->set_center_control(main_editor_button_hb);
+	title_bar->connect("minimize_requested", callable_mp(this, &EditorNode::_titlebar_minimize_requested));
+	title_bar->connect("toggle_maximize_requested", callable_mp(this, &EditorNode::_titlebar_toggle_maximize_requested));
+	title_bar->connect("close_requested", callable_mp(this, &EditorNode::_titlebar_close_requested));
+	title_bar->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_titlebar_resized));
 
 	// Spacer to center 2D / 3D / Script buttons.
 	right_spacer = memnew(Control);
@@ -9058,8 +9102,23 @@ EditorNode::EditorNode() {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 		right_menu_spacer = memnew(Control);
 		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		right_menu_spacer->set_h_size_flags(Control::SIZE_SHRINK_END);
 		title_bar->add_child(right_menu_spacer);
+		title_bar->set_window_buttons_spacer(right_menu_spacer);
 	}
+
+#ifdef WINDOWS_ENABLED
+	if (can_expand && !window_buttons) {
+		window_buttons = memnew(EditorCaptionButtons);
+		window_buttons->connect("minimize_requested", callable_mp(this, &EditorNode::_titlebar_minimize_requested));
+		window_buttons->connect("toggle_maximize_requested", callable_mp(this, &EditorNode::_titlebar_toggle_maximize_requested));
+		window_buttons->connect("close_requested", callable_mp(this, &EditorNode::_titlebar_close_requested));
+		window_buttons->set_as_top_level(true);
+		gui_base->add_child(window_buttons);
+		gui_base->move_child(window_buttons, 1);
+		callable_mp(this, &EditorNode::_titlebar_resized).call_deferred();
+	}
+#endif
 
 	const String current_renderer_ps = String(GLOBAL_GET("rendering/renderer/rendering_method")).to_lower();
 	const String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();

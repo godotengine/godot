@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_title_bar.h                                                    */
+/*  editor_caption_buttons.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,34 +31,28 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
+#include "scene/main/window.h"
 
-class EditorTitleBar : public HBoxContainer {
-	GDCLASS(EditorTitleBar, HBoxContainer);
+class Button;
 
-	Point2i click_pos;
-	bool moving = false;
-	bool can_move = false;
-	Control *center_control = nullptr;
-	Control *window_buttons_spacer = nullptr;
-	int window_buttons_width = 0;
+class EditorCaptionButtons : public HBoxContainer {
+	GDCLASS(EditorCaptionButtons, HBoxContainer);
 
-	int _get_buttons_spacer_width() const;
+	Button *minimize_button = nullptr;
+	Button *maximize_button = nullptr;
+
 	void _minimize_pressed();
-	void _maximize_pressed();
+	void _toggle_maximize_pressed();
 	void _close_pressed();
 
 protected:
+	virtual Size2 get_minimum_size() const override;
 	void _notification(int p_what);
-
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
-	void set_center_control(Control *p_center_control);
-	Control *get_center_control() const;
-	void set_window_buttons_spacer(Control *p_spacer);
-	void set_window_buttons_width(int p_width);
+	void update_for_window(Window *p_window);
+	Size2 get_expected_size() const;
 
-	void set_can_move_window(bool p_enabled);
-	bool get_can_move_window() const;
+	EditorCaptionButtons();
 };
