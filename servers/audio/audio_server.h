@@ -295,6 +295,8 @@ private:
 		SafeNumeric<float> pitch_scale;
 		SafeNumeric<float> highshelf_gain;
 		SafeNumeric<float> attenuation_filter_cutoff_hz; // This isn't used unless highshelf_gain is nonzero.
+		SafeNumeric<double> delay;
+		SafeNumeric<double> stop_position;
 		AudioFilterSW::Processor filter_process[8];
 		// Updating this ref after the list node is created breaks consistency guarantees, don't do it!
 		Ref<AudioStreamPlayback> stream_playback;
@@ -431,9 +433,9 @@ public:
 	float get_playback_speed_scale() const;
 
 	// Convenience method.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, double p_from_pos = 0, float p_pitch_scale = 1, double p_delay = 0);
 	// Expose all parameters.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, double p_from_pos = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0, double p_delay = 0);
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
 
 	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes);
@@ -443,9 +445,16 @@ public:
 	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused);
 	void set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playback, float p_gain, float p_attenuation_cutoff_hz);
 
+	void set_playback_delay(Ref<AudioStreamPlayback> p_playback, double p_delay);
+	double get_playback_delay(Ref<AudioStreamPlayback> p_playback);
+
+	void set_playback_stop_position(Ref<AudioStreamPlayback> p_playback, double p_stop_position);
+	double get_playback_stop_position(Ref<AudioStreamPlayback> p_playback);
+
 	bool is_playback_active(Ref<AudioStreamPlayback> p_playback);
-	float get_playback_position(Ref<AudioStreamPlayback> p_playback);
+	double get_playback_position(Ref<AudioStreamPlayback> p_playback);
 	bool is_playback_paused(Ref<AudioStreamPlayback> p_playback);
+	bool is_playback_scheduled(Ref<AudioStreamPlayback> p_playback);
 
 	uint64_t get_mix_count() const;
 	uint64_t get_mixed_frames() const;
