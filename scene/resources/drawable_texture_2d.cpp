@@ -76,6 +76,7 @@ void DrawableTexture2D::set_width(int p_width) {
 		return;
 	}
 	width = p_width;
+	_initialize();
 	notify_property_list_changed();
 	emit_changed();
 }
@@ -90,6 +91,7 @@ void DrawableTexture2D::set_height(int p_height) {
 		return;
 	}
 	height = p_height;
+	_initialize();
 	notify_property_list_changed();
 	emit_changed();
 }
