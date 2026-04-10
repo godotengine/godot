@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "../../openxr_structure.h"
+
 #include "scene/resources/mesh.h"
 #include "servers/xr/xr_positional_tracker.h"
 
@@ -46,6 +48,7 @@ protected:
 
 public:
 	virtual bool has_valid_configuration() const;
+	uint64_t _get_configurationgd();
 	virtual XrSpatialCapabilityConfigurationBaseHeaderEXT *get_configuration();
 
 	GDVIRTUAL0RC(bool, _has_valid_configuration);
@@ -66,18 +69,27 @@ public:
 	OpenXRSpatialEntityTracker();
 	virtual ~OpenXRSpatialEntityTracker();
 
+	void set_spatial_context(const RID &p_spatial_context);
+	RID get_spatial_context() const;
+
 	void set_entity(const RID &p_entity);
 	RID get_entity() const;
 
 	void set_spatial_tracking_state(const XrSpatialEntityTrackingStateEXT p_state);
 	XrSpatialEntityTrackingStateEXT get_spatial_tracking_state() const;
 
+	void add_next(Ref<OpenXRStructureBase> p_next);
+	void remove_next(Ref<OpenXRStructureBase> p_next);
+	Ref<OpenXRStructureBase> get_next() const;
+
 protected:
 	static void _bind_methods();
 
 private:
+	RID spatial_context;
 	RID spatial_entity;
 	XrSpatialEntityTrackingStateEXT spatial_tracking_state = XR_SPATIAL_ENTITY_TRACKING_STATE_PAUSED_EXT;
+	Ref<OpenXRStructureBase> next;
 
 	void _set_spatial_tracking_state(const EntityTrackingState p_state);
 	EntityTrackingState _get_spatial_tracking_state() const;
@@ -94,12 +106,16 @@ protected:
 
 public:
 	virtual void set_capacity(uint32_t p_capacity);
+	int64_t _get_component_typegd() const;
 	virtual XrSpatialComponentTypeEXT get_component_type() const;
 	virtual void *get_structure_data(void *p_next);
 
 	GDVIRTUAL1(_set_capacity, uint32_t);
 	GDVIRTUAL0RC(uint64_t, _get_component_type);
-	GDVIRTUAL1RC(uint64_t, _get_structure_data, uint64_t);
+	GDVIRTUAL1R(uint64_t, _get_structure_data, uint64_t);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL1RC_COMPAT(_get_structure_data_bind_compat_118128, uint64_t, _get_structure_data, uint64_t);
+#endif
 };
 
 class OpenXRSpatialComponentBounded2DList : public OpenXRSpatialComponentData {
