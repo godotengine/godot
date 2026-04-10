@@ -433,6 +433,18 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 		Array array;
 		array.resize(Mesh::ARRAY_MAX);
+
+		// Move the faces a little to eliminate z fighting
+		for (int i = 0; i < faces.size(); i += 3) {
+			Vector3 a = faces[i + 0];
+			Vector3 b = faces[i + 1];
+			Vector3 c = faces[i + 2];
+			Vector3 n = (b - a).cross(c - a).normalized() * 0.0001f;
+			faces.write[i + 0] = a + n;
+			faces.write[i + 1] = b + n;
+			faces.write[i + 2] = c + n;
+		}
+
 		array[Mesh::ARRAY_VERTEX] = faces;
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
 
