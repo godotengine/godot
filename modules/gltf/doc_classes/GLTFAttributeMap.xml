@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFAttributeMap" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Controls how glTF attributes are mapped on import.
+	</brief_description>
+	<description>
+		Controls how glTF attributes are mapped to the resulting [Mesh]. Used by [method GLTFDocumentExtension._import_get_attribute_map].
+		Multiplexing is supported with [code]CUSTOM*[/code] attributes. Setting [code]custom*[/code] and [code]custom*_mux[/code] will combine them into the one array.
+		A pair of [code]custom*[/code] and [code]custom*_mux[/code] attributes must total no larger than [code]vec4[/code]. For instance, you can set [member custom0] to a scalar and [member custom0_mux] to a [code]vec3[/code], but you cannot set [member custom0] to a [code]vec2[/code] and [member custom0_mux] to a [code]vec3[/code] (as this would require 5 values).
+		If the [code]custom*_mux[/code] attribute that is requested is missing, it will act like only the first was set.
+		[b]Note:[/b] It may be necessary to disable [code]generate_lods[/code] in the mesh import settings to preserve custom data.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="color" type="String" setter="set_color" getter="get_color" default="&quot;COLOR_0&quot;">
+			Targets [constant Mesh.ARRAY_COLOR]. Supported attributes: vec3, vec4.
+		</member>
+		<member name="custom0" type="String" setter="set_custom0" getter="get_custom0" default="&quot;TEXCOORD_2&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM0]. Supported attributes: float, vec2, vec3, vec4.
+		</member>
+		<member name="custom0_mux" type="String" setter="set_custom0_mux" getter="get_custom0_mux" default="&quot;TEXCOORD_3&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM0]. Supported attributes: float, vec2, vec3.
+		</member>
+		<member name="custom1" type="String" setter="set_custom1" getter="get_custom1" default="&quot;TEXCOORD_4&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM1]. Supported attributes: float, vec2, vec3, vec4.
+		</member>
+		<member name="custom1_mux" type="String" setter="set_custom1_mux" getter="get_custom1_mux" default="&quot;TEXCOORD_5&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM1]. Supported attributes: float, vec2, vec3.
+		</member>
+		<member name="custom2" type="String" setter="set_custom2" getter="get_custom2" default="&quot;TEXCOORD_6&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM2]. Supported attributes: float, vec2, vec3, vec4.
+		</member>
+		<member name="custom2_mux" type="String" setter="set_custom2_mux" getter="get_custom2_mux" default="&quot;TEXCOORD_7&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM2]. Supported attributes: float, vec2, vec3.
+		</member>
+		<member name="custom3" type="String" setter="set_custom3" getter="get_custom3" default="&quot;&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM3]. Supported attributes: float, vec2, vec3, vec4.
+		</member>
+		<member name="custom3_mux" type="String" setter="set_custom3_mux" getter="get_custom3_mux" default="&quot;&quot;">
+			Targets [constant Mesh.ARRAY_CUSTOM3]. Supported attributes: float, vec2, vec3.
+		</member>
+		<member name="uv" type="String" setter="set_uv" getter="get_uv" default="&quot;TEXCOORD_0&quot;">
+			Targets [constant Mesh.ARRAY_TEX_UV]. Supported attributes: vec2.
+			[b]Note:[/b] The importer may use ARRAY_TEX_UV to generate tangents.
+		</member>
+		<member name="uv2" type="String" setter="set_uv2" getter="get_uv2" default="&quot;TEXCOORD_1&quot;">
+			Targets [constant Mesh.ARRAY_TEX_UV2]. Supported attributes: vec2.
+		</member>
+	</members>
+</class>
