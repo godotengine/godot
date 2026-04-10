@@ -49,7 +49,7 @@ def get_opts():
         EnumVariable("linker", "Linker program", "default", ["default", "bfd", "gold", "lld", "mold"], ignorecase=2),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
-        BoolVariable("use_coverage", "Test Godot coverage", False),
+        EnumVariable("use_coverage", "Test Godot coverage", "no", ["no", "gcov", "source"], ignorecase=2),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
@@ -160,9 +160,15 @@ def configure(env: "SConsEnvironment"):
         else:
             env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
 
-    if env["use_coverage"]:
+    if env["use_coverage"] == "gcov":
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
+    elif env["use_coverage"] == "source":
+        if not env["use_llvm"]:
+            print_error("Source based coverage requires using clang.")
+            raise
+        env.Append(CCFLAGS=["-fprofile-instr-generate", "-fcoverage-mapping"])
+        env.Append(LINKFLAGS=["-fprofile-instr-generate"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
