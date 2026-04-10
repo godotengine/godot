@@ -34,6 +34,7 @@
 #include "editor/translations/editor_locale_dialog.h"
 
 class Button;
+class EditorIconButton;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
 class MarginContainer;
@@ -117,7 +118,7 @@ class EditorPropertyArray : public EditorProperty {
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
-	Button *edit = nullptr;
+	EditorIconButton *edit = nullptr;
 	PanelContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	EditorSpinSlider *size_slider = nullptr;
@@ -236,7 +237,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;
-	Button *edit = nullptr;
+	EditorIconButton *edit = nullptr;
 	PanelContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	PanelContainer *add_panel = nullptr;
