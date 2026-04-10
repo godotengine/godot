@@ -105,8 +105,37 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 	Size2 s = t->get_size();
 
 	Point2 ofs = offset;
-	if (centered) {
-		ofs -= s / 2;
+	switch (origin) {
+		case OFFSET_ORIGIN_TOP_LEFT:
+			break;
+		case OFFSET_ORIGIN_TOP_CENTER:
+			ofs.x -= s.x / 2;
+			break;
+		case OFFSET_ORIGIN_TOP_RIGHT:
+			ofs.x -= s.x;
+			break;
+		case OFFSET_ORIGIN_CENTER_LEFT:
+			ofs.y -= s.y / 2;
+			break;
+		case OFFSET_ORIGIN_CENTER:
+			ofs -= s / 2;
+			break;
+		case OFFSET_ORIGIN_CENTER_RIGHT:
+			ofs.y -= s.y / 2;
+			ofs.x -= s.x;
+			break;
+		case OFFSET_ORIGIN_BOTTOM_LEFT:
+			ofs.y -= s.y;
+			break;
+		case OFFSET_ORIGIN_BOTTOM_CENTER:
+			ofs.y -= s.y;
+			ofs.x -= s.x / 2;
+			break;
+		case OFFSET_ORIGIN_BOTTOM_RIGHT:
+			ofs -= s;
+			break;
+		default:
+			break;
 	}
 
 	if (s == Size2(0, 0)) {
@@ -300,8 +329,37 @@ void AnimatedSprite2D::_notification(int p_what) {
 
 			Size2 s = texture->get_size();
 			Point2 ofs = offset;
-			if (centered) {
-				ofs -= s / 2;
+			switch (origin) {
+				case OFFSET_ORIGIN_TOP_LEFT:
+					break;
+				case OFFSET_ORIGIN_TOP_CENTER:
+					ofs.x -= s.x / 2;
+					break;
+				case OFFSET_ORIGIN_TOP_RIGHT:
+					ofs.x -= s.x;
+					break;
+				case OFFSET_ORIGIN_CENTER_LEFT:
+					ofs.y -= s.y / 2;
+					break;
+				case OFFSET_ORIGIN_CENTER:
+					ofs -= s / 2;
+					break;
+				case OFFSET_ORIGIN_CENTER_RIGHT:
+					ofs.y -= s.y / 2;
+					ofs.x -= s.x;
+					break;
+				case OFFSET_ORIGIN_BOTTOM_LEFT:
+					ofs.y -= s.y;
+					break;
+				case OFFSET_ORIGIN_BOTTOM_CENTER:
+					ofs.y -= s.y;
+					ofs.x -= s.x / 2;
+					break;
+				case OFFSET_ORIGIN_BOTTOM_RIGHT:
+					ofs -= s;
+					break;
+				default:
+					break;
 			}
 
 			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
@@ -418,18 +476,18 @@ float AnimatedSprite2D::get_playing_speed() const {
 	return speed_scale * custom_speed_scale;
 }
 
-void AnimatedSprite2D::set_centered(bool p_center) {
-	if (centered == p_center) {
+void AnimatedSprite2D::set_offset_origin(AnimatedSprite2D::OffsetOrigin p_offset_origin) {
+	if (origin == p_offset_origin) {
 		return;
 	}
 
-	centered = p_center;
+	origin = p_offset_origin;
 	queue_redraw();
 	item_rect_changed();
 }
 
-bool AnimatedSprite2D::is_centered() const {
-	return centered;
+AnimatedSprite2D::OffsetOrigin AnimatedSprite2D::get_offset_origin() const {
+	return origin;
 }
 
 void AnimatedSprite2D::set_offset(const Point2 &p_offset) {
@@ -658,8 +716,8 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite2D::pause);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
 
-	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
-	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite2D::is_centered);
+	ClassDB::bind_method(D_METHOD("set_offset_origin", "center"), &AnimatedSprite2D::set_offset_origin);
+	ClassDB::bind_method(D_METHOD("get_offset_origin"), &AnimatedSprite2D::get_offset_origin);
 
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &AnimatedSprite2D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &AnimatedSprite2D::get_offset);
@@ -695,10 +753,20 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_progress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_frame_progress", "get_frame_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_GROUP("Offset", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "offset_origin", PROPERTY_HINT_ENUM, "TopLeft,TopCenter,TopRight,CenterLeft,Center,CenterRight,BottomLeft,BottomCenter,BottomRight"), "set_offset_origin", "get_offset_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_TOP_LEFT);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_TOP_CENTER);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_TOP_RIGHT);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_CENTER_LEFT);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_CENTER);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_CENTER_RIGHT);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_BOTTOM_LEFT);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_BOTTOM_CENTER);
+	BIND_ENUM_CONSTANT(OFFSET_ORIGIN_BOTTOM_RIGHT);
 }
 
 AnimatedSprite2D::AnimatedSprite2D() {

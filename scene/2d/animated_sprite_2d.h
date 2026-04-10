@@ -36,6 +36,20 @@
 class AnimatedSprite2D : public Node2D {
 	GDCLASS(AnimatedSprite2D, Node2D);
 
+public:
+	enum OffsetOrigin {
+		OFFSET_ORIGIN_TOP_LEFT,
+		OFFSET_ORIGIN_TOP_CENTER,
+		OFFSET_ORIGIN_TOP_RIGHT,
+		OFFSET_ORIGIN_CENTER_LEFT,
+		OFFSET_ORIGIN_CENTER,
+		OFFSET_ORIGIN_CENTER_RIGHT,
+		OFFSET_ORIGIN_BOTTOM_LEFT,
+		OFFSET_ORIGIN_BOTTOM_CENTER,
+		OFFSET_ORIGIN_BOTTOM_RIGHT,
+	};
+	
+private:
 	Ref<SpriteFrames> frames;
 	String autoplay;
 
@@ -45,7 +59,7 @@ class AnimatedSprite2D : public Node2D {
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;
 
-	bool centered = true;
+	OffsetOrigin origin = OFFSET_ORIGIN_CENTER;
 	Point2 offset;
 
 	real_t frame_speed_scale = 1.0;
@@ -115,8 +129,8 @@ public:
 	float get_speed_scale() const;
 	float get_playing_speed() const;
 
-	void set_centered(bool p_center);
-	bool is_centered() const;
+	void set_offset_origin(AnimatedSprite2D::OffsetOrigin p_offset_origin);
+	AnimatedSprite2D::OffsetOrigin get_offset_origin() const;
 
 	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
@@ -135,3 +149,5 @@ public:
 
 	AnimatedSprite2D();
 };
+
+VARIANT_ENUM_CAST(AnimatedSprite2D::OffsetOrigin)
