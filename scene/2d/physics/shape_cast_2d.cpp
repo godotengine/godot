@@ -137,10 +137,19 @@ real_t ShapeCast2D::get_closest_collision_unsafe_fraction() const {
 }
 
 void ShapeCast2D::set_enabled(bool p_enabled) {
+	if (enabled == p_enabled) {
+		return;
+	}
 	enabled = p_enabled;
-	queue_redraw();
-	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
-		set_physics_process_internal(p_enabled);
+
+	if (is_inside_tree()) {
+		if (get_tree()->is_debugging_collisions_hint()) {
+			queue_redraw();
+		}
+
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			set_physics_process_internal(p_enabled);
+		}
 	}
 	if (!p_enabled) {
 		collided = false;
