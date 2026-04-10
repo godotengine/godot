@@ -2201,6 +2201,15 @@ void GDScriptLanguage::finish() {
 	}
 	finishing = true;
 
+	// Destruct and detach instances that still exist.
+	// Other systems might try to call/destruct them which will crash if `GDScriptLanguage` is not around anymore.
+	for (const SelfList<GDScript> *E = script_list.first(); E != nullptr; E = E->next()) {
+		const Ref<GDScript> script = E->self();
+		while (!script->instances.is_empty()) {
+			(*script->instances.begin())->set_script(Variant());
+		}
+	}
+
 	// Clear the cache before parsing the script_list
 	GDScriptCache::clear();
 
