@@ -54,11 +54,13 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
+#include "editor/inspector/editor_resource_preview.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/texture_rect.h"
 #include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -4211,6 +4213,13 @@ void EditorHelpBit::_update_labels() {
 			content->add_text(nbsp + TTR("Open in File Manager"));
 			content->pop(); // meta
 		}
+
+		if (!help_data.doc_type.type.is_empty() && _handles_type(help_data.doc_type.type)) {
+			preview_texture_rect->show();
+			EditorResourcePreview::get_singleton()->queue_resource_preview(help_data.resource_path, callable_mp(this, &EditorHelpBit::_thumbnail_ready).bind(preview_texture_rect->get_instance_id()));
+		} else {
+			preview_texture_rect->hide();
+		}
 	}
 
 	if (is_inside_tree()) {
@@ -4361,6 +4370,18 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 		DisplayServer::get_singleton()->clipboard_set(p_select.substr(1));
 		EditorToaster::get_singleton()->popup_str(TTR("Code snippet copied to clipboard."), EditorToaster::SEVERITY_INFO);
 	}
+}
+
+void EditorHelpBit::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_trect_id) {
+	TextureRect *tr = ObjectDB::get_instance<TextureRect>(p_trect_id);
+	if (tr) {
+		tr->set_texture(p_preview);
+		update_content_height();
+	}
+}
+
+bool EditorHelpBit::_handles_type(const String &p_resource_type) {
+	return ClassDB::is_parent_class(p_resource_type, "Texture2D") || ClassDB::is_parent_class(p_resource_type, "Image");
 }
 
 void EditorHelpBit::_bind_methods() {
@@ -4849,6 +4870,15 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 	content_min_height = 48 * EDSCALE;
 	content_max_height = 360 * EDSCALE;
 
+	preview_container = memnew(HBoxContainer);
+	add_child(preview_container);
+
+	preview_texture_rect = memnew(TextureRect);
+	preview_texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	preview_texture_rect->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	preview_texture_rect->hide();
+	preview_container->add_child(preview_texture_rect);
+
 	content = memnew(RichTextLabel);
 	content->set_theme_type_variation(p_in_tooltip ? "EditorHelpBitTooltipContent" : "EditorHelpBitContent");
 	content->set_autowrap_trim_flags(TextServer::BREAK_TRIM_END_EDGE_SPACES);
@@ -4858,7 +4888,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 	content->set_context_menu_enabled(p_allow_selection);
 	content->set_selection_modifier(callable_mp_static(_fix_selection));
 	content->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
-	add_child(content);
+	preview_container->add_child(content);
 
 	use_class_prefix = p_use_class_prefix;
 

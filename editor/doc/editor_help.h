@@ -39,6 +39,8 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
+class TextureRect;
+
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
 
@@ -315,6 +317,8 @@ class EditorHelpBit : public VBoxContainer {
 
 	RichTextLabel *title = nullptr;
 	RichTextLabel *content = nullptr;
+	TextureRect *preview_texture_rect = nullptr;
+	HBoxContainer *preview_container = nullptr;
 
 	bool use_class_prefix = false;
 
@@ -343,6 +347,8 @@ class EditorHelpBit : public VBoxContainer {
 	void _go_to_help(const String &p_what);
 	void _go_to_url(const String &p_what);
 	void _meta_clicked(const String &p_select);
+	void _thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_trect_id);
+	static bool _handles_type(const String &p_resource_type);
 
 protected:
 	static void _bind_methods();
