@@ -206,20 +206,41 @@ def get_git_info():
         else:
             git_hash = head
 
-    # Get the UNIX timestamp of the build commit.
+    # UNIX timestamp of the build commit.
     git_timestamp = 0
+    git_dirty = False
+    git_current_branch = ""
     if os.path.exists(".git"):
         try:
             git_timestamp = subprocess.check_output(
-                ["git", "log", "-1", "--pretty=format:%ct", "--no-show-signature", git_hash], encoding="utf-8"
+                ["git", "log", "-1", "--pretty=format:%ct", "--no-show-signature", git_hash],
+                encoding="utf-8",
             )
-        except (subprocess.CalledProcessError, OSError):
-            # `git` not found in PATH.
+
+            changed_files = subprocess.check_output(
+                ["git", "status", "--porcelain"],
+                encoding="utf-8",
+            )
+            git_dirty = len(changed_files) > 0
+
+            git_current_branch = subprocess.check_output(
+                ["git", "branch", "--show-current"],
+                encoding="utf-8",
+            ).strip()
+            if len(git_current_branch) == 0:
+                git_current_branch = "<detached HEAD>"
+        except subprocess.CalledProcessError:
+            # `git` returned an error.
+            raise
+        except (FileNotFoundError, OSError):
+            # `git` not found in PATH, we can rely on default values.
             pass
 
     return {
         "git_hash": git_hash,
         "git_timestamp": git_timestamp,
+        "git_dirty": "true" if git_dirty else "false",
+        "git_current_branch": git_current_branch,
     }
 
 

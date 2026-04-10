@@ -31,14 +31,52 @@
 #include "editor_version_button.h"
 
 #include "core/os/time.h"
+#include "core/string/string_builder.h"
 #include "core/version.h"
 #include "servers/display/display_server.h"
 
 String _get_version_string(EditorVersionButton::VersionFormat p_format) {
 	String main;
+	String hash = GODOT_VERSION_HASH;
+	String branch = GODOT_VERSION_GIT_BRANCH;
+	const int BRANCH_MAX_LENGTH = 20;
+	StringBuilder git_data;
+
+	if (!hash.is_empty() || !branch.is_empty() || GODOT_VERSION_GIT_DIRTY) {
+		git_data.append(" ");
+
+		if (p_format == EditorVersionButton::FORMAT_WITH_BUILD || p_format == EditorVersionButton::FORMAT_WITH_NAME_AND_BUILD) {
+			if (!hash.is_empty()) {
+				git_data.append(hash.left(9));
+			}
+		} else if (!hash.is_empty()) {
+			hash = "";
+		}
+
+		if (!branch.is_empty() && branch == "master") {
+			branch = "";
+		}
+
+		if (!branch.is_empty()) {
+			// The KoBeWi clause.
+			if (branch.length() > BRANCH_MAX_LENGTH) {
+				branch = vformat("%s…", branch.substr(0, BRANCH_MAX_LENGTH));
+			}
+
+			git_data.append(vformat("@%s", branch));
+		}
+
+		if (GODOT_VERSION_GIT_DIRTY) {
+			if (!hash.is_empty() || !branch.is_empty()) {
+				git_data.append(" ");
+			}
+			git_data.append("(dirty)");
+		}
+	}
+
 	switch (p_format) {
 		case EditorVersionButton::FORMAT_BASIC: {
-			return GODOT_VERSION_FULL_CONFIG;
+			return GODOT_VERSION_FULL_CONFIG + git_data.as_string();
 		} break;
 		case EditorVersionButton::FORMAT_WITH_BUILD: {
 			main = "v" GODOT_VERSION_FULL_BUILD;
@@ -51,11 +89,7 @@ String _get_version_string(EditorVersionButton::VersionFormat p_format) {
 		} break;
 	}
 
-	String hash = GODOT_VERSION_HASH;
-	if (!hash.is_empty()) {
-		hash = vformat(" [%s]", hash.left(9));
-	}
-	return main + hash;
+	return main + git_data.as_string();
 }
 
 void EditorVersionButton::_notification(int p_what) {
