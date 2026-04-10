@@ -33,7 +33,7 @@
 #include "../gltf_document_extension.h"
 
 class GLTFDocumentExtensionPhysics : public GLTFDocumentExtension {
-	GDCLASS(GLTFDocumentExtensionPhysics, GLTFDocumentExtension);
+	GDSOFTCLASS(GLTFDocumentExtensionPhysics, GLTFDocumentExtension);
 
 public:
 	// Import process.
