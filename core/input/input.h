@@ -458,6 +458,7 @@ public:
 	void joy_hat(int p_device, BitField<HatMask> p_val);
 	void joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope);
 
+	Dictionary get_mapped_joy_events(int p_device);
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);
 
