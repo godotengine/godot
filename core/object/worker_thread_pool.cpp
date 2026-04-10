@@ -431,8 +431,17 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 		// Taking into account there's no feasible solution for every possible case
 		// with the current design, we just simply reject attempts to await on older tasks,
 		// with a specific error code that signals the situation so the caller can handle it.
-		task_mutex.unlock();
-		return ERR_BUSY;
+		//
+		// However, if the awaited task is already actively running on a *different*
+		// pool thread, it will complete on its own and we can safely wait for it
+		// collaboratively. Only return ERR_BUSY when the task is not yet running
+		// (potential deadlock: it may need our thread) or is running on our own
+		// thread (would wait forever since we are in the call stack above it).
+		if (task->pool_thread_index < 0 || task->pool_thread_index == (int)caller_pool_thread->index) {
+			task_mutex.unlock();
+			return ERR_BUSY;
+		}
+		// Task is actively running on another pool thread — fall through to collaborative wait.
 	}
 
 	if (caller_pool_thread) {
