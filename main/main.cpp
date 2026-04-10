@@ -47,6 +47,7 @@
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -110,6 +111,7 @@
 #endif // XR_DISABLED
 
 #ifdef TESTS_ENABLED
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 #include "tests/test_main.h"
 #endif
 
@@ -744,6 +746,8 @@ Error Main::test_setup() {
 
 	OS::get_singleton()->initialize();
 
+	CoreGlobals::print_ready = true;
+
 	engine = memnew(Engine);
 
 	register_core_types();
@@ -799,6 +803,13 @@ Error Main::test_setup() {
 	}
 	translation_server->load_project_translations(translation_server->get_main_domain());
 	ResourceLoader::load_translation_remaps(); //load remaps for resources
+
+	message_queue = memnew(MessageQueue);
+
+	RasterizerDummy::make_current();
+	rendering_server = memnew(RenderingServerDefault());
+	rendering_server->init();
+	rendering_server->set_render_loop_enabled(false);
 
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
@@ -870,6 +881,9 @@ Error Main::test_setup() {
 void Main::test_cleanup() {
 	ERR_FAIL_COND(!_start_success);
 
+	// Printing in the usual way can become problematic during/after cleanup.
+	CoreGlobals::print_ready = false;
+
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
@@ -892,6 +906,17 @@ void Main::test_cleanup() {
 	unregister_scene_types();
 
 	finalize_theme_db();
+
+	if (rendering_server) {
+		rendering_server->sync();
+		rendering_server->global_shader_parameters_clear();
+		rendering_server->finish();
+		memdelete(rendering_server);
+	}
+	if (message_queue) {
+		message_queue->flush();
+		memdelete(message_queue);
+	}
 
 #ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::finalize_server();
@@ -1005,6 +1030,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
+
+	CoreGlobals::print_ready = true;
 
 #if !defined(OVERRIDE_PATH_ENABLED) && !defined(TOOLS_ENABLED)
 	String old_cwd = OS::get_singleton()->get_cwd();
@@ -2826,7 +2853,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/environment_blend_mode", PROPERTY_HINT_ENUM, "Opaque,Additive,Alpha"), "0");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/foveation_level", PROPERTY_HINT_ENUM, "Off,Low,Medium,High"), "0");
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_dynamic", false);
-	GLOBAL_DEF_BASIC("xr/openxr/foveation_with_subsampled_images", false);
+	GLOBAL_DEF_BASIC("xr/openxr/foveation_eye_tracked", true);
+	GLOBAL_DEF_BASIC("xr/openxr/foveation_with_subsampled_images", true);
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
@@ -5166,6 +5194,9 @@ void Main::cleanup(bool p_force) {
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
+
+	// Printing in the usual way can become problematic during/after cleanup.
+	CoreGlobals::print_ready = false;
 
 #ifdef DEBUG_ENABLED
 	if (input) {

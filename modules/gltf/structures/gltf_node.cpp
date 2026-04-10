@@ -200,7 +200,7 @@ void GLTFNode::set_visible(bool p_visible) {
 }
 
 Variant GLTFNode::get_additional_data(const StringName &p_extension_name) {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 bool GLTFNode::has_additional_data(const StringName &p_extension_name) {

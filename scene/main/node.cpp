@@ -1477,7 +1477,7 @@ void Node::set_name(const StringName &p_name) {
 }
 
 // Returns a clear description of this node depending on what is available. Useful for error messages.
-String Node::get_description() const {
+String Node::get_description(bool p_show_not_in_tree) const {
 	String description;
 	if (is_inside_tree()) {
 		description = String(get_path());
@@ -1485,6 +1485,9 @@ String Node::get_description() const {
 		description = get_name();
 		if (description.is_empty()) {
 			description = get_class();
+		}
+		if (p_show_not_in_tree) {
+			description += " (not inside tree)";
 		}
 	}
 	return description;
@@ -2362,7 +2365,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 		common_parent = common_parent->data.parent;
 	}
 
-	ERR_FAIL_NULL_V(common_parent, NodePath()); //nodes not in the same tree
+	ERR_FAIL_NULL_V_MSG(common_parent, NodePath(), vformat("No path can be resolved between the nodes %s and %s as they share no common ancestor.", get_description(true), p_node->get_description(true)));
 
 	visited.clear();
 
@@ -3238,16 +3241,14 @@ void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 
 	emit_signal(SNAME("replacing_by"), p_node);
 
-	while (get_child_count()) {
-		Node *child = get_child(0);
+	// Move non-internal children to `p_node`.
+	while (get_child_count(false)) {
+		Node *child = get_child(0, false);
 		remove_child(child);
-		if (!child->is_internal()) {
-			// Add the custom children to the p_node.
-			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
-			child->set_owner(nullptr);
-			p_node->add_child(child);
-			child->set_owner(child_owner);
-		}
+		Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+		child->set_owner(nullptr);
+		p_node->add_child(child);
+		child->set_owner(child_owner);
 	}
 
 	p_node->set_owner(owner);
@@ -3966,6 +3967,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_WM_POSITION_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);

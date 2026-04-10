@@ -297,6 +297,8 @@ public:
 	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) override;

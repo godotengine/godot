@@ -106,8 +106,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _node_changed(const StringName &p_node_name);
 
 	String current_node_rename_text;
-	bool graph_update_queued;
-	bool updating;
+	bool graph_update_queued = false;
+	bool updating = false;
 
 	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
 	void _disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);

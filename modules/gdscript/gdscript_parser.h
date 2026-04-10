@@ -146,6 +146,8 @@ public:
 
 		String to_string() const;
 		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
+
+		String to_property_info_hint_string() const;
 		PropertyInfo to_property_info(const String &p_name) const;
 
 		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
@@ -1500,6 +1502,8 @@ private:
 	void clear();
 
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin);
+
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>

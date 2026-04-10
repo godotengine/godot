@@ -648,8 +648,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			instruction_args = nullptr;
 		}
 
-		for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
-			type_init_function_table[E.value](&stack[E.key]);
+		for (const Pair<int, Variant::Type> &E : temporary_slots) {
+			type_init_function_table[E.second](&stack[E.first]);
 		}
 	}
 
@@ -660,7 +660,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		memnew_placement(&stack[ADDR_STACK_SELF], Variant);
 		script = _script;
 	}
-	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
+
+	// We must call a `Variant` constructor here, as accessing an object without doing so is undefined behavior.
+	memnew_placement(&stack[ADDR_STACK_CLASS], Variant);
+	VariantInternal::object_assign_without_ref_unsafe(&stack[ADDR_STACK_CLASS], script);
+
 	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
 
 	String err_text;
@@ -3809,7 +3813,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int globalname_idx = _code_ptr[ip + 2];
 				GD_ERR_BREAK(globalname_idx < 0 || globalname_idx >= _global_names_count);
 				const StringName *globalname = &_global_names_ptr[globalname_idx];
-				GD_ERR_BREAK(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname));
+				if (unlikely(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname))) {
+					err_text = vformat(R"(Trying to access non-existent autoload singleton "%s".)", *globalname);
+					OPCODE_BREAK;
+				}
 
 				GET_VARIANT_PTR(dst, 0);
 				*dst = GDScriptLanguage::get_singleton()->get_named_globals_map()[*globalname];
@@ -4009,7 +4016,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->exit_function();
 	}
 
-	for (int i = 0; i < _stack_size; i++) {
+	// We deliberately avoid calling the destructor for `ADDR_STACK_CLASS`, since we initialized it
+	// without incrementing any reference count that it might have.
+	stack[ADDR_STACK_SELF].~Variant();
+	stack[ADDR_STACK_NIL].~Variant();
+
+	for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 		stack[i].~Variant();
 	}
 

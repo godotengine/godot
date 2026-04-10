@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
@@ -1460,6 +1461,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			time_icon->set_texture(get_editor_theme_icon(SNAME("Time")));
+			time_icon->set_custom_minimum_size(Size2((get_editor_theme_icon(SNAME("Time"))->get_size().width + 16) * EDSCALE, 0));
 			filter_track->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			add_track->get_popup()->clear();
@@ -1484,7 +1486,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		}
 		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -2080,13 +2082,14 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb = memnew(HBoxContainer);
 
 	Control *expander = memnew(Control);
-	expander->set_h_size_flags(SIZE_EXPAND_FILL);
+	expander->set_custom_minimum_size(Vector2(2 * EDSCALE, 0));
 	expander->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	len_hb->add_child(expander);
 
 	time_icon = memnew(TextureRect);
-	time_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	time_icon->set_tooltip_text(TTRC("Animation length (seconds)"));
+	time_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	time_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	len_hb->add_child(time_icon);
 
 	length = memnew(EditorSpinSlider);
@@ -2096,6 +2099,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
+	length->set_h_size_flags(SIZE_EXPAND_FILL);
 	length->set_tooltip_text(TTRC("Animation length (seconds)"));
 	length->set_accessibility_name(TTRC("Animation length (seconds)"));
 	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
@@ -3483,7 +3487,7 @@ bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
 					ScriptEditor::get_singleton()->goto_help(vformat("class_method:%s:%s", target->get_class_name(), method));
 				} else {
 					// Still not found, which means the target doesn't have this method. Warn the user.
-					WARN_PRINT_ED(TTR(vformat("Failed to lookup method: \"%s\"", method)));
+					WARN_PRINT_ED(vformat(TTR("Failed to lookup method: \"%s\""), method));
 				}
 			}
 			return true;
@@ -5597,7 +5601,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			}
 
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -5650,7 +5654,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &AnimationTrackEditor::_selection_changed));
 
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

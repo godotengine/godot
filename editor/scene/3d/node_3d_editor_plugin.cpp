@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/io/resource_loader.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
@@ -2068,16 +2069,24 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 					bool use_origin_snap = spatial_editor->is_vertex_snap_origin_mode();
 
+					Node3D *selected = spatial_editor->get_single_selected_node();
+					Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
+					bool has_subgizmos = se && se->gizmo.is_valid() && !se->subgizmos.is_empty();
+
 					if (!use_origin_snap) {
-						bool has_geometry = false;
-						for (Node *E : selection) {
-							if (_node_has_geometry(E)) {
-								has_geometry = true;
-								break;
-							}
-						}
-						if (!has_geometry) {
+						if (has_subgizmos) {
 							use_origin_snap = true;
+						} else {
+							bool has_geometry = false;
+							for (Node *E : selection) {
+								if (_node_has_geometry(E)) {
+									has_geometry = true;
+									break;
+								}
+							}
+							if (!has_geometry) {
+								use_origin_snap = true;
+							}
 						}
 					}
 
@@ -2099,17 +2108,35 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							Vector3 cam_normal = camera->get_global_transform().basis.get_column(2);
 							vertex_snap_drag_plane = Plane(cam_normal, vertex_snap_source);
 						} else {
-							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-							undo_redo->create_action(TTR("Vertex Snap"));
-							for (const KeyValue<ObjectID, Vector3> &E2 : vertex_snap_original_positions) {
-								Node3D *node = ObjectDB::get_instance<Node3D>(E2.key);
-								if (node) {
-									node->set_global_position(vertex_snap_source);
-									undo_redo->add_do_method(node, "set_global_position", vertex_snap_source);
-									undo_redo->add_undo_method(node, "set_global_position", E2.value);
+							if (has_subgizmos) {
+								Transform3D gi = selected->get_global_transform().affine_inverse();
+								Vector3 local_target = gi.xform(vertex_snap_source);
+
+								Vector<int> ids;
+								Vector<Transform3D> restores;
+								for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D original_xform = se->gizmo->get_subgizmo_transform(GE.key);
+									ids.push_back(GE.key);
+									restores.push_back(original_xform);
+
+									Transform3D snapped_xform = original_xform;
+									snapped_xform.origin = local_target;
+									se->gizmo->set_subgizmo_transform(GE.key, snapped_xform);
 								}
+								se->gizmo->commit_subgizmos(ids, restores, false);
+							} else {
+								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+								undo_redo->create_action(TTR("Vertex Snap"));
+								for (const KeyValue<ObjectID, Vector3> &E2 : vertex_snap_original_positions) {
+									Node3D *node = ObjectDB::get_instance<Node3D>(E2.key);
+									if (node) {
+										node->set_global_position(vertex_snap_source);
+										undo_redo->add_do_method(node, "set_global_position", vertex_snap_source);
+										undo_redo->add_undo_method(node, "set_global_position", E2.value);
+									}
+								}
+								undo_redo->commit_action(false);
 							}
-							undo_redo->commit_action(false);
 							vertex_snap_original_positions.clear();
 							spatial_editor->update_transform_gizmo();
 							_reset_follow_mode_count();
@@ -2373,6 +2400,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 								seg->redraw();
 								spatial_editor->update_transform_gizmo();
+								_reset_follow_mode_count();
 								intersected_subgizmo = true;
 								break;
 							}
@@ -2486,6 +2514,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						ruler_start_point->set_visible(false);
 						ruler_end_point->set_visible(false);
 						ruler_label->set_visible(false);
+						ruler_label_x->set_visible(false);
+						ruler_label_y->set_visible(false);
+						ruler_label_z->set_visible(false);
 						collision_reposition = false;
 						break;
 					}
@@ -2991,6 +3022,11 @@ void Node3DEditorViewport::_cursor_interpolated() {
 	spatial_editor->update_grid();
 }
 
+void Node3DEditorViewport::_cursor_distance_scaled() {
+	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
+	surface->queue_redraw();
+}
+
 void Node3DEditorViewport::_freelook_changed() {
 	spatial_editor->set_freelook_viewport(view_3d_controller->is_freelook_enabled() ? this : nullptr);
 }
@@ -3182,16 +3218,280 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 				geometry->clear_surfaces();
 				geometry->surface_begin(Mesh::PRIMITIVE_LINES);
-				geometry->surface_add_vertex(start_pos);
-				geometry->surface_add_vertex(end_pos);
-				geometry->surface_end();
-
-				float distance = start_pos.distance_to(end_pos);
-				ruler_label->set_text(TranslationServer::get_singleton()->format_number(vformat("%.3f m", distance), _get_locale()));
 
 				Vector3 center = (start_pos + end_pos) / 2;
+				Vector3 camera_dir = (camera->get_transform().origin - center).normalized();
+				real_t offset_distance = 0.01;
+
+				geometry->surface_add_vertex(start_pos + camera_dir * offset_distance);
+				geometry->surface_add_vertex(end_pos + camera_dir * offset_distance);
+				geometry->surface_end();
+
+				geometry_xray->clear_surfaces();
+				geometry_xray->surface_begin(Mesh::PRIMITIVE_LINES);
+				geometry_xray->surface_add_vertex(start_pos);
+				geometry_xray->surface_add_vertex(end_pos);
+				geometry_xray->surface_end();
+
+				float distance = start_pos.distance_to(end_pos);
+				if (distance < 0.001) {
+					distance = 0.0;
+				}
+				ruler_label->set_text(TranslationServer::get_singleton()->format_number(vformat("%.3f m", distance), _get_locale()));
+
 				Vector2 screen_position = camera->unproject_position(center) - (ruler_label->get_custom_minimum_size() / 2);
 				ruler_label->set_position(screen_position);
+
+				bool show_components = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+
+				if (show_components) {
+					Ref<ImmediateMesh> triangle_mesh = ruler_triangle_lines->get_mesh();
+					Ref<ImmediateMesh> triangle_mesh_xray = ruler_triangle_lines_xray->get_mesh();
+
+					if (triangle_mesh.is_valid() && triangle_mesh_xray.is_valid()) {
+						Vector3 delta = end_pos - start_pos;
+						delta = delta.abs();
+						const real_t threshold = 0.001;
+						if (delta.x < threshold) {
+							delta.x = 0.0;
+						}
+						if (delta.y < threshold) {
+							delta.y = 0.0;
+						}
+						if (delta.z < threshold) {
+							delta.z = 0.0;
+						}
+
+						Vector3 corner_point;
+						Color first_line_color;
+						Color second_line_color;
+
+						Color axis_x_color = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
+						Color axis_y_color = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
+						Color axis_z_color = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
+
+						if (delta.x > 0.0 && delta.y > 0.0 && delta.z == 0.0) {
+							// XY plane
+							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+							first_line_color = axis_x_color;
+							second_line_color = axis_y_color;
+						} else if (delta.x > 0.0 && delta.z > 0.0 && delta.y == 0.0) {
+							// XZ plane
+							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+							first_line_color = axis_x_color;
+							second_line_color = axis_z_color;
+						} else if (delta.y > 0.0 && delta.z > 0.0 && delta.x == 0.0) {
+							// YZ plane
+							corner_point = Vector3(start_pos.x, start_pos.y, end_pos.z);
+							first_line_color = axis_z_color;
+							second_line_color = axis_y_color;
+						} else if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0) {
+							// All three axes
+							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+							first_line_color = axis_x_color;
+							second_line_color = axis_y_color;
+						} else {
+							corner_point = end_pos;
+							first_line_color = axis_x_color;
+							second_line_color = axis_x_color;
+						}
+
+						triangle_mesh->clear_surfaces();
+						triangle_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
+
+						Vector3 triangle_camera_dir = (camera->get_transform().origin - center).normalized();
+						real_t triangle_offset_distance = 0.01;
+
+						triangle_mesh->surface_set_color(first_line_color);
+						triangle_mesh->surface_add_vertex(start_pos + triangle_camera_dir * triangle_offset_distance);
+						triangle_mesh->surface_set_color(first_line_color);
+						triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
+						triangle_mesh->surface_set_color(second_line_color);
+						triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
+						triangle_mesh->surface_set_color(second_line_color);
+						triangle_mesh->surface_add_vertex(end_pos + triangle_camera_dir * triangle_offset_distance);
+
+						triangle_mesh->surface_end();
+
+						Color first_line_color_xray = first_line_color;
+						Color second_line_color_xray = second_line_color;
+						first_line_color_xray.a = 0.15;
+						second_line_color_xray.a = 0.15;
+
+						triangle_mesh_xray->clear_surfaces();
+						triangle_mesh_xray->surface_begin(Mesh::PRIMITIVE_LINES);
+
+						triangle_mesh_xray->surface_set_color(first_line_color_xray);
+						triangle_mesh_xray->surface_add_vertex(start_pos);
+						triangle_mesh_xray->surface_set_color(first_line_color_xray);
+						triangle_mesh_xray->surface_add_vertex(corner_point);
+						triangle_mesh_xray->surface_set_color(second_line_color_xray);
+						triangle_mesh_xray->surface_add_vertex(corner_point);
+						triangle_mesh_xray->surface_set_color(second_line_color_xray);
+						triangle_mesh_xray->surface_add_vertex(end_pos);
+
+						triangle_mesh_xray->surface_end();
+					}
+				} else {
+					Ref<ImmediateMesh> triangle_mesh = ruler_triangle_lines->get_mesh();
+					Ref<ImmediateMesh> triangle_mesh_xray = ruler_triangle_lines_xray->get_mesh();
+
+					if (triangle_mesh.is_valid()) {
+						triangle_mesh->clear_surfaces();
+					}
+					if (triangle_mesh_xray.is_valid()) {
+						triangle_mesh_xray->clear_surfaces();
+					}
+				}
+
+				if (show_components) {
+					Vector3 delta = end_pos - start_pos;
+					delta = delta.abs();
+					const real_t threshold = 0.001;
+					if (delta.x < threshold) {
+						delta.x = 0.0;
+					}
+					if (delta.y < threshold) {
+						delta.y = 0.0;
+					}
+					if (delta.z < threshold) {
+						delta.z = 0.0;
+					}
+
+					int active_axes = 0;
+					if (delta.x > 0.0) {
+						active_axes++;
+					}
+					if (delta.y > 0.0) {
+						active_axes++;
+					}
+					if (delta.z > 0.0) {
+						active_axes++;
+					}
+
+					String x_text = delta.x > 0.0 ? TranslationServer::get_singleton()->format_number(vformat("X: %.3f m", delta.x), _get_locale()) : "";
+					String y_text = delta.y > 0.0 ? TranslationServer::get_singleton()->format_number(vformat("Y: %.3f m", delta.y), _get_locale()) : "";
+					String z_text = delta.z > 0.0 ? TranslationServer::get_singleton()->format_number(vformat("Z: %.3f m", delta.z), _get_locale()) : "";
+
+					Color axis_x_color = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
+					Color axis_y_color = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
+					Color axis_z_color = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
+
+					Vector3 corner_point;
+
+					if (active_axes >= 2) {
+						if (delta.z == 0.0) {
+							// XY plane
+							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+
+							ruler_label_x->add_theme_color_override(SceneStringName(font_color), axis_x_color);
+							ruler_label_x->set_text(x_text);
+							ruler_label_x->set_visible(true);
+							Vector2 x_pos = camera->unproject_position((start_pos + corner_point) / 2) - (ruler_label_x->get_custom_minimum_size() / 2);
+							ruler_label_x->set_position(x_pos);
+
+							ruler_label_y->add_theme_color_override(SceneStringName(font_color), axis_y_color);
+							ruler_label_y->set_text(y_text);
+							ruler_label_y->set_visible(true);
+							Vector2 y_pos = camera->unproject_position((corner_point + end_pos) / 2) - (ruler_label_y->get_custom_minimum_size() / 2);
+							ruler_label_y->set_position(y_pos);
+
+							ruler_label_z->set_visible(false);
+						} else if (delta.y == 0.0) {
+							// XZ plane
+							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+
+							ruler_label_x->add_theme_color_override(SceneStringName(font_color), axis_x_color);
+							ruler_label_x->set_text(x_text);
+							ruler_label_x->set_visible(true);
+							Vector2 x_pos = camera->unproject_position((start_pos + corner_point) / 2) - (ruler_label_x->get_custom_minimum_size() / 2);
+							ruler_label_x->set_position(x_pos);
+
+							ruler_label_y->add_theme_color_override(SceneStringName(font_color), axis_z_color);
+							ruler_label_y->set_text(z_text);
+							ruler_label_y->set_visible(true);
+							Vector2 z_pos = camera->unproject_position((corner_point + end_pos) / 2) - (ruler_label_y->get_custom_minimum_size() / 2);
+							ruler_label_y->set_position(z_pos);
+
+							ruler_label_z->set_visible(false);
+						} else if (delta.x == 0.0) {
+							// YZ plane
+							corner_point = Vector3(start_pos.x, start_pos.y, end_pos.z);
+
+							ruler_label_x->add_theme_color_override(SceneStringName(font_color), axis_z_color);
+							ruler_label_x->set_text(z_text);
+							ruler_label_x->set_visible(true);
+							Vector2 z_pos = camera->unproject_position((start_pos + corner_point) / 2) - (ruler_label_x->get_custom_minimum_size() / 2);
+							ruler_label_x->set_position(z_pos);
+
+							ruler_label_y->add_theme_color_override(SceneStringName(font_color), axis_y_color);
+							ruler_label_y->set_text(y_text);
+							ruler_label_y->set_visible(true);
+							Vector2 y_pos = camera->unproject_position((corner_point + end_pos) / 2) - (ruler_label_y->get_custom_minimum_size() / 2);
+							ruler_label_y->set_position(y_pos);
+
+							ruler_label_z->set_visible(false);
+						} else {
+							// All three axes
+							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+
+							ruler_label_x->add_theme_color_override(SceneStringName(font_color), axis_x_color);
+							ruler_label_x->set_text(x_text);
+							ruler_label_x->set_visible(true);
+							Vector2 x_pos = camera->unproject_position((start_pos + corner_point) / 2) - (ruler_label_x->get_custom_minimum_size() / 2);
+							ruler_label_x->set_position(x_pos);
+
+							ruler_label_y->add_theme_color_override(SceneStringName(font_color), axis_y_color);
+							ruler_label_y->set_text(y_text);
+							ruler_label_y->set_visible(true);
+							Vector2 y_pos = camera->unproject_position((corner_point + end_pos) / 2) - (ruler_label_y->get_custom_minimum_size() / 2);
+							ruler_label_y->set_position(y_pos);
+
+							ruler_label_z->add_theme_color_override(SceneStringName(font_color), axis_z_color);
+							ruler_label_z->set_text(z_text);
+							ruler_label_z->set_visible(true);
+							Vector2 z_pos = camera->unproject_position(center + Vector3(0, 0, -0.5)) - (ruler_label_z->get_custom_minimum_size() / 2);
+							ruler_label_z->set_position(z_pos);
+						}
+					} else if (active_axes == 1) {
+						corner_point = end_pos;
+
+						if (delta.x > 0.0) {
+							ruler_label_x->add_theme_color_override(SceneStringName(font_color), axis_x_color);
+							ruler_label_x->set_text(x_text);
+							ruler_label_x->set_visible(true);
+							Vector2 pos = camera->unproject_position(center) - (ruler_label_x->get_custom_minimum_size() / 2);
+							ruler_label_x->set_position(pos);
+							ruler_label_y->set_visible(false);
+							ruler_label_z->set_visible(false);
+						} else if (delta.y > 0.0) {
+							ruler_label_x->add_theme_color_override(SceneStringName(font_color), axis_y_color);
+							ruler_label_x->set_text(y_text);
+							ruler_label_x->set_visible(true);
+							Vector2 pos = camera->unproject_position(center) - (ruler_label_x->get_custom_minimum_size() / 2);
+							ruler_label_x->set_position(pos);
+							ruler_label_y->set_visible(false);
+							ruler_label_z->set_visible(false);
+						} else {
+							ruler_label_x->add_theme_color_override(SceneStringName(font_color), axis_z_color);
+							ruler_label_x->set_text(z_text);
+							ruler_label_x->set_visible(true);
+							Vector2 pos = camera->unproject_position(center) - (ruler_label_x->get_custom_minimum_size() / 2);
+							ruler_label_x->set_position(pos);
+							ruler_label_y->set_visible(false);
+							ruler_label_z->set_visible(false);
+						}
+					} else {
+						ruler_label_x->set_visible(false);
+						ruler_label_y->set_visible(false);
+						ruler_label_z->set_visible(false);
+					}
+
+				} else {
+					ruler_label_x->set_visible(false);
+					ruler_label_y->set_visible(false);
+					ruler_label_z->set_visible(false);
+				}
 			}
 
 			real_t delta = get_process_delta_time();
@@ -3445,6 +3745,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 						ruler_start_point->set_visible(true);
 						ruler_end_point->set_visible(true);
 						ruler_label->set_visible(true);
+						ruler_label_x->set_visible(false);
+						ruler_label_y->set_visible(false);
+						ruler_label_z->set_visible(false);
 					}
 				}
 			}
@@ -3551,6 +3854,21 @@ void Node3DEditorViewport::_notification(int p_what) {
 			ruler_label->add_theme_constant_override("outline_size", 4 * EDSCALE);
 			ruler_label->add_theme_font_size_override(SceneStringName(font_size), 15 * EDSCALE);
 			ruler_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			ruler_label_x->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0));
+			ruler_label_x->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			ruler_label_x->add_theme_font_size_override(SceneStringName(font_size), 15 * EDSCALE);
+			ruler_label_x->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			ruler_label_y->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0));
+			ruler_label_y->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			ruler_label_y->add_theme_font_size_override(SceneStringName(font_size), 15 * EDSCALE);
+			ruler_label_y->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+
+			ruler_label_z->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0));
+			ruler_label_z->add_theme_constant_override("outline_size", 4 * EDSCALE);
+			ruler_label_z->add_theme_font_size_override(SceneStringName(font_size), 15 * EDSCALE);
+			ruler_label_z->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -3767,15 +4085,10 @@ void Node3DEditorViewport::_draw() {
 			}
 
 			Color circle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.6, 1.0, 0.8);
-			for (int i = 0; i < circle_points.size() - 1; i++) {
-				RenderingServer::get_singleton()->canvas_item_add_line(
-						ci,
-						circle_points[i],
-						circle_points[i + 1],
-						circle_color,
-						Math::round(2 * EDSCALE),
-						true);
-			}
+			Vector<Color> circle_colors;
+			circle_colors.resize(circle_points.size());
+			circle_colors.fill(circle_color);
+			RenderingServer::get_singleton()->canvas_item_add_polyline(ci, circle_points, circle_colors, Math::round(2 * EDSCALE), true);
 
 			const int segments = 64;
 			float display_angle = _edit.rotation_angle;
@@ -3843,16 +4156,16 @@ void Node3DEditorViewport::_draw() {
 					edge_color,
 					Math::round(2 * EDSCALE),
 					true);
+		}
 
-			if (_edit.show_rotation_line) {
-				handle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.25, 1.0, handle_color.a);
-				RenderingServer::get_singleton()->canvas_item_add_line(
-						ci,
-						_edit.mouse_pos,
-						center,
-						handle_color,
-						Math::round(2 * EDSCALE));
-			}
+		if (_edit.show_rotation_line) {
+			handle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.25, 1.0, handle_color.a);
+			RenderingServer::get_singleton()->canvas_item_add_line(
+					ci,
+					_edit.mouse_pos,
+					center,
+					handle_color,
+					Math::round(2 * EDSCALE));
 		}
 	}
 	if (previewing) {
@@ -4658,6 +4971,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
 		}
 		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
 		return;
@@ -4716,16 +5030,19 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D view_rotation_xform = xform;
 	view_rotation_xform.orthonormalize();
-	bool shrink_view_ring = arc_replaces_ring >= 0 && arc_replaces_ring < 3;
-	Vector3 view_ring_scale = shrink_view_ring ? scale * spatial_editor->gizmo_view_rotation_shrink : scale;
-	view_rotation_xform.basis.scale(view_ring_scale);
-	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
 
 	bool can_show_trackball = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_gizmo_during_rotation;
 	bool show_trackball_sphere = can_show_trackball && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) && !hide_gizmo_during_trackball;
-	RenderingServer::get_singleton()->instance_set_transform(trackball_sphere_instance, view_rotation_xform);
+	Transform3D trackball_xform = view_rotation_xform;
+	trackball_xform.basis.scale(scale);
+	RenderingServer::get_singleton()->instance_set_transform(trackball_sphere_instance, trackball_xform);
 	RenderingServer::get_singleton()->instance_set_visible(trackball_sphere_instance, show_trackball_sphere);
+
+	bool shrink_view_ring = arc_replaces_ring >= 0 && arc_replaces_ring < 3;
+	Vector3 view_ring_scale = shrink_view_ring ? scale : scale * (spatial_editor->gizmo_view_rotation_scale / GIZMO_CIRCLE_SIZE);
+	view_rotation_xform.basis.scale(view_ring_scale);
+	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
 
 	bool show_axes = spatial_editor->is_gizmo_visible() && _edit.mode != TRANSFORM_NONE && !hide_gizmo_during_trackball;
 	RenderingServer *rs = RenderingServer::get_singleton();
@@ -6696,23 +7013,67 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	geometry.instantiate();
 
+	geometry_xray.instantiate();
+
 	ruler_line = memnew(MeshInstance3D);
 	ruler_line->set_mesh(geometry);
 	ruler_line->set_material_override(ruler_material);
 
 	ruler_line_xray = memnew(MeshInstance3D);
-	ruler_line_xray->set_mesh(geometry);
+	ruler_line_xray->set_mesh(geometry_xray);
 	ruler_line_xray->set_material_override(ruler_material_xray);
+
+	ruler_triangle_material.instantiate();
+	ruler_triangle_material->set_albedo(Color(1.0, 1.0, 1.0, 1.0));
+	ruler_triangle_material->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_triangle_material->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_triangle_material->set_depth_draw_mode(BaseMaterial3D::DEPTH_DRAW_DISABLED);
+	ruler_triangle_material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+	ruler_triangle_material_xray.instantiate();
+	ruler_triangle_material_xray->set_albedo(Color(1.0, 1.0, 1.0, 0.15));
+	ruler_triangle_material_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_triangle_material_xray->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_triangle_material_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	ruler_triangle_material_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+	ruler_triangle_material_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
+	ruler_triangle_material_xray->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+	ruler_triangle_lines = memnew(MeshInstance3D);
+	Ref<ImmediateMesh> triangle_mesh;
+	triangle_mesh.instantiate();
+	ruler_triangle_lines->set_mesh(triangle_mesh);
+	ruler_triangle_lines->set_material_override(ruler_triangle_material);
+
+	ruler_triangle_lines_xray = memnew(MeshInstance3D);
+	Ref<ImmediateMesh> triangle_mesh_xray;
+	triangle_mesh_xray.instantiate();
+	ruler_triangle_lines_xray->set_mesh(triangle_mesh_xray);
+	ruler_triangle_lines_xray->set_material_override(ruler_triangle_material_xray);
 
 	ruler_label = memnew(Label);
 	ruler_label->set_visible(false);
+
+	ruler_label_x = memnew(Label);
+	ruler_label_x->set_visible(false);
+
+	ruler_label_y = memnew(Label);
+	ruler_label_y->set_visible(false);
+
+	ruler_label_z = memnew(Label);
+	ruler_label_z->set_visible(false);
 
 	ruler->add_child(ruler_start_point);
 	ruler->add_child(ruler_end_point);
 	ruler->add_child(ruler_line);
 	ruler->add_child(ruler_line_xray);
+	ruler->add_child(ruler_triangle_lines);
+	ruler->add_child(ruler_triangle_lines_xray);
 
 	viewport->add_child(ruler_label);
+	viewport->add_child(ruler_label_x);
+	viewport->add_child(ruler_label_y);
+	viewport->add_child(ruler_label_z);
 
 	view_3d_controller.instantiate();
 	view_3d_controller->connect("view_state_changed", callable_mp(this, &Node3DEditorViewport::_view_state_changed));
@@ -6721,6 +7082,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_3d_controller->connect("freelook_speed_scaled", callable_mp(this, &Node3DEditorViewport::_freelook_speed_scaled));
 	view_3d_controller->connect("cursor_panned", callable_mp(this, &Node3DEditorViewport::_disable_follow_mode));
 	view_3d_controller->connect("cursor_interpolated", callable_mp(this, &Node3DEditorViewport::_cursor_interpolated));
+	view_3d_controller->connect("cursor_distance_scaled", callable_mp(this, &Node3DEditorViewport::_cursor_distance_scaled));
 	_update_view_3d_controller(true);
 
 	_update_name();
@@ -7591,6 +7953,9 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			tool_mode = (ToolMode)p_option;
 			update_transform_gizmo();
 
+			for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+				viewports[i]->update_transform_gizmo_highlight();
+			}
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 			snap_dialog->popup_centered(Size2(200, 180));
@@ -8175,8 +8540,7 @@ void fragment() {
 				for (int j = 0; j < n; ++j) {
 					Basis basis = Basis(ivec, j * step);
 
-					real_t circle_size = (i == 3) ? gizmo_view_rotation_scale : GIZMO_CIRCLE_SIZE;
-					Vector3 vertex = basis.xform(ivec2 * circle_size);
+					Vector3 vertex = basis.xform(ivec2 * GIZMO_CIRCLE_SIZE);
 
 					for (int k = 0; k < m; ++k) {
 						Vector2 ofs = Vector2(Math::cos((Math::TAU * k) / m), Math::sin((Math::TAU * k) / m));
@@ -9238,6 +9602,8 @@ void Node3DEditor::_notification(int p_what) {
 					active_selection_box_mat_xray->set_albedo(active_selection_box_color * Color(1, 1, 1, 0.15));
 				}
 
+				gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
+
 				// Update grid color by rebuilding grid.
 				_finish_grid();
 				_init_grid();
@@ -9969,9 +10335,7 @@ void Node3DEditor::PreviewSunEnvPopup::shortcut_input(const Ref<InputEvent> &p_e
 Node3DEditor::Node3DEditor() {
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
-	float vp_radius = (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
-	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * vp_radius;
-	gizmo_view_rotation_shrink = 1.0 / vp_radius;
+	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
 
 	viewport_environment.instantiate();
 	VBoxContainer *vbc = this;
@@ -10097,7 +10461,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_RULER]->set_toggle_mode(true);
 	tool_button[TOOL_RULER]->set_theme_type_variation("FlatButton");
 	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
-	tool_button[TOOL_RULER]->set_tooltip_text(TTRC("LMB+Drag: Measure the distance between two points in 3D space."));
+	tool_button[TOOL_RULER]->set_tooltip_text(TTRC("LMB+Drag: Measure distance between two points.\nShift+LMB+Drag: Show component measurements."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTRC("Ruler Mode"), Key::M));
 	tool_button[TOOL_RULER]->set_accessibility_name(TTRC("Ruler Mode"));

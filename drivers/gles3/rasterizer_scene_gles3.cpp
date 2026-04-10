@@ -676,6 +676,21 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 	ERR_FAIL_NULL(shader_data);
 
 	if (sky) {
+		RSE::SkyMode sky_mode = sky->mode;
+
+		if (sky_mode == RSE::SKY_MODE_AUTOMATIC) {
+			bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
+
+			if (shader_data->uses_time || shader_data->uses_position) {
+				sky_mode = RSE::SKY_MODE_REALTIME;
+			} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
+				sky_mode = RSE::SKY_MODE_INCREMENTAL;
+			} else {
+				sky_mode = RSE::SKY_MODE_QUALITY;
+			}
+		}
+		sky->internal_mode = sky_mode;
+
 		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
 			sky->prev_time = time;
 			sky->reflection_dirty = true;
@@ -938,23 +953,8 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 
 	ERR_FAIL_NULL(shader_data);
 
-	bool update_single_frame = sky->mode == RSE::SKY_MODE_REALTIME || sky->mode == RSE::SKY_MODE_QUALITY;
-	RSE::SkyMode sky_mode = sky->mode;
-
-	if (sky_mode == RSE::SKY_MODE_AUTOMATIC) {
-		bool sun_scatter_enabled = environment_get_fog_enabled(p_env) && environment_get_fog_sun_scatter(p_env) > 0.001;
-
-		if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == 256) {
-			update_single_frame = true;
-			sky_mode = RSE::SKY_MODE_REALTIME;
-		} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
-			update_single_frame = false;
-			sky_mode = RSE::SKY_MODE_INCREMENTAL;
-		} else {
-			update_single_frame = true;
-			sky_mode = RSE::SKY_MODE_QUALITY;
-		}
-	}
+	RSE::SkyMode sky_mode = sky->internal_mode;
+	bool update_single_frame = sky_mode == RSE::SKY_MODE_REALTIME || sky_mode == RSE::SKY_MODE_QUALITY;
 
 	if (sky->processing_layer == 0 && sky_mode == RSE::SKY_MODE_INCREMENTAL) {
 		// On the first frame after creating sky, rebuild in single frame
@@ -2455,6 +2455,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_feed = false;
 	float sky_energy_multiplier = 1.0;
 	int camera_feed_id = -1;
+	bool apply_canvas_bg_exposure = false;
 
 	if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -2494,6 +2495,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			} break;
 			case RSE::ENV_BG_CANVAS: {
 				draw_canvas = true;
+				apply_canvas_bg_exposure = !Math::is_equal_approx(tonemap_ubo.exposure, 1.0f);
 			} break;
 			case RSE::ENV_BG_KEEP: {
 				keep_color = true;
@@ -2573,6 +2575,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		fbo = GLES3::LightStorage::get_singleton()->reflection_probe_instance_get_framebuffer(render_data.reflection_probe, render_data.reflection_probe_pass);
 	} else {
 		rb->set_apply_environment_effects_in_post(apply_environment_effects_in_post);
+		rb->set_apply_canvas_bg_exposure(apply_canvas_bg_exposure);
 		fbo = rb->get_render_fbo();
 	}
 
@@ -2676,7 +2679,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, rt->color);
 
-		copy_effects->copy_screen(render_data.luminance_multiplier);
+		if (apply_canvas_bg_exposure) {
+			copy_effects->copy_with_exposure(tonemap_ubo.exposure, render_data.luminance_multiplier);
+		} else {
+			copy_effects->copy_screen(render_data.luminance_multiplier);
+		}
 
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);
@@ -2941,7 +2948,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			post_effects->post_copy(fbo_rt, target_size, color,
 					depth_buffer, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
 					internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
-					srgb_white, 0, false, bcs_spec_constants);
+					srgb_white, 0, false, bcs_spec_constants, p_render_data->render_buffers->scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST);
 
 			// Copy depth buffer
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_int);
@@ -3015,7 +3022,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 				post_effects->post_copy(fbos[2], target_size, source_color,
 						read_depth, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
 						internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
-						srgb_white, v, true, bcs_spec_constants);
+						srgb_white, v, true, bcs_spec_constants, p_render_data->render_buffers->scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST);
 			}
 
 			// Copy depth

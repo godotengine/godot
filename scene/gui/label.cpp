@@ -32,7 +32,6 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "scene/gui/container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
@@ -145,6 +144,20 @@ void Label::_shape() const {
 
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
+	float combined_maximum_width = get_combined_maximum_size().x;
+	bool wrap_with_max_width = autowrap_mode != TextServer::AUTOWRAP_OFF && combined_maximum_width > 0;
+	int maximum_width = -1;
+	if (wrap_with_max_width) {
+		maximum_width = int(combined_maximum_width - style->get_minimum_size().width);
+		if (maximum_width <= 0) {
+			maximum_width = 1;
+		}
+		if (width > 0) {
+			width = MIN(width, maximum_width);
+		} else {
+			width = maximum_width;
+		}
+	}
 
 	if (text_dirty) {
 		for (Paragraph &para : paragraphs) {
@@ -250,7 +263,7 @@ void Label::_shape() const {
 	bool lines_hidden = visible_lines > 0 && visible_lines < total_line_count;
 
 	int line_index = 0;
-	if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF || wrap_with_max_width) {
 		minsize.width = 0.0f;
 	}
 	for (Paragraph &para : paragraphs) {
@@ -260,6 +273,8 @@ void Label::_shape() const {
 					minsize.width = TS->shaped_text_get_size(line_rid).x;
 				}
 			}
+		} else if (wrap_with_max_width) {
+			minsize.width = MAX(minsize.width, TS->shaped_text_get_size(para.text_rid).x);
 		}
 
 		if (para.lines_dirty) {
@@ -338,6 +353,9 @@ void Label::_shape() const {
 			para.lines_dirty = false;
 		}
 		line_index += para.lines_rid.size();
+	}
+	if (wrap_with_max_width && maximum_width > 0) {
+		minsize.width = MIN(minsize.width, maximum_width);
 	}
 
 	_update_visible();
@@ -631,12 +649,8 @@ PackedStringArray Label::get_configuration_warnings() const {
 	// but for now we have to warn about this impossible to resolve combination.
 	// See GH-83546.
 	if (is_inside_tree() && get_tree()->get_edited_scene_root() != this) {
-		// If the Label happens to be the root node of the edited scene, we don't need
-		// to check what its parent is. It's going to be some node from the editor tree
-		// and it can be a container, but that makes no difference to the user.
-		Container *parent_container = Object::cast_to<Container>(get_parent_control());
-		if (parent_container && autowrap_mode != TextServer::AUTOWRAP_OFF && get_custom_minimum_size() == Size2()) {
-			warnings.push_back(RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."));
+		if (autowrap_mode != TextServer::AUTOWRAP_OFF && get_combined_maximum_size().width <= 0) {
+			warnings.push_back(RTR("Labels with autowrapping enabled must have a positive custom maximum width configured to work correctly."));
 		}
 	}
 
@@ -979,6 +993,9 @@ Size2 Label::get_minimum_size() const {
 	_ensure_shaped();
 
 	Size2 min_size = minsize;
+	Size2 combined_maximum_size = get_combined_maximum_size();
+	bool wrap_with_max_width = autowrap_mode != TextServer::AUTOWRAP_OFF && combined_maximum_size.x > 0;
+	bool overrun_with_max_width = autowrap_mode == TextServer::AUTOWRAP_OFF && combined_maximum_size.x > 0 && (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING);
 
 	const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
@@ -993,12 +1010,25 @@ Size2 Label::get_minimum_size() const {
 		} else if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			min_size.height = 1;
 		}
-		return Size2(1, min_size.height) + min_style;
+		if (wrap_with_max_width) {
+			min_size.width = MAX(1, min_size.width);
+			return min_size + min_style;
+		} else {
+			return Size2(1, min_size.height) + min_style;
+		}
 	} else {
 		if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-			min_size.width = 1;
+			if (overrun_with_max_width) {
+				min_size.width = MAX(1, min_size.width);
+			} else {
+				min_size.width = 1;
+			}
 		}
-		return min_size + min_style;
+		Size2 computed_min_size = min_size + min_style;
+		if (overrun_with_max_width) {
+			computed_min_size.width = MIN(computed_min_size.width, combined_maximum_size.x);
+		}
+		return computed_min_size;
 	}
 }
 
@@ -1120,6 +1150,19 @@ void Label::set_text(const String &p_string) {
 void Label::_invalidate() {
 	font_dirty = true;
 	queue_redraw();
+	update_configuration_warnings();
+}
+
+void Label::_maximum_size_changed() {
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF && overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
+		return;
+	}
+
+	for (Paragraph &para : paragraphs) {
+		para.lines_dirty = true;
+	}
+	queue_redraw();
+	update_minimum_size();
 	update_configuration_warnings();
 }
 
@@ -1479,6 +1522,8 @@ void Label::_bind_methods() {
 }
 
 Label::Label(const String &p_text) {
+	connect(SceneStringName(maximum_size_changed), callable_mp(this, &Label::_maximum_size_changed));
+
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	set_text(p_text);
 	set_v_size_flags(SIZE_SHRINK_CENTER);

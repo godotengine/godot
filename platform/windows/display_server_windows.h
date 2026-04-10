@@ -48,7 +48,9 @@
 #endif
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 #include "gl_manager_windows_angle.h"
+#endif // ANGLE_ENABLED
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
@@ -255,7 +257,9 @@ class DisplayServerWindows : public DisplayServer {
 	Point2i center;
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	GLManagerANGLE_Windows *gl_manager_angle = nullptr;
+#endif
 	GLManagerNative_Windows *gl_manager_native = nullptr;
 #endif
 
@@ -265,11 +269,6 @@ class DisplayServerWindows : public DisplayServer {
 #endif
 
 	RBMap<int, Vector2> touch_state;
-
-	Vector<BYTE> icon_buffer_big;
-	HICON icon_big = nullptr;
-	Vector<BYTE> icon_buffer_small;
-	HICON icon_small = nullptr;
 
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
@@ -314,7 +313,9 @@ class DisplayServerWindows : public DisplayServer {
 		bool exclusive = false;
 		bool rendering_context_window_created = false;
 		bool gl_native_window_created = false;
+#ifdef ANGLE_ENABLED
 		bool gl_angle_window_created = false;
+#endif
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
@@ -349,6 +350,11 @@ class DisplayServerWindows : public DisplayServer {
 		Point2 last_pos;
 
 		ObjectID instance_id;
+		bool icon_set = false;
+		Vector<BYTE> icon_buffer_big;
+		HICON icon_big = nullptr;
+		Vector<BYTE> icon_buffer_small;
+		HICON icon_small = nullptr;
 
 		// IME
 		HIMC im_himc;
@@ -395,6 +401,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	Error _create_window(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(DisplayServerEnums::WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
+
+	void _window_set_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window);
 
 #ifdef RD_ENABLED
 	Error _create_rendering_context_window(DisplayServerEnums::WindowID p_window_id, const String &p_rendering_driver);
@@ -548,9 +556,9 @@ class DisplayServerWindows : public DisplayServer {
 	};
 	AHashMap<int, ScreenHdrData> hdr_output_cache;
 
-	ScreenHdrData _get_screen_hdr_data(int p_screen) const;
+	ScreenHdrData _get_screen_hdr_data(int p_screen, bool p_include_sdr_white_level) const;
 	void _update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data);
-	void _update_hdr_output_for_tracked_windows();
+	void _update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -667,6 +675,8 @@ public:
 
 	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 

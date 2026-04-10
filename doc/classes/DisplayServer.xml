@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DisplayServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DisplayServer" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level window management.
 	</brief_description>
@@ -1904,7 +1904,7 @@
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<description>
-				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				Sets the application icon and icons of all windows with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
 				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
@@ -2439,6 +2439,15 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the reference white luminance in nits (cd/m²) for HDR output by the window specified by [param window_id]. If [param reference_luminance] is negative, the window automatically adjusts to the brightness set by the operating system. By default, this luminance is set to [code]-1.0[/code] for every window. Typically this property should be left at this default value, but may optionally be exposed as an "HDR Brightness" in-game setting to allow the player to adjust the brightness of their game, independently of their device settings. See also [method window_get_hdr_output_current_reference_luminance] and [method window_get_hdr_output_reference_luminance].
+			</description>
+		</method>
+		<method name="window_set_icon">
+			<return type="void" />
+			<param index="0" name="icon" type="Image" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the window icon (usually displayed in the top-left corner) for the window specified by [param window_id].
+				[b]Note:[/b] This method is implemented on Linux and Windows.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -3374,6 +3383,10 @@
 		<constant name="WINDOW_EVENT_FORCE_CLOSE" value="8" enum="WindowEvent">
 			Sent when the window has been forcibly closed by the display server. The window will immediately hide and clean any internal rendering references.
 			[b]Note:[/b] This flag is implemented only on Linux (Wayland).
+		</constant>
+		<constant name="WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED" value="9" enum="WindowEvent">
+			Sent when the output max linear value returned by [method Window.get_output_max_linear_value] has changed.
+			This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen.
 		</constant>
 		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
 			Top-left edge of a window.

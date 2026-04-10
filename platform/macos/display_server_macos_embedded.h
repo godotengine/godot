@@ -35,10 +35,11 @@
 @class CAContext;
 @class CALayer;
 class InputEvent;
-class GLManagerEmbedded;
 class NativeMenu;
-class RenderingContextDriver;
-class RenderingDevice;
+
+#ifdef GLES3_ENABLED
+class GLManagerEmbedded;
+#endif
 
 struct DisplayServerMacOSEmbeddedState {
 	/*! Default to a scale of 2.0, which is the most common. */
@@ -129,7 +130,7 @@ public:
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void send_input_event(const Ref<InputEvent> &p_event, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const;
 	void send_input_text(const String &p_text, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const;
-	void send_window_event(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const;
+	virtual void send_window_event_by_id(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
 	// MARK: - Mouse

@@ -397,26 +397,7 @@ void SplineIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, SplineI
 		bool is_fitting_first = HEAD == chain_path_start;
 
 		// Special case for out of path joints.
-		if (point_count == 1 || HEAD <= chain_path_start) {
-			// Set twist only for first fitting joint.
-			if (!is_fitting_first) {
-				p_setting->update_chain_coordinate(p_skeleton, TAIL, limit_length(p_setting->chain[HEAD], p_setting->chain[HEAD] + start_vector, solver_info->length));
-			}
-			if (p_setting->tilt_enabled) {
-				if (p_setting->tilt_fade_in < 0) {
-					p_setting->twists[HEAD] = 0.0;
-				} else if (p_setting->tilt_fade_in == 0) {
-					p_setting->twists[HEAD] = tilts[0];
-				} else {
-					// Decreases monotonically in a straight line, fetch the distance.
-					double fade_in_dumping = CLAMP((double)(p_setting->chain[HEAD].distance_to(start_point) / fade_in_denom), 0.0, 1.0);
-					p_setting->twists[HEAD] = Math::lerp((double)tilts[0], 0.0, fade_in_dumping);
-				}
-			}
-			if (!is_fitting_first) {
-				continue;
-			}
-		} else if (ended > 0) {
+		if (ended > 0) {
 			p_setting->update_chain_coordinate(p_skeleton, TAIL, limit_length(p_setting->chain[HEAD], p_setting->chain[HEAD] + end_vector, solver_info->length));
 			if (p_setting->tilt_enabled) {
 				if (p_setting->tilt_fade_out < 0) {
@@ -436,6 +417,26 @@ void SplineIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, SplineI
 				}
 			}
 			continue;
+		} else if (point_count == 1 || HEAD <= chain_path_start) {
+			// Set twist only for first fitting joint.
+			bool update_coordinate = !is_fitting_first || point_count == 1;
+			if (update_coordinate) {
+				p_setting->update_chain_coordinate(p_skeleton, TAIL, limit_length(p_setting->chain[HEAD], p_setting->chain[HEAD] + start_vector, solver_info->length));
+			}
+			if (p_setting->tilt_enabled) {
+				if (p_setting->tilt_fade_in < 0) {
+					p_setting->twists[HEAD] = 0.0;
+				} else if (p_setting->tilt_fade_in == 0) {
+					p_setting->twists[HEAD] = tilts[0];
+				} else {
+					// Decreases monotonically in a straight line, fetch the distance.
+					double fade_in_dumping = CLAMP((double)(p_setting->chain[HEAD].distance_to(start_point) / fade_in_denom), 0.0, 1.0);
+					p_setting->twists[HEAD] = Math::lerp((double)tilts[0], 0.0, fade_in_dumping);
+				}
+			}
+			if (update_coordinate) {
+				continue;
+			}
 		}
 
 		// General case.

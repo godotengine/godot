@@ -188,7 +188,7 @@ void EditorCommandPalette::_confirmed() {
 	const String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
 	if (!command_key.is_empty()) {
 		hide();
-		callable_mp(this, &EditorCommandPalette::execute_command).call_deferred(command_key);
+		execute_command(command_key);
 	}
 }
 

@@ -166,7 +166,7 @@ void GraphNode::_resort() {
 	fit_child_in_rect(titlebar_hbox, titlebar_rect);
 
 	// After resort, the children of the titlebar container may have changed their height (e.g. Label autowrap).
-	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
+	Size2i titlebar_min_size = titlebar_hbox->get_bound_minimum_size();
 
 	// First pass, determine minimum size AND amount of stretchable elements.
 	Ref<StyleBox> sb_slot = theme_cache.slot;
@@ -185,11 +185,16 @@ void GraphNode::_resort() {
 		}
 
 		Size2i size = child->get_combined_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
+		Size2 max_size = child->get_combined_maximum_size();
 
 		stretch_min += size.height;
 
 		_MinSizeCache msc;
 		msc.min_size = size.height;
+		msc.max_size = max_size.height >= 0 ? int(max_size.height) + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().height : 0) : -1;
+		if (msc.max_size >= 0 && msc.max_size < msc.min_size) {
+			msc.min_size = msc.max_size;
+		}
 		msc.will_stretch = child->get_v_size_flags().has_flag(SIZE_EXPAND);
 		msc.final_size = msc.min_size;
 		min_size_cache[child] = msc;
@@ -230,15 +235,25 @@ void GraphNode::_resort() {
 			_MinSizeCache &msc = min_size_cache[child];
 
 			if (msc.will_stretch) {
-				int final_pixel_size = available_stretch_space * child->get_stretch_ratio() / stretch_ratio_total;
+				float stretch_ratio = child->get_stretch_ratio();
+				int final_pixel_size = available_stretch_space * stretch_ratio / stretch_ratio_total;
 				if (final_pixel_size < msc.min_size) {
 					// If the available stretching area is too small for a Control,
 					// then remove it from stretching area.
 					msc.will_stretch = false;
-					stretch_ratio_total -= child->get_stretch_ratio();
+					stretch_ratio_total -= stretch_ratio;
 					refit_successful = false;
 					available_stretch_space -= msc.min_size;
 					msc.final_size = msc.min_size;
+					break;
+				} else if (msc.max_size >= 0 && final_pixel_size > msc.max_size) {
+					// If stretching would exceed the Control's maximum size,
+					// cap it and redistribute its unused share.
+					msc.will_stretch = false;
+					stretch_ratio_total -= stretch_ratio;
+					refit_successful = false;
+					available_stretch_space -= msc.max_size;
+					msc.final_size = msc.max_size;
 					break;
 				} else {
 					msc.final_size = final_pixel_size;
@@ -544,74 +559,77 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 	GraphElement::gui_input(p_event);
 }
 
+String GraphNode::_get_accessibility_name() const {
+	String name = Control::_get_accessibility_name();
+	if (name.is_empty()) {
+		name = get_name();
+	}
+	name = vformat(ETR("graph node %s (%s)"), name, get_title());
+
+	if (slot_table.has(selected_slot)) {
+		GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+		Dictionary type_info;
+		if (graph) {
+			type_info = graph->get_type_names();
+		}
+		const Slot &slot = slot_table[selected_slot];
+		name += ", " + vformat(ETR("slot %d of %d"), selected_slot + 1, slot_count);
+		if (slot.enable_left) {
+			if (type_info.has(slot.type_left)) {
+				name += "," + vformat(ETR("input port, type: %s"), type_info[slot.type_left]);
+			} else {
+				name += "," + vformat(ETR("input port, type: %d"), slot.type_left);
+			}
+			if (graph) {
+				for (int i = 0; i < left_port_cache.size(); i++) {
+					if (left_port_cache[i].slot_index == selected_slot) {
+						String cd = graph->get_connections_description(get_name(), i);
+						if (cd.is_empty()) {
+							name += " " + ETR("no connections");
+						} else {
+							name += " " + cd;
+						}
+						break;
+					}
+				}
+			}
+		}
+		if (slot.enable_right) {
+			if (type_info.has(slot.type_right)) {
+				name += "," + vformat(ETR("output port, type: %s"), type_info[slot.type_right]);
+			} else {
+				name += "," + vformat(ETR("output port, type: %d"), slot.type_right);
+			}
+			if (graph) {
+				for (int i = 0; i < right_port_cache.size(); i++) {
+					if (right_port_cache[i].slot_index == selected_slot) {
+						String cd = graph->get_connections_description(get_name(), i);
+						if (cd.is_empty()) {
+							name += " " + ETR("no connections");
+						} else {
+							name += " " + cd;
+						}
+						break;
+					}
+				}
+			}
+		}
+		if (graph && graph->is_keyboard_connecting()) {
+			name += ", " + ETR("currently selecting target port");
+		}
+	} else {
+		name += ", " + vformat(ETR("has %d slots"), slot_count);
+	}
+	return name;
+}
+
 void GraphNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			String name = get_accessibility_name();
-			if (name.is_empty()) {
-				name = get_name();
-			}
-			name = vformat(ETR("graph node %s (%s)"), name, get_title());
-
-			if (slot_table.has(selected_slot)) {
-				GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-				Dictionary type_info;
-				if (graph) {
-					type_info = graph->get_type_names();
-				}
-				const Slot &slot = slot_table[selected_slot];
-				name += ", " + vformat(ETR("slot %d of %d"), selected_slot + 1, slot_count);
-				if (slot.enable_left) {
-					if (type_info.has(slot.type_left)) {
-						name += "," + vformat(ETR("input port, type: %s"), type_info[slot.type_left]);
-					} else {
-						name += "," + vformat(ETR("input port, type: %d"), slot.type_left);
-					}
-					if (graph) {
-						for (int i = 0; i < left_port_cache.size(); i++) {
-							if (left_port_cache[i].slot_index == selected_slot) {
-								String cd = graph->get_connections_description(get_name(), i);
-								if (cd.is_empty()) {
-									name += " " + ETR("no connections");
-								} else {
-									name += " " + cd;
-								}
-								break;
-							}
-						}
-					}
-				}
-				if (slot.enable_right) {
-					if (type_info.has(slot.type_right)) {
-						name += "," + vformat(ETR("output port, type: %s"), type_info[slot.type_right]);
-					} else {
-						name += "," + vformat(ETR("output port, type: %d"), slot.type_right);
-					}
-					if (graph) {
-						for (int i = 0; i < right_port_cache.size(); i++) {
-							if (right_port_cache[i].slot_index == selected_slot) {
-								String cd = graph->get_connections_description(get_name(), i);
-								if (cd.is_empty()) {
-									name += " " + ETR("no connections");
-								} else {
-									name += " " + cd;
-								}
-								break;
-							}
-						}
-					}
-				}
-				if (graph && graph->is_keyboard_connecting()) {
-					name += ", " + ETR("currently selecting target port");
-				}
-			} else {
-				name += ", " + vformat(ETR("has %d slots"), slot_count);
-			}
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST);
-			AccessibilityServer::get_singleton()->update_set_name(ae, name);
 			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_INPUT, ETR("Edit Input Port Connection"));
 			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT_OUTPUT, ETR("Edit Output Port Connection"));
 			AccessibilityServer::get_singleton()->update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW_INPUT, ETR("Follow Input Port Connection"));
@@ -992,7 +1010,7 @@ Size2 GraphNode::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size();
+		Size2i size = child->get_bound_minimum_size();
 		size.width += sb_panel->get_minimum_size().width;
 		if (slot_table.has(i)) {
 			size += slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();

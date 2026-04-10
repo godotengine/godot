@@ -360,7 +360,7 @@ private:
 
 	SelfList<GDScriptFunction> function_list{ this };
 	mutable Variant nil;
-	HashMap<int, Variant::Type> temporary_slots;
+	TightLocalVector<Pair<int, Variant::Type>> temporary_slots;
 	List<StackDebug> stack_debug;
 
 	Vector<int> code;

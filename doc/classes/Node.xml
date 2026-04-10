@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Node" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all scene objects.
 	</brief_description>
@@ -1275,6 +1275,10 @@
 		</constant>
 		<constant name="NOTIFICATION_WM_POSITION_CHANGED" value="1012">
 			Notification received when the window is moved.
+		</constant>
+		<constant name="NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED" value="1013">
+			Notification received when the output max linear value returned by [method Window.get_output_max_linear_value] has changed.
+			This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen.
 		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.

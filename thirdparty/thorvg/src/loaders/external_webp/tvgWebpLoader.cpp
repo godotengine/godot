@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-
 void WebpLoader::run(unsigned tid)
 {
     //TODO: acquire the current colorspace format & pre-multiplied alpha image.
@@ -58,7 +57,7 @@ WebpLoader::~WebpLoader()
 {
     done();
 
-    if (freeData) free(data);
+    if (freeData) tvg::free(data);
     data = nullptr;
     size = 0;
     freeData = false;
@@ -66,47 +65,27 @@ WebpLoader::~WebpLoader()
 }
 
 
-bool WebpLoader::open(const string& path)
+bool WebpLoader::open(const char* path)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    auto webpFile = fopen(path.c_str(), "rb");
-    if (!webpFile) return false;
-
-    auto ret = false;
-
-    //determine size
-    if (fseek(webpFile, 0, SEEK_END) < 0) goto finalize;
-    if (((size = ftell(webpFile)) < 1)) goto finalize;
-    if (fseek(webpFile, 0, SEEK_SET)) goto finalize;
-
-    data = (unsigned char *) malloc(size);
-    if (!data) goto finalize;
-
-    freeData = true;
-
-    if (fread(data, size, 1, webpFile) < 1) goto finalize;
+    if (!(data = (unsigned char*)LoadModule::open(path, size))) return false;
 
     int width, height;
-    if (!WebPGetInfo(data, size, &width, &height)) goto finalize;
-
+    if (!WebPGetInfo(data, size, &width, &height)) return false;
     w = static_cast<float>(width);
     h = static_cast<float>(height);
-
-    ret = true;
-
-finalize:
-    fclose(webpFile);
-    return ret;
+    freeData = true;
+    return true;
 #else
     return false;
 #endif
 }
 
 
-bool WebpLoader::open(const char* data, uint32_t size, bool copy)
+bool WebpLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
 {
     if (copy) {
-        this->data = (unsigned char *) malloc(size);
+        this->data = tvg::malloc<unsigned char>(size);
         if (!this->data) return false;
         memcpy((unsigned char *)this->data, data, size);
         freeData = true;

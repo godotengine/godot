@@ -1603,14 +1603,14 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 	}
 
 	static const MTL::LoadAction LOAD_ACTIONS[] = {
-		[ATTACHMENT_LOAD_OP_LOAD] = MTL::LoadActionLoad,
-		[ATTACHMENT_LOAD_OP_CLEAR] = MTL::LoadActionClear,
-		[ATTACHMENT_LOAD_OP_DONT_CARE] = MTL::LoadActionDontCare,
+		MTL::LoadActionLoad, // ATTACHMENT_LOAD_OP_LOAD
+		MTL::LoadActionClear, // ATTACHMENT_LOAD_OP_CLEAR
+		MTL::LoadActionDontCare, // ATTACHMENT_LOAD_OP_DONT_CARE
 	};
 
 	static const MTL::StoreAction STORE_ACTIONS[] = {
-		[ATTACHMENT_STORE_OP_STORE] = MTL::StoreActionStore,
-		[ATTACHMENT_STORE_OP_DONT_CARE] = MTL::StoreActionDontCare,
+		MTL::StoreActionStore, // ATTACHMENT_STORE_OP_STORE
+		MTL::StoreActionDontCare, // ATTACHMENT_STORE_OP_DONT_CARE
 	};
 
 	Vector<MDAttachment> attachments;
@@ -2262,20 +2262,16 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 
 // ----- ACCELERATION STRUCTURE -----
 
-RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_coun, BitField<AccelerationStructureGeometryBits> p_geometry_bits) {
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) {
 	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
-uint32_t RenderingDeviceDriverMetal::tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) {
-	ERR_FAIL_V_MSG(0, "Ray tracing is not currently supported by the Metal driver.");
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) {
+	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
-void RenderingDeviceDriverMetal::tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) {
+void RenderingDeviceDriverMetal::acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
-}
-
-RDD::AccelerationStructureID RenderingDeviceDriverMetal::tlas_create(BufferID p_instance_buffer) {
-	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
 void RenderingDeviceDriverMetal::acceleration_structure_free(RDD::AccelerationStructureID p_acceleration_structure) {
@@ -2288,7 +2284,7 @@ uint32_t RenderingDeviceDriverMetal::acceleration_structure_get_scratch_size_byt
 
 // ----- PIPELINE -----
 
-RDD::RaytracingPipelineID RenderingDeviceDriverMetal::raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::RaytracingPipelineID RenderingDeviceDriverMetal::raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) {
 	ERR_FAIL_V_MSG(RaytracingPipelineID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
@@ -2296,9 +2292,17 @@ void RenderingDeviceDriverMetal::raytracing_pipeline_free(RDD::RaytracingPipelin
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
+bool RenderingDeviceDriverMetal::raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data) {
+	ERR_FAIL_V_MSG(false, "Ray tracing is not currently supported by the Metal driver.");
+}
+
 // ----- COMMANDS -----
 
-void RenderingDeviceDriverMetal::command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+void RenderingDeviceDriverMetal::command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
@@ -2310,7 +2314,7 @@ void RenderingDeviceDriverMetal::command_bind_raytracing_uniform_set(CommandBuff
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
-void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 

@@ -239,7 +239,7 @@ void AcceptDialog::_update_child_rects() {
 	}
 
 	// Place the buttons from the bottom edge to their minimum required size.
-	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
+	Size2 buttons_minsize = buttons_hbox->get_bound_minimum_size();
 	Size2 buttons_size = Size2(dlg_size.x - h_margins, buttons_minsize.y);
 	Point2 buttons_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), dlg_size.y - theme_cache.panel_style->get_margin(SIDE_BOTTOM) - buttons_size.y);
 	buttons_hbox->set_position(buttons_position);
@@ -298,13 +298,13 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		Size2 child_minsize = c->get_combined_minimum_size();
+		Size2 child_minsize = c->get_bound_minimum_size();
 		content_minsize = child_minsize.max(content_minsize);
 	}
 
 	// Then we add buttons. Horizontally we're interested in whichever
 	// value is the biggest. Vertically buttons add to the overall size.
-	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
+	Size2 buttons_minsize = buttons_hbox->get_bound_minimum_size();
 	content_minsize.x = MAX(buttons_minsize.x, content_minsize.x);
 	content_minsize.y += buttons_minsize.y;
 	// Plus there is a separation size added on top.

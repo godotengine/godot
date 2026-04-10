@@ -265,9 +265,14 @@ int DirAccess::_get_drive_count() {
 	return d->get_drive_count();
 }
 
-String DirAccess::get_drive_name(int p_idx) {
+String DirAccess::_get_drive_name(int p_idx) {
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	return d->get_drive(p_idx);
+}
+
+String DirAccess::_get_drive_label(int p_idx) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	return d->get_drive_label(p_idx);
 }
 
 Error DirAccess::make_dir_absolute(const String &p_dir) {
@@ -646,7 +651,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_directories"), &DirAccess::get_directories);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_directories_at", "path"), &DirAccess::get_directories_at);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_count"), &DirAccess::_get_drive_count);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::get_drive_name);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::_get_drive_name);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_label", "idx"), &DirAccess::_get_drive_label);
 	ClassDB::bind_method(D_METHOD("get_current_drive"), &DirAccess::get_current_drive);
 	ClassDB::bind_method(D_METHOD("change_dir", "to_dir"), &DirAccess::change_dir);
 	ClassDB::bind_method(D_METHOD("get_current_dir", "include_drive"), &DirAccess::get_current_dir, DEFVAL(true));

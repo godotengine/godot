@@ -34,7 +34,9 @@
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
@@ -336,6 +338,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_custom_bg_color(0, parent_bg_color);
 			}
 			file_item->set_metadata(0, file_metadata);
+			file_item->set_accept_children(false);
 			if (!p_select_in_favorites && current_path == file_metadata) {
 				file_item->select(0);
 				file_item->set_as_cursor(0);
@@ -391,6 +394,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	tree_update_id++;
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
+	root->set_accept_children(false);
 	folder_map.clear();
 
 	// Handles the favorites.
@@ -458,6 +462,11 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		ti->set_tooltip_text(0, favorite);
 		ti->set_selectable(0, true);
 		ti->set_metadata(0, favorite);
+		ti->set_accept_children(false);
+
+		if (favorite == main_scene_path) {
+			ti->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		}
 
 		if (!favorite.ends_with("/")) {
 			EditorResourcePreview::get_singleton()->queue_resource_preview(favorite, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, ti->get_instance_id()));
@@ -1713,6 +1722,10 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 		}
 	}
 
+	if (p_renames.has(main_scene_path)) {
+		main_scene_path = p_renames[main_scene_path];
+	}
+
 	// Update folder colors.
 	for (const KeyValue<String, String> &rename : p_folders_renames) {
 		if (assigned_folder_colors.has(rename.key)) {
@@ -2022,7 +2035,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			overwrite_dialog_footer->set_text(
 					p_copy ? TTRC("Do you wish to overwrite them or rename the copied files?")
 						   : TTRC("Do you wish to overwrite them or rename the moved files?"));
-			overwrite_dialog->popup_centered();
+			overwrite_dialog->popup_centered_ratio(0.6);
 			return;
 		}
 	}
@@ -2537,7 +2550,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 			if (to_move.size() > 0) {
 				move_dialog->config(p_selected);
-				move_dialog->popup_centered_ratio(0.4);
+				move_dialog->popup_centered_ratio(0.5);
 			}
 		} break;
 
@@ -3276,8 +3289,9 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 	// In the tree.
 	if (p_from == tree) {
 		TreeItem *ti = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_selected() : tree->get_item_at_position(p_point);
-		int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 		if (ti) {
+			int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
+
 			// Check the favorites first.
 			if (ti == tree->get_root()->get_first_child() && section >= 0) {
 				target_favorites = true;
@@ -3287,7 +3301,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 				return;
 			} else {
 				String fpath = ti->get_metadata(0);
-				if (section == 0) {
+				if (section == 0 || section == 2) {
 					if (fpath.ends_with("/")) {
 						// We drop on a folder.
 						target = fpath;
@@ -4527,7 +4541,8 @@ FileSystemDock::FileSystemDock() {
 
 	overwrite_dialog_scroll = memnew(ScrollContainer);
 	overwrite_dialog_vb->add_child(overwrite_dialog_scroll);
-	overwrite_dialog_scroll->set_custom_minimum_size(Vector2(400, 600) * EDSCALE);
+	overwrite_dialog_scroll->set_custom_minimum_size(Vector2(50, 50) * EDSCALE);
+	overwrite_dialog_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	overwrite_dialog_file_list = memnew(Label);
 	overwrite_dialog_scroll->add_child(overwrite_dialog_file_list);

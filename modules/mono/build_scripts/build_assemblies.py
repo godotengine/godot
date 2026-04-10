@@ -273,9 +273,16 @@ def generate_sdk_package_versions():
     version_info = get_version_info("")
     sys.path.remove(root_path)
 
-    version_str = "{major}.{minor}.{patch}".format(**version_info)
     version_status = version_info["status"]
-    if version_status != "stable":  # Pre-release
+    godotsharp_version_str = "{major}.{minor}.{patch}".format(**version_info)
+    godot_dotnet_version_str = "{major}.{minor}.{patch}".format(**version_info)
+    if version_status == "stable":
+        # For stable versions, use the latest revision version available
+        # of the Godot .NET packages.
+        godot_dotnet_version_str = ".*"
+    else:
+        # Pre-releases and development builds.
+
         # If version was overridden to be e.g. "beta3", we insert a dot between
         # "beta" and "3" to follow SemVer 2.0.
         import re
@@ -283,8 +290,23 @@ def generate_sdk_package_versions():
         match = re.search(r"[\d]+$", version_status)
         if match:
             pos = match.start()
-            version_status = version_status[:pos] + "." + version_status[pos:]
-        version_str += "-" + version_status
+            godotsharp_version_status = version_status[:pos]
+            godot_dotnet_version_status = version_status[:pos]
+
+            # "dev" pre-releases always use the "alpha" label in the Godot .NET packages.
+            if godot_dotnet_version_status == "dev":
+                godot_dotnet_version_status = "alpha"
+
+            godotsharp_version_status += f".{version_status[pos:]}"
+            godot_dotnet_version_status += f".{version_status[pos:]}"
+        else:
+            # If the version status is not numbered, it must be a development build.
+            # Development builds always use the "dev" label in the Godot .NET packages.
+            godot_dotnet_version_status = "dev"
+            godotsharp_version_status = version_status
+
+        godotsharp_version_str += f"-{godotsharp_version_status}"
+        godot_dotnet_version_str += f"-{godot_dotnet_version_status}"
 
     import version
 
@@ -299,15 +321,16 @@ def generate_sdk_package_versions():
         + [f"GODOT{version.major}_{version.minor}_{v}_OR_GREATER" for v in range(0, version.patch + 1)]
     )
 
-    props = """<Project>
+    props = f"""<Project>
   <PropertyGroup>
-    <PackageVersion_GodotSharp>{0}</PackageVersion_GodotSharp>
-    <PackageVersion_Godot_NET_Sdk>{0}</PackageVersion_Godot_NET_Sdk>
-    <PackageVersion_Godot_SourceGenerators>{0}</PackageVersion_Godot_SourceGenerators>
-    <GodotVersionConstants>{1}</GodotVersionConstants>
+    <PackageVersion_GodotSharp>{godotsharp_version_str}</PackageVersion_GodotSharp>
+    <PackageVersion_Godot_NET_Sdk>{godotsharp_version_str}</PackageVersion_Godot_NET_Sdk>
+    <PackageVersion_Godot_SourceGenerators>{godotsharp_version_str}</PackageVersion_Godot_SourceGenerators>
+    <PackageVersion_GodotDotNet>{godot_dotnet_version_str}</PackageVersion_GodotDotNet>
+    <GodotVersionConstants>{";".join(version_defines)}</GodotVersionConstants>
   </PropertyGroup>
 </Project>
-""".format(version_str, ";".join(version_defines))
+"""
 
     # We write in ../SdkPackageVersions.props.
     with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:

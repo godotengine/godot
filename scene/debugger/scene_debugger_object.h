@@ -43,7 +43,6 @@ class Script;
 class SceneDebuggerObject {
 private:
 	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
-	static String _parse_type_from_remote_object(const Variant &p_variant);
 
 public:
 	typedef Pair<PropertyInfo, Variant> SceneDebuggerProperty;

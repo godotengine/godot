@@ -36,11 +36,13 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
+#include "core/variant/dictionary.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -2126,6 +2128,25 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	String path = ResourceLoader::path_remap(local_path);
 
+	// Reuse an already-open TextFile resource to avoid creating duplicates.
+	// This prevents opening the same file multiple times as "unsaved" tabs.
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (!seb) {
+			continue;
+		}
+
+		if (seb->edited_file_data.path == local_path) {
+			Ref<TextFile> existing_text_file = seb->get_edited_resource();
+			if (existing_text_file.is_valid()) {
+				if (r_error) {
+					*r_error = OK;
+				}
+				return existing_text_file;
+			}
+		}
+	}
+
 	Ref<TextFile> text_file;
 	text_file.instantiate();
 	Error err = text_file->load_text(path);
@@ -2558,7 +2579,9 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 		}
 
 		if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
+			Dictionary state = teb->get_edit_state();
 			teb->reload_text();
+			teb->set_edit_state(state);
 		}
 	}
 
@@ -2621,6 +2644,20 @@ Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 		return text_file;
 	}
 	return Ref<Resource>();
+}
+
+Error ScriptEditor::close_file(const String &p_file) {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (seb && seb->get_edited_resource()->get_path() == p_file) {
+			if (seb->is_unsaved()) {
+				seb->get_edited_resource()->reload_from_file();
+			}
+			_close_tab(i, false, _get_current_editor() == seb);
+			return OK;
+		}
+	}
+	return ERR_FILE_NOT_FOUND;
 }
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
@@ -3635,7 +3672,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 	if (ResourceLoader::exists(fpath)) {
 		Ref<Resource> res = ResourceLoader::load(fpath);
 
-		if (fpath.get_extension() == "gdshader") {
+		if (fpath.has_extension("gdshader") || fpath.has_extension("gdshaderinc")) {
 			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
@@ -3644,7 +3681,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 				text_shader_editor->goto_line_selection(line_number - 1, begin, end);
 			}
 			return;
-		} else if (fpath.get_extension() == "tscn") {
+		} else if (fpath.has_extension("tscn")) {
 			const PackedStringArray lines = FileAccess::get_file_as_string(fpath).split("\n");
 			if (line_number > lines.size()) {
 				return;
@@ -3790,6 +3827,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unsaved_files"), &ScriptEditor::get_unsaved_files);
 
 	ClassDB::bind_method(D_METHOD("save_all_scripts"), &ScriptEditor::save_all_scripts);
+	ClassDB::bind_method(D_METHOD("close_file", "path"), &ScriptEditor::close_file);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static())));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static())));

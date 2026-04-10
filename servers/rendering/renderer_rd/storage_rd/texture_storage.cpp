@@ -659,9 +659,9 @@ void TextureStorage::_tex_blit_shader_initialize() {
 		ShaderCompiler::DefaultIdentifierActions actions;
 
 		actions.renames["TIME"] = "data.time";
-		actions.renames["PI"] = _MKSTR(Math_PI);
-		actions.renames["TAU"] = _MKSTR(Math_TAU);
-		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 
@@ -3463,7 +3463,8 @@ void TextureStorage::update_decal_atlas() {
 			int *v_offsets = v_offsetsv.ptrw();
 			memset(v_offsets, 0, sizeof(int) * base_size);
 
-			int max_height = 0;
+			// Take border into account for minimum height.
+			int max_height = 2;
 
 			for (int i = 0; i < item_count; i++) {
 				//best fit

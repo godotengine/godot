@@ -196,11 +196,19 @@ private:
 	Node3D *ruler_start_point = nullptr;
 	Node3D *ruler_end_point = nullptr;
 	Ref<ImmediateMesh> geometry;
+	Ref<ImmediateMesh> geometry_xray;
 	MeshInstance3D *ruler_line = nullptr;
 	MeshInstance3D *ruler_line_xray = nullptr;
 	Label *ruler_label = nullptr;
 	Ref<StandardMaterial3D> ruler_material;
 	Ref<StandardMaterial3D> ruler_material_xray;
+	Ref<StandardMaterial3D> ruler_triangle_material;
+	Ref<StandardMaterial3D> ruler_triangle_material_xray;
+	MeshInstance3D *ruler_triangle_lines = nullptr;
+	MeshInstance3D *ruler_triangle_lines_xray = nullptr;
+	Label *ruler_label_x = nullptr;
+	Label *ruler_label_y = nullptr;
+	Label *ruler_label_z = nullptr;
 
 	int index;
 	void _menu_option(int p_option);
@@ -386,6 +394,7 @@ private:
 	void _update_view_3d_controller(bool p_update_all = true);
 
 	void _cursor_interpolated();
+	void _cursor_distance_scaled();
 
 	void _freelook_changed();
 	void _freelook_speed_scaled();
@@ -617,7 +626,6 @@ public:
 	};
 
 	real_t gizmo_view_rotation_scale = 1.0;
-	real_t gizmo_view_rotation_shrink = 1.0;
 
 private:
 	EditorSelection *editor_selection = nullptr;

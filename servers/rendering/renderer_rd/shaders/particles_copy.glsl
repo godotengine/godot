@@ -318,7 +318,7 @@ void main() {
 			inv_emission_transform[1] = vec4(params.inv_emission_transform[3], params.inv_emission_transform[4], params.inv_emission_transform[5], 0.0);
 			inv_emission_transform[2] = vec4(params.inv_emission_transform[6], params.inv_emission_transform[7], params.inv_emission_transform[8], 0.0);
 			inv_emission_transform[3] = vec4(params.inv_emission_transform[9], params.inv_emission_transform[10], params.inv_emission_transform[11], 1.0);
-			inv_emission_transform = transpose(inv_emission_transform);
+
 			txform = inv_emission_transform * txform;
 		}
 	} else {

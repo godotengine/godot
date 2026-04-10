@@ -34,6 +34,8 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -918,15 +920,26 @@ bool EditorFileSystem::_update_scan_actions() {
 				const String new_file_path = ia.dir->get_file_path(idx);
 				const ResourceUID::ID existing_id = ResourceLoader::get_resource_uid(new_file_path);
 				if (existing_id != ResourceUID::INVALID_ID) {
-					const String old_path = ResourceUID::get_singleton()->get_id_path(existing_id);
-					if (old_path != new_file_path && FileAccess::exists(old_path)) {
+					const bool id_known = ResourceUID::get_singleton()->has_id(existing_id);
+					const String old_path = id_known ? ResourceUID::get_singleton()->get_id_path(existing_id) : String();
+
+					if (id_known && old_path != new_file_path && FileAccess::exists(old_path)) {
 						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
 						ResourceSaver::set_uid(new_file_path, new_id);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
+						ia.new_file->uid = new_id;
 					} else {
 						// Re-assign the UID to file, just in case it was pulled from cache.
 						ResourceSaver::set_uid(new_file_path, existing_id);
+
+						if (id_known) {
+							ResourceUID::get_singleton()->set_id(existing_id, new_file_path);
+						} else {
+							ResourceUID::get_singleton()->add_id(existing_id, new_file_path);
+						}
+
+						ia.new_file->uid = existing_id;
 					}
 				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
@@ -3140,7 +3153,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		Error err = OK;
 		Ref<Resource> res = ResourceCache::get_ref(p_from);
 		if (res.is_null()) {
-			res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+			res = ResourceLoader::load(p_from, "", ResourceLoaderConstants::CACHE_MODE_REUSE, &err);
 		} else {
 			bool edited = false;
 			List<Ref<Resource>> cached;
@@ -3441,7 +3454,7 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 	return OK;
 }
 
-Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode) {
+Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceLoaderConstants::CacheMode p_cache_mode) {
 	ERR_FAIL_NULL_V(p_importer, Ref<Resource>());
 
 	if (!FileAccess::exists(p_path)) {

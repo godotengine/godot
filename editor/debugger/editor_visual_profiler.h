@@ -88,6 +88,7 @@ private:
 	int hover_metric = -1;
 
 	StringName selected_area;
+	HashMap<StringName, bool> category_folding;
 
 	bool updating_frame = false;
 
@@ -116,6 +117,7 @@ private:
 
 	//void _make_metric_ptrs(Metric &m);
 	void _item_selected();
+	void _item_collapsed(TreeItem *p_item);
 
 	void _update_plot();
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorContextMenuPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorContextMenuPlugin" inherits="RefCounted" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Plugin for adding custom context menus in the editor.
 	</brief_description>
@@ -116,6 +116,9 @@
 				var canvas_item = Engine.get_main_loop().root.get_node(paths[0]); # Replace 0 with the desired index.
 			[/codeblock]
 			The paths array is empty if there weren't any nodes under cursor. The option callback will receive a typed array of [CanvasItem] nodes.
+		</constant>
+		<constant name="CONTEXT_SLOT_INSPECTOR_PROPERTY" value="7" enum="ContextMenuSlot">
+			Context menu of the inspectors right-click menu. [method _popup_menu] will be called with an array of two items: The first will be the object's ID, the second will be the property name. An object can be retrieved from it's ID via [method @GlobalScope.instance_from_id] after converting it to an int. The option callback will receive the EditorProperty directly.
 		</constant>
 	</constants>
 </class>

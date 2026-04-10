@@ -1101,6 +1101,9 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 		case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
 			tex = get_editor_theme_icon(SNAME("MemberMethod"));
 			break;
+		case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+			tex = get_editor_theme_icon(SNAME("Keyword"));
+			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 			tex = get_editor_theme_icon(SNAME("BoxMesh"));
 			break;
@@ -1503,21 +1506,27 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	if (state.has("folded_lines")) {
 		const PackedInt32Array folded_lines = state["folded_lines"];
 		for (const int &line : folded_lines) {
-			text_editor->fold_line(line);
+			if (line < text_editor->get_line_count()) {
+				text_editor->fold_line(line);
+			}
 		}
 	}
 
 	if (state.has("breakpoints")) {
 		const PackedInt32Array breakpoints = state["breakpoints"];
 		for (const int &line : breakpoints) {
-			text_editor->set_line_as_breakpoint(line, true);
+			if (line < text_editor->get_line_count()) {
+				text_editor->set_line_as_breakpoint(line, true);
+			}
 		}
 	}
 
 	if (state.has("bookmarks")) {
 		const PackedInt32Array bookmarks = state["bookmarks"];
 		for (const int &line : bookmarks) {
-			text_editor->set_line_as_bookmarked(line, true);
+			if (line < text_editor->get_line_count()) {
+				text_editor->set_line_as_bookmarked(line, true);
+			}
 		}
 	}
 
@@ -1635,6 +1644,11 @@ void CodeTextEditor::_update_text_editor_theme() {
 	}
 
 	_update_font_ligatures();
+
+	update_editor_settings();
+	if (text_editor->get_code_completion_selected_index() != -1) {
+		_complete_request();
+	}
 }
 
 void CodeTextEditor::_update_font_ligatures() {

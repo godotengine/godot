@@ -349,6 +349,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static String get_as_plain_text(const String &p_symbol, const String &p_prologue = String());
+
 	void parse_symbol(const String &p_symbol, const String &p_prologue = String());
 	void set_custom_text(const String &p_type, const String &p_name, const String &p_description);
 
