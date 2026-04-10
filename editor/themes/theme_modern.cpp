@@ -2029,16 +2029,28 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", margin);
 
 			// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
-			p_theme->set_type_variation("NoBorderAssetLib", "NoBorderHorizontal");
+
+			p_theme->set_type_variation("NoBorderAssetLib", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAssetLib", -p_config.base_margin);
+			p_theme->set_constant("margin_right", "NoBorderAssetLib", -p_config.base_margin);
 			p_theme->set_constant("margin_bottom", "NoBorderAssetLib", -p_config.base_margin);
+
+			p_theme->set_type_variation("NoBorderAssetLibHorizontal", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAssetLibHorizontal", -p_config.base_margin);
+			p_theme->set_constant("margin_right", "NoBorderAssetLibHorizontal", -p_config.base_margin);
 
 			margin = -panel_margin - p_config.base_margin;
 
 			// Same as above, but with the margins adapted for the project manager.
-			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "NoBorderHorizontal");
+
+			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "MarginContainer");
 			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
 			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
 			p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
+
+			p_theme->set_type_variation("NoBorderAssetLibProjectManagerHorizontal", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManagerHorizontal", margin);
+			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManagerHorizontal", margin);
 
 			int bottom_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
 			margin = -bottom_margin;
