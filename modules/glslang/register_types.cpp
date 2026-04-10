@@ -33,6 +33,7 @@
 #include "shader_compile.h"
 
 #include "core/config/engine.h"
+#include "core/io/file_access.h"
 
 #ifdef D3D12_ENABLED
 #include "core/os/os.h"
@@ -46,7 +47,78 @@ GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
 
 GODOT_GCC_WARNING_POP
 
-Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_stage, const String &p_source_code, RenderingDeviceCommons::ShaderLanguageVersion p_language_version, RenderingDeviceCommons::ShaderSpirvVersion p_spirv_version, String *r_error) {
+class GlslIncluder : public glslang::TShader::Includer {
+	static const int max_depth = 1000;
+
+	int num_base_include_dirs = 0;
+	Vector<String> dirs;
+
+	IncludeResult *new_error(const String &p_error_message) const {
+		CharString cs_error_message = p_error_message.utf8();
+		char *cs_error_message_ptr = (char *)memalloc(cs_error_message.length() + 1);
+		memcpy(cs_error_message_ptr, cs_error_message.get_data(), cs_error_message.length() + 1);
+
+		return memnew(IncludeResult("", cs_error_message_ptr, cs_error_message.length(), cs_error_message_ptr));
+	}
+
+public:
+	void add_include_dirs(const Vector<String> &p_include_dirs) {
+		dirs.append_array(p_include_dirs);
+		num_base_include_dirs += p_include_dirs.size();
+	}
+
+	virtual IncludeResult *includeSystem(const char *p_header_name, const char *p_includer_name, size_t p_inclusion_depth) override {
+		if (p_inclusion_depth > max_depth) {
+			return new_error(vformat("Inclusion depth (%d) exceeded maximum (%d)", p_inclusion_depth, max_depth));
+		}
+
+		dirs.resize(num_base_include_dirs + p_inclusion_depth - 1);
+
+		String include_path = p_header_name;
+		if (include_path.is_relative_path()) {
+			for (int i = dirs.size() - 1; i >= 0; --i) {
+				String tmp_include = dirs[i].path_join(include_path);
+				if (FileAccess::exists(tmp_include)) {
+					include_path = tmp_include;
+					break;
+				}
+			}
+		}
+
+		Error err;
+		Ref<FileAccess> file_inc = FileAccess::open(include_path, FileAccess::READ, &err);
+		if (err == OK) {
+			dirs.append(include_path.get_base_dir());
+			CharString cs_include_path = include_path.utf8();
+
+			CharString cs_include_content = file_inc->get_as_utf8_string().utf8();
+			char *cs_include_content_ptr = (char *)memalloc(cs_include_content.length() + 1);
+			memcpy(cs_include_content_ptr, cs_include_content.get_data(), cs_include_content.length() + 1);
+
+			return memnew(IncludeResult(cs_include_path.get_data(), cs_include_content_ptr, cs_include_content.length(), cs_include_content_ptr));
+		}
+
+		return nullptr;
+	}
+
+	virtual IncludeResult *includeLocal(const char *p_header_name, const char *p_includer_name, size_t p_inclusion_depth) override {
+		// This will fall-through to includeSystem. See thirdparty/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp#L717
+		return nullptr;
+	}
+
+	virtual void releaseInclude(IncludeResult *p_include_result) override {
+		if (p_include_result) {
+			if (p_include_result->userData) {
+				memfree(p_include_result->userData);
+			}
+			memdelete(p_include_result);
+		}
+	}
+
+	virtual ~GlslIncluder() override {}
+};
+
+Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_stage, const String &p_source_code, RenderingDeviceCommons::ShaderLanguageVersion p_language_version, RenderingDeviceCommons::ShaderSpirvVersion p_spirv_version, String *r_error, const String &p_source_file_path, const Vector<String> &p_include_dirs) {
 	Vector<uint8_t> ret;
 	EShLanguage stages[RenderingDeviceCommons::SHADER_STAGE_MAX] = {
 		EShLangVertex,
@@ -70,9 +142,12 @@ Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_sta
 	glslang::TShader shader(stages[p_stage]);
 	CharString cs = p_source_code.utf8();
 	const char *cs_strings = cs.get_data();
+	int source_code_length = cs.length();
 	std::string preamble = "";
 
-	shader.setStrings(&cs_strings, 1);
+	CharString cs_source_file_path = p_source_file_path.utf8();
+	const char *cs_names = cs_source_file_path.get_data();
+	shader.setStringsWithLengthsAndNames(&cs_strings, &source_code_length, &cs_names, 1);
 	shader.setEnvInput(glslang::EShSourceGlsl, stages[p_stage], glslang::EShClientVulkan, ClientInputSemanticsVersion);
 	shader.setEnvClient(glslang::EShClientVulkan, ClientVersion);
 	shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
@@ -95,8 +170,15 @@ Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_sta
 	}
 	const int DefaultVersion = 100;
 
+	GlslIncluder includer = {};
+
+	includer.add_include_dirs(p_include_dirs);
+	if (!p_source_file_path.is_empty()) {
+		includer.add_include_dirs({ p_source_file_path.get_base_dir() });
+	}
+
 	//parse
-	if (!shader.parse(GetDefaultResources(), DefaultVersion, false, messages)) {
+	if (!shader.parse(GetDefaultResources(), DefaultVersion, false, messages, includer)) {
 		if (r_error) {
 			(*r_error) = "Failed parse:\n";
 			(*r_error) += shader.getInfoLog();
