@@ -219,7 +219,9 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	struct Warning {
+		/// One-based.
 		int start_line = 0;
+		/// One-based.
 		int end_line = 0;
 		int code;
 		String string_code;
@@ -228,7 +230,9 @@ public:
 
 	struct ScriptError {
 		String path;
+		/// One-based.
 		int line = -1;
+		/// One-based.
 		int column = -1;
 		String message;
 	};

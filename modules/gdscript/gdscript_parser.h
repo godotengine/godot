@@ -271,10 +271,10 @@ public:
 		// };
 		// Type type = NO_ERROR;
 		String message;
-		int start_line = 0;
-		int start_column = 0;
-		int end_line = 0;
-		int end_column = 0;
+		int start_line;
+		int start_column;
+		int end_line;
+		int end_column;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -342,10 +342,11 @@ public:
 		};
 
 		Type type = NONE;
-		int start_line = 0;
-		int start_column = 0;
-		int end_line = 0;
-		int end_column = 0;
+		// Negative values indicate a node which was used for sentence level recovery.
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
