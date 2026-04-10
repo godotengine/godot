@@ -32,12 +32,11 @@
 
 #include "3d/nav_region_iteration_3d.h"
 #include "nav_base_3d.h"
-#include "nav_utils_3d.h"
 
 #include "core/object/worker_thread_pool.h"
-#include "core/os/rw_lock.h"
 #include "scene/resources/navigation_mesh.h"
 
+// Handles iterations and syncs of NavigationRegion3D in case something changed - does not cover baking a navmesh.
 class NavRegion3D : public NavBase3D {
 	RWLock region_rwlock;
 
@@ -57,9 +56,9 @@ class NavRegion3D : public NavBase3D {
 
 	SelfList<NavRegion3D> sync_dirty_request_list_element;
 	mutable RWLock iteration_rwlock;
-	Ref<NavRegionIteration3D> iteration;
+	Ref<NavRegionIteration3D> iteration; // Snapshot of `iteration_build.region`_iteration. See `NavRegion3D::_sync_iteration()`.
 
-	NavRegionIterationBuild3D iteration_build;
+	NavRegionIterationBuild3D iteration_build; // Gets cleared after flushing to `iteration`. See `NavRegion3D::_sync_iteration()`.
 	bool use_async_iterations = true;
 	SelfList<NavRegion3D> async_list_element;
 	WorkerThreadPool::TaskID iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
@@ -110,10 +109,13 @@ public:
 
 	// NavBase properties.
 	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
+#ifndef DISABLE_DEPRECATED
 	virtual void set_enter_cost(real_t p_enter_cost) override;
 	virtual void set_travel_cost(real_t p_travel_cost) override;
+#endif // DISABLE_DEPRECATED
 	virtual void set_owner_id(ObjectID p_owner_id) override;
 
+	// Called by map, see `NavMap3D::sync()`:
 	bool sync();
 	void request_sync();
 	void cancel_sync_request();

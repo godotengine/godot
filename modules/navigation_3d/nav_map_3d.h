@@ -47,9 +47,16 @@
 
 class NavLink3D;
 class NavRegion3D;
+class NavArea3D;
 class NavAgent3D;
 class NavObstacle3D;
 
+// Holds regions, agents, obstacles, areas, and links.
+// Handles (or delegates to thirdparty library):
+// * parsing of NavArea3D objects created via server
+// * map iterations/syncs
+// * path queries for agents
+// * local avoidance
 class NavMap3D : public NavRid3D {
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
@@ -76,6 +83,10 @@ class NavMap3D : public NavRid3D {
 
 	/// Map regions
 	LocalVector<NavRegion3D *> regions;
+
+	/// Map areas
+	// NOTE: only affect navmesh baking, not syncs/iterations.
+	LocalVector<NavArea3D *> areas;
 
 	/// Map links
 	LocalVector<NavLink3D *> links;
@@ -110,11 +121,17 @@ class NavMap3D : public NavRid3D {
 	// Performance Monitor
 	Nav3D::PerformanceData performance_data;
 
+	// To keep track of the different sources that can trigger a map iteration.
+	// Is one of the sources to set `iteration_dirty` to true.
 	struct {
 		struct {
 			RWLock rwlock;
 			SelfList<NavRegion3D>::List list;
 		} regions;
+		struct {
+			RWLock rwlock;
+			SelfList<NavArea3D>::List list;
+		} areas;
 		struct {
 			RWLock rwlock;
 			SelfList<NavLink3D>::List list;
@@ -211,6 +228,12 @@ public:
 		return regions;
 	}
 
+	void add_area(NavArea3D *p_area);
+	void remove_area(NavArea3D *p_area);
+	const LocalVector<NavArea3D *> &get_areas() const {
+		return areas;
+	}
+
 	void add_link(NavLink3D *p_link);
 	void remove_link(NavLink3D *p_link);
 	const LocalVector<NavLink3D *> &get_links() const {
@@ -250,6 +273,7 @@ public:
 	int get_pm_edge_connection_count() const { return performance_data.pm_edge_connection_count; }
 	int get_pm_edge_free_count() const { return performance_data.pm_edge_free_count; }
 	int get_pm_obstacle_count() const { return performance_data.pm_obstacle_count; }
+	int get_pm_area_count() const { return performance_data.pm_area_count; }
 
 	int get_region_connections_count(NavRegion3D *p_region) const;
 	Vector3 get_region_connection_pathway_start(NavRegion3D *p_region, int p_connection_id) const;
@@ -262,11 +286,13 @@ public:
 	void add_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request);
 	void add_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request);
 	void add_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request);
+	void add_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 
 	void remove_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_request);
 	void remove_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request);
 	void remove_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request);
 	void remove_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request);
+	void remove_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 
 	void set_use_async_iterations(bool p_enabled);
 	bool get_use_async_iterations() const;

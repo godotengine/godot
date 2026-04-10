@@ -49,10 +49,16 @@ struct NavRegionIterationBuild3D {
 	struct NavMeshData {
 		Vector<Vector3> vertices;
 		Vector<Vector<int>> polygons;
+		Vector<uint32_t> polygons_meta; // Will be stored in `Nav3D::Polygon` later on.
+		Vector<uint16_t> polygons_meta_ids;
+		Vector<Vector<int>> polygons_meta_indices;
 
 		void clear() {
 			vertices.clear();
 			polygons.clear();
+			polygons_meta.clear();
+			polygons_meta_ids.clear();
+			polygons_meta_indices.clear();
 		}
 	} navmesh_data;
 
@@ -76,7 +82,7 @@ public:
 	Transform3D transform;
 	real_t surface_area = 0.0;
 	AABB bounds;
-	LocalVector<Nav3D::ConnectableEdge> external_edges;
+	LocalVector<Nav3D::ConnectableEdge> external_edges; // Not connected to any other edge, yet!
 
 	const Transform3D &get_transform() const { return transform; }
 	real_t get_surface_area() const { return surface_area; }

@@ -31,14 +31,13 @@
 #pragma once
 
 #include "../nav_agent_3d.h"
+#include "../nav_area_3d.h"
 #include "../nav_link_3d.h"
 #include "../nav_map_3d.h"
 #include "../nav_obstacle_3d.h"
 #include "../nav_region_3d.h"
 
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
-#include "core/templates/rid_owner.h"
 #include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
 #include "servers/navigation_3d/navigation_path_query_result_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
@@ -74,6 +73,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	mutable RID_Owner<NavLink3D> link_owner;
 	mutable RID_Owner<NavMap3D> map_owner;
 	mutable RID_Owner<NavRegion3D> region_owner;
+	mutable RID_Owner<NavArea3D> area_owner;
 	mutable RID_Owner<NavAgent3D> agent_owner;
 	mutable RID_Owner<NavObstacle3D> obstacle_owner;
 
@@ -92,6 +92,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
 	int pm_obstacle_count = 0;
+	int pm_area_count = 0;
 
 public:
 	GodotNavigationServer3D();
@@ -158,10 +159,12 @@ public:
 	COMMAND_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled);
 	virtual bool region_get_use_edge_connections(RID p_region) const override;
 
+#ifndef DISABLE_DEPRECATED
 	COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost);
 	virtual real_t region_get_enter_cost(RID p_region) const override;
 	COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost);
 	virtual real_t region_get_travel_cost(RID p_region) const override;
+#endif // DISABLE_DEPRECATED
 
 	COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id);
 	virtual ObjectID region_get_owner_id(RID p_region) const override;
@@ -187,6 +190,32 @@ public:
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override;
 	virtual AABB region_get_bounds(RID p_region) const override;
 
+	virtual RID area_create(AreaShapeType3D p_shape_type) override;
+	virtual AreaShapeType3D area_get_shape_type(RID p_area) const override;
+	COMMAND_2(area_set_map, RID, p_area, RID, p_map);
+	virtual RID area_get_map(RID p_area) const override;
+	COMMAND_2(area_set_id, RID, p_area, uint16_t, p_id);
+	virtual uint16_t area_get_id(RID p_area) const override;
+	COMMAND_2(area_set_enabled, RID, p_area, bool, p_enabled);
+	virtual bool area_get_enabled(RID p_area) const override;
+	COMMAND_2(area_set_position, RID, p_area, Vector3, p_position);
+	virtual Vector3 area_get_position(RID p_area) const override;
+	COMMAND_2(area_set_height, RID, p_area, real_t, p_height);
+	virtual real_t area_get_height(RID p_area) const override;
+	COMMAND_2(area_set_navigation_layers, RID, p_area, uint32_t, p_navigation_layers);
+	virtual uint32_t area_get_navigation_layers(RID p_area) const override;
+	COMMAND_2(area_set_bake_priority, RID, p_area, int, p_priority);
+	virtual int area_get_bake_priority(RID p_area) const override;
+	COMMAND_2(area_set_size, RID, p_area, Vector3, p_size);
+	virtual Vector3 area_get_size(RID p_area) const override;
+	// virtual AABB area_get_bounds(RID p_area) const override;
+	COMMAND_2(area_set_radius, RID, p_area, real_t, p_radius);
+	virtual real_t area_get_radius(RID p_area) const override;
+	COMMAND_2(area_set_elevation, RID, p_area, real_t, p_elevation);
+	virtual real_t area_get_elevation(RID p_area) const override;
+	virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) override;
+	virtual Vector<Vector3> area_get_vertices(RID p_area) const override;
+
 	virtual RID link_create() override;
 	virtual uint32_t link_get_iteration_id(RID p_link) const override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
@@ -201,10 +230,12 @@ public:
 	virtual Vector3 link_get_start_position(RID p_link) const override;
 	COMMAND_2(link_set_end_position, RID, p_link, Vector3, p_position);
 	virtual Vector3 link_get_end_position(RID p_link) const override;
+#ifndef DISABLE_DEPRECATED
 	COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost);
 	virtual real_t link_get_enter_cost(RID p_link) const override;
 	COMMAND_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost);
 	virtual real_t link_get_travel_cost(RID p_link) const override;
+#endif // DISABLE_DEPRECATED
 	COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id);
 	virtual ObjectID link_get_owner_id(RID p_link) const override;
 
@@ -269,6 +300,7 @@ public:
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override;
 
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
+	virtual void parse_map_geometry_meta_data(const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, RID p_map, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;

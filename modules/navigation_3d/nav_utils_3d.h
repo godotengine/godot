@@ -96,7 +96,8 @@ struct Connection {
 };
 
 struct Polygon {
-	uint32_t id = UINT32_MAX;
+	uint32_t id = UINT32_MAX; // Is the index of the polygon in NavRegionIterationBuild3D::NavMeshData::polygons which comes from the source `NavigationMesh`.
+	uint32_t navigation_layers = 1; // Derived from region, potentially overwritten by an area. Used in cost calculation.
 
 	/// Navigation region or link that contains this polygon.
 	const NavBaseIteration3D *owner = nullptr;
@@ -106,6 +107,7 @@ struct Polygon {
 	real_t surface_area = 0.0;
 };
 
+// NavigationPoly is used for path query: collects suitable polys according to smallest cost.
 struct NavigationPoly {
 	/// This poly.
 	const Polygon *poly = nullptr;
@@ -192,6 +194,7 @@ struct PerformanceData {
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
 	int pm_obstacle_count = 0;
+	int pm_area_count = 0;
 
 	void reset() {
 		pm_region_count = 0;
@@ -203,6 +206,7 @@ struct PerformanceData {
 		pm_edge_connection_count = 0;
 		pm_edge_free_count = 0;
 		pm_obstacle_count = 0;
+		pm_area_count = 0;
 	}
 };
 

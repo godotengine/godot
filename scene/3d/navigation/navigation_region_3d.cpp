@@ -132,6 +132,7 @@ bool NavigationRegion3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
+#ifndef DISABLE_DEPRECATED
 void NavigationRegion3D::set_enter_cost(real_t p_enter_cost) {
 	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
 	if (Math::is_equal_approx(enter_cost, p_enter_cost)) {
@@ -161,6 +162,7 @@ void NavigationRegion3D::set_travel_cost(real_t p_travel_cost) {
 real_t NavigationRegion3D::get_travel_cost() const {
 	return travel_cost;
 }
+#endif // DISABLE_DEPRECATED
 
 RID NavigationRegion3D::get_region_rid() const {
 	return get_rid();
@@ -231,6 +233,7 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
 	source_geometry_data.instantiate();
 
+	// Parse the SceneTree for nodes (as configured) that should contribute to the navigation mesh baking and write the result to `source_geometry_data`.
 	NavigationServer3D::get_singleton()->parse_source_geometry_data(navigation_mesh, source_geometry_data, this);
 
 	if (p_on_thread) {
@@ -288,11 +291,13 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationRegion3D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationRegion3D::get_enter_cost);
 
 	ClassDB::bind_method(D_METHOD("set_travel_cost", "travel_cost"), &NavigationRegion3D::set_travel_cost);
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion3D::get_travel_cost);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh", "on_thread"), &NavigationRegion3D::bake_navigation_mesh, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_baking"), &NavigationRegion3D::is_baking);
@@ -303,8 +308,10 @@ void NavigationRegion3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_edge_connections"), "set_use_edge_connections", "get_use_edge_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_enter_cost", "get_enter_cost");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_travel_cost", "get_travel_cost");
+#endif // DISABLE_DEPRECATED
 
 	ADD_SIGNAL(MethodInfo("navigation_mesh_changed"));
 	ADD_SIGNAL(MethodInfo("bake_finished"));
@@ -432,8 +439,10 @@ NavigationRegion3D::NavigationRegion3D() {
 
 	region = NavigationServer3D::get_singleton()->region_create();
 	NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
+#ifndef DISABLE_DEPRECATED
 	NavigationServer3D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer3D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
+#endif // DISABLE_DEPRECATED
 	NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 	NavigationServer3D::get_singleton()->region_set_use_edge_connections(region, use_edge_connections);
 	NavigationServer3D::get_singleton()->region_set_enabled(region, enabled);
@@ -513,7 +522,6 @@ void NavigationRegion3D::_update_debug_mesh() {
 		return;
 	}
 
-	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
 
 	int vertex_count = 0;
@@ -533,19 +541,21 @@ void NavigationRegion3D::_update_debug_mesh() {
 	face_vertex_array.resize(vertex_count);
 
 	Vector<Color> face_color_array;
-	if (enabled_geometry_face_random_color) {
-		face_color_array.resize(vertex_count);
-	}
+	face_color_array.resize(vertex_count);
 
 	Vector<Vector3> line_vertex_array;
 	if (enabled_edge_lines) {
 		line_vertex_array.resize(line_count);
 	}
 
+	// Face coloring.
 	Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+	Color debug_navigation_geometry_face_area_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_area_color();
+	Color polygon_color = debug_navigation_geometry_face_color;
 
 	RandomPCG rand;
-	Color polygon_color = debug_navigation_geometry_face_color;
+	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	bool has_polygon_meta = navigation_mesh->get_polygon_meta_count() == polygon_count;
 
 	int face_vertex_index = 0;
 	int line_vertex_index = 0;
@@ -561,21 +571,27 @@ void NavigationRegion3D::_update_debug_mesh() {
 			continue;
 		}
 
-		if (enabled_geometry_face_random_color) {
+		if (has_polygon_meta && navigation_mesh->get_polygon_meta(polygon_index) != navigation_layers) {
+			// Color faces that were generated because of area meshes differently using vertex colors.
+			polygon_color = debug_navigation_geometry_face_area_color;
+		} else if (enabled_geometry_face_random_color) {
 			// Generate the polygon color, slightly randomly modified from the settings one.
 			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
 			polygon_color.a = debug_navigation_geometry_face_color.a;
+		} else {
+			// Reset.
+			polygon_color = debug_navigation_geometry_face_color;
 		}
 
 		for (int polygon_indices_index = 0; polygon_indices_index < polygon_indices_size - 2; polygon_indices_index++) {
 			face_vertex_array_ptrw[face_vertex_index] = vertices[polygon_indices[0]];
 			face_vertex_array_ptrw[face_vertex_index + 1] = vertices[polygon_indices[polygon_indices_index + 1]];
 			face_vertex_array_ptrw[face_vertex_index + 2] = vertices[polygon_indices[polygon_indices_index + 2]];
-			if (enabled_geometry_face_random_color) {
-				face_color_array_ptrw[face_vertex_index] = polygon_color;
-				face_color_array_ptrw[face_vertex_index + 1] = polygon_color;
-				face_color_array_ptrw[face_vertex_index + 2] = polygon_color;
-			}
+
+			face_color_array_ptrw[face_vertex_index] = polygon_color;
+			face_color_array_ptrw[face_vertex_index + 1] = polygon_color;
+			face_color_array_ptrw[face_vertex_index + 2] = polygon_color;
+
 			face_vertex_index += 3;
 		}
 
@@ -599,9 +615,8 @@ void NavigationRegion3D::_update_debug_mesh() {
 	Array face_mesh_array;
 	face_mesh_array.resize(Mesh::ARRAY_MAX);
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
-	if (enabled_geometry_face_random_color) {
-		face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
-	}
+	face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
 	debug_mesh->surface_set_material(0, face_material);
 

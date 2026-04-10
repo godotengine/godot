@@ -461,6 +461,7 @@ Transform3D GodotNavigationServer3D::region_get_transform(RID p_region) const {
 	return region->get_transform();
 }
 
+#ifndef DISABLE_DEPRECATED
 COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
@@ -490,6 +491,7 @@ real_t GodotNavigationServer3D::region_get_travel_cost(RID p_region) const {
 
 	return region->get_travel_cost();
 }
+#endif // DISABLE_DEPRECATED
 
 COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
@@ -617,6 +619,190 @@ AABB GodotNavigationServer3D::region_get_bounds(RID p_region) const {
 	return region->get_bounds();
 }
 
+RID GodotNavigationServer3D::area_create(AreaShapeType3D p_shape_type) {
+	MutexLock lock(operations_mutex);
+
+	RID rid = area_owner.make_rid();
+	NavArea3D *area = area_owner.get_or_null(rid);
+	area->set_shape_type(NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType(p_shape_type));
+	area->set_self(rid);
+	return rid;
+}
+
+NavigationServer3D::AreaShapeType3D GodotNavigationServer3D::area_get_shape_type(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, AreaShapeType3D::AREA_SHAPE_NONE);
+
+	return AreaShapeType3D(area->get_shape_type());
+}
+
+COMMAND_2(area_set_map, RID, p_area, RID, p_map) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	NavMap3D *map = map_owner.get_or_null(p_map);
+
+	area->set_map(map);
+}
+
+RID GodotNavigationServer3D::area_get_map(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, RID());
+
+	if (area->get_map()) {
+		return area->get_map()->get_self();
+	}
+	return RID();
+}
+
+COMMAND_2(area_set_id, RID, p_area, uint16_t, p_id) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	print_line("COMMAND_2(area_set_id)");
+	area->set_id(p_id);
+}
+
+uint16_t GodotNavigationServer3D::area_get_id(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_id();
+}
+
+COMMAND_2(area_set_enabled, RID, p_area, bool, p_enabled) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_enabled(p_enabled);
+}
+
+bool GodotNavigationServer3D::area_get_enabled(RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, false);
+
+	return area->get_enabled();
+}
+
+COMMAND_2(area_set_position, RID, p_area, Vector3, p_position) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_position(p_position);
+}
+
+Vector3 GodotNavigationServer3D::area_get_position(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, Vector3());
+
+	return area->get_position();
+}
+
+COMMAND_2(area_set_height, RID, p_area, real_t, p_height) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_height(p_height);
+}
+
+real_t GodotNavigationServer3D::area_get_height(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_height();
+}
+
+COMMAND_2(area_set_navigation_layers, RID, p_area, uint32_t, p_navigation_layers) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	print_line("COMMAND_2(area_set_navigation_layers)");
+	ERR_FAIL_NULL(area);
+
+	area->set_navigation_layers(p_navigation_layers);
+}
+
+uint32_t GodotNavigationServer3D::area_get_navigation_layers(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_navigation_layers();
+}
+
+COMMAND_2(area_set_bake_priority, RID, p_area, int, p_priority) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_bake_priority(p_priority);
+}
+
+int GodotNavigationServer3D::area_get_bake_priority(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_bake_priority();
+}
+
+COMMAND_2(area_set_size, RID, p_area, Vector3, p_size) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_size(p_size);
+}
+
+Vector3 GodotNavigationServer3D::area_get_size(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, Vector3());
+
+	return area->get_size();
+}
+
+// AABB GodotNavigationServer3D::area_get_bounds(const RID p_area) const {
+// 	const NavArea3D *area = area_owner.get_or_null(p_area);
+// 	ERR_FAIL_NULL_V(area, AABB());
+
+// 	return area->get_bounds();
+// }
+
+COMMAND_2(area_set_radius, RID, p_area, real_t, p_radius) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_radius(p_radius);
+}
+
+real_t GodotNavigationServer3D::area_get_radius(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_radius();
+}
+
+COMMAND_2(area_set_elevation, RID, p_area, real_t, p_elevation) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+
+	area->set_elevation(p_elevation);
+}
+
+real_t GodotNavigationServer3D::area_get_elevation(const RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, 0);
+
+	return area->get_elevation();
+}
+
+void GodotNavigationServer3D::area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) {
+	NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL(area);
+	area->set_vertices(p_vertices);
+}
+
+Vector<Vector3> GodotNavigationServer3D::area_get_vertices(RID p_area) const {
+	const NavArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_NULL_V(area, Vector<Vector3>());
+
+	return area->get_vertices();
+}
+
 RID GodotNavigationServer3D::link_create() {
 	MutexLock lock(operations_mutex);
 
@@ -722,6 +908,7 @@ Vector3 GodotNavigationServer3D::link_get_end_position(RID p_link) const {
 	return link->get_end_position();
 }
 
+#ifndef DISABLE_DEPRECATED
 COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost) {
 	NavLink3D *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_NULL(link);
@@ -749,6 +936,7 @@ real_t GodotNavigationServer3D::link_get_travel_cost(const RID p_link) const {
 
 	return link->get_travel_cost();
 }
+#endif // DISABLE_DEPRECATED
 
 COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id) {
 	NavLink3D *link = link_owner.get_or_null(p_link);
@@ -1199,6 +1387,13 @@ void GodotNavigationServer3D::parse_source_geometry_data(const Ref<NavigationMes
 	NavMeshGenerator3D::get_singleton()->parse_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_root_node, p_callback);
 }
 
+void GodotNavigationServer3D::parse_map_geometry_meta_data(const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, RID p_map, const Callable &p_callback) {
+	ERR_FAIL_NULL(NavMeshGenerator3D::get_singleton());
+	NavMap3D *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+	NavMeshGenerator3D::get_singleton()->parse_map_geometry_meta_data(p_source_geometry_data, map, p_callback);
+}
+
 void GodotNavigationServer3D::bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
 	ERR_FAIL_COND_MSG(p_navigation_mesh.is_null(), "Invalid navigation mesh.");
 	ERR_FAIL_COND_MSG(p_source_geometry_data.is_null(), "Invalid NavigationMeshSourceGeometryData3D.");
@@ -1237,6 +1432,12 @@ COMMAND_1(free_rid, RID, p_object) {
 			region->set_map(nullptr);
 		}
 
+		// Removes any assigned area
+		for (NavArea3D *area : map->get_areas()) {
+			map->remove_area(area);
+			area->set_map(nullptr);
+		}
+
 		// Removes any assigned links
 		for (NavLink3D *link : map->get_links()) {
 			map->remove_link(link);
@@ -1271,6 +1472,17 @@ COMMAND_1(free_rid, RID, p_object) {
 		}
 
 		region_owner.free(p_object);
+
+	} else if (area_owner.owns(p_object)) {
+		NavArea3D *area = area_owner.get_or_null(p_object);
+
+		// Removes this area from the map if assigned
+		if (area->get_map() != nullptr) {
+			area->get_map()->remove_area(area);
+			area->set_map(nullptr);
+		}
+
+		area_owner.free(p_object);
 
 	} else if (link_owner.owns(p_object)) {
 		NavLink3D *link = link_owner.get_or_null(p_object);
@@ -1403,6 +1615,7 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 	int _new_pm_edge_connection_count = 0;
 	int _new_pm_edge_free_count = 0;
 	int _new_pm_obstacle_count = 0;
+	int _new_pm_area_count = 0;
 
 	MutexLock lock(operations_mutex);
 	for (uint32_t i(0); i < active_maps.size(); i++) {
@@ -1419,6 +1632,7 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
 		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
+		_new_pm_area_count += active_maps[i]->get_pm_area_count();
 	}
 
 	pm_region_count = _new_pm_region_count;
@@ -1430,6 +1644,7 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 	pm_edge_connection_count = _new_pm_edge_connection_count;
 	pm_edge_free_count = _new_pm_edge_free_count;
 	pm_obstacle_count = _new_pm_obstacle_count;
+	pm_area_count = _new_pm_area_count;
 }
 
 void GodotNavigationServer3D::init() {
@@ -1543,6 +1758,9 @@ int GodotNavigationServer3D::get_process_info(ProcessInfo p_info) const {
 		} break;
 		case INFO_OBSTACLE_COUNT: {
 			return pm_obstacle_count;
+		} break;
+		case INFO_AREA_COUNT: {
+			return pm_area_count;
 		} break;
 	}
 

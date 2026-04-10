@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 
 #ifdef DEBUG_ENABLED
+#include "core/math/random_pcg.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
@@ -42,6 +43,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 
 	vertices = Vector<Vector3>();
 	polygons.clear();
+	polygons_meta.clear();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -339,6 +341,9 @@ Array NavigationMesh::_get_polygons() const {
 void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
 	RWLockWrite write_lock(rwlock);
 	polygons = p_polygons;
+	polygons_meta = Vector<uint32_t>();
+	polygons_meta_ids = Vector<uint16_t>();
+	polygons_meta_indices = Vector<Vector<int>>();
 	notify_property_list_changed();
 }
 
@@ -367,11 +372,49 @@ Vector<int> NavigationMesh::get_polygon(int p_idx) {
 void NavigationMesh::clear_polygons() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
+	polygons_meta.clear();
+	polygons_meta_ids.clear();
+	polygons_meta_indices.clear();
+}
+
+int NavigationMesh::get_polygon_meta_count() const {
+	RWLockRead read_lock(rwlock);
+	return polygons_meta.size();
+}
+
+uint32_t NavigationMesh::get_polygon_meta(int p_idx) {
+	RWLockRead read_lock(rwlock);
+	ERR_FAIL_INDEX_V(p_idx, polygons_meta.size(), uint32_t(0));
+	return polygons_meta[p_idx];
+}
+
+void NavigationMesh::_set_polygons_meta(const Array &p_polygons_meta) {
+	RWLockWrite write_lock(rwlock);
+
+	polygons_meta.resize(p_polygons_meta.size());
+	for (int i = 0; i < p_polygons_meta.size(); i++) {
+		polygons_meta.write[i] = p_polygons_meta[i];
+	}
+}
+
+Array NavigationMesh::_get_polygons_meta() const {
+	RWLockRead read_lock(rwlock);
+
+	Array ret;
+	ret.resize(polygons_meta.size());
+	for (int i = 0; i < ret.size(); i++) {
+		ret[i] = polygons_meta[i];
+	}
+
+	return ret;
 }
 
 void NavigationMesh::clear() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
+	polygons_meta.clear();
+	polygons_meta_ids.clear();
+	polygons_meta_indices.clear();
 	vertices.clear();
 }
 
@@ -379,12 +422,27 @@ void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Ve
 	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	polygons = p_polygons;
+	polygons_meta = Vector<uint32_t>();
+	polygons_meta_ids = Vector<uint16_t>();
+	polygons_meta_indices = Vector<Vector<int>>();
 }
 
-void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons) {
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_polygons_meta_ids, const Vector<Vector<int>> &p_polygons_meta_indices) {
+	RWLockWrite write_lock(rwlock);
+	vertices = p_vertices;
+	polygons = p_polygons;
+	polygons_meta = p_polygons_meta;
+	polygons_meta_ids = p_polygons_meta_ids;
+	polygons_meta_indices = p_polygons_meta_indices;
+}
+
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_polygons_meta_ids, Vector<Vector<int>> &r_polygons_meta_indices) {
 	RWLockRead read_lock(rwlock);
 	r_vertices = vertices;
 	r_polygons = polygons;
+	r_polygons_meta = polygons_meta;
+	r_polygons_meta_ids = polygons_meta_ids;
+	r_polygons_meta_indices = polygons_meta_indices;
 }
 
 #ifdef DEBUG_ENABLED
@@ -430,8 +488,11 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 
 	// if enabled add vertex colors to colorize each face individually
+	// NOTE: Cannot color faces, that were generated because of area meshes, differently using vertex colors - no access to region's navigation layers.
+	print_line("area coloring not supported");
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {
+		RandomPCG rand;
 		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
 		Color polygon_color = debug_navigation_geometry_face_color;
 
@@ -439,7 +500,8 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		face_color_array.resize(polygon_count * 3);
 
 		for (int i = 0; i < polygon_count; i++) {
-			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_navigation_geometry_face_color.a;
 
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
@@ -569,10 +631,14 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);
 
+	ClassDB::bind_method(D_METHOD("_set_polygons_meta", "polygons_meta"), &NavigationMesh::_set_polygons_meta);
+	ClassDB::bind_method(D_METHOD("_get_polygons_meta"), &NavigationMesh::_get_polygons_meta);
+
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationMesh::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons_meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons_meta", "_get_polygons_meta");
 
 	ADD_GROUP("Sampling", "sample_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");

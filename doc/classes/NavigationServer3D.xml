@@ -298,6 +298,152 @@
 				Replaces the internal velocity in the collision avoidance simulation with [param velocity] for the specified [param agent]. When an agent is teleported to a new position this function should be used in the same frame. If called frequently this function can get agents stuck.
 			</description>
 		</method>
+		<method name="area_create">
+			<return type="RID" />
+			<param index="0" name="shape_type" type="int" enum="NavigationServer3D.AreaShapeType3D" />
+			<description>
+				Create a new server-only mesh area (see [NavigationMeshArea3D]) according to the given shape type on a map.
+			</description>
+		</method>
+		<method name="area_get_bake_priority" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_elevation" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_map" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_shape_type" qualifiers="const">
+			<return type="int" enum="NavigationServer3D.AreaShapeType3D" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_size" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_bake_priority">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="priority" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_elevation">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="elevation" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_enabled">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_height">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="height" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_map">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_navigation_layers">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				States which layers should be considered for the cost calculation during a path query.
+				A query takes the first matching layer between the query parameter and the polygon. This means if the area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
+				[b]Note:[/b] Requires re-baking the affected region(s). And will only be used for baking in a region, if at least 1 layer bit is different from the targeted region.
+			</description>
+		</method>
+		<method name="area_set_position">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_radius">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_size">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="area_set_vertices">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="vertices" type="PackedVector3Array" />
+			<description>
+			</description>
+		</method>
 		<method name="bake_from_source_geometry_data">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
@@ -369,7 +515,7 @@
 				Returns the ending position of this [param link].
 			</description>
 		</method>
-		<method name="link_get_enter_cost" qualifiers="const">
+		<method name="link_get_enter_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
@@ -412,7 +558,7 @@
 				Returns the starting position of this [param link].
 			</description>
 		</method>
-		<method name="link_get_travel_cost" qualifiers="const">
+		<method name="link_get_travel_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
@@ -450,7 +596,7 @@
 				Sets the exit position for the [param link].
 			</description>
 		</method>
-		<method name="link_set_enter_cost">
+		<method name="link_set_enter_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="enter_cost" type="float" />
@@ -490,7 +636,7 @@
 				Sets the entry position for this [param link].
 			</description>
 		</method>
-		<method name="link_set_travel_cost">
+		<method name="link_set_travel_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="travel_cost" type="float" />
@@ -501,7 +647,7 @@
 		<method name="map_create">
 			<return type="RID" />
 			<description>
-				Create a new map.
+				Create a new map that holds regions, agents, obstacles, areas, and links.
 			</description>
 		</method>
 		<method name="map_force_update" deprecated="This method is no longer supported, as it is incompatible with asynchronous updates. It can only be used in a single-threaded context, at your own risk.">
@@ -745,7 +891,7 @@
 		<method name="obstacle_create">
 			<return type="RID" />
 			<description>
-				Creates a new obstacle.
+				Creates a new obstacle. To create an obstacle that affects the navigation bake process, a [NavigationObstacle3D] is required with [member NavigationObstacle3D.affect_navigation_mesh] set to [code]true[/code].
 			</description>
 		</method>
 		<method name="obstacle_get_avoidance_enabled" qualifiers="const">
@@ -898,6 +1044,15 @@
 				Sets the outline vertices for the obstacle. If the vertices are winded in clockwise order agents will be pushed in by the obstacle, else they will be pushed out.
 			</description>
 		</method>
+		<method name="parse_map_geometry_meta_data">
+			<return type="void" />
+			<param index="0" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="1" name="map" type="RID" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<description>
+				Parses navigation area meshes created with [method area_create] that were assigned [param map] via [method area_set_map] and adds the result to [param source_geometry_data]. The resource can then be used to bake a navigation mesh with [method bake_from_source_geometry_data].
+			</description>
+		</method>
 		<method name="parse_source_geometry_data">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
@@ -997,7 +1152,7 @@
 				Returns [code]true[/code] if the specified [param region] is enabled.
 			</description>
 		</method>
-		<method name="region_get_enter_cost" qualifiers="const">
+		<method name="region_get_enter_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
@@ -1051,7 +1206,7 @@
 				Returns the global transformation of this [param region].
 			</description>
 		</method>
-		<method name="region_get_travel_cost" qualifiers="const">
+		<method name="region_get_travel_cost" qualifiers="const" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
@@ -1090,7 +1245,7 @@
 				If [param enabled] is [code]true[/code], the specified [param region] will contribute to its current navigation map.
 			</description>
 		</method>
-		<method name="region_set_enter_cost">
+		<method name="region_set_enter_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="enter_cost" type="float" />
@@ -1112,6 +1267,7 @@
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
 				Set the region's navigation layers. This allows selecting regions from a path request (when using [method NavigationServer3D.map_get_path]).
+				[b]Note:[/b] Prefer working with navigation layers in path queries whenever possible, as enabling or disabling navigation layers on a region triggers a costly recalculation of the navigation map connections.
 			</description>
 		</method>
 		<method name="region_set_navigation_mesh">
@@ -1138,7 +1294,7 @@
 				Sets the global transformation for the region.
 			</description>
 		</method>
-		<method name="region_set_travel_cost">
+		<method name="region_set_travel_cost" deprecated="Deprecated and has no effect. Costs are controlled as part of path queries for each navigation layer.">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="travel_cost" type="float" />
@@ -1222,6 +1378,18 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="AREA_SHAPE_NONE" value="0" enum="AreaShapeType3D">
+			Constant for areas of type none shape.
+		</constant>
+		<constant name="AREA_SHAPE_BOX" value="1" enum="AreaShapeType3D">
+			Constant for areas of type box shape.
+		</constant>
+		<constant name="AREA_SHAPE_CYLINDER" value="2" enum="AreaShapeType3D">
+			Constant for areas of type cylinder shape.
+		</constant>
+		<constant name="AREA_SHAPE_POLYGON" value="3" enum="AreaShapeType3D">
+			Constant for areas of type polygon shape.
+		</constant>
 		<constant name="INFO_ACTIVE_MAPS" value="0" enum="ProcessInfo">
 			Constant to get the number of active navigation maps.
 		</constant>
@@ -1251,6 +1419,8 @@
 		</constant>
 		<constant name="INFO_OBSTACLE_COUNT" value="9" enum="ProcessInfo">
 			Constant to get the number of active navigation obstacles.
+		</constant>
+		<constant name="INFO_AREA_COUNT" value="10" enum="ProcessInfo">
 		</constant>
 	</constants>
 </class>

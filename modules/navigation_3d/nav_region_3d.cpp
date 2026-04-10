@@ -33,6 +33,7 @@
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_builder_3d.h"
 #include "3d/nav_region_iteration_3d.h"
+#include "nav_area_3d.h"
 #include "nav_map_3d.h"
 
 #include "core/config/project_settings.h"
@@ -116,6 +117,7 @@ void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 #endif // DEBUG_ENABLED
 
 	navmesh = p_navigation_mesh;
+	// FIXME: this breaks areas
 
 	iteration_dirty = true;
 
@@ -155,6 +157,7 @@ void NavRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	request_sync();
 }
 
+#ifndef DISABLE_DEPRECATED
 void NavRegion3D::set_enter_cost(real_t p_enter_cost) {
 	real_t new_enter_cost = MAX(p_enter_cost, 0.0);
 	if (enter_cost == new_enter_cost) {
@@ -176,6 +179,7 @@ void NavRegion3D::set_travel_cost(real_t p_travel_cost) {
 
 	request_sync();
 }
+#endif // DISABLE_DEPRECATED
 
 void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
 	if (owner_id == p_owner_id) {
@@ -209,6 +213,7 @@ LocalVector<Nav3D::Polygon> const &NavRegion3D::get_polygons() const {
 }
 
 bool NavRegion3D::sync() {
+	print_line("NavRegion3D::sync");
 	bool requires_map_update = false;
 	if (!map) {
 		return requires_map_update;
@@ -240,6 +245,7 @@ void NavRegion3D::sync_async_tasks() {
 }
 
 void NavRegion3D::_build_iteration() {
+	print_line("NavRegion3D::_build_iteration ??");
 	if (!iteration_dirty || iteration_building || iteration_ready) {
 		return;
 	}
@@ -251,7 +257,8 @@ void NavRegion3D::_build_iteration() {
 	iteration_build.reset();
 
 	if (navmesh.is_valid()) {
-		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons);
+		// Read data from latest bake result.
+		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.polygons_meta_ids, iteration_build.navmesh_data.polygons_meta_indices);
 	}
 
 	iteration_build.map_cell_size = map->get_merge_rasterizer_cell_size();
@@ -259,15 +266,41 @@ void NavRegion3D::_build_iteration() {
 	Ref<NavRegionIteration3D> new_iteration;
 	new_iteration.instantiate();
 
+	// Apply potential changes.
 	new_iteration->navigation_layers = get_navigation_layers();
+#ifndef DISABLE_DEPRECATED
 	new_iteration->enter_cost = get_enter_cost();
 	new_iteration->travel_cost = get_travel_cost();
+#endif // DISABLE_DEPRECATED
 	new_iteration->owner_object_id = get_owner_id();
 	new_iteration->owner_type = get_type();
 	new_iteration->owner_rid = get_self();
 	new_iteration->enabled = get_enabled();
 	new_iteration->transform = get_transform();
 	new_iteration->owner_use_edge_connections = get_use_edge_connections();
+
+	print_line("NavRegion3D::_build_iteration");
+	int i = 0;
+	for (uint16_t area_id : iteration_build.navmesh_data.polygons_meta_ids) {
+		uint32_t navigation_layers = 0;
+
+		for (const NavArea3D *m_area : map->get_areas()) {
+			uint16_t m_area_id = m_area->get_id();
+			if (m_area_id == area_id) {
+				print_line("update layers");
+				navigation_layers = m_area->get_iteration();
+				break; // This _is_ the area you're looking for.
+			}
+		}
+
+		if (navigation_layers > 0) {
+			for (int polygon_index : iteration_build.navmesh_data.polygons_meta_indices[i]) {
+				iteration_build.navmesh_data.polygons_meta.write[polygon_index] = navigation_layers;
+			}
+		}
+
+		i++;
+	}
 
 	iteration_build.region_iteration = new_iteration;
 

@@ -33,6 +33,7 @@
 #include "core/os/rw_lock.h"
 #include "scene/resources/mesh.h"
 
+// Stores geometry data required for the navigation mesh baking.
 class NavigationMeshSourceGeometryData3D : public Resource {
 	GDCLASS(NavigationMeshSourceGeometryData3D, Resource);
 	RWLock geometry_rwlock;
@@ -43,11 +44,15 @@ class NavigationMeshSourceGeometryData3D : public Resource {
 	AABB bounds;
 	bool bounds_dirty = true;
 
+	uint16_t next_free_area_id = 1; // See ProjectedArea::id.
+
 public:
 	struct ProjectedObstruction;
+	struct ProjectedArea;
 
 private:
 	Vector<ProjectedObstruction> _projected_obstructions;
+	Vector<ProjectedArea> _projected_areas;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -70,6 +75,29 @@ public:
 		bool carve = false;
 	};
 
+	// ProjectedArea is the source geometry for overwriting navigation layers in polygons. Affects baked polygon result.
+	struct ProjectedArea {
+		static inline uint32_t VERSION = 1; // Increase on format changes.
+
+		int id; // Random ID assigned during parsing process, to help connect to a server RID afterwards. And an area node, if existant.
+
+		Vector<float> vertices; // Used by POLYGON only.
+		AABB aabb; // Bounds.
+		Vector3 position; // Used by BOX and CYLINDER as position. Unused by POLYGON.
+		float radius = 0.0; // Used by CYLINDER only.
+		float elevation = 0.0; // Used by POLYGON only. // FIXME: is the area height min. this + height is the height max. Could be merged into position.y.
+		float height = 0.0; // Used by CYLINDER and POLYGON. For BOX, it is baked into aabb.
+		uint32_t navigation_layers = 0;
+		int priority = 0;
+		enum ShapeType { // Duplicate of NavigationServer3D::AreaShapeType3D to prevent import issues.
+			NONE = 0,
+			BOX,
+			CYLINDER,
+			POLYGON
+		};
+		ShapeType shape_type = ShapeType::NONE;
+	};
+
 	// kept root node transform here on the geometry data
 	// if we add this transform to all exposed functions we need to break comp on all functions later
 	// when navmesh changes from global transform to relative to navregion
@@ -87,6 +115,7 @@ public:
 	bool has_data();
 	void clear();
 	void clear_projected_obstructions();
+	void clear_projected_areas();
 
 	void add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform);
 	void add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform);
@@ -99,9 +128,18 @@ public:
 
 	void set_projected_obstructions(const Array &p_array);
 	Array get_projected_obstructions() const;
+	void set_projected_areas(const Array &p_array);
+	Array get_projected_areas() const;
 
-	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions);
-	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions);
+	// void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions);
+	// void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions);
+
+	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
+	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
+
+	uint16_t add_projected_area_box(const AABB &p_aabb, uint32_t p_navigation_layers, int p_priority = 0);
+	uint16_t add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
+	uint16_t add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
 
 	AABB get_bounds();
 

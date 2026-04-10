@@ -70,6 +70,7 @@ struct NavMapIterationBuild3D {
 	}
 };
 
+// The map snapshot where the actual navigation queries run on.
 struct NavMapIteration3D {
 	mutable SafeNumeric<uint32_t> users;
 	RWLock rwlock;

@@ -254,6 +254,45 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK_EQ(navigation_server->get_maps().size(), 0);
 	}
 
+	TEST_CASE("[NavigationServer3D] Server should manage area properly") {
+		NavigationServer3D *ns = NavigationServer3D::get_singleton();
+
+		RID area = ns->area_create(NavigationServer3D::AreaShapeType3D::AREA_SHAPE_BOX);
+		CHECK(area.is_valid());
+
+		SUBCASE("'ProcessInfo' should not report dangling area") {
+			CHECK_EQ(ns->get_process_info(NavigationServer3D::INFO_AREA_COUNT), 0);
+		}
+
+		SUBCASE("Setters/getters should work") {
+			bool initial_is_enabled = ns->area_get_enabled(area);
+			ns->area_set_enabled(area, !initial_is_enabled);
+			Vector3 initial_pos = Vector3(0, 0, 3);
+			ns->area_set_position(area, initial_pos);
+			// TODO: test more setters/getters.
+
+			ns->physics_process(0.0); // Give server some cycles to commit.
+
+			CHECK_EQ(ns->area_get_enabled(area), !initial_is_enabled);
+			CHECK_EQ(ns->area_get_position(area), initial_pos);
+		}
+
+		SUBCASE("'ProcessInfo' should report area with active map") {
+			RID map = ns->map_create();
+			CHECK(map.is_valid());
+			ns->map_set_active(map, true);
+			ns->area_set_map(area, map);
+			ns->physics_process(0.0); // Give server some cycles to commit.
+			CHECK_EQ(ns->get_process_info(NavigationServer3D::INFO_AREA_COUNT), 1);
+			ns->area_set_map(area, RID());
+			ns->free_rid(map);
+			ns->physics_process(0.0); // Give server some cycles to commit.
+			CHECK_EQ(ns->get_process_info(NavigationServer3D::INFO_AREA_COUNT), 0);
+		}
+
+		ns->free_rid(area);
+	}
+
 	TEST_CASE("[NavigationServer3D] Server should manage link properly") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 
@@ -268,20 +307,24 @@ TEST_SUITE("[Navigation3D]") {
 			bool initial_bidirectional = navigation_server->link_is_bidirectional(link);
 			navigation_server->link_set_bidirectional(link, !initial_bidirectional);
 			navigation_server->link_set_end_position(link, Vector3(7, 7, 7));
+#ifndef DISABLE_DEPRECATED
 			navigation_server->link_set_enter_cost(link, 0.55);
+			navigation_server->link_set_travel_cost(link, 0.66);
+#endif // DISABLE_DEPRECATED
 			navigation_server->link_set_navigation_layers(link, 6);
 			navigation_server->link_set_owner_id(link, ObjectID((int64_t)7));
 			navigation_server->link_set_start_position(link, Vector3(8, 8, 8));
-			navigation_server->link_set_travel_cost(link, 0.66);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 			CHECK_EQ(navigation_server->link_is_bidirectional(link), !initial_bidirectional);
 			CHECK_EQ(navigation_server->link_get_end_position(link), Vector3(7, 7, 7));
+#ifndef DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->link_get_enter_cost(link), doctest::Approx(0.55));
+			CHECK_EQ(navigation_server->link_get_travel_cost(link), doctest::Approx(0.66));
+#endif // DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->link_get_navigation_layers(link), 6);
 			CHECK_EQ(navigation_server->link_get_owner_id(link), ObjectID((int64_t)7));
 			CHECK_EQ(navigation_server->link_get_start_position(link), Vector3(8, 8, 8));
-			CHECK_EQ(navigation_server->link_get_travel_cost(link), doctest::Approx(0.66));
 		}
 
 		SUBCASE("'ProcessInfo' should report link with active map") {
@@ -323,17 +366,21 @@ TEST_SUITE("[Navigation3D]") {
 
 		SUBCASE("Setters/getters should work") {
 			bool initial_use_edge_connections = navigation_server->region_get_use_edge_connections(region);
+#ifndef DISABLE_DEPRECATED
 			navigation_server->region_set_enter_cost(region, 0.55);
+			navigation_server->region_set_travel_cost(region, 0.66);
+#endif // DISABLE_DEPRECATED
 			navigation_server->region_set_navigation_layers(region, 5);
 			navigation_server->region_set_owner_id(region, ObjectID((int64_t)7));
-			navigation_server->region_set_travel_cost(region, 0.66);
 			navigation_server->region_set_use_edge_connections(region, !initial_use_edge_connections);
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
+#ifndef DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->region_get_enter_cost(region), doctest::Approx(0.55));
+			CHECK_EQ(navigation_server->region_get_travel_cost(region), doctest::Approx(0.66));
+#endif // DISABLE_DEPRECATED
 			CHECK_EQ(navigation_server->region_get_navigation_layers(region), 5);
 			CHECK_EQ(navigation_server->region_get_owner_id(region), ObjectID((int64_t)7));
-			CHECK_EQ(navigation_server->region_get_travel_cost(region), doctest::Approx(0.66));
 			CHECK_EQ(navigation_server->region_get_use_edge_connections(region), !initial_use_edge_connections);
 		}
 

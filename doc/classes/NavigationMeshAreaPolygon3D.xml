@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationMeshAreaPolygon3D" inherits="NavigationMeshArea3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An axis-aligned area with a projected shape of a closed polygon to affect navigation mesh geometry and traversal cost (when baked).
+		[b]Note:[/b] To guarantee that the area affects the intended [NavigationMesh], make sure that
+		1. the area's origin is as close as possible to the source geometry, and
+		2. the [member NavigationMeshArea3D.navigation_layers] are different from the [NavigationRegion3D] you intend to bake with.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="are_vertices_clockwise" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member vertices] are winded in clockwise order.
+			</description>
+		</method>
+		<method name="are_vertices_valid" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member vertices] create a valid, not self-overlapping shape.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
+			Sets how much the projected area shape is extruded along the positive y-axis starting from its global position.
+			[b]Note:[/b] Changes require a re-baking of this area to the region.
+		</member>
+		<member name="vertices" type="PackedVector3Array" setter="set_vertices" getter="get_vertices" default="PackedVector3Array()">
+			The vertices that define the outline of the projected area shape.
+			[b]Note:[/b] Changes require a re-baking of this area to the region.
+		</member>
+	</members>
+</class>
