@@ -219,6 +219,8 @@ class ScriptEditor : public PanelContainer {
 	struct ScriptHistory {
 		Control *control = nullptr;
 		Variant state;
+		// path if ScriptEditorBase / class name if EditorHelp
+		String source;
 	};
 
 	Vector<ScriptHistory> history;

@@ -383,12 +383,12 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		}
 	}
 
-	history.resize(history_pos + 1);
 	ScriptHistory sh;
 	sh.control = c;
 	sh.state = Variant();
 
-	if (!lock_history && (history.is_empty() || history[history.size() - 1].control != sh.control)) {
+	if (!lock_history && (history.is_empty() || history[history_pos].control != sh.control)) {
+		history.resize(history_pos + 1);
 		history.push_back(sh);
 		history_pos++;
 	}
@@ -528,7 +528,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		return;
 	}
 
-	Node *tselected = tab_container->get_tab_control(selected);
+	Control *tselected = tab_container->get_tab_control(selected);
 
 	if (ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tselected)) {
 		Ref<Resource> file = current->get_edited_resource();
@@ -557,19 +557,16 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_history_back();
 	}
 
-	//remove from history
-	history.resize(history_pos + 1);
-
 	for (int i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
-			history.remove_at(i);
-			i--;
-			history_pos--;
+			if (ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tselected)) {
+				history.write[i].source = seb->edited_file_data.path;
+			}
+			if (EditorHelp *eh = Object::cast_to<EditorHelp>(tselected)) {
+				history.write[i].source = eh->get_class();
+			}
+			history.write[i].control = nullptr;
 		}
-	}
-
-	if (history_pos >= history.size()) {
-		history_pos = history.size() - 1;
 	}
 
 	int idx = tab_container->get_current_tab();
@@ -583,7 +580,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			idx = tab_container->get_tab_count() - 1;
 		}
 		if (idx >= 0) {
-			if (history_pos >= 0) {
+			if (history_pos >= 0 && history[history_pos].control != nullptr) {
 				idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
 			}
 			_go_to_tab(idx);
@@ -3487,7 +3484,7 @@ void ScriptEditor::_unlock_history() {
 }
 
 void ScriptEditor::_update_history_pos(int p_new_pos) {
-	Node *n = tab_container->get_current_tab_control();
+	Control *n = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<TextEditorBase>(n)) {
 		Dictionary nav_state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
@@ -3498,10 +3495,58 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
 	}
 
+	bool new_pos_is_larger = p_new_pos > history_pos;
 	history_pos = p_new_pos;
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(history[history_pos].control));
-
 	n = history[history_pos].control;
+	if (n == nullptr) {
+		bool adjusted_history_pos = false;
+		// Remove all tabs which have a deleted source from the history.
+		for (int i = history.size() - 1; i >= 0; i--) {
+			String source = history[i].source;
+			if (history[i].control || EditorHelp::has_doc(source) || ResourceLoader::exists(source)) {
+				continue;
+			}
+			history.remove_at(i);
+			if (i <= history_pos) {
+				history_pos--;
+			}
+			if (i == history_pos) {
+				adjusted_history_pos = true;
+			}
+		}
+		// In case the history_pos was increased and the entry at the new history_pos was deleted
+		// we need to increase the history_pos to be on the next valid entry.
+		if (new_pos_is_larger && adjusted_history_pos && history_pos < history.size() - 1) {
+			history_pos = history_pos + 1;
+		}
+		// Handle history_pos = -1.
+		if (history_pos < 0) {
+			_update_script_names();
+			_update_history_arrows();
+			_update_selected_editor_menu();
+			return;
+		}
+		n = history[history_pos].control;
+	}
+
+	// Handle closed tabs for which the source still exists.
+	if (n == nullptr) {
+		String source = history[history_pos].source;
+		lock_history = true;
+		if (EditorHelp::has_doc(source)) {
+			_help_class_open(source);
+		} else {
+			edit(ResourceLoader::load(source));
+		}
+		lock_history = false;
+		n = tab_container->get_current_tab_control();
+		for (int i = 0; i < history.size(); i++) {
+			if (history[i].source == source) {
+				history.write[i].control = n;
+			}
+		}
+	}
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(n));
 
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n);
 	if (seb) {
