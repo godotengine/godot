@@ -1372,6 +1372,8 @@ void Node3DEditorViewport::_view_state_changed() {
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 	_update_name();
+
+	emit_signal(SNAME("view_state_changed"));
 }
 
 void Node3DEditorViewport::_update_name() {
@@ -5262,6 +5264,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 void Node3DEditorViewport::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked"));
+	ADD_SIGNAL(MethodInfo("view_state_changed"));
 }
 
 void Node3DEditorViewport::reset() {
