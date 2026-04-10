@@ -844,7 +844,17 @@ Expression::ENode *Expression::_parse_expression() {
 				expression_nodes.push_back(e);
 				continue;
 			} break;
+                        case TK_OP_BIT_AND: {
+                                _get_token(tk);
+                                if (tk.type != TK_CONSTANT || Variant(tk.value).get_type() != Variant::STRING) {
+                                   _set_error("Expected string after '&'.");
+                                   return nullptr;
+                                 }
 
+                                ConstantNode *constant = alloc_node<ConstantNode>();
+                                constant->value = StringName(String(tk.value));
+                                expr = constant;
+                                } break;
 			default: {
 				_set_error("Expected expression.");
 				return nullptr;
