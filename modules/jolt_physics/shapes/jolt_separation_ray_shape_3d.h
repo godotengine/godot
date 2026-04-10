@@ -34,7 +34,8 @@
 
 class JoltSeparationRayShape3D final : public JoltShape3D {
 	float length = 0.0f;
-	bool slide_on_slope = false;
+	bool stops_motion = false;
+	bool separate_along_ray = false;
 
 	virtual JPH::ShapeRefC _build() const override;
 
