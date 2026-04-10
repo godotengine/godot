@@ -687,6 +687,8 @@ void EditorNode::_propagate_translation_notification() {
 }
 
 void EditorNode::_update_theme(bool p_skip_creation) {
+	class_icon_cache.clear();
+
 	if (!p_skip_creation) {
 		theme = EditorThemeManager::generate_theme(theme);
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
