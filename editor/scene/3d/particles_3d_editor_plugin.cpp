@@ -149,9 +149,7 @@ void Particles3DEditorPlugin::_add_menu_options(PopupMenu *p_menu) {
 	p_menu->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 }
 
-bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals) {
-	bool use_normals = emission_fill->get_selected() == 1;
-
+bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals, bool p_generate_normals) {
 	if (emission_fill->get_selected() < 2) {
 		float area_accum = 0;
 		RBMap<float, int> triangle_area_map;
@@ -188,7 +186,7 @@ bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector
 
 			r_points.push_back(pos);
 
-			if (use_normals) {
+			if (p_generate_normals) {
 				Vector3 normal = face.get_plane().normal;
 				r_normals.push_back(normal);
 			}
@@ -340,12 +338,14 @@ bool GPUParticles3DEditorPlugin::_can_generate_points() const {
 
 void GPUParticles3DEditorPlugin::_generate_emission_points() {
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(edited_node);
+	Ref<ParticleProcessMaterial> mat = particles->get_process_material();
+	ERR_FAIL_COND(mat.is_null());
 
 	/// hacer codigo aca
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
 
-	if (!_generate(points, normals)) {
+	if (!_generate(points, normals, mat->get_emission_shape() == mat->EMISSION_SHAPE_DIRECTED_POINTS)) {
 		return;
 	}
 
@@ -371,9 +371,6 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
 	Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
-
-	Ref<ParticleProcessMaterial> mat = particles->get_process_material();
-	ERR_FAIL_COND(mat.is_null());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Emission Points"));
@@ -436,7 +433,7 @@ void CPUParticles3DEditorPlugin::_generate_emission_points() {
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
 
-	if (!_generate(points, normals)) {
+	if (!_generate(points, normals, particles->get_emission_shape() == particles->EMISSION_SHAPE_DIRECTED_POINTS)) {
 		return;
 	}
 
