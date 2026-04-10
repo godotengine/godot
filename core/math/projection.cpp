@@ -162,6 +162,118 @@ Projection Projection::create_fit_aabb(const AABB &p_aabb) {
 	return proj;
 }
 
+Projection Projection::create_combined_projection(const Transform3D &p_center, const Projection &p_projection_a, const Transform3D &p_offset_a, const Projection &p_projection_b, const Transform3D &p_offset_b) {
+	Vector<Plane> planes[2];
+	Projection proj;
+
+	/////////////////////////////////////////////////////////////////////////////
+	// Get some basic information
+
+	// 1. obtain our planes
+	planes[0] = p_projection_a.get_projection_planes(p_offset_a);
+	planes[1] = p_projection_b.get_projection_planes(p_offset_b);
+
+	// 2. Intersect horizon, left and right to obtain the combined camera origin.
+	Plane horizon(Vector3(0.0, 1.0, 0.0), Vector3());
+	Vector3 origin;
+	ERR_FAIL_COND_V_MSG(
+			!horizon.intersect_3(planes[0][Projection::PLANE_LEFT], planes[1][Projection::PLANE_RIGHT], &origin), proj, "Can't determine camera origin");
+
+	// 3. figure out our near and far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
+	Vector3 near_center = (planes[0][Projection::PLANE_NEAR].get_center() + planes[1][Projection::PLANE_NEAR].get_center()) * 0.5;
+	Plane near_plane = Plane(Vector3(0.0, 0.0, -1.0), near_center);
+	Vector3 far_center = (planes[0][Projection::PLANE_FAR].get_center() + planes[1][Projection::PLANE_FAR].get_center()) * 0.5;
+	Plane far_plane = Plane(Vector3(0.0, 0.0, -1.0), far_center);
+
+	/////////////////////////////////////////////////////////////////////////////
+	// Figure out our top/bottom planes
+
+	// 4. Intersect far and left planes with top planes from both eyes, save the point with highest y as top_left.
+	Vector3 top_left, other;
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_TOP], &top_left), proj, "Can't determine left camera far/left/top vector");
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_TOP], &other), proj, "Can't determine right camera far/left/top vector");
+	if (top_left.y < other.y) {
+		top_left = other;
+	}
+
+	// 5. Intersect far and left planes with bottom planes from both eyes, save the point with lowest y as bottom_left.
+	Vector3 bottom_left;
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_BOTTOM], &bottom_left), proj, "Can't determine left camera far/left/bottom vector");
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_BOTTOM], &other), proj, "Can't determine right camera far/left/bottom vector");
+	if (other.y < bottom_left.y) {
+		bottom_left = other;
+	}
+
+	// 6. Intersect far and right planes with top planes from both eyes, save the point with highest y as top_right.
+	Vector3 top_right;
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_TOP], &top_right), proj, "Can't determine left camera far/right/top vector");
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_TOP], &other), proj, "Can't determine right camera far/right/top vector");
+	if (top_right.y < other.y) {
+		top_right = other;
+	}
+
+	//  7. Intersect far and right planes with bottom planes from both eyes, save the point with lowest y as bottom_right.
+	Vector3 bottom_right;
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_BOTTOM], &bottom_right), proj, "Can't determine left camera far/right/bottom vector");
+	ERR_FAIL_COND_V_MSG(
+			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_BOTTOM], &other), proj, "Can't determine right camera far/right/bottom vector");
+	if (other.y < bottom_right.y) {
+		bottom_right = other;
+	}
+
+	// 8. Create top plane with these points: camera origin, top_left, top_right
+	Plane top(origin, top_left, top_right);
+
+	// 9. Create bottom plane with these points: camera origin, bottom_left, bottom_right
+	Plane bottom(origin, bottom_left, bottom_right);
+
+	/////////////////////////////////////////////////////////////////////////////
+	// Figure out our near plane points
+
+	// 10. Intersect near plane with bottm/left planes, to obtain min_vec then top/right to obtain max_vec
+	Vector3 min_vec;
+	ERR_FAIL_COND_V_MSG(
+			!near_plane.intersect_3(bottom, planes[0][Projection::PLANE_LEFT], &min_vec), proj, "Can't determine left camera near/left/bottom vector");
+	ERR_FAIL_COND_V_MSG(
+			!near_plane.intersect_3(bottom, planes[1][Projection::PLANE_LEFT], &other), proj, "Can't determine right camera near/left/bottom vector");
+	if (other.x < min_vec.x) {
+		min_vec = other;
+	}
+
+	Vector3 max_vec;
+	ERR_FAIL_COND_V_MSG(
+			!near_plane.intersect_3(top, planes[0][Projection::PLANE_RIGHT], &max_vec), proj, "Can't determine left camera near/right/top vector");
+	ERR_FAIL_COND_V_MSG(
+			!near_plane.intersect_3(top, planes[1][Projection::PLANE_RIGHT], &other), proj, "Can't determine right camera near/right/top vector");
+	if (max_vec.x < other.x) {
+		max_vec = other;
+	}
+
+	// 11. get x and y from these to obtain left, top, right bottom for the frustum. Get the distance from near plane to camera origin to obtain near, and the distance from the far plane to the camera origin to obtain far.
+	float z_near = -near_plane.distance_to(origin);
+	float z_far = -far_plane.distance_to(origin);
+
+	// Safeguard our near and far values
+	z_near = MAX(z_near, origin.z + 0.01);
+	z_far = MAX(z_far, z_near + 1.0);
+
+	// 12. Use this to build the combined camera matrix.
+	proj.set_frustum(min_vec.x, max_vec.x, min_vec.y, max_vec.y, z_near, z_far);
+
+	// 13. Add in offset to origin
+	Transform3D main_offset(Basis(), -origin);
+	proj = proj * Projection(main_offset);
+
+	return proj;
+}
+
 Projection Projection::perspective_znear_adjusted(real_t p_new_znear) const {
 	Projection proj = *this;
 	proj.adjust_perspective_znear(p_new_znear);
@@ -874,6 +986,17 @@ bool Projection::is_orthogonal() const {
 	// NOTE: This assumes that the matrix is a projection across z-axis
 	// i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0
 	return columns[2][3] == 0.0;
+}
+
+bool Projection::is_asymmetrical() const {
+	// NOTE: This assumes that the matrix is a projection across z-axis
+	// i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0
+	return columns[2][0] != 0.0 || columns[2][1] != 0.0;
+}
+
+bool Projection::is_z_axis_projection() const {
+	// These need to all be zero for this to be a projection along the z-axis.
+	return columns[0][1] == 0.0 && columns[1][0] == 0.0 && columns[0][3] == 0.0 && columns[1][3] == 0.0;
 }
 
 real_t Projection::get_fov() const {

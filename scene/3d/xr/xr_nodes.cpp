@@ -36,9 +36,16 @@
 #include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void XRCamera3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_tracker", "tracker_name"), &XRCamera3D::set_tracker);
+	ClassDB::bind_method(D_METHOD("get_tracker"), &XRCamera3D::get_tracker);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tracker", PROPERTY_HINT_ENUM_SUGGESTION), "set_tracker", "get_tracker");
+}
 
 void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
@@ -47,21 +54,100 @@ void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
 	// Hide properties that are managed by XRInterface or otherwise not applicable for XRCamera3D.
 	if (p_property.name == "fov" || p_property.name == "projection" || p_property.name == "size" || p_property.name == "frustum_offset" || p_property.name == "keep_aspect") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	} else if (p_property.name == "tracker") {
+		// For now we only set our default head tracker, but we'll be adding support for additional head trackers here soon.
+		String hint_string = "head";
+		p_property.hint_string = hint_string;
 	}
+}
+
+void XRCamera3D::set_tracker(const StringName &p_tracker_name) {
+	if (tracker.is_valid() && tracker->get_tracker_name() == p_tracker_name) {
+		// didn't change
+		return;
+	}
+
+	// just in case
+	_unbind_tracker();
+
+	// copy the name
+	tracker_name = p_tracker_name;
+	pose_name = SceneStringName(default_);
+
+	// see if it's already available
+	_bind_tracker();
+
+	update_configuration_warnings();
+	notify_property_list_changed();
+}
+
+StringName XRCamera3D::get_tracker() const {
+	return tracker_name;
+}
+
+void XRCamera3D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_current()) {
+				_update_projections();
+			}
+		} break;
+	}
+}
+
+void XRCamera3D::_update_camera_mode() {
+	// Ignore this here, we are setting our projection matrices later
+}
+
+void XRCamera3D::fti_update_servers_property() {
+	// TODO: We don't update the projection matrices right away,
+	// but we'll need to see if there is anything we need to capture here.
+}
+
+void XRCamera3D::_update_projections() {
+	if (tracker.is_null()) {
+		return;
+	}
+
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL(xr_server);
+	Viewport *vp = get_viewport();
+	ERR_FAIL_NULL(vp);
+
+	Size2 viewport_size = vp->get_visible_rect().size;
+
+	rendering_server->camera_set_projections(
+			get_camera(),
+			xr_server->get_camera_projections(tracker_name, viewport_size.aspect(), get_near(), get_far()),
+			xr_server->get_camera_offsets(tracker_name));
+
+	// rest is old code!
+	return;
 }
 
 void XRCamera3D::_bind_tracker() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	tracker = xr_server->get_tracker(tracker_name);
-	if (tracker.is_valid()) {
-		tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+	Ref<XRTracker> new_tracker = xr_server->get_tracker(tracker_name);
+	if (new_tracker.is_null()) {
+		// Fail silently, tracker does not yet exist.
+		return;
+	} else if (tracker == new_tracker) {
+		// Already bound?
+		return;
+	}
 
-		Ref<XRPose> pose = tracker->get_pose(pose_name);
-		if (pose.is_valid()) {
-			set_transform(pose->get_adjusted_transform());
-		}
+	// Assign our new tracker
+	tracker = new_tracker;
+	tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+
+	// Update our initial pose
+	Ref<XRPose> pose = tracker->get_pose(pose_name);
+	if (pose.is_valid()) {
+		set_transform(pose->get_adjusted_transform());
 	}
 }
 
@@ -74,6 +160,8 @@ void XRCamera3D::_unbind_tracker() {
 
 void XRCamera3D::_changed_tracker(const StringName &p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
+		// Rebind it.
+		_unbind_tracker();
 		_bind_tracker();
 	}
 }
@@ -221,6 +309,9 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 XRCamera3D::XRCamera3D() {
 	// XRCamera3D gets its transform updated every render frame and shouldn't be interpolated.
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
+
+	// Run internal process in runtime.
+	set_desired_process_modes(!Engine::get_singleton()->is_editor_hint(), false);
 
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);

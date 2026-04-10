@@ -279,7 +279,13 @@ Rect2 MobileVRInterface::get_offset_rect() const {
 }
 
 void MobileVRInterface::set_iod(const double p_iod) {
-	intraocular_dist = p_iod;
+	if (intraocular_dist != p_iod) {
+		intraocular_dist = p_iod;
+
+		// Clear our cached values, we'll need to recalculate.
+		camera_projections.clear();
+		camera_offsets.clear();
+	}
 }
 
 double MobileVRInterface::get_iod() const {
@@ -287,7 +293,12 @@ double MobileVRInterface::get_iod() const {
 }
 
 void MobileVRInterface::set_display_width(const double p_display_width) {
-	display_width = p_display_width;
+	if (display_width != p_display_width) {
+		display_width = p_display_width;
+
+		// Clear our cached view projections, we'll need to recalculate.
+		camera_projections.clear();
+	}
 }
 
 double MobileVRInterface::get_display_width() const {
@@ -295,7 +306,12 @@ double MobileVRInterface::get_display_width() const {
 }
 
 void MobileVRInterface::set_display_to_lens(const double p_display_to_lens) {
-	display_to_lens = p_display_to_lens;
+	if (display_to_lens != p_display_to_lens) {
+		display_to_lens = p_display_to_lens;
+
+		// Clear our cached view projections, we'll need to recalculate.
+		camera_projections.clear();
+	}
 }
 
 double MobileVRInterface::get_display_to_lens() const {
@@ -303,7 +319,12 @@ double MobileVRInterface::get_display_to_lens() const {
 }
 
 void MobileVRInterface::set_oversample(const double p_oversample) {
-	oversample = p_oversample;
+	if (oversample != p_oversample) {
+		oversample = p_oversample;
+
+		// Clear our cached view projections, we'll need to recalculate.
+		camera_projections.clear();
+	}
 }
 
 double MobileVRInterface::get_oversample() const {
@@ -373,8 +394,8 @@ bool MobileVRInterface::initialize() {
 
 		// we must create a tracker for our head
 		head.instantiate();
-		head->set_tracker_type(XRServer::TRACKER_HEAD);
-		head->set_tracker_name("head");
+		head->set_tracker_type(XRServer::TRACKER_CAMERA);
+		head->set_tracker_name(XR_TRACKER_HEAD);
 		head->set_tracker_desc("Players head");
 		xr_server->add_tracker(head);
 
@@ -406,6 +427,11 @@ void MobileVRInterface::uninitialize() {
 			}
 		}
 
+		// Clear our cached data
+		camera_projections.clear();
+		camera_offsets.clear();
+
+		// And we're no longer initialized.
 		initialized = false;
 	};
 }
@@ -465,8 +491,78 @@ Transform3D MobileVRInterface::get_camera_transform() {
 	return transform_for_eye;
 }
 
+TypedArray<Projection> MobileVRInterface::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	_THREAD_SAFE_METHOD_
+
+	if (p_tracker_name != XR_TRACKER_HEAD) {
+		return camera_projections;
+	}
+
+	if (aspect != p_aspect || z_near != p_z_near || z_far != p_z_far) {
+		camera_projections.clear();
+		aspect = p_aspect;
+		z_near = p_z_near;
+		z_far = p_z_far;
+	}
+
+	if (!camera_projections.is_empty()) {
+		// Return our cached values.
+		return camera_projections;
+	}
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, camera_projections);
+
+	if (initialized) {
+		for (int v = 1; v < 3; v++) {
+			Projection projection;
+
+			projection.set_for_hmd(v, aspect, intraocular_dist, display_width, display_to_lens, oversample, z_near, z_far);
+
+			camera_projections.push_back(projection);
+		}
+	}
+
+	return camera_projections;
+}
+
+TypedArray<Transform3D> MobileVRInterface::get_camera_offsets(const StringName &p_tracker_name) {
+	_THREAD_SAFE_METHOD_
+
+	if (p_tracker_name != XR_TRACKER_HEAD) {
+		return camera_offsets;
+	}
+
+	if (!camera_offsets.is_empty()) {
+		// Return our cached values.
+		return camera_offsets;
+	}
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, camera_offsets);
+
+	if (initialized) {
+		float world_scale = xr_server->get_world_scale();
+
+		for (int v = 0; v < 2; v++) {
+			Transform3D offset;
+
+			// We don't need to check for the existence of our HMD, doesn't affect our values...
+			// note * 0.01 to convert cm to m and * 0.5 as we're moving half in each direction...
+			offset.origin.x = intraocular_dist * 0.01 * world_scale * (v == 0 ? -0.5 : 0.5);
+
+			camera_offsets.push_back(offset);
+		}
+	}
+
+	return camera_offsets;
+}
+
+#ifndef DISABLE_DEPRECATED
 Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
+
+	WARN_PRINT_ONCE("MobileVRInterface.get_transform_for_view is deprecated, please use MobileVRInterface.get_camera_offsets");
 
 	Transform3D transform_for_eye;
 
@@ -476,21 +572,14 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	if (initialized) {
 		float world_scale = xr_server->get_world_scale();
 
-		// we don't need to check for the existence of our HMD, doesn't affect our values...
-		// note * 0.01 to convert cm to m and * 0.5 as we're moving half in each direction...
-		if (p_view == 0) {
-			transform_for_eye.origin.x = -(intraocular_dist * 0.01 * 0.5 * world_scale);
-		} else if (p_view == 1) {
-			transform_for_eye.origin.x = intraocular_dist * 0.01 * 0.5 * world_scale;
-		} else {
-			// should not have any other values..
-		};
-
 		// just scale our origin point of our transform
 		Transform3D _head_transform = head_transform;
 		_head_transform.origin *= world_scale;
 
-		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * _head_transform * transform_for_eye;
+		Transform3D offset;
+		offset.origin.x = intraocular_dist * 0.01 * world_scale * (p_view == 0 ? -0.5 : 0.5);
+
+		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * _head_transform * offset;
 	} else {
 		// huh? well just return what we got....
 		transform_for_eye = p_cam_transform;
@@ -502,6 +591,8 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
 
+	WARN_PRINT_ONCE("MobileVRInterface.get_projection_for_view is deprecated, please use MobileVRInterface.get_camera_projections");
+
 	Projection eye;
 
 	aspect = p_aspect;
@@ -509,6 +600,7 @@ Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_
 
 	return eye;
 }
+#endif
 
 Vector<RenderingServerTypes::BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_

@@ -17,6 +17,23 @@
 				If this is an AR interface that requires displaying a camera feed as the background, this method returns the feed ID in the [CameraServer] for this interface.
 			</description>
 		</method>
+		<method name="get_camera_offsets">
+			<return type="Transform3D[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Get an array of offset transforms for each view for tracker [param tracker_name]. [param tracker_name] must refer to a [XRPositionalTracker] used as a camera. Returns empty if this interface is not responsible for this tracker.
+			</description>
+		</method>
+		<method name="get_camera_projections">
+			<return type="Projection[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="near" type="float" />
+			<param index="3" name="far" type="float" />
+			<description>
+				Get an array of projection matrices for each view for tracker [param tracker_name]. [param tracker_name] must refer to a [XRPositionalTracker] used as a camera. Returns empty if this interface is not responsible for this tracker.
+			</description>
+		</method>
 		<method name="get_capabilities" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -35,7 +52,7 @@
 				Returns an array of vectors that represent the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
 			</description>
 		</method>
-		<method name="get_projection_for_view">
+		<method name="get_projection_for_view" deprecated="Use get_camera_projections">
 			<return type="Projection" />
 			<param index="0" name="view" type="int" />
 			<param index="1" name="aspect" type="float" />
@@ -70,7 +87,7 @@
 				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
 			</description>
 		</method>
-		<method name="get_transform_for_view">
+		<method name="get_transform_for_view" deprecated="Use get_camera_offsets">
 			<return type="Transform3D" />
 			<param index="0" name="view" type="int" />
 			<param index="1" name="cam_transform" type="Transform3D" />
