@@ -587,8 +587,11 @@ RDD::BufferID RenderingDevice::_hit_sbt_buffer_create(uint32_t p_buffer_size) {
 }
 
 Error RenderingDevice::_hit_sbt_buffer_update(HitShaderBindingTable *p_hit_sbt, RID p_hit_sbt_id, RDD::ShaderBindingTable &r_sbt) {
-	uint32_t shader_group_size = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_HANDLE_SIZE);
-	uint32_t buffer_size = p_hit_sbt->hit_group_indices.size() * shader_group_size;
+	uint32_t shader_group_handle_size = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_HANDLE_SIZE);
+	uint32_t shader_group_handle_alignment = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT);
+	uint32_t shader_group_stride = STEPIFY(shader_group_handle_size, shader_group_handle_alignment);
+
+	uint32_t buffer_size = p_hit_sbt->hit_group_indices.size() * shader_group_stride;
 
 	if (p_hit_sbt->size != buffer_size) {
 		RDD::BufferID buffer = _hit_sbt_buffer_create(buffer_size);
@@ -607,8 +610,8 @@ Error RenderingDevice::_hit_sbt_buffer_update(HitShaderBindingTable *p_hit_sbt, 
 
 	if (p_hit_sbt->first_dirty_index != UINT32_MAX) {
 		uint32_t count = p_hit_sbt->last_dirty_index - p_hit_sbt->first_dirty_index;
-		uint32_t offset = shader_group_size * p_hit_sbt->first_dirty_index;
-		uint32_t size = shader_group_size * count;
+		uint32_t offset = shader_group_stride * p_hit_sbt->first_dirty_index;
+		uint32_t size = shader_group_stride * count;
 
 		thread_local LocalVector<uint8_t> data;
 		data.resize(size);
@@ -617,8 +620,8 @@ Error RenderingDevice::_hit_sbt_buffer_update(HitShaderBindingTable *p_hit_sbt, 
 				p_hit_sbt->raytracing_pipeline,
 				p_hit_sbt->index_offset,
 				VectorView<uint32_t>(p_hit_sbt->hit_group_indices.ptr() + p_hit_sbt->first_dirty_index, count),
-				data.ptr());
-
+				data.ptr(),
+				shader_group_stride);
 		ERR_FAIL_COND_V(!success, ERR_CANT_CREATE);
 
 		Error err = _buffer_update(p_hit_sbt, p_hit_sbt_id, offset, size, data.ptr());
@@ -630,7 +633,7 @@ Error RenderingDevice::_hit_sbt_buffer_update(HitShaderBindingTable *p_hit_sbt, 
 
 	r_sbt.buffer = p_hit_sbt->driver_id;
 	r_sbt.offset = 0;
-	r_sbt.stride = shader_group_size;
+	r_sbt.stride = shader_group_stride;
 	r_sbt.size = buffer_size;
 
 	return OK;
@@ -5071,11 +5074,17 @@ Error RenderingDevice::_raytracing_pipeline_create_sbt_buffer(RDD::RaytracingPip
 	// Ray generation and miss shader group handles are placed next to each other in the same buffer.
 
 	uint32_t shader_group_handle_size = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_HANDLE_SIZE);
+	uint32_t shader_group_handle_alignment = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT);
 	uint32_t shader_group_base_alignment = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT);
 
-	uint32_t raygen_sbt_size = p_raygen_shader_count * shader_group_handle_size;
+	uint32_t shader_group_stride = STEPIFY(shader_group_handle_size, shader_group_handle_alignment);
+	uint32_t raygen_shader_group_stride = STEPIFY(shader_group_stride, shader_group_base_alignment);
+
+	// Make sure to reserve a full base-aligned slot for every raygen shader.
+	uint32_t raygen_sbt_size = p_raygen_shader_count * raygen_shader_group_stride;
 	uint32_t miss_sbt_offset = STEPIFY(raygen_sbt_size, shader_group_base_alignment);
-	uint32_t miss_sbt_size = p_miss_shader_count * shader_group_handle_size;
+	// Reserve handle-aligned slots for miss shaders.
+	uint32_t miss_sbt_size = p_miss_shader_count * shader_group_stride;
 
 	r_sbt_buffer.size = miss_sbt_offset + miss_sbt_size;
 	r_sbt_buffer.driver_id = driver->buffer_create(r_sbt_buffer.size, RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_SHADER_BINDING_TABLE_BIT | RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
@@ -5084,20 +5093,26 @@ Error RenderingDevice::_raytracing_pipeline_create_sbt_buffer(RDD::RaytracingPip
 	thread_local LocalVector<uint8_t> sbt_data;
 	sbt_data.resize(r_sbt_buffer.size);
 
+	thread_local LocalVector<uint32_t> raygen_shader_group_indices;
+	raygen_shader_group_indices.resize(p_raygen_shader_count);
 	for (uint32_t i = 0; i < p_raygen_shader_count; i++) {
-		bool success = driver->raytracing_pipeline_get_shader_group_handles(p_raytracing_pipeline, 0, VectorView<uint32_t>(i), sbt_data.ptr() + (i * shader_group_handle_size));
-		if (unlikely(!success)) {
-			driver->buffer_free(r_sbt_buffer.driver_id);
-			ERR_FAIL_V(ERR_CANT_CREATE);
-		}
+		raygen_shader_group_indices[i] = i;
+	}
+	bool success = driver->raytracing_pipeline_get_shader_group_handles(p_raytracing_pipeline, 0, VectorView<uint32_t>(raygen_shader_group_indices), sbt_data.ptr(), raygen_shader_group_stride);
+	if (unlikely(!success)) {
+		driver->buffer_free(r_sbt_buffer.driver_id);
+		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
 
+	thread_local LocalVector<uint32_t> miss_shader_group_indices;
+	miss_shader_group_indices.resize(p_miss_shader_count);
 	for (uint32_t i = 0; i < p_miss_shader_count; i++) {
-		bool success = driver->raytracing_pipeline_get_shader_group_handles(p_raytracing_pipeline, p_raygen_shader_count, VectorView<uint32_t>(i), sbt_data.ptr() + miss_sbt_offset + (i * shader_group_handle_size));
-		if (unlikely(!success)) {
-			driver->buffer_free(r_sbt_buffer.driver_id);
-			ERR_FAIL_V(ERR_CANT_CREATE);
-		}
+		miss_shader_group_indices[i] = i;
+	}
+	success = driver->raytracing_pipeline_get_shader_group_handles(p_raytracing_pipeline, p_raygen_shader_count, VectorView<uint32_t>(miss_shader_group_indices), sbt_data.ptr() + miss_sbt_offset, shader_group_stride);
+	if (unlikely(!success)) {
+		driver->buffer_free(r_sbt_buffer.driver_id);
+		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
 
 	Error err = _buffer_initialize(&r_sbt_buffer, sbt_data);
@@ -6557,21 +6572,25 @@ void RenderingDevice::raytracing_list_trace_rays(RaytracingListID p_list, uint32
 	}
 
 	uint32_t shader_group_handle_size = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_HANDLE_SIZE);
+	uint32_t shader_group_handle_alignment = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT);
 	uint32_t shader_group_base_alignment = driver->api_trait_get(RDD::API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT);
+
+	uint32_t shader_group_stride = STEPIFY(shader_group_handle_size, shader_group_handle_alignment);
+	uint32_t raygen_shader_group_stride = STEPIFY(shader_group_stride, shader_group_base_alignment);
 
 	ERR_FAIL_COND(p_raygen_shader_index >= raytracing_list.state.raygen_shader_count);
 
 	RDD::ShaderBindingTable raygen_sbt;
 	raygen_sbt.buffer = raytracing_list.state.sbt_buffer;
-	raygen_sbt.offset = p_raygen_shader_index * shader_group_handle_size;
-	raygen_sbt.stride = shader_group_handle_size;
-	raygen_sbt.size = shader_group_handle_size;
+	raygen_sbt.offset = p_raygen_shader_index * raygen_shader_group_stride;
+	raygen_sbt.stride = raygen_shader_group_stride;
+	raygen_sbt.size = raygen_shader_group_stride;
 
 	RDD::ShaderBindingTable miss_sbt;
 	miss_sbt.buffer = raytracing_list.state.sbt_buffer;
-	miss_sbt.offset = STEPIFY(raytracing_list.state.raygen_shader_count * shader_group_handle_size, shader_group_base_alignment);
-	miss_sbt.stride = shader_group_handle_size;
-	miss_sbt.size = raytracing_list.state.miss_shader_count * shader_group_handle_size;
+	miss_sbt.offset = STEPIFY(raytracing_list.state.raygen_shader_count * raygen_shader_group_stride, shader_group_base_alignment);
+	miss_sbt.stride = shader_group_stride;
+	miss_sbt.size = raytracing_list.state.miss_shader_count * shader_group_stride;
 
 	HitShaderBindingTable *hit_sbt = hit_sbt_owner.get_or_null(p_hit_sbt);
 	ERR_FAIL_NULL(hit_sbt);
