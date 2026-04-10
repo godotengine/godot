@@ -2051,6 +2051,11 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 	// Try to find the target node in modified node paths.
 	HashMap<Node *, NodePath>::Iterator found_node_path = p_renames->find(target_node);
 	if (found_node_path) {
+		if (found_node_path->value.is_empty()) {
+			r_node_path = found_node_path->value;
+			return true;
+		}
+
 		String old_subnames;
 		if (r_node_path.get_subname_count() > 0) {
 			old_subnames = ":" + r_node_path.get_concatenated_subnames();
