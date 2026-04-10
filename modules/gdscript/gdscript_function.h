@@ -455,6 +455,10 @@ private:
 	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
+#ifdef DEBUG_ENABLED
+	void _script_error_debug_break(GDScriptInstance *p_instance, GDScript *p_script, int p_line, const String &p_err_text) const;
+#endif
+
 public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
 
