@@ -3748,6 +3748,7 @@ void Tree::_go_down() {
 	if (!selected_item) {
 		if (root) {
 			next = hide_root ? root->get_next_visible() : root;
+			selected_col = 0;
 		}
 	} else {
 		next = selected_item->get_next_visible();
