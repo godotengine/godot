@@ -263,6 +263,7 @@ class SceneTreeDock : public EditorDock {
 	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
+	void _normalize_drop_on_exposed_node(Node *&to_node, int &to_pos, int p_type);
 	Array _get_selection_array();
 
 	void _nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type);

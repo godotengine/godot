@@ -3652,7 +3652,12 @@ static bool _is_node_visible(Node *p_node) {
 	if (!p_node->get_owner()) {
 		return false;
 	}
-	if (p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene() && !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node->get_owner()) && !p_node->has_meta(META_MARKED_FOR_EXPOSURE)) {
+	bool exposure_is_visible = false;
+	if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		Node *exposed_by = Object::cast_to<Node>(p_node->get_meta(META_EXPOSED_IN_INSTANCE));
+		exposure_is_visible = exposed_by != nullptr && exposed_by->get_owner() != nullptr && exposed_by->get_owner() == EditorNode::get_singleton()->get_edited_scene();
+	}
+	if (p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene() && !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node->get_owner()) && !exposure_is_visible) {
 		return false;
 	}
 
@@ -3663,19 +3668,21 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 	// Drop as last child, by default.
 	to_pos = -1;
 
+	// If the node is exposed or is a scene containing exposed nodes we need to handle it in a special way.
+	if (to_node->has_meta(META_EXPOSED_IN_INSTANCE) || (!to_node->get_scene_file_path().is_empty() && to_node->has_exposed_nodes())) {
+		_normalize_drop_on_exposed_node(to_node, to_pos, p_type);
+		return;
+	}
+
 	if (p_type == -1) {
 		// Drop as sibling, above.
 		if (to_node == EditorNode::get_singleton()->get_edited_scene()) {
 			to_node = nullptr;
 			ERR_FAIL_MSG("Cannot perform drop above the root node!");
 		}
-		if (to_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
-			to_node = to_node->get_owner();
-			to_pos = -1;
-		} else {
-			to_pos = to_node->get_index(false);
-			to_node = to_node->get_parent();
-		}
+
+		to_pos = to_node->get_index(false);
+		to_node = to_node->get_parent();
 
 	} else if (p_type == 1) {
 		// Drop as child of root node if out of bounds.
@@ -3699,14 +3706,41 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 			to_pos = lower_sibling->get_index(false);
 		}
 
-			if (to_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
-				to_pos = to_node->get_index(false) + 1;
-				to_node = to_node->get_owner();
-			} else {
-				to_node = to_node->get_parent();
+		to_node = to_node->get_parent();
 	} else if (p_type == 2) {
 		// Drop as first child, among others.
 		to_pos = 0;
+	}
+}
+
+void SceneTreeDock::_normalize_drop_on_exposed_node(Node *&to_node, int &to_pos, int p_type) {
+	to_pos = -1;
+
+	if (p_type == -1 || p_type == 1) {
+		// Climb the tree until we find this exposed node's visible parent, insert as last child.
+		Node *parent = to_node->get_parent();
+		while (parent != nullptr) {
+			if (_is_node_visible(parent)) {
+				to_node = parent;
+
+				if (!parent->has_exposed_nodes()) {
+					break;
+				}
+
+				Node *lower_sibling = nullptr;
+
+				for (int i = 0; i < parent->get_child_count(false); i++) {
+					Node *c = parent->get_child(i, false);
+					if (_is_node_visible(c) && !c->has_meta(META_EXPOSED_IN_INSTANCE)) {
+						lower_sibling = c;
+					}
+				}
+				if (lower_sibling) {
+					to_pos = lower_sibling->get_index(false);
+				}
+				break;
+			}
+			parent = parent->get_parent();
 		}
 	}
 }
