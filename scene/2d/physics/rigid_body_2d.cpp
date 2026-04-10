@@ -362,6 +362,7 @@ void RigidBody2D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 	}
 
 	notify_property_list_changed();
+	queue_redraw();
 }
 
 RigidBody2D::CenterOfMassMode RigidBody2D::get_center_of_mass_mode() const {
@@ -377,6 +378,7 @@ void RigidBody2D::set_center_of_mass(const Vector2 &p_center_of_mass) {
 	center_of_mass = p_center_of_mass;
 
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+	queue_redraw();
 }
 
 const Vector2 &RigidBody2D::get_center_of_mass() const {
@@ -640,6 +642,25 @@ void RigidBody2D::_notification(int p_what) {
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			update_configuration_warnings();
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (!is_inside_tree()) {
+				break;
+			}
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				break;
+			}
+			// Draw a crosshair at the center of mass position.
+			const Vector2 com = get_center_of_mass();
+			const float extents = 5.0;
+			Color com_color = (center_of_mass_mode == CENTER_OF_MASS_MODE_CUSTOM)
+					? Color(1.0, 0.3, 1.0, 0.95) // Magenta
+					: Color(1.0, 0.6, 0.0, 0.8); // Orange
+			const float line_width = 0.5;
+
+			draw_line(com + Vector2(-extents, 0), com + Vector2(extents, 0), com_color, line_width);
+			draw_line(com + Vector2(0, -extents), com + Vector2(0, extents), com_color, line_width);
 		} break;
 	}
 #endif
