@@ -124,6 +124,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libwayland-bin  # TODO: Figure out somehow how to embed this one.
+          sudo apt-get install libusb-1.0-0-dev
           if [ "${{ matrix.proj-test }}" == "true" -o "${{ matrix.proj-export }}" == "true" ]; then
             sudo apt-get install mesa-vulkan-drivers
           fi
