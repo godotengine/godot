@@ -392,7 +392,9 @@ void Viewport::_sub_window_update(Window *p_window) {
 			TextLine title_text = TextLine(p_window->get_displayed_title(), title_font, font_size);
 			title_text.set_width(title_space);
 			title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-			int x = (r.size.width - title_text.get_size().x) / 2;
+			title_text.set_horizontal_alignment(p_window->get_title_alignment());
+
+			int x = panel->get_margin(SIDE_LEFT);
 			int y = (-title_height - title_text.get_size().y) / 2;
 
 			Color font_outline_color = p_window->theme_cache.title_outline_modulate;
