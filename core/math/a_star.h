@@ -48,8 +48,8 @@ class AStar3D : public RefCounted {
 		real_t weight_scale = 0;
 		bool enabled = false;
 
-		AHashMap<int64_t, Point *> neighbors = 4u;
-		AHashMap<int64_t, Point *> unlinked_neighbours = 4u;
+		AHashMap<int64_t, Point *> neighbors{ 4u };
+		AHashMap<int64_t, Point *> unlinked_neighbours{ 4u };
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
