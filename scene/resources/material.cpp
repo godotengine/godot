@@ -1262,6 +1262,15 @@ void vertex() {)";
 )";
 	}
 
+#ifdef REAL_T_IS_DOUBLE
+	if (billboard_mode != BILLBOARD_DISABLED) {
+		code += R"(
+	// Save the node position for later to improve stability on double precision builds.
+	vec3 node_pos_view = MODELVIEW_MATRIX[3].xyz;
+)";
+	}
+#endif
+
 	switch (billboard_mode) {
 		case BILLBOARD_DISABLED: {
 		} break;
@@ -1276,17 +1285,6 @@ void vertex() {)";
 			MAIN_CAM_INV_VIEW_MATRIX[2],
 			MODEL_MATRIX[3]);
 )";
-			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += R"(
-	// Billboard Keep Scale: Enabled
-	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(
-			vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),
-			vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0),
-			vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0),
-			vec4(0.0, 0.0, 0.0, 1.0));
-)";
-			}
-			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 		} break;
 		case BILLBOARD_FIXED_Y: {
 			// `MAIN_CAM_INV_VIEW_MATRIX` is inverse of the camera, even on shadow passes.
@@ -1299,17 +1297,6 @@ void vertex() {)";
 			vec4(normalize(cross(MAIN_CAM_INV_VIEW_MATRIX[0].xyz, vec3(0.0, 1.0, 0.0))), 0.0),
 			MODEL_MATRIX[3]);
 )";
-			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += R"(
-	// Billboard Keep Scale: Enabled
-	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(
-			vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),
-			vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0),
-			vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0),
-			vec4(0.0, 0.0, 0.0, 1.0));
-)";
-			}
-			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 		} break;
 		case BILLBOARD_PARTICLES: {
 			// Make billboard and rotated by rotation.
@@ -1328,8 +1315,14 @@ void vertex() {)";
 )";
 			// Set modelview.
 			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
-			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += R"(
+		} break;
+		case BILLBOARD_MAX:
+			break; // Internal value, skip.
+	}
+
+	if (billboard_mode != BILLBOARD_DISABLED) {
+		if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+			code += R"(
 	// Billboard Keep Scale: Enabled
 	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(
 			vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),
@@ -1337,11 +1330,21 @@ void vertex() {)";
 			vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0),
 			vec4(0.0, 0.0, 0.0, 1.0));
 )";
-			}
-			// Set modelview normal and handle animation.
-			code += R"(
-	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
+		}
 
+#ifdef REAL_T_IS_DOUBLE
+		code += R"(
+	// Reapply the node position.
+	MODELVIEW_MATRIX[3].xyz = node_pos_view;
+)";
+#endif
+
+		// Set modelview normal.
+		code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
+
+		if (billboard_mode == BILLBOARD_PARTICLES) {
+			// Handle animation.
+			code += R"(
 	float h_frames = float(particles_anim_h_frames);
 	float v_frames = float(particles_anim_v_frames);
 	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);
@@ -1354,9 +1357,7 @@ void vertex() {)";
 	UV /= vec2(h_frames, v_frames);
 	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
 )";
-		} break;
-		case BILLBOARD_MAX:
-			break; // Internal value, skip.
+		}
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
