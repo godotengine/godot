@@ -12,6 +12,8 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
+				Used by the engine to add a global constant which will be available for the entire program lifetime.
+				Since those constants can't be removed it might be possible to optimize the access.
 			</description>
 		</method>
 		<method name="_add_named_global_constant" qualifiers="virtual required">
@@ -19,6 +21,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
+				Used by the engine to add a global constant which can be removed at any point.
 			</description>
 		</method>
 		<method name="_auto_indent_code" qualifiers="virtual required const">
