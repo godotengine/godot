@@ -123,6 +123,10 @@ void AudioStreamPlayer::play(float p_from_pos) {
 
 		AudioServer::get_singleton()->start_sample_playback(sample_playback);
 	}
+
+	if (!can_process()) {
+		_notification(NOTIFICATION_PAUSED);
+	}
 }
 
 void AudioStreamPlayer::seek(float p_seconds) {
