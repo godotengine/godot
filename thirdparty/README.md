@@ -367,6 +367,17 @@ Files extracted from upstream source:
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
+## gamemode
+
+- Upstream: https://github.com/FeralInteractive/gamemode/
+- Version: 1.8.2 (c54d6d4243b0dd0afcb49f2c9836d432da171a2b, 2024)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `lib/gamemode_client.h`
+- `LICENSE.txt`
+
 
 ## gamepadmotionhelpers
 
