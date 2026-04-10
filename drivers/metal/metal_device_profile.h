@@ -104,6 +104,7 @@ struct MetalDeviceProfile {
 		Apple7 = 1007,
 		Apple8 = 1008,
 		Apple9 = 1009,
+		Apple10 = 1010,
 	};
 
 	enum class ArgumentBuffersTier : uint32_t {
@@ -123,6 +124,7 @@ struct MetalDeviceProfile {
 	Features features;
 
 	static const MetalDeviceProfile *get_profile(Platform p_platform, GPU p_gpu, MinOsVersion p_min_os_version);
+	static GPU string_to_gpu(const String &value);
 
 	MetalDeviceProfile() = default;
 
