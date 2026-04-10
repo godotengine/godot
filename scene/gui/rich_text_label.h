@@ -739,7 +739,7 @@ private:
 	Size2 _get_item_image_final_size(ItemImage *p_img, float p_orig_width, float p_base_font_size);
 
 	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
-	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l);
+	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l, int p_base_font_size);
 
 	static int _find_unquoted(const String &p_src, char32_t p_chr, int p_from);
 	static Vector<String> _split_unquoted(const String &p_src, char32_t p_splitter);
@@ -766,6 +766,11 @@ private:
 	RID accessibility_scroll_element;
 
 	bool fit_content = false;
+
+	bool resize_font_to_fit = false;
+	int minimum_font_size = 10;
+	int maximum_font_size = 60;
+	mutable int current_fitted_font_size = -1;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
@@ -902,6 +907,17 @@ public:
 
 	void set_fit_content(bool p_enabled);
 	bool is_fit_content_enabled() const;
+
+	void set_resize_font_to_fit(bool p_enabled);
+	bool is_resize_font_to_fit_enabled() const;
+
+	void set_minimum_font_size(int p_size);
+	int get_minimum_font_size() const;
+
+	void set_maximum_font_size(int p_size);
+	int get_maximum_font_size() const;
+
+	int get_rendered_font_size() const;
 
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
