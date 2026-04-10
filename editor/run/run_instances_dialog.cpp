@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -201,14 +202,6 @@ void RunInstancesDialog::popup_dialog() {
 	popup_centered_clamped(Size2(1200, 600) * EDSCALE, 0.8);
 }
 
-int RunInstancesDialog::get_instance_count() const {
-	if (enable_multiple_instances_checkbox->is_pressed()) {
-		return instance_count->get_value();
-	} else {
-		return 1;
-	}
-}
-
 void RunInstancesDialog::get_argument_list_for_instance(int p_idx, List<String> &r_list) const {
 	bool override_args = instances_data[p_idx].overrides_run_args();
 	bool use_multiple_instances = enable_multiple_instances_checkbox->is_pressed();
@@ -295,6 +288,39 @@ void RunInstancesDialog::apply_custom_features(int p_instance_idx) {
 	OS::get_singleton()->set_environment("GODOT_EDITOR_CUSTOM_FEATURES", String(",").join(stripped_features));
 }
 
+void RunInstancesDialog::set_instance_count(int p_count, bool p_force_debug_mode) {
+	instance_count->set_value_no_signal(p_count);
+	enable_multiple_instances_checkbox->set_pressed_no_signal(p_count != 1 || p_force_debug_mode);
+
+	_refresh_argument_count();
+	_save_main_args();
+	_save_arguments();
+}
+
+int RunInstancesDialog::get_instance_count() const {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false)) {
+		return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instance_count", 1);
+	} else {
+		return 1;
+	}
+}
+
+void RunInstancesDialog::set_stored_data(TypedArray<Dictionary> p_data) {
+	stored_data = p_data;
+
+	instance_count->set_value_no_signal(p_data.size());
+
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "multiple_instances_enabled", enable_multiple_instances_checkbox->is_pressed());
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_instances_config", stored_data);
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_instance_count", instance_count->get_value());
+
+	_refresh_argument_count();
+}
+
+TypedArray<Dictionary> RunInstancesDialog::get_stored_data() const {
+	return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>());
+}
+
 RunInstancesDialog::RunInstancesDialog() {
 	singleton = this;
 	set_title(TTR("Run Instances"));
@@ -330,8 +356,6 @@ RunInstancesDialog::RunInstancesDialog() {
 		main_gc->add_child(l);
 	}
 
-	stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
-
 	main_args_edit = memnew(LineEdit);
 	main_args_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_args_edit->set_placeholder(TTR("Space-separated arguments, example: host player1 blue"));
@@ -344,7 +368,6 @@ RunInstancesDialog::RunInstancesDialog() {
 	main_features_edit = memnew(LineEdit);
 	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
-	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
 	main_features_edit->set_accessibility_name(TTRC("Main Feature Tags:"));
 	main_gc->add_child(main_features_edit);
 	main_features_edit->connect(SceneStringName(text_changed), callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
@@ -357,14 +380,12 @@ RunInstancesDialog::RunInstancesDialog() {
 
 	enable_multiple_instances_checkbox = memnew(CheckBox);
 	enable_multiple_instances_checkbox->set_text(TTRC("Enable Multiple Instances"));
-	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
 	instance_hb->add_child(enable_multiple_instances_checkbox);
 	enable_multiple_instances_checkbox->connect(SceneStringName(pressed), callable_mp(this, &RunInstancesDialog::_start_main_timer));
 
 	instance_count = memnew(SpinBox);
 	instance_count->set_min(1);
 	instance_count->set_max(20);
-	instance_count->set_value(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instance_count", stored_data.size()));
 	instance_count->set_accessibility_name(TTRC("Number of Instances"));
 
 	instance_hb->add_child(instance_count);
@@ -420,4 +441,24 @@ bool RunInstancesDialog::InstanceData::overrides_features() const {
 
 String RunInstancesDialog::InstanceData::get_feature_tags() const {
 	return item->get_text(COLUMN_FEATURE_TAGS);
+}
+
+void RunInstancesDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
+
+			main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
+			enable_multiple_instances_checkbox->set_pressed_no_signal(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
+			instance_count->set_value_no_signal(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instance_count", stored_data.size()));
+		} break;
+	}
+}
+
+void RunInstancesDialog::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_instance_count", "count", "force_debug_mode"), &RunInstancesDialog::set_instance_count);
+	ClassDB::bind_method(D_METHOD("get_instance_count"), &RunInstancesDialog::get_instance_count);
+
+	ClassDB::bind_method(D_METHOD("set_stored_data", "data"), &RunInstancesDialog::set_stored_data);
+	ClassDB::bind_method(D_METHOD("get_stored_data"), &RunInstancesDialog::get_stored_data);
 }
