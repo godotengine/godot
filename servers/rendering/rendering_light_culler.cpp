@@ -379,7 +379,7 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+		if (!_is_colinear_tri(pt0, pt1, pt2, DIRECTIONAL_LIGHT_COLINEARITY_THRESHOLD)) {
 			// Create plane from 3 points.
 			Plane p(pt0, pt1, pt2);
 			r_cull_planes.add_cull_plane(p);
@@ -397,7 +397,7 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+		if (!_is_colinear_tri(pt0, pt1, pt2, DIRECTIONAL_LIGHT_COLINEARITY_THRESHOLD)) {
 			// Create plane from 3 points.
 			Plane p(pt0, pt1, pt2);
 			r_cull_planes.add_cull_plane(p);
@@ -540,7 +540,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 		const Vector3 &pt0 = frustum_points[i0];
 		const Vector3 &pt1 = frustum_points[i1];
 
-		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+		if (!_is_colinear_tri(pt0, pt1, pt2, POINT_LIGHT_COLINEARITY_THRESHOLD)) {
 			// Create plane from 3 points.
 			Plane p(pt0, pt1, pt2);
 			r_cull_planes.add_cull_plane(p);
@@ -555,7 +555,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 		const Vector3 &pt0 = frustum_points[i0];
 		const Vector3 &pt1 = frustum_points[i1];
 
-		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+		if (!_is_colinear_tri(pt0, pt1, pt2, POINT_LIGHT_COLINEARITY_THRESHOLD)) {
 			// Create plane from 3 points.
 			Plane p(pt0, pt1, pt2);
 			r_cull_planes.add_cull_plane(p);

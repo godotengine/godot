@@ -141,6 +141,20 @@ private:
 		LUT_SIZE = 64,
 	};
 
+	// Directional lights work fine with small colinearity thresholds, but omnis not so much.
+	// Using the same value as directional lights for omnis will cause omni shadows (cube & paraboloid)
+	// to flicker while their center is out of view but near the edges of the viewport.
+	// Using a larger threshold for non-directional lights fixes this.
+	// See also GH-92078 for why this value is used.
+	constexpr static float POINT_LIGHT_COLINEARITY_THRESHOLD = 0.001f;
+
+	// Long frustums are made out of significantly stretched-out triangles,
+	// so a very small threshold is needed to prevent getting large amounts of cullable but unculled meshes.
+	// For example: 0.001 fails to cull cullable meshes with camera FOV of 70 and ortho shadows at ~50m at certain view angles.
+	// 0.0001 fails to cull cullable meshes with camera FOV of 70 and ortho shadows at ~500m at certain view angles.
+	// ...These apply less to cascades since they have large near planes in comparison to far planes, unlike ortho lights.
+	constexpr static float DIRECTIONAL_LIGHT_COLINEARITY_THRESHOLD = 0.00001f;
+
 public:
 	// Before each pass with a different camera, you must call this so the culler can pre-create
 	// the camera frustum planes and corner points in world space which are used for the culling.
@@ -188,8 +202,7 @@ private:
 	// - issue GH-89702 "Tighter Shadow Caster Culling causes some object shadows to not render for a Frame"
 	// - issue GH-89560 "Directional Shadows disappear with large Camera Z Far values at some angles"
 	// - issue GH-91976 "SpotLight3D shadows exhibit flickering when moved around."
-	// - PR GH-92078 which gave it the current value.
-	bool _is_colinear_tri(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c) const {
+	bool _is_colinear_tri(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, float p_threshold) const {
 		// Lengths of sides a, b and c.
 		float la = (p_b - p_a).length();
 		float lb = (p_c - p_b).length();
@@ -217,9 +230,7 @@ private:
 			// For example: 0.001 fails to cull cullable meshes with camera FOV of 70 and ortho shadows at ~50m at certain view angles.
 			// 0.0001 fails to cull cullable meshes with camera FOV of 70 and ortho shadows at ~500m at certain view angles.
 			// ...These apply less to cascades since they have large near planes in comparison to far planes, unlike ortho lights.
-			// If you're reading this and the value for directional lights is still 0.001f,
-			// that is fine as is and it only means GH-115176 didn't make it.
-			return ld < 0.001f;
+			return ld < p_threshold;
 		}
 
 		// Don't create planes from tiny triangles,
