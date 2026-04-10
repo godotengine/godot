@@ -148,6 +148,7 @@
 	ignore_momentum_scroll = false;
 	last_pen_inverted = false;
 	registered_observers = [[NSMutableSet alloc] init];
+	trackpad_pressure = 0.0;
 	[self updateTrackingAreas];
 
 	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
@@ -535,16 +536,18 @@
 	mm->set_button_mask(ds->mouse_get_button_state());
 	ds->update_mouse_pos(wd, mpos);
 	mm->set_position(wd.mouse_pos);
-	mm->set_pressure([event pressure]);
+	mm->set_pressure(trackpad_pressure);
 	NSEventSubtype subtype = [event subtype];
 	if (subtype == NSEventSubtypeTabletPoint) {
 		const NSPoint p = [event tilt];
 		mm->set_tilt(Vector2(p.x, -p.y));
 		mm->set_pen_inverted(last_pen_inverted);
+		mm->set_pressure([event pressure]);
 	} else if (subtype == NSEventSubtypeTabletProximity) {
 		// Check if using the eraser end of pen only on proximity event.
 		last_pen_inverted = [event pointingDeviceType] == NSPointingDeviceTypeEraser;
 		mm->set_pen_inverted(last_pen_inverted);
+		mm->set_pressure([event pressure]);
 	}
 	mm->set_global_position(wd.mouse_pos);
 	mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
@@ -560,6 +563,10 @@
 	}
 
 	Input::get_singleton()->parse_input_event(mm);
+}
+
+- (void)pressureChangeWithEvent:(NSEvent *)event {
+	trackpad_pressure = [event pressure];
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
