@@ -58,7 +58,15 @@ const FuzzySearchTestCase test_cases[] = {
 	// Many matches, many short tokens
 	{ "menu menu characters wav", "./menu/menu/characters/smoker/0.wav" },
 	// Maximize total matches
-	{ "entity gd", "./entity/entity_man.gd" }
+	{ "entity gd", "./entity/entity_man.gd" },
+	// Exact filename start beats exact word boundary in the filename of a shorter path
+	{ "fallback", "./menu/fonts/fallback_font.tres" },
+	// Incomplete exact word at filename start beats exact complete word later in filename
+	{ "me", "./menu/metal_text.tres" },
+	// Exact word boundary in middle of a filename beats exact dirname start
+	{ "floor", "./entity/background_freighter/background/background_floor.png" },
+	// Exact match beats inexact filename start match ("./entity/background_zone_2/background/wall_overlay.png")
+	{ "wor", "./entity/blood_sword/data.gd" }
 };
 
 Vector<String> load_test_data() {
