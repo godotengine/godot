@@ -63,6 +63,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool is_bin_notation = false;
 	bool in_member_variable = false;
 	bool in_lambda = false;
+	static bool in_enum = false;
 
 	bool in_function_name = false; // Any call.
 	bool in_function_declaration = false; // Only declaration.
@@ -472,7 +473,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						col = global_function_color;
 					}
 				}
-			} else if (class_names.has(word)) {
+			} else if (class_names.has(word) && !in_enum) {
 				col = class_names[word];
 			} else if (reserved_keywords.has(word)) {
 				col = reserved_keywords[word];
@@ -498,6 +499,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				if (!in_member_variable && col != Color()) {
 					in_keyword = true;
 					keyword_color = col;
+
+					if (word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::ENUM)) {
+						in_enum = true;
+					}
 				}
 			}
 		}
@@ -571,6 +576,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						break;
 					case '}':
 						in_declaration_param_dicts -= 1;
+						if (in_enum && in_declaration_param_dicts == 0) {
+							in_enum = false;
+						}
 						break;
 				}
 			} else if ((is_after_func_signal_declaration || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) && str[j] == '(') {
