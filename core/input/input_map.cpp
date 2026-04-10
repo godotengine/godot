@@ -801,6 +801,16 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_menu", inputs);
 
 	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::MENU));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::CTRL | Key::ENTER));
+	default_builtin_cache.insert("ui_menu.macos", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::MENU));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::F10));
+	default_builtin_cache.insert("ui_menu.windows", inputs);
+
+	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_submit", inputs);

@@ -1415,8 +1415,14 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_menu" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to open a context menu in a text field.
+			Default [InputEventAction] to open a context menu.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_menu.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to open a context menu.
+		</member>
+		<member name="input/ui_menu.windows" type="Dictionary" setter="" getter="">
+			Windows specific override for the shortcut to open a context menu.
 		</member>
 		<member name="input/ui_page_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go down a page in a [Control] (e.g. in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEDOWN] on typical desktop UI systems.
