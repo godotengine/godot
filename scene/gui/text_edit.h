@@ -539,6 +539,7 @@ private:
 	bool fit_content_height = false;
 	bool fit_content_width = false;
 	bool scroll_past_end_of_file_enabled = false;
+	bool scroll_past_end_of_line_enabled = false;
 
 	// Smooth scrolling.
 	bool smooth_scroll_enabled = false;
@@ -1061,6 +1062,9 @@ public:
 
 	void set_scroll_past_end_of_file_enabled(bool p_enabled);
 	bool is_scroll_past_end_of_file_enabled() const;
+
+	void set_scroll_past_end_of_line_enabled(bool p_enabled);
+	bool is_scroll_past_end_of_line_enabled() const;
 
 	VScrollBar *get_v_scroll_bar() const;
 	HScrollBar *get_h_scroll_bar() const;
