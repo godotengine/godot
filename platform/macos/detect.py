@@ -24,7 +24,7 @@ def can_build():
     return False
 
 
-def get_opts():
+def get_opts(env: "SConsEnvironment"):
     from SCons.Variables import BoolVariable, EnumVariable
 
     # Dependencies folder.

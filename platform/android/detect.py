@@ -23,7 +23,7 @@ def get_tools(env: "SConsEnvironment"):
     return ["clang", "clang++", "as", "ar", "link"]
 
 
-def get_opts():
+def get_opts(env: "SConsEnvironment"):
     from SCons.Variables import BoolVariable
 
     return [
@@ -39,7 +39,7 @@ def get_opts():
             "Generate APK, AAB & AAR binaries after building Android library by calling Gradle",
             False,
         ),
-        BoolVariable("swappy", "Use Swappy Frame Pacing library", False),
+        BoolVariable("swappy", "Use Swappy Frame Pacing library", env.get_default("swappy", False)),
     ]
 
 

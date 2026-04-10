@@ -1,8 +1,14 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons.Script.SConscript import SConsEnvironment
+
+
 def can_build(env, platform):
     return env.editor_build or env["cvtt_export_templates"]
 
 
-def get_opts(platform):
+def get_opts(env: "SConsEnvironment"):
     from SCons.Variables import BoolVariable
 
     return [

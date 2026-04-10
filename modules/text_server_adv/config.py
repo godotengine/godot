@@ -1,9 +1,15 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons.Script.SConscript import SConsEnvironment
+
+
 def can_build(env, platform):
     env.module_add_dependencies("text_server_adv", ["freetype", "msdfgen", "svg"], True)
     return True
 
 
-def get_opts(platform):
+def get_opts(env: "SConsEnvironment"):
     from SCons.Variables import BoolVariable
 
     return [

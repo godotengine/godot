@@ -237,6 +237,22 @@ def get_cmdline_bool(option, default):
         return default
 
 
+def early_env_get_default(env, option, default):
+    early_env = env["early_env"]
+
+    # Try to get direct defaults set by aliases first.
+    if option in early_env:
+        return early_env[option]
+
+    # Check platform defaults populated by aliases and platform's get_flags().
+    platform = early_env.get("platform", None)
+    platform_defaults = early_env["platform_defaults"].get(platform, {})
+    if option in platform_defaults:
+        return platform_defaults[option]
+
+    return default
+
+
 def detect_modules(search_path, recursive=False):
     """Detects and collects a list of C++ modules at specified path
 

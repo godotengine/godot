@@ -161,7 +161,7 @@ def get_tools(env: "SConsEnvironment"):
         return ["msvc", "mslink", "mslib"]
 
 
-def get_opts():
+def get_opts(env: "SConsEnvironment"):
     from SCons.Variables import BoolVariable, EnumVariable
 
     mingw = os.getenv("MINGW_PREFIX", "")
@@ -188,7 +188,11 @@ def get_opts():
         ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
+        BoolVariable(
+            "use_static_cpp",
+            "Link MinGW/MSVC C++ runtime libraries statically",
+            env.get_default("use_static_cpp", True),
+        ),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("use_ubsan", "Use LLVM compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
