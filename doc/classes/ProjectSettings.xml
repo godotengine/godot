@@ -83,6 +83,8 @@
 				- [code]icon[/code] is a path to a custom icon of the global class, if it has any;
 				- [code]language[/code] is a name of a programming language in which the global class is written;
 				- [code]path[/code] is a path to a file containing the global class.
+				- [code]is_abstract[/code] is set to [code]true[/code] if the global class is abstract.
+				- [code]is_tool[/code] is set to [code]true[/code] if the global class is a tool script and will run in editor.
 				[b]Note:[/b] Both the script and the icon paths are local to the project filesystem, i.e. they start with [code]res://[/code].
 			</description>
 		</method>
