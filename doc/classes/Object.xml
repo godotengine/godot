@@ -509,7 +509,7 @@
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
-		<method name="can_translate_messages" qualifiers="const">
+		<method name="can_translate_messages" qualifiers="const" deprecated="See [method set_message_translation].">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the object is allowed to translate messages with [method tr] and [method tr_n]. See also [method set_message_translation].
@@ -947,11 +947,12 @@
 				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
-		<method name="set_message_translation">
+		<method name="set_message_translation" deprecated="">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
 				If set to [code]true[/code], allows the object to translate messages with [method tr] and [method tr_n]. Enabled by default. See also [method can_translate_messages].
+				[b]Note:[/b] This method is deprecated. For [Node]s, use [method Node.atr] and [member Node.auto_translate_mode] instead. For other objects, it's recommended to manually skip [method tr]. Alternatively, set the object's translation domain to a custom domain with [member TranslationDomain.enabled] set to [code]false[/code].
 			</description>
 		</method>
 		<method name="set_meta">
@@ -992,9 +993,9 @@
 			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation. Note that most [Control] nodes automatically translate their strings, so this method is mostly useful for formatted strings or custom drawn text.
-				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method set_message_translation].
+				If no translation is available, this method returns the [param message] without changes.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
-				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate].
+				[b]Note:[/b] This method can't be used without an [Object] instance. To translate strings in a static context, use [method TranslationServer.translate].
 			</description>
 		</method>
 		<method name="tr_n" qualifiers="const">
@@ -1005,11 +1006,11 @@
 			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Translates a [param message] or [param plural_message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
-				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns [param message] or [param plural_message], without changes. See [method set_message_translation].
+				If no translation is available, this method returns [param message] or [param plural_message], without changes.
 				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
 				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method tr].
-				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate_plural].
+				[b]Note:[/b] This method can't be used without an [Object] instance. To translate strings in a static context, use [method TranslationServer.translate_plural].
 			</description>
 		</method>
 	</methods>
