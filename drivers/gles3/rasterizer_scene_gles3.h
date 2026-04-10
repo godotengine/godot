@@ -76,6 +76,7 @@ enum SceneUniformLocation {
 	SCENE_EMPTY2, // Unused, put here to avoid conflicts with SKY_MULTIVIEW_UNIFORM_LOCATION.
 	SCENE_PREV_DATA_UNIFORM_LOCATION,
 	SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION,
+	SCENE_DECAL_DATA,
 };
 
 enum SkyUniformLocation {
@@ -93,6 +94,7 @@ enum SkyUniformLocation {
 	SKY_MULTIVIEW_UNIFORM_LOCATION,
 	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
 	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
+	SKY_EMPTY10, // Unused, put here to avoid conflicts with SCENE_DECAL_DATA.
 };
 
 struct RenderDataGLES3 {
@@ -331,6 +333,9 @@ private:
 		LocalVector<RID> reflection_probe_rid_cache;
 		LocalVector<Transform3D> reflection_probes_local_transform_cache;
 
+		uint32_t decals_count = 0;
+		int32_t decals[MAX_DECAL_CULL];
+
 		RID lightmap_instance;
 		Rect2 lightmap_uv_scale;
 		uint32_t lightmap_slice_index;
@@ -350,7 +355,7 @@ private:
 		virtual void clear_light_instances() override;
 		virtual void pair_light_instance(const RID p_light_instance, RSE::LightType light_type, uint32_t placement_idx) override;
 		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
-		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
+		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
 		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
 
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override {}
@@ -720,6 +725,8 @@ private:
 	};
 
 	RenderList render_list[RENDER_LIST_MAX];
+
+	RSE::DecalFilter decals_filter = RSE::DECAL_FILTER_LINEAR_MIPMAPS;
 
 	void _update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_index, uint32_t p_size, const void *p_source_data, String p_name = "");
 

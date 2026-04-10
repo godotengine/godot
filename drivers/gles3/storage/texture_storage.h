@@ -33,6 +33,8 @@
 #ifdef GLES3_ENABLED
 
 #include "core/io/image.h"
+#include "core/math/transform_3d.h"
+#include "core/templates/paged_array.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
@@ -40,6 +42,7 @@
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/texture_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 #include <platform_gl.h>
 
@@ -346,6 +349,51 @@ private:
 	RSE::CanvasItemTextureRepeat state_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_MAX;
 };
 
+struct Decal {
+	Vector3 size = Vector3(2, 2, 2);
+	RID textures[RSE::DECAL_TEXTURE_MAX];
+	float emission_energy = 1.0;
+	float albedo_mix = 1.0;
+	Color modulate = Color(1, 1, 1, 1);
+	uint32_t cull_mask = (1 << 20) - 1;
+	float upper_fade = 0.3;
+	float lower_fade = 0.3;
+	bool distance_fade = false;
+	float distance_fade_begin = 40.0;
+	float distance_fade_length = 10.0;
+	float normal_fade = 0.0;
+
+	Dependency dependency;
+};
+
+#define MAX_DECAL_CULL 8
+
+struct DecalInstance {
+	RID decal;
+	Transform3D transform;
+	float sorting_offset = 0.0;
+	uint32_t cull_mask = 0;
+	int32_t decal_id = -1;
+};
+
+struct DecalData {
+	float xform[16];
+	float inv_extents[3];
+	float albedo_mix;
+	float albedo_rect[4];
+	float normal_rect[4];
+	float orm_rect[4];
+	float emission_rect[4];
+	float modulate[4];
+	float emission_energy;
+	uint32_t mask;
+	float upper_fade;
+	float lower_fade;
+	float normal_xform[12];
+	float normal[3];
+	float normal_fade;
+};
+
 struct RenderTarget {
 	Point2i position = Point2i(0, 0);
 	Size2i size = Size2i(0, 0);
@@ -433,6 +481,72 @@ private:
 	mutable RID_Owner<Texture, true> texture_owner;
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
+
+	/* DECAL API */
+
+	struct DecalAtlas {
+		struct Texture {
+			int users;
+			Rect2 uv_rect;
+		};
+
+		struct SortItem {
+			RID texture;
+			Size2i pixel_size;
+			Size2i size;
+			Point2i pos;
+
+			bool operator<(const SortItem &p_item) const {
+				//sort larger to smaller
+				if (size.height == p_item.size.height) {
+					return size.width > p_item.size.width;
+				} else {
+					return size.height > p_item.size.height;
+				}
+			}
+		};
+
+		HashMap<RID, Texture> textures;
+		bool dirty = true;
+		int mipmaps = 5;
+
+		GLuint texture = 0;
+		GLuint framebuffer = 0;
+		Size2i size;
+	} decal_atlas;
+
+	mutable RID_Owner<Decal, true> decal_owner;
+
+	/* DECAL INSTANCE API */
+
+	struct DecalIDAllocator {
+		LocalVector<bool> allocations;
+		LocalVector<uint8_t> map;
+		LocalVector<uint64_t> last_pass;
+	} decal_id_allocator;
+
+	int32_t allocate_decal_id();
+	void free_decal_id(int32_t p_id);
+	void map_decal_id(int32_t p_id, uint32_t p_index, uint64_t p_last_pass);
+
+	mutable RID_Owner<DecalInstance> decal_instance_owner;
+
+	/* DECAL DATA (UBO) */
+
+	struct DecalInstanceSort {
+		float depth;
+		DecalInstance *decal_instance;
+		Decal *decal;
+		bool operator<(const DecalInstanceSort &p_sort) const {
+			return depth < p_sort.depth;
+		}
+	};
+
+	uint32_t max_decals = 0;
+	uint32_t decal_count = 0;
+	DecalData *decals = nullptr;
+	DecalInstanceSort *decal_sort = nullptr;
+	GLuint decal_buffer = 0;
 
 	/* TEXTURE ATLAS API */
 
@@ -632,9 +746,11 @@ public:
 
 	/* DECAL API */
 
+	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); }
+
 	virtual RID decal_allocate() override;
-	virtual void decal_initialize(RID p_rid) override;
-	virtual void decal_free(RID p_rid) override {}
+	virtual void decal_initialize(RID p_decal) override;
+	virtual void decal_free(RID p_decal) override;
 
 	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override;
 	virtual void decal_set_texture(RID p_decal, RSE::DecalTexture p_type, RID p_texture) override;
@@ -647,17 +763,72 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override;
 
 	virtual AABB decal_get_aabb(RID p_decal) const override;
-	virtual uint32_t decal_get_cull_mask(RID p_decal) const override { return 0; }
+	virtual uint32_t decal_get_cull_mask(RID p_decal) const override;
 
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	Dependency *decal_get_dependency(RID p_decal);
+
+	/* DECAL ATLAS API */
+
+	void update_decal_atlas();
+
+	GLuint decal_atlas_get_texture() const;
+	_FORCE_INLINE_ Rect2 decal_atlas_get_texture_rect(RID p_texture) {
+		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
+		if (!t) {
+			return Rect2();
+		}
+
+		return t->uv_rect;
+	}
+
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
+	void decal_atlas_mark_dirty_on_texture(RID p_texture);
+	void decal_atlas_remove_texture(RID p_texture);
 
 	/* DECAL INSTANCE */
 
-	virtual RID decal_instance_create(RID p_decal) override { return RID(); }
-	virtual void decal_instance_free(RID p_decal_instance) override {}
-	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
-	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override {}
+	bool owns_decal_instance(RID p_rid) const { return decal_instance_owner.owns(p_rid); }
+
+	virtual RID decal_instance_create(RID p_decal) override;
+	virtual void decal_instance_free(RID p_decal_instance) override;
+	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) override;
+	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override;
+
+	_FORCE_INLINE_ RID decal_instance_get_base(RID p_decal_instance) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		return di->decal;
+	}
+
+	_FORCE_INLINE_ Transform3D decal_instance_get_transform(RID p_decal_instance) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		return di->transform;
+	}
+
+	_FORCE_INLINE_ int32_t decal_instance_get_decal_id(RID p_decal_instance) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		return di->decal_id;
+	}
+
+	_FORCE_INLINE_ void decal_instance_set_cullmask(RID p_decal_instance, uint32_t p_cull_mask) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		di->cull_mask = p_cull_mask;
+	}
+
+	_FORCE_INLINE_ uint64_t get_decal_last_pass(int32_t p_decal_id) {
+		return decal_id_allocator.last_pass[p_decal_id];
+	}
+
+	_FORCE_INLINE_ uint8_t get_decal_map(int32_t p_decal_id) {
+		return decal_id_allocator.map[p_decal_id];
+	}
+
+	/* DECAL DATA API */
+
+	void free_decal_data();
+	void set_max_decals(const uint32_t p_max_decals);
+	GLuint get_decal_buffer() { return decal_buffer; }
+	void update_decal_buffer(const PagedArray<RID> &p_decals, const Transform3D &p_camera_xform);
 
 	/* RENDER TARGET API */
 
