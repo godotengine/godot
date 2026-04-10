@@ -120,6 +120,10 @@ repos:
         language: python
         entry: python misc/scripts/validate_includes.py
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc)$
+        exclude: |
+          (?x)^(
+            editor/settings/gdextension/cpp_scons/template/.*
+          )$
 
       - id: eslint
         name: eslint
@@ -176,6 +180,7 @@ repos:
         exclude: |
           (?x)^(
             core/math/bvh_.*\.inc|
+            editor/settings/gdextension/cpp_scons/template/.*|
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
             platform/android/java/lib/src/main/java/org/godotengine/godot/gl/GLSurfaceView\.java|
             platform/android/java/lib/src/main/java/org/godotengine/godot/gl/EGLLogWrapper\.java|
