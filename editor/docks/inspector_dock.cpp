@@ -711,10 +711,14 @@ void InspectorDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
-		search->grab_focus();
-		search->select_all();
+		focus_search();
 		accept_event();
 	}
+}
+
+void InspectorDock::focus_search() {
+	search->grab_focus();
+	search->select_all();
 }
 
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
