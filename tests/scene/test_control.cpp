@@ -39,6 +39,10 @@ TEST_FORCE_LINK(test_control)
 #include "scene/main/window.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
+#include "core/os/memory.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/container.h"
 
 namespace TestControl {
 
@@ -1283,6 +1287,58 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 	}
 
 	memdelete(test_control);
+}
+
+TEST_CASE("[SceneTree][Control] Container layout") {
+	Window *root = SceneTree::get_singleton()->get_root();
+
+	SUBCASE("VBoxContainer ordering") {
+		VBoxContainer *container = memnew(VBoxContainer);
+		container->add_theme_constant_override("separation", 0);
+		Button *b1 = memnew(Button);
+		Button *b2 = memnew(Button);
+		Button *b3 = memnew(Button);
+		root->add_child(container);
+		container->add_child(b1);
+		container->add_child(b2);
+		container->add_child(b3);
+		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
+		CHECK_MESSAGE(
+				b1->get_position().y == 0,
+				"First child should be at the top of the container.");
+		CHECK_MESSAGE(
+				Math::is_equal_approx(b2->get_position().y, b1->get_size().y),
+				"Second child position should be after first child's height.");
+		CHECK_MESSAGE(
+				Math::is_equal_approx(b3->get_position().y, b1->get_size().y + b2->get_size().y),
+				"Third child position should be after the sum of other children's heights.");
+		root->remove_child(container);
+		memdelete(container);
+	}
+	
+	SUBCASE("HBoxContainer ordering") {
+		HBoxContainer *container = memnew(HBoxContainer);
+		container->add_theme_constant_override("separation", 0);
+		Button *b1 = memnew(Button);
+		Button *b2 = memnew(Button);
+		Button *b3 = memnew(Button);
+		root->add_child(container);
+		container->add_child(b1);
+		container->add_child(b2);
+		container->add_child(b3);
+		container->notification(Container::NOTIFICATION_SORT_CHILDREN);
+		CHECK_MESSAGE(
+				b1->get_position().x == 0,
+				"First child should be on the left side of the container.");
+		CHECK_MESSAGE(
+				Math::is_equal_approx(b2->get_position().x, b1->get_size().x),
+				"Second child should be after the first child's width.");
+		CHECK_MESSAGE(
+				Math::is_equal_approx(b3->get_position().x, b1->get_size().x + b2->get_size().x),
+				"Third child should be after the sum of the other children's widths.");
+		root->remove_child(container);
+		memdelete(container);
+	}
 }
 
 } // namespace TestControl
