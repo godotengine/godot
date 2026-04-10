@@ -40,7 +40,8 @@
 /drivers/vulkan/                              @godotengine/rendering
 
 ## OS
-/drivers/apple*/                              @godotengine/macos
+/drivers/apple/                               @godotengine/macos
+/drivers/apple_embedded/                      @godotengine/ios
 /drivers/unix/                                @godotengine/linux-bsd
 /drivers/windows/                             @godotengine/windows
 
@@ -177,6 +178,7 @@
 /modules/openxr/                              @godotengine/xr
 /modules/openxr/doc_classes/                  @godotengine/xr @godotengine/documentation
 /modules/openxr/editor/                       @godotengine/xr @godotengine/editor
+/modules/visionos_xr/                         @godotengine/xr
 /modules/webxr/                               @godotengine/xr
 /modules/webxr/doc_classes/                   @godotengine/xr @godotengine/documentation
 

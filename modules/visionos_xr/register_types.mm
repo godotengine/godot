@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  register_types.mm                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,45 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifdef VISIONOS_ENABLED
 
-#import <UIKit/UIKit.h>
+#include "register_types.h"
 
-class String;
+#include "visionos_xr_interface.h"
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
+#include "core/object/class_db.h"
 
-@protocol GDTViewDelegate
+Ref<VisionOSXRInterface> visionos_xr;
 
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
+void initialize_visionos_xr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-@end
+	GDREGISTER_CLASS(VisionOSXRInterface);
 
-@interface GDTView : UIView
+	if (XRServer::get_singleton()) {
+		visionos_xr.instantiate();
+		XRServer::get_singleton()->add_interface(visionos_xr);
+	}
+}
 
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
+void uninitialize_visionos_xr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-@property(assign, readonly, nonatomic) BOOL isActive;
+	if (visionos_xr.is_valid()) {
+		// uninitialize our interface if it is initialized
+		if (visionos_xr->is_initialized()) {
+			visionos_xr->uninitialize();
+		}
 
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
+		// unregister our interface from the XR server
+		if (XRServer::get_singleton()) {
+			XRServer::get_singleton()->remove_interface(visionos_xr);
+		}
 
-@property(assign, nonatomic) float preferredFrameRate;
+		// and release
+		visionos_xr.unref();
+	}
+}
 
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
-
-@end
-
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();
+#endif // VISIONOS_ENABLED

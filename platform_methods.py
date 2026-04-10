@@ -342,6 +342,7 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
     bridging_header_path = current_path + "/" + bridging_header_filename
     env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
     env["SWIFTCFLAGS"] = [
+        "-warnings-as-errors",
         "-cxx-interoperability-mode=default",
         "-emit-object",
         "-target",
@@ -401,3 +402,4 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
     env.Append(BUILDERS={"Swift": swift_builder})
     env["BUILDERS"]["Library"].add_src_builder("Swift")
     env["BUILDERS"]["Object"].add_action(".swift", Action(generate_swift_action, generator=1))
+    env["BUILDERS"]["Object"].emitter[".swift"] = methods.redirect_emitter
