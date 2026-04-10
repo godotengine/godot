@@ -1093,6 +1093,11 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		}
 
 		while (surf) {
+			if (p_pass_mode == PASS_MODE_COLOR && !(surf->material->layer_mask & p_render_data->scene_data->camera_visible_layers)) {
+				surf = surf->next;
+				continue;
+			}
+
 			surf->sort.uses_forward_gi = 0;
 			surf->sort.uses_lightmap = 0;
 

@@ -1411,6 +1411,11 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 		}
 
 		while (surf) {
+			if ((p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) && !(surf->material->layer_mask & p_render_data->camera_visible_layers)) {
+				surf = surf->next;
+				continue;
+			}
+
 			// LOD
 
 			if (p_render_data->screen_mesh_lod_threshold > 0.0 && mesh_storage->mesh_surface_has_lod(surf->surface)) {

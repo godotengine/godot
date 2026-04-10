@@ -43,6 +43,7 @@ class Material : public Resource {
 	mutable RID material;
 	Ref<Material> next_pass;
 	int render_priority;
+	uint32_t layer_mask;
 
 	enum {
 		INIT_STATE_UNINITIALIZED,
@@ -58,6 +59,7 @@ protected:
 	static void _bind_methods();
 	virtual bool _can_do_next_pass() const;
 	virtual bool _can_use_render_priority() const;
+	virtual bool _can_use_layer_mask() const;
 
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -68,6 +70,7 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(Shader::Mode, _get_shader_mode)
 	GDVIRTUAL0RC(bool, _can_do_next_pass)
 	GDVIRTUAL0RC(bool, _can_use_render_priority)
+	GDVIRTUAL0RC(bool, _can_use_layer_mask)
 public:
 	enum {
 		RENDER_PRIORITY_MAX = RSE::MATERIAL_RENDER_PRIORITY_MAX,
@@ -81,6 +84,11 @@ public:
 
 	void set_render_priority(int p_priority);
 	int get_render_priority() const;
+
+	void set_layer_mask(uint32_t p_layer_mask);
+	uint32_t get_layer_mask() const;
+	void set_layer_mask_value(int p_layer_number, bool p_value);
+	bool get_layer_mask_value(int p_layer_number) const;
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const;
@@ -115,6 +123,7 @@ protected:
 
 	virtual bool _can_do_next_pass() const override;
 	virtual bool _can_use_render_priority() const override;
+	virtual bool _can_use_layer_mask() const override;
 
 	void _shader_changed();
 	void _check_material_rid() const;
@@ -640,6 +649,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	virtual bool _can_do_next_pass() const override { return true; }
 	virtual bool _can_use_render_priority() const override { return true; }
+	virtual bool _can_use_layer_mask() const override { return true; }
 
 public:
 	void set_albedo(const Color &p_albedo);
