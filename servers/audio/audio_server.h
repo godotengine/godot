@@ -196,6 +196,12 @@ public:
 		PLAYBACK_TYPE_MAX
 	};
 
+	enum MixTarget {
+		MIX_TARGET_STEREO,
+		MIX_TARGET_SURROUND,
+		MIX_TARGET_CENTER
+	};
+
 	enum {
 		AUDIO_DATA_INVALID_ID = -1,
 		MAX_CHANNELS_PER_BUS = 4,
@@ -436,6 +442,9 @@ public:
 	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
 
+	Vector<AudioFrame> create_volume_vector(float p_volume_db, MixTarget p_mix_target) const;
+	void _start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, float p_volume_db_offset = 0, MixTarget p_mix_target = MIX_TARGET_STEREO, float p_start_time = 0, float p_pitch_scale = 1);
+
 	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes);
 	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes);
 	void set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes);
@@ -526,6 +535,7 @@ public:
 
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
 VARIANT_ENUM_CAST(AudioServer::PlaybackType)
+VARIANT_ENUM_CAST(AudioServer::MixTarget)
 
 class AudioBusLayout : public Resource {
 	GDCLASS(AudioBusLayout, Resource);

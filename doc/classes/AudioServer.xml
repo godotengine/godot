@@ -359,6 +359,25 @@
 				If [param active] is [code]false[/code], stops the input stream if it is running.
 			</description>
 		</method>
+		<method name="start_playback_stream">
+			<return type="void" />
+			<param index="0" name="playback" type="AudioStreamPlayback" />
+			<param index="1" name="bus" type="StringName" />
+			<param index="2" name="volume_db_offset" type="float" default="0" />
+			<param index="3" name="mix_target" type="int" enum="AudioServer.MixTarget" default="0" />
+			<param index="4" name="start_time" type="float" default="0" />
+			<param index="5" name="pitch_scale" type="float" default="1" />
+			<description>
+				Plays [param playback] on the [param bus] audio bus from beginning, or from given [param start_time] in seconds.
+			</description>
+		</method>
+		<method name="stop_playback_stream">
+			<return type="void" />
+			<param index="0" name="playback" type="AudioStreamPlayback" />
+			<description>
+				Stops the [AudioStreamPlayback].
+			</description>
+		</method>
 		<method name="swap_bus_effects">
 			<return type="void" />
 			<param index="0" name="bus_idx" type="int" />
@@ -431,6 +450,15 @@
 		</constant>
 		<constant name="PLAYBACK_TYPE_MAX" value="3" enum="PlaybackType" experimental="">
 			Represents the size of the [enum PlaybackType] enum.
+		</constant>
+		<constant name="MIX_TARGET_STEREO" value="0" enum="MixTarget">
+			The audio will be played only on the first channel. This is the default.
+		</constant>
+		<constant name="MIX_TARGET_SURROUND" value="1" enum="MixTarget">
+			The audio will be played on all surround channels.
+		</constant>
+		<constant name="MIX_TARGET_CENTER" value="2" enum="MixTarget">
+			The audio will be played on the second channel, which is usually the center.
 		</constant>
 	</constants>
 </class>
