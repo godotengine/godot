@@ -440,6 +440,8 @@ public:
 	void toggle_foldable_line(int p_line);
 	void toggle_foldable_lines_at_carets();
 
+	void fold_all_regions();
+
 	int get_folded_line_header(int p_line) const;
 	bool is_line_folded(int p_line) const;
 	TypedArray<int> get_folded_lines_bind() const;

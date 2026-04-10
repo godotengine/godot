@@ -802,6 +802,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Appearance: Lines
 	_initial_set("text_editor/appearance/lines/code_folding", true, true);
+	_initial_set("text_editor/appearance/lines/collapse_regions_on_start", false, true);
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/lines/word_wrap", 0, "None,Boundary")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/lines/autowrap_mode", 3, "Arbitrary:1,Word:2,Word (Smart):3")
 

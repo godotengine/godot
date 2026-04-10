@@ -403,6 +403,14 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 			teb->ensure_focus();
 		}
 
+		if (EDITOR_GET("text_editor/appearance/lines/collapse_regions_on_start")) {
+			if (c->get_meta("__editor_pass", 0).operator int() == 0) {
+				if (ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(seb)) {
+					ste->get_code_editor()->get_text_editor()->fold_all_regions();
+				}
+			}
+		}
+
 		Ref<Script> scr = seb->get_edited_resource();
 		if (scr.is_valid()) {
 			notify_script_changed(scr);
