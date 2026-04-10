@@ -2863,7 +2863,10 @@ void EditorPropertyTilePolygon::update_property() {
 			// Multiple array of vertices.
 			generic_tile_polygon_editor->clear_polygons();
 			for (int i = 0; i < count; i++) {
-				generic_tile_polygon_editor->add_polygon(get_edited_object()->get(vformat(element_pattern, i)));
+				const PackedVector2Array &polygon = get_edited_object()->get(vformat(element_pattern, i));
+				if (polygon.size() >= 3) {
+					generic_tile_polygon_editor->add_polygon(polygon);
+				}
 			}
 		} else if (base_type == "OccluderPolygon2D") {
 			// Multiple OccluderPolygon2D.
@@ -2952,12 +2955,6 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 			}
 			add_property_editor_for_multiple_properties("Polygons", properties, ep);
 			return true;
-		} else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
-			int polygon_index = components[1].trim_prefix("polygon_").to_int();
-			ERR_FAIL_COND_V(polygon_index < 0, false);
-			if (components[2] == "points") {
-				return true;
-			}
 		}
 	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 		// Navigation layers.
