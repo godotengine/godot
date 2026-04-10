@@ -168,6 +168,8 @@ public:
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
+	Error open_scene_or_resource_from_path(const String &scene_path, bool p_change_scene_tab_if_already_open = false);
+
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);

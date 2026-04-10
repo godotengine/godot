@@ -684,6 +684,18 @@ void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property
 	EditorNode::get_singleton()->push_item(p_obj, p_for_property, p_inspector_only);
 }
 
+Error EditorInterface::open_scene_or_resource_from_path(const String &p_path, bool p_change_scene_tab_if_already_open) {
+	if (ClassDB::is_parent_class(ResourceLoader::get_resource_type(p_path), "PackedScene")) {
+		if (EditorNode::get_singleton()->is_scene_open(p_path) && (!p_change_scene_tab_if_already_open || (get_edited_scene_root() && get_edited_scene_root()->get_scene_file_path() == p_path))) {
+			return OK;
+		}
+		if (EditorNode::get_singleton()->is_changing_scene()) {
+			return ERR_BUSY;
+		}
+	}
+	return EditorNode::get_singleton()->load_scene_or_resource(p_path, false, p_change_scene_tab_if_already_open);
+}
+
 void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
@@ -913,6 +925,8 @@ void EditorInterface::_bind_methods() {
 	// Object/Resource/Node editing.
 
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property", "inspector_only"), &EditorInterface::inspect_object, DEFVAL(String()), DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("open_scene_or_resource_from_path", "scene_path", "change_scene_tab_if_already_open"), &EditorInterface::open_scene_or_resource_from_path, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
 	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);

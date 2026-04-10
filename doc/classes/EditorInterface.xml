@@ -314,6 +314,15 @@
 				Opens the scene at the given path. If [param set_inherited] is [code]true[/code], creates a new inherited scene.
 			</description>
 		</method>
+		<method name="open_scene_or_resource_from_path">
+			<return type="int" enum="Error" />
+			<param index="0" name="scene_path" type="String" />
+			<param index="1" name="change_scene_tab_if_already_open" type="bool" default="false" />
+			<description>
+				Opens the scene or resource at the given path. If [param change_scene_tab_if_already_open] is [code]true[/code], the scene will be opened in a new tab if it is already open.
+				Returns [constant OK] if the scene or resource is opened successfully, [constant ERR_BUSY] if the editor is busy, or one of the other [enum Error] constants if the scene or resource cannot be opened.
+			</description>
+		</method>
 		<method name="play_current_scene">
 			<return type="void" />
 			<description>
