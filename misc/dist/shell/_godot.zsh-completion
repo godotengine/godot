@@ -88,6 +88,7 @@ _arguments \
   '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Godot build directory (optional):_dirs' \
   '--no-docbase[disallow dumping the base types (used with --doctool)]' \
   '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \
+  '--generate-build-profile[Generate an engine compilation profile by detecting the configuration from the project and save it to a given file. The path should be absolute]:path of profile' \
   '--dump-gdextension-interface[generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.]' \
   '--dump-extension-api[generate JSON dump of the Godot API for GDExtension bindings named "extension_api.json" in the current folder]' \
   '--benchmark[benchmark the run time and print it to console]' \
