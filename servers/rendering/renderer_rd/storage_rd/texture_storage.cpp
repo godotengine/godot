@@ -716,7 +716,7 @@ void TextureStorage::_tex_blit_shader_free() {
 	if (tex_blit_shader.initialized) {
 		MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
-		print_verbose("Freeing Default Tex_Blit Shader");
+		PRINT_VERBOSE("Freeing Default Tex_Blit Shader");
 		material_storage->material_free(tex_blit_shader.default_material);
 		material_storage->shader_free(tex_blit_shader.default_shader);
 	}
