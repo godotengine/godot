@@ -1580,22 +1580,22 @@ Error ShaderCompiler::compile(RSE::ShaderMode p_mode, const String &p_code, Iden
 
 			if (E.key.is_empty()) {
 				if (p_path == "") {
-					print_line("--Main Shader--");
+					print_line_rich("[u]Main shader");
 				} else {
-					print_line("--" + p_path + "--");
+					print_line_rich("[u]" + p_path);
 				}
 			} else {
-				print_line("--" + E.key + "--");
+				print_line_rich("[u]" + E.key);
 			}
 			const Vector<String> &V = E.value;
 			for (int i = 0; i < V.size(); i++) {
 				if (i == err_line - 1) {
 					// Mark the error line to be visible without having to look at
 					// the trace at the end.
-					print_line(vformat("E%4d-> %s", i + 1, V[i]));
+					print_line_rich(vformat("[color=red][b]E[/b]%4d-> %s", i + 1, V[i]));
 				} else if ((i == err_line - 3) || (i == err_line - 2) || (i == err_line) || (i == err_line + 1)) {
 					// Print 4 lines around the error line.
-					print_line(vformat("%5d | %s", i + 1, V[i]));
+					print_line_rich(vformat("[color=gray]%5d | %s", i + 1, V[i]));
 				}
 			}
 		}
