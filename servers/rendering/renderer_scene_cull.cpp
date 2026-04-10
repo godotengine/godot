@@ -2860,10 +2860,17 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
 				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
 				if (base_type == RSE::INSTANCE_LIGHT) {
-					cull_result.lights.push_back(idata.instance);
-					cull_result.light_instances.push_back(RID::from_uint64(idata.instance_data_rid));
-					if (cull_data.shadow_atlas.is_valid() && RSG::light_storage->light_has_shadow(idata.base_rid)) {
-						RSG::light_storage->light_instance_mark_visible(RID::from_uint64(idata.instance_data_rid)); //mark it visible for shadow allocation later
+					RSE::LightType light_type = RSG::light_storage->light_get_type(idata.base_rid);
+					bool is_light_energy_culled =
+							(light_type == RSE::LIGHT_OMNI || light_type == RSE::LIGHT_SPOT) &&
+							RSG::light_storage->light_get_param(idata.base_rid, RSE::LIGHT_PARAM_ENERGY) <= CMP_EPSILON;
+
+					if (!is_light_energy_culled) {
+						cull_result.lights.push_back(idata.instance);
+						cull_result.light_instances.push_back(RID::from_uint64(idata.instance_data_rid));
+						if (cull_data.shadow_atlas.is_valid() && RSG::light_storage->light_has_shadow(idata.base_rid)) {
+							RSG::light_storage->light_instance_mark_visible(RID::from_uint64(idata.instance_data_rid)); //mark it visible for shadow allocation later
+						}
 					}
 
 				} else if (base_type == RSE::INSTANCE_REFLECTION_PROBE) {
@@ -3276,7 +3283,11 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 			if (light) {
 				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::light_storage->light_has_shadow(E->base) && !(RSG::light_storage->light_get_type(E->base) == RSE::LIGHT_DIRECTIONAL && RSG::light_storage->light_directional_get_sky_mode(E->base) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY)) {
-					lights_with_shadow.push_back(E);
+					// Only draw the shadow only if it has energy
+					// otherwise we are wasting performance and lowering shadow resolution for other lights
+					if (bool is_light_energy_culled = RSG::light_storage->light_get_param(E->base, RSE::LIGHT_PARAM_ENERGY) <= CMP_EPSILON; !is_light_energy_culled) {
+						lights_with_shadow.push_back(E);
+					}
 				}
 				//add to list
 				directional_lights.push_back(light->instance);
