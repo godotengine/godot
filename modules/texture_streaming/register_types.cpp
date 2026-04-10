@@ -30,46 +30,29 @@
 
 #include "register_types.h"
 
-#include "image_saver_dds.h"
-#include "texture_loader_dds.h"
+#include "texture_streaming.h"
 
-#include "core/io/resource_loader.h"
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
-#include "scene/resources/texture.h"
 
-static Ref<ResourceImporterDds> resource_importer_dds;
-static Ref<ResourceLoaderDDS> resource_loader_dds;
+#include "modules/register_module_types.h"
 
-void initialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+static TextureStreaming *_texture_streaming_server = nullptr;
 
-	Image::save_dds_func = save_dds;
-	Image::save_dds_buffer_func = save_dds_buffer;
+void initialize_texture_streaming_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(TextureStreaming);
 
-	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
-		resource_importer_dds.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(resource_importer_dds, true);
-
-		resource_loader_dds.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_dds);
+		_texture_streaming_server = memnew(TextureStreaming);
+		GDREGISTER_CLASS(TextureStreaming);
+		Engine::get_singleton()->add_singleton(Engine::Singleton("TextureStreaming", TextureStreaming::get_singleton()));
 	}
 }
 
-void uninitialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+void uninitialize_texture_streaming_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		if (_texture_streaming_server) {
+			memdelete(_texture_streaming_server);
+		}
 	}
-
-	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_dds);
-		resource_loader_dds.unref();
-
-		ResourceFormatImporter::get_singleton()->remove_importer(resource_importer_dds);
-		resource_importer_dds.unref();
-	}
-
-	Image::save_dds_func = nullptr;
-	Image::save_dds_buffer_func = nullptr;
 }

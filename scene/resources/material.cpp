@@ -2069,6 +2069,24 @@ void fragment() {)";
 )";
 	}
 
+	bool streaming_enabled = false;
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	streaming_enabled = GLOBAL_GET_CACHED(bool, "rendering/textures/streaming/enabled");
+#endif
+	if (streaming_enabled && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += R"(
+	// Write triplanar UV to UV for texture streaming feedback.
+	// Pick the UV projection of the dominant triplanar axis.
+	if (uv1_power_normal.x >= uv1_power_normal.y && uv1_power_normal.x >= uv1_power_normal.z) {
+		STREAMING_UV = uv1_triplanar_pos.zy * vec2(-1.0, 1.0);
+	} else if (uv1_power_normal.y >= uv1_power_normal.z) {
+		STREAMING_UV = uv1_triplanar_pos.xz;
+	} else {
+		STREAMING_UV = uv1_triplanar_pos.xy;
+	}
+)";
+	}
+
 	code += "}\n";
 
 	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with

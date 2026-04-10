@@ -150,6 +150,7 @@
 /modules/visual_shader/                       @godotengine/shaders
 /modules/visual_shader/doc_classes/           @godotengine/shaders @godotengine/documentation
 /modules/xatlas_unwrap/                       @godotengine/rendering
+/modules/texture_streaming/                   @godotengine/rendering
 
 ## Scripting
 /modules/gdscript/                            @godotengine/gdscript

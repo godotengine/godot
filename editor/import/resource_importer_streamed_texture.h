@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  resource_importer_streamed_texture.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,53 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "image_saver_dds.h"
-#include "texture_loader_dds.h"
+#include "core/io/resource_importer.h"
+#include "servers/rendering/rendering_server_enums.h"
 
-#include "core/io/resource_loader.h"
-#include "core/object/class_db.h"
-#include "scene/resources/texture.h"
+class StreamedTexture2D;
 
-static Ref<ResourceImporterDds> resource_importer_dds;
-static Ref<ResourceLoaderDDS> resource_loader_dds;
+class ResourceImporterStreamedTexture : public ResourceImporter {
+	GDCLASS(ResourceImporterStreamedTexture, ResourceImporter);
 
-void initialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+	static ResourceImporterStreamedTexture *singleton;
+
+	enum {
+		MAKE_ROUGHNESS_FLAG = 1,
+		MAKE_NORMAL_FLAG = 2,
+	};
+
+	Mutex mutex;
+	struct MakeInfo {
+		int flags = 0;
+		String normal_path_for_roughness;
+		RSE::TextureDetectRoughnessChannel channel_for_roughness = RSE::TEXTURE_DETECT_ROUGHNESS_R;
+	};
+
+	HashMap<StringName, MakeInfo> make_flags;
+
+	static void _texture_reimport_roughness(const Ref<StreamedTexture2D> &p_tex, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_channel);
+	static void _texture_reimport_normal(const Ref<StreamedTexture2D> &p_tex);
+
+public:
+	static ResourceImporterStreamedTexture *get_singleton() { return singleton; }
+
+	String get_importer_name() const override;
+	String get_visible_name() const override;
+	void get_recognized_extensions(List<String> *p_extensions) const override;
+	String get_save_extension() const override;
+	String get_resource_type() const override;
+	float get_priority() const override {
+		return -1.0; // Set lower than resource_importer_texture
 	}
 
-	Image::save_dds_func = save_dds;
-	Image::save_dds_buffer_func = save_dds_buffer;
+	void update_imports();
 
-	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
-		resource_importer_dds.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(resource_importer_dds, true);
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-		resource_loader_dds.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_dds);
-	}
-}
-
-void uninitialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_dds);
-		resource_loader_dds.unref();
-
-		ResourceFormatImporter::get_singleton()->remove_importer(resource_importer_dds);
-		resource_importer_dds.unref();
-	}
-
-	Image::save_dds_func = nullptr;
-	Image::save_dds_buffer_func = nullptr;
-}
+	ResourceImporterStreamedTexture(bool p_singleton = false);
+	virtual ~ResourceImporterStreamedTexture() = default;
+};
