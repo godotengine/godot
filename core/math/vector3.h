@@ -197,6 +197,12 @@ struct [[nodiscard]] Vector3 {
 	constexpr Vector3 &operator/=(const Vector3 &p_v);
 	constexpr Vector3 operator/(const Vector3 &p_v) const;
 
+	constexpr Vector3 &operator+=(real_t p_scalar);
+	constexpr Vector3 operator+(real_t p_scalar) const;
+
+	constexpr Vector3 &operator-=(real_t p_scalar);
+	constexpr Vector3 operator-(real_t p_scalar) const;
+
 	constexpr Vector3 &operator*=(real_t p_scalar);
 	constexpr Vector3 operator*(real_t p_scalar) const;
 	constexpr Vector3 &operator/=(real_t p_scalar);
@@ -426,6 +432,28 @@ constexpr Vector3 &Vector3::operator/=(const Vector3 &p_v) {
 
 constexpr Vector3 Vector3::operator/(const Vector3 &p_v) const {
 	return Vector3(x / p_v.x, y / p_v.y, z / p_v.z);
+}
+
+constexpr Vector3 &Vector3::operator+=(real_t p_scalar) {
+	x += p_scalar;
+	y += p_scalar;
+	z += p_scalar;
+	return *this;
+}
+
+constexpr Vector3 Vector3::operator+(real_t p_scalar) const {
+	return Vector3(x + p_scalar, y + p_scalar, z + p_scalar);
+}
+
+constexpr Vector3 &Vector3::operator-=(real_t p_scalar) {
+	x -= p_scalar;
+	y -= p_scalar;
+	z -= p_scalar;
+	return *this;
+}
+
+constexpr Vector3 Vector3::operator-(real_t p_scalar) const {
+	return Vector3(x - p_scalar, y - p_scalar, z - p_scalar);
 }
 
 constexpr Vector3 &Vector3::operator*=(real_t p_scalar) {
