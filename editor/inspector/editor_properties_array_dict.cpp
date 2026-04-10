@@ -35,6 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -521,7 +522,15 @@ void EditorPropertyArray::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
-					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+					Variant e = array.get(idx);
+					PropertyHint obj_subtype_hint = subtype_hint;
+					Variant::Type var_type = value_type;
+					if (Object::cast_to<Node>(e.get_validated_object())) {
+						obj_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						var_type = Variant::OBJECT;
+					}
+
+					new_prop = EditorInspector::instantiate_property_editor(this, var_type, "", obj_subtype_hint, "", PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
@@ -1401,7 +1410,14 @@ void EditorPropertyDictionary::update_property() {
 						editor->setup("Object");
 						new_prop = editor;
 					} else {
-						new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
+						PropertyHint obj_subtype_hint = key_subtype_hint;
+						Variant::Type var_type = key_type;
+						if (Object::cast_to<Node>(key.get_validated_object())) {
+							obj_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+							var_type = Variant::OBJECT;
+						}
+
+						new_prop = EditorInspector::instantiate_property_editor(this, var_type, "", obj_subtype_hint, "", PROPERTY_USAGE_NONE);
 					}
 					new_prop->set_read_only(true);
 					new_prop->set_selectable(false);
@@ -1448,9 +1464,19 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
-					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
-					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
-							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);
+					if (Object::cast_to<Node>(value.get_validated_object())) {
+						value_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						value_type = Variant::OBJECT;
+					}
+
+					PropertyHint obj_subtype_hint = value_subtype_hint;
+					Variant::Type var_type = value_type;
+					if (Object::cast_to<Node>(value.get_validated_object())) {
+						obj_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						var_type = Variant::OBJECT;
+					}
+
+					new_prop = EditorInspector::instantiate_property_editor(this, var_type, "", obj_subtype_hint, "", PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
