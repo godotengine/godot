@@ -534,6 +534,13 @@
 				[b]Note:[/b] This method, and all other signal-related methods, are thread-safe.
 			</description>
 		</method>
+		<method name="disconnect_all">
+			<return type="void" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Disconnects all emitters from a given [param signal]. If any connection does not exist, generates an error. Use [method is_connected] to make sure that any connection exists.
+			</description>
+		</method>
 		<method name="disconnect">
 			<return type="void" />
 			<param index="0" name="signal" type="StringName" />

@@ -1609,6 +1609,30 @@ bool Object::has_connections(const StringName &p_signal) const {
 	return !s->slot_map.is_empty();
 }
 
+void Object::disconnect_all(const StringName &p_signal) {
+	_disconnect_all(p_signal);
+}
+
+bool Object::_disconnect_all(const StringName &p_signal, bool p_force) {
+	// use p_force like in _disconnect
+	OBJ_SIGNAL_LOCK
+
+	SignalData *s = signal_map.getptr(p_signal);
+	if (!s) {
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
+				(script_instance && script_instance->get_script()->has_script_signal(p_signal));
+		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect all connections from nonexistent signal '%s'. Signal: '%s'.", to_string(), p_signal));
+	}
+	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting all connections from nonexistent signal '%s' in '%s'.", p_signal, to_string()));
+	ERR_FAIL_COND_V_MSG(s->slot_map.is_empty(), false, vformat("No connections to disconnect from signal '%s' in '%s'.", p_signal, to_string()));
+	s->slot_map.clear();
+	if (ClassDB::has_signal(get_class_name(), p_signal) && s->user.name.is_empty()) {
+		//not user signal, delete
+		signal_map.erase(p_signal);
+	}
+	return true;
+}
+
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	_disconnect(p_signal, p_callable);
 }
