@@ -32,6 +32,7 @@
 #include "editor_inspector.compat.inc"
 
 #include "core/input/input.h"
+#include "core/io/json.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -1258,6 +1259,12 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 		} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 			menu_option(MENU_COPY_PROPERTY_PATH);
 			accept_event();
+		} else if (ED_IS_SHORTCUT("property_editor/copy_value_to_json", p_event)) {
+			menu_option(MENU_COPY_VALUE_TO_JSON);
+			accept_event();
+		} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value_from_json", p_event)) {
+			menu_option(MENU_PASTE_VALUE_FROM_JSON);
+			accept_event();
 		}
 	}
 }
@@ -1486,12 +1493,48 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	return nullptr;
 }
 
+void EditorProperty::copy_to_json(Variant p_to_copy) {
+	Variant json_value = JSON::from_native(p_to_copy, true);
+	String json_string = JSON::stringify(json_value, "\t");
+	DisplayServer::get_singleton()->clipboard_set(json_string);
+}
+
+bool EditorProperty::try_to_paste_json() {
+	String json_string = DisplayServer::get_singleton()->clipboard_get();
+	if (!json_string.is_empty()) {
+		Variant json_value = JSON::parse_string(json_string);
+		if (json_value.get_type() != Variant::NIL) {
+			Variant native_value = JSON::to_native(json_value, true);
+			if (native_value.get_type() != Variant::NIL) {
+				emit_changed(property, native_value);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
+		case MENU_COPY_VALUE_TO_JSON: {
+			copy_to_json(object->get(property));
+		} break;
+		case MENU_PASTE_VALUE_FROM_JSON: {
+			try_to_paste_json();
+		} break;
 		case MENU_COPY_VALUE: {
 			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::PROPERTY, object->get(property));
+			if (EDITOR_GET("interface/editor/behavior/copy_properties_as_json_to_os_clipboard_as_well")) {
+				copy_to_json(object->get(property));
+			}
 		} break;
 		case MENU_PASTE_VALUE: {
+			if (EDITOR_GET("interface/editor/behavior/copy_properties_as_json_to_os_clipboard_as_well")) {
+				bool worked = try_to_paste_json();
+				if (worked) {
+					return;
+				}
+			}
 			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY) {
 				return;
 			}
@@ -1660,6 +1703,9 @@ void EditorProperty::_update_popup() {
 	menu->set_item_disabled(-1, read_only || EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY);
 	menu->add_icon_shortcut(theme_cache.copy_node_path_icon, ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
 	menu->set_item_disabled(-1, internal);
+	menu->add_separator();
+	menu->add_icon_shortcut(theme_cache.paste_icon, ED_GET_SHORTCUT("property_editor/copy_value_to_json"), MENU_COPY_VALUE_TO_JSON);
+	menu->add_icon_shortcut(theme_cache.paste_icon, ED_GET_SHORTCUT("property_editor/paste_value_from_json"), MENU_PASTE_VALUE_FROM_JSON);
 
 	if (can_favorite || !pin_hidden) {
 		menu->add_separator();
@@ -6237,6 +6283,9 @@ EditorInspector::EditorInspector() {
 	ED_SHORTCUT("property_editor/copy_value", TTRC("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTRC("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTRC("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+
+	ED_SHORTCUT("property_editor/copy_value_to_json", TTRC("Copy Value To JSON"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::C);
+	ED_SHORTCUT("property_editor/paste_value_from_json", TTRC("Paste Value From JSON"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::V);
 
 	// `use_settings_name_style` is true by default, set the name style accordingly.
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
