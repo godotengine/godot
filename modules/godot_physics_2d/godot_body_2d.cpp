@@ -316,13 +316,12 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 				wakeup_neighbours();
 			} else {
 				Transform2D t = p_variant;
-				t.orthonormalize();
 				new_transform = get_transform(); //used as old to compute motion
 				if (t == new_transform) {
 					break;
 				}
 				_set_transform(t);
-				_set_inv_transform(get_transform().inverse());
+				_set_inv_transform(t.inverse());
 				_update_transform_dependent();
 			}
 			wakeup();
@@ -580,11 +579,7 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 				damp = 0;
 			}
 
-			real_t angular_damp_new = 1.0 - p_step * total_angular_damp;
-
-			if (angular_damp_new < 0) { // reached zero in the given time
-				angular_damp_new = 0;
-			}
+			real_t angular_damp_new = MAX(0, 1.0 - p_step * total_angular_damp);
 
 			linear_velocity *= damp;
 			angular_velocity *= angular_damp_new;
@@ -634,21 +629,25 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 
 	real_t total_angular_velocity = angular_velocity + biased_angular_velocity;
 	Vector2 total_linear_velocity = linear_velocity + biased_linear_velocity;
+	Transform2D old_transform = get_transform();
 
 	real_t angle_delta = total_angular_velocity * p_step;
-	real_t angle = get_transform().get_rotation() + angle_delta;
-	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
+	Transform2D rot = Transform2D(angle_delta, Vector2());
+	Vector2 pos_delta = total_linear_velocity * p_step;
 
 	if (center_of_mass.length_squared() > CMP_EPSILON2) {
 		// Calculate displacement due to center of mass offset.
-		pos += center_of_mass - center_of_mass.rotated(angle_delta);
+		pos_delta += center_of_mass - rot.xform(center_of_mass);
 	}
+	Vector2 pos = old_transform.get_origin() + pos_delta;
+	old_transform = rot * old_transform;
+	old_transform.set_origin(pos);
 
-	_set_transform(Transform2D(angle, pos), continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
+	_set_transform(old_transform, continuous_cd_mode == PhysicsServer2D::CCD_MODE_DISABLED);
 	_set_inv_transform(get_transform().inverse());
 
 	if (continuous_cd_mode != PhysicsServer2D::CCD_MODE_DISABLED) {
-		new_transform = get_transform();
+		old_transform = get_transform();
 	}
 
 	_update_transform_dependent();
