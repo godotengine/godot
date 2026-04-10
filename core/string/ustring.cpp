@@ -4495,6 +4495,7 @@ String String::c_escape_multiline() const {
 	String escaped = *this;
 	escaped = escaped.replace("\\", "\\\\");
 	escaped = escaped.replace("\"", "\\\"");
+	escaped = escaped.replace("\r", "\\r");
 
 	return escaped;
 }
