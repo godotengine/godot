@@ -518,6 +518,12 @@
 		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
 			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport.
 		</member>
+		<member name="editors/3d/selection_outline_enabled" type="bool" setter="" getter="">
+			If [code]true[/code], draws screen-space selection outlines for selected objects in the 3D editor viewport. If [code]false[/code], selection is displayed using 3D selection boxes.
+		</member>
+		<member name="editors/3d/selection_outline_thickness" type="float" setter="" getter="">
+			The outline thickness in screen pixels.
+		</member>
 		<member name="editors/3d/show_gizmo_during_rotation" type="int" setter="" getter="">
 			If checked, the transform gizmo remains visible during rotation in that transform mode.
 		</member>
