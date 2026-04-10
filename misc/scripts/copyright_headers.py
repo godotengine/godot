@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 
+import io
 import os
 import sys
+import typing
 
-header = """\
+if typing.TYPE_CHECKING:
+    pass
+
+
+HEADER = """\
 /**************************************************************************/
 /*  $filename                                                             */
 /**************************************************************************/
@@ -35,31 +41,44 @@ header = """\
 /**************************************************************************/
 """
 
-if len(sys.argv) < 2:
-    print("Invalid usage of copyright_headers.py, it should be called with a path to one or multiple files.")
-    sys.exit(1)
 
-for f in sys.argv[1:]:
-    fname = f
+def process_file(filename):  # type: (str) -> None
+    filename = filename.strip()
+    basename = os.path.basename(filename)
 
-    # Handle replacing $filename with actual filename and keep alignment
-    fsingle = os.path.basename(fname.strip())
-    rep_fl = "$filename"
-    rep_fi = fsingle
-    len_fl = len(rep_fl)
-    len_fi = len(rep_fi)
-    # Pad with spaces to keep alignment
-    if len_fi < len_fl:
-        for x in range(len_fl - len_fi):
-            rep_fi += " "
-    elif len_fl < len_fi:
-        for x in range(len_fi - len_fl):
-            rep_fl += " "
-    if header.find(rep_fl) != -1:
-        text = header.replace(rep_fl, rep_fi)
+    new_buffer = None  # type: typing.Union[io.StringIO, None]
+    with open(filename, "r", encoding="utf-8") as file:
+        new_buffer = process_file_buffer(basename, file)
+    with open(filename, "w", encoding="utf-8") as file:
+        CHUNK_SIZE = 1024
+        while True:
+            chunk = new_buffer.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            file.write(chunk)
+
+
+def process_file_buffer(filename, text_buffer):  # type: (str, io.TextIOWrapper) -> io.StringIO
+    output = io.StringIO()
+
+    # Handle replacing $filename with actual filename and keep alignment.
+    token = "$filename"
+    padded_filename = filename
+    padded_token = token
+    filename_length = len(filename)
+    token_length = len(token)
+
+    # Pad with spaces to keep alignment.
+    if filename_length < token_length:
+        padded_filename += " " * (token_length - filename_length)
+    elif token_length < filename_length:
+        padded_token += " " * (filename_length - token_length)
+
+    if HEADER.find(token) != -1:
+        output.write(HEADER.replace(padded_token, padded_filename))
     else:
-        text = header.replace("$filename", fsingle)
-    text += "\n"
+        output.write(HEADER.replace(token, filename))
+    output.write("\n")
 
     # We now have the proper header, so we want to ignore the one in the original file
     # and potentially empty lines and badly formatted lines, while keeping comments that
@@ -68,28 +87,35 @@ for f in sys.argv[1:]:
     # In a second pass, we skip all consecutive comment lines starting with "/*",
     # then we can append the rest (step 2).
 
-    with open(fname.strip(), "r", encoding="utf-8") as fileread:
-        line = fileread.readline()
-        header_done = False
+    line = text_buffer.readline()
+    header_done = False
 
-        while line.strip() == "" and line != "":  # Skip empty lines at the top
-            line = fileread.readline()
+    while line.strip() == "" and line != "":  # Skip empty lines at the top
+        line = text_buffer.readline()
 
-        if line.find("/**********") == -1:  # Godot header starts this way
-            # Maybe starting with a non-Godot comment, abort header magic
+    if line.find("/**********") == -1:  # Godot header starts this way
+        # Maybe starting with a non-Godot comment, abort header magic
+        header_done = True
+
+    while not header_done:  # Handle header now
+        if line.find("/*") != 0:  # No more starting with a comment
             header_done = True
+            if line.strip() != "":
+                output.write(line)
+        line = text_buffer.readline()
 
-        while not header_done:  # Handle header now
-            if line.find("/*") != 0:  # No more starting with a comment
-                header_done = True
-                if line.strip() != "":
-                    text += line
-            line = fileread.readline()
+    while line != "":  # Dump everything until EOF
+        output.write(line)
+        line = text_buffer.readline()
 
-        while line != "":  # Dump everything until EOF
-            text += line
-            line = fileread.readline()
+    output.seek(0)
+    return output
 
-    # Write
-    with open(fname.strip(), "w", encoding="utf-8", newline="\n") as filewrite:
-        filewrite.write(text)
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Invalid usage of copyright_headers.py, it should be called with a path to one or multiple files.")
+        sys.exit(1)
+
+    for f in sys.argv[1:]:
+        process_file(f)

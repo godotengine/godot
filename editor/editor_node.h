@@ -1006,6 +1006,7 @@ public:
 	Dictionary drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
 
 	EditorQuickOpenDialog *get_quick_open_dialog() { return quick_open_dialog; }
+	ProjectExportDialog *get_project_export_dialog() { return project_export; }
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);

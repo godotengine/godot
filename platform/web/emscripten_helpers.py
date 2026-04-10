@@ -1,9 +1,20 @@
 import json
 import os
+import typing
+
+if typing.TYPE_CHECKING:
+    T = typing.TypeVar("T")
 
 from SCons.Util import WhereIs
 
+from misc.scripts.copyright_headers import process_file_buffer as process_file_buffer_copyright_buffer
 from platform_methods import get_build_version
+
+
+def ensure_list(value):  # type: (typing.Union[T, typing.List[T]]) -> typing.List[T]
+    if not isinstance(value, list):
+        return [value]
+    return value
 
 
 def run_closure_compiler(target, source, env, for_signature):
@@ -30,20 +41,63 @@ def create_engine_file(env, target, source, externs, threads_enabled):
     return env.Substfile(target=target, source=[env.File(s) for s in source], SUBST_DICT=subst_dict)
 
 
+def package_js_module_generator(target, source, env, for_signature):
+    if for_signature:
+        return source
+
+    target = target[0]
+    source = source[0]
+
+    def get_wrapper(filename):
+        def wrapper(target, source, env):
+            return package_js_module_action_ensure_copyright_buffer(target, source, env, filename)
+
+        return wrapper
+
+    source_filename = os.path.basename(source.get_abspath())
+    wrapper = get_wrapper(source_filename)
+    return env.Action(wrapper, "Ensuring copyright buffer.")
+
+
+def package_js_module_action_ensure_copyright_buffer(target, source, env, filename):
+    target = target[0]
+    source = source[0]
+
+    with open(source, mode="r", encoding="utf-8") as source_file:
+        with open(target, mode="w", encoding="utf-8") as target_file:
+            new_contents = process_file_buffer_copyright_buffer(filename, source_file)
+            CHUNK_SIZE = 1024
+            while True:
+                chunk = new_contents.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                target_file.write(chunk)
+
+
 def create_template_zip(env, js, wasm, side):
     binary_name = "godot.editor" if env.editor_build else "godot"
     zip_dir = env.Dir(env.GetTemplateZipPath())
+
     in_files = [
         js,
         wasm,
         "#platform/web/js/libs/audio.worklet.js",
         "#platform/web/js/libs/audio.position.worklet.js",
+        env.PackageJSModule(
+            target="#bin/obj/platform/web/js/modules/utils/concurrency.js",
+            source="#platform/web/js/modules/utils/concurrency.js",
+        ),
+        env.PackageJSModule(
+            target="#bin/obj/platform/web/js/modules/utils/wait.js", source="#platform/web/js/modules/utils/wait.js"
+        ),
     ]
     out_files = [
         zip_dir.File(binary_name + ".js"),
         zip_dir.File(binary_name + ".wasm"),
         zip_dir.File(binary_name + ".audio.worklet.js"),
         zip_dir.File(binary_name + ".audio.position.worklet.js"),
+        zip_dir.File(binary_name + ".utils.concurrency.js"),
+        zip_dir.File(binary_name + ".utils.wait.js"),
     ]
     # Dynamic linking (extensions) specific.
     if env["dlink_enabled"]:

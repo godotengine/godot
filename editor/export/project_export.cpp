@@ -504,6 +504,11 @@ void ProjectExportDialog::_tab_changed(int) {
 	_update_feature_list();
 }
 
+void ProjectExportDialog::_on_result_dialog_copy_to_clipboard() {
+	const String log_text = result_dialog_log->get_parsed_text();
+	DisplayServer::get_singleton()->clipboard_set(log_text);
+}
+
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
 	_update_current_preset();
 }
@@ -2020,7 +2025,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	result_dialog->set_title(TTR("Project Export"));
 	result_dialog_log = memnew(RichTextLabel);
 	result_dialog_log->set_custom_minimum_size(Size2(300, 80) * EDSCALE);
+	result_dialog_log->set_selection_enabled(true);
 	result_dialog->add_child(result_dialog_log);
+
+	copy_to_clipboard_button = result_dialog->add_button(TTRC("Copy to clipboard"), false, "copy_to_clipboard");
+	copy_to_clipboard_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_on_result_dialog_copy_to_clipboard));
 
 	main_vb->add_child(result_dialog);
 	result_dialog->hide();
