@@ -1424,12 +1424,13 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 					xshift += (p_font_data->embolden * double(p_size.x) / 64.0);
 					if (fd->color_paint) {
 						hb_raster_paint_reset(p_font_data->hb_rdr);
-						if (p_font_data->transform != Transform2D()) {
-							hb_raster_paint_set_transform(p_font_data->hb_rdr, p_font_data->transform[0][0], p_font_data->transform[1][0], p_font_data->transform[0][1], -p_font_data->transform[1][1], 0.f, 0.f);
-						} else {
-							hb_raster_paint_set_transform(p_font_data->hb_rdr, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
-						}
 						hb_raster_paint_set_scale_factor(p_font_data->hb_rdr, 64.0, 64.0);
+						if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
+						} else {
+							Transform2D tr = p_font_data->transform * Transform2D::FLIP_Y;
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, tr[0][0], tr[1][0], tr[0][1], tr[1][1], 0.f, 0.f);
+						}
 						hb_raster_paint_clear_custom_palette_colors(p_font_data->hb_rdr);
 						if (!p_font_data->palette_custom_colors_hb.is_empty()) {
 							for (int col = 0; col < p_font_data->palette_custom_colors_hb.size(); col++) {
@@ -1455,12 +1456,13 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 					}
 					if (!is_rasterized && !fix_edge) {
 						hb_raster_draw_reset(p_font_data->hb_mono);
-						if (p_font_data->transform != Transform2D()) {
-							hb_raster_draw_set_transform(p_font_data->hb_mono, p_font_data->transform[0][0], p_font_data->transform[1][0], p_font_data->transform[0][1], -p_font_data->transform[1][1], 0.f, 0.f);
-						} else {
-							hb_raster_draw_set_transform(p_font_data->hb_mono, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
-						}
 						hb_raster_draw_set_scale_factor(p_font_data->hb_mono, 64.0, 64.0);
+						if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
+							hb_raster_draw_set_transform(p_font_data->hb_mono, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
+						} else {
+							Transform2D tr = p_font_data->transform * Transform2D::FLIP_Y;
+							hb_raster_draw_set_transform(p_font_data->hb_mono, tr[0][0], tr[1][0], tr[0][1], tr[1][1], 0.f, 0.f);
+						}
 						hb_raster_draw_glyph(p_font_data->hb_mono, fd->hb_handle, (hb_codepoint_t)glyph_index, xshift, 0);
 						hb_raster_image_t *img = hb_raster_draw_render(p_font_data->hb_mono);
 						hb_raster_extents_t ext = { 0, 0, 0, 0, 0 };
@@ -1648,7 +1650,10 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 		fd->underline_thickness = (FT_MulFix(p_font_data->face->underline_thickness, p_font_data->face->size->metrics.y_scale) / 64.0) * fd->scale;
 
 #if HB_VERSION_ATLEAST(3, 3, 0)
-		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
+
+		if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
+			hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
+		}
 #else
 #ifndef _MSC_VER
 #warning Building with HarfBuzz < 3.3.0, synthetic slant offset correction disabled.
