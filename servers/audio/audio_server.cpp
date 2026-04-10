@@ -1133,12 +1133,15 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 #endif
 
 	if (p_at_pos >= buses[p_bus]->effects.size() || p_at_pos < 0) {
+		p_at_pos = buses[p_bus]->effects.size();
 		buses[p_bus]->effects.push_back(fx);
 	} else {
 		buses[p_bus]->effects.insert(p_at_pos, fx);
 	}
 
 	_update_bus_effects(p_bus);
+
+	emit_signal(SNAME("effect_created"), p_bus, p_at_pos);
 
 	unlock();
 }
@@ -1152,6 +1155,7 @@ void AudioServer::remove_bus_effect(int p_bus, int p_effect) {
 
 	buses[p_bus]->effects.remove_at(p_effect);
 	_update_bus_effects(p_bus);
+	emit_signal(SNAME("effect_removed"), p_bus, p_effect);
 
 	unlock();
 }
@@ -1187,6 +1191,15 @@ void AudioServer::swap_bus_effects(int p_bus, int p_effect, int p_by_effect) {
 	lock();
 	SWAP(buses.write[p_bus]->effects.write[p_effect], buses.write[p_bus]->effects.write[p_by_effect]);
 	_update_bus_effects(p_bus);
+
+	emit_signal(SNAME("effect_removed"), p_bus, p_effect);
+	emit_signal(SNAME("effect_created"), p_bus, p_by_effect);
+	emit_signal(SNAME("effect_moved"), p_bus, p_effect, p_bus, p_by_effect);
+
+	emit_signal(SNAME("effect_removed"), p_bus, p_by_effect);
+	emit_signal(SNAME("effect_created"), p_bus, p_effect);
+	emit_signal(SNAME("effect_moved"), p_bus, p_by_effect, p_bus, p_effect);
+
 	unlock();
 }
 
@@ -2123,6 +2136,10 @@ void AudioServer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 	ADD_SIGNAL(MethodInfo("bus_renamed", PropertyInfo(Variant::INT, "bus_index"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
+
+	ADD_SIGNAL(MethodInfo("effect_moved", PropertyInfo(Variant::INT, "old_bus_index"), PropertyInfo(Variant::INT, "old_effect_index"), PropertyInfo(Variant::INT, "new_bus_index"), PropertyInfo(Variant::INT, "new_effect_index")));
+	ADD_SIGNAL(MethodInfo("effect_created", PropertyInfo(Variant::INT, "bus_index"), PropertyInfo(Variant::INT, "effect_index")));
+	ADD_SIGNAL(MethodInfo("effect_removed", PropertyInfo(Variant::INT, "old_bus_index"), PropertyInfo(Variant::INT, "old_effect_index")));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);
