@@ -1040,6 +1040,9 @@
 		<member name="interface/editor/fonts/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
 		</member>
+		<member name="interface/editor/fonts/custom_font_scale" type="float" setter="" getter="">
+			The scale factor for various editor font sizes. Affects main, code, help, and output font sizes. Does not scale other interface elements.
+		</member>
 		<member name="interface/editor/fonts/font_allow_msdf" type="bool" setter="" getter="">
 			If set to [code]true[/code], MSDF font rendering will be used for the visual shader graph editor. You may need to set this to [code]false[/code] when using a custom main font, as some fonts will look broken due to the use of self-intersecting outlines in their font data. Downloading the font from the font maker's official website as opposed to a service like Google Fonts can help resolve this issue.
 		</member>
