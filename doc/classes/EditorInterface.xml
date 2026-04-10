@@ -116,6 +116,14 @@
 				Returns the [EditorPaths] singleton.
 			</description>
 		</method>
+		<method name="get_editor_plugin">
+			<return type="EditorPlugin" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns an [EditorPlugin] whose [method EditorPlugin._get_plugin_name] is [param name], or [code]null[/code] if no such plugin is found.
+				This method can be useful to obtain instances of some native plugins (like [GridMapEditorPlugin]), or custom plugins.
+			</description>
+		</method>
 		<method name="get_editor_scale" qualifiers="const">
 			<return type="float" />
 			<description>
