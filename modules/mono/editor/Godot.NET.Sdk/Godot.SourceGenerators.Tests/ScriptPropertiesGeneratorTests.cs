@@ -76,4 +76,13 @@ public class ScriptPropertiesGeneratorTests
             "ExportedToolButtons_ScriptProperties.generated.cs"
         );
     }
+
+    [Fact]
+    public async Task ExportedStorage()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
+            "ExportedStorage.cs",
+            "ExportedStorage_ScriptProperties.generated.cs"
+        );
+    }
 }
