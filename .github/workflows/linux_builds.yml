@@ -177,7 +177,7 @@ jobs:
 
       - name: Install mold linker
         if: matrix.proj-test
-        uses: rui314/setup-mold@v1
+        uses: rui314/setup-mold@725a8794d15fc7563f59595bd9556495c0564878 # v1
 
       - name: Compilation
         uses: ./.github/actions/godot-build
