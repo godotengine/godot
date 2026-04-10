@@ -110,8 +110,9 @@ struct ObjectGDExtension {
 
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassCreateInstance create_instance;
+	GDExtensionClassCreateInstance2 create_instance2; // Without refcount.
 #endif // DISABLE_DEPRECATED
-	GDExtensionClassCreateInstance2 create_instance2;
+	GDExtensionClassCreateInstance3 create_instance3;
 	GDExtensionClassFreeInstance free_instance;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassGetVirtual get_virtual;
