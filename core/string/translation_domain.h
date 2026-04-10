@@ -68,8 +68,8 @@ protected:
 
 public:
 	// Methods in this section are not intended for scripting.
-	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_context) const;
-	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
+	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, bool p_exact, const StringName &p_context) const;
+	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, bool p_exact, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
 	PackedStringArray get_loaded_locales() const;
 
 public:
