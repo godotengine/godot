@@ -147,6 +147,12 @@ Copyright: 2001, Robert Penner
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
+Files: scene/3d/ribbon3d.cpp
+ scene/3d/ribbon3d.h
+Comment: CozyCubeGames' trail and lines plugin
+Copyright: 2024, CozyCubeGames
+License: MIT
+
 Files: servers/audio/effects/audio_effect_pitch_shift.cpp
 Copyright: 2014-present Godot Engine contributors
  2007-2014 Juan Linietsky, Ariel Manzur

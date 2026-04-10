@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Ribbon" inherits="MeshInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node used to draw lines in spaces, dedicated to visual effects.
+	</brief_description>
+	<description>
+		The Ribbon node is a node that draws a flat line in space, either billboarded or not.
+		It can be used to draw a trail, usually to complement effects for projectiles, or to draw a beam, a line of a given length.
+		This node is targeted for visual effects. For solid lines, please refer to CSG nodes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the ribbon.
+			</description>
+		</method>
+		<method name="get_current_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Gets the current length of the ribbon, in meters.
+			</description>
+		</method>
+		<method name="rebuild">
+			<return type="void" />
+			<description>
+				Rebuilds the ribbon mesh.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="beam_length" type="float" setter="set_beam_length" getter="get_beam_length">
+			The length of the beam.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+			The color of the ribbon, baked into the ribbon's vertices.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="color_gradient" type="Gradient" setter="set_color_gradient" getter="get_color_gradient">
+			The color gradient across the ribbon.
+		</member>
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="0.2">
+			The lifetime of the trail, when in [member limit_mode] lifetime.
+		</member>
+		<member name="limit_mode" type="int" setter="set_limit_mode" getter="get_limit_mode" enum="Ribbon.LimitMode" default="0">
+			What limits the trail existence between a given time and a given length.
+		</member>
+		<member name="material" type="ShaderMaterial" setter="set_material" getter="get_material">
+			When in custom material mode, the material to assign to the ribbon mesh.
+			Use the following shader as a base to preserve billboarding.
+			[codeblock]
+			shader_type spatial;
+			render_mode
+				blend_mix,
+				depth_draw_never,
+				unshaded,
+				skip_vertex_transform,
+				cull_disabled;
+
+			void vertex() {
+				vec3 p = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+				vec3 t = (MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
+				VERTEX = p + UV.y * normalize(cross(p, t));
+				NORMAL = (VIEW_MATRIX * vec4(0, 1, 0, 0)).xyz;
+				UV.y = (sign(UV.y) + 1.0) / 2.0;
+			}
+
+			void fragment() {
+				ALBEDO = COLOR.rgb;
+				ALPHA = COLOR.a;
+			}
+			[/codeblock]
+		</member>
+		<member name="material_mode" type="int" setter="set_material_mode" getter="get_material_mode" enum="Ribbon.MaterialMode" default="0">
+			The material mode for the ribbon. Use material mode custom to supply a custom material.
+		</member>
+		<member name="max_length" type="float" setter="set_max_length" getter="get_max_length">
+			When in limit mode length, the maximum length of the trail.
+		</member>
+		<member name="mesh_alignment" type="int" setter="set_mesh_alignment" getter="get_alignment" enum="Ribbon.MeshAlignment" default="1">
+			Alignent of the ribbon. Possible options are [constant MESH_ALIGNMENT_LOCAL] for a 3D line, and [constant MESH_ALIGNMENT_BILLBOARD] for a billboarded line.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="min_section_length" type="float" setter="set_min_section_length" getter="get_min_section_length" default="0.2">
+			Minimum distance before adding a new section.
+		</member>
+		<member name="pin_uv" type="bool" setter="set_pin_uv" getter="get_pin_uv" default="false">
+			Pin the UV to their position in space.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="ribbon_mode" type="int" setter="set_ribbon_mode" getter="get_ribbon_mode" enum="Ribbon.RibbonMode" default="0">
+			Operating mode of the ribbon.
+			Use [constant RIBBON_MODE_TRAIL] for trails and [constant RIBBON_MODE_BEAM] for a beam: a straight line with a given length and given subdivisions.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="tiling_mode" type="int" setter="set_tiling_mode" getter="get_tiling_mode" enum="Ribbon.TilingMode" default="1">
+			How to tile the UVs across the length of the ribbon.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="tiling_multiplier" type="float" setter="set_tiling_multiplier" getter="get_tiling_multiplier" default="1.0">
+			UV multiplier across the length of the ribbon.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="1.0">
+			Width of the ribbon.
+			Changing it causes the ribbon to be rebuilt.
+		</member>
+		<member name="width_curve" type="Curve" setter="set_width_curve" getter="get_width_curve">
+			Width across the length of the ribbon.
+		</member>
+	</members>
+	<constants>
+		<constant name="RIBBON_MODE_TRAIL" value="0" enum="RibbonMode">
+			Setting [member ribbon_mode] to trail causes the ribbon to leave a line when moving the ribbon node.
+			Always in world space.
+		</constant>
+		<constant name="RIBBON_MODE_BEAM" value="1" enum="RibbonMode">
+			Setting [member ribbon_mode] to trail causes the ribbon to draw a line on its Z axis of length [member beam_length].
+			Always in world space.
+		</constant>
+		<constant name="RIBBON_MODE_MAX" value="2" enum="RibbonMode">
+			Maximum enum value for [enum RibbonMode].
+		</constant>
+		<constant name="MESH_ALIGNMENT_LOCAL" value="0" enum="MeshAlignment">
+			Align the ribbon to the local Y of the ribbon node.
+		</constant>
+		<constant name="MESH_ALIGNMENT_BILLBOARD" value="1" enum="MeshAlignment">
+			Align the ribbon to the camera, causing each section to billboard.
+		</constant>
+		<constant name="MESH_ALIGNMENT_MAX" value="2" enum="MeshAlignment">
+			Maximum value for enum [enum MeshAlignment].
+		</constant>
+		<constant name="TILING_MODE_UNIT" value="0" enum="TilingMode">
+		</constant>
+		<constant name="TILING_MODE_LENGTH" value="1" enum="TilingMode">
+		</constant>
+		<constant name="TILING_MAX" value="2" enum="TilingMode">
+			Maximum value for enum [enum TilingMode]
+		</constant>
+		<constant name="LIMIT_MODE_LIFETIME" value="0" enum="LimitMode">
+			Limit the trail length in time.
+		</constant>
+		<constant name="LIMIT_MODE_MAX_LENGTH" value="1" enum="LimitMode">
+			Limit the trail length in size.
+		</constant>
+		<constant name="LIMIT_MODE_MAX" value="2" enum="LimitMode">
+			Maxmum value for enum [enum LimitMode]. Relevant only when in trail mode.
+		</constant>
+		<constant name="MATERIAL_MODE_MIX" value="0" enum="MaterialMode">
+		</constant>
+		<constant name="MATERIAL_MODE_ADD" value="1" enum="MaterialMode">
+		</constant>
+		<constant name="MATERIAL_MODE_CUSTOM" value="2" enum="MaterialMode">
+		</constant>
+		<constant name="MATERIAL_MODE_MAX" value="3" enum="MaterialMode">
+		</constant>
+	</constants>
+</class>
