@@ -1273,6 +1273,9 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
+		<member name="translation_context" type="StringName" setter="set_translation_context" getter="get_translation_context" default="&amp;&quot;&quot;">
+			The translation context used when translating this control's displayed text, if it has any. Also used when generating translation templates.
+		</member>
 	</members>
 	<signals>
 		<signal name="focus_entered">
