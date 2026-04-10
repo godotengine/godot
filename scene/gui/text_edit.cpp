@@ -2318,7 +2318,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					emit_signal(SNAME("gutter_clicked"), hovered_gutter.y, hovered_gutter.x);
 					return;
 				}
-				int left_margin = Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
+				int left_margin = get_line_start_margin();
 				if (mpos.x < left_margin + gutters_width + gutter_padding) {
 					return;
 				}
@@ -5119,7 +5119,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 
 	Point2i pos, size;
 	pos.y = cache_entry.y_offset + get_line_height() * wrap_index;
-	pos.x = get_total_gutter_width() + Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT)) + wrap_indent - get_h_scroll();
+	pos.x = get_total_gutter_width() + get_line_start_margin() + wrap_indent - get_h_scroll();
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
 	Vector2 col_bounds = TS->shaped_text_get_grapheme_bounds(text_rid, p_column);
@@ -5129,6 +5129,10 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 	size.y = get_line_height();
 
 	return Rect2i(pos, size);
+}
+
+int TextEdit::get_line_start_margin() const {
+	return Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
 }
 
 int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
@@ -9043,7 +9047,7 @@ void TextEdit::_update_gutter_width() {
 }
 
 Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
-	int left_margin = Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
+	int left_margin = get_line_start_margin();
 	if (p_mouse_pos.x > left_margin + gutters_width + gutter_padding) {
 		return Vector2i(-1, -1);
 	}
