@@ -41,6 +41,7 @@ using namespace RendererSceneRenderImplementation;
 /* ShaderData */
 
 void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	//compile
 
 	code = p_code;
@@ -54,7 +55,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	ShaderCompiler::GeneratedCode gen_code;
 
-	blend_mode = BLEND_MODE_MIX;
+	blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_MIX);
 	depth_test_disabledi = 0;
 	depth_test_invertedi = 0;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
@@ -96,11 +97,12 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
 	actions.entry_point_stages["light"] = ShaderCompiler::STAGE_FRAGMENT;
 
-	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
-	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
-	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_mode, BLEND_MODE_SUB);
-	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
-	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PREMULTIPLIED_ALPHA);
+	int blend_modei = -1;
+	Vector<StringName> modes = material_storage->get_blend_modes(RSE::SHADER_SPATIAL);
+	for (int i = 0; i < modes.size(); i++) {
+		StringName name = modes[i];
+		actions.render_mode_values[name] = Pair<int *, int>(&blend_modei, i);
+	}
 
 	actions.render_mode_values["alpha_to_coverage"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
 	actions.render_mode_values["alpha_to_coverage_and_one"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE);
@@ -181,6 +183,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 		version = SceneShaderForwardMobile::singleton->shader.version_create(false);
 	}
 
+	if (blend_modei >= 0) {
+		blend_mode = modes[blend_modei];
+	}
+
 	depth_draw = DepthDraw(depth_drawi);
 	if (depth_test_disabledi) {
 		depth_test = DEPTH_TEST_DISABLED;
@@ -243,10 +249,11 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	// If any form of Alpha Antialiasing is enabled, set the blend mode to alpha to coverage.
 	if (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF) {
-		blend_mode = BLEND_MODE_ALPHA_TO_COVERAGE;
+		blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_ALPHA_TO_COVERAGE);
 	}
 
-	uses_blend_alpha = blend_mode_uses_blend_alpha(BlendMode(blend_mode));
+	auto attachment = material_storage->get_blend_attachment(RSE::SHADER_SPATIAL, blend_mode);
+	uses_blend_alpha = attachment.uses_blend_alpha;
 }
 
 bool SceneShaderForwardMobile::ShaderData::is_animated() const {
@@ -295,8 +302,9 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			"RENDER PASS:", p_pipeline_key.render_pass,
 			"WIREFRAME:", p_pipeline_key.wireframe);
 #endif
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	RD::PipelineColorBlendState::Attachment blend_attachment = blend_mode_to_blend_attachment(BlendMode(blend_mode));
+	RD::PipelineColorBlendState::Attachment blend_attachment = material_storage->get_blend_attachment(RSE::SHADER_SPATIAL, blend_mode);
 	RD::PipelineColorBlendState blend_state_blend;
 	blend_state_blend.attachments.push_back(blend_attachment);
 	RD::PipelineColorBlendState blend_state_opaque = RD::PipelineColorBlendState::create_disabled(1);

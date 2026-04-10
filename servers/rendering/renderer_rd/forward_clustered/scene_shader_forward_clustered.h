@@ -231,7 +231,7 @@ public:
 		DepthDraw depth_draw = DEPTH_DRAW_OPAQUE;
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
-		int blend_mode = BLEND_MODE_MIX;
+		StringName blend_mode;
 		int depth_test_disabledi = 0;
 		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;

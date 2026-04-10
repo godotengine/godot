@@ -651,93 +651,6 @@ bool MaterialStorage::ShaderData::is_parameter_texture(const StringName &p_param
 	return uniforms[p_param].is_texture();
 }
 
-RD::PipelineColorBlendState::Attachment MaterialStorage::ShaderData::blend_mode_to_blend_attachment(BlendMode p_mode) {
-	RD::PipelineColorBlendState::Attachment attachment;
-
-	switch (p_mode) {
-		case BLEND_MODE_MIX: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		} break;
-		case BLEND_MODE_ADD: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		} break;
-		case BLEND_MODE_SUB: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
-			attachment.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		} break;
-		case BLEND_MODE_MUL: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_DST_COLOR;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-		} break;
-		case BLEND_MODE_ALPHA_TO_COVERAGE: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-		} break;
-		case BLEND_MODE_PREMULTIPLIED_ALPHA: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		} break;
-		case BLEND_MODE_DISABLED:
-		default: {
-			// Use default attachment values.
-		} break;
-	}
-
-	return attachment;
-}
-
-bool MaterialStorage::ShaderData::blend_mode_uses_blend_alpha(BlendMode p_mode) {
-	switch (p_mode) {
-		case BLEND_MODE_MIX:
-			return false;
-		case BLEND_MODE_ADD:
-			return true;
-		case BLEND_MODE_SUB:
-			return true;
-		case BLEND_MODE_MUL:
-			return true;
-		case BLEND_MODE_ALPHA_TO_COVERAGE:
-			return false;
-		case BLEND_MODE_PREMULTIPLIED_ALPHA:
-			return true;
-		case BLEND_MODE_DISABLED:
-		default:
-			return false;
-	}
-}
-
 ///////////////////////////////////////////////////////////////////////////
 // MaterialStorage::MaterialData
 
@@ -1261,6 +1174,7 @@ void MaterialStorage::MaterialData::set_as_used() {
 
 void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	// Initialize and compile the shader.
 
 	code = p_code;
@@ -1275,16 +1189,17 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	// Actual enum set further down after compilation.
-	int blend_modei = BLEND_MODE_DISABLED;
+	blend_mode = RenderingServerTypes::blend_mode_name(RSE::BLEND_MODE_DISABLED);
 
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["blit"] = ShaderCompiler::STAGE_FRAGMENT;
 
-	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_modei, BLEND_MODE_ADD);
-	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MIX);
-	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
-	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
-	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+	int blend_modei = -1;
+	auto modes = material_storage->get_blend_modes(RSE::SHADER_TEXTURE_BLIT);
+	for (int i = 0; i < modes.size(); i++) {
+		StringName name = modes[i];
+		actions.render_mode_values[name] = Pair<int *, int>(&blend_modei, i);
+	}
 
 	actions.uniforms = &uniforms;
 	Error err = texture_storage->tex_blit_shader.compiler.compile(RSE::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
@@ -1294,7 +1209,9 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 		version = texture_storage->tex_blit_shader.shader.version_create();
 	}
 
-	blend_mode = BlendMode(blend_modei);
+	if (blend_modei >= 0) {
+		blend_mode = modes[blend_modei];
+	}
 
 #if 0
 	print_line("**compiling shader:");
@@ -1322,52 +1239,7 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	texture_uniforms = gen_code.texture_uniforms;
 
 	RD::PipelineColorBlendState blend_state_color_blend;
-	RD::PipelineColorBlendState::Attachment attachment;
-
-	// blend_mode_to_blend_attachment(blend_mode) does not work
-	// Because we want BlendAdd and BlendSub to behave differently for Texture_Blit
-	switch (blend_mode) {
-		case BLEND_MODE_MIX: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		} break;
-		case BLEND_MODE_ADD: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		} break;
-		case BLEND_MODE_SUB: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
-			attachment.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-		} break;
-		case BLEND_MODE_MUL: {
-			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
-			attachment.color_blend_op = RD::BLEND_OP_ADD;
-			attachment.src_color_blend_factor = RD::BLEND_FACTOR_DST_COLOR;
-			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
-			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
-			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-		} break;
-		case BLEND_MODE_DISABLED:
-		default: {
-			// Use default attachment values.
-		} break;
-	}
+	RD::PipelineColorBlendState::Attachment attachment = material_storage->get_blend_attachment(RSE::SHADER_TEXTURE_BLIT, blend_mode, false);
 
 	blend_state_color_blend.attachments = { attachment, attachment, attachment, attachment };
 
@@ -1508,6 +1380,212 @@ MaterialStorage::MaterialStorage() {
 	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE));
 	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * (1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE)));
 	global_shader_uniforms.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
+
+	// Default Render Modes
+	{
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_MIX,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_ADD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_SUB,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_REVERSE_SUBTRACT,
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_REVERSE_SUBTRACT));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_MUL,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_DST_COLOR,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_DST_ALPHA,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_ALPHA_TO_COVERAGE,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD),
+				false);
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_PREMULTIPLIED_ALPHA,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_LCD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_CONSTANT_COLOR,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD),
+				false);
+		register_blend_mode(
+				RSE::SHADER_CANVAS_ITEM,
+				RSE::BLEND_MODE_DISABLED,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment());
+	}
+
+	{
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_MIX,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_ADD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_SUB,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_REVERSE_SUBTRACT,
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_REVERSE_SUBTRACT));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_MUL,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_DST_COLOR,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_DST_ALPHA,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_ALPHA_TO_COVERAGE,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD),
+				false);
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_PREMULTIPLIED_ALPHA,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_LCD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_CONSTANT_COLOR,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD),
+				false);
+		register_blend_mode(
+				RSE::SHADER_SPATIAL,
+				RSE::BLEND_MODE_DISABLED,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment());
+	}
+
+	{
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_MIX,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_SRC_ALPHA,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_ADD,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_SUB,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_REVERSE_SUBTRACT,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_FACTOR_ONE,
+						RD::BLEND_OP_REVERSE_SUBTRACT));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_MUL,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment(
+						RD::BLEND_FACTOR_DST_COLOR,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD,
+						RD::BLEND_FACTOR_DST_ALPHA,
+						RD::BLEND_FACTOR_ZERO,
+						RD::BLEND_OP_ADD));
+		register_blend_mode(
+				RSE::SHADER_TEXTURE_BLIT,
+				RSE::BLEND_MODE_DISABLED,
+				RenderingDeviceCommons::PipelineColorBlendState::Attachment());
+	}
 }
 
 MaterialStorage::~MaterialStorage() {
