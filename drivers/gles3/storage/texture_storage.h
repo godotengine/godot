@@ -629,6 +629,7 @@ public:
 	void texture_remove_from_texture_atlas(RID p_texture);
 	void texture_atlas_mark_dirty_on_texture(RID p_texture);
 	void texture_atlas_remove_texture(RID p_texture);
+	void texture_atlas_update_texture(RID p_texture);
 
 	/* DECAL API */
 
