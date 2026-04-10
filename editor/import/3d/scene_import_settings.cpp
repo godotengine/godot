@@ -60,6 +60,7 @@ class SceneImportSettingsData : public Object {
 	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
 	Vector<String> animation_list;
+	Ref<Animation> animation;
 
 	bool hide_options = false;
 	String path;
@@ -98,6 +99,13 @@ class SceneImportSettingsData : public Object {
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
+		if (String(p_name) == "properties/animation_length") {
+			if (animation.is_valid()) {
+				r_ret = animation->get_length();
+				return true;
+			}
+			return false;
+		}
 		if (settings) {
 			if (settings->has(p_name)) {
 				r_ret = (*settings)[p_name];
@@ -167,6 +175,10 @@ class SceneImportSettingsData : public Object {
 			return;
 		}
 		Ref<ResourceImporterScene> resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+		if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION) {
+			PropertyInfo duration_prop(Variant::FLOAT, "properties/animation_length", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY);
+			r_list->push_back(duration_prop);
+		}
 		for (const ResourceImporter::ImportOption &E : options) {
 			PropertyInfo option = E.option;
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
@@ -921,6 +933,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
 		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
+		scene_import_settings_data->animation = ad.animation;
 
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
@@ -1109,7 +1122,8 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		animation_pingpong = false;
 
 		if (animation_map.has(p_animation_name)) {
-			HashMap<StringName, Variant> settings(animation_map[p_animation_name].settings);
+			const AnimationData &animation_data = animation_map[p_animation_name];
+			HashMap<StringName, Variant> settings(animation_data.settings);
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
 			}
@@ -1173,11 +1187,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 }
 
 void SceneImportSettingsDialog::_animation_update_skeleton_visibility() {
-	if (animation_toggle_skeleton_visibility->is_pressed()) {
-		bones_mesh_preview->show();
-	} else {
-		bones_mesh_preview->hide();
-	}
+	bones_mesh_preview->set_visible(animation_toggle_skeleton_visibility->is_pressed());
 }
 
 void SceneImportSettingsDialog::_material_tree_selected() {
