@@ -736,6 +736,7 @@ protected:
 public:
 	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+	void refresh_plugins();
 
 	void init_plugins();
 
