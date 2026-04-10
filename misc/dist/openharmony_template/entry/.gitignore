@@ -1,0 +1,6 @@
+/node_modules
+/oh_modules
+/.preview
+/build
+/.cxx
+/.test

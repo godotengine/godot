@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformOpenHarmony" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Export platform for OpenHarmony applications.
+	</brief_description>
+	<description>
+		The OpenHarmony export platform allows you to build and deploy Godot projects as OpenHarmony applications ([code].hap[/code] files). OpenHarmony is an open-source operating system for various smart devices including smartphones, tablets, and IoT devices.
+		This platform handles the complete export process including:
+		- Template extraction and project configuration
+		- Asset packaging and resource management
+		- Native library integration
+		- Application signing and certification
+		- Device deployment and debugging
+		[b]Requirements:[/b]
+		- OpenHarmony SDK properly installed and configured
+		- Vulkan renderer (Forward+ or Mobile rendering method with the Vulkan driver)
+		- Valid export templates (debug/release)
+		- For device deployment: HDC (HarmonyOS Device Connector) tool
+		- For signing: Valid certificate files and signing profiles
+		[b]Supported Architectures:[/b]
+		- ARM64 (arm64-v8a) - Primary architecture for most OpenHarmony devices
+		- x86_64 - For emulator and development purposes
+		[b]Export Process:[/b]
+		1. Template preparation and extraction
+		2. Project configuration and manifest generation
+		3. Asset copying and resource processing
+		4. Native library integration
+		5. Application building using Hvigor build system
+		6. Optional code signing
+		7. Package generation ([code].hap[/code] or [code].app[/code] files)
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="architectures/arm64" type="bool" setter="" getter="">
+			Enable ARM64 architecture support. This is the primary architecture for most OpenHarmony devices including smartphones and tablets. Only one architecture can be selected at a time. This option is only visible when advanced options are enabled in the export preset.
+		</member>
+		<member name="architectures/x86_64" type="bool" setter="" getter="">
+			Enable x86_64 architecture support. This is primarily used for emulator testing and development purposes. Only one architecture can be selected at a time. This option is only visible when advanced options are enabled in the export preset.
+		</member>
+		<member name="build/background_image" type="String" setter="" getter="">
+			Path to the background image file (PNG format, 1024x1024 pixels) used for the application icon. This image will be copied to the media folder during export and referenced in the application manifest.
+		</member>
+		<member name="build/bundle_id" type="String" setter="" getter="">
+			The unique bundle identifier for the OpenHarmony application. This should follow reverse domain notation (e.g., "com.example.myapp"). This identifier is used in the application manifest and must be unique across the OpenHarmony ecosystem.
+		</member>
+		<member name="build/default_orientation" type="int" setter="" getter="">
+			The default screen orientation for the application. Determines how the application will be displayed when launched on OpenHarmony devices.
+		</member>
+		<member name="build/export_project_only" type="bool" setter="" getter="">
+			When enabled, only exports the project files without building the final application package. This is useful for manual building or integration with external build systems. When disabled, the complete build process including Hvigor compilation will be executed.
+		</member>
+		<member name="build/foreground_image" type="String" setter="" getter="">
+			Path to the foreground image file (PNG format, 1024x1024 pixels) used for the application icon. This image will be copied to the media folder during export and referenced in the application manifest.
+		</member>
+		<member name="build/override_project_dir" type="bool" setter="" getter="">
+			When enabled, allows overriding the default project directory structure during export. This can be useful for custom build configurations or when integrating with existing OpenHarmony projects.
+		</member>
+		<member name="build/sdk_version" type="String" setter="" getter="">
+			The target OpenHarmony SDK version for the application. This version will be used in the build configuration and determines the available APIs and features. The version should match an installed SDK version.
+		</member>
+		<member name="build/sign" type="bool" setter="" getter="">
+			Enable application signing during the export process. When enabled, the application will be signed using the provided certificate and profile files. This is required for distribution and installation on real devices. When enabled, all signing options become visible and required.
+		</member>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			Path to a custom debug template ZIP file. When specified, this template will be used instead of the default "openharmony_debug_arm64-v8a.zip" template. The template should contain the complete OpenHarmony project structure. This option is only visible when advanced options are enabled in the export preset.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			Path to a custom release template ZIP file. When specified, this template will be used instead of the default "openharmony_release_arm64-v8a.zip" template. The template should contain the complete OpenHarmony project structure. This option is only visible when advanced options are enabled in the export preset.
+		</member>
+		<member name="permissions/ohos.permission.INTERNET" type="bool" setter="" getter="">
+			Request INTERNET permission for the application. This permission allows the application to access network resources and make internet connections. When enabled, this permission will be added to the application manifest.
+		</member>
+		<member name="permissions/ohos.permission.MICROPHONE" type="bool" setter="" getter="">
+			Request MICROPHONE permission for the application. This permission allows the application to access the device's microphone for audio recording. When enabled, this permission will be added to the application manifest and requires user consent at runtime.
+		</member>
+		<member name="sign/certpath_file" type="String" setter="" getter="">
+			Path to the certificate file ([code].cer[/code]) used for application signing. This file contains the public key certificate that corresponds to the private key in the keystore. Required when signing is enabled. This option is only visible when build/sign is enabled.
+		</member>
+		<member name="sign/key_alias" type="String" setter="" getter="">
+			The alias name of the key pair in the keystore file. This identifies which key from the keystore should be used for signing the application. Required when signing is enabled. This option is only visible when build/sign is enabled.
+		</member>
+		<member name="sign/key_password" type="String" setter="" getter="">
+			The password for the specific key identified by the key alias in the keystore. This password protects the private key used for signing. Required when signing is enabled. This field is marked as secret in the UI. This option is only visible when build/sign is enabled.
+		</member>
+		<member name="sign/profile_file" type="String" setter="" getter="">
+			Path to the provisioning profile file ([code].p7b[/code]) that authorizes the application to run on OpenHarmony devices. This file contains information about the application's capabilities and the devices it can run on. Required when signing is enabled. This option is only visible when build/sign is enabled.
+		</member>
+		<member name="sign/sign_alg" type="String" setter="" getter="">
+			The signing algorithm to use for application signing. Default value is "SHA256withECDSA". This determines the cryptographic algorithm used to create the digital signature. This option is only visible when build/sign is enabled.
+		</member>
+		<member name="sign/store_file" type="String" setter="" getter="">
+			Path to the keystore file containing the private key and certificate used for signing the application. This file stores the cryptographic keys needed for the signing process. Required when signing is enabled. This option is only visible when build/sign is enabled.
+		</member>
+		<member name="sign/store_password" type="String" setter="" getter="">
+			The password for the keystore file. This password protects access to the keystore containing the signing keys. Required when signing is enabled. This field is marked as secret in the UI. This option is only visible when build/sign is enabled.
+		</member>
+	</members>
+</class>

@@ -136,6 +136,10 @@ void volkLoadDeviceTable(struct VolkDeviceTable* table, VkDevice device);
 #include <vulkan/vulkan_android.h>
 #endif
 
+#ifdef VK_USE_PLATFORM_OHOS
+#include <vulkan/vulkan_ohos.h>
+#endif
+
 #ifdef VK_USE_PLATFORM_FUCHSIA
 #include <zircon/types.h>
 #include <vulkan/vulkan_fuchsia.h>
