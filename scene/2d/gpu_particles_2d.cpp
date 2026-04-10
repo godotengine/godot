@@ -86,6 +86,9 @@ void GPUParticles2D::set_lifetime(double p_lifetime) {
 }
 
 void GPUParticles2D::set_one_shot(bool p_enable) {
+	if (one_shot == p_enable) {
+		return;
+	}
 	one_shot = p_enable;
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
@@ -95,8 +98,11 @@ void GPUParticles2D::set_one_shot(bool p_enable) {
 			RenderingServer::get_singleton()->particles_restart(particles);
 		}
 	}
-
-	if (!one_shot) {
+	if (one_shot) {
+		active = true;
+		emission_time = lifetime;
+		active_time = lifetime * (2 - explosiveness_ratio);
+	} else {
 		set_process_internal(false);
 	}
 }
