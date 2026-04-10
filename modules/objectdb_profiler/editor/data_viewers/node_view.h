@@ -31,8 +31,9 @@
 #pragma once
 
 #include "../snapshot_data.h"
-#include "shared_controls.h"
 #include "snapshot_view.h"
+
+#include "editor/gui/tree_sort_and_filter_line_edit.h"
 
 class Tree;
 

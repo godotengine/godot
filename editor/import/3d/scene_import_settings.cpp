@@ -749,9 +749,8 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 	const bool disable_mesh_mat_tabs = p_scene_import_type == "AnimationLibrary";
 	data_mode->set_tab_hidden(1, disable_mesh_mat_tabs);
 	data_mode->set_tab_hidden(2, disable_mesh_mat_tabs);
-	if (disable_mesh_mat_tabs) {
-		data_mode->set_current_tab(0);
-	}
+	data_mode->set_current_tab(0);
+	_on_tree_tab_changed(0);
 
 	// Only show the save data options for PackedScene imports of scenes, not resource imports.
 	const bool disable_save_mesh_mat = p_scene_import_type != "PackedScene";
@@ -1237,6 +1236,22 @@ void SceneImportSettingsDialog::_on_light_rotate_switch_pressed() {
 	light2->set_as_top_level_keep_local(light_top_level);
 }
 
+void SceneImportSettingsDialog::_on_tree_tab_changed(int p_tab_id) {
+	TreeSortAndFilterBar *filters[3] = {
+		scene_tree_filter_bar,
+		mesh_tree_filter_bar,
+		material_tree_filter_bar
+	};
+
+	for (int i = 0; i < 3; ++i) {
+		filters[i]->set_visible(i == p_tab_id);
+	}
+
+	scene_tree_filter_bar->clear();
+	mesh_tree_filter_bar->clear();
+	material_tree_filter_bar->clear();
+}
+
 void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) {
 	float *rot_x = &cam_rot_x;
 	float *rot_y = &cam_rot_y;
@@ -1713,29 +1728,43 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	main_vb->add_child(tree_split);
 	tree_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
+	VBoxContainer *data_mode_vbc = memnew(VBoxContainer);
+	tree_split->add_child(data_mode_vbc);
+	data_mode_vbc->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+
+	scene_tree = memnew(Tree);
+	mesh_tree = memnew(Tree);
+	material_tree = memnew(Tree);
+
+	scene_tree_filter_bar = memnew(TreeSortAndFilterBar(scene_tree, TTRC("Filter")));
+	data_mode_vbc->add_child(scene_tree_filter_bar);
+	mesh_tree_filter_bar = memnew(TreeSortAndFilterBar(mesh_tree, TTRC("Filter")));
+	data_mode_vbc->add_child(mesh_tree_filter_bar);
+	material_tree_filter_bar = memnew(TreeSortAndFilterBar(material_tree, TTRC("Filter")));
+	data_mode_vbc->add_child(material_tree_filter_bar);
+
 	data_mode = memnew(TabContainer);
-	tree_split->add_child(data_mode);
+	data_mode_vbc->add_child(data_mode);
 	data_mode->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	data_mode->set_theme_type_variation("TabContainerOdd");
+	data_mode->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	data_mode->connect("tab_changed", callable_mp(this, &SceneImportSettingsDialog::_on_tree_tab_changed));
 
 	property_split = memnew(HSplitContainer);
 	tree_split->add_child(property_split);
 	property_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	scene_tree = memnew(Tree);
 	scene_tree->set_name(TTR("Scene"));
 	scene_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(scene_tree);
 	scene_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_scene_tree_selected));
 
-	mesh_tree = memnew(Tree);
 	mesh_tree->set_name(TTR("Meshes"));
 	mesh_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(mesh_tree);
 	mesh_tree->set_hide_root(true);
 	mesh_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_mesh_tree_selected));
 
-	material_tree = memnew(Tree);
 	material_tree->set_name(TTR("Materials"));
 	material_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(material_tree);
