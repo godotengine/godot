@@ -75,17 +75,32 @@ void AudioStreamEditor::_notification(int p_what) {
 }
 
 void AudioStreamEditor::_draw_preview() {
+	if (stream.is_null()) {
+		return;
+	}
 	Size2 size = get_size();
 	int width = size.width;
 	if (width <= 0) {
-		return; // No points to draw.
+		return;
 	}
-
-	Rect2 rect = _preview->get_rect();
-
+	if (stream->get_length() <= 0.0f) {
+		const Color col = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
+		Ref<Font> font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
+		int font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
+		_preview->draw_string(font,
+				Point2(8 * EDSCALE, size.height * 0.5f + font_size * 0.25f),
+				TTR("Waveform preview not available"),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, col);
+		return;
+	}
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 	float preview_len = preview->get_length();
 
+	if (preview_len <= 0.0f) {
+		return;
+	}
+
+	Rect2 rect = _preview->get_rect();
 	Vector<Vector2> points;
 	points.resize(width * 2);
 
@@ -119,6 +134,9 @@ void AudioStreamEditor::_stream_changed() {
 }
 
 void AudioStreamEditor::_play() {
+	if (stream.is_null() || stream->get_length() <= 0.0f) {
+		return;
+	}
 	if (_player->is_playing()) {
 		_pausing = true;
 		_player->stop();
@@ -155,9 +173,12 @@ void AudioStreamEditor::_draw_indicator() {
 	if (stream.is_null()) {
 		return;
 	}
-
-	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
+	if (len <= 0.0f) {
+		_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
+		return;
+	}
+	Rect2 rect = _preview->get_rect();
 	float ofs_x = _current / len * rect.size.width;
 	const Color col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TimelineIndicator"));
@@ -209,8 +230,12 @@ void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 	_player->set_stream(stream);
 	_current = 0;
 
-	String text = String::num(stream->get_length(), 2).pad_decimals(2) + "s";
-	_duration_label->set_text(text);
+	float len = stream->get_length();
+	if (len > 0.0f) {
+		_duration_label->set_text(String::num(len, 2).pad_decimals(2) + "s");
+	} else {
+		_duration_label->set_text(TTR("dynamic"));
+	}
 
 	queue_redraw();
 }
@@ -269,7 +294,13 @@ AudioStreamEditor::AudioStreamEditor() {
 // EditorInspectorPluginAudioStream
 
 bool EditorInspectorPluginAudioStream::can_handle(Object *p_object) {
-	return Object::cast_to<AudioStreamWAV>(p_object) != nullptr;
+	if (Object::cast_to<AudioStream>(p_object) == nullptr) {
+		return false;
+	}
+	String cls = p_object->get_class();
+	return cls == "AudioStreamWAV" ||
+			cls == "AudioStreamMP3" ||
+			cls == "AudioStreamOggVorbis";
 }
 
 void EditorInspectorPluginAudioStream::parse_begin(Object *p_object) {
