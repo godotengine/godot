@@ -1165,6 +1165,9 @@
 		<member name="editor/movie_writer/ogv/keyframe_interval" type="int" setter="" getter="" default="64" keywords="theora">
 			Forces keyframes at the specified interval (in frame count). Higher values can improve compression up to a certain level at the expense of higher latency when seeking.
 		</member>
+		<member name="editor/movie_writer/png/optimize_speed" type="bool" setter="" getter="" default="true" keywords="optimize, png, speed">
+			Optimizes rendering speed at the cost of file size, by changing PNG compression behavior.
+		</member>
 		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0" keywords="stereo, surround">
 			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
 		</member>

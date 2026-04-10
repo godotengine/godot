@@ -43,8 +43,8 @@ class Image;
 
 // Function pointer prototypes.
 
-typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
-typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img, bool p_fast_save);
+typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img, bool p_fast_save);
 
 typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, float p_quality);
 typedef Vector<uint8_t> (*SaveJPGBufferFunc)(const Ref<Image> &p_img, float p_quality);
@@ -260,6 +260,10 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	Vector<uint8_t> _save_exr_to_buffer_bind_compat_117800(bool p_grayscale = false) const;
 	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
+
+	Error _save_png_bind_compat_117943(const String &p_path) const;
+	Vector<uint8_t> _save_png_to_buffer_bind_compat_117943() const;
+
 	static void _bind_compatibility_methods();
 #endif
 
@@ -362,10 +366,10 @@ public:
 
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);
-	Error save_png(const String &p_path) const;
+	Error save_png(const String &p_path, bool p_fast_save = false) const;
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Error save_dds(const String &p_path) const;
-	Vector<uint8_t> save_png_to_buffer() const;
+	Vector<uint8_t> save_png_to_buffer(bool p_fast_save = false) const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
 	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Vector<uint8_t> save_dds_to_buffer() const;

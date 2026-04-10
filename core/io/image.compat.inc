@@ -30,6 +30,8 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "image.h"
+
 #include "core/object/class_db.h"
 
 Vector<uint8_t> Image::_save_exr_to_buffer_bind_compat_117800(bool p_grayscale) const {
@@ -40,9 +42,19 @@ Error Image::_save_exr_bind_compat_117800(const String &p_path, bool p_grayscale
 	return save_exr(p_path, p_grayscale);
 }
 
+Error Image::_save_png_bind_compat_117943(const String &p_path) const {
+	return save_png(p_path, false);
+}
+
+Vector<uint8_t> Image::_save_png_to_buffer_bind_compat_117943() const {
+	return save_png_to_buffer(false);
+}
+
 void Image::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr", "path", "grayscale"), &Image::_save_exr_bind_compat_117800, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::_save_exr_to_buffer_bind_compat_117800, DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("save_png", "path"), &Image::_save_png_bind_compat_117943);
+	ClassDB::bind_compatibility_method(D_METHOD("save_png_to_buffer"), &Image::_save_png_to_buffer_bind_compat_117943);
 }
 
 #endif // DISABLE_DEPRECATED
