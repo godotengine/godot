@@ -1785,6 +1785,59 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_dragging_cursor());
 		}
 
+		SUBCASE("[TextEdit] mouse click past wrapped line end") {
+			text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+			text_edit->set_text("this is some text");
+			text_edit->set_size(Size2(110, 100));
+			MessageQueue::get_singleton()->flush();
+
+			// Line 0 wraps: 'this is ', 'some text'.
+			CHECK(text_edit->is_line_wrapped(0));
+
+			// Click past the end of the first wrap - caret should stay on wrap 0.
+			Point2i past_end = text_edit->get_rect_at_line_column(0, 7).get_center() + Point2i(50, 0);
+			SEND_GUI_MOUSE_BUTTON_EVENT(past_end, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_wrap_index() == 0);
+			CHECK(text_edit->get_caret_column() == 7);
+		}
+
+		SUBCASE("[TextEdit] typing at wrap boundary keeps caret on correct wrap") {
+			text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+			text_edit->set_text("this is some text");
+			text_edit->set_size(Size2(110, 100));
+			MessageQueue::get_singleton()->flush();
+
+			// Line 0 wraps: 'this is ', 'some text'.
+			CHECK(text_edit->is_line_wrapped(0));
+
+			// Insert space at the wrap boundary - caret should stay on wrap 0.
+			text_edit->set_caret_column(8);
+			text_edit->insert_text_at_caret(" ");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_wrap_index() == 0);
+
+			// Backspace at the wrap boundary - caret should stay on wrap 0.
+			text_edit->set_text("this is some text");
+			MessageQueue::get_singleton()->flush();
+			text_edit->set_caret_column(8);
+			text_edit->backspace();
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_wrap_index() == 0);
+
+			// Backspace in the middle of wrap 1 - caret should stay on wrap 1 (no false positive).
+			text_edit->set_text("this is some text");
+			MessageQueue::get_singleton()->flush();
+			text_edit->set_caret_column(12);
+			text_edit->backspace();
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 11);
+			// After removing 'e' from "some", the wrap boundary may shift.
+			// The caret should be on whatever wrap col 11 naturally falls on.
+			int expected_wrap = text_edit->get_line_wrap_index_at_column(0, 11);
+			CHECK(text_edit->get_caret_wrap_index() == expected_wrap);
+		}
+
 		SUBCASE("[TextEdit] mouse word select") {
 			// Set size for mouse input.
 			text_edit->set_size(Size2(200, 200));
