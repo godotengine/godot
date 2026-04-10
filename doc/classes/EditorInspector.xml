@@ -60,6 +60,11 @@
 				Emitted when the object being edited by the inspector has changed.
 			</description>
 		</signal>
+		<signal name="inspector_tabs_updated">
+			<description>
+				Emitted when the inspector tabs are updated. This can happen when the edited object changes or when the user changes the inspector tab settings in EditorSettings.
+			</description>
+		</signal>
 		<signal name="object_id_selected">
 			<param index="0" name="id" type="int" />
 			<description>

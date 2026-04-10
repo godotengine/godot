@@ -506,6 +506,7 @@ void InspectorDock::_notification(int p_what) {
 
 				bool disable_folding = EDITOR_GET("interface/inspector/disable_folding");
 				inspector->set_use_folding(!disable_folding);
+				_update_tab_bar_layout();
 			}
 		} break;
 	}
@@ -697,6 +698,126 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 	stored_properties.clear();
 }
 
+// Inspector tab bar.
+
+void InspectorDock::_on_inspector_tab_selected(int p_tab) {
+	if (tab_bar_updating) {
+		return;
+	}
+	inspector->set_current_inspector_tab(p_tab);
+}
+
+void InspectorDock::_update_inspector_tab_bar() {
+	tab_bar_updating = true;
+
+	bool tabs_enabled = inspector->are_inspector_tabs_enabled();
+	int tab_count = inspector->get_inspector_tab_count();
+	bool search_active = !search->get_text().is_empty();
+
+	// Hide tab bar when tabs are disabled, no tabs, or search is active.
+	if (!tabs_enabled || tab_count == 0 || search_active) {
+		tab_bar_container->hide();
+		tab_bar_updating = false;
+		return;
+	}
+
+	int tab_style = inspector->get_tab_style();
+	switch (tab_style) {
+		case EditorInspector::TAB_STYLE_TEXT_ONLY: {
+			inspector_tab_bar->set_hide_text(false);
+			inspector_tab_bar->set_hide_icons(true);
+		} break;
+		case EditorInspector::TAB_STYLE_ICON_ONLY: {
+			inspector_tab_bar->set_hide_text(true);
+			inspector_tab_bar->set_hide_icons(false);
+		} break;
+		case EditorInspector::TAB_STYLE_TEXT_AND_ICON: {
+			inspector_tab_bar->set_hide_text(false);
+			inspector_tab_bar->set_hide_icons(false);
+		} break;
+	}
+
+	// Rebuild tab bar.
+	inspector_tab_bar->clear_tabs();
+	for (int i = 0; i < tab_count; i++) {
+		String name = inspector->get_inspector_tab_name(i);
+		Ref<Texture2D> icon = inspector->get_inspector_tab_icon(i);
+		inspector_tab_bar->add_tab(name, icon);
+		inspector_tab_bar->set_tab_tooltip(i, name);
+	}
+
+	int current_tab = inspector->get_current_inspector_tab();
+	if (current_tab >= 0 && current_tab < tab_count) {
+		inspector_tab_bar->set_current_tab(current_tab);
+	}
+
+	_update_tab_bar_layout();
+	tab_bar_container->show();
+
+	tab_bar_updating = false;
+}
+
+void InspectorDock::_update_tab_bar_layout() {
+	if (!inspector_tab_bar || inspector_tab_bar->get_tab_count() == 0) {
+		return;
+	}
+
+	int tab_layout = inspector->get_tab_layout();
+	bool is_vertical = (tab_layout == 1);
+
+	inspector_tab_bar->set_vertical(is_vertical);
+
+	// Propagate TabBar minimum size to the container.
+	Size2 tab_min = inspector_tab_bar->get_minimum_size();
+
+	if (is_vertical) {
+		// Vertical mode: tab bar on the side.
+		inspector_with_tabs->set_vertical(false); // HBoxContainer-like.
+		tab_bar_container->set_h_size_flags(Control::SIZE_FILL);
+		tab_bar_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		tab_bar_container->set_custom_minimum_size(Size2(tab_min.x, 0));
+
+		// Determine if this dock is currently on the right side of the editor.
+		bool dock_is_on_right = true;
+		if (inspector->is_inside_tree()) {
+			float inspector_center_x = inspector->get_global_position().x + inspector->get_size().x / 2.0;
+			float viewport_center_x = inspector->get_viewport_rect().size.x / 2.0;
+			dock_is_on_right = (inspector_center_x >= viewport_center_x);
+		}
+
+		bool right_side = true;
+		switch (inspector->get_vertical_tab_side()) {
+			case EditorInspector::TAB_VERTICAL_SIDE_LEFT: {
+				right_side = false;
+			} break;
+			case EditorInspector::TAB_VERTICAL_SIDE_RIGHT: {
+				right_side = true;
+			} break;
+			case EditorInspector::TAB_VERTICAL_SIDE_INSIDE: {
+				right_side = !dock_is_on_right;
+			} break;
+			case EditorInspector::TAB_VERTICAL_SIDE_OUTSIDE:
+			default: {
+				right_side = dock_is_on_right;
+			} break;
+		}
+
+		// Ensure tab bar container is on the correct side.
+		if (right_side) {
+			inspector_with_tabs->move_child(tab_bar_container, -1); // Right side.
+		} else {
+			inspector_with_tabs->move_child(tab_bar_container, 0); // Left side.
+		}
+	} else {
+		// Horizontal mode: tab bar on top.
+		inspector_with_tabs->set_vertical(true); // VBoxContainer-like.
+		tab_bar_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		tab_bar_container->set_v_size_flags(Control::SIZE_FILL);
+		inspector_with_tabs->move_child(tab_bar_container, 0); // Top.
+		tab_bar_container->set_custom_minimum_size(Size2(0, tab_min.y));
+	}
+}
+
 void InspectorDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -874,13 +995,34 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	load_resource_dialog->set_current_dir("res://");
 	load_resource_dialog->connect("file_selected", callable_mp(this, &InspectorDock::_resource_file_selected));
 
+	// Inspector tab bar and inspector area.
+	inspector_with_tabs = memnew(BoxContainer);
+	inspector_with_tabs->set_vertical(true);
+	main_vb->add_child(inspector_with_tabs);
+	inspector_with_tabs->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	tab_bar_container = memnew(Control);
+	tab_bar_container->set_clip_contents(true);
+	inspector_with_tabs->add_child(tab_bar_container);
+	tab_bar_container->hide();
+	tab_bar_container->connect(SceneStringName(resized), callable_mp(this, &InspectorDock::_update_tab_bar_layout));
+
+	inspector_tab_bar = memnew(TabBar);
+	inspector_tab_bar->set_tab_close_display_policy(TabBar::CLOSE_BUTTON_SHOW_NEVER);
+	inspector_tab_bar->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	tab_bar_container->add_child(inspector_tab_bar);
+	inspector_tab_bar->connect("tab_selected", callable_mp(this, &InspectorDock::_on_inspector_tab_selected));
+	inspector_tab_bar->connect("minimum_size_changed", callable_mp(this, &InspectorDock::_update_tab_bar_layout));
+
 	MarginContainer *mc = memnew(MarginContainer);
-	main_vb->add_child(mc);
+	inspector_with_tabs->add_child(mc);
 	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	inspector = memnew(EditorInspector);
 	mc->add_child(inspector);
+	inspector->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_autoclear(true);
 	inspector->set_show_categories(true, true);
 	inspector->set_use_doc_hints(true);
@@ -895,6 +1037,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_use_filter(true);
 
 	inspector->connect("resource_selected", callable_mp(this, &InspectorDock::_resource_selected));
+	inspector->connect("inspector_tabs_updated", callable_mp(this, &InspectorDock::_update_inspector_tab_bar));
 
 	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &InspectorDock::_files_moved));
 

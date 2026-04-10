@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TabBar" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A control that provides a horizontal bar with tabs.
+		A control that provides a bar with tabs.
 	</brief_description>
 	<description>
-		A control that provides a horizontal bar with tabs. Similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
+		A control that provides a bar with tabs. Similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -258,6 +258,12 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="hide_icons" type="bool" setter="set_hide_icons" getter="is_hide_icons" default="false">
+			If [code]true[/code], the icons of the tabs will be hidden.
+		</member>
+		<member name="hide_text" type="bool" setter="set_hide_text" getter="is_hide_text" default="false">
+			If [code]true[/code], the text of the tabs will be hidden.
+		</member>
 		<member name="max_tab_width" type="int" setter="set_max_tab_width" getter="get_max_tab_width" default="0">
 			Sets the maximum width which all tabs should be limited to. Unlimited if set to [code]0[/code].
 		</member>
@@ -301,6 +307,9 @@
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabBar]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
 			Setting this to [code]-1[/code] will disable rearranging between [TabBar]s.
+		</member>
+		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
+			If [code]true[/code], the [TabBar] will arrange its tabs vertically, rather than horizontally.
 		</member>
 	</members>
 	<signals>

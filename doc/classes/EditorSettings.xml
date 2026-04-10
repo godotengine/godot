@@ -1166,6 +1166,27 @@
 		<member name="interface/inspector/show_low_level_opentype_features" type="bool" setter="" getter="">
 			If [code]true[/code], display OpenType features marked as [code]hidden[/code] by the font file in the [Font] editor.
 		</member>
+		<member name="interface/inspector/tabs/horizontal_tab_style" type="int" setter="" getter="">
+			The tab style of horizontal tabs in the inspector.
+		</member>
+		<member name="interface/inspector/tabs/merge_abstract_class_tabs" type="bool" setter="" getter="">
+			If [code]true[/code], tabs of abstract classes in the inspector will be merged with their first non-abstract subclass.
+		</member>
+		<member name="interface/inspector/tabs/tab_layout" type="int" setter="" getter="">
+			The orientation of the tab bar in the inspector.
+		</member>
+		<member name="interface/inspector/tabs/tab_property_mode" type="int" setter="" getter="">
+			Controls how tab switching works in the inspector.
+		</member>
+		<member name="interface/inspector/tabs/use_inspector_tabs" type="bool" setter="" getter="">
+			If [code]true[/code], the inspector uses tabs to separate properties of different classes.
+		</member>
+		<member name="interface/inspector/tabs/vertical_tab_side" type="int" setter="" getter="">
+			The side of the inspector to display vertical tabs on.
+		</member>
+		<member name="interface/inspector/tabs/vertical_tab_style" type="int" setter="" getter="">
+			The tab style of vertical tabs in the inspector.
+		</member>
 		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
 			If [code]true[/code], multiple window support in editor is enabled. The following panels can become dedicated windows (i.e. made floating): Docks, Script editor, Shader editor, and Game Workspace.
 			[b]Note:[/b] When [member interface/editor/display/single_window_mode] is [code]true[/code], the multi window support is always disabled.
