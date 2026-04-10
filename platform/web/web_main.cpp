@@ -58,17 +58,25 @@ static uint64_t target_ticks = 0;
 static bool main_started = false;
 static bool shutdown_complete = false;
 
+void delete_os() {
+	if (!predelete_handler(os)) {
+		return; // doesn't want to be deleted
+	}
+	delete os; // we used a normal new, so it needs a normal delete
+	os = nullptr;
+}
+
 void exit_callback() {
 	if (!shutdown_complete) {
 		return; // Still waiting.
 	}
+	emscripten_cancel_main_loop(); // We are exiting in this iteration.
 	if (main_started) {
 		Main::cleanup();
 		main_started = false;
 	}
 	int exit_code = OS_Web::get_singleton()->get_exit_code();
-	memdelete(os);
-	os = nullptr;
+	delete_os();
 	godot_cleanup_profiler();
 	emscripten_force_exit(exit_code); // Exit runtime.
 }

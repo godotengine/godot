@@ -230,7 +230,8 @@ const GodotDisplayCursor = {
 mergeInto(LibraryManager.library, GodotDisplayCursor);
 
 const GodotDisplayScreen = {
-	$GodotDisplayScreen__deps: ['$GodotConfig', '$GodotOS', '$GL', 'emscripten_webgl_get_current_context'],
+	$GodotDisplayScreen__postset: 'Module["setCanvasSize"] = GodotDisplayScreen._setCanvasSize;',
+	$GodotDisplayScreen__deps: ['$GodotConfig', '$GodotOS', 'emscripten_set_canvas_element_size'],
 	$GodotDisplayScreen: {
 		desired_size: [0, 0],
 		hidpi: true,
@@ -289,11 +290,9 @@ const GodotDisplayScreen = {
 			}
 			return 0;
 		},
-		_updateGL: function () {
-			const gl_context_handle = _emscripten_webgl_get_current_context();
-			const gl = GL.getContext(gl_context_handle);
-			if (gl) {
-				GL.resizeOffscreenFramebuffer(gl);
+		_setCanvasSize: function (width, height) {
+			if (GodotConfig.canvas_id_ptr) {
+				_emscripten_set_canvas_element_size(GodotConfig.canvas_id_ptr, width, height);
 			}
 		},
 		updateSize: function () {
@@ -309,7 +308,7 @@ const GodotDisplayScreen = {
 				// Don't resize canvas, just update GL if needed.
 				if (canvas.width !== width || canvas.height !== height) {
 					GodotDisplayScreen.desired_size = [canvas.width, canvas.height];
-					GodotDisplayScreen._updateGL();
+					GodotDisplayScreen._setCanvasSize(canvas.width, canvas.height);
 					return 1;
 				}
 				return 0;
@@ -324,12 +323,10 @@ const GodotDisplayScreen = {
 			const csh = `${Math.floor(height / scale)}px`;
 			if (canvas.style.width !== csw || canvas.style.height !== csh || canvas.width !== width || canvas.height !== height) {
 				// Size doesn't match.
-				// Resize canvas, set correct CSS pixel size, update GL.
-				canvas.width = width;
-				canvas.height = height;
+				// Resize canvas, set correct CSS pixel size.
+				GodotDisplayScreen._setCanvasSize(width, height);
 				canvas.style.width = csw;
 				canvas.style.height = csh;
-				GodotDisplayScreen._updateGL();
 				return 1;
 			}
 			return 0;
@@ -514,11 +511,11 @@ const GodotDisplay = {
 		GodotRuntime.setHeapValue(height, window.screen.height * scale, 'i32');
 	},
 
+	godot_js_display_window_size_get__deps: ['emscripten_get_canvas_element_size'],
 	godot_js_display_window_size_get__proxy: 'sync',
 	godot_js_display_window_size_get__sig: 'vii',
 	godot_js_display_window_size_get: function (p_width, p_height) {
-		GodotRuntime.setHeapValue(p_width, GodotConfig.canvas.width, 'i32');
-		GodotRuntime.setHeapValue(p_height, GodotConfig.canvas.height, 'i32');
+		_emscripten_get_canvas_element_size(GodotConfig.canvas_id_ptr, p_width, p_height);
 	},
 
 	godot_js_display_has_webgl__proxy: 'sync',
@@ -766,6 +763,18 @@ const GodotDisplay = {
 		if (p_fullscreen) {
 			GodotDisplayScreen.requestFullscreen();
 		}
+	},
+
+	godot_js_display_check_canvas__deps: ['$GL'],
+	godot_js_display_check_canvas__proxy: 'sync',
+	godot_js_display_check_canvas__sig: 'i',
+	godot_js_display_check_canvas: function () {
+		// Canvas is an offscreen canvas and it is outside of the main thread.
+		if (GodotConfig.canvas.controlTransferredOffscreen && GL.offscreenCanvases[GodotConfig.canvas.id] === undefined) {
+			return 0;
+		}
+		// Canvas is on the main thread, either as offscreen canvas or a normal canvas.
+		return 1;
 	},
 
 	/*

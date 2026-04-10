@@ -36,7 +36,7 @@ def get_tools(env: "SConsEnvironment"):
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable
+    from SCons.Variables import BoolVariable, EnumVariable
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
@@ -58,6 +58,13 @@ def get_opts():
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
             False,
+        ),
+        EnumVariable(
+            "use_offscreen_canvas",
+            "Use Emscripten OFFSCREENCANVAS_SUPPORT option to use offscreen canvas for rendering",
+            "auto",
+            ["auto", "no", "yes"],
+            ignorecase=2,
         ),
         BoolVariable("wasm_simd", "Use WebAssembly SIMD to improve CPU performance", True),
     ]
@@ -306,9 +313,20 @@ def configure(env: "SConsEnvironment"):
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
         env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
-        env["EXPORTED_RUNTIME_METHODS"] += ["_emscripten_proxy_main"]
-        # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
-        env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
+        # Webxr doesn't work in a worker thread main loop.
+        # See https://github.com/immersive-web/webxr/issues/1102.
+        print_warning('"proxy_to_pthread=yes" support requires "disable_xr=yes", disabling xr.')
+        env["disable_xr"] = True
+
+    # Configure offscreen canvas.
+    if env["use_offscreen_canvas"] == "auto":
+        env["use_offscreen_canvas"] = "yes" if env["proxy_to_pthread"] else "no"
+
+    if env["use_offscreen_canvas"] == "yes":
+        env.AppendUnique(LINKFLAGS=["-sOFFSCREENCANVAS_SUPPORT=1"])
+        env.AppendUnique(CPPDEFINES=["OFFSCREENCANVAS_ENABLED"])
+        if env["lto"] != "none" and env["threads"]:
+            env.Append(LINKFLAGS=["-Wl,-u,_emscripten_set_offscreencanvas_size_on_thread"])
 
     # Enable WebAssembly SIMD
     if env["wasm_simd"]:
