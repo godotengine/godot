@@ -4512,8 +4512,11 @@ void DisplayServerX11::_xim_preedit_caret_callback(::XIM xim, ::XPointer client_
 
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
+	print_verbose("Input method stopped.");
+
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 	ds->xim = nullptr;
+	ds->warn_xim_just_stopped = true;
 
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
 		E.value.xic = nullptr;
@@ -6321,69 +6324,83 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, D
 }
 
 void DisplayServerX11::_create_xic(WindowData &wd) {
-	if (xim && xim_style) {
-		// Block events polling while changing input focus
-		// because it triggers some event polling internally.
-		MutexLock mutex_lock(events_mutex);
-
-		// Force on-the-spot for the over-the-spot style.
-		if ((xim_style & XIMPreeditPosition) != 0) {
-			xim_style &= ~XIMPreeditPosition;
-			xim_style |= XIMPreeditCallbacks;
+	wd.xic = nullptr;
+	if (!xim) {
+		// An input method is not required for the application to run.
+		// However, it is still assumed that the user requires an input method for text input;
+		// therefore, in order to avoid generating spam, a warning is issued only once whenever
+		// the input method becomes inactive.
+		if (warn_xim_just_stopped) {
+			WARN_PRINT("Failed to create wd.xic as the input method or its xim server may not have started yet.");
+			warn_xim_just_stopped = false;
 		}
-		if ((xim_style & XIMPreeditCallbacks) != 0) {
-			::XIMCallback preedit_start_callback;
-			preedit_start_callback.client_data = (::XPointer)(this);
-			preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
-
-			::XIMCallback preedit_done_callback;
-			preedit_done_callback.client_data = (::XPointer)(this);
-			preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
-
-			::XIMCallback preedit_draw_callback;
-			preedit_draw_callback.client_data = (::XPointer)(this);
-			preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
-
-			::XIMCallback preedit_caret_callback;
-			preedit_caret_callback.client_data = (::XPointer)(this);
-			preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
-
-			::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
-					XNPreeditStartCallback, &preedit_start_callback,
-					XNPreeditDoneCallback, &preedit_done_callback,
-					XNPreeditDrawCallback, &preedit_draw_callback,
-					XNPreeditCaretCallback, &preedit_caret_callback,
-					(char *)nullptr);
-
-			wd.xic = XCreateIC(xim,
-					XNInputStyle, xim_style,
-					XNClientWindow, wd.x11_xim_window,
-					XNFocusWindow, wd.x11_xim_window,
-					XNPreeditAttributes, preedit_attributes,
-					(char *)nullptr);
-			XFree(preedit_attributes);
-		} else {
-			wd.xic = XCreateIC(xim,
-					XNInputStyle, xim_style,
-					XNClientWindow, wd.x11_xim_window,
-					XNFocusWindow, wd.x11_xim_window,
-					(char *)nullptr);
+		return;
+	}
+	if (xim_style == 0L) {
+		if (warn_xim_just_stopped) {
+			WARN_PRINT("Failed to create wd.xic as the input method may not support any styles.");
+			warn_xim_just_stopped = false;
 		}
+		return;
+	}
 
-		long im_event_mask = 0;
-		if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
-			WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value.");
-			XDestroyIC(wd.xic);
-			wd.xic = nullptr;
-		}
-		if (wd.xic) {
-			XUnsetICFocus(wd.xic);
-		} else {
-			WARN_PRINT("XCreateIC couldn't create wd.xic.");
-		}
+	// Block events polling while changing input focus
+	// because it triggers some event polling internally.
+	MutexLock mutex_lock(events_mutex);
+
+	// Force on-the-spot for the over-the-spot style.
+	if ((xim_style & XIMPreeditPosition) != 0) {
+		xim_style &= ~XIMPreeditPosition;
+		xim_style |= XIMPreeditCallbacks;
+	}
+	if ((xim_style & XIMPreeditCallbacks) != 0) {
+		::XIMCallback preedit_start_callback;
+		preedit_start_callback.client_data = (::XPointer)(this);
+		preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
+
+		::XIMCallback preedit_done_callback;
+		preedit_done_callback.client_data = (::XPointer)(this);
+		preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
+
+		::XIMCallback preedit_draw_callback;
+		preedit_draw_callback.client_data = (::XPointer)(this);
+		preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
+
+		::XIMCallback preedit_caret_callback;
+		preedit_caret_callback.client_data = (::XPointer)(this);
+		preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
+
+		::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
+				XNPreeditStartCallback, &preedit_start_callback,
+				XNPreeditDoneCallback, &preedit_done_callback,
+				XNPreeditDrawCallback, &preedit_draw_callback,
+				XNPreeditCaretCallback, &preedit_caret_callback,
+				(char *)nullptr);
+
+		wd.xic = XCreateIC(xim,
+				XNInputStyle, xim_style,
+				XNClientWindow, wd.x11_xim_window,
+				XNFocusWindow, wd.x11_xim_window,
+				XNPreeditAttributes, preedit_attributes,
+				(char *)nullptr);
+		XFree(preedit_attributes);
 	} else {
+		wd.xic = XCreateIC(xim,
+				XNInputStyle, xim_style,
+				XNClientWindow, wd.x11_xim_window,
+				XNFocusWindow, wd.x11_xim_window,
+				(char *)nullptr);
+	}
+
+	ERR_FAIL_NULL_MSG(wd.xic, "XCreateIC couldn't create wd.xic.");
+
+	long im_event_mask = 0;
+	if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
+		WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value.");
+		XDestroyIC(wd.xic);
 		wd.xic = nullptr;
-		WARN_PRINT("XCreateIC couldn't create wd.xic.");
+	} else {
+		XUnsetICFocus(wd.xic);
 	}
 }
 
@@ -6744,6 +6761,8 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 
 void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer client_data,
 		::XPointer call_data) {
+	print_verbose("Input method started.");
+
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 
 	ds->xim = XOpenIM(display, nullptr, nullptr, nullptr);
@@ -6751,38 +6770,40 @@ void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer 
 	if (ds->xim == nullptr) {
 		WARN_PRINT("XOpenIM failed.");
 		ds->xim_style = 0L;
-	} else {
-		::XIMCallback im_destroy_callback;
-		im_destroy_callback.client_data = client_data;
-		im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
-		if (XSetIMValues(ds->xim, XNDestroyCallback, &im_destroy_callback,
-					nullptr) != nullptr) {
-			WARN_PRINT("Error setting XIM destroy callback.");
-		}
+		return;
+	}
 
-		::XIMStyles *xim_styles = nullptr;
-		ds->xim_style = 0L;
-		char *imvalret = XGetIMValues(ds->xim, XNQueryInputStyle, &xim_styles, nullptr);
-		if (imvalret != nullptr || xim_styles == nullptr) {
-			fprintf(stderr, "Input method doesn't support any styles\n");
-		}
+	::XIMCallback im_destroy_callback;
+	im_destroy_callback.client_data = client_data;
+	im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
+	if (XSetIMValues(ds->xim, XNDestroyCallback, &im_destroy_callback,
+				nullptr) != nullptr) {
+		WARN_PRINT("Error setting XIM destroy callback.");
+	}
 
-		if (xim_styles) {
-			ds->xim_style = 0L;
-			for (int i = 0; i < xim_styles->count_styles; i++) {
-				const ::XIMStyle &style = xim_styles->supported_styles[i];
+	::XIMStyles *xim_styles = nullptr;
+	ds->xim_style = 0L;
+	char *imvalret = XGetIMValues(ds->xim, XNQueryInputStyle, &xim_styles, nullptr);
+	if (imvalret != nullptr || xim_styles == nullptr) {
+		fprintf(stderr, "Input method doesn't support any styles\n");
+	}
 
-				if (!_is_xim_style_supported(style)) {
-					continue;
-				}
+	if (xim_styles) {
+		for (int i = 0; i < xim_styles->count_styles; i++) {
+			const ::XIMStyle &style = xim_styles->supported_styles[i];
 
-				ds->xim_style = _get_best_xim_style(ds->xim_style, style);
+			if (!_is_xim_style_supported(style)) {
+				continue;
 			}
 
-			XFree(xim_styles);
+			ds->xim_style = _get_best_xim_style(ds->xim_style, style);
 		}
-		XFree(imvalret);
+
+		ds->warn_xim_just_stopped = false;
+
+		XFree(xim_styles);
 	}
+	XFree(imvalret);
 
 	// The input method has been (re)started.
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
