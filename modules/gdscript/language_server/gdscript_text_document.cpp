@@ -303,8 +303,14 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 		hover.range.start = params.position;
 		hover.range.end = params.position;
 		return hover.to_json();
+	}
 
-	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
+	LSP::Hover resource_hover;
+	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_resource_path(params, resource_hover)) {
+		return resource_hover.to_json();
+	}
+
+	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		Dictionary ret;
 		Array contents;
 		List<const LSP::DocumentSymbol *> list;

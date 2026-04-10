@@ -35,6 +35,8 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
@@ -704,6 +706,42 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 	}
 
 	return symbol;
+}
+
+bool GDScriptWorkspace::resolve_resource_path(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::Hover &r_hover) {
+	String path = get_file_path(p_doc_pos.textDocument.uri);
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+	if (!parser) {
+		return false;
+	}
+
+	LSP::Range string_range;
+	String literal = parser->get_string_literal_under_position(p_doc_pos.position, string_range);
+	if (!literal.begins_with("uid://")) {
+		return false;
+	}
+
+	r_hover.range = string_range;
+
+	String res_path = literal;
+	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(literal);
+	if (uid == ResourceUID::INVALID_ID) {
+		r_hover.contents.value = "**" + TTR("Invalid UID") + "**\n\n*" + TTR("This UID does not point to any valid Resource.") + "*";
+		return true;
+	}
+	res_path = ResourceUID::get_singleton()->get_id_path(uid);
+	if (res_path.is_empty()) {
+		r_hover.contents.value = "**" + TTR("Invalid UID") + "**\n\n*" + TTR("This UID does not point to any valid Resource.") + "*";
+		return true;
+	}
+
+	String type = ResourceLoader::get_resource_type(res_path);
+	String name = res_path.get_file();
+	if (type.is_empty()) {
+		type = "Unknown";
+	}
+	r_hover.contents.value = "**" + TTR("Resource") + "** `" + name + "`: " + type + "\n\n" + TTR("Path") + ": `" + res_path + "`";
+	return true;
 }
 
 const LSP::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const LSP::NativeSymbolInspectParams &p_params) {

@@ -766,6 +766,53 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	return "";
 }
 
+String ExtendGDScriptParser::get_string_literal_under_position(const LSP::Position &p_position, LSP::Range &r_range) const {
+	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");
+	String line = lines[p_position.line];
+	if (line.is_empty()) {
+		return "";
+	}
+
+	GDScriptTokenizerText scr_tokenizer;
+	scr_tokenizer.set_source_code(line);
+
+	// LSP is 0 based.
+	const int godot_line = p_position.line + 1;
+	const int cursor_col = GodotPosition::from_lsp(p_position, lines).column;
+
+	while (true) {
+		GDScriptTokenizer::Token token = scr_tokenizer.scan();
+		if (token.type == GDScriptTokenizer::Token::TK_EOF) {
+			break;
+		}
+		if (token.type != GDScriptTokenizer::Token::LITERAL) {
+			continue;
+		}
+		if (token.literal.get_type() != Variant::STRING) {
+			continue;
+		}
+
+		// tokenizer's end_column gets reset when a newline is at end of input.
+		const int token_end_column = token.start_column + token.source.length();
+		if (cursor_col <= token.start_column || cursor_col >= token_end_column) {
+			continue;
+		}
+
+		int quote_width = 1;
+		if (token.source.begins_with("\"\"\"") || token.source.begins_with("'''")) {
+			quote_width = 3;
+		}
+
+		GodotPosition content_start(godot_line, token.start_column + quote_width);
+		GodotPosition content_end(godot_line, token_end_column - quote_width);
+		r_range = GodotRange(content_start, content_end).to_lsp(lines);
+
+		return token.literal;
+	}
+
+	return "";
+}
+
 String ExtendGDScriptParser::get_uri() const {
 	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(path);
 }
