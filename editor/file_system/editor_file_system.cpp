@@ -44,6 +44,7 @@
 #include "core/variant/variant_parser.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
+#include "editor/extension/extension_source_code_manager.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/script/script_editor_plugin.h"
@@ -3756,6 +3757,19 @@ void EditorFileSystem::_update_extensions() {
 		}
 		valid_extensions.insert(E);
 		other_file_extensions.insert(E);
+	}
+
+	if (ExtensionSourceCodeManager::get_singleton() != nullptr) {
+		for (int i = 0; i < ExtensionSourceCodeManager::get_singleton()->get_plugin_count(); i++) {
+			const Ref<EditorExtensionSourceCodePlugin> &plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_at_index(i);
+			for (const String &E : plugin->get_language_extensions()) {
+				if (valid_extensions.has(E)) {
+					continue;
+				}
+				valid_extensions.insert(E);
+				textfile_extensions.insert(E);
+			}
+		}
 	}
 
 	extensionsl.clear();

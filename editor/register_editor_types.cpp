@@ -156,6 +156,7 @@ void register_editor_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorPlugin);
 	GDREGISTER_CLASS(EditorTranslationParserPlugin);
 	GDREGISTER_CLASS(EditorImportPlugin);
+	GDREGISTER_CLASS(EditorExtensionSourceCodePlugin);
 	GDREGISTER_CLASS(EditorScript);
 	GDREGISTER_CLASS(EditorDock);
 	GDREGISTER_CLASS(EditorSelection);
@@ -190,6 +191,8 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);
 	GDREGISTER_CLASS(ScriptCreateDialog);
+	GDREGISTER_INTERNAL_CLASS(ExtensionClassCreateDialog);
+	GDREGISTER_ABSTRACT_CLASS(EditorValidationContext);
 	GDREGISTER_CLASS(EditorFeatureProfile);
 	GDREGISTER_CLASS(EditorSpinSlider);
 	GDREGISTER_CLASS(EditorResourcePicker);
