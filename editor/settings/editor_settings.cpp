@@ -1049,6 +1049,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
+	// Audio buses
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/active_max_db_color", Color(1.0, 0.0, 0.0), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/active_min_db_color", Color(0.0, 1.0, 0.1), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/active_normalized_db_color", Color(1.0, 1.0, 0.1), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/inactive_max_db_color", Color(0.0, 0.5, 1.0), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/inactive_min_db_color", Color(0.0, 1.0, 1.0), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/inactive_normalized_db_color", Color(1.0, 1.0, 1.0), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/tint_over_color", Color(0.15, 0.15, 0.15), "")
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/audio_buses/tint_under_color", Color(0.15, 0.15, 0.15), "")
+
 	// Shader editor
 	_initial_set("editors/shader_editor/behavior/files/restore_shaders_on_load", true, true);
 
