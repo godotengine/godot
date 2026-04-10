@@ -681,14 +681,12 @@ void TextureStorage::_tex_blit_shader_initialize() {
 	}
 
 	{
-		// default material and shader for Texture Blit shader
-		tex_blit_shader.default_shader = material_storage->shader_allocate();
-		material_storage->shader_initialize(tex_blit_shader.default_shader);
-		material_storage->shader_set_code(tex_blit_shader.default_shader, R"(
+		// Default materials and shaders for Texture Blit shader.
+		const String shader_code = R"(
 // Default Texture Blit shader.
 
 shader_type texture_blit;
-render_mode blend_mix;
+render_mode %s;
 
 uniform sampler2D source_texture0 : hint_blit_source0;
 uniform sampler2D source_texture1 : hint_blit_source1;
@@ -702,10 +700,21 @@ void blit() {
 	COLOR2 = texture(source_texture2, UV) * MODULATE;
 	COLOR3 = texture(source_texture3, UV) * MODULATE;
 }
-)");
-		tex_blit_shader.default_material = material_storage->material_allocate();
-		material_storage->material_initialize(tex_blit_shader.default_material);
-		material_storage->material_set_shader(tex_blit_shader.default_material, tex_blit_shader.default_shader);
+)";
+
+		tex_blit_shader.default_blit_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(tex_blit_shader.default_blit_shader);
+		material_storage->shader_set_code(tex_blit_shader.default_blit_shader, vformat(shader_code, "blend_disabled"));
+		tex_blit_shader.default_blit_material = material_storage->material_allocate();
+		material_storage->material_initialize(tex_blit_shader.default_blit_material);
+		material_storage->material_set_shader(tex_blit_shader.default_blit_material, tex_blit_shader.default_blit_shader);
+
+		tex_blit_shader.default_blend_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(tex_blit_shader.default_blend_shader);
+		material_storage->shader_set_code(tex_blit_shader.default_blend_shader, vformat(shader_code, "blend_mix"));
+		tex_blit_shader.default_blend_material = material_storage->material_allocate();
+		material_storage->material_initialize(tex_blit_shader.default_blend_material);
+		material_storage->material_set_shader(tex_blit_shader.default_blend_material, tex_blit_shader.default_blend_shader);
 	}
 
 	tex_blit_shader.initialized = true;
@@ -717,8 +726,10 @@ void TextureStorage::_tex_blit_shader_free() {
 		MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 		print_verbose("Freeing Default Tex_Blit Shader");
-		material_storage->material_free(tex_blit_shader.default_material);
-		material_storage->shader_free(tex_blit_shader.default_shader);
+		material_storage->material_free(tex_blit_shader.default_blit_material);
+		material_storage->shader_free(tex_blit_shader.default_blit_shader);
+		material_storage->material_free(tex_blit_shader.default_blend_material);
+		material_storage->shader_free(tex_blit_shader.default_blend_shader);
 	}
 }
 
@@ -1672,7 +1683,7 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 
 	RendererRD::MaterialStorage::TexBlitMaterialData *m = static_cast<RendererRD::MaterialStorage::TexBlitMaterialData *>(material_storage->material_get_data(p_material, RendererRD::MaterialStorage::SHADER_TYPE_TEXTURE_BLIT));
 	if (!m) {
-		m = static_cast<RendererRD::MaterialStorage::TexBlitMaterialData *>(material_storage->material_get_data(tex_blit_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_TEXTURE_BLIT));
+		m = static_cast<RendererRD::MaterialStorage::TexBlitMaterialData *>(material_storage->material_get_data(tex_blit_shader.default_blit_material, RendererRD::MaterialStorage::SHADER_TYPE_TEXTURE_BLIT));
 	}
 	// GUARDRAIL:: p_material MUST BE ShaderType TextureBlit
 	ERR_FAIL_NULL(m);
@@ -1954,9 +1965,13 @@ void TextureStorage::texture_drawable_generate_mipmaps(RID p_texture) {
 	}
 }
 
-RID TextureStorage::texture_drawable_get_default_material() const {
-	// Return a material with a default Texture_Blit shader for DrawableTexture2D to use
-	return tex_blit_shader.default_material;
+RID TextureStorage::texture_drawable_get_default_blit_material() const {
+	// Return a material with a default Texture_Blit shader for DrawableTexture2D to use.
+	return tex_blit_shader.default_blit_material;
+}
+
+RID TextureStorage::texture_drawable_get_default_blend_material() const {
+	return tex_blit_shader.default_blend_material;
 }
 
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {

@@ -3929,10 +3929,14 @@
 				Calculates new MipMaps for the given Drawable [param texture].
 			</description>
 		</method>
-		<method name="texture_drawable_get_default_material" qualifiers="const">
+		<method name="texture_drawable_get_default_blend_material" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns a ShaderMaterial with the default texture_blit Shader.
+			</description>
+		</method>
+		<method name="texture_drawable_get_default_blit_material" qualifiers="const">
+			<return type="RID" />
+			<description>
 			</description>
 		</method>
 		<method name="texture_get_format" qualifiers="const">

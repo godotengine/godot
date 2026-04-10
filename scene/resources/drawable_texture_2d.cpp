@@ -36,7 +36,8 @@
 #include "servers/rendering/rendering_server.h"
 
 DrawableTexture2D::DrawableTexture2D() {
-	default_material = RS::get_singleton()->texture_drawable_get_default_material();
+	default_blit_material = RS::get_singleton()->texture_drawable_get_default_blit_material();
+	default_blend_material = RS::get_singleton()->texture_drawable_get_default_blend_material();
 }
 
 DrawableTexture2D::~DrawableTexture2D() {
@@ -44,6 +45,25 @@ DrawableTexture2D::~DrawableTexture2D() {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free_rid(texture);
 	}
+}
+
+void DrawableTexture2D::_blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate, int p_mipmap, RID p_material) {
+	// Rendering server expects textureParameters as a TypedArray[RID]
+	Array textures;
+	textures.push_back(texture);
+
+	if (p_source.is_valid()) {
+		ERR_FAIL_COND_MSG(texture == p_source->get_rid(), "Cannot use self as a source.");
+	}
+	Array src_textures;
+	if (Ref<AtlasTexture>(p_source).is_valid()) {
+		WARN_PRINT("AtlasTexture not supported as a source for blit_rect. Using default White.");
+		src_textures.push_back(RID());
+	} else {
+		src_textures.push_back(p_source);
+	}
+
+	RS::get_singleton()->texture_drawable_blit_rect(textures, p_rect, p_material, p_modulate, src_textures, p_mipmap);
 }
 
 // Initialize Texture Resource with a call to rendering server. Overwrite existing.
@@ -172,36 +192,24 @@ void DrawableTexture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect,
 // Perform a blit operation from the given source to the given rect on self.
 void DrawableTexture2D::blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
 	// Use user Shader if exists.
-	RID material = default_material;
+	RID material = default_blit_material;
 	if (p_material.is_valid()) {
-		material = p_material->get_rid();
-		if (p_material->get_shader_mode() != Shader::MODE_TEXTURE_BLIT) {
+		if (p_material->get_shader_mode() == Shader::MODE_TEXTURE_BLIT) {
+			material = p_material->get_rid();
+		} else {
 			WARN_PRINT("ShaderMaterial passed to blit_rect() is not a texture_blit shader. Using default instead.");
 		}
 	}
+	_blit_rect(p_rect, p_source, p_modulate, p_mipmap, material);
+}
 
-	// Rendering server expects textureParameters as a TypedArray[RID]
-	Array textures;
-	textures.push_back(texture);
-
-	if (p_source.is_valid()) {
-		ERR_FAIL_COND_MSG(texture == p_source->get_rid(), "Cannot use self as a source.");
-	}
-	Array src_textures;
-	if (Ref<AtlasTexture>(p_source).is_valid()) {
-		WARN_PRINT("AtlasTexture not supported as a source for blit_rect. Using default White.");
-		src_textures.push_back(RID());
-	} else {
-		src_textures.push_back(p_source);
-	}
-
-	RS::get_singleton()->texture_drawable_blit_rect(textures, p_rect, material, p_modulate, src_textures, p_mipmap);
-	notify_property_list_changed();
+void DrawableTexture2D::blend_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate, int p_mipmap) {
+	_blit_rect(p_rect, p_source, p_modulate, p_mipmap, default_blend_material);
 }
 
 // Perform a blit operation from the given sources to the given rect on self and extra targets
 void DrawableTexture2D::blit_rect_multi(const Rect2i p_rect, const TypedArray<Texture2D> &p_sources, const TypedArray<DrawableTexture2D> &p_extra_targets, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
-	RID material = default_material;
+	RID material = default_blit_material;
 	if (p_material.is_valid()) {
 		material = p_material->get_rid();
 		if (p_material->get_shader_mode() != Shader::MODE_TEXTURE_BLIT) {
@@ -257,6 +265,7 @@ void DrawableTexture2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("setup", "width", "height", "format", "color", "use_mipmaps"), &DrawableTexture2D::setup, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("blit_rect", "rect", "source", "modulate", "mipmap", "material"), &DrawableTexture2D::blit_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0), DEFVAL(Ref<Material>()));
+	ClassDB::bind_method(D_METHOD("blend_rect", "rect", "source", "modulate", "mipmap"), &DrawableTexture2D::blend_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("blit_rect_multi", "rect", "sources", "extra_targets", "modulate", "mipmap", "material"), &DrawableTexture2D::blit_rect_multi, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0), DEFVAL(Ref<Material>()));
 	ClassDB::bind_method(D_METHOD("generate_mipmaps"), &DrawableTexture2D::generate_mipmaps);
 

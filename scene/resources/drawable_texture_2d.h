@@ -55,7 +55,10 @@ private:
 
 	Color base_color = Color(1, 1, 1, 1);
 
-	RID default_material;
+	RID default_blit_material;
+	RID default_blend_material;
+
+	void _blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate, int p_mipmap, RID p_material);
 
 	void _initialize();
 
@@ -83,6 +86,7 @@ public:
 	void setup(int p_width, int p_height, DrawableFormat p_format, const Color &p_modulate = Color(1, 1, 1, 1), bool p_use_mipmaps = false);
 
 	void blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate = Color(1, 1, 1, 1), int p_mipmap = 0, const Ref<Material> &p_material = Ref<Material>());
+	void blend_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate = Color(1, 1, 1, 1), int p_mipmap = 0);
 	void blit_rect_multi(const Rect2i p_rect, const TypedArray<Texture2D> &p_sources, const TypedArray<DrawableTexture2D> &p_extra_targets, const Color &p_modulate = Color(1, 1, 1, 1), int p_mipmap = 0, const Ref<Material> &p_material = Ref<Material>());
 
 	virtual Ref<Image> get_image() const override;
