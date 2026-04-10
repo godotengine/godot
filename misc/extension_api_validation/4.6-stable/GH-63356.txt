@@ -1,0 +1,5 @@
+GH-63356
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Engine/methods/get_frames_per_second': arguments
+
+Optional argument added. Compatibility method registered.

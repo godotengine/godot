@@ -1920,8 +1920,8 @@ int Engine::get_max_fps() const {
 	return ::Engine::get_singleton()->get_max_fps();
 }
 
-double Engine::get_frames_per_second() const {
-	return ::Engine::get_singleton()->get_frames_per_second();
+double Engine::get_frames_per_second(FPSMetric p_metric) const {
+	return ::Engine::get_singleton()->get_frames_per_second((::Engine::FPSMetric)p_metric);
 }
 
 uint64_t Engine::get_physics_frames() const {
@@ -2101,7 +2101,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_time_scale"), &Engine::get_time_scale);
 
 	ClassDB::bind_method(D_METHOD("get_frames_drawn"), &Engine::get_frames_drawn);
-	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &Engine::get_frames_per_second);
+	ClassDB::bind_method(D_METHOD("get_frames_per_second", "metric"), &Engine::get_frames_per_second, DEFVAL(FPS_METRIC_AVERAGE));
 	ClassDB::bind_method(D_METHOD("get_physics_frames"), &Engine::get_physics_frames);
 	ClassDB::bind_method(D_METHOD("get_process_frames"), &Engine::get_process_frames);
 
@@ -2149,6 +2149,10 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+
+	BIND_ENUM_CONSTANT(FPS_METRIC_AVERAGE);
+	BIND_ENUM_CONSTANT(FPS_METRIC_ROLLING_AVERAGE);
+	BIND_ENUM_CONSTANT(FPS_METRIC_MAX);
 }
 
 ////// EngineDebugger //////

@@ -59,8 +59,10 @@
 		</method>
 		<method name="get_frames_per_second" qualifiers="const">
 			<return type="float" />
+			<param index="0" name="metric" type="int" enum="Engine.FPSMetric" default="0" />
 			<description>
-				Returns the average frames rendered every second (FPS), also known as the framerate.
+				Returns the average frames rendered every second (FPS), also known as the framerate. [param metric] can optionally be specified to customize the metric being reported.
+				[b]Note:[/b] Comparing performance is usually better done using [i]milliseconds per frame[/i] (mspf) instead of [i]frames per second[/i], as mspf measurements are linear across the entire spectrum of values. To get the milliseconds per frame, use [code]1000.0 / Engine.get_frames_per_second()[/code].
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
@@ -353,4 +355,15 @@
 			[b]Note:[/b] This does not automatically adjust [member physics_ticks_per_second]. With values above [code]1.0[/code] physics simulation may become less precise, as each physics tick will stretch over a larger period of engine time. If you're modifying [member Engine.time_scale] to speed up simulation by a large factor, consider also increasing [member physics_ticks_per_second] to make the simulation more reliable.
 		</member>
 	</members>
+	<constants>
+		<constant name="FPS_METRIC_AVERAGE" value="0" enum="FPSMetric">
+			Number of frames rendered in the last second. This makes momentary frame drops easier to spot, but sudden value changes make the value harder to read. The value reported is always a whole number.
+		</constant>
+		<constant name="FPS_METRIC_ROLLING_AVERAGE" value="1" enum="FPSMetric">
+			Rolling average of the number of frames rendered in the last second. This provides a more stable FPS reading that is less affected by momentary frame drops, but it can make it harder to spot momentary drops in performance. The value reported may have a decimal fraction.
+		</constant>
+		<constant name="FPS_METRIC_MAX" value="2" enum="FPSMetric">
+			Represents the size of the [enum FPSMetric] enum.
+		</constant>
+	</constants>
 </class>
