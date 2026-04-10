@@ -1,0 +1,5 @@
+GH-115986
+---------
+Validate extension JSON: API was removed: classes/MultiplayerPeerExtension/methods/_is_server
+
+Method was unused and not intended to be called directly.
