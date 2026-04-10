@@ -85,6 +85,7 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 
 	bool _is_sample = false;
 	Ref<AudioSamplePlayback> sample_playback;
+	StringName sample_bus = SceneStringName(Master);
 
 	_FORCE_INLINE_ Stream *_find_stream(int64_t p_id);
 	_FORCE_INLINE_ const Stream *_find_stream(int64_t p_id) const;
@@ -124,9 +125,13 @@ public:
 	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
 	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 
+	void set_sample_bus(const StringName &p_bus);
+	StringName get_sample_bus() const;
+
 private:
 #ifndef DISABLE_DEPRECATED
 	ID _play_stream_bind_compat_91382(const Ref<AudioStream> &p_stream, float p_from_offset = 0, float p_volume_db = 0, float p_pitch_scale = 1.0);
+	ID _play_stream_bind_compat_104608(const Ref<AudioStream> &p_stream, float p_from_offset = 0, float p_volume_db = 0, float p_pitch_scale = 1.0, AudioServer::PlaybackType p_playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT, const StringName &p_bus = SceneStringName(Master));
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
