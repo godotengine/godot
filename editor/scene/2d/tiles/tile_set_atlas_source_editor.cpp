@@ -1099,7 +1099,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 			current_tile_data_editor->forward_painting_atlas_gui_input(tile_atlas_view, tile_set_atlas_source, p_event);
 		}
 		// Update only what's needed.
-		tile_set_changed_needs_update = false;
+		_set_tile_set_changed_needs_update(false);
 
 		tile_atlas_control->queue_redraw();
 		tile_atlas_control_unscaled->queue_redraw();
@@ -1169,7 +1169,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					drag_current_tile = coords;
 
 					// Update only what's needed.
-					tile_set_changed_needs_update = false;
+					_set_tile_set_changed_needs_update(false);
 					_update_tile_inspector();
 					_update_atlas_view();
 					_update_tile_id_label();
@@ -1211,7 +1211,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 					drag_current_tile = new_rect.position;
 
 					// Update only what's needed.
-					tile_set_changed_needs_update = false;
+					_set_tile_set_changed_needs_update(false);
 					_update_tile_inspector();
 					_update_atlas_view();
 					_update_tile_id_label();
@@ -2114,19 +2114,25 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 	}
 }
 
+void TileSetAtlasSourceEditor::_set_tile_set_changed_needs_update(bool p_needs_update) {
+	tile_set_changed_needs_update = p_needs_update;
+	set_process_internal(p_needs_update);
+}
+
 void TileSetAtlasSourceEditor::_tile_set_changed() {
 	if (tile_set->get_source_count() == 0) {
 		// No sources, so nothing to do here anymore.
+		_set_tile_set_changed_needs_update(false);
 		tile_set->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 		tile_set = Ref<TileSet>();
 		return;
 	}
 
-	tile_set_changed_needs_update = true;
+	_set_tile_set_changed_needs_update(true);
 }
 
 void TileSetAtlasSourceEditor::_tile_proxy_object_changed(const String &p_what) {
-	tile_set_changed_needs_update = false; // Avoid updating too many things.
+	_set_tile_set_changed_needs_update(false); // Avoid updating too many things.
 	_update_atlas_view();
 }
 
@@ -2504,7 +2510,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				_update_tile_data_editors();
 				_update_current_tile_data_editor();
 
-				tile_set_changed_needs_update = false;
+				_set_tile_set_changed_needs_update(false);
 			}
 		} break;
 
@@ -2529,7 +2535,7 @@ void TileSetAtlasSourceEditor::_bind_methods() {
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	set_shortcut_context(this);
 	set_process_shortcut_input(true);
-	set_process_internal(true);
+	set_process_internal(false);
 	TileSetEditor::get_singleton()->register_split(this);
 
 	// Middle panel.
