@@ -1220,6 +1220,8 @@ void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_format", "format"), &AudioStreamWAV::set_format);
 	ClassDB::bind_method(D_METHOD("get_format"), &AudioStreamWAV::get_format);
 
+	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamWAV::has_loop);
+
 	ClassDB::bind_method(D_METHOD("set_loop_mode", "loop_mode"), &AudioStreamWAV::set_loop_mode);
 	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AudioStreamWAV::get_loop_mode);
 

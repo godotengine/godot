@@ -12,6 +12,12 @@
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
+		<method name="has_loop" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member loop_mode] is not set to [constant LOOP_DISABLED], [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="load_from_buffer" qualifiers="static">
 			<return type="AudioStreamWAV" />
 			<param index="0" name="stream_data" type="PackedByteArray" />
