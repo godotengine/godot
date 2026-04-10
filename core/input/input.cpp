@@ -149,7 +149,9 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
 	ClassDB::bind_method(D_METHOD("get_joy_guid", "device"), &Input::get_joy_guid);
 	ClassDB::bind_method(D_METHOD("get_joy_info", "device"), &Input::get_joy_info);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("should_ignore_device", "vendor_id", "product_id"), &Input::should_ignore_device);
+#endif // DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_connected_joypads"), &Input::get_connected_joypads);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
@@ -2283,10 +2285,12 @@ Dictionary Input::get_joy_info(int p_device) const {
 	return joy_names[p_device].info;
 }
 
+#ifndef DISABLE_DEPRECATED
 bool Input::should_ignore_device(int p_vendor_id, int p_product_id) const {
 	uint32_t full_id = (((uint32_t)p_vendor_id) << 16) | ((uint16_t)p_product_id);
 	return ignored_device_ids.has(full_id);
 }
+#endif // DISABLE_DEPRECATED
 
 TypedArray<int> Input::get_connected_joypads() {
 	TypedArray<int> ret;
@@ -2340,6 +2344,7 @@ Input::Input() {
 		}
 	}
 
+#ifndef DISABLE_DEPRECATED
 	String env_ignore_devices = OS::get_singleton()->get_environment("SDL_GAMECONTROLLER_IGNORE_DEVICES");
 	if (!env_ignore_devices.is_empty()) {
 		Vector<String> entries = env_ignore_devices.split(",");
@@ -2360,6 +2365,7 @@ Input::Input() {
 			ignored_device_ids.insert(full_id);
 		}
 	}
+#endif // DISABLE_DEPRECATED
 
 	legacy_just_pressed_behavior = GLOBAL_DEF("input_devices/compatibility/legacy_just_pressed_behavior", false);
 	if (Engine::get_singleton()->is_editor_hint()) {
