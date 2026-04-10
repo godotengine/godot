@@ -15,7 +15,7 @@
 		<method name="has_loop" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if [member loop_mode] is not set to [constant LOOP_DISABLED], [code]false[/code] otherwise.
+				Returns [code]true[/code] if [member loop_mode] is set to any value other than [constant LOOP_DISABLED].
 			</description>
 		</method>
 		<method name="load_from_buffer" qualifiers="static">
