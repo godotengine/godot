@@ -384,6 +384,7 @@
 				- On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
 				- On Android, this is [code]"Android"[/code].
 				- On iOS, this is [code]"iOS"[/code].
+				- On visionOS, this is [code]"visionOS"[/code].
 				- On Web, this is [code]"Web"[/code].
 				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, possibly returning other names.
 				[codeblocks]
@@ -399,6 +400,8 @@
 						print("Welcome to Android!")
 					"iOS":
 						print("Welcome to iOS!")
+					"visionOS":
+						print("Welcome to visionOS!")
 					"Web":
 						print("Welcome to the Web!")
 				[/gdscript]
