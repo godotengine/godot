@@ -335,11 +335,16 @@ Size2 GraphFrame::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_bound_minimum_size();
-		size.width += sb_panel->get_minimum_size().width;
+		Size2 size = child->get_bound_minimum_size();
+		Size2 max_size = child->get_custom_maximum_size();
 
-		minsize.x = MAX(minsize.x, size.x);
-		minsize.y += MAX(minsize.y, size.y);
+		real_t width = (child->get_h_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.width >= 0) ? max_size.width : size.width;
+		real_t height = (child->get_v_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.height >= 0) ? max_size.height : size.height;
+
+		width += sb_panel->get_minimum_size().width;
+
+		minsize.width = MAX(minsize.width, width);
+		minsize.height += MAX(minsize.height, height);
 	}
 
 	minsize.height += sb_panel->get_minimum_size().height;

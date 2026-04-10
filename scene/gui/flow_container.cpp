@@ -34,6 +34,14 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
 
+struct _ChildData {
+	Size2i min_size;
+	Size2i max_size;
+	bool will_stretch = false;
+	float stretch_ratio = 0.0;
+	int stretch_size = 0;
+};
+
 struct _LineData {
 	int child_count = 0;
 	int min_line_height = 0;
@@ -51,9 +59,7 @@ void FlowContainer::_resort() {
 
 	bool rtl = is_layout_rtl();
 
-	HashMap<Control *, Size2i> children_minsize_cache;
-	HashMap<Control *, Size2i> children_maxsize_cache;
-	HashMap<Control *, int> children_stretch_cache;
+	HashMap<Control *, _ChildData> children_data;
 
 	Vector<_LineData> lines_data;
 
@@ -72,6 +78,7 @@ void FlowContainer::_resort() {
 			continue;
 		}
 
+		_ChildData child_data;
 		Size2i child_msc = child->get_combined_minimum_size();
 		Size2i child_max_size = child->get_combined_maximum_size();
 
@@ -93,7 +100,11 @@ void FlowContainer::_resort() {
 
 			line_height = MAX(line_height, child_msc.x);
 			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
-				line_stretch_ratio_total += child->get_stretch_ratio();
+				child_data.stretch_ratio = child->get_stretch_ratio();
+				if (child_max_size.y >= 0 && child->get_v_size_flags().has_flag(SIZE_MAX)) {
+					child_data.stretch_ratio *= MAXIMIZE_STRETCH_FACTOR;
+				}
+				line_stretch_ratio_total += child_data.stretch_ratio;
 			}
 			ofs.y += child_msc.y;
 
@@ -115,14 +126,19 @@ void FlowContainer::_resort() {
 
 			line_height = MAX(line_height, child_msc.y);
 			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
-				line_stretch_ratio_total += child->get_stretch_ratio();
+				child_data.stretch_ratio = child->get_stretch_ratio();
+				if (child_max_size.x >= 0 && child->get_h_size_flags().has_flag(SIZE_MAX)) {
+					child_data.stretch_ratio *= MAXIMIZE_STRETCH_FACTOR;
+				}
+				line_stretch_ratio_total += child_data.stretch_ratio;
 			}
 			ofs.x += child_msc.x;
 		}
 
 		last_child = child;
-		children_minsize_cache[child] = child_msc;
-		children_maxsize_cache[child] = child_max_size;
+		child_data.min_size = child_msc;
+		child_data.max_size = child_max_size;
+		children_data[child] = child_data;
 		children_in_current_line++;
 	}
 	line_length = vertical ? (ofs.y) : (ofs.x);
@@ -145,7 +161,8 @@ void FlowContainer::_resort() {
 		if (!child) {
 			continue;
 		}
-		Size2i child_size = children_minsize_cache[child];
+		_ChildData &child_data = children_data[child];
+		Size2i child_size = child_data.min_size;
 
 		_LineData line_data = lines_data[current_line_idx];
 		if (child_idx_in_line >= lines_data[current_line_idx].child_count) {
@@ -168,9 +185,10 @@ void FlowContainer::_resort() {
 				if (!line_child) {
 					continue;
 				}
+				_ChildData &line_child_data = children_data[line_child];
 
 				line_children.push_back(line_child);
-				children_stretch_cache[line_child] = 0;
+				line_child_data.stretch_size = 0;
 			}
 
 			int line_remaining_stretch = line_data.stretch_avail;
@@ -180,14 +198,17 @@ void FlowContainer::_resort() {
 
 			for (int j = 0; j < line_children.size(); j++) {
 				Control *line_child = line_children[j];
+				_ChildData &line_child_data = children_data[line_child];
 				bool can_stretch = vertical ? line_child->get_v_size_flags().has_flag(SIZE_EXPAND) : line_child->get_h_size_flags().has_flag(SIZE_EXPAND);
 				if (!can_stretch) {
 					continue;
 				}
+				line_child_data.will_stretch = true;
 
 				stretch_children.push_back(line_child);
 				stretch_children_active.push_back(true);
-				line_stretch_ratio_total += line_child->get_stretch_ratio();
+				line_child_data.stretch_ratio = line_child->get_stretch_ratio();
+				line_stretch_ratio_total += line_child_data.stretch_ratio;
 			}
 
 			while (line_stretch_ratio_total > 0) {
@@ -199,17 +220,18 @@ void FlowContainer::_resort() {
 					}
 
 					Control *line_child = stretch_children[j];
-					float stretch_ratio = line_child->get_stretch_ratio();
+					_ChildData &line_child_data = children_data[line_child];
+					float stretch_ratio = line_child_data.stretch_ratio;
 					int child_stretch = line_remaining_stretch * stretch_ratio / line_stretch_ratio_total;
 
-					const Size2i &child_min_size = children_minsize_cache[line_child];
-					const Size2i &child_max_size = children_maxsize_cache[line_child];
+					const Size2i &child_min_size = line_child_data.min_size;
+					const Size2i &child_max_size = line_child_data.max_size;
 					int child_axis_min = vertical ? child_min_size.height : child_min_size.width;
 					int child_axis_max = vertical ? child_max_size.height : child_max_size.width;
 					int max_stretch = child_axis_max >= 0 ? MAX(child_axis_max - child_axis_min, 0) : INT_MAX;
 
 					if (child_stretch > max_stretch) {
-						children_stretch_cache[line_child] = max_stretch;
+						line_child_data.stretch_size = max_stretch;
 						stretch_children_active.write[j] = false;
 						line_stretch_ratio_total -= stretch_ratio;
 						line_remaining_stretch -= max_stretch;
@@ -225,7 +247,8 @@ void FlowContainer::_resort() {
 						}
 
 						Control *line_child = stretch_children[j];
-						children_stretch_cache[line_child] = line_remaining_stretch * line_child->get_stretch_ratio() / line_stretch_ratio_total;
+						_ChildData &line_child_data = children_data[line_child];
+						line_child_data.stretch_size = line_remaining_stretch * line_child_data.stretch_ratio / line_stretch_ratio_total;
 					}
 					break;
 				}
@@ -233,7 +256,7 @@ void FlowContainer::_resort() {
 
 			int used_stretch = 0;
 			for (int j = 0; j < line_children.size(); j++) {
-				used_stretch += children_stretch_cache[line_children[j]];
+				used_stretch += children_data[line_children[j]].stretch_size;
 			}
 			lines_data.write[current_line_idx].stretch_avail = MAX(line_data.stretch_avail - used_stretch, 0);
 			line_data = lines_data[current_line_idx];
@@ -309,7 +332,7 @@ void FlowContainer::_resort() {
 			}
 
 			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
-				int stretch = children_stretch_cache.has(child) ? children_stretch_cache[child] : 0;
+				int stretch = children_data[child].stretch_size;
 				child_size.height += stretch;
 			}
 
@@ -319,7 +342,7 @@ void FlowContainer::_resort() {
 			}
 
 			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
-				int stretch = children_stretch_cache.has(child) ? children_stretch_cache[child] : 0;
+				int stretch = children_data[child].stretch_size;
 				child_size.width += stretch;
 			}
 		}
@@ -348,7 +371,7 @@ void FlowContainer::_resort() {
 }
 
 Size2 FlowContainer::get_minimum_size() const {
-	Size2i minimum;
+	Size2 minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
@@ -356,16 +379,24 @@ Size2 FlowContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_bound_minimum_size();
+		Size2 size = c->get_bound_minimum_size();
+		Size2 max_size = c->get_custom_maximum_size();
 
 		if (vertical) { /* VERTICAL */
-			minimum.height = MAX(minimum.height, size.height);
-			minimum.width = cached_size;
+			real_t height = (c->get_v_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.height >= 0) ? max_size.height : size.height;
+			minimum.height = MAX(minimum.height, height);
 
 		} else { /* HORIZONTAL */
-			minimum.width = MAX(minimum.width, size.width);
-			minimum.height = cached_size;
+			real_t width = (c->get_h_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.width >= 0) ? max_size.width : size.width;
+			minimum.width = MAX(minimum.width, width);
 		}
+	}
+
+	if (vertical) { /* VERTICAL */
+		minimum.width = cached_size;
+
+	} else { /* HORIZONTAL */
+		minimum.height = cached_size;
 	}
 
 	return minimum;
@@ -376,6 +407,7 @@ Vector<int> FlowContainer::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_FILL);
 	if (!vertical) {
 		flags.append(SIZE_EXPAND);
+		flags.append(SIZE_MAXIMIZE);
 	}
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
@@ -388,6 +420,7 @@ Vector<int> FlowContainer::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_FILL);
 	if (vertical) {
 		flags.append(SIZE_EXPAND);
+		flags.append(SIZE_MAXIMIZE);
 	}
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
