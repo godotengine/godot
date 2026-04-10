@@ -276,17 +276,6 @@ void EmbeddedProcess::queue_update_embedded_process() {
 void EmbeddedProcess::_timer_update_embedded_process_timeout() {
 	_check_focused_process_id();
 	_check_mouse_over();
-
-	if (!updated_embedded_process_queued) {
-		// We need to detect when the control globally changes location or size on the screen.
-		// NOTIFICATION_RESIZED and NOTIFICATION_WM_POSITION_CHANGED are not enough to detect
-		// resized parent to siblings controls that can affect global position.
-		Rect2i new_global_rect = get_global_rect();
-		if (last_global_rect != new_global_rect) {
-			last_global_rect = new_global_rect;
-			queue_update_embedded_process();
-		}
-	}
 }
 
 void EmbeddedProcess::_update_embedded_process() {
@@ -317,11 +306,26 @@ void EmbeddedProcess::_notification(int p_what) {
 			if (updated_embedded_process_queued) {
 				updated_embedded_process_queued = false;
 				_update_embedded_process();
+				last_global_rect = get_global_rect();
+			} else {
+				// Detect global rect changes every frame for responsive resize.
+				// NOTIFICATION_RESIZED propagation through the container tree is
+				// delayed by cascading deferred queue_sort() calls, so polling
+				// here catches changes that notifications miss.
+				Rect2i new_global_rect = get_global_rect();
+				if (last_global_rect != new_global_rect) {
+					last_global_rect = new_global_rect;
+					_update_embedded_process();
+				}
 			}
 		} break;
 		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_VISIBILITY_CHANGED:
 		case NOTIFICATION_WM_POSITION_CHANGED: {
+			// Update immediately for responsive resize/move rather than
+			// deferring to the next NOTIFICATION_PROCESS frame.
+			_update_embedded_process();
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
