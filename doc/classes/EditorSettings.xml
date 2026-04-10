@@ -358,6 +358,11 @@
 		<member name="editors/2d/locked_selection_rectangle_color" type="Color" setter="" getter="">
 			The color to use for the selection rectangle that surrounds selected locked nodes in the 2D editor viewport.
 		</member>
+		<member name="editors/2d/parallax_preview_mode" type="int" setter="" getter="">
+			Controls the editor preview mode for [Parallax2D] nodes.
+			If set to [b]Centered[/b], the preview will center around the 2D editor viewport's center.
+			If set to [b]Top Left[/b], the preview will align with the top-left corner of the 2D editor viewport.
+		</member>
 		<member name="editors/2d/ruler_width" type="float" setter="" getter="">
 			The thickness of the coordinate ruler in the 2D editor. Increasing this will also increase the size of the ruler font, improving readability when using a lower editor scale. The editor may force a minimum size to keep the ruler numbers legible.
 		</member>
