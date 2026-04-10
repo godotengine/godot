@@ -30,6 +30,106 @@
 		<member name="animation/trimming" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], trim the beginning and end of animations if there are no keyframe changes. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
 		</member>
+		<member name="blender/animation/always_sample" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], forces animation sampling on import to ensure consistency between how Blender and glTF perform animation interpolation, at the cost of larger file sizes. If [code]false[/code], there may be differences in how animations are interpolated between what you see in Blender and the imported scene in Godot, due to different interpolation semantics between both.
+		</member>
+		<member name="blender/animation/group_tracks" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports animations as separate tracks. If [code]false[/code], all currently assigned actions become one glTF animation.
+		</member>
+		<member name="blender/animation/limit_playback" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], limits animation import to the playback range defined in Blender. This can avoid including unused animation data, making the imported scene smaller and faster to load. However, this can also result in missing animation data if the playback range is not set correctly in Blender.
+		</member>
+		<member name="blender/materials/export_materials" type="int" setter="" getter="" default="1">
+			Controls how textures embedded within glTF scenes should be handled.
+			- [code]0 (Placeholder)[/code], does not import materials, but keeps surface slots so that separate materials can be assigned to different surfaces.
+			- [code]1 (Export)[/code], imports materials as-is (note that procedural Blender materials may not work correctly).
+			- [code]2 (Named Placeholder)[/code], imports materials, but doesn't import images that are packed into the [code].blend[/code] file. Textures will have to be reassigned manually in the imported materials.
+		</member>
+		<member name="blender/materials/unpack_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], unpacks the original images to the Godot filesystem and uses them. This allows changing image import settings like VRAM compression. If [code]false[/code], allows Blender to convert the original images, such as repacking roughness and metallic into one roughness + metallic texture. In most cases, this option should be set to [code]true[/code], but if the [code].blend[/code] file's images aren't in the correct format, set to [code]false[/code] for correct behavior.
+		</member>
+		<member name="blender/meshes/colors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], imports vertex colors from Blender.
+		</member>
+		<member name="blender/meshes/export_bones_deforming_mesh_only" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], only imports bones that deform the mesh from Blender.
+		</member>
+		<member name="blender/meshes/export_geometry_nodes_instances" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], imports geometry node instances from Blender.
+		</member>
+		<member name="blender/meshes/gpu_instances" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], imports instances and particle systems as GLTF's buffer/accessor data instead of numerous singular [Mesh] objects. This does not include Geometry Nodes instancing.
+		</member>
+		<member name="blender/meshes/normals" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports vertex normals from Blender.
+		</member>
+		<member name="blender/meshes/skins" type="int" setter="" getter="" default="2">
+			Controls how textures embedded within glTF scenes should be handled.
+			- [code]0 (None)[/code], skips skeleton skin data import from Blender.
+			- [code]1 (4 Influences (Compatible))[/code], imports skin data to be compatible with all renderers, at the cost of lower precision for certain rigs.
+			- [code]2 (All Influences)[/code], imports skin data with all influences (up to 8 in Godot), which is more precise but may not be compatible with all renderers.
+		</member>
+		<member name="blender/meshes/tangents" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports vertex tangents from Blender.
+		</member>
+		<member name="blender/meshes/uvs" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports vertex UV1 and UV2 from Blender.
+		</member>
+		<member name="blender/nodes/active_collection_only" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], only imports nodes in the active collection from Blender.
+		</member>
+		<member name="blender/nodes/cameras" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports cameras from Blender.
+		</member>
+		<member name="blender/nodes/custom_properties" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports custom properties from Blender as glTF extras. This data can then be used from an editor plugin that uses [method GLTFDocument.register_gltf_document_extension], which can set node metadata on import (among other use cases).
+		</member>
+		<member name="blender/nodes/modifiers" type="int" setter="" getter="" default="1">
+			- [code]0 (No Modifiers)[/code], ignores object modifiers on import.
+			- [code]1 (All Modifiers)[/code], applies object modifiers on import.
+		</member>
+		<member name="blender/nodes/punctual_lights" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], imports lights (directional, omni, and spot) from Blender. "Punctual" is not to be confused with "positional", which is why directional lights are also included.
+		</member>
+		<member name="blender/nodes/visible" type="int" setter="" getter="" default="0">
+			- [code]0 (All)[/code], imports everything.
+			- [code]1 (Visible Only)[/code], only imports visible objects.
+			- [code]2 (Renderable)[/code], only imports objects that are marked as renderable in Blender, regardless of whether they are actually visible.
+		</member>
+		<member name="fbx/allow_geometry_helper_nodes" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables geometry helper nodes.
+		</member>
+		<member name="fbx/embedded_image_handling" type="int" setter="" getter="" default="1">
+			Controls how textures embedded within FBX scenes should be handled.
+			- [code]0 (Discard All Textures)[/code], does not import textures. This is useful if you wish to manually set up materials in Godot instead.
+			- [code]1 (Extract Textures)[/code], extracts textures to external images. This can result in smaller file sizes and more control over import options.
+			- [code]2 (Embed As Basis Universal)[/code], keeps textures embedded in the imported scene with VRAM compression.
+			- [code]3 (Embed As Uncompressed)[/code], keeps textures embedded in the imported scene without VRAM compression.
+		</member>
+		<member name="fbx/importer" type="int" setter="" getter="" default="0">
+			Controls how textures embedded within glTF scenes should be handled.
+			- [code]0 (ubfx)[/code], handles FBX files as-is.
+			- [code]1 (FBX2glTF)[/code], converts FBX files to glTF on import. This requires additional setup and is not recommended unless you have a specific reason to use FBX2glTF over ufbx.
+		</member>
+		<member name="fbx/naming_version" type="int" setter="" getter="" default="2">
+			Handles naming of nodes within a skeleton hierarchy.
+			- [code]0 (Godot 4.0 or 4.1)[/code], provides compatibility for existing imports.
+			- [code]1 (Godot 4.2 to 4.4)[/code], provides compatibility for existing imports.
+			- [code]2 (Godot 4.5 or later)[/code], is the recommended choice for all new imports.
+		</member>
+		<member name="gltf/embedded_image_handling" type="int" setter="" getter="" default="1">
+			Controls how textures embedded within glTF scenes should be handled.
+			- [code]0 (Discard All Textures)[/code], does not import textures. This is useful if you wish to manually set up materials in Godot instead.
+			- [code]1 (Extract Textures)[/code], extracts textures to external images. This can result in smaller file sizes and more control over import options.
+			- [code]2 (Embed As Basis Universal)[/code], keeps textures embedded in the imported scene with VRAM compression.
+			- [code]3 (Embed As Uncompressed)[/code], keeps textures embedded in the imported scene without VRAM compression.
+		</member>
+		<member name="gltf/naming_version" type="int" setter="" getter="" default="2">
+			Handles naming of nodes within a skeleton hierarchy.
+			- [code]0 (Godot 4.0 or 4.1)[/code], provides compatibility for existing imports.
+			- [code]1 (Godot 4.2 to 4.4)[/code], provides compatibility for existing imports.
+			- [code]2 (Godot 4.5 or later)[/code], is the recommended choice for all new imports.
+		</member>
 		<member name="import_script/path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an import script, which can run code after the import process has completed for custom processing. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation]Using import scripts for automation[/url] for more information.
 		</member>
