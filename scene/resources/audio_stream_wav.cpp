@@ -437,6 +437,10 @@ AudioStreamWAV::Format AudioStreamWAV::get_format() const {
 	return format;
 }
 
+bool AudioStreamWAV::has_loop() const {
+	return loop_mode != AudioStreamWAV::LOOP_DISABLED;
+}
+
 void AudioStreamWAV::set_loop_mode(LoopMode p_loop_mode) {
 	loop_mode = p_loop_mode;
 }
