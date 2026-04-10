@@ -49,7 +49,6 @@ const uint g_bc7_partition2[64] = uint[64](
 		0x9336, 0x9CC6, 0x817E, 0xE718, 0xCCF0, 0x0FCC, 0x7744, 0xEE22);
 
 // Table.P3 - 64 partitions for 3 subsets (encoded as 2 bits per texel, packed into 32-bit words)
-// Note: Currently unused since we only implement 2-subset modes, but kept for future expansion
 const uint g_bc7_partition3[64] = uint[64](
 		0xAA685050, 0x6A5A5040, 0x5A5A4200, 0x5450A0A8,
 		0xA5A50000, 0xA0A05050, 0x5555A0A0, 0x5A5A5050,
@@ -114,13 +113,14 @@ uint getPartition3(uint partitionIndex, uint texelIndex) {
 }
 
 float colorError(vec4 a, vec4 b) {
-	vec4 diff = a - b;
-	return dot(diff, diff);
+	vec3 diff_rgb = a.rgb * a.a - b.rgb * b.a;
+	float diff_a = a.a - b.a;
+	return dot(diff_rgb, diff_rgb) + diff_a * diff_a;
 }
 
 float colorErrorRGB(vec4 a, vec4 b) {
-	vec3 diff = a.rgb - b.rgb;
-	return dot(diff, diff);
+	vec3 diff_rgb = a.rgb * a.a - b.rgb * b.a;
+	return dot(diff_rgb, diff_rgb);
 }
 
 float alphaError(float a, float b) {
@@ -275,12 +275,18 @@ void refineEndpoints(vec4 texels[16], uint subset, uint partitionIndex, uint num
 	}
 
 	for (uint refineIter = 0u; refineIter < 2u; refineIter++) {
-		// Accumulate for least squares refinement
-		vec4 atb0 = vec4(0.0);
-		vec4 atb1 = vec4(0.0);
-		float ata00 = 0.0;
-		float ata01 = 0.0;
-		float ata11 = 0.0;
+		// Fit RGB in alpha-weighted space so invisible texels do not anchor color
+		// endpoints, while alpha itself is fit in normal scalar space.
+		vec3 atb0Rgb = vec3(0.0);
+		vec3 atb1Rgb = vec3(0.0);
+		float ata00Rgb = 0.0;
+		float ata01Rgb = 0.0;
+		float ata11Rgb = 0.0;
+		float atb0A = 0.0;
+		float atb1A = 0.0;
+		float ata00A = 0.0;
+		float ata01A = 0.0;
+		float ata11A = 0.0;
 
 		for (uint i = 0u; i < 16u; i++) {
 			if (inSubset[i]) {
@@ -318,21 +324,34 @@ void refineEndpoints(vec4 texels[16], uint subset, uint partitionIndex, uint num
 				float w = float(weight) / 64.0;
 				float w0 = 1.0 - w;
 				float w1 = w;
+				float alphaWeight = texels[i].a;
 
-				atb0 += texels[i] * w0;
-				atb1 += texels[i] * w1;
-				ata00 += w0 * w0;
-				ata01 += w0 * w1;
-				ata11 += w1 * w1;
+				atb0Rgb += texels[i].rgb * alphaWeight * w0;
+				atb1Rgb += texels[i].rgb * alphaWeight * w1;
+				ata00Rgb += alphaWeight * w0 * w0;
+				ata01Rgb += alphaWeight * w0 * w1;
+				ata11Rgb += alphaWeight * w1 * w1;
+
+				atb0A += texels[i].a * w0;
+				atb1A += texels[i].a * w1;
+				ata00A += w0 * w0;
+				ata01A += w0 * w1;
+				ata11A += w1 * w1;
 			}
 		}
 
-		// Solve 2x2 system for each channel
-		float det = ata00 * ata11 - ata01 * ata01;
-		if (abs(det) > 1e-6) {
-			float invDet = 1.0 / det;
-			e0 = clamp((atb0 * ata11 - atb1 * ata01) * invDet, vec4(0.0), vec4(1.0));
-			e1 = clamp((atb1 * ata00 - atb0 * ata01) * invDet, vec4(0.0), vec4(1.0));
+		float detRgb = ata00Rgb * ata11Rgb - ata01Rgb * ata01Rgb;
+		if (abs(detRgb) > 1e-6) {
+			float invDet = 1.0 / detRgb;
+			e0.rgb = clamp((atb0Rgb * ata11Rgb - atb1Rgb * ata01Rgb) * invDet, vec3(0.0), vec3(1.0));
+			e1.rgb = clamp((atb1Rgb * ata00Rgb - atb0Rgb * ata01Rgb) * invDet, vec3(0.0), vec3(1.0));
+		}
+
+		float detA = ata00A * ata11A - ata01A * ata01A;
+		if (abs(detA) > 1e-6) {
+			float invDet = 1.0 / detA;
+			e0.a = clamp((atb0A * ata11A - atb1A * ata01A) * invDet, 0.0, 1.0);
+			e1.a = clamp((atb1A * ata00A - atb0A * ata01A) * invDet, 0.0, 1.0);
 		}
 	}
 }
@@ -415,40 +434,130 @@ float computeBlockError(vec4 texels[16], uint r0, uint g0, uint b0, uint a0, uin
 	return totalError;
 }
 
+uint adjustQuantizedValue(uint value, int delta, uint bits) {
+	int maxValue = int((1u << bits) - 1u);
+	return uint(clamp(int(value) + delta, 0, maxValue));
+}
+
+void shakeMode6Endpoints(vec4 texels[16], inout uint r0, inout uint g0, inout uint b0, inout uint a0,
+		inout uint r1, inout uint g1, inout uint b1, inout uint a1,
+		inout uint p0, inout uint p1, inout float bestError) {
+	for (uint pass = 0u; pass < 2u; pass++) {
+		bool improved = false;
+
+		for (uint component = 0u; component < 8u; component++) {
+			for (int delta = -1; delta <= 1; delta += 2) {
+				uint trialR0 = r0;
+				uint trialG0 = g0;
+				uint trialB0 = b0;
+				uint trialA0 = a0;
+				uint trialR1 = r1;
+				uint trialG1 = g1;
+				uint trialB1 = b1;
+				uint trialA1 = a1;
+
+				if (component == 0u) {
+					trialR0 = adjustQuantizedValue(trialR0, delta, 7u);
+				} else if (component == 1u) {
+					trialG0 = adjustQuantizedValue(trialG0, delta, 7u);
+				} else if (component == 2u) {
+					trialB0 = adjustQuantizedValue(trialB0, delta, 7u);
+				} else if (component == 3u) {
+					trialA0 = adjustQuantizedValue(trialA0, delta, 7u);
+				} else if (component == 4u) {
+					trialR1 = adjustQuantizedValue(trialR1, delta, 7u);
+				} else if (component == 5u) {
+					trialG1 = adjustQuantizedValue(trialG1, delta, 7u);
+				} else if (component == 6u) {
+					trialB1 = adjustQuantizedValue(trialB1, delta, 7u);
+				} else {
+					trialA1 = adjustQuantizedValue(trialA1, delta, 7u);
+				}
+
+				for (uint trialP0 = 0u; trialP0 < 2u; trialP0++) {
+					for (uint trialP1 = 0u; trialP1 < 2u; trialP1++) {
+						float trialError = computeBlockError(
+								texels,
+								trialR0, trialG0, trialB0, trialA0, trialP0,
+								trialR1, trialG1, trialB1, trialA1, trialP1);
+						if (trialError < bestError) {
+							bestError = trialError;
+							r0 = trialR0;
+							g0 = trialG0;
+							b0 = trialB0;
+							a0 = trialA0;
+							r1 = trialR1;
+							g1 = trialG1;
+							b1 = trialB1;
+							a1 = trialA1;
+							p0 = trialP0;
+							p1 = trialP1;
+							improved = true;
+						}
+					}
+				}
+			}
+		}
+
+		if (!improved) {
+			break;
+		}
+	}
+}
+
 // Compute optimal endpoints from indices using least squares (in quantized space)
 void computeOptimalEndpoints(vec4 texels[16], uint indices[16],
 		out vec4 optE0, out vec4 optE1) {
-	vec4 atb0 = vec4(0.0);
-	vec4 atb1 = vec4(0.0);
-	float ata00 = 0.0;
-	float ata01 = 0.0;
-	float ata11 = 0.0;
+	vec3 atb0Rgb = vec3(0.0);
+	vec3 atb1Rgb = vec3(0.0);
+	float ata00Rgb = 0.0;
+	float ata01Rgb = 0.0;
+	float ata11Rgb = 0.0;
+	float atb0A = 0.0;
+	float atb1A = 0.0;
+	float ata00A = 0.0;
+	float ata01A = 0.0;
+	float ata11A = 0.0;
 
 	for (uint i = 0u; i < 16u; i++) {
 		float w = float(g_bc7_weights4[indices[i]]) / 64.0;
 		float w0 = 1.0 - w;
 		float w1 = w;
+		float alphaWeight = texels[i].a;
 
-		atb0 += texels[i] * w0;
-		atb1 += texels[i] * w1;
-		ata00 += w0 * w0;
-		ata01 += w0 * w1;
-		ata11 += w1 * w1;
+		atb0Rgb += texels[i].rgb * alphaWeight * w0;
+		atb1Rgb += texels[i].rgb * alphaWeight * w1;
+		ata00Rgb += alphaWeight * w0 * w0;
+		ata01Rgb += alphaWeight * w0 * w1;
+		ata11Rgb += alphaWeight * w1 * w1;
+
+		atb0A += texels[i].a * w0;
+		atb1A += texels[i].a * w1;
+		ata00A += w0 * w0;
+		ata01A += w0 * w1;
+		ata11A += w1 * w1;
 	}
 
-	float det = ata00 * ata11 - ata01 * ata01;
-	if (abs(det) > 1e-8) {
-		float invDet = 1.0 / det;
-		optE0 = clamp((atb0 * ata11 - atb1 * ata01) * invDet, vec4(0.0), vec4(1.0));
-		optE1 = clamp((atb1 * ata00 - atb0 * ata01) * invDet, vec4(0.0), vec4(1.0));
-	} else {
-		// Degenerate case - all same index
-		vec4 avg = vec4(0.0);
-		for (uint i = 0u; i < 16u; i++) {
-			avg += texels[i];
-		}
-		optE0 = avg / 16.0;
-		optE1 = optE0;
+	float detRgb = ata00Rgb * ata11Rgb - ata01Rgb * ata01Rgb;
+	float detA = ata00A * ata11A - ata01A * ata01A;
+	vec4 avg = vec4(0.0);
+	for (uint i = 0u; i < 16u; i++) {
+		avg += texels[i];
+	}
+	avg /= 16.0;
+	optE0 = avg;
+	optE1 = avg;
+
+	if (abs(detRgb) > 1e-8) {
+		float invDet = 1.0 / detRgb;
+		optE0.rgb = clamp((atb0Rgb * ata11Rgb - atb1Rgb * ata01Rgb) * invDet, vec3(0.0), vec3(1.0));
+		optE1.rgb = clamp((atb1Rgb * ata00Rgb - atb0Rgb * ata01Rgb) * invDet, vec3(0.0), vec3(1.0));
+	}
+
+	if (abs(detA) > 1e-8) {
+		float invDet = 1.0 / detA;
+		optE0.a = clamp((atb0A * ata11A - atb1A * ata01A) * invDet, 0.0, 1.0);
+		optE1.a = clamp((atb1A * ata00A - atb0A * ata01A) * invDet, 0.0, 1.0);
 	}
 }
 
@@ -552,6 +661,8 @@ uvec4 encodeMode6(vec4 texels[16], out float outError) {
 	uint p0 = bestP0;
 	uint p1 = bestP1;
 
+	shakeMode6Endpoints(texels, r0, g0, b0, a0, r1, g1, b1, a1, p0, p1, bestError);
+
 	// Final index assignment with best endpoints
 	vec4 qe0 = expandEndpointMode6(r0, g0, b0, a0, p0);
 	vec4 qe1 = expandEndpointMode6(r1, g1, b1, a1, p1);
@@ -606,10 +717,170 @@ uvec4 encodeMode6(vec4 texels[16], out float outError) {
 	return block;
 }
 
-// Encode Mode 5: 1 subset, 7-bit RGB + 8-bit A endpoints, separate 2-bit color/alpha indices
-uvec4 encodeMode5(vec4 texels[16], out float outError) {
+uvec4 encodeMode6AlphaRamp(vec4 texels[16], out float outError) {
+	vec3 fixedRgb = vec3(0.0);
+	float minA = 1.0;
+	float maxA = 0.0;
+	float maxWeight = 0.0;
+
+	for (uint i = 0u; i < 16u; i++) {
+		float weight = texels[i].a;
+		fixedRgb += texels[i].rgb * weight;
+		maxWeight += weight;
+		minA = min(minA, texels[i].a);
+		maxA = max(maxA, texels[i].a);
+	}
+
+	if (maxWeight > 1e-6) {
+		fixedRgb /= maxWeight;
+	} else {
+		fixedRgb = vec3(0.0);
+		for (uint i = 0u; i < 16u; i++) {
+			fixedRgb += texels[i].rgb;
+		}
+		fixedRgb /= 16.0;
+	}
+
+	uint r = quantize(fixedRgb.r, 7u);
+	uint g = quantize(fixedRgb.g, 7u);
+	uint b = quantize(fixedRgb.b, 7u);
+	uint a0 = quantize(minA, 7u);
+	uint a1 = quantize(maxA, 7u);
+
+	uint bestA0 = a0;
+	uint bestA1 = a1;
+	uint bestP0 = 0u;
+	uint bestP1 = 0u;
+	float bestError = FLT_MAX;
+	uint bestIndices[16];
+
+	for (uint iter = 0u; iter < 4u; iter++) {
+		for (uint p0Trial = 0u; p0Trial < 2u; p0Trial++) {
+			for (uint p1Trial = 0u; p1Trial < 2u; p1Trial++) {
+				vec4 qe0 = expandEndpointMode6(r, g, b, a0, p0Trial);
+				vec4 qe1 = expandEndpointMode6(r, g, b, a1, p1Trial);
+
+				uint trialIndices[16];
+				float trialError;
+				assignIndices(texels, 0u, 0u, 1u, qe0, qe1, 4u, trialIndices, trialError);
+
+				if (trialError < bestError) {
+					bestError = trialError;
+					bestA0 = a0;
+					bestA1 = a1;
+					bestP0 = p0Trial;
+					bestP1 = p1Trial;
+					for (uint i = 0u; i < 16u; i++) {
+						bestIndices[i] = trialIndices[i];
+					}
+				}
+			}
+		}
+
+		if (iter < 3u) {
+			float atb0 = 0.0;
+			float atb1 = 0.0;
+			float ata00 = 0.0;
+			float ata01 = 0.0;
+			float ata11 = 0.0;
+
+			for (uint i = 0u; i < 16u; i++) {
+				float w = float(g_bc7_weights4[bestIndices[i]]) / 64.0;
+				float w0 = 1.0 - w;
+				float w1 = w;
+				atb0 += texels[i].a * w0;
+				atb1 += texels[i].a * w1;
+				ata00 += w0 * w0;
+				ata01 += w0 * w1;
+				ata11 += w1 * w1;
+			}
+
+			float det = ata00 * ata11 - ata01 * ata01;
+			if (abs(det) > 1e-6) {
+				float invDet = 1.0 / det;
+				float optA0 = clamp((atb0 * ata11 - atb1 * ata01) * invDet, 0.0, 1.0);
+				float optA1 = clamp((atb1 * ata00 - atb0 * ata01) * invDet, 0.0, 1.0);
+				a0 = quantize(optA0, 7u);
+				a1 = quantize(optA1, 7u);
+			}
+		}
+	}
+
+	a0 = bestA0;
+	a1 = bestA1;
+	uint p0 = bestP0;
+	uint p1 = bestP1;
+	uint indices[16];
+	for (uint i = 0u; i < 16u; i++) {
+		indices[i] = bestIndices[i];
+	}
+
+	outError = bestError;
+
+	if (indices[0] >= 8u) {
+		uint tmp = a0;
+		a0 = a1;
+		a1 = tmp;
+		tmp = p0;
+		p0 = p1;
+		p1 = tmp;
+		for (uint i = 0u; i < 16u; i++) {
+			indices[i] = 15u - indices[i];
+		}
+	}
+
+	uvec4 block = uvec4(0u);
+	uint bitPos = 0u;
+
+	bc7WriteBits(block, bitPos, 64u, 7u);
+	bc7WriteBits(block, bitPos, r, 7u);
+	bc7WriteBits(block, bitPos, r, 7u);
+	bc7WriteBits(block, bitPos, g, 7u);
+	bc7WriteBits(block, bitPos, g, 7u);
+	bc7WriteBits(block, bitPos, b, 7u);
+	bc7WriteBits(block, bitPos, b, 7u);
+	bc7WriteBits(block, bitPos, a0, 7u);
+	bc7WriteBits(block, bitPos, a1, 7u);
+	bc7WriteBits(block, bitPos, p0, 1u);
+	bc7WriteBits(block, bitPos, p1, 1u);
+
+	for (uint i = 0u; i < 16u; i++) {
+		uint bits = (i == 0u) ? 3u : 4u;
+		bc7WriteBits(block, bitPos, indices[i], bits);
+	}
+
+	return block;
+}
+
+// Encode Mode 5: 1 subset, 7-bit RGB + 8-bit A endpoints, separate 2-bit color/alpha indices, 2-bit rotation
+uvec4 encodeMode5(vec4 texels[16], uint rot, out float outError) {
+	for (uint i = 0u; i < 16u; i++) {
+		if (rot == 1u) {
+			float tmp = texels[i].r;
+			texels[i].r = texels[i].a;
+			texels[i].a = tmp;
+		} else if (rot == 2u) {
+			float tmp = texels[i].g;
+			texels[i].g = texels[i].a;
+			texels[i].a = tmp;
+		} else if (rot == 3u) {
+			float tmp = texels[i].b;
+			texels[i].b = texels[i].a;
+			texels[i].a = tmp;
+		}
+	}
+
 	vec4 e0, e1;
 	findEndpoints(texels, 0u, 0u, 1u, e0, e1);
+
+	float minA = 1.0;
+	float maxA = 0.0;
+	for (uint i = 0u; i < 16u; i++) {
+		minA = min(minA, texels[i].a);
+		maxA = max(maxA, texels[i].a);
+	}
+	e0.a = minA;
+	e1.a = maxA;
 
 	uint r0 = quantize(e0.r, 7u);
 	uint g0 = quantize(e0.g, 7u);
@@ -620,40 +891,126 @@ uvec4 encodeMode5(vec4 texels[16], out float outError) {
 	uint b1 = quantize(e1.b, 7u);
 	uint a1 = quantize(e1.a, 8u);
 
-	vec4 qe0 = vec4(dequantize(r0, 7u), dequantize(g0, 7u), dequantize(b0, 7u), dequantize(a0, 8u));
-	vec4 qe1 = vec4(dequantize(r1, 7u), dequantize(g1, 7u), dequantize(b1, 7u), dequantize(a1, 8u));
-
+	uint bestR0 = r0, bestG0 = g0, bestB0 = b0, bestA0 = a0;
+	uint bestR1 = r1, bestG1 = g1, bestB1 = b1, bestA1 = a1;
+	float bestError = FLT_MAX;
 	uint colorIdx[16];
 	uint alphaIdx[16];
-	float totalError = 0.0;
 
-	for (uint i = 0u; i < 16u; i++) {
-		float bestColorErr = FLT_MAX;
-		float bestAlphaErr = FLT_MAX;
-		uint bestC = 0u;
-		uint bestA = 0u;
+	for (uint iter = 0u; iter < 4u; iter++) {
+		vec4 qe0 = vec4(dequantize(r0, 7u), dequantize(g0, 7u), dequantize(b0, 7u), dequantize(a0, 8u));
+		vec4 qe1 = vec4(dequantize(r1, 7u), dequantize(g1, 7u), dequantize(b1, 7u), dequantize(a1, 8u));
 
-		for (uint j = 0u; j < 4u; j++) {
-			uint w = g_bc7_weights2[j];
-			vec4 interp = interpolateColor(qe0, qe1, w);
+		uint trialColorIdx[16];
+		uint trialAlphaIdx[16];
+		float totalError = 0.0;
 
-			float cErr = colorErrorRGB(texels[i], interp);
-			if (cErr < bestColorErr) {
-				bestColorErr = cErr;
-				bestC = j;
+		for (uint i = 0u; i < 16u; i++) {
+			float bestColorErr = FLT_MAX;
+			float bestAlphaErr = FLT_MAX;
+			uint bestC = 0u;
+			uint bestA = 0u;
+
+			for (uint j = 0u; j < 4u; j++) {
+				uint w = g_bc7_weights2[j];
+				vec4 interp = interpolateColor(qe0, qe1, w);
+
+				float cErr = colorErrorRGB(texels[i], interp);
+				if (cErr < bestColorErr) {
+					bestColorErr = cErr;
+					bestC = j;
+				}
+
+				float aErr = alphaError(texels[i].a, interp.a);
+				if (aErr < bestAlphaErr) {
+					bestAlphaErr = aErr;
+					bestA = j;
+				}
 			}
 
-			float aErr = alphaError(texels[i].a, interp.a);
-			if (aErr < bestAlphaErr) {
-				bestAlphaErr = aErr;
-				bestA = j;
+			trialColorIdx[i] = bestC;
+			trialAlphaIdx[i] = bestA;
+			totalError += bestColorErr + bestAlphaErr;
+		}
+
+		if (totalError < bestError) {
+			bestError = totalError;
+			bestR0 = r0;
+			bestG0 = g0;
+			bestB0 = b0;
+			bestA0 = a0;
+			bestR1 = r1;
+			bestG1 = g1;
+			bestB1 = b1;
+			bestA1 = a1;
+			for (uint i = 0u; i < 16u; i++) {
+				colorIdx[i] = trialColorIdx[i];
+				alphaIdx[i] = trialAlphaIdx[i];
 			}
 		}
 
-		colorIdx[i] = bestC;
-		alphaIdx[i] = bestA;
-		totalError += bestColorErr + bestAlphaErr;
+		if (iter < 3u) {
+			vec3 atb0_c = vec3(0.0);
+			vec3 atb1_c = vec3(0.0);
+			float ata00_c = 0.0, ata01_c = 0.0, ata11_c = 0.0;
+			float atb0_a = 0.0, atb1_a = 0.0;
+			float ata00_a = 0.0, ata01_a = 0.0, ata11_a = 0.0;
+
+			for (uint i = 0u; i < 16u; i++) {
+				float w_c = float(g_bc7_weights2[trialColorIdx[i]]) / 64.0;
+				float w0_c = 1.0 - w_c;
+				float w1_c = w_c;
+				// Weight RGB accumulation by alpha: transparent pixels are invisible,
+				// so they should not anchor the color endpoints.
+				float aw = texels[i].a;
+				atb0_c += texels[i].rgb * aw * w0_c;
+				atb1_c += texels[i].rgb * aw * w1_c;
+				ata00_c += aw * w0_c * w0_c;
+				ata01_c += aw * w0_c * w1_c;
+				ata11_c += aw * w1_c * w1_c;
+
+				float w_a = float(g_bc7_weights2[trialAlphaIdx[i]]) / 64.0;
+				float w0_a = 1.0 - w_a;
+				float w1_a = w_a;
+				atb0_a += texels[i].a * w0_a;
+				atb1_a += texels[i].a * w1_a;
+				ata00_a += w0_a * w0_a;
+				ata01_a += w0_a * w1_a;
+				ata11_a += w1_a * w1_a;
+			}
+
+			float det_c = ata00_c * ata11_c - ata01_c * ata01_c;
+			if (abs(det_c) > 1e-6) {
+				float invDet = 1.0 / det_c;
+				vec3 optE0 = clamp((atb0_c * ata11_c - atb1_c * ata01_c) * invDet, vec3(0.0), vec3(1.0));
+				vec3 optE1 = clamp((atb1_c * ata00_c - atb0_c * ata01_c) * invDet, vec3(0.0), vec3(1.0));
+				r0 = quantize(optE0.r, 7u);
+				g0 = quantize(optE0.g, 7u);
+				b0 = quantize(optE0.b, 7u);
+				r1 = quantize(optE1.r, 7u);
+				g1 = quantize(optE1.g, 7u);
+				b1 = quantize(optE1.b, 7u);
+			}
+
+			float det_a = ata00_a * ata11_a - ata01_a * ata01_a;
+			if (abs(det_a) > 1e-6) {
+				float invDet = 1.0 / det_a;
+				float optE0_a = clamp((atb0_a * ata11_a - atb1_a * ata01_a) * invDet, 0.0, 1.0);
+				float optE1_a = clamp((atb1_a * ata00_a - atb0_a * ata01_a) * invDet, 0.0, 1.0);
+				a0 = quantize(optE0_a, 8u);
+				a1 = quantize(optE1_a, 8u);
+			}
+		}
 	}
+
+	r0 = bestR0;
+	g0 = bestG0;
+	b0 = bestB0;
+	a0 = bestA0;
+	r1 = bestR1;
+	g1 = bestG1;
+	b1 = bestB1;
+	a1 = bestA1;
 
 	// Anchor texel (0) omits MSB in both index planes.
 	if (colorIdx[0] >= 2u) {
@@ -684,7 +1041,7 @@ uvec4 encodeMode5(vec4 texels[16], out float outError) {
 		}
 	}
 
-	outError = totalError;
+	outError = bestError;
 
 	// Generic BC7 LSB-first pack.
 	uvec4 block = uvec4(0u);
@@ -693,8 +1050,8 @@ uvec4 encodeMode5(vec4 texels[16], out float outError) {
 	// Mode 5 selector: 0b100000 in 6 bits.
 	bc7WriteBits(block, bitPos, 32u, 6u);
 
-	// Rotation (2 bits). Keep alpha in A channel.
-	bc7WriteBits(block, bitPos, 0u, 2u);
+	// Rotation (2 bits).
+	bc7WriteBits(block, bitPos, rot, 2u);
 
 	// Endpoints: RGB (7 bits), then A (8 bits), ep0 then ep1.
 	bc7WriteBits(block, bitPos, r0, 7u);
@@ -721,10 +1078,35 @@ uvec4 encodeMode5(vec4 texels[16], out float outError) {
 	return block;
 }
 
-// Encode Mode 4: 1 subset, 5-bit RGB + 6-bit A endpoints, separate indices (2/3 bits) + selector
-uvec4 encodeMode4(vec4 texels[16], out float outError) {
+// Encode Mode 4: 1 subset, 5-bit RGB + 6-bit A endpoints, separate indices (2/3 bits) + selector, 2-bit rotation
+uvec4 encodeMode4(vec4 texels[16], uint rot, out float outError) {
+	for (uint i = 0u; i < 16u; i++) {
+		if (rot == 1u) {
+			float tmp = texels[i].r;
+			texels[i].r = texels[i].a;
+			texels[i].a = tmp;
+		} else if (rot == 2u) {
+			float tmp = texels[i].g;
+			texels[i].g = texels[i].a;
+			texels[i].a = tmp;
+		} else if (rot == 3u) {
+			float tmp = texels[i].b;
+			texels[i].b = texels[i].a;
+			texels[i].a = tmp;
+		}
+	}
+
 	vec4 e0, e1;
 	findEndpoints(texels, 0u, 0u, 1u, e0, e1);
+
+	float minA = 1.0;
+	float maxA = 0.0;
+	for (uint i = 0u; i < 16u; i++) {
+		minA = min(minA, texels[i].a);
+		maxA = max(maxA, texels[i].a);
+	}
+	e0.a = minA;
+	e1.a = maxA;
 
 	uint r0 = quantize(e0.r, 5u);
 	uint g0 = quantize(e0.g, 5u);
@@ -735,77 +1117,155 @@ uvec4 encodeMode4(vec4 texels[16], out float outError) {
 	uint b1 = quantize(e1.b, 5u);
 	uint a1 = quantize(e1.a, 6u);
 
-	vec4 qe0 = vec4(dequantize(r0, 5u), dequantize(g0, 5u), dequantize(b0, 5u), dequantize(a0, 6u));
-	vec4 qe1 = vec4(dequantize(r1, 5u), dequantize(g1, 5u), dequantize(b1, 5u), dequantize(a1, 6u));
+	uint bestR0 = r0, bestG0 = g0, bestB0 = b0, bestA0 = a0;
+	uint bestR1 = r1, bestG1 = g1, bestB1 = b1, bestA1 = a1;
 
 	uint bestSelector = 0u; // 0: primary->RGB(2), secondary->A(3). 1: swapped.
 	uint bestIdx0[16];
 	uint bestIdx1[16];
 	float bestError = FLT_MAX;
 
-	for (uint selector = 0u; selector < 2u; selector++) {
-		uint trialIdx0[16];
-		uint trialIdx1[16];
-		float trialError = 0.0;
+	for (uint iter = 0u; iter < 4u; iter++) {
+		vec4 qe0 = vec4(dequantize(r0, 5u), dequantize(g0, 5u), dequantize(b0, 5u), dequantize(a0, 6u));
+		vec4 qe1 = vec4(dequantize(r1, 5u), dequantize(g1, 5u), dequantize(b1, 5u), dequantize(a1, 6u));
 
-		for (uint i = 0u; i < 16u; i++) {
-			float bestRgbErr2 = FLT_MAX;
-			float bestRgbErr3 = FLT_MAX;
-			float bestAlphaErr2 = FLT_MAX;
-			float bestAlphaErr3 = FLT_MAX;
-			uint bestRgb2 = 0u;
-			uint bestRgb3 = 0u;
-			uint bestA2 = 0u;
-			uint bestA3 = 0u;
+		for (uint selector = 0u; selector < 2u; selector++) {
+			uint trialIdx0[16];
+			uint trialIdx1[16];
+			float trialError = 0.0;
 
-			for (uint j = 0u; j < 4u; j++) {
-				vec4 interp2 = interpolateColor(qe0, qe1, g_bc7_weights2[j]);
-				float rgbErr2 = colorErrorRGB(texels[i], interp2);
-				if (rgbErr2 < bestRgbErr2) {
-					bestRgbErr2 = rgbErr2;
-					bestRgb2 = j;
+			for (uint i = 0u; i < 16u; i++) {
+				float bestRgbErr2 = FLT_MAX;
+				float bestRgbErr3 = FLT_MAX;
+				float bestAlphaErr2 = FLT_MAX;
+				float bestAlphaErr3 = FLT_MAX;
+				uint bestRgb2 = 0u;
+				uint bestRgb3 = 0u;
+				uint bestA2 = 0u;
+				uint bestA3 = 0u;
+
+				for (uint j = 0u; j < 4u; j++) {
+					vec4 interp2 = interpolateColor(qe0, qe1, g_bc7_weights2[j]);
+					float rgbErr2 = colorErrorRGB(texels[i], interp2);
+					if (rgbErr2 < bestRgbErr2) {
+						bestRgbErr2 = rgbErr2;
+						bestRgb2 = j;
+					}
+					float aErr2 = alphaError(texels[i].a, interp2.a);
+					if (aErr2 < bestAlphaErr2) {
+						bestAlphaErr2 = aErr2;
+						bestA2 = j;
+					}
 				}
-				float aErr2 = alphaError(texels[i].a, interp2.a);
-				if (aErr2 < bestAlphaErr2) {
-					bestAlphaErr2 = aErr2;
-					bestA2 = j;
+
+				for (uint j = 0u; j < 8u; j++) {
+					vec4 interp3 = interpolateColor(qe0, qe1, g_bc7_weights3[j]);
+					float rgbErr3 = colorErrorRGB(texels[i], interp3);
+					if (rgbErr3 < bestRgbErr3) {
+						bestRgbErr3 = rgbErr3;
+						bestRgb3 = j;
+					}
+					float aErr3 = alphaError(texels[i].a, interp3.a);
+					if (aErr3 < bestAlphaErr3) {
+						bestAlphaErr3 = aErr3;
+						bestA3 = j;
+					}
+				}
+
+				if (selector == 0u) {
+					trialIdx0[i] = bestRgb2;
+					trialIdx1[i] = bestA3;
+					trialError += bestRgbErr2 + bestAlphaErr3;
+				} else {
+					trialIdx0[i] = bestA2;
+					trialIdx1[i] = bestRgb3;
+					trialError += bestRgbErr3 + bestAlphaErr2;
 				}
 			}
 
-			for (uint j = 0u; j < 8u; j++) {
-				vec4 interp3 = interpolateColor(qe0, qe1, g_bc7_weights3[j]);
-				float rgbErr3 = colorErrorRGB(texels[i], interp3);
-				if (rgbErr3 < bestRgbErr3) {
-					bestRgbErr3 = rgbErr3;
-					bestRgb3 = j;
+			if (trialError < bestError) {
+				bestError = trialError;
+				bestSelector = selector;
+				bestR0 = r0;
+				bestG0 = g0;
+				bestB0 = b0;
+				bestA0 = a0;
+				bestR1 = r1;
+				bestG1 = g1;
+				bestB1 = b1;
+				bestA1 = a1;
+				for (uint i = 0u; i < 16u; i++) {
+					bestIdx0[i] = trialIdx0[i];
+					bestIdx1[i] = trialIdx1[i];
 				}
-				float aErr3 = alphaError(texels[i].a, interp3.a);
-				if (aErr3 < bestAlphaErr3) {
-					bestAlphaErr3 = aErr3;
-					bestA3 = j;
-				}
-			}
-
-			if (selector == 0u) {
-				trialIdx0[i] = bestRgb2;
-				trialIdx1[i] = bestA3;
-				trialError += bestRgbErr2 + bestAlphaErr3;
-			} else {
-				trialIdx0[i] = bestA2;
-				trialIdx1[i] = bestRgb3;
-				trialError += bestRgbErr3 + bestAlphaErr2;
 			}
 		}
 
-		if (trialError < bestError) {
-			bestError = trialError;
-			bestSelector = selector;
+		if (iter < 3u) {
+			vec3 atb0_c = vec3(0.0);
+			vec3 atb1_c = vec3(0.0);
+			float ata00_c = 0.0, ata01_c = 0.0, ata11_c = 0.0;
+			float atb0_a = 0.0, atb1_a = 0.0;
+			float ata00_a = 0.0, ata01_a = 0.0, ata11_a = 0.0;
+
 			for (uint i = 0u; i < 16u; i++) {
-				bestIdx0[i] = trialIdx0[i];
-				bestIdx1[i] = trialIdx1[i];
+				uint cIdx = (bestSelector == 0u) ? bestIdx0[i] : bestIdx1[i];
+				uint aIdx = (bestSelector == 0u) ? bestIdx1[i] : bestIdx0[i];
+
+				float w_c = float(((bestSelector == 0u) ? g_bc7_weights2[cIdx] : g_bc7_weights3[cIdx])) / 64.0;
+				float w0_c = 1.0 - w_c;
+				float w1_c = w_c;
+				// Weight RGB accumulation by alpha: transparent pixels are invisible,
+				// so they should not anchor the color endpoints.
+				float aw = texels[i].a;
+				atb0_c += texels[i].rgb * aw * w0_c;
+				atb1_c += texels[i].rgb * aw * w1_c;
+				ata00_c += aw * w0_c * w0_c;
+				ata01_c += aw * w0_c * w1_c;
+				ata11_c += aw * w1_c * w1_c;
+
+				float w_a = float(((bestSelector == 0u) ? g_bc7_weights3[aIdx] : g_bc7_weights2[aIdx])) / 64.0;
+				float w0_a = 1.0 - w_a;
+				float w1_a = w_a;
+				atb0_a += texels[i].a * w0_a;
+				atb1_a += texels[i].a * w1_a;
+				ata00_a += w0_a * w0_a;
+				ata01_a += w0_a * w1_a;
+				ata11_a += w1_a * w1_a;
+			}
+
+			float det_c = ata00_c * ata11_c - ata01_c * ata01_c;
+			if (abs(det_c) > 1e-6) {
+				float invDet = 1.0 / det_c;
+				vec3 optE0 = clamp((atb0_c * ata11_c - atb1_c * ata01_c) * invDet, vec3(0.0), vec3(1.0));
+				vec3 optE1 = clamp((atb1_c * ata00_c - atb0_c * ata01_c) * invDet, vec3(0.0), vec3(1.0));
+				r0 = quantize(optE0.r, 5u);
+				g0 = quantize(optE0.g, 5u);
+				b0 = quantize(optE0.b, 5u);
+				r1 = quantize(optE1.r, 5u);
+				g1 = quantize(optE1.g, 5u);
+				b1 = quantize(optE1.b, 5u);
+			}
+
+			float det_a = ata00_a * ata11_a - ata01_a * ata01_a;
+			if (abs(det_a) > 1e-6) {
+				float invDet = 1.0 / det_a;
+				float optE0_a = clamp((atb0_a * ata11_a - atb1_a * ata01_a) * invDet, 0.0, 1.0);
+				float optE1_a = clamp((atb1_a * ata00_a - atb0_a * ata01_a) * invDet, 0.0, 1.0);
+				a0 = quantize(optE0_a, 6u);
+				a1 = quantize(optE1_a, 6u);
 			}
 		}
 	}
+
+	r0 = bestR0;
+	g0 = bestG0;
+	b0 = bestB0;
+	a0 = bestA0;
+	r1 = bestR1;
+	g1 = bestG1;
+	b1 = bestB1;
+	a1 = bestA1;
 
 	// Anchor texel 0: primary index stores 1 bit (of 2), secondary stores 2 bits (of 3).
 	// Flip endpoint direction for the channel space that each index plane controls.
@@ -864,7 +1324,7 @@ uvec4 encodeMode4(vec4 texels[16], out float outError) {
 	bc7WriteBits(block, bitPos, 16u, 5u);
 
 	// Rotation (2 bits) and index selector (1 bit).
-	bc7WriteBits(block, bitPos, 0u, 2u);
+	bc7WriteBits(block, bitPos, rot, 2u);
 	bc7WriteBits(block, bitPos, bestSelector, 1u);
 
 	// RGB endpoints (5 bits), channel-major, subset=0, ep0 then ep1.
@@ -1734,203 +2194,261 @@ uvec4 encodeMode1(vec4 texels[16], uint bestPartition, out float outError) {
 
 float evaluatePartition2(vec4 texels[16], uint partitionIndex) {
 	float totalError = 0.0;
+	vec4 minColor[2];
+	vec4 maxColor[2];
+	minColor[0] = vec4(1.0);
+	maxColor[0] = vec4(0.0);
+	minColor[1] = vec4(1.0);
+	maxColor[1] = vec4(0.0);
 
-	for (uint subset = 0u; subset < 2u; subset++) {
-		vec4 minColor = vec4(1.0);
-		vec4 maxColor = vec4(0.0);
-
-		for (uint i = 0u; i < 16u; i++) {
-			if (getPartition2(partitionIndex, i) == subset) {
-				minColor = min(minColor, texels[i]);
-				maxColor = max(maxColor, texels[i]);
-			}
-		}
-
-		for (uint i = 0u; i < 16u; i++) {
-			if (getPartition2(partitionIndex, i) == subset) {
-				vec4 center = (minColor + maxColor) * 0.5;
-				totalError += colorError(texels[i], center);
-			}
-		}
+	for (uint i = 0u; i < 16u; i++) {
+		uint subset = getPartition2(partitionIndex, i);
+		minColor[subset] = min(minColor[subset], texels[i]);
+		maxColor[subset] = max(maxColor[subset], texels[i]);
 	}
 
+	for (uint i = 0u; i < 16u; i++) {
+		uint subset = getPartition2(partitionIndex, i);
+		vec4 center = (minColor[subset] + maxColor[subset]) * 0.5;
+		totalError += colorError(texels[i], center);
+	}
 	return totalError;
 }
 
 float evaluatePartition3(vec4 texels[16], uint partitionIndex) {
 	float totalError = 0.0;
+	vec4 minColor[3];
+	vec4 maxColor[3];
+	minColor[0] = vec4(1.0);
+	maxColor[0] = vec4(0.0);
+	minColor[1] = vec4(1.0);
+	maxColor[1] = vec4(0.0);
+	minColor[2] = vec4(1.0);
+	maxColor[2] = vec4(0.0);
 
-	for (uint subset = 0u; subset < 3u; subset++) {
-		vec4 minColor = vec4(1.0);
-		vec4 maxColor = vec4(0.0);
-
-		for (uint i = 0u; i < 16u; i++) {
-			if (getPartition3(partitionIndex, i) == subset) {
-				minColor = min(minColor, texels[i]);
-				maxColor = max(maxColor, texels[i]);
-			}
-		}
-
-		for (uint i = 0u; i < 16u; i++) {
-			if (getPartition3(partitionIndex, i) == subset) {
-				vec4 center = (minColor + maxColor) * 0.5;
-				totalError += colorError(texels[i], center);
-			}
-		}
+	for (uint i = 0u; i < 16u; i++) {
+		uint subset = getPartition3(partitionIndex, i);
+		minColor[subset] = min(minColor[subset], texels[i]);
+		maxColor[subset] = max(maxColor[subset], texels[i]);
 	}
 
+	for (uint i = 0u; i < 16u; i++) {
+		uint subset = getPartition3(partitionIndex, i);
+		vec4 center = (minColor[subset] + maxColor[subset]) * 0.5;
+		totalError += colorError(texels[i], center);
+	}
 	return totalError;
 }
 
-uint findBestPartition2(vec4 texels[16]) {
-	float bestError = FLT_MAX;
-	uint bestPartition = 0u;
-
-	// For fast mode, only test a subset of partitions
-	uint numPartitions = (params.p_qualityLevel == 0u) ? 16u : 64u;
-
-	for (uint p = 0u; p < numPartitions; p++) {
-		float error = evaluatePartition2(texels, p);
-		if (error < bestError) {
-			bestError = error;
-			bestPartition = p;
-		}
+void getTopPartitions(vec4 texels[16], out uint top2[8], out uint top3[8], out uint top3_16[4]) {
+	float err2[8];
+	float err3[8];
+	float err3_16[4];
+	for (int i = 0; i < 8; i++) {
+		top2[i] = 0u;
+		err2[i] = FLT_MAX;
+		top3[i] = 0u;
+		err3[i] = FLT_MAX;
 	}
-
-	return bestPartition;
-}
-
-void findBestPartition3Both(vec4 texels[16], out uint bestFull, out uint bestFirst16) {
-	float bestErrorFull = FLT_MAX;
-	float bestError16 = FLT_MAX;
-	bestFull = 0u;
-	bestFirst16 = 0u;
+	for (int i = 0; i < 4; i++) {
+		top3_16[i] = 0u;
+		err3_16[i] = FLT_MAX;
+	}
 
 	for (uint p = 0u; p < 64u; p++) {
-		float error = evaluatePartition3(texels, p);
-		if (error < bestErrorFull) {
-			bestErrorFull = error;
-			bestFull = p;
+		float e2 = evaluatePartition2(texels, p);
+		for (int k = 0; k < 8; k++) {
+			if (e2 < err2[k]) {
+				for (int j = 7; j > k; j--) {
+					top2[j] = top2[j - 1];
+					err2[j] = err2[j - 1];
+				}
+				top2[k] = p;
+				err2[k] = e2;
+				break;
+			}
 		}
-		if (p < 16u && error < bestError16) {
-			bestError16 = error;
-			bestFirst16 = p;
+
+		float e3 = evaluatePartition3(texels, p);
+		for (int k = 0; k < 8; k++) {
+			if (e3 < err3[k]) {
+				for (int j = 7; j > k; j--) {
+					top3[j] = top3[j - 1];
+					err3[j] = err3[j - 1];
+				}
+				top3[k] = p;
+				err3[k] = e3;
+				break;
+			}
+		}
+
+		if (p < 16u) {
+			for (int k = 0; k < 4; k++) {
+				if (e3 < err3_16[k]) {
+					for (int j = 3; j > k; j--) {
+						top3_16[j] = top3_16[j - 1];
+						err3_16[j] = err3_16[j - 1];
+					}
+					top3_16[k] = p;
+					err3_16[k] = e3;
+					break;
+				}
+			}
 		}
 	}
-}
-
-void analyzeBlock(vec4 texels[16], out float outAlphaRange, out float outMaxRgbRange) {
-	vec3 minRgb = vec3(1.0);
-	vec3 maxRgb = vec3(0.0);
-	float minA = 1.0;
-	float maxA = 0.0;
-
-	for (uint i = 0u; i < 16u; i++) {
-		minRgb = min(minRgb, texels[i].rgb);
-		maxRgb = max(maxRgb, texels[i].rgb);
-		minA = min(minA, texels[i].a);
-		maxA = max(maxA, texels[i].a);
-	}
-
-	outAlphaRange = maxA - minA;
-	vec3 rgbRange = maxRgb - minRgb;
-	outMaxRgbRange = max(rgbRange.r, max(rgbRange.g, rgbRange.b));
 }
 
 uvec4 compressBlock(vec4 texels[16]) {
-	// Quality 0 (fast): Mode 6 only, minimal refinement
-	// Quality 1 (balanced): Try Mode 6, Mode 5 and Mode 4
-	// Quality 2 (high): Try all modes, pick best
+	// Solid Block Fast Path: If all 16 pixels are identical (or near identical),
+	// Mode 6 encodes them perfectly and searching partitions/rotations is a massive waste.
+	vec4 minT = texels[0];
+	vec4 maxT = texels[0];
+	for (uint i = 1u; i < 16u; i++) {
+		minT = min(minT, texels[i]);
+		maxT = max(maxT, texels[i]);
+	}
+	vec4 delta = maxT - minT;
+	if (dot(delta, delta) < 1e-5) {
+		float err;
+		return encodeMode6(texels, err);
+	}
+
+	// Top-N Partition Quality Search
+	// Early out threshold: If the error is virtually microscopic, stop computing.
+	const float EARLY_OUT_ERROR = 1e-5;
+	bool hasAlphaVariation = delta.a > (1.0 / 255.0);
 
 	float bestError;
 	uvec4 bestBlock = encodeMode6(texels, bestError);
-
-	if (params.p_qualityLevel == 0u) {
+	if (bestError <= EARLY_OUT_ERROR) {
 		return bestBlock;
 	}
 
-	{
-		float err;
-		uvec4 blk = encodeMode5(texels, err);
-		if (err < bestError) {
-			bestError = err;
-			bestBlock = blk;
-		}
-	}
-
-	{
-		float err;
-		uvec4 blk = encodeMode4(texels, err);
-		if (err < bestError) {
-			bestError = err;
-			bestBlock = blk;
-		}
-	}
-
-	if (params.p_qualityLevel == 1u) {
-		return bestBlock;
-	}
-
-	float alphaRange;
-	float maxRgbRange;
-	analyzeBlock(texels, alphaRange, maxRgbRange);
-
-	bool alphaIsConstant = alphaRange < (2.0 / 255.0);
-	bool alphaHasVariation = alphaRange > (12.0 / 255.0);
-	bool colorIsFlat = maxRgbRange < 0.075;
-
-	bool allowPartitioned = !colorIsFlat;
-	bool allowAlphaLessModes = !alphaHasVariation;
-
-	if (allowPartitioned) {
-		uint bestPartition2 = findBestPartition2(texels);
-
-		if (allowAlphaLessModes) {
-			{
-				float err;
-				uvec4 blk = encodeMode1(texels, bestPartition2, err);
-				if (err < bestError) {
-					bestError = err;
-					bestBlock = blk;
-				}
-			}
-			{
-				float err;
-				uvec4 blk = encodeMode3(texels, bestPartition2, err);
-				if (err < bestError) {
-					bestError = err;
-					bestBlock = blk;
-				}
+	if (hasAlphaVariation) {
+		float rampError;
+		uvec4 rampBlock = encodeMode6AlphaRamp(texels, rampError);
+		if (rampError < bestError) {
+			bestError = rampError;
+			bestBlock = rampBlock;
+			if (bestError <= EARLY_OUT_ERROR) {
+				return bestBlock;
 			}
 		}
+	}
 
-		if (!alphaIsConstant) {
+	{
+		for (uint rot = 0u; rot < 4u; rot++) {
+			if (!hasAlphaVariation && rot == 0u) {
+				continue;
+			}
 			float err;
-			uvec4 blk = encodeMode7(texels, bestPartition2, err);
+			uvec4 blk = encodeMode5(texels, rot, err);
 			if (err < bestError) {
 				bestError = err;
 				bestBlock = blk;
+				if (bestError <= EARLY_OUT_ERROR) {
+					return bestBlock;
+				}
+			}
+		}
+	}
+
+	{
+		for (uint rot = 0u; rot < 4u; rot++) {
+			if (!hasAlphaVariation && rot == 0u) {
+				continue;
+			}
+			float err;
+			uvec4 blk = encodeMode4(texels, rot, err);
+			if (err < bestError) {
+				bestError = err;
+				bestBlock = blk;
+				if (bestError <= EARLY_OUT_ERROR) {
+					return bestBlock;
+				}
+			}
+		}
+	}
+
+	uint top2[8];
+	uint top3[8];
+	uint top3_16[4];
+	getTopPartitions(texels, top2, top3, top3_16);
+
+	// Search top 8 partitions for 2-subset modes
+	for (int i = 0; i < 8; i++) {
+		uint p = top2[i];
+
+		// Mode 1: 2 subsets, 6-bit endpoints, 3-bit indices
+		{
+			float err;
+			uvec4 blk = encodeMode1(texels, p, err);
+			if (err < bestError) {
+				bestError = err;
+				bestBlock = blk;
+				if (bestError <= EARLY_OUT_ERROR) {
+					return bestBlock;
+				}
 			}
 		}
 
-		if (allowAlphaLessModes) {
-			uint bestPartition3, bestPartition0;
-			findBestPartition3Both(texels, bestPartition3, bestPartition0);
-			{
-				float err;
-				uvec4 blk = encodeMode2(texels, bestPartition3, err);
-				if (err < bestError) {
-					bestError = err;
-					bestBlock = blk;
+		// Mode 3: 2 subsets, 7-bit endpoints, 2-bit indices
+		{
+			float err;
+			uvec4 blk = encodeMode3(texels, p, err);
+			if (err < bestError) {
+				bestError = err;
+				bestBlock = blk;
+				if (bestError <= EARLY_OUT_ERROR) {
+					return bestBlock;
 				}
 			}
-			{
-				float err;
-				uvec4 blk = encodeMode0(texels, bestPartition0, err);
-				if (err < bestError) {
-					bestError = err;
-					bestBlock = blk;
+		}
+
+		// Mode 7: 2 subsets, 5-bit RGBA endpoints, 2-bit indices
+		if (hasAlphaVariation) {
+			float err;
+			uvec4 blk = encodeMode7(texels, p, err);
+			if (err < bestError) {
+				bestError = err;
+				bestBlock = blk;
+				if (bestError <= EARLY_OUT_ERROR) {
+					return bestBlock;
 				}
+			}
+		}
+	}
+
+	// Search top 8 partitions for 3-subset mode 2
+	for (int i = 0; i < 8; i++) {
+		uint p = top3[i];
+
+		// Mode 2: 3 subsets, 5-bit endpoints, 2-bit indices
+		{
+			float err;
+			uvec4 blk = encodeMode2(texels, p, err);
+			if (err < bestError) {
+				bestError = err;
+				bestBlock = blk;
+				if (bestError <= EARLY_OUT_ERROR) {
+					return bestBlock;
+				}
+			}
+		}
+	}
+
+	// Search top 4 partitions for 3-subset mode 0
+	for (int i = 0; i < 4; i++) {
+		uint p = top3_16[i];
+
+		// Mode 0: 3 subsets, 4-bit endpoints, 3-bit indices
+		float err;
+		uvec4 blk = encodeMode0(texels, p, err);
+		if (err < bestError) {
+			bestError = err;
+			bestBlock = blk;
+			if (bestError <= EARLY_OUT_ERROR) {
+				return bestBlock;
 			}
 		}
 	}
