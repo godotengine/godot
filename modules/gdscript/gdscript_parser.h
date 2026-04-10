@@ -1327,6 +1327,7 @@ public:
 		CompletionType type = COMPLETION_NONE;
 		ClassNode *current_class = nullptr;
 		FunctionNode *current_function = nullptr;
+		VariableNode *current_variable = nullptr;
 		SuiteNode *current_suite = nullptr;
 		int current_line = -1;
 		union {
@@ -1338,6 +1339,10 @@ public:
 		Object *base = nullptr;
 		GDScriptParser *parser = nullptr;
 		CompletionCall call;
+
+		bool is_static() const {
+			return (current_function && current_function->is_static) || (current_variable && current_variable->is_static);
+		}
 	};
 
 private:
@@ -1397,6 +1402,7 @@ private:
 
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
+	VariableNode *current_variable = nullptr;
 	LambdaNode *current_lambda = nullptr;
 	SuiteNode *current_suite = nullptr;
 
