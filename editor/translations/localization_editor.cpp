@@ -53,6 +53,7 @@ void LocalizationEditor::_notification(int p_what) {
 			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
 			template_source_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_template_source_delete));
 			template_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
+			template_add_title->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_project_title_to_translation_template"));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -421,6 +422,11 @@ void LocalizationEditor::_template_generate_command() {
 
 void LocalizationEditor::_template_add_builtin_toggled() {
 	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", template_add_builtin->is_pressed());
+	ProjectSettings::get_singleton()->save();
+}
+
+void LocalizationEditor::_template_add_title_toggled() {
+	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_project_title_to_translation_template", template_add_title->is_pressed());
 	ProjectSettings::get_singleton()->save();
 }
 
@@ -896,10 +902,17 @@ LocalizationEditor::LocalizationEditor() {
 		tree_data_types[template_source_list] = "localization_editor_pot_item";
 		tree_settings[template_source_list] = "internationalization/locale/translations_pot_files";
 
+		HBoxContainer *checkbox_hb = memnew(HBoxContainer);
+		tvb->add_child(checkbox_hb);
+
 		template_add_builtin = memnew(CheckBox(TTRC("Add Built-in Strings")));
 		template_add_builtin->set_tooltip_text(TTRC("Add strings from built-in components such as certain Control nodes."));
 		template_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_add_builtin_toggled));
-		tvb->add_child(template_add_builtin);
+		checkbox_hb->add_child(template_add_builtin);
+
+		template_add_title = memnew(CheckBox(TTRC("Add Project Title")));
+		template_add_title->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_add_title_toggled));
+		checkbox_hb->add_child(template_add_title);
 
 		template_generate_dialog = memnew(EditorFileDialog);
 		template_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
