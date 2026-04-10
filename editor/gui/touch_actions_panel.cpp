@@ -76,16 +76,20 @@ void TouchActionsPanel::_notification(int p_what) {
 }
 
 void TouchActionsPanel::input(const Ref<InputEvent> &event) {
-	if (ctrl_btn_pressed) {
+	if (event->is_class("InputEventMouse") && ctrl_btn_pressed) {
 		event->call(SNAME("set_ctrl_pressed"), true);
+		ctrl_modifier_event->set_pressed(true);
+		Input::get_singleton()->parse_input_event(ctrl_modifier_event);
 	}
-
-	if (shift_btn_pressed) {
+	if (event->is_class("InputEventMouse") && shift_btn_pressed) {
 		event->call(SNAME("set_shift_pressed"), true);
+		shift_modifier_event->set_pressed(true);
+		Input::get_singleton()->parse_input_event(shift_modifier_event);
 	}
-
-	if (alt_btn_pressed) {
+	if (event->is_class("InputEventMouse") && alt_btn_pressed) {
 		event->call(SNAME("set_alt_pressed"), true);
+		alt_modifier_event->set_pressed(true);
+		Input::get_singleton()->parse_input_event(alt_modifier_event);
 	}
 }
 
@@ -117,12 +121,24 @@ void TouchActionsPanel::_on_modifier_button_toggled(bool p_pressed, int p_modifi
 	switch ((Modifier)p_modifier) {
 		case MODIFIER_CTRL:
 			ctrl_btn_pressed = p_pressed;
+			if (ctrl_btn_pressed == false) {
+				ctrl_modifier_event->set_pressed(false);
+				Input::get_singleton()->parse_input_event(ctrl_modifier_event);
+			}
 			break;
 		case MODIFIER_SHIFT:
 			shift_btn_pressed = p_pressed;
+			if (shift_btn_pressed == false) {
+				shift_modifier_event->set_pressed(false);
+				Input::get_singleton()->parse_input_event(shift_modifier_event);
+			}
 			break;
 		case MODIFIER_ALT:
 			alt_btn_pressed = p_pressed;
+			if (alt_btn_pressed == false) {
+				alt_modifier_event->set_pressed(false);
+				Input::get_singleton()->parse_input_event(alt_modifier_event);
+			}
 			break;
 	}
 }
@@ -147,12 +163,18 @@ void TouchActionsPanel::_add_new_modifier_button(Modifier p_modifier) {
 	switch (p_modifier) {
 		case MODIFIER_CTRL:
 			text = "Ctrl";
+			ctrl_modifier_event.instantiate();
+			ctrl_modifier_event->set_keycode(Key::CTRL);
 			break;
 		case MODIFIER_SHIFT:
 			text = "Shift";
+			shift_modifier_event.instantiate();
+			shift_modifier_event->set_keycode(Key::SHIFT);
 			break;
 		case MODIFIER_ALT:
 			text = "Alt";
+			alt_modifier_event.instantiate();
+			alt_modifier_event->set_keycode(Key::ALT);
 			break;
 	}
 	Button *toggle_button = memnew(Button);
