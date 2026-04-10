@@ -47,6 +47,7 @@ class InspectorDock : public EditorDock {
 	GDCLASS(InspectorDock, EditorDock);
 
 	enum MenuOptions {
+		RESOURCE_NEW,
 		RESOURCE_LOAD,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -77,19 +78,15 @@ class InspectorDock : public EditorDock {
 
 	Object *current = nullptr;
 
-	Button *backward_button = nullptr;
+	MenuButton *backward_button = nullptr;
 	Button *forward_button = nullptr;
 
 	EditorFileDialog *load_resource_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
-	Button *resource_new_button = nullptr;
-	Button *resource_load_button = nullptr;
 	MenuButton *resource_save_button = nullptr;
 	MenuButton *resource_extra_button = nullptr;
-	MenuButton *history_menu = nullptr;
 	LineEdit *search = nullptr;
 
-	Button *open_docs_button = nullptr;
 	MenuButton *object_menu = nullptr;
 	EditorObjectSelector *object_selector = nullptr;
 
@@ -112,7 +109,6 @@ class InspectorDock : public EditorDock {
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
-	void _open_resource_selector() { _load_resource(); } // just used to call from arg-less signal
 	void _resource_file_selected(const String &p_file);
 	void _save_resource(bool save_as);
 	void _unref_resource();
@@ -126,7 +122,7 @@ class InspectorDock : public EditorDock {
 	void _resource_selected(const Ref<Resource> &p_res, const String &p_property);
 	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _edit_forward();
-	void _edit_back();
+	void _edit_back(const Ref<InputEvent> &p_event);
 	void _menu_collapseall();
 	void _menu_expandall();
 	void _menu_expand_revertable();
@@ -147,7 +143,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void go_back();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_resource(const String &p_type);
 	void clear();
