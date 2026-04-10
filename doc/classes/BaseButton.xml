@@ -69,7 +69,7 @@
 			[b]Note:[/b] This property only affects the button's visual appearance. Signals will be emitted at the same moment regardless of this property's value.
 		</member>
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
-			[Shortcut] associated to the button.
+			[Shortcut] associated to the button. The button gets pressed when the shortcut is matched in shortcut input (see [method Node._shortcut_input]).
 		</member>
 		<member name="shortcut_feedback" type="bool" setter="set_shortcut_feedback" getter="is_shortcut_feedback" default="true">
 			If [code]true[/code], the button will highlight for a short amount of time when its shortcut is activated. If [code]false[/code] and [member toggle_mode] is [code]false[/code], the shortcut will activate without any visual feedback.
