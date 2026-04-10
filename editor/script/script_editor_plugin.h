@@ -469,6 +469,8 @@ public:
 class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
+	static ScriptEditorPlugin *singleton;
+
 	ScriptEditor *script_editor = nullptr;
 	WindowWrapper *window_wrapper = nullptr;
 
@@ -483,6 +485,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static ScriptEditorPlugin *get_singleton() { return singleton; }
+
 	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
 
 	virtual String get_plugin_name() const override { return TTRC("Script"); }
@@ -504,4 +508,5 @@ public:
 	virtual void edited_scene_changed() override;
 
 	ScriptEditorPlugin();
+	~ScriptEditorPlugin();
 };
