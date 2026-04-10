@@ -204,6 +204,10 @@
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+#include "modules/visual_shader/editor/visual_shader_editor_plugin.h"
+#endif // MODULE_VISUAL_SHADER_ENABLED
+
 #include <cstdlib>
 
 EditorNode *EditorNode::singleton = nullptr;

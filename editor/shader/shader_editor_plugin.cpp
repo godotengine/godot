@@ -94,6 +94,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 
 	script_editor = memnew(ScriptEditor(nullptr, shader_dock));
 	script_editor->set_config_section("ShaderEditor");
-	script_editor->set_handled_file_types({ "Shader", "ShaderInclude" });
+	script_editor->set_handled_file_types({ "Shader", "VisualShader", "ShaderInclude" });
 	shader_dock->add_child(script_editor);
 }

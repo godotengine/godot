@@ -45,7 +45,6 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
-#include "modules/visual_shader/visual_shader.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/sky.h"
@@ -1268,10 +1267,8 @@ void ShaderTextEditor::apply_code() {
 }
 
 ScriptEditorBase *ShaderTextEditor::create_editor(const Ref<Resource> &p_resource) {
-	if (Object::cast_to<VisualShader>(*p_resource)) {
-		return nullptr;
-	}
-	if (Object::cast_to<Shader>(*p_resource) || Object::cast_to<ShaderInclude>(*p_resource)) {
+	// Check class name for Shader to ensure it is not a VisualShader even when the visual shader module is disabled
+	if (p_resource->is_class("Shader") || Object::cast_to<ShaderInclude>(*p_resource)) {
 		return memnew(ShaderTextEditor);
 	}
 	return nullptr;

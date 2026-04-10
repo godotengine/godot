@@ -85,6 +85,12 @@
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+#include "modules/visual_shader/editor/visual_shader_editor_plugin.h"
+#endif // MODULE_VISUAL_SHADER_ENABLED
+
 void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, bool p_dontclear) {
 	popup_centered_ratio(0.6);
 	if (p_dontclear) {
@@ -2352,7 +2358,10 @@ LocalVector<Pair<String, bool>> ScriptEditor::get_unsaved_scripts() const {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (seb && seb->is_unsaved()) {
-			bool is_shader_editor = Object::cast_to<ShaderTextEditor>(seb) || Object::cast_to<VisualShaderEditor>(seb);
+			bool is_shader_editor = Object::cast_to<ShaderTextEditor>(seb);
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+			is_shader_editor |= Object::cast_to<VisualShaderEditor>(seb) != nullptr;
+#endif // MODULE_VISUAL_SHADER_ENABLED
 			unsaved_list.push_back(Pair(seb->get_name(), is_shader_editor));
 		}
 	}
@@ -2873,14 +2882,13 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
 			}
-			if (ResourceLoader::exists(file, "Script") || ResourceLoader::exists(file, "JSON")) {
-				Ref<Resource> scr = ResourceLoader::load(file);
-				if (scr.is_valid()) {
-					return true;
-				}
+
+			const String &file_type = ResourceLoader::get_resource_type(file);
+			if (handled_file_types.has(file_type)) {
+				return true;
 			}
 
-			if (textfile_extensions.has(file.get_extension())) {
+			if (this == script_editor && textfile_extensions.has(file.get_extension())) {
 				Error err;
 				Ref<TextFile> text_file = _load_text_file(file, &err);
 				if (text_file.is_valid() && err == OK) {
@@ -2978,7 +2986,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 				continue;
 			}
 
-			if (!ResourceLoader::exists(file, "Script") && !ResourceLoader::exists(file, "JSON") && !textfile_extensions.has(file.get_extension())) {
+			if (!(handled_file_types.has(ResourceLoader::get_resource_type(file)) || (this == script_editor && textfile_extensions.has(file.get_extension())))) {
 				continue;
 			}
 
@@ -3501,7 +3509,10 @@ void ScriptEditor::_update_selected_editor_menu() {
 	}
 
 	ScriptEditorBase *seb = _get_current_editor();
-	bool is_shader_editor = Object::cast_to<VisualShaderEditor>(seb) || Object::cast_to<ShaderTextEditor>(seb);
+	bool is_shader_editor = Object::cast_to<ShaderTextEditor>(seb);
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+	is_shader_editor |= Object::cast_to<VisualShaderEditor>(seb) != nullptr;
+#endif // MODULE_VISUAL_SHADER_ENABLED
 	debug_menu_btn->set_visible(!is_shader_editor);
 	help_search->set_visible(!is_shader_editor);
 
@@ -4274,10 +4285,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper, EditorDock *p_dock) {
 	Ref<TextShaderLanguagePlugin> text_shader_lang;
 	text_shader_lang.instantiate();
 	EditorShaderLanguagePlugin::register_shader_language(text_shader_lang);
-
-	Ref<VisualShaderLanguagePlugin> visual_shader_lang;
-	visual_shader_lang.instantiate();
-	EditorShaderLanguagePlugin::register_shader_language(visual_shader_lang);
 }
 
 ScriptEditor::~ScriptEditor() {
@@ -4530,7 +4537,7 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 
 	script_editor = memnew(ScriptEditor(window_wrapper));
 	script_editor->set_config_section("ScriptEditor");
-	script_editor->set_handled_file_types({ "Script", "JSON" });
+	script_editor->set_handled_file_types({ "GDScript", "Script", "JSON" });
 	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("script_editor/make_floating", TTRC("Make Floating"));
 	window_wrapper->set_wrapped_control(script_editor, make_floating_shortcut);
 

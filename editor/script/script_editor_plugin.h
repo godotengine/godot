@@ -386,7 +386,7 @@ class ScriptEditor : public PanelContainer {
 
 	String config_section;
 
-	List<String> handled_file_types = { "Script", "JSON", "Shader", "ShaderInclude" };
+	HashSet<String> handled_file_types = { "GDScript", "Script", "JSON", "Shader", "VisualShader", "ShaderInclude" };
 	List<String> _get_recognized_extensions();
 	HashSet<String> textfile_extensions;
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
@@ -429,7 +429,7 @@ public:
 
 	bool is_editor_floating();
 
-	void set_handled_file_types(List<String> p_file_types) { handled_file_types = p_file_types; }
+	void set_handled_file_types(HashSet<String> p_file_types) { handled_file_types = p_file_types; }
 
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
