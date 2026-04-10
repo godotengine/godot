@@ -698,6 +698,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["BACKLIGHT"] = "backlight_highp";
 		actions.renames["AO"] = "ao_highp";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect_highp";
+		actions.renames["MICRO_SHADOWS"] = "micro_shadows_highp";
 		actions.renames["EMISSION"] = "emission_highp";
 		actions.renames["POINT_COORD"] = "point_coord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
@@ -821,6 +822,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
 		actions.render_mode_defines["specular_occlusion_disabled"] = "#define SPECULAR_OCCLUSION_DISABLED\n";
+
+		actions.render_mode_defines["micro_shadows_disabled"] = "#define MICRO_SHADOWS_DISABLED\n";
 
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardMobile::MATERIAL_UNIFORM_SET;

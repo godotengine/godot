@@ -1522,6 +1522,13 @@ float V_Kelemen(float LdotH) {
 	return 0.25 / (LdotH * LdotH + 1e-4);
 }
 
+// Brinck and Maximov 2016, "The Technical Art of Uncharted 4"
+float compute_micro_shadowing(float NoL, float ao, float opacity) {
+	float aperture = 2.0 * ao * ao;
+	float microshadow = clamp(NoL + aperture - 1.0, 0.0, 1.0);
+	return mix(1.0, microshadow, opacity);
+}
+
 void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_directional, float attenuation, vec3 f0, float roughness, float metallic, float specular_amount, vec3 albedo, inout float alpha, vec2 screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 		vec3 backlight,
@@ -2040,7 +2047,9 @@ void main() {
 #endif
 
 	float ao = 1.0;
+	float direct_ao = 0.0;
 	float ao_light_affect = 0.0;
+	float micro_shadows = 0.0;
 
 	float alpha = 1.0;
 
@@ -2396,7 +2405,7 @@ void main() {
 #endif // !AMBIENT_LIGHT_DISABLED
 
 	// convert ao to direct light ao
-	ao = mix(1.0, ao, ao_light_affect);
+	direct_ao = mix(1.0, ao, ao_light_affect);
 #ifndef AMBIENT_LIGHT_DISABLED
 	{
 #if defined(DIFFUSE_TOON)
@@ -2550,7 +2559,7 @@ void main() {
 	normal_output_buffer.rgb = normal * 0.5 + 0.5;
 	normal_output_buffer.a = 0.0;
 
-	orm_output_buffer.r = ao;
+	orm_output_buffer.r = direct_ao;
 	orm_output_buffer.g = roughness;
 	orm_output_buffer.b = metallic;
 	orm_output_buffer.a = 1.0;
@@ -2747,6 +2756,16 @@ void main() {
 #else
 	float directional_shadow = 1.0f;
 #endif // SHADOWS_DISABLED
+
+#ifndef MICRO_SHADOWS_DISABLED
+#ifdef BENT_NORMAL_MAP_USED
+	float NdotL = dot(bent_normal_vector, directional_lights[directional_shadow_index].direction);
+#else
+	float NdotL = dot(normal, directional_lights[directional_shadow_index].direction);
+#endif // BENT_NORMAL_MAP_USED
+	// Disable microshadowing when facing away from light.
+	directional_shadow *= NdotL >= 0.0 ? compute_micro_shadowing(NdotL, ao, micro_shadows) : 1.0;
+#endif // MICRO_SHADOWS_DISABLED
 
 #ifndef USE_VERTEX_LIGHTING
 	if (bool(directional_lights[directional_shadow_index].mask & layer_mask)) {

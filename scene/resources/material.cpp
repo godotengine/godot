@@ -628,6 +628,7 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->grow = "grow";
 
 	shader_names->ao_light_affect = "ao_light_affect";
+	shader_names->micro_shadows_strength = "micro_shadows_strength";
 
 	shader_names->proximity_fade_distance = "proximity_fade_distance";
 	shader_names->distance_fade_min = "distance_fade_min";
@@ -903,6 +904,9 @@ void BaseMaterial3D::_update_shader() {
 	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
 		code += ", depth_prepass_alpha";
 	}
+	if (flags[FLAG_DISABLE_MICRO_SHADOWS]) {
+		code += ", micro_shadows_disabled";
+	}
 
 	// Although it's technically possible to do alpha antialiasing without using alpha hash or alpha scissor,
 	// it is restricted in the base material because it has no use, and abusing it with regular Alpha blending can
@@ -1135,6 +1139,10 @@ uniform vec4 ao_texture_channel;
 uniform float ao_light_affect : hint_range(0.0, 1.0, 0.01);
 )",
 				texfilter_str);
+	}
+
+	if (!flags[FLAG_DISABLE_MICRO_SHADOWS]) {
+		code += "uniform float micro_shadows_strength : hint_range(0.0, 1.0, 0.01);";
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -1964,6 +1972,13 @@ void fragment() {)";
 		code += "	AO_LIGHT_AFFECT = ao_light_affect;\n";
 	}
 
+	if (!flags[FLAG_DISABLE_MICRO_SHADOWS]) {
+		code += R"(
+	// Micro Shadows: Enabled
+)";
+		code += "	MICRO_SHADOWS = micro_shadows_strength;\n";
+	}
+
 	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 		code += R"(
 	// Subsurface Scattering: Enabled
@@ -2256,6 +2271,15 @@ void BaseMaterial3D::set_ao_light_affect(float p_ao_light_affect) {
 
 float BaseMaterial3D::get_ao_light_affect() const {
 	return ao_light_affect;
+}
+
+void BaseMaterial3D::set_micro_shadows_strength(float p_micro_shadows_strength) {
+	micro_shadows_strength = p_micro_shadows_strength;
+	_material_set_param(shader_names->micro_shadows_strength, p_micro_shadows_strength);
+}
+
+float BaseMaterial3D::get_micro_shadows_strength() const {
+	return micro_shadows_strength;
 }
 
 void BaseMaterial3D::set_clearcoat(float p_clearcoat) {
@@ -3523,6 +3547,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ao_light_affect", "amount"), &BaseMaterial3D::set_ao_light_affect);
 	ClassDB::bind_method(D_METHOD("get_ao_light_affect"), &BaseMaterial3D::get_ao_light_affect);
 
+	ClassDB::bind_method(D_METHOD("set_micro_shadows_strength", "amount"), &BaseMaterial3D::set_micro_shadows_strength);
+	ClassDB::bind_method(D_METHOD("get_micro_shadows_strength"), &BaseMaterial3D::get_micro_shadows_strength);
+
 	ClassDB::bind_method(D_METHOD("set_alpha_scissor_threshold", "threshold"), &BaseMaterial3D::set_alpha_scissor_threshold);
 	ClassDB::bind_method(D_METHOD("get_alpha_scissor_threshold"), &BaseMaterial3D::get_alpha_scissor_threshold);
 
@@ -3608,6 +3635,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_fog"), "set_flag", "get_flag", FLAG_DISABLE_FOG);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_specular_occlusion"), "set_flag", "get_flag", FLAG_DISABLE_SPECULAR_OCCLUSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "disable_micro_shadows"), "set_flag", "get_flag", FLAG_DISABLE_MICRO_SHADOWS);
 
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
@@ -3675,6 +3703,9 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_ao_texture_channel", "get_ao_texture_channel");
+
+	ADD_GROUP("Micro Shadows", "micro_shadows_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "micro_shadows_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_micro_shadows_strength", "get_micro_shadows_strength");
 
 	ADD_GROUP("Height", "heightmap_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_HEIGHT_MAPPING);
@@ -3891,6 +3922,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_SPECULAR_OCCLUSION);
 	BIND_ENUM_CONSTANT(FLAG_USE_Z_CLIP_SCALE);
 	BIND_ENUM_CONSTANT(FLAG_USE_FOV_OVERRIDE);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_MICRO_SHADOWS);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
@@ -3987,6 +4019,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_distance_fade_max_distance(10);
 
 	set_ao_light_affect(0.0);
+	set_micro_shadows_strength(0.85);
 
 	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
 	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);
