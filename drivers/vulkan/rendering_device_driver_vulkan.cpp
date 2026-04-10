@@ -6470,12 +6470,13 @@ void RenderingDeviceDriverVulkan::raytracing_pipeline_free(RaytracingPipelineID 
 #endif
 }
 
-bool RenderingDeviceDriverVulkan::raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data) {
+bool RenderingDeviceDriverVulkan::raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) {
 #if VULKAN_RAYTRACING_ENABLED
+	ERR_FAIL_COND_V_MSG(p_data_stride_bytes < raytracing_capabilities.shader_group_handle_size, false, "Data stride must be at least the size of shader group handles.");
 	for (uint32_t i = 0; i < p_group_indices.size(); i++) {
 		VkResult err = vkGetRayTracingShaderGroupHandlesKHR(vk_device, (VkPipeline)p_pipeline.id, p_group_index_offset + p_group_indices[i], 1, raytracing_capabilities.shader_group_handle_size, r_data);
 		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, "vkGetRayTracingShaderGroupHandlesKHR failed with error " + itos(err) + ".");
-		r_data += raytracing_capabilities.shader_group_handle_size;
+		r_data += p_data_stride_bytes;
 	}
 	return true;
 #else
