@@ -343,6 +343,14 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			load_task.status = THREAD_LOAD_FAILED;
 			return;
 		}
+		if (load_task.status != THREAD_LOAD_IN_PROGRESS || load_task.load_claimed) {
+			// Another thread already completed or claimed this task (e.g., the
+			// original load finished or is already running while the deadlock
+			// prevention branch was about to re-run it).
+			load_task.load_token->unreference();
+			return;
+		}
+		load_task.load_claimed = true;
 	}
 
 	ThreadLoadTask *curr_load_task_backup = curr_load_task;
@@ -372,6 +380,27 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 
 	thread_load_mutex.lock();
+
+	if (load_task.status != THREAD_LOAD_IN_PROGRESS) {
+		// Another thread already completed this task while we were loading
+		// (race between deadlock prevention re-run and the original load).
+		// Discard our result and bail out. The discarded resource (res) is
+		// safely released when it goes out of scope; any cache interaction
+		// from set_path() during its loading is handled by the existing
+		// ResourceCache reconciliation logic above.
+		thread_load_mutex.unlock();
+
+		if (load_nesting == 0) {
+			if (own_mq_override) {
+				MessageQueue::set_thread_singleton_override(nullptr);
+				memdelete(own_mq_override);
+			}
+		}
+
+		curr_load_task = curr_load_task_backup;
+		load_task.load_token->unreference();
+		return;
+	}
 
 	load_task.resource = res;
 
