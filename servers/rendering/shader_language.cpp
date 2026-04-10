@@ -31,6 +31,7 @@
 #include "shader_language.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
@@ -5316,6 +5317,10 @@ void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
 	}
 }
 
+int ShaderLanguage::get_max_instance_uniform_indices() {
+	return GLOBAL_GET_CACHED(int, "rendering/limits/shaders/max_instance_uniform_indices");
+}
+
 ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 	static const DataType scalar_types[] = {
 		TYPE_VOID,
@@ -10041,8 +10046,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									custom_instance_index = tk.constant;
 									current_uniform_instance_index_defined = true;
 
-									if (custom_instance_index >= MAX_INSTANCE_UNIFORM_INDICES) {
-										_set_error(vformat(RTR("Allowed instance uniform indices must be within [0..%d] range."), MAX_INSTANCE_UNIFORM_INDICES - 1));
+									if (custom_instance_index >= get_max_instance_uniform_indices()) {
+										_set_error(vformat(RTR("Allowed instance uniform indices must be within [0..%d] range."), get_max_instance_uniform_indices() - 1));
 										return ERR_PARSE_ERROR;
 									}
 
@@ -10203,8 +10208,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							uniform.instance_index = custom_instance_index;
 						} else {
 							uniform.instance_index = instance_index++;
-							if (instance_index > MAX_INSTANCE_UNIFORM_INDICES) {
-								_set_error(vformat(RTR("Too many '%s' uniforms in shader, maximum supported is %d."), "instance", MAX_INSTANCE_UNIFORM_INDICES));
+							if (instance_index > get_max_instance_uniform_indices()) {
+								_set_error(vformat(RTR("Too many '%s' uniforms in shader, maximum supported is %d."), "instance", get_max_instance_uniform_indices()));
 								return ERR_PARSE_ERROR;
 							}
 						}
