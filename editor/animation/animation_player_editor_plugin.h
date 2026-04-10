@@ -197,7 +197,8 @@ class AnimationPlayerEditor : public EditorDock {
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
-	void _seek_value_changed(float p_value, bool p_timeline_only = false);
+	void _set_seek_value(float p_value, bool p_timeline_only = false);
+	void _frame_value_changed(double p_value);
 	void _blend_editor_next_changed(const int p_idx);
 
 	void _edit_animation_blend();
