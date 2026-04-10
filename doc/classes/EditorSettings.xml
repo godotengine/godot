@@ -1563,6 +1563,11 @@
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically inserts the matching closing brace when the opening brace is inserted by typing or autocompletion. Also automatically removes the closing brace when pressing [kbd]Backspace[/kbd] on the opening brace. This includes brackets ([code]()[/code], [code][][/code], [code]{}[/code]), string quotation marks ([code]''[/code], [code]""[/code]), and comments ([code]/**/[/code]) if the language supports it.
 		</member>
+		<member name="text_editor/completion/auto_brace_complete_mode" type="int" setter="" getter="">
+			If [member text_editor/completion/auto_brace_complete] [code]true[/code], braces are auto-completed following the selected mode.
+			- [b]Always:[/b] automatically close the brace independently of where it is inserted.
+			- [b]Before Whitespace:[/b] automatically close the brace if inserted before a whitespace.
+		</member>
 		<member name="text_editor/completion/code_complete_delay" type="float" setter="" getter="">
 			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.
 		</member>

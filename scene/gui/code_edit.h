@@ -61,6 +61,11 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
+	enum AutoBraceCompletionMode {
+		AUTO_BRACE_COMPLETION_ALWAYS = 0,
+		AUTO_BRACE_COMPLETION_BEFORE_WHITESPACE = 1,
+	};
+
 private:
 	/* Indent management */
 	int indent_size = 4;
@@ -77,6 +82,7 @@ private:
 
 	/* Auto brace completion */
 	bool auto_brace_completion_enabled = false;
+	int auto_brace_completion_mode = 0;
 
 	/* BracePair open_key must be uniquie and ordered by length. */
 	struct BracePair {
@@ -374,6 +380,9 @@ public:
 	/* Auto brace completion */
 	void set_auto_brace_completion_enabled(bool p_enabled);
 	bool is_auto_brace_completion_enabled() const;
+
+	void set_auto_brace_completion_mode(int p_mode);
+	int get_auto_brace_completion_mode() const;
 
 	void set_highlight_matching_braces_enabled(bool p_enabled);
 	bool is_highlight_matching_braces_enabled() const;

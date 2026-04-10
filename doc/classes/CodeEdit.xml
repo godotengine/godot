@@ -188,6 +188,14 @@
 				Gets the matching auto brace close key for [param open_key].
 			</description>
 		</method>
+		<method name="get_auto_brace_completion_mode" qualifiers="const">
+			<return type="int" />
+			<description>
+				Gets the auto brace completion mode.
+				- [b]Always:[/b] automatically close the brace independently of where it is inserted.
+				- [b]Before Whitespace:[/b] automatically close the brace if inserted before a whitespace.
+			</description>
+		</method>
 		<method name="get_bookmarked_lines" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>
@@ -429,6 +437,13 @@
 			<param index="0" name="force" type="bool" default="false" />
 			<description>
 				Emits [signal code_completion_requested], if [param force] is [code]true[/code] will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path, or signal.
+			</description>
+		</method>
+		<method name="set_auto_brace_completion_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" />
+			<description>
+				Sets the auto brace completion mode.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
