@@ -84,4 +84,8 @@ struct DirectionalLightData {
 	vec2 uv_scale2;
 	vec2 uv_scale3;
 	vec2 uv_scale4;
+	mat4 projector_matrix;
+	vec4 projector_rect; //projector rect in srgb decal atlas
+	vec2 projector_offset;
+	vec2 padding;
 };
