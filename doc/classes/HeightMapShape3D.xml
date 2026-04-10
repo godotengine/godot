@@ -26,6 +26,23 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<description>
+				Returns the exact height at [code](x, y)[/code].
+				This is the same as [method get_heightv], but with two integer arguments instead of a [Vector2i] argument.
+			</description>
+		</method>
+		<method name="get_heightv" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="point" type="Vector2i" />
+			<description>
+				Returns the exact height at [param point].
+				This is the same as [method get_height], but with a [Vector2i] argument instead of two integer arguments.
+			</description>
+		</method>
 		<method name="get_max_height" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -36,6 +53,23 @@
 			<return type="float" />
 			<description>
 				Returns the smallest height value found in [member map_data]. Recalculates only when [member map_data] changes.
+			</description>
+		</method>
+		<method name="sample_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<description>
+				Returns the height at [code](x, y)[/code] as computed from the four nearest heights on the heightmap. This function may return NaN if any of the four nearest points are NaN.
+				This is the same as [method sample_heightv], but with two integer arguments instead of a [Vector2] argument.
+			</description>
+		</method>
+		<method name="sample_heightv" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns the height at [param point] as computed from the four nearest heights on the heightmap. This function may return NaN if any of the four nearest points are NaN.
+				This is the same as [method sample_height], but with a [Vector2] argument instead of two integer arguments.
 			</description>
 		</method>
 		<method name="update_map_data_from_image">
