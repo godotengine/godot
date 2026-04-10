@@ -901,6 +901,7 @@
 		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
+			[b]Note:[/b] Low processor mode is always enabled in [url=$DOCS_URL/tutorials/export/exporting_for_dedicated_servers.html]dedicated server mode[/url] or when using the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], regardless of the value of [member low_processor_usage_mode], as dedicated servers don't perform any rendering.
 			[b]Note:[/b] On start-up, this is the same as [member ProjectSettings.application/run/low_processor_mode].
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
