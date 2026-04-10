@@ -1230,6 +1230,9 @@ void EditorNode::init_plugins() {
 	if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
 		addons = GLOBAL_GET("editor_plugins/enabled");
 	}
+	if (EditorSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
+		addons.append_array(EditorSettings::get_singleton()->get_setting("editor_plugins/enabled"));
+	}
 
 	for (const String &addon : addons) {
 		set_addon_plugin_enabled(addon, true);
@@ -1256,14 +1259,24 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 
 void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	ProjectSettings *ps = ProjectSettings::get_singleton();
-	PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
-	for (int i = 0; i < enabled_plugins.size(); ++i) {
-		if (enabled_plugins.get(i) == p_name) {
-			enabled_plugins.remove_at(i);
-			break;
+	PackedStringArray enabled_project_plugins = ps->get("editor_plugins/enabled");
+	for (int i = 0; i < enabled_project_plugins.size(); ++i) {
+		if (enabled_project_plugins.get(i) == p_name) {
+			enabled_project_plugins.remove_at(i);
+			ps->set("editor_plugins/enabled", enabled_project_plugins);
+			return;
 		}
 	}
-	ps->set("editor_plugins/enabled", enabled_plugins);
+
+	EditorSettings *es = EditorSettings::get_singleton();
+	PackedStringArray enabled_editor_plugins = es->get("editor_plugins/enabled");
+	for (int i = 0; i < enabled_editor_plugins.size(); ++i) {
+		if (enabled_editor_plugins.get(i) == p_name) {
+			enabled_editor_plugins.remove_at(i);
+			es->set("editor_plugins/enabled", enabled_editor_plugins);
+			return;
+		}
+	}
 }
 
 void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
@@ -4415,17 +4428,28 @@ void EditorNode::_update_addon_config() {
 		return;
 	}
 
-	Vector<String> enabled_addons;
+	Vector<String> enabled_project_addons;
+	Vector<String> enabled_editor_addons;
 
 	for (const KeyValue<String, EditorPlugin *> &E : addon_name_to_plugin) {
-		enabled_addons.push_back(E.key);
+		if (E.key.begins_with("res://")) {
+			enabled_project_addons.push_back(E.key);
+		} else if (E.key.begins_with("editor://")) {
+			enabled_editor_addons.push_back(E.key);
+		}
 	}
 
-	if (enabled_addons.is_empty()) {
+	if (enabled_project_addons.is_empty()) {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
-		enabled_addons.sort();
-		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
+		enabled_project_addons.sort();
+		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_project_addons);
+	}
+	if (enabled_editor_addons.is_empty()) {
+		EditorSettings::get_singleton()->set("editor_plugins/enabled", Variant());
+	} else {
+		enabled_editor_addons.sort();
+		EditorSettings::get_singleton()->set("editor_plugins/enabled", enabled_editor_addons);
 	}
 
 	project_settings_editor->queue_save();
@@ -4434,7 +4458,7 @@ void EditorNode::_update_addon_config() {
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
 	String addon_path = p_addon;
 
-	if (!addon_path.begins_with("res://")) {
+	if (!addon_path.begins_with("res://") && !addon_path.begins_with("editor://")) {
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
@@ -4530,6 +4554,10 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	if (p_addon.begins_with("res://")) {
+		return addon_name_to_plugin.has(p_addon);
+	}
+
+	if (p_addon.begins_with("editor://")) {
 		return addon_name_to_plugin.has(p_addon);
 	}
 

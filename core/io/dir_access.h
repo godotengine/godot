@@ -41,6 +41,7 @@ class DirAccess : public RefCounted {
 public:
 	enum AccessType : int32_t {
 		ACCESS_RESOURCES,
+		ACCESS_EDITOR_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM,
 		ACCESS_MAX
