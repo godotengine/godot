@@ -94,6 +94,10 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	return ret;
 }
 
+String ResourceLoader::get_resource_script_class(const String &p_path) {
+	return ::ResourceLoader::get_resource_script_class(p_path);
+}
+
 void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
 	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
 }
@@ -147,6 +151,7 @@ void ResourceLoader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
+	ClassDB::bind_method(D_METHOD("get_resource_script_class", "path"), &ResourceLoader::get_resource_script_class);
 	ClassDB::bind_method(D_METHOD("add_resource_format_loader", "format_loader", "at_front"), &ResourceLoader::add_resource_format_loader, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_loader", "format_loader"), &ResourceLoader::remove_resource_format_loader);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &ResourceLoader::set_abort_on_missing_resources);
