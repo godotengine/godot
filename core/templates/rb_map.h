@@ -358,6 +358,23 @@ private:
 		return prev;
 	}
 
+	Element *_lower_bound(const K &p_key) const {
+		Element *node = _data._root->left;
+		Element *result = nullptr;
+		C less;
+
+		while (node != _data._nil) {
+			if (!less(node->_data.key, p_key)) {
+				result = node;
+				node = node->left;
+			} else {
+				node = node->right;
+			}
+		}
+
+		return result;
+	}
+
 	void _insert_rb_fix(Element *p_new_node) {
 		Element *node = p_new_node;
 		Element *nparent = node->parent;
@@ -632,6 +649,20 @@ public:
 
 		Element *res = _find_closest(p_key);
 		return res;
+	}
+
+	Element *lower_bound(const K &p_key) {
+		if (!_data._root) {
+			return nullptr;
+		}
+		return _lower_bound(p_key);
+	}
+
+	const Element *lower_bound(const K &p_key) const {
+		if (!_data._root) {
+			return nullptr;
+		}
+		return _lower_bound(p_key);
 	}
 
 	bool has(const K &p_key) const {
