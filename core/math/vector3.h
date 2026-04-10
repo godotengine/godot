@@ -32,10 +32,12 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/math/vector_swizzling.h"
 #include "core/string/ustring.h"
 
 struct Basis;
 struct Vector2;
+struct Vector4;
 struct Vector3i;
 
 struct [[nodiscard]] Vector3 {
@@ -71,6 +73,8 @@ struct [[nodiscard]] Vector3 {
 		real_t coord[3] = { 0 };
 		// NOLINTEND(modernize-use-default-member-init)
 	};
+
+	VECTOR_SWIZZLING_SETGET()
 
 	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);

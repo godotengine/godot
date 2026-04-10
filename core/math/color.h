@@ -31,9 +31,13 @@
 #pragma once
 
 #include "core/math/math_funcs.h"
+#include "core/math/vector_swizzling.h"
 #include "core/templates/hashfuncs.h"
 
 class String;
+struct Vector2;
+struct Vector3;
+struct Vector4;
 
 struct [[nodiscard]] Color {
 	union {
@@ -47,6 +51,8 @@ struct [[nodiscard]] Color {
 		float components[4] = { 0, 0, 0, 1.0 };
 		// NOLINTEND(modernize-use-default-member-init)
 	};
+
+	COLOR_SWIZZLING_SETGET()
 
 	uint32_t to_rgba32() const;
 	uint32_t to_argb32() const;
