@@ -62,6 +62,8 @@ class JoltSoftBody3D final : public JoltObject3D {
 
 	int simulation_precision = 5;
 
+	PhysicsServer3D::SoftBodyForm form = PhysicsServer3D::SOFT_BODY_FORM_CLOTH;
+
 	virtual JPH::BroadPhaseLayer _get_broad_phase_layer() const override;
 	virtual JPH::ObjectLayer _get_object_layer() const override;
 
@@ -71,6 +73,9 @@ class JoltSoftBody3D final : public JoltObject3D {
 	virtual void _add_to_space() override;
 
 	JPH::SoftBodySharedSettings *_create_shared_settings();
+	JPH::SoftBodySharedSettings *_create_shared_settings_cloth();
+	JPH::SoftBodySharedSettings *_create_shared_settings_volume();
+	float _calculate_compliance(JPH::SoftBodySharedSettings *settings);
 
 	void _apply_environmental_forces(float p_step);
 
@@ -154,6 +159,9 @@ public:
 
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_value);
+
+	PhysicsServer3D::SoftBodyForm get_form() const;
+	void set_form(PhysicsServer3D::SoftBodyForm p_form);
 
 	Transform3D get_transform() const;
 	void set_transform(const Transform3D &p_transform);
