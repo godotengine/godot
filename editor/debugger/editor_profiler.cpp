@@ -211,6 +211,20 @@ void EditorProfiler::_update_plot() {
 		wr[i + 3] = 255;
 	}
 
+	struct PlotData {
+		Vector<float> frame_values;
+	};
+	Vector<PlotData> flat_plots;
+	flat_plots.resize(plot_sigs.size());
+	for (int i = 0; i < flat_plots.size(); i++) {
+		flat_plots.write[i].frame_values.resize(total_metrics);
+		flat_plots.write[i].frame_values.fill(0.0);
+	}
+
+	const int max_profiles_shown = frame_metrics.size() / Math::exp(graph_zoom);
+	const int left_border = _get_zoom_left_border();
+	const int profiles_drawn = CLAMP(total_metrics - left_border, 0, max_profiles_shown);
+
 	//find highest value
 
 	const bool use_self = display_time->get_selected() == DISPLAY_SELF_TIME;
@@ -219,20 +233,42 @@ void EditorProfiler::_update_plot() {
 	for (int i = 0; i < total_metrics; i++) {
 		const Metric &m = _get_frame_metric(i);
 
+		int plot_sig_index = 0;
+		int compressed_frame_target = 0;
+		if (i >= left_border && i < left_border + profiles_drawn) { // if this data is visible in the graph
+			if (w < max_profiles_shown) { // if more data points than pixels
+				int pixel = (i - left_border) * w / max_profiles_shown; // Figure out which frame the pixel is going to get data from in the draw code
+				compressed_frame_target = (pixel * max_profiles_shown / w) + left_border; // Copy draw code "int current = (i * max_profiles_shown / w) + left_border;"
+			}
+		}
+
 		for (const StringName &E : plot_sigs) {
+			float val = 0;
+
 			HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
 			if (F) {
-				highest = MAX(F->value->total_time, highest);
+				val = F->value->total_time;
 			}
 
 			HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
 			if (G) {
 				if (use_self) {
-					highest = MAX(G->value->self, highest);
+					val = G->value->self;
 				} else {
-					highest = MAX(G->value->total, highest);
+					val = G->value->total;
 				}
 			}
+
+			highest = MAX(highest, val);
+			if (i >= left_border && i < left_border + profiles_drawn) { // if this data is visible in the graph
+				if (w < max_profiles_shown) { // if more data points than pixels
+					float max_val = MAX(val, flat_plots[plot_sig_index].frame_values[compressed_frame_target]);
+					flat_plots.write[plot_sig_index].frame_values.write[compressed_frame_target] = max_val;
+				} else { // if same number of data points as pixels, or less data points than pixels
+					flat_plots.write[plot_sig_index].frame_values.write[i] = val;
+				}
+			}
+			plot_sig_index++;
 		}
 	}
 
@@ -248,9 +284,6 @@ void EditorProfiler::_update_plot() {
 
 		HashMap<StringName, int> prev_plots;
 
-		const int max_profiles_shown = frame_metrics.size() / Math::exp(graph_zoom);
-		const int left_border = _get_zoom_left_border();
-		const int profiles_drawn = CLAMP(total_metrics - left_border, 0, max_profiles_shown);
 		const int pixel_cols = (profiles_drawn * w) / max_profiles_shown - 1;
 
 		for (int i = 0; i < pixel_cols; i++) {
@@ -259,25 +292,10 @@ void EditorProfiler::_update_plot() {
 			}
 
 			int current = (i * max_profiles_shown / w) + left_border;
+			int plot_sig_index = 0;
 
 			for (const StringName &E : plot_sigs) {
-				const Metric &m = _get_frame_metric(current);
-
-				float value = 0;
-
-				HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
-				if (F) {
-					value = F->value->total_time;
-				}
-
-				HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
-				if (G) {
-					if (use_self) {
-						value = G->value->self;
-					} else {
-						value = G->value->total;
-					}
-				}
+				float value = flat_plots[plot_sig_index].frame_values[current];
 
 				int plot_pos = CLAMP(int(value * h / highest), 0, h - 1);
 
@@ -305,6 +323,8 @@ void EditorProfiler::_update_plot() {
 					column[j * 4 + 2] += Math::fast_ftoi(CLAMP(col.b * 255, 0, 255));
 					column[j * 4 + 3] += 1;
 				}
+
+				plot_sig_index++;
 			}
 
 			for (int j = 0; j < h * 4; j += 4) {
