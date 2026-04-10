@@ -30,7 +30,23 @@
 
 #pragma once
 
+#include "core/typedefs.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+
+#include <windows.h>
+
+class WinRTWindowData;
+
 class WinRTUtils {
 public:
 	static bool try_show_onecore_emoji_picker();
+
+	static bool create_queue();
+	static void destroy_queue();
+
+	static WinRTWindowData *create_wd(HWND p_window, const Callable &p_color_cb, int64_t p_window_id);
+	static bool window_has_display_info(WinRTWindowData *p_data);
+	static Dictionary window_get_advanced_color_info(WinRTWindowData *p_data);
+	static void destroy_wd(WinRTWindowData *p_data);
 };
