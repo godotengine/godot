@@ -522,7 +522,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			for (int i = 0; i < values.size(); i++) {
 				if (values[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(values[i].address);
 				}
 			}
 
@@ -572,7 +572,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			for (int i = 0; i < elements.size(); i++) {
 				if (elements[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(elements[i].address);
 				}
 			}
 
@@ -592,7 +592,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				gen->write_cast(result, src, cast_type);
 
 				if (src.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(src.address);
 				}
 			} else {
 				result = _parse_expression(codegen, r_error, cn->operand);
@@ -718,7 +718,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									gen->write_call(result, base, call->function_name, arguments);
 								}
 								if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-									gen->pop_temporary();
+									gen->pop_temporary(base.address);
 								}
 							}
 						} else {
@@ -736,7 +736,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			for (int i = 0; i < arguments.size(); i++) {
 				if (arguments[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(arguments[i].address);
 				}
 			}
 			return result;
@@ -775,7 +775,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			gen->write_await(result, argument);
 
 			if (argument.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(argument.address);
 			}
 
 			return result;
@@ -809,7 +809,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 					if (MI && MI->value.getter == "") {
 						// Remove result temp as we don't need it.
-						gen->pop_temporary();
+						gen->pop_temporary(result.address);
 						// Faster than indexing self (as if no self. had been used).
 						return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::MEMBER, MI->value.index, _gdtype_from_datatype(subscript->get_datatype(), codegen.script));
 					}
@@ -838,10 +838,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			if (index.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(index.address);
 			}
 			if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(base.address);
 			}
 
 			return result;
@@ -859,7 +859,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			gen->write_unary_operator(result, unary->variant_op, operand);
 
 			if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(operand.address);
 			}
 
 			return result;
@@ -867,11 +867,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		case GDScriptParser::Node::BINARY_OPERATOR: {
 			const GDScriptParser::BinaryOpNode *binary = static_cast<const GDScriptParser::BinaryOpNode *>(p_expression);
 
-			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(binary->get_datatype(), codegen.script));
+			GDScriptCodeGenerator::Address result;
 
 			switch (binary->operation) {
 				case GDScriptParser::BinaryOpNode::OP_LOGIC_AND: {
 					// AND operator with early out on failure.
+					result = codegen.add_temporary(_gdtype_from_datatype(binary->get_datatype(), codegen.script));
 					GDScriptCodeGenerator::Address left_operand = _parse_expression(codegen, r_error, binary->left_operand);
 					gen->write_and_left_operand(left_operand);
 					GDScriptCodeGenerator::Address right_operand = _parse_expression(codegen, r_error, binary->right_operand);
@@ -880,14 +881,15 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->write_end_and(result);
 
 					if (right_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(right_operand.address);
 					}
 					if (left_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(left_operand.address);
 					}
 				} break;
 				case GDScriptParser::BinaryOpNode::OP_LOGIC_OR: {
 					// OR operator with early out on success.
+					result = codegen.add_temporary(_gdtype_from_datatype(binary->get_datatype(), codegen.script));
 					GDScriptCodeGenerator::Address left_operand = _parse_expression(codegen, r_error, binary->left_operand);
 					gen->write_or_left_operand(left_operand);
 					GDScriptCodeGenerator::Address right_operand = _parse_expression(codegen, r_error, binary->right_operand);
@@ -896,23 +898,24 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->write_end_or(result);
 
 					if (right_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(right_operand.address);
 					}
 					if (left_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(left_operand.address);
 					}
 				} break;
 				default: {
 					GDScriptCodeGenerator::Address left_operand = _parse_expression(codegen, r_error, binary->left_operand);
 					GDScriptCodeGenerator::Address right_operand = _parse_expression(codegen, r_error, binary->right_operand);
 
+					result = codegen.add_temporary(_gdtype_from_datatype(binary->get_datatype(), codegen.script));
 					gen->write_binary_operator(result, binary->variant_op, left_operand, right_operand);
 
 					if (right_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(right_operand.address);
 					}
 					if (left_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(left_operand.address);
 					}
 				}
 			}
@@ -932,7 +935,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			gen->write_ternary_condition(condition);
 
 			if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(condition.address);
 			}
 
 			GDScriptCodeGenerator::Address true_expr = _parse_expression(codegen, r_error, ternary->true_expr);
@@ -941,7 +944,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 			gen->write_ternary_true_expr(true_expr);
 			if (true_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(true_expr.address);
 			}
 
 			GDScriptCodeGenerator::Address false_expr = _parse_expression(codegen, r_error, ternary->false_expr);
@@ -950,7 +953,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 			gen->write_ternary_false_expr(false_expr);
 			if (false_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(false_expr.address);
 			}
 
 			gen->write_end_ternary();
@@ -974,7 +977,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
+				gen->pop_temporary(operand.address);
 			}
 
 			return result;
@@ -1147,9 +1150,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						gen->write_get(value, key, prev_base);
 					}
 					gen->write_binary_operator(op_result, assignment->variant_op, value, assigned);
-					gen->pop_temporary();
+					gen->pop_temporary(value.address);
 					if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(assigned.address);
 					}
 					assigned = op_result;
 				}
@@ -1161,10 +1164,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					gen->write_set(prev_base, key, assigned);
 				}
 				if (key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(key.address);
 				}
 				if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(assigned.address);
 				}
 
 				assigned = prev_base;
@@ -1189,10 +1192,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						}
 					}
 					if (!info.is_named && info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(info.key.address);
 					}
 					if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(assigned.address);
 					}
 					assigned = info.base;
 				}
@@ -1225,7 +1228,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							GDScriptCodeGenerator::Address temp = codegen.add_temporary(static_var_data_type);
 							gen->write_assign(temp, assigned);
 							gen->write_set_static_variable(temp, static_var_class, static_var_index);
-							gen->pop_temporary();
+							gen->pop_temporary(temp.address);
 						} else {
 							gen->write_assign(target_member_property, assigned);
 						}
@@ -1245,7 +1248,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 
 				if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(assigned.address);
 				}
 			} else if (assignment->assignee->type == GDScriptParser::Node::IDENTIFIER && _is_class_member_property(codegen, static_cast<GDScriptParser::IdentifierNode *>(assignment->assignee)->name)) {
 				// Assignment to member property.
@@ -1264,17 +1267,17 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					GDScriptCodeGenerator::Address member = codegen.add_temporary(_gdtype_from_datatype(assignment->assignee->get_datatype(), codegen.script));
 					gen->write_get_member(member, name);
 					gen->write_binary_operator(op_result, assignment->variant_op, member, assigned_value);
-					gen->pop_temporary(); // Pop member temp.
+					gen->pop_temporary(member.address); // Pop member temp.
 					to_assign = op_result;
 				}
 
 				gen->write_set_member(to_assign, name);
 
 				if (to_assign.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary(); // Pop the assigned expression or the temp result if it has operation.
+					gen->pop_temporary(to_assign.address); // Pop the assigned expression or the temp result if it has operation.
 				}
 				if (has_operation && assigned_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary(); // Pop the assigned expression if not done before.
+					gen->pop_temporary(assigned_value.address); // Pop the assigned expression if not done before.
 				}
 			} else {
 				// Regular assignment.
@@ -1351,7 +1354,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					to_assign = op_result;
 
 					if (og_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
+						gen->pop_temporary(og_value.address);
 					}
 				} else {
 					to_assign = assigned_value;
@@ -1371,7 +1374,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						gen->write_assign(temp, to_assign);
 					}
 					gen->write_set_static_variable(temp, static_var_class, static_var_index);
-					gen->pop_temporary();
+					gen->pop_temporary(temp.address);
 				} else {
 					// Just assign.
 					if (assignment->use_conversion_assign) {
@@ -1382,13 +1385,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 
 				if (to_assign.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary(); // Pop assigned value or temp operation result.
+					gen->pop_temporary(to_assign.address); // Pop assigned value or temp operation result.
 				}
 				if (has_operation && assigned_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary(); // Pop assigned value if not done before.
+					gen->pop_temporary(assigned_value.address); // Pop assigned value if not done before.
 				}
 				if (target.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary(); // Pop the target to assignment.
+					gen->pop_temporary(target.address); // Pop the target to assignment.
 				}
 			}
 			return GDScriptCodeGenerator::Address(); // Assignment does not return a value.
@@ -1416,7 +1419,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 			for (int i = 0; i < captures.size(); i++) {
 				if (captures[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					gen->pop_temporary();
+					gen->pop_temporary(captures[i].address);
 				}
 			}
 
@@ -1461,7 +1464,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				codegen.generator->write_binary_operator(tmp_comp_addr, Variant::OP_EQUAL, p_type_addr, type_stringname_addr);
 				codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, tmp_comp_addr);
 
-				codegen.generator->pop_temporary(); // Remove tmp_comp_addr from stack.
+				codegen.generator->pop_temporary(tmp_comp_addr.address); // Remove tmp_comp_addr from stack.
 			} else if (literal_type == Variant::STRING_NAME) {
 				GDScriptCodeGenerator::Address type_string_addr = codegen.add_constant(Variant::STRING);
 
@@ -1471,7 +1474,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				codegen.generator->write_binary_operator(tmp_comp_addr, Variant::OP_EQUAL, p_type_addr, type_string_addr);
 				codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, tmp_comp_addr);
 
-				codegen.generator->pop_temporary(); // Remove tmp_comp_addr from stack.
+				codegen.generator->pop_temporary(tmp_comp_addr.address); // Remove tmp_comp_addr from stack.
 			}
 
 			codegen.generator->write_and_left_operand(type_equality_addr);
@@ -1490,10 +1493,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			// AND both together (reuse temporary location).
 			codegen.generator->write_end_and(type_equality_addr);
 
-			codegen.generator->pop_temporary(); // Remove equality_addr from stack.
+			codegen.generator->pop_temporary(equality_addr.address); // Remove equality_addr from stack.
 
 			if (literal_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				codegen.generator->pop_temporary();
+				codegen.generator->pop_temporary(literal_addr.address);
 			}
 
 			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
@@ -1509,7 +1512,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				// Just assign this value to the accumulator temporary.
 				codegen.generator->write_assign(p_previous_test, type_equality_addr);
 			}
-			codegen.generator->pop_temporary(); // Remove type_equality_addr.
+			codegen.generator->pop_temporary(type_equality_addr.address); // Remove type_equality_addr.
 
 			return p_previous_test;
 		} break;
@@ -1562,9 +1565,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_AND, stringy_comp_addr, stringy_comp_addr_2);
 			codegen.generator->write_binary_operator(result_addr, Variant::OP_OR, result_addr, stringy_comp_addr);
 
-			codegen.generator->pop_temporary(); // Remove expr_type_addr from stack.
-			codegen.generator->pop_temporary(); // Remove stringy_comp_addr_2 from stack.
-			codegen.generator->pop_temporary(); // Remove stringy_comp_addr from stack.
+			codegen.generator->pop_temporary(expr_type_addr.address); // Remove expr_type_addr from stack.
+			codegen.generator->pop_temporary(stringy_comp_addr_2.address); // Remove stringy_comp_addr_2 from stack.
+			codegen.generator->pop_temporary(stringy_comp_addr.address); // Remove stringy_comp_addr from stack.
 
 			codegen.generator->write_and_left_operand(result_addr);
 
@@ -1577,9 +1580,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// We don't need the expression temporary anymore.
 			if (expr_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				codegen.generator->pop_temporary();
+				codegen.generator->pop_temporary(expr_addr.address);
 			}
-			codegen.generator->pop_temporary(); // Remove equality_test_addr from stack.
+			codegen.generator->pop_temporary(equality_test_addr.address); // Remove equality_test_addr from stack.
 
 			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
 			if (p_is_nested) {
@@ -1594,7 +1597,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				// Just assign this value to the accumulator temporary.
 				codegen.generator->write_assign(p_previous_test, result_addr);
 			}
-			codegen.generator->pop_temporary(); // Remove temp result addr.
+			codegen.generator->pop_temporary(result_addr.address); // Remove temp result addr.
 
 			return p_previous_test;
 		} break;
@@ -1637,8 +1640,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			codegen.generator->write_end_and(result_addr);
 
 			// Remove length temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
+			codegen.generator->pop_temporary(length_compat_addr.address);
+			codegen.generator->pop_temporary(value_length_addr.address);
 
 			// Create temporaries outside the loop so they can be reused.
 			GDScriptCodeGenerator::Address element_addr = codegen.add_temporary();
@@ -1675,8 +1678,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				codegen.generator->write_end_and(result_addr);
 			}
 			// Remove element temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
+			codegen.generator->pop_temporary(element_type_addr.address);
+			codegen.generator->pop_temporary(element_addr.address);
 
 			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
 			if (p_is_nested) {
@@ -1691,7 +1694,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				// Just assign this value to the accumulator temporary.
 				codegen.generator->write_assign(p_previous_test, result_addr);
 			}
-			codegen.generator->pop_temporary(); // Remove temp result addr.
+			codegen.generator->pop_temporary(result_addr.address); // Remove temp result addr.
 
 			return p_previous_test;
 		} break;
@@ -1734,8 +1737,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			codegen.generator->write_end_and(result_addr);
 
 			// Remove length temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
+			codegen.generator->pop_temporary(length_compat_addr.address);
+			codegen.generator->pop_temporary(value_length_addr.address);
 
 			// Create temporaries outside the loop so they can be reused.
 			GDScriptCodeGenerator::Address element_addr = codegen.add_temporary();
@@ -1789,13 +1792,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 				// Remove pattern key temporary.
 				if (pattern_key_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(pattern_key_addr.address);
 				}
 			}
 
 			// Remove element temporaries.
-			codegen.generator->pop_temporary();
-			codegen.generator->pop_temporary();
+			codegen.generator->pop_temporary(element_type_addr.address);
+			codegen.generator->pop_temporary(element_addr.address);
 
 			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
 			if (p_is_nested) {
@@ -1810,7 +1813,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 				// Just assign this value to the accumulator temporary.
 				codegen.generator->write_assign(p_previous_test, result_addr);
 			}
-			codegen.generator->pop_temporary(); // Remove temp result addr.
+			codegen.generator->pop_temporary(result_addr.address); // Remove temp result addr.
 
 			return p_previous_test;
 		} break;
@@ -1920,7 +1923,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				gen->write_assign(value, value_expr);
 
 				if (value_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(value_expr.address);
 				}
 
 				// Then, let's save the type of the value in the stack too, so we can reuse for later comparisons.
@@ -1975,7 +1978,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						gen->write_end_and(pattern_result);
 
 						if (guard_result.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-							codegen.generator->pop_temporary();
+							codegen.generator->pop_temporary(guard_result.address);
 						}
 					}
 
@@ -1983,7 +1986,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					gen->write_if(pattern_result);
 
 					// Remove the result from stack.
-					gen->pop_temporary();
+					gen->pop_temporary(pattern_result.address);
 
 					// Parse the branch block.
 					err = _parse_block(codegen, branch->block, false); // Don't add locals again.
@@ -2013,7 +2016,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				gen->write_if(condition);
 
 				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(condition.address);
 				}
 
 				err = _parse_block(codegen, if_n->true_block);
@@ -2082,7 +2085,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 					for (int j = 0; j < args.size(); j++) {
 						if (args[j].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-							codegen.generator->pop_temporary();
+							codegen.generator->pop_temporary(args[j].address);
 						}
 					}
 				} else {
@@ -2094,7 +2097,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					gen->write_for_list_assignment(list);
 
 					if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						codegen.generator->pop_temporary();
+						codegen.generator->pop_temporary(list.address);
 					}
 				}
 
@@ -2131,7 +2134,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				gen->write_while(condition);
 
 				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(condition.address);
 				}
 
 				// Loop variables must be cleared even when `break`/`continue` is used.
@@ -2175,7 +2178,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					gen->write_return(return_value, return_n->use_conversion);
 				}
 				if (return_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(return_value.address);
 				}
 			} break;
 			case GDScriptParser::Node::ASSERT: {
@@ -2198,10 +2201,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				gen->write_assert(condition, message);
 
 				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(condition.address);
 				}
 				if (message.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(message.address);
 				}
 #endif
 			} break;
@@ -2228,7 +2231,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						gen->write_assign(local, src_address);
 					}
 					if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						codegen.generator->pop_temporary();
+						codegen.generator->pop_temporary(src_address.address);
 					}
 					initialized = true;
 				} else if (local_type.kind == GDScriptDataType::BUILTIN || codegen.generator->is_local_dirty(local)) {
@@ -2264,7 +2267,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						return err;
 					}
 					if (expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						codegen.generator->pop_temporary();
+						codegen.generator->pop_temporary(expr.address);
 					}
 				} else {
 					_set_error("Compiler bug (please report): unexpected node in parse tree while parsing statement.", s); // Unreachable code.
@@ -2429,7 +2432,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					codegen.generator->write_assign(dst_address, src_address);
 				}
 				if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(src_address.address);
 				}
 			}
 		}
@@ -2449,7 +2452,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				GDScriptCodeGenerator::Address dst_addr = codegen.parameters[parameter->identifier->name];
 				codegen.generator->write_assign_default_parameter(dst_addr, src_addr, parameter->use_conversion_assign);
 				if (src_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					codegen.generator->pop_temporary(src_addr.address);
 				}
 			}
 			codegen.generator->end_parameters();
@@ -2580,18 +2583,18 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct_typed_array(temp, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
 				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-				codegen.generator->pop_temporary();
+				codegen.generator->pop_temporary(temp.address);
 			} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct_typed_dictionary(temp, field_type.get_container_element_type_or_variant(0),
 						field_type.get_container_element_type_or_variant(1), Vector<GDScriptCodeGenerator::Address>());
 				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-				codegen.generator->pop_temporary();
+				codegen.generator->pop_temporary(temp.address);
 			} else if (field_type.kind == GDScriptDataType::BUILTIN) {
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct(temp, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
 				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-				codegen.generator->pop_temporary();
+				codegen.generator->pop_temporary(temp.address);
 			}
 			// The `else` branch is for objects, in such case we leave it as `null`.
 		}
@@ -2625,11 +2628,11 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 				codegen.generator->write_assign(temp, src_address);
 			}
 			if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				codegen.generator->pop_temporary();
+				codegen.generator->pop_temporary(src_address.address);
 			}
 
 			codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-			codegen.generator->pop_temporary();
+			codegen.generator->pop_temporary(temp.address);
 		}
 	}
 
