@@ -776,7 +776,7 @@ void RuntimeNodeSelect::_update_selection() {
 			continue;
 		}
 
-		Transform2D xform = ci->get_global_transform_with_canvas();
+		Transform2D xform = ci->get_screen_transform();
 
 		// Fallback.
 		Rect2 rect = Rect2(Vector2(), Vector2(10, 10));
@@ -999,21 +999,34 @@ void RuntimeNodeSelect::_set_prefer_group(bool p_enabled) {
 
 // Copied and trimmed from the CanvasItemEditor implementation.
 void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	if (!p_node || Object::cast_to<Viewport>(p_node)) {
+	if (!p_node || Object::cast_to<Window>(p_node)) {
 		return;
 	}
 
 	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	Transform2D xform = p_canvas_xform;
+
+	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+		xform = cl->get_transform();
+	} else if (Viewport *vp = Object::cast_to<Viewport>(p_node)) {
+		if (!vp->is_visible_subviewport()) {
+			return;
+		}
+		xform = vp->get_popup_base_transform();
+		if (!vp->get_visible_rect().has_point(xform.affine_inverse().xform(p_pos))) {
+			return;
+		}
+	}
+
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 		if (ci) {
 			if (!ci->is_set_as_top_level()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), p_canvas_xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), xform);
 			} else {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, ci->get_transform(), p_canvas_xform);
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, ci->get_transform(), xform);
 			}
 		} else {
-			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
+			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, Transform2D(), xform);
 		}
 	}
 
@@ -1021,19 +1034,15 @@ void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_n
 		return;
 	}
 
-	Transform2D xform = p_canvas_xform;
 	if (!ci->is_set_as_top_level()) {
 		xform *= p_parent_xform;
 	}
 
-	Window *root = SceneTree::get_singleton()->get_root();
-	Point2 pos;
-
+	Point2 pos = p_pos;
 	// Cameras don't affect `CanvasLayer`s.
 	if (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport()) {
-		pos = root->get_canvas_transform().affine_inverse().xform(p_pos);
-	} else {
-		pos = p_pos;
+		Viewport *vp = ci->get_viewport();
+		pos = vp->get_canvas_transform().affine_inverse().xform(p_pos);
 	}
 
 	xform = (xform * ci->get_transform()).affine_inverse();
@@ -1062,21 +1071,35 @@ void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_n
 
 // Copied and trimmed from the CanvasItemEditor implementation.
 void RuntimeNodeSelect::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	if (!p_node || Object::cast_to<Viewport>(p_node)) {
+	if (!p_node || Object::cast_to<Window>(p_node)) {
 		return;
 	}
 
 	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	Transform2D xform = p_canvas_xform;
+
+	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+		xform = cl->get_transform();
+	} else if (Viewport *vp = Object::cast_to<Viewport>(p_node)) {
+		if (!vp->is_visible_subviewport()) {
+			return;
+		}
+		xform = vp->get_popup_base_transform();
+		if (!vp->get_visible_rect().intersects(xform.affine_inverse().xform(p_rect))) {
+			return;
+		}
+	}
+
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 		if (ci) {
 			if (!ci->is_set_as_top_level()) {
-				_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), p_canvas_xform);
+				_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), xform);
 			} else {
-				_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), p_canvas_xform);
+				_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), xform);
 			}
 		} else {
 			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-			_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
+			_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : xform);
 		}
 	}
 
@@ -1084,18 +1107,15 @@ void RuntimeNodeSelect::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_
 		return;
 	}
 
-	Transform2D xform = p_canvas_xform;
 	if (!ci->is_set_as_top_level()) {
 		xform *= p_parent_xform;
 	}
 
-	Window *root = SceneTree::get_singleton()->get_root();
-	Rect2 rect;
+	Rect2 rect = p_rect;
 	// Cameras don't affect `CanvasLayer`s.
 	if (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport()) {
-		rect = root->get_canvas_transform().affine_inverse().xform(p_rect);
-	} else {
-		rect = p_rect;
+		Viewport *vp = ci->get_viewport();
+		rect = vp->get_canvas_transform().affine_inverse().xform(p_rect);
 	}
 	rect = (xform * ci->get_transform()).affine_inverse().xform(rect);
 
