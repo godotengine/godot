@@ -41,6 +41,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/callable_mp.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/view_panner.h"
@@ -374,6 +375,10 @@ void RuntimeNodeSelect::_update_input_state() {
 }
 
 void RuntimeNodeSelect::_process_frame() {
+#ifdef DEBUG_ENABLED
+	// Stream audio peaks to the editor UI at low frequency.
+	SceneDebugger::send_audio_peaks();
+#endif
 #ifndef _3D_DISABLED
 	// Calculate the process time manually, as the time scale can be frozen.
 	const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second()) * Engine::get_singleton()->get_unfrozen_time_scale();

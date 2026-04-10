@@ -422,6 +422,9 @@ public:
 	void set_bus_effect_enabled(int p_bus, int p_effect, bool p_enabled);
 	bool is_bus_effect_enabled(int p_bus, int p_effect) const;
 
+	/// Recreate effect instances for a bus (e.g. after updating effect parameters from the editor).
+	void refresh_bus_effects(int p_bus);
+
 	float get_bus_peak_volume_left_db(int p_bus, int p_channel) const;
 	float get_bus_peak_volume_right_db(int p_bus, int p_channel) const;
 
