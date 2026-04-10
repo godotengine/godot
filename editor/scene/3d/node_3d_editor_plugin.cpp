@@ -1998,12 +1998,31 @@ static bool _redirect_freelook_input(const Ref<InputEvent> &p_event, Node3DEdito
 // This is only active during instant transforms,
 // to capture and wrap mouse events outside the control.
 void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(!_edit.instant);
-	Ref<InputEventMouseMotion> m = p_event;
+	if (!_edit.instant && !emulated_nav_mouse_captured) {
+		return;
+	}
 
-	if (m.is_valid()) {
+	Ref<InputEventMouseMotion> m = p_event;
+	if (!m.is_valid()) {
+		return;
+	}
+
+	if (_edit.instant) {
 		_edit.mouse_pos += view_3d_controller->get_warped_mouse_motion(p_event, surface->get_global_rect());
 		update_transform(_get_key_modifier(m) == Key::SHIFT);
+		return;
+	}
+
+	if (surface->get_global_rect().has_point(m->get_global_position())) {
+		// Ignore regular in-viewport motion while emulated navigation is captured.
+		return;
+	}
+
+	_edit.mouse_pos += m->get_relative();
+	view_3d_controller->gui_input(p_event, surface->get_global_rect());
+	if (!view_3d_controller->is_navigating()) {
+		emulated_nav_mouse_captured = false;
+		set_process_input(_edit.instant);
 	}
 }
 
@@ -2189,6 +2208,28 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	// Several parts of the 3D navigation are handled here.
 	bool was_navigating = view_3d_controller->is_navigating();
 	view_3d_controller->gui_input(p_event, surface->get_global_rect());
+
+	const BitField<MouseButtonMask> mouse_mask = Input::get_singleton()->get_mouse_button_mask();
+	const bool no_mouse_buttons_pressed = !mouse_mask.has_flag(MouseButtonMask::LEFT) &&
+			!mouse_mask.has_flag(MouseButtonMask::MIDDLE) &&
+			!mouse_mask.has_flag(MouseButtonMask::RIGHT) &&
+			!mouse_mask.has_flag(MouseButtonMask::MB_XBUTTON1) &&
+			!mouse_mask.has_flag(MouseButtonMask::MB_XBUTTON2);
+	const bool emulated_nav_active = bool(EDITOR_GET("editors/3d/navigation/emulate_3_button_mouse")) &&
+			!view_3d_controller->is_freelook_enabled() &&
+			Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE &&
+			no_mouse_buttons_pressed &&
+			view_3d_controller->is_navigating();
+
+	if (!emulated_nav_mouse_captured && emulated_nav_active) {
+		emulated_nav_mouse_captured = true;
+		set_process_input(true);
+	}
+
+	if (emulated_nav_mouse_captured && !view_3d_controller->is_navigating()) {
+		emulated_nav_mouse_captured = false;
+		set_process_input(_edit.instant);
+	}
 	if (was_navigating && !view_3d_controller->is_navigating()) {
 		return;
 	}
@@ -2509,6 +2550,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					surface->queue_redraw();
 				} else {
+					if (emulated_nav_mouse_captured) {
+						emulated_nav_mouse_captured = false;
+						set_process_input(_edit.instant);
+						Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
+						if (mouse_mode == Input::MouseMode::MOUSE_MODE_CAPTURED || mouse_mode == Input::MouseMode::MOUSE_MODE_CONFINED || mouse_mode == Input::MouseMode::MOUSE_MODE_CONFINED_HIDDEN) {
+							Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
+						}
+					}
+
 					if (ruler->is_inside_tree()) {
 						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
 						ruler_start_point->set_visible(false);

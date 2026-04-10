@@ -253,6 +253,7 @@ private:
 	bool vertex_snap_has_target = false;
 	bool vertex_snap_has_source = false;
 	HashMap<ObjectID, Vector3> vertex_snap_original_positions;
+	bool emulated_nav_mouse_captured = false;
 
 	PanelContainer *info_panel = nullptr;
 	Label *info_label = nullptr;
