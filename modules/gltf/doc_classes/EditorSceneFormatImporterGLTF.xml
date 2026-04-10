@@ -6,4 +6,10 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="gltf/embedded_image_handling" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="gltf/naming_version" type="int" setter="" getter="" default="2">
+		</member>
+	</members>
 </class>
