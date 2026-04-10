@@ -758,6 +758,8 @@ class EditorPropertyResource : public EditorProperty {
 	void _sub_inspector_resource_selected(const Ref<Resource> &p_resource, const String &p_property);
 	void _sub_inspector_object_id_selected(int p_id);
 
+	bool _has_external_editor(const Ref<Resource> &p_resource) const;
+	void _open_resource_editor(const Ref<Resource> &p_resource);
 	void _open_editor_pressed();
 	void _update_preferred_shader();
 	bool _should_stop_editing() const;
