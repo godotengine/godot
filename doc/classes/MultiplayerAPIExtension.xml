@@ -88,6 +88,12 @@
 				Called when the [member MultiplayerAPI.multiplayer_peer] is retrieved.
 			</description>
 		</method>
+		<method name="_get_packet_processing_paused" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				Callback for [method MultiplayerAPI.get_packet_processing_paused]
+			</description>
+		</method>
 		<method name="_get_peer_ids" qualifiers="virtual const">
 			<return type="PackedInt32Array" />
 			<description>
@@ -143,6 +149,13 @@
 			<param index="0" name="multiplayer_peer" type="MultiplayerPeer" />
 			<description>
 				Called when the [member MultiplayerAPI.multiplayer_peer] is set.
+			</description>
+		</method>
+		<method name="_set_packet_processing_paused" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="paused" type="bool" />
+			<description>
+				Callback for [method MultiplayerAPI.set_packet_processing_paused].
 			</description>
 		</method>
 	</methods>

@@ -24,6 +24,13 @@
 				Returns the default MultiplayerAPI implementation class name. This is usually [code]"SceneMultiplayer"[/code] when [SceneMultiplayer] is available. See [method set_default_interface].
 			</description>
 		</method>
+		<method name="get_packet_processing_paused">
+			<return type="bool" />
+			<description>
+				Gets whether packet processing is paused or not.
+				See [method set_packet_processing_paused]
+			</description>
+		</method>
 		<method name="get_peers">
 			<return type="PackedInt32Array" />
 			<description>
@@ -96,6 +103,15 @@
 			<param index="0" name="interface_name" type="StringName" />
 			<description>
 				Sets the default MultiplayerAPI implementation class. This method can be used by modules and extensions to configure which implementation will be used by [SceneTree] when the engine starts.
+			</description>
+		</method>
+		<method name="set_packet_processing_paused">
+			<return type="void" />
+			<param index="0" name="paused" type="bool" />
+			<description>
+				Sets whether packet processing is paused, leaving sent/received data to accumulate until it is unpaused.
+				[b]Note:[/b] This is primarily used by the SceneTree to allow a client to delay processing packets until it is done changing the main scene via an RPC.
+				This will be set back to false when the scene is changed via [method SceneTree.change_scene_to_node].
 			</description>
 		</method>
 	</methods>
