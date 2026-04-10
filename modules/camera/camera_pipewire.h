@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_pipewire.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#if defined(PIPEWIRE_ENABLED)
-#include "camera_pipewire.h"
-#endif
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_apple.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
+#include "servers/camera/camera_server.h"
+
+#ifdef DBUS_ENABLED
+#include "platform/linuxbsd/freedesktop_portal_desktop.h"
 #endif
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-#if defined(LINUXBSD_ENABLED)
-#if defined(PIPEWIRE_ENABLED)
-	bool pipewire_supported = true;
-#if defined(SOWRAP_ENABLED)
-#if defined(DEBUG_ENABLED)
-	int dylibloader_verbose = 1;
+#ifdef SOWRAP_ENABLED
+#include "drivers/pipewire/pipewire-so_wrap.h" // IWYU pragma: keep. For PipeWire transitive includes.
 #else
-	int dylibloader_verbose = 0;
-#endif // defined(DEBUG_ENABLED)
-	pipewire_supported = false;
-	if (initialize_pipewire(dylibloader_verbose) == 0) {
-		if (pw_check_library_version_dylibloader_wrapper_pipewire) {
-			pipewire_supported = pw_check_library_version(PW_MAJOR, PW_MINOR, PW_MICRO);
-		}
-	}
-#endif // defined(SOWRAP_ENABLED)
-	if (pipewire_supported) {
-		print_verbose("CameraServer: Using PipeWire driver.");
-		CameraServer::make_default<CameraPipeWire>();
-		return;
-	}
-#endif // defined(PIPEWIRE_ENABLED)
-	print_verbose("CameraServer: Using V4L2 driver.");
-	CameraServer::make_default<CameraLinux>();
-#endif // defined(LINUXBSD_ENABLED)
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
+#include <pipewire/pipewire.h>
 #endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraApple>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-}
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+class CameraPipeWire : public CameraServer {
+	static void on_registry_event_global(void *data, uint32_t id, uint32_t permissions, const char *type, uint32_t version, const struct spa_dict *props);
+	static void on_registry_event_global_remove(void *data, uint32_t id);
+	static void on_core_done(void *data, uint32_t id, int seq);
+
+	static const struct pw_registry_events registry_events;
+	static const struct pw_core_events core_events;
+
+	pw_thread_loop *loop = nullptr;
+	pw_core *core = nullptr;
+	pw_context *context = nullptr;
+	pw_registry *registry = nullptr;
+	spa_hook registry_listener = {};
+	spa_hook core_listener = {};
+	uint32_t pending_id = PW_ID_ANY;
+	int pending_seq = 0;
+#ifdef DBUS_ENABLED
+	FreeDesktopPortalDesktop *portal = nullptr;
+#endif
+
+	void on_access_camera_response(int p_resp_code);
+	bool pipewire_connect(int p_fd = -1);
+	void pipewire_disconnect();
+
+public:
+	CameraPipeWire();
+	~CameraPipeWire();
+
+	void thread_lock();
+	void thread_unlock();
+	void sync_wait(pw_proxy *p_proxy);
+
+	virtual void set_monitoring_feeds(bool p_monitoring_feeds) override;
+};
