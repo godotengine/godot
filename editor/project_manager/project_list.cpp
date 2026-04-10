@@ -936,8 +936,8 @@ void ProjectList::sort_projects() {
 				}
 			}
 
-			// When searching, display projects whose name or path contain the search term and whose tags match the searched tags.
-			item_visible = !missing_tags && (search_term.is_empty() || item.project_name.containsn(search_term) || search_path.containsn(search_term));
+			// When searching, display projects whose name, path, or description contain the search term and whose tags match the searched tags.
+			item_visible = !missing_tags && (search_term.is_empty() || item.project_name.containsn(search_term) || search_path.containsn(search_term) || item.description.containsn(search_term));
 		}
 
 		item.control->set_visible(item_visible);
