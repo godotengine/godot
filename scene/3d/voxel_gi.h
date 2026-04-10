@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/3d/voxelizer.h"
 
 class CameraAttributes;
 class Mesh;
@@ -108,10 +109,6 @@ public:
 
 	};
 
-	typedef void (*BakeBeginFunc)();
-	typedef bool (*BakeStepFunc)(int, const String &);
-	typedef void (*BakeEndFunc)();
-
 private:
 	Ref<VoxelGIData> probe_data;
 
@@ -120,6 +117,11 @@ private:
 	Subdiv subdiv = SUBDIV_128;
 	Vector3 size = Vector3(20, 20, 20);
 	Ref<CameraAttributes> camera_attributes;
+	Mutex bake_mutex;
+
+	StringName bake_begin_name = "bake_begin";
+	StringName bake_step_name = "bake_step";
+	StringName bake_end_name = "bake_end";
 
 	struct PlotMesh {
 		Ref<Material> override_material;
@@ -128,23 +130,41 @@ private:
 		Transform3D local_xform;
 	};
 
+	struct BakeData {
+		VoxelGI *node;
+		Voxelizer baker;
+		List<PlotMesh> mesh_list;
+		bool create_visual_debug;
+		float exposure_normalization;
+	};
+
+	BakeData bake_data;
+	int voxelizer_plot_bake_base = 0;
+	int voxelizer_plot_bake_total = 0;
+
 	void _find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes);
 	void _debug_bake();
+	bool _voxelizer_plot_bake_step_function(int p_current, int p_total);
+	bool _voxelizer_sdf_bake_step_function(int p_current, int p_total);
 
 	float _get_camera_exposure_normalization();
+
+	void bake_begin();
+	bool bake_step(int p_step, const String &p_status);
+	void bake_end();
+
+	static void bake_task(void *data);
 
 protected:
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _bake_bind_compat_116833(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
+	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
 public:
-	static BakeBeginFunc bake_begin_function;
-	static BakeStepFunc bake_step_function;
-	static BakeEndFunc bake_end_function;
-
 	void set_probe_data(const Ref<VoxelGIData> &p_data);
 	Ref<VoxelGIData> get_probe_data() const;
 
@@ -159,7 +179,7 @@ public:
 
 	Vector3i get_estimated_cell_size() const;
 
-	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
+	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false, bool p_threaded = false);
 
 	virtual AABB get_aabb() const override;
 

@@ -29,9 +29,12 @@
 /**************************************************************************/
 
 #include "voxel_gi.h"
+#include "voxel_gi.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
@@ -279,7 +282,11 @@ void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
 	}
 
 	probe_data = p_data;
-	update_configuration_warnings();
+	if (Thread::is_main_thread()) {
+		update_configuration_warnings();
+	} else {
+		callable_mp((Node *)this, &VoxelGI::update_configuration_warnings).call_deferred();
+	}
 }
 
 Ref<VoxelGIData> VoxelGI::get_probe_data() const {
@@ -390,19 +397,35 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 }
 
-VoxelGI::BakeBeginFunc VoxelGI::bake_begin_function = nullptr;
-VoxelGI::BakeStepFunc VoxelGI::bake_step_function = nullptr;
-VoxelGI::BakeEndFunc VoxelGI::bake_end_function = nullptr;
-
-static int voxelizer_plot_bake_base = 0;
-static int voxelizer_plot_bake_total = 0;
-
-static bool voxelizer_plot_bake_step_function(int current, int) {
-	return VoxelGI::bake_step_function((voxelizer_plot_bake_base + current) * 500 / voxelizer_plot_bake_total, RTR("Plotting Meshes"));
+void VoxelGI::bake_begin() {
+	emit_signal(VoxelGI::bake_begin_name);
 }
 
-static bool voxelizer_sdf_bake_step_function(int current, int total) {
-	return VoxelGI::bake_step_function(500 + current * 500 / total, RTR("Generating Distance Field"));
+bool VoxelGI::bake_step(int p_step, const String &p_status) {
+	if (Thread::is_main_thread()) {
+		return emit_signal(VoxelGI::bake_step_name, p_step, p_status);
+	} else {
+		call_deferred("emit_signal", VoxelGI::bake_step_name, p_step, p_status);
+		return false;
+	}
+}
+
+void VoxelGI::bake_end() {
+	if (Thread::is_main_thread()) {
+		emit_signal(VoxelGI::bake_end_name);
+		notify_property_list_changed(); // bake property may have changed
+	} else {
+		call_deferred("emit_signal", VoxelGI::bake_end_name);
+		callable_mp((Object *)this, &VoxelGI::notify_property_list_changed).call_deferred(); // bake property may have changed
+	}
+}
+
+bool VoxelGI::_voxelizer_plot_bake_step_function(int p_current, int p_total) {
+	return bake_step((voxelizer_plot_bake_base + p_current) * 500 / voxelizer_plot_bake_total, RTR("Plotting Meshes"));
+}
+
+bool VoxelGI::_voxelizer_sdf_bake_step_function(int p_current, int p_total) {
+	return bake_step(500 + p_current * 500 / p_total, RTR("Generating Distance Field"));
 }
 
 Vector3i VoxelGI::get_estimated_cell_size() const {
@@ -431,7 +454,9 @@ Vector3i VoxelGI::get_estimated_cell_size() const {
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
 
-void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
+void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug, bool p_threaded) {
+	bake_mutex.lock();
+
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 
 	p_from_node = p_from_node ? p_from_node : get_parent();
@@ -447,79 +472,19 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	_find_meshes(p_from_node, mesh_list);
 
-	if (bake_begin_function) {
-		bake_begin_function();
-	}
+	bake_begin();
 
-	Voxelizer::BakeStepFunc voxelizer_step_func = bake_step_function != nullptr ? voxelizer_plot_bake_step_function : nullptr;
+	bake_data.baker = baker;
+	bake_data.create_visual_debug = p_create_visual_debug;
+	bake_data.exposure_normalization = exposure_normalization;
+	bake_data.mesh_list = mesh_list;
+	bake_data.node = this;
 
-	voxelizer_plot_bake_total = voxelizer_plot_bake_base = 0;
-	for (PlotMesh &E : mesh_list) {
-		voxelizer_plot_bake_total += baker.get_bake_steps(E.mesh);
-	}
-	for (PlotMesh &E : mesh_list) {
-		if (baker.plot_mesh(E.local_xform, E.mesh, E.instance_materials, E.override_material, voxelizer_step_func) != Voxelizer::BAKE_RESULT_OK) {
-			baker.end_bake();
-			if (bake_end_function) {
-				bake_end_function();
-			}
-			return;
-		}
-		voxelizer_plot_bake_base += baker.get_bake_steps(E.mesh);
-	}
-	if (bake_step_function) {
-		bake_step_function(500, RTR("Finishing Plot"));
-	}
-
-	baker.end_bake();
-
-	//create the data for rendering server
-
-	if (p_create_visual_debug) {
-		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
-		mmi->set_multimesh(baker.create_debug_multimesh());
-		add_child(mmi, true);
-#ifdef TOOLS_ENABLED
-		if (is_inside_tree() && get_tree()->get_edited_scene_root() == this) {
-			mmi->set_owner(this);
-		} else {
-			mmi->set_owner(get_owner());
-		}
-#else
-		mmi->set_owner(get_owner());
-#endif
-
+	if (p_threaded) {
+		WorkerThreadPool::get_singleton()->add_native_task(bake_task, &bake_data);
 	} else {
-		Ref<VoxelGIData> probe_data_new = get_probe_data();
-
-		if (probe_data_new.is_null()) {
-			probe_data_new.instantiate();
-		}
-
-		if (bake_step_function) {
-			bake_step_function(500, RTR("Generating Distance Field"));
-		}
-
-		voxelizer_step_func = bake_step_function != nullptr ? voxelizer_sdf_bake_step_function : nullptr;
-
-		Vector<uint8_t> df;
-		if (baker.get_sdf_3d_image(df, voxelizer_step_func) == Voxelizer::BAKE_RESULT_OK) {
-			RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data_new->get_rid(), exposure_normalization);
-
-			probe_data_new->allocate(baker.get_to_cell_space_xform(), AABB(-size / 2, size), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
-
-			set_probe_data(probe_data_new);
-#ifdef TOOLS_ENABLED
-			probe_data_new->set_edited(true); //so it gets saved
-#endif
-		}
+		bake_task(&bake_data);
 	}
-
-	if (bake_end_function) {
-		bake_end_function();
-	}
-
-	notify_property_list_changed(); //bake property may have changed
 }
 
 void VoxelGI::_debug_bake() {
@@ -567,7 +532,7 @@ void VoxelGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &VoxelGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &VoxelGI::get_camera_attributes);
 
-	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &VoxelGI::bake, DEFVAL(Variant()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug", "threaded"), &VoxelGI::bake, DEFVAL(Variant()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("debug_bake"), &VoxelGI::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), StringName("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
@@ -581,6 +546,10 @@ void VoxelGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUBDIV_256);
 	BIND_ENUM_CONSTANT(SUBDIV_512);
 	BIND_ENUM_CONSTANT(SUBDIV_MAX);
+
+	ADD_SIGNAL(MethodInfo("bake_begin"));
+	ADD_SIGNAL(MethodInfo("bake_step", PropertyInfo(Variant::INT, "step"), PropertyInfo(Variant::STRING, "status")));
+	ADD_SIGNAL(MethodInfo("bake_end"));
 }
 
 VoxelGI::VoxelGI() {
@@ -591,4 +560,72 @@ VoxelGI::VoxelGI() {
 VoxelGI::~VoxelGI() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free_rid(voxel_gi);
+}
+
+void VoxelGI::bake_task(void *p_user_data) {
+	BakeData *bake_data = static_cast<BakeData *>(p_user_data);
+	VoxelGI *node = bake_data->node;
+	Vector3 size = node->size;
+
+	Callable voxelizer_step_func = callable_mp(node, &VoxelGI::_voxelizer_plot_bake_step_function);
+
+	node->voxelizer_plot_bake_total = node->voxelizer_plot_bake_base = 0;
+	for (PlotMesh &E : bake_data->mesh_list) {
+		node->voxelizer_plot_bake_total += bake_data->baker.get_bake_steps(E.mesh);
+	}
+	for (PlotMesh &E : bake_data->mesh_list) {
+		if (bake_data->baker.plot_mesh(E.local_xform, E.mesh, E.instance_materials, E.override_material, voxelizer_step_func) != Voxelizer::BAKE_RESULT_OK) {
+			bake_data->baker.end_bake();
+			node->bake_end();
+			return;
+		}
+		node->voxelizer_plot_bake_base += bake_data->baker.get_bake_steps(E.mesh);
+	}
+
+	node->bake_step(500, RTR("Finishing Plot"));
+
+	bake_data->baker.end_bake();
+
+	// Create the data for rendering server
+
+	if (bake_data->create_visual_debug) {
+		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
+		mmi->set_multimesh(bake_data->baker.create_debug_multimesh());
+		bake_data->node->add_child(mmi, true);
+#ifdef TOOLS_ENABLED
+		if (bake_data->node->is_inside_tree() && node->get_tree()->get_edited_scene_root() == bake_data->node) {
+			mmi->set_owner(node);
+		} else {
+			mmi->set_owner(node->get_owner());
+		}
+#else
+		mmi->set_owner(node->get_owner());
+#endif
+
+	} else {
+		Ref<VoxelGIData> probe_data_new = bake_data->node->get_probe_data();
+
+		if (probe_data_new.is_null()) {
+			probe_data_new.instantiate();
+		}
+
+		bake_data->node->bake_step(500, RTR("Generating Distance Field"));
+
+		Callable voxelizer_sdf_step_func = callable_mp(node, &VoxelGI::_voxelizer_sdf_bake_step_function);
+
+		Vector<uint8_t> df;
+		if (bake_data->baker.get_sdf_3d_image(df, voxelizer_sdf_step_func) == Voxelizer::BAKE_RESULT_OK) {
+			RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data_new->get_rid(), bake_data->exposure_normalization);
+
+			probe_data_new->allocate(bake_data->baker.get_to_cell_space_xform(), AABB(-size / 2, size), bake_data->baker.get_voxel_gi_octree_size(), bake_data->baker.get_voxel_gi_octree_cells(), bake_data->baker.get_voxel_gi_data_cells(), df, bake_data->baker.get_voxel_gi_level_cell_count());
+
+			bake_data->node->set_probe_data(probe_data_new);
+#ifdef TOOLS_ENABLED
+			probe_data_new->set_edited(true); //so it gets saved
+#endif
+		}
+	}
+
+	node->bake_end();
+	node->bake_mutex.unlock();
 }
