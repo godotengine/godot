@@ -188,9 +188,9 @@ jobs:
 
       - name: Style checks via clangd-tidy
         if: matrix.clangd-tidy
-        uses: ./.github/actions/clangd-tidy
+        uses: ./.github/actions/pre-commit
         with:
-          changed-files: ${{ inputs.changed-files }}
+          args: --hook-stage manual clangd-tidy --files ${{ inputs.changed-files }}
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build

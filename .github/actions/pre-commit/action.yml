@@ -1,0 +1,48 @@
+name: pre-commit
+description: Run and cache pre-commit
+
+inputs:
+  args:
+    description: Options to pass to the pre-commit run.
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Restore pre-commit cache
+      id: pre-commit-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}|${{ github.sha }}
+        restore-keys: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}
+
+    - name: Setup pre-commit
+      shell: sh
+      run: |
+        echo "::group::Installing pre-commit"
+        # Don't know which python we're using, so just access the global scope.
+        python -m pip install pre-commit
+        echo "::endgroup::"
+
+        echo "::group::Preparing pre-commit dependencies"
+        # Specify manual hook stage to capture `clangd-tidy` as well.
+        pre-commit run --hook-stage manual
+        echo "::endgroup::"
+
+        echo "::group::Removing unused dependencies"
+        # Prevent cache bloat by only keeping current dependencies.
+        pre-commit gc
+        echo "::endgroup::"
+
+    - name: Save pre-commit cache
+      uses: actions/cache/save@v5
+      if: steps.pre-commit-restore.outputs.cache-hit != 'true'
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}|${{ github.sha }}
+
+    - name: Run pre-commit
+      shell: sh
+      run: pre-commit run --show-diff-on-failure --color=always ${{ inputs.args }}
