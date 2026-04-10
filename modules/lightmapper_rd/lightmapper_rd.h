@@ -259,9 +259,12 @@ class LightmapperRD : public Lightmapper {
 		uint32_t ray_count = 0;
 		uint32_t ray_from = 0;
 		uint32_t ray_to = 0;
+		uint32_t light_from = 0;
+		uint32_t light_to = 0;
 		uint32_t region_ofs[2] = {};
 		uint32_t probe_count = 0;
 		uint32_t denoiser_range = 0;
+		uint32_t pad[2] = {};
 	};
 
 	Vector<Ref<Image>> lightmap_textures;

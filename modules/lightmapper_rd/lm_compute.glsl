@@ -52,7 +52,12 @@ layout(rgba32f, set = 1, binding = 1) uniform restrict image2DArray unocclude;
 
 #if defined(MODE_DIRECT_LIGHT) || defined(MODE_BOUNCE_LIGHT)
 
+#if defined(MODE_DIRECT_LIGHT)
+layout(rgba16f, set = 1, binding = 0) uniform restrict image2DArray dest_light;
+#else
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2DArray dest_light;
+#endif
+
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
 layout(set = 1, binding = 2) uniform texture2DArray source_position;
 layout(set = 1, binding = 3) uniform texture2DArray source_normal;
@@ -61,7 +66,7 @@ layout(rgba16f, set = 1, binding = 4) uniform restrict image2DArray accum_light;
 #endif
 
 #if defined(MODE_DIRECT_LIGHT) && defined(USE_SHADOWMASK)
-layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shadowmask;
+layout(rgba8, set = 1, binding = 5) uniform restrict image2DArray shadowmask;
 #elif defined(MODE_BOUNCE_LIGHT)
 layout(set = 1, binding = 5) uniform texture2D environment;
 #endif
@@ -92,6 +97,9 @@ layout(push_constant, std430) uniform Params {
 	uint ray_count;
 	uint ray_from;
 	uint ray_to;
+
+	uint light_from;
+	uint light_to;
 
 	ivec2 region_ofs;
 	uint probe_count;
@@ -837,32 +845,31 @@ void main() {
 	}
 	float texel_size_world_space = distance(position, neighbor_position.xyz) * bake_params.supersampling_factor;
 
-	vec3 light_for_texture = vec3(0.0);
-	vec3 light_for_bounces = vec3(0.0);
-
-#ifdef USE_SHADOWMASK
-	float shadowmask_value = 0.0f;
-#endif
+	vec3 light_for_bounces = imageLoad(dest_light, ivec3(atlas_pos, params.atlas_slice)).rgb;
 
 #ifdef USE_SH_LIGHTMAPS
 	vec4 sh_accum[4] = vec4[](
-			vec4(0.0, 0.0, 0.0, 1.0),
-			vec4(0.0, 0.0, 0.0, 1.0),
-			vec4(0.0, 0.0, 0.0, 1.0),
-			vec4(0.0, 0.0, 0.0, 1.0));
+			imageLoad(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 0)),
+			imageLoad(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 1)),
+			imageLoad(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 2)),
+			imageLoad(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 3)));
+#else
+	vec3 light_for_texture = imageLoad(accum_light, ivec3(atlas_pos, params.atlas_slice)).rgb;
+#endif
+
+#ifdef USE_SHADOWMASK
+	float shadowmask_value = imageLoad(shadowmask, ivec3(atlas_pos, params.atlas_slice)).r;
 #endif
 
 	// Use atlas position and a prime number as the seed.
 	uint noise = random_seed(ivec3(atlas_pos, 43573547));
-	for (uint i = 0; i < bake_params.light_count; i++) {
+	for (uint i = params.light_from; i < params.light_to; i++) {
 		vec3 light;
 		vec3 light_dir;
 		float shadow;
 		trace_direct_light(position, normal, i, true, light, light_dir, noise, texel_size_world_space, shadow);
 
 		if (lights.data[i].static_bake) {
-			light_for_texture += light;
-
 #ifdef USE_SH_LIGHTMAPS
 			// For L0, light needs to be attenuated by dot(normal, light_dir) else it is oversaturated when sampled later.
 			// For L1, light can't be attenuated by dot(normal, light_dir) since when sampling later, the dot product is done.
@@ -895,10 +902,12 @@ void main() {
 			for (uint j = 0; j < 4; j++) {
 				sh_accum[j].rgb += light * c[j] * bake_params.exposure_normalization;
 			}
+#else
+			light_for_texture += light * bake_params.exposure_normalization;
 #endif
 		}
 
-		light_for_bounces += light * lights.data[i].indirect_energy;
+		light_for_bounces += light * lights.data[i].indirect_energy * bake_params.exposure_normalization;
 
 #ifdef USE_SHADOWMASK
 		if (lights.data[i].type == LIGHT_TYPE_DIRECTIONAL && i == bake_params.shadowmask_light_idx) {
@@ -907,22 +916,20 @@ void main() {
 #endif
 	}
 
-	light_for_bounces *= bake_params.exposure_normalization;
 	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), vec4(light_for_bounces, 1.0));
 
 #ifdef USE_SH_LIGHTMAPS
 	// Keep for adding at the end.
-	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 0), sh_accum[0]);
-	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 1), sh_accum[1]);
-	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 2), sh_accum[2]);
-	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 3), sh_accum[3]);
+	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 0), vec4(sh_accum[0].rgb, 1.0));
+	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 1), vec4(sh_accum[1].rgb, 1.0));
+	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 2), vec4(sh_accum[2].rgb, 1.0));
+	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 3), vec4(sh_accum[3].rgb, 1.0));
 #else
-	light_for_texture *= bake_params.exposure_normalization;
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), vec4(light_for_texture, 1.0));
 #endif
 
 #ifdef USE_SHADOWMASK
-	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, shadowmask_value, shadowmask_value, 1.0));
+	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, 1.0, 1.0, 1.0));
 #endif
 
 #endif
