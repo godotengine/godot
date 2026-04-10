@@ -4730,11 +4730,15 @@ DisplayServerEnums::VSyncMode DisplayServerWindows::window_get_vsync_mode(Displa
 bool DisplayServerWindows::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	bool renderer_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
-		return false; // HDR output is not supported by the rendering device.
+	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		renderer_supports_hdr_output = true;
 	}
 #endif
+	if (!renderer_supports_hdr_output) {
+		return false;
+	}
 
 	// The window supports HDR if the screen it is on supports HDR.
 	int screen = window_get_current_screen(p_window);
@@ -4745,9 +4749,18 @@ bool DisplayServerWindows::window_is_hdr_output_supported(DisplayServerEnums::Wi
 void DisplayServerWindows::window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
+	if (p_enable) {
+		bool renderer_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	ERR_FAIL_COND_EDMSG(p_enable && (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) == false, "HDR output is not supported by the rendering device.");
+		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+			renderer_supports_hdr_output = true;
+		}
 #endif
+		if (!renderer_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+	}
 
 	WindowData &wd = windows[p_window];
 	wd.hdr_output_requested = p_enable;
