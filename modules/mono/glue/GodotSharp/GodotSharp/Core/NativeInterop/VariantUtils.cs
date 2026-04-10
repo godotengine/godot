@@ -524,7 +524,7 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static StringName ConvertToStringName(in godot_variant p_var)
-            => StringName.CreateTakingOwnershipOfDisposableValue(ConvertToNativeStringName(p_var));
+            => Pools.StringNamePoolInstance.Rent(ConvertToNativeStringName(p_var));
 
         public static godot_node_path ConvertToNativeNodePath(scoped in godot_variant p_var)
             => p_var.Type == Variant.Type.NodePath ?
@@ -533,7 +533,7 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NodePath ConvertToNodePath(in godot_variant p_var)
-            => NodePath.CreateTakingOwnershipOfDisposableValue(ConvertToNativeNodePath(p_var));
+            => Pools.NodePathPoolInstance.Rent(ConvertToNativeNodePath(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_callable ConvertToNativeCallable(scoped in godot_variant p_var)
@@ -564,11 +564,11 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Collections.Array ConvertToArray(in godot_variant p_var)
-            => Collections.Array.CreateTakingOwnershipOfDisposableValue(ConvertToNativeArray(p_var));
+            => Pools.ArrayPoolInstance.Rent(ConvertToNativeArray(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Array<T> ConvertToArray<[MustBeVariant] T>(in godot_variant p_var)
-            => Array<T>.CreateTakingOwnershipOfDisposableValue(ConvertToNativeArray(p_var));
+            => Pools.ArrayPool<T>.Instance.Rent(Pools.ArrayPoolInstance.Rent(ConvertToNativeArray(p_var)));
 
         public static godot_dictionary ConvertToNativeDictionary(scoped in godot_variant p_var)
             => p_var.Type == Variant.Type.Dictionary ?
@@ -577,11 +577,11 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary ConvertToDictionary(in godot_variant p_var)
-            => Dictionary.CreateTakingOwnershipOfDisposableValue(ConvertToNativeDictionary(p_var));
+            => Pools.DictionaryPoolInstance.Rent(ConvertToNativeDictionary(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<TKey, TValue> ConvertToDictionary<[MustBeVariant] TKey, [MustBeVariant] TValue>(in godot_variant p_var)
-            => Dictionary<TKey, TValue>.CreateTakingOwnershipOfDisposableValue(ConvertToNativeDictionary(p_var));
+            => Pools.DictionaryPool<TKey, TValue>.Instance.Rent(Pools.DictionaryPoolInstance.Rent(ConvertToNativeDictionary(p_var)));
 
         public static byte[] ConvertAsPackedByteArrayToSystemArray(in godot_variant p_var)
         {
