@@ -3806,7 +3806,8 @@ void RendererSceneCull::render_probes() {
 			for (Instance *E : probe->lights) {
 				Instance *instance = E;
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-				if (!instance->visible) {
+				RSE::LightBakeMode bake_mode = RSG::light_storage->light_get_bake_mode(instance->base);
+				if (!instance->visible || bake_mode == RSE::LIGHT_BAKE_DISABLED) {
 					continue;
 				}
 				if (cache_dirty) {
@@ -3838,7 +3839,8 @@ void RendererSceneCull::render_probes() {
 
 			for (const Instance *instance : probe->owner->scenario->directional_lights) {
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-				if (!instance->visible) {
+				RSE::LightBakeMode bake_mode = RSG::light_storage->light_get_bake_mode(instance->base);
+				if (!instance->visible || bake_mode == RSE::LIGHT_BAKE_DISABLED) {
 					continue;
 				}
 				if (cache_dirty) {
@@ -3890,7 +3892,8 @@ void RendererSceneCull::render_probes() {
 				for (Instance *E : probe->lights) {
 					Instance *instance = E;
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-					if (!instance->visible) {
+					RSE::LightBakeMode bake_mode = RSG::light_storage->light_get_bake_mode(instance->base);
+					if (!instance->visible || bake_mode == RSE::LIGHT_BAKE_DISABLED) {
 						continue;
 					}
 
@@ -3913,7 +3916,8 @@ void RendererSceneCull::render_probes() {
 				}
 				for (const Instance *instance : probe->owner->scenario->directional_lights) {
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
-					if (!instance->visible) {
+					RSE::LightBakeMode bake_mode = RSG::light_storage->light_get_bake_mode(instance->base);
+					if (!instance->visible || bake_mode == RSE::LIGHT_BAKE_DISABLED) {
 						continue;
 					}
 
