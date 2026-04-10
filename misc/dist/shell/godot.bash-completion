@@ -91,6 +91,7 @@ _complete_godot_options() {
 --build-solutions
 --dump-gdextension-interface
 --dump-extension-api
+--dump-shader-api
 --benchmark
 --benchmark-file
 --test
