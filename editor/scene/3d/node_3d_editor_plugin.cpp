@@ -9615,6 +9615,7 @@ void Node3DEditor::_notification(int p_what) {
 			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d_gizmos/gizmo_settings")) {
 				CollisionShape3DGizmoPlugin::set_show_only_when_selected(EDITOR_GET("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected"));
+				SpringArm3DGizmoPlugin::set_show_only_when_selected(EDITOR_GET("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected"));
 				update_all_gizmos();
 			}
 			_update_vertex_snap_tooltips();

@@ -31,6 +31,7 @@
 #include "spring_arm_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/scene_tree.h"
@@ -76,7 +77,7 @@ void SpringArm3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_margin"), &SpringArm3D::get_margin);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape3D::get_class_static()), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D,-SeparationRayShape3D,-HeightMapShape3D,-WorldBoundaryShape3D,-ConvexPolygonShape3D,-ConcavePolygonShape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spring_length", PROPERTY_HINT_NONE, "suffix:m"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_NONE, "suffix:m"), "set_margin", "get_margin");
 }
@@ -94,7 +95,17 @@ void SpringArm3D::set_length(real_t p_length) {
 }
 
 void SpringArm3D::set_shape(Ref<Shape3D> p_shape) {
+	if (p_shape == shape) {
+		return;
+	}
+	if (shape.is_valid()) {
+		shape->disconnect_changed(callable_mp((Node3D *)this, &Node3D::update_gizmos));
+	}
 	shape = p_shape;
+	if (shape.is_valid()) {
+		shape->connect_changed(callable_mp((Node3D *)this, &Node3D::update_gizmos));
+	}
+	update_gizmos();
 }
 
 Ref<Shape3D> SpringArm3D::get_shape() const {
