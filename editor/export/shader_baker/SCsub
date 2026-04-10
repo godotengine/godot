@@ -4,6 +4,3 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
-
-if env["rendering_device"]:
-    SConscript("shader_baker/SCsub")
