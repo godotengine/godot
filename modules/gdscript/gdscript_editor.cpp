@@ -1966,6 +1966,11 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 		switch (p_expression->type) {
 			case GDScriptParser::Node::IDENTIFIER: {
 				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(p_expression);
+				if (id->has_narrowed_datatype) {
+					r_type.type = id->narrowed_datatype;
+					found = true;
+					break;
+				}
 				found = _guess_identifier_type(p_context, id, r_type);
 			} break;
 			case GDScriptParser::Node::DICTIONARY: {

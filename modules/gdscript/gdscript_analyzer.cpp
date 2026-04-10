@@ -2243,11 +2243,55 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 	resolve_assignable(p_parameter, kind);
 }
 
+void GDScriptAnalyzer::extract_type_tests(GDScriptParser::ExpressionNode *p_expression, HashMap<StringName, GDScriptParser::DataType> &r_overrides) {
+	if (p_expression == nullptr) {
+		return;
+	}
+
+	if (p_expression->type == GDScriptParser::Node::BINARY_OPERATOR) {
+		GDScriptParser::BinaryOpNode *binary_op = static_cast<GDScriptParser::BinaryOpNode *>(p_expression);
+		if (binary_op->variant_op == Variant::OP_AND) {
+			extract_type_tests(binary_op->left_operand, r_overrides);
+			extract_type_tests(binary_op->right_operand, r_overrides);
+			return;
+		}
+	}
+
+	if (p_expression->type == GDScriptParser::Node::TYPE_TEST) {
+		GDScriptParser::TypeTestNode *type_test = static_cast<GDScriptParser::TypeTestNode *>(p_expression);
+		if (type_test->operand && type_test->operand->type == GDScriptParser::Node::IDENTIFIER) {
+			GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(type_test->operand);
+			if (type_test->test_datatype.is_set()) {
+				r_overrides[identifier->name] = type_test->test_datatype;
+			}
+		}
+	}
+}
+
 void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
 	reduce_expression(p_if->condition);
 
+	HashMap<StringName, GDScriptParser::DataType> narrowed;
+	extract_type_tests(p_if->condition, narrowed);
+
+	HashMap<StringName, GDScriptParser::DataType> saved;
+	for (const KeyValue<StringName, GDScriptParser::DataType> &kv : narrowed) {
+		if (type_overrides.has(kv.key)) {
+			saved[kv.key] = type_overrides[kv.key];
+		}
+		type_overrides[kv.key] = kv.value;
+	}
+
 	resolve_suite(p_if->true_block);
 	p_if->set_datatype(p_if->true_block->get_datatype());
+
+	for (const KeyValue<StringName, GDScriptParser::DataType> &kv : narrowed) {
+		if (saved.has(kv.key)) {
+			type_overrides[kv.key] = saved[kv.key];
+		} else {
+			type_overrides.erase(kv.key);
+		}
+	}
 
 	if (p_if->false_block != nullptr) {
 		resolve_suite(p_if->false_block);
@@ -3093,7 +3137,42 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 
 void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op) {
 	reduce_expression(p_binary_op->left_operand);
-	reduce_expression(p_binary_op->right_operand);
+
+	if (p_binary_op->variant_op == Variant::OP_AND) {
+		HashMap<StringName, GDScriptParser::DataType> narrowed;
+		extract_type_tests(p_binary_op->left_operand, narrowed);
+
+		HashMap<StringName, GDScriptParser::DataType> saved;
+		for (const KeyValue<StringName, GDScriptParser::DataType> &kv : narrowed) {
+			if (type_overrides.has(kv.key)) {
+				saved[kv.key] = type_overrides[kv.key];
+			}
+			type_overrides[kv.key] = kv.value;
+		}
+
+		if (p_binary_op->right_operand != nullptr && p_binary_op->right_operand->type == GDScriptParser::Node::SUBSCRIPT) {
+			GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_binary_op->right_operand);
+			if (subscript->base != nullptr && subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+				GDScriptParser::IdentifierNode *base_id = static_cast<GDScriptParser::IdentifierNode *>(subscript->base);
+				if (type_overrides.has(base_id->name)) {
+					base_id->narrowed_datatype = type_overrides[base_id->name];
+					base_id->has_narrowed_datatype = true;
+				}
+			}
+		}
+
+		reduce_expression(p_binary_op->right_operand);
+
+		for (const KeyValue<StringName, GDScriptParser::DataType> &kv : narrowed) {
+			if (saved.has(kv.key)) {
+				type_overrides[kv.key] = saved[kv.key];
+			} else {
+				type_overrides.erase(kv.key);
+			}
+		}
+	} else {
+		reduce_expression(p_binary_op->right_operand);
+	}
 
 	GDScriptParser::DataType left_type;
 	if (p_binary_op->left_operand) {
@@ -4461,6 +4540,12 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (found_source) {
+		if (type_overrides.has(p_identifier->name)) {
+			p_identifier->narrowed_datatype = type_overrides[p_identifier->name];
+			p_identifier->has_narrowed_datatype = true;
+			p_identifier->set_datatype(type_overrides[p_identifier->name]);
+		}
+
 		const bool source_is_instance_variable = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 		const bool source_is_instance_function = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_FUNCTION && !p_identifier->function_source_is_static;
 		const bool source_is_signal = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_SIGNAL;

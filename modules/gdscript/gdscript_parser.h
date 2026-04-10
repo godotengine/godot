@@ -897,6 +897,9 @@ public:
 		StringName name;
 		SuiteNode *suite = nullptr; // The block in which the identifier is used.
 
+		DataType narrowed_datatype;
+		bool has_narrowed_datatype = false;
+
 		enum Source {
 			UNDEFINED_SOURCE,
 			FUNCTION_PARAMETER,
