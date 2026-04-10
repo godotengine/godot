@@ -136,6 +136,8 @@ public:
 	void set_format(Format p_format);
 	Format get_format() const;
 
+	virtual bool has_loop() const override;
+
 	void set_loop_mode(LoopMode p_loop_mode);
 	LoopMode get_loop_mode() const;
 
