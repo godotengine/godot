@@ -1,0 +1,3 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 1: "@abstract" annotation cannot be applied to a final class.
+>> ERROR at line 7: The base class "final_classes.gd::A" is marked as final and cannot be extended.

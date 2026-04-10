@@ -438,6 +438,12 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					}
 					method_doc.qualifiers += "static";
 				}
+				if (m_func->is_final) {
+					if (!method_doc.qualifiers.is_empty()) {
+						method_doc.qualifiers += " ";
+					}
+					method_doc.qualifiers += "final";
+				}
 
 				if (func_name == "_init" || func_name == "_static_init") {
 					method_doc.return_type = "void";
