@@ -203,6 +203,20 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	// When making a new scene, allow shortcuts if the root
+	// has not been decided.
+	if (get_tree()->get_edited_scene_root() == nullptr) {
+		if (ED_IS_SHORTCUT("scene_tree/new_node_option1", p_event)) {
+			_tool_selected(TOOL_CREATE_2D_SCENE);
+		} else if (ED_IS_SHORTCUT("scene_tree/new_node_option2", p_event)) {
+			_tool_selected(TOOL_CREATE_3D_SCENE);
+		} else if (ED_IS_SHORTCUT("scene_tree/new_node_option3", p_event)) {
+			_tool_selected(TOOL_CREATE_USER_INTERFACE);
+		} else if (ED_IS_SHORTCUT("scene_tree/new_node_option4", p_event)) {
+			_tool_selected(TOOL_NEW);
+		}
+	}
+
 	if (ED_IS_SHORTCUT("scene_tree/rename", p_event)) {
 		// Prevent renaming if a button or a range is focused
 		// to avoid conflict with Enter shortcut on macOS.
@@ -1730,18 +1744,21 @@ void SceneTreeDock::_notification(int p_what) {
 			button_2d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_2d);
 			button_2d->set_text(TTR("2D Scene"));
+			button_2d->set_shortcut(ED_GET_SHORTCUT("scene_tree/new_node_option1"));
 			button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
 			button_2d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_2D_SCENE, false));
 
 			button_3d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_3d);
 			button_3d->set_text(TTR("3D Scene"));
+			button_3d->set_shortcut(ED_GET_SHORTCUT("scene_tree/new_node_option2"));
 			button_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
 			button_3d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_3D_SCENE, false));
 
 			button_ui = memnew(Button);
 			beginner_node_shortcuts->add_child(button_ui);
 			button_ui->set_text(TTR("User Interface"));
+			button_ui->set_shortcut(ED_GET_SHORTCUT("scene_tree/new_node_option3"));
 			button_ui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			button_ui->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_USER_INTERFACE, false));
 
@@ -1751,6 +1768,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_custom = memnew(Button);
 			node_shortcuts->add_child(button_custom);
 			button_custom->set_text(TTR("Other Node"));
+			button_custom->set_shortcut(ED_GET_SHORTCUT("scene_tree/new_node_option4"));
 			button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_custom->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
 
@@ -1762,6 +1780,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			_update_create_root_dialog(true);
 			_update_create_root_dialog_visibility();
+			scene_tree->get_scene_tree()->grab_focus(true);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -4938,6 +4957,10 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTRC("Expand/Collapse Branch"));
 	ED_SHORTCUT("scene_tree/cut_node", TTRC("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
 	ED_SHORTCUT("scene_tree/copy_node", TTRC("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("scene_tree/new_node_option1", TTRC("Root Node Option 1"), Key::KEY_1, true);
+	ED_SHORTCUT("scene_tree/new_node_option2", TTRC("Root Node Option 2"), Key::KEY_2, true);
+	ED_SHORTCUT("scene_tree/new_node_option3", TTRC("Root Node Option 3"), Key::KEY_3, true);
+	ED_SHORTCUT("scene_tree/new_node_option4", TTRC("Root Node Option 4"), Key::KEY_4, true);
 	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste (as Child)"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_sibling", TTRC("Paste as Sibling"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_replacement", TTRC("Paste as Replacement"), KeyModifierMask::ALT | Key::V);
