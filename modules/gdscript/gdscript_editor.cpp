@@ -722,11 +722,13 @@ static String _trim_parent_class(const String &p_class, const String &p_base_cla
 
 static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg, const String &p_base_class = "") {
 	String class_name = p_info.class_name;
-	bool is_enum = p_info.type == Variant::INT && p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM;
-	// PROPERTY_USAGE_CLASS_IS_BITFIELD: BitField[T] isn't supported (yet?), use plain int.
+	bool is_enum = p_info.type == Variant::INT && p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD);
 
 	if ((p_info.type == Variant::OBJECT || is_enum) && !class_name.is_empty()) {
 		if (is_enum && CoreConstants::is_global_enum(p_info.class_name)) {
+			if (p_info.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD) {
+				return vformat("BitField[%s]", class_name);
+			}
 			return class_name;
 		}
 		return _trim_parent_class(class_name, p_base_class);

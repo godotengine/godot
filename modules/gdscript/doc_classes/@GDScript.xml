@@ -317,6 +317,33 @@
 				[/codeblock]
 			</description>
 		</annotation>
+        <annotation name="@bitfield">
+            <return type="void" />
+            <description>
+                Marks an enum as a bitfield.
+                Automatically assigns all values of the enum to [code]2^n[/code], while still respecting manually defined values. Variables with the same type as the bitfield enum will automatically have [constant PROPERTY_HINT_FLAGS] when exported, allowing for easier exporting of bitfields. Those same variables will automatically show their type as being [code]BitField[EnumName][/code] in documentation, similar to bitfields defined in the engine.
+                When returning or exporting the bitfield enum, the warnings [member ProjectSettings.debug/gdscript/warnings/int_as_enum_without_cast], [member ProjectSettings.debug/gdscript/warnings/int_as_enum_without_cast] and [member ProjectSettings.debug/gdscript/warnings/enum_variable_without_default] automatically get ignored for easier use.
+                See also [annotation @export_flags].
+                [codeblock]
+                @bitfield
+                enum Type {
+                    FIRE,  # Value: 1
+                    ICE,   # Value: 2
+                    WATER, # Value: 4
+                    WIND,  # Value: 8
+                    EARTH  # Value: 16
+                }
+
+                @export var type: Type # Ignores the ENUM_VARIABLE_WITHOUT_DEFAULT warning
+
+                # Has the same effect as above, but can be more annoying to use
+                @export_flags("Fire", "Ice", "Water", "Wind", "Earth") var type2 = 0
+
+                func return_bitfield_enum() -> Type:
+                    return Type.FIRE | Type.ICE # Ignores the INT_AS_ENUM_WITHOUT_CAST warning
+                [/codeblock]
+            </description>
+        </annotation>
 		<annotation name="@export">
 			<return type="void" />
 			<description>
@@ -472,7 +499,7 @@
 			<param index="0" name="names" type="String" />
 			<description>
 				Export an integer property as a bit flag field. This allows to store several "checked" or [code]true[/code] values with one property, and comfortably select them from the Inspector dock.
-				See also [constant PROPERTY_HINT_FLAGS].
+				See also [constant PROPERTY_HINT_FLAGS] and [annotation @bitfield].
 				[codeblock]
 				@export_flags("Fire", "Water", "Earth", "Wind") var spell_elements = 0
 				[/codeblock]
