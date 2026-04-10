@@ -173,8 +173,13 @@ public:
 	void update_graph();
 	void update_graph_immediately();
 
+	void update_theme();
+
 	void pan_to_node(const StringName &p_node_name, int p_input_index = -1);
 	AnimationNodeBlendTreeEditor();
+
+private:
+	Ref<Theme> ab_msdf_fonts_theme;
 };
 
 // EditorPluginAnimationNodeAnimation
