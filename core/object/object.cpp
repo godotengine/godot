@@ -589,6 +589,19 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 	return Variant();
 }
 
+String Object::get_property_description(const StringName &p_name) const {
+	String desc = _get_property_descriptionv(p_name);
+	if (!desc.is_empty()) {
+		return desc;
+	}
+
+	if (script_instance) {
+		desc = script_instance->get_property_description(p_name);
+	}
+
+	return desc;
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 	ClassDB::get_method_list(get_class_name(), p_list);
 	if (script_instance) {
@@ -1955,6 +1968,8 @@ void Object::_bind_methods() {
 		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_OBJ_CORE_METHOD(mi);
 	}
+
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::STRING, "_get_property_description", PropertyInfo(Variant::STRING_NAME, "property")));
 
 	// These are actually `Variant` methods, but that doesn't matter since scripts can't inherit built-in types.
 
