@@ -808,15 +808,76 @@ String String::to_kebab_case() const {
 }
 
 String String::get_with_code_lines() const {
-	const Vector<String> lines = split("\n");
-	String ret;
-	for (int i = 0; i < lines.size(); i++) {
-		if (i > 0) {
-			ret += "\n";
-		}
-		ret += vformat("%4d | %s", i + 1, lines[i]);
+	if (is_empty()) {
+		return String();
 	}
-	return ret;
+
+	// Count New lines
+	const Span<char32_t> src = span();
+	uint64_t count_new_lines = 0;
+	for (char32_t c : src) {
+		if (c == '\n') {
+			count_new_lines++;
+		}
+	}
+	uint64_t total_lines = count_new_lines + 1;
+
+	// Default Godot minimum padding width - could be lower
+	uint64_t digits = 4;
+	uint64_t max_line = 9999;
+	while (total_lines > max_line) {
+		max_line = max_line * 10 + 9;
+		digits++;
+	}
+
+	// Total len = original string + (padding per line)
+	const uint64_t padding = digits + 3; // +3 for " | "
+	const uint64_t src_len = src.size();
+	const uint64_t dst_len = src_len + (padding * total_lines);
+
+	// Stack buffer for zero-allocation integer formatting
+	char prefix_buf[32];
+
+	// Copy across single alloc in cacheline friendly way
+	String dst;
+	dst.resize_uninitialized(dst_len);
+	char32_t *dst_ptr = dst.ptrw();
+
+	uint64_t line_counter = 1;
+	uint64_t dst_cur = 0;
+	uint64_t src_cur = 0;
+	while (src_cur <= src_len) {
+		// Find next newline
+		int64_t n = src.find('\n', src_cur);
+		uint64_t end_idx = (n < 0) ? src_len : n;
+
+		// Print line number into scrap buffer
+		// %*llu allows us to dynamically set the zero-padding width
+		int prefix_len = snprintf(prefix_buf, sizeof(prefix_buf), "%*llu | ", (int)digits, (unsigned long long)line_counter);
+		for (int i = 0; i < prefix_len; i++) {
+			dst_ptr[dst_cur++] = (char32_t)prefix_buf[i];
+		}
+
+		// Copy actual string
+		uint64_t copy_len = end_idx - src_cur;
+		if (copy_len > 0) {
+			memcpy(&dst_ptr[dst_cur], &src[src_cur], copy_len * sizeof(char32_t));
+			dst_cur += copy_len;
+		}
+
+		// Copy the newline itself if we aren't at the end of the string
+		if (n < 0) {
+			src_cur = src_len; // Force loop exit last line
+		} else {
+			dst_ptr[dst_cur++] = '\n';
+			src_cur = n + 1; // Jump past the newline
+		}
+
+		line_counter++;
+	}
+
+	dst_ptr[dst_cur] = 0; // Safety terminator
+	return dst;
 }
 
 int String::get_slice_count(const String &p_splitter) const {
