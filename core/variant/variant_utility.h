@@ -48,6 +48,7 @@ struct VariantUtilityFunctions {
 	static double acosh(double arg);
 	static double atanh(double arg);
 	static double sqrt(double x);
+	static double cbrt(double x);
 	static double fmod(double b, double r);
 	static double fposmod(double b, double r);
 	static int64_t posmod(int64_t b, int64_t r);
