@@ -223,6 +223,12 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
+		<member name="hide_tabs_icons" type="bool" setter="set_hide_tabs_icons" getter="is_hide_tabs_icons" default="false">
+			If [code]true[/code], the icons of the tabs will be hidden.
+		</member>
+		<member name="hide_tabs_titles" type="bool" setter="set_hide_tabs_titles" getter="is_hide_tabs_titles" default="false">
+			If [code]true[/code], the titles of the tabs will be hidden.
+		</member>
 		<member name="switch_on_drag_hover" type="bool" setter="set_switch_on_drag_hover" getter="get_switch_on_drag_hover" default="true">
 			If [code]true[/code], hovering over a tab while dragging something will switch to that tab. Does not have effect when hovering another tab to rearrange.
 		</member>

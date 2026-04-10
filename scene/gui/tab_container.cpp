@@ -1126,6 +1126,22 @@ Popup *TabContainer::get_popup() const {
 	return nullptr;
 }
 
+void TabContainer::set_hide_tabs_titles(bool p_hide) {
+	tab_bar->set_hide_titles(p_hide);
+}
+
+bool TabContainer::is_hide_tabs_titles() const {
+	return tab_bar->is_hide_titles();
+}
+
+void TabContainer::set_hide_tabs_icons(bool p_hide) {
+	tab_bar->set_hide_icons(p_hide);
+}
+
+bool TabContainer::is_hide_tabs_icons() const {
+	return tab_bar->is_hide_icons();
+}
+
 void TabContainer::set_switch_on_drag_hover(bool p_enabled) {
 	tab_bar->set_switch_on_drag_hover(p_enabled);
 }
@@ -1208,6 +1224,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabContainer::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabContainer::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabContainer::get_tab_button_icon);
+	ClassDB::bind_method(D_METHOD("set_hide_tabs_titles", "hide"), &TabContainer::set_hide_tabs_titles);
+	ClassDB::bind_method(D_METHOD("is_hide_tabs_titles"), &TabContainer::is_hide_tabs_titles);
+	ClassDB::bind_method(D_METHOD("set_hide_tabs_icons", "hide"), &TabContainer::set_hide_tabs_icons);
+	ClassDB::bind_method(D_METHOD("is_hide_tabs_icons"), &TabContainer::is_hide_tabs_icons);
 
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_from_control", "control"), &TabContainer::get_tab_idx_from_control);
@@ -1246,6 +1266,8 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_tabs_titles"), "set_hide_tabs_titles", "is_hide_tabs_titles");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_tabs_icons"), "set_hide_tabs_icons", "is_hide_tabs_icons");
 
 	ADD_CLASS_DEPENDENCY("TabBar");
 	ADD_CLASS_DEPENDENCY("Button");

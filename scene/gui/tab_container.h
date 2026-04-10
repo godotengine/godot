@@ -236,6 +236,12 @@ public:
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
 
+	void set_hide_tabs_titles(bool p_hide_text);
+	bool is_hide_tabs_titles() const;
+
+	void set_hide_tabs_icons(bool p_hide_icons);
+	bool is_hide_tabs_icons() const;
+
 	void move_tab_from_tab_container(TabContainer *p_from, int p_from_index, int p_to_index = -1);
 
 	void set_switch_on_drag_hover(bool p_enabled);

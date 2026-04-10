@@ -81,16 +81,18 @@ Size2 TabBar::get_minimum_size() const {
 		}
 		ms.width += style->get_minimum_size().width;
 
-		if (tabs[i].icon.is_valid()) {
+		if (tabs[i].icon.is_valid() && !hide_icons) {
 			const Size2 icon_size = _get_tab_icon_size(i);
 			ms.height = MAX(ms.height, icon_size.height + y_margin);
 			ms.width += icon_size.width + theme_cache.h_separation;
 		}
 
-		if (!tabs[i].text.is_empty()) {
+		if (!tabs[i].text.is_empty() && !hide_titles) {
 			ms.width += tabs[i].size_text + theme_cache.h_separation;
 		}
-		ms.height = MAX(ms.height, tabs[i].text_buf->get_size().y + y_margin);
+		if (!hide_titles) {
+			ms.height = MAX(ms.height, tabs[i].text_buf->get_size().y + y_margin);
+		}
 
 		bool close_visible = cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current);
 
@@ -687,7 +689,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 
 	// Draw the icon.
 	Ref<Texture2D> icon = tabs[p_index].icon;
-	if (icon.is_valid()) {
+	if (icon.is_valid() && !hide_icons) {
 		const Size2 icon_size = _get_tab_icon_size(p_index);
 		const Point2 icon_pos = Point2i(rtl ? p_x - icon_size.width : p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon_size.height) / 2);
 		icon->draw_rect(ci, Rect2(icon_pos, icon_size), false, p_icon_color);
@@ -696,7 +698,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, co
 	}
 
 	// Draw the text.
-	if (!tabs[p_index].text.is_empty()) {
+	if (!tabs[p_index].text.is_empty() && !hide_titles) {
 		Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
 				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
 
@@ -1492,7 +1494,7 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 
 	HBoxContainer *drag_preview = memnew(HBoxContainer);
 
-	if (tabs[tab_over].icon.is_valid()) {
+	if (tabs[tab_over].icon.is_valid() && !hide_icons) {
 		const Size2 icon_size = _get_tab_icon_size(tab_over);
 
 		TextureRect *tf = memnew(TextureRect);
@@ -1739,6 +1741,36 @@ void TabBar::set_tab_style_v_flip(bool p_tab_style_v_flip) {
 	tab_style_v_flip = p_tab_style_v_flip;
 }
 
+void TabBar::set_hide_titles(bool p_hide_titles) {
+	if (hide_titles == p_hide_titles) {
+		return;
+	}
+	hide_titles = p_hide_titles;
+
+	_update_cache();
+	queue_redraw();
+	update_minimum_size();
+}
+
+bool TabBar::is_hide_titles() const {
+	return hide_titles;
+}
+
+void TabBar::set_hide_icons(bool p_hide_icons) {
+	if (hide_icons == p_hide_icons) {
+		return;
+	}
+	hide_icons = p_hide_icons;
+
+	_update_cache();
+	queue_redraw();
+	update_minimum_size();
+}
+
+bool TabBar::is_hide_icons() const {
+	return hide_icons;
+}
+
 void TabBar::move_tab(int p_from, int p_to) {
 	if (p_from == p_to) {
 		return;
@@ -1796,12 +1828,12 @@ int TabBar::get_tab_width(int p_idx) const {
 	}
 	int x = style->get_minimum_size().width;
 
-	if (tabs[p_idx].icon.is_valid()) {
+	if (tabs[p_idx].icon.is_valid() && !hide_icons) {
 		const Size2 icon_size = _get_tab_icon_size(p_idx);
 		x += icon_size.width + theme_cache.h_separation;
 	}
 
-	if (!tabs[p_idx].text.is_empty()) {
+	if (!tabs[p_idx].text.is_empty() && !hide_titles) {
 		x += tabs[p_idx].size_text + theme_cache.h_separation;
 	}
 
@@ -2137,6 +2169,10 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("set_deselect_enabled", "enabled"), &TabBar::set_deselect_enabled);
 	ClassDB::bind_method(D_METHOD("get_deselect_enabled"), &TabBar::get_deselect_enabled);
+	ClassDB::bind_method(D_METHOD("set_hide_titles", "hide_titles"), &TabBar::set_hide_titles);
+	ClassDB::bind_method(D_METHOD("is_hide_titles"), &TabBar::is_hide_titles);
+	ClassDB::bind_method(D_METHOD("set_hide_icons", "hide_icons"), &TabBar::set_hide_icons);
+	ClassDB::bind_method(D_METHOD("is_hide_icons"), &TabBar::is_hide_icons);
 	ClassDB::bind_method(D_METHOD("clear_tabs"), &TabBar::clear_tabs);
 
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
@@ -2161,6 +2197,8 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_titles"), "set_hide_titles", "is_hide_titles");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_icons"), "set_hide_icons", "is_hide_icons");
 
 	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
 
