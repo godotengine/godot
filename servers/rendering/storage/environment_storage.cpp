@@ -767,7 +767,7 @@ float RendererEnvironmentStorage::environment_get_ssao_ao_channel_affect(RID p_e
 
 // SSIL
 
-void RendererEnvironmentStorage::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) {
+void RendererEnvironmentStorage::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_thickness, bool p_backface_rejection, float p_normal_rejection) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
@@ -779,6 +779,8 @@ void RendererEnvironmentStorage::environment_set_ssil(RID p_env, bool p_enable, 
 	env->ssil_radius = p_radius;
 	env->ssil_intensity = p_intensity;
 	env->ssil_sharpness = p_sharpness;
+	env->ssil_thickness = p_thickness;
+	env->ssil_backface_rejection = p_backface_rejection;
 	env->ssil_normal_rejection = p_normal_rejection;
 }
 
@@ -802,8 +804,20 @@ float RendererEnvironmentStorage::environment_get_ssil_intensity(RID p_env) cons
 
 float RendererEnvironmentStorage::environment_get_ssil_sharpness(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0.98);
+	ERR_FAIL_NULL_V(env, 0.95);
 	return env->ssil_sharpness;
+}
+
+float RendererEnvironmentStorage::environment_get_ssil_thickness(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.5);
+	return env->ssil_thickness;
+}
+
+bool RendererEnvironmentStorage::environment_get_ssil_backface_rejection_enabled(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->ssil_backface_rejection;
 }
 
 float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_env) const {

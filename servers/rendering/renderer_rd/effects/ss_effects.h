@@ -43,8 +43,6 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/ssil_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/subsurface_scattering.glsl.gen.h"
 
 #define RB_SCOPE_SSLF SNAME("rb_sslf")
@@ -56,6 +54,8 @@
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")
 #define RB_LAST_FRAME SNAME("last_frame")
+#define RB_RAW SNAME("raw")
+#define RB_BLURRED_PONG SNAME("blurred_pong")
 #define RB_DEINTERLEAVED SNAME("deinterleaved")
 #define RB_DEINTERLEAVED_PONG SNAME("deinterleaved_pong")
 #define RB_EDGES SNAME("edges")
@@ -93,7 +93,7 @@ public:
 	void downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_view, const Projection &p_projection);
 
 	/* SSIL */
-	void ssil_set_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
+	void ssil_set_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size);
 
 	struct SSILRenderBuffers {
 		bool half_size = false;
@@ -104,16 +104,18 @@ public:
 	};
 
 	struct SSILSettings {
-		float radius = 1.0;
+		float radius = 5.0;
 		float intensity = 2.0;
-		float sharpness = 0.98;
+		float sharpness = 0.95;
+		float thickness = 0.5;
+		bool backface_rejection = false;
 		float normal_rejection = 1.0;
 
 		Size2i full_screen_size;
 	};
 
 	void ssil_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, const SSILSettings &p_settings);
-	void screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
+	void screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_reprojection, const SSILSettings &p_settings);
 
 	/* SSAO */
 	void ssao_set_quality(RSE::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
@@ -171,11 +173,6 @@ private:
 
 	RSE::EnvironmentSSILQuality ssil_quality = RSE::ENV_SSIL_QUALITY_MEDIUM;
 	bool ssil_half_size = false;
-	float ssil_adaptive_target = 0.5;
-	int ssil_blur_passes = 4;
-	float ssil_fadeout_from = 50.0;
-	float ssil_fadeout_to = 300.0;
-
 	bool ssr_half_size = false;
 
 	RSE::SubSurfaceScatteringQuality sss_quality = RSE::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
@@ -227,74 +224,46 @@ private:
 
 	enum SSILMode {
 		SSIL_GATHER,
-		SSIL_GATHER_BASE,
-		SSIL_GATHER_ADAPTIVE,
-		SSIL_GENERATE_IMPORTANCE_MAP,
-		SSIL_PROCESS_IMPORTANCE_MAPA,
-		SSIL_PROCESS_IMPORTANCE_MAPB,
-		SSIL_BLUR_PASS,
-		SSIL_BLUR_PASS_SMART,
-		SSIL_BLUR_PASS_WIDE,
-		SSIL_INTERLEAVE,
-		SSIL_INTERLEAVE_SMART,
-		SSIL_INTERLEAVE_HALF,
+		SSIL_BLUR_FAST,
+		SSIL_BLUR_ACCURATE,
 		SSIL_MAX
 	};
 
 	struct SSILGatherPushConstant {
 		int32_t screen_size[2];
-		int pass;
 		int quality;
-
-		float half_screen_pixel_size[2];
-		float half_screen_pixel_size_x025[2];
-
-		float NDC_to_view_mul[2];
-		float NDC_to_view_add[2];
-
-		float pad2[2];
-		float z_near;
-		float z_far;
-
-		float radius;
-		float intensity;
-		int size_multiplier;
 		int pad;
 
-		float fade_out_mul;
-		float fade_out_add;
-		float normal_rejection_amount;
-		float inv_radius_near_limit;
+		float z_near;
+		float z_far;
+		float radius;
+		float thickness;
 
-		uint32_t is_orthogonal;
-		float neg_inv_radius;
-		float load_counter_avg_div;
-		float adaptive_sample_limit;
-
-		int32_t pass_coord_offset[2];
-		float pass_uv_offset[2];
-	};
-
-	struct SSILImportanceMapPushConstant {
-		float half_screen_pixel_size[2];
 		float intensity;
-		float pad;
+		float normal_rejection;
+		uint32_t backface_rejection;
+		uint32_t is_orthogonal;
+
+		float NDC_to_view_mul[2];
+		int32_t full_screen_size[2];
 	};
 
 	struct SSILBlurPushConstant {
-		float edge_sharpness;
-		float pad;
-		float half_screen_pixel_size[2];
-	};
+		int32_t screen_size[2];
+		float edge_threshold;
+		int quality;
 
-	struct SSILInterleavePushConstant {
-		float inv_sharpness;
-		uint32_t size_modifier;
-		float pixel_size[2];
+		float z_near;
+		float z_far;
+		float blur_intensity;
+		float depth_difference_threshold;
+
+		float blur_offset[2];
+		int32_t full_screen_size[2];
 	};
 
 	struct SSILProjectionUniforms {
-		float inv_last_frame_projection_matrix[16];
+		float last_frame_reprojection_matrix[16];
 	};
 
 	struct SSIL {
@@ -303,24 +272,14 @@ private:
 		RID gather_shader_version;
 		RID projection_uniform_buffer;
 
-		SSILImportanceMapPushConstant importance_map_push_constant;
-		SsilImportanceMapShaderRD importance_map_shader;
-		RID importance_map_shader_version;
-		RID importance_map_load_counter;
-		RID counter_uniform_set;
-
 		SSILBlurPushConstant blur_push_constant;
 		SsilBlurShaderRD blur_shader;
 		RID blur_shader_version;
 
-		SSILInterleavePushConstant interleave_push_constant;
-		SsilInterleaveShaderRD interleave_shader;
-		RID interleave_shader_version;
-
 		PipelineDeferredRD pipelines[SSIL_MAX];
 	} ssil;
 
-	void gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_slices, const RID *p_edges_slices, const SSILSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set, RID p_projection_uniform_set);
+	void gather_ssil(RD::ComputeListID p_compute_list, const SSILSettings &p_settings, RID p_gather_uniform_set, RID p_projection_uniform_set, RID p_dest_uniform_set);
 
 	/* SSAO */
 

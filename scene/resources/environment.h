@@ -144,7 +144,9 @@ private:
 	bool ssil_enabled = false;
 	float ssil_radius = 5.0;
 	float ssil_intensity = 1.0;
-	float ssil_sharpness = 0.98;
+	float ssil_sharpness = 0.95;
+	float ssil_thickness = 0.5;
+	bool ssil_backface_rejection = false;
 	float ssil_normal_rejection = 1.0;
 
 	void _update_ssil();
@@ -320,6 +322,10 @@ public:
 	float get_ssil_intensity() const;
 	void set_ssil_sharpness(float p_sharpness);
 	float get_ssil_sharpness() const;
+	void set_ssil_thickness(float p_thickness);
+	float get_ssil_thickness() const;
+	void set_ssil_backface_rejection_enabled(bool p_backface_rejection);
+	bool is_ssil_backface_rejection_enabled() const;
 	void set_ssil_normal_rejection(float p_normal_rejection);
 	float get_ssil_normal_rejection() const;
 

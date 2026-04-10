@@ -450,6 +450,25 @@ float Environment::get_ssil_sharpness() const {
 	return ssil_sharpness;
 }
 
+void Environment::set_ssil_thickness(float p_thickness) {
+	ssil_thickness = p_thickness;
+	_update_ssil();
+}
+
+float Environment::get_ssil_thickness() const {
+	return ssil_thickness;
+}
+
+void Environment::set_ssil_backface_rejection_enabled(bool p_backface_rejection) {
+	ssil_backface_rejection = p_backface_rejection;
+	_update_ssil();
+	notify_property_list_changed();
+}
+
+bool Environment::is_ssil_backface_rejection_enabled() const {
+	return ssil_backface_rejection;
+}
+
 void Environment::set_ssil_normal_rejection(float p_normal_rejection) {
 	ssil_normal_rejection = p_normal_rejection;
 	_update_ssil();
@@ -466,6 +485,8 @@ void Environment::_update_ssil() {
 			ssil_radius,
 			ssil_intensity,
 			ssil_sharpness,
+			ssil_thickness,
+			ssil_backface_rejection,
 			ssil_normal_rejection);
 }
 
@@ -1194,6 +1215,13 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (p_property.name == "ssil_normal_rejection") {
+		if (ssil_backface_rejection != true) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			return;
+		}
+	}
+
 	if (p_property.name == "background_color") {
 		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -1377,6 +1405,10 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ssil_intensity"), &Environment::get_ssil_intensity);
 	ClassDB::bind_method(D_METHOD("set_ssil_sharpness", "sharpness"), &Environment::set_ssil_sharpness);
 	ClassDB::bind_method(D_METHOD("get_ssil_sharpness"), &Environment::get_ssil_sharpness);
+	ClassDB::bind_method(D_METHOD("set_ssil_thickness", "thickness"), &Environment::set_ssil_thickness);
+	ClassDB::bind_method(D_METHOD("get_ssil_thickness"), &Environment::get_ssil_thickness);
+	ClassDB::bind_method(D_METHOD("set_ssil_backface_rejection_enabled", "enabled"), &Environment::set_ssil_backface_rejection_enabled);
+	ClassDB::bind_method(D_METHOD("is_ssil_backface_rejection_enabled"), &Environment::is_ssil_backface_rejection_enabled);
 	ClassDB::bind_method(D_METHOD("set_ssil_normal_rejection", "normal_rejection"), &Environment::set_ssil_normal_rejection);
 	ClassDB::bind_method(D_METHOD("get_ssil_normal_rejection"), &Environment::get_ssil_normal_rejection);
 
@@ -1385,6 +1417,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_radius", PROPERTY_HINT_RANGE, "0.01,16,0.01,or_greater,suffix:m"), "set_ssil_radius", "get_ssil_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_intensity", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_ssil_intensity", "get_ssil_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssil_sharpness", "get_ssil_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_thickness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssil_thickness", "get_ssil_thickness");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssil_backface_rejection_enabled"), "set_ssil_backface_rejection_enabled", "is_ssil_backface_rejection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_normal_rejection", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssil_normal_rejection", "get_ssil_normal_rejection");
 
 	// SDFGI
