@@ -110,7 +110,7 @@
 		<member name="uv" type="PackedVector2Array" setter="set_uv" getter="get_uv" default="PackedVector2Array()">
 			Texture coordinates for each vertex of the polygon. There should be one UV value per polygon vertex. If there are fewer, undefined vertices will use [code]Vector2(0, 0)[/code].
 		</member>
-		<member name="vertex_colors" type="PackedColorArray" setter="set_vertex_colors" getter="get_vertex_colors" default="PackedColorArray()">
+		<member name="vertex_colors" type="TypedDictionary" setter="set_vertex_colors" getter="get_vertex_colors" default="{}">
 			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [member color].
 		</member>
 	</members>
