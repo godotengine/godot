@@ -375,7 +375,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->methods.resize(method_bind_map.size());
 		function->_methods_ptr = function->methods.ptrw();
 		function->_methods_count = method_bind_map.size();
-		for (const KeyValue<MethodBind *, int> &E : method_bind_map) {
+		for (const KeyValue<const MethodBind *, int> &E : method_bind_map) {
 			function->methods.write[E.value] = E.key;
 		}
 	} else {
@@ -1253,7 +1253,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 }
 
 void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) {
-	MethodBind *method = ClassDB::get_method(p_class, p_method);
+	const MethodBind *method = ClassDB::get_method(p_class, p_method);
 
 	// Perform regular call.
 	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
@@ -1268,7 +1268,7 @@ void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target
 	return;
 }
 
-void GDScriptByteCodeGenerator::write_call_native_static_validated(const GDScriptCodeGenerator::Address &p_target, MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
+void GDScriptByteCodeGenerator::write_call_native_static_validated(const GDScriptCodeGenerator::Address &p_target, const MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
 	Variant::Type return_type = Variant::NIL;
 	bool has_return = p_method->has_return();
 
@@ -1298,7 +1298,7 @@ void GDScriptByteCodeGenerator::write_call_native_static_validated(const GDScrip
 	ct.cleanup();
 }
 
-void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
+void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
 	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
@@ -1311,7 +1311,7 @@ void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, 
 	ct.cleanup();
 }
 
-void GDScriptByteCodeGenerator::write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
+void GDScriptByteCodeGenerator::write_call_method_bind_validated(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
 	Variant::Type return_type = Variant::NIL;
 	bool has_return = p_method->has_return();
 

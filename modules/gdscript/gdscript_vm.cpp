@@ -1943,7 +1943,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (ret->get_type() == Variant::NIL) {
 						if (base_type == Variant::OBJECT) {
 							if (base_obj) {
-								MethodBind *method = ClassDB::get_method(base_class, *methodname);
+								const MethodBind *method = ClassDB::get_method(base_class, *methodname);
 								if (*methodname == CoreStringName(free_) || (method && !method->has_return())) {
 									err_text = R"(Trying to get a return value of a method that returns "void")";
 									OPCODE_BREAK;
@@ -2037,7 +2037,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int argc = _code_ptr[ip + 1];
 				GD_ERR_BREAK(argc < 0);
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2156,7 +2156,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				ip += instr_arg_count;
 
 				GD_ERR_BREAK(_code_ptr[ip + 1] < 0 || _code_ptr[ip + 1] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 1]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 1]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2204,7 +2204,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2242,7 +2242,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2280,7 +2280,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2334,7 +2334,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2532,7 +2532,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*dst = E->value->call(p_instance, (const Variant **)argptrs, argc, err);
 				} else if (gds->native.ptr()) {
 					if (*methodname != GDScriptLanguage::get_singleton()->strings._init) {
-						MethodBind *mb = ClassDB::get_method(gds->native->get_name(), *methodname);
+						const MethodBind *mb = ClassDB::get_method(gds->native->get_name(), *methodname);
 						if (!mb) {
 							err.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						} else {

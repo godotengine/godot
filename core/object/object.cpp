@@ -647,8 +647,7 @@ bool Object::has_method(const StringName &p_method) const {
 		return true;
 	}
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-	if (method != nullptr) {
+	if (get_gdtype().get_method_map(false).has(p_method)) {
 		return true;
 	}
 
@@ -803,10 +802,10 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
+	const MethodBind *const *method = get_gdtype().get_method_map(false).getptr(p_method);
 
 	if (method) {
-		ret = method->call(this, p_args, p_argcount, r_error);
+		ret = (*method)->call(this, p_args, p_argcount, r_error);
 	} else {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	}
@@ -847,14 +846,14 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
+	const MethodBind *const *method = get_gdtype().get_method_map(false).getptr(p_method);
 
 	if (method) {
-		if (!method->is_const()) {
+		if (!(*method)->is_const()) {
 			r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
 			return ret;
 		}
-		ret = method->call(this, p_args, p_argcount, r_error);
+		ret = (*method)->call(this, p_args, p_argcount, r_error);
 	} else {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	}
@@ -2528,8 +2527,8 @@ void ObjectDB::cleanup() {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
 			// now the scripting languages have already been terminated.
-			MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
-			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
+			const MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
+			const MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
 			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
