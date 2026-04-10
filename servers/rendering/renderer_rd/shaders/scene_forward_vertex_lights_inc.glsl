@@ -47,10 +47,16 @@ half get_omni_attenuation(float distance, float inv_range, float decay) {
 	return half(nd * pow(max(distance, 0.0001), -decay));
 }
 
+// Used to avoid overflows with length() when point components exceed sqrt(MAX_REAL_T_VALUE)
+float length_safe(vec3 point) {
+	float L1_norm_p1 = 1.0 + abs(point.x) + abs(point.y) + abs(point.z);
+	return length(point / L1_norm_p1) * L1_norm_p1;
+}
+
 void light_process_omni_vertex(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, half roughness,
 		inout hvec3 diffuse_light, inout hvec3 specular_light) {
 	vec3 light_rel_vec = omni_lights.data[idx].position - vertex;
-	float light_length = length(light_rel_vec);
+	float light_length = length_safe(light_rel_vec);
 	hvec3 light_rel_vec_norm = hvec3(light_rel_vec / light_length);
 	half omni_attenuation = get_omni_attenuation(light_length, omni_lights.data[idx].inv_radius, omni_lights.data[idx].attenuation);
 	hvec3 color = hvec3(omni_lights.data[idx].color * omni_attenuation);
@@ -64,7 +70,7 @@ void light_process_spot_vertex(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 norma
 		inout hvec3 diffuse_light,
 		inout hvec3 specular_light) {
 	vec3 light_rel_vec = spot_lights.data[idx].position - vertex;
-	float light_length = length(light_rel_vec);
+	float light_length = length_safe(light_rel_vec);
 	hvec3 light_rel_vec_norm = hvec3(light_rel_vec / light_length);
 	half spot_attenuation = get_omni_attenuation(light_length, spot_lights.data[idx].inv_radius, spot_lights.data[idx].attenuation);
 	hvec3 spot_dir = hvec3(spot_lights.data[idx].direction);
