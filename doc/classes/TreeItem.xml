@@ -405,6 +405,13 @@
 				Returns the clipping behavior when the text exceeds the item's bounding rectangle in the given [param column]. By default it is [constant TextServer.OVERRUN_TRIM_ELLIPSIS].
 			</description>
 		</method>
+		<method name="get_text_paragraph" qualifiers="const">
+			<return type="TextParagraph" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the [TextParagraph] used to draw the text of a cell internally. This can be used to measure the text layouts of a cell.
+			</description>
+		</method>
 		<method name="get_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
