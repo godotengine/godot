@@ -502,6 +502,9 @@ public:
 	void set_scroll_offset(const Vector2 &p_ofs);
 	Vector2 get_scroll_offset() const;
 
+	Vector2 screen_to_graph_point(const Vector2 &p_screen_position) const;
+	Vector2 graph_to_screen_point(const Vector2 &p_graph_position) const;
+
 	void set_selected(Node *p_child);
 
 	void set_snapping_enabled(bool p_enable);
