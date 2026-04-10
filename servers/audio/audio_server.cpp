@@ -391,6 +391,8 @@ void AudioServer::_mix_step() {
 		ci->callback(ci->userdata);
 	}
 
+	double next_absolute_time = absolute_time + buffer_size / double(get_mix_rate());
+
 	// Main mixing loop for audio streams.
 	// The basic idea here is to copy the samples returned by the AudioStreamPlayback's mix function into the audio buffers,
 	//  while always maintaining a lookahead buffer of size LOOKAHEAD_BUFFER_SIZE to allow fade-outs for sudden stoppages.
@@ -401,6 +403,13 @@ void AudioServer::_mix_step() {
 		}
 
 		if (playback->stream_playback->get_is_sample()) {
+			continue;
+		}
+
+		// Skip mixing if the playback isn't scheduled to start this frame.
+		double playback_scheduled_start_time = playback->scheduled_start_time.get();
+		double playback_scheduled_end_time = playback->scheduled_end_time.get();
+		if (next_absolute_time < playback_scheduled_start_time) {
 			continue;
 		}
 
@@ -416,8 +425,27 @@ void AudioServer::_mix_step() {
 			buf[i] = playback->lookahead[i];
 		}
 
+		unsigned int frames_todo = buffer_size;
+		unsigned int mixed_frames = 0;
+
+		// For scheduled playbacks starting this frame, mix in the necessary silence frames.
+		if (absolute_time < playback_scheduled_start_time) {
+			unsigned int silence_frames = (unsigned int)((playback_scheduled_start_time - absolute_time) * get_mix_rate());
+			for (unsigned int i = 0; i < silence_frames; i++) {
+				buf[LOOKAHEAD_BUFFER_SIZE + i] = AudioFrame(0, 0);
+			}
+			frames_todo -= silence_frames;
+			mixed_frames += silence_frames;
+		}
+
+		// For scheduled playbacks ending this frame, limit the amount of playback mix frames.
+		if (playback_scheduled_end_time < next_absolute_time) {
+			unsigned int skip_frames = MIN(frames_todo, (unsigned int)((next_absolute_time - playback_scheduled_end_time) * get_mix_rate()));
+			frames_todo -= skip_frames;
+		}
+
 		// Mix the audio stream.
-		unsigned int mixed_frames = playback->stream_playback->mix(&buf[LOOKAHEAD_BUFFER_SIZE], playback->pitch_scale.get(), buffer_size);
+		mixed_frames += playback->stream_playback->mix(&buf[LOOKAHEAD_BUFFER_SIZE + mixed_frames], playback->pitch_scale.get(), frames_todo);
 
 		if (tag_used_audio_streams && playback->stream_playback->is_playing()) {
 			playback->stream_playback->tag_used_streams();
@@ -672,6 +700,7 @@ void AudioServer::_mix_step() {
 	}
 
 	mix_frames += buffer_size;
+	absolute_time = next_absolute_time;
 	to_mix = buffer_size;
 }
 
@@ -1236,21 +1265,21 @@ float AudioServer::get_playback_speed_scale() const {
 	return playback_speed_scale;
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, double p_from_pos, float p_pitch_scale, double p_abs_time) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	HashMap<StringName, Vector<AudioFrame>> map;
 	map[p_bus] = p_volume_db_vector;
 
-	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale);
+	start_playback_stream(p_playback, map, p_from_pos, p_pitch_scale, 0.0f, 0.0f, p_abs_time);
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, double p_from_pos, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz, double p_abs_time) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
 	playback_node->stream_playback = p_playback;
-	playback_node->stream_playback->start(p_start_time);
+	playback_node->stream_playback->start(p_from_pos);
 
 	AudioStreamPlaybackBusDetails *new_bus_details = new AudioStreamPlaybackBusDetails();
 	int idx = 0;
@@ -1282,6 +1311,17 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 	}
 
 	playback_node->state.store(AudioStreamPlaybackListNode::PLAYING);
+
+	if (p_abs_time == 0) {
+		p_abs_time = absolute_time;
+	} else if (p_abs_time < absolute_time) {
+		WARN_PRINT_ED(vformat("Sound (%s) was scheduled for absolute time %.4f, which has already passed. Playing immediately.",
+				p_playback->get_instance_id(),
+				p_abs_time));
+		p_abs_time = absolute_time;
+	}
+	playback_node->scheduled_start_time.set(p_abs_time);
+	playback_node->scheduled_end_time.set(Math::INF);
 
 	playback_list.insert(playback_node);
 }
@@ -1440,6 +1480,57 @@ void AudioServer::set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playb
 	playback_node->highshelf_gain.set(p_gain);
 }
 
+void AudioServer::set_playback_scheduled_start_time(Ref<AudioStreamPlayback> p_playback, double p_abs_time) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+
+	if (p_abs_time < absolute_time) {
+		WARN_PRINT_ED(vformat("Sound (%s) was scheduled for absolute time %.4f, which has already passed. Playing immediately.",
+				p_playback->get_instance_id(),
+				p_abs_time));
+		p_abs_time = absolute_time;
+	}
+
+	playback_node->scheduled_start_time.set(p_abs_time);
+}
+
+double AudioServer::get_playback_scheduled_start_time(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND_V(p_playback.is_null(), 0);
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return 0;
+	}
+
+	return playback_node->scheduled_start_time.get();
+}
+
+void AudioServer::set_playback_scheduled_end_time(Ref<AudioStreamPlayback> p_playback, double p_abs_time) {
+	ERR_FAIL_COND(p_playback.is_null());
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return;
+	}
+
+	playback_node->scheduled_end_time.set(p_abs_time);
+}
+
+double AudioServer::get_playback_scheduled_end_time(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND_V(p_playback.is_null(), 0);
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return 0;
+	}
+
+	return playback_node->scheduled_end_time.get();
+}
+
 bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
 	ERR_FAIL_COND_V(p_playback.is_null(), false);
 
@@ -1459,7 +1550,7 @@ bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
 	return playback_node->state.load() == AudioStreamPlaybackListNode::PLAYING;
 }
 
-float AudioServer::get_playback_position(Ref<AudioStreamPlayback> p_playback) {
+double AudioServer::get_playback_position(Ref<AudioStreamPlayback> p_playback) {
 	ERR_FAIL_COND_V(p_playback.is_null(), 0);
 
 	// Samples.
@@ -1485,6 +1576,22 @@ bool AudioServer::is_playback_paused(Ref<AudioStreamPlayback> p_playback) {
 	}
 
 	return playback_node->state.load() == AudioStreamPlaybackListNode::PAUSED || playback_node->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE;
+}
+
+bool AudioServer::is_playback_scheduled(Ref<AudioStreamPlayback> p_playback) {
+	ERR_FAIL_COND_V(p_playback.is_null(), false);
+
+	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
+	if (!playback_node) {
+		return false;
+	}
+
+	AudioStreamPlaybackListNode::PlaybackState state = playback_node->state.load();
+	bool valid = state != AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION && state != AudioStreamPlaybackListNode::AWAITING_DELETION;
+
+	WARN_PRINT_ED(vformat("STATE = %d", state));
+
+	return valid && absolute_time < playback_node->scheduled_start_time.get();
 }
 
 uint64_t AudioServer::get_mix_count() const {
@@ -1702,6 +1809,10 @@ double AudioServer::get_time_to_next_mix() const {
 
 double AudioServer::get_time_since_last_mix() const {
 	return AudioDriver::get_singleton()->get_time_since_last_mix();
+}
+
+double AudioServer::get_absolute_time() const {
+	return absolute_time;
 }
 
 AudioServer *AudioServer::singleton = nullptr;
@@ -2095,6 +2206,7 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_time_to_next_mix"), &AudioServer::get_time_to_next_mix);
 	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);
+	ClassDB::bind_method(D_METHOD("get_absolute_time"), &AudioServer::get_absolute_time);
 	ClassDB::bind_method(D_METHOD("get_output_latency"), &AudioServer::get_output_latency);
 
 	ClassDB::bind_method(D_METHOD("get_input_device_list"), &AudioServer::get_input_device_list);
