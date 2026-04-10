@@ -157,6 +157,7 @@ public:
 	const StringName state_finished = "state_finished";
 
 	const StringName FlatButton = "FlatButton";
+	const StringName FlatMenuButton = "FlatMenuButton";
 };
 
 #define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name

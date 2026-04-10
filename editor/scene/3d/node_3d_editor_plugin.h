@@ -672,9 +672,13 @@ private:
 
 	DynamicBVH gizmo_bvh;
 
-	real_t snap_translate_value = 0;
-	real_t snap_rotate_value = 0;
-	real_t snap_scale_value = 0;
+	real_t snap_rotate_step = 0.15;
+	real_t snap_scale_step = 0.1;
+
+	/// Distance between individual vertices of the grid (in meters).
+	real_t grid_step = 0;
+	/// Power of 2 used to multiply our `grid_step` (i.e. snap = grid_step * 2^grid_step_multiplier).
+	int grid_step_multiplier = 0;
 
 	Ref<ArrayMesh> active_selection_box_xray;
 	Ref<ArrayMesh> active_selection_box;
@@ -758,9 +762,6 @@ private:
 	bool snap_enabled = false;
 	bool snap_key_enabled = false;
 	bool vertex_snap_origin_mode = false;
-	EditorSpinSlider *snap_translate = nullptr;
-	EditorSpinSlider *snap_rotate = nullptr;
-	EditorSpinSlider *snap_scale = nullptr;
 
 	bool trackball_enabled = false;
 
@@ -845,6 +846,7 @@ private:
 	uint32_t world_env_count = 0;
 	uint32_t directional_light_count = 0;
 
+	MenuButton *snap_config_menu = nullptr;
 	Button *sun_button = nullptr;
 	Label *sun_state = nullptr;
 	Label *sun_title = nullptr;
@@ -887,6 +889,8 @@ private:
 	Ref<ProceduralSkyMaterial> sky_material;
 
 	bool sun_environ_updating = false;
+
+	void handle_grid_shortcut_input(const Ref<InputEvent> &p_event);
 
 	void _sun_direction_draw();
 	void _sun_direction_input(const Ref<InputEvent> &p_event);
@@ -958,7 +962,7 @@ public:
 	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
 	Ref<ArrayMesh> get_trackball_sphere_gizmo() const { return trackball_sphere_gizmo; }
 
-	void update_grid();
+	void update_grid(bool force = true);
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);
 	void update_gizmo_opacity();
