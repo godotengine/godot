@@ -91,6 +91,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	virtual void _update_shortcut_input() override { set_process_shortcut_input(true); }
 
 public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
@@ -153,5 +154,4 @@ public:
 #endif
 
 	OptionButton(const String &p_text = String());
-	~OptionButton();
 };
