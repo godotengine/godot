@@ -314,8 +314,8 @@
 			[b]Note:[/b] If the node is not inside the tree, getting this property fails and returns [constant Vector3.ZERO].
 		</member>
 		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
-			The transformation of this node, in global space (relative to the world). Contains and represents this node's [member global_position], [member global_rotation], and global scale.
-			[b]Note:[/b] If the node is not inside the tree, getting this property fails and returns [constant Transform3D.IDENTITY].
+			World space (global) [Transform3D] of this node, i.e. the combined transform up to the topmost [Node3D] node. The topmost item is a [Node3D] that either has no parent, has non-[Node3D] parent or it has [member top_level] enabled.
+			[b]Note:[/b] If the node is not inside the currently playing scene, the value returned will not be global with regard to the playing scene's world origin, but only relative to the topmost item of its out-of-tree branch.
 		</member>
 		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3(0, 0, 0)" keywords="translation">
 			Position (translation) of this node in parent space (relative to the parent node). This is equivalent to the [member transform]'s [member Transform3D.origin].
