@@ -800,12 +800,14 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	/* Indentation */
 	if (k->is_action("ui_text_indent", true)) {
 		do_indent();
+		_reset_caret_blink_timer();
 		accept_event();
 		return;
 	}
 
 	if (k->is_action("ui_text_dedent", true)) {
 		unindent_lines();
+		_reset_caret_blink_timer();
 		accept_event();
 		return;
 	}
@@ -1298,6 +1300,7 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 	if (!is_editable()) {
 		return;
 	}
+	_reset_caret_blink_timer();
 
 	begin_complex_operation();
 	begin_multicaret_edit();
