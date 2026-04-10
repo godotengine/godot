@@ -50,6 +50,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
@@ -2092,6 +2093,16 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					if (use_origin_snap || !vertex_snap_has_source) {
 						_vertex_snap_update_source(vb->get_position());
+					}
+
+					if (selection.is_empty()) {
+						EditorToaster::get_singleton()->popup_str(TTR("Select a node to vertex snap."), EditorToaster::SEVERITY_WARNING);
+					} else if (!vertex_snap_has_source) {
+						if (use_origin_snap) {
+							EditorToaster::get_singleton()->popup_str(TTR("No vertex found near cursor."), EditorToaster::SEVERITY_WARNING);
+						} else {
+							EditorToaster::get_singleton()->popup_str(TTR("No vertex found on selected node near cursor."), EditorToaster::SEVERITY_WARNING);
+						}
 					}
 
 					if (vertex_snap_has_source && !selection.is_empty()) {
