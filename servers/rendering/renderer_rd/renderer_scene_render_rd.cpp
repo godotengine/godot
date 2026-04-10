@@ -1159,10 +1159,12 @@ void RendererSceneRenderRD::positional_soft_shadow_filter_set_quality(RSE::Shado
 	if (shadows_quality != p_quality) {
 		shadows_quality = p_quality;
 
+		// Mobile renderer uses different fixed count kernels. Only specific sample counts will work. Check the scene shader implementation for details.
+		bool fixed_pcf_kernel = !_render_buffers_can_be_storage();
 		switch (shadows_quality) {
 			case RSE::SHADOW_QUALITY_HARD: {
 				penumbra_shadow_samples = 4;
-				soft_shadow_samples = 0;
+				soft_shadow_samples = fixed_pcf_kernel ? 1 : 0;
 				shadows_quality_radius = 1.0;
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_VERY_LOW: {
@@ -1177,7 +1179,7 @@ void RendererSceneRenderRD::positional_soft_shadow_filter_set_quality(RSE::Shado
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_MEDIUM: {
 				penumbra_shadow_samples = 12;
-				soft_shadow_samples = 8;
+				soft_shadow_samples = fixed_pcf_kernel ? 9 : 8;
 				shadows_quality_radius = 2.0;
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_HIGH: {
@@ -1187,7 +1189,7 @@ void RendererSceneRenderRD::positional_soft_shadow_filter_set_quality(RSE::Shado
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_ULTRA: {
 				penumbra_shadow_samples = 32;
-				soft_shadow_samples = 32;
+				soft_shadow_samples = fixed_pcf_kernel ? 16 : 32;
 				shadows_quality_radius = 4.0;
 			} break;
 			case RSE::SHADOW_QUALITY_MAX:
@@ -1206,10 +1208,12 @@ void RendererSceneRenderRD::directional_soft_shadow_filter_set_quality(RSE::Shad
 	if (directional_shadow_quality != p_quality) {
 		directional_shadow_quality = p_quality;
 
+		// Mobile renderer uses different fixed count kernels. Only specific sample counts will work. Check the scene shader implementation for details.
+		bool fixed_pcf_kernel = !_render_buffers_can_be_storage();
 		switch (directional_shadow_quality) {
 			case RSE::SHADOW_QUALITY_HARD: {
 				directional_penumbra_shadow_samples = 4;
-				directional_soft_shadow_samples = 0;
+				directional_soft_shadow_samples = fixed_pcf_kernel ? 1 : 0;
 				directional_shadow_quality_radius = 1.0;
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_VERY_LOW: {
@@ -1224,7 +1228,7 @@ void RendererSceneRenderRD::directional_soft_shadow_filter_set_quality(RSE::Shad
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_MEDIUM: {
 				directional_penumbra_shadow_samples = 12;
-				directional_soft_shadow_samples = 8;
+				directional_soft_shadow_samples = fixed_pcf_kernel ? 9 : 8;
 				directional_shadow_quality_radius = 2.0;
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_HIGH: {
@@ -1234,7 +1238,7 @@ void RendererSceneRenderRD::directional_soft_shadow_filter_set_quality(RSE::Shad
 			} break;
 			case RSE::SHADOW_QUALITY_SOFT_ULTRA: {
 				directional_penumbra_shadow_samples = 32;
-				directional_soft_shadow_samples = 32;
+				directional_soft_shadow_samples = fixed_pcf_kernel ? 16 : 32;
 				directional_shadow_quality_radius = 4.0;
 			} break;
 			case RSE::SHADOW_QUALITY_MAX:
