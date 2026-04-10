@@ -273,6 +273,14 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 }
 #endif
 
+void TranslationDomain::set_fallback_locale(const String &p_locale) {
+	fallback = p_locale;
+}
+
+String TranslationDomain::get_fallback_locale() const {
+	return fallback;
+}
+
 void TranslationDomain::add_translation(const Ref<Translation> &p_translation) {
 	ERR_FAIL_COND_MSG(p_translation.is_null(), "Invalid translation provided.");
 	translations.insert(p_translation);
@@ -357,9 +365,9 @@ StringName TranslationDomain::translate(const StringName &p_message, const Strin
 	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_context);
 
-	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
-	if (!res && fallback.length() >= 2) {
-		res = get_message_from_translations(fallback, p_message, p_context);
+	const String &fallback_locale = get_fallback_locale();
+	if (!res && fallback_locale.length() >= 2) {
+		res = get_message_from_translations(fallback_locale, p_message, p_context);
 	}
 
 	if (!res) {
@@ -376,9 +384,9 @@ StringName TranslationDomain::translate_plural(const StringName &p_message, cons
 	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_message_plural, p_n, p_context);
 
-	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
-	if (!res && fallback.length() >= 2) {
-		res = get_message_from_translations(fallback, p_message, p_message_plural, p_n, p_context);
+	const String &fallback_locale = get_fallback_locale();
+	if (!res && fallback_locale.length() >= 2) {
+		res = get_message_from_translations(fallback_locale, p_message, p_message_plural, p_n, p_context);
 	}
 
 	if (!res) {
@@ -509,6 +517,8 @@ void TranslationDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_translation_object", "locale"), &TranslationDomain::get_translation_object);
 #endif
 
+	ClassDB::bind_method(D_METHOD("set_fallback_locale", "locale"), &TranslationDomain::set_fallback_locale);
+	ClassDB::bind_method(D_METHOD("get_fallback_locale"), &TranslationDomain::get_fallback_locale);
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationDomain::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationDomain::remove_translation);
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationDomain::clear);
