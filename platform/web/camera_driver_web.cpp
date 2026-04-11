@@ -66,8 +66,14 @@ int CameraDriverWeb::_get_int_value(const Variant &p_val) {
 }
 
 void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, const char *json_ptr) {
+	// Always call the user callback — even on error — so callers can clear any
+	// in-progress flags (e.g. CameraWeb::activating) regardless of outcome.
+	CameraDriverWebGetCamerasCallback on_get_cameras_callback =
+			reinterpret_cast<CameraDriverWebGetCamerasCallback>(callback);
+
 	if (!json_ptr) {
 		ERR_PRINT("CameraDriverWeb::_on_get_cameras_callback: json_ptr is null.");
+		on_get_cameras_callback(context, Vector<CameraInfo>());
 		return;
 	}
 	String json_string = String::utf8(json_ptr);
@@ -75,6 +81,7 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 
 	if (json_variant.get_type() != Variant::DICTIONARY) {
 		ERR_PRINT("CameraDriverWeb::_on_get_cameras_callback: Failed to parse JSON response or response is not a Dictionary.");
+		on_get_cameras_callback(context, Vector<CameraInfo>());
 		return;
 	}
 
@@ -83,12 +90,14 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 	if (v_error.get_type() == Variant::STRING) {
 		String error_str = v_error;
 		ERR_PRINT(vformat("Camera error from JS: %s", error_str));
+		on_get_cameras_callback(context, Vector<CameraInfo>());
 		return;
 	}
 
 	Variant v_devices = json_dict.get(KEY_CAMERAS, Variant());
 	if (v_devices.get_type() != Variant::ARRAY) {
 		ERR_PRINT("Camera error: 'cameras' is not an array or missing.");
+		on_get_cameras_callback(context, Vector<CameraInfo>());
 		return;
 	}
 
@@ -147,7 +156,6 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 		camera_info.push_back(info);
 	}
 
-	CameraDriverWebGetCamerasCallback on_get_cameras_callback = reinterpret_cast<CameraDriverWebGetCamerasCallback>(callback);
 	on_get_cameras_callback(context, camera_info);
 }
 
