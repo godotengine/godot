@@ -2822,7 +2822,7 @@ EditorInspectorSection::EditorInspectorSection() {
 	dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds"));
 	dropping_unfold_timer->set_one_shot(true);
 	add_child(dropping_unfold_timer);
-	dropping_unfold_timer->connect("timeout", callable_mp(this, &EditorInspectorSection::unfold));
+	dropping_unfold_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorInspectorSection::unfold));
 }
 
 EditorInspectorSection::~EditorInspectorSection() {

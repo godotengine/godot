@@ -339,7 +339,7 @@ void PathFollow2D::_notification(int p_what) {
 				update_timer = memnew(Timer);
 				update_timer->set_wait_time(0.2);
 				update_timer->set_one_shot(true);
-				update_timer->connect("timeout", callable_mp(this, &PathFollow2D::_update_transform));
+				update_timer->connect(SceneStringName(timeout), callable_mp(this, &PathFollow2D::_update_transform));
 				add_child(update_timer, false, Node::INTERNAL_MODE_BACK);
 			}
 		} break;

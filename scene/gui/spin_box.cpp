@@ -746,6 +746,6 @@ SpinBox::SpinBox() {
 	line_edit->connect(SceneStringName(gui_input), callable_mp(this, &SpinBox::_line_edit_input));
 
 	range_click_timer = memnew(Timer);
-	range_click_timer->connect("timeout", callable_mp(this, &SpinBox::_range_click_timeout));
+	range_click_timer->connect(SceneStringName(timeout), callable_mp(this, &SpinBox::_range_click_timeout));
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 }

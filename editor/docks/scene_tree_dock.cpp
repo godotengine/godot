@@ -5085,7 +5085,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->set_editor_selection(editor_selection);
 
 	inspect_hovered_node_delay = memnew(Timer);
-	inspect_hovered_node_delay->connect("timeout", callable_mp(this, &SceneTreeDock::_inspect_hovered_node));
+	inspect_hovered_node_delay->connect(SceneStringName(timeout), callable_mp(this, &SceneTreeDock::_inspect_hovered_node));
 	inspect_hovered_node_delay->set_one_shot(true);
 	add_child(inspect_hovered_node_delay);
 

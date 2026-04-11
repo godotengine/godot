@@ -8448,7 +8448,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	click_select_held = memnew(Timer);
 	add_child(click_select_held, false, INTERNAL_MODE_FRONT);
 	click_select_held->set_wait_time(0.05);
-	click_select_held->connect("timeout", callable_mp(this, &RichTextLabel::_update_selection));
+	click_select_held->connect(SceneStringName(timeout), callable_mp(this, &RichTextLabel::_update_selection));
 }
 
 RichTextLabel::~RichTextLabel() {

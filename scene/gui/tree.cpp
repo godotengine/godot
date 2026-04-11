@@ -7445,12 +7445,12 @@ Tree::Tree() {
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
 
 	range_click_timer = memnew(Timer);
-	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
+	range_click_timer->connect(SceneStringName(timeout), callable_mp(this, &Tree::_range_click_timeout));
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 
 	dropping_unfold_timer = memnew(Timer);
 	dropping_unfold_timer->set_one_shot(true);
-	dropping_unfold_timer->connect("timeout", callable_mp(this, &Tree::_on_dropping_unfold_timer_timeout));
+	dropping_unfold_timer->connect(SceneStringName(timeout), callable_mp(this, &Tree::_on_dropping_unfold_timer_timeout));
 	add_child(dropping_unfold_timer);
 
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));

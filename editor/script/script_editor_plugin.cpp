@@ -4175,7 +4175,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	autosave_timer = memnew(Timer);
 	autosave_timer->set_one_shot(false);
 	autosave_timer->connect(SceneStringName(tree_entered), callable_mp(this, &ScriptEditor::_update_autosave_timer));
-	autosave_timer->connect("timeout", callable_mp(this, &ScriptEditor::_autosave_scripts));
+	autosave_timer->connect(SceneStringName(timeout), callable_mp(this, &ScriptEditor::_autosave_scripts));
 	add_child(autosave_timer);
 
 	grab_focus_block = false;

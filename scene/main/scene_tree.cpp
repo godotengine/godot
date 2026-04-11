@@ -808,7 +808,7 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 		timer->set_time_left(time_left);
 
 		if (time_left <= 0) {
-			E->get()->emit_signal(SNAME("timeout"));
+			E->get()->emit_signal(SceneStringName(timeout));
 			timers.erase(E);
 		}
 		if (E == L) {

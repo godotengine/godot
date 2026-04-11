@@ -532,7 +532,7 @@ EditorExport::EditorExport() {
 	add_child(save_timer);
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
-	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
+	save_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorExport::_save));
 
 	_export_presets_updated = StringName("export_presets_updated", true);
 	_export_presets_runnable_updated = StringName("export_presets_runnable_updated", true);

@@ -3694,7 +3694,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	update_debounce_timer = memnew(Timer);
 	update_debounce_timer->set_one_shot(true);
 	update_debounce_timer->set_wait_time(0.5);
-	update_debounce_timer->connect("timeout", callable_mp(this, &ThemeTypeEditor::_update_type_list));
+	update_debounce_timer->connect(SceneStringName(timeout), callable_mp(this, &ThemeTypeEditor::_update_type_list));
 	add_child(update_debounce_timer);
 }
 

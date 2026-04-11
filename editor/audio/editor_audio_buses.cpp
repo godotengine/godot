@@ -930,7 +930,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorAudioBus::_volume_changed));
 	slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorAudioBus::_show_value));
-	preview_timer->connect("timeout", callable_mp(this, &EditorAudioBus::_hide_value_preview));
+	preview_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorAudioBus::_hide_value_preview));
 	hb->add_child(slider);
 
 	cc = 0;
@@ -1440,7 +1440,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
 	main_vb->add_child(save_timer);
-	save_timer->connect("timeout", callable_mp(this, &EditorAudioBuses::_server_save));
+	save_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorAudioBuses::_server_save));
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 

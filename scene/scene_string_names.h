@@ -151,6 +151,8 @@ public:
 	const StringName text_submitted = "text_submitted";
 	const StringName value_changed = "value_changed";
 
+	const StringName timeout = "timeout";
+
 	const StringName Start = "Start";
 	const StringName End = "End";
 	const StringName state_started = "state_started";

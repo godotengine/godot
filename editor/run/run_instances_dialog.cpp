@@ -303,13 +303,13 @@ RunInstancesDialog::RunInstancesDialog() {
 	main_apply_timer->set_wait_time(0.5);
 	main_apply_timer->set_one_shot(true);
 	add_child(main_apply_timer);
-	main_apply_timer->connect("timeout", callable_mp(this, &RunInstancesDialog::_save_main_args));
+	main_apply_timer->connect(SceneStringName(timeout), callable_mp(this, &RunInstancesDialog::_save_main_args));
 
 	instance_apply_timer = memnew(Timer);
 	instance_apply_timer->set_wait_time(0.5);
 	instance_apply_timer->set_one_shot(true);
 	add_child(instance_apply_timer);
-	instance_apply_timer->connect("timeout", callable_mp(this, &RunInstancesDialog::_save_arguments));
+	instance_apply_timer->connect(SceneStringName(timeout), callable_mp(this, &RunInstancesDialog::_save_arguments));
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);

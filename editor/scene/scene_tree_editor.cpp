@@ -661,11 +661,11 @@ void SceneTreeEditor::_update_if_clean() {
 
 void SceneTreeEditor::_queue_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 	Callable update_tooltip = callable_mp(this, &SceneTreeEditor::_update_node_tooltip);
-	if (update_node_tooltip_delay->is_connected("timeout", update_tooltip)) {
-		update_node_tooltip_delay->disconnect("timeout", update_tooltip);
+	if (update_node_tooltip_delay->is_connected(SceneStringName(timeout), update_tooltip)) {
+		update_node_tooltip_delay->disconnect(SceneStringName(timeout), update_tooltip);
 	}
 
-	update_node_tooltip_delay->connect("timeout", update_tooltip.bind(p_node, p_item));
+	update_node_tooltip_delay->connect(SceneStringName(timeout), update_tooltip.bind(p_node, p_item));
 	update_node_tooltip_delay->start();
 }
 
@@ -2207,7 +2207,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	blocked = 0;
 
 	update_timer = memnew(Timer);
-	update_timer->connect("timeout", callable_mp(this, &SceneTreeEditor::_update_tree).bind(false));
+	update_timer->connect(SceneStringName(timeout), callable_mp(this, &SceneTreeEditor::_update_tree).bind(false));
 	update_timer->set_one_shot(true);
 	update_timer->set_wait_time(0.5);
 	add_child(update_timer);
