@@ -650,6 +650,9 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader, const Stri
 	set_edited_code(p_code);
 
 	if (shader.is_valid()) {
+		for (int line : shader->get_preview_lines()) {
+			get_text_editor()->set_line_as_breakpoint(line, true);
+		}
 		shader->connect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 }
@@ -1825,15 +1828,18 @@ void TextShaderEditor::_update_shader_previews() {
 
 	const CodeEdit *ce = code_editor->get_text_editor();
 	code_editor->clear_previews();
+	shader->clear_preview_lines();
 	bool found = false;
 
 	for (int i = 0; i < ce->get_line_count(); i++) {
 		if (ce->is_line_breakpointed(i)) {
 			found = true;
 			code_editor->toggle_shader_preview(i);
+			shader->add_preview_line(i);
 		}
 	}
 
+	shader->emit_changed();
 	code_editor->redraw_preview_lines();
 
 	if (!found) {

@@ -57,6 +57,9 @@
 		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;&quot;">
 			Returns the shader's code as the user has written it, not the full generated code used internally.
 		</member>
+		<member name="preview_lines" type="PackedInt32Array" setter="set_preview_lines" getter="get_preview_lines" default="PackedInt32Array()">
+			Returns the list of shader preview lines in use.
+		</member>
 	</members>
 	<constants>
 		<constant name="MODE_SPATIAL" value="0" enum="Mode">

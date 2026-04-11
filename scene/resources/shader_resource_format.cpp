@@ -51,6 +51,28 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 	Ref<Shader> shader;
 	shader.instantiate();
 
+	if (str.begins_with("@")) {
+		String line = "";
+
+		for (int i = 1; i < str.size(); i++) {
+			if (str[i] == '\n') {
+				break;
+			}
+			line += str[i];
+		}
+		str = str.erase(0, line.size() + 1);
+
+		PackedStringArray line_strings = line.split(",");
+		PackedInt32Array lines;
+
+		for (const String &line_string : line_strings) {
+			ERR_FAIL_COND_V_MSG(!line_string.is_valid_int(), nullptr, "Cannot parse shader: " + p_path);
+			lines.push_back(line_string.to_int());
+		}
+
+		shader->set_preview_lines(lines);
+	}
+
 	shader->set_include_path(p_path);
 	shader->set_code(str);
 
@@ -86,6 +108,24 @@ Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const Str
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot save shader '" + p_path + "'.");
+
+	PackedInt32Array lines = shader->get_preview_lines();
+	if (!lines.is_empty()) {
+		String preview_lines = "@";
+
+		for (int i = 0; i < lines.size(); i++) {
+			if (i > 0) {
+				preview_lines += ",";
+			}
+			preview_lines += itos(lines[i]);
+		}
+		preview_lines += "\n";
+
+		file->store_string(preview_lines);
+		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
+			return ERR_CANT_CREATE;
+		}
+	}
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
