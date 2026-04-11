@@ -97,6 +97,12 @@
 				Returns tab [Rect2] with local position and size.
 			</description>
 		</method>
+		<method name="get_tab_style_v_flip" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the tab style is flipped vertically. See [method set_tab_style_v_flip].
+			</description>
+		</method>
 		<method name="get_tab_text_direction" qualifiers="const">
 			<return type="int" enum="Control.TextDirection" />
 			<param index="0" name="tab_idx" type="int" />
@@ -213,6 +219,13 @@
 			<param index="1" name="metadata" type="Variant" />
 			<description>
 				Sets the metadata value for the tab at index [param tab_idx], which can be retrieved later using [method get_tab_metadata].
+			</description>
+		</method>
+		<method name="set_tab_style_v_flip">
+			<return type="void" />
+			<param index="0" name="tab_style_v_flip" type="bool" />
+			<description>
+				If [code]true[/code], the tab style will be flipped vertically. This is used when tabs are positioned at the bottom of the container to ensure the tab style is oriented correctly.
 			</description>
 		</method>
 		<method name="set_tab_text_direction">
@@ -453,6 +466,12 @@
 		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="decrement_vertical" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
 		<theme_item name="drop_mark" data_type="icon" type="Texture2D">
 			Icon shown to indicate where a dragged tab will be dropped (see [member drag_to_rearrange_enabled]).
 		</theme_item>
@@ -461,6 +480,15 @@
 		</theme_item>
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="increment_vertical" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). When the button is disabled (i.e. the last tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="increment_vertical_highlight" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container height (vertical tabs). Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="vertical_drop_mark" data_type="icon" type="Texture2D">
+			Icon shown to indicate where a dragged tab will be dropped when using vertical tabs (see [member drag_to_rearrange_enabled]).
 		</theme_item>
 		<theme_item name="button_highlight" data_type="style" type="StyleBox">
 			Background of the tab and close buttons when they're being hovered with the cursor.
