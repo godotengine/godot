@@ -53,6 +53,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 TextServer::AutowrapMode Label::get_autowrap_mode() const {
@@ -74,6 +75,7 @@ void Label::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags)
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 BitField<TextServer::LineBreakFlag> Label::get_autowrap_trim_flags() const {
@@ -152,11 +154,7 @@ void Label::_shape() const {
 		if (maximum_width <= 0) {
 			maximum_width = 1;
 		}
-		if (width > 0) {
-			width = MIN(width, maximum_width);
-		} else {
-			width = maximum_width;
-		}
+		width = maximum_width;
 	}
 
 	if (text_dirty) {
@@ -914,6 +912,7 @@ void Label::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			font_dirty = true;
 			queue_redraw();
+			update_desired_size();
 			update_configuration_warnings();
 		} break;
 
@@ -993,9 +992,6 @@ Size2 Label::get_minimum_size() const {
 	_ensure_shaped();
 
 	Size2 min_size = minsize;
-	Size2 combined_maximum_size = get_combined_maximum_size();
-	bool wrap_with_max_width = autowrap_mode != TextServer::AUTOWRAP_OFF && combined_maximum_size.x > 0;
-	bool overrun_with_max_width = autowrap_mode == TextServer::AUTOWRAP_OFF && combined_maximum_size.x > 0 && (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING);
 
 	const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
@@ -1010,26 +1006,27 @@ Size2 Label::get_minimum_size() const {
 		} else if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			min_size.height = 1;
 		}
-		if (wrap_with_max_width) {
-			min_size.width = MAX(1, min_size.width);
-			return min_size + min_style;
-		} else {
-			return Size2(1, min_size.height) + min_style;
-		}
+		return Size2(1, min_size.height) + min_style;
 	} else {
 		if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-			if (overrun_with_max_width) {
-				min_size.width = MAX(1, min_size.width);
-			} else {
-				min_size.width = 1;
-			}
+			min_size.width = 1;
 		}
-		Size2 computed_min_size = min_size + min_style;
-		if (overrun_with_max_width) {
-			computed_min_size.width = MIN(computed_min_size.width, combined_maximum_size.x);
-		}
-		return computed_min_size;
+		return min_size + min_style;
 	}
+}
+
+Size2 Label::get_desired_size() const {
+	Size2 combined_max = get_combined_maximum_size();
+	if (combined_max.width < 0) {
+		return Size2();
+	}
+
+	_ensure_shaped();
+	Size2 min_style = theme_cache.normal_style->get_minimum_size();
+	Size2 content_size = minsize + min_style;
+	content_size.width = MIN(content_size.width, int(combined_max.width));
+
+	return content_size;
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -1144,6 +1141,7 @@ void Label::set_text(const String &p_string) {
 	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();
+	update_desired_size();
 	update_configuration_warnings();
 }
 
@@ -1163,6 +1161,7 @@ void Label::_maximum_size_changed() {
 	}
 	queue_redraw();
 	update_minimum_size();
+	update_desired_size();
 	update_configuration_warnings();
 }
 
@@ -1264,6 +1263,7 @@ void Label::set_clip_text(bool p_clip) {
 	clip = p_clip;
 	queue_redraw();
 	update_minimum_size();
+	update_desired_size();
 }
 
 bool Label::is_clipping_text() const {
@@ -1297,6 +1297,7 @@ void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 TextServer::OverrunBehavior Label::get_text_overrun_behavior() const {
@@ -1320,6 +1321,7 @@ void Label::set_ellipsis_char(const String &p_char) {
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+	update_desired_size();
 }
 
 String Label::get_ellipsis_char() const {

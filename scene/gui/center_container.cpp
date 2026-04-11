@@ -49,6 +49,23 @@ Size2 CenterContainer::get_minimum_size() const {
 	return ms;
 }
 
+Size2 CenterContainer::get_desired_size() const {
+	if (use_top_left) {
+		return Size2();
+	}
+	Size2 ds;
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+		if (!c) {
+			continue;
+		}
+		Size2 minsize = c->get_bound_desired_size();
+		ds = ds.max(minsize);
+	}
+
+	return ds;
+}
+
 void CenterContainer::set_use_top_left(bool p_enable) {
 	if (use_top_left == p_enable) {
 		return;

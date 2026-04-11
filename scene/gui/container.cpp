@@ -39,6 +39,11 @@ void Container::_child_minsize_changed() {
 	queue_sort();
 }
 
+void Container::_child_desired_size_changed() {
+	update_desired_size();
+	queue_sort();
+}
+
 void Container::add_child_notify(Node *p_child) {
 	Control::add_child_notify(p_child);
 
@@ -50,6 +55,7 @@ void Container::add_child_notify(Node *p_child) {
 	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->connect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->connect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect("_desired_size_changed", callable_mp(this, &Container::_child_desired_size_changed));
 	control->connect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
@@ -78,6 +84,7 @@ void Container::remove_child_notify(Node *p_child) {
 	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->disconnect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->disconnect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect("_desired_size_changed", callable_mp(this, &Container::_child_desired_size_changed));
 	control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
@@ -105,6 +112,7 @@ void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &
 
 	bool rtl = is_layout_rtl();
 	Size2 minsize = p_child->get_combined_minimum_size();
+	Size2 desired_size = p_child->get_bound_desired_size();
 	Size2 maxsize = p_child->get_combined_maximum_size();
 	Rect2 r = p_rect;
 	BitField<SizeFlags> h_size_flags = p_child->get_h_size_flags();
@@ -112,6 +120,7 @@ void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &
 
 	if (!h_size_flags.has_flag(SIZE_FILL)) {
 		float final_width = minsize.width;
+		final_width = MAX(MIN(desired_size.width, r.size.width), final_width);
 		if (maxsize.width >= 0) {
 			final_width = MIN(final_width, maxsize.width);
 		}
@@ -127,6 +136,7 @@ void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &
 
 	if (!v_size_flags.has_flag(SIZE_FILL)) {
 		float final_height = minsize.y;
+		final_height = MAX(MIN(desired_size.y, r.size.y), final_height);
 		if (maxsize.height >= 0) {
 			final_height = MIN(final_height, maxsize.height);
 		}
