@@ -30,6 +30,8 @@
 
 #include "camera_web.h"
 
+#include "platform/web/camera_driver_web.h"
+
 #include "core/templates/hash_set.h"
 
 namespace {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  camera_web.h                                                          */
+/*  camera_types_web.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,48 +30,22 @@
 
 #pragma once
 
-#include "servers/camera/camera_feed.h"
-#include "servers/camera/camera_server.h"
+// Shared data types used by both the Web camera driver (platform/web) and the
+// camera module (modules/camera). Kept in a dedicated header so the module
+// does not need to include the full camera driver header.
 
-// Shared camera data types — kept in a platform/web-level header so this
-// module does not need to include the full CameraDriverWeb driver header.
-#include "platform/web/camera_types_web.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
-class CameraDriverWeb;
-
-class CameraFeedWeb : public CameraFeed {
-	GDSOFTCLASS(CameraFeedWeb, CameraFeed);
-
-	String device_id;
-	Ref<Image> image;
-	Vector<uint8_t> data;
-
-	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_facing_mode, const char *p_error);
-	static void _on_denied_callback(void *p_context);
-
-public:
-	bool activate_feed() override;
-	void deactivate_feed() override;
-	bool set_format(int p_index, const Dictionary &p_parameters) override;
-	Array get_formats() const override;
-	FeedFormat get_format() const override;
-	String get_device_id() const { return device_id; }
-
-	CameraFeedWeb(const CameraInfo &info);
-	~CameraFeedWeb();
+struct FormatInfo {
+	int width;
+	int height;
+	int frame_rate;
 };
 
-class CameraWeb : public CameraServer {
-	GDSOFTCLASS(CameraWeb, CameraServer);
-
-	CameraDriverWeb *driver = nullptr;
-	SafeFlag activating;
-	void _cleanup();
-	void _update_feeds();
-	static void _on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info);
-
-public:
-	void set_monitoring_feeds(bool p_monitoring_feeds) override;
-
-	~CameraWeb();
+struct CameraInfo {
+	int index;
+	String device_id;
+	String label;
+	Vector<FormatInfo> formats;
 };
