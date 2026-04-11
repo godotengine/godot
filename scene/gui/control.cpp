@@ -608,6 +608,12 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 				}
 				hint_string += "Shrink End:8";
 			}
+			if (size_flags.has(SIZE_MAXIMIZE)) {
+				if (!hint_string.is_empty()) {
+					hint_string += ",";
+				}
+				hint_string += "Maximize:16";
+			}
 
 			if (hint_string.is_empty()) {
 				p_property.hint_string = "";
@@ -4835,8 +4841,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset_ratio"), "set_pivot_offset_ratio", "get_pivot_offset_ratio");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_v_size_flags", "get_v_size_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8,Maximize:16"), "set_h_size_flags", "get_h_size_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8,Maximize:16"), "set_v_size_flags", "get_v_size_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,20,0.01,or_greater"), "set_stretch_ratio", "get_stretch_ratio");
 
 	ADD_GROUP("Offset Transform", "offset_transform_");
@@ -4963,6 +4969,7 @@ void Control::_bind_methods() {
 	BIND_BITFIELD_FLAG(SIZE_EXPAND_FILL);
 	BIND_BITFIELD_FLAG(SIZE_SHRINK_CENTER);
 	BIND_BITFIELD_FLAG(SIZE_SHRINK_END);
+	BIND_BITFIELD_FLAG(SIZE_MAXIMIZE);
 
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_STOP);
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_PASS);

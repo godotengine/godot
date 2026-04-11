@@ -52,7 +52,12 @@ Size2 ScrollContainer::get_minimum_size() const {
 		}
 
 		Size2 child_min_size = c->get_bound_minimum_size();
-		largest_child_min_size = largest_child_min_size.max(child_min_size);
+		Size2 child_max_size = c->get_custom_maximum_size();
+
+		real_t width = (child_max_size.width >= 0 && c->get_h_size_flags().has_flag(SIZE_MAXIMIZE)) ? child_max_size.width : child_min_size.width;
+		real_t height = (child_max_size.height >= 0 && c->get_v_size_flags().has_flag(SIZE_MAXIMIZE)) ? child_max_size.height : child_min_size.height;
+
+		largest_child_min_size = largest_child_min_size.max(Size2(width, height));
 	}
 
 	Size2 min_size;
