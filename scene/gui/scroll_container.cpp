@@ -40,7 +40,7 @@
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
 
-Size2 ScrollContainer::get_minimum_size() const {
+Size2 ScrollContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	// Calculated in this function, as it needs to traverse all child controls once to calculate;
 	// and needs to be calculated before being used by `_update_scrollbars()`.
 	largest_child_min_size = Size2();
@@ -51,7 +51,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 child_min_size = c->get_bound_minimum_size();
+		Size2 child_min_size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 
@@ -91,6 +91,14 @@ Size2 ScrollContainer::get_minimum_size() const {
 	min_size += margins.position + margins.size;
 
 	return min_size;
+}
+
+Size2 ScrollContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 ScrollContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 Size2 ScrollContainer::get_inner_combined_maximum_size() const {
