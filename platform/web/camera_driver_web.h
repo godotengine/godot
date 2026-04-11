@@ -30,22 +30,9 @@
 
 #pragma once
 
-#include "core/string/ustring.h"
-#include "core/templates/vector.h"
+#include "camera_types_web.h"
+
 #include "core/variant/array.h"
-
-struct FormatInfo {
-	int width;
-	int height;
-	int frame_rate;
-};
-
-struct CameraInfo {
-	int index;
-	String device_id;
-	String label;
-	Vector<FormatInfo> formats;
-};
 
 using CameraDriverWebGetCamerasCallback = void (*)(void *p_context, const Vector<CameraInfo> &p_camera_info);
 
