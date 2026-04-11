@@ -51,7 +51,7 @@ extern void godot_js_camera_get_pixel_data(
 		void (*p_callback)(void *p_context, const uint8_t *p_data, const int p_size, const int p_width, const int p_height, const int p_facing_mode, const char *p_error),
 		void (*p_denied_callback)(void *p_context));
 
-extern void godot_js_camera_stop_stream(const char *p_device_id = nullptr);
+extern void godot_js_camera_stop_stream(const char *p_device_id);
 
 #ifdef __cplusplus
 }
