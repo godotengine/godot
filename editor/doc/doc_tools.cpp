@@ -1034,7 +1034,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		// FIXME: this is kind of hackish...
 		for (const Engine::Singleton &s : singletons) {
 			DocData::PropertyDoc pd;
-			if (!s.ptr) {
+			if (!s.ptr || s.user_created) {
 				continue;
 			}
 			pd.name = s.name;
