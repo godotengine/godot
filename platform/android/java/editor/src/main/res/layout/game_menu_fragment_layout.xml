@@ -182,6 +182,15 @@
 		/>
 
 	<ImageButton
+		android:id="@+id/game_menu_drag_button"
+		style="?android:attr/borderlessButtonStyle"
+		android:layout_width="48dp"
+		android:layout_height="48dp"
+		android:background="@drawable/game_menu_selected_button_bg"
+		android:src="@drawable/drag_pan_24px"
+		/>
+
+	<ImageButton
 		android:id="@+id/game_menu_minimize_button"
 		style="?android:attr/borderlessButtonStyle"
 		android:layout_width="48dp"

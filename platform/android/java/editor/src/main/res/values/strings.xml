@@ -20,4 +20,5 @@
 	<string name="show_game_resume_hint">Tap on \'Game\' to resume</string>
 	<string name="restart_embed_game_hint">Restart game to embed</string>
 	<string name="restart_non_embedded_game_hint">Restart Game to disable embedding</string>
+	<string name="lock_aspect_ratio_btn_text">Lock Aspect ratio (%d x %d)</string>
 </resources>
