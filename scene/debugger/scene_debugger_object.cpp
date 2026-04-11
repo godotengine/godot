@@ -196,7 +196,8 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 
 		Array prop = { pi.name, pi.type };
 		PropertyHint hint = pi.hint;
-		String hint_string = pi.hint_string;
+		String hint_string = res.is_valid() ? res->get_class() : pi.hint_string;
+
 		if (res.is_valid() && !res->get_path().is_empty()) {
 			// HACK: Overwrite `PropertyInfo` with the current runtime type.
 			// This allows untyped variables to be displayed correctly.
