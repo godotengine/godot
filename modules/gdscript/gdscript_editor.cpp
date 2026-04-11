@@ -1492,7 +1492,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 					List<StringName> enum_values;
 
-					ClassDB::get_enum_constants(type, type_enum, &enum_values);
+					// Type may be a script type.
+					if (ClassDB::class_exists(type)) {
+						ClassDB::get_enum_constants(type, type_enum, &enum_values);
+					}
 
 					for (const StringName &E : enum_values) {
 						int location = p_recursion_depth + _get_enum_constant_location(type, E);
