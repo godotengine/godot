@@ -122,13 +122,9 @@ bool CameraFeedWeb::activate_feed() {
 	CameraDriverWeb *driver = CameraDriverWeb::get_singleton();
 	ERR_FAIL_NULL_V_MSG(driver, false, "CameraDriverWeb singleton is not initialized.");
 
-	// 'this' is passed as a raw context pointer to the JS callback.
-	// Safety assumption: Web builds are single-threaded (threads=no), so JS
-	// callbacks are dispatched synchronously on the same thread. deactivate_feed()
-	// calls stop_stream() which synchronously cancels all pending callbacks
-	// (cancelAnimationFrame / Worker.terminate), so no callback can fire after
-	// deactivate_feed() or the destructor returns.
-	// This invariant would break if Godot Web threads were ever enabled.
+	// 'this' is passed as a raw context pointer to JS. This is safe because
+	// Web builds are single-threaded - stop_stream() synchronously cancels all
+	// pending callbacks, so no callback can fire after deactivate_feed() returns.
 	driver->get_pixel_data(this, device_id, width, height,
 			&_on_get_pixel_data, &_on_denied_callback);
 	return true;

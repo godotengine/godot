@@ -66,7 +66,7 @@ int CameraDriverWeb::_get_int_value(const Variant &p_val) {
 }
 
 void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, const char *json_ptr) {
-	// Always call the user callback — even on error — so callers can clear any
+	// Always call the user callback, even on error, so callers can clear any
 	// in-progress flags (e.g. CameraWeb::activating) regardless of outcome.
 	CameraDriverWebGetCamerasCallback on_get_cameras_callback =
 			reinterpret_cast<CameraDriverWebGetCamerasCallback>(callback);
