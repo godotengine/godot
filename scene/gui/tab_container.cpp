@@ -257,7 +257,12 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_icon_override(SNAME("increment_highlight"), theme_cache.increment_hl_icon);
 	tab_bar->add_theme_icon_override(SNAME("decrement"), theme_cache.decrement_icon);
 	tab_bar->add_theme_icon_override(SNAME("decrement_highlight"), theme_cache.decrement_hl_icon);
+	tab_bar->add_theme_icon_override(SNAME("increment_vertical"), theme_cache.increment_vertical_icon);
+	tab_bar->add_theme_icon_override(SNAME("increment_vertical_highlight"), theme_cache.increment_vertical_hl_icon);
+	tab_bar->add_theme_icon_override(SNAME("decrement_vertical"), theme_cache.decrement_vertical_icon);
+	tab_bar->add_theme_icon_override(SNAME("decrement_vertical_highlight"), theme_cache.decrement_vertical_hl_icon);
 	tab_bar->add_theme_icon_override(SNAME("drop_mark"), theme_cache.drop_mark_icon);
+	tab_bar->add_theme_icon_override(SNAME("vertical_drop_mark"), theme_cache.vertical_drop_mark_icon);
 	tab_bar->add_theme_color_override(SNAME("drop_mark_color"), theme_cache.drop_mark_color);
 
 	tab_bar->add_theme_color_override(SNAME("font_selected_color"), theme_cache.font_selected_color);
@@ -408,11 +413,11 @@ void TabContainer::_update_margins() {
 			case TabBar::ALIGNMENT_RIGHT: {
 				internal_container->set_offset(SIDE_LEFT, left_margin);
 
-			if (has_popup) {
-				internal_container->set_offset(SIDE_RIGHT, -right_margin);
-				_maximum_size_changed();
-				return;
-			}
+				if (has_popup) {
+					internal_container->set_offset(SIDE_RIGHT, -right_margin);
+					_maximum_size_changed();
+					return;
+				}
 
 				int first_tab_pos = tab_bar->get_tab_rect(0).position.x;
 				Rect2 last_tab_rect = tab_bar->get_tab_rect(get_tab_count() - 1);
@@ -1412,7 +1417,12 @@ void TabContainer::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_hl_icon, "increment_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_icon, "decrement");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_hl_icon, "decrement_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_vertical_icon, "increment_vertical");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, increment_vertical_hl_icon, "increment_vertical_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_vertical_icon, "decrement_vertical");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, decrement_vertical_hl_icon, "decrement_vertical_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, drop_mark_icon, "drop_mark");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, vertical_drop_mark_icon, "vertical_drop_mark");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, drop_mark_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_selected_color);
