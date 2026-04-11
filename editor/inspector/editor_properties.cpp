@@ -1657,6 +1657,15 @@ void EditorPropertyObjectID::update_property() {
 
 	const ObjectID id = _get_object_id();
 	if (id.is_valid()) {
+		// Some objects have both their current class and the one they inherit in their `base_type`,
+		// but we just need to show the current one (in the last position).
+		if (type.contains(",")) {
+			Vector<String> types = type.split(",", false);
+			if (!types.is_empty()) {
+				type = types[types.size() - 1];
+			}
+		}
+
 		edit->set_text(type + ": " + uitos(id));
 		edit->set_tooltip_text(type + ": " + uitos(id));
 		edit->set_disabled(false);
