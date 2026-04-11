@@ -173,6 +173,8 @@ void CameraDriverWeb::stop_stream(const String &device_id) {
 
 CameraDriverWeb::CameraDriverWeb() {
 	ERR_FAIL_COND_MSG(singleton != nullptr, "CameraDriverWeb singleton already exists.");
+	// Clear before push_back in case the singleton is recreated (static Array persists).
+	_camera_info_key.clear();
 	_camera_info_key.push_back(KEY_INDEX);
 	_camera_info_key.push_back(KEY_ID);
 	_camera_info_key.push_back(KEY_LABEL);
