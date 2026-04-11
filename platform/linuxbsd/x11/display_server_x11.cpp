@@ -4520,6 +4520,7 @@ void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
 		E.value.xic = nullptr;
+		E.value.ime_active = false;
 	}
 }
 
