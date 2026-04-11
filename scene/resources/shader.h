@@ -61,6 +61,7 @@ private:
 	HashSet<Ref<ShaderInclude>> include_dependencies;
 	String code;
 	String include_path;
+	PackedInt32Array preview_lines;
 
 	HashMap<StringName, HashMap<int, Ref<Texture>>> default_textures;
 
@@ -88,6 +89,13 @@ public:
 
 	void set_code(const String &p_code);
 	String get_code() const;
+
+	void set_preview_lines(PackedInt32Array p_preview_lines);
+	PackedInt32Array get_preview_lines() const;
+
+	// Internal methods.
+	void clear_preview_lines();
+	void add_preview_line(int p_line);
 
 	void inspect_native_shader_code();
 

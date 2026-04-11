@@ -143,6 +143,23 @@ String Shader::get_code() const {
 	return code;
 }
 
+void Shader::set_preview_lines(PackedInt32Array p_preview_lines) {
+	preview_lines = p_preview_lines;
+	emit_changed();
+}
+
+PackedInt32Array Shader::get_preview_lines() const {
+	return preview_lines;
+}
+
+void Shader::clear_preview_lines() {
+	preview_lines.clear();
+}
+
+void Shader::add_preview_line(int p_line) {
+	preview_lines.push_back(p_line);
+}
+
 void Shader::inspect_native_shader_code() {
 	SceneTree *st = SceneTree::get_singleton();
 	RID _shader = get_rid();
@@ -279,6 +296,9 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_code", "code"), &Shader::set_code);
 	ClassDB::bind_method(D_METHOD("get_code"), &Shader::get_code);
 
+	ClassDB::bind_method(D_METHOD("set_preview_lines", "preview_lines"), &Shader::set_preview_lines);
+	ClassDB::bind_method(D_METHOD("get_preview_lines"), &Shader::get_preview_lines);
+
 	ClassDB::bind_method(D_METHOD("set_default_texture_parameter", "name", "texture", "index"), &Shader::set_default_texture_parameter, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_default_texture_parameter", "name", "index"), &Shader::get_default_texture_parameter, DEFVAL(0));
 
@@ -288,6 +308,7 @@ void Shader::_bind_methods() {
 	ClassDB::set_method_flags(get_class_static(), StringName("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "preview_lines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_preview_lines", "get_preview_lines");
 
 	BIND_ENUM_CONSTANT(MODE_SPATIAL);
 	BIND_ENUM_CONSTANT(MODE_CANVAS_ITEM);
