@@ -1196,7 +1196,7 @@ self.onmessage = async function(event) {
 						}
 					}
 				} catch (error) {
-					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
+					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, error.message);
 					if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
 						deniedCallback(context);
 					}
