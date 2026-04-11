@@ -3,7 +3,7 @@
 class Example:
 	extends RefCounted
 
-const const_ints : Array[int] = [1, 2, 3]
+const const_ints: Array[int] = [1, 2, 3]
 
 func test():
 	var ints: Array[int] = [1, 2, 3]

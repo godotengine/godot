@@ -1,7 +1,7 @@
 class A: pass
 class B extends A: pass
 
-enum E { E0 = 391 }
+enum E {E0 = 391}
 
 func floats_identity(floats: Array[float]): return floats
 
@@ -69,7 +69,7 @@ func test():
 	Utils.check(str(casted_floats) == '[526.0]')
 	Utils.check(casted_floats.get_typed_builtin() == TYPE_FLOAT)
 
-	var returned_floats = (func () -> Array[float]: return [554]).call()
+	var returned_floats = (func() -> Array[float]: return [554]).call()
 	Utils.check(str(returned_floats) == '[554.0]')
 	Utils.check(returned_floats.get_typed_builtin() == TYPE_FLOAT)
 
@@ -77,7 +77,7 @@ func test():
 	Utils.check(str(passed_floats) == '[663.0]')
 	Utils.check(passed_floats.get_typed_builtin() == TYPE_FLOAT)
 
-	var default_floats = (func (floats: Array[float] = [364.0]): return floats).call()
+	var default_floats = (func(floats: Array[float] = [364.0]): return floats).call()
 	Utils.check(str(default_floats) == '[364.0]')
 	Utils.check(default_floats.get_typed_builtin() == TYPE_FLOAT)
 

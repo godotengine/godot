@@ -2778,11 +2778,16 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 // When an array literal is stored (or passed as function argument) to a typed context, we then assume the array is typed.
 // This function determines which type is that (if any).
 void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type) {
-	GDScriptParser::DataType expected_type = p_element_type;
-	expected_type.container_element_types.clear(); // Nested types (like `Array[Array[int]]`) are not currently supported.
+	const GDScriptParser::DataType &expected_type = p_element_type;
 
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element_node = p_array->elements[i];
+		if (element_node->type == GDScriptParser::Node::ARRAY && expected_type.has_container_element_type(0)) {
+			update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(element_node), expected_type.get_container_element_type(0));
+		} else if (element_node->type == GDScriptParser::Node::DICTIONARY && expected_type.has_container_element_types()) {
+			update_dictionary_literal_element_type(static_cast<GDScriptParser::DictionaryNode *>(element_node),
+					expected_type.get_container_element_type_or_variant(0), expected_type.get_container_element_type_or_variant(1));
+		}
 		if (element_node->is_constant) {
 			update_const_expression_builtin_type(element_node, expected_type, "include");
 		}
@@ -2809,13 +2814,17 @@ void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNo
 // When a dictionary literal is stored (or passed as function argument) to a typed context, we then assume the dictionary is typed.
 // This function determines which type is that (if any).
 void GDScriptAnalyzer::update_dictionary_literal_element_type(GDScriptParser::DictionaryNode *p_dictionary, const GDScriptParser::DataType &p_key_element_type, const GDScriptParser::DataType &p_value_element_type) {
-	GDScriptParser::DataType expected_key_type = p_key_element_type;
-	GDScriptParser::DataType expected_value_type = p_value_element_type;
-	expected_key_type.container_element_types.clear(); // Nested types (like `Dictionary[String, Array[int]]`) are not currently supported.
-	expected_value_type.container_element_types.clear();
+	const GDScriptParser::DataType &expected_key_type = p_key_element_type;
+	const GDScriptParser::DataType &expected_value_type = p_value_element_type;
 
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *key_element_node = p_dictionary->elements[i].key;
+		if (key_element_node->type == GDScriptParser::Node::ARRAY && expected_key_type.has_container_element_type(0)) {
+			update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(key_element_node), expected_key_type.get_container_element_type(0));
+		} else if (key_element_node->type == GDScriptParser::Node::DICTIONARY && expected_key_type.has_container_element_types()) {
+			update_dictionary_literal_element_type(static_cast<GDScriptParser::DictionaryNode *>(key_element_node),
+					expected_key_type.get_container_element_type_or_variant(0), expected_key_type.get_container_element_type_or_variant(1));
+		}
 		if (key_element_node->is_constant) {
 			update_const_expression_builtin_type(key_element_node, expected_key_type, "include");
 		}
@@ -2832,6 +2841,12 @@ void GDScriptAnalyzer::update_dictionary_literal_element_type(GDScriptParser::Di
 		}
 
 		GDScriptParser::ExpressionNode *value_element_node = p_dictionary->elements[i].value;
+		if (value_element_node->type == GDScriptParser::Node::ARRAY && expected_value_type.has_container_element_type(0)) {
+			update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(value_element_node), expected_value_type.get_container_element_type(0));
+		} else if (value_element_node->type == GDScriptParser::Node::DICTIONARY && expected_value_type.has_container_element_types()) {
+			update_dictionary_literal_element_type(static_cast<GDScriptParser::DictionaryNode *>(value_element_node),
+					expected_value_type.get_container_element_type_or_variant(0), expected_value_type.get_container_element_type_or_variant(1));
+		}
 		if (value_element_node->is_constant) {
 			update_const_expression_builtin_type(value_element_node, expected_value_type, "include");
 		}
@@ -6292,13 +6307,13 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			valid = true;
 		}
 		if (valid && p_target.builtin_type == Variant::ARRAY && p_source.builtin_type == Variant::ARRAY) {
-			// Check the element type.
+			// Check the element type. Typed array element types are invariant — strict equality is required.
 			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {
 				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);
 			}
 		}
 		if (valid && p_target.builtin_type == Variant::DICTIONARY && p_source.builtin_type == Variant::DICTIONARY) {
-			// Check the element types.
+			// Check the element types. Typed dictionary element types are invariant — strict equality is required.
 			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {
 				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);
 			}

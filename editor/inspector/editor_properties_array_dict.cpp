@@ -363,6 +363,67 @@ void EditorPropertyArray::set_preview_value(bool p_preview_value) {
 	preview_value = p_preview_value;
 }
 
+// Build a display name like "Array[int]" or "Dictionary[String, Array[int]]"
+// from a nested property hint string such as "2", "28/23:2", or
+// "4;28/23:2". Wildcard numeric ids (0 / NIL) resolve to "Variant".
+static String _get_nested_container_display_name(const String &p_hint_string) {
+	auto resolve_base = [](const String &p_part) -> String {
+		if (p_part.is_empty()) {
+			return "Variant";
+		}
+		if (p_part.is_valid_int()) {
+			int id = p_part.to_int();
+			if (id > 0 && id < Variant::VARIANT_MAX) {
+				return Variant::get_type_name(Variant::Type(id));
+			}
+			return "Variant";
+		}
+		Variant::Type named = Variant::get_type_by_name(p_part);
+		if (named != Variant::VARIANT_MAX) {
+			return Variant::get_type_name(named);
+		}
+		return p_part;
+	};
+
+	int colon_pos = p_hint_string.find_char(':');
+	if (colon_pos < 0) {
+		return resolve_base(p_hint_string);
+	}
+
+	const String type_part = p_hint_string.substr(0, colon_pos);
+	const String remainder = p_hint_string.substr(colon_pos + 1);
+
+	int slash_pos = type_part.find_char('/');
+	int type_id = (slash_pos >= 0) ? type_part.substr(0, slash_pos).to_int() : type_part.to_int();
+	int hint_id = (slash_pos >= 0) ? type_part.substr(slash_pos + 1).to_int() : 0;
+
+	if (type_id <= 0 || type_id >= Variant::VARIANT_MAX) {
+		return resolve_base(type_part);
+	}
+
+	const String base = Variant::get_type_name(Variant::Type(type_id));
+	if (hint_id != PROPERTY_HINT_TYPE_STRING || remainder.is_empty()) {
+		return base;
+	}
+
+	if (Variant::Type(type_id) == Variant::ARRAY) {
+		return vformat("%s[%s]", base, _get_nested_container_display_name(remainder));
+	}
+	if (Variant::Type(type_id) == Variant::DICTIONARY) {
+		// The remainder is `key_hint;value_hint`. By convention (see PR #117529),
+		// the split happens on the FIRST `;` so any inner dictionary's own `;` is
+		// preserved as part of the value hint.
+		const int split_pos = remainder.find_char(';');
+		const String key_hint = (split_pos >= 0) ? remainder.substr(0, split_pos) : remainder;
+		const String value_hint = (split_pos >= 0) ? remainder.substr(split_pos + 1) : String();
+		return vformat("%s[%s, %s]",
+				base,
+				_get_nested_container_display_name(key_hint),
+				_get_nested_container_display_name(value_hint));
+	}
+	return base;
+}
+
 void EditorPropertyArray::update_property() {
 	Variant array = get_edited_property_value();
 
@@ -372,6 +433,17 @@ void EditorPropertyArray::update_property() {
 		String type_name;
 		if (subtype == Variant::OBJECT && (subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
 			type_name = subtype_hint_string;
+		} else if (subtype == Variant::ARRAY && subtype_hint == PROPERTY_HINT_TYPE_STRING && !subtype_hint_string.is_empty()) {
+			// Nested array element: `subtype_hint_string` is the inner element type descriptor.
+			type_name = vformat("Array[%s]", _get_nested_container_display_name(subtype_hint_string));
+		} else if (subtype == Variant::DICTIONARY && subtype_hint == PROPERTY_HINT_TYPE_STRING && !subtype_hint_string.is_empty()) {
+			// Nested dictionary element: `subtype_hint_string` is `key_hint;value_hint`.
+			const int split_pos = subtype_hint_string.find_char(';');
+			const String key_part = (split_pos >= 0) ? subtype_hint_string.substr(0, split_pos) : subtype_hint_string;
+			const String value_part = (split_pos >= 0) ? subtype_hint_string.substr(split_pos + 1) : String();
+			type_name = vformat("Dictionary[%s, %s]",
+					_get_nested_container_display_name(key_part),
+					_get_nested_container_display_name(value_part));
 		} else {
 			type_name = Variant::get_type_name(subtype);
 		}
@@ -902,9 +974,19 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 			subtype = Variant::get_type_by_name(p_hint_string);
 
 			if (subtype == Variant::VARIANT_MAX) {
-				subtype = Variant::OBJECT;
-				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
-				subtype_hint_string = p_hint_string;
+				// Nested container hint strings encode element types as numeric IDs (e.g. "2" for INT).
+				// `"0"` represents NIL / untyped (wildcard element).
+				if (p_hint_string.is_valid_int()) {
+					int numeric_type = p_hint_string.to_int();
+					if (numeric_type >= 0 && numeric_type < Variant::VARIANT_MAX) {
+						subtype = Variant::Type(numeric_type);
+					}
+				}
+				if (subtype == Variant::VARIANT_MAX) {
+					subtype = Variant::OBJECT;
+					subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+					subtype_hint_string = p_hint_string;
+				}
 			}
 		}
 	}
@@ -1204,9 +1286,19 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			key_subtype = Variant::get_type_by_name(key);
 
 			if (key_subtype == Variant::VARIANT_MAX) {
-				key_subtype = Variant::OBJECT;
-				key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
-				key_subtype_hint_string = key;
+				// Nested container hint strings encode element types as numeric IDs (e.g. "2" for INT).
+				// `"0"` represents NIL / untyped (wildcard element).
+				if (key.is_valid_int()) {
+					int numeric_type = key.to_int();
+					if (numeric_type >= 0 && numeric_type < Variant::VARIANT_MAX) {
+						key_subtype = Variant::Type(numeric_type);
+					}
+				}
+				if (key_subtype == Variant::VARIANT_MAX) {
+					key_subtype = Variant::OBJECT;
+					key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+					key_subtype_hint_string = key;
+				}
 			}
 		}
 
@@ -1232,9 +1324,19 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			value_subtype = Variant::get_type_by_name(value);
 
 			if (value_subtype == Variant::VARIANT_MAX) {
-				value_subtype = Variant::OBJECT;
-				value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
-				value_subtype_hint_string = value;
+				// Nested container hint strings encode element types as numeric IDs (e.g. "2" for INT).
+				// `"0"` represents NIL / untyped (wildcard element).
+				if (value.is_valid_int()) {
+					int numeric_type = value.to_int();
+					if (numeric_type >= 0 && numeric_type < Variant::VARIANT_MAX) {
+						value_subtype = Variant::Type(numeric_type);
+					}
+				}
+				if (value_subtype == Variant::VARIANT_MAX) {
+					value_subtype = Variant::OBJECT;
+					value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+					value_subtype_hint_string = value;
+				}
 			}
 		}
 

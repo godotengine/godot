@@ -386,7 +386,11 @@ uint32_t Dictionary::recursive_hash(int recursion_count) const {
 Array Dictionary::keys() const {
 	Array varr;
 	if (is_typed_key()) {
-		varr.set_typed(get_typed_key_builtin(), get_typed_key_class_name(), get_typed_key_script());
+		if (_p->typed_key.is_nested()) {
+			varr.set_typed(get_key_type());
+		} else {
+			varr.set_typed(get_typed_key_builtin(), get_typed_key_class_name(), get_typed_key_script());
+		}
 	}
 	if (_p->variant_map.is_empty()) {
 		return varr;
@@ -406,7 +410,11 @@ Array Dictionary::keys() const {
 Array Dictionary::values() const {
 	Array varr;
 	if (is_typed_value()) {
-		varr.set_typed(get_typed_value_builtin(), get_typed_value_class_name(), get_typed_value_script());
+		if (_p->typed_value.is_nested()) {
+			varr.set_typed(get_value_type());
+		} else {
+			varr.set_typed(get_typed_value_builtin(), get_typed_value_class_name(), get_typed_value_script());
+		}
 	}
 	if (_p->variant_map.is_empty()) {
 		return varr;
@@ -637,11 +645,57 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMod
 	return n;
 }
 
+ContainerTypeValidate Dictionary::convert_container_type(const ContainerType &p_container) {
+	ContainerTypeValidate validator;
+	validator.type = p_container.builtin_type;
+	validator.class_name = p_container.class_name;
+	validator.script = p_container.script;
+	validator.where = "NestedType";
+
+	for (const ContainerType &nested : p_container.nested_types) {
+		validator.nested_types.push_back(convert_container_type(nested));
+	}
+
+	return validator;
+}
+
+ContainerType Dictionary::convert_validator_to_container(const ContainerTypeValidate &p_validator) {
+	ContainerType type;
+	type.builtin_type = p_validator.type;
+	type.class_name = p_validator.class_name;
+	type.script = p_validator.script;
+
+	for (const ContainerTypeValidate &nested : p_validator.nested_types) {
+		type.nested_types.push_back(convert_validator_to_container(nested));
+	}
+
+	return type;
+}
+
 void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type) {
-	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_key_type.script);
+	Vector<ContainerTypeValidate> key_nested_validators;
+	for (const ContainerType &nested : p_key_type.nested_types) {
+		key_nested_validators.push_back(convert_container_type(nested));
+	}
+
+	Vector<ContainerTypeValidate> value_nested_validators;
+	for (const ContainerType &nested : p_value_type.nested_types) {
+		value_nested_validators.push_back(convert_container_type(nested));
+	}
+
+	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, key_nested_validators,
+			p_value_type.builtin_type, p_value_type.class_name, p_value_type.script, value_nested_validators);
 }
 
 void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
+	set_typed(p_key_type, p_key_class_name, p_key_script, Vector<ContainerTypeValidate>(),
+			p_value_type, p_value_class_name, p_value_script, Vector<ContainerTypeValidate>());
+}
+
+void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script,
+		const Vector<ContainerTypeValidate> &p_key_nested_types,
+		uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script,
+		const Vector<ContainerTypeValidate> &p_value_nested_types) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when dictionary has no more than one user.");
@@ -652,14 +706,33 @@ void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_na
 	Ref<Script> value_script = p_value_script;
 	ERR_FAIL_COND_MSG(value_script.is_valid() && p_value_class_name == StringName(), "Script class can only be set together with base class name.");
 
+	if (!p_key_nested_types.is_empty()) {
+		ERR_FAIL_COND_MSG(p_key_type != Variant::ARRAY && p_key_type != Variant::DICTIONARY,
+				"Nested types can only be set for Array or Dictionary key types.");
+		for (const ContainerTypeValidate &nested_type : p_key_nested_types) {
+			ERR_FAIL_COND_MSG(nested_type.get_depth() > MAX_CONTAINER_NESTING_DEPTH,
+					vformat("Nested key type depth exceeds maximum (%d levels).", MAX_CONTAINER_NESTING_DEPTH));
+		}
+	}
+	if (!p_value_nested_types.is_empty()) {
+		ERR_FAIL_COND_MSG(p_value_type != Variant::ARRAY && p_value_type != Variant::DICTIONARY,
+				"Nested types can only be set for Array or Dictionary value types.");
+		for (const ContainerTypeValidate &nested_type : p_value_nested_types) {
+			ERR_FAIL_COND_MSG(nested_type.get_depth() > MAX_CONTAINER_NESTING_DEPTH,
+					vformat("Nested value type depth exceeds maximum (%d levels).", MAX_CONTAINER_NESTING_DEPTH));
+		}
+	}
+
 	_p->typed_key.type = Variant::Type(p_key_type);
 	_p->typed_key.class_name = p_key_class_name;
 	_p->typed_key.script = key_script;
+	_p->typed_key.nested_types = p_key_nested_types;
 	_p->typed_key.where = "TypedDictionary.Key";
 
 	_p->typed_value.type = Variant::Type(p_value_type);
 	_p->typed_value.class_name = p_value_class_name;
 	_p->typed_value.script = value_script;
+	_p->typed_value.nested_types = p_value_nested_types;
 	_p->typed_value.where = "TypedDictionary.Value";
 }
 
@@ -692,19 +765,11 @@ bool Dictionary::is_same_typed_value(const Dictionary &p_other) const {
 }
 
 ContainerType Dictionary::get_key_type() const {
-	ContainerType type;
-	type.builtin_type = _p->typed_key.type;
-	type.class_name = _p->typed_key.class_name;
-	type.script = _p->typed_key.script;
-	return type;
+	return convert_validator_to_container(_p->typed_key);
 }
 
 ContainerType Dictionary::get_value_type() const {
-	ContainerType type;
-	type.builtin_type = _p->typed_value.type;
-	type.class_name = _p->typed_value.class_name;
-	type.script = _p->typed_value.script;
-	return type;
+	return convert_validator_to_container(_p->typed_value);
 }
 
 uint32_t Dictionary::get_typed_key_builtin() const {
