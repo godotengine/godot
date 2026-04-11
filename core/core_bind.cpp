@@ -1998,20 +1998,11 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 
 void Engine::register_singleton(const StringName &p_name, RequiredParam<Object> rp_instance) {
 	EXTRACT_PARAM_OR_FAIL(p_object, rp_instance);
-	ERR_FAIL_COND_MSG(has_singleton(p_name), vformat("Singleton already registered: '%s'.", String(p_name)));
-	ERR_FAIL_COND_MSG(!String(p_name).is_valid_ascii_identifier(), vformat("Singleton name is not a valid identifier: '%s'.", p_name));
-	::Engine::Singleton s;
-	s.class_name = p_name;
-	s.name = p_name;
-	s.ptr = p_object;
-	s.user_created = true;
-	::Engine::get_singleton()->add_singleton(s);
+	::Engine::get_singleton()->register_singleton(p_name, p_object);
 }
 
 void Engine::unregister_singleton(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!has_singleton(p_name), vformat("Attempt to remove unregistered singleton: '%s'.", String(p_name)));
-	ERR_FAIL_COND_MSG(!::Engine::get_singleton()->is_singleton_user_created(p_name), vformat("Attempt to remove non-user created singleton: '%s'.", String(p_name)));
-	::Engine::get_singleton()->remove_singleton(p_name);
+	::Engine::get_singleton()->unregister_singleton(p_name);
 }
 
 Vector<String> Engine::get_singleton_list() const {
