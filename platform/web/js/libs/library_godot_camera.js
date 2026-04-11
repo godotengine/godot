@@ -291,6 +291,10 @@ async function processVideoFrame(videoFrame) {
 			width: frameWidth,
 			height: frameHeight,
 		};
+	} catch (e) {
+		// Return the buffer to the pool so it is not permanently lost on error.
+		bufferPool.push(arrayBuffer);
+		throw e;
 	} finally {
 		videoFrame.close();
 	}
