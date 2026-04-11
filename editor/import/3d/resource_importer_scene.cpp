@@ -30,6 +30,7 @@
 
 #include "resource_importer_scene.h"
 
+#include "core/config/engine.h"
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
@@ -2971,6 +2972,17 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	}
 }
 
+void ResourceImporterScene::_generate_editor_preview_for_scene(const String &p_path, Node *p_scene) {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
+	ERR_FAIL_NULL_MSG(p_scene, "Scene is null, cannot generate preview.");
+
+	int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
+	EditorInterface::get_singleton()->make_scene_preview(p_path, p_scene, thumbnail_size);
+}
+
 Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_source_file.get_extension().to_lower();
@@ -3358,7 +3370,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
-		EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
+		_generate_editor_preview_for_scene(p_source_file, scene);
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}
