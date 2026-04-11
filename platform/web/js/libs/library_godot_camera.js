@@ -587,21 +587,26 @@ self.onmessage = async function(event) {
 								format: 'RGBA',
 							});
 
-							const dataPtr = GodotRuntime.malloc(pixelBuffer.length);
-							GodotRuntime.heapCopy(HEAPU8, pixelBuffer, dataPtr);
+							// Reuse cached Wasm heap buffer to avoid per-frame malloc/free.
+							if (GodotCamera._cachedDataSize !== pixelBuffer.length) {
+								if (GodotCamera._cachedDataPtr) {
+									GodotRuntime.free(GodotCamera._cachedDataPtr);
+								}
+								GodotCamera._cachedDataPtr = GodotRuntime.malloc(pixelBuffer.length);
+								GodotCamera._cachedDataSize = pixelBuffer.length;
+							}
+							GodotRuntime.heapCopy(HEAPU8, pixelBuffer, GodotCamera._cachedDataPtr);
 
 							GodotCamera.sendGetPixelDataCallback(
 								callback,
 								context,
-								dataPtr,
+								GodotCamera._cachedDataPtr,
 								pixelBuffer.length,
 								width,
 								height,
 								currentCamera.facingMode,
 								null
 							);
-
-							GodotRuntime.free(dataPtr);
 						} finally {
 							videoFrame.close();
 						}
@@ -829,21 +834,26 @@ self.onmessage = async function(event) {
 						const imageData = currentCamera.canvasContext.getImageData(0, 0, _width, _height);
 						const pixelData = imageData.data;
 
-						const dataPtr = GodotRuntime.malloc(pixelData.length);
-						GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
+						// Reuse cached Wasm heap buffer to avoid per-frame malloc/free.
+						if (GodotCamera._cachedDataSize !== pixelData.length) {
+							if (GodotCamera._cachedDataPtr) {
+								GodotRuntime.free(GodotCamera._cachedDataPtr);
+							}
+							GodotCamera._cachedDataPtr = GodotRuntime.malloc(pixelData.length);
+							GodotCamera._cachedDataSize = pixelData.length;
+						}
+						GodotRuntime.heapCopy(HEAPU8, pixelData, GodotCamera._cachedDataPtr);
 
 						GodotCamera.sendGetPixelDataCallback(
 							callback,
 							context,
-							dataPtr,
+							GodotCamera._cachedDataPtr,
 							pixelData.length,
 							_width,
 							_height,
 							currentCamera.facingMode,
 							null
 						);
-
-						GodotRuntime.free(dataPtr);
 					} catch (error) {
 						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, error.message);
 
