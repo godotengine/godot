@@ -1012,7 +1012,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("increment_highlight", "TabContainer", icons["scroll_button_right_hl"]);
 	theme->set_icon("decrement", "TabContainer", icons["scroll_button_left"]);
 	theme->set_icon("decrement_highlight", "TabContainer", icons["scroll_button_left_hl"]);
+	theme->set_icon("decrement_highlight", "TabContainer", icons["scroll_button_left_hl"]);
+	theme->set_icon("increment_vertical", "TabContainer", icons["scroll_button_down"]);
+	theme->set_icon("increment_vertical_highlight", "TabContainer", icons["scroll_button_down_hl"]);
+	theme->set_icon("decrement_vertical", "TabContainer", icons["scroll_button_up"]);
+	theme->set_icon("decrement_vertical_highlight", "TabContainer", icons["scroll_button_up_hl"]);
 	theme->set_icon("drop_mark", "TabContainer", icons["tabs_drop_mark"]);
+	theme->set_icon("vertical_drop_mark", "TabContainer", icons["vertical_tabs_drop_mark"]);
 	theme->set_icon("menu", "TabContainer", icons["tabs_menu"]);
 	theme->set_icon("menu_highlight", "TabContainer", icons["tabs_menu_hl"]);
 
@@ -1050,7 +1056,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("increment_highlight", "TabBar", icons["scroll_button_right_hl"]);
 	theme->set_icon("decrement", "TabBar", icons["scroll_button_left"]);
 	theme->set_icon("decrement_highlight", "TabBar", icons["scroll_button_left_hl"]);
+	theme->set_icon("increment_vertical", "TabBar", icons["scroll_button_down"]);
+	theme->set_icon("increment_vertical_highlight", "TabBar", icons["scroll_button_down_hl"]);
+	theme->set_icon("decrement_vertical", "TabBar", icons["scroll_button_up"]);
+	theme->set_icon("decrement_vertical_highlight", "TabBar", icons["scroll_button_up_hl"]);
 	theme->set_icon("drop_mark", "TabBar", icons["tabs_drop_mark"]);
+	theme->set_icon("vertical_drop_mark", "TabBar", icons["vertical_tabs_drop_mark"]);
 	theme->set_icon("close", "TabBar", icons["close"]);
 
 	theme->set_font(SceneStringName(font), "TabBar", Ref<Font>());

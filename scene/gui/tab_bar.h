@@ -116,6 +116,8 @@ private:
 	int rb_hover = -1;
 	bool rb_pressing = false;
 	bool tab_style_v_flip = false;
+	bool vertical = false;
+	bool vertical_buttons_on_left = false;
 
 	bool select_with_rmb = false;
 	bool deselect_enabled = false;
@@ -159,7 +161,12 @@ private:
 		Ref<Texture2D> increment_hl_icon;
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> increment_vertical_icon;
+		Ref<Texture2D> increment_vertical_hl_icon;
+		Ref<Texture2D> decrement_vertical_icon;
+		Ref<Texture2D> decrement_vertical_hl_icon;
 		Ref<Texture2D> drop_mark_icon;
+		Ref<Texture2D> vertical_drop_mark_icon;
 		Color drop_mark_color;
 
 		Ref<Font> font;
@@ -274,6 +281,13 @@ public:
 	bool get_clip_tabs() const;
 
 	void set_tab_style_v_flip(bool p_tab_style_v_flip);
+	bool get_tab_style_v_flip() const;
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
+
+	void set_vertical_buttons_on_left(bool p_enable);
+	bool is_vertical_buttons_on_left() const;
 
 	void move_tab(int p_from, int p_to);
 

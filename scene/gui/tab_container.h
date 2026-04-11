@@ -45,6 +45,8 @@ public:
 	enum TabPosition {
 		POSITION_TOP,
 		POSITION_BOTTOM,
+		POSITION_LEFT,
+		POSITION_RIGHT,
 		POSITION_MAX,
 	};
 
@@ -90,7 +92,12 @@ private:
 		Ref<Texture2D> increment_hl_icon;
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> increment_vertical_icon;
+		Ref<Texture2D> increment_vertical_hl_icon;
+		Ref<Texture2D> decrement_vertical_icon;
+		Ref<Texture2D> decrement_vertical_hl_icon;
 		Ref<Texture2D> drop_mark_icon;
+		Ref<Texture2D> vertical_drop_mark_icon;
 		Color drop_mark_color;
 
 		Color font_selected_color;
@@ -124,6 +131,7 @@ private:
 	HashMap<Node *, RID> tab_panels;
 
 	int _get_tab_height() const;
+	int _get_tab_width() const;
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
