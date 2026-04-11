@@ -116,7 +116,7 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 		}
 
 		CameraInfo info;
-		info.index = device_dict[KEY_INDEX];
+		info.index = _get_int_value(device_dict[KEY_INDEX]);
 		info.device_id = device_dict[KEY_ID];
 		info.label = device_dict[KEY_LABEL];
 
