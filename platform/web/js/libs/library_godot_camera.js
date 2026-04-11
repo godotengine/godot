@@ -1221,7 +1221,7 @@ self.onmessage = async function(event) {
 					}
 					cameras.delete(deviceId);
 				} else {
-					cameras.forEach((camera, id) => {
+					cameras.forEach((camera) => {
 						if (camera) {
 							GodotCamera.cleanupCamera(camera);
 						}
