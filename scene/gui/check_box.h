@@ -38,6 +38,7 @@ class CheckBox : public Button {
 	struct ThemeCache {
 		int h_separation = 0;
 		int check_v_offset = 0;
+		int icon_size = 0;
 		Ref<StyleBox> normal_style;
 
 		Ref<Texture2D> checked;
