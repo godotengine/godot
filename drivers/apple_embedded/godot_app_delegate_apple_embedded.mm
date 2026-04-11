@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_app_delegate.mm                                                 */
+/*  godot_app_delegate_apple_embedded.mm                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "godot_app_delegate.h"
+#import "godot_app_delegate_apple_embedded.h"
 
 #include "core/typedefs.h"
-#import "drivers/apple_embedded/app_delegate_service.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 
-@implementation GDTApplicationDelegate
+@implementation GDTAppDelegate
 
 static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 
@@ -43,7 +43,7 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 
 + (void)load {
 	services = [NSMutableArray new];
-	[services addObject:[GDTAppDelegateService new]];
+	// Add the specific GDTAppDelegateService subclass in each inheriting platform
 }
 
 + (void)addService:(GDTAppDelegateServiceProtocol *)service {
@@ -113,7 +113,7 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
 	UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
-	config.delegateClass = [GDTApplicationDelegate class];
+	config.delegateClass = [GDTAppDelegate class];
 	return config;
 }
 
@@ -409,6 +409,8 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 	}
 }
 
+#ifndef TVOS_ENABLED
+
 - (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL succeeded))completionHandler {
 	for (GDTAppDelegateServiceProtocol *service in services) {
 		if (![service respondsToSelector:_cmd]) {
@@ -418,6 +420,8 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 		[service application:application performActionForShortcutItem:shortcutItem completionHandler:completionHandler];
 	}
 }
+
+#endif
 
 // MARK: WatchKit
 

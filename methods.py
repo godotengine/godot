@@ -651,6 +651,14 @@ def detect_darwin_sdk_path(platform, env):
         sdk_name = "xrsimulator"
         var_name = "APPLE_SDK_PATH"
 
+    elif platform == "tvos":
+        sdk_name = "appletvos"
+        var_name = "APPLE_SDK_PATH"
+
+    elif platform == "tvosimulator":
+        sdk_name = "appletvsimulator"
+        var_name = "APPLE_SDK_PATH"
+
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 
@@ -667,7 +675,7 @@ def detect_darwin_sdk_path(platform, env):
 def is_apple_clang(env):
     import shlex
 
-    if env["platform"] not in ["macos", "ios"]:
+    if env["platform"] not in ["macos", "ios", "tvos"]:
         return False
     if not using_clang(env):
         return False
