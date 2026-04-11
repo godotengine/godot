@@ -135,7 +135,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ScriptTextEditor::EditMenusSTE::_update_breakpoint_list() {
+void ScriptTextEditor::EditMenusScTE::_update_breakpoint_list() {
 	breakpoints_menu->clear();
 	breakpoints_menu->reset_size();
 
@@ -171,7 +171,7 @@ void ScriptTextEditor::EditMenusSTE::_update_breakpoint_list() {
 	}
 }
 
-void ScriptTextEditor::EditMenusSTE::_breakpoint_item_pressed(int p_idx) {
+void ScriptTextEditor::EditMenusScTE::_breakpoint_item_pressed(int p_idx) {
 	TextEditorBase *script_text_editor = _get_active_editor();
 	ERR_FAIL_NULL(script_text_editor);
 	if (p_idx < 4) { // Any item before the separator.
@@ -181,7 +181,7 @@ void ScriptTextEditor::EditMenusSTE::_breakpoint_item_pressed(int p_idx) {
 	}
 }
 
-ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
+ScriptTextEditor::EditMenusScTE::EditMenusScTE(ScriptEditor *p_se) : EditMenusCEB(p_se) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	_popup_move_item(EDIT_DUPLICATE_LINES, edit_menu->get_popup());
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_function"), SEARCH_LOCATE_FUNCTION);
@@ -198,8 +198,8 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 
 	breakpoints_menu = memnew(PopupMenu);
 	goto_menu->get_popup()->add_submenu_node_item(TTRC("Breakpoints"), breakpoints_menu);
-	breakpoints_menu->connect("about_to_popup", callable_mp(this, &EditMenusSTE::_update_breakpoint_list));
-	breakpoints_menu->connect("index_pressed", callable_mp(this, &EditMenusSTE::_breakpoint_item_pressed));
+	breakpoints_menu->connect("about_to_popup", callable_mp(this, &EditMenusScTE::_update_breakpoint_list));
+	breakpoints_menu->connect("index_pressed", callable_mp(this, &EditMenusScTE::_breakpoint_item_pressed));
 
 	// Update immediately for shortcuts.
 	_update_breakpoint_list();
@@ -1148,11 +1148,6 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 }
 
-void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
-	ScriptTextEditor *ste = (ScriptTextEditor *)p_ud;
-	ste->_code_complete_script(p_code, r_options, r_force);
-}
-
 void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
 	if (color_panel->is_visible()) {
 		return;
@@ -1858,7 +1853,7 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 			}
 		} break;
 		default: {
-			if (TextEditorBase::_edit_option(p_op)) {
+			if (CodeEditorBase::_edit_option(p_op)) {
 				return true;
 			}
 			if (p_op >= EditorContextMenuPlugin::BASE_ID) {
@@ -1921,13 +1916,6 @@ void ScriptTextEditor::_notification(int p_what) {
 			}
 		} break;
 	}
-}
-
-Control *ScriptTextEditor::get_edit_menu() {
-	if (!edit_menus) {
-		edit_menus = memnew(EditMenusSTE);
-	}
-	return edit_menus;
 }
 
 PackedInt32Array ScriptTextEditor::get_breakpoints() {
@@ -2720,7 +2708,8 @@ void ScriptTextEditor::_enable_code_editor() {
 }
 
 ScriptTextEditor::ScriptTextEditor() {
-	code_editor->set_code_complete_func(_code_complete_scripts, this);
+	editor_box->add_child(code_editor);
+
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
@@ -2760,7 +2749,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->add_child(drag_info_label);
 	drag_info_label->hide();
 
-	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(true);
 
 	color_panel = memnew(PopupPanel);

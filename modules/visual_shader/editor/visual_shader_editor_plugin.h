@@ -33,7 +33,7 @@
 #include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "editor/shader/shader_editor.h"
+#include "editor/script/script_editor_base.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/material.h"
 #include "scene/resources/syntax_highlighter.h"
@@ -197,8 +197,8 @@ public:
 	Variant get_edited_property() const;
 };
 
-class VisualShaderEditor : public ShaderEditor {
-	GDCLASS(VisualShaderEditor, ShaderEditor);
+class VisualShaderEditor : public ScriptEditorBase {
+	GDCLASS(VisualShaderEditor, ScriptEditorBase);
 	friend class VisualShaderGraphPlugin;
 
 	Ref<ConfigFile> vs_editor_cache; // Keeps the graph offsets and zoom levels for each VisualShader that has been edited.
@@ -210,7 +210,6 @@ class VisualShaderEditor : public ShaderEditor {
 	Ref<VisualShaderEditedProperty> edited_property_holder;
 
 	MaterialEditor *material_editor = nullptr;
-	Ref<VisualShader> visual_shader;
 	Ref<ShaderMaterial> preview_material;
 	Ref<Environment> env;
 	String param_filter_name;
@@ -654,20 +653,25 @@ class VisualShaderEditor : public ShaderEditor {
 	void _param_selected();
 	void _param_unselected();
 
-	void _help_open();
+	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	virtual void edit_shader(const Ref<Shader> &p_shader) override;
-	virtual void use_menu_bar(MenuButton *p_file_menu) override;
-	virtual void apply_shaders() override;
-	virtual bool is_unsaved() const override;
-	virtual void save_external_data(const String &p_str = "") override;
+	virtual String get_doc_url_path() override { return "/tutorials/shaders/visual_shaders.html"; }
+
+	virtual void set_edited_resource(const Ref<Resource> &p_shader) override;
+	virtual void apply_code() override;
+	virtual bool is_unsaved() override;
 	virtual void validate_script() override;
 
+	virtual void ensure_focus() override { graph->grab_focus(true); }
+
+	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
+
+	virtual void update_toggle_files_button() override;
 	void save_editor_layout();
 
 	void set_current_shader_type(VisualShader::Type p_type);
@@ -680,14 +684,11 @@ public:
 
 	void clear_custom_types();
 	void add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
 
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
 
-	virtual void update_toggle_files_button() override;
-
-	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
+	static void register_editor();
 
 	VisualShaderEditor();
 	~VisualShaderEditor();
