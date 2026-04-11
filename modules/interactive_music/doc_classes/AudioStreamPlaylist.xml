@@ -31,6 +31,13 @@
 				Sets the stream at playback position index.
 			</description>
 		</method>
+		<method name="set_loop_stream">
+			<return type="void" />
+			<param index="0" name="loop" type="bool" />
+			<description>
+				Sets the currently-playing stream to loop. The playlist will not advance while true.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="fade_time" type="float" setter="set_fade_time" getter="get_fade_time" default="0.3">
@@ -38,6 +45,9 @@
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="true">
 			If [code]true[/code], the playlist will loop, otherwise the playlist will end when the last stream is finished.
+		</member>
+		<member name="loop_stream" type="bool" setter="set_loop_stream" getter="has_loop_stream" default="false">
+			If [code]true[/code], the current stream will loop, otherwise when the stream ends, the next one is played. The audio file loop import setting is not used inside the playlist.
 		</member>
 		<member name="shuffle" type="bool" setter="set_shuffle" getter="get_shuffle" default="false">
 			If [code]true[/code], the playlist will shuffle each time playback starts and each time it loops.
