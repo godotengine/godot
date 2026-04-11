@@ -414,17 +414,6 @@ self.onmessage = async function(event) {
 		},
 
 		/**
-		 * Ensures cameras Map is properly initialized.
-		 * @returns {Map<string, CameraResource>}
-		 */
-		ensureCamerasMap: function () {
-			if (!this.cameras || !(this.cameras instanceof Map)) {
-				this.cameras = new Map();
-			}
-			return this.cameras;
-		},
-
-		/**
 		 * Cleanup all camera resources.
 		 * @returns {void}
 		 */
@@ -560,7 +549,7 @@ self.onmessage = async function(event) {
 			camera.frameReader = camera.trackProcessor.readable.getReader();
 
 			const processFrames = async () => {
-				const cameras = GodotCamera.ensureCamerasMap();
+				const cameras = GodotCamera.cameras;
 				try {
 					while (true) {
 						const currentCamera = cameras.get(cameraId);
@@ -722,7 +711,7 @@ self.onmessage = async function(event) {
 
 			// Start the frame reading loop
 			const processFrames = async () => {
-				const cameras = GodotCamera.ensureCamerasMap();
+				const cameras = GodotCamera.cameras;
 				try {
 					while (true) {
 						const currentCamera = cameras.get(cameraId);
@@ -790,7 +779,7 @@ self.onmessage = async function(event) {
 			}
 
 			const captureFrame = () => {
-				const cameras = GodotCamera.ensureCamerasMap();
+				const cameras = GodotCamera.cameras;
 				const currentCamera = cameras.get(cameraId);
 				if (!currentCamera) {
 					return;
@@ -943,7 +932,7 @@ self.onmessage = async function(event) {
 
 			// Start the frame capture loop.
 			const captureFrame = () => {
-				const cameras = GodotCamera.ensureCamerasMap();
+				const cameras = GodotCamera.cameras;
 				const currentCamera = cameras.get(cameraId);
 				if (!currentCamera || !currentCamera.useWorker || !currentCamera.worker) {
 					return;
@@ -1118,8 +1107,8 @@ self.onmessage = async function(event) {
 				const cameraId = deviceId || 'default';
 
 				try {
-					const camerasMap = GodotCamera.ensureCamerasMap();
-					let camera = camerasMap.get(cameraId);
+					const cameras = GodotCamera.cameras;
+					let camera = cameras.get(cameraId);
 					if (!camera) {
 						camera = {
 							video: null,
@@ -1137,7 +1126,7 @@ self.onmessage = async function(event) {
 							useWorker: false,
 							facingMode: 0,
 						};
-						camerasMap.set(cameraId, camera);
+						cameras.set(cameraId, camera);
 					}
 
 					if (!camera.stream) {
@@ -1223,7 +1212,7 @@ self.onmessage = async function(event) {
 			 * @returns {void}
 			 */
 			stop: function (deviceId) {
-				const cameras = GodotCamera.ensureCamerasMap();
+				const cameras = GodotCamera.cameras;
 
 				if (deviceId && cameras.has(deviceId)) {
 					const camera = cameras.get(deviceId);
