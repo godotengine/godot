@@ -87,6 +87,21 @@ const GodotCamera = {
 		 */
 		_cachedDataSize: 0,
 
+		/**
+		 * Copies pixel data into the cached Wasm heap buffer, reallocating if the size changed.
+		 * @param {Uint8Array} p_data - Pixel data to copy.
+		 */
+		_heapCopyPixelData(p_data) {
+			if (GodotCamera._cachedDataSize !== p_data.length) {
+				if (GodotCamera._cachedDataPtr) {
+					GodotRuntime.free(GodotCamera._cachedDataPtr);
+				}
+				GodotCamera._cachedDataPtr = GodotRuntime.malloc(p_data.length);
+				GodotCamera._cachedDataSize = p_data.length;
+			}
+			GodotRuntime.heapCopy(HEAPU8, p_data, GodotCamera._cachedDataPtr);
+		},
+
 		defaultMinimumCapabilities: {
 			'width': {
 				'min': 1,
@@ -479,15 +494,7 @@ self.onmessage = async function(event) {
 		handleWorkerFrameData: function (eventData, callback, context, worker) {
 			const { pixelData, width, height, facingMode } = eventData;
 
-			// Reuse cached Wasm heap buffer to avoid per-frame malloc/free.
-			if (GodotCamera._cachedDataSize !== pixelData.length) {
-				if (GodotCamera._cachedDataPtr) {
-					GodotRuntime.free(GodotCamera._cachedDataPtr);
-				}
-				GodotCamera._cachedDataPtr = GodotRuntime.malloc(pixelData.length);
-				GodotCamera._cachedDataSize = pixelData.length;
-			}
-			GodotRuntime.heapCopy(HEAPU8, pixelData, GodotCamera._cachedDataPtr);
+			GodotCamera._heapCopyPixelData(pixelData);
 
 			GodotCamera.sendGetPixelDataCallback(
 				callback,
@@ -576,15 +583,7 @@ self.onmessage = async function(event) {
 								format: 'RGBA',
 							});
 
-							// Reuse cached Wasm heap buffer to avoid per-frame malloc/free.
-							if (GodotCamera._cachedDataSize !== pixelBuffer.length) {
-								if (GodotCamera._cachedDataPtr) {
-									GodotRuntime.free(GodotCamera._cachedDataPtr);
-								}
-								GodotCamera._cachedDataPtr = GodotRuntime.malloc(pixelBuffer.length);
-								GodotCamera._cachedDataSize = pixelBuffer.length;
-							}
-							GodotRuntime.heapCopy(HEAPU8, pixelBuffer, GodotCamera._cachedDataPtr);
+							GodotCamera._heapCopyPixelData(pixelBuffer);
 
 							GodotCamera.sendGetPixelDataCallback(
 								callback,
@@ -823,15 +822,7 @@ self.onmessage = async function(event) {
 						const imageData = currentCamera.canvasContext.getImageData(0, 0, _width, _height);
 						const pixelData = imageData.data;
 
-						// Reuse cached Wasm heap buffer to avoid per-frame malloc/free.
-						if (GodotCamera._cachedDataSize !== pixelData.length) {
-							if (GodotCamera._cachedDataPtr) {
-								GodotRuntime.free(GodotCamera._cachedDataPtr);
-							}
-							GodotCamera._cachedDataPtr = GodotRuntime.malloc(pixelData.length);
-							GodotCamera._cachedDataSize = pixelData.length;
-						}
-						GodotRuntime.heapCopy(HEAPU8, pixelData, GodotCamera._cachedDataPtr);
+						GodotCamera._heapCopyPixelData(pixelData);
 
 						GodotCamera.sendGetPixelDataCallback(
 							callback,
