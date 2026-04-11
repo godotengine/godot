@@ -1724,6 +1724,7 @@ void Curve3D::_bake() const {
 			up_write[0] = frame_prev.get_column(1);
 		}
 
+		Vector3 sticky_up = frame_prev.get_column(1);
 		// Calculate the Parallel Transport Frame.
 		for (int idx = 1; idx < point_count; idx++) {
 			Vector3 forward = forward_ptr[idx];
@@ -1732,7 +1733,14 @@ void Curve3D::_bake() const {
 			rotate.rotate_to_align(-frame_prev.get_column(2), forward);
 			frame = rotate * frame_prev;
 			frame.orthonormalize(); // Guard against float error accumulation.
-
+			if (up_vector_sticky) {
+				if (sticky_up.angle_to(frame.get_column(1)) >= Math::PI * 0.5) {
+					sticky_up = frame.get_column(1);
+				} else {
+					Vector3 tangent = -frame.get_column(2);
+					frame = Basis::looking_at(tangent, sticky_up);
+				}
+			}
 			up_write[idx] = frame.get_column(1);
 			frame_prev = frame;
 		}
@@ -2169,6 +2177,15 @@ bool Curve3D::is_up_vector_enabled() const {
 	return up_vector_enabled;
 }
 
+void Curve3D::set_up_vector_sticky(bool p_sticky) {
+	up_vector_sticky = p_sticky;
+	mark_dirty();
+}
+
+bool Curve3D::is_up_vector_sticky() const {
+	return up_vector_sticky;
+}
+
 Dictionary Curve3D::_get_data() const {
 	Dictionary dc;
 
@@ -2354,6 +2371,8 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bake_interval"), &Curve3D::get_bake_interval);
 	ClassDB::bind_method(D_METHOD("set_up_vector_enabled", "enable"), &Curve3D::set_up_vector_enabled);
 	ClassDB::bind_method(D_METHOD("is_up_vector_enabled"), &Curve3D::is_up_vector_enabled);
+	ClassDB::bind_method(D_METHOD("set_up_vector_sticky", "sticky"), &Curve3D::set_up_vector_sticky);
+	ClassDB::bind_method(D_METHOD("is_up_vector_sticky"), &Curve3D::is_up_vector_sticky);
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve3D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("sample_baked", "offset", "cubic"), &Curve3D::sample_baked, DEFVAL(0.0), DEFVAL(false));
@@ -2378,6 +2397,7 @@ void Curve3D::_bind_methods() {
 
 	ADD_GROUP("Up Vector", "up_vector_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_sticky"), "set_up_vector_sticky", "is_up_vector_sticky");
 
 	Point defaults;
 
