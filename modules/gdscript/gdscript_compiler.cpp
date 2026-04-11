@@ -2702,6 +2702,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	parsing_classes.insert(p_script);
 
+#ifdef DEBUG_ENABLED
+	p_script->old_member_indices = p_script->member_indices;
+#endif // DEBUG_ENABLED
+
 	p_script->clearing = true;
 
 	p_script->cancel_pending_functions(true);
@@ -3100,6 +3104,10 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	}
 
 	p_script->_static_default_init();
+
+#ifdef DEBUG_ENABLED
+	p_script->old_member_indices.clear();
+#endif // DEBUG_ENABLED
 
 	p_script->valid = true;
 	return OK;
