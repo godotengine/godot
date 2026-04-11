@@ -33,7 +33,7 @@
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 
-// Shared camera data types — kept in a platform/web-level header so this
+// Shared camera data types, kept in a platform/web-level header so this
 // module does not need to include the full CameraDriverWeb driver header.
 #include "platform/web/camera_types_web.h"
 
