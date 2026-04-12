@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "scene/resources/audio_stream_wav.h"
 #include "servers/audio/audio_effect.h"
@@ -43,6 +44,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 
 	bool is_recording;
 	Thread io_thread;
+	Mutex recording_lock;
 
 	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
