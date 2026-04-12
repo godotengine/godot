@@ -6663,7 +6663,7 @@ void EditorNode::_proceed_closing_scene_tabs() {
 	}
 	int tab_idx = E->get();
 	tabs_to_close.pop_front();
-	
+
 	ERR_FAIL_COND(tab_idx < 0);
 
 	_scene_tab_closed(tab_idx);
