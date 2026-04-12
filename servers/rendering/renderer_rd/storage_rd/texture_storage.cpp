@@ -3703,6 +3703,9 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 			continue;
 		}
 		Decal *decal = decal_owner.get_or_null(decal_instance->decal);
+		if (!decal) {
+			continue;
+		}
 
 		Transform3D xform = decal_instance->transform;
 
