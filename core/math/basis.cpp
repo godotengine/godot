@@ -828,6 +828,12 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 
 void Basis::set_quaternion(const Quaternion &p_quaternion) {
 	real_t d = p_quaternion.length_squared();
+	if (d == 0.0f) {
+		set(1.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 1.0f);
+		return;
+	}
 	real_t s = 2.0f / d;
 	real_t xs = p_quaternion.x * s, ys = p_quaternion.y * s, zs = p_quaternion.z * s;
 	real_t wx = p_quaternion.w * xs, wy = p_quaternion.w * ys, wz = p_quaternion.w * zs;
