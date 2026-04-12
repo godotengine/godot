@@ -2565,7 +2565,7 @@ void RenderingDevice::_texture_create_reinterpret_buffer(Texture *p_texture) {
 	uint64_t transfer_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
 	uint32_t pixel_bytes = get_image_format_pixel_size(p_texture->format);
 	uint32_t row_pitch = STEPIFY(p_texture->width * pixel_bytes, row_pitch_step);
-	uint64_t buffer_size = STEPIFY(pixel_bytes * row_pitch * p_texture->height * p_texture->depth, transfer_alignment);
+	uint64_t buffer_size = STEPIFY((uint64_t)row_pitch * p_texture->height * p_texture->depth, transfer_alignment);
 	p_texture->shared_fallback->buffer = driver->buffer_create(buffer_size, RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
 	buffer_memory += driver->buffer_get_allocation_size(p_texture->shared_fallback->buffer);
 
