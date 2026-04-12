@@ -16,14 +16,14 @@
 				Changes to a specific stream within the playlist (by index). Sends an error to the console if [param stream_index] is out of bounds.
 			</description>
 		</method>
-		<method name="get_current_stream_index">
+		<method name="get_current_stream_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Get the currently playing audio stream index.
 			</description>
 		</method>
-		<method name="get_stream_playback_position">
-			<return type="int" />
+		<method name="get_stream_playback_position" qualifiers="const">
+			<return type="float" />
 			<description>
 				Return the playback position of the currently-playing stream. This is different from the [code]get_playback_position()[/code]
 				which returns the playback position of the entire playlist.
