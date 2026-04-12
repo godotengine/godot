@@ -536,7 +536,7 @@ void XMLParser::skip_section() {
 
 void XMLParser::close() {
 	if (data_copy) {
-		memdelete_arr(data);
+		memdelete_arr(data_copy);
 		data_copy = nullptr;
 	}
 	data = nullptr;
