@@ -320,13 +320,9 @@ public:
 	virtual void flush_queries() override;
 	virtual void finish() override;
 
-	virtual bool is_flushing_queries() const override {
-		return physics_server_2d->is_flushing_queries();
-	}
+	FUNC0RC(bool, is_flushing_queries)
 
-	int get_process_info(ProcessInfo p_info) override {
-		return physics_server_2d->get_process_info(p_info);
-	}
+	FUNC1R(int, get_process_info, ProcessInfo)
 
 	PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread);
 	~PhysicsServer2DWrapMT();

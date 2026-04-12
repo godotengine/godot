@@ -403,13 +403,9 @@ public:
 	virtual void flush_queries() override;
 	virtual void finish() override;
 
-	virtual bool is_flushing_queries() const override {
-		return physics_server_3d->is_flushing_queries();
-	}
+	FUNC0RC(bool, is_flushing_queries)
 
-	int get_process_info(ProcessInfo p_info) override {
-		return physics_server_3d->get_process_info(p_info);
-	}
+	FUNC1R(int, get_process_info, ProcessInfo)
 
 	PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread);
 	~PhysicsServer3DWrapMT();
