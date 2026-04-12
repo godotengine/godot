@@ -3348,6 +3348,10 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			hash_compare_packed_array(_data.packed_array, p_variant._data.packed_array, Vector4, hash_compare_vector4);
 		} break;
 
+		case OBJECT: {
+			return _get_obj().id == p_variant._get_obj().id;
+		} break;
+
 		default:
 			bool v;
 			Variant r;
