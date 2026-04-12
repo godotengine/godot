@@ -101,7 +101,7 @@ bool CharacterBody2D::move_and_slide() {
 	}
 
 	// Compute real velocity.
-	real_velocity = get_position_delta() / delta;
+	real_velocity = delta > 0 ? get_position_delta() / delta : Vector2();
 
 	if (platform_on_leave != PLATFORM_ON_LEAVE_DO_NOTHING) {
 		// Add last platform velocity when just left a moving platform.
