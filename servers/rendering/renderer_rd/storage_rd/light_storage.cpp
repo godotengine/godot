@@ -591,6 +591,9 @@ void LightStorage::free_light_data() {
 }
 
 void LightStorage::set_max_lights(const uint32_t p_max_lights) {
+	if (omni_lights) {
+		free_light_data();
+	}
 	max_lights = p_max_lights;
 
 	uint32_t light_buffer_size = max_lights * sizeof(LightData);
@@ -1741,6 +1744,9 @@ void LightStorage::free_reflection_data() {
 }
 
 void LightStorage::set_max_reflection_probes(const uint32_t p_max_reflection_probes) {
+	if (reflections) {
+		free_reflection_data();
+	}
 	max_reflections = p_max_reflection_probes;
 	reflections = memnew_arr(ReflectionData, max_reflections);
 	reflection_sort = memnew_arr(ReflectionProbeInstanceSort, max_reflections);
