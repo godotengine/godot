@@ -57,7 +57,15 @@ bool CharacterBody2D::move_and_slide() {
 		}
 		if (!excluded) {
 			//this approach makes sure there is less delay between the actual body velocity and the one we saved
-			PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(platform_rid);
+			PhysicsDirectBodyState2D *bs = nullptr;
+
+			// We need to check the platform_rid object still exists before accessing.
+			// A valid RID is no guarantee that the object has not been deleted.
+			// We can only perform the ObjectDB lifetime check on Object derived objects.
+			if (platform_object_id.is_null() || ObjectDB::get_instance(platform_object_id)) {
+				bs = PhysicsServer2D::get_singleton()->body_get_direct_state(platform_rid);
+			}
+
 			if (bs) {
 				Vector2 local_position = gt.columns[2] - bs->get_transform().columns[2];
 				current_platform_velocity = bs->get_velocity_at_local_position(local_position);
