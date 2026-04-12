@@ -32,6 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/object/class_db.h"
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 
 void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
@@ -80,6 +81,8 @@ void AudioEffectRecordInstance::_io_thread_process() {
 }
 
 void AudioEffectRecordInstance::_io_store_buffer() {
+	MutexLock lock(recording_lock);
+
 	int to_read = ring_buffer_pos - ring_buffer_read_pos;
 
 	AudioFrame *rb_buf = ring_buffer.ptrw();
@@ -175,6 +178,7 @@ void AudioEffectRecord::set_recording_active(bool p_record) {
 		current_instance->init();
 	} else {
 		if (current_instance.is_valid()) {
+			MutexLock lock(current_instance->recording_lock);
 			current_instance->is_recording = false;
 		}
 	}
@@ -197,6 +201,8 @@ AudioStreamWAV::Format AudioEffectRecord::get_format() const {
 }
 
 Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
+	MutexLock lock(current_instance->recording_lock);
+
 	AudioStreamWAV::Format dst_format = format;
 	bool stereo = true; //forcing mono is not implemented
 
