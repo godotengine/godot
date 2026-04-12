@@ -511,7 +511,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<uint8_t> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			uint8_t *w = array.ptrw();
 			f->get_buffer(w, len);
 			_advance_padding(len);
@@ -523,7 +523,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<int32_t> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			int32_t *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(int32_t));
 #ifdef BIG_ENDIAN_ENABLED
@@ -542,7 +542,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<int64_t> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			int64_t *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(int64_t));
 #ifdef BIG_ENDIAN_ENABLED
@@ -561,7 +561,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<float> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			float *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(float));
 #ifdef BIG_ENDIAN_ENABLED
@@ -580,7 +580,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<double> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			double *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(double));
 #ifdef BIG_ENDIAN_ENABLED
@@ -598,7 +598,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		case VARIANT_PACKED_STRING_ARRAY: {
 			uint32_t len = f->get_32();
 			Vector<String> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			String *w = array.ptrw();
 			for (uint32_t i = 0; i < len; i++) {
 				w[i] = get_unicode_string();
@@ -611,7 +611,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<Vector2> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			Vector2 *w = array.ptrw();
 			static_assert(sizeof(Vector2) == 2 * sizeof(real_t));
 			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 2);
@@ -624,7 +624,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<Vector3> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			Vector3 *w = array.ptrw();
 			static_assert(sizeof(Vector3) == 3 * sizeof(real_t));
 			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 3);
@@ -637,7 +637,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<Color> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			Color *w = array.ptrw();
 			// Colors always use `float` even with double-precision support enabled
 			static_assert(sizeof(Color) == 4 * sizeof(float));
@@ -658,7 +658,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 
 			Vector<Vector4> array;
-			array.resize(len);
+			ERR_FAIL_COND_V(array.resize(len) != OK, ERR_OUT_OF_MEMORY);
 			Vector4 *w = array.ptrw();
 			static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
 			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 4);
@@ -916,10 +916,13 @@ static void save_ustring(Ref<FileAccess> f, const String &p_string) {
 
 static String get_ustring(Ref<FileAccess> f) {
 	int len = f->get_32();
+	if (len == 0) {
+		return String();
+	}
 	Vector<char> str_buf;
-	str_buf.resize(len);
-	f->get_buffer((uint8_t *)&str_buf[0], len);
-	return String::utf8(&str_buf[0], len);
+	ERR_FAIL_COND_V(str_buf.resize(len) != OK, String());
+	f->get_buffer((uint8_t *)str_buf.ptrw(), len);
+	return String::utf8(str_buf.ptr(), len);
 }
 
 String ResourceLoaderBinary::get_unicode_string() {
