@@ -915,11 +915,13 @@ void AudioServer::add_bus(int p_at_pos) {
 
 	bus_map[attempt] = bus;
 
+	lock();
 	if (p_at_pos == -1) {
 		buses.push_back(bus);
 	} else {
 		buses.insert(p_at_pos, bus);
 	}
+	unlock();
 
 	AudioDriver::get_singleton()->add_sample_bus(p_at_pos);
 
@@ -937,6 +939,8 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 	}
 
 	Bus *bus = buses[p_bus];
+
+	lock();
 	buses.remove_at(p_bus);
 
 	if (p_to_pos == -1) {
@@ -946,6 +950,7 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 	} else {
 		buses.insert(p_to_pos - 1, bus);
 	}
+	unlock();
 
 	AudioDriver::get_singleton()->move_sample_bus(p_bus, p_to_pos);
 
