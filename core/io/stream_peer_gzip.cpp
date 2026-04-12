@@ -97,7 +97,11 @@ Error StreamPeerGZIP::_start(bool p_compress, bool p_is_deflate, int buffer_size
 	} else {
 		err = inflateInit2(&strm, window_bits);
 	}
-	ERR_FAIL_COND_V(err != Z_OK, FAILED);
+	if (err != Z_OK) {
+		memfree(ctx);
+		ctx = nullptr;
+		ERR_FAIL_V(FAILED);
+	}
 	return OK;
 }
 
