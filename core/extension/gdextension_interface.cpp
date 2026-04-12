@@ -1363,21 +1363,27 @@ static GDExtensionObjectPtr gdextension_global_get_singleton(GDExtensionConstStr
 }
 
 static void *gdextension_object_get_instance_binding(GDExtensionObjectPtr p_object, void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
+	if (!p_object) {
+		return nullptr;
+	}
 	Object *o = (Object *)p_object;
 	return o->get_instance_binding(p_token, p_callbacks);
 }
 
 static void gdextension_object_set_instance_binding(GDExtensionObjectPtr p_object, void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
+	ERR_FAIL_NULL(p_object);
 	Object *o = (Object *)p_object;
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
 }
 
 static void gdextension_object_free_instance_binding(GDExtensionObjectPtr p_object, void *p_token) {
+	ERR_FAIL_NULL(p_object);
 	Object *o = (Object *)p_object;
 	o->free_instance_binding(p_token);
 }
 
 static void gdextension_object_set_instance(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance) {
+	ERR_FAIL_NULL(p_object);
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	Object *o = (Object *)p_object;
 	ClassDB::set_object_extension_instance(o, classname, p_instance);
@@ -1410,11 +1416,17 @@ static GDExtensionObjectPtr gdextension_object_cast_to(GDExtensionConstObjectPtr
 }
 
 static GDObjectInstanceID gdextension_object_get_instance_id(GDExtensionConstObjectPtr p_object) {
+	if (!p_object) {
+		return 0;
+	}
 	const Object *o = (const Object *)p_object;
 	return (GDObjectInstanceID)o->get_instance_id();
 }
 
 static GDExtensionBool gdextension_object_has_script_method(GDExtensionConstObjectPtr p_object, GDExtensionConstStringNamePtr p_method) {
+	if (!p_object) {
+		return false;
+	}
 	Object *o = (Object *)p_object;
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 
@@ -1426,6 +1438,7 @@ static GDExtensionBool gdextension_object_has_script_method(GDExtensionConstObje
 }
 
 static void gdextension_object_call_script_method(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
+	ERR_FAIL_NULL(p_object);
 	Object *o = (Object *)p_object;
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
 	const Variant **args = (const Variant **)p_args;
