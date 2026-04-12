@@ -95,7 +95,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	freqPerBin = sampleRate/(double)fftFrameSize;
 	expct = 2.*Math::PI*(double)stepSize/(double)fftFrameSize;
 	inFifoLatency = fftFrameSize-stepSize;
-	if (gRover == 0) { gRover = inFifoLatency;
+	if (gRover == 0 || gRover >= fftFrameSize) { gRover = inFifoLatency;
 }
 
 	/* initialize our static arrays */
