@@ -198,9 +198,11 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 			}
 		}
 
-		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidBodyInOut));
+		LocalVector<_RigidBodyInOut> toadd;
+		toadd.resize(p_state->get_contact_count());
 		int toadd_count = 0;
-		RigidBody3D_RemoveAction *toremove = (RigidBody3D_RemoveAction *)alloca(rc * sizeof(RigidBody3D_RemoveAction));
+		LocalVector<RigidBody3D_RemoveAction> toremove;
+		toremove.resize(rc);
 		int toremove_count = 0;
 
 		//put the ones to add
@@ -213,10 +215,10 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(col_obj);
 			if (!E) {
-				toadd[toadd_count].rid = col_rid;
-				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = col_obj;
-				toadd[toadd_count].shape = col_shape;
+				toadd.ptr()[toadd_count].rid = col_rid;
+				toadd.ptr()[toadd_count].local_shape = local_shape;
+				toadd.ptr()[toadd_count].id = col_obj;
+				toadd.ptr()[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}
@@ -224,10 +226,10 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 			ShapePair sp(col_shape, local_shape);
 			int idx = E->value.shapes.find(sp);
 			if (idx == -1) {
-				toadd[toadd_count].rid = col_rid;
-				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = col_obj;
-				toadd[toadd_count].shape = col_shape;
+				toadd.ptr()[toadd_count].rid = col_rid;
+				toadd.ptr()[toadd_count].local_shape = local_shape;
+				toadd.ptr()[toadd_count].id = col_obj;
+				toadd.ptr()[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}
@@ -240,9 +242,9 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
 			for (int i = 0; i < E.value.shapes.size(); i++) {
 				if (!E.value.shapes[i].tagged) {
-					toremove[toremove_count].rid = E.value.rid;
-					toremove[toremove_count].body_id = E.key;
-					toremove[toremove_count].pair = E.value.shapes[i];
+					toremove.ptr()[toremove_count].rid = E.value.rid;
+					toremove.ptr()[toremove_count].body_id = E.key;
+					toremove.ptr()[toremove_count].pair = E.value.shapes[i];
 					toremove_count++;
 				}
 			}
@@ -251,13 +253,13 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		//process removals
 
 		for (int i = 0; i < toremove_count; i++) {
-			_body_inout(0, toremove[i].rid, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
+			_body_inout(0, toremove.ptr()[i].rid, toremove.ptr()[i].body_id, toremove.ptr()[i].pair.body_shape, toremove.ptr()[i].pair.local_shape);
 		}
 
 		//process additions
 
 		for (int i = 0; i < toadd_count; i++) {
-			_body_inout(1, toadd[i].rid, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
+			_body_inout(1, toadd.ptr()[i].rid, toadd.ptr()[i].id, toadd.ptr()[i].shape, toadd.ptr()[i].local_shape);
 		}
 
 		contact_monitor->locked = false;
