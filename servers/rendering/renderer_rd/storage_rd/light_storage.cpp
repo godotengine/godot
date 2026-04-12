@@ -1762,6 +1762,9 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 			continue;
 		}
 		ReflectionProbe *probe = reflection_probe_owner.get_or_null(rpi->probe);
+		if (!probe) {
+			continue;
+		}
 		Vector3 extents = probe->size / 2;
 		float probe_size = extents.length();
 
@@ -1786,6 +1789,9 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		}
 
 		ReflectionProbe *probe = reflection_probe_owner.get_or_null(rpi->probe);
+		if (!probe) {
+			continue;
+		}
 
 		ReflectionData &reflection_ubo = reflections[i];
 
