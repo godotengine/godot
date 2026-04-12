@@ -40,6 +40,7 @@
 WorkerThreadPool::Task *const WorkerThreadPool::ThreadData::YIELDING = (Task *)1;
 
 HashMap<StringName, WorkerThreadPool *> WorkerThreadPool::named_pools;
+BinaryMutex WorkerThreadPool::named_pools_mutex;
 
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_NULL(template_userdata);
@@ -726,15 +727,17 @@ bool WorkerThreadPool::is_group_task_completed(GroupID p_group) const {
 
 void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 #ifdef THREADS_ENABLED
-	task_mutex.lock();
-	Group **groupp = groups.getptr(p_group);
-	task_mutex.unlock();
-	if (!groupp) {
-		ERR_FAIL_MSG("Invalid Group ID.");
+	Group *group = nullptr;
+	{
+		MutexLock task_lock(task_mutex);
+		Group **groupp = groups.getptr(p_group);
+		if (!groupp) {
+			ERR_FAIL_MSG("Invalid Group ID.");
+		}
+		group = *groupp;
 	}
 
 	{
-		Group *group = *groupp;
 
 		if (this == singleton) {
 			_unlock_unlockable_mutexes();
@@ -900,6 +903,7 @@ void WorkerThreadPool::_bind_methods() {
 }
 
 WorkerThreadPool *WorkerThreadPool::get_named_pool(const StringName &p_name) {
+	MutexLock lock(named_pools_mutex);
 	WorkerThreadPool **pool_ptr = named_pools.getptr(p_name);
 	if (pool_ptr) {
 		return *pool_ptr;

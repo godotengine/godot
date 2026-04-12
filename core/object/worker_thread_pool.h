@@ -173,6 +173,7 @@ private:
 	int pump_task_count = 0;
 
 	static HashMap<StringName, WorkerThreadPool *> named_pools;
+	static BinaryMutex named_pools_mutex;
 
 	static void _thread_function(void *p_user);
 
