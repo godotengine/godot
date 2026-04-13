@@ -62,6 +62,7 @@ public:
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const = 0;
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
+	virtual void light_set_extra_cull_margin(RID p_light, float p_margin) = 0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) = 0;
 

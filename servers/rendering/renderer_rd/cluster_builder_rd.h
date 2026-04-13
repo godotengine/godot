@@ -231,7 +231,7 @@ public:
 
 	void begin(const Transform3D &p_view_transform, const Projection &p_cam_projection, bool p_flip_y);
 
-	_FORCE_INLINE_ void add_light(LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) {
+	_FORCE_INLINE_ void add_light(LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture, float p_extra_cull_margin) {
 		if (p_type == LIGHT_TYPE_OMNI && cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT] == max_elements_by_type) {
 			return; // Max number elements reached.
 		}
@@ -250,11 +250,13 @@ public:
 
 		radius *= p_radius;
 
+		radius += p_extra_cull_margin;
+
 		// Spotlights with wide angle are trated as Omni lights.
 		// If the spot angle is above the threshold, we need a sphere instead of a cone for building the clusters
 		// since the cone gets too flat/large (spot angle close to 90 degrees) or
 		// can't even cover the affected area of the light (spot angle above 90 degrees).
-		if (p_type == LIGHT_TYPE_OMNI || (p_type == LIGHT_TYPE_SPOT && p_spot_aperture > WIDE_SPOT_ANGLE_THRESHOLD_DEG)) {
+		if (p_type == LIGHT_TYPE_OMNI || (p_type == LIGHT_TYPE_SPOT && (p_spot_aperture + p_extra_cull_margin) > WIDE_SPOT_ANGLE_THRESHOLD_DEG)) {
 			radius *= shared->sphere_overfit; // Overfit icosphere.
 
 			float depth = -xform.origin.z;

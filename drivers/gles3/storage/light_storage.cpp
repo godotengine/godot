@@ -217,6 +217,16 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
+void LightStorage::light_set_extra_cull_margin(RID p_light, float p_margin) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->extra_cull_margin = p_margin;
+
+	light->version++;
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+
 void LightStorage::light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
