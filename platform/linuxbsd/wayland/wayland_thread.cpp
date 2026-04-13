@@ -1916,7 +1916,6 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	DisplayServerEnums::WindowID id = pd.pointed_id;
 
 	pd.pointed_id = DisplayServerEnums::INVALID_WINDOW_ID;
-	pd.pressed_button_mask.clear();
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Pointer left window %d.", id));
 
@@ -2025,14 +2024,19 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	PointerData &old_pd = ss->pointer_data;
 	PointerData &pd = ss->pointer_data_buffer;
 
+	WindowState *ws = nullptr;
+
 	if (pd.pointed_id != old_pd.pointed_id) {
 		if (old_pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			pd.pressed_button_mask.clear();
+
 			Ref<WindowEventMessage> msg;
 			msg.instantiate();
 			msg->id = old_pd.pointed_id;
 			msg->event = DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT;
-
 			wayland_thread->push_message(msg);
+
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Notifying mouse exit to window %d", msg->id));
 		}
 
 		if (pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
@@ -2040,24 +2044,32 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 			msg.instantiate();
 			msg->id = pd.pointed_id;
 			msg->event = DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER;
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Notifying mouse enter to window %d", msg->id));
 
 			wayland_thread->push_message(msg);
 		}
+
+		// According to the spec, compositors SHOULD emit both leave and enter events
+		// in one frame. Given that the frame event groups logically related events,
+		// it makes sense that all other events outside `enter` are related to the OLD
+		// surface. Additionally, some compositors (e.g. sway) emit other events
+		// alongside a leave event in one single frame, further confirming this
+		// behavior.
+		if (wayland_thread->window_exists(old_pd.pointed_id)) {
+			ws = wayland_thread->window_get_state(old_pd.pointed_id);
+			if (ws == nullptr) {
+				// Not ERR_FAIL_* as we still want to fall through.
+				ERR_PRINT("Invalid window userdata.");
+			}
+		}
 	}
 
-	WindowState *ws = nullptr;
-
-	// NOTE: At least on sway, with wl_pointer version 5 or greater,
-	// wl_pointer::leave might be emitted with other events (like
-	// wl_pointer::button) within the same wl_pointer::frame. Because of this, we
-	// need to account for when the currently pointed window might be invalid
-	// (third-party or even none) and fall back to the old one.
-	if (pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-		ws = ss->wayland_thread->window_get_state(pd.pointed_id);
-		ERR_FAIL_NULL(ws);
-	} else if (old_pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
-		ws = ss->wayland_thread->window_get_state(old_pd.pointed_id);
-		ERR_FAIL_NULL(ws);
+	if (ws == nullptr && wayland_thread->window_exists(pd.pointed_id)) {
+		ws = wayland_thread->window_get_state(pd.pointed_id);
+		if (ws == nullptr) {
+			// Not ERR_FAIL_* as we still want to fall through.
+			ERR_PRINT("Invalid window userdata.");
+		}
 	}
 
 	if (ws == nullptr) {
@@ -4311,6 +4323,14 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 
 	// We can already clean up here, we're done.
 	windows.erase(p_window_id);
+}
+
+bool WaylandThread::window_exists(DisplayServerEnums::WindowID p_window_id) {
+	if (p_window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
+		return false;
+	}
+
+	return windows.has(p_window_id);
 }
 
 struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServerEnums::WindowID p_window_id) const {

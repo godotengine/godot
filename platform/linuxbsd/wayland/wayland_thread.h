@@ -1231,6 +1231,10 @@ public:
 	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
 	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
 
+	// Checks if a window exists for this ID (NOT if its data is valid). Useful to
+	// detect deleted windows.
+	bool window_exists(DisplayServerEnums::WindowID p_window_id);
+
 	void window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id);
 
 	struct wl_surface *window_get_wl_surface(DisplayServerEnums::WindowID p_window_id) const;
