@@ -255,7 +255,7 @@
 		</member>
 		<member name="keep_partial_download" type="bool" setter="set_keep_partial_download" getter="is_keeping_partial_download" default="false">
 			If [code]true[/code], the partially downloaded file set via [member download_file] will not be deleted when the request fails or is canceled. This allows resuming an interrupted download later by sending a new request with an HTTP [code skip-lint]Range[/code] header and [member append_to_download_file] set to [code]true[/code].
-			If [code]false[/code] (the default), incomplete download files are automatically deleted on failure or cancelation.
+			If [code]false[/code] (the default), incomplete download files are automatically deleted on failure or cancellation.
 		</member>
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
