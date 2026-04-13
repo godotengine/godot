@@ -140,6 +140,7 @@ int Label::get_line_height(int p_line) const {
 }
 
 void Label::_shape() const {
+	Size2 old_min_size = (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) ? _get_min_size() : Size2();
 	const String &lang = language.is_empty() ? _get_locale() : language;
 
 	Ref<StyleBox> style = theme_cache.normal_style;
@@ -361,7 +362,9 @@ void Label::_shape() const {
 	_update_visible();
 
 	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
-		const_cast<Label *>(this)->update_minimum_size();
+		if (old_min_size != _get_min_size()) {
+			const_cast<Label *>(this)->update_minimum_size();
+		}
 	}
 }
 
@@ -989,9 +992,7 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 	return Rect2();
 }
 
-Size2 Label::get_minimum_size() const {
-	_ensure_shaped();
-
+Size2 Label::_get_min_size() const {
 	Size2 min_size = minsize;
 	Size2 combined_maximum_size = get_combined_maximum_size();
 	bool wrap_with_max_width = autowrap_mode != TextServer::AUTOWRAP_OFF && combined_maximum_size.x > 0;
@@ -1030,6 +1031,12 @@ Size2 Label::get_minimum_size() const {
 		}
 		return computed_min_size;
 	}
+}
+
+Size2 Label::get_minimum_size() const {
+	_ensure_shaped();
+
+	return _get_min_size();
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -1162,7 +1169,6 @@ void Label::_maximum_size_changed() {
 		para.lines_dirty = true;
 	}
 	queue_redraw();
-	update_minimum_size();
 	update_configuration_warnings();
 }
 

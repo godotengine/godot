@@ -103,6 +103,8 @@ private:
 	void _invalidate();
 	void _maximum_size_changed();
 
+	Size2 _get_min_size() const;
+
 protected:
 	RID get_line_rid(int p_line) const;
 	Rect2 get_line_rect(int p_line) const;
