@@ -31,7 +31,7 @@ jobs:
           echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       - name: Style checks via pre-commit
-        uses: pre-commit/action@v3.0.1
+        uses: ./.github/actions/pre-commit
         with:
           extra_args: --files ${{ env.CHANGED_FILES }}
 
