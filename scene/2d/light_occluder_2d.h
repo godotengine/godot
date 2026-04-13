@@ -39,7 +39,8 @@ public:
 	enum CullMode {
 		CULL_DISABLED,
 		CULL_CLOCKWISE,
-		CULL_COUNTER_CLOCKWISE
+		CULL_COUNTER_CLOCKWISE,
+		CULL_SOLID
 	};
 
 private:
