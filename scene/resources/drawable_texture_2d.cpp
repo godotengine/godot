@@ -70,28 +70,8 @@ void DrawableTexture2D::setup(int p_width, int p_height, DrawableFormat p_format
 	emit_changed();
 }
 
-void DrawableTexture2D::set_width(int p_width) {
-	ERR_FAIL_COND_MSG(p_width <= 0 || p_width > 16384, "Texture dimensions have to be in the 1 to 16384 range.");
-	if (width == p_width) {
-		return;
-	}
-	width = p_width;
-	notify_property_list_changed();
-	emit_changed();
-}
-
 int DrawableTexture2D::get_width() const {
 	return width;
-}
-
-void DrawableTexture2D::set_height(int p_height) {
-	ERR_FAIL_COND_MSG(p_height <= 0 || p_height > 16384, "Texture dimensions have to be in the 1 to 16384 range.");
-	if (height == p_height) {
-		return;
-	}
-	height = p_height;
-	notify_property_list_changed();
-	emit_changed();
 }
 
 int DrawableTexture2D::get_height() const {
@@ -249,8 +229,6 @@ void DrawableTexture2D::generate_mipmaps() {
 }
 
 void DrawableTexture2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_width", "width"), &DrawableTexture2D::set_width);
-	ClassDB::bind_method(D_METHOD("set_height", "height"), &DrawableTexture2D::set_height);
 	ClassDB::bind_method(D_METHOD("set_format", "format"), &DrawableTexture2D::set_drawable_format);
 	ClassDB::bind_method(D_METHOD("set_use_mipmaps", "mipmaps"), &DrawableTexture2D::set_use_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_use_mipmaps"), &DrawableTexture2D::get_use_mipmaps);
