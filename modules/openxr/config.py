@@ -27,6 +27,7 @@ def get_doc_classes():
         "OpenXRIPBinding",
         "OpenXRHand",
         "OpenXRVisibilityMask",
+        "OpenXRFoveatedInsetViewport",
         "OpenXRCompositionLayer",
         "OpenXRCompositionLayerQuad",
         "OpenXRCompositionLayerCylinder",

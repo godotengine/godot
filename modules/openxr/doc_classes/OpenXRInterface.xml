@@ -17,6 +17,13 @@
 				Returns a list of action sets registered with Godot (loaded from the action map at runtime).
 			</description>
 		</method>
+		<method name="get_active_view_configuration" qualifiers="const">
+			<return type="int" enum="OpenXRInterface.ViewConfiguration" />
+			<description>
+				Gets the active view configuration.
+				[b]Note:[/b] This will only return a valid value after OpenXR is initialized.
+			</description>
+		</method>
 		<method name="get_available_display_refresh_rates" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -296,6 +303,21 @@
 		</constant>
 		<constant name="SESSION_STATE_EXITING" value="8" enum="SessionState">
 			The OpenXR instance is about to be destroyed and we're exiting. [signal instance_exiting] is emitted when we change to this state.
+		</constant>
+		<constant name="VIEW_CONFIGURATION_MONO" value="0" enum="ViewConfiguration">
+			Our XR output configuration is monoscopic.
+		</constant>
+		<constant name="VIEW_CONFIGURATION_STEREO" value="1" enum="ViewConfiguration">
+			Our XR output configuration is stereoscopic.
+		</constant>
+		<constant name="VIEW_CONFIGURATION_STEREO_WITH_INSET" value="2" enum="ViewConfiguration">
+			Our XR output configuration is stereoscopic with an additional foveated inset render.
+		</constant>
+		<constant name="VIEW_CONFIGURATION_UNSET" value="254" enum="ViewConfiguration">
+			Our XR output configuration has not yet been determined.
+		</constant>
+		<constant name="VIEW_CONFIGURATION_UNKNOWN" value="255" enum="ViewConfiguration">
+			Our XR output configuration is unknown.
 		</constant>
 		<constant name="HAND_LEFT" value="0" enum="Hand">
 			Left hand.

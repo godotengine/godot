@@ -243,6 +243,17 @@ public:
 	bool is_user_presence_supported() const;
 	bool is_user_present() const;
 
+	/** View configuration */
+	enum ViewConfiguration {
+		VIEW_CONFIGURATION_MONO = 0,
+		VIEW_CONFIGURATION_STEREO = 1,
+		VIEW_CONFIGURATION_STEREO_WITH_INSET = 2,
+		VIEW_CONFIGURATION_UNSET = 254,
+		VIEW_CONFIGURATION_UNKNOWN = 255,
+	};
+
+	ViewConfiguration get_active_view_configuration() const;
+
 	/** Hand tracking. */
 	enum Hand {
 		HAND_LEFT,
@@ -349,6 +360,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(OpenXRInterface::SessionState)
+VARIANT_ENUM_CAST(OpenXRInterface::ViewConfiguration)
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
 VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)

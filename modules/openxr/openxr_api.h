@@ -378,6 +378,7 @@ private:
 		bool use_subsampled_images = true; // We need to default to true for the warning to be shown if we fallback immediately at startup.
 
 		uint32_t view_count = 0;
+		uint32_t primary_view_count = 0;
 		bool view_pose_valid = false;
 		LocalVector<XrPosef> view_poses;
 		LocalVector<XrFovf> view_fovs;
@@ -398,7 +399,7 @@ private:
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
 
-	static void _allocate_view_buffers_rt(uint32_t p_view_count, bool p_submit_depth_buffer);
+	static void _allocate_view_buffers_rt(uint32_t p_view_count, uint32_t p_primary_view_count, bool p_submit_depth_buffer);
 	static void _set_render_session_running_rt(bool p_is_running);
 	static void _set_render_display_info_rt(XrTime p_predicted_display_time, bool p_should_render);
 	static void _set_render_play_space_rt(uint64_t p_play_space);
@@ -406,10 +407,10 @@ private:
 	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
 	static void _set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
-	static void _set_render_state_near_and_far(double p_z_near, double p_z_far);
+	static void _set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
 	static void _update_main_swapchain_size_rt();
 
-	void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer);
+	void allocate_view_buffers(uint32_t p_view_count, uint32_t p_primary_view_count, bool p_submit_depth_buffer);
 	void set_render_session_running(bool p_is_running);
 	void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
 	void set_render_play_space(XrSpace p_play_space);
@@ -417,7 +418,7 @@ private:
 	void set_render_state_multiplier(double p_render_target_size_multiplier);
 	void set_render_state_render_region(const Rect2i &p_render_region);
 	void set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
-	void set_render_state_near_and_far(double p_z_near, double p_z_far);
+	void set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
 
 public:
 	void update_main_swapchain_size();
@@ -473,6 +474,7 @@ public:
 	XrFormFactor get_form_factor() const { return form_factor; }
 
 	uint32_t get_view_count() const;
+	uint32_t get_primary_view_count() const;
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
@@ -501,6 +503,7 @@ public:
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
 	Size2 get_recommended_target_size();
+	Size2i get_recommended_target_size(uint32_t p_view);
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far);
 	TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name);
@@ -527,6 +530,9 @@ public:
 	const XrCompositionLayerProjection *get_projection_layer() const;
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
+
+	// Rendering
+	void set_projection_view_swapchain_rt(uint32_t p_view, XrSwapchain p_swapchain, uint32_t image_array_index, Size2i p_size);
 
 	// Display refresh rate
 	float get_display_refresh_rate() const;
