@@ -109,27 +109,29 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
         source.Append("#pragma warning disable CS0109")
             .Append(" // Disable warning about new protected member declared in sealed type\n");
 
-        const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.TrampolineCollectors";
-        const string OptionsType = "global::Godot.Bridge.ScriptManagerBridge.TrampolineCollectionOptions";
+        source.Append("    ").Append(symbol.IsSealed ? "" : "protected ")
+            .Append("internal new static partial class GodotInternal\n    {\n");
 
-        source.Append("    /// <summary>\n")
-            .Append("    /// Collects the trampolines for all the members visible to Godot.\n")
+        const string CollectorType = "global::Godot.Bridge.TrampolineCollectors";
+        const string OptionsType = "global::Godot.Bridge.TrampolineCollectionOptions";
+
+        source.Append("        /// <summary>\n")
+            .Append("        /// Collects the trampolines for all the members visible to Godot.\n")
             .Append(
-                "    /// This method is used by Godot to collect the trampolines to call this class's members from the native side.\n")
-            .Append("    /// Do not call this method.\n")
-            .Append("    /// </summary>\n");
-
-        source.Append(
-                "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n")
-            .Append("    protected internal new static void GetGodotClassTrampolines(")
-            .Append(CollectorType).Append(" collectors, ").Append(OptionsType).Append(" options)\n    {\n");
+                "        /// This method is used by Godot to collect the trampolines to call this class's members from the native side.\n")
+            .Append("        /// Do not call this method.\n")
+            .Append("        /// </summary>\n");
 
         source
-            .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
+            .Append("        public static void GetGodotClassTrampolines(")
+            .Append(CollectorType).Append(" collectors, ").Append(OptionsType).Append(" options)\n        {\n");
+
+        source
+            .Append("            ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
             .Append(".GetGodotMethodTrampolines(collectors.MethodTrampolineCollector);\n")
-            .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
+            .Append("            ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
             .Append(".GetGodotPropertyTrampolines(collectors.PropertyTrampolineCollector);\n")
-            .Append("        ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
+            .Append("            ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
             .Append(".GetGodotRaiseSignalTrampolines(collectors.RaiseSignalTrampolineCollector);\n");
 
         var usableBaseType = symbol.GetClosestBaseTypeDeclaringGodotInternalMethod("GetGodotClassTrampolines");
@@ -145,7 +147,9 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
 
 
         source
-            .Append("    }\n");
+            .Append("        }\n");
+
+        source.Append("    }\n"); // partial class GodotInternal
 
         source.Append("#pragma warning restore CS0109\n");
         source.Append("#pragma warning restore CS0628\n");

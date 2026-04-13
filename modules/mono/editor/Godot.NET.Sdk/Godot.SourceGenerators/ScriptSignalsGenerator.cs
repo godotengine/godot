@@ -256,9 +256,10 @@ namespace Godot.SourceGenerators
             // Generate GetGodotMethodTrampolines
 
             {
-                source.Append("    private static partial class GodotInternal\n    {\n");
+                source.Append("    ").Append(symbol.IsSealed ? "" : "protected ")
+                    .Append("internal new static partial class GodotInternal\n    {\n");
 
-                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.RaiseSignalTrampolineCollector";
+                const string CollectorType = "global::Godot.Bridge.RaiseSignalTrampolineCollector";
 
                 source.Append("        internal new static ")
                     .Append(isUnsafeAllowed ? "unsafe " : "")
