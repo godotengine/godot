@@ -405,7 +405,7 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 	return filter_active && search_match;
 }
 
-bool EditorLog::_contains_case_sensitive(String p_base, String p_contains) {
+bool EditorLog::_contains_case_sensitive(const String &p_base, const String &p_contains) {
 	if (search_case_sensitive) {
 		return p_base.contains(p_contains);
 	} else {
@@ -413,7 +413,7 @@ bool EditorLog::_contains_case_sensitive(String p_base, String p_contains) {
 	}
 }
 
-void EditorLog::_append_styled_log_line(Color p_color_regular, Color p_color_highlighted, String p_line, String p_keytext) {
+void EditorLog::_append_styled_log_line(const Color &p_color_regular, const Color &p_color_highlighted, const String &p_line, const String &p_keytext) {
 	if (p_keytext.is_empty() || !_contains_case_sensitive(p_line, p_keytext)) {
 		log->push_color(p_color_regular);
 		log->add_text(p_line);
