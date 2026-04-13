@@ -738,7 +738,7 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->call_virtual_with_data = nullptr;
 	placeholder_extension->recreate_instance = &PlaceholderExtensionInstance::placeholder_class_recreate_instance;
 
-	placeholder_extension->create_gdtype();
+	placeholder_extension->gdtype = ti->gdtype;
 
 	return placeholder_extension;
 }
