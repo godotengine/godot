@@ -51,6 +51,9 @@ public:
 			NEEDS_VIEW_MASK_BUFFER = 1 << 0,
 			USES_ARGUMENT_BUFFERS = 1 << 1,
 			NEEDS_DEBUG_LOGGING = 1 << 2,
+
+			/// A special value indicating that the shader failed to compile, so the compiled library data is invalid and should be ignored.
+			INVALID_SHADER = 0xFFFFFFFF,
 		};
 
 		/// The base profile that was used to generate this shader.
@@ -107,7 +110,20 @@ public:
 				flags &= ~NEEDS_DEBUG_LOGGING;
 			}
 		}
+
+		bool is_invalid() const {
+			return flags == INVALID_SHADER;
+		}
+
+		void mark_invalid() {
+			flags = INVALID_SHADER;
+		}
 	};
+
+	/// @brief Returns `true` if the shader failed to compile and the compiled library data is invalid.
+	bool is_invalid() const {
+		return mtl_reflection_data.is_invalid();
+	}
 
 	struct StageData {
 		uint32_t vertex_input_binding_mask = 0;
@@ -148,6 +164,8 @@ public:
 					return slot;
 				case IndexType::ARG:
 					return arg_buffer;
+				default:
+					CRASH_NOW_MSG("Unreachable");
 			}
 		}
 	};
@@ -176,7 +194,7 @@ private:
 
 	Error compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data);
 
-	Error reflect_spirv(const ReflectShader &p_shader);
+	MetalDeviceProfile::MinimumRequirements inspect_spirv(const ReflectShader &p_shader);
 
 public:
 	static constexpr uint32_t FORMAT_VERSION = 2;
