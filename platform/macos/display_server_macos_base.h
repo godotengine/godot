@@ -30,16 +30,16 @@
 
 #pragma once
 
-#include "core/os/thread_safe.h"
-#include "core/typedefs.h" // IWYU pragma: keep. Prevent macOS `MAX`/`MIN` from being defined.
-#include "servers/display/display_server.h"
-
 #define FontVariation __FontVariation
 
 #import <AppKit/AppKit.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
 #undef FontVariation
+
+// Must come after AppKit.h so include chain up to TypeDefs.h appropriately undefines MAX/MIN
+#include "core/os/thread_safe.h"
+#include "servers/display/display_server.h"
 
 class RenderingContextDriver;
 class RenderingDevice;
