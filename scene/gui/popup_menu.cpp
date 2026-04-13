@@ -1338,7 +1338,14 @@ void PopupMenu::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU);
-			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, items.size());
+
+			int item_count = 0;
+			for (const Item &item : items) {
+				if (item.visible && !item.separator) {
+					item_count++;
+				}
+			}
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, item_count);
 
 			if (accessibility_scroll_element.is_null()) {
 				accessibility_scroll_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
@@ -1351,23 +1358,25 @@ void PopupMenu::_notification(int p_what) {
 
 			float scroll_width = scroll_container->get_v_scroll_bar()->is_visible_in_tree() ? scroll_container->get_v_scroll_bar()->get_size().width : 0;
 			float display_width = control->get_size().width - scroll_width;
-			Point2 ofs;
+			Point2 ofs = scroll_container->get_global_position();
 
+			int item_index = 0;
+			bool first_visible = true;
 			for (int i = 0; i < items.size(); i++) {
 				const Item &item = items.write[i];
-				if (!item.visible) {
-					continue;
-				}
 
-				// Avoid discrepancy between min size and drawn items due to rounding.
-				ofs.y += i > 0 ? theme_cache.v_separation : theme_cache.v_separation - (theme_cache.v_separation / 2);
-
-				Point2 item_ofs = ofs;
 				if (item.accessibility_item_element.is_null()) {
 					item.accessibility_item_element = AccessibilityServer::get_singleton()->create_sub_element(accessibility_scroll_element, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_ITEM);
 					item.accessibility_item_dirty = true;
 				}
 
+				if (item.visible) {
+					// Avoid discrepancy between min size and drawn items due to rounding.
+					ofs.y += first_visible ? 0 : theme_cache.v_separation;
+					first_visible = false;
+				}
+
+				Point2 item_ofs = ofs;
 				item_ofs.x += item.indent * theme_cache.indent;
 				float h = _get_item_height(i);
 
@@ -1387,18 +1396,26 @@ void PopupMenu::_notification(int p_what) {
 					}
 
 					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &PopupMenu::_accessibility_action_click).bind(i));
-					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, i);
+					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, item_index);
 					AccessibilityServer::get_singleton()->update_set_list_item_level(item.accessibility_item_element, 0);
 					AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, i == mouse_over);
 					AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, item.xl_text);
 					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
+					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !item.visible);
 					AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
 
 					AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(item_ofs, Size2(display_width, h + theme_cache.v_separation)));
 
 					item.accessibility_item_dirty = false;
 				}
-				ofs.y += h;
+
+				if (item.visible) {
+					ofs.y += h;
+
+					if (!item.separator) {
+						item_index++;
+					}
+				}
 			}
 			prev_mouse_over = -1;
 
