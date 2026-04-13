@@ -1079,6 +1079,11 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	Ref<RenderingShaderContainerMetal> shader_container = p_shader_container;
 	using RSCM = RenderingShaderContainerMetal;
 
+	if (shader_container->is_invalid()) {
+		WARN_PRINT("Metal shader container is invalid and will be recompiled.");
+		return RDD::ShaderID();
+	}
+
 	CharString shader_name = shader_container->shader_name;
 	RSCM::HeaderData &mtl_reflection_data = shader_container->mtl_reflection_data;
 	Vector<RenderingShaderContainer::Shader> &shaders = shader_container->shaders;
