@@ -212,11 +212,13 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	// 3. Progress for Animation.
 	double prev_playback_time = prev_time + start_offset;
 	double cur_playback_time = cur_time + start_offset;
+	double cur_len_scaled = cur_len;
 	if (stretch_time_scale) {
 		double mlt = anim_size / cur_len;
 		prev_playback_time *= mlt;
 		cur_playback_time *= mlt;
 		cur_delta *= mlt;
+		cur_len_scaled *= mlt;
 	}
 	if (cur_loop_mode == Animation::LOOP_LINEAR) {
 		if (!Math::is_zero_approx(anim_size)) {
@@ -270,7 +272,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		if (immediately_after_start) {
 			AnimationMixer::PlaybackInfo pi = p_playback_info;
 			pi.start = 0.0;
-			pi.end = cur_len;
+			pi.end = cur_len_scaled;
 			if (play_mode == PLAY_MODE_FORWARD) {
 				pi.time = 0;
 			} else {
@@ -283,7 +285,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
 		pi.start = 0.0;
-		pi.end = cur_len;
+		pi.end = cur_len_scaled;
 		if (play_mode == PLAY_MODE_FORWARD) {
 			pi.time = cur_playback_time;
 		} else {
