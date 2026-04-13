@@ -1518,7 +1518,7 @@ void PopupMenu::_notification(int p_what) {
 						if (!match_found) {
 							// If the last item is not selectable, try re-searching from the start.
 							for (int i = 0; i < search_from; i++) {
-								if (!items[i].separator && !items[i].disabled) {
+								if (!items[i].separator && !items[i].disabled && items[i].visible) {
 									mouse_over = i;
 									emit_signal(SNAME("id_focused"), items[i].id);
 									scroll_to_item(i);
@@ -1538,7 +1538,7 @@ void PopupMenu::_notification(int p_what) {
 
 						bool match_found = false;
 						for (int i = search_from; i >= 0; i--) {
-							if (!items[i].separator && !items[i].disabled) {
+							if (!items[i].separator && !items[i].disabled && items[i].visible) {
 								mouse_over = i;
 								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
@@ -1551,7 +1551,7 @@ void PopupMenu::_notification(int p_what) {
 						if (!match_found) {
 							// If the first item is not selectable, try re-searching from the end.
 							for (int i = items.size() - 1; i >= search_from; i--) {
-								if (!items[i].separator && !items[i].disabled) {
+								if (!items[i].separator && !items[i].disabled && items[i].visible) {
 									mouse_over = i;
 									emit_signal(SNAME("id_focused"), items[i].id);
 									scroll_to_item(i);
