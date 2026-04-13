@@ -242,6 +242,7 @@ class PopupMenu : public Popup {
 	void _search_bar_input(const Ref<InputEvent> &p_event);
 	void _search_bar_text_changed(const String &p_new_text);
 	void _filter_items(const String &p_query);
+	void _update_wrapped_size(bool p_keep_width = false);
 
 	void _close_pressed();
 	void _menu_changed();

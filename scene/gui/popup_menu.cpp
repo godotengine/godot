@@ -248,6 +248,10 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	for (int i = 0; i < items.size(); i++) {
 		_shape_item(i);
 
+		if (!items[i].visible) {
+			continue;
+		}
+
 		icon_max_w = MAX(_get_item_icon_size(i).width, icon_max_w);
 
 		if (items[i].checkable_type && !items[i].separator) {
@@ -1104,6 +1108,8 @@ void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 			}
 		}
 	}
+
+	_update_wrapped_size(true);
 
 	queue_accessibility_update();
 	control->queue_redraw();
@@ -3658,20 +3664,25 @@ void PopupMenu::_pre_popup() {
 	}
 
 	set_content_scale_factor(popup_scale);
-	if (is_wrapping_controls()) {
-		Size2 minsize = get_contents_minimum_size() * popup_scale;
-		Size2 maxsize = get_max_size();
-		if (maxsize.height > 0) {
-			minsize.height = MIN(minsize.height, maxsize.height);
-		}
-		if (maxsize.width > 0) {
-			minsize.width = MIN(minsize.width, maxsize.width);
-		}
-		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		Size2i sz = get_size(); // Shrinkwraps to min size.
-		set_size(Vector2i(shrink_width ? 0 : sz.x, shrink_height ? 0 : sz.y));
+	_update_wrapped_size();
+}
+
+void PopupMenu::_update_wrapped_size(bool p_keep_width) {
+	if (!is_wrapping_controls()) {
+		return;
 	}
+	Size2 minsize = get_contents_minimum_size() * get_content_scale_factor();
+	Size2 maxsize = get_max_size();
+	if (maxsize.height > 0) {
+		minsize.height = MIN(minsize.height, maxsize.height);
+	}
+	if (maxsize.width > 0) {
+		minsize.width = MIN(minsize.width, maxsize.width);
+	}
+	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
+	Size2i sz = get_size(); // Shrinkwraps to min size.
+	set_size(Vector2i(shrink_width && !p_keep_width ? 0 : sz.x, shrink_height ? 0 : sz.y));
 }
 
 void PopupMenu::set_visible(bool p_visible) {
