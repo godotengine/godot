@@ -7480,6 +7480,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 			// Replace the original node with the instantiated version.
 			original_node->replace_by(instantiated_node, false);
+			instantiated_node->set_unique_scene_id(original_node->get_unique_scene_id());
 
 			// Mark the old node for deletion.
 			original_node->queue_free();
