@@ -806,7 +806,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 
 #if !defined(RENDER_SHADOWS) && !defined(RENDER_SHADOWS_LINEAR)
 #ifdef Z_CLIP_SCALE_USED
-	gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
+	clip_position_output.z = mix(clip_position_output.w, clip_position_output.z, z_clip_scale);
 #endif
 #endif
 
