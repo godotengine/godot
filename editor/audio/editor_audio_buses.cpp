@@ -158,6 +158,15 @@ void EditorAudioBus::_notification(int p_what) {
 				_update_visible_channels();
 			}
 
+			// Sync the volume slider if AudioServer state was changed externally.
+			float current_db = AudioServer::get_singleton()->get_bus_volume_db(get_index());
+			float current_normalized = _scaled_db_to_normalized_volume(current_db);
+			if (!Math::is_equal_approx((float)slider->get_value(), current_normalized)) {
+				updating_bus = true;
+				slider->set_value(current_normalized);
+				updating_bus = false;
+			}
+
 			for (int i = 0; i < cc; i++) {
 				float real_peak[2] = { -100, -100 };
 				bool activity_found = false;
