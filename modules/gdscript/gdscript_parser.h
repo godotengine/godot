@@ -762,6 +762,13 @@ public:
 		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
+
+		// Range for a class's "extends <CLASS_NAME>" line.
+		// Used as range for some warnings/errors.
+		int extends_start_line = -1;
+		int extends_start_column = -1;
+		int extends_end_line = -1;
+		int extends_end_column = -1;
 #ifdef TOOLS_ENABLED
 		ClassDocData doc_data;
 
