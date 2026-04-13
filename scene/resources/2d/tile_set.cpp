@@ -61,15 +61,6 @@ void TileMapPattern::_set_tile_data(const Vector<int> &p_data) {
 			local[j] = ptr[j];
 		}
 
-#ifdef BIG_ENDIAN_ENABLED
-		SWAP(local[0], local[3]);
-		SWAP(local[1], local[2]);
-		SWAP(local[4], local[7]);
-		SWAP(local[5], local[6]);
-		SWAP(local[8], local[11]);
-		SWAP(local[9], local[10]);
-#endif
-
 		int16_t x = decode_uint16(&local[0]);
 		int16_t y = decode_uint16(&local[2]);
 		uint16_t source_id = decode_uint16(&local[4]);
