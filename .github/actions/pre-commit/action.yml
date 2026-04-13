@@ -1,0 +1,25 @@
+name: Pre-commit
+description: Setup pre-commit, and run it.
+
+inputs:
+  extra_args:
+    description: Options to pass to pre-commit run
+    required: false
+    default: '--all-files'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache@v5
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}
+
+    - run: |
+        pip install pre-commit
+        pre-commit install
+      shell: bash
+
+    - run: |
+        pre-commit run --show-diff-on-failure --color=always --files ${{ inputs.extra_args }}
+      shell: bash
