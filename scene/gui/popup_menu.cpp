@@ -1091,6 +1091,20 @@ void PopupMenu::_search_bar_input(const Ref<InputEvent> &p_event) {
 void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 	_filter_items(p_new_text);
 
+	prev_mouse_over = mouse_over;
+	mouse_over = -1;
+
+	if (!p_new_text.is_empty()) {
+		for (int i = 0; i < items.size(); i++) {
+			if (!items[i].separator && !items[i].disabled && items[i].visible) {
+				mouse_over = i;
+				emit_signal(SNAME("id_focused"), items[i].id);
+				scroll_to_item(i);
+				break;
+			}
+		}
+	}
+
 	queue_accessibility_update();
 	control->queue_redraw();
 	child_controls_changed();
