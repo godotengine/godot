@@ -154,6 +154,7 @@ public:
 	virtual void on_main_swapchains_created(); // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
 	virtual void on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport
 	virtual void on_post_draw_viewport(RID p_render_target); // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued)
+	virtual void on_post_render() {} // `on_post_render` is called right before we submit our XR viewports to the XR compositor.
 
 	GDVIRTUAL1(_on_register_metadata, OpenXRInteractionProfileMetadata *);
 	GDVIRTUAL0(_on_before_instance_created);

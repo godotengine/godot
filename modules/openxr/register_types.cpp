@@ -59,6 +59,7 @@
 #include "extensions/openxr_dpad_binding_extension.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
+#include "extensions/openxr_foveated_inset_extension.h"
 #include "extensions/openxr_frame_synthesis_extension.h"
 #include "extensions/openxr_future_extension.h"
 #include "extensions/openxr_hand_interaction_extension.h"
@@ -88,6 +89,7 @@
 #include "scene/openxr_composition_layer_cylinder.h"
 #include "scene/openxr_composition_layer_equirect.h"
 #include "scene/openxr_composition_layer_quad.h"
+#include "scene/openxr_foveated_inset_viewport.h"
 #include "scene/openxr_visibility_mask.h"
 
 #ifdef MODULE_GLTF_ENABLED
@@ -179,6 +181,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRKHRGenericController));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRFoveatedInsetExtension));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
@@ -305,6 +308,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRRenderModel);
 		GDREGISTER_CLASS(OpenXRRenderModelManager);
 #endif
+		GDREGISTER_CLASS(OpenXRFoveatedInsetViewport);
 
 		GDREGISTER_CLASS(OpenXRSpatialEntityExtension);
 		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialEntityTracker);
