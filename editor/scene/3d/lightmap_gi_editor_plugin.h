@@ -42,6 +42,7 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 	LightmapGI *lightmap = nullptr;
 
 	Button *bake = nullptr;
+	Button *upgrade = nullptr;
 
 	EditorFileDialog *file_dialog = nullptr;
 	static EditorProgress *tmp_progress;
@@ -50,6 +51,7 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 
 	void _bake_select_file(const String &p_file);
 	void _bake();
+	void _upgrade();
 
 protected:
 	static void _bind_methods();
