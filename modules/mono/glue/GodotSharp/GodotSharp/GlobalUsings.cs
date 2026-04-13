@@ -20,3 +20,23 @@ global using unsafe RaiseSignalTrampolineDelegate = delegate* managed<
     /* godotObject: */ object,
     /* args: */ Godot.NativeInterop.NativeVariantPtrArgs,
     /* return */ void>;
+
+global using unsafe TryAddMethodTrampolineDelegate = delegate* unmanaged<
+    /* scriptPtr: */ System.IntPtr,
+    /* name: */ Godot.NativeInterop.godot_string_name*,
+    /* argCount: */ int,
+    /* trampolineDelegate: */ void*,
+    /* isStatic: */ Godot.NativeInterop.godot_bool,
+    /* return */ void>;
+global using unsafe TryAddPropertyTrampolineDelegate = delegate* unmanaged<
+    /* scriptPtr: */ System.IntPtr,
+    /* name: */ Godot.NativeInterop.godot_string_name*,
+    /* getterTrampolineDelegate: */ void*,
+    /* setterTrampolineDelegate: */ void*,
+    /* return */ void>;
+global using unsafe TryAddRaiseSignalTrampolineDelegate = delegate* unmanaged<
+    /* scriptPtr: */ System.IntPtr,
+    /* name: */ Godot.NativeInterop.godot_string_name*,
+    /* argCount: */ int,
+    /* trampolineDelegate: */ void*,
+    /* return */ void>;

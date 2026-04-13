@@ -179,11 +179,12 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // end of class PropertyName
 
-            source.Append("    private static partial class GodotInternal\n    {\n");
+            source.Append("    ").Append(symbol.IsSealed ? "" : "protected ")
+                .Append("internal new static partial class GodotInternal\n    {\n");
 
             // Generate GetGodotMethodTrampolines
             {
-                const string CollectorType = "global::Godot.Bridge.ScriptManagerBridge.PropertyTrampolineCollector";
+                const string CollectorType = "global::Godot.Bridge.PropertyTrampolineCollector";
 
                 source.Append("        internal new static ")
                     .Append(isUnsafeAllowed ? "unsafe " : "")
