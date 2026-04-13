@@ -1099,35 +1099,55 @@ void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 }
 
 void PopupMenu::_filter_items(const String &p_query) {
-	PackedStringArray search_names;
-	for (int i = 0; i < items.size(); i++) {
-		search_names.append(items[i].text);
-	}
-
-	Vector<FuzzySearchResult> results;
-	FuzzySearch fuzzy;
-	fuzzy.set_query(p_query, false);
-	fuzzy.search_all(search_names, results);
-
 	for (PopupMenu::Item &item : items) {
-		bool submenu_visible = false;
 		if (item.submenu) {
 			item.submenu->_filter_items(p_query);
-			for (PopupMenu::Item &submenu_item : item.submenu->items) {
+		}
+	}
+
+	for (PopupMenu::Item &item : items) {
+		item.visible = true;
+	}
+
+	if (p_query.is_empty()) {
+		return;
+	}
+
+	PackedStringArray search_candidates;
+	search_candidates.reserve(items.size());
+
+	Vector<int> search_candidate_to_item;
+	search_candidate_to_item.reserve(items.size());
+
+	for (int i = 0; i < items.size(); i++) {
+		Item &item = items.write[i];
+		item.visible = false;
+
+		if (item.submenu) {
+			for (const PopupMenu::Item &submenu_item : item.submenu->items) {
 				if (submenu_item.visible) {
-					submenu_visible = true;
+					item.visible = true;
 					break;
 				}
 			}
 		}
 
-		item.visible = p_query.length() == 0 || submenu_visible;
+		if (!item.separator) {
+			search_candidates.append(item.text);
+			search_candidate_to_item.append(i);
+		}
 	}
 
-	for (const FuzzySearchResult &res : results) {
-		items.write[res.original_index].visible = res.score > 0;
-		if (items[res.original_index].visible && items[res.original_index].submenu) {
-			for (PopupMenu::Item &submenu_item : items[res.original_index].submenu->items) {
+	Vector<FuzzySearchResult> results;
+	FuzzySearch fuzzy;
+	fuzzy.set_query(p_query, false);
+	fuzzy.search_all(search_candidates, results);
+
+	for (const FuzzySearchResult &result : results) {
+		PopupMenu::Item &item = items.write[search_candidate_to_item[result.original_index]];
+		item.visible = true;
+		if (item.submenu) {
+			for (PopupMenu::Item &submenu_item : item.submenu->items) {
 				submenu_item.visible = true;
 			}
 		}
