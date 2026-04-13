@@ -2509,13 +2509,15 @@ Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
 	copy_queue_buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
 
 	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 1.0, *)) {
-		MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
-		rs_desc->setInitialCapacity(2);
-		rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
-		NS::Error *error = nullptr;
-		copy_queue_rs = NS::TransferPtr(device->newResidencySet(rs_desc, &error));
-		rs_desc->release();
-		copy_queue.get()->addResidencySet(copy_queue_rs.get());
+		if (!OS::get_singleton()->get_processor_name().contains("Virtual")) {
+			MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
+			rs_desc->setInitialCapacity(2);
+			rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
+			NS::Error *error = nullptr;
+			copy_queue_rs = NS::TransferPtr(device->newResidencySet(rs_desc, &error));
+			rs_desc->release();
+			copy_queue.get()->addResidencySet(copy_queue_rs.get());
+		}
 	}
 
 	return OK;
