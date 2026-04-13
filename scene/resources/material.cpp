@@ -278,7 +278,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					if (!groups.has(last_group)) {
 						PropertyInfo info;
 						info.usage = PROPERTY_USAGE_GROUP;
-						info.name = last_group.capitalize();
+						info.name = last_group;
 						info.hint_string = "shader_parameter/";
 
 						List<PropertyInfo> none_subgroup;
@@ -294,7 +294,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					if (!groups[last_group].has(last_subgroup)) {
 						PropertyInfo info;
 						info.usage = PROPERTY_USAGE_SUBGROUP;
-						info.name = last_subgroup.capitalize();
+						info.name = last_subgroup;
 						info.hint_string = "shader_parameter/";
 
 						List<PropertyInfo> subgroup;
