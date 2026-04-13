@@ -681,6 +681,20 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("pressed_joystick", "VirtualJoystick", style_joystick);
 	theme->set_stylebox("pressed_tip", "VirtualJoystick", style_joystick_tip);
 
+	// OutputPanel
+
+	Ref<StyleBoxFlat> style_background = make_flat_stylebox(style_normal_color, 8, 8, 8, 8, 0);
+
+	theme->set_stylebox("background", "OutputPanel", style_background);
+
+	theme->set_font("normal_font", "OutputPanel", Ref<Font>());
+	theme->set_font("bold_font", "OutputPanel", bold_font);
+	theme->set_font_size("font_size", "OutputPanel", -1);
+
+	theme->set_color("error_color", "OutputPanel", Color(1.0, 0.37, 0.37, 1.0));
+	theme->set_color("warning_color", "OutputPanel", Color(1.0, 0.867, 0.396, 1.0));
+	theme->set_color("message_color", "OutputPanel", Color(0.784, 0.784, 0.784, 1.0));
+
 	// Window
 
 	theme->set_stylebox("embedded_border", "Window", sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));

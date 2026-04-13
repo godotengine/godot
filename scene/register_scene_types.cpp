@@ -75,6 +75,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/output_panel.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
@@ -565,6 +566,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FoldableContainer);
 
 	GDREGISTER_CLASS(VirtualJoystick);
+
+	GDREGISTER_CLASS(OutputPanel);
 
 	OS::get_singleton()->yield(); // may take time to init
 

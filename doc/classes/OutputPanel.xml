@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OutputPanel" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An in-game output log control for runtime debugging.
+	</brief_description>
+	<description>
+		A customizable [Control] node that captures and displays engine log output directly inside a running game. It intercepts all messages produced by [method @GlobalScope.print], [method @GlobalScope.print_rich], [method @GlobalScope.printerr], [method @GlobalScope.push_error], and [method @GlobalScope.push_warning], and renders them in a scrollable panel with color-coded text.
+		By default, [member debug_only] is [code]true[/code], which means the node is only visible and registers its log handlers in debug builds ([code]DEBUG_ENABLED[/code]). Set [member debug_only] to [code]false[/code] to keep the panel visible and active in release exports as well.
+		[b]Note:[/b] [OutputPanel] does not capture output produced by editor operations. Handlers are registered only when the game is actually running, not while the scene is open in the editor.
+		[b]Note:[/b] Messages are stored internally up to [member max_lines] entries. Once the limit is reached, the oldest entries are discarded to make room for new ones.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears all messages from the panel and resets the internal message store.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="debug_only" type="bool" setter="set_debug_only" getter="get_debug_only" default="true">
+			If [code]true[/code], the panel is only visible and captures log output in debug builds. In release exports the handlers are never registered and the panel remains invisible and empty.
+			If [code]false[/code], the panel is active and visible in both debug and release builds.
+			[b]Note:[/b] Changing this property at runtime after the node has entered the scene tree has no effect. The value is read once during [constant Node.NOTIFICATION_READY].
+		</member>
+		<member name="max_lines" type="int" setter="set_max_lines" getter="get_max_lines" default="500">
+			The maximum number of log lines retained by the panel. When new messages arrive and this limit is exceeded, the oldest lines are removed first.
+			Lowering this value on a panel that already contains more lines than the new limit will immediately discard the excess from the top.
+		</member>
+		<member name="show_errors" type="bool" setter="set_show_errors" getter="get_show_errors" default="true">
+			If [code]true[/code], error messages produced by [method @GlobalScope.push_error] and [method @GlobalScope.printerr] are displayed.
+		</member>
+		<member name="show_std" type="bool" setter="set_show_std" getter="get_show_std" default="true">
+			If [code]true[/code], standard messages produced by [method @GlobalScope.print] and [method @GlobalScope.print_rich] are displayed.
+		</member>
+		<member name="show_warnings" type="bool" setter="set_show_warnings" getter="get_show_warnings" default="true">
+			If [code]true[/code], warning messages produced by [method @GlobalScope.push_warning] are displayed.
+		</member>
+	</members>
+	<constants>
+		<constant name="MSG_TYPE_STD" value="0" enum="MessageType">
+			A standard plain-text message, produced by [method @GlobalScope.print].
+		</constant>
+		<constant name="MSG_TYPE_STD_RICH" value="1" enum="MessageType">
+			A rich-text message that supports BBCode, produced by [method @GlobalScope.print_rich].
+		</constant>
+		<constant name="MSG_TYPE_WARNING" value="2" enum="MessageType">
+			A warning message, produced by [method @GlobalScope.push_warning].
+		</constant>
+		<constant name="MSG_TYPE_ERROR" value="3" enum="MessageType">
+			An error message, produced by [method @GlobalScope.push_error] or [method @GlobalScope.printerr].
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="error_color" data_type="color" type="Color" default="Color(1, 0.37, 0.37, 1)">
+			The color used for error messages, including those produced by [method @GlobalScope.printerr].
+		</theme_item>
+		<theme_item name="message_color" data_type="color" type="Color" default="Color(0.784, 0.784, 0.784, 1)">
+			The color used for standard messages produced by [method @GlobalScope.print].
+		</theme_item>
+		<theme_item name="warning_color" data_type="color" type="Color" default="Color(1, 0.867, 0.396, 1)">
+			The color used for warning messages produced by [method @GlobalScope.push_warning].
+		</theme_item>
+		<theme_item name="bold_font" data_type="font" type="Font">
+			The font used for bold text, such as the [code]WARNING:[/code] and [code]ERROR:[/code] prefixes. When not set, the default theme font is used.
+		</theme_item>
+		<theme_item name="normal_font" data_type="font" type="Font">
+			The font used for standard log text. When not set, the default theme font is used.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			The font size used for all log text. When not set, the default theme font size is used.
+		</theme_item>
+		<theme_item name="background" data_type="style" type="StyleBox">
+			The [StyleBox] drawn as the panel background.
+		</theme_item>
+	</theme_items>
+</class>
