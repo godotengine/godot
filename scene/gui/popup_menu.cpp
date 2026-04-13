@@ -1152,7 +1152,16 @@ void PopupMenu::_filter_items(const String &p_query) {
 
 	for (int i = 0; i < items.size(); i++) {
 		Item &item = items.write[i];
-		item.visible = false;
+
+		if (item.search_behavior == SEARCH_ALWAYS_HIDE) {
+			item.visible = false;
+			continue;
+		} else if (item.search_behavior == SEARCH_ALWAYS_SHOW) {
+			item.visible = true;
+			continue;
+		} else {
+			item.visible = false;
+		}
 
 		if (item.submenu) {
 			for (const PopupMenu::Item &submenu_item : item.submenu->items) {
@@ -2588,6 +2597,27 @@ int PopupMenu::get_item_state(int p_idx) const {
 	return items[p_idx].state;
 }
 
+void PopupMenu::set_item_search_behavior(int p_idx, SearchBehavior p_behavior) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+	if (items[p_idx].search_behavior == p_behavior) {
+		return;
+	}
+	items.write[p_idx].search_behavior = p_behavior;
+	_filter_items(search_bar->get_text());
+	control->queue_redraw();
+}
+
+PopupMenu::SearchBehavior PopupMenu::get_item_search_behavior(int p_idx) const {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX_V(p_idx, items.size(), SEARCH_NORMAL);
+	return items[p_idx].search_behavior;
+}
+
 void PopupMenu::set_item_as_separator(int p_idx, bool p_separator) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -3446,6 +3476,9 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_multistate_max", "index"), &PopupMenu::get_item_max_states);
 	ClassDB::bind_method(D_METHOD("get_item_multistate", "index"), &PopupMenu::get_item_state);
 
+	ClassDB::bind_method(D_METHOD("set_item_search_behavior", "index", "behavior"), &PopupMenu::set_item_search_behavior);
+	ClassDB::bind_method(D_METHOD("get_item_search_behavior", "index"), &PopupMenu::get_item_search_behavior);
+
 	ClassDB::bind_method(D_METHOD("set_focused_item", "index"), &PopupMenu::set_focused_item);
 	ClassDB::bind_method(D_METHOD("get_focused_item"), &PopupMenu::get_focused_item);
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &PopupMenu::set_item_count);
@@ -3504,6 +3537,10 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("menu_changed"));
+
+	BIND_ENUM_CONSTANT(SEARCH_NORMAL);
+	BIND_ENUM_CONSTANT(SEARCH_ALWAYS_HIDE);
+	BIND_ENUM_CONSTANT(SEARCH_ALWAYS_SHOW);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, hover_style, "hover");

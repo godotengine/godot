@@ -315,6 +315,13 @@
 				Returns the max states of the item at the given [param index].
 			</description>
 		</method>
+		<method name="get_item_search_behavior" qualifiers="const">
+			<return type="int" enum="PopupMenu.SearchBehavior" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the search behavior of the item at the given [param index].
+			</description>
+		</method>
 		<method name="get_item_shortcut" qualifiers="const">
 			<return type="Shortcut" />
 			<param index="0" name="index" type="int" />
@@ -583,6 +590,14 @@
 				Sets the max states of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
+		<method name="set_item_search_behavior">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="behavior" type="int" enum="PopupMenu.SearchBehavior" />
+			<description>
+				Sets the search behavior of the item at the given [param index]. See [member search_bar_enabled_on_item_count].
+			</description>
+		</method>
 		<method name="set_item_shortcut">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -751,6 +766,17 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="SEARCH_NORMAL" value="0" enum="SearchBehavior">
+			The item is visible when it matches the search filter and hidden when it doesn't. This is the default behavior.
+		</constant>
+		<constant name="SEARCH_ALWAYS_HIDE" value="1" enum="SearchBehavior">
+			The item is always hidden when there's a search filter.
+		</constant>
+		<constant name="SEARCH_ALWAYS_SHOW" value="2" enum="SearchBehavior">
+			The item is always visible when there's a search filter.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
 			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
