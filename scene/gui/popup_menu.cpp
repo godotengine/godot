@@ -3673,7 +3673,7 @@ void PopupMenu::set_visible(bool p_visible) {
 		if (!parent_popup) {
 			search_bar->set_visible(is_search_bar_enabled());
 			if (search_bar->is_visible()) {
-				search_bar->edit(true);
+				search_bar->edit();
 			}
 		}
 	}
