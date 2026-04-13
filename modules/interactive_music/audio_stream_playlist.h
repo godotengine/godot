@@ -129,7 +129,7 @@ public:
 
 	double get_stream_playback_position() const;
 	int get_current_stream_index() const;
-	void change_stream(int stream_index);
+	void change_stream(int p_stream_index);
 	void next_stream();
 	void previous_stream();
 

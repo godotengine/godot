@@ -422,7 +422,7 @@ bool AudioStreamPlaybackPlaylist::is_playing() const {
 	return active;
 }
 
-void AudioStreamPlaybackPlaylist::change_stream(int stream_index) {
+void AudioStreamPlaybackPlaylist::change_stream(int p_stream_index) {
 	ERR_FAIL_INDEX(stream_index, playlist->stream_count);
 	next_stream_index = stream_index;
 }

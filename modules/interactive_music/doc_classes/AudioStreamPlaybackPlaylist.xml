@@ -19,27 +19,27 @@
 		<method name="get_current_stream_index" qualifiers="const">
 			<return type="int" />
 			<description>
-				Get the currently playing audio stream index.
+				Gets the currently playing audio stream index.
 			</description>
 		</method>
 		<method name="get_stream_playback_position" qualifiers="const">
 			<return type="float" />
 			<description>
-				Return the playback position of the currently-playing stream. This is different from the [code]get_playback_position()[/code]
+				Returns the playback position of the currently-playing stream. This is different from the [method get_playback_position]
 				which returns the playback position of the entire playlist.
 			</description>
 		</method>
 		<method name="next_stream">
 			<return type="void" />
 			<description>
-				Play the next stream. The next random stream is played if [member AudioStreamPlaylist.shuffle] is enabled.
+				Plays the next stream. The next random stream is played if [member AudioStreamPlaylist.shuffle] is enabled.
 				If [member AudioStreamPlaylist.loop] is disabled and is the last already, nothing will happen.
 			</description>
 		</method>
 		<method name="previous_stream">
 			<return type="void" />
 			<description>
-				Play the previous stream. The previous random stream is played if [member AudioStreamPlaylist.shuffle] is enabled.
+				Plays the previous stream. The previous random stream is played if [member AudioStreamPlaylist.shuffle] is enabled.
 				If [member AudioStreamPlaylist.loop] is disabled and is the first already, nothing will happen.
 			</description>
 		</method>
@@ -52,7 +52,7 @@
 		</signal>
 		<signal name="stream_looped">
 			<description>
-				Emitted when the currently-playing stream loops and begins playback again.
+				Emitted when the currently playing stream loops and begins playback again.
 			</description>
 		</signal>
 	</signals>
