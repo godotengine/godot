@@ -193,6 +193,9 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 	edit_menu_convert_indent->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 
 	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_all_references"), FIND_ALL_REFERENCES);
+
+	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/show_tooltip"), SHOW_TOOLTIP_AT_CARET);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
 
@@ -1846,6 +1849,40 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->get_caret_line(0), tx->get_caret_column(0));
 			}
 		} break;
+		case FIND_ALL_REFERENCES: {
+			String text = tx->get_word_under_caret(0);
+			if (text.is_empty()) {
+				text = tx->get_selected_text(0);
+			}
+			if (text.is_empty()) {
+				break;
+			}
+
+			Ref<Script> script = edited_res;
+
+			if (ScriptServer::is_global_class(text)) {
+				emit_signal(SNAME("search_references_in_files_requested"), text, script->get_path(), 0, 0);
+				break;
+			}
+
+			ScriptLanguage::LookupResult result;
+			String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(tx->get_caret_line(0), tx->get_caret_column(0));
+			if (script->get_language()->lookup_code(code_text, text, script->get_path(), nullptr, result) != OK) {
+				break;
+			}
+
+			String origin_path = result.script_path;
+			int location = result.location;
+
+			String line = code_editor->get_text_editor()->get_line(tx->get_caret_line(0));
+			bool is_function_declaration = line.strip_edges().find("func") == 0;
+			if (is_function_declaration) {
+				origin_path = script->get_path();
+				location = tx->get_caret_line(0) + 1;
+			}
+
+			emit_signal(SNAME("search_references_in_files_requested"), text, origin_path, result.type, location);
+		} break;
 		default: {
 			if (TextEditorBase::_edit_option(p_op)) {
 				return true;
@@ -2592,6 +2629,10 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_separator();
 		if (p_open_docs) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_all_references"), FIND_ALL_REFERENCES);
+			_popup_move_item(EDIT_REDO, context_menu);
+			context_menu->add_separator();
+			_popup_move_item(EDIT_REDO, context_menu);
 		}
 		if (p_color) {
 			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
@@ -2672,6 +2713,8 @@ void ScriptTextEditor::register_editor() {
 	// Using Control for these shortcuts even on macOS because Command+Comma is taken for opening Editor Settings.
 	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTRC("Go to Next Breakpoint"), KeyModifierMask::CTRL | Key::PERIOD);
 	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTRC("Go to Previous Breakpoint"), KeyModifierMask::CTRL | Key::COMMA);
+
+	ED_SHORTCUT("script_text_editor/find_all_references", TTRC("Find All References"), KeyModifierMask::SHIFT | KeyModifierMask::CTRL | Key::F12);
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }
