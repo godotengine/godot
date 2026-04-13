@@ -726,15 +726,16 @@ bool WorkerThreadPool::is_group_task_completed(GroupID p_group) const {
 
 void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 #ifdef THREADS_ENABLED
-	task_mutex.lock();
-	Group **groupp = groups.getptr(p_group);
-	task_mutex.unlock();
-	if (!groupp) {
-		ERR_FAIL_MSG("Invalid Group ID.");
-	}
-
+	Group *group = nullptr;
 	{
-		Group *group = *groupp;
+		MutexLock task_lock(task_mutex);
+		Group **groupp = groups.getptr(p_group);
+		if (!groupp) {
+			task_mutex.unlock();
+			ERR_FAIL_MSG("Invalid Group ID.");
+		}
+		group = *groupp;
+	}
 
 		if (this == singleton) {
 			_unlock_unlockable_mutexes();

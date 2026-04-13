@@ -3639,6 +3639,7 @@ RID TextureStorage::decal_instance_create(RID p_decal) {
 
 void TextureStorage::decal_instance_free(RID p_decal_instance) {
 	DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+	ERR_FAIL_NULL(di);
 	ForwardIDStorage::get_singleton()->free_forward_id(FORWARD_ID_TYPE_DECAL, di->forward_id);
 	decal_instance_owner.free(p_decal_instance);
 }
@@ -3703,6 +3704,9 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 			continue;
 		}
 		Decal *decal = decal_owner.get_or_null(decal_instance->decal);
+		if (!decal) {
+			continue;
+		}
 
 		Transform3D xform = decal_instance->transform;
 

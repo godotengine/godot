@@ -162,7 +162,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 			/* ***************** PROCESSING ******************* */
 			/* this does the actual pitch shifting */
 			size_t fftBufferSize = static_cast<size_t>(fftFrameSize) * sizeof(float);
-			if (unlikely(fftBufferSize > MAX_FRAME_LENGTH)) {
+			if (unlikely(fftFrameSize > MAX_FRAME_LENGTH)) {
 				ERR_PRINT_ONCE("Invalid FFT frame size for PitchShift. This is a bug, please report.");
 				return;
 			}

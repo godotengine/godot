@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "scene/resources/audio_stream_wav.h"
@@ -42,16 +44,16 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectRecordInstance, AudioEffectInstance);
 	friend class AudioEffectRecord;
 
-	bool is_recording;
+	std::atomic<bool> is_recording;
 	Thread io_thread;
 	Mutex recording_lock;
 
 	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
 
-	unsigned int ring_buffer_pos;
+	std::atomic<unsigned int> ring_buffer_pos;
 	unsigned int ring_buffer_mask;
-	unsigned int ring_buffer_read_pos;
+	std::atomic<unsigned int> ring_buffer_read_pos;
 
 	void _io_thread_process();
 	void _io_store_buffer();

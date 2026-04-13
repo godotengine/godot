@@ -201,14 +201,14 @@ AudioStreamWAV::Format AudioEffectRecord::get_format() const {
 }
 
 Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
+	ERR_FAIL_COND_V(current_instance.is_null(), nullptr);
+
 	MutexLock lock(current_instance->recording_lock);
 
 	AudioStreamWAV::Format dst_format = format;
 	bool stereo = true; //forcing mono is not implemented
 
 	Vector<uint8_t> dst_data;
-
-	ERR_FAIL_COND_V(current_instance.is_null(), nullptr);
 	ERR_FAIL_COND_V(current_instance->recording_data.is_empty(), nullptr);
 
 	if (dst_format == AudioStreamWAV::FORMAT_8_BITS) {

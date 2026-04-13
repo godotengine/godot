@@ -1341,6 +1341,7 @@ RID LightStorage::reflection_atlas_create() {
 void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
 	reflection_atlas_set_size(p_ref_atlas, 0, 0);
 	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
+	ERR_FAIL_NULL(ra);
 	if (ra->cluster_builder) {
 		memdelete(ra->cluster_builder);
 	}
@@ -1413,6 +1414,7 @@ RID LightStorage::reflection_probe_instance_create(RID p_probe) {
 
 void LightStorage::reflection_probe_instance_free(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(rpi);
 	ForwardIDStorage::get_singleton()->free_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id);
 	reflection_probe_release_atlas_index(p_instance);
 	reflection_probe_instance_owner.free(p_instance);
