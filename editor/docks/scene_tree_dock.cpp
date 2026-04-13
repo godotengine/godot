@@ -3724,24 +3724,18 @@ void SceneTreeDock::_normalize_drop_on_exposed_node(Node *&to_node, int &to_pos,
 		}
 		while (parent != nullptr) {
 			if (_is_node_visible(parent)) {
-				to_node = parent;
-
 				if (!parent->has_exposed_nodes()) {
 					to_pos = 0;
 					break;
 				}
 
-				Node *lower_sibling = nullptr;
-
 				for (int i = 0; i < parent->get_child_count(false); i++) {
-					Node *c = parent->get_child(i, false);
-					if (_is_node_visible(c) && !c->has_meta(META_EXPOSED_IN_INSTANCE)) {
-						lower_sibling = c;
+					Node *child = parent->get_child(i, false);
+					if (!child->has_exposed_nodes()) {
+						to_pos = child->get_index(false);
+						to_node = parent;
 						break;
 					}
-				}
-				if (lower_sibling) {
-					to_pos = lower_sibling->get_index(false);
 				}
 				break;
 			}
