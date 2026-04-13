@@ -30,9 +30,7 @@
 
 #pragma once
 
-#include "core/object/script_language.h"
 #include "core/os/process_id.h"
-#include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "scene/gui/margin_container.h"
 
@@ -51,10 +49,16 @@ class EditorFileDialog;
 class EditorVisualProfiler;
 class EditorPerformanceProfiler;
 class SceneDebuggerTree;
+class EditorDebuggerInspector;
 class EditorDebuggerPlugin;
 class DebugAdapterProtocol;
 class DebugAdapterParser;
 class EditorExpressionEvaluator;
+class OptionButton;
+class PopupMenu;
+class RemoteDebuggerPeer;
+class TextureRect;
+class VBoxContainer;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);

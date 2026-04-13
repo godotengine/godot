@@ -35,6 +35,8 @@
 #include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"

@@ -41,6 +41,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {

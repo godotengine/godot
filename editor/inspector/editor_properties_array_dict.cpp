@@ -41,12 +41,18 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_variant_type_selectors.h"
+#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_action_button.h"
+#include "editor/inspector/editor_paginator.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/panel_container.h"
 #include "scene/main/scene_tree.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {

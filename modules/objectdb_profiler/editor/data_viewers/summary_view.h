@@ -36,7 +36,9 @@
 #include "scene/gui/margin_container.h"
 
 class CenterContainer;
+class PanelContainer;
 class RichTextLabel;
+class VBoxContainer;
 
 class SummaryBlurb : public MarginContainer {
 	GDCLASS(SummaryBlurb, MarginContainer);

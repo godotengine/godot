@@ -33,6 +33,7 @@
 #include "editor/animation/animation_library_editor.h"
 #include "editor/animation/animation_track_editor.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
@@ -41,6 +42,7 @@
 #include "scene/resources/material.h"
 
 class AnimationPlayerEditorPlugin;
+class Button;
 class ImageTexture;
 
 class AnimationPlayerEditor : public EditorDock {
@@ -260,11 +262,9 @@ public:
 
 	static AnimationPlayerEditor *get_singleton() { return singleton; }
 
-	bool is_pinned() const { return pin->is_pressed(); }
-	void unpin() {
-		pin->set_pressed(false);
-		_pin_pressed();
-	}
+	bool is_pinned() const;
+	void unpin();
+
 	AnimationTrackEditor *get_track_editor() { return track_editor; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);

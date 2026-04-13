@@ -30,14 +30,17 @@
 
 #pragma once
 
+#include "core/doc_data.h"
 #include "core/os/thread.h"
-#include "editor/doc/doc_tools.h"
-#include "editor/plugins/editor_plugin.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/text_edit.h"
-#include "scene/main/timer.h"
+
+class Button;
+class DocTools;
+class LineEdit;
+class RichTextLabel;
+class TextEdit;
+class Timer;
 
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
@@ -258,7 +261,7 @@ public:
 
 	String get_class();
 
-	void set_focused() { class_desc->grab_focus(); }
+	void set_focused();
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);

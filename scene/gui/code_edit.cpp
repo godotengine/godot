@@ -41,6 +41,7 @@
 #include "core/string/string_builder.h"
 #include "core/string/translation_server.h"
 #include "core/string/ustring.h"
+#include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"

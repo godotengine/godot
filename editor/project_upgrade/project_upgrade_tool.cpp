@@ -42,7 +42,9 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 
 void ProjectUpgradeTool::_add_files(EditorFileSystemDirectory *p_dir, Vector<String> &r_reimport_paths, Vector<String> &r_resave_scenes, Vector<String> &r_resave_resources) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);

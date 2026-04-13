@@ -39,6 +39,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/visual_shader_editor_plugin.h"
 #include "editor/visual_shader_language_plugin.h"
 

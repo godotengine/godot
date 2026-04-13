@@ -31,11 +31,13 @@
 #pragma once
 
 #include "scene/gui/control.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/scroll_bar.h"
 #include "scene/main/timer.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_paragraph.h"
+
+class HScrollBar;
+class PopupMenu;
+class VScrollBar;
 
 class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);

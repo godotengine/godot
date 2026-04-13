@@ -37,6 +37,7 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
 
 void Skeleton2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

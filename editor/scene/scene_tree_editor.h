@@ -30,16 +30,20 @@
 
 #pragma once
 
+#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
 
 class CheckBox;
 class CheckButton;
 class EditorSelection;
 class FilterLineEdit;
+class HBoxContainer;
 class Label;
 class TextureRect;
 class Timer;
+class Tree;
+class TreeItem;
+class VBoxContainer;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);

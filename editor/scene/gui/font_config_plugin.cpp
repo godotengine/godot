@@ -34,9 +34,15 @@
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/import/dynamic_font_import_settings.h"
+#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_action_button.h"
+#include "editor/inspector/editor_paginator.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/popup_menu.h"
 
 /*************************************************************************/
 /*  EditorPropertyFontMetaObject                                         */

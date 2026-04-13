@@ -34,11 +34,12 @@
 
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/tree.h"
 
+class Button;
+class LineEdit;
 class Timer;
+class Tree;
+class TreeItem;
 
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)

@@ -39,12 +39,18 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);

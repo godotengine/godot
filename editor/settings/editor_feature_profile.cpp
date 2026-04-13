@@ -34,6 +34,7 @@
 #include "core/io/json.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
@@ -41,8 +42,15 @@
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tree.h"
+#include "scene/main/timer.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),

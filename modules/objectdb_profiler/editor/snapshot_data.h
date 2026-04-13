@@ -30,9 +30,13 @@
 
 #pragma once
 
-#include "editor/debugger/editor_debugger_inspector.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 
 class GameStateSnapshot;
+class Resource;
+class SceneDebuggerObject;
+class Script;
 
 class SnapshotDataObject : public Object {
 	GDCLASS(SnapshotDataObject, Object);

@@ -37,8 +37,10 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server.h"
 

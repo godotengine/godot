@@ -34,8 +34,9 @@
 #include "core/os/process_id.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
-#include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
+#include "scene/main/node.h"
+#include "scene/resources/theme.h"
 #include "servers/display/display_server_enums.h"
 
 typedef void (*EditorNodeInitCallback)();
@@ -63,6 +64,8 @@ class Tree;
 class VBoxContainer;
 class VSplitContainer;
 class Window;
+class Label;
+class Button;
 
 class AudioStreamImportSettingsDialog;
 class AudioStreamPreviewGenerator;

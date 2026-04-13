@@ -31,33 +31,32 @@
 #pragma once
 
 #include "editor/docks/editor_dock.h"
-#include "editor/file_system/dependency_editor.h"
-#include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/file_info.h"
-#include "editor/script/script_create_dialog.h"
-#include "editor/script/script_editor_plugin.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/control.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 class AcceptDialog;
+class Button;
+class CheckBox;
+class ConfirmationDialog;
 class CreateDialog;
 class DependencyEditor;
 class DependencyEditorOwners;
 class DependencyRemoveDialog;
 class EditorDirDialog;
+class EditorFileSystemDirectory;
 class HBoxContainer;
 class LineEdit;
+class MenuButton;
 class ProgressBar;
 class SceneCreateDialog;
+class ScriptCreateDialog;
 class ShaderCreateDialog;
+class SplitContainer;
 class DirectoryCreateDialog;
 class EditorResourceTooltipPlugin;
 class VBoxContainer;
+class ScrollContainer;
 
 class FileSystemTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;

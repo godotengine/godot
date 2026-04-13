@@ -45,8 +45,12 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_mixer.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
 

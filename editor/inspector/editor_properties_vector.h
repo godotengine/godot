@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_properties.h"
 
 class EditorSpinSlider;

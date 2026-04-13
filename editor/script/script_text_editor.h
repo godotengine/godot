@@ -32,13 +32,13 @@
 
 #include "editor/gui/code_editor.h"
 #include "editor/script/script_editor_base.h"
-#include "editor/script/script_editor_plugin.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tree.h"
 
+class OptionButton;
 class RichTextLabel;
+class ScriptEditorQuickOpen;
+class Tree;
 
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);

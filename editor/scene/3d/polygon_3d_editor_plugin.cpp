@@ -43,6 +43,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/button.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/material.h"

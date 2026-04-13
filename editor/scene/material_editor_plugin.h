@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -45,6 +45,7 @@ class SubViewport;
 class SubViewportContainer;
 class Button;
 class Label;
+class VBoxContainer;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);

@@ -30,18 +30,22 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/panel.h"
 
 class AtlasTexture;
+class HScrollBar;
 class NinePatchRect;
 class OptionButton;
 class PanelContainer;
+class SpinBox;
 class Sprite2D;
 class Sprite3D;
 class StyleBoxTexture;
 class ViewPanner;
+class VScrollBar;
 
 class TextureRegionEditor : public AcceptDialog {
 	GDCLASS(TextureRegionEditor, AcceptDialog);

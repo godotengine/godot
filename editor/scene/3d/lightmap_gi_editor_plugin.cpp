@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "scene/3d/lightmap_gi.h"
+#include "scene/gui/button.h"
 #include "scene/main/scene_tree.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"

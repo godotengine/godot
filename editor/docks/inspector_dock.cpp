@@ -40,6 +40,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_object_selector.h"
 #include "editor/script/script_editor_plugin.h"
@@ -47,6 +48,10 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
 
 void InspectorDock::_prepare_menu() {
 	PopupMenu *menu = object_menu->get_popup();

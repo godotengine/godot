@@ -31,6 +31,7 @@
 #include "graph_edit_arranger.h"
 
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_node.h"
 
 #include <cfloat> // FLT_MIN, FLT_MAX
 

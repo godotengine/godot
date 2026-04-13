@@ -30,17 +30,19 @@
 
 #pragma once
 
-#include "../action_map/openxr_action_map.h"
-#include "../action_map/openxr_interaction_profile.h"
-#include "openxr_binding_modifier_editor.h"
-
-#include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/create_dialog.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/label.h"
-#include "scene/gui/scroll_container.h"
+
+class Button;
+class CreateDialog;
+class EditorUndoRedoManager;
+class Label;
+class OpenXRActionMap;
+class OpenXRBindingModifier;
+class OpenXRBindingModifierEditor;
+class OpenXRInteractionProfile;
+class OpenXRIPBinding;
+class ScrollContainer;
+class VBoxContainer;
 
 class OpenXRBindingModifiersDialog : public AcceptDialog {
 	GDCLASS(OpenXRBindingModifiersDialog, AcceptDialog);

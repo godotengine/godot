@@ -30,13 +30,15 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 
 class CheckBox;
 class HSplitContainer;
 class VSplitContainer;
+class OptionButton;
+class SpinBox;
 class Tree;
 class TreeItem;
 class AudioStreamInteractive;

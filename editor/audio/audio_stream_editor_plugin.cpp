@@ -35,6 +35,9 @@
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
 #include "scene/resources/audio_stream_wav.h"
 #include "servers/rendering/rendering_server.h"
 

@@ -33,7 +33,11 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 
 void OpenXRActionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionEditor::_do_set_name);

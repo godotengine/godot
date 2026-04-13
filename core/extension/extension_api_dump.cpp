@@ -30,6 +30,8 @@
 
 #include "extension_api_dump.h"
 
+#ifdef TOOLS_ENABLED
+
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
@@ -38,8 +40,7 @@
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
-
-#ifdef TOOLS_ENABLED
+#include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {

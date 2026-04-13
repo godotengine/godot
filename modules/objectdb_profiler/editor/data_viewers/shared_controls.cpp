@@ -37,6 +37,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/resources/style_box_flat.h"
 
 SpanningHeader::SpanningHeader(const String &p_text) {

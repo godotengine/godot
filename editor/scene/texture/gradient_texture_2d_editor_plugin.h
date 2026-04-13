@@ -30,12 +30,14 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/gui/box_container.h"
 
 class Button;
 class EditorSpinSlider;
 class GradientTexture2D;
+class TextureRect;
 
 class GradientTexture2DEdit : public Control {
 	GDCLASS(GradientTexture2DEdit, Control);

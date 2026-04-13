@@ -34,11 +34,11 @@
 
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/box_container.h"
 
 class Button;
 class ConfirmationDialog;
 class FilterLineEdit;
+class HBoxContainer;
 class HSlider;
 class ItemList;
 class MenuButton;
@@ -47,6 +47,7 @@ class ButtonGroup;
 class EditorZoomWidget;
 class BaseButton;
 class SpinBox;
+class VBoxContainer;
 
 class GridMapEditor : public EditorDock {
 	GDCLASS(GridMapEditor, EditorDock);
