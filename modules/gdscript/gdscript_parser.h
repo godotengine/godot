@@ -869,6 +869,9 @@ public:
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
 		Vector<Variant> default_arg_values;
+
+		int header_end_line = 0;
+		int header_end_column = 0;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 		int min_local_doc_line = 0;
@@ -1374,7 +1377,10 @@ public:
 
 private:
 	struct PendingWarning {
-		const Node *source = nullptr;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
 		bool treated_as_error = false;
 		Vector<String> symbols;
@@ -1503,6 +1509,7 @@ private:
 	void clear();
 
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, int p_start_line, int p_start_column, int p_end_line, int p_end_column);
 	void push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin);
 
 #ifdef DEBUG_ENABLED
@@ -1510,6 +1517,11 @@ private:
 	template <typename... Symbols>
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
+	}
+	void push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+	template <typename... Symbols>
+	void push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
+		push_warning(p_start_line, p_start_column, p_end_line, p_end_column, p_code, Vector<String>{ p_symbols... });
 	}
 	void apply_pending_warnings();
 	void evaluate_warning_directory_rules_for_script_path();
