@@ -48,6 +48,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/add_metadata_dialog.h"
 #include "editor/inspector/editor_properties.h"
+#include "editor/inspector/editor_properties_array_dict.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
@@ -98,7 +99,7 @@ bool EditorInspector::_property_path_matches(const String &p_property_path, cons
 	return false;
 }
 
-bool EditorInspector::_resource_properties_matches(const Ref<Resource> &p_resource, const String &p_filter) {
+bool EditorInspector::resource_properties_matches(const Ref<Resource> &p_resource, const String &p_filter) {
 	String group;
 	String group_base;
 	String subgroup;
@@ -209,13 +210,102 @@ bool EditorInspector::_resource_properties_matches(const Ref<Resource> &p_resour
 		// Check if the sub-resource has any properties that match the filter.
 		if (p.hint && p.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			Ref<Resource> res = p_resource->get(p.name);
-			if (res.is_valid() && _resource_properties_matches(res, p_filter)) {
+			if (res.is_valid() && resource_properties_matches(res, p_filter)) {
 				return true;
 			}
 		}
 	}
 
 	return false;
+}
+
+bool EditorInspector::array_properties_matches(const Array &p_array, const String &p_filter) {
+	bool found = false;
+	for (int i = 0; i < p_array.size(); i++) {
+		Ref<Resource> res = p_array.get(i);
+		if (res.is_valid()) {
+			if (resource_properties_matches(res, p_filter)) {
+				found = true;
+				break;
+			}
+
+			continue;
+		}
+
+		// Search inside inner arrays.
+		Variant var = p_array.get(i);
+		if (var.is_array()) {
+			const Array &array = var;
+			if (array_properties_matches(array, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+
+		// Search inside inner dictionaries.
+		if (var.get_type() == Variant::DICTIONARY) {
+			const Dictionary &dict = var;
+			if (dict_properties_matches(dict, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+	}
+
+	return found;
+}
+
+bool EditorInspector::dict_properties_matches(const Dictionary &p_dict, const String &p_filter) {
+	bool found = false;
+	for (const Variant &k : p_dict.get_key_list()) {
+		Ref<Resource> res = k;
+		if (res.is_null()) {
+			res = p_dict[k];
+			if (res.is_null()) {
+				continue;
+			}
+		}
+
+		if (resource_properties_matches(res, p_filter)) {
+			found = true;
+			break;
+		}
+
+		// Search inside inner dictionaries.
+		if (k.get_type() == Variant::DICTIONARY) {
+			const Dictionary &dict = k;
+			if (dict_properties_matches(dict, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+		Variant value = p_dict[k];
+		if (value.get_type() == Variant::DICTIONARY) {
+			const Dictionary &dict = value;
+			if (dict_properties_matches(dict, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+
+		// Search inside inner arrays.
+		if (k.is_array()) {
+			const Array &array = k;
+			if (array_properties_matches(array, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+		if (value.is_array()) {
+			const Array &array = value;
+			if (array_properties_matches(array, p_filter)) {
+				found = true;
+				break;
+			}
+		}
+	}
+
+	return found;
 }
 
 String EditorProperty::get_tooltip_string(const String &p_string) const {
@@ -4230,6 +4320,16 @@ void EditorInspector::_apply_property_editor_flags(EditorProperty *p_ep, bool p_
 		EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(p_ep);
 		if (epr) {
 			epr->set_use_filter(true);
+		} else {
+			EditorPropertyArray *epa = Object::cast_to<EditorPropertyArray>(p_ep);
+			if (epa) {
+				epa->set_use_filter(true);
+			} else {
+				EditorPropertyDictionary *epd = Object::cast_to<EditorPropertyDictionary>(p_ep);
+				if (epd) {
+					epd->set_use_filter(true);
+				}
+			}
 		}
 	}
 
@@ -4769,21 +4869,32 @@ void EditorInspector::update_tree() {
 		if (use_filter && !filter.is_empty()) {
 			const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
 			if (!_property_path_matches(property_path, filter, property_name_style)) {
-				if (!sub_inspectors_enabled || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+				if (!sub_inspectors_enabled || !(p.hint == PROPERTY_HINT_RESOURCE_TYPE || p.type == Variant::ARRAY || p.type == Variant::DICTIONARY)) {
 					continue;
 				}
 
-				Ref<Resource> res = object->get(p.name);
-				if (res.is_null()) {
-					continue;
+				if (p.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					Ref<Resource> res = object->get(p.name);
+					if (res.is_valid() && resource_properties_matches(res, filter)) {
+						sub_inspector_use_filter = true;
+					}
+
+				} else if (p.type == Variant::ARRAY) {
+					const Array &array = object->get(p.name);
+					if (array_properties_matches(array, filter)) {
+						sub_inspector_use_filter = true;
+					}
+
+				} else if (p.type == Variant::DICTIONARY) {
+					const Dictionary &dict = object->get(p.name);
+					if (dict_properties_matches(dict, filter)) {
+						sub_inspector_use_filter = true;
+					}
 				}
 
-				// Check if the sub-resource has any properties that match the filter.
-				if (!_resource_properties_matches(res, filter)) {
+				if (!sub_inspector_use_filter) {
 					continue;
 				}
-
-				sub_inspector_use_filter = true;
 			}
 		}
 
