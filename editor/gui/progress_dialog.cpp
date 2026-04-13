@@ -146,10 +146,23 @@ void ProgressDialog::_notification(int p_what) {
 }
 
 void ProgressDialog::_update_ui() {
-	// Run main loop for two frames.
+	// Prevent re-entrant Main::iteration() calls. Main::iteration() runs a full
+	// frame cycle including _process() on all nodes. If a @tool script's _process()
+	// triggers another operation that reaches _update_ui (or any code that calls
+	// Main::iteration()), we get recursive frame iterations that can corrupt editor
+	// state. This is the same class of bug fixed by prevent_recursive_process_hack
+	// in EditorFileSystem (GH #73214 / #54864).
+	static bool is_iterating = false;
+	if (is_iterating) {
+		return;
+	}
+
+	// Run main loop for a frame to update the UI.
 	if (is_inside_tree()) {
+		is_iterating = true;
 		DisplayServer::get_singleton()->process_events();
 		Main::iteration();
+		is_iterating = false;
 	}
 }
 
