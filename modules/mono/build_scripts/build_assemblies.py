@@ -327,7 +327,7 @@ def generate_sdk_package_versions():
     <PackageVersion_Godot_NET_Sdk>{godotsharp_version_str}</PackageVersion_Godot_NET_Sdk>
     <PackageVersion_Godot_SourceGenerators>{godotsharp_version_str}</PackageVersion_Godot_SourceGenerators>
     <PackageVersion_GodotDotNet>{godot_dotnet_version_str}</PackageVersion_GodotDotNet>
-    <GodotVersionConstants>{";".join(version_defines)}</GodotVersionConstants>
+    <_GodotVersionConstants>{";".join(version_defines)}</_GodotVersionConstants>
   </PropertyGroup>
 </Project>
 """
