@@ -125,7 +125,6 @@ class ScriptEditor : public PanelContainer {
 		HELP_SEARCH_FIND_PREVIOUS,
 
 		SEARCH_IN_FILES,
-		REPLACE_IN_FILES,
 
 		SEARCH_HELP,
 		SEARCH_WEBSITE,
@@ -195,8 +194,6 @@ class ScriptEditor : public PanelContainer {
 
 	Button *script_back = nullptr;
 	Button *script_forward = nullptr;
-
-	FindInFiles *find_in_files = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
 
@@ -405,7 +402,6 @@ public:
 	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
-	void open_find_in_files_dialog(const String &p_initial_text = "", bool p_replace = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
@@ -460,7 +456,6 @@ public:
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
 	ScriptEditor(WindowWrapper *p_wrapper);
-	~ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
@@ -501,4 +496,5 @@ public:
 	virtual void edited_scene_changed() override;
 
 	ScriptEditorPlugin();
+	~ScriptEditorPlugin();
 };
