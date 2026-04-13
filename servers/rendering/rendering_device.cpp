@@ -3970,6 +3970,12 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 						vformat("Vertex attribute (%d) uses instancing, but it's just too small.", atf.location));
 
 				uint32_t instances_allowed = available / atf.stride;
+
+				// The remaining space might be able to fit another instance.
+				if ((available % atf.stride) >= element_size) {
+					++instances_allowed;
+				}
+
 				vertex_array.max_instances_allowed = MIN(instances_allowed, vertex_array.max_instances_allowed);
 			}
 		}
