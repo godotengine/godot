@@ -67,7 +67,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (p_event->is_pressed()) {
+	if (p_event->is_pressed() && status.touch_index == -1) {
 		status.device_id = p_event->get_device();
 	}
 
@@ -267,6 +267,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
+					status.touch_index = -1; // Action completed, release matching touch so later taps aren't dropped if a modal consumes the release.
 				}
 				status.pressed = !status.pressed;
 				_unpress_group();
