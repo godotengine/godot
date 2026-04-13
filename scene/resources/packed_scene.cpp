@@ -393,7 +393,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						dnp.value = props[nprops[j].value];
 						dnp.base = node->get_instance_id();
 						dnp.property = snames[name_idx];
-						dnp.nd = &n;
+						dnp.nd_index = i;
 						deferred_node_paths.push_back(dnp);
 						continue;
 					}
@@ -605,9 +605,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Array array = base->get(dnp.property, &valid);
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
 
-			int idx = dnp.nd - nd;
-			paths = setup_resources_in_array(paths, *dnp.nd, resources_local_to_scenes, base, dnp.property, idx, ret_nodes, p_edit_state);
+			paths = setup_resources_in_array(paths, nd[dnp.nd_index], resources_local_to_scenes, base, dnp.property, dnp.nd_index, ret_nodes, p_edit_state);
 			array.resize(paths.size());
+
 			bind_deferred_node_paths_in_array(paths, array, base);
 			base->set(dnp.property, array);
 		} else if (dnp.value.get_type() == Variant::DICTIONARY) {
@@ -616,10 +616,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			bool valid;
 			Dictionary dict = base->get(dnp.property, &valid);
 			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-
 			dict.clear();
-			int idx = dnp.nd - nd;
-			dict_to_scan = setup_resources_in_dictionary(dict_to_scan, *dnp.nd, resources_local_to_scenes, base, dnp.property, idx, ret_nodes, p_edit_state);
+
+			dict_to_scan = setup_resources_in_dictionary(dict_to_scan, nd[dnp.nd_index], resources_local_to_scenes, base, dnp.property, dnp.nd_index, ret_nodes, p_edit_state);
 			bind_deferred_node_paths_in_dictionary(dict_to_scan, dict, base);
 			base->set(dnp.property, dict);
 		} else if (dnp.value.get_type() == Variant::OBJECT && maybe_node_binding) {

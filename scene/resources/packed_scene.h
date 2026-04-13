@@ -80,7 +80,7 @@ class SceneState : public RefCounted {
 		ObjectID base;
 		StringName property;
 		Variant value;
-		const NodeData *nd;
+		int nd_index;
 	};
 
 	Vector<NodeData> nodes;
