@@ -36,6 +36,9 @@
 #include "scene/gui/texture_rect.h"
 
 class EditorSelectionHistory;
+class Label;
+class PopupMenu;
+class TextureRect;
 
 class EditorObjectSelector : public Button {
 	GDCLASS(EditorObjectSelector, Button);

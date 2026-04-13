@@ -36,6 +36,9 @@
 #include "core/io/dir_access.h"
 #include "core/templates/lru.h"
 
+class Button;
+class OptionButton;
+class PopupMenu;
 class TabContainer;
 class Tree;
 

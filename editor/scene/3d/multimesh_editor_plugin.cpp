@@ -38,8 +38,11 @@
 #include "editor/scene/scene_tree_editor.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 
 void MultiMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

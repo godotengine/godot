@@ -42,6 +42,7 @@
 #include "editor/editor_node.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/gui/button.h"
 
 DebugAdapterProtocol *DebugAdapterProtocol::singleton = nullptr;
 

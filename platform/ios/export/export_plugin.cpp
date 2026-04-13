@@ -35,6 +35,7 @@
 
 #include "editor/editor_node.h"
 #include "main/splash.gen.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 Vector<String> EditorExportPlatformIOS::device_types({ "iPhone", "iPad" });
 

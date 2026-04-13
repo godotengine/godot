@@ -34,7 +34,7 @@
 #include "../noise_texture_2d.h"
 
 #include "core/object/callable_mp.h"
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"

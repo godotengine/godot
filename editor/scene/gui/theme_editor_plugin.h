@@ -35,6 +35,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/gui/theme_editor_preview.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/theme.h"

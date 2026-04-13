@@ -40,6 +40,7 @@ class MenuButton;
 class OptionButton;
 class ProgressBar;
 class Tree;
+class VBoxContainer;
 
 class ExportTemplateManager : public AcceptDialog {
 	GDCLASS(ExportTemplateManager, AcceptDialog);

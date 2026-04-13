@@ -35,8 +35,8 @@
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/property_selector.h"
 #include "scene/3d/node_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
@@ -50,9 +50,11 @@ class CheckBox;
 class ColorPickerButton;
 class EditorSpinSlider;
 class HSlider;
+class MenuButton;
 class OptionButton;
 class PanelContainer;
 class SceneTreeDialog;
+class ScrollContainer;
 class SpinBox;
 class TextureRect;
 class ViewPanner;

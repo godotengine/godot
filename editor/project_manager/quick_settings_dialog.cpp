@@ -34,6 +34,7 @@
 #include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/editor_settings_dialog.h"
@@ -43,6 +44,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "servers/display/display_server.h"
 
 void QuickSettingsDialog::_fetch_setting_values() {

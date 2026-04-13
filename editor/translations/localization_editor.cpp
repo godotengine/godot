@@ -42,9 +42,14 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
+#include "editor/translations/editor_locale_dialog.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "editor/translations/template_generator.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
+#include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"
 
 void LocalizationEditor::_notification(int p_what) {

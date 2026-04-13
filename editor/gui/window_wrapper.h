@@ -34,6 +34,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
+class Button;
 class HBoxContainer;
 class Popup;
 class Window;

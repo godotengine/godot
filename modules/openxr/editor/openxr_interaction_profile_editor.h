@@ -38,7 +38,6 @@
 
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 
 class OpenXRInteractionProfileEditorBase : public HBoxContainer {
 	GDCLASS(OpenXRInteractionProfileEditorBase, HBoxContainer);

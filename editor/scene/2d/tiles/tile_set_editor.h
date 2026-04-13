@@ -45,6 +45,7 @@ class SplitContainer;
 class EditorFileDialog;
 class EditorInspectorPlugin;
 class TileSetSourceItemList;
+class PanelContainer;
 
 class TileSetEditor : public EditorDock {
 	GDCLASS(TileSetEditor, EditorDock);

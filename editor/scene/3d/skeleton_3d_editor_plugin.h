@@ -32,6 +32,7 @@
 
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/add_metadata_dialog.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
@@ -41,6 +42,7 @@
 #include "scene/resources/immediate_mesh.h"
 
 class EditorInspectorPluginSkeleton;
+class EditorInspectorSection;
 class EditorPropertyVector3;
 class Joint;
 class PhysicalBone3D;

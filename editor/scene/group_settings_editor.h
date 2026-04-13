@@ -30,13 +30,17 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/box_container.h"
 
+class AcceptDialog;
+class Button;
 class CheckBox;
+class ConfirmationDialog;
 class EditorFileSystemDirectory;
 class EditorValidationPanel;
 class FileSystemDock;
 class Label;
+class LineEdit;
 class Tree;
 
 class GroupSettingsEditor : public VBoxContainer {

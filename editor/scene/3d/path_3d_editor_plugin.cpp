@@ -41,8 +41,11 @@
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/debugger/view_3d_controller.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/curve.h"
 

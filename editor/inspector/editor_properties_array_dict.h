@@ -30,13 +30,15 @@
 
 #pragma once
 
-#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/translations/editor_locale_dialog.h"
 
 class Button;
+class EditorPaginator;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
 class MarginContainer;
+class PanelContainer;
 
 class EditorPropertyArrayObject : public RefCounted {
 	GDCLASS(EditorPropertyArrayObject, RefCounted);

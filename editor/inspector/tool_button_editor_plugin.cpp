@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector_action_button.h"
 #include "editor/inspector/multi_node_edit.h"
 
 void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, const StringName &p_property) {

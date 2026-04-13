@@ -38,6 +38,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/gradient_texture.h"
 
 Point2 GradientTexture2DEdit::_get_handle_pos(const Handle p_handle) {

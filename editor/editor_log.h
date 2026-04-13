@@ -32,10 +32,10 @@
 
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
-#include "scene/gui/button.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/rich_text_label.h"
 
+class Button;
+class LineEdit;
+class RichTextLabel;
 class Timer;
 class UndoRedo;
 
@@ -88,40 +88,17 @@ private:
 		MessageType type;
 		Button *toggle_button = nullptr;
 
-		void initialize_button(const String &p_name, const String &p_tooltip, Callable p_toggled_callback) {
-			toggle_button = memnew(Button);
-			toggle_button->set_toggle_mode(true);
-			toggle_button->set_pressed(true);
-			toggle_button->set_text(itos(message_count));
-			toggle_button->set_accessibility_name(TTRGET(p_name));
-			toggle_button->set_tooltip_text(TTRGET(p_tooltip));
-			toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-			toggle_button->set_theme_type_variation("EditorLogFilterButton");
-			// When toggled call the callback and pass the MessageType this button is for.
-			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
-		}
+		void initialize_button(const String &p_name, const String &p_tooltip, Callable p_toggled_callback);
 
-		int get_message_count() {
-			return message_count;
-		}
+		int get_message_count();
 
-		void set_message_count(int p_count) {
-			message_count = p_count;
-			toggle_button->set_text(itos(message_count));
-		}
+		void set_message_count(int p_count);
 
-		bool is_active() {
-			return active;
-		}
+		bool is_active();
 
-		void set_active(bool p_active) {
-			toggle_button->set_pressed(p_active);
-			active = p_active;
-		}
+		void set_active(bool p_active);
 
-		LogFilter(MessageType p_type) :
-				type(p_type) {
-		}
+		LogFilter(MessageType p_type);
 	};
 
 	int line_limit = 10000;

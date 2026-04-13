@@ -30,18 +30,20 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/graph_frame.h"
-#include "scene/gui/graph_node.h"
-#include "scene/resources/shader.h"
+#include "scene/gui/control.h"
 
 class Button;
 class GraphEdit;
 class GraphEditArranger;
+class GraphElement;
+class GraphFrame;
+class GraphNode;
+class HBoxContainer;
 class HScrollBar;
 class Label;
 class Line2D;
 class PanelContainer;
+class Shader;
 class SpinBox;
 class ViewPanner;
 class VScrollBar;

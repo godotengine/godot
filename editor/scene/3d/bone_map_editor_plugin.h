@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector_plugin.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/skeleton_3d.h"
@@ -41,6 +42,7 @@
 #include "scene/resources/bone_map.h"
 
 class AspectRatioContainer;
+class TextureRect;
 
 class BoneMapperButton : public TextureButton {
 	GDCLASS(BoneMapperButton, TextureButton);

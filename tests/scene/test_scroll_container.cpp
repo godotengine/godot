@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_scroll_container)
 
 #include "scene/gui/control.h"
+#include "scene/gui/scroll_bar.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"

@@ -36,6 +36,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"

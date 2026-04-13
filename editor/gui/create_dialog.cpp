@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -44,7 +45,10 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {

@@ -30,14 +30,16 @@
 
 #pragma once
 
-#include "editor/gui/editor_zoom_widget.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/center_container.h"
-#include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/control.h"
 #include "scene/resources/2d/tile_set.h"
 
+class Button;
+class CenterContainer;
+class EditorZoomWidget;
+class HBoxContainer;
+class MarginContainer;
+class TileData;
+class TileSetAtlasSource;
 class ViewPanner;
 
 class TileAtlasView : public Control {
