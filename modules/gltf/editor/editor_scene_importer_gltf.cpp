@@ -81,7 +81,7 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
 	return gltf_doc->generate_scene(gltf_state, gltf_state->get_bake_fps(), trimming, false);
 #else
-	return gltf->generate_scene(state, state->get_bake_fps(), (bool)p_options["animation/trimming"], false);
+	return gltf_doc->generate_scene(gltf_state, gltf_state->get_bake_fps(), (bool)p_options["animation/trimming"], false);
 #endif
 }
 
