@@ -13,9 +13,6 @@
 #include "../logger/gs_debug_trace.h"
 #include "../logger/gs_logger.h"
 
-#include "../core/gs_project_settings.h"
-#include "core/config/project_settings.h"
-
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
@@ -81,31 +78,46 @@ static uint64_t _compute_instance_pipeline_resource_fingerprint(const ResourceSt
 	return generation;
 }
 
+static uint64_t _compute_instance_asset_remap_fingerprint(const PublishedInstanceAssetRemap &p_remap) {
+	uint64_t generation = 0x510e527fade682d1ULL;
+	generation = _mix_u32_generation(generation, p_remap.valid ? 1u : 0u);
+	generation = _mix_u32_generation(generation, p_remap.asset_to_dense_id.size());
+	generation = _mix_content_generation(generation, p_remap.generation);
+	if (p_remap.asset_to_dense_id.is_empty()) {
+		return generation;
+	}
+
+	LocalVector<uint32_t> asset_ids;
+	asset_ids.reserve(p_remap.asset_to_dense_id.size());
+	for (const KeyValue<uint32_t, uint32_t> &entry : p_remap.asset_to_dense_id) {
+		asset_ids.push_back(entry.key);
+	}
+	uint32_t *asset_ids_ptr = asset_ids.ptr();
+	std::sort(asset_ids_ptr, asset_ids_ptr + asset_ids.size());
+	for (uint32_t i = 0; i < asset_ids.size(); i++) {
+		const uint32_t asset_id = asset_ids[i];
+		const uint32_t *dense_id = p_remap.asset_to_dense_id.getptr(asset_id);
+		generation = _mix_u32_generation(generation, asset_id);
+		generation = _mix_u32_generation(generation, dense_id ? *dense_id : UINT32_MAX);
+	}
+	return generation;
+}
+
+static uint64_t _compute_instance_pipeline_upload_fingerprint(const ResourceState &p_resource_state,
+		const InstancePipelineBuffers &p_buffers,
+		const PublishedInstanceAssetRemap &p_remap) {
+	uint64_t generation = 0xbb67ae8584caa73bULL;
+	generation = _mix_rid_generation(generation, p_resource_state.instance_buffer);
+	generation = _mix_u32_generation(generation, p_resource_state.instance_buffer_capacity);
+	generation = _mix_u32_generation(generation, p_buffers.instance_count);
+	generation = _mix_content_generation(generation, _compute_instance_asset_remap_fingerprint(p_remap));
+	return generation;
+}
+
 constexpr uint32_t kInstanceAssetEmptySyncGraceFrames = 3u;
 constexpr uint32_t kPrimaryStreamingAssetId = 0u;
 constexpr uint32_t kInvalidStreamingAssetId = UINT32_MAX;
-
-static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
-	if (!p_metadata.has(p_key)) {
-		return p_default;
-	}
-	const Variant value = p_metadata[p_key];
-	if (value.get_type() == Variant::FLOAT) {
-		return int((double)value);
-	}
-	return int(value);
-}
-
-static double _metadata_double(const Dictionary &p_metadata, const StringName &p_key, double p_default) {
-	if (!p_metadata.has(p_key)) {
-		return p_default;
-	}
-	const Variant value = p_metadata[p_key];
-	if (value.get_type() == Variant::INT) {
-		return double(int64_t(value));
-	}
-	return (double)value;
-}
+constexpr uint64_t kStreamingBootstrapRetryCooldownFrames = 30u;
 
 static PublishedInstanceAssetRemap _build_streaming_instance_asset_remap(
 		GaussianStreamingSystem *p_streaming_system,
@@ -149,77 +161,6 @@ static PublishedInstanceAssetRemap _build_streaming_instance_asset_remap(
 	remap.generation = p_generation == 0 ? 1u : p_generation;
 	remap.valid = true;
 	return remap;
-}
-
-static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
-	if (p_asset.is_null()) {
-		return false;
-	}
-	const Dictionary import_metadata = p_asset->get_import_metadata();
-	const int import_max_splats = _metadata_int(import_metadata, StringName("max_splats"), -1);
-	const double density_multiplier = _metadata_double(import_metadata, StringName("density_multiplier"), 1.0);
-	return import_max_splats == 0 && density_multiplier >= 0.999;
-}
-
-static bool _renderer_requests_conservative_full_fidelity_runtime(const GaussianSplatRenderer *p_renderer,
-		const Ref<GaussianSplatAsset> &p_active_asset) {
-	if (_asset_requests_full_fidelity_runtime(p_active_asset)) {
-		return true;
-	}
-	if (!p_renderer) {
-		return false;
-	}
-	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
-	if (!director) {
-		return false;
-	}
-
-	LocalVector<InstanceAssetRegistration> instance_assets;
-	director->collect_instance_assets_for_renderer(p_renderer, instance_assets,
-			p_renderer->is_shadow_instance_filter_enabled());
-	if (instance_assets.is_empty()) {
-		return false;
-	}
-	for (const InstanceAssetRegistration &entry : instance_assets) {
-		if (entry.requests_full_fidelity_runtime) {
-			return true;
-		}
-	}
-	if (p_active_asset.is_null()) {
-		return true;
-	}
-	const Ref<GaussianData> active_data = p_active_asset->get_gaussian_data();
-	if (active_data.is_null()) {
-		return true;
-	}
-	for (const InstanceAssetRegistration &entry : instance_assets) {
-		if (entry.data.is_null()) {
-			continue;
-		}
-		if (entry.data == active_data) {
-			return false;
-		}
-	}
-	return true;
-}
-
-static uint32_t _resolve_runtime_budget_splats(const GaussianSplatRenderer *p_renderer,
-		const GaussianSplatRenderer::SceneState &p_scene_state,
-		const PerformanceSettings &p_perf_settings) {
-	if (!p_scene_state.gaussian_data.is_valid()) {
-		return 0;
-	}
-	const uint32_t real_count = uint32_t(MAX(0, p_scene_state.gaussian_data->get_count()));
-	if (real_count == 0) {
-		return 0;
-	}
-	if (_renderer_requests_conservative_full_fidelity_runtime(p_renderer, p_scene_state.active_asset)) {
-		return real_count;
-	}
-	if (p_perf_settings.max_splats <= 0) {
-		return real_count;
-	}
-	return MIN<uint32_t>(real_count, uint32_t(p_perf_settings.max_splats));
 }
 
 enum class LayoutHintValidationUsage : uint8_t {
@@ -672,22 +613,95 @@ RenderStreamingOrchestrator::RenderStreamingOrchestrator(const RenderStreamingOr
 	ERR_FAIL_COND_MSG(runtime_ports.get_cull_frustum_plane_slack == nullptr, "RenderStreamingOrchestrator requires get_cull_frustum_plane_slack runtime port.");
 }
 
+void RenderStreamingOrchestrator::invalidate_instance_pipeline_caches() {
+	instance_pipeline_assets.clear();
+	instance_pipeline_assets_next.clear();
+	instance_pipeline_assets_to_remove.clear();
+	instance_pipeline_assets_cache.clear();
+	instance_pipeline_instance_cache.clear();
+	instance_pipeline_asset_versions.clear();
+	instance_pipeline_lod_mask_cache.clear();
+	instance_pipeline_asset_snapshot_generation = 0;
+	instance_pipeline_asset_snapshot_shadow_only = false;
+	instance_pipeline_empty_asset_sync_streak = 0;
+	visible_lod_selection._internal_get_instances().clear();
+	visible_lod_selection.residency_request_count = 0;
+	visible_lod_selection_generation = 0;
+	visible_lod_selection_shadow_only = false;
+}
+
+bool RenderStreamingOrchestrator::refresh_instance_asset_snapshot(GaussianSplatSceneDirector *p_director, bool p_trace_enabled) {
+	if (!p_director) {
+		instance_pipeline_assets_cache.clear();
+		instance_pipeline_asset_snapshot_generation = 0;
+		instance_pipeline_asset_snapshot_shadow_only = false;
+		return false;
+	}
+
+	const bool shadow_only = renderer->is_shadow_instance_filter_enabled();
+	const uint64_t asset_generation = p_director->get_instance_asset_generation_for_renderer(renderer);
+	const bool cache_hit = asset_generation != 0 &&
+			instance_pipeline_asset_snapshot_generation == asset_generation &&
+			instance_pipeline_asset_snapshot_shadow_only == shadow_only;
+	if (cache_hit) {
+		if (p_trace_enabled) {
+			GaussianSplatting::debug_trace_record_event("instance_pipeline",
+					vformat("SyncAssets cached generation=%d collected=%d",
+							static_cast<int64_t>(asset_generation),
+							instance_pipeline_assets_cache.size()),
+					false);
+		}
+		return true;
+	}
+
+	instance_pipeline_assets_cache.clear();
+	p_director->collect_instance_assets_for_renderer(renderer, instance_pipeline_assets_cache, shadow_only);
+	if (instance_pipeline_assets_cache.size() > 1) {
+		InstanceAssetRegistration *asset_cache_ptr = instance_pipeline_assets_cache.ptr();
+		std::sort(asset_cache_ptr, asset_cache_ptr + instance_pipeline_assets_cache.size(),
+				[](const InstanceAssetRegistration &a, const InstanceAssetRegistration &b) {
+					return a.asset_id < b.asset_id;
+				});
+	}
+	instance_pipeline_asset_snapshot_generation = asset_generation;
+	instance_pipeline_asset_snapshot_shadow_only = shadow_only;
+	if (p_trace_enabled) {
+		GaussianSplatting::debug_trace_record_event("instance_pipeline",
+				vformat("SyncAssets collected=%d generation=%d", instance_pipeline_assets_cache.size(),
+						static_cast<int64_t>(asset_generation)),
+				false);
+	}
+	return true;
+}
+
 const RenderStreamingOrchestrator::VisibleLODSelection &RenderStreamingOrchestrator::produce_visible_lod_selection(
 		GaussianSplatSceneDirector *p_director,
 		GaussianStreamingSystem *p_streaming_system,
 		const Vector3 &p_camera_origin) {
-	visible_lod_selection._internal_get_instances().clear();
 	visible_lod_selection.residency_request_count = 0;
 
 	if (!p_director || !p_streaming_system) {
+		visible_lod_selection._internal_get_instances().clear();
+		visible_lod_selection_generation = 0;
 		return visible_lod_selection;
 	}
 
 	const LODConfig &lod_config = p_streaming_system->get_lod_config();
 	const float hysteresis_zone = p_streaming_system->get_lod_hysteresis_zone();
 	p_director->update_instance_lods_for_renderer(renderer, p_camera_origin, lod_config, hysteresis_zone);
+	const uint64_t instance_generation = p_director->get_instance_generation_for_renderer(renderer);
+	const bool shadow_only = renderer->is_shadow_instance_filter_enabled();
+	if (instance_generation != 0 &&
+			visible_lod_selection_generation == instance_generation &&
+			visible_lod_selection_shadow_only == shadow_only) {
+		return visible_lod_selection;
+	}
+
+	visible_lod_selection._internal_get_instances().clear();
 	p_director->build_instance_buffer_for_renderer(renderer, visible_lod_selection._internal_get_instances(),
-			renderer->is_shadow_instance_filter_enabled());
+			shadow_only);
+	visible_lod_selection_generation = instance_generation;
+	visible_lod_selection_shadow_only = shadow_only;
 
 	return visible_lod_selection;
 }
@@ -774,26 +788,40 @@ bool RenderStreamingOrchestrator::should_throttle_streaming_rebuild(uint32_t p_c
 	return false;
 }
 
-bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
-	// Route-policy gate: when resident is selected, never create the streaming system.
-	// This is the single chokepoint — all 4 callers funnel through here.
-	const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
-	if (renderer->should_prefer_resident_backend(route_policy)) {
-		return false;
-	}
-
+bool RenderStreamingOrchestrator::ensure_instance_streaming_system(const GaussianSplatRenderer::FrameBackendPlan &p_backend_plan) {
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
+	// Runtime-policy gate: when the shared policy prefers resident, never create the streaming system.
+	// This remains the single chokepoint for the streaming bootstrap callers.
+	if (p_backend_plan.prefer_resident_backend || !p_backend_plan.streaming_requested) {
+		streaming_bootstrap_retry_after_frame = 0;
+		streaming_bootstrap_last_error = p_backend_plan.prefer_resident_backend
+				? String("resident_backend_selected")
+				: String("streaming_not_requested");
+		return false;
+	}
+
 	if (streaming_state.current_streaming_system.is_valid()) {
+		streaming_bootstrap_retry_after_frame = 0;
+		streaming_bootstrap_last_error = "none";
 		return true;
 	}
+	const uint64_t current_frame = state_view.get_frame_state_view().frame_counter;
+	if (streaming_bootstrap_retry_after_frame > current_frame) {
+		return false;
+	}
+	streaming_state.last_streaming_init_attempt_frame = current_frame;
 	if (!(renderer->*runtime_ports.ensure_rendering_device)("instance_pipeline_streaming")) {
+		streaming_bootstrap_last_error = "rendering_device_unavailable";
+		streaming_bootstrap_retry_after_frame = current_frame + kStreamingBootstrapRetryCooldownFrames;
 		return false;
 	}
 	RenderingDevice *rd = state_view.get_rendering_device();
 	if (!rd) {
+		streaming_bootstrap_last_error = "rendering_device_null";
+		streaming_bootstrap_retry_after_frame = current_frame + kStreamingBootstrapRetryCooldownFrames;
 		return false;
 	}
 
@@ -832,6 +860,8 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	String init_error;
 	if (!streaming_system->is_runtime_ready(&init_error)) {
 		ERR_PRINT(vformat("[GaussianSplatRenderer] Failed to initialize streaming bootstrap: %s", init_error));
+		streaming_bootstrap_last_error = init_error;
+		streaming_bootstrap_retry_after_frame = current_frame + kStreamingBootstrapRetryCooldownFrames;
 		return false;
 	}
 	streaming_state.current_streaming_system = streaming_system;
@@ -841,8 +871,9 @@ bool RenderStreamingOrchestrator::ensure_instance_streaming_system() {
 	streaming_state.streaming_gpu_splat_count = 0;
 	streaming_state.streaming_gpu_total_capacity = 0;
 	streaming_state.streamed_indices_are_local = false;
-	instance_pipeline_assets.clear();
-	instance_pipeline_asset_versions.clear();
+	streaming_bootstrap_retry_after_frame = 0;
+	streaming_bootstrap_last_error = "none";
+	invalidate_instance_pipeline_caches();
 	// Streaming system can be recreated while static chunk revision stays unchanged.
 	// Force one sync cache miss so primary/io chunk layout hints are reapplied.
 	static_layout_cache_revision = UINT64_MAX;
@@ -875,6 +906,7 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 		if (trace_enabled) {
 			GaussianSplatting::debug_trace_record_event("instance_pipeline", "SyncAssets FAIL: streaming_system=NULL", true);
 		}
+		invalidate_instance_pipeline_caches();
 		return;
 	}
 	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
@@ -882,16 +914,10 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 		if (trace_enabled) {
 			GaussianSplatting::debug_trace_record_event("instance_pipeline", "SyncAssets FAIL: director=NULL", true);
 		}
+		invalidate_instance_pipeline_caches();
 		return;
 	}
-	instance_pipeline_assets_cache.clear();
-	director->collect_instance_assets_for_renderer(renderer, instance_pipeline_assets_cache,
-			renderer->is_shadow_instance_filter_enabled());
-	if (trace_enabled) {
-		GaussianSplatting::debug_trace_record_event("instance_pipeline",
-				vformat("SyncAssets collected=%d", instance_pipeline_assets_cache.size()),
-				false);
-	}
+	refresh_instance_asset_snapshot(director, trace_enabled);
 	bool transient_empty_asset_sync = false;
 	if (instance_pipeline_assets_cache.is_empty()) {
 		if (!instance_pipeline_assets.is_empty()) {
@@ -1329,7 +1355,7 @@ void RenderStreamingOrchestrator::sync_instance_pipeline_assets(GaussianStreamin
 
 bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_data, const Transform3D &p_camera_to_world_transform,
 		const Transform3D &p_world_to_camera_transform, const Projection &p_projection, const Projection &p_render_projection,
-		RenderSceneBuffersRD *p_render_buffers, bool p_allow_runtime_fallback_instance) {
+		RenderSceneBuffersRD *p_render_buffers, const GaussianSplatRenderer::FrameBackendPlan &p_backend_plan) {
 	const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
 	// DEBUG: Track if this function runs every frame
 	static int streaming_frame_counter = 0;
@@ -1357,15 +1383,16 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		performance_state.metrics.streaming_state = streaming_metrics;
 		return false;
 	}
-	const GaussianSplatRenderer::SceneState &scene_state = state_view.get_scene_state();
-	const PerformanceSettings &perf_settings = renderer->get_performance_settings();
-	const uint32_t desired_runtime_splats = _resolve_runtime_budget_splats(renderer, scene_state, perf_settings);
+	const uint32_t desired_runtime_splats = p_backend_plan.runtime_policy.runtime_budget_splats;
 	if (desired_runtime_splats > 0 && streaming_state.memory_stream.is_valid()) {
 		const uint32_t current_memory_capacity = streaming_state.memory_stream->get_max_gaussians();
-		const uint32_t current_runtime_capacity = streaming_state.current_streaming_system.is_valid()
-				? streaming_state.current_streaming_system->get_buffer_capacity_splats()
-				: 0u;
-		if (desired_runtime_splats > current_memory_capacity || desired_runtime_splats > current_runtime_capacity) {
+		// Only compare against the memory stream capacity.  The streaming
+		// system's persistent buffer (get_buffer_capacity_splats()) is
+		// intentionally smaller than the total budget — the whole point of
+		// streaming is to page chunks in and out of a smaller resident
+		// window.  Comparing against that capacity caused an infinite
+		// rebuild loop for large datasets.
+		if (desired_runtime_splats > current_memory_capacity) {
 			RenderingDevice *rd = state_view.get_rendering_device();
 			if (!rd) {
 				const StreamingReadinessState readiness_state = StreamingReadinessState::RUNTIME_BOOTSTRAP_PENDING;
@@ -1403,7 +1430,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			streaming_state.cached_streamed_sh_limits.clear();
 			streaming_state.cached_streamed_index_lookup.clear();
 			(renderer->*runtime_ports.clear_instance_pipeline_buffers)();
-			if (!ensure_instance_streaming_system()) {
+			if (!ensure_instance_streaming_system(p_backend_plan)) {
 				const StreamingReadinessState readiness_state = StreamingReadinessState::RUNTIME_BOOTSTRAP_PENDING;
 				publish_not_ready_route(readiness_state);
 				Dictionary streaming_metrics = performance_state.metrics.streaming_state;
@@ -1514,7 +1541,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 	// render primary gaussian data without SceneDirector instances. In those cases we
 	// still need a synthetic instance entry so the instance-pipeline cull/sort/raster
 	// contracts can come up without silently falling back to the resident path.
-	if (p_allow_runtime_fallback_instance &&
+	if (p_backend_plan.allow_primary_fallback_instance &&
 			instance_pipeline_instance_cache.is_empty() &&
 			state_view.get_scene_state().gaussian_data.is_valid() &&
 			state_view.get_scene_state().gaussian_data->get_count() > 0) {
@@ -1539,14 +1566,15 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		instance_pipeline_instance_cache.push_back(fallback_instance);
 		if (trace_enabled) {
 			GaussianSplatting::debug_trace_record_event("instance_pipeline",
-					"Injected primary fallback instance for empty-instance streaming path",
+					vformat("Injected primary fallback instance for empty-instance streaming path (%s)",
+							p_backend_plan.primary_fallback_instance_reason),
 					false);
 		}
 	}
 	const uint32_t registered_assets_with_data = streaming_system->get_registered_asset_count_with_data();
 	if (!instance_pipeline_instance_cache.is_empty() &&
 			registered_assets_with_data == 0 &&
-			!p_allow_runtime_fallback_instance) {
+			!p_backend_plan.allow_primary_fallback_instance) {
 		const StreamingReadinessState readiness_state = StreamingReadinessState::REGISTRATION_PENDING;
 		ERR_PRINT("[GaussianSplatRenderer] Streaming bootstrap produced instances but no registered streaming assets with data; resetting streaming system.");
 		finalize_streaming_frame(readiness_state,
@@ -1567,14 +1595,22 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 	streaming_state.current_streaming_system->update_streaming(streaming_camera_transform, cull_projection);
 
 	uint64_t instance_generation = 0;
+	uint64_t instance_asset_generation = 0;
 	if (GaussianSplatSceneDirector *generation_director = GaussianSplatSceneDirector::get_singleton()) {
 		instance_generation = generation_director->get_instance_generation_for_renderer(renderer);
+		instance_asset_generation = generation_director->get_instance_asset_generation_for_renderer(renderer);
 	}
 	uint64_t atlas_generation = 0;
 	if (streaming_state.current_streaming_system.is_valid()) {
 		atlas_generation = streaming_state.current_streaming_system->get_atlas_generation();
 	}
 	const uint64_t base_content_generation = _mix_content_generation(instance_generation, atlas_generation);
+	const uint64_t contract_generation = _mix_content_generation(instance_asset_generation, atlas_generation);
+	const uint64_t upload_generation = base_content_generation;
+	const uint64_t previous_contract_generation = resource_state.instance_pipeline_contract_generation;
+	const uint64_t previous_contract_fingerprint = resource_state.instance_pipeline_contract_fingerprint;
+	const uint64_t previous_upload_generation = resource_state.instance_pipeline_upload_generation;
+	const uint64_t previous_upload_fingerprint = resource_state.instance_pipeline_upload_fingerprint;
 	resource_state.instance_pipeline_content_generation = base_content_generation;
 	bool instance_buffers_atlas_ready = false;
 	bool instance_buffers_cull_ready = false;
@@ -1586,10 +1622,14 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 	uint32_t instance_pipeline_max_visible_chunks = 0;
 	uint32_t instance_pipeline_max_visible_splats = 0;
 	uint32_t instance_pipeline_max_chunk_splats = 0;
+	uint32_t instance_pipeline_working_set_chunks = 0;
 	StreamingReadinessState stream_readiness_state = StreamingReadinessState::MISSING_STREAMING_SYSTEM;
 
 	if (streaming_system) {
 		InstancePipelineBuffers buffers = renderer->instance_pipeline_buffers;
+		if (resource_state.instance_buffer.is_valid()) {
+			buffers.instance_buffer = resource_state.instance_buffer;
+		}
 		const GlobalAtlasState &atlas_state = streaming_system->get_global_atlas_state();
 		const bool quantization_required = streaming_system->is_per_chunk_quantization_enabled();
 
@@ -1616,6 +1656,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			buffers.quantization_required = quantization_required;
 			buffers.quantization_buffer = quantization_required ? atlas_state.quantization_buffer : RID();
 
+		buffers.world_submission_active = renderer->world_submission_contract_active;
 		buffers.instance_count = instance_pipeline_instance_cache.size();
 		const uint32_t instance_count = buffers.instance_count;
 		instance_pipeline_instance_count = instance_count;
@@ -1624,15 +1665,26 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 		buffers.max_chunk_splats = streaming_system->get_max_chunk_splats();
 		instance_pipeline_max_chunk_splats = buffers.max_chunk_splats;
 
+		// Size cull/sort buffers from the actual runtime working-set capacity,
+		// not the atlas upper bound.  effective_max_chunks is the VRAM
+		// regulator's chunk cap — the real ceiling on how many chunks can be
+		// resident simultaneously.  Using it instead of dispatch_chunk_count
+		// (structural per-asset maximum) avoids massively over-allocated
+		// buffers and unnecessary sorter rebuilds for large datasets with
+		// limited VRAM budgets.
+		const uint32_t effective_max = streaming_system->get_effective_max_chunks();
+		const uint32_t working_set_chunks_per_instance = (effective_max > 0)
+				? MIN(effective_max, buffers.dispatch_chunk_count)
+				: buffers.dispatch_chunk_count;
+
 		uint64_t max_visible_splats_u64 = desired_runtime_splats > 0
 				? uint64_t(desired_runtime_splats)
-				: uint64_t(atlas_state.atlas_gaussian_count);
+				: uint64_t(working_set_chunks_per_instance) * uint64_t(buffers.max_chunk_splats);
 
-		// Recompute the budget every frame from current scene state.
-		// Do not reuse stale values from prior renderer/scene frames.
-		if (instance_count > 1 && buffers.dispatch_chunk_count > 0 && buffers.max_chunk_splats > 0) {
+		// Multi-instance: scale by instance count using working-set budget.
+		if (instance_count > 1 && working_set_chunks_per_instance > 0 && buffers.max_chunk_splats > 0) {
 			const uint64_t needed = uint64_t(instance_count)
-					* uint64_t(buffers.dispatch_chunk_count)
+					* uint64_t(working_set_chunks_per_instance)
 					* uint64_t(buffers.max_chunk_splats);
 			max_visible_splats_u64 = MAX(max_visible_splats_u64, needed);
 		}
@@ -1645,13 +1697,14 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 				: uint32_t(max_visible_splats_u64);
 		buffers.max_visible_splats = max_visible_splats;
 
-		uint64_t max_visible_chunks_u64 = uint64_t(instance_count) * uint64_t(buffers.dispatch_chunk_count);
+		uint64_t max_visible_chunks_u64 = uint64_t(instance_count) * uint64_t(working_set_chunks_per_instance);
 		uint32_t max_visible_chunks = max_visible_chunks_u64 > UINT32_MAX ? UINT32_MAX : uint32_t(max_visible_chunks_u64);
 		if (max_visible_chunks > 0 && max_visible_splats > 0) {
 			max_visible_chunks = MIN(max_visible_chunks, max_visible_splats);
 		}
 		buffers.max_visible_chunks = max_visible_chunks;
 		instance_pipeline_max_visible_chunks = buffers.max_visible_chunks;
+		instance_pipeline_working_set_chunks = working_set_chunks_per_instance;
 
 		ResourceState &resource_state_mut = resource_state;
 		RenderingDevice *rd = state_view.get_rendering_device();
@@ -1798,24 +1851,41 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 				streaming_system, instance_pipeline_assets_cache, instance_pipeline_instance_cache,
 				base_content_generation);
 		const bool atlas_ready_preupload = GaussianSplatting::InstancePipelineContract::has_atlas_buffers(buffers);
+		uint64_t contract_fingerprint = _compute_instance_pipeline_resource_fingerprint(resource_state_mut, buffers);
+		const bool contract_changed = previous_contract_generation != contract_generation ||
+				previous_contract_fingerprint != contract_fingerprint ||
+				!renderer->instance_pipeline_buffers_valid ||
+				renderer->get_instance_backend_policy() != InstanceBackendPolicy::STREAMING;
+		uint64_t upload_fingerprint = _compute_instance_pipeline_upload_fingerprint(resource_state_mut, buffers, published_remap);
+		const bool upload_changed = previous_upload_generation != upload_generation ||
+				previous_upload_fingerprint != upload_fingerprint ||
+				!resource_state_mut.instance_buffer.is_valid();
 		if (atlas_ready_preupload) {
-			if (trace_enabled) {
+			if (trace_enabled && contract_changed) {
 				GaussianSplatting::debug_trace_record_event("instance_pipeline",
 						"InstanceBufferCheck atlas ready - publish_instance_pipeline_contract",
 						false);
 			}
-			renderer->publish_instance_pipeline_contract(
-					buffers,
-					published_remap,
-					InstanceBackendPolicy::STREAMING,
-					base_content_generation,
-					"atlas_emulation");
-			if (!(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache)) {
-				buffers = renderer->get_instance_pipeline_buffers();
-				renderer->clear_instance_pipeline_buffers();
-			} else {
+			if (contract_changed) {
+				renderer->publish_instance_pipeline_contract(
+						buffers,
+						published_remap,
+						InstanceBackendPolicy::STREAMING,
+						contract_generation,
+						"atlas_emulation");
+			}
+			if (upload_changed) {
+				if (!(renderer->*runtime_ports.update_instance_buffer)(instance_pipeline_instance_cache, published_remap)) {
+					buffers = renderer->get_instance_pipeline_buffers();
+					renderer->clear_instance_pipeline_buffers();
+				} else {
+					buffers = renderer->get_instance_pipeline_buffers();
+				}
+			} else if (!contract_changed) {
 				buffers = renderer->get_instance_pipeline_buffers();
 			}
+			contract_fingerprint = _compute_instance_pipeline_resource_fingerprint(resource_state_mut, buffers);
+			upload_fingerprint = _compute_instance_pipeline_upload_fingerprint(resource_state_mut, buffers, published_remap);
 		}
 
 		const bool atlas_ready = GaussianSplatting::InstancePipelineContract::has_atlas_buffers(buffers);
@@ -2020,11 +2090,19 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			renderer->instance_pipeline_buffers = buffers;
 			renderer->instance_pipeline_buffers_valid = false;
 		}
+		resource_state.instance_pipeline_contract_generation = contract_generation;
+		resource_state.instance_pipeline_contract_fingerprint = contract_fingerprint;
+		resource_state.instance_pipeline_upload_generation = upload_generation;
+		resource_state.instance_pipeline_upload_fingerprint = upload_fingerprint;
 		resource_state.instance_pipeline_content_generation = _mix_content_generation(
 				base_content_generation,
-				_compute_instance_pipeline_resource_fingerprint(resource_state_mut, buffers));
+				contract_fingerprint);
 	} else {
 		renderer->clear_instance_pipeline_buffers();
+		resource_state.instance_pipeline_contract_generation = 0;
+		resource_state.instance_pipeline_contract_fingerprint = 0;
+		resource_state.instance_pipeline_upload_generation = 0;
+		resource_state.instance_pipeline_upload_fingerprint = 0;
 		resource_state.instance_pipeline_content_generation = base_content_generation;
 	}
 
@@ -2052,7 +2130,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 			const int64_t total_chunks = int64_t(chunk_stats.get("total_chunks", int64_t(0)));
 			const int64_t visible_chunks = int64_t(chunk_stats.get("visible_chunks", int64_t(0)));
 			const int64_t loaded_chunks = int64_t(chunk_stats.get("loaded_chunks", int64_t(0)));
-				readiness_detail = vformat("state=%s atlas=%s cull=%s sort=%s raster=%s atlas_required=%s inst=%d chunk_count=%d max_vis_chunks=%d max_vis_splats=%d max_chunk_splats=%d chunks=%d/%d (visible=%d)",
+				readiness_detail = vformat("state=%s atlas=%s cull=%s sort=%s raster=%s atlas_required=%s inst=%d chunk_count=%d ws_chunks=%d max_vis_chunks=%d max_vis_splats=%d max_chunk_splats=%d chunks=%d/%d (visible=%d)",
 						String(_streaming_readiness_state_token(stream_readiness_state)),
 						instance_buffers_atlas_ready ? "Y" : "N",
 					instance_buffers_cull_ready ? "Y" : "N",
@@ -2061,6 +2139,7 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 					instance_buffers_atlas_required ? "Y" : "N",
 					instance_pipeline_instance_count,
 					instance_pipeline_dispatch_chunk_count,
+					instance_pipeline_working_set_chunks,
 					instance_pipeline_max_visible_chunks,
 					instance_pipeline_max_visible_splats,
 					instance_pipeline_max_chunk_splats,
@@ -2092,15 +2171,19 @@ bool RenderStreamingOrchestrator::render_streaming_frame(RenderDataRD *p_render_
 	return true;
 }
 
-void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection) {
+void RenderStreamingOrchestrator::tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection,
+		const GaussianSplatRenderer::FrameBackendPlan &p_backend_plan) {
 	GaussianSplatRenderer::FrameStateProvider state_provider(renderer);
 	GaussianSplatRenderer::IFrameMutationAccess &state_mut = state_provider;
 	const GaussianSplatRenderer::IFrameStateView &state_view = state_provider;
 	StreamingState &streaming_state = state_mut.get_streaming_state_mut();
 	GaussianSplatRenderer::FrameState &frame_state_mut = state_mut.get_frame_state_mut();
 	GaussianSplatRenderer::PerformanceState &performance_state = state_mut.get_performance_state_mut();
+	if (p_backend_plan.prefer_resident_backend || !p_backend_plan.streaming_requested) {
+		return;
+	}
 	if (!streaming_state.current_streaming_system.is_valid()) {
-		if (!ensure_instance_streaming_system()) {
+		if (!ensure_instance_streaming_system(p_backend_plan)) {
 			return;
 		}
 	}

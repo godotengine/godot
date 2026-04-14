@@ -1,0 +1,45 @@
+{
+  "asset_classification": "chunked_open_world_candidate",
+  "asset_id": "open_world_boundary_50m",
+  "bootstrap_world_builder": {
+    "builder_kind": "boundary_world_bootstrap",
+    "camera_path_hint": "boundary_crossing",
+    "chunk_size": 10.0,
+    "corridor_lanes": 20,
+    "corridor_segments": 100,
+    "instance_count": 2000,
+    "lane_spacing": 12.0,
+    "materialized_total_splats": 50000000,
+    "segment_spacing": 12.0,
+    "source_asset_path": "res://tests/fixtures/synthetic_spiral.ply",
+    "source_asset_splats": 25000,
+    "world_resource_kind": "gaussian_world_contract"
+  },
+  "evidence_role": "open_world_proof_pending_staging",
+  "generation": {
+    "chunk_naming_pattern": "chunks/chunk_{chunk_index:04d}.ply",
+    "helper_script": "tests/runtime/open_world_chunked_asset_ladder.py",
+    "materialization_support": "runtime_world_builder_contract",
+    "seed": 45050,
+    "topology": "biome_boundary_crossing"
+  },
+  "notes": "Boundary-crossing proof asset. Intended for large visibility shifts and forward/reverse crossing without collapsing into a monolithic single-file benchmark shortcut.",
+  "staging": {
+    "project_fixture_root": "tests/examples/godot/test_project/tests/fixtures/open_world/open_world_boundary_50m",
+    "project_res_root": "res://tests/fixtures/open_world/open_world_boundary_50m",
+    "project_stage_manifest_path": "res://tests/fixtures/open_world/open_world_boundary_50m/open_world_boundary_50m.stage_manifest.json",
+    "repo_stage_manifest_path": "tests/examples/godot/test_project/tests/fixtures/open_world/open_world_boundary_50m/open_world_boundary_50m.stage_manifest.json"
+  },
+  "staging_status": "planned_unstaged",
+  "working_set_contract": {
+    "chunk_count": 763,
+    "chunk_splats": 65536,
+    "max_resident_chunks": 80,
+    "max_resident_splats": 5242880,
+    "max_visible_chunks": 32,
+    "max_visible_fraction": 0.041943,
+    "max_visible_splats": 2097152,
+    "resident_fraction": 0.104858,
+    "total_splats": 50000000
+  }
+}

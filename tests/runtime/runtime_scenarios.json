@@ -4,6 +4,7 @@
   "profiles": {
     "headless-ci": {
       "description": "Headless-safe CI lane: only checks that can execute without a local RenderingDevice.",
+      "gd_mode": "headless",
       "cpp_tests": [
         "Runtime Modifications",
         "Animation Persistence"
@@ -17,6 +18,7 @@
     },
     "release-ci": {
       "description": "Canonical release-ready runtime validation lane used by baseline QA CI.",
+      "gd_mode": "non-headless",
       "cpp_tests": [
         "Runtime Modifications",
         "Animation Persistence"
@@ -33,8 +35,22 @@
       ],
       "godot_args": []
     },
+    "streaming-gpu-ci": {
+      "description": "Canonical blocking GPU-backed streaming validation gate for runtime residency and world-streaming regressions; benchmark proof surfaces live in the benchmark workflow.",
+      "gd_mode": "windows-vulkan",
+      "cpp_tests": [],
+      "gd_tests": [
+        "GPU Streaming Stress",
+        "World Streaming Gate",
+        "Streaming Residency API"
+      ],
+      "godot_args": [],
+      "gd_timeout": 420,
+      "fail_on_skip": true
+    },
     "stress-only": {
       "description": "Stress-focused runtime lane for local and CI soak checks.",
+      "gd_mode": "non-headless",
       "cpp_tests": [],
       "gd_tests": [
         "GPU Streaming Stress",
@@ -45,6 +61,7 @@
     },
     "smoke": {
       "description": "Fast local smoke profile for quick runtime sanity checks.",
+      "gd_mode": "non-headless",
       "cpp_tests": [
         "Runtime Modifications"
       ],

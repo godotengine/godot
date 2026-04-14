@@ -61,7 +61,7 @@ void GaussianAtlasAllocator::clear() {
 	slot_map.clear();
 }
 
-void GaussianStreamingSystem::_apply_requested_residency() {
+void GaussianStreamingSystem::_apply_requested_residency(bool can_async_pack) {
 	if (!asset_registry.request_pending) {
 		return;
 	}
@@ -72,39 +72,31 @@ void GaussianStreamingSystem::_apply_requested_residency() {
 				false);
 	}
 
-	const bool can_async_pack = upload_pipeline.async_pack_enabled && upload_pipeline.pack_thread_running.load();
-	bool has_deferred_requested_chunks = false;
-	for (uint32_t asset_id : asset_registry.atlas_asset_order) {
-		if (asset_id == PRIMARY_ASSET_ID) {
-			if (trace_enabled) {
-				GaussianSplatting::debug_trace_record_event("streaming",
-						vformat("ApplyResidency SKIP PRIMARY asset_id=%d", asset_id),
-						false);
-			}
-			continue;
-		}
-
-		AtlasAssetState *asset = _get_asset_state(asset_id);
-		if (!asset || !asset->data.is_valid()) {
-			if (trace_enabled) {
-				GaussianSplatting::debug_trace_record_event("streaming",
+    bool has_deferred_requested_chunks = false;
+    for (uint32_t asset_id : asset_registry.atlas_asset_order) {
+        AtlasAssetState *asset = _get_asset_state(asset_id);
+        if (!asset || !asset->data.is_valid()) {
+            if (trace_enabled) {
+                GaussianSplatting::debug_trace_record_event("streaming",
 						vformat("ApplyResidency SKIP INVALID asset_id=%d", asset_id),
 						true);
 			}
 			continue;
 		}
 
-		LocalVector<StreamingChunk> &asset_chunks = _get_asset_chunks(*asset);
-		if (trace_enabled) {
-			GaussianSplatting::debug_trace_record_event("streaming",
+        LocalVector<StreamingChunk> &asset_chunks = _get_asset_chunks(*asset);
+        if (trace_enabled) {
+            GaussianSplatting::debug_trace_record_event("streaming",
 					vformat("ApplyResidency asset_id=%d chunks=%d requested_chunks=%d",
-							asset_id, asset_chunks.size(), asset->requested_chunks.size()),
-					false);
-		}
-		_evict_unrequested_chunks(asset_id, *asset, asset_chunks);
-		const bool deferred_chunks = _load_requested_chunks(asset_id, *asset, asset_chunks, trace_enabled, can_async_pack);
-		has_deferred_requested_chunks = has_deferred_requested_chunks || deferred_chunks;
-	}
+					asset_id, asset_chunks.size(), asset->requested_chunks.size()),
+				false);
+        }
+        if (asset_id != PRIMARY_ASSET_ID) {
+            _evict_unrequested_chunks(asset_id, *asset, asset_chunks);
+        }
+        const bool deferred_chunks = _load_requested_chunks(asset_id, *asset, asset_chunks, trace_enabled, can_async_pack);
+        has_deferred_requested_chunks = has_deferred_requested_chunks || deferred_chunks;
+    }
 
 	if (trace_enabled) {
 		GaussianSplatting::debug_trace_record_event("streaming",
@@ -119,15 +111,13 @@ void GaussianStreamingSystem::_evict_unrequested_chunks(uint32_t asset_id, Atlas
 		LocalVector<StreamingChunk> &asset_chunks) {
 	for (uint32_t i = 0; i < asset_chunks.size(); i++) {
 		StreamingChunk &chunk = asset_chunks[i];
-		const RequestedChunkState *state = asset.requested_chunk_state.getptr(i);
-		const bool requested = state && state->stamp == asset_registry.request_generation;
+		const bool requested = _is_requested_chunk_in_current_generation(asset, i);
 		if (requested) {
 			continue;
 		}
 
 		if (chunk.upload_pending) {
 			upload_pipeline.cancel_chunk_jobs(*this, asset_id, i, chunk.buffer_slot);
-			eviction_controller.record_total_eviction();
 		}
 		if (chunk.is_loaded) {
 			_unload_chunk(asset_id, i);
@@ -148,30 +138,57 @@ bool GaussianStreamingSystem::_load_requested_chunks(uint32_t asset_id, AtlasAss
 			continue;
 		}
 		chunks_processed++;
-		StreamingChunk &chunk = asset_chunks[chunk_id];
-		if (chunk.is_loaded || chunk.upload_pending) {
-			chunks_already_loaded++;
-			if (chunk.is_loaded) {
-				eviction_controller.touch_chunk_use(chunk.last_used_frame);
-			}
-			continue;
-		}
-		const bool queued = _enqueue_chunk_load_request(asset_id, chunk_id, can_async_pack, !can_async_pack);
+        const GaussianStreamingSystem::RequestedChunkState *request_state =
+                asset.requested_chunk_state.getptr(chunk_id);
+        if (request_state &&
+                request_state->stamp == asset_registry.request_generation &&
+                request_state->request_result == GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED) {
+            continue;
+        }
+        StreamingChunk &chunk = asset_chunks[chunk_id];
+        if (chunk.is_loaded || chunk.upload_pending) {
+            chunks_already_loaded++;
+            if (chunk.is_loaded) {
+                chunk.explicit_request_generation = 0;
+                eviction_controller.touch_chunk_use(chunk.last_used_frame);
+                _update_requested_chunk_state(asset, chunk_id,
+                        GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED,
+                        GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED);
+            } else {
+                chunk.explicit_request_generation = request_state ? request_state->stamp : asset_registry.request_generation;
+                _update_requested_chunk_state(asset, chunk_id,
+                        GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_QUEUED,
+                        GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_QUEUED);
+            }
+            continue;
+        }
+        const bool queued = _enqueue_chunk_load_request(asset_id, chunk_id, can_async_pack, !can_async_pack);
 
-		if (queued) {
-			chunks_queued++;
-		}
-		if (!queued && !chunk.is_loaded && !chunk.upload_pending) {
-			if (trace_enabled) {
-				GaussianSplatting::debug_trace_record_event("streaming",
-						vformat("ApplyResidency DEFER chunk_id=%d", chunk_id),
-						true);
-			}
-			has_deferred_chunks = true;
-		}
-		if (!can_async_pack && !chunk.is_loaded && !chunk.upload_pending) {
-			has_deferred_chunks = true;
-		}
+        if (queued) {
+            chunks_queued++;
+            chunk.explicit_request_generation = request_state ? request_state->stamp : asset_registry.request_generation;
+            _update_requested_chunk_state(asset, chunk_id,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_QUEUED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_QUEUED);
+            if (!can_async_pack) {
+                has_deferred_chunks = true;
+            }
+        }
+        if (!queued && !chunk.is_loaded && !chunk.upload_pending) {
+            if (trace_enabled) {
+                GaussianSplatting::debug_trace_record_event("streaming",
+                        vformat("ApplyResidency DEFER chunk_id=%d", chunk_id),
+                        true);
+            }
+            _update_requested_chunk_state(asset, chunk_id,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                    ERR_BUSY);
+            has_deferred_chunks = true;
+        }
+        if (!can_async_pack && !chunk.is_loaded && !chunk.upload_pending) {
+            has_deferred_chunks = true;
+        }
 	}
 
 	if (trace_enabled) {

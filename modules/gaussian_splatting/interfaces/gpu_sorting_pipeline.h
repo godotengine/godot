@@ -34,6 +34,7 @@ public:
         uint32_t max_visible_chunks = 0;
         uint32_t max_visible_splats = 0;
         uint32_t max_chunk_splats = 0;
+        bool world_submission_active = false;
     };
 
     GPUSortingPipeline();
@@ -234,8 +235,18 @@ private:
     void ensure_remap_resources(RenderingDevice *p_device);
     void ensure_gather_resources(RenderingDevice *p_device);
     bool _publish_sorted_results(const Vector<uint8_t> &p_sorted_index_bytes);
+#ifdef TESTS_ENABLED
+public:
+#endif
     void _on_sort_readback(const Vector<uint8_t> &p_data, int64_t p_generation);
     void _on_instance_count_readback(const Vector<uint8_t> &p_data, int64_t p_generation);
+#ifdef TESTS_ENABLED
+private:
+#endif
+    void _reset_instance_count_readback_state(bool p_reset_bootstrap_attempted);
+    bool _capture_instance_count_sync(RenderingDevice *p_device, RID p_buffer,
+            uint32_t p_frame_counter, uint32_t p_safe_visible_max, uint32_t *r_resolved_visible = nullptr);
+    Error _enqueue_instance_count_readback(RenderingDevice *p_device, RID p_buffer, uint32_t p_frame_counter);
     void _ensure_instance_param_buffer(RenderingDevice *p_device);
     void _ensure_instance_count_resources(RenderingDevice *p_device);
     void _ensure_instance_chunk_dispatch_resources(RenderingDevice *p_device);

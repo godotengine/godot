@@ -1,5 +1,7 @@
 extends Node3D
 
+# Shared benchmark lane scene reused by the corridor-churn and boundary-crossing proof-support lanes.
+
 const BenchmarkMetricsUtil = preload("res://scripts/benchmark_metrics.gd")
 const BenchmarkVisualMetrics = preload("res://scripts/benchmark_visual_metrics.gd")
 const BenchmarkSceneContract = preload("res://scripts/benchmark_scene_contract.gd")
@@ -13,6 +15,7 @@ const DEFAULT_VISUAL_PSNR_THRESHOLD := 30.0
 const SETTINGS_APPLY_INTERVAL := 0.1
 const INSTANCE_SINGLE_PASS_SETTING := "rendering/gaussian_splatting/instance_pipeline/true_single_pass_enabled"
 const INSTANCE_BENCH_SERIAL_MULTI_ASSET_SETTING := "rendering/gaussian_splatting/instance_pipeline/benchmark_allow_serial_multi_asset"
+const STREAMING_VRAM_CHUNK_CAP_MONITOR := "gaussian_splatting/streaming_vram_chunk_cap_hit"
 
 const MONITOR_KEYS := [
 	"gpu_time_frame_ms",
@@ -23,6 +26,8 @@ const MONITOR_KEYS := [
 	"streaming_total_chunks",
 	"streaming_visible_chunks",
 	"streaming_loaded_chunks",
+	"streaming_resident_chunks",
+	"streaming_atlas_published_chunks",
 	"streaming_vram_usage_mb",
 	"streaming_chunks_loaded_this_frame",
 	"streaming_chunks_evicted_this_frame",
@@ -194,6 +199,27 @@ var _capture_targets: Array[Dictionary] = []
 var _capture_records: Array[Dictionary] = []
 var _pending_contract: Dictionary = {}
 var _orchestrated := false
+var _latest_renderer_stats: Dictionary = {}
+var _proof_first_visible_ms := -1.0
+var _proof_visibility_metric_available := false
+var _proof_queue_pressure_available := false
+var _proof_streaming_state_available := false
+var _proof_residency_available := false
+var _proof_chunk_monitor_available := false
+var _proof_vram_cap_hit_available := false
+var _proof_queue_pressure_frames := 0
+var _proof_queue_pressure_candidate_frames := 0
+var _proof_no_progress_frames := 0
+var _proof_scan_starved_frames := 0
+var _proof_vram_cap_hit_frames := 0
+var _proof_chunk_loads_per_frame: Array = []
+var _proof_chunk_evictions_per_frame: Array = []
+var _proof_last_uploaded_splats := 0
+var _proof_last_total_splats := 0
+var _proof_last_visible_splats := 0
+var _proof_atlas_published_available := false
+var _proof_last_loaded_chunks := 0
+var _proof_last_atlas_published_chunks := 0
 
 func apply_benchmark_contract(contract: Dictionary) -> void:
 	_pending_contract = contract.duplicate(true)
@@ -328,6 +354,24 @@ func _setup_runtime_state() -> void:
 	OS.set_low_processor_usage_mode_sleep_usec(0)
 	Engine.max_fps = 0
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	_latest_renderer_stats.clear()
+	_proof_first_visible_ms = -1.0
+	_proof_visibility_metric_available = false
+	_proof_queue_pressure_available = false
+	_proof_streaming_state_available = false
+	_proof_residency_available = false
+	_proof_chunk_monitor_available = false
+	_proof_vram_cap_hit_available = false
+	_proof_queue_pressure_frames = 0
+	_proof_queue_pressure_candidate_frames = 0
+	_proof_no_progress_frames = 0
+	_proof_scan_starved_frames = 0
+	_proof_vram_cap_hit_frames = 0
+	_proof_chunk_loads_per_frame.clear()
+	_proof_chunk_evictions_per_frame.clear()
+	_proof_last_uploaded_splats = 0
+	_proof_last_total_splats = 0
+	_proof_last_visible_splats = 0
 
 func _config_for_preset(preset: String) -> Dictionary:
 	match preset:
@@ -728,9 +772,192 @@ func _sample_metrics(delta: float) -> void:
 		if visible > _max_node_visible_splats:
 			_max_node_visible_splats = visible
 
+	var renderer = _get_primary_renderer()
+	if renderer != null and renderer.has_method("get_render_stats"):
+		var renderer_stats = renderer.get_render_stats()
+		if renderer_stats is Dictionary:
+			_latest_renderer_stats = renderer_stats
+			_sample_proof_metrics(renderer_stats)
+
 func _update_monitor_peak(target: Dictionary, key: String, value: float) -> void:
 	if not target.has(key) or value > float(target[key]):
 		target[key] = value
+
+func _read_stat_int(stats: Dictionary, keys: Array[String], default_value: int = 0) -> int:
+	for key in keys:
+		if stats.has(key):
+			return int(stats.get(key, default_value))
+	return default_value
+
+func _read_stat_int_max(stats: Dictionary, keys: Array[String], default_value: int = 0) -> int:
+	var best := default_value
+	for key in keys:
+		if stats.has(key):
+			best = max(best, int(stats.get(key, default_value)))
+	return best
+
+func _read_stat_optional_bool(stats: Dictionary, keys: Array[String]) -> Variant:
+	for key in keys:
+		if stats.has(key):
+			return bool(stats.get(key, false))
+	return null
+
+func _sample_proof_metrics(stats: Dictionary) -> void:
+	var visible := _read_stat_int_max(stats, ["visible_after_culling", "visible_splats", "cull_cpu_visible_count"], -1)
+	if visible >= 0:
+		_proof_visibility_metric_available = true
+		_proof_last_visible_splats = visible
+		if _proof_first_visible_ms < 0.0 and visible > 0:
+			_proof_first_visible_ms = _elapsed_s * 1000.0
+
+	var uploaded := _read_stat_int_max(stats, ["uploaded_splat_count", "buffer_manager_count"], -1)
+	var total := _read_stat_int_max(stats, ["total_splats", "uploaded_splat_count", "buffer_manager_count"], -1)
+	if uploaded >= 0 and total > 0:
+		_proof_residency_available = true
+		_proof_last_uploaded_splats = uploaded
+		_proof_last_total_splats = total
+
+	if Performance.has_custom_monitor("gaussian_splatting/streaming_chunks_loaded_this_frame"):
+		_proof_chunk_monitor_available = true
+		_proof_chunk_loads_per_frame.append(float(Performance.get_custom_monitor("gaussian_splatting/streaming_chunks_loaded_this_frame")))
+	if Performance.has_custom_monitor("gaussian_splatting/streaming_chunks_evicted_this_frame"):
+		_proof_chunk_monitor_available = true
+		_proof_chunk_evictions_per_frame.append(float(Performance.get_custom_monitor("gaussian_splatting/streaming_chunks_evicted_this_frame")))
+
+	if Performance.has_custom_monitor("gaussian_splatting/streaming_loaded_chunks"):
+		_proof_atlas_published_available = true
+		_proof_last_loaded_chunks = int(Performance.get_custom_monitor("gaussian_splatting/streaming_loaded_chunks"))
+	if Performance.has_custom_monitor("gaussian_splatting/streaming_atlas_published_chunks"):
+		_proof_atlas_published_available = true
+		_proof_last_atlas_published_chunks = int(Performance.get_custom_monitor("gaussian_splatting/streaming_atlas_published_chunks"))
+
+	var queue_pressure_active := false
+	if Performance.has_custom_monitor("gaussian_splatting/streaming_queue_pressure_active"):
+		_proof_queue_pressure_available = true
+		queue_pressure_active = float(Performance.get_custom_monitor("gaussian_splatting/streaming_queue_pressure_active")) > 0.0
+
+	var vram_cap_monitor_hit := false
+	if Performance.has_custom_monitor(STREAMING_VRAM_CHUNK_CAP_MONITOR):
+		_proof_vram_cap_hit_available = true
+		vram_cap_monitor_hit = int(Performance.get_custom_monitor(STREAMING_VRAM_CHUNK_CAP_MONITOR)) > 0
+
+	var stream_state: Dictionary = {}
+	if stats.has("streaming_state") and stats["streaming_state"] is Dictionary:
+		stream_state = stats["streaming_state"]
+	if not stream_state.is_empty():
+		_proof_streaming_state_available = true
+		_proof_queue_pressure_available = true
+		queue_pressure_active = queue_pressure_active or bool(stream_state.get("queue_pressure_active", false))
+		var diagnostics: Dictionary = {}
+		if stream_state.has("diagnostics") and stream_state["diagnostics"] is Dictionary:
+			diagnostics = stream_state["diagnostics"]
+		if queue_pressure_active:
+			_proof_queue_pressure_frames += 1
+			var load_candidates := _read_stat_int(stream_state, ["scheduler_load_candidates"])
+			if load_candidates > 0:
+				_proof_queue_pressure_candidate_frames += 1
+				if _read_stat_int(stream_state, ["chunks_loaded_this_frame"]) == 0:
+					_proof_no_progress_frames += 1
+				if _read_stat_int(stream_state, ["scheduler_visible_scan_budget_effective"]) <= 1:
+					_proof_scan_starved_frames += 1
+
+		var vram_cap_hit: Variant = _read_stat_optional_bool(
+			stream_state,
+			["vram_chunk_cap_hit", "vram_cap_hit", "streaming_vram_chunk_cap_hit"]
+		)
+		if vram_cap_hit == null:
+			vram_cap_hit = _read_stat_optional_bool(
+				diagnostics,
+				["vram_chunk_cap_hit", "vram_cap_hit", "streaming_vram_chunk_cap_hit"]
+			)
+		if vram_cap_hit != null:
+			_proof_vram_cap_hit_available = true
+			vram_cap_monitor_hit = vram_cap_monitor_hit or bool(vram_cap_hit)
+	elif queue_pressure_active:
+		_proof_queue_pressure_frames += 1
+
+	if vram_cap_monitor_hit:
+		_proof_vram_cap_hit_frames += 1
+
+func _proof_metric_summary(samples: Array) -> Dictionary:
+	if samples.is_empty():
+		return {
+			"avg": null,
+			"p95": null,
+			"max": null,
+			"sample_count": 0,
+		}
+	var total := 0.0
+	var max_value := 0.0
+	for value in samples:
+		var sample := float(value)
+		total += sample
+		max_value = maxf(max_value, sample)
+	return {
+		"avg": total / float(samples.size()),
+		"p95": BenchmarkMetricsUtil.percentile(samples, 95.0),
+		"max": max_value,
+		"sample_count": samples.size(),
+	}
+
+func _build_proof_metrics(overall: Dictionary, steady_overall: Dictionary, renderer_stats: Dictionary) -> Dictionary:
+	var proof_summary: Dictionary = overall
+	var proof_window := "overall"
+	if BenchmarkMetricsUtil.has_samples(steady_overall):
+		proof_summary = steady_overall
+		proof_window = "steady_overall"
+
+	var chunk_loads_summary := _proof_metric_summary(_proof_chunk_loads_per_frame)
+	var chunk_evictions_summary := _proof_metric_summary(_proof_chunk_evictions_per_frame)
+	var proof_samples := int(proof_summary.get("sample_count", 0))
+	var avg_frame_ms := float(proof_summary.get("avg_frame_ms", 0.0))
+	var p95_frame_ms := float(proof_summary.get("p95_frame_ms", 0.0))
+	var residency_ratio = null
+	if _proof_residency_available and _proof_last_total_splats > 0:
+		var residency_numerator := _proof_last_uploaded_splats
+		# Streaming worlds don't update uploaded_splat_count; fall back to visible_splats.
+		if residency_numerator == 0 and _proof_atlas_published_available and _proof_last_visible_splats > 0:
+			residency_numerator = _proof_last_visible_splats
+		residency_ratio = float(residency_numerator) / float(max(1, _proof_last_total_splats))
+
+	return {
+		"proof_window": proof_window,
+		"proof_window_sample_count": proof_samples,
+		"first_visible_ms": _proof_first_visible_ms if _proof_visibility_metric_available else null,
+		"residency_ratio": residency_ratio,
+		"frame_p95_ms": p95_frame_ms if proof_samples > 0 else null,
+		"frame_p95_to_avg_ratio": (
+			p95_frame_ms / maxf(0.001, avg_frame_ms) if proof_samples > 0 else null
+		),
+		"queue_pressure_frames": _proof_queue_pressure_frames if _proof_queue_pressure_available else null,
+		"queue_pressure_candidate_frames": (
+			_proof_queue_pressure_candidate_frames if _proof_streaming_state_available else null
+		),
+		"no_progress_frames": _proof_no_progress_frames if _proof_streaming_state_available else null,
+		"scan_starved_frames": _proof_scan_starved_frames if _proof_streaming_state_available else null,
+		"vram_cap_hit_frames": _proof_vram_cap_hit_frames if _proof_vram_cap_hit_available else null,
+		"chunk_loads_per_frame_avg": chunk_loads_summary.get("avg"),
+		"chunk_loads_per_frame_p95": chunk_loads_summary.get("p95"),
+		"chunk_loads_per_frame_max": chunk_loads_summary.get("max"),
+		"chunk_loads_per_frame_samples": chunk_loads_summary.get("sample_count"),
+		"chunk_evictions_per_frame_avg": chunk_evictions_summary.get("avg"),
+		"chunk_evictions_per_frame_p95": chunk_evictions_summary.get("p95"),
+		"chunk_evictions_per_frame_max": chunk_evictions_summary.get("max"),
+		"chunk_evictions_per_frame_samples": chunk_evictions_summary.get("sample_count"),
+		"uploaded_splats": _proof_last_uploaded_splats if _proof_residency_available else null,
+		"total_splats": _proof_last_total_splats if _proof_residency_available else null,
+		"visible_splats": _proof_last_visible_splats if _proof_visibility_metric_available else null,
+		"loaded_chunks": _proof_last_loaded_chunks if _proof_atlas_published_available else null,
+		"atlas_published_chunks": _proof_last_atlas_published_chunks if _proof_atlas_published_available else null,
+		"visibility_telemetry_available": _proof_visibility_metric_available,
+		"atlas_published_telemetry_available": _proof_atlas_published_available,
+		"streaming_state_telemetry_available": _proof_streaming_state_available,
+		"residency_telemetry_available": _proof_residency_available,
+		"chunk_monitor_telemetry_available": _proof_chunk_monitor_available,
+		"queue_pressure_telemetry_available": _proof_queue_pressure_available,
+		"vram_cap_telemetry_available": _proof_vram_cap_hit_available,
+		"renderer_stat_keys": renderer_stats.keys(),
+	}
 
 func _get_primary_renderer():
 	if _primary_renderer_owner != null and _primary_renderer_owner.has_method("get_renderer"):
@@ -775,12 +1002,13 @@ func _build_report() -> Dictionary:
 	var overall: Dictionary = BenchmarkMetricsUtil.summarize_samples(_frame_ms, _fps)
 	var warmup_overall: Dictionary = BenchmarkMetricsUtil.summarize_samples(_warmup_frame_ms, _warmup_fps)
 	var steady_overall: Dictionary = BenchmarkMetricsUtil.summarize_samples(_steady_frame_ms, _steady_fps)
-	var renderer_stats: Dictionary = {}
+	var renderer_stats: Dictionary = _latest_renderer_stats.duplicate(true)
 	var renderer = _get_primary_renderer()
 	if renderer != null and renderer.has_method("get_render_stats"):
 		var stats = renderer.get_render_stats()
 		if stats is Dictionary:
 			renderer_stats = stats
+			_latest_renderer_stats = stats
 
 	overall["route_uid"] = renderer_stats.get("route_uid", "")
 	overall["sort_route_uid"] = renderer_stats.get("sort_route_uid", "")
@@ -838,6 +1066,7 @@ func _build_report() -> Dictionary:
 		"project_settings": settings_now,
 	})
 	var visual_summary := _build_visual_summary()
+	var proof_metrics := _build_proof_metrics(overall, steady_overall, renderer_stats)
 
 	return {
 		"name": "GodotGS Benchmark Lane",
@@ -882,6 +1111,7 @@ func _build_report() -> Dictionary:
 		"score": score,
 		"warmup_score": warmup_score,
 		"steady_score": steady_score,
+		"proof_metrics": proof_metrics,
 		"captures": _capture_records,
 		"visual_summary": visual_summary,
 		"recommendations": recommendations,

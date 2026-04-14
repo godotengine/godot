@@ -1,12 +1,27 @@
 {
+  "chunked_asset_ladder": {},
   "default_asset": "res://tests/fixtures/synthetic_sphere.ply",
   "lane_defaults": {
     "deck_static_baseline": "res://tests/fixtures/synthetic_sphere.ply",
     "deck_streaming_baseline": "res://tests/fixtures/synthetic_sphere.ply"
   },
+  "lane_metadata": {
+    "deck_static_baseline": {
+      "asset_classification": "deterministic_synthetic",
+      "evidence_role": "handheld_smoke",
+      "notes": "Steam Deck static-path smoke lane backed by the deterministic synthetic sphere asset.",
+      "require_explicit_lane_default": true
+    },
+    "deck_streaming_baseline": {
+      "asset_classification": "deterministic_synthetic",
+      "evidence_role": "handheld_smoke",
+      "notes": "Steam Deck streaming-path smoke lane backed by the deterministic synthetic sphere asset.",
+      "require_explicit_lane_default": true
+    }
+  },
   "scene_defaults": {
     "deck_static_baseline": "res://tests/fixtures/synthetic_sphere.ply",
     "deck_streaming_baseline": "res://tests/fixtures/synthetic_sphere.ply"
   },
-  "version": "2.0.0"
+  "version": "2.2.0"
 }

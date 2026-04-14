@@ -100,6 +100,95 @@ static int _get_int_setting(ProjectSettings *ps, const StringName &name, int fal
     return static_cast<int>(gs::settings::get_uint(ps, name, static_cast<uint32_t>(fallback)));
 }
 
+static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
+    if (!p_metadata.has(p_key)) {
+        return p_default;
+    }
+    const Variant value = p_metadata[p_key];
+    if (value.get_type() == Variant::FLOAT) {
+        return int((double)value);
+    }
+    return int(value);
+}
+
+static double _metadata_double(const Dictionary &p_metadata, const StringName &p_key, double p_default) {
+    if (!p_metadata.has(p_key)) {
+        return p_default;
+    }
+    const Variant value = p_metadata[p_key];
+    if (value.get_type() == Variant::INT) {
+        return double(int64_t(value));
+    }
+    return (double)value;
+}
+
+static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
+    if (p_asset.is_null()) {
+        return false;
+    }
+    const Dictionary import_metadata = p_asset->get_import_metadata();
+    const int import_max_splats = _metadata_int(import_metadata, StringName("max_splats"), -1);
+    const double density_multiplier = _metadata_double(import_metadata, StringName("density_multiplier"), 1.0);
+    return import_max_splats == 0 && density_multiplier >= 0.999;
+}
+
+static bool _renderer_requests_conservative_full_fidelity_runtime(const GaussianSplatRenderer *p_renderer,
+        const Ref<GaussianSplatAsset> &p_active_asset) {
+    if (_asset_requests_full_fidelity_runtime(p_active_asset)) {
+        return true;
+    }
+    if (!p_renderer) {
+        return false;
+    }
+    GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
+    if (!director) {
+        return false;
+    }
+
+    LocalVector<InstanceAssetRegistration> instance_assets;
+    director->collect_instance_assets_for_renderer(p_renderer, instance_assets,
+            p_renderer->is_shadow_instance_filter_enabled());
+    if (instance_assets.is_empty()) {
+        return false;
+    }
+    for (const InstanceAssetRegistration &entry : instance_assets) {
+        if (entry.requests_full_fidelity_runtime) {
+            return true;
+        }
+    }
+    if (p_active_asset.is_null()) {
+        return true;
+    }
+    const Ref<GaussianData> active_data = p_active_asset->get_gaussian_data();
+    if (active_data.is_null()) {
+        return true;
+    }
+    for (const InstanceAssetRegistration &entry : instance_assets) {
+        if (entry.data.is_null()) {
+            continue;
+        }
+        if (entry.data == active_data) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static void _apply_resident_rejection_to_backend_plan(GaussianSplatRenderer::FrameBackendPlan &r_plan,
+        const String &p_resident_attempt_reason) {
+    const String resident_rejection_reason =
+            vformat("%s_not_feasible:%s", r_plan.resident_backend_reason, p_resident_attempt_reason);
+    r_plan.prefer_resident_backend = false;
+    r_plan.should_attempt_streaming_bootstrap = r_plan.streaming_requested && !r_plan.streaming_ready;
+    r_plan.resident_rejection_reason = resident_rejection_reason;
+    r_plan.streaming_backend_reason = resident_rejection_reason;
+    r_plan.streaming_contract_ready_reason = vformat("%s -> streaming_contract_published", resident_rejection_reason);
+    r_plan.streaming_not_ready_fallback_reason = vformat("%s -> streaming_frame_not_ready_fallback",
+            resident_rejection_reason);
+    r_plan.streaming_unavailable_fallback_reason = vformat("%s -> streaming_unavailable_fallback",
+            resident_rejection_reason);
+}
+
 // Convert SH band level (0-3) to coefficient count limit
 static uint8_t _sh_band_to_coeff_limit(int p_band) {
     // SH bands: 0 -> 1 coeff (DC only), 1 -> 4, 2 -> 9, 3 -> 16
@@ -768,6 +857,12 @@ GaussianSplatRenderer::GaussianSplatRenderer(RenderingDevice *p_device) {
     subsystem_state.gpu_culler->get_state().sort_cache_angle_cos_threshold = Math::cos(Math::deg_to_rad(5.0f));
     float position_threshold = 0.05f;
     subsystem_state.gpu_culler->get_state().sort_cache_position_threshold_sq = position_threshold * position_threshold;
+    if (ProjectSettings *project_settings = ProjectSettings::get_singleton()) {
+        Callable settings_changed = callable_mp(this, &GaussianSplatRenderer::_mark_streaming_route_policy_dirty);
+        if (!project_settings->is_connected("settings_changed", settings_changed)) {
+            project_settings->connect("settings_changed", settings_changed);
+        }
+    }
 
 	// Initialize orchestrators.
 	pipeline_stages = std::make_unique<RenderPipelineStages>(this);
@@ -1047,6 +1142,12 @@ void GaussianSplatRenderer::publish_sorted_indices(const SortPublicationPayload 
 }
 
 GaussianSplatRenderer::~GaussianSplatRenderer() {
+    if (ProjectSettings *project_settings = ProjectSettings::get_singleton()) {
+        Callable settings_changed = callable_mp(this, &GaussianSplatRenderer::_mark_streaming_route_policy_dirty);
+        if (project_settings->is_connected("settings_changed", settings_changed)) {
+            project_settings->disconnect("settings_changed", settings_changed);
+        }
+    }
     if (GaussianRenderingDiagnostics::get_singleton()) {
         GaussianRenderingDiagnostics::get_singleton()->unregister_renderer(this);
     }
@@ -1223,6 +1324,105 @@ void GaussianSplatRenderer::_release_shared_dynamic_asset() {
 void GaussianSplatRenderer::_notification(int p_what) {
     // Notification handling disabled for Object-based implementation
     // Will be called manually from module initialization
+}
+
+void GaussianSplatRenderer::_mark_streaming_route_policy_dirty() {
+    cached_streaming_route_policy_dirty = true;
+}
+
+void GaussianSplatRenderer::_refresh_streaming_route_policy_cache() {
+    if (!cached_streaming_route_policy_dirty) {
+        return;
+    }
+    ProjectSettings *project_settings = ProjectSettings::get_singleton();
+    cached_streaming_route_policy = gs::settings::get_streaming_route_policy(project_settings);
+    cached_streaming_route_policy_source = gs::settings::get_streaming_route_policy_source(project_settings);
+    cached_streaming_route_policy_dirty = false;
+}
+
+int GaussianSplatRenderer::get_cached_streaming_route_policy() {
+    _refresh_streaming_route_policy_cache();
+    return cached_streaming_route_policy;
+}
+
+const String &GaussianSplatRenderer::get_cached_streaming_route_policy_source() {
+    _refresh_streaming_route_policy_cache();
+    return cached_streaming_route_policy_source;
+}
+
+GaussianSplatRenderer::RuntimeFidelityPolicy GaussianSplatRenderer::build_runtime_fidelity_policy(
+        const SceneState &p_scene_state, const PerformanceSettings &p_performance_settings) const {
+    RuntimeFidelityPolicy policy;
+    const_cast<GaussianSplatRenderer *>(this)->_refresh_streaming_route_policy_cache();
+    policy.requested_route_policy = cached_streaming_route_policy;
+    policy.requested_route_policy_source = cached_streaming_route_policy_source;
+    policy.prefer_resident_backend =
+            should_prefer_resident_backend(policy.requested_route_policy, &policy.backend_preference_reason);
+    policy.preserve_source_fidelity =
+            _renderer_requests_conservative_full_fidelity_runtime(this, p_scene_state.active_asset);
+
+    if (!p_scene_state.gaussian_data.is_valid()) {
+        policy.runtime_budget_splats = 0;
+        return policy;
+    }
+
+    const uint32_t real_count = uint32_t(MAX(0, p_scene_state.gaussian_data->get_count()));
+    if (real_count == 0) {
+        policy.runtime_budget_splats = 0;
+        return policy;
+    }
+
+    if (policy.preserve_source_fidelity || p_performance_settings.max_splats <= 0) {
+        policy.runtime_budget_splats = real_count;
+        return policy;
+    }
+
+    policy.runtime_budget_splats = MIN<uint32_t>(real_count, uint32_t(p_performance_settings.max_splats));
+    return policy;
+}
+
+GaussianSplatRenderer::FrameBackendPlan GaussianSplatRenderer::build_frame_backend_plan(bool p_streaming_ready) const {
+    FrameBackendPlan plan;
+    plan.runtime_policy = build_runtime_fidelity_policy(get_scene_state(), get_performance_settings());
+    plan.streaming_requested = (plan.runtime_policy.requested_route_policy == gs::settings::GS_ROUTE_STREAMING);
+    plan.prefer_resident_backend = plan.runtime_policy.prefer_resident_backend;
+    plan.streaming_ready = p_streaming_ready;
+    plan.should_attempt_streaming_bootstrap =
+            plan.streaming_requested && !plan.prefer_resident_backend && !plan.streaming_ready;
+    plan.allow_legacy_resident_fallback = !plan.streaming_requested;
+    // Allow the streaming path to inject a synthetic identity instance when
+    // the SceneDirector has no instances and no world submission is active.
+    // World submissions (gsplatworld) own the streaming cull/sort/raster
+    // contract directly, so a synthetic primary fallback would re-route the
+    // staged-world data back through the resident-style primary path and
+    // contradict the active submission.  Suppressing the fallback here keeps
+    // staged worlds on the streamed-world path; the contract-active flag
+    // comes from apply_world_submission_contract(), and the director-side
+    // probe catches the case where the contract has not yet been observed
+    // by this renderer but a submission is already published.
+    const bool world_submission_active = world_submission_contract_active;
+    bool director_has_submission = false;
+    if (!world_submission_active) {
+        if (const GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton()) {
+            director_has_submission = director->has_world_submission_for_renderer(this);
+        }
+    }
+    const bool any_world_submission = world_submission_active || director_has_submission;
+    plan.has_active_world_submission = any_world_submission;
+    plan.allow_primary_fallback_instance =
+            !any_world_submission &&
+            get_scene_state().gaussian_data.is_valid() &&
+            get_scene_state().gaussian_data->get_count() > 0;
+    if (any_world_submission) {
+        plan.primary_fallback_instance_reason = String("world_submission_owns_streaming_path");
+    } else if (plan.allow_primary_fallback_instance) {
+        plan.primary_fallback_instance_reason = String("primary_gaussian_data_available");
+    } else {
+        plan.primary_fallback_instance_reason = String("primary_gaussian_data_unavailable");
+    }
+    plan.resident_backend_reason = plan.runtime_policy.backend_preference_reason;
+    plan.streaming_backend_reason = plan.runtime_policy.backend_preference_reason;
+    return plan;
 }
 
 void GaussianSplatRenderer::initialize() {
@@ -1793,6 +1993,15 @@ bool GaussianSplatRenderer::_try_render_resident_frame(RenderDataRD *p_render_da
     }
 #endif
 
+    {
+        static int _diag_res = 0;
+        if (++_diag_res <= 10 || _diag_res % 60 == 0) {
+            print_line(vformat("[DIAG-RESIDENT] has_dataset=%s has_buffer_mgr=%s",
+                    has_gaussian_dataset ? "YES" : "no",
+                    has_buffer_manager_data ? "YES" : "no"));
+        }
+    }
+
     if (!has_gaussian_dataset && !has_buffer_manager_data) {
         if (r_reason) {
             *r_reason = "no_render_data";
@@ -1851,14 +2060,23 @@ bool GaussianSplatRenderer::_try_render_resident_frame(RenderDataRD *p_render_da
 }
 
 void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
-        const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers) {
+        const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers,
+        bool p_allow_legacy_resident_fallback) {
     _try_render_resident_frame(p_render_data, p_world_to_camera_transform, p_projection,
-            p_render_projection, p_render_buffers, true, nullptr);
+            p_render_projection, p_render_buffers, p_allow_legacy_resident_fallback, nullptr);
 }
 
 void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     // Render flow: render_scene_instance -> (streaming ? render_streaming_frame : render_resident_frame)
     // -> RenderPipelineStages::render_sorted_splats_with_context -> raster/composite.
+
+    {
+        static int _diag_rsi = 0;
+        if (++_diag_rsi <= 10 || _diag_rsi % 60 == 0) {
+            print_line(vformat("[DIAG-RSI] render_scene_instance called count=%d render_data=%s",
+                    _diag_rsi, p_render_data ? "valid" : "NULL"));
+        }
+    }
 
     if (debug_state_orchestrator) {
         DebugState &debug_state = get_debug_state();
@@ -1984,18 +2202,10 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     }
 
     // Update streaming system if active.
-    ProjectSettings *project_settings = ProjectSettings::get_singleton();
-    const int route_policy = gs::settings::get_streaming_route_policy(project_settings);
-    _set_route_policy_diagnostics(route_policy, gs::settings::get_streaming_route_policy_source(project_settings));
-    String backend_preference_reason;
-    const bool prefer_resident_backend = should_prefer_resident_backend(route_policy, &backend_preference_reason);
-    bool streaming_requested = (route_policy == gs::settings::GS_ROUTE_STREAMING);
-    String streaming_backend_reason = "requested_streaming_policy";
-    String streaming_contract_ready_reason = "streaming_contract_published";
-    String streaming_not_ready_fallback_reason = "streaming_frame_not_ready_fallback";
-    String streaming_unavailable_fallback_reason = "streaming_unavailable_fallback";
-
-    bool streaming_ready = get_streaming_state().current_streaming_system.is_valid();
+    FrameBackendPlan backend_plan =
+            build_frame_backend_plan(get_streaming_state().current_streaming_system.is_valid());
+    _set_route_policy_diagnostics(backend_plan.runtime_policy.requested_route_policy,
+            backend_plan.runtime_policy.requested_route_policy_source.utf8().get_data());
     static uint64_t render_debug_count = 0;
     const auto &debug_config = get_debug_config();
     const bool trace_enabled = GaussianSplatting::debug_trace_is_enabled();
@@ -2004,35 +2214,47 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
             debug_config.enable_all_debug;
     if (render_log_enabled && (++render_debug_count % 300) == 1) {
         GS_LOG_RENDERER_DEBUG(vformat("[RENDER-DBG] streaming_requested=%s streaming_ready=%s",
-                streaming_requested ? "yes" : "no",
-                streaming_ready ? "yes" : "no"));
+                backend_plan.streaming_requested ? "yes" : "no",
+                backend_plan.streaming_ready ? "yes" : "no"));
     }
 #if defined(DEBUG_ENABLED) || kLogFrameDebug
     if (should_log_frame) {
-        _trace_render_path(true, log_frame, streaming_requested && !prefer_resident_backend, streaming_ready);
+        _trace_render_path(true, log_frame,
+                backend_plan.streaming_requested && !backend_plan.prefer_resident_backend,
+                backend_plan.streaming_ready);
     }
 #endif
-    if (streaming_requested && !prefer_resident_backend && !streaming_ready && streaming_orchestrator) {
-        if (streaming_orchestrator->ensure_instance_streaming_system()) {
-            streaming_ready = get_streaming_state().current_streaming_system.is_valid();
+    if (backend_plan.should_attempt_streaming_bootstrap && streaming_orchestrator) {
+        if (streaming_orchestrator->ensure_instance_streaming_system(backend_plan)) {
+            backend_plan.streaming_ready = get_streaming_state().current_streaming_system.is_valid();
         }
+        backend_plan.should_attempt_streaming_bootstrap = false;
     }
     // DEBUG: Track why render_streaming_frame might not be called
     static int render_gate_counter = 0;
     if (trace_enabled && ++render_gate_counter % 60 == 1) {
         GaussianSplatting::debug_trace_record_event("render_gate",
                 vformat("streaming_requested=%s streaming_ready=%s",
-                        streaming_requested ? "YES" : "no",
-                        streaming_ready ? "YES" : "no"),
+                        backend_plan.streaming_requested ? "YES" : "no",
+                        backend_plan.streaming_ready ? "YES" : "no"),
                 false);
     }
-    if (prefer_resident_backend) {
-        const bool allow_legacy_resident_fallback = !streaming_requested;
+    {
+        static int _diag_route = 0;
+        if (++_diag_route <= 10 || _diag_route % 60 == 0) {
+            print_line(vformat("[DIAG-ROUTE] prefer_resident=%s streaming_req=%s streaming_ready=%s visible=%d",
+                    backend_plan.prefer_resident_backend ? "YES" : "no",
+                    backend_plan.streaming_requested ? "YES" : "no",
+                    backend_plan.streaming_ready ? "YES" : "no",
+                    (int)get_frame_state().visible_splat_count.load(std::memory_order_relaxed)));
+        }
+    }
+    if (backend_plan.prefer_resident_backend) {
         String resident_attempt_reason;
         if (_try_render_resident_frame(p_render_data, view_transform, cam_projection, render_projection,
-                    render_buffers_rd, allow_legacy_resident_fallback, &resident_attempt_reason)) {
+                    render_buffers_rd, backend_plan.allow_legacy_resident_fallback, &resident_attempt_reason)) {
             _set_instance_backend_diagnostics(InstanceBackendPolicy::RESIDENT,
-                    backend_preference_reason,
+                    backend_plan.resident_backend_reason,
                     is_instance_contract_ready(),
                     get_instance_contract_shape());
             return;
@@ -2040,41 +2262,30 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
 
         // Preserve the rejected resident reason when we pivot into the streaming backend so
         // stats/HUD surfaces can explain both "why resident was rejected" and "what won next".
-        const String resident_rejection_reason =
-                vformat("%s_not_feasible:%s", backend_preference_reason, resident_attempt_reason);
+        _apply_resident_rejection_to_backend_plan(backend_plan, resident_attempt_reason);
         _set_instance_backend_diagnostics(InstanceBackendPolicy::STREAMING,
-                resident_rejection_reason,
+                backend_plan.streaming_backend_reason,
                 false,
                 "atlas_emulation");
-        streaming_backend_reason = resident_rejection_reason;
-        streaming_contract_ready_reason = vformat("%s -> streaming_contract_published", resident_rejection_reason);
-        streaming_not_ready_fallback_reason = vformat("%s -> streaming_frame_not_ready_fallback",
-                resident_rejection_reason);
-        streaming_unavailable_fallback_reason = vformat("%s -> streaming_unavailable_fallback",
-                resident_rejection_reason);
-        if (streaming_requested && !streaming_ready && streaming_orchestrator) {
-            if (streaming_orchestrator->ensure_instance_streaming_system()) {
-                streaming_ready = get_streaming_state().current_streaming_system.is_valid();
+        if (backend_plan.streaming_requested && !backend_plan.streaming_ready && streaming_orchestrator) {
+            if (streaming_orchestrator->ensure_instance_streaming_system(backend_plan)) {
+                backend_plan.streaming_ready = get_streaming_state().current_streaming_system.is_valid();
             }
         }
     }
-    if (streaming_requested && streaming_ready) {
-        const bool has_primary_gaussian_data =
-                get_scene_state().gaussian_data.is_valid() &&
-                get_scene_state().gaussian_data->get_count() > 0;
-        const bool allow_primary_fallback_instance = has_primary_gaussian_data;
+    if (backend_plan.streaming_requested && backend_plan.streaming_ready) {
         _set_instance_backend_diagnostics(InstanceBackendPolicy::STREAMING,
-                streaming_backend_reason, has_instance_pipeline_buffers(), "atlas_emulation");
+                backend_plan.streaming_backend_reason, has_instance_pipeline_buffers(), "atlas_emulation");
         if (debug_state_orchestrator) {
             get_debug_state().route_uid = RenderRouteUID::INSTANCE_STREAMING;
         }
         const bool streaming_frame_rendered = streaming_orchestrator &&
                 streaming_orchestrator->render_streaming_frame(
                         p_render_data, cam_transform, view_transform, cam_projection, render_projection, render_buffers_rd,
-                        allow_primary_fallback_instance);
+                        backend_plan);
         if (streaming_frame_rendered) {
             _set_instance_backend_diagnostics(InstanceBackendPolicy::STREAMING,
-                    streaming_contract_ready_reason,
+                    backend_plan.streaming_contract_ready_reason,
                     is_instance_contract_ready(),
                     get_instance_contract_shape());
             return;
@@ -2096,11 +2307,11 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
                     fallback_route_uid));
         }
         _set_instance_backend_diagnostics(InstanceBackendPolicy::RESIDENT,
-                streaming_not_ready_fallback_reason, has_instance_pipeline_buffers(), "atlas_emulation");
+                backend_plan.streaming_not_ready_fallback_reason, has_instance_pipeline_buffers(), "atlas_emulation");
     } else {
         // Streaming was requested but the system failed to initialize.
         _set_instance_backend_diagnostics(InstanceBackendPolicy::RESIDENT,
-                streaming_unavailable_fallback_reason, has_instance_pipeline_buffers(), "atlas_emulation");
+                backend_plan.streaming_unavailable_fallback_reason, has_instance_pipeline_buffers(), "atlas_emulation");
         String fallback_route_uid = _streaming_not_ready_route_uid("MISSING_STREAMING_SYSTEM");
         if (debug_state_orchestrator) {
             DebugState &debug_state = get_debug_state();
@@ -2115,15 +2326,17 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
         WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Streaming unavailable (route=%s); falling back to resident render path.",
                 fallback_route_uid));
     }
-    _render_resident_frame(p_render_data, view_transform, cam_projection, render_projection, render_buffers_rd);
+    _render_resident_frame(p_render_data, view_transform, cam_projection, render_projection, render_buffers_rd,
+            backend_plan.allow_legacy_resident_fallback);
 }
 
 void GaussianSplatRenderer::tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection) {
     // When route policy is resident, skip streaming tick entirely — don't create
     // or update the streaming system.  This eliminates all per-frame streaming
     // overhead (visibility scan, prefetch, eviction, worker threads).
-    const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
-    if (should_prefer_resident_backend(route_policy)) {
+    const FrameBackendPlan backend_plan =
+            build_frame_backend_plan(get_streaming_state().current_streaming_system.is_valid());
+    if (backend_plan.prefer_resident_backend || !backend_plan.streaming_requested) {
         return;
     }
     if (!streaming_orchestrator) {
@@ -2133,7 +2346,7 @@ void GaussianSplatRenderer::tick_streaming_only(const Transform3D &p_camera_to_w
     get_view_state().last_camera_to_world_transform = p_camera_to_world_transform;
     get_view_state().last_camera_projection = p_projection;
 
-    streaming_orchestrator->tick_streaming_only(p_camera_to_world_transform, p_projection);
+    streaming_orchestrator->tick_streaming_only(p_camera_to_world_transform, p_projection, backend_plan);
 }
 
 void GaussianSplatRenderer::render_gaussians(RenderDataRD *p_render_data, const PagedArray<RID> &p_instances) {
@@ -2337,6 +2550,14 @@ const GaussianSplatRenderer::ResourceState &GaussianSplatRenderer::get_resource_
 bool GaussianSplatRenderer::get_submission_residency_hint(int32_t *r_hint, String *r_source) const {
     ERR_FAIL_NULL_V(r_hint, false);
 
+    if (world_submission_contract_active && world_submission_has_residency_hint) {
+        *r_hint = world_submission_residency_hint;
+        if (r_source) {
+            *r_source = "world_submission";
+        }
+        return true;
+    }
+
     GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
     if (director == nullptr) {
         if (r_source) {
@@ -2445,7 +2666,7 @@ void GaussianSplatRenderer::clear_instance_pipeline_buffers() {
     instance_contract_source_generation = 0;
 }
 
-bool GaussianSplatRenderer::update_instance_buffer(LocalVector<InstanceDataGPU> &p_instances) {
+bool GaussianSplatRenderer::update_instance_buffer(LocalVector<InstanceDataGPU> &p_instances, const PublishedInstanceAssetRemap &p_remap) {
     if (!_ensure_rendering_device("update_instance_buffer")) {
         return false;
     }
@@ -2456,19 +2677,19 @@ bool GaussianSplatRenderer::update_instance_buffer(LocalVector<InstanceDataGPU> 
         return true;
     }
 
-    if (!instance_asset_remap.valid) {
+    if (!p_remap.valid) {
         WARN_PRINT_ONCE("[GaussianSplatRenderer] Instance buffer upload skipped; published asset remap unavailable.");
         instance_pipeline_buffers.instance_count = 0;
         return false;
     }
 
-    const uint32_t published_generation = instance_asset_remap.generation == 0
+    const uint32_t published_generation = p_remap.generation == 0
             ? 1u
-            : uint32_t(instance_asset_remap.generation & uint64_t(UINT32_MAX));
+            : uint32_t(p_remap.generation & uint64_t(UINT32_MAX));
     for (uint32_t i = 0; i < instance_count; i++) {
         const uint32_t incoming_asset_id = p_instances[i].ids[0];
         uint32_t dense_id = 0u;
-        if (const uint32_t *mapped_dense_id = instance_asset_remap.asset_to_dense_id.getptr(incoming_asset_id)) {
+        if (const uint32_t *mapped_dense_id = p_remap.asset_to_dense_id.getptr(incoming_asset_id)) {
             dense_id = *mapped_dense_id;
         } else {
             WARN_PRINT_ONCE(vformat("[GaussianSplatRenderer] Instance asset_id %u is not published; using primary resident asset.", incoming_asset_id));

@@ -22,6 +22,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from benchmark_asset_manifest import (
+    BenchmarkAssetManifest,
+    resolve_benchmark_asset_manifest_path,
+    resolve_lane_asset_policy,
+    load_benchmark_asset_manifest,
+    validate_manifest_lane_policies,
+)
+
 
 @dataclass(frozen=True)
 class LaneDefinition:
@@ -43,14 +51,21 @@ LANES: list[LaneDefinition] = [
     LaneDefinition(
         lane_id="streaming_corridor",
         scene="res://scenes/benchmark_suite/lane_streaming_corridor.tscn",
-        description="Camera sweep stressing chunk turnover",
+        description="Corridor churn smoke support",
         durations={"quick": 12.0, "performance": 40.0, "showcase": 50.0},
         weights={"quick": 12.0, "performance": 12.0, "showcase": 12.0},
     ),
     LaneDefinition(
+        lane_id="open_world_corridor_proof",
+        scene="res://scenes/benchmark_suite/lane_open_world_corridor_proof.tscn",
+        description="Dedicated world-consuming 20M corridor proof surface",
+        durations={"performance": 40.0},
+        weights={"performance": 0.0},
+    ),
+    LaneDefinition(
         lane_id="city_flyover",
         scene="res://scenes/benchmark_suite/lane_city_flyover.tscn",
-        description="High-altitude visibility-change stress",
+        description="Boundary-crossing smoke support",
         durations={"quick": 12.0, "performance": 35.0, "showcase": 50.0},
         weights={"quick": 10.0, "performance": 10.0, "showcase": 12.0},
     ),
@@ -92,14 +107,14 @@ LANES: list[LaneDefinition] = [
     LaneDefinition(
         lane_id="long_soak",
         scene="res://scenes/benchmark_suite/lane_long_soak.tscn",
-        description="Long-horizon drift/churn stability",
+        description="City-roam soak smoke support",
         durations={"quick": 20.0, "performance": 120.0, "showcase": 150.0},
         weights={"quick": 3.0, "performance": 8.0, "showcase": 8.0},
     ),
     LaneDefinition(
         lane_id="unified_composite",
         scene="res://scenes/benchmark_unified.tscn",
-        description="Integrated all-systems composite lane",
+        description="Integrated composite smoke support",
         durations={"quick": 45.0, "performance": 180.0, "showcase": 240.0},
         weights={"quick": 15.0, "performance": 20.0, "showcase": 10.0},
     ),
@@ -204,6 +219,230 @@ PROFILE_WARMUP_SECONDS: dict[str, float] = {
 DEFAULT_CAPTURE_LANES: tuple[str, ...] = ("integrity_sentinel", "parity_fidelity")
 TEXT_DEPENDENCY_SUFFIXES: tuple[str, ...] = (".tscn", ".gd", ".tres", ".tscn")
 RES_PATH_PATTERN = re.compile(r"res://[^\s\"'\]\)]+")
+LARGE_WORLD_PROOF_CONTRACT_VERSION = "phase4c1_large_world_v1"
+LARGE_WORLD_PROOF_METRIC_LABELS: dict[str, str] = {
+    "first_visible_ms": "first_visible_ms",
+    "residency_ratio": "residency_ratio",
+    "frame_p95_ms": "frame_p95_ms",
+    "frame_p95_to_avg_ratio": "frame_p95_to_avg_ratio",
+    "queue_pressure_frames": "queue_pressure_frames",
+    "no_progress_frames": "no_progress_frames",
+    "scan_starved_frames": "scan_starved_frames",
+    "vram_cap_hit_frames": "vram_cap_hit_frames",
+    "chunk_loads_per_frame_p95": "chunk_loads_per_frame.p95",
+    "chunk_evictions_per_frame_p95": "chunk_evictions_per_frame.p95",
+}
+LARGE_WORLD_PROOF_CONTRACTS: dict[str, dict[str, Any]] = {
+    "open_world_corridor_proof": {
+        "proof_role": "corridor_return",
+        "proof_name": "Corridor return",
+        "failure_intent": (
+            "Fail when the dedicated large-world corridor lane never re-establishes visible streamed output "
+            "with stable residency and forward progress."
+        ),
+        "correctness_thresholds": [
+            {"metric": "first_visible_ms", "op": "<=", "value": 3500.0},
+            {"metric": "residency_ratio", "op": ">=", "value": 0.70},
+            {"metric": "queue_pressure_frames", "op": "<=", "value": 32},
+            {"metric": "no_progress_frames", "op": "<=", "value": 6},
+            {"metric": "scan_starved_frames", "op": "<=", "value": 6},
+            {"metric": "vram_cap_hit_frames", "op": "<=", "value": 0},
+        ],
+        "soft_budget_thresholds": [
+            {"metric": "frame_p95_ms", "op": "<=", "value": 95.0},
+            {"metric": "frame_p95_to_avg_ratio", "op": "<=", "value": 2.25},
+            {"metric": "chunk_loads_per_frame_p95", "op": "<=", "value": 10.0},
+            {"metric": "chunk_evictions_per_frame_p95", "op": "<=", "value": 4.0},
+        ],
+    },
+    # city_flyover and long_soak are smoke-support lanes that do not use chunked
+    # world contracts yet.  Their proof contracts will be added once the lanes
+    # are promoted to real chunked evidence surfaces (see benchmark-suite.md).
+}
+
+
+
+def _validate_large_world_proof_contract_definitions() -> None:
+    known_lanes = {lane.lane_id for lane in LANES}
+    known_metrics = set(LARGE_WORLD_PROOF_METRIC_LABELS)
+    allowed_ops = {"<=", ">="}
+    errors: list[str] = []
+    for lane_id, contract in LARGE_WORLD_PROOF_CONTRACTS.items():
+        if lane_id not in known_lanes:
+            errors.append(f"{lane_id}: lane is not defined in LANES")
+        seen_metrics: set[str] = set()
+        for rule_group in ("correctness_thresholds", "soft_budget_thresholds"):
+            rules = contract.get(rule_group)
+            if not isinstance(rules, list) or not rules:
+                errors.append(f"{lane_id}: {rule_group} must be a non-empty list")
+                continue
+            for idx, rule in enumerate(rules):
+                if not isinstance(rule, dict):
+                    errors.append(f"{lane_id}: {rule_group}[{idx}] must be an object")
+                    continue
+                metric = str(rule.get("metric", "")).strip()
+                op = str(rule.get("op", "")).strip()
+                value = rule.get("value")
+                if metric not in known_metrics:
+                    errors.append(f"{lane_id}: {rule_group}[{idx}] uses unknown metric '{metric}'")
+                if op not in allowed_ops:
+                    errors.append(f"{lane_id}: {rule_group}[{idx}] uses unsupported operator '{op}'")
+                if not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                    errors.append(f"{lane_id}: {rule_group}[{idx}] has non-finite threshold {value!r}")
+                if metric in seen_metrics:
+                    errors.append(f"{lane_id}: metric '{metric}' is defined more than once")
+                seen_metrics.add(metric)
+    if errors:
+        raise ValueError("invalid large-world proof contract:\n- " + "\n- ".join(errors))
+
+
+def _extract_large_world_proof_metrics(report: dict[str, Any]) -> dict[str, Any]:
+    proof_metrics = report.get("proof_metrics")
+    metrics: dict[str, Any] = dict(proof_metrics) if isinstance(proof_metrics, dict) else {}
+    proof_window = metrics.get("proof_window")
+    proof_summary: dict[str, Any] | None = None
+    if proof_window == "steady_overall":
+        steady = report.get("steady_overall")
+        if isinstance(steady, dict) and int(steady.get("sample_count", 0)) > 0:
+            proof_summary = steady
+    if proof_summary is None:
+        overall = report.get("overall")
+        if isinstance(overall, dict):
+            proof_summary = overall
+            if not proof_window:
+                metrics["proof_window"] = "overall"
+    if isinstance(proof_summary, dict):
+        avg_frame_ms = _metric_as_float(proof_summary.get("avg_frame_ms"))
+        p95_frame_ms = _metric_as_float(proof_summary.get("p95_frame_ms"))
+        if _metric_as_float(metrics.get("frame_p95_ms")) is None:
+            metrics["frame_p95_ms"] = p95_frame_ms
+        if _metric_as_float(metrics.get("frame_p95_to_avg_ratio")) is None and avg_frame_ms is not None and p95_frame_ms is not None:
+            metrics["frame_p95_to_avg_ratio"] = p95_frame_ms / max(0.001, avg_frame_ms)
+    if _metric_as_float(metrics.get("queue_pressure_frames")) is None:
+        metrics["queue_pressure_frames"] = _report_renderer_metric(report, "streaming_queue_pressure_frames")
+    if _metric_as_float(metrics.get("vram_cap_hit_frames")) is None:
+        metrics["vram_cap_hit_frames"] = _report_renderer_metric(report, "streaming_vram_cap_hit_frames")
+    return metrics
+
+
+def _proof_metric_observed_value(metric_name: str, metrics: dict[str, Any]) -> float | None:
+    return _metric_as_float(metrics.get(metric_name))
+
+
+def _proof_metric_passes(observed: float, op: str, threshold: float) -> bool:
+    if op == "<=":
+        return observed <= threshold
+    if op == ">=":
+        return observed >= threshold
+    raise ValueError(f"Unsupported proof operator: {op}")
+
+
+def _format_proof_issue(rule: dict[str, Any], observed: float) -> str:
+    metric_name = LARGE_WORLD_PROOF_METRIC_LABELS.get(str(rule["metric"]), str(rule["metric"]))
+    threshold = float(rule["value"])
+    op = str(rule["op"])
+    if metric_name.endswith("_ratio"):
+        return f"{metric_name}={observed:.3f} {op} {threshold:.3f}"
+    if metric_name.endswith("_ms"):
+        return f"{metric_name}={observed:.1f} {op} {threshold:.1f}"
+    if observed.is_integer() and float(threshold).is_integer():
+        return f"{metric_name}={int(observed)} {op} {int(threshold)}"
+    return f"{metric_name}={observed:.2f} {op} {threshold:.2f}"
+
+
+def _evaluate_large_world_proof_contract(lane_id: str, report: dict[str, Any] | None) -> dict[str, Any]:
+    contract = LARGE_WORLD_PROOF_CONTRACTS.get(lane_id)
+    if contract is None:
+        return {
+            "proof_required": False,
+            "proof_contract_version": LARGE_WORLD_PROOF_CONTRACT_VERSION,
+            "proof_contract": None,
+            "proof_metrics": None,
+            "proof_status": "not_applicable",
+            "proof_valid": True,
+            "proof_failures": [],
+            "proof_warnings": [],
+            "proof_missing_telemetry": [],
+        }
+    proof_contract = {
+        "version": LARGE_WORLD_PROOF_CONTRACT_VERSION,
+        "proof_role": contract["proof_role"],
+        "proof_name": contract["proof_name"],
+        "failure_intent": contract["failure_intent"],
+        "correctness_thresholds": contract["correctness_thresholds"],
+        "soft_budget_thresholds": contract["soft_budget_thresholds"],
+    }
+    if not isinstance(report, dict):
+        return {
+            "proof_required": True,
+            "proof_contract_version": LARGE_WORLD_PROOF_CONTRACT_VERSION,
+            "proof_contract": proof_contract,
+            "proof_metrics": None,
+            "proof_status": "report_unavailable",
+            "proof_valid": False,
+            "proof_failures": [],
+            "proof_warnings": [],
+            "proof_missing_telemetry": [
+                {"metric": "report", "message": "lane JSON report unavailable; proof contract could not be audited"}
+            ],
+        }
+
+    metrics = _extract_large_world_proof_metrics(report)
+    proof_failures: list[dict[str, Any]] = []
+    proof_warnings: list[dict[str, Any]] = []
+    proof_missing_telemetry: list[dict[str, Any]] = []
+    for severity, rule_group, sink in (
+        ("correctness", "correctness_thresholds", proof_failures),
+        ("soft_budget", "soft_budget_thresholds", proof_warnings),
+    ):
+        for rule in contract[rule_group]:
+            observed = _proof_metric_observed_value(str(rule["metric"]), metrics)
+            if observed is None:
+                proof_missing_telemetry.append(
+                    {
+                        "metric": rule["metric"],
+                        "severity": severity,
+                        "message": f"missing telemetry for {LARGE_WORLD_PROOF_METRIC_LABELS[rule['metric']]}",
+                    }
+                )
+                continue
+            if _proof_metric_passes(observed, str(rule["op"]), float(rule["value"])):
+                continue
+            sink.append(
+                {
+                    "metric": rule["metric"],
+                    "severity": severity,
+                    "operator": rule["op"],
+                    "threshold": float(rule["value"]),
+                    "observed": observed,
+                    "message": _format_proof_issue(rule, observed),
+                }
+            )
+
+    proof_status = "pass"
+    if proof_failures:
+        proof_status = "fail"
+    elif proof_missing_telemetry:
+        proof_status = "missing_telemetry"
+    elif proof_warnings:
+        proof_status = "warn"
+    return {
+        "proof_required": True,
+        "proof_contract_version": LARGE_WORLD_PROOF_CONTRACT_VERSION,
+        "proof_contract": proof_contract,
+        "proof_metrics": metrics,
+        "proof_status": proof_status,
+        "proof_valid": proof_status not in {"fail", "missing_telemetry", "report_unavailable"},
+        "proof_failures": proof_failures,
+        "proof_warnings": proof_warnings,
+        "proof_missing_telemetry": proof_missing_telemetry,
+    }
+
+
+def _proof_issue_summary(issues: list[dict[str, Any]]) -> str:
+    if not issues:
+        return "none"
+    return "; ".join(str(issue.get("message", "")) for issue in issues)
 
 
 def _repo_root() -> Path:
@@ -319,7 +558,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--asset-manifest",
         default="",
-        help="Optional JSON file mapping lane_id -> asset path (res://... or absolute).",
+        help="Path to benchmark asset manifest JSON. Defaults to the project-local canonical manifest.",
     )
     parser.add_argument(
         "--generate-dummy-assets",
@@ -445,36 +684,6 @@ def _select_capture_lanes(
     return {lane_id for lane_id in DEFAULT_CAPTURE_LANES if lane_id in valid_lane_ids}
 
 
-def _load_asset_manifest(path: str) -> dict[str, str]:
-    if not path:
-        return {}
-    manifest_path = Path(path)
-    try:
-        with manifest_path.open("r", encoding="utf-8") as fh:
-            data = json.load(fh)
-    except FileNotFoundError as exc:
-        raise ValueError(f"--asset-manifest file not found: {manifest_path}") from exc
-    except OSError as exc:
-        raise ValueError(f"--asset-manifest could not be read: {manifest_path} ({exc})") from exc
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"--asset-manifest must be valid JSON: {exc}") from exc
-    if not isinstance(data, dict):
-        raise ValueError("--asset-manifest must be a JSON object")
-    out: dict[str, str] = {}
-    malformed_entries: list[str] = []
-    for key, value in data.items():
-        if not isinstance(key, str) or not isinstance(value, str):
-            malformed_entries.append(repr(key))
-            continue
-        out[key] = value
-    if malformed_entries:
-        raise ValueError(
-            "--asset-manifest entries must map string lane IDs to string asset paths; "
-            f"invalid keys: {', '.join(malformed_entries)}"
-        )
-    return out
-
-
 def _resolve_res_path(project_path: Path, resource_path: str) -> Path:
     return project_path / resource_path[len("res://") :]
 
@@ -525,7 +734,7 @@ def _collect_missing_res_dependencies(
 def _validate_suite_dependencies(
     project_path: Path,
     lanes: list[LaneDefinition],
-    asset_manifest: dict[str, str],
+    asset_manifest: BenchmarkAssetManifest,
     generated_assets: dict[str, str],
 ) -> list[str]:
     failures: list[str] = []
@@ -537,16 +746,23 @@ def _validate_suite_dependencies(
         )
         failures.extend(f"lane={lane.lane_id}: {entry}" for entry in scene_failures)
 
-        asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
-        if not asset_override:
+        generated_asset_path = generated_assets.get(lane.lane_id, "")
+        asset_policy = resolve_lane_asset_policy(
+            asset_manifest,
+            lane_id=lane.lane_id,
+            scene_path=lane.scene,
+            generated_asset_path=generated_asset_path if _lane_supports_asset_override(lane) else "",
+        )
+        if not asset_policy.asset_path:
             continue
-        if asset_override.startswith("res://"):
-            asset_path = _resolve_res_path(project_path, asset_override)
+        if asset_policy.asset_path.startswith("res://"):
+            asset_path = _resolve_res_path(project_path, asset_policy.asset_path)
         else:
-            asset_path = Path(asset_override)
+            asset_path = Path(asset_policy.asset_path)
         if not asset_path.exists():
             failures.append(
-                f"lane={lane.lane_id}: asset override missing: {asset_override}"
+                f"lane={lane.lane_id}: resolved asset missing: {asset_policy.asset_path} "
+                f"(source={asset_policy.asset_source})"
             )
     return failures
 
@@ -896,6 +1112,7 @@ def _run_lane(
             capture_ssim_avg = visual_summary.get("ssim_avg")
             capture_psnr_min = visual_summary.get("psnr_min")
             capture_psnr_avg = visual_summary.get("psnr_avg")
+    proof_eval = _evaluate_large_world_proof_contract(lane.lane_id, report)
 
     return {
         "lane_id": lane.lane_id,
@@ -971,6 +1188,7 @@ def _run_lane(
         "reference_dir": str(reference_dir) if reference_dir is not None else "",
         "summary_source": summary_source,
         "report": report,
+        **proof_eval,
     }
 
 
@@ -1061,8 +1279,8 @@ def _write_suite_summary_markdown(
         f"- Profile: `{profile}`",
         f"- Aggregate score: `{aggregate_score:.2f}`",
         "",
-        "| Lane | Source | Score | Avg FPS | P1 FPS | Steady P1 | Warmup P1 | Sync FB | Route FB | Sort ms | Raster ms | Visible | GPU ms | GPU Src | Eff Preset | Eff Max | DistCull | Stall Cnt | Q Pressure | Exec Mode | Mode OK | P99 ms | Samples | Captures | SSIM min | PSNR min | Exit |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | --- | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Lane | Asset Class | Evidence | Asset Src | Source | Score | Avg FPS | P1 FPS | Steady P1 | Warmup P1 | Sync FB | Route FB | Sort ms | Raster ms | Visible | GPU ms | GPU Src | Eff Preset | Eff Max | DistCull | Stall Cnt | Q Pressure | Exec Mode | Mode OK | Proof | P99 ms | Samples | Captures | SSIM min | PSNR min | Exit |",
+        "| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | --- | ---: | ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for lane in lane_results:
         def _fmt(v: Any, decimals: int = 2) -> str:
@@ -1073,6 +1291,9 @@ def _write_suite_summary_markdown(
         lines.append(
             "| "
             f"`{lane['lane_id']}` | "
+            f"`{lane.get('asset_classification', 'n/a')}` | "
+            f"`{lane.get('evidence_role', 'n/a')}` | "
+            f"`{lane.get('asset_resolution_source', 'n/a')}` | "
             f"`{lane.get('summary_source', 'overall')}` | "
             f"{_fmt(lane.get('score'))} | "
             f"{_fmt(lane.get('avg_fps'))} | "
@@ -1093,6 +1314,7 @@ def _write_suite_summary_markdown(
             f"{_fmt(lane.get('streaming_queue_pressure_frames'), 0)} | "
             f"{lane.get('instancing_execution_mode', 'n/a')} | "
             f"{'yes' if lane.get('instancing_mode_match', True) else 'no'} | "
+            f"{lane.get('proof_status', 'not_applicable')} | "
             f"{_fmt(lane.get('p99_frame_ms'))} | "
             f"{lane.get('sample_count', 'n/a')} | "
             f"{_fmt(lane.get('capture_count'), 0)} | "
@@ -1100,6 +1322,33 @@ def _write_suite_summary_markdown(
             f"{_fmt(lane.get('capture_psnr_min'))} | "
             f"{lane.get('exit_code', 'n/a')} |"
         )
+    proof_lanes = [lane for lane in lane_results if bool(lane.get("proof_required"))]
+    if proof_lanes:
+        lines.extend(
+            [
+                "",
+                "## Large-World Proof Contract",
+                "",
+                f"- Contract version: `{LARGE_WORLD_PROOF_CONTRACT_VERSION}`",
+                "- `proof_failures`: correctness or streaming-behavior contract breaks.",
+                "- `proof_warnings`: perf-noise or soft-budget overruns that do not fail the lane on their own.",
+                "- `proof_missing_telemetry`: required proof telemetry missing from the lane report.",
+                "",
+                "| Lane | Role | Status | Correctness / Streaming Failures | Soft Budget Warnings | Missing Telemetry |",
+                "| --- | --- | --- | --- | --- | --- |",
+            ]
+        )
+        for lane in proof_lanes:
+            contract = lane.get("proof_contract") or {}
+            lines.append(
+                "| "
+                f"`{lane['lane_id']}` | "
+                f"`{contract.get('proof_name', 'n/a')}` | "
+                f"`{lane.get('proof_status', 'not_applicable')}` | "
+                f"{_proof_issue_summary(lane.get('proof_failures', []))} | "
+                f"{_proof_issue_summary(lane.get('proof_warnings', []))} | "
+                f"{_proof_issue_summary(lane.get('proof_missing_telemetry', []))} |"
+            )
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -1132,6 +1381,7 @@ def main() -> int:
     args = _parse_args()
     try:
         duration_scale = _ensure_duration_scale(args.duration_scale)
+        _validate_large_world_proof_contract_definitions()
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
@@ -1177,8 +1427,29 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
+    manifest_path = resolve_benchmark_asset_manifest_path(
+        args.asset_manifest,
+        repo_root=_repo_root(),
+        project_path=project_path,
+    )
+    project_manifest_path = (project_path / "tests" / "fixtures" / "benchmark_asset_manifest.json").resolve()
+    if any(not _lane_supports_asset_override(lane) for lane in selected_lanes):
+        if not project_manifest_path.exists():
+            print(
+                "ERROR: benchmark lanes that ignore --benchmark-asset require the project-local "
+                f"manifest at {project_manifest_path}. Run tests/runtime/prepare_synthetic_assets.py --quiet first.",
+                file=sys.stderr,
+            )
+            return 2
+        if args.asset_manifest and manifest_path != project_manifest_path:
+            print(
+                "ERROR: lanes that ignore --benchmark-asset require --asset-manifest to match the "
+                f"project-local manifest: {project_manifest_path}",
+                file=sys.stderr,
+            )
+            return 2
     try:
-        asset_manifest = _load_asset_manifest(args.asset_manifest)
+        asset_manifest = load_benchmark_asset_manifest(manifest_path)
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
@@ -1186,6 +1457,16 @@ def main() -> int:
     generated_assets: dict[str, str] = {}
     if args.generate_dummy_assets:
         generated_assets = _generate_dummy_assets(project_path, selected_lanes, args.dummy_asset_dir)
+
+    manifest_policy_failures = validate_manifest_lane_policies(
+        asset_manifest,
+        ((lane.lane_id, lane.scene) for lane in selected_lanes),
+    )
+    if manifest_policy_failures:
+        print("ERROR: benchmark asset manifest policy is incomplete or misleading:", file=sys.stderr)
+        for failure in manifest_policy_failures:
+            print(f"  - {failure}", file=sys.stderr)
+        return 2
 
     preflight_failures = _validate_suite_dependencies(
         project_path=project_path,
@@ -1218,7 +1499,14 @@ def main() -> int:
         )
         return 2
     for lane in selected_lanes:
-        asset_override = asset_manifest.get(lane.lane_id, generated_assets.get(lane.lane_id, ""))
+        generated_asset_path = generated_assets.get(lane.lane_id, "")
+        asset_policy = resolve_lane_asset_policy(
+            asset_manifest,
+            lane_id=lane.lane_id,
+            scene_path=lane.scene,
+            generated_asset_path=generated_asset_path if _lane_supports_asset_override(lane) else "",
+        )
+        asset_override = asset_policy.asset_path
         lane_base_duration = lane.durations.get(args.profile, lane.durations.get("performance", 20.0))
         lane_duration = max(5.0, lane_base_duration * duration_scale)
         if asset_override and not _lane_supports_asset_override(lane):
@@ -1226,7 +1514,11 @@ def main() -> int:
                 f"[suite] lane={lane.lane_id} ignores --benchmark-asset; skipping asset override."
             )
             asset_override = ""
-        print(f"[suite] running lane={lane.lane_id} scene={lane.scene} duration={lane_duration:.1f}s")
+        print(
+            f"[suite] running lane={lane.lane_id} scene={lane.scene} duration={lane_duration:.1f}s "
+            f"asset_class={asset_policy.asset_classification} evidence={asset_policy.evidence_role} "
+            f"asset_source={asset_policy.asset_source} resource_kind={asset_policy.resource_kind}"
+        )
         result = _run_lane(
             godot_binary=godot_binary,
             project_path=project_path,
@@ -1242,6 +1534,12 @@ def main() -> int:
             timeout_scale=args.timeout_scale,
             timeout_grace=args.timeout_grace,
         )
+        result["resolved_asset_path"] = asset_policy.asset_path
+        result["asset_resolution_source"] = asset_policy.asset_source
+        result["asset_resource_kind"] = asset_policy.resource_kind
+        result["asset_classification"] = asset_policy.asset_classification
+        result["evidence_role"] = asset_policy.evidence_role
+        result["asset_policy_notes"] = asset_policy.notes
         lane_results.append(result)
         score = result.get("score")
         avg_fps = result.get("avg_fps")
@@ -1263,6 +1561,13 @@ def main() -> int:
             f"exec_path={result.get('instancing_execution_path', 'n/a')} "
             f"exec_reason={result.get('instancing_execution_reason', 'n/a')}"
         )
+        if bool(result.get("proof_required")):
+            print(
+                f"[suite] lane={lane.lane_id} proof={result.get('proof_status', 'not_applicable')} "
+                f"correctness={len(result.get('proof_failures', []))} "
+                f"warnings={len(result.get('proof_warnings', []))} "
+                f"missing={len(result.get('proof_missing_telemetry', []))}"
+            )
         report_valid = isinstance(result.get("report"), dict)
         visible_output_valid = False
         visibility_failure_detail = ""
@@ -1274,6 +1579,7 @@ def main() -> int:
         gpu_timing_match = True
         visual_reference_enforced = bool(result.get("reference_dir")) and int(result.get("capture_count") or 0) > 0
         visual_reference_match = True
+        proof_valid = bool(result.get("proof_valid", True))
         enforce_no_cpu_sort_route = args.profile == "performance"
         if report_valid:
             visible_output_valid, visibility_failure_detail = _lane_has_visible_output(result["report"])
@@ -1303,6 +1609,7 @@ def main() -> int:
             and instancing_mode_match
             and gpu_timing_match
             and visual_reference_match
+            and proof_valid
         )
         result["report_valid"] = report_valid
         result["visible_output_valid"] = visible_output_valid
@@ -1315,6 +1622,7 @@ def main() -> int:
         result["gpu_timing_match"] = gpu_timing_match
         result["visual_reference_enforced"] = visual_reference_enforced
         result["visual_reference_match"] = visual_reference_match
+        result["proof_valid"] = proof_valid
         result["lane_valid"] = lane_valid
         lane_failed = not lane_valid
         if lane_failed:
@@ -1356,6 +1664,31 @@ def main() -> int:
                     f"(matched={result.get('capture_reference_match_count', 0)} passed={result.get('capture_threshold_pass_count', 0)})",
                     file=sys.stderr,
                 )
+            elif not proof_valid:
+                if result.get("proof_status") == "missing_telemetry":
+                    print(
+                        f"[suite] lane={lane.lane_id} proof telemetry missing: "
+                        f"{_proof_issue_summary(result.get('proof_missing_telemetry', []))}",
+                        file=sys.stderr,
+                    )
+                elif result.get("proof_status") == "report_unavailable":
+                    print(
+                        f"[suite] lane={lane.lane_id} proof contract unavailable: "
+                        f"{_proof_issue_summary(result.get('proof_missing_telemetry', []))}",
+                        file=sys.stderr,
+                    )
+                else:
+                    print(
+                        f"[suite] lane={lane.lane_id} proof correctness failed: "
+                        f"{_proof_issue_summary(result.get('proof_failures', []))}",
+                        file=sys.stderr,
+                    )
+                    if result.get("proof_warnings"):
+                        print(
+                            f"[suite] lane={lane.lane_id} proof soft warnings: "
+                            f"{_proof_issue_summary(result.get('proof_warnings', []))}",
+                            file=sys.stderr,
+                        )
             elif int(result["exit_code"]) != 0:
                 print(
                     f"[suite] lane={lane.lane_id} exited with code {result['exit_code']}: {result['log_path']}",
@@ -1364,6 +1697,11 @@ def main() -> int:
             failed = True
             if args.fail_fast:
                 break
+        elif result.get("proof_warnings"):
+            print(
+                f"[suite] lane={lane.lane_id} proof soft warnings: "
+                f"{_proof_issue_summary(result.get('proof_warnings', []))}"
+            )
 
     aggregate_score = _compute_aggregate(args.profile, lane_results)
     require_gpu_timestamps_global = bool(
@@ -1382,7 +1720,9 @@ def main() -> int:
         "output_dir": str(output_dir),
         "generate_dummy_assets": bool(args.generate_dummy_assets),
         "dummy_asset_dir": args.dummy_asset_dir,
-        "asset_manifest_path": args.asset_manifest,
+        "asset_manifest_path": str(manifest_path),
+        "asset_manifest_version": asset_manifest.version,
+        "proof_contract_version": LARGE_WORLD_PROOF_CONTRACT_VERSION,
         "benchmark_instancing_mode": args.benchmark_instancing_mode,
         "capture_lane_ids": sorted(capture_lane_ids),
         "capture_dir": str(capture_dir) if capture_dir is not None else "",

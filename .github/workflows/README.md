@@ -10,7 +10,7 @@ GitHub's Actions tab can also show historical workflow names from past runs, dis
 | --- | --- | --- | --- |
 | Baseline QA Automation | `baseline_qa.yml` | Runs baseline QA and optional compiled-module QA. | Builds the Linux editor once and reuses that artifact for push-only compiled QA. |
 | Docs Pages (Versioned) | `docs_pages.yml` | Builds and deploys MkDocs docs with mike versioning to `gh-pages`. | Publishes `latest` from `master/main` and versioned docs from `v*` tags. |
-| Gaussian Production Gates | `gaussian_production_gates.yml` | Enforces guard checks, pipeline smoke, runtime validation, benchmark probes, and optional Windows GPU evidence lane. | Owns the single Windows build for validation workflows. |
+| Gaussian Production Gates | `gaussian_production_gates.yml` | Enforces guard checks, pipeline smoke, runtime validation, the blocking streaming gate, and optional non-blocking benchmark evidence surfaces. | Owns the single Windows build for validation workflows. `streaming-gpu-ci` is the canonical blocking GPU-backed streaming runtime gate; `openworld-proof-dev` and `openworld-proof-weekly` are evidence-only benchmark surfaces. |
 | Gaussian Shader Validation | `gaussian_shader_validation.yml` | Validates shader compile matrix and host/shader contract checks. | Focused shader CI gate. |
 | Release Builds | `release_builds.yml` | Builds the Linux editor for CI artifacts, nightly prereleases, and optional stable-tag publishes. | Current public binary coverage is Linux editor only. |
 
@@ -21,6 +21,8 @@ GitHub's Actions tab can also show historical workflow names from past runs, dis
 | `baseline_qa.yml` | `debug_mode` | `true`, `false` |
 | `baseline_qa.yml` | `baseline_mode` | `compare`, `update` |
 | `gaussian_production_gates.yml` | `run_gpu_lane` | `true`, `false` |
+| `gaussian_production_gates.yml` | `run_openworld_proof_dev` | `true`, `false` |
+| `gaussian_production_gates.yml` | `run_openworld_proof_weekly` | `true`, `false` |
 | `gaussian_production_gates.yml` | `enforce_gpu_readiness` | `true`, `false` |
 | `gaussian_production_gates.yml` | `runtime_loops` | integer string |
 | `release_builds.yml` | `publish_channel` | `none`, `nightly`, `stable` |
@@ -33,6 +35,7 @@ GitHub's Actions tab can also show historical workflow names from past runs, dis
 | Workflow | Schedule (UTC) | Behavior |
 | --- | --- | --- |
 | `baseline_qa.yml` | `30 3 * * *` | Runs in update mode and publishes `qa-regression-baseline` for future compare runs. |
+| `gaussian_production_gates.yml` | `30 3 * * 1` | Runs the non-blocking `openworld-proof-weekly` benchmark evidence surface. |
 | `release_builds.yml` | `30 2 * * *` | Builds and publishes the nightly prerelease, then prunes older nightly releases and tags. |
 
 ## Dependencies

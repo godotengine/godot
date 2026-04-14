@@ -1,0 +1,45 @@
+{
+  "asset_classification": "chunked_open_world_candidate",
+  "asset_id": "open_world_city_100m",
+  "bootstrap_world_builder": {
+    "builder_kind": "city_world_bootstrap",
+    "camera_path_hint": "city_roam",
+    "chunk_size": 10.0,
+    "corridor_lanes": 20,
+    "corridor_segments": 200,
+    "instance_count": 4000,
+    "lane_spacing": 14.0,
+    "materialized_total_splats": 100000000,
+    "segment_spacing": 14.0,
+    "source_asset_path": "res://tests/fixtures/synthetic_spiral.ply",
+    "source_asset_splats": 25000,
+    "world_resource_kind": "gaussian_world_contract"
+  },
+  "evidence_role": "open_world_proof_pending_staging",
+  "generation": {
+    "chunk_naming_pattern": "chunks/chunk_{chunk_index:04d}.ply",
+    "helper_script": "tests/runtime/open_world_chunked_asset_ladder.py",
+    "materialization_support": "runtime_world_builder_contract",
+    "seed": 50100,
+    "topology": "city_block_roam_soak"
+  },
+  "notes": "City-scale roam/soak proof asset. Total scale reaches 100M splats, but the intended resident and visible working sets remain explicitly bounded.",
+  "staging": {
+    "project_fixture_root": "tests/examples/godot/test_project/tests/fixtures/open_world/open_world_city_100m",
+    "project_res_root": "res://tests/fixtures/open_world/open_world_city_100m",
+    "project_stage_manifest_path": "res://tests/fixtures/open_world/open_world_city_100m/open_world_city_100m.stage_manifest.json",
+    "repo_stage_manifest_path": "tests/examples/godot/test_project/tests/fixtures/open_world/open_world_city_100m/open_world_city_100m.stage_manifest.json"
+  },
+  "staging_status": "planned_unstaged",
+  "working_set_contract": {
+    "chunk_count": 1526,
+    "chunk_splats": 65536,
+    "max_resident_chunks": 128,
+    "max_resident_splats": 8388608,
+    "max_visible_chunks": 48,
+    "max_visible_fraction": 0.031457,
+    "max_visible_splats": 3145728,
+    "resident_fraction": 0.083886,
+    "total_splats": 100000000
+  }
+}

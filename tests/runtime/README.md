@@ -10,8 +10,11 @@ Runtime scenarios are defined declaratively in:
 
 - `tests/runtime/runtime_scenarios.json`
 
-The canonical headless CI profile is `headless-ci`.  
-The canonical release-ready profile remains `release-ci` (default for explicit runtime validation).  
+The canonical headless CI profile is `headless-ci`.
+The canonical release-ready profile remains `release-ci` (default for explicit runtime validation).
+The canonical blocking GPU-backed streaming profile is `streaming-gpu-ci`.
+`--list-profiles` only lists runtime validation profiles; the benchmark proof surfaces are
+separate and live in the benchmark workflow/docs.
 List profiles:
 
 ```bash
@@ -22,6 +25,15 @@ Run a specific profile:
 
 ```bash
 python3 tests/runtime/run_runtime_validation.py --profile stress-only
+```
+
+Profile-selected runtime mode is now part of the scenario config. Override it only when
+you intentionally need a different execution surface:
+
+```bash
+python3 tests/runtime/run_runtime_validation.py \
+  --profile streaming-gpu-ci \
+  --gd-mode windows-vulkan
 ```
 
 Override profile selection with explicit tests:
@@ -84,8 +96,29 @@ The full release-ready runtime gate uses:
 
 - `--profile release-ci`
 
+The blocking streaming-specific GPU runtime gate uses:
+
+- `--profile streaming-gpu-ci`
+
 This keeps headless CI honest about what can actually execute while preserving the
-broader release-ready profile for non-headless lanes.
+broader release-ready profile for non-headless lanes and one explicit streaming gate
+for world-streaming and residency regressions.
+
+Benchmark evidence collection is separate from the canonical runtime gate and uses the
+benchmark runner lane selector instead of runtime validation profiles:
+
+- `openworld-proof-dev` = `open_world_corridor_proof` + `city_flyover`
+- `openworld-proof-weekly` = `long_soak`
+
+That benchmark path resolves lane assets through the project-local
+`benchmark_asset_manifest.json`. Benchmark classifications in that manifest are
+authoritative for what a lane proves. Lanes that still resolve to `test_splats.ply`
+are smoke/support evidence only and should not be cited as representative chunked
+streaming coverage. That means the current `openworld-proof-dev` surface is a
+`20M corridor` candidate plus boundary-crossing smoke support, and
+`openworld-proof-weekly` is still city-roam soak smoke support rather than
+`100M city` proof. The benchmark surfaces above are evidence-only and do not
+create a second blocking streaming gate.
 
 ## Synthetic Asset Prep
 

@@ -37,6 +37,7 @@
 #include "../core/gaussian_data.h"
 #include "../core/gaussian_splat_asset.h"
 #include "../core/gaussian_splat_manager.h"
+#include "../core/gs_project_settings.h"
 #include "../painterly/painterly_material.h"
 #include "painterly_pass_graph.h"
 #include "../interfaces/painterly_renderer.h"
@@ -226,6 +227,70 @@ public:
     using SortFrameMetrics = GaussianRenderPerformance::SortFrameMetrics;
     using PerformanceMetrics = GaussianRenderPerformance::PerformanceMetrics;
     using PerformanceState = GaussianRenderPerformance::PerformanceState;
+
+    struct RuntimeFidelityPolicy {
+        int requested_route_policy = gs::settings::GS_ROUTE_STREAMING;
+        String requested_route_policy_source = "default_fallback";
+        bool prefer_resident_backend = false;
+        String backend_preference_reason = "requested_streaming_policy";
+        bool preserve_source_fidelity = false;
+        uint32_t runtime_budget_splats = 0;
+    };
+
+    struct FrameBackendPlan {
+        RuntimeFidelityPolicy runtime_policy;
+        bool streaming_requested = false;
+        bool prefer_resident_backend = false;
+        bool streaming_ready = false;
+        bool should_attempt_streaming_bootstrap = false;
+        bool allow_legacy_resident_fallback = false;
+        bool allow_primary_fallback_instance = false;
+        // True when an active gsplatworld submission owns this renderer's
+        // streaming path. Suppresses the synthetic primary-data fallback so
+        // staged worlds cannot be re-routed onto the resident-style path.
+        bool has_active_world_submission = false;
+        String primary_fallback_instance_reason = "primary_gaussian_data_unavailable";
+        String resident_backend_reason = "requested_streaming_policy";
+        String resident_rejection_reason = "none";
+        String streaming_backend_reason = "requested_streaming_policy";
+        String streaming_contract_ready_reason = "streaming_contract_published";
+        String streaming_not_ready_fallback_reason = "streaming_frame_not_ready_fallback";
+        String streaming_unavailable_fallback_reason = "streaming_unavailable_fallback";
+    };
+
+    struct WorldSubmissionContract {
+        Ref<GaussianData> gaussian_data;
+        Ref<ChunkPayloadSource> payload_source;
+        Vector<StaticChunk> static_chunks;
+        String debug_label;
+        bool has_desired_residency_hint = false;
+        int32_t desired_residency_hint = 0;
+        bool lod_enabled = true;
+        float lod_bias = 1.0f;
+        float lod_max_distance = 0.0f;
+        bool frustum_culling = true;
+        bool async_upload_enabled = true;
+        float opacity_multiplier = 1.0f;
+        int max_splats = 1000000;
+        GaussianStreamingSystem::ConfigOverrides streaming_overrides;
+    };
+
+    struct WorldSubmissionRuntimeStateSnapshot {
+        bool valid = false;
+        Ref<GaussianData> gaussian_data;
+        Vector<StaticChunk> static_chunks;
+        bool lod_enabled = true;
+        float lod_bias = 1.0f;
+        float lod_max_distance = 0.0f;
+        bool frustum_culling = true;
+        bool async_upload_enabled = true;
+        float opacity_multiplier = 1.0f;
+        int max_splats = 1000000;
+        GaussianStreamingSystem::ConfigOverrides streaming_overrides;
+        bool has_active_world_submission = false;
+        bool has_desired_residency_hint = false;
+        int32_t desired_residency_hint = 0;
+    };
 
     // Rendering state
     using FrameState = RenderFrameContextManager::FrameState;
@@ -532,6 +597,12 @@ public:
     InstanceBackendPolicy instance_backend_policy = InstanceBackendPolicy::NONE;
     String instance_contract_shape = "none";
     uint64_t instance_contract_source_generation = 0;
+    bool world_submission_contract_active = false;
+    bool world_submission_has_residency_hint = false;
+    int32_t world_submission_residency_hint = 0;
+    int cached_streaming_route_policy = gs::settings::GS_ROUTE_STREAMING;
+    String cached_streaming_route_policy_source = "default_fallback";
+    bool cached_streaming_route_policy_dirty = true;
     PipelineFeatureSet pipeline_features_effective;
     String pipeline_features_warning_cache;
 
@@ -596,6 +667,8 @@ public:
             RenderFallbackReason p_cull_skip_reason_code, RenderFallbackReason p_sort_skip_reason_code,
             bool p_set_skip_metrics, bool p_clear_cull_state_on_skip);
     void _set_route_policy_diagnostics(int p_requested_route_policy, const char *p_policy_source);
+    void _mark_streaming_route_policy_dirty();
+    void _refresh_streaming_route_policy_cache();
     void _set_instance_backend_diagnostics(InstanceBackendPolicy p_backend_policy, const String &p_reason,
             bool p_contract_ready, const String &p_contract_shape = "atlas_emulation");
     bool _publish_resident_instance_pipeline_contract(bool p_allow_primary_fallback_instance,
@@ -606,7 +679,8 @@ public:
             String *r_reason = nullptr);
     void _reset_legacy_streaming_data_path_state();
     void _render_resident_frame(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
-            const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers);
+            const Projection &p_projection, const Projection &p_render_projection,
+            RenderSceneBuffersRD *p_render_buffers, bool p_allow_legacy_resident_fallback);
     const Gaussian *_get_streamed_gaussian(uint32_t p_index) const;
     SortStageSummary sort_gaussians_for_view(const Transform3D &p_world_to_camera_transform,
             IndexDomain p_input_domain = IndexDomain::UNKNOWN);
@@ -707,7 +781,16 @@ public:
     bool is_instance_contract_ready() const { return instance_pipeline_buffers_valid; }
     bool get_submission_residency_hint(int32_t *r_hint, String *r_source = nullptr) const;
     bool should_prefer_resident_backend(int p_requested_route_policy, String *r_reason = nullptr) const;
-    bool update_instance_buffer(LocalVector<InstanceDataGPU> &p_instances);
+    RuntimeFidelityPolicy build_runtime_fidelity_policy(const SceneState &p_scene_state,
+            const PerformanceSettings &p_performance_settings) const;
+    FrameBackendPlan build_frame_backend_plan(bool p_streaming_ready) const;
+    WorldSubmissionRuntimeStateSnapshot snapshot_world_submission_runtime_state() const;
+    Error restore_world_submission_runtime_state(const WorldSubmissionRuntimeStateSnapshot &p_snapshot);
+    Error apply_world_submission_contract(const WorldSubmissionContract &p_contract);
+    void clear_world_submission_contract();
+    bool update_instance_buffer(LocalVector<InstanceDataGPU> &p_instances, const PublishedInstanceAssetRemap &p_remap);
+    int get_cached_streaming_route_policy();
+    const String &get_cached_streaming_route_policy_source();
 
     bool ensure_rendering_device(const char *p_context) { return _ensure_rendering_device(p_context); }
     bool ensure_submission_device(const char *p_context) { return _ensure_submission_device(p_context); }

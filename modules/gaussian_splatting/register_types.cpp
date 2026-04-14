@@ -6,6 +6,7 @@
 #include "core/gaussian_splat_scene_director.h"
 #include "core/gaussian_splat_config_registry.h"
 #include "core/gaussian_streaming.h"
+#include "core/streaming_chunk_payload_source.h"
 #include "renderer/gaussian_splat_renderer.h"
 #include "renderer/gpu_buffer_manager.h"
 #include "core/gaussian_splat_manager.h"
@@ -71,6 +72,9 @@ void initialize_gaussian_splatting_module(ModuleInitializationLevel p_level) {
             GDREGISTER_CLASS(GaussianSplatAsset);
             GDREGISTER_CLASS(GaussianSplatWorld);
             GDREGISTER_CLASS(GaussianStreamingSystem);
+            GDREGISTER_ABSTRACT_CLASS(ChunkPayloadSource);
+            GDREGISTER_CLASS(InMemoryChunkPayloadSource);
+            GDREGISTER_CLASS(StagedFileChunkPayloadSource);
             GDREGISTER_CLASS(VRAMBudgetRegulator);
 
             // Node classes

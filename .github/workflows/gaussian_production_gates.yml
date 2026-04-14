@@ -41,6 +41,16 @@ on:
         required: false
         default: false
         type: boolean
+      run_openworld_proof_dev:
+        description: "Run non-blocking openworld-proof-dev benchmark evidence surface"
+        required: false
+        default: false
+        type: boolean
+      run_openworld_proof_weekly:
+        description: "Run non-blocking openworld-proof-weekly benchmark evidence surface"
+        required: false
+        default: false
+        type: boolean
       enforce_gpu_readiness:
         description: "Fail if summary.json readiness booleans are not all true"
         required: false
@@ -51,6 +61,8 @@ on:
         required: false
         default: "3"
         type: string
+  schedule:
+    - cron: "30 3 * * 1"
   merge_group:
     types: [checks_requested]
 
@@ -65,6 +77,7 @@ concurrency:
 jobs:
   guards:
     name: Guards (Render Path + Static Safety)
+    if: ${{ github.event_name != 'schedule' && !(github.event_name == 'workflow_dispatch' && (inputs.run_openworld_proof_dev == true || inputs.run_openworld_proof_weekly == true)) }}
     runs-on: [self-hosted, Windows, X64, godotgs]
     timeout-minutes: 10
     defaults:
@@ -97,6 +110,7 @@ jobs:
 
   gpu-evidence-requirement:
     name: GPU Evidence Requirement
+    if: ${{ github.event_name != 'schedule' && !(github.event_name == 'workflow_dispatch' && (inputs.run_openworld_proof_dev == true || inputs.run_openworld_proof_weekly == true)) }}
     runs-on: ubuntu-latest
     needs: guards
     outputs:
@@ -194,6 +208,7 @@ jobs:
 
   module-validation:
     name: Module Build + Runtime Harness (Windows Self-Hosted)
+    if: ${{ github.event_name != 'schedule' && !(github.event_name == 'workflow_dispatch' && (inputs.run_openworld_proof_dev == true || inputs.run_openworld_proof_weekly == true)) }}
     runs-on: [self-hosted, Windows, X64, godotgs, gpu]
     needs:
       - guards
@@ -283,196 +298,16 @@ jobs:
             --skip-cpp `
             --fail-on-skip
 
-      - name: Run world-streaming runtime gate (blocking, windows-vulkan)
+      - name: Run streaming GPU runtime gate (canonical blocking profile, windows-vulkan)
         env:
           GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
         shell: pwsh
         run: |
           python tests/runtime/run_runtime_validation.py `
             --godot-binary "$env:GODOT_BINARY" `
-            --gd-mode windows-vulkan `
+            --profile streaming-gpu-ci `
             --skip-cpp `
-            --fail-on-skip `
-            --gd-timeout 420 `
-            --godot-arg=--render-thread `
-            --godot-arg=safe `
-            --gd-script tests/runtime/test_world_streaming_gate.gd
-
-      - name: Run large-scene benchmark gate (streaming churn probe)
-        id: large_scene_benchmark
-        env:
-          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
-        shell: pwsh
-        run: |
-          python tests/runtime/run_runtime_validation.py `
-            --godot-binary "$env:GODOT_BINARY" `
-            --gd-mode windows-vulkan `
-            --skip-cpp `
-            --fail-on-skip `
-            --gd-timeout 900 `
-            --godot-arg=--render-thread `
-            --godot-arg=safe `
-            --gd-script tests/runtime/test_gpu_streaming_churn_probe.gd `
-            --report-path tests/runtime/large_scene_benchmark_report.json
-
-      - name: Run eviction-churn benchmark gate (queue-pressure forward-progress probe)
-        id: eviction_churn_benchmark
-        env:
-          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
-        shell: pwsh
-        run: |
-          python tests/runtime/run_runtime_validation.py `
-            --godot-binary "$env:GODOT_BINARY" `
-            --gd-mode windows-vulkan `
-            --skip-cpp `
-            --fail-on-skip `
-            --allow-skip-test "Test Gpu Streaming Eviction Churn Probe" `
-            --gd-timeout 900 `
-            --godot-arg=--render-thread `
-            --godot-arg=safe `
-            --gd-script tests/runtime/test_gpu_streaming_eviction_churn_probe.gd `
-            --report-path tests/runtime/eviction_churn_benchmark_report.json
-
-      - name: Summarize large-scene benchmark metrics
-        if: ${{ always() && steps.large_scene_benchmark.outcome == 'success' }}
-        shell: python
-        run: |
-          import json
-          import os
-          import sys
-          from pathlib import Path
-
-          report_path = Path("tests/runtime/large_scene_benchmark_report.json")
-          if not report_path.exists():
-              print(f"Missing benchmark report: {report_path}", file=sys.stderr)
-              sys.exit(1)
-
-          report = json.loads(report_path.read_text(encoding="utf-8"))
-          tests = report.get("tests", [])
-          if not tests:
-              print("Benchmark report has no test entries.", file=sys.stderr)
-              sys.exit(1)
-
-          benchmark_test = tests[0]
-          metrics = benchmark_test.get("metrics", {})
-          required_metrics = (
-              "fps_avg",
-              "fps_p95",
-              "churn_ratio_evicted_to_loaded",
-              "scheduler_stall_frames",
-          )
-          missing = [key for key in required_metrics if key not in metrics]
-          if missing:
-              print(f"Benchmark report missing required metrics: {', '.join(missing)}", file=sys.stderr)
-              sys.exit(1)
-
-          summary = {
-              "name": benchmark_test.get("name"),
-              "status": benchmark_test.get("status"),
-              "duration": benchmark_test.get("duration"),
-              "fps_avg": metrics.get("fps_avg"),
-              "fps_p95": metrics.get("fps_p95"),
-              "churn_ratio_evicted_to_loaded": metrics.get("churn_ratio_evicted_to_loaded"),
-              "scheduler_stall_frames": metrics.get("scheduler_stall_frames"),
-          }
-          metrics_path = Path("tests/runtime/large_scene_benchmark_metrics.json")
-          metrics_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-
-          step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
-          if step_summary:
-              with open(step_summary, "a", encoding="utf-8") as handle:
-                  handle.write("\n## Large-Scene Benchmark Metrics\n")
-                  handle.write(f"- Test: `{summary['name']}`\n")
-                  handle.write(f"- Status: `{summary['status']}`\n")
-                  handle.write(f"- Duration (s): `{summary['duration']}`\n")
-                  handle.write(f"- FPS Avg: `{summary['fps_avg']}`\n")
-                  handle.write(f"- FPS P95: `{summary['fps_p95']}`\n")
-                  handle.write(f"- Churn Ratio (evicted/loaded): `{summary['churn_ratio_evicted_to_loaded']}`\n")
-                  handle.write(f"- Scheduler Stall Frames: `{summary['scheduler_stall_frames']}`\n")
-
-      - name: Summarize eviction-churn benchmark metrics
-        if: ${{ always() && steps.eviction_churn_benchmark.outcome == 'success' }}
-        shell: python
-        run: |
-          import json
-          import os
-          import sys
-          from pathlib import Path
-
-          report_path = Path("tests/runtime/eviction_churn_benchmark_report.json")
-          if not report_path.exists():
-              print(f"Missing eviction benchmark report: {report_path}", file=sys.stderr)
-              sys.exit(1)
-
-          report = json.loads(report_path.read_text(encoding="utf-8"))
-          tests = report.get("tests", [])
-          if not tests:
-              print("Eviction benchmark report has no test entries.", file=sys.stderr)
-              sys.exit(1)
-
-          benchmark_test = tests[0]
-          metrics = benchmark_test.get("metrics", {})
-          required_metrics = (
-              "fps_avg",
-              "fps_p95",
-              "churn_ratio_evicted_to_loaded",
-              "scheduler_stall_frames",
-              "queue_pressure_active_ratio",
-              "queue_pressure_no_progress_ratio",
-              "queue_pressure_scan_starvation_ratio",
-              "queue_pressure_forward_progress_active_ratio_fail",
-              "queue_pressure_forward_progress_no_progress_ratio_fail",
-              "queue_pressure_forward_progress_scan_starved_ratio_fail",
-          )
-          missing = [key for key in required_metrics if key not in metrics]
-          if missing:
-              print(f"Eviction benchmark report missing required metrics: {', '.join(missing)}", file=sys.stderr)
-              sys.exit(1)
-
-          summary = {
-              "name": benchmark_test.get("name"),
-              "status": benchmark_test.get("status"),
-              "duration": benchmark_test.get("duration"),
-              "fps_avg": metrics.get("fps_avg"),
-              "fps_p95": metrics.get("fps_p95"),
-              "churn_ratio_evicted_to_loaded": metrics.get("churn_ratio_evicted_to_loaded"),
-              "scheduler_stall_frames": metrics.get("scheduler_stall_frames"),
-              "queue_pressure_active_ratio": metrics.get("queue_pressure_active_ratio"),
-              "queue_pressure_no_progress_ratio": metrics.get("queue_pressure_no_progress_ratio"),
-              "queue_pressure_scan_starvation_ratio": metrics.get("queue_pressure_scan_starvation_ratio"),
-              "queue_pressure_forward_progress_active_ratio_fail": metrics.get(
-                  "queue_pressure_forward_progress_active_ratio_fail"
-              ),
-              "queue_pressure_forward_progress_no_progress_ratio_fail": metrics.get(
-                  "queue_pressure_forward_progress_no_progress_ratio_fail"
-              ),
-              "queue_pressure_forward_progress_scan_starved_ratio_fail": metrics.get(
-                  "queue_pressure_forward_progress_scan_starved_ratio_fail"
-              ),
-          }
-          metrics_path = Path("tests/runtime/eviction_churn_benchmark_metrics.json")
-          metrics_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-
-          step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
-          if step_summary:
-              with open(step_summary, "a", encoding="utf-8") as handle:
-                  handle.write("\n## Eviction-Churn Benchmark Metrics\n")
-                  handle.write(f"- Test: `{summary['name']}`\n")
-                  handle.write(f"- Status: `{summary['status']}`\n")
-                  handle.write(f"- Duration (s): `{summary['duration']}`\n")
-                  handle.write(f"- FPS Avg: `{summary['fps_avg']}`\n")
-                  handle.write(f"- FPS P95: `{summary['fps_p95']}`\n")
-                  handle.write(f"- Churn Ratio (evicted/loaded): `{summary['churn_ratio_evicted_to_loaded']}`\n")
-                  handle.write(f"- Scheduler Stall Frames: `{summary['scheduler_stall_frames']}`\n")
-                  handle.write(f"- Queue-Pressure Active Ratio: `{summary['queue_pressure_active_ratio']}`\n")
-                  handle.write(f"- Queue-Pressure No-Progress Ratio: `{summary['queue_pressure_no_progress_ratio']}`\n")
-                  handle.write(f"- Queue-Pressure Scan-Starvation Ratio: `{summary['queue_pressure_scan_starvation_ratio']}`\n")
-                  handle.write(
-                      "- Queue-Pressure Forward-Progress Thresholds: "
-                      f"`active>={summary['queue_pressure_forward_progress_active_ratio_fail']}`, "
-                      f"`no_progress>={summary['queue_pressure_forward_progress_no_progress_ratio_fail']}`, "
-                      f"`scan_starved>={summary['queue_pressure_forward_progress_scan_starved_ratio_fail']}`\n"
-                  )
+            --fail-on-skip
 
       - name: Upload runtime validation report
         if: ${{ always() && steps.godot_bin.outcome == 'success' }}
@@ -480,24 +315,6 @@ jobs:
         with:
           name: runtime-validation-report
           path: repo/tests/runtime/runtime_validation_report.json
-
-      - name: Upload large-scene benchmark report
-        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: large-scene-benchmark-report
-          path: |
-            repo/tests/runtime/large_scene_benchmark_report.json
-            repo/tests/runtime/large_scene_benchmark_metrics.json
-
-      - name: Upload eviction-churn benchmark report
-        if: ${{ always() && steps.godot_bin.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: eviction-churn-benchmark-report
-          path: |
-            repo/tests/runtime/eviction_churn_benchmark_report.json
-            repo/tests/runtime/eviction_churn_benchmark_metrics.json
 
       - name: Collect production evidence
         id: evidence
@@ -547,3 +364,159 @@ jobs:
           if ($missing.Count -gt 0) {
             throw ("Production readiness checks failed: " + ($missing -join ", "))
           }
+
+  openworld-proof-evidence:
+    name: Open-World Proof Evidence (non-blocking)
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.run_openworld_proof_dev == true || inputs.run_openworld_proof_weekly == true)) }}
+    continue-on-error: true
+    runs-on: [self-hosted, Windows, X64, godotgs, gpu]
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: repo
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          submodules: recursive
+          set-safe-directory: false
+
+      - name: Verify Python on runner
+        shell: pwsh
+        run: |
+          python --version
+
+      - name: Set up MSVC build env
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install SCons
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scons
+
+      - name: Build Godot editor with tests
+        shell: pwsh
+        run: |
+          python -m SCons platform=windows target=editor dev_build=yes tests=yes gs_native_arch=no cache_path=C:/godotgs-scons-cache cache_limit=50 -j12
+
+      - name: Resolve Godot binary
+        id: godot_bin
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "bin\\godot.windows.editor.dev.x86_64.console.exe",
+            "bin\\godot.windows.editor.dev.x86_64.exe",
+            "bin\\godot.windows.editor.x86_64.console.exe",
+            "bin\\godot.windows.editor.x86_64.exe"
+          )
+          $resolved = $null
+          foreach ($candidate in $candidates) {
+            if (Test-Path -LiteralPath $candidate) {
+              $resolved = (Resolve-Path -LiteralPath $candidate).Path
+              break
+            }
+          }
+          if (-not $resolved) {
+            throw "Could not find built Godot binary in expected bin\ paths."
+          }
+          Write-Host "Resolved Godot binary: $resolved"
+          "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Prepare canonical synthetic assets
+        shell: pwsh
+        run: |
+          python tests/runtime/prepare_synthetic_assets.py --quiet
+
+      - name: Run openworld-proof-dev evidence surface
+        id: openworld_proof_dev
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_openworld_proof_dev == true }}
+        continue-on-error: true
+        env:
+          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
+        shell: pwsh
+        run: |
+          $outputDir = Join-Path $PWD "tests\output\benchmark_evidence\openworld-proof-dev"
+          python tests/runtime/run_benchmark.py `
+            --godot-binary "$env:GODOT_BINARY" `
+            --project-path tests/examples/godot/test_project `
+            --profile performance `
+            --lane open_world_corridor_proof `
+            --lane city_flyover `
+            --no-dashboard `
+            --output-dir $outputDir
+
+      - name: Summarize openworld-proof-dev evidence
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_openworld_proof_dev == true }}
+        shell: pwsh
+        run: |
+          $surfaceName = "openworld-proof-dev"
+          $outputDir = Join-Path $PWD "tests\output\benchmark_evidence\openworld-proof-dev"
+          $summaryPath = Join-Path $outputDir "benchmark_suite_summary.md"
+          $stepSummary = $env:GITHUB_STEP_SUMMARY
+          Add-Content -LiteralPath $stepSummary -Value ""
+          Add-Content -LiteralPath $stepSummary -Value "## $surfaceName (non-blocking evidence)"
+          Add-Content -LiteralPath $stepSummary -Value ""
+          if (Test-Path -LiteralPath $summaryPath) {
+            Get-Content -LiteralPath $summaryPath | Add-Content -LiteralPath $stepSummary
+          } else {
+            Add-Content -LiteralPath $stepSummary -Value "- Benchmark summary not produced."
+          }
+
+      - name: Upload openworld-proof-dev evidence artifact
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_openworld_proof_dev == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: openworld-proof-dev-evidence
+          path: repo/tests/output/benchmark_evidence/openworld-proof-dev
+          if-no-files-found: warn
+
+      - name: Run openworld-proof-weekly evidence surface
+        id: openworld_proof_weekly
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_openworld_proof_weekly == true) }}
+        continue-on-error: true
+        env:
+          GODOT_BINARY: ${{ steps.godot_bin.outputs.path }}
+        shell: pwsh
+        run: |
+          $outputDir = Join-Path $PWD "tests\output\benchmark_evidence\openworld-proof-weekly"
+          python tests/runtime/run_benchmark.py `
+            --godot-binary "$env:GODOT_BINARY" `
+            --project-path tests/examples/godot/test_project `
+            --profile performance `
+            --lane long_soak `
+            --no-dashboard `
+            --output-dir $outputDir
+
+      - name: Summarize openworld-proof-weekly evidence
+        if: ${{ always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_openworld_proof_weekly == true)) }}
+        shell: pwsh
+        run: |
+          $surfaceName = "openworld-proof-weekly"
+          $outputDir = Join-Path $PWD "tests\output\benchmark_evidence\openworld-proof-weekly"
+          $summaryPath = Join-Path $outputDir "benchmark_suite_summary.md"
+          $stepSummary = $env:GITHUB_STEP_SUMMARY
+          Add-Content -LiteralPath $stepSummary -Value ""
+          Add-Content -LiteralPath $stepSummary -Value "## $surfaceName (non-blocking evidence)"
+          Add-Content -LiteralPath $stepSummary -Value ""
+          if (Test-Path -LiteralPath $summaryPath) {
+            Get-Content -LiteralPath $summaryPath | Add-Content -LiteralPath $stepSummary
+          } else {
+            Add-Content -LiteralPath $stepSummary -Value "- Benchmark summary not produced."
+          }
+
+      - name: Upload openworld-proof-weekly evidence artifact
+        if: ${{ always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_openworld_proof_weekly == true)) }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: openworld-proof-weekly-evidence
+          path: repo/tests/output/benchmark_evidence/openworld-proof-weekly
+          if-no-files-found: warn

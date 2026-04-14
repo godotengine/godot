@@ -109,6 +109,7 @@ void main() {
     uint chunk_index = lod_range.base + chunk_index_in_lod;
     uint chunk_id = asset_chunk_index_buffer.chunk_ids[chunk_index];
     ChunkMetaGPU chunk = chunk_meta_buffer.chunks[chunk_id];
+
     if (chunk.splat_count == 0u) {
         return;
     }

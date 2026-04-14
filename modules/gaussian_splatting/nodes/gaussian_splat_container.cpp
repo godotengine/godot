@@ -201,7 +201,12 @@ void GaussianSplatContainer::_merge_children_internal() {
 
         GaussianSplatMergeSource source;
         source.asset = asset;
-        source.transform = splat_node->get_global_transform();
+        // Use local transform when node is not inside the tree (e.g. offline
+        // materialization in _init before SceneTree::initialize sets the root).
+        // The local transform is correct when all ancestors have identity transform.
+        source.transform = splat_node->is_inside_tree()
+                ? splat_node->get_global_transform()
+                : splat_node->get_transform();
         Dictionary import_metadata = asset->get_import_metadata();
         const bool import_is_2d = import_metadata.has(StringName("gaussian_2d_mode")) && (bool)import_metadata[StringName("gaussian_2d_mode")];
         source.is_2d = import_is_2d;

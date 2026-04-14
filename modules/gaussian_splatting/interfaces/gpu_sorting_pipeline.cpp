@@ -400,10 +400,7 @@ void GPUSortingPipeline::shutdown() {
     sort_buffer_host_context = nullptr;
     sort_readback_state.pending = false;
     sort_readback_state.generation++;
-    instance_count_readback_state.pending = false;
-    instance_count_readback_state.generation++;
-    instance_count_readback_state.pending_frame_counter = 0;
-    instance_count_readback_state.bootstrap_sync_attempted = false;
+    _reset_instance_count_readback_state(true);
     last_instance_visible_splat_count = 0;
     last_instance_visible_splat_count_valid = false;
     last_instance_visible_splat_count_frame = 0;
@@ -650,10 +647,7 @@ void GPUSortingPipeline::release_buffers() {
     instance_resource_device = nullptr;
     instance_count_resource_device = nullptr;
     instance_chunk_dispatch_resource_device = nullptr;
-    instance_count_readback_state.pending = false;
-    instance_count_readback_state.generation++;
-    instance_count_readback_state.pending_frame_counter = 0;
-    instance_count_readback_state.bootstrap_sync_attempted = false;
+    _reset_instance_count_readback_state(true);
 }
 
 void GPUSortingPipeline::ensure_buffers(uint32_t p_required_elements) {
@@ -842,6 +836,64 @@ void GPUSortingPipeline::_on_instance_count_readback(const Vector<uint8_t> &p_da
     }
 }
 
+void GPUSortingPipeline::_reset_instance_count_readback_state(bool p_reset_bootstrap_attempted) {
+    instance_count_readback_state.pending = false;
+    instance_count_readback_state.generation++;
+    instance_count_readback_state.pending_frame_counter = 0;
+    if (p_reset_bootstrap_attempted) {
+        instance_count_readback_state.bootstrap_sync_attempted = false;
+    }
+}
+
+bool GPUSortingPipeline::_capture_instance_count_sync(RenderingDevice *p_device, RID p_buffer,
+        uint32_t p_frame_counter, uint32_t p_safe_visible_max, uint32_t *r_resolved_visible) {
+    if (!p_device || !p_buffer.is_valid()) {
+        return false;
+    }
+
+    Vector<uint8_t> count_data =
+            p_device->buffer_get_data(p_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
+    if (count_data.size() < static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
+        return false;
+    }
+
+    const auto *indirect =
+            reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(count_data.ptr());
+    last_instance_visible_splat_count = indirect->element_count;
+    last_instance_visible_splat_count_valid = true;
+    last_instance_visible_splat_count_frame = p_frame_counter;
+    if (r_resolved_visible) {
+        *r_resolved_visible = MIN(indirect->element_count, p_safe_visible_max);
+    }
+    return true;
+}
+
+Error GPUSortingPipeline::_enqueue_instance_count_readback(
+        RenderingDevice *p_device, RID p_buffer, uint32_t p_frame_counter) {
+    ERR_FAIL_COND_V(p_device == nullptr, ERR_INVALID_PARAMETER);
+    ERR_FAIL_COND_V(!p_buffer.is_valid(), ERR_INVALID_PARAMETER);
+    ERR_FAIL_COND_V(instance_count_readback_state.pending, ERR_BUSY);
+
+    instance_count_readback_state.pending = true;
+    instance_count_readback_state.generation++;
+    instance_count_readback_state.pending_frame_counter = p_frame_counter;
+    const int64_t readback_generation = int64_t(instance_count_readback_state.generation);
+    Callable count_callback =
+            callable_mp(this, &GPUSortingPipeline::_on_instance_count_readback).bind(readback_generation);
+    const Error count_err = p_device->buffer_get_data_async(
+            p_buffer, count_callback, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
+    if (count_err != OK) {
+        instance_count_readback_state.pending = false;
+        instance_count_readback_state.pending_frame_counter = 0;
+        return count_err;
+    }
+
+    if (!p_device->is_main_rendering_device()) {
+        p_device->submit();
+    }
+    return OK;
+}
+
 SortBufferHandles GPUSortingPipeline::get_buffer_handles() const {
     SortBufferHandles handles;
     handles.keys_buffer = sort_keys_buffer;
@@ -975,10 +1027,7 @@ void GPUSortingPipeline::clear_instance_pipeline_inputs() {
     last_instance_visible_splat_count = 0;
     last_instance_visible_splat_count_valid = false;
     last_instance_visible_splat_count_frame = 0;
-    instance_count_readback_state.pending = false;
-    instance_count_readback_state.generation++;
-    instance_count_readback_state.pending_frame_counter = 0;
-    instance_count_readback_state.bootstrap_sync_attempted = false;
+    _reset_instance_count_readback_state(true);
 }
 
 void GPUSortingPipeline::ensure_sort_buffers(uint32_t p_required_elements) {
@@ -2314,13 +2363,29 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
     params.camera_position_ortho[2] = camera_transform.origin.z;
     params.camera_position_ortho[3] = orthographic ? 1.0f : 0.0f;
     params.cull_screen_distance[0] = pixel_scale_y;
-    params.cull_screen_distance[1] = tiny_splat_screen_radius;
-    params.cull_screen_distance[2] = min_screen_threshold;
-    params.cull_screen_distance[3] = max_distance_sq;
-    params.cull_frustum_radius[0] = radius_multiplier;
-    params.cull_frustum_radius[1] = frustum_plane_slack;
-    params.cull_frustum_radius[2] = enable_frustum;
-    params.cull_frustum_radius[3] = 0.0f;
+    if (inputs.world_submission_active) {
+        // Streamed-world path: disable per-splat screen-size, distance,
+        // AND frustum culling.  Screen-size/distance thresholds were calibrated
+        // for single-asset close-up rendering.  Per-splat frustum is disabled
+        // because chunk-level frustum cull is the authority for visibility;
+        // source-index remapped chunks may have gaussians whose file-order
+        // positions differ from their spatially-partitioned chunk centers.
+        params.cull_screen_distance[1] = 0.0f;
+        params.cull_screen_distance[2] = 0.0f;
+        params.cull_screen_distance[3] = 0.0f;
+        params.cull_frustum_radius[0] = radius_multiplier;
+        params.cull_frustum_radius[1] = frustum_plane_slack;
+        params.cull_frustum_radius[2] = 0.0f; // Disable per-splat frustum — chunk-level cull suffices
+        params.cull_frustum_radius[3] = 0.0f;
+    } else {
+        params.cull_screen_distance[1] = tiny_splat_screen_radius;
+        params.cull_screen_distance[2] = min_screen_threshold;
+        params.cull_screen_distance[3] = max_distance_sq;
+        params.cull_frustum_radius[0] = radius_multiplier;
+        params.cull_frustum_radius[1] = frustum_plane_slack;
+        params.cull_frustum_radius[2] = enable_frustum;
+        params.cull_frustum_radius[3] = 0.0f;
+    }
 
     Vector<uint8_t> param_bytes;
     param_bytes.resize(sizeof(InstanceDepthParamsGPU));
@@ -2613,15 +2678,8 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
             inputs.instance_count_buffer.is_valid()) {
         instance_count_readback_state.bootstrap_sync_attempted = true;
         (*sort_ctx.runtime.instance_sort_sync_fallback_count)++;
-        Vector<uint8_t> bootstrap_count_data = compute_rd->buffer_get_data(
-                inputs.instance_count_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
-        if (bootstrap_count_data.size() >= static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
-            const auto *indirect =
-                    reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(bootstrap_count_data.ptr());
-            last_instance_visible_splat_count = indirect->element_count;
-            last_instance_visible_splat_count_valid = true;
-            last_instance_visible_splat_count_frame = sort_ctx.runtime.frame_counter;
-        }
+        _capture_instance_count_sync(compute_rd, inputs.instance_count_buffer,
+                sort_ctx.runtime.frame_counter, current_frame_safe_max);
     }
 
     const bool stale_pending_readback =
@@ -2636,33 +2694,21 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
             const uint32_t stale_age_frames = pending_count_age_frames;
             // Invalidate the stale async request so its callback cannot overwrite the
             // refreshed count and so we can immediately enqueue a fresh async readback.
-            instance_count_readback_state.pending = false;
-            instance_count_readback_state.pending_frame_counter = 0;
-            instance_count_readback_state.generation++;
+            _reset_instance_count_readback_state(false);
 
-            Vector<uint8_t> stale_count_data = compute_rd->buffer_get_data(
-                    inputs.instance_count_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
-            if (stale_count_data.size() >= static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
-                const auto *indirect =
-                        reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(stale_count_data.ptr());
-                last_instance_visible_splat_count = indirect->element_count;
-                last_instance_visible_splat_count_valid = true;
-                last_instance_visible_splat_count_frame = sort_ctx.runtime.frame_counter;
-            } else {
+            if (!_capture_instance_count_sync(compute_rd, inputs.instance_count_buffer,
+                        sort_ctx.runtime.frame_counter, current_frame_safe_max)) {
                 static uint32_t stale_readback_log_counter = 0;
                 stale_readback_log_counter++;
                 if (stale_readback_log_counter == 1 || (stale_readback_log_counter % 120u) == 0u) {
-                    GS_LOG_WARN_DEFAULT(vformat("[GPU Sort] Stale instance-count async readback recovery failed (age_frames=%d, bytes=%d)",
-                            int(stale_age_frames),
-                            stale_count_data.size()));
+                    GS_LOG_WARN_DEFAULT(vformat("[GPU Sort] Stale instance-count async readback recovery failed (age_frames=%d)",
+                            int(stale_age_frames)));
                 }
             }
         } else if (pending_count_age_frames > kInstanceCountAsyncResetAgeFrames) {
             // Extremely stale async requests are dropped to re-arm a fresh async readback
             // without introducing a blocking sync in strict async modes.
-            instance_count_readback_state.pending = false;
-            instance_count_readback_state.pending_frame_counter = 0;
-            instance_count_readback_state.generation++;
+            _reset_instance_count_readback_state(false);
             static uint32_t stale_reset_log_counter = 0;
             stale_reset_log_counter++;
             if (stale_reset_log_counter == 1 || (stale_reset_log_counter % 240u) == 0u) {
@@ -2679,33 +2725,17 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
     }
 
     if (compute_rd && inputs.instance_count_buffer.is_valid() && !instance_count_readback_state.pending) {
-        instance_count_readback_state.pending = true;
-        instance_count_readback_state.generation++;
-        instance_count_readback_state.pending_frame_counter = sort_ctx.runtime.frame_counter;
-        const int64_t readback_generation = int64_t(instance_count_readback_state.generation);
-        Callable count_callback =
-                callable_mp(this, &GPUSortingPipeline::_on_instance_count_readback).bind(readback_generation);
-        Error count_err = compute_rd->buffer_get_data_async(inputs.instance_count_buffer, count_callback, 0,
-                sizeof(GaussianSplatting::IndirectDispatchLayout));
+        const Error count_err = _enqueue_instance_count_readback(
+                compute_rd, inputs.instance_count_buffer, sort_ctx.runtime.frame_counter);
         if (count_err != OK) {
-            instance_count_readback_state.pending = false;
-            instance_count_readback_state.pending_frame_counter = 0;
             bool enqueue_sync_fallback_used = false;
             if (compute_rd && inputs.instance_count_buffer.is_valid() && readback_policy.allow_sync_enqueue_fallback) {
                 // Preserve count freshness when async enqueue fails, while honoring strict
                 // async/timestamp-preserving policy modes that disallow blocking fallbacks.
                 (*sort_ctx.runtime.instance_sort_sync_fallback_count)++;
-                Vector<uint8_t> sync_count_data = compute_rd->buffer_get_data(
-                        inputs.instance_count_buffer, 0, sizeof(GaussianSplatting::IndirectDispatchLayout));
-                if (sync_count_data.size() >= static_cast<int>(sizeof(GaussianSplatting::IndirectDispatchLayout))) {
-                    const auto *indirect =
-                            reinterpret_cast<const GaussianSplatting::IndirectDispatchLayout *>(sync_count_data.ptr());
-                    last_instance_visible_splat_count = indirect->element_count;
-                    last_instance_visible_splat_count_valid = true;
-                    last_instance_visible_splat_count_frame = sort_ctx.runtime.frame_counter;
-                    resolved_visible = MIN(indirect->element_count, current_frame_safe_max);
-                    enqueue_sync_fallback_used = true;
-                }
+                enqueue_sync_fallback_used = _capture_instance_count_sync(
+                        compute_rd, inputs.instance_count_buffer, sort_ctx.runtime.frame_counter,
+                        current_frame_safe_max, &resolved_visible);
             }
             GS_LOG_WARN_DEFAULT(vformat("[GPU Sort] Instance pipeline async count readback enqueue failed: err=%d", int(count_err)));
             if (trace_enabled) {
@@ -2717,9 +2747,6 @@ bool GPUSortingPipeline::_sort_instance_pipeline(const Transform3D &p_cam_transf
                                 int(resolved_visible)),
                         true);
             }
-        } else if (!compute_rd->is_main_rendering_device()) {
-            // Ensure async readback requests are flushed on worker rendering devices.
-            compute_rd->submit();
         }
     }
     *sort_ctx.runtime.sorted_splat_count = resolved_visible;

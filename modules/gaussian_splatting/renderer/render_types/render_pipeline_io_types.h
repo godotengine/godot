@@ -154,6 +154,7 @@ struct InstancePipelineBuffers {
 	uint32_t max_visible_chunks = 0;
 	uint32_t max_visible_splats = 0;
 	uint32_t max_chunk_splats = 0;
+	bool world_submission_active = false;
 };
 
 struct DataSourcePlan {

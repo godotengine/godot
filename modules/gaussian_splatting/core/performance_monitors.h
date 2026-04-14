@@ -153,6 +153,8 @@ private:
     int _get_streaming_total_chunks() const;
     int _get_streaming_visible_chunks() const;
     int _get_streaming_loaded_chunks() const;
+    int _get_streaming_resident_chunks() const;
+    int _get_streaming_atlas_published_chunks() const;
     int _get_streaming_frustum_culled_chunks() const;
     float _get_streaming_vram_usage_mb() const;
     int _get_streaming_chunks_loaded_this_frame() const;

@@ -95,6 +95,7 @@ struct StreamingState {
 	bool streamed_indices_are_local = false;
 	bool cached_streamed_indices_valid = false;
 	bool use_streamed_data = false;
+	Ref<ChunkPayloadSource> pending_payload_source;
 	uint64_t last_streaming_init_attempt_frame = 0;
 
 	uint64_t last_rebuild_frame = 0;

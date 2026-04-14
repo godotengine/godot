@@ -145,11 +145,34 @@ RID GaussianData::create_gpu_buffer(RenderingDevice *p_rd) const {
     }
     ERR_FAIL_NULL_V_MSG(rd, RID(), "RenderingDevice required for GPU buffer creation");
 
-    Vector<PackedGaussian> packed_gaussians;
-    SHCompressionMetrics metrics;
+    // Godot's staging-buffer transfer system uses uint32_t for buffer sizes;
+    // next_power_of_2() overflows to 0 when the transfer exceeds ~2 GB,
+    // crashing in buffer_create(0).  Check the estimated size BEFORE the
+    // expensive validate-and-pack cycle so oversized datasets (e.g. 20M
+    // splats × 144 B ≈ 2.9 GB) bail out in microseconds instead of
+    // spending seconds on a multi-GB allocation that will be discarded.
+    constexpr uint64_t kMaxMonolithicBytes = uint64_t(2u) * 1024u * 1024u * 1024u; // 2 GB
     {
         RWLockRead lock(data_rwlock);
-        uint32_t gaussian_count = gaussians.size();
+        const uint32_t count = gaussians.size();
+        if (count == 0) {
+            return RID();
+        }
+        const uint64_t estimated_bytes = uint64_t(count) * uint64_t(sizeof(PackedGaussian));
+        if (estimated_bytes > kMaxMonolithicBytes) {
+            WARN_PRINT(vformat("create_gpu_buffer: %d gaussians would require %.1f GB; "
+                    "exceeds 2 GB staging limit, falling back to streaming",
+                    count, estimated_bytes / (1024.0 * 1024.0 * 1024.0)));
+            return RID();
+        }
+    }
+
+    Vector<PackedGaussian> packed_gaussians;
+    SHCompressionMetrics metrics;
+    uint32_t gaussian_count = 0;
+    {
+        RWLockRead lock(data_rwlock);
+        gaussian_count = gaussians.size();
         if (gaussian_count == 0) {
             return RID();
         }
@@ -168,7 +191,17 @@ RID GaussianData::create_gpu_buffer(RenderingDevice *p_rd) const {
                 sh_high_order_count);
     }
 
-    uint32_t buffer_size = sizeof(PackedGaussian) * packed_gaussians.size();
+    if (packed_gaussians.is_empty()) {
+        // Packing produced no output — the contiguous allocation for the
+        // packed buffer likely failed.  Return an invalid RID so callers
+        // fall back to streaming.
+        WARN_PRINT(vformat("create_gpu_buffer: packing %d gaussians produced an empty buffer; "
+                "dataset too large for monolithic GPU upload", gaussian_count));
+        return RID();
+    }
+
+    uint64_t buffer_size_64 = (uint64_t)sizeof(PackedGaussian) * (uint64_t)packed_gaussians.size();
+    uint32_t buffer_size = (uint32_t)buffer_size_64;
     Span<const PackedGaussian> packed_span(packed_gaussians.ptr(), packed_gaussians.size());
     RID buffer = rd->storage_buffer_create(buffer_size, packed_span.reinterpret<uint8_t>());
     rd->set_resource_name(buffer, "GS_GaussianData_PackedGaussianBuffer");

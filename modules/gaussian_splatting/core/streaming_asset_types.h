@@ -2,6 +2,7 @@
 #define STREAMING_ASSET_TYPES_H
 
 #include "gaussian_data.h"
+#include "streaming_chunk_payload_source.h"
 #include "core/math/aabb.h"
 #include "core/math/vector3.h"
 #include "core/templates/hash_map.h"
@@ -11,6 +12,15 @@
 #include <cstdint>
 
 namespace GaussianStreamingTypes {
+
+enum ResidencyRequestState : uint8_t {
+    RESIDENCY_REQUEST_STATE_IDLE = 0,
+    RESIDENCY_REQUEST_STATE_COLLECTED = 1,
+    RESIDENCY_REQUEST_STATE_QUEUED = 2,
+    RESIDENCY_REQUEST_STATE_DEFERRED = 3,
+    RESIDENCY_REQUEST_STATE_SATISFIED = 4,
+    RESIDENCY_REQUEST_STATE_FAILED = 5,
+};
 
 struct ChunkLayoutHint {
     uint32_t start_idx = 0;
@@ -38,6 +48,7 @@ struct StreamingChunk {
     uint64_t last_used_frame = 0;
     uint64_t last_loaded_frame = 0;
     uint32_t buffer_slot = UINT32_MAX;
+    uint64_t explicit_request_generation = 0;
 
     float lod_blend_factor = 1.0f;
     float previous_distance = 0.0f;
@@ -54,14 +65,24 @@ struct StreamingChunk {
 };
 
 struct RequestedChunkState {
+    // `stamp` tracks the request generation that most recently collected this
+    // chunk into the explicit residency set.
     uint64_t stamp = 0;
     uint32_t lod_mask = 0;
+    // Latest caller-visible request status generation. This may lag behind the
+    // current global request generation when an older request completes or
+    // fails after collection has moved on.
+    uint64_t request_generation = 0;
+    uint8_t request_state = 0;
+    uint8_t request_result = 0;
+    int32_t request_error = 0;
 };
 
 struct AtlasAssetState {
     uint32_t asset_id = 0;
     uint32_t dense_id = 0;
     Ref<GaussianData> data;
+    Ref<ChunkPayloadSource> payload_source;
     bool uses_primary_chunks = false;
     LocalVector<StreamingChunk> asset_chunks;
     LocalVector<uint32_t> requested_chunks;

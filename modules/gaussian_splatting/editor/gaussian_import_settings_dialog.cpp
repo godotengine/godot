@@ -164,6 +164,14 @@ Variant GaussianImportSettingsDialog::_test_get_setting_value(const StringName &
 	return Variant();
 }
 
+void GaussianImportSettingsDialog::_test_set_setting_value(const StringName &p_name, const Variant &p_value) {
+	if (!settings_data) {
+		return;
+	}
+
+	settings_data->current[p_name] = p_value;
+}
+
 String GaussianImportSettingsDialog::_test_get_stats_text() const {
 	return stats_label ? stats_label->get_text() : String();
 }

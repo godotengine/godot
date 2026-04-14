@@ -107,6 +107,7 @@ public:
 	static GaussianImportSettingsDialog *get_singleton();
 	void _test_reimport_now() { _re_import(); }
 	Variant _test_get_setting_value(const StringName &p_name) const;
+	void _test_set_setting_value(const StringName &p_name, const Variant &p_value);
 	String _test_get_stats_text() const;
 	bool _test_has_preview_splat_node() const { return splat_node != nullptr; }
 	Ref<GaussianSplatAsset> _test_get_loaded_asset() const { return loaded_asset; }

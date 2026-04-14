@@ -1,7 +1,6 @@
 #include "render_quality_orchestrator.h"
 
 #include "../logger/gs_logger.h"
-#include "../core/gaussian_splat_scene_director.h"
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
@@ -28,80 +27,6 @@ struct FidelityOverrideSnapshot {
 };
 
 static HashMap<uint64_t, FidelityOverrideSnapshot> g_fidelity_override_snapshots;
-
-static int _metadata_int(const Dictionary &p_metadata, const StringName &p_key, int p_default) {
-	if (!p_metadata.has(p_key)) {
-		return p_default;
-	}
-	const Variant value = p_metadata[p_key];
-	if (value.get_type() == Variant::FLOAT) {
-		return int((double)value);
-	}
-	return int(value);
-}
-
-static double _metadata_double(const Dictionary &p_metadata, const StringName &p_key, double p_default) {
-	if (!p_metadata.has(p_key)) {
-		return p_default;
-	}
-	const Variant value = p_metadata[p_key];
-	if (value.get_type() == Variant::INT) {
-		return double(int64_t(value));
-	}
-	return (double)value;
-}
-
-static bool _asset_requests_full_fidelity_runtime(const Ref<GaussianSplatAsset> &p_asset) {
-	if (p_asset.is_null()) {
-		return false;
-	}
-	const Dictionary import_metadata = p_asset->get_import_metadata();
-	const int import_max_splats = _metadata_int(import_metadata, StringName("max_splats"), -1);
-	const double density_multiplier = _metadata_double(import_metadata, StringName("density_multiplier"), 1.0);
-	return import_max_splats == 0 && density_multiplier >= 0.999;
-}
-
-static bool _renderer_requests_conservative_full_fidelity_runtime(const GaussianSplatRenderer *p_renderer,
-		const Ref<GaussianSplatAsset> &p_active_asset) {
-	if (_asset_requests_full_fidelity_runtime(p_active_asset)) {
-		return true;
-	}
-	if (!p_renderer) {
-		return false;
-	}
-	GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
-	if (!director) {
-		return false;
-	}
-
-	LocalVector<InstanceAssetRegistration> instance_assets;
-	director->collect_instance_assets_for_renderer(p_renderer, instance_assets,
-			p_renderer->is_shadow_instance_filter_enabled());
-	if (instance_assets.is_empty()) {
-		return false;
-	}
-	for (const InstanceAssetRegistration &entry : instance_assets) {
-		if (entry.requests_full_fidelity_runtime) {
-			return true;
-		}
-	}
-	if (p_active_asset.is_null()) {
-		return true;
-	}
-	const Ref<GaussianData> active_data = p_active_asset->get_gaussian_data();
-	if (active_data.is_null()) {
-		return true;
-	}
-	for (const InstanceAssetRegistration &entry : instance_assets) {
-		if (entry.data.is_null()) {
-			continue;
-		}
-		if (entry.data == active_data) {
-			return false;
-		}
-	}
-	return true;
-}
 
 static void _apply_source_fidelity_overrides(uint64_t p_renderer_key, GPUCuller *p_gpu_culler, bool p_enable) {
 	if (!p_gpu_culler) {
@@ -333,7 +258,7 @@ void RenderQualityOrchestrator::set_overflow_autotune_enabled(bool p_enabled) {
 }
 
 void RenderQualityOrchestrator::set_max_splats(int p_count) {
-	ERR_FAIL_COND(p_count < 1000);
+	ERR_FAIL_COND(p_count < 1);
 	if (p_count == performance_settings.max_splats) {
 		return;
 	}
@@ -432,7 +357,9 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 		return output;
 	}
 
-	const bool preserve_source_fidelity = _renderer_requests_conservative_full_fidelity_runtime(renderer, scene_state.active_asset);
+	const GaussianSplatRenderer::RuntimeFidelityPolicy runtime_policy =
+			renderer->build_runtime_fidelity_policy(scene_state, performance_settings);
+	const bool preserve_source_fidelity = runtime_policy.preserve_source_fidelity;
 	const uint64_t renderer_key = renderer ? uint64_t(renderer->get_instance_id()) : 0u;
 	_apply_source_fidelity_overrides(renderer_key, gpu_culler, preserve_source_fidelity);
 
@@ -442,11 +369,7 @@ GaussianRenderState::CullStageOutput RenderQualityOrchestrator::cull_for_view(co
 	inputs.test_scales = &test_data_state->scales;
 	inputs.cull_route_uid = RenderRouteUID::COMMON_SKIP_NO_DATA;
 	inputs.cull_route_reason = "missing_source_data";
-	const int source_splat_count = scene_state.gaussian_data.is_valid() ? scene_state.gaussian_data->get_count() : 0;
-	const int max_splats = preserve_source_fidelity && source_splat_count > 0
-			? source_splat_count
-			: performance_settings.max_splats;
-	inputs.max_splats = max_splats > 0 ? static_cast<uint32_t>(max_splats) : 0;
+	inputs.max_splats = runtime_policy.runtime_budget_splats;
 	// Runtime sorting path is GPU/cached only; avoid readbacks that were only needed for CPU sort fallback.
 	inputs.readback_distances = false;
 	inputs.readback_importance = false;

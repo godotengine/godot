@@ -15,6 +15,7 @@
 
 #include "gaussian_data.h"
 #include "gaussian_splat_asset.h"
+#include "streaming_chunk_payload_source.h"
 #include "../lod/lod_config.h"
 #include "../renderer/gaussian_splat_renderer.h"
 
@@ -57,6 +58,7 @@ public:
         ObjectID owner_id;
         RID scenario;
         Ref<GaussianData> gaussian_data;
+        Ref<ChunkPayloadSource> payload_source;
         Vector<GaussianSplatRenderer::StaticChunk> static_chunks;
         AABB bounds;
         Dictionary metadata;
@@ -96,6 +98,7 @@ public:
 			bool p_shadow_casters_only = false) const;
 	uint32_t get_instance_count_for_renderer(const GaussianSplatRenderer *p_renderer) const;
 	uint64_t get_instance_generation_for_renderer(const GaussianSplatRenderer *p_renderer) const;
+	uint64_t get_instance_asset_generation_for_renderer(const GaussianSplatRenderer *p_renderer) const;
     void register_instance_submission(ObjectID p_node_id, const Ref<GaussianSplatAsset> &p_asset,
             const Transform3D &p_transform, float p_opacity, float p_lod_bias, uint32_t p_flags,
             bool p_casts_shadow = false, float p_wind_intensity = 1.0f,
@@ -161,17 +164,20 @@ private:
         LocalVector<InstanceRecord> instances;
         HashMap<ObjectID, uint32_t> instance_lookup;
         uint64_t instance_generation = 1;
-        struct WorldSubmissionRecord {
-            ObjectID owner_id;
-            Ref<GaussianData> gaussian_data;
-            Vector<GaussianSplatRenderer::StaticChunk> static_chunks;
-            AABB bounds;
-            Dictionary metadata;
-            bool has_desired_residency_hint = false;
-            int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
-            Dictionary desired_renderer_overrides;
-            bool active = false;
-        };
+        uint64_t instance_asset_generation = 1;
+	        struct WorldSubmissionRecord {
+	            ObjectID owner_id;
+	            Ref<GaussianData> gaussian_data;
+	            Ref<ChunkPayloadSource> payload_source;
+	            Vector<GaussianSplatRenderer::StaticChunk> static_chunks;
+	            AABB bounds;
+	            Dictionary metadata;
+	            bool has_desired_residency_hint = false;
+	            int32_t desired_residency_hint = SUBMISSION_RESIDENCY_HINT_RESIDENT;
+	            Dictionary desired_renderer_overrides;
+	            GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot renderer_restore_state;
+	            bool active = false;
+	        };
         WorldSubmissionRecord world_submission;
         struct AssetRecord {
             Ref<GaussianSplatAsset> asset;
@@ -204,8 +210,13 @@ private:
     static void _store_world_submission_record(SharedWorld::WorldSubmissionRecord &r_record, const WorldSubmission &p_submission);
     static void _copy_world_submission_record(const SharedWorld &p_world, const SharedWorld::WorldSubmissionRecord &p_record,
             WorldSubmission *r_submission);
-    static void _clear_world_submission_renderer(SharedWorld &p_world);
-    static bool _apply_world_submission_to_renderer(SharedWorld &p_world, const SharedWorld::WorldSubmissionRecord &p_record);
+	    static GaussianSplatRenderer::WorldSubmissionContract _build_world_submission_contract(
+	            const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot &p_renderer_state,
+	            const SharedWorld::WorldSubmissionRecord &p_record);
+	    static void _restore_world_submission_renderer(SharedWorld &p_world,
+	            const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot &p_snapshot);
+	    static bool _apply_world_submission_to_renderer(SharedWorld &p_world, const SharedWorld::WorldSubmissionRecord &p_record,
+	            const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot &p_renderer_state);
 	bool _should_prune_world(const SharedWorld &p_world) const;
 	void _prune_world_if_unused(const RID &p_scenario);
 };

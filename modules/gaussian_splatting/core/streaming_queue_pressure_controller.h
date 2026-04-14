@@ -30,12 +30,14 @@ public:
         uint32_t pack_queue_depth = 0;
         uint32_t upload_queue_depth = 0;
         uint32_t sync_fallback_queue_depth = 0;
+        uint32_t pack_jobs_in_flight = 0;
         bool pack_inflight_saturated = false;
         bool upload_frame_cap_hit = false;
         bool upload_bandwidth_cap_hit = false;
         bool chunk_load_cap_hit = false;
         bool vram_chunk_cap_hit = false;
         bool sync_backpressure = false;
+        bool visible_eviction_active = false;
     };
 
     struct PressureSummary {
@@ -45,6 +47,7 @@ public:
         bool upload_source_active = false;
         bool sync_source_active = false;
         uint32_t backlog_depth = 0;
+        uint32_t total_pending_chunks = 0;
         String source = "none";
         String reason = "none";
     };

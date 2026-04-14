@@ -14,10 +14,11 @@ var test_scenes: Array[String] = [
 	"res://scenes/qa/qa_sort_multi_instance.tscn",
 	"res://scenes/qa/qa_performance_budget.tscn",
 	"res://scenes/qa/qa_stream_visual_smoke.tscn",
+	# Disabled until the runtime surface can prove true resident/streaming coexistence.
+	#"res://scenes/qa/qa_stream_multi_asset.tscn",
 	# Known issues - streaming monitors not populated (see GitHub issue):
 	#"res://scenes/qa/qa_stream_chunk_loading.tscn",
 	#"res://scenes/qa/qa_stream_eviction_churn.tscn",
-	#"res://scenes/qa/qa_stream_multi_asset.tscn",
 ]
 
 var results: Array[Dictionary] = []

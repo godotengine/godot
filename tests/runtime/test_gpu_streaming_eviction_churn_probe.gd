@@ -1,5 +1,7 @@
 extends SceneTree
 
+# Runtime budget-churn corridor probe for the large-world proof ladder.
+
 const METRICS_MARKER := "[RUNTIME_METRICS]"
 const FAIL_MARKER := "[RUNTIME_FAIL]"
 const SKIP_MARKER := "[RUNTIME_SKIP]"

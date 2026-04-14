@@ -1,7 +1,7 @@
 extends SceneTree
 
-# Stress test for GPU streaming and sorter metrics. Exercises the radix path
-# and validates that performance counters are being populated.
+# Runtime large-tier stress probe for the large-world proof ladder. Exercises
+# the radix path and validates that performance counters are being populated.
 
 const STREAM_TIERS := [
     {

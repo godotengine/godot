@@ -439,6 +439,7 @@ void StreamingUploadPipeline::pack_thread_entry(void *p_userdata) {
 void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, uint32_t p_thread_index) {
     (void)p_thread_index;
     static constexpr uint32_t PACK_DEQUEUE_BATCH = 4;
+    PackSnapshotScratch thread_scratch;
     while (!pack_thread_exit.load()) {
         pack_semaphore.wait();
         if (pack_thread_exit.load()) {
@@ -448,12 +449,15 @@ void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, 
 
         PackJob jobs[PACK_DEQUEUE_BATCH];
         uint32_t job_count = 0;
-        uint32_t semaphore_tokens_to_consume = 0;
         {
             const uint64_t lock_wait_start_usec = _ticks_usec_now();
             MutexLock lock(pack_mutex);
             record_pack_mutex_wait(lock_wait_start_usec);
             const uint64_t dequeue_usec = _ticks_usec_now();
+            // The pack queue guarded by pack_mutex is the authoritative owner
+            // of pending work. Semaphore wakeups may be stale if the main
+            // thread synchronously promotes a job after enqueue; in that case
+            // the worker simply observes no queued jobs and sleeps again.
             while (job_count < PACK_DEQUEUE_BATCH && pack_queue_read_idx < pack_queue.size()) {
                 jobs[job_count++] = std::move(pack_queue[pack_queue_read_idx++]);
                 const PackJob &dequeued_job = jobs[job_count - 1];
@@ -461,28 +465,6 @@ void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, 
                     const uint64_t latency_usec = dequeue_usec - dequeued_job.enqueue_usec;
                     telemetry.add_pack_queue_latency(latency_usec);
                 }
-            }
-            // queue_chunk_load() posts one semaphore token per enqueued job.
-            // This worker may dequeue several jobs after a single wait(), so
-            // consume extra ready tokens while the queue lock is held. That
-            // keeps token accounting aligned with the queue snapshot and avoids
-            // stealing wake credits for jobs enqueued after this dequeue.
-            semaphore_tokens_to_consume = job_count > 0 ? (job_count - 1) : 0;
-            while (semaphore_tokens_to_consume > 0) {
-                if (pack_thread_exit.load()) {
-                    break;
-                }
-                if (!pack_semaphore.try_wait()) {
-                    break;
-                }
-                // Shutdown posts one wake token per worker. If exit flips after
-                // try_wait() succeeds, return that token so blocked workers can
-                // still observe pack_thread_exit and terminate cleanly.
-                if (pack_thread_exit.load()) {
-                    pack_semaphore.post();
-                    break;
-                }
-                semaphore_tokens_to_consume--;
             }
             compact_queues_locked();
         }
@@ -494,7 +476,7 @@ void StreamingUploadPipeline::pack_thread_func(GaussianStreamingSystem &system, 
 
         for (uint32_t job_idx = 0; job_idx < job_count; job_idx++) {
             telemetry.record_pack_thread_snapshot();
-            PendingChunkUpload *upload = build_pending_upload_from_pack_job(jobs[job_idx]);
+            PendingChunkUpload *upload = build_pending_upload_from_pack_job(jobs[job_idx], thread_scratch);
             enqueue_upload_job(upload);
             telemetry.record_pack_thread_enqueue_upload();
             _atomic_saturating_sub(pack_jobs_in_flight, 1);
@@ -508,7 +490,7 @@ bool StreamingUploadPipeline::queue_chunk_load(GaussianStreamingSystem &system, 
     }
 
     GaussianStreamingSystem::AtlasAssetState *asset = system._get_asset_state(asset_id);
-    if (!asset || !asset->data.is_valid()) {
+    if (!asset || (!asset->data.is_valid() && !asset->payload_source.is_valid())) {
         return false;
     }
 
@@ -574,7 +556,8 @@ bool StreamingUploadPipeline::queue_chunk_load(GaussianStreamingSystem &system, 
         }
     }
     job.data_ref = asset->data;
-    if (!job.data_ref.is_valid()) {
+    job.payload_source = asset->payload_source;
+    if (!job.payload_source.is_valid() && !job.data_ref.is_valid()) {
         return false;
     }
 
@@ -695,6 +678,55 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
         return true;
     };
 
+    auto inspect_upload_chunk_for_coalescing = [&](PendingChunkUpload *job,
+                                                   GaussianStreamingSystem::StreamingChunk *&chunk,
+                                                   uint64_t &total_bytes) -> bool {
+        if (!job) {
+            return false;
+        }
+
+        GaussianStreamingSystem::AtlasAssetState *asset = system._get_asset_state(job->asset_id);
+        if (!asset || asset->generation != job->asset_generation) {
+            return false;
+        }
+
+        LocalVector<GaussianStreamingSystem::StreamingChunk> &asset_chunks = system._get_asset_chunks(*asset);
+        if (job->chunk_idx >= asset_chunks.size()) {
+            return false;
+        }
+
+        GaussianStreamingSystem::StreamingChunk &resolved_chunk = asset_chunks[job->chunk_idx];
+        if (!resolved_chunk.upload_pending ||
+                resolved_chunk.is_loaded ||
+                resolved_chunk.buffer_slot != job->buffer_slot ||
+                resolved_chunk.count == 0 ||
+                resolved_chunk.count > GaussianStreamingSystem::CHUNK_SIZE) {
+            return false;
+        }
+
+        const uint64_t chunk_key = system._make_chunk_key(job->asset_id, job->chunk_idx);
+        if (!_chunk_slot_matches_allocator(system.atlas_allocator, chunk_key, job->buffer_slot)) {
+            return false;
+        }
+
+        if (job->packed_data.size() != static_cast<int>(resolved_chunk.count)) {
+            return false;
+        }
+        total_bytes = uint64_t(job->packed_data.size()) * sizeof(PackedGaussian);
+        if (total_bytes == 0 ||
+                total_bytes > uint64_t(GaussianStreamingSystem::CHUNK_SIZE) * sizeof(PackedGaussian) ||
+                job->bytes_uploaded > total_bytes) {
+            return false;
+        }
+
+        if (_packed_gaussian_payload_checksum(job->packed_data) != job->payload_checksum) {
+            return false;
+        }
+
+        chunk = &resolved_chunk;
+        return true;
+    };
+
     auto upload_job_slices = [&](GaussianStreamingSystem::StreamingChunk &chunk,
                                  PendingChunkUpload *job,
                                  uint64_t total_bytes,
@@ -805,14 +837,20 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
     const uint64_t bandwidth_budget_limit = max_upload_bytes_per_second == 0 ? UINT64_MAX : upload_budget_tokens;
     bool submitted = false;
     uint32_t sync_promoted_pack_jobs = 0;
+    LocalVector<PendingChunkUpload *> peek_upload_jobs_buffer;
+    LocalVector<PendingChunkUpload *> coalesced_upload_jobs;
+    LocalVector<GaussianStreamingSystem::StreamingChunk *> coalesced_upload_chunks;
+    LocalVector<uint64_t> coalesced_upload_total_bytes;
+    LocalVector<UploadCoalescingCandidate> coalescing_candidates;
 
     while (upload_budget_state.upload_budget > 0 && upload_budget_state.completed_chunks < upload_budget_state.chunk_limit) {
-        // Preserve forward progress when async workers are alive but have not yet
-        // produced any uploads. This keeps direct-renderer streaming from
-        // stalling indefinitely at pack_q>0 / upload_q=0.
+        // Only rescue orphaned pack work here. When pack threads are running,
+        // they are the sole dequeue owner for pack_queue and its semaphore
+        // tokens; the frame thread must not steal jobs from that path.
         if (sync_promoted_pack_jobs == 0 &&
                 get_upload_queue_depth_cached() == 0 &&
-                get_pack_queue_depth_cached() > 0) {
+                get_pack_queue_depth_cached() > 0 &&
+                !has_async_pack_queue_owner()) {
             const uint32_t promoted = promote_pack_jobs_sync(1);
             sync_promoted_pack_jobs += promoted;
             sync_promoted_pack_jobs_total += promoted;
@@ -860,6 +898,104 @@ void StreamingUploadPipeline::process_upload_queue(GaussianStreamingSystem &syst
             system._rollback_pending_chunk(job->asset_id, job->chunk_idx, *chunk, true);
             memdelete(job);
             continue;
+        }
+
+        const uint64_t slot_capacity_bytes =
+                uint64_t(GaussianStreamingSystem::CHUNK_SIZE) * sizeof(PackedGaussian);
+        const uint32_t remaining_chunk_budget = upload_budget_state.completed_chunks < upload_budget_state.chunk_limit
+                ? (upload_budget_state.chunk_limit - upload_budget_state.completed_chunks)
+                : 0;
+        const uint64_t coalescing_byte_limit = upload_budget_state.slice_limit == UINT64_MAX
+                ? upload_budget_state.upload_budget
+                : MIN(upload_budget_state.upload_budget, upload_budget_state.slice_limit);
+        if (job->bytes_uploaded == 0 &&
+                total_bytes == slot_capacity_bytes &&
+                remaining_chunk_budget > 1 &&
+                coalescing_byte_limit >= slot_capacity_bytes) {
+            peek_upload_jobs_buffer.clear();
+            coalesced_upload_jobs.clear();
+            coalesced_upload_chunks.clear();
+            coalesced_upload_total_bytes.clear();
+            coalescing_candidates.clear();
+
+            coalesced_upload_jobs.push_back(job);
+            coalesced_upload_chunks.push_back(chunk);
+            coalesced_upload_total_bytes.push_back(total_bytes);
+            UploadCoalescingCandidate first_candidate;
+            first_candidate.buffer_slot = job->buffer_slot;
+            first_candidate.packed_count = static_cast<uint32_t>(job->packed_data.size());
+            first_candidate.bytes_uploaded = job->bytes_uploaded;
+            coalescing_candidates.push_back(first_candidate);
+
+            const uint32_t max_additional_jobs = remaining_chunk_budget - 1;
+            peek_upload_jobs(max_additional_jobs, peek_upload_jobs_buffer);
+            for (uint32_t i = 0; i < peek_upload_jobs_buffer.size(); i++) {
+                PendingChunkUpload *candidate_job = peek_upload_jobs_buffer[i];
+                GaussianStreamingSystem::StreamingChunk *candidate_chunk = nullptr;
+                uint64_t candidate_total_bytes = 0;
+                if (!inspect_upload_chunk_for_coalescing(candidate_job, candidate_chunk, candidate_total_bytes)) {
+                    break;
+                }
+
+                coalesced_upload_jobs.push_back(candidate_job);
+                coalesced_upload_chunks.push_back(candidate_chunk);
+                coalesced_upload_total_bytes.push_back(candidate_total_bytes);
+                UploadCoalescingCandidate candidate;
+                candidate.buffer_slot = candidate_job->buffer_slot;
+                candidate.packed_count = static_cast<uint32_t>(candidate_job->packed_data.size());
+                candidate.bytes_uploaded = candidate_job->bytes_uploaded;
+                coalescing_candidates.push_back(candidate);
+            }
+
+            const UploadCoalescingPlan coalescing_plan =
+                    _plan_coalesced_upload_batch(coalescing_candidates, coalescing_byte_limit);
+            if (coalescing_plan.coalesced_job_count > 1) {
+                const uint64_t first_slot_offset = uint64_t(chunk->buffer_slot) * slot_capacity_bytes;
+                const bool offset_in_range =
+                        first_slot_offset <= uint64_t(UINT32_MAX) &&
+                        coalescing_plan.total_bytes <= uint64_t(UINT32_MAX) &&
+                        coalescing_plan.total_bytes <= system.persistent_buffer_size &&
+                        first_slot_offset <= system.persistent_buffer_size - coalescing_plan.total_bytes;
+                if (offset_in_range) {
+                    const uint32_t additional_jobs_to_consume = coalescing_plan.coalesced_job_count - 1;
+                    const uint32_t consumed_jobs = consume_upload_jobs(additional_jobs_to_consume);
+                    const uint32_t batched_job_count = 1 + consumed_jobs;
+                    if (batched_job_count > 1) {
+                        const uint32_t batched_gaussian_count =
+                                uint32_t((uint64_t(batched_job_count) * slot_capacity_bytes) / sizeof(PackedGaussian));
+                        upload_coalescing_scratch.resize(batched_gaussian_count);
+                        PackedGaussian *scratch_ptr = upload_coalescing_scratch.ptrw();
+                        uint32_t scratch_offset = 0;
+                        for (uint32_t i = 0; i < batched_job_count; i++) {
+                            const Vector<PackedGaussian> &source = coalesced_upload_jobs[i]->packed_data;
+                            if (!source.is_empty()) {
+                                memcpy(scratch_ptr + scratch_offset,
+                                        source.ptr(),
+                                        size_t(source.size()) * sizeof(PackedGaussian));
+                            }
+                            scratch_offset += source.size();
+                        }
+
+                        submission_rd->buffer_update(system.persistent_buffer,
+                                static_cast<uint32_t>(first_slot_offset),
+                                uint32_t(uint64_t(batched_job_count) * slot_capacity_bytes),
+                                reinterpret_cast<const uint8_t *>(upload_coalescing_scratch.ptr()));
+                        if (upload_budget_state.upload_budget != UINT64_MAX) {
+                            upload_budget_state.upload_budget -= uint64_t(batched_job_count) * slot_capacity_bytes;
+                        }
+                        submitted = true;
+                        if (telemetry.is_enabled()) {
+                            telemetry.add_upload_bytes(uint64_t(batched_job_count) * slot_capacity_bytes);
+                        }
+
+                        for (uint32_t i = 0; i < batched_job_count; i++) {
+                            coalesced_upload_jobs[i]->bytes_uploaded += coalesced_upload_total_bytes[i];
+                            finalize_upload_job(coalesced_upload_jobs[i], *coalesced_upload_chunks[i], upload_budget_state);
+                        }
+                        continue;
+                    }
+                }
+            }
         }
 
         const bool upload_ok = upload_job_slices(*chunk, job, total_bytes,
@@ -963,47 +1099,61 @@ bool StreamingUploadPipeline::pop_pack_job(PackJob &r_job) {
     return true;
 }
 
-StreamingUploadPipeline::PendingChunkUpload *StreamingUploadPipeline::build_pending_upload_from_pack_job(const PackJob &p_job) {
+StreamingUploadPipeline::PendingChunkUpload *StreamingUploadPipeline::build_pending_upload_from_pack_job(
+        const PackJob &p_job, PackSnapshotScratch &r_scratch) {
     PendingChunkUpload *upload = memnew(PendingChunkUpload);
     upload->asset_id = p_job.asset_id;
     upload->chunk_idx = p_job.chunk_idx;
     upload->buffer_slot = p_job.buffer_slot;
     upload->asset_generation = p_job.asset_generation;
 
-    if (p_job.chunk_count == 0 || !p_job.data_ref.is_valid()) {
+    const bool has_payload_source = p_job.payload_source.is_valid();
+    const bool has_data_ref = p_job.data_ref.is_valid();
+    if (p_job.chunk_count == 0 || (!has_payload_source && !has_data_ref)) {
         return upload;
     }
 
-    LocalVector<Gaussian> gaussian_snapshot;
-    LocalVector<Vector3> sh_high_order_snapshot;
     uint32_t sh_first_order = 0;
     uint32_t sh_high_order = 0;
     bool snapshot_ok = false;
     if (p_job.uses_explicit_source_indices) {
-        snapshot_ok = p_job.chunk_count == static_cast<uint32_t>(p_job.source_indices.size()) &&
-                p_job.data_ref->capture_indexed_chunk_snapshot(p_job.source_indices.ptr(), p_job.chunk_count,
-                        gaussian_snapshot,
-                        sh_high_order_snapshot,
-                        sh_first_order,
-                        sh_high_order);
+        const bool indices_ok = p_job.chunk_count == static_cast<uint32_t>(p_job.source_indices.size());
+        if (indices_ok && has_payload_source) {
+            snapshot_ok = p_job.payload_source->capture_indexed_chunk_snapshot(
+                    p_job.source_indices.ptr(), p_job.chunk_count,
+                    r_scratch.gaussian_snapshot, r_scratch.sh_high_order_snapshot,
+                    sh_first_order, sh_high_order);
+        } else if (indices_ok && has_data_ref) {
+            snapshot_ok = p_job.data_ref->capture_indexed_chunk_snapshot(
+                    p_job.source_indices.ptr(), p_job.chunk_count,
+                    r_scratch.gaussian_snapshot, r_scratch.sh_high_order_snapshot,
+                    sh_first_order, sh_high_order);
+        }
     } else {
-        snapshot_ok = p_job.data_ref->capture_chunk_snapshot(p_job.chunk_start, p_job.chunk_count,
-                gaussian_snapshot,
-                sh_high_order_snapshot,
-                sh_first_order,
-                sh_high_order);
+        if (has_payload_source) {
+            snapshot_ok = p_job.payload_source->capture_chunk_snapshot(
+                    p_job.chunk_start, p_job.chunk_count,
+                    r_scratch.gaussian_snapshot, r_scratch.sh_high_order_snapshot,
+                    sh_first_order, sh_high_order);
+        } else {
+            snapshot_ok = p_job.data_ref->capture_chunk_snapshot(
+                    p_job.chunk_start, p_job.chunk_count,
+                    r_scratch.gaussian_snapshot, r_scratch.sh_high_order_snapshot,
+                    sh_first_order, sh_high_order);
+        }
     }
-    if (!snapshot_ok || p_job.chunk_count > static_cast<uint32_t>(gaussian_snapshot.size())) {
+    if (!snapshot_ok || p_job.chunk_count > static_cast<uint32_t>(r_scratch.gaussian_snapshot.size())) {
         return upload;
     }
 
-    const Vector3 *sh_coeffs = sh_high_order_snapshot.is_empty() ? nullptr : sh_high_order_snapshot.ptr();
+    const Vector3 *sh_coeffs =
+            r_scratch.sh_high_order_snapshot.is_empty() ? nullptr : r_scratch.sh_high_order_snapshot.ptr();
     const bool telemetry_on = telemetry.is_enabled();
     uint64_t pack_start_usec = 0;
     if (telemetry_on) {
         pack_start_usec = _ticks_usec_now();
     }
-    pack_gaussians_range(gaussian_snapshot,
+    pack_gaussians_range(r_scratch.gaussian_snapshot,
             0,
             p_job.chunk_count,
             upload->packed_data,
@@ -1032,22 +1182,30 @@ void StreamingUploadPipeline::enqueue_upload_job(PendingChunkUpload *p_job) {
 }
 
 uint32_t StreamingUploadPipeline::promote_pack_jobs_sync(uint32_t p_max_jobs) {
+    if (has_async_pack_queue_owner()) {
+        return 0;
+    }
+
     uint32_t promoted = 0;
     while (promoted < p_max_jobs) {
         PackJob job;
         if (!pop_pack_job(job)) {
             break;
         }
-        // Consume the semaphore token that queue_chunk_load() posted for this job.
-        // Without this, the pack thread would get a spurious wake for a job that
-        // has already been promoted synchronously.
-        pack_semaphore.try_wait();
-        PendingChunkUpload *upload = build_pending_upload_from_pack_job(job);
+        // The main thread claims work directly from the mutex-guarded pack
+        // queue. Workers may still observe a stale wake token afterwards, but
+        // they will see an empty queue and go back to sleep without touching
+        // unrelated jobs or wake ownership state.
+        PendingChunkUpload *upload = build_pending_upload_from_pack_job(job, sync_pack_scratch);
         enqueue_upload_job(upload);
         _atomic_saturating_sub(pack_jobs_in_flight, 1);
         promoted++;
     }
     return promoted;
+}
+
+bool StreamingUploadPipeline::has_async_pack_queue_owner() const {
+    return async_pack_enabled && pack_thread_running.load(std::memory_order_acquire);
 }
 
 uint32_t StreamingUploadPipeline::get_pack_queue_depth_unsafe() const {
@@ -1124,6 +1282,45 @@ void StreamingUploadPipeline::record_upload_queue_latency(uint64_t enqueue_usec)
     telemetry.add_upload_queue_latency(latency_usec);
 }
 
+StreamingUploadPipeline::UploadCoalescingPlan StreamingUploadPipeline::_plan_coalesced_upload_batch(
+        const LocalVector<UploadCoalescingCandidate> &p_candidates, uint64_t p_byte_limit) {
+    UploadCoalescingPlan plan;
+    if (p_candidates.is_empty()) {
+        return plan;
+    }
+
+    const uint64_t slot_capacity_bytes = uint64_t(GaussianStreamingSystem::CHUNK_SIZE) * sizeof(PackedGaussian);
+    const UploadCoalescingCandidate &first = p_candidates[0];
+    if (first.buffer_slot == UINT32_MAX ||
+            first.bytes_uploaded != 0 ||
+            first.packed_count != GaussianStreamingSystem::CHUNK_SIZE ||
+            p_byte_limit < slot_capacity_bytes) {
+        return plan;
+    }
+
+    plan.coalesced_job_count = 1;
+    plan.total_bytes = slot_capacity_bytes;
+
+    uint32_t expected_slot = first.buffer_slot;
+    for (uint32_t i = 1; i < p_candidates.size(); i++) {
+        const UploadCoalescingCandidate &candidate = p_candidates[i];
+        const bool contiguous_slot = candidate.buffer_slot == expected_slot + 1u;
+        const bool full_slot = candidate.packed_count == GaussianStreamingSystem::CHUNK_SIZE;
+        const bool untouched = candidate.bytes_uploaded == 0;
+        if (!contiguous_slot || !full_slot || !untouched) {
+            break;
+        }
+        if (plan.total_bytes > p_byte_limit - slot_capacity_bytes) {
+            break;
+        }
+        plan.coalesced_job_count++;
+        plan.total_bytes += slot_capacity_bytes;
+        expected_slot = candidate.buffer_slot;
+    }
+
+    return plan;
+}
+
 bool StreamingUploadPipeline::has_pending_uploads() {
     return get_upload_queue_depth_cached() > 0 || get_pack_queue_depth_cached() > 0;
 }
@@ -1141,6 +1338,46 @@ bool StreamingUploadPipeline::pop_upload_job(PendingChunkUpload *&job) {
     }
     compact_queues_locked();
     return true;
+}
+
+uint32_t StreamingUploadPipeline::peek_upload_jobs(uint32_t p_max_jobs, LocalVector<PendingChunkUpload *> &r_jobs) {
+    r_jobs.clear();
+    if (p_max_jobs == 0) {
+        return 0;
+    }
+
+    const uint64_t lock_wait_start_usec = _ticks_usec_now();
+    MutexLock lock(pack_mutex);
+    record_pack_mutex_wait(lock_wait_start_usec);
+    const uint32_t available =
+            upload_queue_read_idx < upload_queue.size() ? (upload_queue.size() - upload_queue_read_idx) : 0;
+    const uint32_t peek_count = MIN(p_max_jobs, available);
+    r_jobs.reserve(peek_count);
+    for (uint32_t i = 0; i < peek_count; i++) {
+        r_jobs.push_back(upload_queue[upload_queue_read_idx + i]);
+    }
+    return peek_count;
+}
+
+uint32_t StreamingUploadPipeline::consume_upload_jobs(uint32_t p_count) {
+    if (p_count == 0) {
+        return 0;
+    }
+
+    const uint64_t lock_wait_start_usec = _ticks_usec_now();
+    MutexLock lock(pack_mutex);
+    record_pack_mutex_wait(lock_wait_start_usec);
+
+    uint32_t consumed = 0;
+    while (consumed < p_count && upload_queue_read_idx < upload_queue.size()) {
+        PendingChunkUpload *job = upload_queue[upload_queue_read_idx++];
+        if (job) {
+            record_upload_queue_latency(job->enqueue_usec);
+        }
+        consumed++;
+    }
+    compact_queues_locked();
+    return consumed;
 }
 
 StreamingUploadPipeline::UploadBudgetState

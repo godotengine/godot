@@ -68,7 +68,11 @@ struct ResourceState {
 	uint32_t resident_chunk_meta_buffer_size = 0;
 	RID resident_quantization_buffer;
 	uint32_t resident_quantization_buffer_size = 0;
+	uint64_t instance_pipeline_contract_generation = 0;
 	uint64_t instance_pipeline_content_generation = 0;
+	uint64_t instance_pipeline_contract_fingerprint = 0;
+	uint64_t instance_pipeline_upload_generation = 0;
+	uint64_t instance_pipeline_upload_fingerprint = 0;
 };
 
 struct TestDataState {

@@ -2,6 +2,7 @@
 #define STREAMING_VISIBILITY_CONTROLLER_H
 
 #include "core/math/aabb.h"
+#include "core/math/math_funcs.h"
 #include "core/math/plane.h"
 #include "core/math/projection.h"
 #include "core/math/transform_3d.h"
@@ -10,8 +11,43 @@
 #include "core/templates/vector.h"
 #include "streaming_vram_regulator.h"
 #include <cstdint>
+#include <cstring>
+
+namespace GaussianStreamingTypes {
+struct StreamingChunk;
+}
 
 class GaussianStreamingSystem;
+
+struct ChunkSpatialGrid {
+    static constexpr int MAX_CELLS_PER_DIM = 64;
+    static constexpr float MIN_CELL_SIZE = 0.5f;
+
+    AABB world_bounds;
+    float cell_size = 0.0f;
+    int dim_x = 0, dim_y = 0, dim_z = 0;
+    LocalVector<LocalVector<uint32_t>> cell_chunks;
+    uint32_t built_for_chunk_count = 0;
+
+    bool is_built() const { return built_for_chunk_count > 0; }
+
+    void build(const GaussianStreamingTypes::StreamingChunk *chunks, uint32_t chunk_count);
+    void clear();
+
+    _FORCE_INLINE_ void world_to_cell(const Vector3 &pos, int &cx, int &cy, int &cz) const {
+        Vector3 local = pos - world_bounds.position;
+        cx = CLAMP(int(Math::floor(local.x / cell_size)), 0, dim_x - 1);
+        cy = CLAMP(int(Math::floor(local.y / cell_size)), 0, dim_y - 1);
+        cz = CLAMP(int(Math::floor(local.z / cell_size)), 0, dim_z - 1);
+    }
+
+    _FORCE_INLINE_ uint32_t flat_index(int cx, int cy, int cz) const {
+        return uint32_t(cz) * uint32_t(dim_y) * uint32_t(dim_x) + uint32_t(cy) * uint32_t(dim_x) + uint32_t(cx);
+    }
+
+    void query_aabb(const AABB &bounds, LocalVector<uint32_t> &out_chunk_indices) const;
+    void query_nearby(const Vector3 &pos, int radius_cells, LocalVector<uint32_t> &out_chunk_indices) const;
+};
 
 class StreamingVisibilityController {
     friend class GaussianStreamingSystem;
@@ -22,12 +58,14 @@ public:
         uint32_t visible_chunks = 0;
         uint32_t frustum_culled_chunks = 0;
         uint32_t loaded_chunks = 0;
+        uint32_t resident_chunks = 0;
 
         void reset() {
             total_chunks = 0;
             visible_chunks = 0;
             frustum_culled_chunks = 0;
             loaded_chunks = 0;
+            resident_chunks = 0;
         }
     };
 
@@ -75,6 +113,9 @@ public:
     float get_visible_count_change_ratio() const;
     float get_effective_count_change_ratio(uint32_t visible_chunks_evicted_this_frame) const;
 
+    static constexpr uint32_t SPATIAL_GRID_MIN_CHUNKS = 64;
+    static constexpr int RECOVERY_MAX_CELL_RADIUS = 5;
+
 private:
     uint32_t get_prefetch_limit(GaussianStreamingSystem &system, uint32_t available_slots, uint32_t load_budget) const;
     void collect_prefetch_candidates(GaussianStreamingSystem &system, const Vector3 &predicted_pos,
@@ -85,9 +126,14 @@ private:
     bool chunk_frustum_culling_enabled = true;
     float chunk_frustum_padding = 1.5f;
     float chunk_radius_multiplier = 1.0f;
+    float max_discovery_distance = 10000.0f;
     ChunkCullingStats culling_stats;
     LocalVector<uint32_t> visible_chunk_indices;
     CameraVelocityTracker camera_tracker;
+
+    ChunkSpatialGrid spatial_grid;
+    LocalVector<uint8_t> grid_query_visited;
+    LocalVector<uint32_t> grid_query_candidates;
     bool predictive_prefetch_enabled = true;
     float prefetch_lookahead_distance = 10.0f;
     LODBlendConfig lod_blend_config;

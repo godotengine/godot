@@ -7,6 +7,7 @@
 #include "core/variant/variant.h"
 
 #include "gaussian_data.h"
+#include "streaming_chunk_payload_source.h"
 #include "../renderer/gaussian_splat_renderer.h"
 
 class GaussianSplatWorld : public Resource {
@@ -15,6 +16,7 @@ class GaussianSplatWorld : public Resource {
 
 private:
     Ref<GaussianData> gaussian_data;
+    Ref<ChunkPayloadSource> chunk_payload_source;
     Vector<GaussianSplatRenderer::StaticChunk> static_chunks;
     AABB bounds;
     Dictionary metadata;
@@ -37,11 +39,16 @@ public:
     void set_static_chunks(const Vector<GaussianSplatRenderer::StaticChunk> &p_chunks);
     const Vector<GaussianSplatRenderer::StaticChunk> &get_static_chunks() const { return static_chunks; }
 
+    void set_chunk_payload_source(const Ref<ChunkPayloadSource> &p_source) { chunk_payload_source = p_source; }
+    Ref<ChunkPayloadSource> get_chunk_payload_source() const { return chunk_payload_source; }
+
     int get_chunk_count() const;
     PackedInt32Array get_chunk_sizes() const;
     Array get_chunk_aabbs() const;
 
     void clear();
+
+    Error save_to_file(const String &p_path) const;
 };
 
 #endif // GAUSSIAN_SPLAT_WORLD_H

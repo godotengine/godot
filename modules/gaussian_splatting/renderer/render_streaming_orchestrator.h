@@ -19,7 +19,8 @@ struct RenderStreamingOrchestratorDependencies {
 		bool (GaussianSplatRenderer::*validate_cull_projection_contract)(RenderDataRD *p_render_data, const Projection &p_projection,
 				const Projection &p_cull_projection, const char *p_context) = &GaussianSplatRenderer::validate_cull_projection_contract;
 		void (GaussianSplatRenderer::*clear_instance_pipeline_buffers)() = &GaussianSplatRenderer::clear_instance_pipeline_buffers;
-		bool (GaussianSplatRenderer::*update_instance_buffer)(LocalVector<InstanceDataGPU> &p_instances) = &GaussianSplatRenderer::update_instance_buffer;
+		bool (GaussianSplatRenderer::*update_instance_buffer)(LocalVector<InstanceDataGPU> &p_instances,
+				const GaussianSplatRenderer::PublishedInstanceAssetRemap &p_remap) = &GaussianSplatRenderer::update_instance_buffer;
 		void (GaussianSplatRenderer::*run_cull_sort_pipeline_frame)(RenderDataRD *p_render_data, const Transform3D &p_world_to_camera_transform,
 				const Projection &p_projection, const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers,
 				bool p_has_render_data, const String &p_cull_skip_reason, const String &p_sort_skip_reason,
@@ -37,13 +38,14 @@ class RenderStreamingOrchestrator {
 public:
 	explicit RenderStreamingOrchestrator(const RenderStreamingOrchestratorDependencies &p_dependencies);
 
-	bool ensure_instance_streaming_system();
+	bool ensure_instance_streaming_system(const GaussianSplatRenderer::FrameBackendPlan &p_backend_plan);
 	void sync_instance_pipeline_assets(GaussianStreamingSystem *p_streaming_system);
 	bool render_streaming_frame(RenderDataRD *p_render_data, const Transform3D &p_camera_to_world_transform,
 			const Transform3D &p_world_to_camera_transform, const Projection &p_projection,
 			const Projection &p_render_projection, RenderSceneBuffersRD *p_render_buffers,
-			bool p_allow_runtime_fallback_instance = false);
-	void tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection);
+			const GaussianSplatRenderer::FrameBackendPlan &p_backend_plan);
+	void tick_streaming_only(const Transform3D &p_camera_to_world_transform, const Projection &p_projection,
+			const GaussianSplatRenderer::FrameBackendPlan &p_backend_plan);
 	bool should_throttle_streaming_rebuild(uint32_t p_chunks_loaded, uint32_t p_chunks_evicted,
 			uint32_t p_visible_evicted, uint64_t p_current_frame);
 
@@ -70,7 +72,13 @@ private:
 	LocalVector<InstanceDataGPU> instance_pipeline_instance_cache;
 	HashMap<uint32_t, uint32_t> instance_pipeline_lod_mask_cache;
 	HashMap<uint32_t, uint32_t> instance_pipeline_asset_versions;
+	uint64_t instance_pipeline_asset_snapshot_generation = 0;
+	bool instance_pipeline_asset_snapshot_shadow_only = false;
 	uint32_t instance_pipeline_empty_asset_sync_streak = 0;
+	uint64_t visible_lod_selection_generation = 0;
+	bool visible_lod_selection_shadow_only = false;
+	uint64_t streaming_bootstrap_retry_after_frame = 0;
+	String streaming_bootstrap_last_error = "none";
 
 	uint64_t static_layout_cache_revision = 0;
 	Vector<GaussianStreamingSystem::ChunkLayoutHint> static_layout_cache_hints;
@@ -94,6 +102,8 @@ private:
 
 	VisibleLODSelection visible_lod_selection;
 
+	void invalidate_instance_pipeline_caches();
+	bool refresh_instance_asset_snapshot(GaussianSplatSceneDirector *p_director, bool p_trace_enabled);
 	const VisibleLODSelection &produce_visible_lod_selection(GaussianSplatSceneDirector *p_director,
 			GaussianStreamingSystem *p_streaming_system, const Vector3 &p_camera_origin);
 	void consume_visible_lod_selection_for_residency(const VisibleLODSelection &p_selection,

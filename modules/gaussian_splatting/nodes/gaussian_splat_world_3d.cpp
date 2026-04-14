@@ -1,6 +1,7 @@
 #include "gaussian_splat_world_3d.h"
 
 #include "../core/gaussian_splat_scene_director.h"
+#include "../core/gs_project_settings.h"
 #include "../core/quality_tier_config.h"
 #include "../logger/gs_logger.h"
 
@@ -369,6 +370,7 @@ void GaussianSplatWorld3D::_register_shared_renderer() {
     submission.owner_id = get_instance_id();
     submission.scenario = get_world_3d().is_valid() ? get_world_3d()->get_scenario() : RID();
     submission.gaussian_data = world->get_gaussian_data();
+    submission.payload_source = world->get_chunk_payload_source();
     submission.static_chunks = world->get_static_chunks();
     submission.bounds = world->get_bounds();
     if (!submission.bounds.has_volume() && submission.gaussian_data.is_valid()) {
@@ -379,11 +381,15 @@ void GaussianSplatWorld3D::_register_shared_renderer() {
     if (!world_path.is_empty()) {
         submission.metadata[StringName("world_path")] = world_path;
     }
-    // World submissions are fully materialized payloads, so they prefer the
-    // resident backend while leaving the renderer free to fall back when the
-    // resident instance contract is not feasible.
+    // World submissions carry a residency hint that defers to the active
+    // route policy.  When the policy is STREAMING the hint lets the renderer
+    // bootstrap the streaming system; when it is RESIDENT the hint preserves
+    // the fully-materialized resident path.
     submission.has_desired_residency_hint = true;
-    submission.desired_residency_hint = GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT;
+    const int route_policy = gs::settings::get_streaming_route_policy(ProjectSettings::get_singleton());
+    submission.desired_residency_hint = (route_policy == gs::settings::GS_ROUTE_STREAMING)
+            ? GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_STREAMING
+            : GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT;
     submission.desired_renderer_overrides = _build_desired_renderer_overrides();
     if (!director->submit_world_submission(submission)) {
         if (_is_world_debug_enabled()) {

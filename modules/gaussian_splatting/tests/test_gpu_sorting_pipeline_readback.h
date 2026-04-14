@@ -123,4 +123,28 @@ TEST_CASE("[GaussianSplatting][GPU Sort Pipeline] Instance-count readbacks rejec
 	CHECK(pipeline->last_instance_visible_splat_count_frame == 71);
 }
 
+TEST_CASE("[GaussianSplatting][GPU Sort Pipeline] Clearing instance pipeline inputs resets readback ownership state") {
+	Ref<GPUSortingPipeline> pipeline;
+	pipeline.instantiate();
+	REQUIRE(pipeline.is_valid());
+
+	pipeline->instance_count_readback_state.pending = true;
+	pipeline->instance_count_readback_state.generation = 11;
+	pipeline->instance_count_readback_state.pending_frame_counter = 29;
+	pipeline->instance_count_readback_state.bootstrap_sync_attempted = true;
+	pipeline->last_instance_visible_splat_count = 42;
+	pipeline->last_instance_visible_splat_count_valid = true;
+	pipeline->last_instance_visible_splat_count_frame = 17;
+
+	pipeline->clear_instance_pipeline_inputs();
+
+	CHECK_FALSE(pipeline->instance_count_readback_state.pending);
+	CHECK(pipeline->instance_count_readback_state.generation == 12);
+	CHECK(pipeline->instance_count_readback_state.pending_frame_counter == 0);
+	CHECK_FALSE(pipeline->instance_count_readback_state.bootstrap_sync_attempted);
+	CHECK(pipeline->last_instance_visible_splat_count == 0);
+	CHECK_FALSE(pipeline->last_instance_visible_splat_count_valid);
+	CHECK(pipeline->last_instance_visible_splat_count_frame == 0);
+}
+
 } // namespace TestGaussianSplatting

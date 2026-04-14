@@ -8,6 +8,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
 #include <cfloat>
+#include <cstring>
 
 namespace {
 uint32_t _compute_visibility_async_enqueue_headroom(
@@ -33,8 +34,123 @@ uint32_t _compute_visibility_async_enqueue_headroom(
 }
 } // namespace
 
+// ---------------------------------------------------------------------------
+// ChunkSpatialGrid
+// ---------------------------------------------------------------------------
+
+void ChunkSpatialGrid::build(const GaussianStreamingTypes::StreamingChunk *chunks, uint32_t chunk_count) {
+    clear();
+    if (chunk_count == 0) {
+        return;
+    }
+
+    // Compute world bounds from all chunk AABBs.
+    world_bounds = chunks[0].bounds;
+    for (uint32_t i = 1; i < chunk_count; i++) {
+        world_bounds = world_bounds.merge(chunks[i].bounds);
+    }
+    // Small margin to avoid edge-case clamping issues.
+    world_bounds = world_bounds.grow(0.01f);
+
+    Vector3 extent = world_bounds.size;
+    float max_extent = MAX(extent.x, MAX(extent.y, extent.z));
+    if (max_extent <= 0.0f) {
+        // Degenerate: all chunks at one point.
+        cell_size = MIN_CELL_SIZE;
+        dim_x = dim_y = dim_z = 1;
+    } else {
+        cell_size = MAX(MIN_CELL_SIZE, max_extent / float(MAX_CELLS_PER_DIM));
+        dim_x = CLAMP(int(Math::ceil(extent.x / cell_size)), 1, MAX_CELLS_PER_DIM);
+        dim_y = CLAMP(int(Math::ceil(extent.y / cell_size)), 1, MAX_CELLS_PER_DIM);
+        dim_z = CLAMP(int(Math::ceil(extent.z / cell_size)), 1, MAX_CELLS_PER_DIM);
+    }
+
+    uint32_t total = uint32_t(dim_x) * uint32_t(dim_y) * uint32_t(dim_z);
+    cell_chunks.resize(total);
+    for (uint32_t c = 0; c < total; c++) {
+        cell_chunks[c].clear();
+    }
+
+    // Insert each chunk into every cell its AABB overlaps.
+    for (uint32_t ci = 0; ci < chunk_count; ci++) {
+        const AABB &cb = chunks[ci].bounds;
+        int min_cx, min_cy, min_cz, max_cx, max_cy, max_cz;
+        world_to_cell(cb.position, min_cx, min_cy, min_cz);
+        world_to_cell(cb.position + cb.size, max_cx, max_cy, max_cz);
+
+        for (int z = min_cz; z <= max_cz; z++) {
+            for (int y = min_cy; y <= max_cy; y++) {
+                for (int x = min_cx; x <= max_cx; x++) {
+                    cell_chunks[flat_index(x, y, z)].push_back(ci);
+                }
+            }
+        }
+    }
+
+    built_for_chunk_count = chunk_count;
+}
+
+void ChunkSpatialGrid::clear() {
+    cell_chunks.clear();
+    dim_x = dim_y = dim_z = 0;
+    cell_size = 0.0f;
+    built_for_chunk_count = 0;
+    world_bounds = AABB();
+}
+
+void ChunkSpatialGrid::query_aabb(const AABB &bounds, LocalVector<uint32_t> &out_chunk_indices) const {
+    if (!is_built()) {
+        return;
+    }
+
+    int min_cx, min_cy, min_cz, max_cx, max_cy, max_cz;
+    world_to_cell(bounds.position, min_cx, min_cy, min_cz);
+    world_to_cell(bounds.position + bounds.size, max_cx, max_cy, max_cz);
+
+    for (int z = min_cz; z <= max_cz; z++) {
+        for (int y = min_cy; y <= max_cy; y++) {
+            for (int x = min_cx; x <= max_cx; x++) {
+                const LocalVector<uint32_t> &cell = cell_chunks[flat_index(x, y, z)];
+                for (uint32_t j = 0; j < cell.size(); j++) {
+                    out_chunk_indices.push_back(cell[j]);
+                }
+            }
+        }
+    }
+}
+
+void ChunkSpatialGrid::query_nearby(const Vector3 &pos, int radius_cells, LocalVector<uint32_t> &out_chunk_indices) const {
+    if (!is_built()) {
+        return;
+    }
+
+    int center_cx, center_cy, center_cz;
+    world_to_cell(pos, center_cx, center_cy, center_cz);
+
+    int min_cx = MAX(0, center_cx - radius_cells);
+    int min_cy = MAX(0, center_cy - radius_cells);
+    int min_cz = MAX(0, center_cz - radius_cells);
+    int max_cx = MIN(dim_x - 1, center_cx + radius_cells);
+    int max_cy = MIN(dim_y - 1, center_cy + radius_cells);
+    int max_cz = MIN(dim_z - 1, center_cz + radius_cells);
+
+    for (int z = min_cz; z <= max_cz; z++) {
+        for (int y = min_cy; y <= max_cy; y++) {
+            for (int x = min_cx; x <= max_cx; x++) {
+                const LocalVector<uint32_t> &cell = cell_chunks[flat_index(x, y, z)];
+                for (uint32_t j = 0; j < cell.size(); j++) {
+                    out_chunk_indices.push_back(cell[j]);
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+
 void StreamingVisibilityController::reset_runtime_state() {
     clear_visible_state();
+    spatial_grid.clear();
     camera_tracker = CameraVelocityTracker();
     current_lod_blend_factor = 1.0f;
     lod_transitions_this_frame = 0;
@@ -141,25 +257,98 @@ void StreamingVisibilityController::handle_zero_visible_chunk_recovery(GaussianS
         return;
     }
 
-    for (uint32_t i = 0; i < system.chunks.size(); i++) {
-        system.chunks[i].is_visible = true;
+    uint32_t forced_count = 0;
+
+    // Use the last known camera position for distance recomputation.
+    // This is the same position used by the grid search below.
+    const Vector3 recovery_pos = camera_tracker.has_previous_position
+            ? camera_tracker.last_position
+            : Vector3();
+
+    if (spatial_grid.is_built()) {
+        // Bounded local recovery: search outward from camera position
+        // through expanding rings of grid cells.
+        visible_chunk_indices.clear();
+
+        for (int r = 0; r <= RECOVERY_MAX_CELL_RADIUS && visible_chunk_indices.is_empty(); r++) {
+            LocalVector<uint32_t> nearby;
+            spatial_grid.query_nearby(recovery_pos, r, nearby);
+            for (uint32_t j = 0; j < nearby.size(); j++) {
+                uint32_t ci = nearby[j];
+                if (!system.chunks[ci].is_visible) {
+                    system.chunks[ci].is_visible = true;
+                    visible_chunk_indices.push_back(ci);
+                }
+            }
+        }
+
+        forced_count = visible_chunk_indices.size();
+
+        if (forced_count == 0) {
+            // Grid search exhausted without finding any chunks — fall back
+            // to all-visible so rendering can proceed.
+            for (uint32_t i = 0; i < system.chunks.size(); i++) {
+                system.chunks[i].is_visible = true;
+            }
+            visible_chunk_indices.reserve(system.chunks.size());
+            for (uint32_t i = 0; i < system.chunks.size(); i++) {
+                visible_chunk_indices.push_back(i);
+            }
+            forced_count = total_chunks;
+        }
+    } else {
+        // No spatial grid — original all-visible fallback.
+        for (uint32_t i = 0; i < system.chunks.size(); i++) {
+            system.chunks[i].is_visible = true;
+        }
+        visible_chunk_indices.clear();
+        visible_chunk_indices.reserve(system.chunks.size());
+        for (uint32_t i = 0; i < system.chunks.size(); i++) {
+            visible_chunk_indices.push_back(i);
+        }
+        forced_count = total_chunks;
     }
-    visible_chunk_indices.clear();
-    visible_chunk_indices.reserve(system.chunks.size());
-    for (uint32_t i = 0; i < system.chunks.size(); i++) {
-        visible_chunk_indices.push_back(i);
+
+    // Recompute distances for the recovered set and sort nearest-first.
+    // Without this, the streaming scheduler would load chunks in grid
+    // traversal order (expanding rings) or in index order, which on a
+    // corridor asset means far-before-near pop-in.
+    {
+        GaussianStreamingSystem::StreamingChunk *chunks_ptr = system.chunks.ptr();
+        const uint32_t cnt = visible_chunk_indices.size();
+        uint32_t *iptr = visible_chunk_indices.ptr();
+        for (uint32_t i = 0; i < cnt; i++) {
+            const uint32_t ci = iptr[i];
+            chunks_ptr[ci].distance = recovery_pos.distance_to(chunks_ptr[ci].center);
+        }
+        if (cnt > 1) {
+            // Same insertion sort as the normal path — nearest-first.
+            for (uint32_t i = 1; i < cnt; i++) {
+                uint32_t key = iptr[i];
+                float key_dist = chunks_ptr[key].distance;
+                int32_t j = (int32_t)i - 1;
+                while (j >= 0 && chunks_ptr[iptr[j]].distance > key_dist) {
+                    iptr[j + 1] = iptr[j];
+                    j--;
+                }
+                iptr[j + 1] = key;
+            }
+        }
     }
-    culling_stats.visible_chunks = total_chunks;
-    culling_stats.frustum_culled_chunks = 0;
+
+    culling_stats.visible_chunks = forced_count;
+    culling_stats.frustum_culled_chunks = total_chunks > forced_count ? (total_chunks - forced_count) : 0;
     zero_visible_recovery.last_recovery_frame = system.total_frame_count;
     zero_visible_recovery.recoveries_triggered++;
 
     if (system.debug_logging_enabled) {
-        GS_LOG_STREAMING_INFO(vformat("[Streaming] Zero-visible recovery activated (frame=%d mode=%s zero_visible_frames=%d forced_visible_chunks=%d).",
+        GS_LOG_STREAMING_INFO(vformat("[Streaming] Zero-visible recovery activated (frame=%d mode=%s zero_visible_frames=%d forced_visible_chunks=%d total_chunks=%d grid=%s).",
                 system.total_frame_count,
                 persistent_mode ? "persistent" : "startup_only",
                 zero_visible_frames,
-                total_chunks));
+                forced_count,
+                total_chunks,
+                spatial_grid.is_built() ? "yes" : "no"));
     }
 }
 
@@ -168,53 +357,166 @@ void StreamingVisibilityController::update_chunk_visibility(
         const Transform3D &camera_transform,
         const Projection &projection) {
     culling_stats.reset();
-    culling_stats.total_chunks = system.chunks.size();
+    const uint32_t chunk_count = system.chunks.size();
+    culling_stats.total_chunks = chunk_count;
     visible_chunk_indices.clear();
-    visible_chunk_indices.reserve(culling_stats.total_chunks);
+    visible_chunk_indices.reserve(chunk_count);
+
+    if (chunk_count == 0) {
+        return;
+    }
 
     Vector3 camera_pos = camera_transform.origin;
     Vector<Plane> frustum_planes = projection.get_projection_planes(camera_transform);
 
-    for (uint32_t i = 0; i < system.chunks.size(); i++) {
-        system.chunks[i].distance = camera_pos.distance_to(system.chunks[i].center);
+    const bool use_spatial_grid = chunk_count >= SPATIAL_GRID_MIN_CHUNKS;
 
-        if (chunk_frustum_culling_enabled) {
-            AABB padded_bounds = system.chunks[i].bounds;
-            if (chunk_radius_multiplier > 1.0f && system.chunks[i].max_radius > 0.0f) {
-                float radius_pad = system.chunks[i].max_radius * (chunk_radius_multiplier - 1.0f);
-                Vector3 radius_vec(radius_pad, radius_pad, radius_pad);
-                padded_bounds.position -= radius_vec;
-                padded_bounds.size += radius_vec * 2.0f;
-            }
-            Vector3 padding_vec = padded_bounds.size * (chunk_frustum_padding - 1.0f) * 0.5f;
-            padded_bounds.position -= padding_vec;
-            padded_bounds.size += padding_vec * 2.0f;
-
-            system.chunks[i].is_visible = is_chunk_in_frustum(padded_bounds, frustum_planes);
-
-            if (!system.chunks[i].is_visible) {
-                culling_stats.frustum_culled_chunks++;
-            }
-        } else {
-            system.chunks[i].is_visible = true;
+    if (use_spatial_grid) {
+        // Build / rebuild the spatial grid when chunk count changes.
+        if (spatial_grid.built_for_chunk_count != chunk_count) {
+            spatial_grid.build(system.chunks.ptr(), chunk_count);
         }
 
-        if (system.chunks[i].is_visible) {
-            culling_stats.visible_chunks++;
-            visible_chunk_indices.push_back(i);
+        // Compute bounded discovery AABB centred on camera.
+        float discovery_dist = max_discovery_distance;
+        real_t z_far = projection.get_z_far();
+        if (z_far > 0.0 && float(z_far) < discovery_dist) {
+            discovery_dist = float(z_far);
         }
-        if (system.chunks[i].is_loaded) {
-            culling_stats.loaded_chunks++;
+        AABB query_aabb(
+                camera_pos - Vector3(discovery_dist, discovery_dist, discovery_dist),
+                Vector3(discovery_dist * 2.0f, discovery_dist * 2.0f, discovery_dist * 2.0f));
+        // Expand by one cell to catch chunks whose padded bounds cross the boundary.
+        if (spatial_grid.cell_size > 0.0f) {
+            query_aabb = query_aabb.grow(spatial_grid.cell_size);
+        }
+
+        // Prepare visited bitfield for de-duplication.
+        if (grid_query_visited.size() < chunk_count) {
+            grid_query_visited.resize(chunk_count);
+        }
+        memset(grid_query_visited.ptr(), 0, chunk_count);
+
+        // Lightweight O(N) pass: clear visibility flags and accumulate
+        // loaded / resident stats (boolean-only, no math).
+        for (uint32_t i = 0; i < chunk_count; i++) {
+            system.chunks[i].is_visible = false;
+            if (system.chunks[i].is_loaded) {
+                culling_stats.loaded_chunks++;
+                if (!system.chunks[i].upload_pending && system.chunks[i].buffer_slot != UINT32_MAX) {
+                    culling_stats.resident_chunks++;
+                }
+            }
+        }
+
+        // Collect candidate chunk indices from grid cells overlapping the query AABB.
+        grid_query_candidates.clear();
+        spatial_grid.query_aabb(query_aabb, grid_query_candidates);
+
+        // Process candidates with de-duplication — the expensive per-chunk
+        // distance + frustum-test work is bounded by the spatial query size.
+        for (uint32_t ci = 0; ci < grid_query_candidates.size(); ci++) {
+            const uint32_t i = grid_query_candidates[ci];
+            if (grid_query_visited[i]) {
+                continue;
+            }
+            grid_query_visited[i] = 1;
+
+            system.chunks[i].distance = camera_pos.distance_to(system.chunks[i].center);
+
+            if (chunk_frustum_culling_enabled) {
+                AABB padded_bounds = system.chunks[i].bounds;
+                if (chunk_radius_multiplier > 1.0f && system.chunks[i].max_radius > 0.0f) {
+                    float radius_pad = system.chunks[i].max_radius * (chunk_radius_multiplier - 1.0f);
+                    Vector3 radius_vec(radius_pad, radius_pad, radius_pad);
+                    padded_bounds.position -= radius_vec;
+                    padded_bounds.size += radius_vec * 2.0f;
+                }
+                Vector3 padding_vec = padded_bounds.size * (chunk_frustum_padding - 1.0f) * 0.5f;
+                padded_bounds.position -= padding_vec;
+                padded_bounds.size += padding_vec * 2.0f;
+
+                system.chunks[i].is_visible = is_chunk_in_frustum(padded_bounds, frustum_planes);
+
+                if (!system.chunks[i].is_visible) {
+                    culling_stats.frustum_culled_chunks++;
+                }
+            } else {
+                system.chunks[i].is_visible = true;
+            }
+
+            if (system.chunks[i].is_visible) {
+                culling_stats.visible_chunks++;
+                visible_chunk_indices.push_back(i);
+            }
+        }
+    } else {
+        // Original O(N) path for small chunk counts.
+        for (uint32_t i = 0; i < chunk_count; i++) {
+            system.chunks[i].distance = camera_pos.distance_to(system.chunks[i].center);
+
+            if (chunk_frustum_culling_enabled) {
+                AABB padded_bounds = system.chunks[i].bounds;
+                if (chunk_radius_multiplier > 1.0f && system.chunks[i].max_radius > 0.0f) {
+                    float radius_pad = system.chunks[i].max_radius * (chunk_radius_multiplier - 1.0f);
+                    Vector3 radius_vec(radius_pad, radius_pad, radius_pad);
+                    padded_bounds.position -= radius_vec;
+                    padded_bounds.size += radius_vec * 2.0f;
+                }
+                Vector3 padding_vec = padded_bounds.size * (chunk_frustum_padding - 1.0f) * 0.5f;
+                padded_bounds.position -= padding_vec;
+                padded_bounds.size += padding_vec * 2.0f;
+
+                system.chunks[i].is_visible = is_chunk_in_frustum(padded_bounds, frustum_planes);
+
+                if (!system.chunks[i].is_visible) {
+                    culling_stats.frustum_culled_chunks++;
+                }
+            } else {
+                system.chunks[i].is_visible = true;
+            }
+
+            if (system.chunks[i].is_visible) {
+                culling_stats.visible_chunks++;
+                visible_chunk_indices.push_back(i);
+            }
+            if (system.chunks[i].is_loaded) {
+                culling_stats.loaded_chunks++;
+                if (!system.chunks[i].upload_pending && system.chunks[i].buffer_slot != UINT32_MAX) {
+                    culling_stats.resident_chunks++;
+                }
+            }
+        }
+    }
+
+    // Sort visible chunks by distance from camera so the streaming scheduler
+    // loads nearby chunks first (the scan cursor iterates this list in order).
+    if (visible_chunk_indices.size() > 1) {
+        const GaussianStreamingSystem::StreamingChunk *cptr = system.chunks.ptr();
+        const uint32_t cnt = visible_chunk_indices.size();
+        uint32_t *iptr = visible_chunk_indices.ptr();
+        // Simple insertion sort — visible count is typically < 2000 and
+        // the list is nearly sorted across frames.
+        for (uint32_t i = 1; i < cnt; i++) {
+            uint32_t key = iptr[i];
+            float key_dist = cptr[key].distance;
+            int32_t j = (int32_t)i - 1;
+            while (j >= 0 && cptr[iptr[j]].distance > key_dist) {
+                iptr[j + 1] = iptr[j];
+                j--;
+            }
+            iptr[j + 1] = key;
         }
     }
 
     static uint64_t log_counter = 0;
     if (system.debug_logging_enabled && (++log_counter % 300) == 0 && chunk_frustum_culling_enabled) {
-        GS_LOG_STREAMING_DEBUG(vformat("[Streaming] Chunk culling: %d total, %d visible, %d culled (%.1f%% reduction)",
+        GS_LOG_STREAMING_DEBUG(vformat("[Streaming] Chunk culling: %d total, %d visible, %d culled (%.1f%% reduction, grid=%s)",
                 culling_stats.total_chunks,
                 culling_stats.visible_chunks,
                 culling_stats.frustum_culled_chunks,
-                culling_stats.total_chunks > 0 ? (culling_stats.frustum_culled_chunks * 100.0f / culling_stats.total_chunks) : 0.0f));
+                culling_stats.total_chunks > 0 ? (culling_stats.frustum_culled_chunks * 100.0f / culling_stats.total_chunks) : 0.0f,
+                use_spatial_grid ? "yes" : "no"));
     }
 }
 

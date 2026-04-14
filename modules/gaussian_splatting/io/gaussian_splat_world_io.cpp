@@ -41,8 +41,19 @@ struct ChunkRecord {
 static bool _read_exact(Ref<FileAccess> p_file, void *p_dst, uint64_t p_size) {
 	ERR_FAIL_COND_V(p_file.is_null(), false);
 	uint8_t *dst = static_cast<uint8_t *>(p_dst);
-	const uint64_t read = p_file->get_buffer(dst, p_size);
-	return read == p_size;
+	// Read in <=256 MB slices to avoid MSVC CRT fread issues with >2 GB reads.
+	constexpr uint64_t kSliceBytes = 256u * 1024u * 1024u;
+	uint64_t remaining = p_size;
+	while (remaining > 0) {
+		uint64_t slice = (remaining > kSliceBytes) ? kSliceBytes : remaining;
+		uint64_t got = p_file->get_buffer(dst, slice);
+		if (got != slice) {
+			return false;
+		}
+		dst += slice;
+		remaining -= slice;
+	}
+	return true;
 }
 
 static void _write_vec3(Ref<FileAccess> p_file, const Vector3 &p_value) {
@@ -407,6 +418,18 @@ Ref<Resource> ResourceFormatLoaderGaussianSplatWorld::load(const String &p_path,
 	world->set_metadata(file_metadata);
 	world->set_static_chunks(chunks);
 
+	// For uncompressed files, create a file-backed payload source so the streaming
+	// system can load chunk payloads on demand without retaining the full gaussian
+	// array in process memory.
+	if (!gaussian_data_compressed) {
+		Ref<StagedFileChunkPayloadSource> file_source;
+		file_source.instantiate();
+		file_source->configure(p_path, gaussian_offset, sh_offset,
+				splat_count, sh_degree, sh_first_order, sh_high_order,
+				AABB(bounds_pos, bounds_size));
+		world->set_chunk_payload_source(file_source);
+	}
+
 	if (GaussianSplattingIO::is_data_log_enabled()) {
 		GS_LOG_STREAMING_INFO(vformat("[GaussianSplatWorld] Loaded: %d splats, %d spatial chunks, bounds: pos=%s size=%s",
 				splat_count, chunks.size(), bounds_pos, bounds_size));
@@ -540,18 +563,29 @@ Error ResourceFormatSaverGaussianSplatWorld::save(const Ref<Resource> &p_resourc
 	}
 
 	if (gaussian_bytes > 0) {
+		const uint8_t *write_src = nullptr;
+		uint64_t write_total = 0;
 		if (use_compression && !compressed_gaussians.is_empty()) {
 			// Write compressed format: [8 bytes size][compressed data]
 			file->store_64(compressed_gaussians.size());
-			file->store_buffer(compressed_gaussians.ptr(), compressed_gaussians.size());
+			write_src = compressed_gaussians.ptr();
+			write_total = compressed_gaussians.size();
 		} else {
 			// Write uncompressed format: raw gaussian data
-			file->store_buffer(reinterpret_cast<const uint8_t *>(gaussian_data->get_gaussian_storage().ptr()),
-					gaussian_bytes);
+			write_src = reinterpret_cast<const uint8_t *>(gaussian_data->get_gaussian_storage().ptr());
+			write_total = gaussian_bytes;
 		}
-		err = _ensure_file_write_ok(file, "save(gaussian_data)");
-		if (err != OK) {
-			return err;
+		// Write in <=256 MB slices to avoid MSVC CRT fwrite issues with >2 GB writes.
+		constexpr uint64_t kSliceBytes = 256u * 1024u * 1024u;
+		uint64_t written = 0;
+		while (written < write_total) {
+			uint64_t slice = MIN(kSliceBytes, write_total - written);
+			file->store_buffer(write_src + written, slice);
+			err = _ensure_file_write_ok(file, "save(gaussian_data)");
+			if (err != OK) {
+				return err;
+			}
+			written += slice;
 		}
 	}
 

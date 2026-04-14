@@ -82,6 +82,10 @@ StreamingQueuePressureController::PressureSummary StreamingQueuePressureControll
     summary.sync_source_active = sync_queue_backlog || p_sample.sync_backpressure;
     summary.backlog_depth = MAX(p_sample.sync_fallback_queue_depth,
             MAX(p_sample.pack_queue_depth, p_sample.upload_queue_depth));
+    summary.total_pending_chunks = p_sample.pack_queue_depth +
+            p_sample.pack_jobs_in_flight +
+            p_sample.upload_queue_depth +
+            p_sample.sync_fallback_queue_depth;
 
     const bool queue_backlog_active = pack_queue_backlog || upload_queue_backlog || sync_queue_backlog;
     summary.cap_active = p_sample.pack_inflight_saturated ||
@@ -89,7 +93,8 @@ StreamingQueuePressureController::PressureSummary StreamingQueuePressureControll
             p_sample.upload_bandwidth_cap_hit ||
             p_sample.chunk_load_cap_hit ||
             p_sample.vram_chunk_cap_hit ||
-            p_sample.sync_backpressure;
+            p_sample.sync_backpressure ||
+            p_sample.visible_eviction_active;
     summary.active = queue_backlog_active || summary.cap_active;
 
     const uint32_t active_sources = uint32_t(summary.pack_source_active) +
@@ -244,10 +249,15 @@ bool StreamingQueuePressureController::validate_summary_invariants(const Pressur
             p_sample.upload_bandwidth_cap_hit ||
             p_sample.chunk_load_cap_hit ||
             p_sample.vram_chunk_cap_hit ||
-            p_sample.sync_backpressure;
+            p_sample.sync_backpressure ||
+            p_sample.visible_eviction_active;
     const bool expected_active = pack_queue_backlog || upload_queue_backlog || sync_queue_backlog || expected_cap_active;
     const uint32_t expected_backlog_depth = MAX(p_sample.sync_fallback_queue_depth,
             MAX(p_sample.pack_queue_depth, p_sample.upload_queue_depth));
+    const uint32_t expected_total_pending = p_sample.pack_queue_depth +
+            p_sample.pack_jobs_in_flight +
+            p_sample.upload_queue_depth +
+            p_sample.sync_fallback_queue_depth;
 
     if (p_summary.pack_source_active != expected_pack_source) {
         _set_error(r_error, "pack source activity must match queue/cap inputs");
@@ -271,6 +281,10 @@ bool StreamingQueuePressureController::validate_summary_invariants(const Pressur
     }
     if (p_summary.backlog_depth != expected_backlog_depth) {
         _set_error(r_error, "backlog depth must equal max(pack, upload, sync)");
+        return false;
+    }
+    if (p_summary.total_pending_chunks != expected_total_pending) {
+        _set_error(r_error, "total pending chunks must equal pack_queue + pack_in_flight + upload_queue + sync_queue");
         return false;
     }
     if (!is_known_source(p_summary.source)) {

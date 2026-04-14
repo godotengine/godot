@@ -2029,9 +2029,7 @@ TEST_CASE("[GaussianSplatting][Editor] Advanced import settings reimport refresh
 
     EditorProperty *max_splats_property = _find_property_editor(dialog, StringName("quality/max_splats"));
     REQUIRE_MESSAGE(max_splats_property != nullptr, "Import settings inspector should expose quality/max_splats.");
-    Object *edited_object = max_splats_property->get_edited_object();
-    REQUIRE_MESSAGE(edited_object != nullptr, "Import settings editor property should have a backing object.");
-    edited_object->set(StringName("quality/max_splats"), 22222);
+    dialog->_test_set_setting_value(StringName("quality/max_splats"), 22222);
 
     dialog->current_import_options = refreshed_options;
     dialog->current_asset = _make_editor_test_asset(source_path, 5, refreshed_options,

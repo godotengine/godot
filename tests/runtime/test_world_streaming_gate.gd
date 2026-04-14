@@ -1,5 +1,7 @@
 extends SceneTree
 
+# Runtime corridor-return gate for the large-world proof ladder.
+
 const SKIP_MARKER := "[RUNTIME_SKIP]"
 const FAIL_MARKER := "[RUNTIME_FAIL]"
 const METRICS_MARKER := "[RUNTIME_METRICS]"
@@ -7,6 +9,8 @@ const METRICS_MARKER := "[RUNTIME_METRICS]"
 const ASSET_PATH := "res://tests/fixtures/test_splats.ply"
 const MAX_TEST_FRAMES := 300
 const CAMERA_MOVE_FRAME := 24
+const RETURN_MOVE_FRAME := 160
+const RETURN_SETTLE_FRAMES := 24
 const STREAMING_ROUTE_POLICY_PATH := "rendering/gaussian_splatting/streaming/route_policy"
 const STREAMING_ROUTE_RESIDENT := 0
 const STREAMING_ROUTE_STREAMING := 1
@@ -19,11 +23,22 @@ var manager = null
 var _settings_captured := false
 var _prev_streaming_route_policy := STREAMING_ROUTE_STREAMING
 var _prev_instance_pipeline_enabled := false
+var _moved_to_near := false
+var _moved_back_far := false
 
 var metrics: Dictionary = {
     "frames": 0,
     "generated_chunk_count": 0,
     "monitor_ready_seen": false,
+    "near_loaded_chunks_max": 0,
+    "near_visible_chunks_max": 0,
+    "near_loaded_chunks_last": 0,
+    "near_visible_chunks_last": 0,
+    "return_loaded_chunks_max": 0,
+    "return_visible_chunks_max": 0,
+    "return_chunks_loaded_this_frame_max": 0,
+    "return_phase_samples": 0,
+    "return_transition_seen": false,
     "total_chunks_max": 0,
     "loaded_chunks_max": 0,
     "visible_chunks_max": 0,
@@ -39,6 +54,7 @@ var metrics: Dictionary = {
     "renderer_route_uid": "",
     "manager_total_gaussians_max": 0,
     "gate_ready": false,
+    "return_path_ready": false,
     "status": "",
     "reason": ""
 }
@@ -156,6 +172,22 @@ func _sample_metrics(frame_index: int) -> void:
     metrics["chunks_loaded_this_frame_max"] = max(int(metrics.get("chunks_loaded_this_frame_max", 0)), loaded_this_frame)
     metrics["streaming_visible_count_max"] = max(int(metrics.get("streaming_visible_count_max", 0)), streaming_visible_count)
 
+    var in_return_phase := frame_index >= RETURN_MOVE_FRAME
+    if in_return_phase:
+        metrics["return_phase_samples"] = int(metrics.get("return_phase_samples", 0)) + 1
+        metrics["return_loaded_chunks_max"] = max(int(metrics.get("return_loaded_chunks_max", 0)), loaded_chunks)
+        metrics["return_visible_chunks_max"] = max(int(metrics.get("return_visible_chunks_max", 0)), visible_chunks)
+        metrics["return_chunks_loaded_this_frame_max"] = max(int(metrics.get("return_chunks_loaded_this_frame_max", 0)), loaded_this_frame)
+        if (loaded_this_frame > 0 or
+                loaded_chunks != int(metrics.get("near_loaded_chunks_last", 0)) or
+                visible_chunks != int(metrics.get("near_visible_chunks_last", 0))):
+            metrics["return_transition_seen"] = true
+    else:
+        metrics["near_loaded_chunks_max"] = max(int(metrics.get("near_loaded_chunks_max", 0)), loaded_chunks)
+        metrics["near_visible_chunks_max"] = max(int(metrics.get("near_visible_chunks_max", 0)), visible_chunks)
+        metrics["near_loaded_chunks_last"] = loaded_chunks
+        metrics["near_visible_chunks_last"] = visible_chunks
+
     if world_node != null and world_node.get_renderer() != null:
         var renderer = world_node.get_renderer()
         if renderer.has_method("get_render_stats"):
@@ -219,8 +251,17 @@ func _is_gate_ready() -> bool:
     return monitor_ready and chunk_signal and visibility_signal and streaming_source
 
 
+func _has_return_path_ready() -> bool:
+    var near_signal := int(metrics.get("near_loaded_chunks_max", 0)) > 0 or int(metrics.get("near_visible_chunks_max", 0)) > 0
+    var return_signal := int(metrics.get("return_loaded_chunks_max", 0)) > 0 or int(metrics.get("return_visible_chunks_max", 0)) > 0
+    var settled := int(metrics.get("return_phase_samples", 0)) >= RETURN_SETTLE_FRAMES
+    var transitioned := bool(metrics.get("return_transition_seen", false))
+    return _moved_to_near and _moved_back_far and near_signal and return_signal and settled and transitioned
+
+
 func _emit_metrics(status: String, reason: String) -> void:
     metrics["gate_ready"] = _is_gate_ready()
+    metrics["return_path_ready"] = _has_return_path_ready()
     metrics["status"] = status
     metrics["reason"] = reason
     print("%s %s" % [METRICS_MARKER, JSON.stringify(metrics)])
@@ -254,7 +295,7 @@ func _run() -> void:
         return
 
     var passed := false
-    var failure_reason := "World streaming gate did not reach chunk/residency readiness within frame budget."
+    var failure_reason := "World streaming gate did not reach long-walk return-path readiness within frame budget."
 
     for frame_idx in range(MAX_TEST_FRAMES):
         await process_frame
@@ -262,14 +303,20 @@ func _run() -> void:
         if frame_idx == CAMERA_MOVE_FRAME and camera != null:
             camera.position = Vector3(0.0, 2.5, 10.0)
             camera.look_at(Vector3.ZERO, Vector3.UP)
+            _moved_to_near = true
+
+        if frame_idx == RETURN_MOVE_FRAME and camera != null:
+            camera.position = Vector3(0.0, 4.0, 24.0)
+            camera.look_at(Vector3.ZERO, Vector3.UP)
+            _moved_back_far = true
 
         _sample_metrics(frame_idx)
-        if _is_gate_ready():
+        if _has_return_path_ready() and _is_gate_ready():
             passed = true
             break
 
     if passed:
-        _emit_metrics("passed", "World streaming monitors and residency signals progressed.")
+        _emit_metrics("passed", "World streaming monitors stayed healthy across near and return phases.")
     else:
         _emit_metrics("failed", failure_reason)
         push_error("%s %s" % [FAIL_MARKER, failure_reason])

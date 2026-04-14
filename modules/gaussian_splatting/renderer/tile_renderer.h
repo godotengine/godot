@@ -377,6 +377,7 @@ private:
         RID quantization_buffer;
         RID indirect_count_buffer;
         RID indirect_dispatch_buffer;
+        bool quantization_required = false;
     };
     InstancePipelineBindings instance_pipeline_buffers;
     bool sh_cache_needs_full_update = false;

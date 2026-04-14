@@ -133,11 +133,11 @@ static func _prepare_metric_image(image: Image) -> Image:
 	var prepared := image.duplicate()
 	if prepared == null:
 		return null
-	var max_dim := max(prepared.get_width(), prepared.get_height())
+	var max_dim: int = max(prepared.get_width(), prepared.get_height())
 	if max_dim > SSIM_MAX_DIM:
 		var scale := float(SSIM_MAX_DIM) / float(max_dim)
-		var new_width := max(1, int(round(prepared.get_width() * scale)))
-		var new_height := max(1, int(round(prepared.get_height() * scale)))
+		var new_width: int = max(1, int(round(prepared.get_width() * scale)))
+		var new_height: int = max(1, int(round(prepared.get_height() * scale)))
 		prepared.resize(new_width, new_height, Image.INTERPOLATE_BILINEAR)
 	prepared.convert(Image.FORMAT_RGB8)
 	return prepared

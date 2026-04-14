@@ -1,4 +1,7 @@
+#define _ALLOW_KEYWORD_MACROS
+#define private public
 #include "../core/gaussian_streaming.h"
+#undef private
 
 #include "test_macros.h"
 
@@ -77,6 +80,24 @@ TEST_CASE("[Streaming Pipeline] stop_pack_threads clears partial lifecycle state
     CHECK(uploads.pack_thread_contexts.is_empty());
     CHECK_FALSE(uploads.pack_thread_running.load(std::memory_order_acquire));
     CHECK_FALSE(uploads.pack_thread_exit.load(std::memory_order_acquire));
+}
+
+TEST_CASE("[Streaming Pipeline] sync pack rescue does not steal worker-owned pack jobs") {
+    GaussianStreamingSystem system;
+    auto &uploads = system._internal_get_upload_pipeline();
+
+    uploads.async_pack_enabled = true;
+    uploads.pack_thread_running.store(true, std::memory_order_release);
+
+    {
+        MutexLock lock(uploads.pack_mutex);
+        uploads.pack_queue.push_back(StreamingUploadPipeline::PackJob());
+        uploads.sync_cached_queue_depths_locked();
+    }
+
+    CHECK(uploads.promote_pack_jobs_sync(1) == 0);
+    CHECK(uploads.get_pack_queue_depth_cached() == 1);
+    CHECK(uploads.get_upload_queue_depth_cached() == 0);
 }
 
 TEST_CASE("[Streaming Pipeline] async chunk upload rejects tampered payload checksums") {

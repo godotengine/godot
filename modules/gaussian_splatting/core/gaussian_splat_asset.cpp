@@ -839,19 +839,30 @@ void GaussianSplatAsset::_ensure_buffer_sizes() {
             }
         }
     }
+    // Use resize_initialized() (not resize()) for POD vectors to force
+    // zero-fill on extension. Vector<T>::resize() skips zero-init when
+    // std::is_trivially_constructible_v<T> is true (floats, ints), which
+    // leaves the new slots holding whatever the allocator returned —
+    // on Windows dev builds that is the 0xC0C0C0C0 poison pattern
+    // (as float: -6.023529, as int32: -1061109568). Those uninitialized
+    // bytes were being serialized straight into the .tres cache, causing
+    // the runtime to read a full-count buffer of -6.023529 opacity logits
+    // for every splat — which the opacity-aware tile-binning pass then
+    // rejected as "effectively transparent", producing 0 overlap records
+    // and a black viewport on any freshly-imported .ply.
     if (has_sh_dc_coefficients) {
-        sh_dc_coefficients.resize(count * 3);
+        sh_dc_coefficients.resize_initialized(count * 3);
     } else {
-        sh_dc_coefficients.resize(0);
+        sh_dc_coefficients.resize_initialized(0);
     }
-    sh_first_order_coefficients.resize(count * sh_first_order_terms * 3);
-    sh_high_order_coefficients.resize(count * sh_high_order_terms * 3);
-    opacity_logits.resize(count);
-    palette_ids.resize(count);
-    painterly_flags.resize(count);
-    normals.resize(count * 3);
-    brush_axes.resize(count * 2);
-    stroke_ages.resize(count);
+    sh_first_order_coefficients.resize_initialized(count * sh_first_order_terms * 3);
+    sh_high_order_coefficients.resize_initialized(count * sh_high_order_terms * 3);
+    opacity_logits.resize_initialized(count);
+    palette_ids.resize_initialized(count);
+    painterly_flags.resize_initialized(count);
+    normals.resize_initialized(count * 3);
+    brush_axes.resize_initialized(count * 2);
+    stroke_ages.resize_initialized(count);
 
     _recalculate_sh_component_counts();
 }

@@ -80,7 +80,8 @@ static bool _upload_typed_storage_buffer(GaussianSplatRenderer *p_renderer, Rend
 	}
 
 	const uint64_t required_size_u64 = uint64_t(p_data.size()) * sizeof(T);
-	if (required_size_u64 > uint64_t(UINT32_MAX)) {
+	static constexpr uint64_t kMaxResidentUploadBytes = uint64_t(2) * 1024 * 1024 * 1024; // 2 GB staging limit
+	if (required_size_u64 > kMaxResidentUploadBytes) {
 		return false;
 	}
 	const uint32_t required_size = uint32_t(required_size_u64);
@@ -252,6 +253,30 @@ bool publish(GaussianSplatRenderer *p_renderer, bool p_allow_primary_fallback_in
 		}
 		p_renderer->clear_instance_pipeline_buffers();
 		return false;
+	}
+
+	// Early-out: estimate total packed size across all assets.  If it would
+	// exceed the staging limit, skip the expensive per-chunk packing loop
+	// entirely.  The streaming path should handle datasets this large.
+	{
+		static constexpr uint64_t kMaxResidentUploadBytes = uint64_t(2) * 1024 * 1024 * 1024;
+		uint64_t total_gaussians = 0;
+		for (const ResidentAssetDescriptor &asset : assets) {
+			if (asset.data.is_valid()) {
+				total_gaussians += uint64_t(asset.data->get_count());
+			}
+		}
+		if (total_gaussians * sizeof(PackedGaussian) > kMaxResidentUploadBytes) {
+			if (r_reason) {
+				*r_reason = "resident_dataset_exceeds_staging_limit";
+			}
+			// Do NOT clear instance pipeline buffers here — the streaming
+			// orchestrator may have already published its own atlas/cull
+			// buffers.  Clearing them would force MISSING_CULL_INPUTS on
+			// every subsequent frame, preventing the streaming path from
+			// ever becoming valid.
+			return false;
+		}
 	}
 
 	Vector<AssetMetaGPU> asset_meta_cpu;
@@ -561,9 +586,13 @@ bool publish(GaussianSplatRenderer *p_renderer, bool p_allow_primary_fallback_in
 
 	p_renderer->publish_instance_pipeline_contract(buffers, remap,
 			GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT, source_generation, "atlas_emulation");
+	resource_state.instance_pipeline_contract_generation = source_generation;
 	resource_state.instance_pipeline_content_generation = source_generation;
+	resource_state.instance_pipeline_contract_fingerprint = 0;
+	resource_state.instance_pipeline_upload_generation = source_generation;
+	resource_state.instance_pipeline_upload_fingerprint = 0;
 
-	if (!p_renderer->update_instance_buffer(instances)) {
+	if (!p_renderer->update_instance_buffer(instances, remap)) {
 		if (r_reason) {
 			*r_reason = "resident_instance_upload_failed";
 		}

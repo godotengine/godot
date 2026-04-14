@@ -12,6 +12,7 @@ public:
         String source = "none";
         String reason = "none";
         uint32_t backlog_depth = 0;
+        uint32_t total_pending_chunks = 0;
         bool pack_source_active = false;
         bool upload_source_active = false;
         bool sync_source_active = false;

@@ -315,6 +315,10 @@ void GaussianSplattingPerformanceMonitors::_register_monitor_definitions(Perform
                 callable_mp(this, &GaussianSplattingPerformanceMonitors::_get_streaming_visible_chunks) },
         { "gaussian_splatting/streaming_loaded_chunks",
                 callable_mp(this, &GaussianSplattingPerformanceMonitors::_get_streaming_loaded_chunks) },
+        { "gaussian_splatting/streaming_resident_chunks",
+                callable_mp(this, &GaussianSplattingPerformanceMonitors::_get_streaming_resident_chunks) },
+        { "gaussian_splatting/streaming_atlas_published_chunks",
+                callable_mp(this, &GaussianSplattingPerformanceMonitors::_get_streaming_atlas_published_chunks) },
         { "gaussian_splatting/streaming_frustum_culled_chunks",
                 callable_mp(this, &GaussianSplattingPerformanceMonitors::_get_streaming_frustum_culled_chunks) },
         { "gaussian_splatting/streaming_vram_usage_mb",
@@ -965,6 +969,26 @@ int GaussianSplattingPerformanceMonitors::_get_streaming_loaded_chunks() const {
     if (!snapshot.has_streaming_system) return 0;
     const Dictionary &stats = snapshot.chunk_culling_stats;
     return stats.has("loaded_chunks") ? (int)stats["loaded_chunks"] : 0;
+}
+
+int GaussianSplattingPerformanceMonitors::_get_streaming_resident_chunks() const {
+    GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
+    if (!renderer) return 0;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.chunk_culling_stats;
+    return stats.has("resident_chunks") ? (int)stats["resident_chunks"] : 0;
+}
+
+int GaussianSplattingPerformanceMonitors::_get_streaming_atlas_published_chunks() const {
+    GaussianSplatRenderer *renderer = _get_active_splat_renderer(true);
+    if (!renderer) return 0;
+    const GaussianSplatRenderer::MonitorStreamingSnapshot snapshot =
+            _streaming_snapshot_for_monitors(renderer);
+    if (!snapshot.has_streaming_system) return 0;
+    const Dictionary &stats = snapshot.chunk_culling_stats;
+    return stats.has("atlas_published_chunks") ? (int)stats["atlas_published_chunks"] : 0;
 }
 
 int GaussianSplattingPerformanceMonitors::_get_streaming_frustum_culled_chunks() const {

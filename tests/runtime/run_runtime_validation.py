@@ -4,10 +4,10 @@
 Builds and executes lightweight C++ harnesses alongside GDScript runtime checks.
 
 Examples:
-  - Default headless run:
+  - Default release-ready profile run:
       python3 tests/runtime/run_runtime_validation.py
-  - Canonical non-headless Windows Vulkan gate:
-      python3 tests/runtime/run_runtime_validation.py --gd-mode windows-vulkan
+  - Blocking streaming GPU gate:
+      python3 tests/runtime/run_runtime_validation.py --profile streaming-gpu-ci
   - Profile-based stress lane:
       python3 tests/runtime/run_runtime_validation.py --profile stress-only
 """
@@ -128,10 +128,10 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--gd-mode",
         choices=("headless", "non-headless", "windows-vulkan"),
-        default=os.environ.get("GS_RUNTIME_GD_MODE", "headless"),
+        default=None,
         help=(
-            "Godot runtime mode. 'windows-vulkan' is the canonical non-headless runtime gate "
-            "for issue #897."
+            "Override the profile-selected Godot runtime mode. "
+            "Defaults to the selected profile's gd_mode, otherwise GS_RUNTIME_GD_MODE."
         ),
     )
     parser.add_argument(
@@ -659,6 +659,13 @@ def _load_scenario_config(path: Path) -> Dict[str, object]:
             raise ValueError(f"Profile '{profile_name}' field 'gd_timeout' must be an integer.")
         if "fail_on_skip" in profile_config and not isinstance(profile_config["fail_on_skip"], bool):
             raise ValueError(f"Profile '{profile_name}' field 'fail_on_skip' must be a boolean.")
+        if "gd_mode" in profile_config:
+            gd_mode = profile_config["gd_mode"]
+            valid_modes = {"headless", "non-headless", "windows-vulkan"}
+            if not isinstance(gd_mode, str) or gd_mode not in valid_modes:
+                raise ValueError(
+                    f"Profile '{profile_name}' field 'gd_mode' must be one of: {', '.join(sorted(valid_modes))}."
+                )
 
     if default_profile not in profiles:
         raise ValueError(
@@ -931,8 +938,19 @@ def main() -> int:
     profile_cpp_tests = [str(name) for name in profile_config.get("cpp_tests", [])]
     profile_gd_tests = [str(name) for name in profile_config.get("gd_tests", [])]
     profile_godot_args = tuple(str(value) for value in profile_config.get("godot_args", []))
+    profile_gd_mode = str(profile_config.get("gd_mode", "")).strip()
     cpp_timeout = int(profile_config.get("cpp_timeout", args.cpp_timeout))
     gd_timeout = int(profile_config.get("gd_timeout", args.gd_timeout))
+    env_gd_mode = os.environ.get("GS_RUNTIME_GD_MODE")
+    resolved_gd_mode = args.gd_mode or profile_gd_mode or env_gd_mode or "headless"
+    if env_gd_mode and not args.gd_mode and profile_gd_mode and env_gd_mode != profile_gd_mode:
+        print(
+            "[runtime] Ignoring GS_RUNTIME_GD_MODE={env!r}; profile '{profile}' requires gd_mode={mode!r}.".format(
+                env=env_gd_mode,
+                profile=profile_name,
+                mode=profile_gd_mode,
+            )
+        )
 
     selected_cpp_tests = args.cpp_test if args.cpp_test else profile_cpp_tests
     selected_gd_tests = args.gd_test if args.gd_test else profile_gd_tests
@@ -945,7 +963,7 @@ def main() -> int:
             return 1
     allow_skip_tests = tuple(dict.fromkeys(str(name) for name in args.allow_skip_test if str(name).strip()))
 
-    default_fail_on_skip = args.gd_mode != "headless"
+    default_fail_on_skip = resolved_gd_mode != "headless"
     if args.fail_on_skip:
         fail_on_skip = True
     elif args.allow_skips:
@@ -958,7 +976,7 @@ def main() -> int:
     project_path = Path(args.project_path).resolve() if args.project_path else None
     gd_config = GodotRunConfig(
         binary=args.godot_binary,
-        mode=args.gd_mode,
+        mode=resolved_gd_mode,
         timeout=gd_timeout,
         extra_args=tuple(profile_godot_args) + tuple(args.godot_arg),
         fail_on_skip=fail_on_skip,
@@ -973,7 +991,7 @@ def main() -> int:
     print(
         f"[runtime] profile='{profile_name}' scenario_config='{config_display}' "
         f"cpp_tests={len(selected_cpp_tests)} gd_tests={len(selected_gd_tests)} "
-        f"cpp_link_mode={cpp_build_config.link_mode}"
+        f"gd_mode={resolved_gd_mode} cpp_link_mode={cpp_build_config.link_mode}"
     )
 
     all_results: List[TestResult] = []
@@ -990,6 +1008,7 @@ def main() -> int:
 
     summary = summarise(all_results)
     summary["profile"] = profile_name
+    summary["gd_mode"] = resolved_gd_mode
     summary["scenario_config"] = str(config_display)
     schema_errors = _validate_summary_schema(summary)
     summary["schema_valid"] = len(schema_errors) == 0

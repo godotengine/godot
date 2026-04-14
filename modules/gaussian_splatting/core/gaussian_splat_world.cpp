@@ -1,5 +1,7 @@
 #include "gaussian_splat_world.h"
 
+#include "../io/gaussian_splat_world_io.h"
+
 void GaussianSplatWorld::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_gaussian_data", "data"), &GaussianSplatWorld::set_gaussian_data);
     ClassDB::bind_method(D_METHOD("get_gaussian_data"), &GaussianSplatWorld::get_gaussian_data);
@@ -11,6 +13,7 @@ void GaussianSplatWorld::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_chunk_sizes"), &GaussianSplatWorld::get_chunk_sizes);
     ClassDB::bind_method(D_METHOD("get_chunk_aabbs"), &GaussianSplatWorld::get_chunk_aabbs);
     ClassDB::bind_method(D_METHOD("clear"), &GaussianSplatWorld::clear);
+    ClassDB::bind_method(D_METHOD("save_to_file", "path"), &GaussianSplatWorld::save_to_file);
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gaussian_data", PROPERTY_HINT_RESOURCE_TYPE, "GaussianData"),
             "set_gaussian_data", "get_gaussian_data");
@@ -113,4 +116,9 @@ void GaussianSplatWorld::clear() {
     static_chunks.clear();
     bounds = AABB();
     metadata.clear();
+}
+
+Error GaussianSplatWorld::save_to_file(const String &p_path) const {
+    ResourceFormatSaverGaussianSplatWorld saver;
+    return saver.save(Ref<Resource>(const_cast<GaussianSplatWorld *>(this)), p_path, 0);
 }

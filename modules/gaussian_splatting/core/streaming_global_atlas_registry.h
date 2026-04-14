@@ -23,6 +23,12 @@ class StreamingGlobalAtlasRegistry {
 	friend class GaussianStreamingSystem;
 
 public:
+	struct ChunkMetaUploadPlan {
+		bool full_update = false;
+		uint32_t dirty_count = 0;
+		uint32_t contiguous_range_count = 0;
+	};
+
 	void cleanup(RenderingDevice *p_rd);
 	void mark_asset_registry_dirty() { asset_registry_dirty = true; }
 	void build_cpu_state(GaussianStreamingSystem &system);
@@ -33,14 +39,25 @@ public:
 
 	uint32_t get_max_chunk_count_per_asset() const { return max_chunk_count_per_asset; }
 	uint32_t get_max_chunk_splats() const { return max_chunk_splats; }
+	uint32_t get_atlas_published_chunks() const { return atlas_published_chunk_count; }
 	uint64_t get_auxiliary_vram_overhead_bytes() const;
 	const GlobalAtlasState &get_global_atlas_state() const { return global_atlas_state; }
 	uint64_t get_atlas_generation() const { return global_atlas_state.atlas_generation; }
+#if defined(TESTS_ENABLED)
+	static ChunkMetaUploadPlan _test_plan_chunk_meta_uploads(
+			const LocalVector<uint32_t> &p_dirty_indices, uint32_t p_total_chunks);
+#endif
 
 private:
+	void _invalidate_chunk_meta_tracking();
+	void _invalidate_published_buffers();
+	static ChunkMetaUploadPlan _plan_chunk_meta_uploads(
+			LocalVector<uint32_t> &r_dirty_indices, uint32_t p_total_chunks);
+
 	GlobalAtlasState global_atlas_state;
 	uint32_t max_chunk_count_per_asset = 0;
 	uint32_t max_chunk_splats = 0;
+	uint32_t atlas_published_chunk_count = 0;
 	RID asset_meta_buffer;
 	RID chunk_meta_buffer;
 	RID asset_chunk_index_buffer;

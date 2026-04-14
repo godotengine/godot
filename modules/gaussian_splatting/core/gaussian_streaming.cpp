@@ -762,6 +762,8 @@ void GaussianStreamingSystem::_bind_methods() {
     ClassDB::bind_method(D_METHOD("request_asset_residency", "asset_id", "lod_level"),
             &GaussianStreamingSystem::request_asset_residency);
     ClassDB::bind_method(D_METHOD("finalize_residency_requests"), &GaussianStreamingSystem::finalize_residency_requests);
+    ClassDB::bind_method(D_METHOD("get_residency_request_status", "asset_id", "chunk_id"),
+            &GaussianStreamingSystem::get_residency_request_status);
     ClassDB::bind_method(D_METHOD("get_visible_count"), &GaussianStreamingSystem::get_visible_count);
     ClassDB::bind_method(D_METHOD("begin_frame"), &GaussianStreamingSystem::begin_frame);
     ClassDB::bind_method(D_METHOD("end_frame"), &GaussianStreamingSystem::end_frame);
@@ -1077,12 +1079,6 @@ void GaussianStreamingSystem::initialize_empty(RenderingDevice *p_device) {
 }
 
 void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_data) {
-    // Diagnostic logging for debugging streaming fallback path
-    const uint64_t system_id = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this));
-    print_line(vformat("[Streaming DIAG] update_primary_asset_data: system=%s data_valid=%s streaming_initialized=%s",
-            String::num_uint64(system_id),
-            p_data.is_valid() ? "yes" : "no", streaming_initialized ? "yes" : "no"));
-
     if (p_data.is_null()) {
         GS_LOG_STREAMING_WARN("[Streaming] update_primary_asset_data called with null data");
         return;
@@ -1148,9 +1144,6 @@ void GaussianStreamingSystem::update_primary_asset_data(Ref<::GaussianData> p_da
     }
     quantization_cpu_cache_valid = false;
     global_atlas_registry.mark_asset_registry_dirty();
-
-    print_line(vformat("[Streaming DIAG] update_primary_asset_data complete: system=%s splats=%d chunks=%d",
-            String::num_uint64(system_id), total_splat_count, (uint32_t)chunks.size()));
 }
 
 void GaussianStreamingSystem::attach_memory_stream(const Ref<GaussianMemoryStream> &p_stream) {
@@ -1244,17 +1237,17 @@ void GaussianStreamingSystem::begin_residency_requests() {
     asset_registry.request_pending = false;
 }
 
-void GaussianStreamingSystem::request_chunk_residency(uint32_t asset_id, uint32_t chunk_id, uint32_t lod_level) {
+Error GaussianStreamingSystem::request_chunk_residency(uint32_t asset_id, uint32_t chunk_id, uint32_t lod_level) {
     AtlasAssetState *asset = _get_asset_state(asset_id);
     if (!asset) {
         ERR_PRINT(vformat("[Streaming] request_chunk_residency ignored: asset %d is not registered.", asset_id));
-        return;
+        return ERR_DOES_NOT_EXIST;
     }
     LocalVector<StreamingChunk> &asset_chunks = _get_asset_chunks(*asset);
     if (chunk_id >= asset_chunks.size()) {
         ERR_PRINT(vformat("[Streaming] request_chunk_residency ignored: asset %d chunk %d is out of range (chunk_count=%d).",
                 asset_id, chunk_id, asset_chunks.size()));
-        return;
+        return ERR_INVALID_PARAMETER;
     }
     if (!asset_registry.request_collection_active) {
         begin_residency_requests();
@@ -1266,34 +1259,206 @@ void GaussianStreamingSystem::request_chunk_residency(uint32_t asset_id, uint32_
         state.lod_mask = 0;
         asset->requested_chunks.push_back(chunk_id);
     }
+    state.request_generation = asset_registry.request_generation;
+    state.request_state = GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_COLLECTED;
+    state.request_result = GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_COLLECTED;
+    state.request_error = OK;
     state.lod_mask |= (1u << safe_lod);
     asset_registry.request_pending = true;
+    return OK;
 }
 
-void GaussianStreamingSystem::request_asset_residency(uint32_t asset_id, uint32_t lod_level) {
+Error GaussianStreamingSystem::request_asset_residency(uint32_t asset_id, uint32_t lod_level) {
     AtlasAssetState *asset = _get_asset_state(asset_id);
     if (!asset) {
         ERR_PRINT(vformat("[Streaming] request_asset_residency ignored: asset %d is not registered.", asset_id));
-        return;
+        return ERR_DOES_NOT_EXIST;
     }
     if (!asset->data.is_valid()) {
         ERR_PRINT(vformat("[Streaming] request_asset_residency ignored: asset %d has no data.", asset_id));
-        return;
+        return ERR_DOES_NOT_EXIST;
     }
     LocalVector<StreamingChunk> &asset_chunks = _get_asset_chunks(*asset);
     if (asset_chunks.is_empty()) {
         ERR_PRINT(vformat("[Streaming] request_asset_residency ignored: asset %d has zero chunks.", asset_id));
-        return;
+        return ERR_DOES_NOT_EXIST;
     }
     const uint32_t safe_lod = MIN(lod_level, MAX_REQUESTED_LOD);
+    Error last_error = OK;
     for (uint32_t i = 0; i < asset_chunks.size(); i++) {
-        request_chunk_residency(asset_id, i, safe_lod);
+        const Error err = request_chunk_residency(asset_id, i, safe_lod);
+        if (err != OK && last_error == OK) {
+            last_error = err;
+        }
     }
+    return last_error;
 }
 
 void GaussianStreamingSystem::finalize_residency_requests() {
-    asset_registry.request_pending = true;
     asset_registry.request_collection_active = false;
+}
+
+Dictionary GaussianStreamingSystem::get_residency_request_status(uint32_t asset_id, uint32_t chunk_id) const {
+    return _build_residency_request_status(asset_id, chunk_id);
+}
+
+bool GaussianStreamingSystem::_is_requested_chunk_in_current_generation(const AtlasAssetState &asset, uint32_t chunk_id) const {
+    const RequestedChunkState *state = asset.requested_chunk_state.getptr(chunk_id);
+    return state && state->stamp == asset_registry.request_generation;
+}
+
+void GaussianStreamingSystem::_update_requested_chunk_state(
+        AtlasAssetState &asset, uint32_t chunk_id, uint8_t request_state, uint8_t request_result, Error request_error) {
+    const RequestedChunkState *state = asset.requested_chunk_state.getptr(chunk_id);
+    if (!state || state->stamp == 0) {
+        return;
+    }
+    _update_requested_chunk_state_for_generation(
+            asset,
+            chunk_id,
+            state->stamp,
+            request_state,
+            request_result,
+            request_error);
+}
+
+void GaussianStreamingSystem::_update_requested_chunk_state_for_generation(
+        AtlasAssetState &asset, uint32_t chunk_id, uint64_t request_generation,
+        uint8_t request_state, uint8_t request_result, Error request_error) {
+    RequestedChunkState *state = asset.requested_chunk_state.getptr(chunk_id);
+    if (!state || state->stamp == 0 || state->stamp != request_generation) {
+        return;
+    }
+    state->request_state = request_state;
+    state->request_result = request_result;
+    state->request_generation = request_generation;
+    state->request_error = request_error;
+}
+
+StringName GaussianStreamingSystem::_residency_request_state_name(uint8_t request_state) {
+    switch (request_state) {
+        case GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_COLLECTED:
+            return StringName("collected");
+        case GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_QUEUED:
+            return StringName("queued");
+        case GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED:
+            return StringName("deferred");
+        case GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED:
+            return StringName("satisfied");
+        case GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED:
+            return StringName("failed");
+        case GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_IDLE:
+        default:
+            return StringName("idle");
+    }
+}
+
+StringName GaussianStreamingSystem::_residency_request_error_name(Error request_error) {
+    switch (request_error) {
+        case OK:
+            return StringName("ok");
+        case ERR_BUSY:
+            return StringName("busy");
+        case ERR_UNAVAILABLE:
+            return StringName("unavailable");
+        case ERR_DOES_NOT_EXIST:
+            return StringName("does_not_exist");
+        case ERR_INVALID_PARAMETER:
+            return StringName("invalid_parameter");
+        case FAILED:
+            return StringName("failed");
+        default:
+            return StringName("unknown");
+    }
+}
+
+bool GaussianStreamingSystem::_is_terminal_residency_request_error(Error request_error) {
+    switch (request_error) {
+        case ERR_BUSY:
+        case OK:
+            return false;
+        case ERR_UNAVAILABLE:
+        case ERR_DOES_NOT_EXIST:
+        case ERR_INVALID_PARAMETER:
+        case FAILED:
+        default:
+            return true;
+    }
+}
+
+Dictionary GaussianStreamingSystem::_build_residency_request_status(uint32_t asset_id, uint32_t chunk_id) const {
+    Dictionary status;
+    status["asset_id"] = static_cast<int64_t>(asset_id);
+    status["chunk_id"] = static_cast<int64_t>(chunk_id);
+    status["request_generation"] = static_cast<int64_t>(asset_registry.request_generation);
+    status["request_collection_active"] = asset_registry.request_collection_active;
+    status["request_pending"] = asset_registry.request_pending;
+    status["request_generation_current"] = int64_t(0);
+    status["request_status_generation"] = int64_t(0);
+    status["request_status_current_generation"] = false;
+    status["request_error"] = int64_t(OK);
+    status["request_error_name"] = _residency_request_error_name(OK);
+    status["lod_mask"] = int64_t(0);
+    status["stale_request_generation"] = int64_t(0);
+    status["stale_request_state"] = static_cast<int64_t>(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_IDLE);
+    status["stale_request_state_name"] = _residency_request_state_name(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_IDLE);
+    status["stale_request_result"] = static_cast<int64_t>(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_IDLE);
+    status["stale_request_result_name"] = _residency_request_state_name(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_IDLE);
+    status["stale_request_error"] = int64_t(OK);
+    status["stale_request_error_name"] = _residency_request_error_name(OK);
+
+    const AtlasAssetState *asset = _get_asset_state(asset_id);
+    if (!asset) {
+        status["requested"] = false;
+        status["request_state"] = static_cast<int64_t>(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        status["request_state_name"] = _residency_request_state_name(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        status["request_result"] = static_cast<int64_t>(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        status["request_result_name"] = _residency_request_state_name(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        return status;
+    }
+
+    const LocalVector<StreamingChunk> &asset_chunks = _get_asset_chunks(*asset);
+    if (chunk_id >= asset_chunks.size()) {
+        status["requested"] = false;
+        status["request_state"] = static_cast<int64_t>(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        status["request_state_name"] = _residency_request_state_name(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        status["request_result"] = static_cast<int64_t>(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        status["request_result_name"] = _residency_request_state_name(GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED);
+        return status;
+    }
+
+    const RequestedChunkState *state = asset->requested_chunk_state.getptr(chunk_id);
+    const bool requested = _is_requested_chunk_in_current_generation(*asset, chunk_id);
+    const bool has_recorded_status = state && state->request_generation != 0;
+    const uint8_t request_state = has_recorded_status ? state->request_state : GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_IDLE;
+    const uint8_t request_result = has_recorded_status ? state->request_result : GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_IDLE;
+    const Error request_error = has_recorded_status ? static_cast<Error>(state->request_error) : OK;
+    const bool stale_request = has_recorded_status && state->request_generation != asset_registry.request_generation;
+    status["requested"] = requested;
+    if (requested) {
+        status["request_generation_current"] = static_cast<int64_t>(state->stamp);
+        status["lod_mask"] = static_cast<int64_t>(state->lod_mask);
+    }
+    if (has_recorded_status) {
+        status["request_status_generation"] = static_cast<int64_t>(state->request_generation);
+        status["request_status_current_generation"] = state->request_generation == asset_registry.request_generation;
+    }
+    status["request_state"] = static_cast<int64_t>(request_state);
+    status["request_state_name"] = _residency_request_state_name(request_state);
+    status["request_result"] = static_cast<int64_t>(request_result);
+    status["request_result_name"] = _residency_request_state_name(request_result);
+    status["request_error"] = static_cast<int64_t>(request_error);
+    status["request_error_name"] = _residency_request_error_name(request_error);
+    if (stale_request) {
+        status["stale_request_generation"] = static_cast<int64_t>(state->request_generation);
+        status["stale_request_state"] = static_cast<int64_t>(request_state);
+        status["stale_request_state_name"] = _residency_request_state_name(request_state);
+        status["stale_request_result"] = static_cast<int64_t>(request_result);
+        status["stale_request_result_name"] = _residency_request_state_name(request_result);
+        status["stale_request_error"] = static_cast<int64_t>(request_error);
+        status["stale_request_error_name"] = _residency_request_error_name(request_error);
+    }
+    return status;
 }
 
 void GaussianStreamingSystem::register_asset(uint32_t asset_id, const Ref<GaussianData> &p_data) {
@@ -1454,6 +1619,28 @@ void GaussianStreamingSystem::unregister_asset(uint32_t asset_id) {
     quantization_dirty = true;
     quantization_cpu_cache_valid = false;
     _refresh_quantization_dc_compatibility();
+}
+
+void GaussianStreamingSystem::set_chunk_payload_source(uint32_t asset_id, const Ref<ChunkPayloadSource> &p_source) {
+    AtlasAssetState *asset = _get_asset_state(asset_id);
+    ERR_FAIL_NULL_MSG(asset, vformat("[Streaming] set_chunk_payload_source: asset %d not registered.", asset_id));
+    asset->payload_source = p_source;
+}
+
+void GaussianStreamingSystem::detach_source_data(uint32_t asset_id) {
+    AtlasAssetState *asset = _get_asset_state(asset_id);
+    ERR_FAIL_NULL_MSG(asset, vformat("[Streaming] detach_source_data: asset %d not registered.", asset_id));
+
+    if (asset->payload_source.is_null()) {
+        WARN_PRINT(vformat("[Streaming] detach_source_data: asset %d has no payload source; refusing to detach.", asset_id));
+        return;
+    }
+    asset->data.unref();
+
+    // For the primary asset, also release the system-level source_data reference.
+    if (asset_id == PRIMARY_ASSET_ID) {
+        source_data.unref();
+    }
 }
 
 void GaussianStreamingSystem::_refresh_quantization_dc_compatibility() {
@@ -1707,7 +1894,18 @@ void GaussianStreamingSystem::_build_chunks_for_data(const Ref<GaussianData> &p_
     const bool quantize = per_chunk_quantization_enabled;
     const LocalVector<Gaussian> *gaussians = quantize ? &p_data->get_gaussian_storage() : nullptr;
 
-    if (build_primary_spatial && splat_count > 0) {
+    // Skip Morton sort for very large datasets.  The O(N*log(N)) sort on
+    // hundreds of MB followed by random-access bounds computation into
+    // multi-GB gaussian storage causes stalls of 30+ seconds.  Contiguous
+    // chunks are sufficient for the initial pass; proper spatial layout
+    // arrives from static chunk hints via set_primary_chunk_layout().
+    static constexpr uint32_t kMortonSortSplatThreshold = 2'000'000;
+    const bool morton_sort_feasible = splat_count <= kMortonSortSplatThreshold;
+    if (build_primary_spatial && splat_count > 0 && !morton_sort_feasible) {
+        WARN_PRINT(vformat("[Streaming] Skipping Morton sort for %d splats (threshold=%d); using contiguous chunk layout.",
+                splat_count, kMortonSortSplatThreshold));
+    }
+    if (build_primary_spatial && splat_count > 0 && morton_sort_feasible) {
         struct MortonPair {
             uint32_t morton = 0;
             uint32_t source_index = 0;
@@ -1739,7 +1937,7 @@ void GaussianStreamingSystem::_build_chunks_for_data(const Ref<GaussianData> &p_
         StreamingChunk &chunk = out_chunks[i];
         chunk.start_idx = i * CHUNK_SIZE;
         chunk.count = MIN(CHUNK_SIZE, splat_count - chunk.start_idx);
-        chunk.source_index_remapped = build_primary_spatial;
+        chunk.source_index_remapped = build_primary_spatial && morton_sort_feasible;
         if (chunk.source_index_remapped &&
                 (uint64_t(chunk.start_idx) + uint64_t(chunk.count)) > asset_registry.primary_chunk_source_indices.size()) {
             WARN_PRINT_ONCE("[Streaming] Primary spatial remap index range is invalid; falling back to contiguous chunk reads.");
@@ -2259,11 +2457,11 @@ void GaussianStreamingSystem::_run_streaming_frame_pipeline(const Transform3D &c
     }
     if (can_async_pack) {
         _load_visible_chunks(effective_max, evictions_left, eviction_blocked);
-        _apply_requested_residency();
+        _apply_requested_residency(can_async_pack);
     } else {
         // In sync fallback mode the per-frame sync cap is very small; prioritize
         // explicit residency requests before opportunistic visible loads.
-        _apply_requested_residency();
+        _apply_requested_residency(can_async_pack);
         _load_visible_chunks(effective_max, evictions_left, eviction_blocked);
         const uint64_t sync_drain_start_usec = os ? os->get_ticks_usec() : 0;
         _drain_sync_fallback_chunk_loads(effective_max, evictions_left, eviction_blocked);
@@ -2567,6 +2765,16 @@ void GaussianStreamingSystem::_load_visible_chunks(uint32_t effective_max, uint3
         scheduler.visible_scan_cursor = 0;
     }
 
+    // Under a throttled scan budget (queue pressure or limited enqueue headroom)
+    // the round-robin cursor can starve the nearest prefix: a later frame resumes
+    // mid-list and enqueues farther chunks before the nearest ones. visible_chunks
+    // is sorted nearest-first (streaming_visibility_controller.cpp:463), so when
+    // the budget can't cover the full list we always restart at 0 to prefer the
+    // near field. Only fall back to the cursor when the budget can scan the whole
+    // visible list in one frame (the fairness case).
+    const bool restart_from_nearest = scan_budget < visible_count;
+    const uint32_t scan_origin = restart_from_nearest ? 0u : scheduler.visible_scan_cursor;
+
     ResidencyBudgetController::AdmissionFrameBudget admission_budget =
             ResidencyBudgetController::make_frame_budget(effective_max, evictions_left, eviction_blocked);
     const float lod_mult = budget.vram_regulator.is_valid()
@@ -2587,7 +2795,7 @@ void GaussianStreamingSystem::_load_visible_chunks(uint32_t effective_max, uint3
                         upload_pipeline.max_pack_jobs_in_flight) == 0) {
             break;
         }
-        const uint32_t visible_idx = (scheduler.visible_scan_cursor + scanned_chunks) % visible_count;
+        const uint32_t visible_idx = (scan_origin + scanned_chunks) % visible_count;
         const uint32_t chunk_idx = visible_chunks[visible_idx];
         if (chunk_idx >= chunks.size()) {
             continue;
@@ -2647,7 +2855,12 @@ void GaussianStreamingSystem::_load_visible_chunks(uint32_t effective_max, uint3
             scheduler.last_sync_fallback_stalled_count++;
         }
     }
-    scheduler.visible_scan_cursor = (scheduler.visible_scan_cursor + scanned_chunks) % visible_count;
+    // If we restarted from the nearest prefix this frame, the cursor stays where
+    // it was so that a healthy (unthrottled) frame can resume fair round-robin.
+    // Otherwise advance it by the scanned count.
+    if (!restart_from_nearest) {
+        scheduler.visible_scan_cursor = (scheduler.visible_scan_cursor + scanned_chunks) % visible_count;
+    }
     scheduler.last_visible_scan_count = scanned_chunks;
     scheduler.last_visible_scan_budget_effective = scanned_chunks;
     scheduler.last_load_candidate_count = load_candidates;
@@ -2820,8 +3033,8 @@ void GaussianStreamingSystem::_update_chunk_visibility(const Transform3D &camera
     visibility.update_chunk_visibility(*this, camera_transform, projection);
 }
 
-void GaussianStreamingSystem::_load_chunk(uint32_t chunk_idx) {
-    _load_chunk(PRIMARY_ASSET_ID, chunk_idx);
+Error GaussianStreamingSystem::_load_chunk(uint32_t chunk_idx) {
+    return _load_chunk(PRIMARY_ASSET_ID, chunk_idx);
 }
 
 void GaussianStreamingSystem::_assert_chunk_state_invariant(uint32_t asset_id, uint32_t chunk_idx,
@@ -2947,20 +3160,20 @@ void GaussianStreamingSystem::_rollback_pending_chunk(uint32_t asset_id, uint32_
             !release_slot);
 }
 
-void GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx) {
+Error GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx) {
     AtlasAssetState *asset = _get_asset_state(asset_id);
-    if (!asset || !asset->data.is_valid()) {
-        return;
+    if (!asset || (!asset->data.is_valid() && !asset->payload_source.is_valid())) {
+        return ERR_DOES_NOT_EXIST;
     }
 
     LocalVector<StreamingChunk> &asset_chunks = _get_asset_chunks(*asset);
     if (chunk_idx >= asset_chunks.size()) {
-        return;
+        return ERR_INVALID_PARAMETER;
     }
 
     StreamingChunk &chunk = asset_chunks[chunk_idx];
     if (chunk.is_loaded || chunk.upload_pending) {
-        return;
+        return ERR_BUSY;
     }
 
     _assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "_load_chunk.pre");
@@ -2972,42 +3185,61 @@ void GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx)
     GaussianSplatManager::ScopedSubmissionLock submission_lock;
     RenderingDevice *submission_rd = _resolve_submission_device(manager, submission_lock);
 
-    if (!submission_rd || !persistent_buffer.is_valid()) {
-        return;
+    if (!submission_rd) {
+        return ERR_UNAVAILABLE;
+    }
+    if (!persistent_buffer.is_valid()) {
+        return ERR_UNAVAILABLE;
     }
     if (!_ensure_atlas_slot_available(asset_id)) {
-        return;
+        return ERR_BUSY;
     }
 
     uint32_t buffer_slot = UINT32_MAX;
     if (!atlas_allocator.allocate_slot(_make_chunk_key(asset_id, chunk_idx), buffer_slot)) {
-        return;
+        return ERR_BUSY;
     }
 
     if (!_begin_chunk_upload(asset_id, chunk_idx, chunk, buffer_slot)) {
         atlas_allocator.release_slot(_make_chunk_key(asset_id, chunk_idx));
-        return;
+        return FAILED;
     }
 
     const uint64_t buffer_offset64 = uint64_t(buffer_slot) * CHUNK_SIZE * sizeof(PackedGaussian);
     if (buffer_offset64 > uint64_t(UINT32_MAX)) {
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
-        return;
+        return FAILED;
     }
     const uint32_t buffer_offset = static_cast<uint32_t>(buffer_offset64);
 
     Vector<PackedGaussian> chunk_data;
     SHCompressionMetrics metrics;
     if (!_pack_chunk_data(asset_id, chunk_idx, *asset, chunk, chunk_data, metrics)) {
+        static int _diag_pack = 0;
+        if (++_diag_pack <= 5) {
+            print_line(vformat("[DIAG-SYNC-LOAD] _pack_chunk_data FAILED asset=%d chunk=%d data=%s payload=%s",
+                    asset_id, chunk_idx,
+                    asset->data.is_valid() ? "valid" : "null",
+                    asset->payload_source.is_valid() ? "valid" : "null"));
+        }
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
-        return;
+        return FAILED;
     }
     _log_chunk_load_metrics(chunk_idx, metrics);
     if (!_upload_chunk_to_gpu(submission_rd, buffer_offset, chunk_data, asset_id, chunk_idx, buffer_slot, chunk.count)) {
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
-        return;
+        return FAILED;
+    }
+    {
+        static int _diag_sync = 0;
+        if (++_diag_sync <= 5) {
+            print_line(vformat("[DIAG-SYNC-LOAD] chunk=%d slot=%d count=%d packed_bytes=%d offset=%d",
+                    chunk_idx, buffer_slot, chunk.count,
+                    chunk_data.size() * int(sizeof(PackedGaussian)), buffer_offset));
+        }
     }
     _finalize_chunk_load(asset_id, chunk_idx, chunk, buffer_slot, asset_chunks.size());
+    return OK;
 }
 
 RenderingDevice *GaussianStreamingSystem::_resolve_submission_device(GaussianSplatManager *manager,
@@ -3035,9 +3267,31 @@ bool GaussianStreamingSystem::_pack_chunk_data(uint32_t asset_id, uint32_t chunk
     chunk_data.clear();
     metrics = SHCompressionMetrics();
 
-    if (!asset.data.is_valid()) {
+    // Resolve data source: prefer payload_source (supports out-of-core),
+    // fall back to in-memory asset.data.
+    const bool has_payload_source = asset.payload_source.is_valid();
+    const bool has_data = asset.data.is_valid();
+    if (!has_payload_source && !has_data) {
         return false;
     }
+
+    // Lambdas that abstract contiguous / indexed reads regardless of source.
+    const auto read_contiguous = [&](uint32_t start, uint32_t count,
+            LocalVector<Gaussian> &g, LocalVector<Vector3> &sh,
+            uint32_t &fo, uint32_t &ho) -> bool {
+        if (has_payload_source) {
+            return asset.payload_source->capture_chunk_snapshot(start, count, g, sh, fo, ho);
+        }
+        return asset.data->capture_chunk_snapshot(start, count, g, sh, fo, ho);
+    };
+    const auto read_indexed = [&](const uint32_t *indices, uint32_t count,
+            LocalVector<Gaussian> &g, LocalVector<Vector3> &sh,
+            uint32_t &fo, uint32_t &ho) -> bool {
+        if (has_payload_source) {
+            return asset.payload_source->capture_indexed_chunk_snapshot(indices, count, g, sh, fo, ho);
+        }
+        return asset.data->capture_indexed_chunk_snapshot(indices, count, g, sh, fo, ho);
+    };
 
     LocalVector<Gaussian> gaussian_snapshot;
     LocalVector<Vector3> sh_high_order_snapshot;
@@ -3053,12 +3307,12 @@ bool GaussianStreamingSystem::_pack_chunk_data(uint32_t asset_id, uint32_t chunk
             }
             source_indices[i] = source_index;
         }
-        if (!asset.data->capture_indexed_chunk_snapshot(source_indices.ptr(), chunk.count,
+        if (!read_indexed(source_indices.ptr(), chunk.count,
                     gaussian_snapshot, sh_high_order_snapshot, sh_first_order, sh_high_order)) {
             return false;
         }
     } else {
-        if (!asset.data->capture_chunk_snapshot(chunk.start_idx, chunk.count,
+        if (!read_contiguous(chunk.start_idx, chunk.count,
                     gaussian_snapshot, sh_high_order_snapshot, sh_first_order, sh_high_order)) {
             return false;
         }
@@ -3158,6 +3412,12 @@ void GaussianStreamingSystem::_log_chunk_load_metrics(uint32_t chunk_idx, const 
 bool GaussianStreamingSystem::_upload_chunk_to_gpu(RenderingDevice *submission_rd, uint32_t buffer_offset,
         const Vector<PackedGaussian> &chunk_data, uint32_t asset_id, uint32_t chunk_idx,
         uint32_t buffer_slot, uint32_t chunk_count) const {
+#if defined(TESTS_ENABLED)
+    if (const_cast<GaussianStreamingSystem *>(this)->test_force_next_chunk_upload_failure) {
+        const_cast<GaussianStreamingSystem *>(this)->test_force_next_chunk_upload_failure = false;
+        return false;
+    }
+#endif
     if (!submission_rd || !persistent_buffer.is_valid() || buffer_slot == UINT32_MAX || chunk_count == 0 || chunk_count > CHUNK_SIZE) {
         return false;
     }
@@ -3174,13 +3434,13 @@ bool GaussianStreamingSystem::_upload_chunk_to_gpu(RenderingDevice *submission_r
     }
 
     static int upload_debug_count = 0;
-    if (asset_id == PRIMARY_ASSET_ID && ++upload_debug_count <= 3 && chunk_data.size() > 0) {
+    if (++upload_debug_count <= 5 && chunk_data.size() > 0) {
         const PackedGaussian &g0 = chunk_data[0];
-        GS_LOG_STREAMING_DEBUG(vformat("[UPLOAD-DEBUG] chunk=%d slot=%d offset=%d bytes=%d first_scale=(%.6f,%.6f,%.6f) first_rot=(%.3f,%.3f,%.3f,%.3f)",
-                chunk_idx, buffer_slot, buffer_offset,
-                chunk_count * (int)sizeof(PackedGaussian),
+        print_line(vformat("[DIAG-UPLOAD] asset=%d chunk=%d slot=%d offset=%d count=%d pos=(%.3f,%.3f,%.3f) scale=(%.6f,%.6f,%.6f) opacity=%.3f",
+                asset_id, chunk_idx, buffer_slot, buffer_offset, chunk_count,
+                g0.position[0], g0.position[1], g0.position[2],
                 g0.scale[0], g0.scale[1], g0.scale[2],
-                g0.rotation[0], g0.rotation[1], g0.rotation[2], g0.rotation[3]));
+                g0.opacity));
     }
 
     submission_rd->buffer_update(persistent_buffer, buffer_offset,
@@ -3212,6 +3472,22 @@ void GaussianStreamingSystem::_complete_chunk_load_common(uint32_t asset_id, uin
     eviction_controller.touch_chunk_use(chunk.last_used_frame);
     budget.loaded_chunks_count++;
     budget.vram_usage += chunk.count * sizeof(PackedGaussian);
+    AtlasAssetState *asset = _get_asset_state(asset_id);
+    if (asset) {
+        if (chunk.explicit_request_generation != 0) {
+            _update_requested_chunk_state_for_generation(*asset, chunk_idx,
+                    chunk.explicit_request_generation,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED,
+                    OK);
+        } else {
+            _update_requested_chunk_state(*asset, chunk_idx,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED,
+                    OK);
+        }
+    }
+    chunk.explicit_request_generation = 0;
     global_atlas_registry.mark_chunk_meta_dirty(*this, asset_id, chunk_idx);
     _assert_chunk_state_invariant(asset_id, chunk_idx, chunk, "_complete_chunk_load_common");
 }
@@ -3284,6 +3560,7 @@ void GaussianStreamingSystem::end_frame() {
     analytics_snapshot["vram_payload_mb"] = double(payload_vram_bytes) / (1024.0 * 1024.0);
     analytics_snapshot["vram_overhead_mb"] = double(overhead_vram_bytes) / (1024.0 * 1024.0);
     analytics_snapshot["loaded_chunks"] = get_loaded_chunks();
+    analytics_snapshot["atlas_published_chunks"] = global_atlas_registry.get_atlas_published_chunks();
     analytics_snapshot["visible_splats"] = get_visible_count();
     analytics_snapshot["effective_max_chunks"] = get_effective_max_chunks();
     analytics_snapshot["chunks_loaded_this_frame"] = budget.chunks_loaded_this_frame;
@@ -3416,20 +3693,25 @@ void GaussianStreamingSystem::end_frame() {
     uint32_t upload_queue_depth = 0;
     const uint32_t sync_fallback_queue_depth = _get_sync_fallback_queue_depth();
     upload_pipeline.get_pending_queue_depths_cached(pack_queue_depth, upload_queue_depth);
+    const uint32_t analytics_pack_jobs_in_flight = upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed);
     const bool pack_inflight_saturated = upload_pipeline.max_pack_jobs_in_flight > 0 &&
-            upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed) >= upload_pipeline.max_pack_jobs_in_flight;
+            analytics_pack_jobs_in_flight >= upload_pipeline.max_pack_jobs_in_flight;
     const bool sync_backpressure =
             scheduler.last_sync_fallback_dropped_count > 0 || scheduler.last_sync_fallback_stalled_count > 0;
+    const bool analytics_visible_eviction_active = diagnostics.visible_evict_fallback_attempts > 0 &&
+            diagnostics.visible_evict_fallback_successes < diagnostics.visible_evict_fallback_attempts;
     StreamingQueuePressureController::PressureSample queue_pressure_sample;
     queue_pressure_sample.pack_queue_depth = pack_queue_depth;
     queue_pressure_sample.upload_queue_depth = upload_queue_depth;
     queue_pressure_sample.sync_fallback_queue_depth = sync_fallback_queue_depth;
+    queue_pressure_sample.pack_jobs_in_flight = analytics_pack_jobs_in_flight;
     queue_pressure_sample.pack_inflight_saturated = pack_inflight_saturated;
     queue_pressure_sample.upload_frame_cap_hit = upload_pipeline.upload_frame_cap_hit_this_frame;
     queue_pressure_sample.upload_bandwidth_cap_hit = upload_pipeline.upload_bandwidth_cap_hit_this_frame;
     queue_pressure_sample.chunk_load_cap_hit = upload_pipeline.chunk_load_cap_hit_this_frame;
     queue_pressure_sample.vram_chunk_cap_hit = budget.vram_chunk_cap_hit_this_frame;
     queue_pressure_sample.sync_backpressure = sync_backpressure;
+    queue_pressure_sample.visible_eviction_active = analytics_visible_eviction_active;
     const StreamingQueuePressureController::PressureSummary queue_pressure_summary =
             _summarize_queue_pressure_checked(queue_pressure_sample, "GaussianStreamingSystem::end_frame.analytics");
     StreamingQueuePressureController::latch_summary(queue_pressure_summary,
@@ -3489,6 +3771,7 @@ void GaussianStreamingSystem::end_frame() {
     queue_pressure_snapshot.source = upload_pipeline.queue_pressure_source;
     queue_pressure_snapshot.reason = upload_pipeline.queue_pressure_reason;
     queue_pressure_snapshot.backlog_depth = queue_pressure_summary.backlog_depth;
+    queue_pressure_snapshot.total_pending_chunks = queue_pressure_summary.total_pending_chunks;
     queue_pressure_snapshot.pack_source_active = queue_pressure_summary.pack_source_active;
     queue_pressure_snapshot.upload_source_active = queue_pressure_summary.upload_source_active;
     queue_pressure_snapshot.sync_source_active = queue_pressure_summary.sync_source_active;
@@ -3537,20 +3820,25 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
     const bool upload_bandwidth_cap_hit = upload_pipeline.upload_bandwidth_cap_hit_this_frame;
     const bool chunk_load_cap_hit = upload_pipeline.chunk_load_cap_hit_this_frame;
     const bool vram_chunk_cap_hit = budget.vram_chunk_cap_hit_this_frame;
+    const uint32_t current_pack_jobs_in_flight = upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed);
     const bool pack_inflight_saturated = upload_pipeline.max_pack_jobs_in_flight > 0 &&
-            upload_pipeline.pack_jobs_in_flight.load(std::memory_order_relaxed) >= upload_pipeline.max_pack_jobs_in_flight;
+            current_pack_jobs_in_flight >= upload_pipeline.max_pack_jobs_in_flight;
     const bool sync_backpressure =
             scheduler.last_sync_fallback_dropped_count > 0 || scheduler.last_sync_fallback_stalled_count > 0;
+    const bool visible_eviction_active = diagnostics.visible_evict_fallback_attempts > 0 &&
+            diagnostics.visible_evict_fallback_successes < diagnostics.visible_evict_fallback_attempts;
     StreamingQueuePressureController::PressureSample queue_pressure_sample;
     queue_pressure_sample.pack_queue_depth = pack_queue_depth;
     queue_pressure_sample.upload_queue_depth = upload_queue_depth;
     queue_pressure_sample.sync_fallback_queue_depth = sync_fallback_queue_depth;
+    queue_pressure_sample.pack_jobs_in_flight = current_pack_jobs_in_flight;
     queue_pressure_sample.pack_inflight_saturated = pack_inflight_saturated;
     queue_pressure_sample.upload_frame_cap_hit = upload_frame_cap_hit;
     queue_pressure_sample.upload_bandwidth_cap_hit = upload_bandwidth_cap_hit;
     queue_pressure_sample.chunk_load_cap_hit = chunk_load_cap_hit;
     queue_pressure_sample.vram_chunk_cap_hit = vram_chunk_cap_hit;
     queue_pressure_sample.sync_backpressure = sync_backpressure;
+    queue_pressure_sample.visible_eviction_active = visible_eviction_active;
     const StreamingQueuePressureController::PressureSummary queue_pressure_summary =
             _summarize_queue_pressure_checked(queue_pressure_sample,
                     "GaussianStreamingSystem::_build_streaming_diagnostics_snapshot");
@@ -3627,6 +3915,49 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
         diagnostics.vram_cap_hit_frames = 0;
     }
 
+    // Sustained pressure categorization: classify the dominant bottleneck
+    // so long-soak diagnostics can distinguish bandwidth limits, residency
+    // limits, churn, and pipeline stalls.
+    {
+        const uint32_t chunks_evicted = eviction_controller.get_chunks_evicted_this_frame();
+        const uint32_t visible_evicted = eviction_controller.get_visible_chunks_evicted_this_frame();
+        const bool bandwidth_signal = upload_frame_cap_hit || upload_bandwidth_cap_hit || chunk_load_cap_hit;
+        const bool residency_signal = vram_chunk_cap_hit && chunks_evicted > 0;
+        const bool churn_signal = visible_evicted > 0 && loaded_this_frame > 0;
+        const bool stall_signal = upload_stalled || sync_fallback_stalled || scheduler_stalled;
+
+        const uint32_t active_signals = uint32_t(bandwidth_signal) + uint32_t(residency_signal) +
+                uint32_t(churn_signal) + uint32_t(stall_signal);
+
+        if (active_signals > 1) {
+            diagnostics.pressure_category = "combined";
+            diagnostics.sustained_pressure_frames++;
+        } else if (churn_signal) {
+            diagnostics.pressure_category = "churn";
+            diagnostics.sustained_pressure_frames++;
+        } else if (residency_signal) {
+            diagnostics.pressure_category = "residency_limited";
+            diagnostics.sustained_pressure_frames++;
+        } else if (bandwidth_signal) {
+            diagnostics.pressure_category = "bandwidth_limited";
+            diagnostics.sustained_pressure_frames++;
+        } else if (stall_signal) {
+            diagnostics.pressure_category = "pipeline_stall";
+            diagnostics.sustained_pressure_frames++;
+        } else {
+            if (diagnostics.sustained_pressure_frames > 0) {
+                if (diagnostics.sustained_pressure_frames <= DiagnosticsState::SUSTAINED_PRESSURE_COOLDOWN_FRAMES) {
+                    diagnostics.sustained_pressure_frames = 0;
+                    diagnostics.pressure_category = "none";
+                } else {
+                    diagnostics.sustained_pressure_frames--;
+                }
+            } else {
+                diagnostics.pressure_category = "none";
+            }
+        }
+    }
+
     String category = "ok";
     String reason = "healthy";
     if (!runtime_ready) {
@@ -3670,7 +4001,7 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
 
     const bool has_failure = category != "ok";
     const String fingerprint = vformat(
-            "%s|ready=%s|chunks=%d/%d/%d|visible_splats=%d|cand=%d|pack_q=%d|upload_q=%d|sync_q=%d|load_frame=%d|upload_frame=%d|caps=%d/%d/%d|vram=%d/%d|hits=%d%d%d%d%d|qsrc=%s|qwhy=%s|atlas=%d|req=%d|inv=%d/%d/%d|sync_promo=%d",
+            "%s|ready=%s|chunks=%d/%d/%d|visible_splats=%d|cand=%d|pack_q=%d|upload_q=%d|sync_q=%d|pack_flight=%d|total_pend=%d|load_frame=%d|upload_frame=%d|caps=%d/%d/%d|vram=%d/%d|hits=%d%d%d%d%d%d|qsrc=%s|qwhy=%s|atlas=%d|req=%d|inv=%d/%d/%d|sync_promo=%d",
             category,
             runtime_ready ? "1" : "0",
             loaded_chunks,
@@ -3681,6 +4012,8 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             pack_queue_depth,
             upload_queue_depth,
             sync_fallback_queue_depth,
+            current_pack_jobs_in_flight,
+            queue_pressure_summary.total_pending_chunks,
             loaded_this_frame,
             upload_chunks_this_frame,
             upload_pipeline.effective_upload_cap_mb_per_frame,
@@ -3693,6 +4026,7 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
             chunk_load_cap_hit ? 1 : 0,
             vram_chunk_cap_hit ? 1 : 0,
             queue_pressure_active ? 1 : 0,
+            visible_eviction_active ? 1 : 0,
             queue_pressure_source,
             queue_pressure_reason,
             static_cast<int64_t>(global_atlas_registry.get_atlas_generation()),
@@ -3754,11 +4088,15 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
     diagnostics_snapshot["pack_queue_depth"] = static_cast<int64_t>(pack_queue_depth);
     diagnostics_snapshot["upload_queue_depth"] = static_cast<int64_t>(upload_queue_depth);
     diagnostics_snapshot["sync_fallback_queue_depth"] = static_cast<int64_t>(sync_fallback_queue_depth);
+    diagnostics_snapshot["pack_jobs_in_flight"] = static_cast<int64_t>(current_pack_jobs_in_flight);
+    diagnostics_snapshot["total_pending_chunks"] = static_cast<int64_t>(queue_pressure_summary.total_pending_chunks);
+    diagnostics_snapshot["visible_eviction_active"] = visible_eviction_active;
     StreamingTelemetryAdapter::QueuePressureSnapshot queue_pressure_snapshot;
     queue_pressure_snapshot.active = queue_pressure_active;
     queue_pressure_snapshot.source = queue_pressure_source;
     queue_pressure_snapshot.reason = queue_pressure_reason;
     queue_pressure_snapshot.backlog_depth = queue_pressure_summary.backlog_depth;
+    queue_pressure_snapshot.total_pending_chunks = queue_pressure_summary.total_pending_chunks;
     queue_pressure_snapshot.pack_source_active = queue_pressure_summary.pack_source_active;
     queue_pressure_snapshot.upload_source_active = queue_pressure_summary.upload_source_active;
     queue_pressure_snapshot.sync_source_active = queue_pressure_summary.sync_source_active;
@@ -3823,6 +4161,8 @@ Dictionary GaussianStreamingSystem::_build_streaming_diagnostics_snapshot(
     diagnostics_snapshot["scheduler_stall_frames"] = static_cast<int64_t>(diagnostics.scheduler_stall_frames);
     diagnostics_snapshot["upload_stall_frames"] = static_cast<int64_t>(diagnostics.upload_stall_frames);
     diagnostics_snapshot["sync_fallback_stall_frames"] = static_cast<int64_t>(diagnostics.sync_fallback_stall_frames);
+    diagnostics_snapshot["sustained_pressure_frames"] = static_cast<int64_t>(diagnostics.sustained_pressure_frames);
+    diagnostics_snapshot["pressure_category"] = diagnostics.pressure_category;
     diagnostics_snapshot["scheduler_update_cpu_ms"] = scheduler.last_update_cpu_ms;
     diagnostics_snapshot["scheduler_visibility_cpu_ms"] = scheduler.last_visibility_cpu_ms;
     diagnostics_snapshot["scheduler_load_cpu_ms"] = scheduler.last_load_cpu_ms;
@@ -4072,10 +4412,21 @@ bool GaussianStreamingSystem::_should_force_sync_fallback_for_async_stall(
         scheduler.force_sync_fallback_due_to_async_stall = false;
     }
 
+    // Original narrow signature: pack queue has work but nothing reaches
+    // the upload queue — pack thread may be wedged.
     if (!scheduler.force_sync_fallback_due_to_async_stall &&
             diagnostics.upload_stall_frames >= DiagnosticsState::STALL_THRESHOLD_FRAMES &&
             pack_queue_depth > 0 &&
             upload_queue_depth == 0) {
+        scheduler.force_sync_fallback_due_to_async_stall = true;
+    }
+
+    // Broader signature: upload queue has work but nothing completes —
+    // GPU upload path may be blocked or starved.
+    if (!scheduler.force_sync_fallback_due_to_async_stall &&
+            diagnostics.upload_stall_frames >= DiagnosticsState::STALL_THRESHOLD_FRAMES &&
+            upload_queue_depth > 0 &&
+            upload_pipeline.last_upload_chunks == 0) {
         scheduler.force_sync_fallback_due_to_async_stall = true;
     }
 
@@ -4120,7 +4471,7 @@ void GaussianStreamingSystem::_compact_sync_fallback_queue() {
 
 bool GaussianStreamingSystem::_enqueue_sync_fallback_chunk_load(uint32_t asset_id, uint32_t chunk_idx, bool prioritize) {
     AtlasAssetState *asset = _get_asset_state(asset_id);
-    if (!asset || !asset->data.is_valid()) {
+    if (!asset || (!asset->data.is_valid() && !asset->payload_source.is_valid())) {
         return false;
     }
 
@@ -4251,7 +4602,7 @@ uint32_t GaussianStreamingSystem::_drain_sync_fallback_chunk_loads(
         const uint32_t chunk_idx = uint32_t(chunk_key & 0xffffffffu);
 
         AtlasAssetState *asset = _get_asset_state(asset_id);
-        if (!asset || !asset->data.is_valid()) {
+        if (!asset || (!asset->data.is_valid() && !asset->payload_source.is_valid())) {
             continue;
         }
 
@@ -4264,17 +4615,19 @@ uint32_t GaussianStreamingSystem::_drain_sync_fallback_chunk_loads(
         if (chunk.is_loaded || chunk.upload_pending) {
             continue;
         }
+        const bool explicitly_requested = _is_requested_chunk_in_current_generation(*asset, chunk_idx);
         bool enforce_vram_regulator_gate = true;
         if (asset_id == PRIMARY_ASSET_ID) {
-            if (!is_primary_chunk_relevant(chunk)) {
+            if (!explicitly_requested && !is_primary_chunk_relevant(chunk)) {
                 scheduler.last_sync_fallback_stalled_count++;
                 continue;
             }
+            if (explicitly_requested) {
+                enforce_vram_regulator_gate = false;
+            }
         } else {
             enforce_vram_regulator_gate = false;
-            const RequestedChunkState *state = asset->requested_chunk_state.getptr(chunk_idx);
-            const bool requested = state && state->stamp == asset_registry.request_generation;
-            if (!requested) {
+            if (!explicitly_requested) {
                 continue;
             }
         }
@@ -4296,6 +4649,10 @@ uint32_t GaussianStreamingSystem::_drain_sync_fallback_chunk_loads(
         const ResidencyBudgetController::AdmissionDecision decision = admission_gate.decision;
         if (decision == ResidencyBudgetController::AdmissionDecision::Skip) {
             scheduler.last_sync_fallback_stalled_count++;
+            _update_requested_chunk_state(*asset, chunk_idx,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                    ERR_BUSY);
             _enqueue_sync_fallback_chunk_load(asset_id, chunk_idx, asset_id != PRIMARY_ASSET_ID);
             continue;
         }
@@ -4316,21 +4673,47 @@ uint32_t GaussianStreamingSystem::_drain_sync_fallback_chunk_loads(
             } else {
                 ResidencyBudgetController::note_blocked_eviction(admission_budget);
                 scheduler.last_sync_fallback_stalled_count++;
+                _update_requested_chunk_state(*asset, chunk_idx,
+                        GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                        GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                        ERR_BUSY);
                 _enqueue_sync_fallback_chunk_load(asset_id, chunk_idx, asset_id != PRIMARY_ASSET_ID);
                 continue;
             }
         }
 
-        _load_chunk(asset_id, chunk_idx);
+        const RequestedChunkState *request_state = asset->requested_chunk_state.getptr(chunk_idx);
+        chunk.explicit_request_generation = request_state ? request_state->stamp : uint64_t(0);
+        const Error load_error = _load_chunk(asset_id, chunk_idx);
         if (chunk.is_loaded) {
+            _update_requested_chunk_state(*asset, chunk_idx,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_SATISFIED,
+                    OK);
             drained++;
             scheduler.last_sync_fallback_drained_count++;
             budget.chunks_loaded_this_frame++;
             continue;
         }
 
-        if (!chunk.upload_pending) {
+        if (chunk.upload_pending) {
+            _update_requested_chunk_state(*asset, chunk_idx,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_QUEUED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_QUEUED,
+                    OK);
+        } else if (_is_terminal_residency_request_error(load_error)) {
             scheduler.last_sync_fallback_stalled_count++;
+            _update_requested_chunk_state(*asset, chunk_idx,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_FAILED,
+                    load_error);
+            chunk.explicit_request_generation = 0;
+        } else {
+            scheduler.last_sync_fallback_stalled_count++;
+            _update_requested_chunk_state(*asset, chunk_idx,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                    GaussianStreamingTypes::RESIDENCY_REQUEST_STATE_DEFERRED,
+                    load_error == OK ? ERR_BUSY : load_error);
             _enqueue_sync_fallback_chunk_load(asset_id, chunk_idx, asset_id != PRIMARY_ASSET_ID);
         }
     }
@@ -4339,6 +4722,26 @@ uint32_t GaussianStreamingSystem::_drain_sync_fallback_chunk_loads(
     scheduler.last_sync_fallback_queue_depth = _get_sync_fallback_queue_depth();
     evictions_left = admission_budget.evictions_left;
     eviction_blocked = admission_budget.eviction_blocked;
+
+    // Track consecutive frames where the sync fallback queue has entries but
+    // drains zero chunks. When the staleness limit is reached, flush the
+    // queue to prevent indefinite re-enqueue loops under sustained pressure.
+    if (drained == 0 && scheduler.last_sync_fallback_queue_depth > 0) {
+        scheduler.sync_fallback_no_progress_frames++;
+        if (scheduler.sync_fallback_no_progress_frames >= SchedulerState::SYNC_FALLBACK_STALENESS_LIMIT_FRAMES) {
+            WARN_PRINT(vformat("[Streaming] Sync fallback queue stale for %d frames — flushing %d entries.",
+                    scheduler.sync_fallback_no_progress_frames,
+                    scheduler.last_sync_fallback_queue_depth));
+            scheduler.sync_fallback_chunk_load_queue.clear();
+            scheduler.sync_fallback_chunk_load_set.clear();
+            scheduler.sync_fallback_chunk_load_queue_read_idx = 0;
+            scheduler.sync_fallback_no_progress_frames = 0;
+            scheduler.last_sync_fallback_queue_depth = 0;
+        }
+    } else {
+        scheduler.sync_fallback_no_progress_frames = 0;
+    }
+
     return drained;
 }
 
@@ -4416,6 +4819,8 @@ Dictionary GaussianStreamingSystem::get_chunk_culling_stats() const {
     stats["visible_chunks"] = visibility.culling_stats.visible_chunks;
     stats["frustum_culled_chunks"] = visibility.culling_stats.frustum_culled_chunks;
     stats["loaded_chunks"] = visibility.culling_stats.loaded_chunks;
+    stats["resident_chunks"] = visibility.culling_stats.resident_chunks;
+    stats["atlas_published_chunks"] = global_atlas_registry.get_atlas_published_chunks();
     stats["culling_enabled"] = visibility.chunk_frustum_culling_enabled;
     stats["frustum_padding"] = visibility.chunk_frustum_padding;
     stats["zero_visible_consecutive_frames"] = visibility.zero_visible_recovery.zero_visible_consecutive_frames;

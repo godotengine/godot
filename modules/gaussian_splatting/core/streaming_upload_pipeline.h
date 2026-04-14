@@ -2,6 +2,7 @@
 #define STREAMING_UPLOAD_PIPELINE_H
 
 #include "gaussian_data.h"
+#include "streaming_chunk_payload_source.h"
 #include "core/os/mutex.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -15,6 +16,22 @@ class GaussianStreamingSystem;
 
 class StreamingUploadPipeline {
 public:
+    struct PackSnapshotScratch {
+        LocalVector<Gaussian> gaussian_snapshot;
+        LocalVector<Vector3> sh_high_order_snapshot;
+    };
+
+    struct UploadCoalescingCandidate {
+        uint32_t buffer_slot = UINT32_MAX;
+        uint32_t packed_count = 0;
+        uint32_t bytes_uploaded = 0;
+    };
+
+    struct UploadCoalescingPlan {
+        uint32_t coalesced_job_count = 1;
+        uint64_t total_bytes = 0;
+    };
+
     struct PackJob {
         uint32_t asset_id = 0;
         uint32_t chunk_idx = UINT32_MAX;
@@ -26,6 +43,7 @@ public:
         bool uses_explicit_source_indices = false;
         LocalVector<uint32_t> source_indices;
         Ref<GaussianData> data_ref;
+        Ref<ChunkPayloadSource> payload_source;
     };
 
     struct PendingChunkUpload {
@@ -248,6 +266,8 @@ public:
     uint32_t pack_queue_read_idx = 0;
     LocalVector<PendingChunkUpload *> upload_queue;
     uint32_t upload_queue_read_idx = 0;
+    PackSnapshotScratch sync_pack_scratch;
+    Vector<PackedGaussian> upload_coalescing_scratch;
     std::atomic<uint32_t> pack_queue_depth_cached{0};
     std::atomic<uint32_t> upload_queue_depth_cached{0};
 
@@ -265,16 +285,40 @@ public:
     uint32_t get_pack_queue_depth_cached() const;
     uint32_t get_upload_queue_depth_cached() const;
     void get_pending_queue_depths_cached(uint32_t &r_pack_queue_depth, uint32_t &r_upload_queue_depth) const;
+#if defined(TESTS_ENABLED)
+    void _test_set_async_pack_queue_owner(bool p_has_owner) {
+        async_pack_enabled = true;
+        pack_thread_running.store(p_has_owner, std::memory_order_release);
+    }
+    void _test_enqueue_dummy_pack_job() {
+        MutexLock lock(pack_mutex);
+        pack_queue.push_back(PackJob());
+        sync_cached_queue_depths_locked();
+    }
+    uint32_t _test_promote_pack_jobs_sync(uint32_t p_max_jobs) { return promote_pack_jobs_sync(p_max_jobs); }
+    bool _test_has_async_pack_queue_owner() const { return has_async_pack_queue_owner(); }
+    uint32_t _test_get_sync_snapshot_gaussian_size() const { return sync_pack_scratch.gaussian_snapshot.size(); }
+    uint32_t _test_get_sync_snapshot_gaussian_capacity() const { return sync_pack_scratch.gaussian_snapshot.get_capacity(); }
+    static UploadCoalescingPlan _test_plan_coalesced_upload_batch(
+            const LocalVector<UploadCoalescingCandidate> &p_candidates, uint64_t p_byte_limit) {
+        return _plan_coalesced_upload_batch(p_candidates, p_byte_limit);
+    }
+#endif
 
 private:
+    bool has_async_pack_queue_owner() const;
     bool pop_pack_job(PackJob &r_job);
-    PendingChunkUpload *build_pending_upload_from_pack_job(const PackJob &p_job);
+    PendingChunkUpload *build_pending_upload_from_pack_job(const PackJob &p_job, PackSnapshotScratch &r_scratch);
     void enqueue_upload_job(PendingChunkUpload *p_job);
     uint32_t promote_pack_jobs_sync(uint32_t p_max_jobs);
     bool pop_upload_job(PendingChunkUpload *&job);
+    uint32_t peek_upload_jobs(uint32_t p_max_jobs, LocalVector<PendingChunkUpload *> &r_jobs);
+    uint32_t consume_upload_jobs(uint32_t p_count);
     UploadBudgetState prepare_upload_budget_state();
     uint32_t get_pack_queue_depth_unsafe() const;
     uint32_t get_upload_queue_depth_unsafe() const;
+    static UploadCoalescingPlan _plan_coalesced_upload_batch(
+            const LocalVector<UploadCoalescingCandidate> &p_candidates, uint64_t p_byte_limit);
     void compact_queues_locked();
     void sync_cached_queue_depths_locked();
     void record_pack_mutex_wait(uint64_t wait_start_usec);

@@ -31,6 +31,13 @@ static void _bump_instance_generation(uint64_t &r_generation) {
 	}
 }
 
+static void _bump_instance_asset_generation(uint64_t &r_generation) {
+	r_generation++;
+	if (r_generation == 0) {
+		r_generation = 1;
+	}
+}
+
 static bool _dict_get_bool(const Dictionary &p_dict, const StringName &p_key, bool p_default) {
 	if (!p_dict.has(p_key)) {
 		return p_default;
@@ -101,50 +108,73 @@ static const StringName WORLD_STREAMING_VRAM_MAX_CHUNKS("vram_max_chunks");
 static const StringName WORLD_STREAMING_OVERRIDE_IO_SOURCE("override_io_source");
 static const StringName WORLD_STREAMING_IO_SOURCE_PATH("io_source_path");
 
-struct WorldSubmissionRendererConfigSnapshot {
-	bool valid = false;
-	bool lod_enabled = true;
-	float lod_bias = 1.0f;
-	float lod_max_distance = 0.0f;
-	bool frustum_culling = true;
-	bool async_upload_enabled = true;
-	float opacity_multiplier = 1.0f;
-	int max_splats = 1000000;
-	GaussianStreamingTypes::ConfigOverrides streaming_overrides;
-};
+GaussianSplatRenderer::WorldSubmissionContract GaussianSplatSceneDirector::_build_world_submission_contract(
+		const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot &p_renderer_state,
+		const SharedWorld::WorldSubmissionRecord &p_record) {
+	GaussianSplatRenderer::WorldSubmissionContract contract;
+	contract.gaussian_data = p_record.gaussian_data;
+	contract.payload_source = p_record.payload_source;
+	contract.static_chunks = p_record.static_chunks;
+	contract.debug_label = _dict_get_string(p_record.metadata, StringName("world_path"));
+	contract.has_desired_residency_hint = p_record.has_desired_residency_hint;
+	contract.desired_residency_hint = p_record.desired_residency_hint;
 
-static WorldSubmissionRendererConfigSnapshot _snapshot_world_submission_renderer_config(const Ref<GaussianSplatRenderer> &p_renderer) {
-	WorldSubmissionRendererConfigSnapshot snapshot;
-	if (p_renderer.is_null()) {
-		return snapshot;
+	const Dictionary &overrides = p_record.desired_renderer_overrides;
+	contract.lod_enabled = _dict_get_bool(overrides, WORLD_OVERRIDE_LOD_ENABLED, p_renderer_state.lod_enabled);
+	contract.lod_bias = _dict_get_float(overrides, WORLD_OVERRIDE_LOD_BIAS, p_renderer_state.lod_bias);
+	contract.lod_max_distance = _dict_get_float(overrides, WORLD_OVERRIDE_LOD_MAX_DISTANCE, p_renderer_state.lod_max_distance);
+	contract.frustum_culling = _dict_get_bool(overrides, WORLD_OVERRIDE_FRUSTUM_CULLING, p_renderer_state.frustum_culling);
+	contract.async_upload_enabled = _dict_get_bool(overrides, WORLD_OVERRIDE_ASYNC_UPLOAD_ENABLED, p_renderer_state.async_upload_enabled);
+	contract.opacity_multiplier = _dict_get_float(overrides, WORLD_OVERRIDE_OPACITY_MULTIPLIER, p_renderer_state.opacity_multiplier);
+	contract.streaming_overrides = p_renderer_state.streaming_overrides;
+
+	if (overrides.has(WORLD_OVERRIDE_STREAMING)) {
+		const Dictionary streaming_dict = _dict_get_dictionary(overrides, WORLD_OVERRIDE_STREAMING);
+		contract.streaming_overrides.override_prefetch =
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_PREFETCH, contract.streaming_overrides.override_prefetch);
+		contract.streaming_overrides.predictive_prefetch_enabled =
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_PREDICTIVE_PREFETCH_ENABLED,
+						contract.streaming_overrides.predictive_prefetch_enabled);
+		contract.streaming_overrides.prefetch_lookahead_distance =
+				_dict_get_float(streaming_dict, WORLD_STREAMING_PREFETCH_LOOKAHEAD_DISTANCE,
+						contract.streaming_overrides.prefetch_lookahead_distance);
+		contract.streaming_overrides.override_vram_budget =
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_VRAM_BUDGET,
+						contract.streaming_overrides.override_vram_budget);
+		contract.streaming_overrides.vram_budget_config.budget_mb =
+				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_BUDGET_MB,
+						int(contract.streaming_overrides.vram_budget_config.budget_mb)));
+		contract.streaming_overrides.vram_budget_config.min_chunks =
+				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MIN_CHUNKS,
+						int(contract.streaming_overrides.vram_budget_config.min_chunks)));
+		contract.streaming_overrides.vram_budget_config.max_chunks =
+				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MAX_CHUNKS,
+						int(contract.streaming_overrides.vram_budget_config.max_chunks)));
+		contract.streaming_overrides.override_io_source =
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_IO_SOURCE,
+						contract.streaming_overrides.override_io_source);
+		contract.streaming_overrides.io_source_path =
+				_dict_get_string(streaming_dict, WORLD_STREAMING_IO_SOURCE_PATH,
+						contract.streaming_overrides.io_source_path);
+		if (contract.streaming_overrides.override_vram_budget) {
+			contract.streaming_overrides.vram_budget_config.min_chunks =
+					MIN(contract.streaming_overrides.vram_budget_config.min_chunks,
+							contract.streaming_overrides.vram_budget_config.max_chunks);
+		}
 	}
 
-	snapshot.valid = true;
-	snapshot.lod_enabled = p_renderer->get_lod_enabled();
-	snapshot.lod_bias = p_renderer->get_lod_bias();
-	snapshot.lod_max_distance = p_renderer->get_lod_max_distance();
-	snapshot.frustum_culling = p_renderer->get_frustum_culling();
-	snapshot.async_upload_enabled = p_renderer->get_async_upload_enabled();
-	snapshot.opacity_multiplier = p_renderer->get_opacity_multiplier();
-	snapshot.max_splats = p_renderer->get_max_splats();
-	snapshot.streaming_overrides = p_renderer->get_streaming_config_overrides();
-	return snapshot;
-}
-
-static void _restore_world_submission_renderer_config(const Ref<GaussianSplatRenderer> &p_renderer,
-		const WorldSubmissionRendererConfigSnapshot &p_snapshot) {
-	if (p_renderer.is_null() || !p_snapshot.valid) {
-		return;
+	const uint32_t data_count = p_record.gaussian_data.is_valid() ? p_record.gaussian_data->get_count() : 0;
+	const int baseline_max_splats = MAX(1, p_renderer_state.max_splats);
+	const int requested_max_splats = _dict_get_int(overrides, WORLD_OVERRIDE_MAX_SPLATS, baseline_max_splats);
+	int effective_max_splats = requested_max_splats;
+	if (effective_max_splats <= 0) {
+		effective_max_splats = data_count > 0 ? int(data_count) : baseline_max_splats;
 	}
-
-	p_renderer->set_lod_enabled(p_snapshot.lod_enabled);
-	p_renderer->set_lod_bias(p_snapshot.lod_bias);
-	p_renderer->set_lod_max_distance(p_snapshot.lod_max_distance);
-	p_renderer->set_frustum_culling(p_snapshot.frustum_culling);
-	p_renderer->set_async_upload_enabled(p_snapshot.async_upload_enabled);
-	p_renderer->set_opacity_multiplier(p_snapshot.opacity_multiplier);
-	p_renderer->set_max_splats(p_snapshot.max_splats);
-	p_renderer->set_streaming_config_overrides(p_snapshot.streaming_overrides);
+	if (data_count > 0) {
+		effective_max_splats = MIN(effective_max_splats, int(data_count));
+	}
+	contract.max_splats = MAX(1, effective_max_splats);
+	return contract;
 }
 
 GaussianSplatSceneDirector *GaussianSplatSceneDirector::singleton = nullptr;
@@ -206,7 +236,13 @@ GaussianSplatSceneDirector::SharedWorld *GaussianSplatSceneDirector::_get_or_cre
 			GS_LOG_RENDERER_DEBUG("[SceneDirector] Created shared renderer (deferred initialization)");
 		}
 		if (entry->world_submission.active) {
-			_apply_world_submission_to_renderer(*entry, entry->world_submission);
+			const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot renderer_state =
+					entry->renderer->snapshot_world_submission_runtime_state();
+			if (!entry->world_submission.renderer_restore_state.valid) {
+				entry->world_submission.renderer_restore_state = renderer_state;
+			}
+			_apply_world_submission_to_renderer(*entry, entry->world_submission,
+					entry->world_submission.renderer_restore_state);
 		}
 	}
 
@@ -341,6 +377,7 @@ bool GaussianSplatSceneDirector::_retain_asset_record(SharedWorld &p_world, cons
 		new_record.refcount = 1;
 		p_world.asset_records.insert(p_asset_id, new_record);
 		_bump_instance_generation(p_world.instance_generation);
+		_bump_instance_asset_generation(p_world.instance_asset_generation);
 		return true;
 	}
 
@@ -354,6 +391,7 @@ bool GaussianSplatSceneDirector::_retain_asset_record(SharedWorld &p_world, cons
 		record->data = refreshed_data;
 		record->edited_version = edited_version;
 		_bump_instance_generation(p_world.instance_generation);
+		_bump_instance_asset_generation(p_world.instance_asset_generation);
 	}
 	record->refcount++;
 	return true;
@@ -383,6 +421,7 @@ bool GaussianSplatSceneDirector::_refresh_asset_record(SharedWorld &p_world, con
 	record->data = refreshed_data;
 	record->edited_version = edited_version;
 	_bump_instance_generation(p_world.instance_generation);
+	_bump_instance_asset_generation(p_world.instance_asset_generation);
 	return true;
 }
 
@@ -396,6 +435,7 @@ void GaussianSplatSceneDirector::_release_asset_record(SharedWorld &p_world, uin
 	}
 	if (record->refcount == 0) {
 		p_world.asset_records.erase(p_asset_id);
+		_bump_instance_asset_generation(p_world.instance_asset_generation);
 	}
 }
 
@@ -410,12 +450,14 @@ void GaussianSplatSceneDirector::_store_world_submission_record(SharedWorld::Wor
 		const WorldSubmission &p_submission) {
 	r_record.owner_id = p_submission.owner_id;
 	r_record.gaussian_data = p_submission.gaussian_data;
+	r_record.payload_source = p_submission.payload_source;
 	r_record.static_chunks = p_submission.static_chunks;
 	r_record.bounds = p_submission.bounds;
 	r_record.metadata = p_submission.metadata;
 	r_record.has_desired_residency_hint = p_submission.has_desired_residency_hint;
 	r_record.desired_residency_hint = p_submission.desired_residency_hint;
 	r_record.desired_renderer_overrides = p_submission.desired_renderer_overrides;
+	r_record.renderer_restore_state = GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot();
 	r_record.active = true;
 }
 
@@ -426,6 +468,7 @@ void GaussianSplatSceneDirector::_copy_world_submission_record(const SharedWorld
 	r_submission->owner_id = p_record.owner_id;
 	r_submission->scenario = p_world.scenario;
 	r_submission->gaussian_data = p_record.gaussian_data;
+	r_submission->payload_source = p_record.payload_source;
 	r_submission->static_chunks = p_record.static_chunks;
 	r_submission->bounds = p_record.bounds;
 	r_submission->metadata = p_record.metadata;
@@ -434,92 +477,41 @@ void GaussianSplatSceneDirector::_copy_world_submission_record(const SharedWorld
 	r_submission->desired_renderer_overrides = p_record.desired_renderer_overrides;
 }
 
-void GaussianSplatSceneDirector::_clear_world_submission_renderer(SharedWorld &p_world) {
+void GaussianSplatSceneDirector::_restore_world_submission_renderer(SharedWorld &p_world,
+		const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot &p_snapshot) {
 	if (!p_world.renderer.is_valid()) {
 		return;
 	}
-	p_world.renderer->set_gaussian_data(Ref<GaussianData>());
-	p_world.renderer->clear_static_chunks();
+	GaussianSplatRenderer *renderer = p_world.renderer.ptr();
+	ERR_FAIL_NULL(renderer);
+
+	if (!p_snapshot.valid) {
+		renderer->clear_world_submission_contract();
+		return;
+	}
+
+	const Error err = renderer->restore_world_submission_runtime_state(p_snapshot);
+	if (err != OK) {
+		GS_LOG_RENDERER_ERROR(vformat("[GaussianSplatSceneDirector] Failed to restore world submission renderer state (err=%d).", err));
+	}
 }
 
 bool GaussianSplatSceneDirector::_apply_world_submission_to_renderer(SharedWorld &p_world,
-		const SharedWorld::WorldSubmissionRecord &p_record) {
+		const SharedWorld::WorldSubmissionRecord &p_record,
+		const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot &p_renderer_state) {
 	if (!p_record.active || !p_world.renderer.is_valid()) {
 		return true;
 	}
 
 	GaussianSplatRenderer *renderer = p_world.renderer.ptr();
 	ERR_FAIL_NULL_V(renderer, false);
-
-	const Dictionary &overrides = p_record.desired_renderer_overrides;
-	renderer->set_lod_enabled(_dict_get_bool(overrides, WORLD_OVERRIDE_LOD_ENABLED, renderer->get_lod_enabled()));
-	renderer->set_lod_bias(_dict_get_float(overrides, WORLD_OVERRIDE_LOD_BIAS, renderer->get_lod_bias()));
-	renderer->set_lod_max_distance(_dict_get_float(overrides, WORLD_OVERRIDE_LOD_MAX_DISTANCE, renderer->get_lod_max_distance()));
-	renderer->set_frustum_culling(_dict_get_bool(overrides, WORLD_OVERRIDE_FRUSTUM_CULLING, renderer->get_frustum_culling()));
-	renderer->set_async_upload_enabled(_dict_get_bool(overrides, WORLD_OVERRIDE_ASYNC_UPLOAD_ENABLED, renderer->get_async_upload_enabled()));
-	renderer->set_opacity_multiplier(_dict_get_float(overrides, WORLD_OVERRIDE_OPACITY_MULTIPLIER, renderer->get_opacity_multiplier()));
-
-	if (overrides.has(WORLD_OVERRIDE_STREAMING)) {
-		GaussianStreamingTypes::ConfigOverrides streaming_overrides;
-		const Dictionary streaming_dict = _dict_get_dictionary(overrides, WORLD_OVERRIDE_STREAMING);
-		streaming_overrides.override_prefetch = _dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_PREFETCH, false);
-		streaming_overrides.predictive_prefetch_enabled = _dict_get_bool(streaming_dict, WORLD_STREAMING_PREDICTIVE_PREFETCH_ENABLED,
-				streaming_overrides.predictive_prefetch_enabled);
-		streaming_overrides.prefetch_lookahead_distance = _dict_get_float(streaming_dict, WORLD_STREAMING_PREFETCH_LOOKAHEAD_DISTANCE,
-				streaming_overrides.prefetch_lookahead_distance);
-		streaming_overrides.override_vram_budget = _dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_VRAM_BUDGET, false);
-		streaming_overrides.vram_budget_config.budget_mb = MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_BUDGET_MB,
-				int(streaming_overrides.vram_budget_config.budget_mb)));
-		streaming_overrides.vram_budget_config.min_chunks = MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MIN_CHUNKS,
-				int(streaming_overrides.vram_budget_config.min_chunks)));
-		streaming_overrides.vram_budget_config.max_chunks = MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MAX_CHUNKS,
-				int(streaming_overrides.vram_budget_config.max_chunks)));
-		streaming_overrides.override_io_source = _dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_IO_SOURCE, false);
-		streaming_overrides.io_source_path = _dict_get_string(streaming_dict, WORLD_STREAMING_IO_SOURCE_PATH);
-		if (streaming_overrides.override_vram_budget) {
-			streaming_overrides.vram_budget_config.min_chunks = MIN(streaming_overrides.vram_budget_config.min_chunks,
-					streaming_overrides.vram_budget_config.max_chunks);
-		}
-		renderer->set_streaming_config_overrides(streaming_overrides);
-	}
-
-	const uint32_t data_count = p_record.gaussian_data.is_valid() ? p_record.gaussian_data->get_count() : 0;
-	const int requested_max_splats = MAX(0, _dict_get_int(overrides, WORLD_OVERRIDE_MAX_SPLATS, renderer->get_max_splats()));
-	int effective_max_splats = requested_max_splats;
-	if (effective_max_splats > 0 && data_count > 0) {
-		effective_max_splats = MIN(effective_max_splats, int(data_count));
-	} else if (data_count > 0) {
-		effective_max_splats = int(data_count);
-	} else {
-		effective_max_splats = 1000;
-	}
-	renderer->set_max_splats(MAX(1000, effective_max_splats));
-
-	const auto &resource_state = renderer->get_resource_state();
-	if (!resource_state.gpu_resources_initialized && !resource_state.gpu_initialization_pending) {
-		renderer->initialize();
-	}
-
-	const Error err = renderer->set_gaussian_data(p_record.gaussian_data);
+	const GaussianSplatRenderer::WorldSubmissionContract contract =
+			_build_world_submission_contract(p_renderer_state, p_record);
+	const Error err = renderer->apply_world_submission_contract(contract);
 	if (err != OK) {
-		GS_LOG_RENDERER_ERROR(vformat("[GaussianSplatSceneDirector] Failed to apply world submission (err=%d).", err));
-		renderer->clear_static_chunks();
+		GS_LOG_RENDERER_ERROR(vformat("[GaussianSplatSceneDirector] Failed to apply world submission contract (err=%d).", err));
 		return false;
 	}
-
-	if (data_count == 0) {
-		const String world_path = _dict_get_string(p_record.metadata, StringName("world_path"));
-		if (world_path.is_empty()) {
-			WARN_PRINT("[GaussianSplatSceneDirector] World submission has zero splats; renderer will stay disconnected.");
-		} else {
-			WARN_PRINT(vformat("[GaussianSplatSceneDirector] World submission '%s' has zero splats; renderer will stay disconnected.",
-					world_path));
-		}
-		renderer->clear_static_chunks();
-		return true;
-	}
-
-	renderer->set_static_chunks(p_record.static_chunks);
 	return true;
 }
 
@@ -590,6 +582,7 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 	if (index_ptr && *index_ptr < world->instances.size()) {
 		InstanceRecord &record = world->instances[*index_ptr];
 		bool dirty = false;
+		bool asset_selection_dirty = false;
 		if (!record.transform.is_equal_approx(p_transform)) {
 			record.transform = p_transform;
 			dirty = true;
@@ -609,10 +602,12 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 		if (record.casts_shadow != p_casts_shadow) {
 			record.casts_shadow = p_casts_shadow;
 			dirty = true;
+			asset_selection_dirty = true;
 		}
 		if (record.visible != p_visible) {
 			record.visible = p_visible;
 			dirty = true;
+			asset_selection_dirty = true;
 		}
 		if (!Math::is_equal_approx(record.wind_intensity, wind_intensity)) {
 			record.wind_intensity = wind_intensity;
@@ -657,10 +652,14 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 			record.asset_id = asset_id;
 			record.last_lod = 0;
 			dirty = true;
+			asset_selection_dirty = true;
 		}
 		record.dirty = record.dirty || dirty;
 		if (dirty) {
 			_bump_instance_generation(world->instance_generation);
+		}
+		if (asset_selection_dirty) {
+			_bump_instance_asset_generation(world->instance_asset_generation);
 		}
 		return;
 	}
@@ -690,6 +689,7 @@ void GaussianSplatSceneDirector::register_instance(ObjectID p_node_id, const Ref
 	world->instance_lookup[p_node_id] = world->instances.size();
 	world->instances.push_back(record);
 	_bump_instance_generation(world->instance_generation);
+	_bump_instance_asset_generation(world->instance_asset_generation);
 	GaussianSplatting::debug_trace_record_event("instance_reg",
 			vformat("ADDED: instances_after=%d", world->instances.size()),
 			false);
@@ -742,6 +742,7 @@ void GaussianSplatSceneDirector::update_instance_params(ObjectID p_node_id, floa
 	const uint32_t wind_mode = MIN(p_wind_mode, (uint32_t)INSTANCE_WIND_FORCE_ENABLED);
 	const float wind_frequency = MAX(0.0f, p_wind_frequency);
 	bool dirty = false;
+	bool asset_selection_dirty = false;
 	if (!Math::is_equal_approx(record.opacity, p_opacity)) {
 		record.opacity = p_opacity;
 		dirty = true;
@@ -757,10 +758,12 @@ void GaussianSplatSceneDirector::update_instance_params(ObjectID p_node_id, floa
 	if (record.casts_shadow != p_casts_shadow) {
 		record.casts_shadow = p_casts_shadow;
 		dirty = true;
+		asset_selection_dirty = true;
 	}
 	if (record.visible != p_visible) {
 		record.visible = p_visible;
 		dirty = true;
+		asset_selection_dirty = true;
 	}
 	if (!Math::is_equal_approx(record.wind_intensity, wind_intensity)) {
 		record.wind_intensity = wind_intensity;
@@ -790,6 +793,9 @@ void GaussianSplatSceneDirector::update_instance_params(ObjectID p_node_id, floa
 	if (dirty) {
 		_bump_instance_generation(world->instance_generation);
 	}
+	if (asset_selection_dirty) {
+		_bump_instance_asset_generation(world->instance_asset_generation);
+	}
 }
 
 void GaussianSplatSceneDirector::unregister_instance(ObjectID p_node_id) {
@@ -818,6 +824,7 @@ void GaussianSplatSceneDirector::unregister_instance(ObjectID p_node_id) {
 	world->instance_lookup.erase(p_node_id);
 	_release_asset_record(*world, asset_id);
 	_bump_instance_generation(world->instance_generation);
+	_bump_instance_asset_generation(world->instance_asset_generation);
 
 	_prune_world_if_unused(world->scenario);
 }
@@ -1116,7 +1123,38 @@ void GaussianSplatSceneDirector::build_instance_buffer_for_renderer(const Gaussi
 	out.clear();
 
 	const SharedWorld *world = _find_world_for_renderer(p_renderer);
-	if (!world || world->instances.is_empty()) {
+	if (!world) {
+		return;
+	}
+
+	// World submission instance: when the world has an active world submission with
+	// renderable data and no normal instances, produce a proper identity-transform
+	// instance referencing the primary asset (id=0).  This replaces the synthetic
+	// fallback shim that render_streaming_orchestrator previously injected.
+	if (world->instances.is_empty()) {
+		if (world->world_submission.active &&
+				world->world_submission.gaussian_data.is_valid() &&
+				world->world_submission.gaussian_data->get_count() > 0) {
+			InstanceDataGPU entry = {};
+			entry.rotation[3] = 1.0f;
+			entry.inv_rotation[3] = 1.0f;
+			entry.translation_scale[3] = 1.0f;
+			entry.params[0] = 1.0f; // opacity
+			entry.params[1] = 1.0f; // lod_bias
+			entry.params[2] = 1.0f; // wind_intensity
+			entry.params[3] = 0.0f; // wind_mode
+			entry.ids[0] = 0u; // primary asset id
+			entry.ids[1] = GS_INSTANCE_FLAG_ROTATION_IDENTITY |
+					GS_INSTANCE_FLAG_SCALE_IDENTITY |
+					GS_INSTANCE_FLAG_TRANSLATION_ZERO;
+			entry.lod[0] = 0;
+			entry.lod[1] = 0;
+			entry.wind_params[0] = 0.0f;
+			entry.wind_params[1] = 0.0f;
+			entry.wind_params[2] = 0.0f;
+			entry.wind_params[3] = 1.0f;
+			out.push_back(entry);
+		}
 		return;
 	}
 
@@ -1245,6 +1283,15 @@ uint64_t GaussianSplatSceneDirector::get_instance_generation_for_renderer(const 
 	return world->instance_generation;
 }
 
+uint64_t GaussianSplatSceneDirector::get_instance_asset_generation_for_renderer(const GaussianSplatRenderer *p_renderer) const {
+	MutexLock lock(world_mutex);
+	const SharedWorld *world = _find_world_for_renderer(p_renderer);
+	if (!world) {
+		return 0;
+	}
+	return world->instance_asset_generation;
+}
+
 uint32_t GaussianSplatSceneDirector::get_instance_count_for_renderer(const GaussianSplatRenderer *p_renderer) const {
 	MutexLock lock(world_mutex);
 	const SharedWorld *world = _find_world_for_renderer(p_renderer);
@@ -1275,22 +1322,24 @@ bool GaussianSplatSceneDirector::submit_world_submission(const WorldSubmission &
 		}
 	}
 
-	const WorldSubmissionRendererConfigSnapshot target_previous_renderer_config =
-			_snapshot_world_submission_renderer_config(world->renderer);
+	const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot target_previous_renderer_state =
+			world->renderer.is_valid()
+					? world->renderer->snapshot_world_submission_runtime_state()
+					: GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot();
 	SharedWorld::WorldSubmissionRecord candidate_record;
 	_store_world_submission_record(candidate_record, p_submission);
-	if (!_apply_world_submission_to_renderer(*world, candidate_record)) {
-		_restore_world_submission_renderer_config(world->renderer, target_previous_renderer_config);
-		if (target_previous_record.active) {
-			_apply_world_submission_to_renderer(*world, target_previous_record);
-		} else {
-			_clear_world_submission_renderer(*world);
-		}
+	candidate_record.renderer_restore_state = target_previous_record.active
+			? (target_previous_record.renderer_restore_state.valid
+					? target_previous_record.renderer_restore_state
+					: target_previous_renderer_state)
+			: target_previous_renderer_state;
+	if (!_apply_world_submission_to_renderer(*world, candidate_record, candidate_record.renderer_restore_state)) {
+		_restore_world_submission_renderer(*world, target_previous_renderer_state);
 		return false;
 	}
 
 	if (previous_world && previous_world != world) {
-		_clear_world_submission_renderer(*previous_world);
+		_restore_world_submission_renderer(*previous_world, previous_world->world_submission.renderer_restore_state);
 		previous_world->world_submission = SharedWorld::WorldSubmissionRecord();
 	}
 
@@ -1305,7 +1354,7 @@ void GaussianSplatSceneDirector::release_world_submission(ObjectID p_owner_id) {
 		return;
 	}
 	const RID scenario = world->scenario;
-	_clear_world_submission_renderer(*world);
+	_restore_world_submission_renderer(*world, world->world_submission.renderer_restore_state);
 	world->world_submission = SharedWorld::WorldSubmissionRecord();
 	_prune_world_if_unused(scenario);
 }
@@ -1339,7 +1388,12 @@ bool GaussianSplatSceneDirector::get_world_submission_for_scenario(const RID &p_
 bool GaussianSplatSceneDirector::has_world_submission_for_renderer(const GaussianSplatRenderer *p_renderer) const {
 	MutexLock lock(world_mutex);
 	const SharedWorld *world = _find_world_for_renderer(p_renderer);
-	return world && world->world_submission.active;
+	if (!world || !world->world_submission.active) {
+		return false;
+	}
+
+	return world->world_submission.gaussian_data.is_valid() &&
+			world->world_submission.gaussian_data->get_count() > 0;
 }
 
 bool GaussianSplatSceneDirector::get_submission_residency_hint_for_renderer(const GaussianSplatRenderer *p_renderer,
@@ -1348,7 +1402,11 @@ bool GaussianSplatSceneDirector::get_submission_residency_hint_for_renderer(cons
 
 	MutexLock lock(world_mutex);
 	if (const SharedWorld *world = _find_world_for_renderer(p_renderer)) {
-		if (world->world_submission.active && world->world_submission.has_desired_residency_hint) {
+		const bool world_submission_has_renderable_data =
+				world->world_submission.gaussian_data.is_valid() &&
+				world->world_submission.gaussian_data->get_count() > 0;
+		if (world->world_submission.active && world_submission_has_renderable_data &&
+				world->world_submission.has_desired_residency_hint) {
 			*r_hint = world->world_submission.desired_residency_hint;
 			if (r_source) {
 				*r_source = "world_submission";

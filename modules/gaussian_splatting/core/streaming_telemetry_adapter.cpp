@@ -9,6 +9,7 @@ static void _apply_queue_pressure_common(Dictionary &r_snapshot,
     r_snapshot[Variant("queue_pressure_source")] = p_snapshot.source;
     r_snapshot[Variant("queue_pressure_reason")] = p_snapshot.reason;
     r_snapshot[Variant("queue_pressure_backlog_depth")] = static_cast<int64_t>(p_snapshot.backlog_depth);
+    r_snapshot[Variant("queue_pressure_total_pending_chunks")] = static_cast<int64_t>(p_snapshot.total_pending_chunks);
     r_snapshot[Variant("queue_pressure_pack_source_active")] = p_snapshot.pack_source_active;
     r_snapshot[Variant("queue_pressure_upload_source_active")] = p_snapshot.upload_source_active;
     r_snapshot[Variant("queue_pressure_sync_source_active")] = p_snapshot.sync_source_active;

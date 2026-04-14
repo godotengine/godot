@@ -763,6 +763,20 @@ private:
 
 			// Pass 1: count overlaps per tile.
 			renderer.binning_stage.clear_tile_counts(resource_device);
+			// Zero the subpixel_visibility buffer so EMIT cannot read a stale
+			// "visible=1" from a previous frame when COUNT took an early
+			// return (conic invalid, distance cull, eigen reject, etc.) and
+			// never wrote its decision for this splat. A stale visible=1 made
+			// EMIT process tiles that COUNT had not counted, which exceeded
+			// the per-tile prefix-scan allocation (range.y) and was the
+			// primary source of per-tile clamp spikes on the corridor proof.
+			if (renderer.subpixel_visibility_buffers.subpixel_visibility_buffer.is_valid() &&
+					renderer.subpixel_visibility_buffers.subpixel_visibility_size > 0 &&
+					resource_device) {
+				resource_device->buffer_clear(
+						renderer.subpixel_visibility_buffers.subpixel_visibility_buffer,
+						0, renderer.subpixel_visibility_buffers.subpixel_visibility_size);
+			}
 
 			TileBinningStage::BinningUniformSets count_sets;
 			renderer.binning_stage.prepare_count_uniform_sets(uniform_device, params.gaussian_buffer, params.sorted_indices, params, count_sets);
@@ -819,6 +833,14 @@ private:
 					// Re-run COUNT + PREFIX so the new buffers contain valid data.
 					renderer.global_sort_resources.advance_tile_counts_buffer();
 					renderer.binning_stage.clear_tile_counts(resource_device);
+					// Same stale-visibility guard as the initial COUNT dispatch.
+					if (renderer.subpixel_visibility_buffers.subpixel_visibility_buffer.is_valid() &&
+							renderer.subpixel_visibility_buffers.subpixel_visibility_size > 0 &&
+							resource_device) {
+						resource_device->buffer_clear(
+								renderer.subpixel_visibility_buffers.subpixel_visibility_buffer,
+								0, renderer.subpixel_visibility_buffers.subpixel_visibility_size);
+					}
 
 					renderer.binning_stage.prepare_count_uniform_sets(uniform_device,
 							params.gaussian_buffer, params.sorted_indices, params, count_sets);

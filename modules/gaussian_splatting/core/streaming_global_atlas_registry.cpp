@@ -16,6 +16,9 @@
 
 namespace {
 
+constexpr uint32_t CHUNK_META_FULL_UPLOAD_RANGE_THRESHOLD = 16;
+constexpr uint32_t CHUNK_META_FULL_UPLOAD_DIRTY_DIVISOR = 4;
+
 bool _is_streaming_debug_enabled() {
 	ProjectSettings *ps = ProjectSettings::get_singleton();
 	if (!ps) {
@@ -74,6 +77,70 @@ uint64_t StreamingGlobalAtlasRegistry::get_auxiliary_vram_overhead_bytes() const
 			uint64_t(chunk_meta_buffer_size) +
 			uint64_t(asset_chunk_index_buffer_size);
 }
+
+void StreamingGlobalAtlasRegistry::_invalidate_chunk_meta_tracking() {
+	asset_registry_dirty = true;
+	asset_meta_dirty = true;
+	asset_chunk_index_dirty = true;
+	chunk_meta_dirty_all = true;
+	chunk_meta_dirty_indices.clear();
+	_clear_dirty_flags(chunk_meta_dirty_flags);
+}
+
+void StreamingGlobalAtlasRegistry::_invalidate_published_buffers() {
+	global_atlas_state.asset_meta_buffer = RID();
+	global_atlas_state.chunk_meta_buffer = RID();
+	global_atlas_state.asset_chunk_index_buffer = RID();
+	global_atlas_state.quantization_buffer = RID();
+}
+
+StreamingGlobalAtlasRegistry::ChunkMetaUploadPlan StreamingGlobalAtlasRegistry::_plan_chunk_meta_uploads(
+		LocalVector<uint32_t> &r_dirty_indices, uint32_t p_total_chunks) {
+	ChunkMetaUploadPlan plan;
+	if (r_dirty_indices.is_empty() || p_total_chunks == 0) {
+		r_dirty_indices.clear();
+		return plan;
+	}
+
+	uint32_t dirty_count = r_dirty_indices.size();
+	uint32_t *dirty_ptr = r_dirty_indices.ptr();
+	std::sort(dirty_ptr, dirty_ptr + dirty_count);
+
+	uint32_t filtered_count = 0;
+	uint32_t last_idx = UINT32_MAX;
+	for (uint32_t i = 0; i < dirty_count; i++) {
+		const uint32_t idx = dirty_ptr[i];
+		if (idx >= p_total_chunks || idx == last_idx) {
+			continue;
+		}
+		dirty_ptr[filtered_count++] = idx;
+		last_idx = idx;
+	}
+	r_dirty_indices.resize(filtered_count);
+	plan.dirty_count = filtered_count;
+	if (filtered_count == 0) {
+		return plan;
+	}
+
+	uint32_t range_count = 1;
+	for (uint32_t i = 1; i < filtered_count; i++) {
+		if (dirty_ptr[i] != dirty_ptr[i - 1] + 1u) {
+			range_count++;
+		}
+	}
+	plan.contiguous_range_count = range_count;
+	plan.full_update = (filtered_count * CHUNK_META_FULL_UPLOAD_DIRTY_DIVISOR >= p_total_chunks) ||
+			(range_count >= CHUNK_META_FULL_UPLOAD_RANGE_THRESHOLD);
+	return plan;
+}
+
+#if defined(TESTS_ENABLED)
+StreamingGlobalAtlasRegistry::ChunkMetaUploadPlan StreamingGlobalAtlasRegistry::_test_plan_chunk_meta_uploads(
+		const LocalVector<uint32_t> &p_dirty_indices, uint32_t p_total_chunks) {
+	LocalVector<uint32_t> dirty_indices = p_dirty_indices;
+	return _plan_chunk_meta_uploads(dirty_indices, p_total_chunks);
+}
+#endif
 
 void StreamingGlobalAtlasRegistry::cleanup(RenderingDevice *p_rd) {
 	auto release_buffer = [p_rd](RID &buffer, uint32_t &size, const char *label) {
@@ -239,6 +306,7 @@ void StreamingGlobalAtlasRegistry::build_cpu_state(GaussianStreamingSystem &syst
 			resident_meta_chunks++;
 		}
 	}
+	atlas_published_chunk_count = resident_meta_chunks;
 	if (log_enabled) {
 		const uint64_t system_id = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&system));
 		GS_LOG_STREAMING_DEBUG(vformat("[Streaming DIAG] atlas cpu meta built: system=%s total_chunks=%d resident_meta_chunks=%d loaded_chunks_count=%d",
@@ -308,6 +376,17 @@ void StreamingGlobalAtlasRegistry::update_chunk_meta_entry(GaussianStreamingSyst
 	meta.flags = _pack_data_gpu_flags(asset->data);
 	meta.sh_limit = sh_band_limit;
 
+	// Track atlas-published chunk count delta.
+	const bool was_published = chunk_meta_cpu[global_idx].splat_count > 0;
+	const bool now_published = meta.splat_count > 0;
+	if (was_published && !now_published) {
+		if (atlas_published_chunk_count > 0) {
+			atlas_published_chunk_count--;
+		}
+	} else if (!was_published && now_published) {
+		atlas_published_chunk_count++;
+	}
+
 	chunk_meta_cpu[global_idx] = meta;
 }
 
@@ -322,10 +401,34 @@ void StreamingGlobalAtlasRegistry::mark_chunk_meta_dirty(GaussianStreamingSystem
 
 	GaussianStreamingSystem::AtlasAssetState *asset = system._get_asset_state(asset_id);
 	if (!asset) {
+		WARN_PRINT_ONCE(vformat("[Streaming] mark_chunk_meta_dirty rejected invalid asset %d for chunk %d; forcing atlas rebuild.",
+				asset_id, chunk_idx));
+		_invalidate_chunk_meta_tracking();
+		return;
+	}
+
+	LocalVector<GaussianStreamingSystem::StreamingChunk> &asset_chunks = system._get_asset_chunks(*asset);
+	if (chunk_idx >= asset_chunks.size()) {
+		WARN_PRINT_ONCE(vformat("[Streaming] mark_chunk_meta_dirty rejected out-of-range chunk %d for asset %d (chunk_count=%d); forcing atlas rebuild.",
+				chunk_idx, asset_id, asset_chunks.size()));
+		_invalidate_chunk_meta_tracking();
+		return;
+	}
+	if (asset->chunk_meta_base > chunk_meta_cpu.size() ||
+			asset->chunk_meta_base + asset_chunks.size() > chunk_meta_cpu.size()) {
+		WARN_PRINT_ONCE(vformat("[Streaming] mark_chunk_meta_dirty rejected stale chunk meta range for asset %d ([%d, %d) vs cpu_size=%d); forcing atlas rebuild.",
+				asset_id,
+				asset->chunk_meta_base,
+				asset->chunk_meta_base + asset_chunks.size(),
+				chunk_meta_cpu.size()));
+		_invalidate_chunk_meta_tracking();
 		return;
 	}
 	const uint32_t global_idx = asset->chunk_meta_base + chunk_idx;
 	if (global_idx >= chunk_meta_cpu.size()) {
+		WARN_PRINT_ONCE(vformat("[Streaming] mark_chunk_meta_dirty rejected out-of-range chunk %d for asset %d; forcing atlas rebuild.",
+				chunk_idx, asset_id));
+		_invalidate_chunk_meta_tracking();
 		return;
 	}
 
@@ -335,6 +438,9 @@ void StreamingGlobalAtlasRegistry::mark_chunk_meta_dirty(GaussianStreamingSystem
 		return;
 	}
 	if (chunk_meta_dirty_flags.is_empty() || global_idx >= chunk_meta_dirty_flags.size()) {
+		WARN_PRINT_ONCE(vformat("[Streaming] mark_chunk_meta_dirty missing dirty-flag tracking for asset %d chunk %d (global_idx=%d flags=%d); forcing atlas rebuild.",
+				asset_id, chunk_idx, global_idx, chunk_meta_dirty_flags.size()));
+		_invalidate_chunk_meta_tracking();
 		return;
 	}
 	if (chunk_meta_dirty_flags[global_idx] == 0) {
@@ -387,10 +493,8 @@ void StreamingGlobalAtlasRegistry::sync_to_gpu(GaussianStreamingSystem &system, 
 	if (!p_rd) {
 		if (atlas_dirty) {
 			WARN_PRINT_ONCE("[Streaming DIAG] _sync_global_atlas_state skipped GPU upload because RenderingDevice is null while atlas is dirty.");
+			cleanup(nullptr);
 		}
-		global_atlas_state.asset_meta_buffer = asset_meta_buffer;
-		global_atlas_state.chunk_meta_buffer = chunk_meta_buffer;
-		global_atlas_state.asset_chunk_index_buffer = asset_chunk_index_buffer;
 		return;
 	}
 
@@ -444,60 +548,57 @@ void StreamingGlobalAtlasRegistry::sync_to_gpu(GaussianStreamingSystem &system, 
 			_clear_dirty_flags(chunk_meta_dirty_flags);
 			atlas_dirty = true;
 		} else if (!chunk_meta_dirty_indices.is_empty()) {
-			uint32_t dirty_count = chunk_meta_dirty_indices.size();
-			uint32_t *dirty_ptr = chunk_meta_dirty_indices.ptr();
-			std::sort(dirty_ptr, dirty_ptr + dirty_count);
+			const ChunkMetaUploadPlan upload_plan =
+					_plan_chunk_meta_uploads(chunk_meta_dirty_indices, chunk_meta_cpu.size());
+			if (upload_plan.dirty_count == 0) {
+				chunk_meta_dirty_indices.clear();
+			} else if (upload_plan.full_update) {
+				p_rd->buffer_update(chunk_meta_buffer, 0, chunk_meta_size, chunk_span.reinterpret<uint8_t>().ptr());
+				chunk_meta_dirty_indices.clear();
+				_clear_dirty_flags(chunk_meta_dirty_flags);
+				atlas_dirty = true;
+			} else {
+				const uint32_t dirty_count = upload_plan.dirty_count;
+				uint32_t *dirty_ptr = chunk_meta_dirty_indices.ptr();
+				uint32_t range_start = UINT32_MAX;
+				uint32_t range_end = UINT32_MAX;
+				for (uint32_t i = 0; i <= dirty_count; i++) {
+					const bool at_end = i == dirty_count;
+					const uint32_t idx = at_end ? UINT32_MAX : dirty_ptr[i];
+					if (range_start == UINT32_MAX) {
+						if (!at_end) {
+							range_start = idx;
+							range_end = idx;
+						}
+						continue;
+					}
 
-			uint32_t filtered_count = 0;
-			uint32_t last_idx = UINT32_MAX;
-			for (uint32_t i = 0; i < dirty_count; i++) {
-				const uint32_t idx = dirty_ptr[i];
-				if (idx >= chunk_meta_cpu.size() || idx == last_idx) {
-					continue;
-				}
-				dirty_ptr[filtered_count++] = idx;
-				last_idx = idx;
-			}
+					if (!at_end && idx == range_end + 1u) {
+						range_end = idx;
+						continue;
+					}
 
-			uint32_t range_start = UINT32_MAX;
-			uint32_t range_end = UINT32_MAX;
-			for (uint32_t i = 0; i <= filtered_count; i++) {
-				const bool at_end = i == filtered_count;
-				const uint32_t idx = at_end ? UINT32_MAX : dirty_ptr[i];
-				if (range_start == UINT32_MAX) {
+					const uint32_t range_count = range_end - range_start + 1u;
+					const uint32_t offset = range_start * sizeof(ChunkMetaGPU);
+					const uint32_t update_size = range_count * sizeof(ChunkMetaGPU);
+					p_rd->buffer_update(chunk_meta_buffer, offset, update_size, chunk_meta_cpu.ptr() + range_start);
+					for (uint32_t clear_idx = range_start; clear_idx <= range_end; clear_idx++) {
+						if (clear_idx < chunk_meta_dirty_flags.size()) {
+							chunk_meta_dirty_flags[clear_idx] = 0;
+						}
+					}
+
 					if (!at_end) {
 						range_start = idx;
 						range_end = idx;
-					}
-					continue;
-				}
-
-				if (!at_end && idx == range_end + 1u) {
-					range_end = idx;
-					continue;
-				}
-
-				const uint32_t range_count = range_end - range_start + 1u;
-				const uint32_t offset = range_start * sizeof(ChunkMetaGPU);
-				const uint32_t update_size = range_count * sizeof(ChunkMetaGPU);
-				p_rd->buffer_update(chunk_meta_buffer, offset, update_size, chunk_meta_cpu.ptr() + range_start);
-				for (uint32_t clear_idx = range_start; clear_idx <= range_end; clear_idx++) {
-					if (clear_idx < chunk_meta_dirty_flags.size()) {
-						chunk_meta_dirty_flags[clear_idx] = 0;
+					} else {
+						range_start = UINT32_MAX;
+						range_end = UINT32_MAX;
 					}
 				}
-
-				if (!at_end) {
-					range_start = idx;
-					range_end = idx;
-				} else {
-					range_start = UINT32_MAX;
-					range_end = UINT32_MAX;
-				}
+				chunk_meta_dirty_indices.clear();
+				atlas_dirty = true;
 			}
-
-			chunk_meta_dirty_indices.clear();
-			atlas_dirty = true;
 		}
 	}
 
@@ -527,15 +628,7 @@ void StreamingGlobalAtlasRegistry::sync_to_gpu(GaussianStreamingSystem &system, 
 	global_atlas_state.asset_meta_buffer = asset_meta_buffer;
 	global_atlas_state.chunk_meta_buffer = chunk_meta_buffer;
 	global_atlas_state.asset_chunk_index_buffer = asset_chunk_index_buffer;
-	static int atlas_sync_diag_counter = 0;
-	if (++atlas_sync_diag_counter <= 20) {
-		print_line(vformat("[Streaming DIAG] atlas sync publish: system=%s chunk_meta_rid=%d asset_meta_rid=%d chunk_index_rid=%d chunks=%d",
-				String::num_uint64(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(&system))),
-				chunk_meta_buffer.get_id(),
-				asset_meta_buffer.get_id(),
-				asset_chunk_index_buffer.get_id(),
-				chunk_meta_cpu.size()));
-	}
+
 	if (atlas_dirty) {
 		global_atlas_state.atlas_generation++;
 		if (global_atlas_state.atlas_generation == 0) {

@@ -16,8 +16,21 @@ import random
 import shutil
 import struct
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+RUNTIME_DIR = Path(__file__).resolve().parent
+if str(RUNTIME_DIR) not in sys.path:
+    sys.path.insert(0, str(RUNTIME_DIR))
+
+from open_world_chunked_asset_ladder import (
+    MAIN_PROJECT_FIXTURE_ROOT,
+    build_chunked_asset_reference,
+    build_chunked_asset_ladder,
+    validate_chunked_asset_ladder,
+    write_stage_manifests,
+)
 
 SH_C0 = 0.28209479177387814
 
@@ -87,6 +100,8 @@ CANONICAL_MANIFESTS: tuple[str, ...] = (
     "tests/examples/godot/test_project/tests/fixtures/benchmark_asset_manifest.json",
 )
 
+DECK_MANIFEST_PATH = "tests/examples/godot/test_project_deck/tests/fixtures/benchmark_asset_manifest.json"
+
 SCENE_DEFAULT_ASSETS: dict[str, str] = {
     "benchmark_suite_lane": "res://tests/fixtures/test_splats.ply",
     "benchmark_unified": "res://tests/fixtures/test_splats.ply",
@@ -104,6 +119,7 @@ SCENE_DEFAULT_ASSETS: dict[str, str] = {
 LANE_DEFAULT_ASSETS: dict[str, str] = {
     "static_baseline": "res://tests/fixtures/test_splats.ply",
     "streaming_corridor": "res://tests/fixtures/test_splats.ply",
+    "open_world_corridor_proof": build_chunked_asset_reference("open_world_corridor_20m"),
     "city_flyover": "res://tests/fixtures/test_splats.ply",
     "instance_storm": "res://tests/fixtures/test_splats.ply",
     "lighting_stress": "res://tests/fixtures/test_splats.ply",
@@ -115,6 +131,8 @@ LANE_DEFAULT_ASSETS: dict[str, str] = {
     "unified_composite": "res://tests/fixtures/test_splats.ply",
     "small_baseline": "res://tests/fixtures/test_splats.ply",
     "instance_pipeline_ab": "res://tests/fixtures/test_splats.ply",
+    "instance_pipeline_ab_serial": "res://tests/fixtures/test_splats.ply",
+    "instance_pipeline_ab_single_pass": "res://tests/fixtures/test_splats.ply",
     "synthetic_sphere": "res://tests/fixtures/synthetic_sphere.ply",
     "synthetic_cube": "res://tests/fixtures/synthetic_cube.ply",
     "synthetic_plane": "res://tests/fixtures/synthetic_plane.ply",
@@ -125,13 +143,163 @@ LANE_DEFAULT_ASSETS: dict[str, str] = {
     "synthetic_flower_field": "res://tests/fixtures/synthetic_flower_field.ply",
 }
 
+LANE_METADATA: dict[str, dict[str, object]] = {
+    "static_baseline": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "published_baseline",
+        "notes": "Low-noise baseline lane backed by the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "streaming_corridor": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "proof_support_corridor_churn_smoke",
+        "notes": "Streaming-shaped corridor churn support lane currently backed by test_splats.ply; useful for proof-shape smoke coverage, not representative chunked evidence.",
+        "require_explicit_lane_default": True,
+    },
+    "open_world_corridor_proof": {
+        "asset_classification": "chunked_open_world_candidate",
+        "evidence_role": "proof_corridor_return_bootstrap",
+        "notes": "Dedicated world-consuming corridor proof lane. Consumes the canonical open-world corridor stage contract to build an approximately 20M-total benchmark-local GaussianSplatWorld using the deterministic spiral fixture; honest large-world candidate evidence, but not yet promoted real_chunked proof.",
+        "require_explicit_lane_default": True,
+        "resource_kind": "gaussian_world_contract",
+    },
+    "city_flyover": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "proof_support_boundary_crossing_smoke",
+        "notes": "High-altitude boundary-crossing support lane currently backed by test_splats.ply; useful for proof-shape smoke coverage, not representative chunked evidence.",
+        "require_explicit_lane_default": True,
+    },
+    "instance_storm": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Submission-pressure lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "lighting_stress": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Lighting stress lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "animation_arena": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Animation lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "lod_torture": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "LOD churn lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "integrity_sentinel": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Deterministic artifact-detection lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "parity_fidelity": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Parity-fidelity lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "long_soak": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "proof_support_city_roam_soak_smoke",
+        "notes": "Long-horizon city-roam soak support lane currently backed by test_splats.ply; useful for proof-shape smoke coverage, not representative chunked evidence.",
+        "require_explicit_lane_default": True,
+    },
+    "unified_composite": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "proof_support_integrated_composite_smoke",
+        "notes": "Integrated composite support lane currently backed by test_splats.ply; useful for combined-system smoke coverage, not representative chunked evidence.",
+        "require_explicit_lane_default": True,
+    },
+    "small_baseline": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Small baseline lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "instance_pipeline_ab": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Shared A/B benchmark scene using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "instance_pipeline_ab_serial": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Serial instance-pipeline A/B lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "instance_pipeline_ab_single_pass": {
+        "asset_classification": "lightweight_smoke",
+        "evidence_role": "suite_support",
+        "notes": "Single-pass instance-pipeline A/B lane using the lightweight canonical smoke asset.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_sphere": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_cube": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_plane": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_torus": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_spiral": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_mandelbulb": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_cloud": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+    "synthetic_flower_field": {
+        "asset_classification": "deterministic_synthetic",
+        "evidence_role": "synthetic_support",
+        "notes": "Deterministic synthetic geometry support lane.",
+        "require_explicit_lane_default": True,
+    },
+}
+
 
 def _benchmark_asset_manifest() -> dict[str, object]:
     return {
-        "version": "2.0.0",
+        "chunked_asset_ladder": build_chunked_asset_ladder(),
+        "version": "2.3.0",
         "default_asset": "res://tests/fixtures/test_splats.ply",
         "scene_defaults": dict(SCENE_DEFAULT_ASSETS),
         "lane_defaults": dict(LANE_DEFAULT_ASSETS),
+        "lane_metadata": dict(LANE_METADATA),
     }
 
 
@@ -443,6 +611,7 @@ def _write_manifest(repo_root: Path) -> None:
         path = repo_root / rel_path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(encoded, encoding="utf-8")
+    write_stage_manifests(repo_root / MAIN_PROJECT_FIXTURE_ROOT)
 
 
 def _benchmark_scene_script_paths(repo_root: Path) -> list[str]:
@@ -463,6 +632,11 @@ def _check_only(repo_root: Path) -> int:
     missing: list[str] = []
     forbidden_present: list[str] = []
     legacy_path_references: list[str] = []
+    policy_failures: list[str] = []
+
+    ladder_failures = validate_chunked_asset_ladder()
+    for failure in ladder_failures:
+        policy_failures.append(f"open-world ladder: {failure}")
 
     for spec in CANONICAL_SPECS:
         file_path = repo_root / spec.relative_path
@@ -473,6 +647,63 @@ def _check_only(repo_root: Path) -> int:
         file_path = repo_root / rel_path
         if not file_path.is_file() or file_path.stat().st_size <= 0:
             missing.append(rel_path)
+            continue
+        try:
+            data = json.loads(file_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            policy_failures.append(f"{rel_path}: invalid JSON ({exc})")
+            continue
+        expected_ladder = build_chunked_asset_ladder()
+        if data.get("chunked_asset_ladder") != expected_ladder:
+            policy_failures.append(f"{rel_path}: chunked_asset_ladder is stale or mismatched")
+        raw_lane_defaults = data.get("lane_defaults", {})
+        if not isinstance(raw_lane_defaults, dict):
+            policy_failures.append(f"{rel_path}: lane_defaults must be a JSON object")
+        else:
+            chunked_lane_refs = sorted(
+                lane_id for lane_id, asset_path in raw_lane_defaults.items()
+                if isinstance(asset_path, str) and asset_path.startswith("chunked_ladder:")
+            )
+            illegal_chunked_refs = [lane_id for lane_id in chunked_lane_refs if lane_id != "open_world_corridor_proof"]
+            if illegal_chunked_refs:
+                policy_failures.append(
+                    f"{rel_path}: only open_world_corridor_proof may use chunked_ladder during bootstrap staging "
+                    f"({', '.join(illegal_chunked_refs)})"
+                )
+            if "open_world_corridor_proof" in chunked_lane_refs:
+                lane_metadata = data.get("lane_metadata", {})
+                proof_metadata = lane_metadata.get("open_world_corridor_proof", {}) if isinstance(lane_metadata, dict) else {}
+                if not isinstance(proof_metadata, dict):
+                    policy_failures.append(
+                        f"{rel_path}: open_world_corridor_proof lane_metadata must be an object"
+                    )
+                elif str(proof_metadata.get("resource_kind", "")).strip() != "gaussian_world_contract":
+                    policy_failures.append(
+                        f"{rel_path}: open_world_corridor_proof must declare resource_kind=gaussian_world_contract"
+                    )
+
+    deck_manifest = repo_root / DECK_MANIFEST_PATH
+    if not deck_manifest.is_file() or deck_manifest.stat().st_size <= 0:
+        missing.append(DECK_MANIFEST_PATH)
+    else:
+        try:
+            deck_data = json.loads(deck_manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            policy_failures.append(f"{DECK_MANIFEST_PATH}: invalid JSON ({exc})")
+        else:
+            deck_ladder = deck_data.get("chunked_asset_ladder")
+            if deck_ladder != {}:
+                policy_failures.append(f"{DECK_MANIFEST_PATH}: chunked_asset_ladder must stay empty for deck smoke lanes")
+
+    for asset_id, entry in build_chunked_asset_ladder().items():
+        staging = entry.get("staging", {})
+        repo_stage_manifest_path = str(staging.get("repo_stage_manifest_path", ""))
+        if not repo_stage_manifest_path:
+            policy_failures.append(f"open-world ladder: {asset_id} missing repo_stage_manifest_path")
+            continue
+        stage_manifest_path = repo_root / repo_stage_manifest_path
+        if not stage_manifest_path.is_file() or stage_manifest_path.stat().st_size <= 0:
+            missing.append(repo_stage_manifest_path)
 
     for rel_path in FORBIDDEN_LEGACY_PLYS:
         file_path = repo_root / rel_path
@@ -497,7 +728,7 @@ def _check_only(repo_root: Path) -> int:
                 legacy_path_references.append(f"{rel_path}: contains legacy token '{token}'")
                 break
 
-    if missing or forbidden_present or legacy_path_references:
+    if missing or forbidden_present or legacy_path_references or policy_failures:
         print("[prepare_synthetic_assets] synthetic asset policy check failed")
         if missing:
             print("  missing canonical assets:")
@@ -510,6 +741,10 @@ def _check_only(repo_root: Path) -> int:
         if legacy_path_references:
             print("  forbidden legacy path references:")
             for rel in legacy_path_references:
+                print(f"    - {rel}")
+        if policy_failures:
+            print("  manifest policy failures:")
+            for rel in policy_failures:
                 print(f"    - {rel}")
         return 1
 

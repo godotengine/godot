@@ -1370,6 +1370,7 @@ bool GPUCuller::_gpu_frustum_cull_instance(const CullParams &p_params, const Ins
     params.frustum_plane_slack = p_params.frustum_plane_slack;
     params.instance_count = instance_count;
     params.max_visible_chunks = p_inputs.max_visible_chunks > 0 ? p_inputs.max_visible_chunks : instance_count;
+
     params.enable_frustum = p_params.frustum_culling_enabled ? 1u : 0u;
 
     if (instance_param_bytes.size() != sizeof(InstanceCullParamsGPU)) {

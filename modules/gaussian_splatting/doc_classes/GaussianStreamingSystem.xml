@@ -41,26 +41,34 @@
 			</description>
 		</method>
 		<method name="request_chunk_residency">
-			<return type="void" />
+			<return type="Error" />
 			<param index="0" name="asset_id" type="int" />
 			<param index="1" name="chunk_id" type="int" />
 			<param index="2" name="lod_level" type="int" />
 			<description>
-				Requests that a specific chunk at a given LOD level be made GPU-resident. Must be called between [method begin_residency_requests] and [method finalize_residency_requests].
+				Requests that a specific chunk at a given LOD level be made GPU-resident. Must be called between [method begin_residency_requests] and [method finalize_residency_requests]. Returns [constant OK] when the request was accepted.
 			</description>
 		</method>
 		<method name="request_asset_residency">
-			<return type="void" />
+			<return type="Error" />
 			<param index="0" name="asset_id" type="int" />
 			<param index="1" name="lod_level" type="int" />
 			<description>
-				Requests that all chunks of an asset at a given LOD level be made GPU-resident.
+				Requests that all chunks of an asset at a given LOD level be made GPU-resident. Returns [constant OK] when the request batch was accepted.
 			</description>
 		</method>
 		<method name="finalize_residency_requests">
 			<return type="void" />
 			<description>
 				Finalizes the current batch of residency requests and triggers chunk loading.
+			</description>
+		</method>
+		<method name="get_residency_request_status">
+			<return type="Dictionary" />
+			<param index="0" name="asset_id" type="int" />
+			<param index="1" name="chunk_id" type="int" />
+			<description>
+				Returns a small status dictionary for the requested chunk. The dictionary includes the active request generation, LOD mask, request state/result, error code, and whether the latest recorded outcome still belongs to the current request generation. When an older explicit request completes after collection has moved on, the stale outcome remains visible through the returned status instead of collapsing back to idle.
 			</description>
 		</method>
 		<method name="get_visible_count">

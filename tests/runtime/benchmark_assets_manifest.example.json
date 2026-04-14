@@ -1,12 +1,82 @@
 {
-  "static_baseline": "res://tests/fixtures/test_splats.ply",
-  "streaming_corridor": "res://tests/fixtures/test_splats.ply",
-  "city_flyover": "res://tests/fixtures/test_splats.ply",
-  "instance_storm": "res://tests/fixtures/test_splats.ply",
-  "lighting_stress": "res://tests/fixtures/test_splats.ply",
-  "animation_arena": "res://tests/fixtures/test_splats.ply",
-  "lod_torture": "res://tests/fixtures/test_splats.ply",
-  "integrity_sentinel": "res://tests/fixtures/test_splats.ply",
-  "long_soak": "res://tests/fixtures/test_splats.ply",
-  "unified_composite": "res://tests/fixtures/test_splats.ply"
+  "version": "2.1.0",
+  "default_asset": "res://tests/fixtures/test_splats.ply",
+  "lane_defaults": {
+    "static_baseline": "res://tests/fixtures/test_splats.ply",
+    "streaming_corridor": "res://tests/fixtures/test_splats.ply",
+    "city_flyover": "res://tests/fixtures/test_splats.ply",
+    "instance_storm": "res://tests/fixtures/test_splats.ply",
+    "lighting_stress": "res://tests/fixtures/test_splats.ply",
+    "animation_arena": "res://tests/fixtures/test_splats.ply",
+    "lod_torture": "res://tests/fixtures/test_splats.ply",
+    "integrity_sentinel": "res://tests/fixtures/test_splats.ply",
+    "long_soak": "res://tests/fixtures/test_splats.ply",
+    "unified_composite": "res://tests/fixtures/test_splats.ply"
+  },
+  "lane_metadata": {
+    "static_baseline": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "published_baseline",
+      "notes": "Example baseline lane using the lightweight canonical smoke asset.",
+      "require_explicit_lane_default": true
+    },
+    "streaming_corridor": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "streaming_smoke_only",
+      "notes": "Example streaming-shaped lane still backed by test_splats.ply, not chunked evidence.",
+      "require_explicit_lane_default": true
+    },
+    "city_flyover": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "streaming_smoke_only",
+      "notes": "Example streaming-shaped lane still backed by test_splats.ply, not chunked evidence.",
+      "require_explicit_lane_default": true
+    },
+    "instance_storm": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "suite_support",
+      "notes": "Example suite-support lane using the lightweight canonical smoke asset.",
+      "require_explicit_lane_default": true
+    },
+    "lighting_stress": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "suite_support",
+      "notes": "Example suite-support lane using the lightweight canonical smoke asset.",
+      "require_explicit_lane_default": true
+    },
+    "animation_arena": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "suite_support",
+      "notes": "Example suite-support lane using the lightweight canonical smoke asset.",
+      "require_explicit_lane_default": true
+    },
+    "lod_torture": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "suite_support",
+      "notes": "Example suite-support lane using the lightweight canonical smoke asset.",
+      "require_explicit_lane_default": true
+    },
+    "integrity_sentinel": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "suite_support",
+      "notes": "Example suite-support lane using the lightweight canonical smoke asset.",
+      "require_explicit_lane_default": true
+    },
+    "long_soak": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "streaming_smoke_only",
+      "notes": "Example long-duration lane still backed by test_splats.ply, not chunked evidence.",
+      "require_explicit_lane_default": true
+    },
+    "unified_composite": {
+      "asset_classification": "lightweight_smoke",
+      "evidence_role": "streaming_smoke_only",
+      "notes": "Example integrated lane still backed by test_splats.ply, not chunked evidence.",
+      "require_explicit_lane_default": true
+    }
+  },
+  "scene_defaults": {
+    "benchmark_suite_lane": "res://tests/fixtures/test_splats.ply",
+    "benchmark_unified": "res://tests/fixtures/test_splats.ply"
+  }
 }
