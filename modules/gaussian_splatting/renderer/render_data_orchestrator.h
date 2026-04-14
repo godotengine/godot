@@ -3,13 +3,23 @@
 
 #include "../core/gaussian_streaming.h"
 #include "../interfaces/gpu_culler.h"
+// Full include (not forward-decl) is required: this header declares a
+// pointer-to-member-function `void (GaussianSplatRenderer::*)()` in
+// RuntimePorts. MSVC's PMF size depends on what is known about the class at
+// the point of declaration — 8 bytes when the class is fully visible,
+// 24 bytes when only forward-declared. With only a forward-decl here,
+// TUs that include this header directly got 24-byte PMFs while TUs that
+// saw gaussian_splat_renderer.h first got 8-byte PMFs, producing an ODR
+// violation: different sizeof(RenderDataOrchestrator) per TU, so the
+// allocator reserved 696 bytes while the ctor wrote 704 — an 8-byte
+// heap overflow on every construction.
+#include "gaussian_splat_renderer.h"
 #include "render_types/render_debug_types.h"
 #include "render_types/render_performance_types.h"
 #include "render_types/render_state_types.h"
 
 #include <functional>
 
-class GaussianSplatRenderer;
 class RenderingDevice;
 
 class RenderDataOrchestrator {
