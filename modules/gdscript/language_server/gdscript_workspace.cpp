@@ -771,7 +771,8 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 				if (symbol->kind == LSP::SymbolKind::Method || symbol->kind == LSP::SymbolKind::Function) {
 					LSP::SignatureInformation signature_info;
 					signature_info.label = symbol->detail;
-					signature_info.documentation = symbol->render();
+					const HashSet<String> &allowed_tags = GDScriptLanguageProtocol::get_singleton()->get_client_markdown_allowed_html_tags();
+					signature_info.documentation = symbol->render(allowed_tags);
 
 					for (int i = 0; i < symbol->children.size(); i++) {
 						const LSP::DocumentSymbol &arg = symbol->children[i];

@@ -250,6 +250,13 @@ Variant GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	client->behavior.use_snippets_for_brace_completion = get_deep(capabilities, false,
 			"textDocument", "completion", "completionItem", "snippetSupport");
 
+	Array allowed_tags = get_deep(capabilities, Array(), "general", "markdown", "allowedTags");
+	for (const Variant &tag : allowed_tags) {
+		if (tag.is_string()) {
+			client->behavior.markdown_allowed_html_tags.insert(tag);
+		}
+	}
+
 	return ret.to_json();
 }
 
@@ -438,6 +445,12 @@ ExtendGDScriptParser *GDScriptLanguageProtocol::get_parse_result(const String &p
 		return client->parse_script(p_path);
 	}
 	return *cached_parser;
+}
+
+const HashSet<String> &GDScriptLanguageProtocol::get_client_markdown_allowed_html_tags() const {
+	static const HashSet<String> default_tags = {};
+	LSP_CLIENT_V(default_tags);
+	return client->behavior.markdown_allowed_html_tags;
 }
 
 void GDScriptLanguageProtocol::lsp_did_open(const Dictionary &p_params) {
