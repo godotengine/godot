@@ -71,6 +71,8 @@ bool Light3D::has_shadow() const {
 void Light3D::set_negative(bool p_enable) {
 	negative = p_enable;
 	RS::get_singleton()->light_set_negative(light, p_enable);
+
+	update_configuration_warnings();
 }
 
 bool Light3D::is_negative() const {
@@ -638,8 +640,14 @@ PackedStringArray OmniLight3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
 	}
 
-	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		warnings.push_back(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
+		if (has_shadow() && is_negative()) {
+			warnings.push_back(RTR("Negative lighting is not supported on lights with shadows when using the Compatibility renderer, as the light is rendered additively when shadows are enabled."));
+		}
+
+		if (get_projector().is_valid()) {
+			warnings.push_back(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+		}
 	}
 
 	return warnings;
@@ -674,8 +682,14 @@ PackedStringArray SpotLight3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
 	}
 
-	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
-		warnings.push_back(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
+		if (has_shadow() && is_negative()) {
+			warnings.push_back(RTR("Negative lighting is not supported on lights with shadows when using the Compatibility renderer, as the light is rendered additively when shadows are enabled."));
+		}
+
+		if (get_projector().is_valid()) {
+			warnings.push_back(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
+		}
 	}
 
 	return warnings;
