@@ -762,7 +762,7 @@
 		</method>
 		<method name="is_class" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="class" type="String" />
+			<param index="0" name="class" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the object inherits from the given [param class]. See also [method get_class].
 				[codeblocks]
