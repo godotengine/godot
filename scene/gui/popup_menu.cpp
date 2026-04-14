@@ -502,6 +502,19 @@ void PopupMenu::_submenu_timeout() {
 
 void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (p_event.is_valid()) {
+		if (search_bar->is_visible() && search_bar->has_focus()) {
+			if (p_event->is_action("ui_select", true)) {
+				// Let this propagate to `search_bar`.
+				return;
+			}
+
+			if (p_event->is_action("ui_cancel", true) && !search_bar->get_text().is_empty()) {
+				search_bar->clear();
+				set_input_as_handled();
+				return;
+			}
+		}
+
 		_input_from_window_internal(p_event);
 	} else {
 		WARN_PRINT_ONCE("PopupMenu has received an invalid InputEvent. Consider filtering out invalid events.");
@@ -1083,12 +1096,10 @@ void PopupMenu::_draw_items() {
 }
 
 void PopupMenu::_search_bar_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			search_bar->accept_event();
-		}
+	if (p_event->is_action("ui_up", true) || p_event->is_action("ui_down", true) || p_event->is_action("ui_page_up") || p_event->is_action("ui_page_down")) {
+		// Prevent `LineEdit` from moving the caret when navigating through the list of items.
+		search_bar->accept_event();
+		return;
 	}
 }
 
