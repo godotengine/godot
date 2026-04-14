@@ -1735,6 +1735,10 @@
 			This is typically used to ensure that shadows from an object only cast onto a nearby floor.
 			Blob shadows are not subject to occlusion, and can thus spread into areas that may be lit by a different light (for instance in a room below). Keeping their range low helps prevent this problem.
 		</member>
+		<member name="rendering/quality/blob_shadows/transition_duration" type="float" setter="" getter="" default="1.0">
+			Determines the duration (in seconds) for a shadow to fade in or out.
+			Fades will occur when the number of casters exceeds the maximum allowed, in order to prevent flickering.
+		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], allocates the root [Viewport]'s framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1. This must be set to [code]true[/code] for glow rendering to work if [member Environment.glow_hdr_threshold] is greater than or equal to [code]1.0[/code].
 			[b]Note:[/b] Only available on the GLES3 backend.
