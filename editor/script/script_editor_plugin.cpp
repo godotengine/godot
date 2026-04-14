@@ -3105,7 +3105,7 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_event);
+	const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, p_event);
 	if (custom_callback.is_valid()) {
 		Ref<Resource> resource;
 		if (ScriptEditorBase *current = _get_current_editor()) {
