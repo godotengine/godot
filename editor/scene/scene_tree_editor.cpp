@@ -926,10 +926,31 @@ void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator 
 	TreeItem *item = p_I->value.item;
 	TreeItem *previous_item = nullptr;
 	Node *node = p_I->key;
-	int cc = node->get_child_count(false);
+	Vector<Node *> ordered_children;
 
+	// Find all exposed node tree items.
+	for (int i = 0; i < item->get_child_count(); i++) {
+		TreeItem *TI = item->get_child(i);
+		HashMap<Node *, CachedNode>::Iterator CI = node_cache.find_by_item(TI);
+		Node *n = CI->key;
+		if (TI->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			ordered_children.push_back(n);
+		}
+	}
+
+	// Find all normal nodes.
+	int cc = node->get_child_count(false);
 	for (int i = 0; i < cc; i++) {
-		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(node->get_child(i, false));
+		Node *child = node->get_child(i, false);
+		if (child->get_owner() == EditorNode::get_singleton()->get_edited_scene() && !child->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			ordered_children.push_back(child);
+		}
+	}
+
+	// Move children in the correct order
+	for (int i = 0; i < ordered_children.size(); i++) {
+		Node *child = ordered_children[i];
+		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(child);
 		if (CI) {
 			_move_node_item(item, CI, previous_item);
 			previous_item = CI->value.item;
