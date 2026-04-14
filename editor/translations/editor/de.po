@@ -10094,7 +10094,7 @@ msgid "Copy Polygon to UV"
 msgstr "Polygon zu UV kopieren"
 
 msgid "Copy UV to Polygon"
-msgstr "Polygon zu UV kopieren"
+msgstr "UV zu Polygon kopieren"
 
 msgid "Clear UV"
 msgstr "Leere UV-Map"
