@@ -31,6 +31,11 @@ if env["platform"] != "server":
 else:
     SConscript("dummy/SCsub")
 
+# Input drivers
+if env["sdl"] and env["platform"] in ["x11", "osx", "windows"]:
+    # TODO: Evaluate support for Android, iOS, and Web.
+    SConscript("sdl/SCsub")
+
 # Core dependencies
 SConscript("png/SCsub")
 

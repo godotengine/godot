@@ -79,6 +79,14 @@
 
 #define TPS_INVERT 0x0010 /* 1.1 */
 
+#ifndef SAFE_RELEASE // when Windows Media Device M? is not present
+#define SAFE_RELEASE(x) \
+	if (x != nullptr) { \
+		x->Release();   \
+		x = nullptr;    \
+	}
+#endif
+
 typedef struct tagLOGCONTEXTW {
 	WCHAR lcName[40];
 	UINT lcOptions;
@@ -262,7 +270,8 @@ typedef struct {
 	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
 } ICONDIR, *LPICONDIR;
 
-class JoypadWindows;
+class JoypadSDL;
+
 class OS_Windows : public OS {
 	String tablet_driver;
 	Vector<String> tablet_drivers;
@@ -373,7 +382,9 @@ class OS_Windows : public OS {
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 
 	InputDefault *input;
-	JoypadWindows *joypad;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	Map<int, Vector2> touch_state;
 
 	PowerWindows *power_manager;

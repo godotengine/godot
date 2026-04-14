@@ -1,0 +1,686 @@
+diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
+index 46a74aafdb..3dad7e29ba 100644
+--- a/thirdparty/sdl/SDL.c
++++ b/thirdparty/sdl/SDL.c
+@@ -40,23 +40,14 @@
+ #include "SDL_hints_c.h"
+ #include "SDL_log_c.h"
+ #include "SDL_properties_c.h"
+-#include "audio/SDL_sysaudio.h"
+-#include "camera/SDL_camera_c.h"
+-#include "cpuinfo/SDL_cpuinfo_c.h"
++//#include "audio/SDL_sysaudio.h"
+ #include "events/SDL_events_c.h"
+ #include "haptic/SDL_haptic_c.h"
+ #include "joystick/SDL_gamepad_c.h"
+ #include "joystick/SDL_joystick_c.h"
+-#include "render/SDL_sysrender.h"
+ #include "sensor/SDL_sensor_c.h"
+ #include "stdlib/SDL_getenv_c.h"
+ #include "thread/SDL_thread_c.h"
+-#include "tray/SDL_tray_utils.h"
+-#include "video/SDL_pixels_c.h"
+-#include "video/SDL_surface_c.h"
+-#include "video/SDL_video_c.h"
+-#include "filesystem/SDL_filesystem_c.h"
+-#include "io/SDL_asyncio_c.h"
+ #ifdef SDL_PLATFORM_ANDROID
+ #include "core/android/SDL_android.h"
+ #endif
+@@ -278,7 +269,7 @@ void SDL_InitMainThread(void)
+     SDL_InitTLSData();
+     SDL_InitEnvironment();
+     SDL_InitTicks();
+-    SDL_InitFilesystem();
++    //SDL_InitFilesystem();
+ 
+     if (!done_info) {
+         const char *value;
+@@ -297,7 +288,7 @@ void SDL_InitMainThread(void)
+ 
+ static void SDL_QuitMainThread(void)
+ {
+-    SDL_QuitFilesystem();
++    //SDL_QuitFilesystem();
+     SDL_QuitTicks();
+     SDL_QuitEnvironment();
+     SDL_QuitTLSData();
+@@ -657,21 +648,21 @@ void SDL_Quit(void)
+     SDL_HelperWindowDestroy();
+ #endif
+     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+-    SDL_CleanupTrays();
++    //SDL_CleanupTrays();
+ 
+ #ifdef SDL_USE_LIBDBUS
+     SDL_DBus_Quit();
+ #endif
+ 
+     SDL_QuitTimers();
+-    SDL_QuitAsyncIO();
++    //SDL_QuitAsyncIO();
+ 
+     SDL_SetObjectsInvalid();
+     SDL_AssertionsQuit();
+ 
+-    SDL_QuitPixelFormatDetails();
++    //SDL_QuitPixelFormatDetails();
+ 
+-    SDL_QuitCPUInfo();
++    //SDL_QuitCPUInfo();
+ 
+     /* Now that every subsystem has been quit, we reset the subsystem refcount
+      * and the list of initialized subsystems.
+diff --git a/thirdparty/sdl/SDL_assert.c b/thirdparty/sdl/SDL_assert.c
+index 2440d04b1e..af904039a4 100644
+--- a/thirdparty/sdl/SDL_assert.c
++++ b/thirdparty/sdl/SDL_assert.c
+@@ -25,7 +25,7 @@
+ #endif
+ 
+ #include "SDL_assert_c.h"
+-#include "video/SDL_sysvideo.h"
++//#include "video/SDL_sysvideo.h"
+ 
+ #if defined(SDL_PLATFORM_WINDOWS)
+ #ifndef WS_OVERLAPPEDWINDOW
+@@ -209,18 +209,6 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
+         }
+     }
+ 
+-    // Leave fullscreen mode, if possible (scary!)
+-    window = SDL_GetToplevelForKeyboardFocus();
+-    if (window) {
+-        if (window->fullscreen_exclusive) {
+-            SDL_MinimizeWindow(window);
+-        } else {
+-            // !!! FIXME: ungrab the input if we're not fullscreen?
+-            // No need to mess with the window
+-            window = NULL;
+-        }
+-    }
+-
+     // Show a messagebox if we can, otherwise fall back to stdio
+     SDL_zero(messagebox);
+     messagebox.flags = SDL_MESSAGEBOX_WARNING;
+@@ -230,7 +218,8 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
+     messagebox.numbuttons = SDL_arraysize(buttons);
+     messagebox.buttons = buttons;
+ 
+-    if (SDL_ShowMessageBox(&messagebox, &selected)) {
++    //if (SDL_ShowMessageBox(&messagebox, &selected)) {
++    if (false) {
+         if (selected == -1) {
+             state = SDL_ASSERTION_IGNORE;
+         } else {
+@@ -311,13 +300,13 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
+             }
+         }
+ #else
+-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
++        //SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
+ #endif // HAVE_STDIO_H
+     }
+ 
+     // Re-enter fullscreen mode
+     if (window) {
+-        SDL_RestoreWindow(window);
++        //SDL_RestoreWindow(window);
+     }
+ 
+     if (message != stack_buf) {
+diff --git a/thirdparty/sdl/SDL_internal.h b/thirdparty/sdl/SDL_internal.h
+index 8fcd96a7fa..20ec0fcb91 100644
+--- a/thirdparty/sdl/SDL_internal.h
++++ b/thirdparty/sdl/SDL_internal.h
+@@ -62,7 +62,7 @@
+ 
+ #include "SDL_build_config.h"
+ 
+-#include "dynapi/SDL_dynapi.h"
++//#include "dynapi/SDL_dynapi.h"
+ 
+ #if SDL_DYNAMIC_API
+ #include "dynapi/SDL_dynapi_overrides.h"
+diff --git a/thirdparty/sdl/SDL_properties.c b/thirdparty/sdl/SDL_properties.c
+index 166ea0f918..42d4845458 100644
+--- a/thirdparty/sdl/SDL_properties.c
++++ b/thirdparty/sdl/SDL_properties.c
+@@ -409,7 +409,7 @@ static void SDLCALL CleanupSurface(void *userdata, void *value)
+ {
+     SDL_Surface *surface = (SDL_Surface *)value;
+ 
+-    SDL_DestroySurface(surface);
++    //SDL_DestroySurface(surface);
+ }
+ 
+ bool SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface)
+diff --git a/thirdparty/sdl/core/linux/SDL_evdev.c b/thirdparty/sdl/core/linux/SDL_evdev.c
+index 5746e2ef98..04e3e9d6b6 100644
+--- a/thirdparty/sdl/core/linux/SDL_evdev.c
++++ b/thirdparty/sdl/core/linux/SDL_evdev.c
+@@ -39,7 +39,6 @@
+ #include <linux/input.h>
+ 
+ #include "../../events/SDL_events_c.h"
+-#include "../../events/SDL_scancode_tables_c.h"
+ #include "../../core/linux/SDL_evdev_capabilities.h"
+ #include "../../core/linux/SDL_udev.h"
+ 
+@@ -221,7 +220,7 @@ bool SDL_EVDEV_Init(void)
+         SDL_EVDEV_UpdateKeyboardMute();
+     }
+ 
+-    SDL_GetMouse()->SetRelativeMouseMode = SDL_EVDEV_SetRelativeMouseMode;
++    //SDL_GetMouse()->SetRelativeMouseMode = SDL_EVDEV_SetRelativeMouseMode;
+ 
+     _this->ref_count += 1;
+ 
+@@ -328,7 +327,7 @@ void SDL_EVDEV_Poll(void)
+ 
+     SDL_EVDEV_kbd_update(_this->kbd);
+ 
+-    mouse = SDL_GetMouse();
++    mouse = NULL; //SDL_GetMouse();
+ 
+     for (item = _this->first; item; item = item->next) {
+         while ((len = read(item->fd, events, sizeof(events))) > 0) {
+@@ -345,10 +344,11 @@ void SDL_EVDEV_Poll(void)
+ 
+                 switch (event->type) {
+                 case EV_KEY:
++					break;
+                     if (event->code >= BTN_MOUSE && event->code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
+                         Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                         mouse_button = event->code - BTN_MOUSE;
+-                        SDL_SendMouseButton(timestamp, mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
++                        //SDL_SendMouseButton(timestamp, mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
+                         break;
+                     }
+ 
+@@ -371,11 +371,11 @@ void SDL_EVDEV_Poll(void)
+                     {
+                         Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                         scancode = SDL_EVDEV_translate_keycode(event->code);
+-                        if (event->value == 0) {
+-                            SDL_SendKeyboardKey(timestamp, (SDL_KeyboardID)item->fd, event->code, scancode, false);
+-                        } else if (event->value == 1 || event->value == 2 /* key repeated */) {
+-                            SDL_SendKeyboardKey(timestamp, (SDL_KeyboardID)item->fd, event->code, scancode, true);
+-                        }
++                        // if (event->value == 0) {
++                        //     SDL_SendKeyboardKey(timestamp, (SDL_KeyboardID)item->fd, event->code, scancode, false);
++                        // } else if (event->value == 1 || event->value == 2 /* key repeated */) {
++                        //     SDL_SendKeyboardKey(timestamp, (SDL_KeyboardID)item->fd, event->code, scancode, true);
++                        // }
+                         SDL_EVDEV_kbd_keycode(_this->kbd, event->code, event->value);
+                     }
+                     break;
+@@ -490,36 +490,30 @@ void SDL_EVDEV_Poll(void)
+                         if (item->relative_mouse) {
+                             if (item->mouse_x != 0 || item->mouse_y != 0) {
+                                 Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+-                                SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
++                                //SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
+                                 item->mouse_x = item->mouse_y = 0;
+                             }
+                         } else if (item->range_x > 0 && item->range_y > 0) {
+                             int screen_w = 0, screen_h = 0;
+                             const SDL_DisplayMode *mode = NULL;
+ 
+-                            if (mouse->focus) {
+-                                mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(mouse->focus));
+-                            }
+-                            if (!mode) {
+-                                mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+-                            }
+                             if (mode) {
+                                 screen_w = mode->w;
+                                 screen_h = mode->h;
+                             }
+-                            SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse,
+-                                (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
+-                                (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
++                            //SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse,
++                            //    (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
++                            //    (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
+                         }
+ 
+                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
+                             Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                             const float denom = (item->high_res_hwheel ? 120.0f : 1.0f);
+-                            SDL_SendMouseWheel(timestamp,
+-                                               mouse->focus, (SDL_MouseID)item->fd,
+-                                               item->mouse_hwheel / denom,
+-                                               item->mouse_wheel / denom,
+-                                               SDL_MOUSEWHEEL_NORMAL);
++                            //SDL_SendMouseWheel(timestamp,
++                            //                   mouse->focus, (SDL_MouseID)item->fd,
++                            //                   item->mouse_hwheel / denom,
++                            //                   item->mouse_wheel / denom,
++                            //                   SDL_MOUSEWHEEL_NORMAL);
+                             item->mouse_wheel = item->mouse_hwheel = 0;
+                         }
+ 
+@@ -546,16 +540,16 @@ void SDL_EVDEV_Poll(void)
+                              * be window-relative in that case. */
+                             switch (item->touchscreen_data->slots[j].delta) {
+                             case EVDEV_TOUCH_SLOTDELTA_DOWN:
+-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_DOWN, norm_x, norm_y, norm_pressure);
++                                //SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_DOWN, norm_x, norm_y, norm_pressure);
+                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
+                                 break;
+                             case EVDEV_TOUCH_SLOTDELTA_UP:
+-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_UP, norm_x, norm_y, norm_pressure);
++                                //SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_UP, norm_x, norm_y, norm_pressure);
+                                 item->touchscreen_data->slots[j].tracking_id = 0;
+                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
+                                 break;
+                             case EVDEV_TOUCH_SLOTDELTA_MOVE:
+-                                SDL_SendTouchMotion(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, norm_x, norm_y, norm_pressure);
++                                //SDL_SendTouchMotion(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, norm_x, norm_y, norm_pressure);
+                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
+                                 break;
+                             default:
+@@ -585,7 +579,7 @@ void SDL_EVDEV_Poll(void)
+ 
+ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
+ {
+-    SDL_Scancode scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, keycode);
++    //SDL_Scancode scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, keycode);
+ 
+ #ifdef DEBUG_SCANCODES
+     if (scancode == SDL_SCANCODE_UNKNOWN) {
+@@ -602,7 +596,7 @@ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
+     }
+ #endif // DEBUG_SCANCODES
+ 
+-    return scancode;
++    return 0; //scancode;
+ }
+ 
+ static bool SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
+@@ -612,14 +606,14 @@ static bool SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
+     name[0] = '\0';
+     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
+ 
+-    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, true);
++    //SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, true);
+ 
+     return true;
+ }
+ 
+ static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
+ {
+-    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, true);
++    //SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, true);
+ }
+ 
+ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
+@@ -631,7 +625,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
+     name[0] = '\0';
+     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
+ 
+-    SDL_AddMouse((SDL_MouseID)item->fd, name, true);
++    //SDL_AddMouse((SDL_MouseID)item->fd, name, true);
+ 
+     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
+     if (ret < 0) {
+@@ -656,7 +650,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
+ 
+ static void SDL_EVDEV_destroy_mouse(SDL_evdevlist_item *item)
+ {
+-    SDL_RemoveMouse((SDL_MouseID)item->fd, true);
++    //SDL_RemoveMouse((SDL_MouseID)item->fd, true);
+ }
+ 
+ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
+@@ -743,9 +737,10 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
+         return false;
+     }
+ 
+-    ret = SDL_AddTouch(item->fd, // I guess our fd is unique enough
+-                       (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) ? SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE : SDL_TOUCH_DEVICE_DIRECT,
+-                       item->touchscreen_data->name);
++    //ret = SDL_AddTouch(item->fd, // I guess our fd is unique enough
++    //                   (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) ? SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE : SDL_TOUCH_DEVICE_DIRECT,
++    //                   item->touchscreen_data->name);
++	ret = -1;
+     if (ret < 0) {
+         SDL_free(item->touchscreen_data->slots);
+         SDL_free(item->touchscreen_data->name);
+@@ -762,7 +757,7 @@ static void SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item *item)
+         return;
+     }
+ 
+-    SDL_DelTouch(item->fd);
++    //SDL_DelTouch(item->fd);
+     SDL_free(item->touchscreen_data->slots);
+     SDL_free(item->touchscreen_data->name);
+     SDL_free(item->touchscreen_data);
+diff --git a/thirdparty/sdl/events/SDL_events.c b/thirdparty/sdl/events/SDL_events.c
+index 81220a1787..7ca683e0eb 100644
+--- a/thirdparty/sdl/events/SDL_events.c
++++ b/thirdparty/sdl/events/SDL_events.c
+@@ -24,10 +24,7 @@
+ 
+ #include "SDL_events_c.h"
+ #include "SDL_eventwatch_c.h"
+-#include "SDL_windowevents_c.h"
+ #include "../SDL_hints_c.h"
+-#include "../audio/SDL_audio_c.h"
+-#include "../camera/SDL_camera_c.h"
+ #include "../timer/SDL_timer_c.h"
+ #ifndef SDL_JOYSTICK_DISABLED
+ #include "../joystick/SDL_joystick_c.h"
+@@ -35,7 +32,7 @@
+ #ifndef SDL_SENSOR_DISABLED
+ #include "../sensor/SDL_sensor_c.h"
+ #endif
+-#include "../video/SDL_sysvideo.h"
++//#include "../video/SDL_sysvideo.h"
+ 
+ #ifdef SDL_PLATFORM_ANDROID
+ #include "../core/android/SDL_android.h"
+@@ -930,7 +927,7 @@ void SDL_StopEventLoop(void)
+     }
+ 
+     SDL_QuitEventWatchList(&SDL_event_watchers);
+-    SDL_QuitWindowEventWatch();
++    //SDL_QuitWindowEventWatch();
+ 
+     SDL_Mutex *lock = NULL;
+     if (SDL_EventQ.lock) {
+@@ -970,7 +967,7 @@ bool SDL_StartEventLoop(void)
+     }
+ #endif // !SDL_THREADS_DISABLED
+ 
+-    SDL_InitWindowEventWatch();
++    //SDL_InitWindowEventWatch();
+ 
+     SDL_EventQ.active = true;
+ 
+@@ -1071,17 +1068,6 @@ static void SDL_SendWakeupEvent(void)
+ {
+ #ifdef SDL_PLATFORM_ANDROID
+     Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
+-#else
+-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+-    if (_this == NULL || !_this->SendWakeupEvent) {
+-        return;
+-    }
+-
+-    // We only want to do this once while waiting for an event, so set it to NULL atomically here
+-    SDL_Window *wakeup_window = (SDL_Window *)SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
+-    if (wakeup_window) {
+-        _this->SendWakeupEvent(_this, wakeup_window);
+-    }
+ #endif
+ }
+ 
+@@ -1421,9 +1407,9 @@ void SDL_PumpEventMaintenance(void)
+     }
+ #endif
+ 
+-    SDL_UpdateTrays();
++    //SDL_UpdateTrays();
+ 
+-    SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
++    //SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
+ }
+ 
+ // Run the system dependent event loops
+@@ -1433,7 +1419,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+     SDL_FreeTemporaryMemory();
+ 
+     // Release any keys held down from last frame
+-    SDL_ReleaseAutoReleaseKeys();
++    //SDL_ReleaseAutoReleaseKeys();
+ 
+     // Run any pending main thread callbacks
+     SDL_RunMainThreadCallbacks();
+@@ -1441,12 +1427,6 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+ #ifdef SDL_PLATFORM_ANDROID
+     // Android event processing is independent of the video subsystem
+     Android_PumpEvents(0);
+-#else
+-    // Get events from the video subsystem
+-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+-    if (_this) {
+-        _this->PumpEvents(_this);
+-    }
+ #endif
+ 
+     SDL_PumpEventMaintenance();
+@@ -1477,103 +1457,6 @@ bool SDL_PollEvent(SDL_Event *event)
+     return SDL_WaitEventTimeoutNS(event, 0);
+ }
+ 
+-#ifndef SDL_PLATFORM_ANDROID
+-
+-static Sint64 SDL_events_get_polling_interval(void)
+-{
+-    Sint64 poll_intervalNS = SDL_MAX_SINT64;
+-
+-#ifndef SDL_JOYSTICK_DISABLED
+-    if (SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks) {
+-        if (SDL_JoysticksOpened()) {
+-            // If we have joysticks open, we need to poll rapidly for events
+-            poll_intervalNS = SDL_min(poll_intervalNS, EVENT_POLL_INTERVAL_NS);
+-        } else {
+-            // If not, just poll every few seconds to enumerate new joysticks
+-            poll_intervalNS = SDL_min(poll_intervalNS, ENUMERATION_POLL_INTERVAL_NS);
+-        }
+-    }
+-#endif
+-
+-#ifndef SDL_SENSOR_DISABLED
+-    if (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && SDL_SensorsOpened()) {
+-        // If we have sensors open, we need to poll rapidly for events
+-        poll_intervalNS = SDL_min(poll_intervalNS, EVENT_POLL_INTERVAL_NS);
+-    }
+-#endif
+-
+-    return poll_intervalNS;
+-}
+-
+-static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
+-{
+-    Sint64 loop_timeoutNS = timeoutNS;
+-    Sint64 poll_intervalNS = SDL_events_get_polling_interval();
+-
+-    for (;;) {
+-        int status;
+-        /* Pump events on entry and each time we wake to ensure:
+-           a) All pending events are batch processed after waking up from a wait
+-           b) Waiting can be completely skipped if events are already available to be pumped
+-           c) Periodic processing that takes place in some platform PumpEvents() functions happens
+-           d) Signals received in WaitEventTimeout() are turned into SDL events
+-        */
+-        SDL_PumpEventsInternal(true);
+-
+-        status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
+-        if (status < 0) {
+-            // Got an error: return
+-            break;
+-        }
+-        if (status > 0) {
+-            // There is an event, we can return.
+-            return 1;
+-        }
+-        // No events found in the queue, call WaitEventTimeout to wait for an event.
+-        if (timeoutNS > 0) {
+-            Sint64 elapsed = SDL_GetTicksNS() - start;
+-            if (elapsed >= timeoutNS) {
+-                return 0;
+-            }
+-            loop_timeoutNS = (timeoutNS - elapsed);
+-        }
+-        // Adjust the timeout for any polling requirements we currently have.
+-        if (poll_intervalNS != SDL_MAX_SINT64) {
+-            if (loop_timeoutNS >= 0) {
+-                loop_timeoutNS = SDL_min(loop_timeoutNS, poll_intervalNS);
+-            } else {
+-                loop_timeoutNS = poll_intervalNS;
+-            }
+-        }
+-        SDL_SetAtomicPointer(&_this->wakeup_window, wakeup_window);
+-        status = _this->WaitEventTimeout(_this, loop_timeoutNS);
+-        SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
+-        if (status == 0 && poll_intervalNS != SDL_MAX_SINT64 && loop_timeoutNS == poll_intervalNS) {
+-            // We may have woken up to poll. Try again
+-            continue;
+-        } else if (status <= 0) {
+-            // There is either an error or the timeout is elapsed: return
+-            return status;
+-        }
+-        /* An event was found and pumped into the SDL events queue. Continue the loop
+-          to let SDL_PeepEvents pick it up .*/
+-    }
+-    return 0;
+-}
+-
+-static SDL_Window *SDL_find_active_window(SDL_VideoDevice *_this)
+-{
+-    SDL_Window *window;
+-    for (window = _this->windows; window; window = window->next) {
+-        if (!window->is_destroying) {
+-            return window;
+-        }
+-    }
+-    return NULL;
+-}
+-
+-#endif // !SDL_PLATFORM_ANDROID
+-
+ bool SDL_WaitEvent(SDL_Event *event)
+ {
+     return SDL_WaitEventTimeoutNS(event, -1);
+@@ -1665,24 +1548,6 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+         Android_PumpEvents(delay);
+     }
+ #else
+-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+-    if (_this && _this->WaitEventTimeout && _this->SendWakeupEvent) {
+-        // Look if a shown window is available to send the wakeup event.
+-        SDL_Window *wakeup_window = SDL_find_active_window(_this);
+-        if (wakeup_window) {
+-            result = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, start, timeoutNS);
+-            if (result > 0) {
+-                return true;
+-            } else if (result == 0) {
+-                return false;
+-            } else {
+-                /* There may be implementation-defined conditions where the backend cannot
+-                 * reliably wait for the next event. If that happens, fall back to polling.
+-                 */
+-            }
+-        }
+-    }
+-
+     for (;;) {
+         SDL_PumpEventsInternal(true);
+ 
+@@ -1855,7 +1720,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
+         /* turn off drag'n'drop support if we've disabled the events.
+            This might change some UI details at the OS level. */
+         if (type == SDL_EVENT_DROP_FILE || type == SDL_EVENT_DROP_TEXT) {
+-            SDL_ToggleDragAndDropSupport();
++            //SDL_ToggleDragAndDropSupport();
+         }
+     }
+ }
+@@ -1947,14 +1812,14 @@ bool SDL_InitEvents(void)
+         return false;
+     }
+ 
+-    SDL_InitQuit();
++    //SDL_InitQuit();
+ 
+     return true;
+ }
+ 
+ void SDL_QuitEvents(void)
+ {
+-    SDL_QuitQuit();
++    //SDL_QuitQuit();
+     SDL_StopEventLoop();
+     SDL_QuitMainThreadCallbacks();
+     SDL_RemoveHintCallback(SDL_HINT_POLL_SENTINEL, SDL_PollSentinelChanged, NULL);
+diff --git a/thirdparty/sdl/events/SDL_events_c.h b/thirdparty/sdl/events/SDL_events_c.h
+index e56ac475e5..f3a0744d1c 100644
+--- a/thirdparty/sdl/events/SDL_events_c.h
++++ b/thirdparty/sdl/events/SDL_events_c.h
+@@ -25,16 +25,9 @@
+ #include "SDL_internal.h"
+ 
+ // Useful functions and variables from SDL_events.c
+-#include "../video/SDL_sysvideo.h"
++//#include "../video/SDL_sysvideo.h"
+ 
+-#include "SDL_clipboardevents_c.h"
+-#include "SDL_displayevents_c.h"
+-#include "SDL_dropevents_c.h"
+-#include "SDL_keyboard_c.h"
+ #include "SDL_mouse_c.h"
+-#include "SDL_touch_c.h"
+-#include "SDL_pen_c.h"
+-#include "SDL_windowevents_c.h"
+ 
+ // Start and stop the event processing loop
+ extern bool SDL_StartEventLoop(void);
+diff --git a/thirdparty/sdl/include/SDL3/SDL.h b/thirdparty/sdl/include/SDL3/SDL.h
+index 7ec527b6d0..c99997044b 100644
+--- a/thirdparty/sdl/include/SDL3/SDL.h
++++ b/thirdparty/sdl/include/SDL3/SDL.h
+@@ -47,7 +47,7 @@
+ #include <SDL3/SDL_events.h>
+ #include <SDL3/SDL_filesystem.h>
+ #include <SDL3/SDL_gamepad.h>
+-#include <SDL3/SDL_gpu.h>
++//#include <SDL3/SDL_gpu.h>
+ #include <SDL3/SDL_guid.h>
+ #include <SDL3/SDL_haptic.h>
+ #include <SDL3/SDL_hidapi.h>
+@@ -85,6 +85,6 @@
+ #include <SDL3/SDL_touch.h>
+ #include <SDL3/SDL_version.h>
+ #include <SDL3/SDL_video.h>
+-#include <SDL3/SDL_oldnames.h>
++//#include <SDL3/SDL_oldnames.h>
+ 
+ #endif /* SDL_h_ */
+diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
+index 5ce36de867..090dc07303 100644
+--- a/thirdparty/sdl/joystick/SDL_joystick.c
++++ b/thirdparty/sdl/joystick/SDL_joystick.c
+@@ -29,7 +29,7 @@
+ #include "SDL_steam_virtual_gamepad.h"
+ 
+ #include "../events/SDL_events_c.h"
+-#include "../video/SDL_sysvideo.h"
++//#include "../video/SDL_sysvideo.h"
+ #include "../sensor/SDL_sensor_c.h"
+ #include "hidapi/SDL_hidapijoystick_c.h"
+ 
+@@ -1014,7 +1014,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
+        When a phone is being used as a gamepad, its orientation changes,
+        so adjust sensor axes to match.
+      */
+-    if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
++    //if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
++    if (true) {
+         /* When a device in landscape orientation is laid flat, the axes change
+            orientation as follows:
+             -X to +X becomes -X to +X
+@@ -2071,11 +2072,6 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
+     if (SDL_joystick_allows_background_events) {
+         return false;
+     }
+-
+-    if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
+-        // We have windows but we don't have focus, ignore the event.
+-        return true;
+-    }
+     return false;
+ }
+ 

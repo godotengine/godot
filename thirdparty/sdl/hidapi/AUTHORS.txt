@@ -1,0 +1,18 @@
+
+HIDAPI Authors:
+
+Alan Ott <alan@signal11.us>:
+	Original Author and Maintainer
+	Linux, Windows, and Mac implementations
+
+Ludovic Rousseau <rousseau@debian.org>:
+	Formatting for Doxygen documentation
+	Bug fixes
+	Correctness fixes
+
+libusb/hidapi Team:
+	Development/maintenance since June 4th 2019
+
+For a comprehensive list of contributions, see the commit list at github:
+	https://github.com/libusb/hidapi/graphs/contributors
+
