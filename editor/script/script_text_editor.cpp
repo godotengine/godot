@@ -1625,6 +1625,18 @@ void ScriptTextEditor::_update_connected_methods() {
 	}
 }
 
+void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (!p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_event);
+	if (custom_callback.is_valid()) {
+		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, code_editor->get_text_editor());
+		accept_event();
+	}
+}
+
 void ScriptTextEditor::_update_gutter_indexes() {
 	for (int i = 0; i < code_editor->get_text_editor()->get_gutter_count(); i++) {
 		if (code_editor->get_text_editor()->get_gutter_name(i) == "connection_gutter") {
@@ -2785,6 +2797,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
 	update_settings();
+	set_process_shortcut_input(true);
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
 }
