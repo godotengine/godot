@@ -67,6 +67,22 @@ struct godotsharp_property_def_val_pair {
 	godot_variant value;
 };
 
+#ifdef TOOLS_ENABLED
+struct ToolsBuildManagedCallbacks {
+	using FuncDelegateUtils_TrySerializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const Array *);
+	using FuncDelegateUtils_TryDeserializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(const Array *, GCHandleIntPtr *);
+	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncCSharpInstanceBridge_SerializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+	using FuncCSharpInstanceBridge_DeserializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+
+	FuncDelegateUtils_TrySerializeDelegateWithGCHandle DelegateUtils_TrySerializeDelegateWithGCHandle;
+	FuncDelegateUtils_TryDeserializeDelegateWithGCHandle DelegateUtils_TryDeserializeDelegateWithGCHandle;
+	FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
+	FuncCSharpInstanceBridge_SerializeState CSharpInstanceBridge_SerializeState;
+	FuncCSharpInstanceBridge_DeserializeState CSharpInstanceBridge_DeserializeState;
+};
+#endif
+
 struct ManagedCallbacks {
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddConstructor = void(GD_CLR_STDCALL *)(CSharpScript *p_script, int32_t p_argc, godotsharp::ConstructorTrampoline p_trampoline);
 	using Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static);
@@ -81,22 +97,18 @@ struct ManagedCallbacks {
 	using FuncDelegateUtils_DelegateEquals = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr);
 	using FuncDelegateUtils_DelegateHash = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncDelegateUtils_GetArgumentCount = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr, bool *);
-	using FuncDelegateUtils_TrySerializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const Array *);
-	using FuncDelegateUtils_TryDeserializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(const Array *, GCHandleIntPtr *);
 	using FuncScriptManagerBridge_FrameCallback = void(GD_CLR_STDCALL *)();
 	using FuncScriptManagerBridge_CreateManagedForGodotObjectBinding = GCHandleIntPtr(GD_CLR_STDCALL *)(const StringName *, Object *);
-	using FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance = bool(GD_CLR_STDCALL *)(const CSharpScript *, Object *, const Variant **, int32_t);
+	using FuncScriptManagerBridge_LegacyCreateManagedForGodotObjectScriptInstance = bool(GD_CLR_STDCALL *)(const CSharpScript *, Object *, const Variant **, int32_t);
 	using FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::ConstructorTrampoline, Object *, const Variant **, int32_t);
-	using FuncScriptManagerBridge_GetScriptNativeName = void(GD_CLR_STDCALL *)(const CSharpScript *, StringName *);
 	using FuncScriptManagerBridge_GetGlobalClassName = void(GD_CLR_STDCALL *)(const String *, String *, String *, bool *, bool *, String *);
 	using FuncScriptManagerBridge_SetGodotObjectPtr = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Object *);
-	using FuncScriptManagerBridge_RaiseEventSignal = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, bool *);
+	using FuncScriptManagerBridge_LegacyRaiseEventSignal = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, bool *);
 	using FuncScriptManagerBridge_RaiseEventSignalViaTrampoline = void(GD_CLR_STDCALL *)(godotsharp::RaiseSignalTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc, bool *r_owner_is_null);
 	using FuncScriptManagerBridge_ScriptIsOrInherits = bool(GD_CLR_STDCALL *)(const CSharpScript *, const CSharpScript *);
 	using FuncScriptManagerBridge_AddScriptBridge = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
 	using FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath = void(GD_CLR_STDCALL *)(const String *, Ref<CSharpScript> *);
 	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
-	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
 	using FuncScriptManagerBridge_UpdateScriptTrampolines = void(GD_CLR_STDCALL *)(const CSharpScript *, bool *,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddConstructor,
 			Callback_ScriptManagerBridge_UpdateScriptTrampolines_TryAddMethod,
@@ -106,19 +118,17 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_SwapGCHandleForType = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr *, bool);
 	using FuncScriptManagerBridge_GetPropertyInfoList = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyInfoList_Add);
 	using FuncScriptManagerBridge_GetPropertyDefaultValues = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add);
-	using FuncScriptManagerBridge_CallStatic = bool(GD_CLR_STDCALL *)(const CSharpScript *, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
+	using FuncScriptManagerBridge_LegacyCallStatic = bool(GD_CLR_STDCALL *)(const CSharpScript *, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
 	using FuncScriptManagerBridge_CallStaticWithTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::MethodTrampoline p_trampoline, const Variant **, int32_t, Callable::CallError *, Variant *);
-	using FuncCSharpInstanceBridge_Call = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
-	using FuncCSharpInstanceBridge_Set = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant *);
-	using FuncCSharpInstanceBridge_Get = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
+	using FuncCSharpInstanceBridge_LegacyCall = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
+	using FuncCSharpInstanceBridge_LegacySet = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant *);
+	using FuncCSharpInstanceBridge_LegacyGet = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
 	using FuncCSharpInstanceBridge_CallViaTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::MethodTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, const Variant **p_args, int32_t p_argc, Callable::CallError *r_ref_call_error, Variant *r_ret);
 	using FuncCSharpInstanceBridge_SetViaTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::PropertySetterTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, const Variant *p_args);
 	using FuncCSharpInstanceBridge_GetViaTrampoline = bool(GD_CLR_STDCALL *)(godotsharp::PropertyGetterTrampoline p_trampoline, GCHandleIntPtr p_obj_gchandle, Variant *r_args);
 	using FuncCSharpInstanceBridge_CallDispose = void(GD_CLR_STDCALL *)(GCHandleIntPtr, bool);
 	using FuncCSharpInstanceBridge_CallToString = void(GD_CLR_STDCALL *)(GCHandleIntPtr, String *, bool *);
-	using FuncCSharpInstanceBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
-	using FuncCSharpInstanceBridge_SerializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
-	using FuncCSharpInstanceBridge_DeserializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+	using FuncCSharpInstanceBridge_LegacyHasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
 	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncGCHandleBridge_GCHandleIsTargetCollectible = bool(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncDebuggingUtils_GetCurrentStackInfo = void(GD_CLR_STDCALL *)(Vector<ScriptLanguage::StackInfo> *);
@@ -130,40 +140,34 @@ struct ManagedCallbacks {
 	FuncDelegateUtils_DelegateEquals DelegateUtils_DelegateEquals;
 	FuncDelegateUtils_DelegateHash DelegateUtils_DelegateHash;
 	FuncDelegateUtils_GetArgumentCount DelegateUtils_GetArgumentCount;
-	FuncDelegateUtils_TrySerializeDelegateWithGCHandle DelegateUtils_TrySerializeDelegateWithGCHandle;
-	FuncDelegateUtils_TryDeserializeDelegateWithGCHandle DelegateUtils_TryDeserializeDelegateWithGCHandle;
 	FuncScriptManagerBridge_FrameCallback ScriptManagerBridge_FrameCallback;
 	FuncScriptManagerBridge_CreateManagedForGodotObjectBinding ScriptManagerBridge_CreateManagedForGodotObjectBinding;
-	FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+	FuncScriptManagerBridge_LegacyCreateManagedForGodotObjectScriptInstance ScriptManagerBridge_LegacyCreateManagedForGodotObjectScriptInstance;
 	FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline ScriptManagerBridge_CreateManagedForGodotObjectScriptInstanceWithTrampoline;
-	FuncScriptManagerBridge_GetScriptNativeName ScriptManagerBridge_GetScriptNativeName;
 	FuncScriptManagerBridge_GetGlobalClassName ScriptManagerBridge_GetGlobalClassName;
 	FuncScriptManagerBridge_SetGodotObjectPtr ScriptManagerBridge_SetGodotObjectPtr;
-	FuncScriptManagerBridge_RaiseEventSignal ScriptManagerBridge_RaiseEventSignal;
+	FuncScriptManagerBridge_LegacyRaiseEventSignal ScriptManagerBridge_LegacyRaiseEventSignal;
 	FuncScriptManagerBridge_RaiseEventSignalViaTrampoline ScriptManagerBridge_RaiseEventSignalViaTrampoline;
 	FuncScriptManagerBridge_ScriptIsOrInherits ScriptManagerBridge_ScriptIsOrInherits;
 	FuncScriptManagerBridge_AddScriptBridge ScriptManagerBridge_AddScriptBridge;
 	FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
 	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
-	FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
 	FuncScriptManagerBridge_UpdateScriptTrampolines ScriptManagerBridge_UpdateScriptTrampolines;
 	FuncScriptManagerBridge_UpdateScriptClassInfo ScriptManagerBridge_UpdateScriptClassInfo;
 	FuncScriptManagerBridge_SwapGCHandleForType ScriptManagerBridge_SwapGCHandleForType;
 	FuncScriptManagerBridge_GetPropertyInfoList ScriptManagerBridge_GetPropertyInfoList;
 	FuncScriptManagerBridge_GetPropertyDefaultValues ScriptManagerBridge_GetPropertyDefaultValues;
-	FuncScriptManagerBridge_CallStatic ScriptManagerBridge_CallStatic;
+	FuncScriptManagerBridge_LegacyCallStatic ScriptManagerBridge_LegacyCallStatic;
 	FuncScriptManagerBridge_CallStaticWithTrampoline ScriptManagerBridge_CallStaticWithTrampoline;
-	FuncCSharpInstanceBridge_Call CSharpInstanceBridge_Call;
-	FuncCSharpInstanceBridge_Set CSharpInstanceBridge_Set;
-	FuncCSharpInstanceBridge_Get CSharpInstanceBridge_Get;
+	FuncCSharpInstanceBridge_LegacyCall CSharpInstanceBridge_LegacyCall;
+	FuncCSharpInstanceBridge_LegacySet CSharpInstanceBridge_LegacySet;
+	FuncCSharpInstanceBridge_LegacyGet CSharpInstanceBridge_LegacyGet;
 	FuncCSharpInstanceBridge_CallViaTrampoline CSharpInstanceBridge_CallViaTrampoline;
 	FuncCSharpInstanceBridge_SetViaTrampoline CSharpInstanceBridge_SetViaTrampoline;
 	FuncCSharpInstanceBridge_GetViaTrampoline CSharpInstanceBridge_GetViaTrampoline;
 	FuncCSharpInstanceBridge_CallDispose CSharpInstanceBridge_CallDispose;
 	FuncCSharpInstanceBridge_CallToString CSharpInstanceBridge_CallToString;
-	FuncCSharpInstanceBridge_HasMethodUnknownParams CSharpInstanceBridge_HasMethodUnknownParams;
-	FuncCSharpInstanceBridge_SerializeState CSharpInstanceBridge_SerializeState;
-	FuncCSharpInstanceBridge_DeserializeState CSharpInstanceBridge_DeserializeState;
+	FuncCSharpInstanceBridge_LegacyHasMethodUnknownParams CSharpInstanceBridge_LegacyHasMethodUnknownParams;
 	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
 	FuncGCHandleBridge_GCHandleIsTargetCollectible GCHandleBridge_GCHandleIsTargetCollectible;
 	FuncDebuggingUtils_GetCurrentStackInfo DebuggingUtils_GetCurrentStackInfo;
@@ -171,9 +175,39 @@ struct ManagedCallbacks {
 	FuncGD_OnCoreApiAssemblyLoaded GD_OnCoreApiAssemblyLoaded;
 };
 
+struct ManagedCallbacksInitContext {
+	ManagedCallbacks *managed_callbacks = nullptr;
+#ifdef TOOLS_ENABLED
+	ToolsBuildManagedCallbacks *tools_managed_callbacks = nullptr;
+#else
+	void *unused = nullptr;
+#endif
+};
+
 extern ManagedCallbacks managed_callbacks;
+#ifdef TOOLS_ENABLED
+extern ToolsBuildManagedCallbacks tools_managed_callbacks;
+#endif
 extern bool godot_api_cache_updated;
 
-void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks);
+void update_godot_api_cache(const ManagedCallbacksInitContext &p_init_context);
 
 } // namespace GDMonoCache
+
+#define _LEGACY_CALLBACK_ERROR_MSG "Attempted to use legacy callback '%s' but it's null. Do not disable legacy callbacks if your application relies on them."
+#define ERR_FAIL_NULL_LEGACY_CALLBACK(m_legacy_callback) \
+	ERR_FAIL_COND_MSG(GDMonoCache::managed_callbacks.m_legacy_callback == nullptr, vformat(_LEGACY_CALLBACK_ERROR_MSG, #m_legacy_callback))
+#define ERR_FAIL_NULL_LEGACY_CALLBACK_V(m_legacy_callback, m_retval) \
+	ERR_FAIL_COND_V_MSG(GDMonoCache::managed_callbacks.m_legacy_callback == nullptr, m_retval, vformat(_LEGACY_CALLBACK_ERROR_MSG, #m_legacy_callback))
+#define ERR_FAIL_NULL_LEGACY_CALLBACK_SET_CALL_ERROR(m_legacy_callback, m_call_error_var, m_call_error_val) \
+	if (unlikely(GDMonoCache::managed_callbacks.m_legacy_callback == nullptr)) { \
+		m_call_error_var.error = Callable::CallError::m_call_error_val; \
+		ERR_FAIL_MSG(vformat(_LEGACY_CALLBACK_ERROR_MSG, #m_legacy_callback)); \
+	} else \
+		((void)0)
+#define ERR_FAIL_NULL_LEGACY_CALLBACK_V_SET_CALL_ERROR(m_legacy_callback, m_retval, m_call_error_var, m_call_error_val) \
+	if (unlikely(GDMonoCache::managed_callbacks.m_legacy_callback == nullptr)) { \
+		m_call_error_var.error = Callable::CallError::m_call_error_val; \
+		ERR_FAIL_V_MSG(m_retval, vformat(_LEGACY_CALLBACK_ERROR_MSG, #m_legacy_callback)); \
+	} else \
+		((void)0)

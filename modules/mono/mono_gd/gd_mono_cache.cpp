@@ -35,10 +35,18 @@
 namespace GDMonoCache {
 
 ManagedCallbacks managed_callbacks;
+#ifdef TOOLS_ENABLED
+ToolsBuildManagedCallbacks tools_managed_callbacks;
+#endif
 bool godot_api_cache_updated = false;
 
-void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
+void update_godot_api_cache(const ManagedCallbacksInitContext &p_init_context) {
 	int checked_count = 0;
+
+	DEV_ASSERT(p_init_context.managed_callbacks != nullptr);
+#ifdef TOOLS_ENABLED
+	DEV_ASSERT(p_init_context.tools_managed_callbacks != nullptr);
+#endif
 
 #define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method) \
 	{ \
@@ -47,58 +55,79 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 		checked_count += 1; \
 	}
 
-#define CHECK_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_managed_callbacks.m_class##_##m_method, m_class, m_method)
+#define LEGACY_CALLBACK_MAY_BE_NULL(m_class, m_method) \
+	{ \
+		(void)p_init_context.managed_callbacks->m_class##_##m_method; \
+		checked_count += 1; \
+	}
+
+#define CHECK_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_init_context.managed_callbacks->m_class##_##m_method, m_class, m_method)
+#ifdef TOOLS_ENABLED
+#define CHECK_TOOLS_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_init_context.tools_managed_callbacks->m_class##_##m_method, m_class, m_method)
+#endif
 
 	CHECK_CALLBACK_NOT_NULL(SignalAwaiter, SignalCallback);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, InvokeWithVariantArgs);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateEquals);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateHash);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, GetArgumentCount);
-	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TrySerializeDelegateWithGCHandle);
-	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TryDeserializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, FrameCallback);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectBinding);
-	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectScriptInstance);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectScriptInstanceWithTrampoline);
-	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetScriptNativeName);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetGlobalClassName);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SetGodotObjectPtr);
-	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignal);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignalViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, ScriptIsOrInherits);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, AddScriptBridge);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetOrCreateScriptBridgeForPath);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RemoveScriptBridge);
-	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, TryReloadRegisteredScriptWithClass);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptTrampolines);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptClassInfo);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SwapGCHandleForType);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyInfoList);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyDefaultValues);
-	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CallStatic);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CallStaticWithTrampoline);
-	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Call);
-	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Set);
-	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Get);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, SetViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, GetViaTrampoline);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallDispose);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallToString);
-	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, HasMethodUnknownParams);
-	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, SerializeState);
-	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, DeserializeState);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, GCHandleIsTargetCollectible);
 	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, GetCurrentStackInfo);
 	CHECK_CALLBACK_NOT_NULL(DisposablesTracker, OnGodotShuttingDown);
 	CHECK_CALLBACK_NOT_NULL(GD, OnCoreApiAssemblyLoaded);
 
-	managed_callbacks = p_managed_callbacks;
+	LEGACY_CALLBACK_MAY_BE_NULL(ScriptManagerBridge, LegacyCreateManagedForGodotObjectScriptInstance);
+	LEGACY_CALLBACK_MAY_BE_NULL(ScriptManagerBridge, LegacyRaiseEventSignal);
+	LEGACY_CALLBACK_MAY_BE_NULL(ScriptManagerBridge, LegacyCallStatic);
+	LEGACY_CALLBACK_MAY_BE_NULL(CSharpInstanceBridge, LegacyCall);
+	LEGACY_CALLBACK_MAY_BE_NULL(CSharpInstanceBridge, LegacySet);
+	LEGACY_CALLBACK_MAY_BE_NULL(CSharpInstanceBridge, LegacyGet);
+	LEGACY_CALLBACK_MAY_BE_NULL(CSharpInstanceBridge, LegacyHasMethodUnknownParams);
+
+#ifdef TOOLS_ENABLED
+	CHECK_TOOLS_CALLBACK_NOT_NULL(DelegateUtils, TrySerializeDelegateWithGCHandle);
+	CHECK_TOOLS_CALLBACK_NOT_NULL(DelegateUtils, TryDeserializeDelegateWithGCHandle);
+	CHECK_TOOLS_CALLBACK_NOT_NULL(ScriptManagerBridge, TryReloadRegisteredScriptWithClass);
+	CHECK_TOOLS_CALLBACK_NOT_NULL(CSharpInstanceBridge, SerializeState);
+	CHECK_TOOLS_CALLBACK_NOT_NULL(CSharpInstanceBridge, DeserializeState);
+#endif
+
+	managed_callbacks = *p_init_context.managed_callbacks;
+#ifdef TOOLS_ENABLED
+	tools_managed_callbacks = *p_init_context.tools_managed_callbacks;
+#endif
+
+#ifdef TOOLS_ENABLED
+	constexpr size_t EXPECTED_SIZE = sizeof(ManagedCallbacks) + sizeof(ToolsBuildManagedCallbacks);
+#else
+	constexpr size_t EXPECTED_SIZE = sizeof(ManagedCallbacks);
+#endif
 
 	// It's easy to forget to add new callbacks here, so this should help
-	if (checked_count * sizeof(void *) != sizeof(ManagedCallbacks)) {
-		int missing_count = (sizeof(ManagedCallbacks) / sizeof(void *)) - checked_count;
+	if (checked_count * sizeof(void *) != EXPECTED_SIZE) {
+		int missing_count = (EXPECTED_SIZE / sizeof(void *)) - checked_count;
 		WARN_PRINT("The presence of " + itos(missing_count) + " callback(s) was not validated");
 	}
 
