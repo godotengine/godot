@@ -48,7 +48,7 @@ namespace LSP {
 typedef String DocumentUri;
 
 /** Format BBCode documentation from DocData to markdown */
-static String marked_documentation(const String &p_bbcode);
+static String marked_documentation(const String &p_bbcode, const HashSet<String> &p_allowed_html_tags);
 
 /**
  * Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
@@ -1299,13 +1299,13 @@ struct DocumentSymbol {
 		return dict;
 	}
 
-	_FORCE_INLINE_ MarkupContent render() const {
+	_FORCE_INLINE_ MarkupContent render(const HashSet<String> &p_allowed_html_tags) const {
 		MarkupContent markdown;
 		if (detail.length()) {
 			markdown.value = "\t" + detail + "\n\n";
 		}
 		if (documentation.length()) {
-			markdown.value += marked_documentation(documentation) + "\n\n";
+			markdown.value += marked_documentation(documentation, p_allowed_html_tags) + "\n\n";
 		}
 		if (script_path.length()) {
 			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
@@ -1909,7 +1909,8 @@ struct GodotCapabilities {
 };
 
 /** Format BBCode documentation from DocData to markdown */
-static String marked_documentation(const String &p_bbcode) {
+static String marked_documentation(const String &p_bbcode, const HashSet<String> &p_allowed_html_tags) {
+	bool span_allowed = p_allowed_html_tags.has("span");
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");
@@ -1989,7 +1990,6 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[center]", "");
 			line = line.replace("[/center]", "");
 			line = line.replace("[/font]", "");
-			line = line.replace("[/color]", "");
 			line = line.replace("[/img]", "");
 
 			// Convert remaining simple bracketed class names to backticks and literal brackets.
@@ -2062,6 +2062,35 @@ static String marked_documentation(const String &p_bbcode) {
 				pos += replacement.length();
 			}
 
+			// Convert [color] BBCode to <span>, if the client is capable of rendering it, strip it otherwise.
+			pos = 0;
+			while ((pos = line.find("[color=", pos)) != -1) {
+				constexpr int COLOR_OPEN_TAG_LENGTH = 7; // Length of "[color=".
+				constexpr int COLOR_CLOSE_TAG_LENGTH = 8; // Length of "[/color]".
+
+				int color_end = line.find_char(']', pos);
+				int close_start = line.find("[/color]", color_end);
+				if (color_end == -1 || close_start == -1) {
+					break;
+				}
+				String text = line.substr(color_end + 1, close_start - color_end - 1);
+				String replacement;
+				if (span_allowed) {
+					const String color = line.substr(pos + COLOR_OPEN_TAG_LENGTH, color_end - pos - COLOR_OPEN_TAG_LENGTH).strip_edges();
+					if (Color::html_is_valid(color)) {
+						replacement = "<span style=\"color:" + color + "\">" + text + "</span>";
+					} else if (int named_color_index = Color::find_named_color(color); named_color_index != -1) {
+						replacement = "<span style=\"color:#" + Color::get_named_color(named_color_index).to_html(false) + "\">" + text + "</span>";
+					}
+				}
+				// If no span replacement was produced (client can't render spans, or invalid color), just keep the inner text.
+				if (replacement.is_empty()) {
+					replacement = text;
+				}
+				line = line.substr(0, pos) + replacement + line.substr(close_start + COLOR_CLOSE_TAG_LENGTH);
+				pos += replacement.length();
+			}
+
 			// Replace the various link types with inline code ([class MyNode] to `MyNode`).
 			// Uses a while loop because there can occasionally be multiple links of the same type in a single line.
 			const Vector<String> link_start_patterns = {
@@ -2083,10 +2112,10 @@ static String marked_documentation(const String &p_bbcode) {
 				}
 			}
 
-			// Remove tags with attributes like [color=red], as they don't have a direct Markdown
+			// Remove tags with attributes like [font=Arial], as they don't have a direct Markdown
 			// equivalent supported by external tools.
 			const String attribute_tags[] = {
-				"color", "font", "img"
+				"font", "img"
 			};
 			for (const String &tag_name : attribute_tags) {
 				int tag_pos = 0;
