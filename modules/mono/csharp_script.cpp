@@ -1498,6 +1498,13 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 				trampolines->setter, gchandle.get_intptr(), &p_value);
 	}
 
+	if (unlikely(script->should_fallback_to_legacy_trampolines)) {
+		// The legacy CSharpInstanceBridge.Set already calls "_set" as a last resort,
+		// so don't continue after this branch.
+		return GDMonoCache::managed_callbacks.CSharpInstanceBridge_Set(
+				gchandle.get_intptr(), &p_name, &p_value);
+	}
+
 	if (has_method(SNAME("_set"))) {
 		Callable::CallError call_error;
 		const Variant name_arg = p_name;
@@ -1511,12 +1518,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
-	if (likely(!script->should_fallback_to_legacy_trampolines)) {
-		return false;
-	}
-
-	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_Set(
-			gchandle.get_intptr(), &p_name, &p_value);
+	return false;
 }
 
 bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
@@ -1531,6 +1533,19 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 		Variant ret_value;
 		if (likely(GDMonoCache::managed_callbacks.CSharpInstanceBridge_GetViaTrampoline(
 					trampolines->getter, gchandle.get_intptr(), &ret_value))) {
+			r_ret = ret_value;
+			return true;
+		}
+
+		return false;
+	}
+
+	if (unlikely(script->should_fallback_to_legacy_trampolines)) {
+		// The legacy CSharpInstanceBridge.Get already handles signal and method objects,
+		// and calls "_get" as a last resort, so don't continue after this branch.
+
+		Variant ret_value;
+		if (GDMonoCache::managed_callbacks.CSharpInstanceBridge_Get(gchandle.get_intptr(), &p_name, &ret_value)) {
 			r_ret = ret_value;
 			return true;
 		}
@@ -1562,16 +1577,6 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		r_ret = ret;
-		return true;
-	}
-
-	if (likely(!script->should_fallback_to_legacy_trampolines)) {
-		return false;
-	}
-
-	Variant ret_value;
-	if (GDMonoCache::managed_callbacks.CSharpInstanceBridge_Get(gchandle.get_intptr(), &p_name, &ret_value)) {
-		r_ret = ret_value;
 		return true;
 	}
 
