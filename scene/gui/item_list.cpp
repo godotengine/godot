@@ -852,6 +852,7 @@ void ItemList::_notification(int p_what) {
 				Vector2 ofs;
 				int col = 0;
 				int max_h = 0;
+				int max_w = 0;
 				separators.clear();
 				for (int i = 0; i < items.size(); i++) {
 					if (current_columns > 1 && items[i].rect_cache.size.width + ofs.x > fit_size) {
@@ -866,6 +867,7 @@ void ItemList::_notification(int p_what) {
 					}
 					items.write[i].rect_cache.position = ofs;
 					max_h = MAX(max_h, items[i].rect_cache.size.y);
+					max_w = MAX(max_w, items[i].rect_cache.size.x);
 					ofs.x += items[i].rect_cache.size.x + hseparation;
 					col++;
 					if (col == current_columns) {
@@ -893,6 +895,9 @@ void ItemList::_notification(int p_what) {
 					float max = MAX(page, ofs.y + max_h);
 					if (auto_height) {
 						auto_height_value = ofs.y + max_h + bg->get_minimum_size().height;
+					}
+					if (auto_width) {
+						auto_width_value = ofs.x + max_w + bg->get_minimum_size().width;
 					}
 					scroll_bar->set_max(max);
 					scroll_bar->set_page(page);
@@ -1344,10 +1349,14 @@ Array ItemList::_get_items() const {
 }
 
 Size2 ItemList::get_minimum_size() const {
+	Size2 ms = Size2(0.0, 0.0);
 	if (auto_height) {
-		return Size2(0, auto_height_value);
+		ms.y = auto_height_value;
 	}
-	return Size2();
+	if (auto_width) {
+		ms.x = auto_width_value;
+	}
+	return ms;
 }
 
 void ItemList::set_autoscroll_to_bottom(const bool p_enable) {
@@ -1360,8 +1369,18 @@ void ItemList::set_auto_height(bool p_enable) {
 	update();
 }
 
+void ItemList::set_auto_width(bool p_enable) {
+	auto_width = p_enable;
+	shape_changed = true;
+	update();
+}
+
 bool ItemList::has_auto_height() const {
 	return auto_height;
+}
+
+bool ItemList::has_auto_width() const {
+	return auto_width;
 }
 
 void ItemList::_bind_methods() {
@@ -1455,6 +1474,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_height", "enable"), &ItemList::set_auto_height);
 	ClassDB::bind_method(D_METHOD("has_auto_height"), &ItemList::has_auto_height);
 
+	ClassDB::bind_method(D_METHOD("set_auto_width", "enable"), &ItemList::set_auto_width);
+	ClassDB::bind_method(D_METHOD("has_auto_width"), &ItemList::has_auto_width);
+
 	ClassDB::bind_method(D_METHOD("is_anything_selected"), &ItemList::is_anything_selected);
 
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
@@ -1477,6 +1499,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_width"), "set_auto_width", "has_auto_width");
 	ADD_GROUP("Columns", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_columns", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_max_columns", "get_max_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");
@@ -1516,6 +1539,9 @@ ItemList::ItemList() {
 	max_columns = 1;
 	auto_height = false;
 	auto_height_value = 0.0f;
+
+	auto_width = false;
+	auto_width_value = 0.0f;
 
 	scroll_bar = memnew(VScrollBar);
 	add_child(scroll_bar);
