@@ -233,15 +233,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="append_to_download_file" type="bool" setter="set_append_to_download_file" getter="is_appending_to_download_file" default="false">
-			If [code]true[/code] and the server responds with HTTP status code [code]206 Partial Content[/code], the response body will be appended to the existing [member download_file] instead of overwriting it. If the server responds with [code]200 OK[/code] (e.g. if it does not support range requests), the file will be overwritten as usual.
-			This is useful for resuming interrupted downloads when used together with an HTTP [code skip-lint]Range[/code] header in the request. See also [member keep_partial_download].
-		</member>
 		<member name="accept_gzip" type="bool" setter="set_accept_gzip" getter="is_accepting_gzip" default="true">
 			If [code]true[/code], this header will be added to each request: [code]Accept-Encoding: gzip, deflate[/code] telling servers that it's okay to compress response bodies.
 			Any Response body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [signal request_completed].
 			If the user has specified their own [code]Accept-Encoding[/code] header, then no header will be added regardless of [member accept_gzip].
 			If [code]false[/code] no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via [signal request_completed].
+		</member>
+		<member name="append_to_download_file" type="bool" setter="set_append_to_download_file" getter="is_appending_to_download_file" default="false">
+			If [code]true[/code] and the server responds with HTTP status code [code]206 Partial Content[/code], the response body will be appended to the existing [member download_file] instead of overwriting it. If the server responds with [code]200 OK[/code] (e.g. if it does not support range requests), the file will be overwritten as usual.
+			This is useful for resuming interrupted downloads when used together with an HTTP [code skip-lint]Range[/code] header in the request. See also [member keep_partial_download].
 		</member>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
 			Maximum allowed size for response bodies. If the response body is compressed, this will be used as the maximum allowed size for the decompressed body.
