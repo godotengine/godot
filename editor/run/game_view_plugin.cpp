@@ -1606,8 +1606,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	menu->add_radio_check_item(TTRC("Manipulate In-Game"), CAMERA_MODE_INGAME);
 	menu->set_item_checked(menu->get_item_index(CAMERA_MODE_INGAME), true);
 	menu->add_radio_check_item(TTRC("Manipulate From Editors"), CAMERA_MODE_EDITORS);
-	_camera_override_menu_id_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "camera_override_mode", 0));
-
 	camera_hb->add_child(memnew(VSeparator));
 
 	embedding_hb = memnew(HBoxContainer);
@@ -1677,6 +1675,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	state_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	state_label->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
+	_camera_override_menu_id_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "camera_override_mode", 0));
 	_update_debugger_buttons();
 
 	p_debugger->connect("session_started", callable_mp(this, &GameView::_sessions_changed));
