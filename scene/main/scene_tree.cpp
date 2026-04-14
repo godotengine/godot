@@ -354,6 +354,10 @@ void SceneTree::_update_group_order(SceneTreeGroup &g) {
 	g.changed = false;
 }
 
+RequiredResult<Window> SceneTree::get_root() const {
+	return root;
+}
+
 void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
 	Vector<Node *> nodes_copy;
 

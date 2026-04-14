@@ -1106,6 +1106,15 @@ public:
 	}
 
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
+	_FORCE_INLINE_ RequiredParam(const RequiredResult<T_Other> &p_other) :
+			_value(p_other.ptr()) {}
+	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
+	_FORCE_INLINE_ RequiredParam &operator=(const RequiredResult<T_Other> &p_other) {
+		_value = p_other.ptr();
+		return *this;
+	}
+
+	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
 	_FORCE_INLINE_ RequiredParam(T_Other *p_ptr) :
 			_value(p_ptr) {}
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
