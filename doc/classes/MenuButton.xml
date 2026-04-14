@@ -78,4 +78,9 @@
 			</description>
 		</signal>
 	</signals>
+	<theme_items>
+		<theme_item name="popup_offset" data_type="constant" type="int" default="0">
+			The vertical space between the button and the popup.
+		</theme_item>
+	</theme_items>
 </class>
