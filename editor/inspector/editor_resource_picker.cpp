@@ -299,10 +299,7 @@ void EditorResourcePicker::_update_menu_items() {
 	_ensure_resource_menu();
 	edit_menu->clear();
 
-	// Add options for creating specific subtypes of the base resource type.
 	if (is_editable()) {
-		set_create_options(edit_menu);
-
 		// Add an option to load a resource from a file using the QuickOpen dialog.
 		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("LoadQuick")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
 		edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
@@ -441,6 +438,11 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);
 			relative_id++;
 		}
+	}
+
+	// Add options for creating specific subtypes of the base resource type.
+	if (is_editable()) {
+		set_create_options(edit_menu);
 	}
 }
 
@@ -670,16 +672,17 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 		_ensure_allowed_types();
 		HashSet<StringName> allowed_types(allowed_types_without_convert);
-		if (!allowed_types.is_empty()) {
-			edit_menu->add_separator(TTRC("New"));
-			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_SHOW);
-		}
 
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
 
 			if (!ClassDB::can_instantiate(t)) {
 				continue;
+			}
+
+			if (idx == 0) {
+				edit_menu->add_separator(TTRC("New"));
+				edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_SHOW);
 			}
 
 			inheritors_array.push_back(t);
@@ -695,10 +698,6 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			}
 
 			idx++;
-		}
-
-		if (edit_menu->get_item_count()) {
-			edit_menu->add_separator();
 		}
 	}
 }
@@ -1534,6 +1533,9 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
+	menu_node->add_separator(TTRC("New"));
+	menu_node->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_SHOW);
+
 	if (!(script_owner && script_owner->has_meta(SceneStringName(_custom_type_script)))) {
 		menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script..."), OBJ_MENU_NEW_SCRIPT);
 	}
@@ -1544,7 +1546,6 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script..."), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}
-	menu_node->add_separator();
 }
 
 bool EditorScriptPicker::handle_menu_selected(int p_which) {
@@ -1590,8 +1591,9 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
+	menu_node->add_separator(TTRC("New"));
+	menu_node->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_SHOW);
 	menu_node->add_icon_item(get_editor_theme_icon(SNAME("Shader")), TTR("New Shader..."), OBJ_MENU_NEW_SHADER);
-	menu_node->add_separator();
 }
 
 bool EditorShaderPicker::handle_menu_selected(int p_which) {
