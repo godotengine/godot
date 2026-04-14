@@ -1780,6 +1780,7 @@ Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_arg
 	}
 
 	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 
@@ -1813,6 +1814,7 @@ void CSharpInstance::raise_event_signal(const StringName &p_event_signal_name, c
 	}
 
 	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return;
 	}
 
