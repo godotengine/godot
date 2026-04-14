@@ -964,7 +964,21 @@ TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	Node *parsed_node_with_props = parsed_node->get_node(path);
 	CHECK(parsed_node_with_props == node_with_props);
 
+	Array parsed_nested_array = parsed_node_with_props->get_meta("nested_array");
+	CHECK(parsed_nested_array.size() == array_property.size());
+	for (int i = 0; i < array_property.size(); i++) {
+		CHECK(parsed_nested_array[i] == array_property[i]);
+	}
+
+	Dictionary parsed_nested_dictionary = parsed_node_with_props->get_meta("nested_dictionary");
+	CHECK(parsed_nested_dictionary.size() == dictionary_property.size());
+	for (KeyValue kv : dictionary_property) {
+		CHECK(kv.value == parsed_nested_dictionary[kv.key]);
+	}
+
 	memdelete(node_with_props);
+	memdelete(node_one);
+	memdelete(node_two);
 	memdelete(scene);
 }
 
