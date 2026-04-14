@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 using System.Diagnostics;
 using System.ComponentModel;
+using JetBrains.Annotations;
 
 #nullable enable
 
@@ -102,7 +103,9 @@ namespace Godot.Collections
 
         /// <inheritdoc cref="Array(ReadOnlySpan{StringName})"/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Array(scoped Span<StringName> span) : this((ReadOnlySpan<StringName>)span) { }
+        public Array(scoped Span<StringName> span) : this((ReadOnlySpan<StringName>)span)
+        {
+        }
 
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given span's elements.
@@ -126,7 +129,9 @@ namespace Godot.Collections
 
         /// <inheritdoc cref="Array(ReadOnlySpan{NodePath})"/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Array(scoped Span<NodePath> span) : this((ReadOnlySpan<NodePath>)span) { }
+        public Array(scoped Span<NodePath> span) : this((ReadOnlySpan<NodePath>)span)
+        {
+        }
 
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given span's elements.
@@ -150,7 +155,9 @@ namespace Godot.Collections
 
         /// <inheritdoc cref="Array(ReadOnlySpan{Rid})"/>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Array(scoped Span<Rid> span) : this((ReadOnlySpan<Rid>)span) { }
+        public Array(scoped Span<Rid> span) : this((ReadOnlySpan<Rid>)span)
+        {
+        }
 
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given ReadOnlySpan's elements.
@@ -174,9 +181,9 @@ namespace Godot.Collections
 
         private Array(godot_array nativeValueToOwn)
         {
-            NativeValue = (godot_array.movable)(nativeValueToOwn.IsAllocated ?
-                nativeValueToOwn :
-                NativeFuncs.godotsharp_array_new());
+            NativeValue = (godot_array.movable)(nativeValueToOwn.IsAllocated
+                ? nativeValueToOwn
+                : NativeFuncs.godotsharp_array_new());
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
@@ -576,6 +583,7 @@ namespace Godot.Collections
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
                 return;
             }
+
             if (collection is Array<T> typedArray)
             {
                 var self = (godot_array)NativeValue;
@@ -1082,7 +1090,7 @@ namespace Godot.Collections
     [DebuggerDisplay("Count = {Count}")]
     [SuppressMessage("ReSharper", "RedundantExtendsListEntry")]
     [SuppressMessage("Design", "CA1001", MessageId = "Types that own disposable fields should be disposable",
-            Justification = "Known issue. Requires explicit refcount management to not dispose untyped collections.")]
+        Justification = "Known issue. Requires explicit refcount management to not dispose untyped collections.")]
     [SuppressMessage("Naming", "CA1710", MessageId = "Identifiers should have correct suffix")]
     public sealed class Array<[MustBeVariant] T> :
         IList<T>,
@@ -1097,23 +1105,44 @@ namespace Godot.Collections
         private static Array<T> FromVariantFunc(in godot_variant variant) =>
             VariantUtils.ConvertToArray<T>(variant);
 
+        // Caching this here won't cause trouble with ALC unloading, as
+        // This cache does not introduce additional AssemblyLoadContext (ALC) unloading issues:
+        // - The field is static on the generic closed type Array<T>,
+        //   so it is collected when that type is unloaded.
+        // - If the generic type is not collected, then the type itself is referenced and
+        //   already prevents ALC unloading, independently of this field.
+        // ReSharper disable StaticMemberInGenericType
+        private static readonly Type _elemCachedType = typeof(T);
+
+        private static readonly NativeProxyMeta? _elemNativeProxyMeta =
+            NativeProxyRegistry.GetNativeProxyMetaOrNull(_elemCachedType);
+
+        private static readonly Bridge.ScriptTypeMeta? _elemScriptTypeMeta =
+            _elemNativeProxyMeta == null
+                ? Bridge.ScriptManagerBridge.GetOrResolveScriptTypeMetaOrNull(_elemCachedType)
+                : null;
+        // ReSharper restore StaticMemberInGenericType
+
         private void SetTypedForUnderlyingArray()
         {
-            Marshaling.GetTypedCollectionParameterInfo<T>(out var elemVariantType, out var elemClassName, out var elemScriptRef);
+            Marshaling.GetTypedCollectionParameterInfo(
+                _elemCachedType, _elemNativeProxyMeta, _elemScriptTypeMeta,
+                out var elemVariantType, out var borrowedElemClassName, out var consumingElemScriptRef);
 
             var self = (godot_array)NativeValue;
 
-            using (elemScriptRef)
+            using (consumingElemScriptRef)
             {
                 NativeFuncs.godotsharp_array_set_typed(
                     ref self,
                     (uint)elemVariantType,
-                    elemClassName,
-                    elemScriptRef);
+                    borrowedElemClassName,
+                    consumingElemScriptRef);
             }
         }
 
-        static unsafe Array()
+        [UsedImplicitly]
+        private static void RegisterVariantGenericConversionTrampolines()
         {
             VariantUtils.GenericConversion<Array<T>>.ToVariantCb = ToVariantFunc;
             VariantUtils.GenericConversion<Array<T>>.FromVariantCb = FromVariantFunc;
@@ -1683,6 +1712,7 @@ namespace Godot.Collections
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
                 return;
             }
+
             if (collection is Array<T> typedArray)
             {
                 var self = (godot_array)_underlyingArray.NativeValue;

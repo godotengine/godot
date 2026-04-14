@@ -35,6 +35,9 @@
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" PrivateAssets="all" />
+  </ItemGroup>
   <!-- Compat Sources -->
   <ItemGroup Condition=" '$(GodotNoDeprecated)' == '' ">
     <Compile Include="Compat.cs" />

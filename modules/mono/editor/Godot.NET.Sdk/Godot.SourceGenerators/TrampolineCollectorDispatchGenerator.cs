@@ -105,12 +105,10 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
         source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
         source.Append("\n{\n");
 
-        source.Append("#pragma warning disable CS0628 // Disable warning about redundant 'new' keyword\n");
-        source.Append("#pragma warning disable CS0109")
-            .Append(" // Disable warning about new protected member declared in sealed type\n");
+        source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-        source.Append("    ").Append(symbol.IsSealed ? "" : "protected ")
-            .Append("internal new static partial class GodotInternal\n    {\n");
+        source.Append("    ").Append(symbol.IsSealed ? "private " : "protected ")
+            .Append("new static partial class GodotInternal\n    {\n");
 
         const string CollectorType = "global::Godot.Bridge.TrampolineCollectors";
         const string OptionsType = "global::Godot.Bridge.TrampolineCollectionOptions";
@@ -137,10 +135,10 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
         if (!symbol.IsGenericType)
         {
             source
-                .Append("        if (options.CollectConstructors) {\n")
-                .Append("            ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
+                .Append("            if (options.CollectConstructors) {\n")
+                .Append("                ").Append(symbol.FullQualifiedNameIncludeGlobal()).Append(".GodotInternal")
                 .Append(".GetGodotConstructorTrampolines(collectors.ConstructorTrampolineCollector);\n")
-                .Append("        }\n");
+                .Append("            }\n");
         }
 
         var usableBaseType = symbol.GetClosestBaseTypeDeclaringGodotInternalMethod("GetGodotClassTrampolines");
@@ -161,7 +159,6 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
         source.Append("    }\n"); // partial class GodotInternal
 
         source.Append("#pragma warning restore CS0109\n");
-        source.Append("#pragma warning restore CS0628\n");
 
         source.Append("}\n"); // partial class
 
