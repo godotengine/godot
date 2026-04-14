@@ -474,6 +474,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 	}
 
 	state = nullptr;
+	_on_physics_callback();
 }
 
 void RigidBody2D::set_mode(Mode p_mode) {
@@ -1428,6 +1429,8 @@ void KinematicBody2D::_direct_state_changed(Object *p_state) {
 	set_notify_local_transform(false);
 	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
+
+	_on_physics_callback();
 }
 
 void KinematicBody2D::_notification(int p_what) {
