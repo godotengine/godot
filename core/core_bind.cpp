@@ -94,11 +94,13 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	return ret;
 }
 
-void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
+void ResourceLoader::add_resource_format_loader(RequiredParam<ResourceFormatLoader> rp_format_loader, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(p_format_loader, rp_format_loader);
 	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
 }
 
-void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
+void ResourceLoader::remove_resource_format_loader(RequiredParam<ResourceFormatLoader> rp_format_loader) {
+	EXTRACT_PARAM_OR_FAIL(p_format_loader, rp_format_loader);
 	::ResourceLoader::remove_resource_format_loader(p_format_loader);
 }
 
@@ -179,7 +181,8 @@ Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	return ::ResourceSaver::set_uid(p_path, p_uid);
 }
 
-Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
+Vector<String> ResourceSaver::get_recognized_extensions(RequiredParam<Resource> rp_resource) {
+	EXTRACT_PARAM_OR_FAIL_V(p_resource, rp_resource, Vector<String>());
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
@@ -189,11 +192,13 @@ Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_r
 	return ret;
 }
 
-void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
+void ResourceSaver::add_resource_format_saver(RequiredParam<ResourceFormatSaver> rp_format_saver, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(p_format_saver, rp_format_saver);
 	::ResourceSaver::add_resource_format_saver(p_format_saver, p_at_front);
 }
 
-void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
+void ResourceSaver::remove_resource_format_saver(RequiredParam<ResourceFormatSaver> rp_format_saver) {
+	EXTRACT_PARAM_OR_FAIL(p_format_saver, rp_format_saver);
 	::ResourceSaver::remove_resource_format_saver(p_format_saver);
 }
 
@@ -708,8 +713,8 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
-void OS::add_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+void OS::add_logger(RequiredParam<Logger> rp_logger) {
+	EXTRACT_PARAM_OR_FAIL(p_logger, rp_logger);
 
 	if (!logger_bind) {
 		logger_bind = memnew(LoggerBind);
@@ -720,8 +725,8 @@ void OS::add_logger(const Ref<Logger> &p_logger) {
 	logger_bind->loggers.push_back(p_logger);
 }
 
-void OS::remove_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+void OS::remove_logger(RequiredParam<Logger> rp_logger) {
+	EXTRACT_PARAM_OR_FAIL(p_logger, rp_logger);
 	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(p_logger) == -1, "Could not remove logger, as it hasn't been added.");
 	logger_bind->loggers.erase(p_logger);
 }
@@ -1666,13 +1671,15 @@ StringName ClassDB::class_get_property_setter(const StringName &p_class, const S
 	return ::ClassDB::get_property_setter(p_class, p_property);
 }
 
-Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
+Variant ClassDB::class_get_property(RequiredParam<Object> rp_object, const StringName &p_property) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, Variant());
 	Variant ret;
 	::ClassDB::get_property(p_object, p_property, ret);
 	return ret;
 }
 
-Error ClassDB::class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
+Error ClassDB::class_set_property(RequiredParam<Object> rp_object, const StringName &p_property, const Variant &p_value) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, ERR_INVALID_PARAMETER);
 	Variant ret;
 	bool valid;
 	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
@@ -1989,7 +1996,8 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 	return ::Engine::get_singleton()->get_singleton_object(p_name);
 }
 
-void Engine::register_singleton(const StringName &p_name, Object *p_object) {
+void Engine::register_singleton(const StringName &p_name, RequiredParam<Object> rp_instance) {
+	EXTRACT_PARAM_OR_FAIL(p_object, rp_instance);
 	ERR_FAIL_COND_MSG(has_singleton(p_name), vformat("Singleton already registered: '%s'.", String(p_name)));
 	ERR_FAIL_COND_MSG(!String(p_name).is_valid_ascii_identifier(), vformat("Singleton name is not a valid identifier: '%s'.", p_name));
 	::Engine::Singleton s;
@@ -2016,11 +2024,13 @@ Vector<String> Engine::get_singleton_list() const {
 	return ret;
 }
 
-Error Engine::register_script_language(ScriptLanguage *p_language) {
+Error Engine::register_script_language(RequiredParam<ScriptLanguage> rp_language) {
+	EXTRACT_PARAM_OR_FAIL_V(p_language, rp_language, ERR_INVALID_PARAMETER);
 	return ScriptServer::register_language(p_language);
 }
 
-Error Engine::unregister_script_language(const ScriptLanguage *p_language) {
+Error Engine::unregister_script_language(RequiredParam<const ScriptLanguage> rp_language) {
+	EXTRACT_PARAM_OR_FAIL_V(p_language, rp_language, ERR_INVALID_PARAMETER);
 	return ScriptServer::unregister_language(p_language);
 }
 

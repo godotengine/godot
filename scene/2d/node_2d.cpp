@@ -395,7 +395,8 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 	}
 }
 
-Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
+Transform2D Node2D::get_relative_transform_to_parent(RequiredParam<const Node> rp_parent) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_parent, rp_parent, Transform2D());
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	if (p_parent == this) {
 		return Transform2D();

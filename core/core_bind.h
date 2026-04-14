@@ -76,8 +76,8 @@ public:
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
-	void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front);
-	void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
+	void add_resource_format_loader(RequiredParam<ResourceFormatLoader> p_format_loader, bool p_at_front);
+	void remove_resource_format_loader(RequiredParam<ResourceFormatLoader> p_format_loader);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
 	bool has_cached(const String &p_path);
@@ -113,9 +113,9 @@ public:
 
 	Error save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags);
 	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
-	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
-	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
-	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
+	Vector<String> get_recognized_extensions(RequiredParam<Resource> p_resource);
+	void add_resource_format_saver(RequiredParam<ResourceFormatSaver> p_format_saver, bool p_at_front);
+	void remove_resource_format_saver(RequiredParam<ResourceFormatSaver> p_format_saver);
 
 	ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
 
@@ -311,8 +311,8 @@ public:
 	Vector<String> get_granted_permissions() const;
 	void revoke_granted_permissions();
 
-	void add_logger(const Ref<Logger> &p_logger);
-	void remove_logger(const Ref<Logger> &p_logger);
+	void add_logger(RequiredParam<Logger> p_logger);
+	void remove_logger(RequiredParam<Logger> p_logger);
 	void remove_script_loggers(const ScriptLanguage *p_script);
 
 	static OS *get_singleton() { return singleton; }
@@ -533,8 +533,8 @@ public:
 	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	StringName class_get_property_getter(const StringName &p_class, const StringName &p_property);
 	StringName class_get_property_setter(const StringName &p_class, const StringName &p_property);
-	Variant class_get_property(Object *p_object, const StringName &p_property) const;
-	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
+	Variant class_get_property(RequiredParam<Object> p_object, const StringName &p_property) const;
+	Error class_set_property(RequiredParam<Object> p_object, const StringName &p_property, const Variant &p_value) const;
 
 	Variant class_get_property_default_value(const StringName &p_class, const StringName &p_property) const;
 
@@ -611,12 +611,12 @@ public:
 
 	bool has_singleton(const StringName &p_name) const;
 	Object *get_singleton_object(const StringName &p_name) const;
-	void register_singleton(const StringName &p_name, Object *p_object);
+	void register_singleton(const StringName &p_name, RequiredParam<Object> p_instance);
 	void unregister_singleton(const StringName &p_name);
 	Vector<String> get_singleton_list() const;
 
-	Error register_script_language(ScriptLanguage *p_language);
-	Error unregister_script_language(const ScriptLanguage *p_language);
+	Error register_script_language(RequiredParam<ScriptLanguage> p_language);
+	Error unregister_script_language(RequiredParam<const ScriptLanguage> p_language);
 	int get_script_language_count();
 	ScriptLanguage *get_script_language(int p_index) const;
 	TypedArray<ScriptBacktrace> capture_script_backtraces(bool p_include_variables = false) const;
