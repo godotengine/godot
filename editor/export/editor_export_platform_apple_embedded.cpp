@@ -2478,7 +2478,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 			args.push_back(vformat("hardwareProperties.deviceType MATCHES '%s'", device_types));
 
 			int ec = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, true);
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, false);
 			if (err == OK && ec == 0) {
 				Ref<JSON> json;
 				json.instantiate();
