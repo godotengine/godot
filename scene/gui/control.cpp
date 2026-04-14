@@ -1745,9 +1745,6 @@ void Control::update_maximum_size() {
 		}
 	}
 
-	// Keep minimum size propagation in sync so parent containers can relayout correctly.
-	callable_mp(this, &Control::_update_minimum_size).call_deferred();
-
 	if (!is_visible_in_tree()) {
 		// Invalidate the last maximum size so it will update when made visible.
 		data.last_maximum_size = Size2(-1, -1);
@@ -1758,6 +1755,12 @@ void Control::update_maximum_size() {
 		return;
 	}
 	data.updating_last_maximum_size = true;
+
+	// Keep minimum size propagation in sync so parent containers can relayout correctly.
+	if (!data.updating_last_minimum_size) {
+		data.updating_last_minimum_size = true;
+		callable_mp(this, &Control::_update_minimum_size).call_deferred();
+	}
 
 	callable_mp(this, &Control::_update_maximum_size).call_deferred();
 }
