@@ -172,49 +172,95 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // end of class MethodName
 
+            source.Append("    ").Append(symbol.IsSealed ? "private " : "protected ")
+                .Append("new static partial class GodotInternal\n    {\n");
+
             // Generate GetGodotMethodList
 
-            if (godotClassMethods.Length > 0)
             {
                 const string ListType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
-                source.Append("    /// <summary>\n")
-                    .Append("    /// Get the method information for all the methods declared in this class.\n")
-                    .Append("    /// This method is used by Godot to register the available methods in the editor.\n")
-                    .Append("    /// Do not call this method.\n")
-                    .Append("    /// </summary>\n");
+                source.Append("        /// <summary>\n")
+                    .Append("        /// Get the method information for all the methods declared in this class.\n")
+                    .Append(
+                        "        /// This method is used by Godot to register the available methods in the editor.\n")
+                    .Append("        /// Do not call this method.\n")
+                    .Append("        /// </summary>\n");
 
-                source.Append(
-                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("        public static\n#nullable enable\n            ");
+                source.Append(ListType);
+                source.Append("?\n#nullable restore\n            GetGodotMethodList()\n        {\n");
 
-                source.Append("    internal new static ")
-                    .Append(ListType)
-                    .Append(" GetGodotMethodList()\n    {\n");
-
-                source.Append("        var methods = new ")
-                    .Append(ListType)
-                    .Append("(")
-                    .Append(godotClassMethods.Length)
-                    .Append(");\n");
-
-                foreach (var method in godotClassMethods)
+                if (godotClassMethods.Length > 0)
                 {
-                    var methodInfo = DetermineMethodInfo(method);
-                    AppendMethodInfo(source, methodInfo);
+                    source.Append("            var methods = new ")
+                        .Append(ListType)
+                        .Append("(")
+                        .Append(godotClassMethods.Length)
+                        .Append(");\n");
+
+                    foreach (var method in godotClassMethods)
+                    {
+                        var methodInfo = DetermineMethodInfo(method);
+                        AppendMethodInfo(source, methodInfo);
+                    }
+
+                    source.Append("            return methods;\n");
+                }
+                else
+                {
+                    source.Append("            return null;\n");
                 }
 
-                source.Append("        return methods;\n");
-                source.Append("    }\n");
+                source.Append("        }\n");
             }
 
-            source.Append("    ").Append(symbol.IsSealed ? "" : "protected ")
-                .Append("internal new static partial class GodotInternal\n    {\n");
+            // Generate GetGodotRpcMethods
+
+            {
+                source.Append("        /// <summary>\n")
+                    .Append("        /// Get the method information for all the methods declared in this class.\n")
+                    .Append(
+                        "        /// This method is used by Godot to register the available methods in the editor.\n")
+                    .Append("        /// Do not call this method.\n")
+                    .Append("        /// </summary>\n");
+
+                source.Append("        public static void GetGodotRpcMethods(")
+                    .Append("global::Godot.Bridge.RpcMethodCollector collector)\n        {\n");
+
+                if (godotClassMethods.Length > 0)
+                {
+                    foreach (var method in godotClassMethods)
+                    {
+                        var attr = method.Method.GetAttributes()
+                            .FirstOrDefault(attrData => attrData.AttributeClass?.IsGodotRpcAttribute() ?? false);
+
+                        if (attr == null)
+                            continue;
+
+                        AppendRpcMethod(source, method.Method.Name, attr);
+                    }
+                }
+
+                var usableBaseType = symbol.GetClosestBaseTypeDeclaringGodotInternalMethod("GetGodotRpcMethods");
+
+                if (usableBaseType != null)
+                {
+                    source
+                        .Append("            if (collector.IncludeAncestors) {\n")
+                        .Append("                ").Append(usableBaseType.FullQualifiedNameIncludeGlobal())
+                        .Append(".GodotInternal.GetGodotRpcMethods(collector);\n")
+                        .Append("            }\n");
+                }
+
+                source.Append("        }\n");
+            }
 
             // Generate GetGodotMethodTrampolines
             {
                 const string CollectorType = "global::Godot.Bridge.MethodTrampolineCollector";
 
-                source.Append("        public new static ")
+                source.Append("        private static ")
                     .Append(isUnsafeAllowed ? "unsafe " : "")
                     .Append("void GetGodotMethodTrampolines(")
                     .Append(CollectorType).Append(" collector)\n        {\n");
@@ -240,8 +286,13 @@ namespace Godot.SourceGenerators
                 {
                     // Store cached typeof(this) and unsafe accessors in GodotInternal class.
                     {
+                        const string DynAccessedMembersFqn =
+                            "global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes";
                         source
-                            .Append("        private static readonly global::System.Type CachedType = typeof(")
+                            .Append("        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(")
+                            .Append(DynAccessedMembersFqn).Append(".PublicConstructors | ")
+                            .Append(DynAccessedMembersFqn).Append(".NonPublicConstructors)]\n")
+                            .Append("        public static global::System.Type CachedType { get; } = typeof(")
                             .Append(symbol.FullQualifiedNameIncludeGlobal())
                             .Append(");\n");
 
@@ -259,7 +310,7 @@ namespace Godot.SourceGenerators
                     const string CollectorType =
                         "global::Godot.Bridge.ConstructorTrampolineCollector";
 
-                    source.Append("        public new static ")
+                    source.Append("        private static ")
                         .Append(isUnsafeAllowed ? "unsafe " : "")
                         .Append("void GetGodotConstructorTrampolines(")
                         .Append(CollectorType).Append(" collector)\n        {\n");
@@ -298,6 +349,76 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+        }
+
+        private static void AppendRpcMethod(StringBuilder source, string methodName, AttributeData attr)
+        {
+            int? maybeRpcMode = null;
+            bool? maybeCallLocal = null;
+            int? maybeTransferMode = null;
+            int? maybeTransferChannel = null;
+
+            if (attr.ConstructorArguments.Length == 1
+                && attr.ConstructorArguments[0].Value is int rpcModeValue)
+            {
+                maybeRpcMode = rpcModeValue;
+            }
+
+            if (attr.NamedArguments.FirstOrDefault(namedArg => namedArg.Key == "Mode") is
+                { Value: { Value: not null } rpcModeConstant })
+            {
+                maybeRpcMode = (int)rpcModeConstant.Value;
+            }
+
+            if (attr.NamedArguments.FirstOrDefault(namedArg => namedArg.Key == "CallLocal") is
+                { Value: { Value: not null } callLocalConstant })
+            {
+                maybeCallLocal = (bool)callLocalConstant.Value;
+            }
+
+            if (attr.NamedArguments.FirstOrDefault(namedArg => namedArg.Key == "TransferMode") is
+                { Value: { Value: not null } transferModeConstant })
+            {
+                maybeTransferMode = (int)transferModeConstant.Value;
+            }
+
+            if (attr.NamedArguments.FirstOrDefault(namedArg => namedArg.Key == "TransferChannel") is
+                { Value: { Value: not null } transferChannelConstant })
+            {
+                maybeTransferChannel = (int)transferChannelConstant.Value;
+            }
+
+            source.Append("            collector.TryAdd(MethodName.@")
+                .Append(methodName)
+                .Append(", ");
+
+            if (maybeRpcMode is { } rpcMode)
+                source.Append("(global::Godot.MultiplayerApi.RpcMode)").Append(rpcMode);
+            else
+                source.Append("null");
+
+            source.Append(", ");
+
+            if (maybeCallLocal is { } callLocal)
+                source.Append(callLocal ? "true" : "false");
+            else
+                source.Append("null");
+
+            source.Append(", ");
+
+            if (maybeTransferMode is { } transferMode)
+                source.Append("(global::Godot.MultiplayerPeer.TransferModeEnum)").Append(transferMode);
+            else
+                source.Append("null");
+
+            source.Append(", ");
+
+            if (maybeTransferChannel is { } transferChannel)
+                source.Append(transferChannel);
+            else
+                source.Append("null");
+
+            source.Append(");\n");
         }
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)

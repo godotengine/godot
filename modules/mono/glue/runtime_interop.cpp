@@ -1120,7 +1120,7 @@ void godotsharp_array_make_read_only(Array *p_self) {
 void godotsharp_array_set_typed(Array *p_self, uint32_t p_elem_type, const StringName *p_elem_class_name, const Ref<CSharpScript> *p_elem_script) {
 	Variant elem_script_variant;
 	StringName elem_class_name = *p_elem_class_name;
-	if (p_elem_script && p_elem_script->is_valid()) {
+	if (elem_class_name.is_empty() && p_elem_script && p_elem_script->is_valid()) {
 		elem_script_variant = Variant(p_elem_script->ptr());
 		elem_class_name = p_elem_script->ptr()->get_instance_base_type();
 	}

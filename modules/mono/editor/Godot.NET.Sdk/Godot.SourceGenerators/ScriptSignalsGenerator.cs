@@ -218,50 +218,55 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // end of class SignalName
 
+            source.Append("    ").Append(symbol.IsSealed ? "private " : "protected ")
+                .Append("new static partial class GodotInternal\n    {\n");
+
             // Generate GetGodotSignalList
 
-            if (godotSignalDelegates.Count > 0)
             {
                 const string ListType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
-                source.Append("    /// <summary>\n")
-                    .Append("    /// Get the signal information for all the signals declared in this class.\n")
-                    .Append("    /// This method is used by Godot to register the available signals in the editor.\n")
-                    .Append("    /// Do not call this method.\n")
-                    .Append("    /// </summary>\n");
+                source.Append("        /// <summary>\n")
+                    .Append("        /// Get the signal information for all the signals declared in this class.\n")
+                    .Append(
+                        "        /// This method is used by Godot to register the available signals in the editor.\n")
+                    .Append("        /// Do not call this method.\n")
+                    .Append("        /// </summary>\n");
 
-                source.Append(
-                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("        public static\n#nullable enable\n            ");
+                source.Append(ListType);
+                source.Append("?\n#nullable restore\n            GetGodotSignalList()\n        {\n");
 
-                source.Append("    internal new static ")
-                    .Append(ListType)
-                    .Append(" GetGodotSignalList()\n    {\n");
-
-                source.Append("        var signals = new ")
-                    .Append(ListType)
-                    .Append("(")
-                    .Append(godotSignalDelegates.Count)
-                    .Append(");\n");
-
-                foreach (var signalDelegateData in godotSignalDelegates)
+                if (godotSignalDelegates.Count > 0)
                 {
-                    var methodInfo = DetermineMethodInfo(signalDelegateData);
-                    AppendMethodInfo(source, methodInfo);
+                    source.Append("            var signals = new ")
+                        .Append(ListType)
+                        .Append("(")
+                        .Append(godotSignalDelegates.Count)
+                        .Append(");\n");
+
+                    foreach (var signalDelegateData in godotSignalDelegates)
+                    {
+                        var methodInfo = DetermineMethodInfo(signalDelegateData);
+                        AppendMethodInfo(source, methodInfo);
+                    }
+
+                    source.Append("            return signals;\n");
+                }
+                else
+                {
+                    source.Append("            return null;\n");
                 }
 
-                source.Append("        return signals;\n");
-                source.Append("    }\n");
+                source.Append("        }\n");
             }
 
             // Generate GetGodotMethodTrampolines
 
             {
-                source.Append("    ").Append(symbol.IsSealed ? "" : "protected ")
-                    .Append("internal new static partial class GodotInternal\n    {\n");
-
                 const string CollectorType = "global::Godot.Bridge.RaiseSignalTrampolineCollector";
 
-                source.Append("        internal new static ")
+                source.Append("        private static ")
                     .Append(isUnsafeAllowed ? "unsafe " : "")
                     .Append("void GetGodotRaiseSignalTrampolines(")
                     .Append(CollectorType).Append(" collector)\n        {\n");
@@ -273,9 +278,9 @@ namespace Godot.SourceGenerators
                 }
 
                 source.Append("        }\n");
-
-                source.Append("    }\n"); // partial class GodotInternal
             }
+
+            source.Append("    }\n"); // partial class GodotInternal
 
             source.Append("#pragma warning restore CS0109\n");
 

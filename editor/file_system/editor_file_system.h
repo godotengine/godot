@@ -388,6 +388,7 @@ public:
 	void scan_changes();
 	void update_file(const String &p_file);
 	void update_files(const Vector<String> &p_script_paths);
+	void update_files(const Span<String> &p_script_paths);
 	HashSet<String> get_valid_extensions() const;
 	void register_global_class_script(const String &p_search_path, const String &p_target_path);
 

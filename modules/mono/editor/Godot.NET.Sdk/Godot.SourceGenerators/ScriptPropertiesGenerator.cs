@@ -179,14 +179,14 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n"); // end of class PropertyName
 
-            source.Append("    ").Append(symbol.IsSealed ? "" : "protected ")
-                .Append("internal new static partial class GodotInternal\n    {\n");
+            source.Append("    ").Append(symbol.IsSealed ? "private " : "protected ")
+                .Append("new static partial class GodotInternal\n    {\n");
 
             // Generate GetGodotMethodTrampolines
             {
                 const string CollectorType = "global::Godot.Bridge.PropertyTrampolineCollector";
 
-                source.Append("        internal new static ")
+                source.Append("        private static ")
                     .Append(isUnsafeAllowed ? "unsafe " : "")
                     .Append("void GetGodotPropertyTrampolines(")
                     .Append(CollectorType).Append(" collector)\n        {\n");
@@ -240,68 +240,72 @@ namespace Godot.SourceGenerators
                 source.Append("        }\n");
             }
 
-            source.Append("    }\n"); // partial class GodotInternal
+            // Generate GetGodotPropertyList
 
-            if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
-                // Generate GetGodotPropertyList
-
                 const string DictionaryType =
                     "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
-                source.Append("    /// <summary>\n")
-                    .Append("    /// Get the property information for all the properties declared in this class.\n")
+                source.Append("        /// <summary>\n")
+                    .Append("        /// Get the property information for all the properties declared in this class.\n")
                     .Append(
-                        "    /// This method is used by Godot to register the available properties in the editor.\n")
-                    .Append("    /// Do not call this method.\n")
-                    .Append("    /// </summary>\n");
+                        "        /// This method is used by Godot to register the available properties in the editor.\n")
+                    .Append("        /// Do not call this method.\n")
+                    .Append("        /// </summary>\n");
 
-                source.Append(
-                    "    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("        public static\n#nullable enable\n            ");
+                source.Append(DictionaryType);
+                source.Append("?\n#nullable restore\n            GetGodotPropertyList()\n        {\n");
 
-                source.Append("    internal new static ")
-                    .Append(DictionaryType)
-                    .Append(" GetGodotPropertyList()\n    {\n");
-
-                source.Append("        var properties = new ")
-                    .Append(DictionaryType)
-                    .Append("();\n");
-
-                // To retain the definition order (and display categories correctly), we want to
-                //  iterate over fields and properties at the same time, sorted by line number.
-                var godotClassPropertiesAndFields = Enumerable.Empty<GodotPropertyOrFieldData>()
-                    .Concat(godotClassProperties.Select(propertyData => new GodotPropertyOrFieldData(propertyData)))
-                    .Concat(godotClassFields.Select(fieldData => new GodotPropertyOrFieldData(fieldData)))
-                    .OrderBy(data => data.Symbol.Locations[0].Path())
-                    .ThenBy(data => data.Symbol.Locations[0].StartLine());
-
-                foreach (var member in godotClassPropertiesAndFields)
+                if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
                 {
-                    foreach (var groupingInfo in DetermineGroupingPropertyInfo(member.Symbol))
-                        AppendGroupingPropertyInfo(source, groupingInfo);
+                    source.Append("            var properties = new ")
+                        .Append(DictionaryType)
+                        .Append("();\n");
 
-                    var propertyInfo = DeterminePropertyInfo(context, typeCache,
-                        member.Symbol, member.Type);
+                    // To retain the definition order (and display categories correctly), we want to
+                    //  iterate over fields and properties at the same time, sorted by line number.
+                    var godotClassPropertiesAndFields = Enumerable.Empty<GodotPropertyOrFieldData>()
+                        .Concat(godotClassProperties.Select(propertyData => new GodotPropertyOrFieldData(propertyData)))
+                        .Concat(godotClassFields.Select(fieldData => new GodotPropertyOrFieldData(fieldData)))
+                        .OrderBy(data => data.Symbol.Locations[0].Path())
+                        .ThenBy(data => data.Symbol.Locations[0].StartLine());
 
-                    if (propertyInfo == null)
-                        continue;
-
-                    if (propertyInfo.Value.Hint == PropertyHint.ToolButton && !isToolClass)
+                    foreach (var member in godotClassPropertiesAndFields)
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            Common.OnlyToolClassesShouldUseExportToolButtonRule,
-                            member.Symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
-                            member.Symbol.ToDisplayString()
-                        ));
-                        continue;
+                        foreach (var groupingInfo in DetermineGroupingPropertyInfo(member.Symbol))
+                            AppendGroupingPropertyInfo(source, groupingInfo);
+
+                        var propertyInfo = DeterminePropertyInfo(context, typeCache,
+                            member.Symbol, member.Type);
+
+                        if (propertyInfo == null)
+                            continue;
+
+                        if (propertyInfo.Value.Hint == PropertyHint.ToolButton && !isToolClass)
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                Common.OnlyToolClassesShouldUseExportToolButtonRule,
+                                member.Symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                                member.Symbol.ToDisplayString()
+                            ));
+                            continue;
+                        }
+
+                        AppendPropertyInfo(source, propertyInfo.Value);
                     }
 
-                    AppendPropertyInfo(source, propertyInfo.Value);
+                    source.Append("            return properties;\n");
+                }
+                else
+                {
+                    source.Append("            return null;\n");
                 }
 
-                source.Append("        return properties;\n");
-                source.Append("    }\n");
+                source.Append("        }\n");
             }
+
+            source.Append("    }\n"); // partial class GodotInternal
 
             source.Append("#pragma warning restore CS0109\n");
 
@@ -475,11 +479,21 @@ namespace Godot.SourceGenerators
         {
             foreach (var attr in memberSymbol.GetAttributes())
             {
-                PropertyUsageFlags? propertyUsage = attr.AttributeClass?.FullQualifiedNameOmitGlobal() switch
+                // Verify the attribute's namespace is 'Godot' (no sub-namespaces).
+                if (attr.AttributeClass is not
+                    {
+                        Arity: 0, // Neither of the attributes we are looking for are generic.
+                        ContainingNamespace: { Name: "Godot", ContainingNamespace.IsGlobalNamespace: true }
+                    })
                 {
-                    GodotClasses.ExportCategoryAttr => PropertyUsageFlags.Category,
-                    GodotClasses.ExportGroupAttr => PropertyUsageFlags.Group,
-                    GodotClasses.ExportSubgroupAttr => PropertyUsageFlags.Subgroup,
+                    continue;
+                }
+
+                PropertyUsageFlags? propertyUsage = attr.AttributeClass.Name switch
+                {
+                    "ExportCategoryAttribute" => PropertyUsageFlags.Category,
+                    "ExportGroupAttribute" => PropertyUsageFlags.Group,
+                    "ExportSubgroupAttribute" => PropertyUsageFlags.Subgroup,
                     _ => null
                 };
 
@@ -615,21 +629,19 @@ namespace Godot.SourceGenerators
                             return true;
 
                         case ObjectCreationExpressionSyntax creationExpression:
-                            var typeSymbol = semanticModel.GetSymbolInfo(creationExpression.Type).Symbol as ITypeSymbol;
-                            if (typeSymbol != null)
+                            if (semanticModel.GetSymbolInfo(creationExpression.Type).Symbol
+                                    is INamedTypeSymbol typeSymbol && typeSymbol.IsGodotCallableType())
                             {
-                                return typeSymbol.FullQualifiedNameOmitGlobal() == GodotClasses.Callable;
+                                return true;
                             }
 
                             break;
 
                         case InvocationExpressionSyntax invocationExpression:
-                            var methodSymbol =
-                                semanticModel.GetSymbolInfo(invocationExpression).Symbol as IMethodSymbol;
-                            if (methodSymbol != null && methodSymbol.Name == "From")
+                            if (semanticModel.GetSymbolInfo(invocationExpression).Symbol
+                                is IMethodSymbol { Name: "From" } methodSymbol)
                             {
-                                return methodSymbol.ContainingType.FullQualifiedNameOmitGlobal() ==
-                                       GodotClasses.Callable;
+                                return methodSymbol.ContainingType.IsGodotCallableType();
                             }
 
                             break;
@@ -802,7 +814,7 @@ namespace Godot.SourceGenerators
                     return true;
                 }
 
-                if (memberNamedType.InheritsFrom("GodotSharp", "Godot.Resource"))
+                if (memberNamedType.IsOrInheritsFrom("GodotSharp", "Godot.Resource"))
                 {
                     hint = PropertyHint.ResourceType;
                     hintString = GetTypeName(memberNamedType);
@@ -810,7 +822,7 @@ namespace Godot.SourceGenerators
                     return true;
                 }
 
-                if (memberNamedType.InheritsFrom("GodotSharp", "Godot.Node"))
+                if (memberNamedType.IsOrInheritsFrom("GodotSharp", "Godot.Node"))
                 {
                     hint = PropertyHint.NodeType;
                     hintString = GetTypeName(memberNamedType);

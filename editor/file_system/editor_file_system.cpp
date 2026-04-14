@@ -2396,10 +2396,14 @@ void EditorFileSystem::_get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet
 
 void EditorFileSystem::update_file(const String &p_file) {
 	ERR_FAIL_COND(p_file.is_empty());
-	update_files({ p_file });
+	update_files(Span(&p_file, 1));
 }
 
 void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
+	update_files(p_script_paths.span());
+}
+
+void EditorFileSystem::update_files(const Span<String> &p_script_paths) {
 	bool updated = false;
 	bool update_files_icon_cache = false;
 	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;

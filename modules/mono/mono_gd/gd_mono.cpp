@@ -423,9 +423,13 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 #endif
 
 #ifdef TOOLS_ENABLED
-using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
+using godot_plugins_initialize_fn = bool (*)(void *p_godot_dll_handle, bool p_is_editor_hint,
+		gdmono::PluginCallbacks *r_plugin_callbacks_res, GDMonoCache::ManagedCallbacksInitContext *r_managed_callbacks_init_ctx,
+		const void **p_interop_funcs, int32_t p_interop_funcs_size);
 #else
-using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
+using godot_plugins_initialize_fn = bool (*)(void *p_godot_dll_handle,
+		GDMonoCache::ManagedCallbacksInitContext *r_managed_callbacks_init_ctx,
+		const void **p_interop_funcs, int32_t p_interop_funcs_size);
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -681,6 +685,15 @@ void GDMono::initialize() {
 	const void **interop_funcs = godotsharp::get_runtime_interop_funcs(interop_funcs_size);
 
 	GDMonoCache::ManagedCallbacks managed_callbacks{};
+#ifdef TOOLS_ENABLED
+	GDMonoCache::ToolsBuildManagedCallbacks tools_managed_callbacks{};
+#endif
+
+#ifdef TOOLS_ENABLED
+	GDMonoCache::ManagedCallbacksInitContext managed_callbacks_init_ctx{ &managed_callbacks, &tools_managed_callbacks };
+#else
+	GDMonoCache::ManagedCallbacksInitContext managed_callbacks_init_ctx{ &managed_callbacks, nullptr };
+#endif
 
 	void *godot_dll_handle = nullptr;
 
@@ -693,18 +706,18 @@ void GDMono::initialize() {
 	gdmono::PluginCallbacks plugin_callbacks_res;
 	bool init_ok = godot_plugins_initialize(godot_dll_handle,
 			Engine::get_singleton()->is_editor_hint(),
-			&plugin_callbacks_res, &managed_callbacks,
+			&plugin_callbacks_res, &managed_callbacks_init_ctx,
 			interop_funcs, interop_funcs_size);
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
 
 	plugin_callbacks = plugin_callbacks_res;
 #else
-	bool init_ok = godot_plugins_initialize(godot_dll_handle, &managed_callbacks,
+	bool init_ok = godot_plugins_initialize(godot_dll_handle, &managed_callbacks_init_ctx,
 			interop_funcs, interop_funcs_size);
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
 #endif
 
-	GDMonoCache::update_godot_api_cache(managed_callbacks);
+	GDMonoCache::update_godot_api_cache(managed_callbacks_init_ctx);
 
 	print_verbose(".NET: GodotPlugins initialized");
 

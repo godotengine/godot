@@ -69,7 +69,7 @@ namespace Godot.SourceGenerators
                 : string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
-            bool isNode = symbol.InheritsFrom("GodotSharp", GodotClasses.Node);
+            bool isNode = symbol.IsOrInheritsFrom("GodotSharp", GodotClasses.Node);
 
             bool isInnerClass = symbol.ContainingType != null;
 
@@ -347,62 +347,72 @@ namespace Godot.SourceGenerators
                     field.Name, marshalType.Value, fieldType, value));
             }
 
+            source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
+
+            source.Append("    ").Append(symbol.IsSealed ? "private " : "protected ")
+                .Append("new static partial class GodotInternal\n    {\n");
+
             // Generate GetGodotExportedProperties
 
-            if (exportedMembers.Count > 0)
             {
-                source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
-
                 const string DictionaryType =
                     "global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>";
 
                 source.Append("#if TOOLS\n");
 
-                source.Append("    /// <summary>\n")
-                    .Append("    /// Get the default values for all properties declared in this class.\n")
-                    .Append("    /// This method is used by Godot to determine the value that will be\n")
-                    .Append("    /// used by the inspector when resetting properties.\n")
-                    .Append("    /// Do not call this method.\n")
-                    .Append("    /// </summary>\n");
+                source.Append("        /// <summary>\n")
+                    .Append("        /// Get the default values for all properties declared in this class.\n")
+                    .Append("        /// This method is used by Godot to determine the value that will be\n")
+                    .Append("        /// used by the inspector when resetting properties.\n")
+                    .Append("        /// Do not call this method.\n")
+                    .Append("        /// </summary>\n");
 
-                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-
-                source.Append("    internal new static ");
+                source.Append("        public static\n#nullable enable\n            ");
                 source.Append(DictionaryType);
-                source.Append(" GetGodotPropertyDefaultValues()\n    {\n");
+                source.Append("?\n#nullable restore\n            GetGodotPropertyDefaultValues()\n        {\n");
 
-                source.Append("        var values = new ");
-                source.Append(DictionaryType);
-                source.Append("(");
-                source.Append(exportedMembers.Count);
-                source.Append(");\n");
-
-                foreach (var exportedMember in exportedMembers)
+                if (exportedMembers.Count > 0)
                 {
-                    string defaultValueLocalName = string.Concat("__", exportedMember.Name, "_default_value");
-
-                    source.Append("        ");
-                    source.Append(exportedMember.TypeSymbol.FullQualifiedNameIncludeGlobal());
-                    source.Append(" ");
-                    source.Append(defaultValueLocalName);
-                    source.Append(" = ");
-                    source.Append(exportedMember.Value ?? "default");
-                    source.Append(";\n");
-                    source.Append("        values.Add(PropertyName.@");
-                    source.Append(exportedMember.Name);
-                    source.Append(", ");
-                    source.AppendManagedToVariantExpr(defaultValueLocalName,
-                        exportedMember.TypeSymbol, exportedMember.Type);
+                    source.Append("            var values = new ");
+                    source.Append(DictionaryType);
+                    source.Append("(");
+                    source.Append(exportedMembers.Count);
                     source.Append(");\n");
+
+                    foreach (var exportedMember in exportedMembers)
+                    {
+                        string defaultValueLocalName = string.Concat("__", exportedMember.Name, "_default_value");
+
+                        source.Append("            ");
+                        source.Append(exportedMember.TypeSymbol.FullQualifiedNameIncludeGlobal());
+                        source.Append(" ");
+                        source.Append(defaultValueLocalName);
+                        source.Append(" = ");
+                        source.Append(exportedMember.Value ?? "default");
+                        source.Append(";\n");
+                        source.Append("            values.Add(PropertyName.@");
+                        source.Append(exportedMember.Name);
+                        source.Append(", ");
+                        source.AppendManagedToVariantExpr(defaultValueLocalName,
+                            exportedMember.TypeSymbol, exportedMember.Type);
+                        source.Append(");\n");
+                    }
+
+                    source.Append("            return values;\n");
+                }
+                else
+                {
+                    source.Append("            return null;\n");
                 }
 
-                source.Append("        return values;\n");
-                source.Append("    }\n");
+                source.Append("        }\n");
 
                 source.Append("#endif // TOOLS\n");
-
-                source.Append("#pragma warning restore CS0109\n");
             }
+
+            source.Append("    }\n"); // partial class GodotInternal
+
+            source.Append("#pragma warning restore CS0109\n");
 
             source.Append("}\n"); // partial class
 
@@ -456,18 +466,18 @@ namespace Godot.SourceGenerators
         {
             if (marshalType == MarshalType.GodotObjectOrDerived)
             {
-                return memberType.InheritsFrom("GodotSharp", GodotClasses.Node);
+                return memberType.IsOrInheritsFrom("GodotSharp", GodotClasses.Node);
             }
             if (marshalType == MarshalType.GodotObjectOrDerivedArray)
             {
                 var elementType = ((IArrayTypeSymbol)memberType).ElementType;
-                return elementType.InheritsFrom("GodotSharp", GodotClasses.Node);
+                return elementType.IsOrInheritsFrom("GodotSharp", GodotClasses.Node);
             }
             if (memberType is INamedTypeSymbol { IsGenericType: true } genericType)
             {
                 return genericType.TypeArguments
                     .Any(static typeArgument
-                        => typeArgument.InheritsFrom("GodotSharp", GodotClasses.Node));
+                        => typeArgument.IsOrInheritsFrom("GodotSharp", GodotClasses.Node));
             }
 
             return false;

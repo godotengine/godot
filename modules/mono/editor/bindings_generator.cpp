@@ -99,7 +99,6 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX "SignalProxyName_"
 
 #define ICALL_PREFIX "godot_icall_"
-#define ICALL_CLASSDB_GET_METHOD "ClassDB_get_method"
 #define ICALL_CLASSDB_GET_METHOD_WITH_COMPATIBILITY "ClassDB_get_method_with_compatibility"
 #define ICALL_CLASSDB_GET_CONSTRUCTOR "ClassDB_get_constructor"
 
@@ -1816,9 +1815,11 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append("// ReSharper disable InconsistentNaming\n\n");
 		cs_built_in_ctors_content.append("internal static partial class " BINDINGS_CLASS_CONSTRUCTOR "\n{");
 
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "static unsafe " BINDINGS_CLASS_CONSTRUCTOR "()\n");
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "private static bool _initialized;\n");
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static unsafe void Initialize()\n");
 		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
-		cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n");
+		cs_built_in_ctors_content.append(INDENT2 "if (_initialized)\n" INDENT3 "return;\n");
+		cs_built_in_ctors_content.append(INDENT2 "_initialized = true;\n");
 
 		for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 			const TypeInterface &itype = E.value;
@@ -1982,6 +1983,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append("// ReSharper disable InconsistentNaming\n\n");
 		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR_EDITOR "\n{");
 
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "[JetBrains.Annotations.PublicAPI(\"Called from GodotTools's GodotSharpEditor.InternalCreateInstance method, before the project assemblies are loaded.\")]");
 		cs_built_in_ctors_content.append(MEMBER_BEGIN "private static unsafe void AddEditorConstructors()\n");
 		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
 		cs_built_in_ctors_content.append(INDENT2 "var builtInMethodConstructors = " BINDINGS_CLASS_CONSTRUCTOR "." BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ";\n");
@@ -2332,10 +2334,14 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	// Add native name static field and cached type.
 
 	if (is_derived_type && !itype.is_singleton) {
-		output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
+		output << MEMBER_BEGIN "public new static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
 	}
 
-	output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
+	output.append(MEMBER_BEGIN "public");
+	if (is_derived_type && !itype.is_singleton) {
+		output.append(" new");
+	}
+	output.append(" static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
 	output.append(itype.name);
 	output.append("\";\n");
 

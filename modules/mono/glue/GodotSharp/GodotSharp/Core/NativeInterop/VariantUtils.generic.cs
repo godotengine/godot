@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
@@ -13,21 +15,40 @@ public partial class VariantUtils
     internal static class GenericConversion<T>
     {
         internal delegate godot_variant ToVariantConverter(scoped in T from);
+
         internal delegate T FromVariantConverter(in godot_variant from);
 
-        public static unsafe godot_variant ToVariant(scoped in T from) =>
-             ToVariantCb != null ? ToVariantCb(from) : throw UnsupportedType<T>();
+        public static godot_variant ToVariant(scoped in T from) =>
+            ToVariantCb != null ? ToVariantCb(from) : throw UnsupportedType<T>();
 
-        public static unsafe T FromVariant(in godot_variant variant) =>
+        public static T FromVariant(in godot_variant variant) =>
             FromVariantCb != null ? FromVariantCb(variant) : throw UnsupportedType<T>();
 
         internal static ToVariantConverter? ToVariantCb;
 
         internal static FromVariantConverter? FromVariantCb;
 
+        // We use a static method RegisterVariantGenericConversionTrampolines instead of the
+        // static constructor because ILLink doesn't recognize DynamicDependency with ".cctor".
+        [DynamicDependency("RegisterVariantGenericConversionTrampolines", typeof(Collections.Array<>))]
+        [DynamicDependency("RegisterVariantGenericConversionTrampolines", typeof(Collections.Dictionary<,>))]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2090:UnrecognizedReflectionPattern",
+            Justification =
+                "DynamicDependency is used to preserve RegisterVariantGenericConversionTrampolines of these two types.")]
         static GenericConversion()
         {
-            RuntimeHelpers.RunClassConstructor(typeof(T).TypeHandle);
+            if (typeof(T).IsGenericType)
+            {
+                if (typeof(T).GetGenericTypeDefinition() == typeof(Collections.Array<>)
+                    || typeof(T).GetGenericTypeDefinition() == typeof(Collections.Dictionary<,>))
+                {
+#pragma warning disable REFL045 // These flags are insufficient to match any members
+                    // Suppressing invalid warning, remove when issue is fixed: https://github.com/DotNetAnalyzers/ReflectionAnalyzers/issues/209
+                    typeof(T).GetMethod("RegisterVariantGenericConversionTrampolines", BindingFlags.NonPublic)!
+                        .Invoke(null, null);
+#pragma warning restore REFL045
+                }
+            }
         }
     }
 

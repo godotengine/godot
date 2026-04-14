@@ -51,12 +51,13 @@ namespace Godot
             try
             {
                 var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
-                int? argCount = @delegate?.Method?.GetParameters().Length;
+                int? argCount = @delegate?.Method.GetParameters().Length;
                 if (argCount is null)
                 {
                     *outIsValid = godot_bool.False;
                     return 0;
                 }
+
                 *outIsValid = godot_bool.True;
                 return argCount.Value;
             }
@@ -103,7 +104,11 @@ namespace Godot
             CompilerGenerated
         }
 
-        internal static bool TrySerializeDelegate(Delegate @delegate, Collections.Array serializedData)
+        // NOTE: Currently, this doesn't actually require unreferenced code,
+        //       but we annotate it preemptively in case that changes in the future.
+        [RequiresUnreferencedCode("This method is for internal use by the Godot editor only. "
+                                  + "It might not be compatible with trimming in the future.")]
+        internal static bool TrySerializeDelegate(Delegate? @delegate, Collections.Array serializedData)
         {
             if (@delegate is null)
             {
@@ -140,6 +145,10 @@ namespace Godot
             return false;
         }
 
+        // NOTE: Currently, this doesn't actually require unreferenced code,
+        //       but we annotate it preemptively in case that changes in the future.
+        [RequiresUnreferencedCode("This method is for internal use by the Godot editor only. "
+                                  + "It might not be compatible with trimming in the future.")]
         private static bool TrySerializeSingleDelegate(Delegate @delegate, [MaybeNullWhen(false)] out byte[] buffer)
         {
             buffer = null;
@@ -279,8 +288,8 @@ namespace Godot
 
             if (parameters.Length > 0)
             {
-                for (int i = 0; i < parameters.Length; i++)
-                    SerializeType(writer, parameters[i].ParameterType);
+                foreach (var parameter in parameters)
+                    SerializeType(writer, parameter.ParameterType);
             }
 
             return true;
@@ -296,16 +305,16 @@ namespace Godot
             else if (type.IsGenericType)
             {
                 Type genericTypeDef = type.GetGenericTypeDefinition();
-                Type[] genericArgs = type.GetGenericArguments();
+                Type[] genericTypeArgs = type.GetGenericArguments();
 
-                int genericArgumentsCount = genericArgs.Length;
+                int genericArgumentsCount = genericTypeArgs.Length;
                 writer.Write(genericArgumentsCount);
 
                 writer.Write(genericTypeDef.Assembly.GetName().Name ?? "");
                 writer.Write(genericTypeDef.FullName ?? genericTypeDef.ToString());
 
-                for (int i = 0; i < genericArgs.Length; i++)
-                    SerializeType(writer, genericArgs[i]);
+                foreach (var genericTypeArg in genericTypeArgs)
+                    SerializeType(writer, genericTypeArg);
             }
             else
             {
@@ -317,55 +326,100 @@ namespace Godot
             }
         }
 
-        [UnmanagedCallersOnly]
-        internal static unsafe godot_bool TrySerializeDelegateWithGCHandle(IntPtr delegateGCHandle,
-            godot_array* nSerializedData)
+        /// <summary>
+        /// Provides trimmer-safe access to unmanaged callables annotated with <see cref="RequiresUnreferencedCodeAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// The trimmer analyzer doesn't warn when unsafely taking the address of a method that's
+        /// annotated with <see cref="RequiresUnreferencedCodeAttribute"/>. By wrapping that method
+        /// with private access inside this class, we make it impossible to take its address.
+        /// Instead, we provide a getter method that's annotated with <see cref="RequiresUnreferencedCodeAttribute"/>.
+        /// </remarks>
+        internal static class ToolsBuildUnmanagedCallables
         {
-            try
+            // NOTE: Currently, this doesn't actually require unreferenced code,
+            //       but we annotate it preemptively in case that changes in the future.
+            [RequiresUnreferencedCode("This method is for internal use by the Godot editor only. "
+                                      + "It might not be compatible with trimming in the future.")]
+            [UnmanagedCallersOnly]
+            private static unsafe godot_bool TrySerializeDelegateWithGCHandle(IntPtr delegateGCHandle,
+                godot_array* nSerializedData)
             {
-                var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
-                    NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
-
-                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
-
-                return TrySerializeDelegate(@delegate, serializedData)
-                    .ToGodotBool();
-            }
-            catch (Exception e)
-            {
-                ExceptionUtils.LogException(e);
-                return godot_bool.False;
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        internal static unsafe godot_bool TryDeserializeDelegateWithGCHandle(godot_array* nSerializedData,
-            IntPtr* delegateGCHandle)
-        {
-            try
-            {
-                var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
-                    NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
-
-                if (TryDeserializeDelegate(serializedData, out Delegate? @delegate))
+                try
                 {
-                    *delegateGCHandle = GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(@delegate));
-                    return godot_bool.True;
+                    var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                        NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
+
+                    var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
+
+                    return TrySerializeDelegate(@delegate, serializedData)
+                        .ToGodotBool();
                 }
-                else
+                catch (Exception e)
                 {
-                    *delegateGCHandle = IntPtr.Zero;
+                    ExceptionUtils.LogException(e);
                     return godot_bool.False;
                 }
             }
-            catch (Exception e)
+
+            [RequiresUnreferencedCode(
+                "This method is for internal use by the Godot editor only. It uses dynamic reflection "
+                + "to deserialize types and to search for methods, which is not compatible with trimming.")]
+            [RequiresDynamicCode(
+                "This method is for internal use by the Godot editor only. "
+                + "It uses MakeGenericType to instantiate generic types from the method signature and target object,"
+                + "and the native code for this instantiation might not be available at runtime.")]
+            [UnmanagedCallersOnly]
+            private static unsafe godot_bool TryDeserializeDelegateWithGCHandle(godot_array* nSerializedData,
+                IntPtr* delegateGCHandle)
             {
-                ExceptionUtils.LogException(e);
-                *delegateGCHandle = default;
-                return godot_bool.False;
+                try
+                {
+                    var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                        NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
+
+                    if (TryDeserializeDelegate(serializedData, out Delegate? @delegate))
+                    {
+                        *delegateGCHandle = GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(@delegate));
+                        return godot_bool.True;
+                    }
+
+                    *delegateGCHandle = IntPtr.Zero;
+                    return godot_bool.False;
+                }
+                catch (Exception e)
+                {
+                    ExceptionUtils.LogException(e);
+                    *delegateGCHandle = default;
+                    return godot_bool.False;
+                }
             }
+
+            [RequiresUnreferencedCode(
+                "This method is for internal use by the Godot editor only. "
+                + "The returned delegate points to a method that might not be compatible with trimming in the future.")]
+            public static unsafe
+                delegate* unmanaged<IntPtr, godot_array*, godot_bool>
+                GetAddressOfTrySerializeDelegateWithGCHandle()
+                => &TrySerializeDelegateWithGCHandle;
+
+            [RequiresUnreferencedCode(
+                "This method is for internal use by the Godot editor only. "
+                + "The returned delegate points to a method that uses dynamic reflection "
+                + "to deserialize types and to search for methods, which is not compatible with trimming.")]
+            public static unsafe
+                delegate* unmanaged<godot_array*, IntPtr*, godot_bool>
+                GetAddressOfTryDeserializeDelegateWithGCHandle()
+                => &TryDeserializeDelegateWithGCHandle;
         }
 
+        [RequiresUnreferencedCode(
+            "This method is for internal use by the Godot editor only. It uses dynamic reflection "
+            + "to deserialize types and to search for methods, which is not compatible with trimming.")]
+        [RequiresDynamicCode(
+            "This method is for internal use by the Godot editor only. "
+            + "It uses MakeGenericType to instantiate generic types from the method signature and target object,"
+            + "and the native code for this instantiation might not be available at runtime.")]
         internal static bool TryDeserializeDelegate(Collections.Array serializedData,
             [MaybeNullWhen(false)] out Delegate @delegate)
         {
@@ -412,6 +466,13 @@ namespace Godot
             return true;
         }
 
+        [RequiresUnreferencedCode(
+            "This method is for internal use by the Godot editor only. It uses dynamic reflection "
+            + "to deserialize types and to search for methods, which is not compatible with trimming.")]
+        [RequiresDynamicCode(
+            "This method is for internal use by the Godot editor only. "
+            + "It uses MakeGenericType to instantiate generic types from the method signature and target object,"
+            + "and the native code for this instantiation might not be available at runtime.")]
         private static bool TryDeserializeSingleDelegate(byte[] buffer, [MaybeNullWhen(false)] out Delegate @delegate)
         {
             @delegate = null;
@@ -510,6 +571,13 @@ namespace Godot
             }
         }
 
+        [RequiresUnreferencedCode(
+            "This method is for internal use by the Godot editor only. It uses dynamic reflection "
+            + "to deserialize types and to search for methods, which is not compatible with trimming.")]
+        [RequiresDynamicCode(
+            "This method is for internal use by the Godot editor only. "
+            + "It uses MakeGenericType to instantiate generic types from the method signature,"
+            + "and the native code for this instantiation might not be available at runtime.")]
         private static bool TryDeserializeMethodInfo(BinaryReader reader,
             [MaybeNullWhen(false)] out MethodInfo methodInfo)
         {
@@ -546,6 +614,15 @@ namespace Godot
             return methodInfo != null && methodInfo.ReturnType == returnType;
         }
 
+        [RequiresUnreferencedCode(
+            "This method is for internal use by the Godot editor only. "
+            + "It searches for the type in an assembly at runtime, and it may use "
+            + "reflection to make a generic type from a list of type arguments. "
+            + "These operations are not compatible with trimming.")]
+        [RequiresDynamicCode(
+            "This method is for internal use by the Godot editor only. "
+            + "It uses MakeGenericType to instantiate generic types, and the native "
+            + "code for this instantiation might not be available at runtime.")]
         private static Type? DeserializeType(BinaryReader reader)
         {
             int genericArgumentsCount = reader.ReadInt32();
@@ -743,6 +820,7 @@ namespace Godot
 
             private delegate object? ConvertToSystemObjectFunc(in godot_variant managed);
 
+            // ReSharper disable once RedundantNameQualifier
             private static readonly System.Collections.Generic.Dictionary<Type, ConvertToSystemObjectFunc>
                 _toSystemObjectFuncByType = new()
                 {
@@ -792,13 +870,16 @@ namespace Godot
                     [typeof(StringName)] = (in godot_variant variant) => VariantUtils.ConvertTo<StringName>(variant),
                     [typeof(NodePath)] = (in godot_variant variant) => VariantUtils.ConvertTo<NodePath>(variant),
                     [typeof(Rid)] = (in godot_variant variant) => VariantUtils.ConvertTo<Rid>(variant),
-                    [typeof(Godot.Collections.Dictionary)] = (in godot_variant variant) =>
-                        VariantUtils.ConvertTo<Godot.Collections.Dictionary>(variant),
+                    [typeof(Collections.Dictionary)] = (in godot_variant variant) =>
+                        VariantUtils.ConvertTo<Collections.Dictionary>(variant),
                     [typeof(Godot.Collections.Array)] =
                         (in godot_variant variant) => VariantUtils.ConvertTo<Godot.Collections.Array>(variant),
                     [typeof(Variant)] = (in godot_variant variant) => VariantUtils.ConvertTo<Variant>(variant),
                 };
 
+            [RequiresUnreferencedCode(
+                "This method is for internal use by the Godot editor only. "
+                + "It may use reflection to create the new instance.")]
             public static object? ConvertToObjectOfType(in godot_variant variant, Type type)
             {
                 if (_toSystemObjectFuncByType.TryGetValue(type, out var func))
@@ -865,28 +946,26 @@ namespace Godot
 
                     if (genericTypeDef == typeof(Godot.Collections.Dictionary<,>))
                     {
-                        var ctor = type.GetConstructor(new[] { typeof(Godot.Collections.Dictionary) });
+                        var ctor = type.GetConstructor([typeof(Collections.Dictionary)]);
 
                         if (ctor == null)
                             throw new InvalidOperationException("Dictionary constructor not found");
 
-                        return ctor.Invoke(new object?[]
-                        {
-                            VariantUtils.ConvertTo<Godot.Collections.Dictionary>(variant)
-                        });
+                        return ctor.Invoke([
+                            VariantUtils.ConvertTo<Collections.Dictionary>(variant)
+                        ]);
                     }
 
-                    if (genericTypeDef == typeof(Godot.Collections.Array<>))
+                    if (genericTypeDef == typeof(Collections.Array<>))
                     {
-                        var ctor = type.GetConstructor(new[] { typeof(Godot.Collections.Array) });
+                        var ctor = type.GetConstructor([typeof(Godot.Collections.Array)]);
 
                         if (ctor == null)
                             throw new InvalidOperationException("Array constructor not found");
 
-                        return ctor.Invoke(new object?[]
-                        {
+                        return ctor.Invoke([
                             VariantUtils.ConvertTo<Godot.Collections.Array>(variant)
-                        });
+                        ]);
                     }
                 }
 

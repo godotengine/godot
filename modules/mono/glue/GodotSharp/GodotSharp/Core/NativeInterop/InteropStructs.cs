@@ -732,6 +732,7 @@ namespace Godot.NativeInterop
         [FieldOffset(8)] private ulong _objectId;
         [FieldOffset(8)] private IntPtr _custom;
 
+        // ReSharper disable once ConvertToPrimaryConstructor
         public godot_callable(godot_string_name method, ulong objectId) : this()
         {
             _method = method;

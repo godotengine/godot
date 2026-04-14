@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 using System.Diagnostics;
+using JetBrains.Annotations;
 
 #nullable enable
 
@@ -37,9 +38,9 @@ namespace Godot.Collections
 
         private Dictionary(godot_dictionary nativeValueToOwn)
         {
-            NativeValue = (godot_dictionary.movable)(nativeValueToOwn.IsAllocated ?
-                nativeValueToOwn :
-                NativeFuncs.godotsharp_dictionary_new());
+            NativeValue = (godot_dictionary.movable)(nativeValueToOwn.IsAllocated
+                ? nativeValueToOwn
+                : NativeFuncs.godotsharp_dictionary_new());
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
@@ -491,7 +492,7 @@ namespace Godot.Collections
     [DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
     [DebuggerDisplay("Count = {Count}")]
     [SuppressMessage("Design", "CA1001", MessageId = "Types that own disposable fields should be disposable",
-            Justification = "Known issue. Requires explicit refcount management to not dispose untyped collections.")]
+        Justification = "Known issue. Requires explicit refcount management to not dispose untyped collections.")]
     public class Dictionary<[MustBeVariant] TKey, [MustBeVariant] TValue> :
         IDictionary<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue>,
@@ -503,28 +504,61 @@ namespace Godot.Collections
         private static Dictionary<TKey, TValue> FromVariantFunc(in godot_variant variant) =>
             VariantUtils.ConvertToDictionary<TKey, TValue>(variant);
 
+        // Caching this here won't cause trouble with ALC unloading, as
+        // This cache does not introduce additional AssemblyLoadContext (ALC) unloading issues:
+        // - The field is static on the generic closed type Array<T>,
+        //   so it is collected when that type is unloaded.
+        // - If the generic type is not collected, then the type itself is referenced and
+        //   already prevents ALC unloading, independently of this field.
+        // ReSharper disable StaticMemberInGenericType
+        private static readonly Type _keyCachedType = typeof(TKey);
+
+        private static readonly NativeProxyMeta? _keyNativeProxyMeta =
+            NativeProxyRegistry.GetNativeProxyMetaOrNull(_keyCachedType);
+
+        private static readonly Bridge.ScriptTypeMeta? _keyScriptTypeMeta =
+            _keyNativeProxyMeta == null
+                ? Bridge.ScriptManagerBridge.GetOrResolveScriptTypeMetaOrNull(_keyCachedType)
+                : null;
+
+        private static readonly Type _valueCachedType = typeof(TValue);
+
+        private static readonly NativeProxyMeta? _valueNativeProxyMeta =
+            NativeProxyRegistry.GetNativeProxyMetaOrNull(_valueCachedType);
+
+        private static readonly Bridge.ScriptTypeMeta? _valueScriptTypeMeta =
+            _valueNativeProxyMeta == null
+                ? Bridge.ScriptManagerBridge.GetOrResolveScriptTypeMetaOrNull(_valueCachedType)
+                : null;
+        // ReSharper restore StaticMemberInGenericType
+
         private void SetTypedForUnderlyingDictionary()
         {
-            Marshaling.GetTypedCollectionParameterInfo<TKey>(out var keyVariantType, out var keyClassName, out var keyScriptRef);
-            Marshaling.GetTypedCollectionParameterInfo<TValue>(out var valueVariantType, out var valueClassName, out var valueScriptRef);
+            Marshaling.GetTypedCollectionParameterInfo(
+                _keyCachedType, _keyNativeProxyMeta, _keyScriptTypeMeta,
+                out var keyVariantType, out var borrowedKeyClassName, out var consumingKeyScriptRef);
+            Marshaling.GetTypedCollectionParameterInfo(
+                _valueCachedType, _valueNativeProxyMeta, _valueScriptTypeMeta,
+                out var valueVariantType, out var borrowedValueClassName, out var consumingValueScriptRef);
 
             var self = (godot_dictionary)NativeValue;
 
-            using (keyScriptRef)
-            using (valueScriptRef)
+            using (consumingKeyScriptRef)
+            using (consumingValueScriptRef)
             {
                 NativeFuncs.godotsharp_dictionary_set_typed(
                     ref self,
                     (uint)keyVariantType,
-                    keyClassName,
-                    keyScriptRef,
+                    borrowedKeyClassName,
+                    consumingKeyScriptRef,
                     (uint)valueVariantType,
-                    valueClassName,
-                    valueScriptRef);
+                    borrowedValueClassName,
+                    consumingValueScriptRef);
             }
         }
 
-        static unsafe Dictionary()
+        [UsedImplicitly]
+        private static void RegisterVariantGenericConversionTrampolines()
         {
             VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.ToVariantCb = ToVariantFunc;
             VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.FromVariantCb = FromVariantFunc;

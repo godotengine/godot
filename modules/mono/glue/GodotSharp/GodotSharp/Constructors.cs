@@ -16,7 +16,7 @@ internal static partial class Constructors
         public unsafe BuiltInConstructorTrampolineDelegate TrampolineDelegate { get; }
     }
 
-    internal static readonly Dictionary<string, BuiltInConstructorTrampoline> BuiltInMethodConstructors;
+    internal static readonly Dictionary<string, BuiltInConstructorTrampoline> BuiltInMethodConstructors = new();
 
     public static GodotObject Invoke(string nativeTypeNameStr, IntPtr nativeObjectPtr)
     {

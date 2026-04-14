@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -104,7 +105,7 @@ namespace Godot
         }
 #pragma warning restore IDE1006
 
-        internal static unsafe StackFrame? GetCurrentStackFrame(int skipFrames = 0)
+        internal static StackFrame? GetCurrentStackFrame(int skipFrames = 0)
         {
             // We skip 2 frames:
             // The first skipped frame is the current method.
@@ -114,6 +115,8 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+            Justification = "GetCurrentStackInfo is best effort when it comes to available information.")]
         internal static unsafe void GetCurrentStackInfo(void* destVector)
         {
             try
@@ -167,6 +170,8 @@ namespace Godot
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+            Justification = "GetStackFrameMethodDecl is best effort when it comes to available information.")]
         internal static void GetStackFrameMethodDecl(StackFrame frame, out string methodDecl)
         {
             MethodBase? methodBase = frame.GetMethod();
