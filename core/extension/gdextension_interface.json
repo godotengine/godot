@@ -986,7 +986,11 @@
                     "name": "p_list",
                     "type": "const GDExtensionPropertyInfo*"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.3",
+                "replace_with": "GDExtensionClassFreePropertyList2"
+            }
         },
         {
             "name": "GDExtensionClassFreePropertyList2",
@@ -1168,7 +1172,11 @@
             "description": [
                 "Called to construct an instance of the class.",
                 "For classes descending from RefCounted, the reference count should be zero."
-            ]
+            ],
+            "deprecated": {
+                "since": "4.4",
+                "replace_with": "GDExtensionClassCreateInstance3"
+            }
         },
         {
             "name": "GDExtensionClassCreateInstance2",
@@ -1189,7 +1197,11 @@
             "description": [
                 "Called to construct an instance of the class.",
                 "For classes descending from RefCounted, the reference count should be zero."
-            ]
+            ],
+            "deprecated": {
+                "since": "4.7",
+                "replace_with": "GDExtensionClassCreateInstance3"
+            }
         },
         {
             "name": "GDExtensionClassCreateInstance3",
@@ -1258,7 +1270,11 @@
                     "name": "p_name",
                     "type": "GDExtensionConstStringNamePtr"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.4",
+                "replace_with": "GDExtensionClassGetVirtual2"
+            }
         },
         {
             "name": "GDExtensionClassGetVirtual2",
@@ -1296,7 +1312,11 @@
                     "name": "p_name",
                     "type": "GDExtensionConstStringNamePtr"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.4",
+                "replace_with": "GDExtensionClassGetVirtualCallData2"
+            }
         },
         {
             "name": "GDExtensionClassGetVirtualCallData2",
@@ -1432,7 +1452,7 @@
             ],
             "deprecated": {
                 "since": "4.2",
-                "replace_with": "GDExtensionClassCreationInfo4"
+                "replace_with": "GDExtensionClassCreationInfo6"
             }
         },
         {
@@ -1553,7 +1573,7 @@
             ],
             "deprecated": {
                 "since": "4.3",
-                "replace_with": "GDExtensionClassCreationInfo4"
+                "replace_with": "GDExtensionClassCreationInfo6"
             }
         },
         {
@@ -1678,7 +1698,7 @@
             ],
             "deprecated": {
                 "since": "4.4",
-                "replace_with": "GDExtensionClassCreationInfo4"
+                "replace_with": "GDExtensionClassCreationInfo6"
             }
         },
         {
@@ -1800,12 +1820,20 @@
                         "Per-class user data, later accessible in instance bindings."
                     ]
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.5",
+                "replace_with": "GDExtensionClassCreationInfo6"
+            }
         },
         {
             "name": "GDExtensionClassCreationInfo5",
             "kind": "alias",
-            "type": "GDExtensionClassCreationInfo4"
+            "type": "GDExtensionClassCreationInfo4",
+            "deprecated": {
+                "since": "4.7",
+                "replace_with": "GDExtensionClassCreationInfo6"
+            }
         },
         {
             "name": "GDExtensionClassCreationInfo6",
@@ -3525,7 +3553,11 @@
                     "name": "string",
                     "type": "const char*"
                 }
-            ]
+            ],
+            "deprecated": {
+                "since": "4.5",
+                "replace_with": "GDExtensionGodotVersion2"
+            }
         },
         {
             "name": "GDExtensionGodotVersion2",
@@ -8442,7 +8474,7 @@
             ],
             "since": "4.4",
             "deprecated": {
-                "since": "4.6",
+                "since": "4.7",
                 "replace_with": "classdb_construct_object3"
             }
         },
@@ -8470,7 +8502,7 @@
                 "",
                 "\"NOTIFICATION_POSTINITIALIZE\" must be sent after construction."
             ],
-            "since": "4.6"
+            "since": "4.7"
         },
         {
             "name": "classdb_get_method_bind",
@@ -8736,7 +8768,7 @@
             ],
             "since": "4.5",
             "deprecated": {
-                "since": "4.6",
+                "since": "4.7",
                 "replace_with": "classdb_register_extension_class6"
             }
         },
@@ -8776,7 +8808,7 @@
                 "Registers an extension class in the ClassDB.",
                 "Provided struct can be safely freed once the function returns."
             ],
-            "since": "4.6"
+            "since": "4.7"
         },
         {
             "name": "classdb_register_extension_class_method",
