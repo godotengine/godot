@@ -36,6 +36,8 @@
 #include "core/templates/sort_array.h"
 #include "core/version.h"
 
+#define ERR_FAIL_NO_CLASS(m_type, m_class) ERR_FAIL_NULL_MSG(m_type, vformat("Cannot get class \"%s\".", m_class))
+
 #ifdef DEBUG_ENABLED
 
 MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount) {
@@ -1142,7 +1144,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->gdtype->bind_integer_constant(p_enum, p_name, p_constant, p_is_bitfield);
 }
@@ -1151,7 +1153,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	for (const KeyValue<StringName, int64_t> &E : type->gdtype->get_integer_constant_map(p_no_inheritance)) {
 		p_constants->push_back(E.key);
@@ -1216,7 +1218,7 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_enum);
 	ERR_FAIL_NULL(enum_info);
@@ -1231,7 +1233,7 @@ void ClassDB::set_method_error_return_values(const StringName &p_class, const St
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->method_error_values[p_method] = p_values;
 #endif // DEBUG_ENABLED
@@ -1282,7 +1284,7 @@ void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->gdtype->add_signal(p_signal);
 }
@@ -1291,7 +1293,7 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	for (const KeyValue<StringName, const MethodInfo *> &kv : type->gdtype->get_signal_map(p_no_inheritance)) {
 		p_signals->push_back(*kv.value);
@@ -1324,7 +1326,7 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	String prefix = p_prefix;
 	if (p_indent_depth > 0) {
@@ -1337,7 +1339,7 @@ void ClassDB::add_property_group(const StringName &p_class, const String &p_name
 void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	String prefix = p_prefix;
 	if (p_indent_depth > 0) {
@@ -1354,7 +1356,7 @@ void ClassDB::add_property_array_count(const StringName &p_class, const String &
 void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
 }
@@ -1365,7 +1367,7 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	MethodBind *mb_set = nullptr;
 	if (p_setter) {
@@ -1430,7 +1432,7 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 #ifdef TOOLS_ENABLED
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	ERR_FAIL_COND(!type->property_map.has(p_property));
 	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
@@ -2350,3 +2352,5 @@ ClassDB::Locker::Lock::~Lock() {
 		Locker::thread_state = STATE_UNLOCKED;
 	}
 }
+
+#undef ERR_FAIL_NO_CLASS
