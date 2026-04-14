@@ -122,10 +122,6 @@ static Node *gltf_export_then_import(Node *p_root, const String &p_test_name) {
 	CHECK_MESSAGE(err == OK, "GLTF state generation failed.");
 
 	err = doc->write_to_filesystem(state, tempfile + ".gltf");
-	Ref<FileAccess> file_access = FileAccess::open(tempfile + ".gltf", FileAccess::READ);
-	CHECK(file_access.is_valid());
-	String file_text = file_access->get_as_text();
-	MESSAGE(file_text);
 	CHECK_MESSAGE(err == OK, "Writing GLTF to cache dir failed.");
 
 	return gltf_import(tempfile + ".gltf");

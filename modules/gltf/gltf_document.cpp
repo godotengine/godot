@@ -617,6 +617,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 		}
 
 		if (n.has("extras")) {
+			ERR_PRINT(n["extras"]);
 			_attach_extras_to_meta(n["extras"], node);
 		}
 
