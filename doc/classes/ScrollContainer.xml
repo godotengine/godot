@@ -143,6 +143,18 @@
 		<theme_item name="scroll_hint_vertical_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			[Color] used to modulate the [theme_item scroll_hint_vertical] texture.
 		</theme_item>
+		<theme_item name="focus_padding_bottom" data_type="constant" type="int" default="0">
+			The spacing between the focused child and the bottom edge of the [ScrollContainer], used if [member follow_focus] is [code]true[/code].
+		</theme_item>
+		<theme_item name="focus_padding_left" data_type="constant" type="int" default="0">
+			The spacing between the focused child and the left edge of the [ScrollContainer], used if [member follow_focus] is [code]true[/code].
+		</theme_item>
+		<theme_item name="focus_padding_right" data_type="constant" type="int" default="0">
+			The spacing between the focused child and the right edge of the [ScrollContainer], used if [member follow_focus] is [code]true[/code].
+		</theme_item>
+		<theme_item name="focus_padding_top" data_type="constant" type="int" default="0">
+			The spacing between the focused child and the top edge of the [ScrollContainer], used if [member follow_focus] is [code]true[/code].
+		</theme_item>
 		<theme_item name="scrollbar_h_separation" data_type="constant" type="int" default="0">
 			The space between the ScrollContainer's vertical scroll bar and its content, in pixels. No space will be added when the content's minimum size is larger than the ScrollContainer's size.
 		</theme_item>

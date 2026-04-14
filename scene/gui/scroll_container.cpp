@@ -363,6 +363,11 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 	Size2 size = get_size();
 	Rect2 other_rect = other_in_this.xform(Rect2(Point2(), p_control->get_size()));
 
+	other_rect.position.x -= theme_cache.focus_padding_left;
+	other_rect.position.y -= theme_cache.focus_padding_top;
+	other_rect.size.x += theme_cache.focus_padding_left + theme_cache.focus_padding_right;
+	other_rect.size.y += theme_cache.focus_padding_top + theme_cache.focus_padding_bottom;
+
 	float side_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
 	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
 
@@ -939,6 +944,11 @@ void ScrollContainer::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_vertical_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_horizontal_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, focus_padding_bottom);
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
 }
