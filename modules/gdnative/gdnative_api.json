@@ -29,7 +29,23 @@
               "major": 1,
               "minor": 4
             },
-            "next": null,
+            "next": {
+              "type": "CORE",
+              "version": {
+                "major": 1,
+                "minor": 5
+              },
+              "next": null,
+              "api": [
+                {
+                  "name": "godot_get_instance",
+                  "return_type": "godot_object *",
+                  "arguments": [
+                    ["uint64_t", "p_instance_id"]
+                  ]
+                }
+              ]
+            },
             "api": [
               {
                 "name": "godot_transform2d_determinant",
