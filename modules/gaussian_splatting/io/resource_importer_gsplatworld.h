@@ -18,7 +18,13 @@ public:
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
 	virtual float get_priority() const override { return 1.0f; }
-	virtual int get_format_version() const override { return 1; }
+	// v1 -> v2: GaussianSplatAsset::_ensure_buffer_sizes() now zero-initializes
+	// optional Packed*Array fields (opacity_logits, palette_ids, normals, ...).
+	// Caches written under v1 may contain 0xC0C0C0C0 poison and must be
+	// re-imported. Bumping this constant makes Godot detect the version delta
+	// in each .gsplatworld.import file and re-run import() automatically — no
+	// manual `rm -rf .godot/imported/` required.
+	virtual int get_format_version() const override { return 2; }
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const override;

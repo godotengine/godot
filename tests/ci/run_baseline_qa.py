@@ -349,6 +349,12 @@ class BaselineQARunner:
                 "category": "ply",
             },
             {
+                "name": "Importer Zero-Init Tests",
+                "type": "godot",
+                "script": "tests/ci/test_importer_zero_init_ci.gd",
+                "category": "import",
+            },
+            {
                 "name": "PLY Pipeline Tests",
                 "type": "godot",
                 "script": "tests/ci/test_ply_pipeline_ci.gd",

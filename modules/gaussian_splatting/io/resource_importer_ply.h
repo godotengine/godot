@@ -27,6 +27,20 @@ public:
     virtual bool has_advanced_options() const override;
     virtual void show_advanced_options(const String &p_path) override;
 
+    // Bump whenever importer behavior changes in a way that requires existing
+    // .tres caches to be re-imported. Godot's resource scanner compares this
+    // against the value stored in each .ply.import file and re-runs import()
+    // when they differ, so users do NOT need to manually wipe .godot/imported/
+    // after a fix lands in the importer.
+    //   v0 (implicit): pre-versioning baseline.
+    //   v1: switch to versioned importer.
+    //   v2: optional Packed*Array fields are now zero-initialized at import
+    //       time (see gaussian_splat_asset.cpp::_ensure_buffer_sizes —
+    //       resize_initialized() instead of resize() for POD vectors).
+    //       Caches written by v0/v1 may contain 0xC0C0C0C0 poison and must
+    //       be re-imported.
+    virtual int get_format_version() const override { return 2; }
+
     // Validation helpers
     Error validate_ply_properties(const Ref<class PLYLoader> &p_loader) const;
     void log_missing_properties(const Ref<class PLYLoader> &p_loader) const;

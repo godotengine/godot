@@ -36,6 +36,11 @@ public:
     virtual bool has_advanced_options() const override;
     virtual void show_advanced_options(const String &p_path) override;
 
+    // See ResourceImporterPLY::get_format_version() for the bump rationale.
+    // SPZ assets share the GaussianSplatAsset deserialization path, so the
+    // same _ensure_buffer_sizes() zero-init fix applies.
+    virtual int get_format_version() const override { return 2; }
+
     ResourceImporterSPZ();
 };
 

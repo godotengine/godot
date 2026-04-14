@@ -218,6 +218,16 @@ static bool recovery_mode = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
 static bool wait_for_import = false;
+#ifdef TOOLS_ENABLED
+// Set by --reimport-path; when non-empty, the editor reimports just this one
+// resource path (instead of scanning the entire project) and quits. Lets
+// users recover from importer regressions without nuking .godot/imported/.
+static String reimport_target_path;
+// Set by --import-skip-plugins; when true, the editor skips loading
+// third-party EditorPlugins during the import pass so a broken plugin
+// cannot block the import pipeline.
+static bool import_skip_plugins_flag = false;
+#endif
 static bool restore_editor_window_layout = true;
 #ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
@@ -301,6 +311,20 @@ static const int OPTION_COLUMN_LENGTH = 32;
 bool Main::is_cmdline_tool() {
 	return cmdline_tool;
 }
+
+#ifdef TOOLS_ENABLED
+bool Main::has_reimport_target_path() {
+	return !reimport_target_path.is_empty();
+}
+
+String Main::get_reimport_target_path() {
+	return reimport_target_path;
+}
+
+bool Main::import_skip_plugins() {
+	return import_skip_plugins_flag;
+}
+#endif
 
 #ifdef TOOLS_ENABLED
 const Vector<String> &Main::get_forwardable_cli_arguments(Main::CLIScope p_scope) {
@@ -669,6 +693,8 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
 	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--reimport-path <res:// path>", "Reimport one specific resource and quit. Faster than --import for recovering from importer regressions affecting a single asset class.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--import-skip-plugins", "Skip third-party EditorPlugin loading during import. Lets a healthy import pass complete even when an addon plugin script has a parse error or missing dependency.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("", "<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. \"builds/game.exe\").\n");
 	print_help_option("", "The target directory must exist.\n");
@@ -1558,6 +1584,33 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			cmdline_tool = true;
 			wait_for_import = true;
 			quit_after = 1;
+#ifdef TOOLS_ENABLED
+		} else if (arg == "--reimport-path") {
+			// Reimport one specific resource path and quit. Faster recovery
+			// path than --import (which rescans the entire project) and does
+			// not require the user to wipe .godot/imported/ when an importer
+			// regression has corrupted a single asset class.
+			if (N) {
+				reimport_target_path = N->get();
+				if (!reimport_target_path.begins_with("res://")) {
+					OS::get_singleton()->print("--reimport-path expects a res:// path, got '%s', aborting.\n", reimport_target_path.utf8().get_data());
+					goto error;
+				}
+				editor = true;
+				cmdline_tool = true;
+				wait_for_import = true;
+				quit_after = 1;
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing res:// path after --reimport-path, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--import-skip-plugins") {
+			// Suppress third-party EditorPlugin loading during the import
+			// pass so a broken plugin script (parse error, missing dep)
+			// cannot block import of otherwise-healthy assets.
+			import_skip_plugins_flag = true;
+#endif
 		} else if (arg == "--export-release" || arg == "--export-debug" ||
 				arg == "--export-pack" || arg == "--export-patch") { // Export project
 			// Actually handling is done in start().

@@ -65,6 +65,18 @@ public:
 		CLI_SCOPE_PROJECT,
 	};
 	static const Vector<String> &get_forwardable_cli_arguments(CLIScope p_scope);
+
+	// True when launched with --reimport-path; the editor should reimport
+	// the path returned by get_reimport_target_path() and quit, instead of
+	// scanning the entire project.
+	static bool has_reimport_target_path();
+	static String get_reimport_target_path();
+
+	// True when launched with --import-skip-plugins; the editor should
+	// load core importers but skip third-party EditorPlugins so a broken
+	// plugin (e.g. an addon with a parse error) cannot block the import
+	// pass on otherwise-healthy assets.
+	static bool import_skip_plugins();
 #endif
 
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);

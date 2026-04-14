@@ -1091,6 +1091,15 @@ void EditorNode::init_plugins() {
 		addons = GLOBAL_GET("editor_plugins/enabled");
 	}
 
+	// --import-skip-plugins: skip third-party EditorPlugins so a broken addon
+	// (parse error, missing dependency) cannot block an otherwise-healthy
+	// import pass. Only takes effect when running a CLI tool (--import or
+	// --reimport-path) so interactive editor sessions are unaffected.
+	if (Main::is_cmdline_tool() && Main::import_skip_plugins() && !addons.is_empty()) {
+		print_line(vformat("--import-skip-plugins: skipping %d EditorPlugin(s) for this run.", addons.size()));
+		addons.clear();
+	}
+
 	for (const String &addon : addons) {
 		set_addon_plugin_enabled(addon, true);
 	}
@@ -1360,6 +1369,20 @@ void EditorNode::_sources_changed(bool p_exist) {
 		waiting_for_first_scan = false;
 
 		OS::get_singleton()->benchmark_end_measure("Editor", "First Scan");
+
+		// --reimport-path: now that the first scan has finished and the file
+		// system index is populated, reimport the one resource the user named
+		// on the command line and let the cmdline_tool quit_after fire on the
+		// next iteration. Avoids the user having to wipe .godot/imported/ to
+		// recover a single file from an importer regression.
+		if (Main::has_reimport_target_path()) {
+			const String reimport_target = Main::get_reimport_target_path();
+			Vector<String> targets;
+			targets.push_back(reimport_target);
+			print_line("--reimport-path: reimporting " + reimport_target);
+			EditorFileSystem::get_singleton()->reimport_files(targets);
+			print_line("--reimport-path: done");
+		}
 
 		// Reload the global shader variables, but this time
 		// loading textures, as they are now properly imported.
