@@ -32,9 +32,12 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/math/vector_swizzling.h"
 #include "core/templates/hashfuncs.h"
 
 class String;
+struct Vector2i;
+struct Vector3i;
 struct Vector4;
 
 struct [[nodiscard]] Vector4i {
@@ -59,6 +62,8 @@ struct [[nodiscard]] Vector4i {
 		int32_t coord[4] = { 0 };
 		// NOLINTEND(modernize-use-default-member-init)
 	};
+
+	VECTOR_SWIZZLING_SETGET()
 
 	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
