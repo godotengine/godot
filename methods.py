@@ -379,49 +379,6 @@ def sort_module_list(env):
         env.module_list.move_to_end(k)
 
 
-def use_windows_spawn_fix(self, platform=None):
-    if os.name != "nt":
-        return  # not needed, only for windows
-
-    def mySubProcess(cmdline, env):
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        popen_args = {
-            "stdin": subprocess.PIPE,
-            "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE,
-            "startupinfo": startupinfo,
-            "shell": False,
-            "env": env,
-        }
-        popen_args["text"] = True
-        proc = subprocess.Popen(cmdline, **popen_args)
-        _, err = proc.communicate()
-        rv = proc.wait()
-        if rv:
-            print_error(err)
-        elif len(err) > 0 and not err.isspace():
-            print(err)
-        return rv
-
-    def mySpawn(sh, escape, cmd, args, env):
-        # Used by TEMPFILE.
-        if cmd == "del":
-            os.remove(args[1])
-            return 0
-
-        newargs = " ".join(args[1:])
-        cmdline = cmd + " " + newargs
-
-        rv = 0
-        env = {str(key): str(value) for key, value in iter(env.items())}
-        rv = mySubProcess(cmdline, env)
-
-        return rv
-
-    self["SPAWN"] = mySpawn
-
-
 def no_verbose(env):
     from misc.utility.color import Ansi, is_stdout_color
 

@@ -643,10 +643,6 @@ def configure_mingw(env: "SConsEnvironment"):
         print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
         sys.exit(255)
 
-    # Workaround for MinGW. See:
-    # https://www.scons.org/wiki/LongCmdLinesOnWin32
-    env.use_windows_spawn_fix()
-
     # HACK: For some reason, Windows-native shells have their MinGW tools
     # frequently fail as a result of parsing path separators incorrectly.
     # For some other reason, this issue is circumvented entirely if the
