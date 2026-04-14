@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamMP3" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		MP3 audio stream driver.
+		Stores audio data of MP3 format as an [AudioStream] resource.
 	</brief_description>
 	<description>
-		MP3 audio stream driver. See [member data] if you want to load an MP3 file at run-time. More info can be found in [ResourceImporterMP3].
-		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]minimp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default.
+		[AudioStreamMP3] stores audio samples from loaded MP3 files.
+		MP3 files can be loaded with [method load_from_file]. Read [ResourceImporterMP3] for information on how MP3 files are imported as [AudioStream] resources.
+		To play the stored audio, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio).
+		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]minimp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default. Read [url=https://docs.godotengine.org/en/latest/engine_details/development/compiling/index.html]Building from source[/url] to learn how to compile the engine.
+		[b]Note:[/b] MP3 files always have a short period (measured in milliseconds) of silence at the beginning. The length of this header is variable. Because of this silence, this format is not perfect for beat-related features. If perfect synchronization is desired, consider using [AudioStreamOggVorbis]. If you convert an MP3 file to Ogg Vorbis (it is preferred to start [i]from[/i] a lossless format), the silent header must be trimmed first.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -24,46 +27,28 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Creates a new [AudioStreamMP3] instance from the given file path. The file must be in MP3 format.
+				[b]Note:[/b] This method should only be used to load [i]external[/i] files at runtime. To load files that were previously imported into Godot as resources, use a method like [method @GDScript.load].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
-			The number of beats within a single bar in the audio track.
+			The number of beats within a single bar of the audio.
 		</member>
 		<member name="beat_count" type="int" setter="set_beat_count" getter="get_beat_count" default="0">
-			The length of the audio track, in beats. The actual duration of the audio file might be longer than what is indicated by this property. It defines the end of the audio for looping, [AudioStreamPlaylist], and [AudioStreamInteractive].
+			The length of the audio, in beats. The actual duration of the audio file might be longer than what is indicated by this property. It defines the end of the audio for looping, [AudioStreamPlaylist], and [AudioStreamInteractive].
 		</member>
 		<member name="bpm" type="float" setter="set_bpm" getter="get_bpm" default="0.0">
-			The tempo of the audio track, measured in beats per minute.
+			The tempo of the audio, measured in beats per minute (BPM).
 		</member>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
-			You can load a file without having to import it beforehand using the code snippet below. Keep in mind that this snippet loads the whole file into memory and may not be ideal for huge files (hundreds of megabytes or more).
-			[codeblocks]
-			[gdscript]
-			func load_mp3(path):
-				var file = FileAccess.open(path, FileAccess.READ)
-				var sound = AudioStreamMP3.new()
-				sound.data = file.get_buffer(file.get_length())
-				return sound
-			[/gdscript]
-			[csharp]
-			public AudioStreamMP3 LoadMP3(string path)
-			{
-				using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-				var sound = new AudioStreamMP3();
-				sound.Data = file.GetBuffer(file.GetLength());
-				return sound;
-			}
-			[/csharp]
-			[/codeblocks]
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			If [code]true[/code], the stream will play again from the specified [member loop_offset] once it reaches the end of the audio track, or once it reaches the end of the last beat according to the amount specified in [member beat_count]. Useful for ambient sounds and background music.
+			If [code]true[/code], the stream will play again from the specified [member loop_offset] once it reaches the end of the stream, or once it reaches the end of the last beat according to the number specified in [member beat_count]. Useful for ambient sounds and background music.
 		</member>
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
-			Time in seconds at which the stream starts after being looped.
+			Playback position in seconds at which the stream starts after being looped. This value should range from [code]0.0[/code] to the length of the stream in seconds, or to the end of the beat set in [member beat_count] in seconds, if the stream loops at a set beat.
 		</member>
 	</members>
 </class>

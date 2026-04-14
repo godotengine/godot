@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamMicrophone" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Plays real-time audio input data.
+		Stores audio data from an input device for immediate playback.
 	</brief_description>
 	<description>
-		When used directly in an [AudioStreamPlayer] node, [AudioStreamMicrophone] plays back microphone input in real-time. This can be used in conjunction with [AudioEffectCapture] to process the data or save it.
+		When [AudioStreamMicrophone] is used directly in an [AudioStreamPlayer] node, the player can play back audio from an input device (a microphone for example) in real-time. This can be used in conjunction with [AudioEffectRecord] or [AudioEffectCapture] to save the data or process it.
 		[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
+		[b]Note:[/b] An audio stream player can only receive input from [AudioStreamMicrophone] if the player is playing.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 		<link title="Recording with microphone">$DOCS_URL/tutorials/audio/recording_with_microphone.html</link>
-		<link title="Audio Mic Record Demo">https://github.com/godotengine/godot-demo-projects/tree/master/audio/mic_record</link>
 	</tutorials>
 </class>

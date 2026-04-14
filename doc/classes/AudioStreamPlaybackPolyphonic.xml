@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlaybackPolyphonic" inherits="AudioStreamPlayback" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Playback instance for [AudioStreamPolyphonic].
+		Playback class used for [AudioStreamPolyphonic].
 	</brief_description>
 	<description>
-		Playback instance for [AudioStreamPolyphonic]. After setting the [code]stream[/code] property of [AudioStreamPlayer], [AudioStreamPlayer2D], or [AudioStreamPlayer3D], the playback instance can be obtained by calling [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback] or [method AudioStreamPlayer3D.get_stream_playback] methods.
+		Playback component of [AudioStreamPolyphonic]. After setting the [code]stream[/code] property of an audio stream player and playing it, the playback instance can be obtained by calling the [method AudioStreamPlayer.get_stream_playback], [method AudioStreamPlayer2D.get_stream_playback], or [method AudioStreamPlayer3D.get_stream_playback] methods.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -25,10 +25,11 @@
 			<param index="4" name="playback_type" type="int" enum="AudioServer.PlaybackType" default="0" />
 			<param index="5" name="bus" type="StringName" default="&amp;&quot;Master&quot;" />
 			<description>
-				Play an [AudioStream] at a given offset, volume, pitch scale, playback type, and bus. Playback starts immediately.
+				Plays an [AudioStream] at a given offset (in seconds), volume (in decibels), pitch scale, playback type, and bus. Playback starts immediately.
 				The return value is a unique integer ID that is associated to this playback stream and which can be used to control it.
-				This ID becomes invalid when the stream ends (if it does not loop), when the [AudioStreamPlaybackPolyphonic] is stopped, or when [method stop_stream] is called.
-				This function returns [constant INVALID_ID] if the amount of streams currently playing equals [member AudioStreamPolyphonic.polyphony]. If you need a higher amount of maximum polyphony, raise this value.
+				This ID becomes invalid when the stream ends and does not loop, when the [AudioStreamPlaybackPolyphonic] is stopped, or when [method stop_stream] is called.
+				This function returns [constant INVALID_ID] if the number of streams currently playing is greater than [member AudioStreamPolyphonic.polyphony]. If you need a higher number of maximum polyphony, raise this value.
+				[b]Note:[/b] [param bus] only works for [AudioSamplePlayback] types.
 			</description>
 		</method>
 		<method name="set_stream_pitch_scale">
@@ -36,7 +37,7 @@
 			<param index="0" name="stream" type="int" />
 			<param index="1" name="pitch_scale" type="float" />
 			<description>
-				Change the stream pitch scale. The [param stream] argument is an integer ID returned by [method play_stream].
+				Changes the stream's pitch scale. The [param stream] argument is an integer ID returned by [method play_stream].
 			</description>
 		</method>
 		<method name="set_stream_volume">
@@ -44,20 +45,21 @@
 			<param index="0" name="stream" type="int" />
 			<param index="1" name="volume_db" type="float" />
 			<description>
-				Change the stream volume (in db). The [param stream] argument is an integer ID returned by [method play_stream].
+				Changes the stream's volume, in decibels. The [param stream] argument is an integer ID returned by [method play_stream].
+				[b]Tip:[/b] You can convert linear value to decibels using [method @GlobalScope.linear_to_db].
 			</description>
 		</method>
 		<method name="stop_stream">
 			<return type="void" />
 			<param index="0" name="stream" type="int" />
 			<description>
-				Stop a stream. The [param stream] argument is an integer ID returned by [method play_stream], which becomes invalid after calling this function.
+				Stops the stream. The [param stream] argument is an integer ID returned by [method play_stream], which becomes invalid after calling this function.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="INVALID_ID" value="-1">
-			Returned by [method play_stream] in case it could not allocate a stream for playback.
+			Returned by [method play_stream] in case the given stream is null, [member AudioStreamPolyphonic.polyphony] equals [code]0[/code], or when attempting to play more streams than allowed by [member AudioStreamPolyphonic.polyphony].
 		</constant>
 	</constants>
 </class>
