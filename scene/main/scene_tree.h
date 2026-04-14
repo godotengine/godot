@@ -300,7 +300,7 @@ public:
 		GROUP_CALL_UNIQUE = 4,
 	};
 
-	_FORCE_INLINE_ Window *get_root() const { return root; }
+	RequiredResult<Window> get_root() const;
 
 	void call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
