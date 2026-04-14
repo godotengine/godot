@@ -1996,11 +1996,19 @@ void GaussianSplatNode3D::_register_instance_in_director() {
     if (!director) {
         return;
     }
+    // Direct single-asset nodes request the resident backend. The streaming
+    // backend is opt-in via GaussianSplatWorld3D (which publishes its own
+    // streaming hint). Without this, a direct-node-only scene with default
+    // project settings (route_policy=STREAMING) would fall into the streaming
+    // branch and rely on an unintended resident-fallback detour that emits a
+    // WARN_PRINT_ONCE on every cold start.
     director->register_instance(get_instance_id(), asset, get_global_transform(),
             opacity, lod_bias, _get_instance_flags(), cast_shadow,
             _get_instance_wind_intensity(), _get_instance_wind_mode(),
             _get_instance_wind_direction(), _get_instance_wind_frequency(),
-            parent_visible && visible_in_viewport && is_visible_in_tree());
+            parent_visible && visible_in_viewport && is_visible_in_tree(),
+            /*has_desired_residency_hint=*/true,
+            GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
 }
 
 void GaussianSplatNode3D::_unregister_instance_in_director() {
@@ -2026,7 +2034,9 @@ void GaussianSplatNode3D::_update_instance_params_in_director() {
         director->update_instance_params(get_instance_id(), opacity, lod_bias, _get_instance_flags(), cast_shadow,
                 _get_instance_wind_intensity(), _get_instance_wind_mode(),
                 _get_instance_wind_direction(), _get_instance_wind_frequency(),
-                parent_visible && visible_in_viewport && is_visible_in_tree());
+                parent_visible && visible_in_viewport && is_visible_in_tree(),
+                /*has_desired_residency_hint=*/true,
+                GaussianSplatSceneDirector::SUBMISSION_RESIDENCY_HINT_RESIDENT);
     }
     if (renderer.is_valid()) {
         renderer->invalidate_cached_render();
