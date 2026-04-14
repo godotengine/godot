@@ -53,6 +53,8 @@ public:
 	struct ClientBehavior {
 		/** If `true` use snippet insert mode to position the cursor between braces of completion options. If `false` strip braces from completion options since we can't provide good UX for them. */
 		bool use_snippets_for_brace_completion = false;
+		/** HTML tags, e.g. `span`, which the client is capable of rendering inside Markdown content. Assumes full support for attributes e.g. `style`. */
+		HashSet<String> markdown_allowed_html_tags;
 	};
 
 private:
@@ -166,6 +168,14 @@ public:
 	 * If no such file exists, or the file is not a GDScript file a `nullptr` is returned.
 	 */
 	ExtendGDScriptParser *get_parse_result(const String &p_path);
+
+	/**
+	 * Returns the HTML tags the client can render inside Markdown content, e.g. `span`.
+	 * Defaults to an empty set if no client is connected.
+	 *
+	 * TODO: Remove after moving endpoints into unified class. Access non-null client directly.
+	 */
+	const HashSet<String> &get_client_markdown_allowed_html_tags() const;
 
 	GDScriptLanguageProtocol();
 	~GDScriptLanguageProtocol() {
