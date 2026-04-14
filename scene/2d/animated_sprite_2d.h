@@ -48,7 +48,7 @@ public:
 		OFFSET_ORIGIN_BOTTOM_CENTER,
 		OFFSET_ORIGIN_BOTTOM_RIGHT,
 	};
-	
+
 private:
 	Ref<SpriteFrames> frames;
 	String autoplay;
