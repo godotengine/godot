@@ -6102,7 +6102,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	resample_timer->set_wait_time(resample_delay);
 	resample_timer->set_one_shot(true);
 	add_child(resample_timer);
-	resample_timer->connect("timeout", callable_mp(this, &CanvasItemEditor::_update_oversampling));
+	resample_timer->connect(SceneStringName(timeout), callable_mp(this, &CanvasItemEditor::_update_oversampling));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTRC("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTRC("Divide grid step by 2"), Key::KP_DIVIDE);

@@ -4177,7 +4177,7 @@ CodeEdit::CodeEdit() {
 	symbol_tooltip_timer = memnew(Timer);
 	symbol_tooltip_timer->set_wait_time(0.5); // See `_apply_project_settings()`.
 	symbol_tooltip_timer->set_one_shot(true);
-	symbol_tooltip_timer->connect("timeout", callable_mp(this, &CodeEdit::_on_symbol_tooltip_timer_timeout));
+	symbol_tooltip_timer->connect(SceneStringName(timeout), callable_mp(this, &CodeEdit::_on_symbol_tooltip_timer_timeout));
 	add_child(symbol_tooltip_timer, false, INTERNAL_MODE_FRONT);
 
 	/* Fold Lines Private signal */

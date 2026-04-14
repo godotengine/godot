@@ -3698,13 +3698,13 @@ PopupMenu::PopupMenu() {
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(submenu_timer_popup_delay); // Default is 0.2.
 	submenu_timer->set_one_shot(true);
-	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
+	submenu_timer->connect(SceneStringName(timeout), callable_mp(this, &PopupMenu::_submenu_timeout));
 	add_child(submenu_timer, false, INTERNAL_MODE_FRONT);
 
 	close_suspended_timer = memnew(Timer);
 	close_suspended_timer->set_wait_time(CLOSE_SUSPENDED_TIMER_DELAY);
 	close_suspended_timer->set_one_shot(true);
-	close_suspended_timer->connect("timeout", callable_mp(this, &PopupMenu::_close_suspended_timeout));
+	close_suspended_timer->connect(SceneStringName(timeout), callable_mp(this, &PopupMenu::_close_suspended_timeout));
 	add_child(close_suspended_timer, false, INTERNAL_MODE_FRONT);
 
 	property_helper.setup_for_instance(base_property_helper, this);

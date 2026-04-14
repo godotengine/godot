@@ -483,7 +483,7 @@ EditorLog::EditorLog() {
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);
 	save_state_timer->set_one_shot(true);
-	save_state_timer->connect("timeout", callable_mp(this, &EditorLog::_save_state));
+	save_state_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorLog::_save_state));
 	add_child(save_state_timer);
 
 	line_limit = int(EDITOR_GET("run/output/max_lines"));

@@ -7826,7 +7826,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	panning_debounce_timer = memnew(Timer);
 	panning_debounce_timer->set_one_shot(true);
 	panning_debounce_timer->set_wait_time(1.0);
-	panning_debounce_timer->connect("timeout", callable_mp(this, &VisualShaderEditor::save_editor_layout));
+	panning_debounce_timer->connect(SceneStringName(timeout), callable_mp(this, &VisualShaderEditor::save_editor_layout));
 	add_child(panning_debounce_timer);
 }
 

@@ -2152,7 +2152,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						gui.tooltip_pos = new_tooltip_pos;
 						gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
 						gui.tooltip_timer->set_ignore_time_scale(true);
-						gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
+						gui.tooltip_timer->connect(SceneStringName(timeout), callable_mp(this, &Viewport::_gui_show_tooltip));
 					}
 				}
 			}

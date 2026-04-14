@@ -2234,7 +2234,7 @@ TabBar::TabBar() {
 	connect(SceneStringName(mouse_exited), callable_mp(this, &TabBar::_on_mouse_exited));
 
 	hover_switch_delay = memnew(Timer);
-	hover_switch_delay->connect("timeout", callable_mp(this, &TabBar::_hover_switch_timeout));
+	hover_switch_delay->connect(SceneStringName(timeout), callable_mp(this, &TabBar::_hover_switch_timeout));
 	hover_switch_delay->set_one_shot(true);
 	add_child(hover_switch_delay, false, INTERNAL_MODE_FRONT);
 

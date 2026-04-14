@@ -2078,7 +2078,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->connect("code_completion_requested", callable_mp(this, &CodeTextEditor::_complete_request));
 	TypedArray<String> cs = { ".", ",", "(", "=", "$", "@", "\"", "\'" };
 	text_editor->set_code_completion_prefixes(cs);
-	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
+	idle->connect(SceneStringName(timeout), callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 
-	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
+	code_complete_timer->connect(SceneStringName(timeout), callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
 }

@@ -445,6 +445,6 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 
 	refresh_timer = memnew(Timer);
 	refresh_timer->set_wait_time(0.5);
-	refresh_timer->connect("timeout", callable_mp(this, &EditorNetworkProfiler::_refresh));
+	refresh_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorNetworkProfiler::_refresh));
 	add_child(refresh_timer);
 }

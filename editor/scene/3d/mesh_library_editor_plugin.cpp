@@ -691,7 +691,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	update_items_delay = memnew(Timer);
 	update_items_delay->set_wait_time(UPDATE_ITEMS_DELAY_TIMEOUT);
 	update_items_delay->set_one_shot(true);
-	update_items_delay->connect("timeout", callable_mp(this, &MeshLibraryEditor::_update_mesh_items).bind(true, Ref<MeshLibrary>()));
+	update_items_delay->connect(SceneStringName(timeout), callable_mp(this, &MeshLibraryEditor::_update_mesh_items).bind(true, Ref<MeshLibrary>()));
 	add_child(update_items_delay);
 
 	search_box = memnew(FilterLineEdit);

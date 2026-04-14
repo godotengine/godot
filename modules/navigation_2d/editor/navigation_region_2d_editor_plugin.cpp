@@ -170,7 +170,7 @@ NavigationRegion2DEditor::NavigationRegion2DEditor() {
 	if (_rebake_timer_delay >= 0.0) {
 		rebake_timer->set_wait_time(_rebake_timer_delay);
 	}
-	rebake_timer->connect("timeout", callable_mp(this, &NavigationRegion2DEditor::_rebake_timer_timeout));
+	rebake_timer->connect(SceneStringName(timeout), callable_mp(this, &NavigationRegion2DEditor::_rebake_timer_timeout));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);

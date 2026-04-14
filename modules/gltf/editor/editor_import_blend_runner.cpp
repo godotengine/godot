@@ -396,7 +396,7 @@ EditorImportBlendRunner::EditorImportBlendRunner() {
 	add_child(kill_timer);
 	kill_timer->set_one_shot(true);
 	kill_timer->set_wait_time(EDITOR_GET("filesystem/import/blender/rpc_server_uptime"));
-	kill_timer->connect("timeout", callable_mp(this, &EditorImportBlendRunner::_kill_blender));
+	kill_timer->connect(SceneStringName(timeout), callable_mp(this, &EditorImportBlendRunner::_kill_blender));
 
 	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &EditorImportBlendRunner::_resources_reimported));
 }
