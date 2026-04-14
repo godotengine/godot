@@ -58,6 +58,7 @@ class OptionButton : public Button {
 		Color font_disabled_color;
 
 		int h_separation = 0;
+		int popup_offset = 0;
 
 		Ref<Texture2D> arrow_icon;
 		int arrow_margin = 0;
