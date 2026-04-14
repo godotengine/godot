@@ -327,7 +327,7 @@ void Polygon2D::_notification(int p_what) {
 			if (invert || polygons.is_empty()) {
 				index_array = Geometry2D::triangulate_polygon(points);
 				if (index_array.is_empty()) {
-					WARN_PRINT_ONCE_ED("Failed to triangulate polygon(s). Polygon data may be invalid, degenerate or self-intersecting.");
+					WARN_PRINT_ONCE_ED("Failed to triangulate polygon(s). Polygon data may be invalid, degenerate, or self-intersecting.");
 				}
 			} else {
 				//draw individual polygons
