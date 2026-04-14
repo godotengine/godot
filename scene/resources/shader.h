@@ -58,6 +58,7 @@ private:
 	mutable Mutex shader_rid_mutex;
 
 	Mode mode = MODE_SPATIAL;
+	bool deprecated = false;
 	HashSet<Ref<ShaderInclude>> include_dependencies;
 	String code;
 	String include_path;
@@ -83,6 +84,8 @@ public:
 	//void set_mode(Mode p_mode);
 	virtual Mode get_mode() const;
 
+	void _set_deprecated_load(bool p_is_deprecated);
+
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	void set_include_path(const String &p_path);
 
@@ -100,6 +103,9 @@ public:
 	virtual bool is_text_shader() const;
 
 	virtual RID get_rid() const override;
+
+	virtual void _start_load(const StringName &p_res_format_type, int p_res_format_version) override;
+	virtual void _finish_load(const StringName &p_res_format_type, int p_res_format_version) override;
 
 	Shader();
 	~Shader();
