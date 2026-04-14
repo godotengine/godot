@@ -260,7 +260,7 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
-		Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_event);
+		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_event);
 		if (custom_callback.is_valid()) {
 			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _get_selection_array());
 		} else {
