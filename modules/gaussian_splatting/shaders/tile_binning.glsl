@@ -157,6 +157,12 @@ layout(set = 0, binding = 5, std430) buffer TileCounts {
     uint counts[];
 } tile_counts;
 
+// Previous-frame tile counts (ping-pong pair slot). Populated by last frame's
+// EMIT cursor == this tile's overlap record count. Read-only for this frame.
+layout(set = 0, binding = 19, std430) readonly buffer PrevTileCounts {
+    uint counts[];
+} prev_tile_counts;
+
 #ifdef GS_TILE_GLOBAL_SORT_EMIT_PASS
 layout(set = 0, binding = 2, std430) buffer GlobalSortKeys {
 #if GS_SORT_KEY_BITS == 32
@@ -1017,12 +1023,19 @@ void main() {
 
 #ifdef GS_TILE_GLOBAL_SORT_COUNT_PASS
     // Pass 1: count overlaps per tile (no keys/values emitted).
+    uint hotspot_pressure_threshold = gs_get_hotspot_pressure_threshold();
+    float hotspot_min_radius = gs_get_hotspot_min_radius_px();
     for (int ty = min_tile_y; ty <= max_tile_y; ++ty) {
         for (int tx = min_tile_x; tx <= max_tile_x; ++tx) {
             if (!gs_tile_intersects_projected_ellipse(screen_pos, conic, ellipse_sigma2, tx, ty)) {
                 continue;
             }
             uint tile_idx = uint(ty) * uint(params.tile_count.x) + uint(tx);
+            uint prev_count = prev_tile_counts.counts[tile_idx];
+            if (gs_should_hotspot_prune_overlap(prev_count, raw_min_radius_px,
+                    hotspot_pressure_threshold, hotspot_min_radius)) {
+                continue;
+            }
             if (!gs_keep_overlap_record(gaussian_idx, splat_ref.instance_id, tile_idx)) {
                 continue;
             }
@@ -1211,6 +1224,8 @@ void main() {
 #ifdef GS_TILE_GLOBAL_SORT_EMIT_PASS
     projection_buffer.projected_gaussians[global_idx] = payload;
     uint emitted_overlap_count = 0u;
+    uint hotspot_pressure_threshold = gs_get_hotspot_pressure_threshold();
+    float hotspot_min_radius = gs_get_hotspot_min_radius_px();
 
     // Pass 2: emit one overlap record per covered tile into the global key/value arrays.
     for (int ty = min_tile_y; ty <= max_tile_y; ++ty) {
@@ -1219,6 +1234,11 @@ void main() {
                 continue;
             }
             uint tile_idx = uint(ty) * uint(params.tile_count.x) + uint(tx);
+            uint prev_count = prev_tile_counts.counts[tile_idx];
+            if (gs_should_hotspot_prune_overlap(prev_count, raw_min_radius_px,
+                    hotspot_pressure_threshold, hotspot_min_radius)) {
+                continue;
+            }
             if (!gs_keep_overlap_record(gaussian_idx, splat_ref.instance_id, tile_idx)) {
                 continue;
             }

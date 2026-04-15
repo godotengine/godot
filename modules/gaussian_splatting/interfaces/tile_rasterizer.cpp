@@ -283,6 +283,8 @@ RasterResult TileRasterizer::render(const RasterParams &p_params) {
     render_params.lod_blend_enabled = p_params.lod_blend_enabled;
     render_params.lod_blend_factor = p_params.lod_blend_factor;
     render_params.lod_blend_distance = p_params.lod_blend_distance;
+    render_params.hotspot_pressure_threshold = p_params.hotspot_pressure_threshold;
+    render_params.hotspot_min_radius_px = p_params.hotspot_min_radius_px;
     render_params.frame_serial = p_params.frame_serial;
     // Instance rotation inverse for SH view direction correction
     render_params.instance_rotation_inverse = p_params.instance_rotation_inverse;

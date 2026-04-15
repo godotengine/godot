@@ -36,7 +36,7 @@
 
 namespace TestGaussianSplatting {
 
-static_assert(GS_RENDER_PARAMS_LAYOUT_VERSION == 16, "Render params layout version mismatch");
+static_assert(GS_RENDER_PARAMS_LAYOUT_VERSION == 17, "Render params layout version mismatch");
 
 static_assert(sizeof(InstanceDataGPU) == 96, "InstanceDataGPU size contract changed");
 static_assert(offsetof(InstanceDataGPU, lod) == 72, "InstanceDataGPU.lod offset contract changed");
@@ -52,7 +52,7 @@ static_assert(offsetof(PackedGaussian, sh) == 48, "PackedGaussian.sh offset cont
 static_assert(offsetof(PackedGaussian, sh_metadata) == 140, "PackedGaussian.sh_metadata offset contract changed");
 static_assert(sizeof(PackedGaussianF16) == 144, "PackedGaussianF16 size contract changed");
 static_assert(sizeof(PackedGaussianQuantized) == 80, "PackedGaussianQuantized size contract changed");
-static_assert(sizeof(TileRenderParamsGPU) == 720, "TileRenderParamsGPU size contract changed");
+static_assert(sizeof(TileRenderParamsGPU) == 736, "TileRenderParamsGPU size contract changed");
 static_assert(offsetof(TileRenderParamsGPU, viewport_size) == 256, "TileRenderParamsGPU.viewport_size offset contract changed");
 static_assert(offsetof(TileRenderParamsGPU, camera_position) == 320, "TileRenderParamsGPU.camera_position offset contract changed");
 static_assert(offsetof(TileRenderParamsGPU, lighting_mode) == 560, "TileRenderParamsGPU.lighting_mode offset contract changed");
@@ -339,7 +339,7 @@ TEST_CASE("[GaussianSplatting][RequiresGPU] Instance cull failures without fallb
 }
 
 TEST_CASE("[GaussianSplatting] GPU layout contract invariants remain stable") {
-    CHECK(GS_RENDER_PARAMS_LAYOUT_VERSION == 16u);
+    CHECK(GS_RENDER_PARAMS_LAYOUT_VERSION == 17u);
     CHECK(sizeof(InstanceDataGPU) == size_t(96));
     CHECK(sizeof(AssetMetaGPU) == size_t(112));
     CHECK(sizeof(ChunkMetaGPU) == size_t(64));
@@ -347,7 +347,7 @@ TEST_CASE("[GaussianSplatting] GPU layout contract invariants remain stable") {
     CHECK(sizeof(PackedGaussian) == size_t(144));
     CHECK(sizeof(PackedGaussianF16) == size_t(144));
     CHECK(sizeof(PackedGaussianQuantized) == size_t(80));
-    CHECK(sizeof(TileRenderParamsGPU) == size_t(720));
+    CHECK(sizeof(TileRenderParamsGPU) == size_t(736));
 
     CHECK(offsetof(PackedGaussian, rotation) == size_t(32));
     CHECK(offsetof(PackedGaussian, sh) == size_t(48));

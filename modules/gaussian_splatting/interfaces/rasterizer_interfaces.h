@@ -59,6 +59,17 @@ struct RasterParams {
     bool lod_blend_enabled = true;
     float lod_blend_factor = 1.0f;
     float lod_blend_distance = 5.0f;
+    // Hotspot-aware pre-raster cull (shared by COUNT and EMIT via tile_counts ping-pong).
+    // Prunes marginal (gaussian, tile) pairs from tiles whose previous-frame count
+    // exceeded hotspot_pressure_threshold. Conservative defaults: the per-tile gate
+    // is no-op unless last-frame tile count >4096 (normal scenes stay well below),
+    // and within a hot tile only well-sub-pixel minor-axis splats
+    // (raw_min_radius_px < 0.7) are pruned. The 0.7 floor was chosen after the
+    // initial 1.0 default pruned some contrib%-positive splats on the corridor
+    // proof; 0.7 keeps the bulk of the pruning benefit while preserving
+    // contributors with near-pixel-wide minor axes. Set either to 0 to disable.
+    uint32_t hotspot_pressure_threshold = 4096;
+    float hotspot_min_radius_px = 0.7f;
 
     // Compute raster selection (defaults to global config).
     GaussianSplatting::ComputeRasterPolicy compute_raster_policy = GaussianSplatting::ComputeRasterPolicy::Default;

@@ -1,6 +1,6 @@
 #ifndef GS_RENDER_PARAMS_GLSL
 #define GS_RENDER_PARAMS_GLSL
-#define GS_RENDER_PARAMS_LAYOUT_VERSION 16 // Keep in sync with gaussian_gpu_layout.h
+#define GS_RENDER_PARAMS_LAYOUT_VERSION 17 // Keep in sync with gaussian_gpu_layout.h
 
 // Instance pipeline only: uses SplatRef indirection and asset-local quantization.
 
@@ -97,6 +97,11 @@ layout(set = 1, binding = 0, std140) uniform RenderParams {
     // effector_config: x = enabled (0/1), y = displacement strength (meters), z = falloff exponent, w = reserved
     vec4 effector_sphere;
     vec4 effector_config;
+    // Hotspot-aware pre-raster cull (deterministic, shared by COUNT and EMIT):
+    // x = hotspot_pressure_threshold (absolute previous-frame tile count; 0 disables)
+    // y = hotspot_min_radius_px (raw minor-axis radius threshold for pruning)
+    // z,w = reserved
+    vec4 hotspot_cull_config;
 } params;
 
 // Helper to get current SH band level from params
@@ -160,6 +165,22 @@ bool gs_is_wind_enabled() {
 // Return whether the sphere effector is enabled.
 bool gs_is_sphere_effector_enabled() {
     return params.effector_config.x > 0.5 && params.effector_sphere.w > 0.0;
+}
+
+// Hotspot-aware pre-raster cull accessors.
+// Absolute previous-frame tile count above which the prune fires. 0 disables.
+uint gs_get_hotspot_pressure_threshold() {
+    return uint(max(params.hotspot_cull_config.x, 0.0));
+}
+
+// Raw minor-axis screen radius threshold for pruning splats from hot tiles.
+float gs_get_hotspot_min_radius_px() {
+    return max(params.hotspot_cull_config.y, 0.0);
+}
+
+// Whether the hotspot-pressure cull is enabled for this frame.
+bool gs_is_hotspot_cull_enabled() {
+    return gs_get_hotspot_pressure_threshold() > 0u && gs_get_hotspot_min_radius_px() > 0.0;
 }
 
 #endif // GS_RENDER_PARAMS_GLSL

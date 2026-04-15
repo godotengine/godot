@@ -179,6 +179,14 @@ struct TileGlobalSortResources {
 		return tile_counts_buffers[tile_counts_index];
 	}
 
+	// Returns the OTHER slot of the ping-pong pair, which holds the previous
+	// frame's per-tile count (post-EMIT cursor == per-tile overlap count).
+	// Readers must tolerate an invalid/zeroed buffer on the very first frame
+	// and when the array has been reallocated this frame.
+	RID get_previous_tile_counts_buffer() const {
+		return tile_counts_buffers[tile_counts_index ^ 1u];
+	}
+
 	void advance_tile_counts_buffer();
 	void mark_tile_counts_dirty();
 	bool ensure_tile_counts_ready(RenderingDevice *p_device);

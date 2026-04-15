@@ -46,6 +46,37 @@ bool gs_should_distance_cull(uint p_stable_splat_key, float world_distance) {
     return rand < cull_probability;
 }
 
+// Hotspot-aware pre-raster cull. Deterministic per (splat, tile) so COUNT and
+// EMIT reach identical decisions without a shared visibility buffer.
+//
+// The predicate is:
+//   enabled  AND  prev_tile_count > pressure_threshold  AND  raw_min_radius_px < min_radius_threshold
+//
+// Rationale:
+// - prev_tile_count is last frame's overlap count for this tile. A tile that
+//   was hot last frame is very likely hot this frame (camera motion between
+//   frames is bounded), so the prior-frame signal is a reasonable proxy for
+//   this-frame pressure without requiring a second GPU pass.
+// - raw_min_radius_px already folds opacity-aware sigma and the subpixel
+//   visibility threshold; splats below a floor here are the same marginal
+//   contributors the hotspot raster probe showed producing ~1-14% contrib%.
+//
+// Both thresholds are zero by default => no-op. Callers can rely on this
+// function returning false when the feature is disabled.
+bool gs_should_hotspot_prune_overlap(
+        uint prev_tile_count,
+        float raw_min_radius_px,
+        uint pressure_threshold,
+        float min_radius_threshold) {
+    if (pressure_threshold == 0u || min_radius_threshold <= 0.0) {
+        return false;
+    }
+    if (prev_tile_count <= pressure_threshold) {
+        return false;
+    }
+    return raw_min_radius_px < min_radius_threshold;
+}
+
 // Decide whether to keep an overlap record for diagnostics or coverage sampling.
 bool gs_keep_overlap_record(uint gaussian_idx, uint instance_id, uint tile_idx) {
     float keep_ratio = gs_get_overlap_keep_ratio();

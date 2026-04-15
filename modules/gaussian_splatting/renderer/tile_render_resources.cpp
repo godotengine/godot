@@ -1348,6 +1348,17 @@ void TileGlobalSortResources::ensure_resources(uint32_t p_visible_count) {
 				device->set_resource_name(wg_offsets_buffer, "GS_TileRenderer_WorkgroupOffsetsBuffer");
 			}
 
+			// Zero-initialize both ping-pong tile-count buffers so that the
+			// "previous" buffer read by hotspot-aware pruning returns 0 (no
+			// pressure) on the first frame and after reallocation, instead of
+			// uninitialized data that could trigger spurious pruning.
+			if (tile_counts_buffers[0].is_valid()) {
+				device->buffer_clear(tile_counts_buffers[0], 0, counts_bytes);
+			}
+			if (tile_counts_buffers[1].is_valid()) {
+				device->buffer_clear(tile_counts_buffers[1], 0, counts_bytes);
+			}
+
 			tile_buffer_tiles = owner.grid_state.total_tiles;
 			tile_counts_bytes = counts_bytes;
 			tile_counts_index = 0;

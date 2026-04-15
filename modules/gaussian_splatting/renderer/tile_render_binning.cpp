@@ -341,6 +341,15 @@ RID TileRenderer::TileBinningStage::acquire_binning_buffer_uniform_set(Rendering
 		counts_uniform.append_id(owner.global_sort_resources.get_tile_counts_buffer());
 		uniforms.push_back(counts_uniform);
 
+		// Previous-frame tile counts (ping-pong pair slot). Used by the
+		// hotspot-aware pre-raster cull in COUNT and EMIT to prune marginal
+		// splats from tiles that were hot on the prior frame.
+		RD::Uniform prev_counts_uniform;
+		prev_counts_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		prev_counts_uniform.binding = 19;
+		prev_counts_uniform.append_id(owner.global_sort_resources.get_previous_tile_counts_buffer());
+		uniforms.push_back(prev_counts_uniform);
+
 			RD::Uniform projection_uniform;
 			projection_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			projection_uniform.binding = 7;
@@ -531,6 +540,15 @@ RID TileRenderer::TileBinningStage::acquire_binning_count_uniform_set(RenderingD
 	counts_uniform.binding = 5;
 	counts_uniform.append_id(owner.global_sort_resources.get_tile_counts_buffer());
 	uniforms.push_back(counts_uniform);
+
+	// Previous-frame tile counts (ping-pong pair slot). Shared with the EMIT
+	// uniform set so the hotspot-aware pre-raster cull makes identical
+	// decisions in both passes.
+	RD::Uniform prev_counts_uniform;
+	prev_counts_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+	prev_counts_uniform.binding = 19;
+	prev_counts_uniform.append_id(owner.global_sort_resources.get_previous_tile_counts_buffer());
+	uniforms.push_back(prev_counts_uniform);
 
 	RD::Uniform debug_uniform;
 	debug_uniform.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;

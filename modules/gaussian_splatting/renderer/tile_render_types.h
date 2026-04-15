@@ -361,6 +361,11 @@ struct TileRenderParams {
 	bool lod_blend_enabled = true;
 	float lod_blend_factor = 1.0f;
 	float lod_blend_distance = 5.0f;
+	// Hotspot-aware pre-raster cull (shared by COUNT and EMIT). Defaults match
+	// RasterParams so a tile needs >4096 prior records and the candidate splat
+	// needs raw_min_radius_px<0.7 to be pruned. Set either to 0 to disable.
+	uint32_t hotspot_pressure_threshold = 4096;
+	float hotspot_min_radius_px = 0.7f;
 	bool wind_enabled = false;
 	Vector3 wind_direction = Vector3(1.0f, 0.0f, 0.0f);
 	float wind_strength = 0.0f;

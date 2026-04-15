@@ -347,6 +347,10 @@ TileRenderParamsGPU TileRenderer::TileRenderParamsBuilder::build_params(const Re
 	params.effector_config[1] = p_params.sphere_effector_strength;
 	params.effector_config[2] = MAX(0.001f, p_params.sphere_effector_falloff);
 	params.effector_config[3] = MAX(0.1f, p_params.sphere_effector_frequency);
+	params.hotspot_cull_config[0] = float(p_params.hotspot_pressure_threshold);
+	params.hotspot_cull_config[1] = MAX(0.0f, p_params.hotspot_min_radius_px);
+	params.hotspot_cull_config[2] = 0.0f;
+	params.hotspot_cull_config[3] = 0.0f;
 
 	return params;
 }

@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 
-static constexpr uint32_t GS_RENDER_PARAMS_LAYOUT_VERSION = 16; // Keep in sync with shaders/includes/gs_render_params.glsl
+static constexpr uint32_t GS_RENDER_PARAMS_LAYOUT_VERSION = 17; // Keep in sync with shaders/includes/gs_render_params.glsl
 static constexpr uint32_t GS_MAX_ASSET_LODS = 8;
 static constexpr uint32_t GS_SH_METADATA_FIRST_ORDER_MASK = 0x000000FFu;
 static constexpr uint32_t GS_SH_METADATA_HIGH_ORDER_MASK = 0x0000FF00u;
@@ -450,9 +450,16 @@ struct alignas(16) TileRenderParamsGPU {
     // effector_config: x=enabled (0/1), y=strength (meters), z=falloff exponent, w=reserved
     float effector_sphere[4];
     float effector_config[4];
+    // Hotspot-aware pre-raster cull (deterministic, shared by COUNT and EMIT):
+    // x = hotspot_pressure_threshold (absolute previous-frame tile count above which
+    //     the per-tile prune fires; 0 disables the cull entirely)
+    // y = hotspot_min_radius_px (raw minor-axis screen radius threshold; splats with
+    //     raw_min_radius_px below this are pruned from hot tiles)
+    // z,w = reserved
+    float hotspot_cull_config[4];
 };
 
-static_assert(sizeof(TileRenderParamsGPU) == 720, "TileRenderParamsGPU must match RenderParams std140 layout (720 bytes)");
+static_assert(sizeof(TileRenderParamsGPU) == 736, "TileRenderParamsGPU must match RenderParams std140 layout (736 bytes)");
 static_assert(alignof(TileRenderParamsGPU) == 16, "TileRenderParamsGPU must be 16-byte aligned");
 static_assert(offsetof(TileRenderParamsGPU, view_matrix) == 0, "TileRenderParamsGPU.view_matrix offset mismatch");
 static_assert(offsetof(TileRenderParamsGPU, inv_view_matrix) == 64, "TileRenderParamsGPU.inv_view_matrix offset mismatch");
@@ -499,6 +506,7 @@ static_assert(offsetof(TileRenderParamsGPU, wind_dir_strength) == 656, "TileRend
 static_assert(offsetof(TileRenderParamsGPU, wind_time_config) == 672, "TileRenderParamsGPU.wind_time_config offset mismatch");
 static_assert(offsetof(TileRenderParamsGPU, effector_sphere) == 688, "TileRenderParamsGPU.effector_sphere offset mismatch");
 static_assert(offsetof(TileRenderParamsGPU, effector_config) == 704, "TileRenderParamsGPU.effector_config offset mismatch");
+static_assert(offsetof(TileRenderParamsGPU, hotspot_cull_config) == 720, "TileRenderParamsGPU.hotspot_cull_config offset mismatch");
 
 struct alignas(16) FrustumCullParamsGPU {
     static constexpr uint32_t kFrustumPlaneCount = 6;
