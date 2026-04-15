@@ -428,10 +428,10 @@ def configure(env: "SConsEnvironment"):
 
     if env["sdl"]:
         if env["builtin_sdl"]:
-            env.Append(CPPDEFINES=["SDL_ENABLED"])
+            env.Append(CPPDEFINES=["SDL_ENABLED", "GODOT_CUSTOM_JOY_MAPPING_DISABLED"])
         elif os.system("pkg-config --exists sdl3") == 0:  # 0 means found
             env.ParseConfig("pkg-config sdl3 --cflags --libs")
-            env.Append(CPPDEFINES=["SDL_ENABLED"])
+            env.Append(CPPDEFINES=["SDL_ENABLED", "GODOT_CUSTOM_JOY_MAPPING_DISABLED"])
         else:
             print_warning(
                 "SDL3 development libraries not found, and `builtin_sdl` was explicitly disabled. Disabling SDL input driver support."

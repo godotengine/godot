@@ -92,13 +92,18 @@ public:
 	public:
 		virtual ~JoypadFeatures() {}
 
-		virtual bool has_joy_vibration() const { return false; }
+		virtual bool has_joy_vibration(int p_device) const { return false; }
 
-		virtual bool has_joy_light() const { return false; }
-		virtual void set_joy_light(const Color &p_color) {}
+		virtual bool has_joy_light(int p_device) const { return false; }
+		virtual void set_joy_light(int p_device, const Color &p_color) {}
 
-		virtual bool has_joy_motion_sensors() const { return false; }
-		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
+		virtual bool has_joy_motion_sensors(int p_device) const { return false; }
+		virtual void set_joy_motion_sensors_enabled(int p_device, bool p_enable) {}
+
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+		virtual void add_joy_mapping(const String &p_mapping, bool p_update_existing) {}
+		virtual void remove_joy_mapping(const String &p_guid) {}
+#endif
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -215,23 +220,26 @@ private:
 		bool last_buttons[(size_t)JoyButton::MAX] = { false };
 		float last_axis[(size_t)JoyAxis::MAX] = { 0.0f };
 		HatMask last_hat = HatMask::CENTER;
+#ifndef GODOT_CUSTOM_JOY_MAPPING_DISABLED
 		int mapping = -1;
+#endif
 		int hat_current = 0;
 		Dictionary info;
 		bool has_light = false;
 		bool has_vibration = false;
-		Input::JoypadFeatures *features = nullptr;
 	};
 
 	VelocityTrack mouse_velocity_track;
 	HashMap<int, VelocityTrack> touch_velocity_track;
 	HashMap<int, Joypad> joy_names;
+	JoypadFeatures *joypad_features = nullptr;
 
 	HashSet<uint32_t> ignored_device_ids;
 
-	int fallback_mapping = -1; // Index of the guid in map_db.
-
 	CursorShape default_shape = CursorShape::CURSOR_ARROW;
+
+#ifndef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+	int fallback_mapping = -1; // Index of the guid in map_db.
 
 	enum JoyType {
 		TYPE_BUTTON,
@@ -297,10 +305,13 @@ private:
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
 	JoyButton _get_output_button(const String &output);
 	JoyAxis _get_output_axis(const String &output);
+
+	void parse_mapping(const String &p_mapping);
+#endif
+
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
-	void _update_joypad_features(int p_device);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -401,8 +412,6 @@ public:
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
-	void set_joy_features(int p_device, JoypadFeatures *p_features);
-
 	void set_joy_light(int p_device, const Color &p_color);
 	bool has_joy_light(int p_device) const;
 
@@ -452,7 +461,6 @@ public:
 	CursorShape get_current_cursor_shape() const;
 	void set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape = Input::CursorShape::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
-	void parse_mapping(const String &p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, BitField<HatMask> p_val);
@@ -467,7 +475,13 @@ public:
 	String get_joy_guid(int p_device) const;
 	bool should_ignore_device(int p_vendor_id, int p_product_id) const;
 	Dictionary get_joy_info(int p_device) const;
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+	// These should only be used by the joypad input drivers that provide their own mapping system.
+	void set_joy_name(int p_device, const String &p_name);
+	void set_joy_known(int p_device, bool p_known);
+#else
 	void set_fallback_mapping(const String &p_guid);
+#endif
 
 #ifdef DEBUG_ENABLED
 	void flush_frame_parsed_events();
@@ -484,6 +498,8 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	void set_joypad_features(JoypadFeatures *p_features);
 
 	Input();
 	~Input();

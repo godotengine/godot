@@ -36,17 +36,30 @@ typedef uint32_t SDL_JoystickID;
 typedef struct SDL_Joystick SDL_Joystick;
 typedef struct SDL_Gamepad SDL_Gamepad;
 
-class JoypadSDL {
+class JoypadSDL : public Input::JoypadFeatures {
 public:
 	~JoypadSDL();
 
 	Error initialize();
 	void process_events();
 
+	virtual bool has_joy_light(int p_device) const override;
+	virtual void set_joy_light(int p_device, const Color &p_color) override;
+
+	virtual bool has_joy_motion_sensors(int p_device) const override;
+	virtual void set_joy_motion_sensors_enabled(int p_device, bool p_enable) override;
+
+	virtual bool has_joy_vibration(int p_device) const override;
+
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+	virtual void add_joy_mapping(const String &p_mapping, bool p_update_existing) override;
+	virtual void remove_joy_mapping(const String &p_guid) override;
+#endif
+
 private:
-	class Joypad : public Input::JoypadFeatures {
-	public:
+	struct Joypad {
 		bool attached = false;
+		bool gamepad = false;
 		StringName guid;
 
 		SDL_JoystickID sdl_instance_idx;
@@ -55,20 +68,13 @@ private:
 		bool supports_motion_sensors = false;
 		uint64_t ff_effect_timestamp = 0;
 
-		virtual bool has_joy_light() const override;
-		virtual void set_joy_light(const Color &p_color) override;
-
-		virtual bool has_joy_motion_sensors() const override;
-		virtual void set_joy_motion_sensors_enabled(bool p_enable) override;
-
-		virtual bool has_joy_vibration() const override;
-
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;
 	};
 
 	Joypad joypads[Input::JOYPADS_MAX];
 	HashMap<SDL_JoystickID, int> sdl_instance_id_to_joypad_id;
+	bool update_existing_mappings = false;
 
 	void close_joypad(int p_pad_idx);
 };

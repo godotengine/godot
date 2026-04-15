@@ -468,7 +468,7 @@ def configure_msvc(env: "SConsEnvironment"):
             LIBS += ["vulkan"]
 
     if env["sdl"]:
-        env.Append(CPPDEFINES=["SDL_ENABLED"])
+        env.Append(CPPDEFINES=["SDL_ENABLED", "GODOT_CUSTOM_JOY_MAPPING_DISABLED"])
 
     if env["d3d12"]:
         check_d3d12_installed(env, env["arch"] + "-msvc")
@@ -899,7 +899,7 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBS=["vulkan"])
 
     if env["sdl"]:
-        env.Append(CPPDEFINES=["SDL_ENABLED"])
+        env.Append(CPPDEFINES=["SDL_ENABLED", "GODOT_CUSTOM_JOY_MAPPING_DISABLED"])
 
     if env["d3d12"]:
         if env["use_llvm"]:

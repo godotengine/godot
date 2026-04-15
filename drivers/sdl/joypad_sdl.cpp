@@ -33,6 +33,7 @@
 #ifdef SDL_ENABLED
 
 #include "core/input/default_controller_mappings.h"
+#include "core/input/input_enums.h"
 #include "core/variant/dictionary.h"
 
 #include <SDL3/SDL.h>
@@ -45,7 +46,12 @@
 // Macro to skip the SDL joystick event handling if the device is an SDL gamepad, because
 // there are separate events for SDL gamepads
 #define SKIP_EVENT_FOR_GAMEPAD \
-	if (SDL_IsGamepad(sdl_event.jdevice.which)) { \
+	if (joypads[joy_id].gamepad) { \
+		continue; \
+	}
+
+#define SKIP_EVENT_FOR_NON_GAMEPAD \
+	if (!joypads[joy_id].gamepad) { \
 		continue; \
 	}
 
@@ -61,6 +67,8 @@ JoypadSDL::~JoypadSDL() {
 }
 
 Error JoypadSDL::initialize() {
+	Input::get_singleton()->set_joypad_features(this);
+
 	SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 	ERR_FAIL_COND_V_MSG(!SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD), FAILED, SDL_GetError());
@@ -68,10 +76,7 @@ Error JoypadSDL::initialize() {
 	// Add Godot's mapping database from memory
 	int i = 0;
 	while (DefaultControllerMappings::mappings[i]) {
-		String mapping_string = DefaultControllerMappings::mappings[i++];
-		CharString data = mapping_string.utf8();
-		SDL_IOStream *rw = SDL_IOFromMem((void *)data.ptr(), data.size());
-		SDL_AddGamepadMappingsFromIO(rw, true);
+		SDL_AddGamepadMapping(DefaultControllerMappings::mappings[i++]);
 	}
 
 	// Make sure that we handle already connected joypads when the driver is initialized.
@@ -82,21 +87,23 @@ Error JoypadSDL::initialize() {
 }
 
 void JoypadSDL::process_events() {
+	Input *input = Input::get_singleton();
+
 	// Update rumble first for it to be applied when we handle SDL events
 	for (int i = 0; i < Input::JOYPADS_MAX; i++) {
 		Joypad &joy = joypads[i];
 		if (joy.attached && joy.supports_force_feedback) {
-			uint64_t timestamp = Input::get_singleton()->get_joy_vibration_timestamp(i);
+			uint64_t timestamp = input->get_joy_vibration_timestamp(i);
 
 			// Update the joypad rumble only if there was a new vibration request
 			if (timestamp > joy.ff_effect_timestamp) {
 				joy.ff_effect_timestamp = timestamp;
 
 				SDL_Joystick *sdl_joy = SDL_GetJoystickFromID(joypads[i].sdl_instance_idx);
-				Vector2 strength = Input::get_singleton()->get_joy_vibration_strength(i);
+				Vector2 strength = input->get_joy_vibration_strength(i);
 				// Invalid values for strength are filtered by Input::start_joy_vibration().
 
-				float duration = Input::get_singleton()->get_joy_vibration_duration(i);
+				float duration = input->get_joy_vibration_duration(i);
 				Uint32 duration_ms = 0;
 				if (duration < 0.0f) {
 					continue; // Invalid duration.
@@ -125,7 +132,7 @@ void JoypadSDL::process_events() {
 	while (SDL_PollEvent(&sdl_event)) {
 		// A new joypad was attached
 		if (sdl_event.type == SDL_EVENT_JOYSTICK_ADDED) {
-			int joy_id = Input::get_singleton()->get_unused_joy_id();
+			int joy_id = input->get_unused_joy_id();
 			if (joy_id == -1) {
 				// There is no space for more joypads...
 				print_error("A new joypad was attached but couldn't allocate a new id for it because joypad limit was reached.");
@@ -166,6 +173,7 @@ void JoypadSDL::process_events() {
 				joypads[joy_id].supports_force_feedback = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
 				joypads[joy_id].guid = StringName(String(guid));
 				joypads[joy_id].supports_motion_sensors = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL) || SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
+				joypads[joy_id].gamepad = SDL_IsGamepad(sdl_event.jdevice.which);
 
 				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
 
@@ -196,18 +204,16 @@ void JoypadSDL::process_events() {
 				}
 #endif
 
-				Input::get_singleton()->joy_connection_changed(
+				input->joy_connection_changed(
 						joy_id,
 						true,
 						device_name,
 						joypads[joy_id].guid,
 						joypad_info);
 
-				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
-
 				if (joypads[joy_id].supports_motion_sensors) {
 					// Data rate for all sensors should be the same.
-					Input::get_singleton()->set_joy_motion_sensors_rate(joy_id, SDL_GetGamepadSensorDataRate(gamepad, SDL_SENSOR_ACCEL));
+					input->set_joy_motion_sensors_rate(joy_id, SDL_GetGamepadSensorDataRate(gamepad, SDL_SENSOR_ACCEL));
 				}
 			}
 			// An event for an attached joypad
@@ -216,14 +222,42 @@ void JoypadSDL::process_events() {
 
 			switch (sdl_event.type) {
 				case SDL_EVENT_JOYSTICK_REMOVED:
-					Input::get_singleton()->joy_connection_changed(joy_id, false, "");
+					input->joy_connection_changed(joy_id, false, "");
 					close_joypad(joy_id);
+					break;
+
+				case SDL_EVENT_GAMEPAD_ADDED: // A controller mapping has been added to a controller that wasn't mapped before.
+					if (!update_existing_mappings || input->is_joy_known(joy_id)) {
+						// Nothing to change here.
+						break;
+					}
+					input->set_joy_known(joy_id, true);
+					input->set_joy_name(joy_id, SDL_GetGamepadNameForID(sdl_event.gdevice.which));
+					joypads[joy_id].gamepad = true;
+					break;
+
+				case SDL_EVENT_GAMEPAD_REMOVED: // A controller's mapping has been removed.
+					if (!update_existing_mappings || !input->is_joy_known(joy_id)) {
+						// Nothing to change here.
+						break;
+					}
+					input->set_joy_known(joy_id, false);
+					input->set_joy_name(joy_id, SDL_GetJoystickNameForID(sdl_event.gdevice.which));
+					joypads[joy_id].gamepad = false;
+					break;
+
+				case SDL_EVENT_GAMEPAD_REMAPPED: // A controller's mapping was updated.
+					if (!update_existing_mappings || !input->is_joy_known(joy_id)) {
+						// Nothing to change here.
+						break;
+					}
+					input->set_joy_name(joy_id, SDL_GetGamepadNameForID(sdl_event.gdevice.which));
 					break;
 
 				case SDL_EVENT_JOYSTICK_AXIS_MOTION:
 					SKIP_EVENT_FOR_GAMEPAD;
 
-					Input::get_singleton()->joy_axis(
+					input->joy_axis(
 							joy_id,
 							static_cast<JoyAxis>(sdl_event.jaxis.axis), // Godot joy axis constants are already intentionally the same as SDL's
 							((sdl_event.jaxis.value - SDL_JOYSTICK_AXIS_MIN) / (float)(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) - 0.5f) * 2.0f);
@@ -239,7 +273,7 @@ void JoypadSDL::process_events() {
 						continue;
 					}
 
-					Input::get_singleton()->joy_button(
+					input->joy_button(
 							joy_id,
 							static_cast<JoyButton>(sdl_event.jbutton.button), // Godot button constants are intentionally the same as SDL's, so we can just straight up use them
 							sdl_event.jbutton.down);
@@ -248,13 +282,14 @@ void JoypadSDL::process_events() {
 				case SDL_EVENT_JOYSTICK_HAT_MOTION:
 					SKIP_EVENT_FOR_GAMEPAD;
 
-					Input::get_singleton()->joy_hat(
+					input->joy_hat(
 							joy_id,
 							(HatMask)sdl_event.jhat.value // Godot hat masks are identical to SDL hat masks, so we can just use them as-is.
 					);
 					break;
 
 				case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
+					SKIP_EVENT_FOR_NON_GAMEPAD;
 					float axis_value;
 
 					if (sdl_event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || sdl_event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
@@ -266,7 +301,7 @@ void JoypadSDL::process_events() {
 								((sdl_event.gaxis.value - SDL_JOYSTICK_AXIS_MIN) / (float)(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) - 0.5f) * 2.0f;
 					}
 
-					Input::get_singleton()->joy_axis(
+					input->joy_axis(
 							joy_id,
 							static_cast<JoyAxis>(sdl_event.gaxis.axis), // Godot joy axis constants are already intentionally the same as SDL's
 							axis_value);
@@ -275,7 +310,8 @@ void JoypadSDL::process_events() {
 				// Do note SDL gamepads do not have separate events for the dpad
 				case SDL_EVENT_GAMEPAD_BUTTON_UP:
 				case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-					Input::get_singleton()->joy_button(
+					SKIP_EVENT_FOR_NON_GAMEPAD;
+					input->joy_button(
 							joy_id,
 							static_cast<JoyButton>(sdl_event.gbutton.button), // Godot button constants are intentionally the same as SDL's, so we can just straight up use them
 							sdl_event.gbutton.down);
@@ -297,7 +333,7 @@ void JoypadSDL::process_events() {
 		SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_ACCEL, accel_data, 3);
 		SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_GYRO, gyro_data, 3);
 
-		Input::get_singleton()->joy_motion_sensors(
+		input->joy_motion_sensors(
 				i,
 				Vector3(-accel_data[0], -accel_data[1], -accel_data[2]),
 				Vector3(gyro_data[0], gyro_data[1], gyro_data[2]));
@@ -319,8 +355,8 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 	}
 }
 
-bool JoypadSDL::Joypad::has_joy_light() const {
-	SDL_Joystick *joystick = get_sdl_joystick();
+bool JoypadSDL::has_joy_light(int p_device) const {
+	SDL_Joystick *joystick = joypads[p_device].get_sdl_joystick();
 	SDL_PropertiesID properties_id = SDL_GetJoystickProperties(joystick);
 	if (properties_id == 0) {
 		return false;
@@ -328,23 +364,63 @@ bool JoypadSDL::Joypad::has_joy_light() const {
 	return SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, false) || SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN, false);
 }
 
-void JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
-	SDL_SetJoystickLED(get_sdl_joystick(), p_color.get_r8(), p_color.get_g8(), p_color.get_b8());
+void JoypadSDL::set_joy_light(int p_device, const Color &p_color) {
+	SDL_SetJoystickLED(joypads[p_device].get_sdl_joystick(), p_color.get_r8(), p_color.get_g8(), p_color.get_b8());
 }
 
-bool JoypadSDL::Joypad::has_joy_motion_sensors() const {
-	return supports_motion_sensors;
+bool JoypadSDL::has_joy_motion_sensors(int p_device) const {
+	return joypads[p_device].supports_motion_sensors;
 }
 
-void JoypadSDL::Joypad::set_joy_motion_sensors_enabled(bool p_enable) {
-	SDL_Gamepad *gamepad = get_sdl_gamepad();
+void JoypadSDL::set_joy_motion_sensors_enabled(int p_device, bool p_enable) {
+	SDL_Gamepad *gamepad = joypads[p_device].get_sdl_gamepad();
 	SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_ACCEL, p_enable);
 	SDL_SetGamepadSensorEnabled(gamepad, SDL_SENSOR_GYRO, p_enable);
 }
 
-bool JoypadSDL::Joypad::has_joy_vibration() const {
-	return supports_force_feedback;
+bool JoypadSDL::has_joy_vibration(int p_device) const {
+	return joypads[p_device].supports_force_feedback;
 }
+
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+
+void JoypadSDL::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
+	update_existing_mappings = p_update_existing;
+	SDL_AddGamepadMapping(p_mapping.utf8().ptr());
+
+	// Process events in case the user might want to call the function several times with different
+	// values for p_update_existing, or call remove_joy_mapping immediately after (while this function
+	// was called with p_update_existing=false, in which case I feel there might be bugs).
+	process_events();
+}
+
+void JoypadSDL::remove_joy_mapping(const String &p_guid) {
+	SDL_GUID guid = SDL_StringToGUID(p_guid.utf8().ptr());
+	char *check_mapping = SDL_GetGamepadMappingForGUID(guid);
+	if (!check_mapping) {
+		// Mapping doesn't exist, nothing to remove.
+		return;
+	}
+
+	int mapping_count;
+	char **mappings = SDL_GetGamepadMappings(&mapping_count);
+	update_existing_mappings = true;
+
+	SDL_ReloadGamepadMappings();
+
+	for (int i = 0; i < mapping_count; i++) {
+		if (SDL_strcmp(mappings[i], check_mapping) != 0) {
+			SDL_AddGamepadMapping(mappings[i]);
+		}
+	}
+
+	SDL_free(check_mapping);
+	SDL_free(mappings);
+
+	// Process new gamepad events.
+	process_events();
+}
+#endif
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
 	return SDL_GetJoystickFromID(sdl_instance_idx);

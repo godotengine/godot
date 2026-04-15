@@ -33,7 +33,6 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -45,6 +44,9 @@
 #include <thirdparty/gamepadmotionhelpers/GamepadMotion.hpp>
 
 #define STANDARD_GRAVITY 9.80665f
+
+#ifndef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+#include "core/input/default_controller_mappings.h"
 
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",
@@ -83,6 +85,7 @@ static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
 	"lefttrigger",
 	"righttrigger",
 };
+#endif
 
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
@@ -709,6 +712,10 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		}
 		js.uid = uidname;
 		js.connected = true;
+
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+		js.is_known = p_joypad_info.get("mapping_handled", false);
+#else
 		int mapping = fallback_mapping;
 		// Bypass the mapping system if the joypad's mapping is already handled by its driver
 		// (for example, the SDL joypad driver).
@@ -725,10 +732,30 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 				}
 			}
 		}
+
+		_set_joypad_mapping(js, mapping);
+#endif
 		// We don't want this setting to be exposed to the user, because it's not very useful outside of this method.
 		js.info.erase("mapping_handled");
 
-		_set_joypad_mapping(js, mapping);
+		if (joypad_features != nullptr) {
+			if (joypad_features->has_joy_vibration(p_idx)) {
+				js.has_vibration = true;
+			}
+			if (joypad_features->has_joy_light(p_idx)) {
+				js.has_light = true;
+			}
+			if (joypad_features->has_joy_motion_sensors(p_idx)) {
+				MotionInfo &motion = joy_motion[p_idx];
+
+				if (!motion.gamepad_motion) {
+					motion.gamepad_motion = new GamepadMotion();
+				} else {
+					motion.gamepad_motion->Reset();
+				}
+				motion.last_timestamp = OS::get_singleton()->get_ticks_msec();
+			}
+		}
 	} else {
 		js.connected = false;
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
@@ -1055,15 +1082,6 @@ void Input::set_joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_joy_axis[c] = p_value;
 }
 
-void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
-	Joypad *joypad = joy_names.getptr(p_device);
-	if (!joypad) {
-		return;
-	}
-	joypad->features = p_features;
-	_update_joypad_features(p_device);
-}
-
 void Input::set_joy_light(int p_device, const Color &p_color) {
 	_THREAD_SAFE_METHOD_
 
@@ -1072,11 +1090,11 @@ void Input::set_joy_light(int p_device, const Color &p_color) {
 	}
 
 	Joypad *joypad = joy_names.getptr(p_device);
-	if (!joypad || !joypad->has_light || joypad->features == nullptr) {
+	if (!joypad || !joypad->has_light || joypad_features == nullptr) {
 		return;
 	}
 	Color linear = p_color.srgb_to_linear();
-	joypad->features->set_joy_light(linear);
+	joypad_features->set_joy_light(p_device, linear);
 }
 
 bool Input::has_joy_light(int p_device) const {
@@ -1148,14 +1166,14 @@ Vector3 Input::get_joy_gyroscope(int p_device) const {
 void Input::set_joy_motion_sensors_enabled(int p_device, bool p_enable) {
 	_THREAD_SAFE_METHOD_
 	Joypad *joypad = joy_names.getptr(p_device);
-	if (joypad == nullptr || joypad->features == nullptr) {
+	if (joypad == nullptr || joypad_features == nullptr) {
 		return;
 	}
 	MotionInfo *motion = joy_motion.getptr(p_device);
 	if (motion == nullptr) {
 		return;
 	}
-	joypad->features->set_joy_motion_sensors_enabled(p_enable);
+	joypad_features->set_joy_motion_sensors_enabled(p_device, p_enable);
 	motion->sensors_enabled = p_enable;
 }
 
@@ -1663,6 +1681,10 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 		return;
 	}
 	joy.last_buttons[(size_t)p_button] = p_pressed;
+
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+	_button_event(p_device, p_button, p_pressed);
+#else
 	if (joy.mapping == -1) {
 		_button_event(p_device, p_button, p_pressed);
 		return;
@@ -1679,6 +1701,7 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 		_axis_event(p_device, (JoyAxis)map.index, p_pressed ? map.value : 0.0);
 	}
 	// no event?
+#endif
 }
 
 void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
@@ -1698,6 +1721,9 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 
 	joy.last_axis[(size_t)p_axis] = p_value;
 
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+	_axis_event(p_device, p_axis, p_value);
+#else
 	if (joy.mapping == -1) {
 		_axis_event(p_device, p_axis, p_value);
 		return;
@@ -1753,6 +1779,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 		_axis_event(p_device, axis, value);
 		return;
 	}
+#endif
 }
 
 void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
@@ -1762,8 +1789,25 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 		return;
 	}
 
-	const Joypad &joy = joy_names[p_device];
+	Joypad &joy = joy_names[p_device];
 
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+	JoyButton map[(size_t)HatDir::MAX];
+	map[(size_t)HatDir::UP] = JoyButton::DPAD_UP;
+	map[(size_t)HatDir::RIGHT] = JoyButton::DPAD_RIGHT;
+	map[(size_t)HatDir::DOWN] = JoyButton::DPAD_DOWN;
+	map[(size_t)HatDir::LEFT] = JoyButton::DPAD_LEFT;
+
+	int cur_val = joy.hat_current;
+
+	for (int hat_direction = 0, hat_mask = 1; hat_direction < (int)HatDir::MAX; hat_direction++, hat_mask <<= 1) {
+		if (((int)p_val & hat_mask) != (cur_val & hat_mask)) {
+			_button_event(p_device, map[hat_direction], (int)p_val & hat_mask);
+		}
+	}
+
+	joy.hat_current = (int)p_val;
+#else
 	JoyEvent map[(size_t)HatDir::MAX];
 
 	map[(size_t)HatDir::UP].type = TYPE_BUTTON;
@@ -1786,7 +1830,7 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 		_get_mapped_hat_events(map_db[joy.mapping], (HatDir)0, map);
 	}
 
-	int cur_val = joy_names[p_device].hat_current;
+	int cur_val = joy.hat_current;
 
 	for (int hat_direction = 0, hat_mask = 1; hat_direction < (int)HatDir::MAX; hat_direction++, hat_mask <<= 1) {
 		if (((int)p_val & hat_mask) != (cur_val & hat_mask)) {
@@ -1799,7 +1843,8 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 		}
 	}
 
-	joy_names[p_device].hat_current = (int)p_val;
+	joy.hat_current = (int)p_val;
+#endif
 }
 
 void Input::joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope) {
@@ -1866,29 +1911,37 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 	}
 }
 
-void Input::_update_joypad_features(int p_device) {
-	Joypad *joypad = joy_names.getptr(p_device);
-	if (!joypad || joypad->features == nullptr) {
+#ifdef GODOT_CUSTOM_JOY_MAPPING_DISABLED
+void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
+	if (joypad_features == nullptr) {
 		return;
 	}
-	if (joypad->features->has_joy_vibration()) {
-		joypad->has_vibration = true;
-	}
-	if (joypad->features->has_joy_light()) {
-		joypad->has_light = true;
-	}
-	if (joypad->features->has_joy_motion_sensors()) {
-		MotionInfo &motion = joy_motion[p_device];
-
-		if (!motion.gamepad_motion) {
-			motion.gamepad_motion = new GamepadMotion();
-		} else {
-			motion.gamepad_motion->Reset();
-		}
-		motion.last_timestamp = OS::get_singleton()->get_ticks_msec();
-	}
+	joypad_features->add_joy_mapping(p_mapping, p_update_existing);
 }
 
+void Input::remove_joy_mapping(const String &p_guid) {
+	if (joypad_features == nullptr) {
+		return;
+	}
+	joypad_features->remove_joy_mapping(p_guid);
+}
+
+void Input::set_joy_name(int p_device, const String &p_name) {
+	Joypad *joy = joy_names.getptr(p_device);
+	if (joy == nullptr) {
+		return;
+	}
+	joy->name = p_name;
+}
+
+void Input::set_joy_known(int p_device, bool p_known) {
+	Joypad *joy = joy_names.getptr(p_device);
+	if (joy == nullptr) {
+		return;
+	}
+	joy->is_known = p_known;
+}
+#else
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
 	JoyEvent event;
 
@@ -2267,6 +2320,7 @@ void Input::set_fallback_mapping(const String &p_guid) {
 		}
 	}
 }
+#endif
 
 //platforms that use the remapping system can override and call to these ones
 bool Input::is_joy_known(int p_device) {
@@ -2317,9 +2371,14 @@ bool Input::is_input_disabled() const {
 	return disable_input;
 }
 
+void Input::set_joypad_features(JoypadFeatures *p_features) {
+	joypad_features = p_features;
+}
+
 Input::Input() {
 	singleton = this;
 
+#ifndef GODOT_CUSTOM_JOY_MAPPING_DISABLED
 	// Parse default mappings.
 	{
 		int i = 0;
@@ -2339,6 +2398,7 @@ Input::Input() {
 			parse_mapping(entries[i]);
 		}
 	}
+#endif
 
 	String env_ignore_devices = OS::get_singleton()->get_environment("SDL_GAMECONTROLLER_IGNORE_DEVICES");
 	if (!env_ignore_devices.is_empty()) {
