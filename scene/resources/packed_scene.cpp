@@ -375,8 +375,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 					ERR_FAIL_INDEX_V(nprops[j].value, prop_count, nullptr);
 
-					ERR_PRINT(snames[nprops[j].name]);
-
 					if (nprops[j].name & FLAG_PATH_PROPERTY_IS_NODE) {
 						if (!Engine::get_singleton()->is_editor_hint() && node->get_scene_instance_load_placeholder()) {
 							// We cannot know if the referenced nodes exist yet, so instead of deferring, we write the NodePaths directly.
@@ -385,6 +383,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
 
 							node->set(snames[name_idx], props[nprops[j].value], &valid);
+
 							continue;
 						}
 
@@ -397,7 +396,13 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						dnp.property = snames[name_idx];
 						dnp.nd_index = i;
 						deferred_node_paths.push_back(dnp);
+
 						continue;
+					}
+
+					if (nprops[j].name < sname_count) {
+						StringName name = snames[nprops[j].name];
+						ERR_PRINT(name);
 					}
 
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
