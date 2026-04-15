@@ -780,8 +780,8 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->class_userdata = ti;
 #ifndef DISABLE_DEPRECATED
 	placeholder_extension->create_instance = nullptr;
-#endif // DISABLE_DEPRECATED
 	placeholder_extension->create_instance2 = &PlaceholderExtensionInstance::placeholder_class_create_instance;
+#endif // DISABLE_DEPRECATED
 	placeholder_extension->free_instance = &PlaceholderExtensionInstance::placeholder_class_free_instance;
 #ifndef DISABLE_DEPRECATED
 	placeholder_extension->get_virtual = nullptr;
@@ -880,7 +880,7 @@ bool ClassDB::is_abstract(const StringName &p_class) {
 			return true;
 		}
 #ifndef DISABLE_DEPRECATED
-		return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance2 == nullptr;
+		return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance == nullptr;
 #else
 		return ti->gdextension->create_instance3 == nullptr;
 #endif //  DISABLE_DEPRECATED
