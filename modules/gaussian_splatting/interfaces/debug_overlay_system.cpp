@@ -553,7 +553,7 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(const DebugOverl
                     String::num_uint64(raster_stats.compute_raster_frames),
                     String::num_uint64(raster_stats.fragment_raster_frames)));
             debug_state.hud_lines.push_back(vformat("Tile Size: %d (compute max 32)", subsystem_state.rasterizer->get_tile_size()));
-            debug_state.hud_lines.push_back(vformat("Overlap Records: %u / %u (effective %u)",
+            debug_state.hud_lines.push_back(vformat("Overlap Records: %d / %d (effective %d)",
                     raster_stats.overlap_records,
                     raster_stats.overlap_record_budget_configured,
                     raster_stats.overlap_record_budget_effective));
@@ -568,13 +568,13 @@ void DebugOverlaySystem::rebuild_renderer_performance_hud_lines(const DebugOverl
         }
         if (debug_state_view.last_stage_metrics_valid) {
             const auto &stage_metrics = debug_state_view.last_stage_metrics;
-            debug_state.hud_lines.push_back(vformat("Cull: %.2f ms (cand %u -> vis %u)",
+            debug_state.hud_lines.push_back(vformat("Cull: %.2f ms (cand %d -> vis %d)",
                     stage_metrics.cull.cull_time_ms, stage_metrics.cull.candidate_count, stage_metrics.cull.visible_count));
             if (stage_metrics.sort.did_sort) {
-                debug_state.hud_lines.push_back(vformat("Sort: %.2f ms (in %u -> %u)",
+                debug_state.hud_lines.push_back(vformat("Sort: %.2f ms (in %d -> %d)",
                         stage_metrics.sort.sort_time_ms, stage_metrics.sort.input_count, stage_metrics.sort.sorted_count));
             } else {
-                debug_state.hud_lines.push_back(vformat("Sort: skipped (in %u)", stage_metrics.sort.input_count));
+                debug_state.hud_lines.push_back(vformat("Sort: skipped (in %d)", stage_metrics.sort.input_count));
             }
             const char *raster_label = stage_metrics.raster.reused_cached_render
                     ? "cached"
