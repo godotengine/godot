@@ -2712,7 +2712,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
 
-		} else {
+		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
 			if ((selection_in_progress || clicked_wants_append || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) && movement_threshold_passed && clicked.is_valid() && !previewing) {
