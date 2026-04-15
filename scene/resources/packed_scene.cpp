@@ -390,7 +390,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
 						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
 
-						ERR_PRINT(snames[nprops[j].name]);
+						ERR_PRINT(snames[name_idx]);
 						DeferredNodePathProperties dnp;
 						dnp.value = props[nprops[j].value];
 						dnp.base = node->get_instance_id();
