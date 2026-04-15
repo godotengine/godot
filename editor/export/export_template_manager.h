@@ -39,6 +39,7 @@ class HTTPRequest;
 class MenuButton;
 class OptionButton;
 class ProgressBar;
+class Timer;
 class Tree;
 
 class ExportTemplateManager : public AcceptDialog {
@@ -76,6 +77,18 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *download_current_button = nullptr;
 	HTTPRequest *request_mirrors = nullptr;
 
+	String download_url;
+	int64_t resume_offset = 0;
+	int retry_count = 0;
+	static const int MAX_DOWNLOAD_RETRIES = 3;
+	Timer *retry_timer = nullptr;
+
+	int last_downloaded_bytes = -1;
+	float stall_elapsed = 0;
+	static constexpr float STALL_TIMEOUT_SEC = 30.0f;
+	Button *retry_button = nullptr;
+	bool download_stalled = false;
+
 	enum TemplatesAction {
 		OPEN_TEMPLATE_FOLDER,
 		UNINSTALL_TEMPLATE,
@@ -94,6 +107,8 @@ class ExportTemplateManager : public AcceptDialog {
 	void _download_template(const String &p_url, bool p_skip_check = false);
 	void _download_template_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	void _cancel_template_download();
+	void _attempt_resume_download();
+	void _reconnect_download();
 	void _refresh_mirrors();
 	void _refresh_mirrors_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	void _force_online_mode();
