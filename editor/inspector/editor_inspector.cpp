@@ -1674,7 +1674,7 @@ void EditorProperty::_update_popup() {
 	menu->add_icon_shortcut(theme_cache.paste_icon, ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
 	menu->set_item_disabled(-1, read_only || EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY);
 	menu->add_icon_shortcut(theme_cache.copy_node_path_icon, ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
-	menu->set_item_disabled(-1, internal);
+	menu->set_item_disabled(-1, internal || property_path.is_empty());
 
 	if (can_favorite || !pin_hidden) {
 		menu->add_separator();
