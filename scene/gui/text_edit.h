@@ -144,8 +144,6 @@ private:
 			Color color = Color(1, 1, 1);
 		};
 
-		mutable int64_t next_item_id = 0;
-
 		struct Line {
 			Vector<Gutter> gutters;
 
