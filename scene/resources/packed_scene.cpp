@@ -1049,7 +1049,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			Array array = value;
 			Array new_array;
 
-			bool has_node_binding;
+			bool has_node_binding = false;
 			_parse_array(new_array, p_node, array, has_node_binding);
 			if (has_node_binding) {
 				ERR_PRINT("found node binding");
@@ -1108,7 +1108,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			Dictionary dict = value;
 			Dictionary new_dict;
 
-			bool has_node_binding;
+			bool has_node_binding = false;
 			_parse_dict(new_dict, p_node, dict, has_node_binding);
 			if (has_node_binding) {
 				ERR_PRINT("found node binding");
