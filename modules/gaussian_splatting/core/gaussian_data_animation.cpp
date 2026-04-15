@@ -155,6 +155,10 @@ void GaussianData::apply_animation_at_time(float p_time) {
             gaussians[i].opacity = animated_opacities_cache[i];
         }
     }
+
+    if (animate_positions || animate_colors || animate_opacities) {
+        _bump_content_revision();
+    }
 }
 
 // ---------------------------------------------------------------------------

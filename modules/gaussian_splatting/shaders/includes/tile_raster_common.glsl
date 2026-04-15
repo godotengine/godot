@@ -37,6 +37,7 @@ layout(set = 0, binding = 15, std430) readonly buffer InstanceIndirectDispatch {
 // For R8G8B8A8_UNORM (8-bit per channel), 1 LSB = 1/255
 // Use slightly more than 1 LSB for effective banding reduction
 const float GS_DITHER_AMPLITUDE = 1.0 / 255.0;
+const float GS_RASTER_ALPHA_REJECT_Q = 18.41;
 
 // Simple hash-based noise for dithering (spatially varying)
 // Uses fragment position to generate pseudo-random value in [-0.5, 0.5]
@@ -154,15 +155,6 @@ bool gs_rasterize_splat_batch(
             continue;
         }
 
-        uint splat_ref_idx = sorted_indices.indices[sorted_idx];
-        if (splat_ref_idx >= gs_get_visible_gaussian_count()) {
-            continue;
-        }
-        uint gaussian_idx = splat_ref_buffer.splat_refs[splat_ref_idx].atlas_index;
-        if (gaussian_idx >= params.total_gaussians) {
-            continue;
-        }
-
 #ifdef GS_TILE_RASTER_SHARED_PAYLOAD
         ProjectedGaussian payload = gs_shared_projected_gaussians[i];
 #else
@@ -184,10 +176,16 @@ bool gs_rasterize_splat_batch(
         if (base_opacity <= 0.0) {
             continue;
         }
+        if (base_opacity * lod_blend <= 1e-4) {
+            continue;
+        }
 
         vec2 diff = pixel_center - screen_px;
         float quadratic = conic.x * diff.x * diff.x + 2.0 * conic.y * diff.x * diff.y + conic.z * diff.y * diff.y;
         quadratic = max(quadratic, 0.0);
+        if (quadratic > GS_RASTER_ALPHA_REJECT_Q) {
+            continue;
+        }
         float weight = gs_exp_fast(-0.5 * quadratic);
         if (weight <= 0.0) {
             continue;
@@ -350,25 +348,6 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
             continue;
         }
 
-        uint splat_ref_idx = sorted_indices.indices[sorted_idx];
-        if (splat_ref_idx >= gs_get_visible_gaussian_count()) {
-#ifdef GS_COLLECT_RASTER_STATS
-            if (sample_raster_stats) {
-                local_reject_gaussian++;
-            }
-#endif
-            continue;
-        }
-        uint gaussian_idx = splat_ref_buffer.splat_refs[splat_ref_idx].atlas_index;
-        if (gaussian_idx >= params.total_gaussians) {
-#ifdef GS_COLLECT_RASTER_STATS
-            if (sample_raster_stats) {
-                local_reject_gaussian++;
-            }
-#endif
-            continue;
-        }
-
         ProjectedGaussian payload = gs_read_projected_gaussian(i, sorted_idx);
 
         // Unpack the 24-byte packed format
@@ -415,6 +394,9 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
             }
             continue;
         }
+        if (base_opacity * lod_blend <= 1e-4) {
+            continue;
+        }
 
         // PERF-8 (#679): NaN/Inf validation moved to tile_binning.glsl projection stage
         // This eliminates per-pixel * per-splat validation overhead.
@@ -436,6 +418,9 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
         float dy = diff.y;
         float quadratic = conic.x * dx * dx + 2.0 * conic.y * dx * dy + conic.z * dy * dy;
         quadratic = max(quadratic, 0.0);
+        if (quadratic > GS_RASTER_ALPHA_REJECT_Q) {
+            continue;
+        }
 
         float weight = gs_exp_fast(-0.5 * quadratic);
         // PERF-8 (#679): Simplified weight check - with conic validated upstream and

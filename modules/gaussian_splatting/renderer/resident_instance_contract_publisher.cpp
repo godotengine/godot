@@ -226,6 +226,49 @@ bool publish(GaussianSplatRenderer *p_renderer, bool p_allow_primary_fallback_in
 		assets.push_back(asset);
 	}
 
+	uint64_t source_generation = 0x6a09e667f3bcc909ULL;
+	source_generation = _mix_generation(source_generation, has_primary_data ? uint64_t(primary_data->get_instance_id()) : 0ULL);
+	source_generation = _mix_generation(source_generation, has_primary_data ? primary_data->get_content_revision() : 0ULL);
+	const Ref<GPUCuller> &gpu_culler = p_renderer->get_subsystem_state().gpu_culler;
+	source_generation = _mix_generation(source_generation,
+			gpu_culler.is_valid() ? gpu_culler->get_state().static_chunks_revision : 0ULL);
+	if (director != nullptr) {
+		source_generation = _mix_generation(source_generation, director->get_instance_generation_for_renderer(p_renderer));
+	}
+	source_generation = _mix_generation(source_generation, p_renderer->is_shadow_instance_filter_enabled() ? 1ULL : 0ULL);
+	source_generation = _mix_generation(source_generation, p_allow_primary_fallback_instance ? 1ULL : 0ULL);
+	source_generation = _mix_generation(source_generation, uint64_t(p_renderer->get_performance_settings().max_splats));
+	for (const ResidentAssetDescriptor &asset : assets) {
+		source_generation = _mix_generation(source_generation, asset.submission_asset_id);
+		source_generation = _mix_generation(source_generation, asset.data.is_valid() ? uint64_t(asset.data->get_instance_id()) : 0ULL);
+		source_generation = _mix_generation(source_generation, asset.data.is_valid() ? asset.data->get_content_revision() : 0ULL);
+	}
+
+	{
+		const GaussianSplatRenderer::ResourceState &resource_state = p_renderer->get_resource_state();
+		const GaussianRenderPipeline::InstancePipelineBuffers &published_buffers = p_renderer->get_instance_pipeline_buffers();
+		auto owner_ok = [&](const RID &p_rid) {
+			return !p_rid.is_valid() || p_renderer->get_resource_owner(p_rid, rd) == rd;
+		};
+		if (p_renderer->get_instance_backend_policy() == GaussianRenderPipeline::InstanceBackendPolicy::RESIDENT &&
+				p_renderer->has_instance_pipeline_buffers() &&
+				p_renderer->has_instance_asset_remap() &&
+				resource_state.instance_pipeline_contract_generation == source_generation &&
+				resource_state.instance_pipeline_upload_generation == source_generation &&
+				GaussianSplatting::InstancePipelineContract::has_atlas_buffers(published_buffers) &&
+				GaussianSplatting::InstancePipelineContract::has_cull_buffers(published_buffers) &&
+				GaussianSplatting::InstancePipelineContract::has_sort_buffers(published_buffers) &&
+				GaussianSplatting::InstancePipelineContract::has_raster_buffers(published_buffers) &&
+				owner_ok(resource_state.instance_visible_chunk_buffer) &&
+				owner_ok(resource_state.instance_splat_ref_buffer) &&
+				owner_ok(resource_state.instance_counter_buffer) &&
+				owner_ok(resource_state.instance_chunk_dispatch_buffer) &&
+				owner_ok(resource_state.instance_indirect_count_buffer) &&
+				owner_ok(resource_state.instance_count_buffer)) {
+			return true;
+		}
+	}
+
 	LocalVector<InstanceDataGPU> instances;
 	if (director != nullptr) {
 		director->build_instance_buffer_for_renderer(p_renderer, instances,
@@ -287,18 +330,10 @@ bool publish(GaussianSplatRenderer *p_renderer, bool p_allow_primary_fallback_in
 
 	uint32_t max_chunk_count_per_asset = 0;
 	uint32_t max_chunk_splats = 0;
-	uint64_t source_generation = 0x6a09e667f3bcc909ULL;
-	source_generation = _mix_generation(source_generation, has_primary_data ? uint64_t(primary_data->get_instance_id()) : 0ULL);
-	source_generation = _mix_generation(source_generation, uint64_t(p_renderer->get_static_chunks().size()));
-	if (director != nullptr) {
-		source_generation = _mix_generation(source_generation, director->get_instance_generation_for_renderer(p_renderer));
-	}
 
 	for (uint32_t asset_index = 0; asset_index < assets.size(); asset_index++) {
 		const ResidentAssetDescriptor &asset = assets[asset_index];
 		asset_meta_cpu.write[asset.dense_asset_id] = AssetMetaGPU();
-		source_generation = _mix_generation(source_generation, asset.submission_asset_id);
-		source_generation = _mix_generation(source_generation, asset.data.is_valid() ? uint64_t(asset.data->get_instance_id()) : 0ULL);
 
 		if (asset.data.is_null() || asset.data->get_count() <= 0) {
 			continue;

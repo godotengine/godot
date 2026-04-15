@@ -222,6 +222,7 @@ void GaussianData::commit_runtime_changes() {
                 MutexLock anim_lock(animation_cache_mutex);
                 animation_cache_dirty = true;
             }
+            _bump_content_revision();
         }
     }
 

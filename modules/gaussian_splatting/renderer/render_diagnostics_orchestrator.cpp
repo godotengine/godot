@@ -999,30 +999,6 @@ Dictionary RenderDiagnosticsOrchestrator::build_render_stats() const {
 			}
 		}
 	}
-	if (sorted_preview.is_empty() && sorting_pipeline) {
-		const uint32_t sorted_count = sorting_state.sorted_splat_count;
-		const int preview_count = MIN((int)sorted_count, 32);
-		if (preview_count > 0) {
-			RID sort_indices_buffer = sorting_pipeline->get_sort_indices_buffer();
-			RenderingDevice *fallback_device = rendering_device;
-			RenderingDevice *owner = (renderer->*runtime_ports.resolve_resource_owner)(sort_indices_buffer, fallback_device);
-			if (!owner) {
-				owner = fallback_device;
-			}
-			if (owner && sort_indices_buffer.is_valid()) {
-				Vector<uint8_t> preview_bytes = owner->buffer_get_data(sort_indices_buffer, 0,
-						uint32_t(preview_count) * uint32_t(sizeof(uint32_t)));
-				const int expected_bytes = preview_count * int(sizeof(uint32_t));
-				if (preview_bytes.size() >= expected_bytes) {
-					sorted_preview.resize(preview_count);
-					const uint32_t *preview_indices = reinterpret_cast<const uint32_t *>(preview_bytes.ptr());
-					for (int i = 0; i < preview_count; i++) {
-						sorted_preview.set(i, int(preview_indices[i]));
-					}
-				}
-			}
-		}
-	}
 	stats["sorted_indices_preview"] = sorted_preview;
 
 	// GPU sorter state and metrics

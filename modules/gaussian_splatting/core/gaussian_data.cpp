@@ -231,6 +231,7 @@ void GaussianData::_on_gaussian_storage_changed_locked() {
     if (animation_state_machine.is_valid()) {
         animation_state_machine->set_splat_count(gaussians.size());
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_gaussians(const LocalVector<Gaussian> &p_gaussians) {
@@ -301,6 +302,7 @@ void GaussianData::set_gaussian_payload(const LocalVector<Gaussian> &p_gaussians
     if (animation_state_machine.is_valid()) {
         animation_state_machine->set_splat_count(gaussians.size());
     }
+    _bump_content_revision();
 }
 
 const Gaussian *GaussianData::get_gaussians() const {
@@ -362,6 +364,7 @@ void GaussianData::set_gaussian(int p_index, const Gaussian &p_gaussian) {
         MutexLock anim_lock(animation_cache_mutex);
         animation_cache_dirty = true;
     }
+    _bump_content_revision();
 }
 
 Gaussian GaussianData::get_gaussian(int p_index) const {
@@ -531,6 +534,7 @@ void GaussianData::set_positions(const PackedVector3Array &p_positions) {
     for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].position = p_positions[i];
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_scales(const PackedVector3Array &p_scales) {
@@ -539,6 +543,7 @@ void GaussianData::set_scales(const PackedVector3Array &p_scales) {
     for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].scale = p_scales[i];
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_rotations(const TypedArray<Quaternion> &p_rotations) {
@@ -547,6 +552,7 @@ void GaussianData::set_rotations(const TypedArray<Quaternion> &p_rotations) {
     for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].rotation = p_rotations[i];
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_opacities(const PackedFloat32Array &p_opacities) {
@@ -555,6 +561,7 @@ void GaussianData::set_opacities(const PackedFloat32Array &p_opacities) {
     for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].opacity = p_opacities[i];
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_spherical_harmonics(const PackedFloat32Array &p_sh_data) {
@@ -583,6 +590,7 @@ void GaussianData::set_spherical_harmonics(const PackedFloat32Array &p_sh_data) 
     for (uint32_t i = 0; i < gaussian_count; i++) {
         _set_spherical_harmonics_locked(i, data_ptr + i * floats_per_gaussian, floats_per_gaussian);
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_palette_ids(const PackedInt32Array &p_palette_ids) {
@@ -594,6 +602,7 @@ void GaussianData::set_palette_ids(const PackedInt32Array &p_palette_ids) {
         Gaussian &g = gaussians[i];
         g.painterly_meta = gaussian_set_palette_id(g.painterly_meta, (uint16_t)value);
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_painterly_flags(const PackedInt32Array &p_flags) {
@@ -605,6 +614,7 @@ void GaussianData::set_painterly_flags(const PackedInt32Array &p_flags) {
         Gaussian &g = gaussians[i];
         g.painterly_meta = gaussian_set_painterly_flags(g.painterly_meta, (uint16_t)value);
     }
+    _bump_content_revision();
 }
 
 PackedInt32Array GaussianData::get_brush_override_ids() const {
@@ -791,6 +801,7 @@ void GaussianData::_set_spherical_harmonics_locked(int p_index, const float *p_c
 void GaussianData::set_spherical_harmonics(int p_index, const float *p_coeffs, int p_count) {
     RWLockWrite lock(data_rwlock);
     _set_spherical_harmonics_locked(p_index, p_coeffs, p_count);
+    _bump_content_revision();
 }
 
 void GaussianData::set_brush_axes(const PackedVector2Array &p_brush_axes) {
@@ -799,6 +810,7 @@ void GaussianData::set_brush_axes(const PackedVector2Array &p_brush_axes) {
     for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].brush_axes = p_brush_axes[i];
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_stroke_ages(const PackedFloat32Array &p_stroke_ages) {
@@ -807,11 +819,13 @@ void GaussianData::set_stroke_ages(const PackedFloat32Array &p_stroke_ages) {
     for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].stroke_age = p_stroke_ages[i];
     }
+    _bump_content_revision();
 }
 
 void GaussianData::set_2d_mode(bool p_enabled) {
     RWLockWrite lock(data_rwlock);
     is_2d_mode = p_enabled;
+    _bump_content_revision();
 }
 
 void GaussianData::set_normals(const PackedVector3Array &p_normals) {
@@ -820,6 +834,7 @@ void GaussianData::set_normals(const PackedVector3Array &p_normals) {
     for (uint32_t i = 0; i < gaussians.size(); i++) {
         gaussians[i].normal = p_normals[i];
     }
+    _bump_content_revision();
 }
 
 

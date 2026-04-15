@@ -11,6 +11,7 @@
 #ifndef GAUSSIAN_DATA_H
 #define GAUSSIAN_DATA_H
 
+#include <atomic>
 #include <cstddef>
 
 #include "core/io/resource.h"
@@ -272,6 +273,7 @@ class GaussianData : public Resource {
 
 private:
     LocalVector<Gaussian> gaussians;
+    std::atomic<uint64_t> content_revision{0};
     uint32_t sh_degree = 0;
     uint32_t sh_first_order_count = 0;
     uint32_t sh_high_order_count = 0;
@@ -347,6 +349,7 @@ private:
     void _subdivide_octree_node(uint32_t node_idx, int max_depth, uint32_t min_gaussians = 32);
     void _on_gaussian_storage_changed();
     void _on_gaussian_storage_changed_locked();
+    void _bump_content_revision() { content_revision.fetch_add(1, std::memory_order_relaxed); }
     void _set_spherical_harmonics_locked(int p_index, const float *p_coeffs, int p_count);
     bool _clear_runtime_modifications_locked();
     void _clear_brush_strokes_locked();
@@ -639,6 +642,8 @@ public:
 
     /** @brief Returns the number of Gaussians in this resource. */
     int get_count() const { return gaussians.size(); }
+
+    uint64_t get_content_revision() const { return content_revision.load(std::memory_order_relaxed); }
 
     /** @brief Returns the axis-aligned bounding box of all Gaussians. */
     AABB get_aabb() const;
