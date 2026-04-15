@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import math
 from pathlib import Path
@@ -13,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_REPORT_PATHS = [
     ROOT / "tests" / "output" / "benchmark_run" / "benchmark_suite_report.json",
+    ROOT / "docs" / "assets" / "data" / "benchmark_suite_report.json",
 ]
 
 EXPORT_FIELDS = [
@@ -70,15 +70,6 @@ def write_json(lanes: list[dict[str, Any]], output: Path) -> None:
     print(f"[benchmark-export] Wrote {len(lanes)} lanes to {output}")
 
 
-def write_csv(lanes: list[dict[str, Any]], output: Path) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with output.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=EXPORT_FIELDS)
-        writer.writeheader()
-        for lane in lanes:
-            writer.writerow({k: ("" if v is None else v) for k, v in lane.items()})
-    print(f"[benchmark-export] Wrote {len(lanes)} lanes to {output}")
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export benchmark data for Vega-Lite charts.")
@@ -93,12 +84,6 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT / "docs" / "assets" / "data" / "benchmark_latest.json",
         help="Output JSON file for Vega-Lite.",
-    )
-    parser.add_argument(
-        "--csv-output",
-        type=Path,
-        default=ROOT / "outputs" / "performance" / "benchmark_latest.csv",
-        help="Output CSV file for matplotlib.",
     )
     return parser.parse_args()
 
@@ -119,7 +104,6 @@ def main() -> int:
         return 0
 
     write_json(lanes, args.json_output)
-    write_csv(lanes, args.csv_output)
     return 0
 
 

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GodotGS Benchmark Dashboard</title>
+  <style>
+    :root {
+      --paper: #f8f6f1;
+      --ink: #182126;
+      --muted: #51606b;
+      --accent: #1f8f6b;
+      --line: #d7cec2;
+    }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffffff 0%, transparent 35%),
+        linear-gradient(135deg, #f8f6f1 0%, #efe7db 100%);
+    }
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+    h1, h2 {
+      margin: 0 0 12px;
+      font-family: "Iowan Old Style", "Palatino Linotype", serif;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card, .panel {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 20px;
+      box-shadow: 0 10px 30px rgba(24, 33, 38, 0.08);
+      backdrop-filter: blur(10px);
+    }
+    .metric {
+      font-size: 34px;
+      line-height: 1;
+      margin-bottom: 8px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: white;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .capture {
+      margin: 0;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="summary">
+      <div class="card">
+        <div class="metric">90.66</div>
+        <div class="meta">Aggregate score</div>
+      </div>
+      <div class="card">
+        <div class="metric">quick</div>
+        <div class="meta">Profile</div>
+      </div>
+      <div class="card">
+        <div class="metric">3</div>
+        <div class="meta">Lanes</div>
+      </div>
+      <div class="card">
+        <div class="metric">captures</div>
+        <div class="meta">Capture output</div>
+      </div>
+    </section>
+    <section class="panel"><h2>Benchmark Suite Scores</h2><img src="benchmark_suite_scores.svg" alt="benchmark_suite_scores.svg"></section>
+<section class="panel"><h2>Benchmark Suite Fps</h2><img src="benchmark_suite_fps.svg" alt="benchmark_suite_fps.svg"></section>
+<section class="panel"><h2>Benchmark Suite Gpu Ms</h2><img src="benchmark_suite_gpu_ms.svg" alt="benchmark_suite_gpu_ms.svg"></section>
+<section class="panel"><h2>Benchmark Suite Ssim</h2><img src="benchmark_suite_ssim.svg" alt="benchmark_suite_ssim.svg"></section>
+<section class="panel"><h2>Benchmark Suite Psnr</h2><img src="benchmark_suite_psnr.svg" alt="benchmark_suite_psnr.svg"></section>
+    <section class="panel">
+      <h2>Lane Metrics</h2>
+      <table>
+        <thead>
+          <tr><th>Lane</th><th>Score</th><th>Avg FPS</th><th>P99 ms</th><th>GPU ms</th><th>SSIM min</th><th>PSNR min</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>static_baseline</code></td><td>90.66</td><td>74.02</td><td>15.62</td><td>0.00</td><td>n/a</td><td>n/a</td></tr><tr><td><code>integrity_sentinel</code></td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td></tr><tr><td><code>parity_fidelity</code></td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Captured Frames</h2>
+      <div class="gallery">
+        <p>No captures were generated for this run.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

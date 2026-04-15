@@ -32,6 +32,20 @@ def run_python(script: Path, *args: str) -> int:
     return run([sys.executable, str(script), *args], f"Running {script.name}")
 
 
+_BENCHMARK_REPORT_PATHS = [
+    ROOT / "tests" / "output" / "benchmark_run" / "benchmark_suite_report.json",
+    DOCS / "assets" / "data" / "benchmark_suite_report.json",
+]
+
+
+def _find_benchmark_report() -> Path | None:
+    """Return the first existing benchmark report (fresh local data preferred over committed baseline)."""
+    for candidate in _BENCHMARK_REPORT_PATHS:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build documentation artifacts.")
     parser.add_argument("--doxygen", action="store_true", help="Generate C++ API docs via Doxygen.")
@@ -96,7 +110,7 @@ def main() -> int:
         action="store_true",
         help="Fail docs build when engine patch generation errors.",
     )
-    parser.add_argument("--performance", action="store_true", help="Build performance graphs.")
+    parser.add_argument("--dashboard", action="store_true", help="Generate SVG benchmark dashboard charts.")
     parser.add_argument("--compatibility", action="store_true", help="Update compatibility matrix.")
     parser.add_argument("--project-settings", action="store_true", help="Regenerate project settings reference.")
     parser.add_argument("--benchmarks", action="store_true", help="Export benchmark data for Vega-Lite charts.")
@@ -106,8 +120,8 @@ def main() -> int:
 
     if args.all:
         args.doxygen = args.gdscript = args.shaders = True
-        args.benchmarks = True
-        args.performance = args.compatibility = args.project_settings = args.report = True
+        args.benchmarks = args.dashboard = True
+        args.compatibility = args.project_settings = args.report = True
         if not args.no_engine_patch:
             args.engine_patch = True
 
@@ -168,8 +182,16 @@ def main() -> int:
     if args.benchmarks:
         exit_code |= run_python(ROOT / "scripts" / "export_benchmark_vegalite.py")
 
-    if args.performance:
-        exit_code |= run_python(ROOT / "scripts" / "generate_performance_graphs.py")
+    if args.dashboard:
+        report_path = _find_benchmark_report()
+        if report_path:
+            exit_code |= run_python(
+                ROOT / "scripts" / "generate_benchmark_suite_dashboard.py",
+                "--suite-report", str(report_path),
+                "--output-dir", str(DOCS / "assets" / "benchmarks"),
+            )
+        else:
+            print("[docs] No benchmark report found; skipping dashboard generation.")
 
     if args.compatibility:
         exit_code |= run_python(ROOT / "scripts" / "update_compatibility_matrix.py")

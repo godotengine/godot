@@ -1040,7 +1040,7 @@ func _build_report() -> Dictionary:
 	for key_variant in RENDER_TELEMETRY_KEYS:
 		var key := str(key_variant)
 		if renderer_stats.has(key):
-			var value = renderer_stats.get(key)
+			var value: Variant = renderer_stats.get(key)
 			overall[key] = value
 			renderer_telemetry[key] = value
 
@@ -1345,7 +1345,7 @@ func _build_visual_summary() -> Dictionary:
 		elif bool(capture.get("saved", false)) and not reference_dir.is_empty():
 			summary["missing_reference_count"] = int(summary["missing_reference_count"]) + 1
 
-		var ssim_value = capture.get("ssim", null)
+		var ssim_value: Variant = capture.get("ssim", null)
 		if ssim_value is float or ssim_value is int:
 			var ssim := float(ssim_value)
 			ssim_total += ssim
@@ -1353,7 +1353,7 @@ func _build_visual_summary() -> Dictionary:
 			if summary["ssim_min"] == null or ssim < float(summary["ssim_min"]):
 				summary["ssim_min"] = ssim
 
-		var psnr_value = capture.get("psnr", null)
+		var psnr_value: Variant = capture.get("psnr", null)
 		if psnr_value is float or psnr_value is int:
 			var psnr := float(psnr_value)
 			psnr_total += psnr

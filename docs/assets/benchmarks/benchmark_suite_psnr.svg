@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="420" viewBox="0 0 1120 420">
+<rect width="1120" height="420" fill="#f8f6f1"/>
+<text x="180" y="28" font-family="Georgia, serif" font-size="24" fill="#182126">PSNR Minimum</text>
+<text x="180" y="48" font-family="Menlo, Consolas, monospace" font-size="12" fill="#51606b">Visual error envelope for captured lanes</text>
+<text x="168" y="116.2" text-anchor="end" font-family="Menlo, Consolas, monospace" font-size="13" fill="#182126">static_baseline</text>
+<rect x="180" y="50" width="900" height="92" fill="#e5ddd0" rx="6" ry="6"/>
+<text x="188" y="116.2" font-family="Menlo, Consolas, monospace" font-size="12" fill="#7b6f63">n/a</text>
+<text x="168" y="220.2" text-anchor="end" font-family="Menlo, Consolas, monospace" font-size="13" fill="#182126">integrity_sentinel</text>
+<rect x="180" y="154" width="900" height="92" fill="#e5ddd0" rx="6" ry="6"/>
+<text x="188" y="220.2" font-family="Menlo, Consolas, monospace" font-size="12" fill="#7b6f63">n/a</text>
+<text x="168" y="324.2" text-anchor="end" font-family="Menlo, Consolas, monospace" font-size="13" fill="#182126">parity_fidelity</text>
+<rect x="180" y="258" width="900" height="92" fill="#e5ddd0" rx="6" ry="6"/>
+<text x="188" y="324.2" font-family="Menlo, Consolas, monospace" font-size="12" fill="#7b6f63">n/a</text>
+</svg>

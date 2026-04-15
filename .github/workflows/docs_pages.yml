@@ -13,6 +13,7 @@ on:
       - "scripts/build_docs_site.py"
       - "scripts/check_docs_media_budget.py"
       - "scripts/export_benchmark_vegalite.py"
+      - "scripts/generate_benchmark_suite_dashboard.py"
       - "docs/reference/engine_patch_sources.yaml"
       - "mkdocs.yml"
       - ".github/workflows/docs_pages.yml"
