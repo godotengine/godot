@@ -1702,6 +1702,15 @@ bool GaussianSplatRenderer::_blit_shadow_depth(RID p_source_depth, RID p_shadow_
 
 bool GaussianSplatRenderer::render_directional_shadow_map(const Projection &p_light_projection, const Transform3D &p_light_transform,
         const Rect2i &p_atlas_rect, RID p_shadow_framebuffer, bool p_flip_y) {
+    static bool logged_once = false;
+    if (!logged_once) {
+        logged_once = true;
+        float z_near = p_light_projection.get_z_near();
+        float z_far = p_light_projection.get_z_far();
+        WARN_PRINT(vformat("[GS Shadow] render_directional_shadow_map called: atlas_rect=(%d,%d,%d,%d) znear=%f zfar=%f flip_y=%s fb_valid=%s",
+                p_atlas_rect.position.x, p_atlas_rect.position.y, p_atlas_rect.size.x, p_atlas_rect.size.y,
+                z_near, z_far, p_flip_y ? "true" : "false", p_shadow_framebuffer.is_valid() ? "true" : "false"));
+    }
     if (p_atlas_rect.size.x <= 0 || p_atlas_rect.size.y <= 0) {
         return false;
     }
@@ -1766,11 +1775,14 @@ bool GaussianSplatRenderer::render_directional_shadow_map(const Projection &p_li
     subsystem_state.output_compositor = saved_output_compositor;
 
     if (!subsystem_state.rasterizer.is_valid()) {
+        WARN_PRINT_ONCE("[GS Shadow] render_directional_shadow_map: rasterizer not valid after render_sorted_splats");
         return false;
     }
     RID depth_texture = subsystem_state.rasterizer->get_depth_texture();
     RenderingDevice *depth_owner = subsystem_state.rasterizer->get_depth_texture_owner();
     if (!depth_texture.is_valid() || !depth_owner) {
+        WARN_PRINT_ONCE(vformat("[GS Shadow] render_directional_shadow_map: depth invalid: tex=%s owner=%s",
+                depth_texture.is_valid() ? "valid" : "null", depth_owner ? "valid" : "null"));
         return false;
     }
     RenderingDevice *main_device = RenderingDevice::get_singleton();
@@ -1782,7 +1794,13 @@ bool GaussianSplatRenderer::render_directional_shadow_map(const Projection &p_li
         GS_LOG_WARN_DEFAULT("[GS Shadow] Depth texture owner mismatch; using main RenderingDevice alias for shadow blit");
     }
 
-    return _blit_shadow_depth(depth_texture, p_shadow_framebuffer, p_atlas_rect, p_flip_y);
+    bool blit_ok = _blit_shadow_depth(depth_texture, p_shadow_framebuffer, p_atlas_rect, p_flip_y);
+    static bool blit_logged = false;
+    if (!blit_logged) {
+        blit_logged = true;
+        WARN_PRINT(vformat("[GS Shadow] Shadow blit result: %s", blit_ok ? "SUCCESS" : "FAILED"));
+    }
+    return blit_ok;
 }
 
 void GaussianSplatRenderer::_on_painterly_material_changed() {

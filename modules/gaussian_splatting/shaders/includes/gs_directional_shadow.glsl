@@ -51,12 +51,21 @@ float gs_directional_shadow(uint idx, vec3 vertex, vec3 geo_normal, float taa_fr
 
     pssm_coord /= pssm_coord.w;
 
-    float shadow = sample_directional_pcf_shadow(
-            directional_shadow_atlas,
-            scene_data_block.data.directional_shadow_pixel_size * directional_lights.data[idx].soft_shadow_scale *
-                    (blur_factor + (1.0 - blur_factor) * float(directional_lights.data[idx].blend_splits)),
-            pssm_coord,
-            taa_frame_count);
+    // Guard: if the shadow coordinate falls outside the valid [0,1] depth range
+    // (e.g. vertex is beyond the current cascade far plane), treat THIS cascade
+    // as unshadowed but fall through so the blend-splits path below can still
+    // sample and mix in the next cascade at split-transition pixels.
+    float shadow;
+    if (pssm_coord.z < 0.0 || pssm_coord.z > 1.0) {
+        shadow = 1.0;
+    } else {
+        shadow = sample_directional_pcf_shadow(
+                directional_shadow_atlas,
+                scene_data_block.data.directional_shadow_pixel_size * directional_lights.data[idx].soft_shadow_scale *
+                        (blur_factor + (1.0 - blur_factor) * float(directional_lights.data[idx].blend_splits)),
+                pssm_coord,
+                taa_frame_count);
+    }
 
     if (directional_lights.data[idx].blend_splits) {
         float pssm_blend;
@@ -98,12 +107,20 @@ float gs_directional_shadow(uint idx, vec3 vertex, vec3 geo_normal, float taa_fr
 
         pssm_coord /= pssm_coord.w;
 
-        float shadow2 = sample_directional_pcf_shadow(
-                directional_shadow_atlas,
-                scene_data_block.data.directional_shadow_pixel_size * directional_lights.data[idx].soft_shadow_scale *
-                        (blur_factor2 + (1.0 - blur_factor2) * float(directional_lights.data[idx].blend_splits)),
-                pssm_coord,
-                taa_frame_count);
+        // Apply the same cascade-range guard to the blend sample so that a
+        // valid current cascade mixed with an out-of-range next cascade does
+        // not pick up garbage shadow.
+        float shadow2;
+        if (pssm_coord.z < 0.0 || pssm_coord.z > 1.0) {
+            shadow2 = 1.0;
+        } else {
+            shadow2 = sample_directional_pcf_shadow(
+                    directional_shadow_atlas,
+                    scene_data_block.data.directional_shadow_pixel_size * directional_lights.data[idx].soft_shadow_scale *
+                            (blur_factor2 + (1.0 - blur_factor2) * float(directional_lights.data[idx].blend_splits)),
+                    pssm_coord,
+                    taa_frame_count);
+        }
 
         shadow = mix(shadow, shadow2, pssm_blend);
     }

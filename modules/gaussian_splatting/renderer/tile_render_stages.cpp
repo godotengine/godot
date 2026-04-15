@@ -168,7 +168,7 @@ TileRenderParamsGPU TileRenderer::TileRenderParamsBuilder::build_params(const Re
 	// Use Godot's projection helpers; clip tolerance is handled in shader via cull_far_tolerance.
 	params.near_plane = p_params.projection.get_z_near();
 	params.far_plane = p_params.projection.get_z_far();
-	if (params.near_plane <= 0.0f || params.far_plane <= params.near_plane) {
+	if (params.near_plane < 0.0f || params.far_plane <= params.near_plane) {
 		WARN_PRINT_ONCE(vformat("[TileRenderer] Invalid near/far extracted: near=%f, far=%f. Using fallback values.",
 				params.near_plane, params.far_plane));
 		params.near_plane = 0.1f;

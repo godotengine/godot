@@ -364,6 +364,7 @@ void main() {
 
         if (shadow_strength > 0.0 && sh_occlusion > 0.0) {
             float sh_factor = 1.0 - shadow_strength * clamp(sh_occlusion, 0.0, 1.0);
+            sh_factor = max(sh_factor, 0.3);
             final_rgb *= sh_factor;
         }
         if (use_clustered) {

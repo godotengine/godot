@@ -1736,6 +1736,11 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		_render_shadow_end();
 #ifdef MODULE_GAUSSIAN_SPLATTING_ENABLED
 		if (!p_render_data->gaussian_shadow_renderers.is_empty()) {
+			WARN_PRINT_ONCE(vformat("[GS Shadow Diag] gaussian_shadow_renderers=%d, directional_shadows=%d, shadows=%d, cube_shadows=%d",
+					(int)p_render_data->gaussian_shadow_renderers.size(),
+					(int)p_render_data->directional_shadows.size(),
+					(int)p_render_data->shadows.size(),
+					(int)p_render_data->cube_shadows.size()));
 			if (p_render_data->directional_shadows.size()) {
 				const RID directional_fb = light_storage->direction_shadow_get_fb();
 				if (directional_fb.is_valid()) {

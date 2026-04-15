@@ -1197,6 +1197,11 @@ void main() {
 
             if (shadow_strength > 0.0 && sh_occlusion > 0.0) {
                 float sh_factor = 1.0 - shadow_strength * clamp(sh_occlusion, 0.0, 1.0);
+                // Preserve minimum ambient so shadowed SH regions are not fully black.
+                // The SH base colour already encodes baked indirect illumination that
+                // should survive real-time shadow.  A floor of 0.3 keeps ~30 % of the
+                // baked radiance visible in full shadow.
+                sh_factor = max(sh_factor, 0.3);
                 final_color *= sh_factor;
             }
 
