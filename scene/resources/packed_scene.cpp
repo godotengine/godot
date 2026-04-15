@@ -746,7 +746,7 @@ Dictionary SceneState::setup_resources_in_dictionary(Dictionary &p_dictionary_to
 	const Array keys = p_dictionary_to_scan.keys();
 	const Array values = p_dictionary_to_scan.values();
 
-	if (has_local_resource(values) || has_local_resource(values)) {
+	if (has_local_resource(keys) || has_local_resource(values)) {
 		Array duplicated_keys = keys.duplicate(true);
 		Array duplicated_values = values.duplicate(true);
 
