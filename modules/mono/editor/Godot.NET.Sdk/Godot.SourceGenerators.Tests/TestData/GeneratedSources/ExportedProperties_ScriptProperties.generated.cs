@@ -321,9 +321,9 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName @_lambdaPropertyStaticImport = "_lambdaPropertyStaticImport";
     }
-    protected internal new static partial class GodotInternal
+    protected new static partial class GodotInternal
     {
-        internal new static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        private static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
         {
             static godot_variant trampoline_get_NotGenerateComplexLamdaProperty(object godotObject)
             {
@@ -1106,16 +1106,18 @@ partial class ExportedProperties
             collector.TryAdd(PropertyName.@_lamdaPropertyString, (new(&trampoline_get__lamdaPropertyString), new(&trampoline_set__lamdaPropertyString)));
             collector.TryAdd(PropertyName.@_lambdaPropertyStaticImport, (new(&trampoline_get__lambdaPropertyStaticImport), new(&trampoline_set__lambdaPropertyStaticImport)));
         }
-    }
-    /// <summary>
-    /// Get the property information for all the properties declared in this class.
-    /// This method is used by Godot to register the available properties in the editor.
-    /// Do not call this method.
-    /// </summary>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
-    {
-        var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
+        /// <summary>
+        /// Get the property information for all the properties declared in this class.
+        /// This method is used by Godot to register the available properties in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static
+#nullable enable
+            global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>?
+#nullable restore
+            GetGodotPropertyList()
+        {
+            var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@_notGeneratePropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@NotGenerateComplexLamdaProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@NotGenerateLamdaNoFieldProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
@@ -1194,7 +1196,8 @@ partial class ExportedProperties
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@PropertyGodotArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)27, name: PropertyName.@PropertyGodotGenericDictionary, hint: (global::Godot.PropertyHint)23, hintString: "4/0:;1/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@PropertyGodotGenericArray, hint: (global::Godot.PropertyHint)23, hintString: "2/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        return properties;
+            return properties;
+        }
     }
 #pragma warning restore CS0109
 }
