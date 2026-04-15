@@ -80,16 +80,9 @@ bool RenderOutputOrchestrator::copy_final_texture_to_target(RID p_render_target,
 
 void RenderOutputOrchestrator::commit_to_render_buffers(RenderDataRD *p_render_data) {
 	(void)p_render_data;
-	// NOTE: Viewport copy is ALREADY handled in OutputCompositor::integrate_final_output(), which is called
-	// from render_scene_instance(). That copy writes to get_internal_texture() which is
-	// the correct target for Godot's rendering pipeline.
-	//
-	// Previously we had a DUPLICATE copy here that was writing to a DIFFERENT target
-	// (render_target_get_rd_texture vs get_internal_texture) which caused confusion.
-	// The copy in OutputCompositor::integrate_final_output uses format 96 (sRGB) with blending enabled,
-	// while this was using format 36 (linear) without blending - wrong target!
-	//
-	// This function now just clears the pending state flags.
+	// Viewport compositing is handled in OutputCompositor::integrate_final_output().
+	// That stage resolves the actual presented render target and performs the
+	// final composite itself. This function only clears the pending state flags.
 
 	GaussianSplatRenderer::FrameStateProvider frame_provider(renderer);
 	const GaussianSplatRenderer::IFrameStateView &state_view = frame_provider;

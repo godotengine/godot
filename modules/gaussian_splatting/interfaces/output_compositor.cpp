@@ -1180,23 +1180,36 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
             viewport_size = Size2i(1, 1);
         }
 
-        RID render_target = r_render_target;
+        RID pipeline_render_target = r_render_target;
+        RID present_render_target;
         RID render_target_framebuffer;
 
-        // CRITICAL FIX: ALWAYS try to get Godot's actual render target framebuffer.
-        // Even if we have the texture, we need the framebuffer to draw into the viewport.
+        // Resolve the final presented viewport target separately from the pipeline's
+        // internal scene color texture. The depth-tested compute path can only write
+        // directly to the presented target when the viewport is single-view and the
+        // render path is not relying on a later scale/upscale step.
         RID godot_render_target = render_buffers_rd->get_render_target();
         if (godot_render_target.is_valid()) {
             RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
             if (texture_storage) {
                 render_target_framebuffer = texture_storage->render_target_get_rd_framebuffer(godot_render_target);
-                if (!render_target.is_valid()) {
-                    render_target = texture_storage->render_target_get_rd_texture(godot_render_target);
-                }
+                present_render_target = texture_storage->render_target_get_rd_texture(godot_render_target);
             }
         }
 
-        output_cache.last_render_target = render_target;
+        bool can_write_directly_to_present = false;
+        if (present_render_target.is_valid()) {
+            const bool single_view = render_buffers_rd->get_view_count() == 1;
+            const bool internal_matches_target = render_buffers_rd->get_internal_size() == render_buffers_rd->get_target_size();
+            const bool scaling_disabled = render_buffers_rd->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_OFF;
+            can_write_directly_to_present = single_view && internal_matches_target && scaling_disabled;
+        }
+
+        RID composite_target = pipeline_render_target;
+        if (!composite_target.is_valid() || can_write_directly_to_present) {
+            composite_target = present_render_target;
+        }
+        output_cache.last_render_target = composite_target;
 
         bool composited = false;
         auto &subsystem_state = p_renderer->get_subsystem_state();
@@ -1229,7 +1242,7 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
             if (++_diag_comp2 <= 10) {
                 print_line(vformat("[DIAG-COMPOSITOR2] composited=%s render_target=%s rt_fb=%s depth_test_req=%s src_depth=%s scene_depth=%s missing=%s allow_fallback=%s",
                         composited ? "yes" : "no",
-                        render_target.is_valid() ? "valid" : "invalid",
+                        composite_target.is_valid() ? "valid" : "invalid",
                         render_target_framebuffer.is_valid() ? "valid" : "invalid",
                         scene_depth_test_requested ? "yes" : "no",
                         has_source_depth ? "yes" : "no",
@@ -1239,7 +1252,7 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
             }
         }
 
-        if (!composited && render_target.is_valid()) {
+        if (!composited && (render_target_framebuffer.is_valid() || composite_target.is_valid())) {
             if (missing_required_scene_depth && !allow_scene_blend_fallback) {
                 gs_log_scene_depth_contract_skip_once(!has_source_depth, !has_scene_depth);
                 output_cache.last_viewport_copy_success = false;
@@ -1255,7 +1268,7 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
                 OutputCopyParams params;
                 params.source_texture = p_final_output;
                 params.source_depth = p_cached_depth;
-                params.destination_texture = render_target;
+                params.destination_texture = composite_target;
                 params.destination_depth = scene_depth;
                 params.viewport_size = viewport_size;
                 params.composite_with_destination = true;
@@ -1283,7 +1296,7 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
                 copy_to_render_target(params);
             }
         }
-        r_render_target = render_target;
+        r_render_target = composite_target.is_valid() ? composite_target : pipeline_render_target;
     }
 
     output_cache.render_buffers_commit_pending = false;
