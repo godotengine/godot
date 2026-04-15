@@ -4667,6 +4667,8 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	_set_node_tree_owner(current_node, p_scene_root);
 	current_node->set_transform(gltf_node->transform);
 	current_node->set_visible(gltf_node->visible);
+
+	ERR_PRINT(gltf_node->get_meta("extras"));
 	current_node->merge_meta_from(*gltf_node);
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -4835,6 +4837,7 @@ void GLTFDocument::_generate_scene_node_compat_4pt4(Ref<GLTFState> p_state, cons
 		current_node->set_transform(gltf_node->transform);
 	}
 
+	ERR_PRINT(gltf_node->get_meta("extras"));
 	current_node->merge_meta_from(*gltf_node);
 
 	p_state->scene_nodes.insert(p_node_index, current_node);

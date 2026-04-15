@@ -375,6 +375,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 					ERR_FAIL_INDEX_V(nprops[j].value, prop_count, nullptr);
 
+					ERR_PRINT(snames[nprops[j].name]);
+
 					if (nprops[j].name & FLAG_PATH_PROPERTY_IS_NODE) {
 						if (!Engine::get_singleton()->is_editor_hint() && node->get_scene_instance_load_placeholder()) {
 							// We cannot know if the referenced nodes exist yet, so instead of deferring, we write the NodePaths directly.
