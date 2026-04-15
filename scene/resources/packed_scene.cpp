@@ -390,6 +390,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
 						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
 
+						ERR_PRINT(snames[nprops[j].name]);
 						DeferredNodePathProperties dnp;
 						dnp.value = props[nprops[j].value];
 						dnp.base = node->get_instance_id();
@@ -437,7 +438,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						}
 					} else {
 						Variant value = props[nprops[j].value];
-						ERR_PRINT(value);
 
 						if (value.get_type() == Variant::OBJECT) {
 							//handle resources that are local to scene by duplicating them if needed
@@ -484,9 +484,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 
-							ERR_PRINT("Found dictionary");
 							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
-							ERR_PRINT("result: " + String(value));
 						}
 
 						bool set_valid = true;
