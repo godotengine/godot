@@ -1132,13 +1132,14 @@ void main() {
         receiver_bias = min(receiver_bias, params.shadow_bias_config.z);
     }
 
+    uint lighting_mode = params.lighting_mode.x;
+    float sh_base_scale = (lighting_mode == 0u) ? 1.0 : params.lighting_config.y;
     // Per-splat direct lighting (Option A): add real-time lights before rasterization.
-    vec3 final_color = sh_color * params.lighting_config.y;
+    vec3 final_color = sh_color * sh_base_scale;
     float shadow_strength = clamp(params.shadow_strength.x, 0.0, 1.0);
     bool shadow_sampling_enabled = shadow_strength > 0.0;
     float sh_occlusion = 0.0;
     if (params.lighting_config.z > 0.5) {
-        uint lighting_mode = params.lighting_mode.x;
         if (lighting_mode == 1u || lighting_mode == 2u) {
             vec3 view_pos = view_pos_scene;
             vec3 view_dir = view_dir_scene;

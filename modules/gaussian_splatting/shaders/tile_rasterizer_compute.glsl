@@ -199,6 +199,7 @@ void main() {
     // Per-pixel state carried across batches
     vec4 final_color = vec4(0.0);
     float final_depth = 1.0;
+    float weighted_depth = 0.0;
     vec3 final_normal = vec3(0.0);
     bool has_depth = false;
     bool pixel_saturated = false;
@@ -238,7 +239,7 @@ void main() {
             pixel_saturated = gs_rasterize_splat_batch(
                     pixel_center, batch_size, lod_blend, pixel_dither,
                     highlight_strength, outline_width, render_state,
-                    final_color, final_depth, final_normal, has_depth);
+                    final_color, final_depth, weighted_depth, final_normal, has_depth);
             if (!pixel_saturated) {
                 atomicAnd(gs_shared_all_saturated, 0u);
             }
@@ -322,6 +323,7 @@ void main() {
         return;
     }
 
+    float coverage_alpha = final_color.a;
     final_color.a = clamp(final_color.a + pixel_dither.r, 0.0, 1.0);
     if (params.force_solid_coverage != 0u) {
         final_color.a = max(final_color.a, params.alpha_floor);
@@ -329,7 +331,16 @@ void main() {
     if (debug_tile_grid) {
         final_color.rgb = gs_apply_tile_grid(frag_coord, final_color.rgb, params.debug_overlay_opacity);
     }
+    vec3 output_normal = vec3(0.0);
+    float lighting_depth = depth_out;
+    if (coverage_alpha > 1e-6) {
+        vec3 normal_candidate = final_normal / coverage_alpha;
+        if (dot(normal_candidate, normal_candidate) > 1e-6) {
+            output_normal = normalize(normal_candidate);
+        }
+        lighting_depth = clamp(weighted_depth / coverage_alpha, 0.0, 1.0);
+    }
     imageStore(out_color_image, pixel, clamp(final_color, vec4(0.0), vec4(1.0)));
     imageStore(out_depth_image, pixel, vec4(depth_out, 0.0, 0.0, 0.0));
-    imageStore(out_normal_image, pixel, vec4(final_normal, final_color.a));
+    imageStore(out_normal_image, pixel, vec4(output_normal, lighting_depth));
 }

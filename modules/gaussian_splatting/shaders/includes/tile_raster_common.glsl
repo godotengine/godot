@@ -147,6 +147,7 @@ bool gs_rasterize_splat_batch(
         uint interactive_render_state,
         inout vec4 final_color,
         inout float final_depth,
+        inout float weighted_depth,
         inout vec3 final_normal,
         inout bool has_depth) {
     for (uint i = 0u; i < batch_size; ++i) {
@@ -224,6 +225,7 @@ bool gs_rasterize_splat_batch(
         final_color.rgb += base_color * blend_alpha;
         final_color.a = clamp(final_color.a + blend_alpha, 0.0, 1.0);
         final_normal += unpacked_normal * blend_alpha;
+        weighted_depth += linear_depth * blend_alpha;
         final_depth = has_depth ? min(final_depth, linear_depth) : linear_depth;
         has_depth = true;
 
@@ -299,6 +301,7 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
     vec4 final_color = vec4(0.0);
     vec3 final_normal = vec3(0.0);
     float final_depth = 1.0;
+    float weighted_depth = 0.0;
     bool has_depth = false;
 
     float highlight_strength = interactive_state.state_params.x;
@@ -504,6 +507,7 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
         final_color.rgb += base_color * blend_alpha;
         final_color.a = clamp(final_color.a + blend_alpha, 0.0, 1.0);
         final_normal += unpacked_normal * blend_alpha;
+        weighted_depth += linear_depth * blend_alpha;
 
         final_depth = has_depth ? min(final_depth, linear_depth) : linear_depth;
         has_depth = true;
@@ -640,7 +644,7 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
         return;
     }
 
-    // Dither alpha to soften 8-bit quantization on silhouettes.
+    float coverage_alpha = final_color.a;
     final_color.a = clamp(final_color.a + pixel_dither.r, 0.0, 1.0);
 
     // Optional solid-coverage mode: enforce a minimum alpha wherever splats contributed.
@@ -654,9 +658,18 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
     if (debug_tile_grid) {
         final_color.rgb = gs_apply_tile_grid(frag_coord, final_color.rgb, params.debug_overlay_opacity);
     }
+    vec3 output_normal = vec3(0.0);
+    float lighting_depth = depth_out;
+    if (coverage_alpha > 1e-6) {
+        vec3 normal_candidate = final_normal / coverage_alpha;
+        if (dot(normal_candidate, normal_candidate) > 1e-6) {
+            output_normal = normalize(normal_candidate);
+        }
+        lighting_depth = clamp(weighted_depth / coverage_alpha, 0.0, 1.0);
+    }
     out_color = clamp(final_color, vec4(0.0), vec4(1.0));
     out_depth = depth_out;
-    out_normal = vec4(final_normal, final_color.a);
+    out_normal = vec4(output_normal, lighting_depth);
 }
 
 #endif

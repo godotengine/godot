@@ -1233,7 +1233,7 @@ GaussianSplatting::TileRenderParams::TileRenderParams() {
 	shadow_receiver_bias_max = 0.0f;
 	enable_direct_lighting = true;
 	normal_mode = 0;
-	direct_lighting_mode = 1;
+	direct_lighting_mode = 0;
 	cull_far_tolerance = 0.05f;
 	tiny_splat_screen_radius = 0.3f;  // Drop subpixel splats to prevent tile overflow (#797)
 	max_conic_aspect = 10.0f;

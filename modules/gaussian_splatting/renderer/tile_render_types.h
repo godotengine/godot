@@ -343,7 +343,7 @@ struct TileRenderParams {
 	float shadow_receiver_bias_max = 0.0f;
 	bool enable_direct_lighting = true;
 	int normal_mode = 0;
-	int direct_lighting_mode = 1; // 0=resolve, 1=per-splat (binning), 2=both
+	int direct_lighting_mode = 0; // 0=resolve, 1=per-splat (binning), 2=both
 	float alpha_floor = 0.0f;
 	bool force_solid_coverage = false;
 	float cull_far_tolerance = 0.05f;

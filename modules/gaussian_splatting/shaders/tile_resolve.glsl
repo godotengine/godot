@@ -171,6 +171,8 @@ void main() {
 
     vec4 color = sample_input_color(coord, uv);
     float depth = sanitize_linear_depth(sample_input_depth(coord, uv));
+    vec4 normal_sample = sample_input_normal(coord, uv);
+    float lighting_depth = sanitize_linear_depth(normal_sample.a > 0.0 ? normal_sample.a : depth);
 
     if (color.a > 0.0) {
         color.rgb /= color.a;
@@ -179,12 +181,12 @@ void main() {
     // Shadow debug overlay (debug_overlay_flags.x == 2).
     // Shows shadow factor per light type: R=dir shadow, G=omni shadow, B=spot shadow
     // Bright = lit (shadow=1), Dark = shadowed (shadow=0)
-    if (params.debug_overlay_flags.x > 1.5 && depth < 1.0 && color.a > 0.001) {
+    if (params.debug_overlay_flags.x > 1.5 && lighting_depth < 1.0 && color.a > 0.001) {
         bool gs_is_ortho = abs(params.projection_matrix[2][3]) < 0.5;
-        vec3 view_pos_gs = reconstruct_view_pos(params.inv_projection_matrix, uv, depth, params.near_plane, params.far_plane, gs_is_ortho);
+        vec3 view_pos_gs = reconstruct_view_pos(params.inv_projection_matrix, uv, lighting_depth, params.near_plane, params.far_plane, gs_is_ortho);
         vec3 view_pos = (scene_data_block.data.view_matrix * params.inv_view_matrix * vec4(view_pos_gs, 1.0)).xyz;
 
-        vec3 normal = sample_input_normal(coord, uv).xyz;
+        vec3 normal = normal_sample.rgb;
         if (length(normal) < 0.001) {
             normal = vec3(0.0, 0.0, 1.0);
         }
@@ -262,10 +264,10 @@ void main() {
     float sh_occlusion = 0.0;
 
     // Apply lighting to pixels with valid depth and non-zero alpha
-    if (params.lighting_config.z > 0.5 && resolve_direct && depth < 1.0 && color.a > 0.001) {
+    if (params.lighting_config.z > 0.5 && resolve_direct && lighting_depth < 1.0 && color.a > 0.001) {
         bool gs_is_ortho = abs(params.projection_matrix[2][3]) < 0.5;
         bool scene_is_ortho = abs(scene_data_block.data.projection_matrix[2][3]) < 0.5;
-        vec3 view_pos_gs = reconstruct_view_pos(params.inv_projection_matrix, uv, depth, params.near_plane, params.far_plane, gs_is_ortho);
+        vec3 view_pos_gs = reconstruct_view_pos(params.inv_projection_matrix, uv, lighting_depth, params.near_plane, params.far_plane, gs_is_ortho);
         // Convert GS view-space position to scene view-space so light positions match.
         vec4 world_pos = params.inv_view_matrix * vec4(view_pos_gs, 1.0);
         vec3 view_pos = (scene_data_block.data.view_matrix * world_pos).xyz;
@@ -294,7 +296,7 @@ void main() {
 
         // Debug: visualize view-space Z mismatch between GS projection and scene_data projection (F7 only).
         if (params.debug_overlay_flags.z > 0.5) {
-            vec3 view_pos_scene = reconstruct_view_pos(scene_data_block.data.inv_projection_matrix, uv, depth,
+            vec3 view_pos_scene = reconstruct_view_pos(scene_data_block.data.inv_projection_matrix, uv, lighting_depth,
                     params.near_plane, params.far_plane, scene_is_ortho);
             float diff = abs(view_pos_gs.z - view_pos_scene.z);
             float range = max(params.far_plane - params.near_plane, 0.01);
@@ -305,13 +307,9 @@ void main() {
             return;
         }
         vec3 view_dir = normalize(-view_pos);
-        vec4 normal_sample = sample_input_normal(coord, uv);
         vec3 normal = view_dir;
-        if (normal_sample.a > 1e-4) {
-            vec3 normal_candidate = normal_sample.rgb / max(normal_sample.a, 1e-6);
-            if (dot(normal_candidate, normal_candidate) > 1e-6) {
-                normal = normalize(normal_candidate);
-            }
+        if (dot(normal_sample.rgb, normal_sample.rgb) > 1e-6) {
+            normal = normalize(normal_sample.rgb);
         }
 
         hvec3 h_normal_base = hvec3(normal);
@@ -380,9 +378,7 @@ void main() {
         diffuse_light *= h_albedo;
         diffuse_light *= (half(1.0) - metallic);
         vec3 direct = vec3(diffuse_light + specular_light) * params.lighting_config.x;
-        // Scale lighting by alpha^2 for smooth edge falloff
-        float lighting_blend = color.a * color.a;
-        final_rgb += direct * lighting_blend;
+        final_rgb += direct * clamp(color.a, 0.0, 1.0);
 
     }
 
