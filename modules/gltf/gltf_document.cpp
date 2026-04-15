@@ -617,8 +617,8 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 		}
 
 		if (n.has("extras")) {
-			ERR_PRINT(n["extras"]);
 			_attach_extras_to_meta(n["extras"], node);
+			ERR_PRINT(node->get_meta("extras"));
 		}
 
 		if (n.has("children")) {
@@ -640,6 +640,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 			ERR_CONTINUE(p_state->nodes[child_i]->parent != -1); //node already has a parent, wtf.
 
 			p_state->nodes.write[child_i]->parent = node_i;
+			ERR_PRINT(p_state->nodes[child_i]->get_meta("extras"));
 		}
 	}
 
