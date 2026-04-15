@@ -400,11 +400,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						continue;
 					}
 
-					if (nprops[j].name < sname_count) {
-						StringName name = snames[nprops[j].name];
-						ERR_PRINT(name);
-					}
-
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
 
 					if (snames[nprops[j].name] == CoreStringName(script)) {
@@ -442,6 +437,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						}
 					} else {
 						Variant value = props[nprops[j].value];
+						ERR_PRINT(value);
 
 						if (value.get_type() == Variant::OBJECT) {
 							//handle resources that are local to scene by duplicating them if needed
@@ -488,7 +484,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								}
 							}
 
+							ERR_PRINT("Found dictionary");
 							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							ERR_PRINT("result: " + String(value));
 						}
 
 						bool set_valid = true;

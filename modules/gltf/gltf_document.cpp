@@ -4668,7 +4668,6 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	current_node->set_transform(gltf_node->transform);
 	current_node->set_visible(gltf_node->visible);
 
-	ERR_PRINT(gltf_node->get_meta("extras"));
 	current_node->merge_meta_from(*gltf_node);
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -4837,7 +4836,6 @@ void GLTFDocument::_generate_scene_node_compat_4pt4(Ref<GLTFState> p_state, cons
 		current_node->set_transform(gltf_node->transform);
 	}
 
-	ERR_PRINT(gltf_node->get_meta("extras"));
 	current_node->merge_meta_from(*gltf_node);
 
 	p_state->scene_nodes.insert(p_node_index, current_node);
@@ -7053,13 +7051,10 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
-		ERR_PRINT("i have single root");
 		ERR_FAIL_COND_V_MSG(p_state->nodes.is_empty(), nullptr, "glTF: Single root file has no nodes. This glTF file is invalid.");
 		if (_naming_version < 2) {
-			ERR_PRINT("compat");
 			_generate_scene_node_compat_4pt4(p_state, 0, nullptr, nullptr);
 		} else {
-			ERR_PRINT("normal");
 			_generate_scene_node(p_state, 0, nullptr, nullptr);
 		}
 		single_root = p_state->scene_nodes[0];
@@ -7067,14 +7062,11 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 			single_root = single_root->get_owner();
 		}
 	} else {
-		ERR_PRINT("i have multi root");
 		single_root = memnew(Node3D);
 		for (int32_t root_i = 0; root_i < p_state->root_nodes.size(); root_i++) {
 			if (_naming_version < 2) {
-				ERR_PRINT("compat");
 				_generate_scene_node_compat_4pt4(p_state, p_state->root_nodes[root_i], single_root, single_root);
 			} else {
-				ERR_PRINT("normal");
 				_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root);
 			}
 		}
