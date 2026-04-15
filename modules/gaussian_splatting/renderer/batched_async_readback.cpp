@@ -45,7 +45,7 @@ Error BatchedAsyncReadback::initialize(RenderingDevice *p_rd, uint32_t p_staging
 	rd->set_resource_name(staging_buffer, "GS_BatchedReadbackStaging");
 
 	initialized = true;
-	GS_LOG_WARN_DEFAULT(vformat("[BatchedAsyncReadback] Initialized with %d KB staging buffer", staging_buffer_size / 1024));
+	GS_LOG_INFO_DEFAULT(vformat("[BatchedAsyncReadback] Initialized with %d KB staging buffer", staging_buffer_size / 1024));
 	return OK;
 }
 

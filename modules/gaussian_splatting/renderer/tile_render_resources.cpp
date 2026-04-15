@@ -1204,7 +1204,7 @@ void TileGlobalSortResources::ensure_resources(uint32_t p_visible_count) {
 					key_config = desired_key_config;
 					capacity = sorter->get_max_elements();
 					sorter_available = true;
-					WARN_PRINT_ONCE(vformat("[TileRenderer] Global sort capacity initialized: %d (config max_overlap_records=%d)",
+					GS_LOG_INFO_DEFAULT(vformat("[TileRenderer] Global sort capacity initialized: %d (config max_overlap_records=%d)",
 						int(capacity), int(g_gpu_sorting_config.max_overlap_records)));
 					if (capacity < attempt_elements) {
 						WARN_PRINT_ONCE(vformat("[TileRenderer] Global sort capacity capped (requested=%d, actual=%d)",

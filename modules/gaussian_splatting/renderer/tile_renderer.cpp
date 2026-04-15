@@ -1955,7 +1955,7 @@ void TileRenderer::_detect_subgroup_support(RenderingDevice *p_device) {
 
 	if (GaussianSplatting::is_debug_frame_logging_enabled()) {
 		if (shader_resources.subgroups_available) {
-			GS_LOG_WARN_DEFAULT(vformat("[TileRenderer] Subgroup operations available (basic=%d, ballot=%d, shuffle=%d, vote=%d, compute=%d, fragment=%d) - using optimized path",
+			GS_LOG_INFO_DEFAULT(vformat("[TileRenderer] Subgroup operations available (basic=%d, ballot=%d, shuffle=%d, vote=%d, compute=%d, fragment=%d) - using optimized path",
 					(int)has_basic, (int)has_ballot, (int)has_shuffle, (int)has_vote, (int)has_compute, (int)has_fragment));
 		} else {
 			GS_LOG_WARN_DEFAULT(vformat("[TileRenderer] Subgroup operations unavailable (basic=%d, ballot=%d, shuffle=%d, vote=%d, compute=%d, fragment=%d) - using atomicAdd fallback",

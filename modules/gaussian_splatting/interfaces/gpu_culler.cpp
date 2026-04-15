@@ -360,7 +360,7 @@ void GPUCuller::_ensure_shader(RenderingDevice *p_device) {
                 // Enable subgroup-optimized variant
                 state.source.enable_group(SHADER_GROUP_SUBGROUPS);
                 state.enabled_group = SHADER_GROUP_SUBGROUPS;
-                GS_LOG_WARN_DEFAULT("[GPUCuller] Subgroup operations available - using optimized ballot/shuffle path");
+                GS_LOG_INFO_DEFAULT("[GPUCuller] Subgroup operations available - using optimized ballot/shuffle path");
             } else {
                 // Enable standard variant with atomicAdd fallback
                 state.source.enable_group(SHADER_GROUP_STANDARD);
@@ -407,7 +407,7 @@ void GPUCuller::_ensure_shader(RenderingDevice *p_device) {
     }
 
     resource_device = p_device;
-    GS_LOG_WARN_DEFAULT(vformat("[GPUCuller] Shader initialized successfully (subgroups=%s)",
+    GS_LOG_INFO_DEFAULT(vformat("[GPUCuller] Shader initialized successfully (subgroups=%s)",
             subgroups_available ? "enabled" : "disabled"));
 }
 
