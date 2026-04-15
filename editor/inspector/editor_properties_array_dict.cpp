@@ -1411,6 +1411,8 @@ void EditorPropertyDictionary::update_property() {
 					new_prop->set_use_folding(is_using_folding());
 					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 					new_prop->set_draw_label(false);
+					new_prop->set_mouse_filter(MOUSE_FILTER_PASS);
+					new_prop->set_mouse_behavior_recursive(MOUSE_BEHAVIOR_DISABLED);
 					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
 					if (arr_prop) {
 						arr_prop->set_preview_value(true);
