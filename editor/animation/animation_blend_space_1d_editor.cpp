@@ -909,8 +909,8 @@ void AnimationNodeBlendSpace1DEditor::_inline_editor_text_changed(const String &
 		return;
 	}
 
-	Vector2 editor_size = inline_editor->get_size();
-	inline_editor->set_size(Vector2(0, editor_size.y));
+	inline_editor->set_size(Vector2(0, inline_editor->get_size().y));
+	Vector2 editor_size = inline_editor->get_minimum_size();
 
 	const float pm = POINT_MARGIN * EDSCALE;
 	const Size2 s = blend_space_draw->get_size() - Vector2(pm * 2, pm * 2);
