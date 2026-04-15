@@ -878,13 +878,6 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 				diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 #endif // !DISABLE_LIGHT_SPOT
-
-#ifndef DISABLE_LIGHT_AREA
-	for (uint i = 0u; i < area_light_count; i++) {
-		light_process_area(area_light_indices[i], vertex_interp, view, normal_interp, roughness,
-				diffuse_light_interp.rgb, specular_light_interp.rgb);
-	}
-#endif // !DISABLE_LIGHT_AREA
 #endif // BASE_PASS
 
 /* ADDITIVE LIGHTING PASS */
