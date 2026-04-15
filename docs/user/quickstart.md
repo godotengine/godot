@@ -6,7 +6,7 @@ Visual captures for the artist lane are still pending, so this page keeps the wo
 
 ## Recommended Order
 
-1. Confirm the editor path and sample scene still work from [First Run](../getting-started/quick-start.md).
+1. Confirm the editor path and public evaluator still work from [Public Evaluator](../getting-started/quick-start.md).
 2. Bring in a real asset with the canonical [Gaussian Splat Asset Import Workflow](../workflows/importing.md).
 3. Use [Performance Presets](manual/performance-presets.md) before touching advanced knobs.
 4. Move into [Gaussian Splat Artist Pipeline](../features/artist_pipeline.md) when you need brush tools, hot reload, or bake actions.
@@ -24,6 +24,6 @@ Visual captures for the artist lane are still pending, so this page keeps the wo
 ## Technical Flow Reference
 
 <figure markdown="1">
-![Diagram of the artist workflow handoff from first run to import, presets, iteration tools, and finishing tasks](../assets/images/artist-workflow-lane.svg){ .gs-diagram }
-<figcaption>The artist lane starts only after First Run is already working, then moves through import, safe preset selection, iteration tools, and finishing tasks like bake or color grading.</figcaption>
+![Diagram of the artist workflow handoff from the public evaluator to import, presets, iteration tools, and finishing tasks](../assets/images/artist-workflow-lane.svg){ .gs-diagram }
+<figcaption>The artist lane starts only after the public evaluator is already working, then moves through import, safe preset selection, iteration tools, and finishing tasks like bake or color grading.</figcaption>
 </figure>

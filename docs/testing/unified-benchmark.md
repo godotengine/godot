@@ -16,11 +16,7 @@ The benchmark is report-only and ends with tuning suggestions based on measured 
 
 ### Editor / one-button
 
-`tests/examples/godot/test_project/project.godot` now uses:
-
-`run/main_scene="res://scenes/benchmark_unified.tscn"`
-
-So pressing Play in the sample project launches the unified benchmark directly.
+The sample project no longer boots into the unified benchmark scene by default. Press Play in the sample project to open `res://scenes/public_evaluator.tscn`. Open `res://scenes/benchmark_unified.tscn` explicitly when you want to run the benchmark lane.
 
 ### CLI
 
@@ -76,7 +72,7 @@ The benchmark does not hard-fail on low performance; it always reports and sugge
 
 ## Small Baseline Comparison
 
-For apples-to-apples high-FPS comparison against the heavy unified scene, run:
+For apples-to-apples high-FPS comparison against the heavy unified scene, run the benchmark scene explicitly:
 
 ```bash
 ./bin/godot.linuxbsd.editor.dev.x86_64 \
@@ -90,13 +86,13 @@ Default report output is `user://benchmark_small_baseline_results.json`.
 
 ## Suite Runner
 
-For multi-lane benchmark runs (scene set + aggregate report), use:
+For multi-lane benchmark runs, use the contributor-facing benchmark runner in [Benchmark Runner](benchmark-suite.md). It runs lane scenes one by one, launching one Godot subprocess per lane, and aggregates the lane JSON outputs into a suite report once the benchmark fixture and manifest set have been staged into the sample project checkout:
 
 ```bash
-python3 tests/runtime/run_benchmark_suite.py --profile quick --generate-dummy-assets
+python3 tests/runtime/run_benchmark.py --profile quick --generate-dummy-assets
 ```
 
-See [Benchmark Suite Runner](benchmark-suite.md) for profiles, lane list, and asset override workflow.
+See [Benchmark Runner](benchmark-suite.md) for profiles, lane list, and asset override workflow.
 
 ## Controls
 

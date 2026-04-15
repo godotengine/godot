@@ -56,7 +56,6 @@ The orchestrator loads each lane scene sequentially in-process and writes lane J
 
 Asset generation and mapping are canonicalized through:
 
-- `tests/runtime/prepare_synthetic_assets.py`
 - `tests/fixtures/benchmark_asset_manifest.json`
 
 The benchmark runner resolves assets through the project-local benchmark manifest by default.

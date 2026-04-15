@@ -15,7 +15,7 @@ This path is for reviewers, maintainers, and contributors who want to understand
 
 ## What To Check
 
-1. Confirm the project is still Alpha and that the preferred public evaluation path is Linux nightly.
+1. Confirm the project is still Alpha and that the preferred public evaluation path is Linux nightly. The workflow now packages Windows, but the visible public Windows release has not landed yet.
 2. Read `ENGINE_PATCHES.md` before opening engine-root changes.
 3. Inspect `modules/gaussian_splatting/` for the module implementation that owns the fork delta.
 4. Use the sample project in `tests/examples/godot/test_project` to verify the current runtime path.
@@ -37,4 +37,4 @@ python scripts/docs/release_acceptance.py
 
 - [Build from Source](../BUILDING.md) for a module-enabled editor from this fork.
 - [First Run](../getting-started/quick-start.md) for the sample-project path after the editor is built.
-- [Try in 5 Minutes](../getting-started/try-in-5-minutes.md) for the fastest nightly-first evaluation loop.
+- [Try in 5 Minutes](../getting-started/try-in-5-minutes.md) for the fastest nightly-first evaluation loop. Do not assume a Windows public binary is already visible on Releases.

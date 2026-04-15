@@ -70,56 +70,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build_linux:
-    name: Build Linux Editor + Publish Channels
+  release_metadata:
+    name: Resolve Release Metadata
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     outputs:
       channel: ${{ steps.meta.outputs.channel }}
       publish: ${{ steps.meta.outputs.publish }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+      tag: ${{ steps.meta.outputs.tag }}
+      release_name: ${{ steps.meta.outputs.release_name }}
       keep_nightlies: ${{ steps.meta.outputs.keep_nightlies }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            scons \
-            pkg-config \
-            libx11-dev \
-            libxcursor-dev \
-            libxinerama-dev \
-            libxi-dev \
-            libxrandr-dev \
-            libgl1-mesa-dev \
-            libglu1-mesa-dev \
-            libasound2-dev \
-            libpulse-dev \
-            libudev-dev \
-            libvulkan-dev \
-            mesa-vulkan-drivers
-
-      - name: Restore SCons build cache
-        uses: actions/cache@v4
-        with:
-          path: .scons_cache
-          key: release-scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-${{ github.sha }}
-          restore-keys: |
-            release-scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-
-            release-scons-linux-
-
       - name: Resolve channel metadata
         id: meta
         env:
@@ -194,10 +155,57 @@ jobs:
           echo "release_name=${release_name}" >> "$GITHUB_OUTPUT"
           echo "keep_nightlies=${keep_nightlies}" >> "$GITHUB_OUTPUT"
 
+  build_linux:
+    name: Build Linux Editor + Contributor Artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    needs: release_metadata
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            scons \
+            pkg-config \
+            libx11-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libxi-dev \
+            libxrandr-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libudev-dev \
+            libvulkan-dev \
+            mesa-vulkan-drivers
+
+      - name: Restore SCons build cache
+        uses: actions/cache@v4
+        with:
+          path: .scons_cache
+          key: release-scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-${{ github.sha }}
+          restore-keys: |
+            release-scons-linux-${{ hashFiles('SConstruct', 'methods.py') }}-
+            release-scons-linux-
+
       - name: Build module-enabled Linux editor
         run: |
           set -euo pipefail
-          if [[ "${{ steps.meta.outputs.channel }}" == "stable" ]]; then
+          if [[ "${{ needs.release_metadata.outputs.channel }}" == "stable" ]]; then
             scons platform=linuxbsd target=editor cache_path=.scons_cache cache_limit=10 -j"$(nproc)"
           else
             scons platform=linuxbsd target=editor dev_build=yes cache_path=.scons_cache cache_limit=10 -j"$(nproc)"
@@ -227,7 +235,7 @@ jobs:
           binary_name="${{ steps.binary.outputs.name }}"
           cp "${binary_path}" "dist/${binary_name}"
 
-          version_label="${{ steps.meta.outputs.tag }}"
+          version_label="${{ needs.release_metadata.outputs.tag }}"
           if [[ -z "${version_label}" ]]; then
             version_label="${GITHUB_SHA:0:12}"
           fi
@@ -240,9 +248,9 @@ jobs:
           sha256sum "${archive_path}" > "${checksum_path}"
 
           cat > dist/BUILD-INFO.txt <<EOF
-          channel=${{ steps.meta.outputs.channel }}
-          publish=${{ steps.meta.outputs.publish }}
-          tag=${{ steps.meta.outputs.tag }}
+          channel=${{ needs.release_metadata.outputs.channel }}
+          publish=${{ needs.release_metadata.outputs.publish }}
+          tag=${{ needs.release_metadata.outputs.tag }}
           commit=${GITHUB_SHA}
           binary=${binary_name}
           generated_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -254,40 +262,209 @@ jobs:
       - name: Upload contributor artifact
         uses: actions/upload-artifact@v4
         with:
-          name: godotgs-linux-${{ steps.meta.outputs.channel }}-${{ github.run_number }}
+          name: godotgs-linux-${{ needs.release_metadata.outputs.channel }}-${{ github.run_number }}
           path: |
             ${{ steps.package.outputs.archive }}
             ${{ steps.package.outputs.checksum }}
             dist/BUILD-INFO.txt
           retention-days: 14
 
+  build_windows:
+    name: Build Windows Editor + Contributor Artifact
+    runs-on: [self-hosted, Windows, X64, godotgs]
+    needs: release_metadata
+    # Never run self-hosted Windows job on untrusted PR code. PR artifact
+    # validation is handled by the Linux job on GitHub-hosted runners.
+    if: github.event_name != 'pull_request'
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: repo
+    steps:
+      - name: Configure Git safe.directory for self-hosted workspace
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+          submodules: recursive
+          set-safe-directory: false
+
+      - name: Verify Python on runner
+        shell: pwsh
+        run: |
+          python --version
+
+      - name: Set up MSVC build env
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install SCons
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scons
+
+      - name: Build module-enabled Windows editor
+        shell: pwsh
+        run: |
+          $args = @(
+            "platform=windows",
+            "target=editor",
+            "gs_native_arch=no",
+            "cache_path=C:/godotgs-scons-cache",
+            "cache_limit=50",
+            "-j12"
+          )
+          if ("${{ needs.release_metadata.outputs.channel }}" -ne "stable") {
+            $args += "dev_build=yes"
+            $args += "tests=yes"
+          }
+          python -m SCons @args
+
+      - name: Resolve Godot binary
+        id: godot_bin
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "bin\godot.windows.editor.dev.x86_64.console.exe",
+            "bin\godot.windows.editor.dev.x86_64.exe",
+            "bin\godot.windows.editor.x86_64.console.exe",
+            "bin\godot.windows.editor.x86_64.exe"
+          )
+          $resolved = $null
+          foreach ($candidate in $candidates) {
+            if (Test-Path -LiteralPath $candidate) {
+              $resolved = (Resolve-Path -LiteralPath $candidate).Path
+              break
+            }
+          }
+          if (-not $resolved) {
+            throw "Could not find built Godot binary in expected bin\ paths."
+          }
+          Write-Host "Resolved Godot binary: $resolved"
+          "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Package artifacts + checksums
+        id: package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+          $binaryPath = "${{ steps.godot_bin.outputs.path }}"
+          $binaryName = Split-Path -Leaf $binaryPath
+          Copy-Item -LiteralPath $binaryPath -Destination (Join-Path "dist" $binaryName) -Force
+
+          $versionLabel = "${{ needs.release_metadata.outputs.tag }}"
+          if ([string]::IsNullOrWhiteSpace($versionLabel)) {
+            $versionLabel = "${{ github.sha }}".Substring(0, 12)
+          }
+
+          $distPath = (Resolve-Path "dist").Path
+          $archiveBase = "godotgs-windows-x86_64-$versionLabel"
+          $archiveName = "$archiveBase.zip"
+          $archivePath = Join-Path $distPath $archiveName
+          $checksumPath = Join-Path $distPath "$archiveBase.sha256"
+          $archiveRelative = "dist/$archiveName"
+          $checksumRelative = "dist/$archiveBase.sha256"
+          $buildInfoPath = Join-Path $distPath "BUILD-INFO.txt"
+
+          $buildInfoLines = @(
+            "channel=${{ needs.release_metadata.outputs.channel }}"
+            "publish=${{ needs.release_metadata.outputs.publish }}"
+            "tag=${{ needs.release_metadata.outputs.tag }}"
+            "commit=${{ github.sha }}"
+            "binary=$binaryName"
+            "generated_at_utc=$(Get-Date -AsUTC -Format o)"
+          )
+          $buildInfoLines | Set-Content -Path $buildInfoPath -Encoding utf8
+
+          Push-Location $distPath
+          try {
+            Compress-Archive -Path $binaryName, "BUILD-INFO.txt" -DestinationPath $archivePath -Force
+          } finally {
+            Pop-Location
+          }
+
+          $hash = Get-FileHash -Algorithm SHA256 -Path $archivePath
+          "{0}  {1}" -f $hash.Hash.ToLower(), $archiveName | Out-File -FilePath $checksumPath -Encoding ascii
+
+          "archive=$archiveRelative" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "checksum=$checksumRelative" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload contributor artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: godotgs-windows-${{ needs.release_metadata.outputs.channel }}-${{ github.run_number }}
+          path: |
+            repo/${{ steps.package.outputs.archive }}
+            repo/${{ steps.package.outputs.checksum }}
+          retention-days: 14
+
+  publish_release:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    needs:
+      - release_metadata
+      - build_linux
+      - build_windows
+    # Publish as long as the Linux lane succeeded. A Windows runner outage
+    # must not prevent a Linux-only release; the Windows artifact is
+    # downloaded optionally below and included if available.
+    if: |
+      always() &&
+      needs.release_metadata.outputs.publish == 'true' &&
+      needs.build_linux.result == 'success'
+    steps:
+      - name: Download Linux contributor artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: godotgs-linux-${{ needs.release_metadata.outputs.channel }}-${{ github.run_number }}
+          path: release-assets/linux
+
+      - name: Download Windows contributor artifact
+        if: needs.build_windows.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: godotgs-windows-${{ needs.release_metadata.outputs.channel }}-${{ github.run_number }}
+          path: release-assets/windows
+
       - name: Publish GitHub release
-        if: steps.meta.outputs.publish == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.meta.outputs.tag }}
-          name: ${{ steps.meta.outputs.release_name }}
+          tag_name: ${{ needs.release_metadata.outputs.tag }}
+          name: ${{ needs.release_metadata.outputs.release_name }}
           target_commitish: ${{ github.sha }}
-          prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
+          prerelease: ${{ needs.release_metadata.outputs.prerelease == 'true' }}
           draft: false
           generate_release_notes: true
+          fail_on_unmatched_files: false
           files: |
-            ${{ steps.package.outputs.archive }}
-            ${{ steps.package.outputs.checksum }}
-            dist/BUILD-INFO.txt
+            release-assets/linux/godotgs-linux-x86_64-${{ needs.release_metadata.outputs.tag }}.tar.xz
+            release-assets/linux/godotgs-linux-x86_64-${{ needs.release_metadata.outputs.tag }}.sha256
+            release-assets/linux/BUILD-INFO.txt
+            release-assets/windows/godotgs-windows-x86_64-${{ needs.release_metadata.outputs.tag }}.zip
+            release-assets/windows/godotgs-windows-x86_64-${{ needs.release_metadata.outputs.tag }}.sha256
           overwrite_files: true
 
   prune_nightly_history:
     name: Prune old nightly prereleases
     runs-on: ubuntu-latest
-    needs: build_linux
-    if: needs.build_linux.outputs.channel == 'nightly' && needs.build_linux.outputs.publish == 'true'
+    needs:
+      - release_metadata
+      - publish_release
+    if: needs.release_metadata.outputs.channel == 'nightly' && needs.release_metadata.outputs.publish == 'true'
     steps:
       - name: Delete old nightly releases/tags
         uses: actions/github-script@v7
         with:
           script: |
-            const keepCount = Number('${{ needs.build_linux.outputs.keep_nightlies }}' || '14');
+            const keepCount = Number('${{ needs.release_metadata.outputs.keep_nightlies }}' || '14');
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const releases = await github.paginate(github.rest.repos.listReleases, {

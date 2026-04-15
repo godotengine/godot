@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="GaussianSplattingTest"
-run/main_scene="res://scenes/benchmark_unified.tscn"
+run/main_scene="res://scenes/public_evaluator.tscn"
 config/features=PackedStringArray("4.5")
 
 [display]

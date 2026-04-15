@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
   <title id="title">Artist workflow overview</title>
-  <desc id="desc">Diagram showing the artist handoff path from first run through import, preset selection, iteration tools, and finishing tasks.</desc>
+  <desc id="desc">Diagram showing the artist handoff path from the public evaluator through import, preset selection, iteration tools, and finishing tasks.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#0c1628" />
@@ -24,7 +24,7 @@
 
   <g font-family="Segoe UI, Arial, sans-serif">
     <rect x="72" y="226" width="196" height="160" rx="24" fill="url(#panel)" stroke="#2b4c73" stroke-width="2" />
-    <text x="100" y="278" fill="#f3f8ff" font-size="24" font-weight="700">Confirm First Run</text>
+    <text x="100" y="278" fill="#f3f8ff" font-size="24" font-weight="700">Confirm Public Evaluator</text>
     <text x="100" y="310" fill="#a9c2df" font-size="18">Start from a working</text>
     <text x="100" y="336" fill="#a9c2df" font-size="18">sample scene.</text>
 

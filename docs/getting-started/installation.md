@@ -1,6 +1,6 @@
 # Installation
 
-Use this page when you need prerequisites, toolchain setup, or an editor built from this fork before [First Run](quick-start.md).
+Use this page when you need prerequisites, toolchain setup, or an editor built from this fork before [Public Evaluator](quick-start.md).
 
 ## What You Need
 
@@ -16,13 +16,13 @@ Use this page when you need prerequisites, toolchain setup, or an editor built f
 
 | Option | When to use it | Next step |
 | --- | --- | --- |
-| Reuse an editor built from this fork | You already have a working binary and only need to point the docs commands at it. | [First Run](quick-start.md) |
-| Build an editor locally | You need a fresh binary from this checkout. | [Build from Source](../BUILDING.md) |
+| Reuse a public or local editor | You already have a Linux nightly or a binary you built locally. Windows release packaging exists in the workflow, but a visible public Windows release is not yet available. | [Public Evaluator](quick-start.md) |
+| Build an editor locally | You need a fresh binary from this checkout, or you are on macOS and need a source build. | [Build from Source](../BUILDING.md) |
 | Build an editor for validation | You plan to run guard, QA, or runtime validation commands. | [Build / Test / CI Command Reference](../reference/build-test-ci.md) |
 
 ## Verify the Editor
 
-Once you have an editor built from this fork, confirm it opens the sample project before continuing:
+Once you have an editor from this fork, confirm it opens the sample project before continuing:
 
 ```bash
 $GODOT_BINARY --headless --path tests/examples/godot/test_project --quit
@@ -32,4 +32,4 @@ $GODOT_BINARY --headless --path tests/examples/godot/test_project --quit
 & $env:GODOT_BINARY --headless --path .\tests\examples\godot\test_project --quit
 ```
 
-Then continue with [First Run](quick-start.md).
+Then continue with [Public Evaluator](quick-start.md).

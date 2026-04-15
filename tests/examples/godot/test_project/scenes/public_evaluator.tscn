@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="GaussianSplatWorld" path="res://tests/fixtures/test_splats.gsplatworld" id="1"]
+[ext_resource type="Script" path="res://fps_camera_controller.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/performance_overlay.tscn" id="3"]
+
+[sub_resource type="ColorGradingResource" id="1"]
+exposure = 0.23
+
+[node name="PublicEvaluator" type="Node3D"]
+
+[node name="PerformanceOverlay" parent="." instance=ExtResource("3")]
+
+[node name="DemoSplat" type="GaussianSplatWorld3D" parent="."]
+world = ExtResource("1")
+quality/lod_bias = 0.75
+quality/max_splat_count = 1000000
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.342, 0, -0.342, 0.94, 0, 10, 20)
+script = ExtResource("2")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 10, 0)

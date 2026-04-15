@@ -12,7 +12,7 @@ GitHub's Actions tab can also show historical workflow names from past runs, dis
 | Docs Pages (Versioned) | `docs_pages.yml` | Builds and deploys MkDocs docs with mike versioning to `gh-pages`. | Publishes `latest` from `master/main` and versioned docs from `v*` tags. |
 | Gaussian Production Gates | `gaussian_production_gates.yml` | Enforces guard checks, pipeline smoke, runtime validation, the blocking streaming gate, and optional non-blocking benchmark evidence surfaces. | Owns the single Windows build for validation workflows. `streaming-gpu-ci` is the canonical blocking GPU-backed streaming runtime gate; `openworld-proof-dev` and `openworld-proof-weekly` are evidence-only benchmark surfaces. |
 | Gaussian Shader Validation | `gaussian_shader_validation.yml` | Validates shader compile matrix and host/shader contract checks. | Focused shader CI gate. |
-| Release Builds | `release_builds.yml` | Builds the Linux editor for CI artifacts, nightly prereleases, and optional stable-tag publishes. | Current public binary coverage is Linux editor only. |
+| Release Builds | `release_builds.yml` | Builds Linux and Windows editors for CI artifacts, nightly prereleases, and optional stable-tag publishes. | Workflow capability covers Linux and Windows; visible public Releases are still Linux-only until the first Windows publish lands. |
 
 ## Manual Dispatch Inputs
 

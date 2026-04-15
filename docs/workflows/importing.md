@@ -8,7 +8,7 @@ Visual captures for the import dialog are still pending, so this page stays text
 ## Before You Import
 
 - Keep the source file inside the project so Godot can import it.
-- Finish [First Run](../getting-started/quick-start.md) first if you have not confirmed a visible sample yet.
+- Finish [Public Evaluator](../getting-started/quick-start.md) first if you have not confirmed a visible sample yet.
 - Choose `.ply` when that is what your source pipeline exports, or `.spz` when you already have a supported compressed asset.
 
 ## Supported Paths
