@@ -390,7 +390,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
 						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
 
-						ERR_PRINT(snames[name_idx]);
 						DeferredNodePathProperties dnp;
 						dnp.value = props[nprops[j].value];
 						dnp.base = node->get_instance_id();
@@ -1053,6 +1052,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			bool has_node_binding;
 			_parse_array(new_array, p_node, array, has_node_binding);
 			if (has_node_binding) {
+				ERR_PRINT("found node binding");
 				use_deferred_node_path_bit = true;
 			}
 
@@ -1111,6 +1111,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			bool has_node_binding;
 			_parse_dict(new_dict, p_node, dict, has_node_binding);
 			if (has_node_binding) {
+				ERR_PRINT("found node binding");
 				use_deferred_node_path_bit = true;
 			}
 
