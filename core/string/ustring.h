@@ -30,8 +30,6 @@
 
 #pragma once
 
-// Note: _GODOT suffix added to header guard to avoid conflict with ICU header.
-
 #include "core/string/char_utils.h" // IWYU pragma: export
 #include "core/templates/cowdata.h"
 #include "core/templates/hashfuncs.h"
