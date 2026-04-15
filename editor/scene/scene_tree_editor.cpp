@@ -92,6 +92,90 @@ PackedStringArray SceneTreeEditor::_get_node_accessibility_configuration_warning
 	return warnings;
 }
 
+void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
+	if (connect_to_script_mode) {
+		return; // Don't do anything in this mode.
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->is_pressed()) {
+				Vector2 tree_mouse_pos = tree->get_transform().xform_inv(mb->get_position());
+				int tree_button_id = tree->get_button_id_at_position(tree_mouse_pos);
+				if (tree_button_id == BUTTON_VISIBILITY) {
+					TreeItem *tree_item = tree->get_item_at_position(tree_mouse_pos);
+					ERR_FAIL_NULL(tree_item);
+					NodePath node_path = tree_item->get_metadata(0);
+					Node *node = get_node_or_null(node_path);
+					if (node != nullptr) {
+						visibility_drag_value = !node->call("is_visible");
+						visibility_drag_start_pos = tree_mouse_pos;
+						visibility_drag_start_node = node->get_instance_id();
+					}
+				}
+			} else if (mb->is_released() && visibility_drag_start_node.is_valid()) {
+				if (!visibility_drag_nodes.is_empty()) {
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->create_action(vformat(TTR("Toggle Visibility of %d Nodes"), visibility_drag_nodes.size()));
+
+					for (ObjectID id : visibility_drag_nodes) {
+						Node *node = ObjectDB::get_instance<Node>(id);
+						if (node != nullptr) {
+							undo_redo->add_do_method(node, "set_visible", visibility_drag_value);
+							undo_redo->add_undo_method(node, "set_visible", !visibility_drag_value);
+						}
+					}
+
+					undo_redo->commit_action(false);
+				}
+
+				// Defer this so that `_cell_button_pressed` can still react to the dragging.
+				callable_mp(this, &SceneTreeEditor::_reset_visibility_drag).call_deferred();
+			}
+		} else if (mb->get_button_index() == MouseButton::RIGHT && visibility_drag_start_node.is_valid()) {
+			_reset_visibility_drag();
+			accept_event();
+		}
+
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		if (visibility_drag_start_node.is_valid()) {
+			Vector2 tree_mouse_pos = tree->get_transform().xform_inv(mm->get_position());
+			int tree_button_id = tree->get_button_id_at_position(tree_mouse_pos);
+			bool crossed_drag_threshold = visibility_drag_start_pos.distance_to(tree_mouse_pos) > get_viewport()->get_drag_threshold();
+			if (tree_button_id == BUTTON_VISIBILITY && (crossed_drag_threshold || !visibility_drag_nodes.is_empty())) {
+				Node *start_node = ObjectDB::get_instance<Node>(visibility_drag_start_node);
+				if (start_node != nullptr && (bool)start_node->call("is_visible") != visibility_drag_value) {
+					start_node->call("set_visible", visibility_drag_value);
+					visibility_drag_nodes.push_back(visibility_drag_start_node);
+				}
+
+				TreeItem *tree_item = tree->get_item_at_position(tree_mouse_pos);
+				ERR_FAIL_NULL(tree_item);
+				NodePath node_path = tree_item->get_metadata(0);
+				Node *node = get_node_or_null(node_path);
+				if (node != nullptr && (bool)node->call("is_visible") != visibility_drag_value) {
+					node->call("set_visible", visibility_drag_value);
+					visibility_drag_nodes.push_back(node->get_instance_id());
+				}
+			}
+		}
+
+		return;
+	}
+
+	if (p_event->is_action_type()) {
+		if (p_event->is_action_pressed(SNAME("ui_cancel")) && visibility_drag_start_node.is_valid()) {
+			_reset_visibility_drag();
+			accept_event();
+		}
+	}
+}
+
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_button != MouseButton::LEFT) {
 		return;
@@ -125,6 +209,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 
 	} else if (p_id == BUTTON_VISIBILITY) {
+		if (!visibility_drag_nodes.is_empty()) {
+			return;
+		}
+
 		undo_redo->create_action(TTR("Toggle Visible"));
 		_toggle_visible(n);
 		List<Node *> selection = editor_selection->get_top_selected_node_list();
@@ -1367,6 +1455,13 @@ void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
 	}
 }
 
+void SceneTreeEditor::_reset_visibility_drag() {
+	visibility_drag_value = false;
+	visibility_drag_start_pos = Vector2();
+	visibility_drag_start_node = ObjectID();
+	visibility_drag_nodes.clear();
+}
+
 void SceneTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1429,6 +1524,11 @@ void SceneTreeEditor::_notification(int p_what) {
 					callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(has_item);
 				}
 			}
+		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			_reset_visibility_drag();
 		} break;
 	}
 }
@@ -2194,6 +2294,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
+	tree->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeEditor::_gui_input));
 
 	error = memnew(AcceptDialog);
 	add_child(error);
