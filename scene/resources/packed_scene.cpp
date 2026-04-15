@@ -437,7 +437,11 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						Variant value = props[nprops[j].value];
 
 						if (value.get_type() == Variant::OBJECT) {
-							value = make_local_resource(value, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							//handle resources that are local to scene by duplicating them if needed
+							Ref<Resource> res = value;
+							if (res.is_valid()) {
+								value = make_local_resource(value, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							}
 						} else {
 							// Making sure that instances of inherited scenes don't share the same
 							// reference between them.
