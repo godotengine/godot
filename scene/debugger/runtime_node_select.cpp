@@ -322,8 +322,14 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Ref<InputEventMouseButton> b = p_event;
+
+	if (b.is_valid() && b->is_pressed()) {
+		list_shortcut_pressed = node_select_mode == SELECT_MODE_SINGLE && b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed();
+	}
+
 	bool is_dragging_camera = false;
-	if (camera_override) {
+	if (camera_override && !list_shortcut_pressed) {
 		if (node_select_type == NODE_TYPE_2D) {
 			is_dragging_camera = panner->gui_input(p_event, Rect2(Vector2(), root->get_visible_rect().get_size()));
 #ifndef _3D_DISABLED
@@ -334,8 +340,6 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 #endif // _3D_DISABLED
 		}
 	}
-
-	Ref<InputEventMouseButton> b = p_event;
 
 	if (selection_drag_state == SELECTION_DRAG_MOVE) {
 		Ref<InputEventMouseMotion> m = p_event;
@@ -370,7 +374,6 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 
 	if (!is_dragging_camera && b->is_pressed()) {
 		multi_shortcut_pressed = b->is_shift_pressed();
-		list_shortcut_pressed = node_select_mode == SELECT_MODE_SINGLE && b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed();
 		if (list_shortcut_pressed || b->get_button_index() == MouseButton::LEFT) {
 			selection_position = root->get_screen_transform().affine_inverse().xform(b->get_position());
 		}
@@ -431,7 +434,7 @@ void RuntimeNodeSelect::_process_frame() {
 }
 
 void RuntimeNodeSelect::_physics_frame() {
-	if (selection_drag_state != SELECTION_DRAG_END && (selection_drag_state == SELECTION_DRAG_MOVE || Math::is_inf(selection_position.x))) {
+	if (selection_drag_state != SELECTION_DRAG_END && (selection_drag_state == SELECTION_DRAG_MOVE || !selection_position.is_finite())) {
 		return;
 	}
 
@@ -444,7 +447,7 @@ void RuntimeNodeSelect::_physics_frame() {
 			for (int i = 0; i < root->get_child_count(); i++) {
 				_find_canvas_items_at_rect(selection_drag_area, root->get_child(i), items);
 			}
-		} else if (!Math::is_inf(selection_position.x)) {
+		} else if (selection_position.is_finite()) {
 			for (int i = 0; i < root->get_child_count(); i++) {
 				_find_canvas_items_at_pos(selection_position, root->get_child(i), items);
 			}
@@ -454,7 +457,7 @@ void RuntimeNodeSelect::_physics_frame() {
 	} else if (node_select_type == NODE_TYPE_3D) {
 		if (selection_drag_valid) {
 			_find_3d_items_at_rect(selection_drag_area, items);
-		} else {
+		} else if (selection_position.is_finite()) {
 			_find_3d_items_at_pos(selection_position, items);
 		}
 #endif // _3D_DISABLED
@@ -537,7 +540,7 @@ void RuntimeNodeSelect::_physics_frame() {
 		} break;
 
 		case SELECTION_DRAG_NONE: {
-			if (node_select_mode == SELECT_MODE_LIST) {
+			if (list_shortcut_pressed || node_select_mode == SELECT_MODE_LIST) {
 				break;
 			}
 
