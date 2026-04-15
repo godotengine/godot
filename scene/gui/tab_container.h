@@ -54,7 +54,9 @@ private:
 	Button *popup_button = nullptr;
 
 	bool tabs_visible = true;
+#ifndef DISABLE_DEPRECATED
 	bool all_tabs_in_front = false;
+#endif
 	TabPosition tabs_position = POSITION_TOP;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
@@ -189,8 +191,10 @@ public:
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_all_tabs_in_front(bool p_is_front);
 	bool is_all_tabs_in_front() const;
+#endif
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
