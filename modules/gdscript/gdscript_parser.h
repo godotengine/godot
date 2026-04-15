@@ -1399,6 +1399,7 @@ private:
 	FunctionNode *current_function = nullptr;
 	LambdaNode *current_lambda = nullptr;
 	SuiteNode *current_suite = nullptr;
+	int anonymous_class_count = 0;
 
 	CompletionContext completion_context;
 	List<CompletionCall> completion_call_stack;

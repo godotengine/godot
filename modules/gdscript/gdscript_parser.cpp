@@ -3589,6 +3589,129 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
 	complete_extents(call);
 
+	// Anonymous class: detect COLON after .new() call.
+	if (call->function_name == SNAME("new") && check(GDScriptTokenizer::Token::COLON) && call->callee != nullptr && call->callee->type == Node::SUBSCRIPT) {
+		SubscriptNode *callee_subscript = static_cast<SubscriptNode *>(call->callee);
+		if (callee_subscript->is_attribute) {
+			// Extract the base class identifier chain from the callee base expression.
+			// For "MyClass.new()" the base is IdentifierNode("MyClass").
+			// For "Outer.Inner.new()" the base is SubscriptNode(Outer, Inner).
+			Vector<IdentifierNode *> base_chain;
+			ExpressionNode *base_expr = callee_subscript->base;
+			String base_class_name;
+
+			// Walk the subscript chain to collect identifiers.
+			while (base_expr != nullptr) {
+				if (base_expr->type == Node::IDENTIFIER) {
+					base_chain.insert(0, static_cast<IdentifierNode *>(base_expr));
+					base_class_name = static_cast<IdentifierNode *>(base_expr)->name.operator String();
+					break;
+				} else if (base_expr->type == Node::SUBSCRIPT) {
+					SubscriptNode *sub = static_cast<SubscriptNode *>(base_expr);
+					if (sub->is_attribute && sub->attribute) {
+						base_chain.insert(0, sub->attribute);
+						if (base_class_name.is_empty()) {
+							base_class_name = sub->attribute->name.operator String();
+						}
+					}
+					base_expr = sub->base;
+				} else {
+					break;
+				}
+			}
+
+			if (base_chain.size() > 0) {
+				// Create synthetic anonymous class.
+				ClassNode *n_class = alloc_node<ClassNode>();
+				ClassNode *previous_class = current_class;
+
+				// Generate name: @AnonymousClass_<BaseName>_<N>
+				String anon_name = vformat("@AnonymousClass_%s_%d", base_class_name, anonymous_class_count++);
+				IdentifierNode *class_id = alloc_node<IdentifierNode>();
+				complete_extents(class_id);
+				class_id->name = StringName(anon_name);
+				n_class->identifier = class_id;
+
+				n_class->outer = current_class;
+				if (current_class) {
+					String fqcn = current_class->fqcn;
+					if (fqcn.is_empty()) {
+						fqcn = GDScript::canonicalize_path(script_path);
+					}
+					n_class->fqcn = fqcn + "::" + anon_name;
+				} else {
+					n_class->fqcn = anon_name;
+				}
+
+				// Set up extends from the base class identifier chain.
+				n_class->extends_used = true;
+				for (int i = 0; i < base_chain.size(); i++) {
+					IdentifierNode *extend_id = alloc_node<IdentifierNode>();
+					complete_extents(extend_id);
+					extend_id->name = base_chain[i]->name;
+					n_class->extends.push_back(extend_id);
+				}
+
+				// Manage indentation context (following lambda pattern).
+				bool multiline_context = multiline_stack.back()->get();
+				push_multiline(false);
+				if (multiline_context) {
+					tokenizer->push_expression_indented_block();
+				}
+
+				current_class = n_class;
+
+				// Consume colon and parse class body.
+				advance(); // Consume COLON.
+				bool multiline_body = match(GDScriptTokenizer::Token::NEWLINE);
+				if (multiline_body) {
+					if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after anonymous class declaration.)")) {
+						current_class = previous_class;
+						pop_multiline();
+						if (multiline_context) {
+							tokenizer->pop_expression_indented_block();
+						}
+						complete_extents(n_class);
+						return call;
+					}
+				}
+
+				parse_class_body(multiline_body);
+				complete_extents(n_class);
+
+				if (multiline_body) {
+					consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the anonymous class body.)");
+				}
+
+				// Clean up spurious indent/dedent/newline tokens (following lambda pattern).
+				pop_multiline();
+				if (multiline_context) {
+					while (check(GDScriptTokenizer::Token::DEDENT) || check(GDScriptTokenizer::Token::INDENT) || check(GDScriptTokenizer::Token::NEWLINE)) {
+						current = tokenizer->scan();
+					}
+					tokenizer->pop_expression_indented_block();
+				}
+
+				current_class = previous_class;
+
+				// Register anonymous class as inner class of the enclosing class.
+				if (current_class) {
+					current_class->add_member(n_class);
+				}
+
+				// Rewrite the call to target the anonymous class instead of the original base.
+				IdentifierNode *anon_ref = alloc_node<IdentifierNode>();
+				complete_extents(anon_ref);
+				anon_ref->name = StringName(anon_name);
+				callee_subscript->base = anon_ref;
+
+				// Signal that the anonymous class body ended the statement
+				// (like lambda_ended does for lambda expressions).
+				lambda_ended = true;
+			}
+		}
+	}
+
 	return call;
 }
 
