@@ -114,7 +114,7 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 				return !was_freed;
 			}
 
-			if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+			if (!obj->is_class(native_type)) {
 				return false;
 			}
 			return true;

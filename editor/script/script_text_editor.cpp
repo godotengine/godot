@@ -2036,7 +2036,7 @@ static String _get_dropped_resource_as_member(const Ref<Resource> &p_resource, b
 			path = ResourceUID::get_singleton()->id_to_text(id);
 		}
 	}
-	const bool is_script = ClassDB::is_parent_class(p_resource->get_class(), "Script");
+	const bool is_script = p_resource->is_class(SNAME("Script"));
 
 	if (!p_create_field) {
 		return vformat("preload(%s)", _quote_drop_data(path));

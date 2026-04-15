@@ -941,7 +941,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				*dst = object && ClassDB::is_parent_class(object->get_class_name(), native_type);
+				*dst = object && object->is_class(native_type);
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
@@ -1548,7 +1548,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+					if (src_obj && !src_obj->is_class(nc->get_name())) {
 						err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
 								"' to a variable of type '" + nc->get_name() + "'.";
 						OPCODE_BREAK;
@@ -1669,7 +1669,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 				Object *src_obj = src->operator Object *();
 
-				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+				if (src_obj && !src_obj->is_class(nc->get_name())) {
 					*dst = Variant(); // invalid cast, assign NULL
 				} else {
 					*dst = *src;
@@ -2943,7 +2943,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #else
 				Object *ret_obj = r->operator Object *();
 #endif // DEBUG_ENABLED
-				if (ret_obj && !ClassDB::is_parent_class(ret_obj->get_class_name(), nc->get_name())) {
+				if (ret_obj && !ret_obj->is_class(nc->get_name())) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
 							_get_var_type(r), nc->get_name());
