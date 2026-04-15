@@ -78,7 +78,7 @@ TEST_CASE("[TileRenderer] Prefix emergency fallback only triggers at device-disp
     CHECK(GaussianSplatting::tile_prefix_any_pass_requires_cpu_fallback(total_workgroups, dispatch_counts.pass2_dispatch_x - 1u));
 }
 
-TEST_CASE("[TileRenderer] Compute raster shared-memory contract uses deterministic requirement") {
+TEST_CASE("[TileRenderer] Compute raster shared-memory contract matches formula derivation") {
     const uint64_t required_bytes = TileRasterizer::get_compute_raster_shared_memory_requirement_bytes();
     const uint64_t expected_bytes = uint64_t(TileRenderer::MAX_SPLATS_PER_TILE) * (sizeof(uint32_t) + 9u * sizeof(uint32_t)) +
             5u * sizeof(uint32_t);
@@ -128,7 +128,7 @@ TEST_CASE("[TileRenderer] SH cache shrink hysteresis resets when usage recovers"
     CHECK(plan.next_shrink_candidate_frames == 0u);
 }
 
-TEST_CASE("[TileRenderer] Compute raster shared-memory contract uses deterministic requirement") {
+TEST_CASE("[TileRenderer] Compute raster shared-memory requirement equals expected absolute byte count") {
     const uint64_t required_bytes = TileRasterizer::get_compute_raster_shared_memory_requirement_bytes();
     const uint64_t expected_bytes = uint64_t(TileRenderer::MAX_SPLATS_PER_TILE) * (sizeof(uint32_t) + 9u * sizeof(uint32_t)) +
             5u * sizeof(uint32_t);

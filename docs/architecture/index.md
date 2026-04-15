@@ -9,6 +9,7 @@ Use this folder for architecture-level documentation and deep technical referenc
 - [Lighting system architecture](lighting-system.md)
 - [Unified Gaussian pipeline refactor plan](gaussian-pipeline-unification-plan.md)
 - [Resident-instanced renderer contract](gaussian-resident-instanced-contract.md)
+- [Gaussian pipeline deprecation and deletion plan](gaussian-pipeline-deprecation-deletion-plan.md)
 
 ## Module Deep References
 

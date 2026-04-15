@@ -400,6 +400,14 @@ Error GaussianData::save_to_file(const String &p_path) const {
                 p_path, invalid_scale_components, invalid_opacity_values));
     }
 
+    const Error io_error = file->get_error();
+    if (io_error != OK) {
+        GS_LOG_WARN_DEFAULT(vformat(
+                "[GaussianData] save_to_file write verification failed for %s (error=%d)",
+                p_path, (int)io_error));
+        return ERR_FILE_CANT_WRITE;
+    }
+
     GS_LOG_INFO_DEFAULT(vformat("[GaussianData] Saved %d splats to: %s", count, p_path));
     return OK;
 }

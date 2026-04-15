@@ -448,7 +448,6 @@
 | modules/gaussian_splatting/shaders/includes/platform_compat.glsl | 0.67 | 82 | 122 |
 | modules/gaussian_splatting/compute/instance_chunk_dispatch.glsl.gen.h | 0.77 | 30 | 39 |
 | modules/gaussian_splatting/shaders/includes/gs_eigen_binning.glsl.gen.h | 0.80 | 59 | 74 |
-| modules/gaussian_splatting/tests/test_octree_compile.cpp | 0.80 | 8 | 10 |
 | modules/gaussian_splatting/shaders/includes/gs_culling_utils.glsl.gen.h | 0.81 | 39 | 48 |
 | modules/gaussian_splatting/interfaces/debug_overlay_macros.h | 0.81 | 61 | 75 |
 | modules/gaussian_splatting/shaders/includes/gs_quat_utils.glsl.gen.h | 0.82 | 36 | 44 |
