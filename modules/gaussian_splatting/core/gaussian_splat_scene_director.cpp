@@ -89,25 +89,23 @@ static Dictionary _dict_get_dictionary(const Dictionary &p_dict, const StringNam
 	return value.get_type() == Variant::DICTIONARY ? Dictionary(value) : Dictionary();
 }
 
-static const StringName WORLD_OVERRIDE_LOD_ENABLED("lod_enabled");
-static const StringName WORLD_OVERRIDE_LOD_BIAS("lod_bias");
-static const StringName WORLD_OVERRIDE_LOD_MAX_DISTANCE("lod_max_distance");
-static const StringName WORLD_OVERRIDE_MAX_SPLATS("max_splats");
-static const StringName WORLD_OVERRIDE_FRUSTUM_CULLING("frustum_culling");
-static const StringName WORLD_OVERRIDE_ASYNC_UPLOAD_ENABLED("async_upload_enabled");
-static const StringName WORLD_OVERRIDE_OPACITY_MULTIPLIER("opacity_multiplier");
-static const StringName WORLD_OVERRIDE_STREAMING("streaming");
-
-static const StringName WORLD_STREAMING_OVERRIDE_PREFETCH("override_prefetch");
-static const StringName WORLD_STREAMING_PREDICTIVE_PREFETCH_ENABLED("predictive_prefetch_enabled");
-static const StringName WORLD_STREAMING_PREFETCH_LOOKAHEAD_DISTANCE("prefetch_lookahead_distance");
-static const StringName WORLD_STREAMING_OVERRIDE_VRAM_BUDGET("override_vram_budget");
-static const StringName WORLD_STREAMING_VRAM_BUDGET_MB("vram_budget_mb");
-static const StringName WORLD_STREAMING_VRAM_MIN_CHUNKS("vram_min_chunks");
-static const StringName WORLD_STREAMING_VRAM_MAX_CHUNKS("vram_max_chunks");
-static const StringName WORLD_STREAMING_OVERRIDE_IO_SOURCE("override_io_source");
-static const StringName WORLD_STREAMING_IO_SOURCE_PATH("io_source_path");
-
+static const StringName &WORLD_OVERRIDE_LOD_ENABLED() { static const StringName s("lod_enabled"); return s; }
+static const StringName &WORLD_OVERRIDE_LOD_BIAS() { static const StringName s("lod_bias"); return s; }
+static const StringName &WORLD_OVERRIDE_LOD_MAX_DISTANCE() { static const StringName s("lod_max_distance"); return s; }
+static const StringName &WORLD_OVERRIDE_MAX_SPLATS() { static const StringName s("max_splats"); return s; }
+static const StringName &WORLD_OVERRIDE_FRUSTUM_CULLING() { static const StringName s("frustum_culling"); return s; }
+static const StringName &WORLD_OVERRIDE_ASYNC_UPLOAD_ENABLED() { static const StringName s("async_upload_enabled"); return s; }
+static const StringName &WORLD_OVERRIDE_OPACITY_MULTIPLIER() { static const StringName s("opacity_multiplier"); return s; }
+static const StringName &WORLD_OVERRIDE_STREAMING() { static const StringName s("streaming"); return s; }
+static const StringName &WORLD_STREAMING_OVERRIDE_PREFETCH() { static const StringName s("override_prefetch"); return s; }
+static const StringName &WORLD_STREAMING_PREDICTIVE_PREFETCH_ENABLED() { static const StringName s("predictive_prefetch_enabled"); return s; }
+static const StringName &WORLD_STREAMING_PREFETCH_LOOKAHEAD_DISTANCE() { static const StringName s("prefetch_lookahead_distance"); return s; }
+static const StringName &WORLD_STREAMING_OVERRIDE_VRAM_BUDGET() { static const StringName s("override_vram_budget"); return s; }
+static const StringName &WORLD_STREAMING_VRAM_BUDGET_MB() { static const StringName s("vram_budget_mb"); return s; }
+static const StringName &WORLD_STREAMING_VRAM_MIN_CHUNKS() { static const StringName s("vram_min_chunks"); return s; }
+static const StringName &WORLD_STREAMING_VRAM_MAX_CHUNKS() { static const StringName s("vram_max_chunks"); return s; }
+static const StringName &WORLD_STREAMING_OVERRIDE_IO_SOURCE() { static const StringName s("override_io_source"); return s; }
+static const StringName &WORLD_STREAMING_IO_SOURCE_PATH() { static const StringName s("io_source_path"); return s; }
 GaussianSplatRenderer::WorldSubmissionContract GaussianSplatSceneDirector::_build_world_submission_contract(
 		const GaussianSplatRenderer::WorldSubmissionRuntimeStateSnapshot &p_renderer_state,
 		const SharedWorld::WorldSubmissionRecord &p_record) {
@@ -120,41 +118,41 @@ GaussianSplatRenderer::WorldSubmissionContract GaussianSplatSceneDirector::_buil
 	contract.desired_residency_hint = p_record.desired_residency_hint;
 
 	const Dictionary &overrides = p_record.desired_renderer_overrides;
-	contract.lod_enabled = _dict_get_bool(overrides, WORLD_OVERRIDE_LOD_ENABLED, p_renderer_state.lod_enabled);
-	contract.lod_bias = _dict_get_float(overrides, WORLD_OVERRIDE_LOD_BIAS, p_renderer_state.lod_bias);
-	contract.lod_max_distance = _dict_get_float(overrides, WORLD_OVERRIDE_LOD_MAX_DISTANCE, p_renderer_state.lod_max_distance);
-	contract.frustum_culling = _dict_get_bool(overrides, WORLD_OVERRIDE_FRUSTUM_CULLING, p_renderer_state.frustum_culling);
-	contract.async_upload_enabled = _dict_get_bool(overrides, WORLD_OVERRIDE_ASYNC_UPLOAD_ENABLED, p_renderer_state.async_upload_enabled);
-	contract.opacity_multiplier = _dict_get_float(overrides, WORLD_OVERRIDE_OPACITY_MULTIPLIER, p_renderer_state.opacity_multiplier);
+	contract.lod_enabled = _dict_get_bool(overrides, WORLD_OVERRIDE_LOD_ENABLED(), p_renderer_state.lod_enabled);
+	contract.lod_bias = _dict_get_float(overrides, WORLD_OVERRIDE_LOD_BIAS(), p_renderer_state.lod_bias);
+	contract.lod_max_distance = _dict_get_float(overrides, WORLD_OVERRIDE_LOD_MAX_DISTANCE(), p_renderer_state.lod_max_distance);
+	contract.frustum_culling = _dict_get_bool(overrides, WORLD_OVERRIDE_FRUSTUM_CULLING(), p_renderer_state.frustum_culling);
+	contract.async_upload_enabled = _dict_get_bool(overrides, WORLD_OVERRIDE_ASYNC_UPLOAD_ENABLED(), p_renderer_state.async_upload_enabled);
+	contract.opacity_multiplier = _dict_get_float(overrides, WORLD_OVERRIDE_OPACITY_MULTIPLIER(), p_renderer_state.opacity_multiplier);
 	contract.streaming_overrides = p_renderer_state.streaming_overrides;
 
-	if (overrides.has(WORLD_OVERRIDE_STREAMING)) {
-		const Dictionary streaming_dict = _dict_get_dictionary(overrides, WORLD_OVERRIDE_STREAMING);
+	if (overrides.has(WORLD_OVERRIDE_STREAMING())) {
+		const Dictionary streaming_dict = _dict_get_dictionary(overrides, WORLD_OVERRIDE_STREAMING());
 		contract.streaming_overrides.override_prefetch =
-				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_PREFETCH, contract.streaming_overrides.override_prefetch);
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_PREFETCH(), contract.streaming_overrides.override_prefetch);
 		contract.streaming_overrides.predictive_prefetch_enabled =
-				_dict_get_bool(streaming_dict, WORLD_STREAMING_PREDICTIVE_PREFETCH_ENABLED,
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_PREDICTIVE_PREFETCH_ENABLED(),
 						contract.streaming_overrides.predictive_prefetch_enabled);
 		contract.streaming_overrides.prefetch_lookahead_distance =
-				_dict_get_float(streaming_dict, WORLD_STREAMING_PREFETCH_LOOKAHEAD_DISTANCE,
+				_dict_get_float(streaming_dict, WORLD_STREAMING_PREFETCH_LOOKAHEAD_DISTANCE(),
 						contract.streaming_overrides.prefetch_lookahead_distance);
 		contract.streaming_overrides.override_vram_budget =
-				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_VRAM_BUDGET,
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_VRAM_BUDGET(),
 						contract.streaming_overrides.override_vram_budget);
 		contract.streaming_overrides.vram_budget_config.budget_mb =
-				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_BUDGET_MB,
+				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_BUDGET_MB(),
 						int(contract.streaming_overrides.vram_budget_config.budget_mb)));
 		contract.streaming_overrides.vram_budget_config.min_chunks =
-				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MIN_CHUNKS,
+				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MIN_CHUNKS(),
 						int(contract.streaming_overrides.vram_budget_config.min_chunks)));
 		contract.streaming_overrides.vram_budget_config.max_chunks =
-				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MAX_CHUNKS,
+				MAX(0, _dict_get_int(streaming_dict, WORLD_STREAMING_VRAM_MAX_CHUNKS(),
 						int(contract.streaming_overrides.vram_budget_config.max_chunks)));
 		contract.streaming_overrides.override_io_source =
-				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_IO_SOURCE,
+				_dict_get_bool(streaming_dict, WORLD_STREAMING_OVERRIDE_IO_SOURCE(),
 						contract.streaming_overrides.override_io_source);
 		contract.streaming_overrides.io_source_path =
-				_dict_get_string(streaming_dict, WORLD_STREAMING_IO_SOURCE_PATH,
+				_dict_get_string(streaming_dict, WORLD_STREAMING_IO_SOURCE_PATH(),
 						contract.streaming_overrides.io_source_path);
 		if (contract.streaming_overrides.override_vram_budget) {
 			contract.streaming_overrides.vram_budget_config.min_chunks =
@@ -165,7 +163,7 @@ GaussianSplatRenderer::WorldSubmissionContract GaussianSplatSceneDirector::_buil
 
 	const uint32_t data_count = p_record.gaussian_data.is_valid() ? p_record.gaussian_data->get_count() : 0;
 	const int baseline_max_splats = MAX(1, p_renderer_state.max_splats);
-	const int requested_max_splats = _dict_get_int(overrides, WORLD_OVERRIDE_MAX_SPLATS, baseline_max_splats);
+	const int requested_max_splats = _dict_get_int(overrides, WORLD_OVERRIDE_MAX_SPLATS(), baseline_max_splats);
 	int effective_max_splats = requested_max_splats;
 	if (effective_max_splats <= 0) {
 		effective_max_splats = data_count > 0 ? int(data_count) : baseline_max_splats;

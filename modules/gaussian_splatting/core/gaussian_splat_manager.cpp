@@ -23,8 +23,7 @@
 #endif
 
 namespace {
-static const StringName RENDERDOC_COMPATIBILITY_PATH("rendering/gaussian_splatting/renderdoc_compatibility");
-
+static const StringName &RENDERDOC_COMPATIBILITY_PATH() { static const StringName s("rendering/gaussian_splatting/renderdoc_compatibility"); return s; }
 // Project settings helpers: delegates to gs_project_settings.h (gs::settings namespace).
 static uint32_t _get_uint_setting(ProjectSettings *ps, const StringName &name, uint32_t fallback) {
     return gs::settings::get_uint(ps, name, fallback);
@@ -233,7 +232,7 @@ GaussianSplatManager::GaussianSplatManager() {
 	renderdoc_compatibility_mode = _detect_renderdoc();
 
 	ProjectSettings *ps = ProjectSettings::get_singleton();
-	if (ps && bool(ps->get_setting(RENDERDOC_COMPATIBILITY_PATH))) {
+	if (ps && bool(ps->get_setting(RENDERDOC_COMPATIBILITY_PATH()))) {
 		// Project setting is a force-enable switch. Leaving it false preserves
 		// RenderDoc auto-detection, which avoids a broken "explicit false" path.
 		renderdoc_compatibility_mode = true;
