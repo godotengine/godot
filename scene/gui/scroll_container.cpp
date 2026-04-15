@@ -171,9 +171,11 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	bool h_scroll_enabled = horizontal_scroll_mode != SCROLL_MODE_DISABLED;
 	bool v_scroll_enabled = vertical_scroll_mode != SCROLL_MODE_DISABLED;
 
+	int event_device_id = p_gui_input->get_device();
+
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		if (mb->is_pressed()) {
 			bool scroll_value_modified = false;
 			bool swap_axes = scroll_horizontal_by_default != mb->is_shift_pressed();
@@ -225,17 +227,12 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				return;
 			}
 		}
+		return;
+	}
 
-		bool is_touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
-		if (!is_touchscreen_available) {
-			return;
-		}
-
-		if (mb->get_button_index() != MouseButton::LEFT) {
-			return;
-		}
-
-		if (mb->is_pressed()) {
+	Ref<InputEventScreenTouch> touch = p_gui_input;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		if (touch->is_pressed()) {
 			if (drag_touching) {
 				_cancel_drag();
 			}
@@ -253,7 +250,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		} else {
 			if (drag_touching) {
-				if (drag_speed == Vector2()) {
+				if (touch->is_canceled() || drag_speed == Vector2()) {
 					_cancel_drag();
 				} else {
 					drag_touching_deaccel = true;
@@ -263,11 +260,11 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	Ref<InputEventMouseMotion> mm = p_gui_input;
+	Ref<InputEventScreenDrag> drag = p_gui_input;
 
-	if (mm.is_valid()) {
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		if (drag_touching && !drag_touching_deaccel) {
-			Vector2 motion = mm->get_relative();
+			Vector2 motion = drag->get_relative();
 			drag_accum -= motion;
 
 			if (beyond_deadzone || (h_scroll_enabled && Math::abs(drag_accum.x) > deadzone) || (v_scroll_enabled && Math::abs(drag_accum.y) > deadzone)) {
