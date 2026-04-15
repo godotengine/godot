@@ -476,6 +476,14 @@ float AnimatedSprite2D::get_playing_speed() const {
 	return speed_scale * custom_speed_scale;
 }
 
+void AnimatedSprite2D::set_centered(bool p_center) {
+	set_offset_origin(p_center ? OFFSET_ORIGIN_CENTER : OFFSET_ORIGIN_TOP_LEFT);
+}
+
+bool AnimatedSprite2D::is_centered() const {
+	return get_offset_origin() == OFFSET_ORIGIN_CENTER;
+}
+
 void AnimatedSprite2D::set_offset_origin(AnimatedSprite2D::OffsetOrigin p_offset_origin) {
 	if (origin == p_offset_origin) {
 		return;
@@ -716,6 +724,9 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite2D::pause);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
 
+	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite2D::is_centered);
+
 	ClassDB::bind_method(D_METHOD("set_offset_origin", "center"), &AnimatedSprite2D::set_offset_origin);
 	ClassDB::bind_method(D_METHOD("get_offset_origin"), &AnimatedSprite2D::get_offset_origin);
 
@@ -753,6 +764,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_progress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_frame_progress", "get_frame_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_GROUP("Offset", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "offset_origin", PROPERTY_HINT_ENUM, "Top Left,Top Center,Top Right,Center Left,Center,Center Right,Bottom Left,Bottom Center,Bottom Right"), "set_offset_origin", "get_offset_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");

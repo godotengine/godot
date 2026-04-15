@@ -129,6 +129,11 @@ public:
 	float get_speed_scale() const;
 	float get_playing_speed() const;
 
+	[[deprecated("please use set_offset_origin instead")]]
+	void set_centered(bool p_center);
+	[[deprecated("please use get_offset_origin instead")]]
+	bool is_centered() const;
+
 	void set_offset_origin(AnimatedSprite2D::OffsetOrigin p_offset_origin);
 	AnimatedSprite2D::OffsetOrigin get_offset_origin() const;
 
