@@ -1372,6 +1372,10 @@
 			Default [InputEventAction] to go up one directory in a [FileDialog].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_focus_last_tab" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the last tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_focus_mode" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to switch [TextEdit] [member input/ui_text_indent] between moving keyboard focus to the next [Control] in the scene and inputting a [code]Tab[/code] character.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1382,6 +1386,38 @@
 		</member>
 		<member name="input/ui_focus_prev" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to focus the previous [Control] in the scene. The focus behavior can be configured via [member Control.focus_previous].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab1" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the first tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab2" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the second tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab3" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the third tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab4" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the fourth tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab5" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the fifth tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab6" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the sixth tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab7" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the seventh tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_focus_tab8" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus the eighth tab in a [TabContainer]. Only works if the [TabContainer] has [member TabContainer.allow_tab_hotkeys] set to [code]true[/code].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_graph_delete" type="Dictionary" setter="" getter="">
