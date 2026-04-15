@@ -40,11 +40,12 @@ class JoltCustomRayShapeSettings final : public JPH::ConvexShapeSettings {
 public:
 	JPH::RefConst<JPH::PhysicsMaterial> material;
 	float length = 1.0f;
-	bool slide_on_slope = false;
+	bool stops_motion = false;
+	bool separate_along_ray = true;
 
 	JoltCustomRayShapeSettings() = default;
-	JoltCustomRayShapeSettings(float p_length, bool p_slide_on_slope, const JPH::PhysicsMaterial *p_material = nullptr) :
-			material(p_material), length(p_length), slide_on_slope(p_slide_on_slope) {}
+	JoltCustomRayShapeSettings(float p_length, bool p_stops_motion, bool p_separate_along_ray, const JPH::PhysicsMaterial *p_material = nullptr) :
+			material(p_material), length(p_length), stops_motion(p_stops_motion), separate_along_ray(p_separate_along_ray) {}
 
 	virtual JPH::ShapeSettings::ShapeResult Create() const override;
 };
@@ -53,7 +54,8 @@ class JoltCustomRayShape final : public JPH::ConvexShape {
 public:
 	JPH::RefConst<JPH::PhysicsMaterial> material;
 	float length = 0.0f;
-	bool slide_on_slope = false;
+	bool stops_motion = false;
+	bool separate_along_ray = true;
 
 	static void register_type();
 
@@ -61,14 +63,14 @@ public:
 			JPH::ConvexShape(JoltCustomShapeSubType::RAY) {}
 
 	JoltCustomRayShape(const JoltCustomRayShapeSettings &p_settings, JPH::Shape::ShapeResult &p_result) :
-			JPH::ConvexShape(JoltCustomShapeSubType::RAY, p_settings, p_result), material(p_settings.material), length(p_settings.length), slide_on_slope(p_settings.slide_on_slope) {
+			JPH::ConvexShape(JoltCustomShapeSubType::RAY, p_settings, p_result), material(p_settings.material), length(p_settings.length), stops_motion(p_settings.stops_motion), separate_along_ray(p_settings.separate_along_ray) {
 		if (!p_result.HasError()) {
 			p_result.Set(this);
 		}
 	}
 
-	JoltCustomRayShape(float p_length, bool p_slide_on_slope, const JPH::PhysicsMaterial *p_material = nullptr) :
-			JPH::ConvexShape(JoltCustomShapeSubType::RAY), material(p_material), length(p_length), slide_on_slope(p_slide_on_slope) {}
+	JoltCustomRayShape(float p_length, bool p_stops_motion, bool p_separate_along_ray, const JPH::PhysicsMaterial *p_material = nullptr) :
+			JPH::ConvexShape(JoltCustomShapeSubType::RAY), material(p_material), length(p_length), stops_motion(p_stops_motion), separate_along_ray(p_separate_along_ray) {}
 
 	virtual JPH::AABox GetLocalBounds() const override;
 

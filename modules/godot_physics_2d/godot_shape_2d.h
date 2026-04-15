@@ -182,11 +182,13 @@ public:
 
 class GodotSeparationRayShape2D : public GodotShape2D {
 	real_t length = 0.0;
-	bool slide_on_slope = false;
+	bool stops_motion = false;
+	bool separate_along_ray = true;
 
 public:
 	_FORCE_INLINE_ real_t get_length() const { return length; }
-	_FORCE_INLINE_ bool get_slide_on_slope() const { return slide_on_slope; }
+	_FORCE_INLINE_ bool get_stops_motion() const { return stops_motion; }
+	_FORCE_INLINE_ bool get_separate_along_ray() const { return separate_along_ray; }
 
 	virtual PhysicsServer2D::ShapeType get_type() const override { return PhysicsServer2D::SHAPE_SEPARATION_RAY; }
 

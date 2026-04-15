@@ -36,7 +36,8 @@ class SeparationRayShape2D : public Shape2D {
 	GDCLASS(SeparationRayShape2D, Shape2D);
 
 	real_t length = 20.0;
-	bool slide_on_slope = false;
+	bool stops_motion = false;
+	bool separate_along_ray = true;
 
 	void _update_shape();
 
@@ -47,8 +48,11 @@ public:
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
-	void set_slide_on_slope(bool p_active);
-	bool get_slide_on_slope() const;
+	void set_stops_motion(bool p_active);
+	bool get_stops_motion() const;
+
+	void set_separate_along_ray(bool p_active);
+	bool get_separate_along_ray() const;
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
 	virtual Rect2 get_rect() const override;
