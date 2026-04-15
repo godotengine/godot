@@ -110,9 +110,9 @@ private:
 		}
 
 		const StringName &obj_class = object->get_class_name();
-		if (obj_class != class_name && !ClassDB::is_parent_class(obj_class, class_name)) {
+		if (obj_class != class_name && !object->is_class(class_name)) {
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), object->get_class(), where, String(class_name)));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), obj_class, where, String(class_name)));
 			} else {
 				return false;
 			}

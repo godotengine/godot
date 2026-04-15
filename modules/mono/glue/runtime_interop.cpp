@@ -278,7 +278,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(script_binding.type_name == StringName());
 #endif
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_unmanaged->get_class_name(), script_binding.type_name);
+	bool parent_is_object_class = p_unmanaged->is_class(script_binding.type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, { nullptr },
 			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class() + "'.");
 
@@ -356,7 +356,7 @@ void godotsharp_array_filter_godot_objects_by_native(StringName *p_native_name, 
 	memnew_placement(r_output, Array);
 
 	for (int i = 0; i < p_input->size(); ++i) {
-		if (ClassDB::is_parent_class(((Object *)(*p_input)[i])->get_class(), *p_native_name)) {
+		if (((Object *)(*p_input)[i])->is_class(*p_native_name)) {
 			r_output->push_back(p_input[i]);
 		}
 	}

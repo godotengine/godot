@@ -478,7 +478,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		GDScriptNativeClass *native_type = Object::cast_to<GDScriptNativeClass>(type_object);
 		if (native_type) {
-			*r_ret = ClassDB::is_parent_class(value_object->get_class_name(), native_type->get_name());
+			*r_ret = value_object->is_class(native_type->get_name());
 			return;
 		}
 

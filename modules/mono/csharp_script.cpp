@@ -894,7 +894,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					continue;
 				}
 
-				if (!ClassDB::is_parent_class(obj->get_class_name(), native_name)) {
+				if (!obj->is_class(native_name)) {
 					// No longer inherits the same compatible type, can't reload
 					scr->pending_reload_state.erase(obj_id);
 					continue;
@@ -1158,7 +1158,7 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	ERR_FAIL_NULL_V(classinfo, false);
 	type_name = classinfo->gdtype->get_name();
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
+	bool parent_is_object_class = p_object->is_class(type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
 			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
@@ -2464,7 +2464,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
 	ERR_FAIL_COND_V(native_name == StringName(), nullptr);
 
-	if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
+	if (!p_this->is_class(native_name)) {
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 					"Script inherits from native type '" + String(native_name) +
