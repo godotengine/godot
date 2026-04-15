@@ -80,10 +80,6 @@
 		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay" default="&quot;&quot;">
 			The key of the animation to play when the scene loads.
 		</member>
-		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
-			If [code]true[/code], texture will be centered.
-			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, set this property to [code]false[/code], or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
-		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
 		</member>
@@ -98,6 +94,10 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
+		</member>
+		<member name="offset_origin" type="int" setter="set_offset_origin" getter="get_offset_origin" enum="AnimatedSprite2D.OffsetOrigin" default="4">
+			The origin point used when applying the texture's offset. This determines how the texture is aligned relative to its position, using one of nine preset origins (top/center/bottom x left/center/right).
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when aligned to certain origins. This is caused by their position landing between pixels. To prevent this, adjust the [member offset] accordingly, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The speed scaling ratio. For example, if this value is [code]1[/code], then the animation plays at normal speed. If it's [code]0.5[/code], then it plays at half speed. If it's [code]2[/code], then it plays at double speed.
@@ -135,4 +135,33 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="OFFSET_ORIGIN_TOP_LEFT" value="0" enum="OffsetOrigin">
+			Aligns the texture using the top-left corner as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_TOP_CENTER" value="1" enum="OffsetOrigin">
+			Aligns the texture using the top-center corner as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_TOP_RIGHT" value="2" enum="OffsetOrigin">
+			Aligns the texture using the top-right corner as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_CENTER_LEFT" value="3" enum="OffsetOrigin">
+			Aligns the texture using the center-left corner as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_CENTER" value="4" enum="OffsetOrigin">
+			Aligns the texture using the center as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_CENTER_RIGHT" value="5" enum="OffsetOrigin">
+			Aligns the texture using the center-right corner as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_BOTTOM_LEFT" value="6" enum="OffsetOrigin">
+			Aligns the texture using the bottom-left corner as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_BOTTOM_CENTER" value="7" enum="OffsetOrigin">
+			Aligns the texture using the bottom-center corner as the origin.
+		</constant>
+		<constant name="OFFSET_ORIGIN_BOTTOM_RIGHT" value="8" enum="OffsetOrigin">
+			Aligns the texture using the bottom-right corner as the origin.
+		</constant>
+	</constants>
 </class>
