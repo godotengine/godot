@@ -6567,6 +6567,10 @@ Error GDScriptAnalyzer::resolve_dependencies() {
 }
 
 Error GDScriptAnalyzer::analyze() {
+	// When loading a script we already hold this lock.
+	// But certain editor functions call to `Analyzer.analyze()` directly.
+	MutexLock lock(GDScriptCache::mutex);
+
 	parser->errors.clear();
 
 	Error err = resolve_inheritance();
