@@ -1911,7 +1911,7 @@ void CodeTextEditor::_zoom_out() {
 }
 
 void CodeTextEditor::_zoom_to(float p_zoom_factor) {
-	if (zoom_factor == p_zoom_factor) {
+	if (Math::is_equal_approx(zoom_factor, p_zoom_factor)) {
 		return;
 	}
 
