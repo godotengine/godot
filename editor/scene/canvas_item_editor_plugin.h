@@ -518,6 +518,7 @@ private:
 	void _selection_changed();
 	void _focus_selection(int p_op);
 	void _reset_drag();
+	void _click_select(const Point2 &p_pos, bool p_append);
 
 	void _project_settings_changed();
 
