@@ -183,7 +183,7 @@ private:
 	StringName local_name; // Inner class identifier or `class_name`.
 	StringName global_name; // `class_name`.
 	String fully_qualified_name;
-	int definition_line = 0; // Source line where the class was declared. Used for anonymous class display names.
+	int definition_line = 0; // Source line of class declaration.
 	String simplified_icon_path;
 	SelfList<GDScript> script_list;
 
