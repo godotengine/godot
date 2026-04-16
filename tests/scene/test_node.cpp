@@ -1026,7 +1026,7 @@ TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	CHECK(check_variants_equal(array_property, parsed_nested_array)); \
 \
 	parsed_nested_dictionary = parsed_node_with_props->get_meta("nested_dictionary"); \
-	CHECK(check_variants_equal(dictionary_property, parsed_nested_dictionary)); \
+	CHECK(check_variants_equal(dictionary_property, parsed_nested_dictionary));
 
 	Node *parsed_node;
 	Node *parsed_node_with_props;
