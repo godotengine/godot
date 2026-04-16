@@ -92,6 +92,7 @@
 			Gradient's offsets as a [PackedFloat32Array].
 			[b]Note:[/b] Setting this property updates all offsets at once. To update any offset individually use [method set_offset].
 		</member>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" overrides="Resource" default="false" />
 	</members>
 	<constants>
 		<constant name="GRADIENT_INTERPOLATE_LINEAR" value="0" enum="InterpolationMode">

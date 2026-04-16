@@ -189,5 +189,6 @@
 			The position of for the vertex at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" overrides="Resource" default="false" />
 	</members>
 </class>

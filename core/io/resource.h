@@ -86,6 +86,7 @@ private:
 	};
 	EmitChangedState emit_changed_state = EMIT_CHANGED_UNBLOCKED;
 	bool local_to_scene = false;
+	bool use_shared_copy = true; // Defaults to true, since there's far less resource should use full copy by default
 	friend class SceneState;
 	Node *local_scene = nullptr;
 
@@ -161,6 +162,9 @@ public:
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
 	virtual void setup_local_to_scene();
+
+	void set_use_shared_copy(bool p_enable);
+	bool get_use_shared_copy() const;
 
 	Node *get_local_scene() const;
 
