@@ -995,6 +995,7 @@ TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	Ref<PackedScene> binary_packed_scene = ResourceLoader::load(binary_scene_path, "PackedScene");
 	CHECK(binary_packed_scene.is_valid());
 	CHECK_PARSED_SCENE(binary_packed_scene);
+	ERR_PRINT(binary_scene_path);
 
 	memdelete(node_with_props);
 	memdelete(node_one);
