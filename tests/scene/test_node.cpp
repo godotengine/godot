@@ -919,6 +919,57 @@ TEST_CASE("[SceneTree][Node] Test the process priority") {
 	memdelete(node4);
 }
 
+bool check_variants_equal(Variant p_original, Variant p_found);
+
+bool check_arrays_equal(Array p_original, Array p_found) {
+	if (p_original.size() != p_found.size()) {
+		return false;
+	}
+	for (int i = 0; i < p_found.size(); i++) {
+		Variant original_elem = p_original[i];
+		Variant found_elem = p_found[i];
+		if (!check_variants_equal(original_elem, found_elem)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool check_dictionaries_equal(Dictionary p_original, Dictionary p_found) {
+	if (p_original.size() != p_found.size()) {
+		return false;
+	}
+	for (KeyValue original_kv : p_original) {
+		bool found_matching = false;
+		for (KeyValue found_kv : p_found) {
+			if (check_variants_equal(original_kv.key, found_kv.key) && check_variants_equal(original_kv.value, found_kv.value)) {
+				found_matching = true;
+			}
+		}
+		if (!found_matching) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool check_variants_equal(Variant p_original, Variant p_found) {
+	Variant::Type type = p_original.get_type();
+	if (type != p_found.get_type()) {
+		return false;
+	}
+	switch (type) {
+		case Variant::ARRAY:
+			return check_arrays_equal(p_original, p_found);
+			break;
+		case Variant::DICTIONARY:
+			return check_dictionaries_equal(p_original, p_found);
+			break;
+		default:
+			return p_original == p_found;
+	}
+}
+
 TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	Node *scene = memnew(Node);
 	scene->set_name("TestScene");
@@ -972,16 +1023,10 @@ TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	CHECK(parsed_node_with_props == node_with_props); \
 \
 	parsed_nested_array = parsed_node_with_props->get_meta("nested_array"); \
-	CHECK(parsed_nested_array.size() == array_property.size()); \
-	for (int i = 0; i < array_property.size(); i++) { \
-		CHECK(parsed_nested_array[i] == array_property[i]); \
-	} \
+	CHECK(check_variants_equal(array_property, parsed_nested_array)); \
 \
 	parsed_nested_dictionary = parsed_node_with_props->get_meta("nested_dictionary"); \
-	CHECK(parsed_nested_dictionary.size() == dictionary_property.size()); \
-	for (KeyValue kv : dictionary_property) { \
-		CHECK(kv.value == parsed_nested_dictionary[kv.key]); \
-	}
+	CHECK(check_variants_equal(dictionary_property, parsed_nested_dictionary)); \
 
 	Node *parsed_node;
 	Node *parsed_node_with_props;
@@ -995,7 +1040,6 @@ TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	Ref<PackedScene> binary_packed_scene = ResourceLoader::load(binary_scene_path, "PackedScene");
 	CHECK(binary_packed_scene.is_valid());
 	CHECK_PARSED_SCENE(binary_packed_scene);
-	ERR_PRINT(binary_scene_path);
 
 	memdelete(node_with_props);
 	memdelete(node_one);
