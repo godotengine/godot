@@ -255,7 +255,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 
 			empty_list_create_project->set_button_icon(get_editor_theme_icon("Add"));
 			empty_list_import_project->set_button_icon(get_editor_theme_icon("Load"));
-			empty_list_open_assetlib->set_button_icon(get_editor_theme_icon("AssetLib"));
+			empty_list_open_assetlib->set_button_icon(get_editor_theme_icon("AssetStore"));
 
 			empty_list_online_warning->add_theme_font_override(SceneStringName(font), get_theme_font("italic", EditorStringName(EditorFonts)));
 			empty_list_online_warning->add_theme_color_override(SceneStringName(font_color), get_theme_color("font_placeholder_color", EditorStringName(Editor)));
