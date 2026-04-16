@@ -75,6 +75,51 @@ const GodotCamera = {
 		workerBlobUrl: null,
 
 		/**
+		 * Pixel format codes passed to the C callback.
+		 * Must match the values used in modules/camera/camera_web.cpp.
+		 */
+		FORMAT_CODE_RGBA: 0,
+		FORMAT_CODE_NV12: 1,
+
+		/**
+		 * Builds the VideoFrame.copyTo options for a given source format.
+		 * Preserves NV12 as two planes (Y + interleaved UV) so the C++ side
+		 * can feed it to set_ycbcr_images without a color conversion. Other
+		 * formats fall through to RGBA and rely on the browser to convert.
+		 * @param {string} srcFormat VideoFrame.format ('NV12', 'RGBA', ...)
+		 * @param {number} width
+		 * @param {number} height
+		 * @returns {{totalSize:number,options:Object,formatCode:number}}
+		 */
+		getCopyToOptions: function (srcFormat, width, height) {
+			if (srcFormat === 'NV12') {
+				// Chrome rejects copyTo with `format: 'NV12'`. Omit the format
+				// field to get the VideoFrame's native pixel format, which is
+				// NV12 here since we only enter this branch for NV12 sources.
+				return {
+					totalSize: width * height * 3 / 2,
+					options: {
+						rect: { x: 0, y: 0, width: width, height: height },
+						layout: [
+							{ offset: 0, stride: width },
+							{ offset: width * height, stride: width },
+						],
+					},
+					formatCode: GodotCamera.FORMAT_CODE_NV12,
+				};
+			}
+			return {
+				totalSize: width * height * 4,
+				options: {
+					rect: { x: 0, y: 0, width: width, height: height },
+					layout: [{ offset: 0, stride: width * 4 }],
+					format: 'RGBA',
+				},
+				formatCode: GodotCamera.FORMAT_CODE_RGBA,
+			};
+		},
+
+		/**
 		 * Cached Wasm heap pointer for frame data copy.
 		 * Avoids per-frame malloc/free overhead and fragmentation.
 		 * @type {number}
@@ -275,6 +320,39 @@ function processImageBitmap(imageBitmap) {
 		pixelData: poolBuffer,
 		width: width,
 		height: height,
+		formatCode: FORMAT_CODE_RGBA,
+	};
+}
+
+// Pixel format codes - must match FORMAT_CODE_* in camera_web.cpp.
+const FORMAT_CODE_RGBA = 0;
+const FORMAT_CODE_NV12 = 1;
+
+function getCopyToOptions(srcFormat, width, height) {
+	if (srcFormat === 'NV12') {
+		// Chrome rejects copyTo with \`format: 'NV12'\`. Omit the format
+		// field to get the VideoFrame's native pixel format, which is
+		// NV12 here since we only enter this branch for NV12 sources.
+		return {
+			totalSize: width * height * 3 / 2,
+			options: {
+				rect: { x: 0, y: 0, width: width, height: height },
+				layout: [
+					{ offset: 0, stride: width },
+					{ offset: width * height, stride: width },
+				],
+			},
+			formatCode: FORMAT_CODE_NV12,
+		};
+	}
+	return {
+		totalSize: width * height * 4,
+		options: {
+			rect: { x: 0, y: 0, width: width, height: height },
+			layout: [{ offset: 0, stride: width * 4 }],
+			format: 'RGBA',
+		},
+		formatCode: FORMAT_CODE_RGBA,
 	};
 }
 
@@ -282,9 +360,9 @@ function processImageBitmap(imageBitmap) {
 async function processVideoFrame(videoFrame) {
 	const frameWidth = videoFrame.displayWidth;
 	const frameHeight = videoFrame.displayHeight;
-	const requiredSize = frameWidth * frameHeight * 4;
+	const copyTo = getCopyToOptions(videoFrame.format, frameWidth, frameHeight);
 
-	ensureBufferPool(requiredSize);
+	ensureBufferPool(copyTo.totalSize);
 
 	const arrayBuffer = acquireBuffer();
 	if (arrayBuffer === null) {
@@ -295,16 +373,13 @@ async function processVideoFrame(videoFrame) {
 	const pixelBuffer = new Uint8Array(arrayBuffer);
 
 	try {
-		await videoFrame.copyTo(pixelBuffer, {
-			rect: { x: 0, y: 0, width: frameWidth, height: frameHeight },
-			layout: [{ offset: 0, stride: frameWidth * 4 }],
-			format: 'RGBA',
-		});
+		await videoFrame.copyTo(pixelBuffer, copyTo.options);
 
 		return {
 			pixelData: pixelBuffer,
 			width: frameWidth,
 			height: frameHeight,
+			formatCode: copyTo.formatCode,
 		};
 	} catch (e) {
 		// Return the buffer to the pool so it is not permanently lost on error.
@@ -359,6 +434,7 @@ self.onmessage = async function(event) {
 					pixelData: result.pixelData,
 					width: result.width,
 					height: result.height,
+					formatCode: result.formatCode,
 					facingMode: data.facingMode,
 				},
 				[result.pixelData.buffer]
@@ -391,6 +467,7 @@ self.onmessage = async function(event) {
 					pixelData: result.pixelData,
 					width: result.width,
 					height: result.height,
+					formatCode: result.formatCode,
 					facingMode: data.facingMode,
 				},
 				[result.pixelData.buffer]
@@ -472,13 +549,14 @@ self.onmessage = async function(event) {
 		 * @param {number} dataLen Length of pixel data
 		 * @param {number} width Image width
 		 * @param {number} height Image height
+		 * @param {number} formatCode Pixel format code (FORMAT_CODE_RGBA, FORMAT_CODE_NV12, ...)
 		 * @param {number} facingMode Camera facing mode (0=unknown, 1=user/front, 2=environment/back)
 		 * @param {string|null} errorMsg Error message if any
 		 * @returns {void}
 		 */
-		sendGetPixelDataCallback: function (callback, context, dataPtr, dataLen, width, height, facingMode, errorMsg) {
+		sendGetPixelDataCallback: function (callback, context, dataPtr, dataLen, width, height, formatCode, facingMode, errorMsg) {
 			const errorMsgPtr = errorMsg ? GodotRuntime.allocString(errorMsg) : 0;
-			callback(context, dataPtr, dataLen, width, height, facingMode, errorMsgPtr);
+			callback(context, dataPtr, dataLen, width, height, formatCode, facingMode, errorMsgPtr);
 			if (errorMsgPtr) {
 				GodotRuntime.free(errorMsgPtr);
 			}
@@ -492,7 +570,7 @@ self.onmessage = async function(event) {
 		 * @returns {void}
 		 */
 		handleWorkerFrameData: function (eventData, callback, context, worker) {
-			const { pixelData, width, height, facingMode } = eventData;
+			const { pixelData, width, height, formatCode, facingMode } = eventData;
 
 			GodotCamera._heapCopyPixelData(pixelData);
 
@@ -503,6 +581,7 @@ self.onmessage = async function(event) {
 				pixelData.length,
 				width,
 				height,
+				formatCode,
 				facingMode,
 				null
 			);
@@ -573,15 +652,11 @@ self.onmessage = async function(event) {
 						try {
 							const width = videoFrame.displayWidth;
 							const height = videoFrame.displayHeight;
-							const bufferSize = width * height * 4;
-							const pixelBuffer = new Uint8Array(bufferSize);
+							const copyTo = GodotCamera.getCopyToOptions(videoFrame.format, width, height);
+							const pixelBuffer = new Uint8Array(copyTo.totalSize);
 
 							// eslint-disable-next-line no-await-in-loop
-							await videoFrame.copyTo(pixelBuffer, {
-								rect: { x: 0, y: 0, width, height },
-								layout: [{ offset: 0, stride: width * 4 }],
-								format: 'RGBA',
-							});
+							await videoFrame.copyTo(pixelBuffer, copyTo.options);
 
 							GodotCamera._heapCopyPixelData(pixelBuffer);
 
@@ -592,6 +667,7 @@ self.onmessage = async function(event) {
 								pixelBuffer.length,
 								width,
 								height,
+								copyTo.formatCode,
 								currentCamera.facingMode,
 								null
 							);
@@ -831,11 +907,12 @@ self.onmessage = async function(event) {
 							pixelData.length,
 							_width,
 							_height,
+							GodotCamera.FORMAT_CODE_RGBA,
 							currentCamera.facingMode,
 							null
 						);
 					} catch (error) {
-						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, error.message);
+						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
 
 						if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
 							GodotRuntime.print('Security error, stopping stream:', error);
@@ -961,7 +1038,7 @@ self.onmessage = async function(event) {
 							GodotRuntime.print('createImageBitmap error:', e.message);
 						});
 					} catch (error) {
-						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, error.message);
+						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
 
 						if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
 							GodotRuntime.print('Security error, stopping stream:', error);
@@ -1190,7 +1267,7 @@ self.onmessage = async function(event) {
 						}
 					}
 				} catch (error) {
-					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, error.message);
+					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
 					if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
 						deniedCallback(context);
 					}

@@ -32,3 +32,4 @@ elif env["platform"] == "linuxbsd":
 
 elif env["platform"] == "web":
     env_camera.add_source_files(env.modules_sources, "camera_web.cpp")
+    env_camera.add_source_files(env.modules_sources, "buffer_decoder.cpp")

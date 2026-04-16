@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "modules/camera/buffer_decoder.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 
@@ -43,10 +44,11 @@ class CameraFeedWeb : public CameraFeed {
 	GDSOFTCLASS(CameraFeedWeb, CameraFeed);
 
 	String device_id;
-	Ref<Image> image;
-	Vector<uint8_t> data;
+	BufferDecoder *buffer_decoder = nullptr;
+	int current_pixel_format = -1;
 
-	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_facing_mode, const char *p_error);
+	static BufferDecoder *_create_buffer_decoder(CameraFeedWeb *p_feed, int p_pixel_format);
+	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_pixel_format, const int p_facing_mode, const char *p_error);
 	static void _on_denied_callback(void *p_context);
 
 public:

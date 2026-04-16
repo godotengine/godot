@@ -35,11 +35,28 @@
 #include "platform/web/camera_driver_web.h"
 
 namespace {
+// Pixel format codes - must match FORMAT_CODE_* in library_godot_camera.js.
+constexpr int FORMAT_CODE_RGBA = 0;
+constexpr int FORMAT_CODE_NV12 = 1;
+
 const String KEY_HEIGHT("height");
 const String KEY_WIDTH("width");
 } // namespace
 
-void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_facing_mode, const char *p_error) {
+BufferDecoder *CameraFeedWeb::_create_buffer_decoder(CameraFeedWeb *p_feed, int p_pixel_format) {
+	switch (p_pixel_format) {
+		case FORMAT_CODE_NV12:
+			return memnew(Nv12BufferDecoder(p_feed));
+		case FORMAT_CODE_RGBA:
+			return memnew(CopyBufferDecoder(p_feed, CopyBufferDecoder::rgba));
+		default:
+			// Unknown format - drop frames to avoid mis-sizing the destination image.
+			ERR_PRINT(vformat("Camera feed error: Unknown pixel format code %d.", p_pixel_format));
+			return memnew(NullBufferDecoder(p_feed));
+	}
+}
+
+void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_pixel_format, const int p_facing_mode, const char *p_error) {
 	// Validate context first to avoid dereferencing null on error paths.
 	ERR_FAIL_NULL_MSG(p_context, "Camera feed error: Null context received.");
 
@@ -54,7 +71,7 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 		return;
 	}
 
-	if (p_data == nullptr || p_length < 0 || p_width <= 0 || p_height <= 0) {
+	if (p_data == nullptr || p_length <= 0 || p_width <= 0 || p_height <= 0) {
 		if (feed->is_active()) {
 			feed->deactivate_feed();
 		}
@@ -70,26 +87,31 @@ void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, c
 		feed->position = CameraFeed::FEED_BACK;
 	}
 
-	Vector<uint8_t> &data = feed->data;
-	Ref<Image> image = feed->image;
-
-	const int64_t expected_size = Image::get_image_data_size(p_width, p_height, Image::FORMAT_RGBA8, false);
-	if (p_length < expected_size) {
-		if (feed->is_active()) {
-			feed->deactivate_feed();
+	// (Re)create the decoder when the format or frame size changes. The browser
+	// may pick a resolution different from what was requested, so the stored
+	// format is updated to reflect the actually delivered dimensions before
+	// BufferDecoder reads them in its constructor.
+	const CameraFeed::FeedFormat current_format = feed->get_format();
+	const bool size_changed = current_format.width != p_width || current_format.height != p_height;
+	if (feed->buffer_decoder == nullptr || feed->current_pixel_format != p_pixel_format || size_changed) {
+		if (feed->selected_format >= 0 && feed->selected_format < feed->formats.size()) {
+			FeedFormat &f = feed->formats.write[feed->selected_format];
+			f.width = p_width;
+			f.height = p_height;
 		}
-		ERR_PRINT("Camera feed error: Received pixel data smaller than expected.");
-		return;
+		if (feed->buffer_decoder) {
+			memdelete(feed->buffer_decoder);
+			feed->buffer_decoder = nullptr;
+		}
+		feed->buffer_decoder = _create_buffer_decoder(feed, p_pixel_format);
+		feed->current_pixel_format = p_pixel_format;
 	}
 
-	if (data.size() != expected_size) {
-		data.resize(expected_size);
-	}
-	// Copy exactly the expected size (ignore any trailing bytes in 'p_data').
-	memcpy(data.ptrw(), p_data, expected_size);
-
-	image->initialize_data(p_width, p_height, false, Image::FORMAT_RGBA8, data);
-	feed->set_rgb_image(image);
+	StreamingBuffer buffer;
+	buffer.start = const_cast<uint8_t *>(p_data);
+	buffer.length = p_length;
+	buffer.pitch = 0; // Tightly packed; decoders will derive the stride from length.
+	feed->buffer_decoder->decode(buffer);
 }
 
 void CameraFeedWeb::_on_denied_callback(void *p_context) {
@@ -104,11 +126,6 @@ bool CameraFeedWeb::activate_feed() {
 		return true;
 	}
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
-
-	// Initialize image when activating the feed.
-	if (image.is_null()) {
-		image.instantiate();
-	}
 
 	int width = parameters.get(KEY_WIDTH, 0);
 	int height = parameters.get(KEY_HEIGHT, 0);
@@ -135,9 +152,11 @@ void CameraFeedWeb::deactivate_feed() {
 	ERR_FAIL_NULL_MSG(driver, "CameraDriverWeb singleton is not initialized.");
 	driver->stop_stream(device_id);
 
-	// Release the image when deactivating the feed.
-	image.unref();
-	data.clear();
+	if (buffer_decoder) {
+		memdelete(buffer_decoder);
+		buffer_decoder = nullptr;
+	}
+	current_pixel_format = -1;
 }
 
 bool CameraFeedWeb::set_format(int p_index, const Dictionary &p_parameters) {
