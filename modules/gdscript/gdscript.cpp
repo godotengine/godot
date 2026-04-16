@@ -1354,13 +1354,29 @@ void GDScript::_save_orphaned_subclasses() {
 	}
 }
 
+String GDScript::get_display_name() const {
+	String name = local_name.operator String();
+	if (name.begins_with("@AnonymousClass_")) {
+		String stripped = name.substr(16);
+		int last_underscore = stripped.rfind_char('_');
+		if (last_underscore > 0) {
+			String base_name = stripped.substr(0, last_underscore);
+			if (definition_line > 0) {
+				return vformat("(anonymous %s at line %d)", base_name, definition_line);
+			}
+			return vformat("(anonymous %s)", base_name);
+		}
+	}
+	return name;
+}
+
 #ifdef DEBUG_ENABLED
 String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 	if (p_script.is_valid()) {
 		Ref<GDScript> gdscript = p_script;
 		if (gdscript.is_valid()) {
 			if (gdscript->get_local_name() != StringName()) {
-				return gdscript->get_local_name();
+				return gdscript->get_display_name();
 			}
 			return gdscript->get_fully_qualified_name().get_file();
 		}

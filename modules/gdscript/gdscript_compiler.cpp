@@ -3124,6 +3124,7 @@ void GDScriptCompiler::make_scripts(GDScript *p_script, const GDScriptParser::Cl
 	p_script->local_name = p_class->identifier ? p_class->identifier->name : StringName();
 	p_script->global_name = p_class->get_global_name();
 	p_script->simplified_icon_path = p_class->simplified_icon_path;
+	p_script->definition_line = p_class->start_line;
 
 	HashMap<StringName, Ref<GDScript>> old_subclasses;
 

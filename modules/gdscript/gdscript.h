@@ -183,6 +183,7 @@ private:
 	StringName local_name; // Inner class identifier or `class_name`.
 	StringName global_name; // `class_name`.
 	String fully_qualified_name;
+	int definition_line = 0; // Source line where the class was declared. Used for anonymous class display names.
 	String simplified_icon_path;
 	SelfList<GDScript> script_list;
 
@@ -233,6 +234,7 @@ public:
 	}
 
 	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
+	String get_display_name() const;
 
 	void clear();
 
