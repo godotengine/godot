@@ -45,6 +45,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -218,6 +219,171 @@ void ExportTemplateManager::_delete_file(const TreeItem *p_item) {
 		for (TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
 			_delete_file(child);
 		}
+	}
+}
+
+void ExportTemplateManager::_tpz_file_selected(const String &p_file) {
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
+	if (!pkg) {
+		EditorNode::get_singleton()->show_warning(TTR("Can't open the export templates file."));
+		return;
+	}
+	int ret = unzGoToFirstFile(pkg);
+
+	// Count them and find version.
+	int fc = 0;
+	String version;
+	String contents_dir;
+
+	while (ret == UNZ_OK) {
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+
+		String file = String::utf8(fname);
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		if (file.ends_with("version.txt")) {
+			Vector<uint8_t> uncomp_data;
+			uncomp_data.resize(info.uncompressed_size);
+
+			// Read.
+			unzOpenCurrentFile(pkg);
+			ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
+			unzCloseCurrentFile(pkg);
+
+			String data_str = String::utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
+			data_str = data_str.strip_edges();
+
+			// Version number should be of the form major.minor[.patch].status[.module_config]
+			// so it can in theory have 3 or more slices.
+			if (data_str.get_slice_count(".") < 3) {
+				EditorNode::get_singleton()->show_warning(vformat(TTR("Invalid version.txt format inside the export templates file: %s."), data_str));
+				unzClose(pkg);
+				return;
+			}
+
+			version = data_str;
+			contents_dir = file.get_base_dir().trim_suffix("/").trim_suffix("\\");
+		}
+
+		if (file.get_file().size() != 0) {
+			fc++;
+		}
+
+		ret = unzGoToNextFile(pkg);
+	}
+
+	if (version.is_empty()) {
+		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside the export templates file."));
+		unzClose(pkg);
+		return;
+	}
+
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(version);
+	Error err = d->make_dir_recursive(template_path);
+	if (err != OK) {
+		EditorNode::get_singleton()->show_warning(TTR("Error creating path for extracting templates:") + "\n" + template_path);
+		unzClose(pkg);
+		return;
+	}
+
+	EditorProgress ep("export_tpz", TTR("Extracting Export Templates"), fc);
+
+	fc = 0;
+	ret = unzGoToFirstFile(pkg);
+	while (ret == UNZ_OK) {
+		// Get filename.
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+
+		if (String::utf8(fname).ends_with("/")) {
+			// File is a directory, ignore it.
+			// Directories will be created when extracting each file.
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		String file_path(String::utf8(fname).simplify_path());
+
+		String file = file_path.get_file();
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.is_empty() || file.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		Vector<uint8_t> uncomp_data;
+		uncomp_data.resize(info.uncompressed_size);
+
+		// Read
+		unzOpenCurrentFile(pkg);
+		ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+		ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
+		unzCloseCurrentFile(pkg);
+
+		String base_dir = file_path.get_base_dir().trim_suffix("/");
+
+		if (base_dir != contents_dir && base_dir.begins_with(contents_dir)) {
+			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/");
+			file = base_dir.path_join(file);
+
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			ERR_CONTINUE(da.is_null());
+
+			String output_dir = template_path.path_join(base_dir);
+
+			if (!DirAccess::exists(output_dir)) {
+				Error mkdir_err = da->make_dir_recursive(output_dir);
+				ERR_CONTINUE(mkdir_err != OK);
+			}
+		}
+		ep.step(TTR("Importing:") + " " + file, fc);
+
+		String to_write = template_path.path_join(file);
+		Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
+
+		if (f.is_null()) {
+			ret = unzGoToNextFile(pkg);
+			fc++;
+			ERR_CONTINUE_MSG(true, "Can't open file from path '" + String(to_write) + "'.");
+		}
+
+		f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+		f.unref(); // close file.
+#ifndef WINDOWS_ENABLED
+		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+#endif
+
+		ret = unzGoToNextFile(pkg);
+		fc++;
+	}
+
+	unzClose(pkg);
+
+	EditorSettings::get_singleton()->set("_export_template_download_directory", p_file.get_base_dir());
+
+	const String selected_version = version_list->get_item_text(version_list->get_current());
+	if (selected_version == version) {
+		_update_template_tree();
 	}
 }
 
@@ -1163,6 +1329,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			install_button->set_button_icon(get_editor_theme_icon("AssetStore"));
 			open_mirror->set_button_icon(get_editor_theme_icon("ExternalLink"));
 			delete_all_button->set_button_icon(get_editor_theme_icon("Remove"));
+			tpz_button->set_button_icon(get_editor_theme_icon("FileBrowse"));
 
 			theme_cache.install_icon = get_editor_theme_icon("AssetStore");
 			theme_cache.remove_icon = get_editor_theme_icon("Remove");
@@ -1398,6 +1565,21 @@ ExportTemplateManager::ExportTemplateManager() {
 	install_button->set_h_size_flags(Control::SIZE_SHRINK_END | Control::SIZE_EXPAND);
 	download_header->add_child(install_button);
 	install_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_install_templates).bind((TreeItem *)nullptr));
+
+	tpz_button = memnew(Button);
+	tpz_button->set_tooltip_text(TTRC("Install from a TPZ file."));
+	download_header->add_child(tpz_button);
+
+	tpz_selection_dialog = memnew(EditorFileDialog);
+	tpz_selection_dialog->set_title(TTRC("Select Template File"));
+	tpz_selection_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+	tpz_selection_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
+	tpz_selection_dialog->set_current_dir(EDITOR_DEF("_export_template_download_directory", ""));
+	tpz_selection_dialog->add_filter("*.tpz", TTRC("Godot Export Templates"));
+	tpz_selection_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_tpz_file_selected));
+	add_child(tpz_selection_dialog);
+
+	tpz_button->connect(SceneStringName(pressed), callable_mp((FileDialog *)tpz_selection_dialog, &FileDialog::popup_file_dialog));
 
 	HSplitContainer *main_split = memnew(HSplitContainer);
 	main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
