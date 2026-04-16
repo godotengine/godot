@@ -1884,7 +1884,7 @@ void CodeTextEditor::_zoom_out() {
 }
 
 void CodeTextEditor::_zoom_to(float p_zoom_factor) {
-	if (zoom_factor == p_zoom_factor) {
+	if (Math::is_equal_approx(zoom_factor, p_zoom_factor)) {
 		return;
 	}
 
@@ -1958,6 +1958,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 	text_editor->set_draw_bookmarks_gutter(true);
 
+	text_editor->set_selection_handle_enabled(true);
 	text_editor->set_virtual_keyboard_show_on_focus(false);
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);
