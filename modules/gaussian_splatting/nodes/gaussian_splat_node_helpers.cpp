@@ -1373,6 +1373,16 @@ void GaussianSplatNodeRendererHelper::ensure_renderer() {
             owner.renderer = director->get_shared_renderer(owner.get_world_3d().ptr());
             if (owner.renderer.is_valid()) {
                 apply_renderer_settings();
+                // Initial sync: push the cached color grading once when the
+                // renderer becomes available. set_color_grading() couldn't
+                // push earlier because the renderer was null (normal scene-
+                // deserialization path: property setter runs before ensure
+                // brings the renderer up). apply_renderer_settings() does
+                // not push grading per-frame to avoid the shared-renderer
+                // clobber, so this initial push is needed.
+                if (can_apply_renderer_settings()) {
+                    owner.renderer->set_color_grading(owner.color_grading);
+                }
             }
         }
     }
