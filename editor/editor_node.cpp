@@ -132,6 +132,7 @@
 #include "editor/scene/material_editor_plugin.h"
 #include "editor/scene/particle_process_material_editor_plugin.h"
 #include "editor/script/editor_script.h"
+#include "editor/script/find_in_files.h"
 #include "editor/script/script_text_editor.h"
 #include "editor/script/text_editor.h"
 #include "editor/settings/editor_build_profile.h"
@@ -3667,7 +3668,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case PROJECT_FIND_IN_FILES: {
-			ScriptEditor::get_singleton()->open_find_in_files_dialog("");
+			FindInFiles::get_singleton()->open_dock();
 		} break;
 
 		case PROJECT_INSTALL_ANDROID_SOURCE: {
