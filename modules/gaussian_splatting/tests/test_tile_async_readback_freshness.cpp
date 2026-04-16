@@ -1,8 +1,6 @@
 #include "test_macros.h"
 
-#define private public
 #include "../renderer/tile_renderer.h"
-#undef private
 
 #include <cstring>
 
@@ -29,7 +27,7 @@ static Vector<uint8_t> _make_tile_counts_payload(uint32_t p_a, uint32_t p_b) {
 
 TEST_CASE("[TileRenderer] Async overflow readback rejects stale callbacks") {
 	TileRenderer renderer;
-	auto &state = renderer.async_readback.overflow_state;
+	auto &state = renderer._test_async_readback().overflow_state;
 
 	state.pending_readback = true;
 	state.requested_frame_serial = 42;
@@ -39,13 +37,13 @@ TEST_CASE("[TileRenderer] Async overflow readback rejects stale callbacks") {
 
 	const Vector<uint8_t> payload = _make_overflow_readback_payload(9, 1, 2048);
 
-	renderer._on_overflow_flag_readback(payload, 41);
+	renderer._test_on_overflow_flag_readback(payload, 41);
 	CHECK(state.pending_readback);
 	CHECK(state.requested_frame_serial == 42);
 	CHECK_FALSE(state.overflow_detected);
 	CHECK(state.last_unclamped_total == 64);
 
-	renderer._on_overflow_flag_readback(payload, 42);
+	renderer._test_on_overflow_flag_readback(payload, 42);
 	CHECK_FALSE(state.pending_readback);
 	CHECK(state.requested_frame_serial == 0);
 	CHECK(state.overflow_detected);
@@ -54,7 +52,7 @@ TEST_CASE("[TileRenderer] Async overflow readback rejects stale callbacks") {
 
 TEST_CASE("[TileRenderer] Async overflow readback ignores short payloads without completing overlap state") {
 	TileRenderer renderer;
-	auto &state = renderer.async_readback.overflow_state;
+	auto &state = renderer._test_async_readback().overflow_state;
 
 	state.pending_readback = true;
 	state.requested_frame_serial = 17;
@@ -69,7 +67,7 @@ TEST_CASE("[TileRenderer] Async overflow readback ignores short payloads without
 	short_payload.write[2] = 0xCC;
 	short_payload.write[3] = 0xDD;
 
-	renderer._on_overflow_flag_readback(short_payload, 17);
+	renderer._test_on_overflow_flag_readback(short_payload, 17);
 	CHECK_FALSE(state.pending_readback);
 	CHECK(state.requested_frame_serial == 0);
 	CHECK_FALSE(state.first_frame_complete);
@@ -79,7 +77,7 @@ TEST_CASE("[TileRenderer] Async overflow readback ignores short payloads without
 
 TEST_CASE("[TileRenderer] Async tile-count readback rejects stale callbacks") {
 	TileRenderer renderer;
-	auto &state = renderer.async_readback.tile_counts_state;
+	auto &state = renderer._test_async_readback().tile_counts_state;
 
 	state.pending_readback = true;
 	state.requested_frame_serial = 7;
@@ -89,13 +87,13 @@ TEST_CASE("[TileRenderer] Async tile-count readback rejects stale callbacks") {
 
 	const Vector<uint8_t> payload = _make_tile_counts_payload(5, 9);
 
-	renderer._on_tile_counts_readback(payload, 6);
+	renderer._test_on_tile_counts_readback(payload, 6);
 	CHECK(state.pending_readback);
 	CHECK(state.requested_frame_serial == 7);
 	CHECK_FALSE(state.first_frame_complete);
 	CHECK(state.cached_counts.is_empty());
 
-	renderer._on_tile_counts_readback(payload, 7);
+	renderer._test_on_tile_counts_readback(payload, 7);
 	REQUIRE_FALSE(state.pending_readback);
 	CHECK(state.requested_frame_serial == 0);
 	CHECK(state.first_frame_complete);
@@ -106,7 +104,7 @@ TEST_CASE("[TileRenderer] Async tile-count readback rejects stale callbacks") {
 
 TEST_CASE("[TileRenderer] Async tile-count readback ignores short payloads without advancing freshness") {
 	TileRenderer renderer;
-	auto &state = renderer.async_readback.tile_counts_state;
+	auto &state = renderer._test_async_readback().tile_counts_state;
 
 	state.pending_readback = true;
 	state.requested_frame_serial = 23;
@@ -123,7 +121,7 @@ TEST_CASE("[TileRenderer] Async tile-count readback ignores short payloads witho
 	short_payload.write[2] = 0x33;
 	short_payload.write[3] = 0x44;
 
-	renderer._on_tile_counts_readback(short_payload, 23);
+	renderer._test_on_tile_counts_readback(short_payload, 23);
 	CHECK_FALSE(state.pending_readback);
 	CHECK(state.requested_frame_serial == 0);
 	CHECK_FALSE(state.first_frame_complete);

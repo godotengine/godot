@@ -197,6 +197,35 @@ public:
     int get_clamped_records() const { return debug_stats.cached_overflow_stats.overflow_splats_clamped; }
     int get_aggregated_count() const { return debug_stats.cached_overflow_stats.overflow_splats_aggregated; }
 
+#ifdef TESTS_ENABLED
+    // Test-only accessors. Mirror the pattern used in core/gaussian_streaming.h
+    // (search for `_test_*`). Replaced the `#define private public` macro that
+    // test_tile_async_readback_freshness.cpp and
+    // test_tile_prefix_scan_renderer_limit.cpp used to reach this state
+    // directly — the macro leaks into transitively-included core templates and
+    // triggers GCC ODR errors of the same family that recently broke
+    // test_gaussian_streaming_lifecycle.cpp on Linux CI. The returned type
+    // names are private nested types of TileRenderer; callers use `auto &` to
+    // bind without naming the inaccessible identifier.
+    auto &_test_async_readback() { return async_readback; }
+    auto &_test_global_sort_resources() { return global_sort_resources; }
+    auto &_test_grid_state() { return grid_state; }
+    auto &_test_timing_state() { return timing_state; }
+    auto &_test_prefix_scan_stage() { return prefix_scan_stage; }
+    void _test_ensure_global_sort_resources(uint32_t p_visible_count) {
+        _ensure_global_sort_resources(p_visible_count);
+    }
+    uint32_t _test_get_effective_overlap_capacity(uint32_t p_capacity_hint = 0) const {
+        return _get_effective_overlap_capacity(p_capacity_hint);
+    }
+    void _test_on_overflow_flag_readback(const Vector<uint8_t> &p_data, int64_t p_request_frame_serial) {
+        _on_overflow_flag_readback(p_data, p_request_frame_serial);
+    }
+    void _test_on_tile_counts_readback(const Vector<uint8_t> &p_data, int64_t p_request_frame_serial) {
+        _on_tile_counts_readback(p_data, p_request_frame_serial);
+    }
+#endif
+
 protected:
     static void _bind_methods();
 

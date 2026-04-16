@@ -1,7 +1,4 @@
-#define _ALLOW_KEYWORD_MACROS
-#define private public
 #include "../core/gaussian_streaming.h"
-#undef private
 
 #include "test_macros.h"
 
@@ -86,16 +83,10 @@ TEST_CASE("[Streaming Pipeline] sync pack rescue does not steal worker-owned pac
     GaussianStreamingSystem system;
     auto &uploads = system._internal_get_upload_pipeline();
 
-    uploads.async_pack_enabled = true;
-    uploads.pack_thread_running.store(true, std::memory_order_release);
+    uploads._test_set_async_pack_queue_owner(true);
+    uploads._test_enqueue_dummy_pack_job();
 
-    {
-        MutexLock lock(uploads.pack_mutex);
-        uploads.pack_queue.push_back(StreamingUploadPipeline::PackJob());
-        uploads.sync_cached_queue_depths_locked();
-    }
-
-    CHECK(uploads.promote_pack_jobs_sync(1) == 0);
+    CHECK(uploads._test_promote_pack_jobs_sync(1) == 0);
     CHECK(uploads.get_pack_queue_depth_cached() == 1);
     CHECK(uploads.get_upload_queue_depth_cached() == 0);
 }

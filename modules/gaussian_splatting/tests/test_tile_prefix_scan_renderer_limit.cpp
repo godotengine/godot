@@ -1,9 +1,6 @@
 #include "test_macros.h"
 
-#define private public
 #include "../renderer/tile_renderer.h"
-#undef private
-
 #include "../renderer/tile_prefix_scan_utils.h"
 #include "servers/rendering_server.h"
 
@@ -75,14 +72,16 @@ TEST_CASE("[TileRenderer] Prefix CPU fallback writes deterministic renderer rang
         return;
     }
 
-    const uint32_t total_tiles = renderer->grid_state.total_tiles;
+    auto &grid_state = renderer->_test_grid_state();
+    auto &global_sort_resources = renderer->_test_global_sort_resources();
+    const uint32_t total_tiles = grid_state.total_tiles;
     REQUIRE(total_tiles >= TileRenderer::BINNING_GROUP_SIZE + 1u);
 
-    renderer->_ensure_global_sort_resources(64u);
-    REQUIRE(renderer->global_sort_resources.tile_buffer_tiles == total_tiles);
-    REQUIRE(renderer->global_sort_resources.get_tile_counts_buffer().is_valid());
-    REQUIRE(renderer->global_sort_resources.tile_ranges_buffer.is_valid());
-    REQUIRE(renderer->global_sort_resources.prefix_total_buffer.is_valid());
+    renderer->_test_ensure_global_sort_resources(64u);
+    REQUIRE(global_sort_resources.tile_buffer_tiles == total_tiles);
+    REQUIRE(global_sort_resources.get_tile_counts_buffer().is_valid());
+    REQUIRE(global_sort_resources.tile_ranges_buffer.is_valid());
+    REQUIRE(global_sort_resources.prefix_total_buffer.is_valid());
 
     Vector<uint32_t> tile_counts;
     tile_counts.resize(total_tiles);
@@ -101,36 +100,40 @@ TEST_CASE("[TileRenderer] Prefix CPU fallback writes deterministic renderer rang
 
     const uint32_t expected_raw_total = 10u;
     const uint64_t counts_bytes = uint64_t(total_tiles) * sizeof(uint32_t);
-    local_device->buffer_update(renderer->global_sort_resources.get_tile_counts_buffer(), 0, counts_bytes, tile_counts.ptr());
+    local_device->buffer_update(global_sort_resources.get_tile_counts_buffer(), 0, counts_bytes, tile_counts.ptr());
 
-    renderer->timing_state.prefix_timestamp.reset();
-    renderer->async_readback.overflow_state.pending_readback = true;
-    renderer->async_readback.overflow_state.requested_frame_serial = 99u;
-    renderer->async_readback.overflow_state.first_frame_complete = false;
-    renderer->async_readback.overflow_state.overflow_detected = false;
-    renderer->async_readback.overflow_state.last_unclamped_total = 0u;
+    auto &timing_state = renderer->_test_timing_state();
+    auto &prefix_scan_stage = renderer->_test_prefix_scan_stage();
+    auto &overflow_state = renderer->_test_async_readback().overflow_state;
+
+    timing_state.prefix_timestamp.reset();
+    overflow_state.pending_readback = true;
+    overflow_state.requested_frame_serial = 99u;
+    overflow_state.first_frame_complete = false;
+    overflow_state.overflow_detected = false;
+    overflow_state.last_unclamped_total = 0u;
 
     uint32_t record_count = 0u;
     uint32_t raw_record_count = 0u;
-    const TileRenderer::TilePrefixScanStage::PrefixParams prefix_params = renderer->prefix_scan_stage.build_prefix_params();
-    const bool ok = renderer->prefix_scan_stage.run_cpu_prefix_fallback(local_device, prefix_params, record_count, raw_record_count);
+    const auto prefix_params = prefix_scan_stage.build_prefix_params();
+    const bool ok = prefix_scan_stage.run_cpu_prefix_fallback(local_device, prefix_params, record_count, raw_record_count);
     REQUIRE(ok);
 
-    const uint32_t effective_capacity = renderer->_get_effective_overlap_capacity();
+    const uint32_t effective_capacity = renderer->_test_get_effective_overlap_capacity();
     const uint32_t expected_record_count = effective_capacity > 0u ? MIN(expected_raw_total, effective_capacity) : expected_raw_total;
     const bool expected_overflow = (effective_capacity > 0u) && (expected_raw_total > effective_capacity);
 
     CHECK(raw_record_count == expected_raw_total);
     CHECK(record_count == expected_record_count);
-    CHECK_FALSE(renderer->timing_state.prefix_timestamp.is_valid());
+    CHECK_FALSE(timing_state.prefix_timestamp.is_valid());
 
-    CHECK_FALSE(renderer->async_readback.overflow_state.pending_readback);
-    CHECK(renderer->async_readback.overflow_state.requested_frame_serial == 0u);
-    CHECK(renderer->async_readback.overflow_state.first_frame_complete);
-    CHECK(renderer->async_readback.overflow_state.overflow_detected == expected_overflow);
-    CHECK(renderer->async_readback.overflow_state.last_unclamped_total == expected_raw_total);
+    CHECK_FALSE(overflow_state.pending_readback);
+    CHECK(overflow_state.requested_frame_serial == 0u);
+    CHECK(overflow_state.first_frame_complete);
+    CHECK(overflow_state.overflow_detected == expected_overflow);
+    CHECK(overflow_state.last_unclamped_total == expected_raw_total);
 
-    Vector<uint8_t> total_bytes = local_device->buffer_get_data(renderer->global_sort_resources.prefix_total_buffer, 0, sizeof(uint32_t));
+    Vector<uint8_t> total_bytes = local_device->buffer_get_data(global_sort_resources.prefix_total_buffer, 0, sizeof(uint32_t));
     REQUIRE(total_bytes.size() == int(sizeof(uint32_t)));
     uint32_t prefix_total = 0u;
     std::memcpy(&prefix_total, total_bytes.ptr(), sizeof(prefix_total));
@@ -138,16 +141,16 @@ TEST_CASE("[TileRenderer] Prefix CPU fallback writes deterministic renderer rang
 
     uint32_t prefix = 0u;
     uint32_t count = 0u;
-    REQUIRE(_read_tile_range_pair(local_device, renderer->global_sort_resources.tile_ranges_buffer, idx0, prefix, count));
+    REQUIRE(_read_tile_range_pair(local_device, global_sort_resources.tile_ranges_buffer, idx0, prefix, count));
     CHECK(prefix == 0u);
     CHECK(count == 2u);
-    REQUIRE(_read_tile_range_pair(local_device, renderer->global_sort_resources.tile_ranges_buffer, idx255, prefix, count));
+    REQUIRE(_read_tile_range_pair(local_device, global_sort_resources.tile_ranges_buffer, idx255, prefix, count));
     CHECK(prefix == 2u);
     CHECK(count == 1u);
-    REQUIRE(_read_tile_range_pair(local_device, renderer->global_sort_resources.tile_ranges_buffer, idx256, prefix, count));
+    REQUIRE(_read_tile_range_pair(local_device, global_sort_resources.tile_ranges_buffer, idx256, prefix, count));
     CHECK(prefix == 3u);
     CHECK(count == 4u);
-    REQUIRE(_read_tile_range_pair(local_device, renderer->global_sort_resources.tile_ranges_buffer, idx_last, prefix, count));
+    REQUIRE(_read_tile_range_pair(local_device, global_sort_resources.tile_ranges_buffer, idx_last, prefix, count));
     CHECK(prefix == 7u);
     CHECK(count == 3u);
 

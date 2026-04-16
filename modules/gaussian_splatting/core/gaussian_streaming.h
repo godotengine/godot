@@ -290,6 +290,33 @@ public:
         global_atlas_registry.mark_chunk_meta_dirty(*this, asset_id, chunk_idx);
     }
     void _test_force_next_chunk_upload_failure() { test_force_next_chunk_upload_failure = true; }
+
+    // Test-only access to atlas-state internals. Replaced the
+    // `#define private public` macro that test_gpu_streaming.cpp used to reach
+    // these private members directly; the macro leaks into transitively-included
+    // core templates and triggers GCC ODR errors.
+    AtlasAssetState *_test_get_asset_state(uint32_t p_asset_id) { return _get_asset_state(p_asset_id); }
+    LocalVector<StreamingChunk> &_test_get_asset_chunks(AtlasAssetState &p_asset) { return _get_asset_chunks(p_asset); }
+    uint64_t _test_make_chunk_key(uint32_t p_asset_id, uint32_t p_chunk_id) const {
+        return _make_chunk_key(p_asset_id, p_chunk_id);
+    }
+    GaussianAtlasAllocator &_test_atlas_allocator() { return atlas_allocator; }
+    bool _test_begin_chunk_upload(uint32_t p_asset_id, uint32_t p_chunk_idx, StreamingChunk &p_chunk, uint32_t p_buffer_slot) {
+        return _begin_chunk_upload(p_asset_id, p_chunk_idx, p_chunk, p_buffer_slot);
+    }
+    void _test_evict_unrequested_chunks(uint32_t p_asset_id, AtlasAssetState &p_asset, LocalVector<StreamingChunk> &p_asset_chunks) {
+        _evict_unrequested_chunks(p_asset_id, p_asset, p_asset_chunks);
+    }
+    // Field-level accessors for the global atlas registry. Returning the
+    // registry by reference would expose private fields the registry's
+    // friendship with this class doesn't grant onward — these forward only
+    // the specific fields tests need, through this class's own friendship.
+    bool _test_get_atlas_registry_dirty() const { return global_atlas_registry.asset_registry_dirty; }
+    bool _test_get_chunk_meta_dirty_all() const { return global_atlas_registry.chunk_meta_dirty_all; }
+    const LocalVector<uint32_t> &_test_get_chunk_meta_dirty_indices() const { return global_atlas_registry.chunk_meta_dirty_indices; }
+    RID _test_get_registry_asset_meta_buffer() const { return global_atlas_registry.asset_meta_buffer; }
+    RID _test_get_registry_chunk_meta_buffer() const { return global_atlas_registry.chunk_meta_buffer; }
+    RID _test_get_registry_asset_chunk_index_buffer() const { return global_atlas_registry.asset_chunk_index_buffer; }
 #endif
 
     // Distance-based LOD (Octree-GS) - chunk-level LOD selection and reduction

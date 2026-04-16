@@ -1,8 +1,5 @@
-#define _ALLOW_KEYWORD_MACROS
 #include "test_macros.h"
-#define private public
 #include "../core/gaussian_streaming.h"
-#undef private
 #include "../renderer/gpu_memory_stream.h"
 #include "../renderer/gaussian_splat_renderer.h"
 #include "../renderer/resource_owner_mismatch_contract.h"
@@ -1763,21 +1760,21 @@ TEST_CASE("[Streaming Pipeline] Cancelled pending chunk loads do not count as ev
     const uint32_t asset_id = 808;
     system->register_asset(asset_id, create_test_gaussian_data(GaussianStreamingSystem::CHUNK_SIZE));
 
-    GaussianStreamingSystem::AtlasAssetState *asset = system->_get_asset_state(asset_id);
+    auto *asset = system->_test_get_asset_state(asset_id);
     REQUIRE(asset != nullptr);
-    LocalVector<GaussianStreamingSystem::StreamingChunk> &asset_chunks = system->_get_asset_chunks(*asset);
+    auto &asset_chunks = system->_test_get_asset_chunks(*asset);
     REQUIRE(asset_chunks.size() > 0);
 
-    GaussianStreamingSystem::StreamingChunk &chunk = asset_chunks[0];
-    const uint64_t chunk_key = system->_make_chunk_key(asset_id, 0);
+    auto &chunk = asset_chunks[0];
+    const uint64_t chunk_key = system->_test_make_chunk_key(asset_id, 0);
     uint32_t buffer_slot = UINT32_MAX;
-    REQUIRE(system->atlas_allocator.allocate_slot(chunk_key, buffer_slot));
-    REQUIRE(system->_begin_chunk_upload(asset_id, 0, chunk, buffer_slot));
+    REQUIRE(system->_test_atlas_allocator().allocate_slot(chunk_key, buffer_slot));
+    REQUIRE(system->_test_begin_chunk_upload(asset_id, 0, chunk, buffer_slot));
     CHECK(chunk.upload_pending);
     CHECK_FALSE(chunk.is_loaded);
     CHECK(system->get_chunks_evicted_this_frame() == 0);
 
-    system->_evict_unrequested_chunks(asset_id, *asset, asset_chunks);
+    system->_test_evict_unrequested_chunks(asset_id, *asset, asset_chunks);
 
     CHECK(system->get_chunks_evicted_this_frame() == 0);
     CHECK_FALSE(chunk.is_loaded);
@@ -1815,9 +1812,9 @@ TEST_CASE("[Streaming Pipeline] Invalid chunk meta dirty marks force a safe atla
     const uint64_t generation_before = system->get_atlas_generation();
     system->_test_mark_chunk_meta_dirty(asset_id, 99);
 
-    CHECK(system->global_atlas_registry.asset_registry_dirty);
-    CHECK(system->global_atlas_registry.chunk_meta_dirty_all);
-    CHECK(system->global_atlas_registry.chunk_meta_dirty_indices.is_empty());
+    CHECK(system->_test_get_atlas_registry_dirty());
+    CHECK(system->_test_get_chunk_meta_dirty_all());
+    CHECK(system->_test_get_chunk_meta_dirty_indices().is_empty());
 
     system->_test_sync_global_atlas_state(rd);
 
@@ -1863,9 +1860,9 @@ TEST_CASE("[Streaming Pipeline] Dirty atlas publication is invalidated when GPU 
     CHECK_FALSE(system->get_asset_meta_buffer().is_valid());
     CHECK_FALSE(system->get_chunk_meta_buffer().is_valid());
     CHECK_FALSE(system->get_asset_chunk_index_buffer().is_valid());
-    CHECK_FALSE(system->global_atlas_registry.asset_meta_buffer.is_valid());
-    CHECK_FALSE(system->global_atlas_registry.chunk_meta_buffer.is_valid());
-    CHECK_FALSE(system->global_atlas_registry.asset_chunk_index_buffer.is_valid());
+    CHECK_FALSE(system->_test_get_registry_asset_meta_buffer().is_valid());
+    CHECK_FALSE(system->_test_get_registry_chunk_meta_buffer().is_valid());
+    CHECK_FALSE(system->_test_get_registry_asset_chunk_index_buffer().is_valid());
     CHECK(system->get_atlas_generation() == generation_before);
 
     system->_test_sync_global_atlas_state(rd);

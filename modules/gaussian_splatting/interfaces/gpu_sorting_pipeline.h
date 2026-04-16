@@ -77,6 +77,27 @@ public:
         last_instance_visible_splat_count_valid = true;
         last_instance_visible_splat_count_frame = p_frame_counter;
     }
+#ifdef TESTS_ENABLED
+    // Test-only accessors. Mirror the pattern used in core/gaussian_streaming.h
+    // (search for `_test_*`). Replaced the `#define private public` macro that
+    // test_gpu_sorting_pipeline_readback used to reach this state directly —
+    // the macro leaks into transitively-included core templates and triggers
+    // GCC ODR errors on Linux.
+    // SortReadbackState / InstanceCountReadbackState are nested types declared
+    // later in the class body (in the private section), so they aren't yet
+    // visible at this point — `auto &` defers type deduction until the function
+    // body is parsed (after the class is complete).
+    auto &_test_sort_readback_state() { return sort_readback_state; }
+    auto &_test_instance_count_readback_state() { return instance_count_readback_state; }
+    ISortResultSink *_test_get_sort_result_sink() const { return sort_result_sink; }
+    void _test_set_last_instance_visible_splat_count_state(uint32_t p_count, bool p_valid, uint32_t p_frame) {
+        last_instance_visible_splat_count = p_count;
+        last_instance_visible_splat_count_valid = p_valid;
+        last_instance_visible_splat_count_frame = p_frame;
+    }
+    bool _test_get_last_instance_visible_splat_count_valid() const { return last_instance_visible_splat_count_valid; }
+    uint32_t _test_get_last_instance_visible_splat_count_frame() const { return last_instance_visible_splat_count_frame; }
+#endif
     String get_last_compute_error() const { return last_compute_error; }
 
     // IGPUSortingPipeline interface - Depth compute resources
