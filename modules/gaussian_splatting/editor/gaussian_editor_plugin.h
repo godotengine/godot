@@ -70,6 +70,7 @@ private:
     Vector<InspectorStatsBinding> inspector_stats_bindings;
     int inspector_stats_frame_accumulator = 0;
 
+    void _initialize_editor_ui_once();
     void _on_import_file_selected(const String &p_path);
     void _update_stats();
     void _update_inspector_stats();

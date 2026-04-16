@@ -160,6 +160,19 @@ static Vector<GaussianSplatNode3D *> _collect_live_hot_reload_nodes(Vector<Objec
 GaussianEditorPlugin::GaussianEditorPlugin() {
     runtime_thumbnail_generator.instantiate();
     editor_integration.instantiate();
+    // EditorFileDialog and the import dialogs are constructed lazily on
+    // NOTIFICATION_ENTER_TREE. Constructing EditorFileDialog at this point
+    // would invoke editor singletons (EditorPaths/EditorSettings/EDSCALE,
+    // shell-path lookup via OS::get_system_dir) that aren't initialized in
+    // --headless --test mode, where the plugin is constructed by hot-reload
+    // doctests. The previous in-ctor construction crashed the [Editor] lane
+    // of gaussian_production_gates with no symbolicated backtrace.
+}
+
+void GaussianEditorPlugin::_initialize_editor_ui_once() {
+    if (import_dialog) {
+        return;
+    }
 
     import_dialog = memnew(EditorFileDialog);
     import_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -175,8 +188,6 @@ GaussianEditorPlugin::GaussianEditorPlugin() {
     // Advanced import settings dialog (opened by double-clicking .ply/.spz in filesystem).
     gaussian_import_settings_dialog = memnew(GaussianImportSettingsDialog);
     add_child(gaussian_import_settings_dialog);
-
-    editor_integration->setup(this, import_dialog);
 }
 
 GaussianEditorPlugin::~GaussianEditorPlugin() {
@@ -198,6 +209,8 @@ void GaussianEditorPlugin::_bind_methods() {
 void GaussianEditorPlugin::_notification(int p_what) {
     switch (p_what) {
         case NOTIFICATION_ENTER_TREE: {
+            _initialize_editor_ui_once();
+
             if (editor_integration.is_valid()) {
                 editor_integration->setup(this, import_dialog);
             }

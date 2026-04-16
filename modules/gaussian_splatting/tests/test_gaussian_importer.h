@@ -27,6 +27,7 @@
 #include "core/config/project_settings.h"
 #include "core/templates/hash_map.h"
 #include "core/math/math_funcs.h"
+#include "editor/editor_node.h"
 #include "editor/inspector/editor_inspector.h"
 #include "core/string/ustring.h"
 #include "scene/main/node.h"
@@ -2000,6 +2001,16 @@ TEST_CASE("[GaussianSplatting][Editor] Import settings dialog ignores missing si
 }
 
 TEST_CASE("[GaussianSplatting][Editor] Advanced import settings reimport refreshes inspector, preview, and stats") {
+    // GaussianImportSettingsDialog::open_settings exercises EditorInspector,
+    // a 3D viewport scene, and popup_centered_ratio — none of which work
+    // without an EditorNode-backed runtime. In --headless --test the dialog's
+    // popup path SIGSEGVs (no symbolicated frames; this was the tail end of
+    // the multi-day [Editor] lane crash). Skip when the editor isn't loaded.
+    if (!EditorNode::get_singleton()) {
+        MESSAGE("Skipping - EditorNode not available; this test requires editor runtime.");
+        return;
+    }
+
     const String source_path = "user://gaussian_import_settings_reimport_fixture.ply";
 
     Dictionary initial_options;
