@@ -35,6 +35,7 @@
 
 class Button;
 class EditorExportPreset;
+class EditorFileDialog;
 class ItemList;
 class HBoxContainer;
 class OptionButton;
@@ -196,8 +197,10 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *open_folder_button = nullptr;
 	Button *install_button = nullptr;
 	Button *delete_all_button = nullptr;
+	Button *tpz_button = nullptr;
 	HBoxContainer *offline_container = nullptr;
 	ConfirmationDialog *confirm_delete = nullptr;
+	EditorFileDialog *tpz_selection_dialog = nullptr;
 
 	void _request_mirrors();
 	void _mirrors_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
@@ -210,6 +213,7 @@ class ExportTemplateManager : public AcceptDialog {
 	void _delete_all();
 	void _delete_confirmed();
 	void _delete_file(const TreeItem *p_item);
+	void _tpz_file_selected(const String &p_file);
 
 	void _initialize_template_data();
 	void _update_version_list();
