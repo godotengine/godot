@@ -128,6 +128,22 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	camera_znear = p_settings.get("editors/3d/default_z_near", 0.05);
 	camera_zfar = p_settings.get("editors/3d/default_z_far", 4'000);
 
+	int freelook_mod_idx = p_settings.get("editors/3d/freelook/freelook_activation_modifier", 0);
+	switch (freelook_mod_idx) {
+		case 1: {
+			freelook_modifier = Key::SHIFT;
+		} break;
+		case 2: {
+			freelook_modifier = Key::ALT;
+		} break;
+		case 3: {
+			freelook_modifier = Key::META;
+		} break;
+		case 4: {
+			freelook_modifier = Key::CTRL;
+		} break;
+	}
+
 	// View3DController Setup
 
 	view_3d_controller.instantiate();
@@ -167,6 +183,17 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 	view_3d_controller->connect("fov_scaled", callable_mp(this, &RuntimeNodeSelect::_fov_scaled));
 	view_3d_controller->connect("cursor_interpolated", callable_mp(this, &RuntimeNodeSelect::_cursor_interpolated));
+
+	freelook_toggle = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_toggle", Array()).operator Array());
+	if (freelook_toggle.is_valid()) {
+		for (Ref<InputEventKey> k : freelook_toggle->get_events()) {
+			if (k->get_physical_keycode() == Key::NONE) {
+				k->set_keycode(view_3d_controller->emulate_numpad_key(k->get_keycode()));
+			} else {
+				k->set_physical_keycode(view_3d_controller->emulate_numpad_key(k->get_physical_keycode()));
+			}
+		}
+	}
 
 #define SET_SHORTCUT(p_name, p_setting) \
 	{ \
@@ -376,7 +403,7 @@ void RuntimeNodeSelect::_update_input_state() {
 void RuntimeNodeSelect::_process_frame() {
 #ifndef _3D_DISABLED
 	// Calculate the process time manually, as the time scale can be frozen.
-	const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second()) * Engine::get_singleton()->get_unfrozen_time_scale();
+	const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second());
 
 	if (view_3d_controller->is_freelook_enabled()) {
 		Input *input = Input::get_singleton();
@@ -1447,8 +1474,42 @@ bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
-		view_3d_controller->set_freelook_enabled(b->is_pressed());
+		bool enable_freelook = b->is_pressed();
+		if (enable_freelook && freelook_modifier != Key::NONE) {
+			switch (freelook_modifier) {
+				case Key::SHIFT: {
+					enable_freelook = b->is_shift_pressed();
+				} break;
+				case Key::ALT: {
+					enable_freelook = b->is_alt_pressed();
+				} break;
+				case Key::META: {
+					enable_freelook = b->is_meta_pressed();
+				} break;
+				case Key::CTRL: {
+					enable_freelook = b->is_ctrl_pressed();
+				} break;
+				default:
+					break;
+			}
+
+			if (!enable_freelook) {
+				return false;
+			}
+		}
+
+		view_3d_controller->set_freelook_enabled(enable_freelook);
 		return true;
+	}
+
+	if (freelook_toggle.is_valid()) {
+		const Array shortcuts = freelook_toggle->get_events();
+		for (Ref<InputEventKey> k : shortcuts) {
+			if (k.is_valid() && p_event->is_match(k) && p_event->is_pressed()) {
+				view_3d_controller->set_freelook_enabled(!view_3d_controller->is_freelook_enabled());
+				return true;
+			}
+		}
 	}
 
 	Ref<InputEventKey> k = p_event;
