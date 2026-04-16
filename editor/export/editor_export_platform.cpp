@@ -1906,10 +1906,8 @@ EditorExportPlatform::FilteredCache EditorExportPlatform::_get_filtered_cache(co
 	}
 
 	// Encode global classes.
-	if (!global_class_list.is_empty()) {
-		global_class_cf->set_value("", "list", global_class_list);
-		result.global_class_list = global_class_cf->encode_to_text().to_utf8_buffer();
-	}
+	global_class_cf->set_value("", "list", global_class_list);
+	result.global_class_list = global_class_cf->encode_to_text().to_utf8_buffer();
 
 	// Encode UIDs.
 	result.uids = ResourceUID::encode_binary_cache(uid_entries);

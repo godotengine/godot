@@ -1492,7 +1492,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 					List<StringName> enum_values;
 
-					ClassDB::get_enum_constants(type, type_enum, &enum_values);
+					// Type may be a script type.
+					if (ClassDB::class_exists(type)) {
+						ClassDB::get_enum_constants(type, type_enum, &enum_values);
+					}
 
 					for (const StringName &E : enum_values) {
 						int location = p_recursion_depth + _get_enum_constant_location(type, E);
@@ -1622,7 +1625,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	const char **kw = _keywords;
 	while (*kw) {
-		ScriptLanguage::CodeCompletionOption option(*kw, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+		ScriptLanguage::CodeCompletionOption option(*kw, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
 		r_result.insert(option.display, option);
 		kw++;
 	}
@@ -1635,7 +1638,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	const char **kws = _keywords_with_space;
 	while (*kws) {
-		ScriptLanguage::CodeCompletionOption option(*kws, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+		ScriptLanguage::CodeCompletionOption option(*kws, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
 		option.insert_text += " ";
 		r_result.insert(option.display, option);
 		kws++;

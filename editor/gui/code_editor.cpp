@@ -1101,6 +1101,9 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 		case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
 			tex = get_editor_theme_icon(SNAME("MemberMethod"));
 			break;
+		case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+			tex = get_editor_theme_icon(SNAME("Keyword"));
+			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 			tex = get_editor_theme_icon(SNAME("BoxMesh"));
 			break;
@@ -1641,6 +1644,11 @@ void CodeTextEditor::_update_text_editor_theme() {
 	}
 
 	_update_font_ligatures();
+
+	update_editor_settings();
+	if (text_editor->get_code_completion_selected_index() != -1) {
+		_complete_request();
+	}
 }
 
 void CodeTextEditor::_update_font_ligatures() {

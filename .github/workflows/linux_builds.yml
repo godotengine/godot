@@ -159,7 +159,7 @@ jobs:
 
       - name: Setup older .NET SDK as baseline
         if: matrix.build-mono
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           # Targeting the oldest version we want to support to ensure it still builds.
           dotnet-version: 8.0.100

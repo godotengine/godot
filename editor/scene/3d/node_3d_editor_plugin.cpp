@@ -857,8 +857,42 @@ float Node3DEditorViewport::_min_screen_dist_to_aabb(const AABB &p_aabb, const T
 	return Math::sqrt(dx * dx + dy * dy);
 }
 
+static bool _node_is_snap_source(Node *p_node, bool p_use_collision) {
+	if (!p_use_collision) {
+		return Object::cast_to<GeometryInstance3D>(p_node);
+	}
+	if (Object::cast_to<CollisionShape3D>(p_node)) {
+		return true;
+	}
+	Node3D *n3d = Object::cast_to<Node3D>(p_node);
+	if (!n3d) {
+		return false;
+	}
+	for (const Ref<Node3DGizmo> &g : n3d->get_gizmos()) {
+		Ref<EditorNode3DGizmo> seg = g;
+		if (seg.is_valid() && seg->get_collision_meshes_are_snap_source()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool _node_has_snap_target(Node *p_node, bool p_use_collision) {
+	if (_node_is_snap_source(p_node, p_use_collision)) {
+		return true;
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		if (_node_has_snap_target(p_node->get_child(i), p_use_collision)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Node3DEditorViewport::_find_closest_vertex_on_node(const Point2 &p_screen_pos, Node3D *p_node, float &r_closest_screen_dist, Vector3 &r_vertex_world) const {
 	bool found = false;
+	bool use_collision = Node3DEditor::get_singleton()->is_vertex_snap_use_collision();
+	bool walk_collision_segments = use_collision && Object::cast_to<CollisionShape3D>(p_node);
 
 	Transform3D gt = p_node->get_global_transform();
 	Vector<Ref<Node3DGizmo>> gizmos = p_node->get_gizmos();
@@ -869,53 +903,72 @@ bool Node3DEditorViewport::_find_closest_vertex_on_node(const Point2 &p_screen_p
 			continue;
 		}
 
-		const LocalVector<Ref<TriangleMesh>> &meshes = seg->get_collision_meshes();
-		for (const Ref<TriangleMesh> &tm : meshes) {
-			if (tm.is_null() || !tm->is_valid()) {
-				continue;
+		if (walk_collision_segments) {
+			const Vector<Vector3> &segments = seg->get_collision_segments();
+			for (int si = 0; si < segments.size(); si++) {
+				Vector3 world_v = gt.xform(segments[si]);
+				if (camera->is_position_behind(world_v)) {
+					continue;
+				}
+				Vector2 screen_v = camera->unproject_position(world_v);
+				float dist = screen_v.distance_to(p_screen_pos);
+				if (dist < r_closest_screen_dist) {
+					r_closest_screen_dist = dist;
+					r_vertex_world = world_v;
+					found = true;
+				}
 			}
+		}
 
-			const Vector<TriangleMesh::BVH> &bvh = tm->get_bvh();
-			const Vector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
-			const Vector<Vector3> &vertices = tm->get_vertices();
-
-			if (bvh.is_empty()) {
-				continue;
-			}
-
-			// Traverse the TriangleMesh BVH, pruning branches whose screen-space
-			// AABB is farther than the current best.
-			LocalVector<int> stack;
-			stack.push_back(bvh.size() - 1);
-
-			while (!stack.is_empty()) {
-				int node_idx = stack[stack.size() - 1];
-				stack.resize(stack.size() - 1);
-
-				const TriangleMesh::BVH &b = bvh[node_idx];
-
-				if (_min_screen_dist_to_aabb(b.aabb, gt, p_screen_pos) >= r_closest_screen_dist) {
+		if (!use_collision || seg->get_collision_meshes_are_snap_source()) {
+			const LocalVector<Ref<TriangleMesh>> &meshes = seg->get_collision_meshes();
+			for (const Ref<TriangleMesh> &tm : meshes) {
+				if (tm.is_null() || !tm->is_valid()) {
 					continue;
 				}
 
-				if (b.face_index >= 0) {
-					const TriangleMesh::Triangle &tri = triangles[b.face_index];
-					for (int vi = 0; vi < 3; vi++) {
-						Vector3 world_v = gt.xform(vertices[tri.indices[vi]]);
-						if (camera->is_position_behind(world_v)) {
-							continue;
-						}
-						Vector2 screen_v = camera->unproject_position(world_v);
-						float dist = screen_v.distance_to(p_screen_pos);
-						if (dist < r_closest_screen_dist) {
-							r_closest_screen_dist = dist;
-							r_vertex_world = world_v;
-							found = true;
-						}
+				const Vector<TriangleMesh::BVH> &bvh = tm->get_bvh();
+				const Vector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
+				const Vector<Vector3> &vertices = tm->get_vertices();
+
+				if (bvh.is_empty()) {
+					continue;
+				}
+
+				// Traverse the TriangleMesh BVH, pruning branches whose screen-space
+				// AABB is farther than the current best.
+				LocalVector<int> stack;
+				stack.push_back(bvh.size() - 1);
+
+				while (!stack.is_empty()) {
+					int node_idx = stack[stack.size() - 1];
+					stack.resize(stack.size() - 1);
+
+					const TriangleMesh::BVH &b = bvh[node_idx];
+
+					if (_min_screen_dist_to_aabb(b.aabb, gt, p_screen_pos) >= r_closest_screen_dist) {
+						continue;
 					}
-				} else {
-					stack.push_back(b.left);
-					stack.push_back(b.right);
+
+					if (b.face_index >= 0) {
+						const TriangleMesh::Triangle &tri = triangles[b.face_index];
+						for (int vi = 0; vi < 3; vi++) {
+							Vector3 world_v = gt.xform(vertices[tri.indices[vi]]);
+							if (camera->is_position_behind(world_v)) {
+								continue;
+							}
+							Vector2 screen_v = camera->unproject_position(world_v);
+							float dist = screen_v.distance_to(p_screen_pos);
+							if (dist < r_closest_screen_dist) {
+								r_closest_screen_dist = dist;
+								r_vertex_world = world_v;
+								found = true;
+							}
+						}
+					} else {
+						stack.push_back(b.left);
+						stack.push_back(b.right);
+					}
 				}
 			}
 		}
@@ -932,12 +985,14 @@ bool Node3DEditorViewport::_find_closest_vertex_in_scene(const Point2 &p_screen_
 	Point2 max_pos(p_screen_pos.x + p_threshold, p_screen_pos.y + p_threshold);
 	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_frustum_query(_build_screen_frustum(min_pos, max_pos));
 
+	bool use_collision = Node3DEditor::get_singleton()->is_vertex_snap_use_collision();
+
 	for (Node3D *spat : nodes_with_gizmos) {
 		if (!spat) {
 			continue;
 		}
 
-		if (!Object::cast_to<GeometryInstance3D>(spat)) {
+		if (!_node_is_snap_source(spat, use_collision)) {
 			continue;
 		}
 
@@ -1042,18 +1097,6 @@ bool Node3DEditorViewport::_is_vertex_occluded(const Vector3 &p_world_pos, const
 	return false;
 }
 
-static bool _node_has_geometry(Node *p_node) {
-	if (Object::cast_to<GeometryInstance3D>(p_node)) {
-		return true;
-	}
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		if (_node_has_geometry(p_node->get_child(i))) {
-			return true;
-		}
-	}
-	return false;
-}
-
 void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 	if (selection.is_empty()) {
@@ -1068,7 +1111,8 @@ void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos
 	if (spatial_editor->is_vertex_snap_origin_mode()) {
 		found = _find_closest_vertex_in_scene(p_screen_pos, threshold, vw);
 	} else {
-		bool selection_has_geometry = false;
+		bool use_collision = spatial_editor->is_vertex_snap_use_collision();
+		bool selection_has_snap_target = false;
 		for (Node *E : selection) {
 			Node3D *sp = Object::cast_to<Node3D>(E);
 			if (!sp) {
@@ -1080,11 +1124,11 @@ void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos
 			while (!descendants.is_empty()) {
 				Node3D *node = descendants[descendants.size() - 1];
 				descendants.resize(descendants.size() - 1);
-				if (Object::cast_to<GeometryInstance3D>(node)) {
-					selection_has_geometry = true;
-				}
-				if (_find_closest_vertex_on_node(p_screen_pos, node, threshold, vw)) {
-					found = true;
+				if (_node_is_snap_source(node, use_collision)) {
+					selection_has_snap_target = true;
+					if (_find_closest_vertex_on_node(p_screen_pos, node, threshold, vw)) {
+						found = true;
+					}
 				}
 				for (int i = 0; i < node->get_child_count(); i++) {
 					Node3D *child = Object::cast_to<Node3D>(node->get_child(i));
@@ -1095,7 +1139,7 @@ void Node3DEditorViewport::_vertex_snap_update_source(const Point2 &p_screen_pos
 			}
 		}
 
-		if (!found && !selection_has_geometry) {
+		if (!found && !selection_has_snap_target) {
 			found = _find_closest_vertex_in_scene(p_screen_pos, threshold, vw);
 		}
 	}
@@ -2023,7 +2067,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	}
 
 	if (k.is_valid()) {
-		if (!vertex_snap_mode && !vertex_snap_dragging && k->is_pressed() && _edit.mode == TRANSFORM_NONE && ED_IS_SHORTCUT("spatial_editor/vertex_snap", p_event)) {
+		Ref<InputEventKey> k_no_shift = k->duplicate();
+		k_no_shift->set_shift_pressed(false);
+		if (!vertex_snap_mode && !vertex_snap_dragging && k->is_pressed() && _edit.mode == TRANSFORM_NONE && ED_IS_SHORTCUT("spatial_editor/vertex_snap", k_no_shift)) {
 			vertex_snap_mode = true;
 			vertex_snap_keycode = k->get_physical_keycode() != Key::NONE ? k->get_physical_keycode() : k->get_keycode();
 			_disable_follow_mode();
@@ -2069,15 +2115,19 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 					bool use_origin_snap = spatial_editor->is_vertex_snap_origin_mode();
 
+					Node3D *selected = spatial_editor->get_single_selected_node();
+					Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
+					bool has_subgizmos = se && se->gizmo.is_valid() && !se->subgizmos.is_empty();
+
 					if (!use_origin_snap) {
-						bool has_geometry = false;
+						bool has_snap_target = false;
 						for (Node *E : selection) {
-							if (_node_has_geometry(E)) {
-								has_geometry = true;
+							if (_node_has_snap_target(E, spatial_editor->is_vertex_snap_use_collision())) {
+								has_snap_target = true;
 								break;
 							}
 						}
-						if (!has_geometry) {
+						if (!has_snap_target) {
 							use_origin_snap = true;
 						}
 					}
@@ -2100,17 +2150,35 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							Vector3 cam_normal = camera->get_global_transform().basis.get_column(2);
 							vertex_snap_drag_plane = Plane(cam_normal, vertex_snap_source);
 						} else {
-							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-							undo_redo->create_action(TTR("Vertex Snap"));
-							for (const KeyValue<ObjectID, Vector3> &E2 : vertex_snap_original_positions) {
-								Node3D *node = ObjectDB::get_instance<Node3D>(E2.key);
-								if (node) {
-									node->set_global_position(vertex_snap_source);
-									undo_redo->add_do_method(node, "set_global_position", vertex_snap_source);
-									undo_redo->add_undo_method(node, "set_global_position", E2.value);
+							if (has_subgizmos) {
+								Transform3D gi = selected->get_global_transform().affine_inverse();
+								Vector3 local_target = gi.xform(vertex_snap_source);
+
+								Vector<int> ids;
+								Vector<Transform3D> restores;
+								for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
+									Transform3D original_xform = se->gizmo->get_subgizmo_transform(GE.key);
+									ids.push_back(GE.key);
+									restores.push_back(original_xform);
+
+									Transform3D snapped_xform = original_xform;
+									snapped_xform.origin = local_target;
+									se->gizmo->set_subgizmo_transform(GE.key, snapped_xform);
 								}
+								se->gizmo->commit_subgizmos(ids, restores, false);
+							} else {
+								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+								undo_redo->create_action(TTR("Vertex Snap"));
+								for (const KeyValue<ObjectID, Vector3> &E2 : vertex_snap_original_positions) {
+									Node3D *node = ObjectDB::get_instance<Node3D>(E2.key);
+									if (node) {
+										node->set_global_position(vertex_snap_source);
+										undo_redo->add_do_method(node, "set_global_position", vertex_snap_source);
+										undo_redo->add_undo_method(node, "set_global_position", E2.value);
+									}
+								}
+								undo_redo->commit_action(false);
 							}
-							undo_redo->commit_action(false);
 							vertex_snap_original_positions.clear();
 							spatial_editor->update_transform_gizmo();
 							_reset_follow_mode_count();
@@ -2374,6 +2442,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 								seg->redraw();
 								spatial_editor->update_transform_gizmo();
+								_reset_follow_mode_count();
 								intersected_subgizmo = true;
 								break;
 							}
@@ -4058,15 +4127,10 @@ void Node3DEditorViewport::_draw() {
 			}
 
 			Color circle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.6, 1.0, 0.8);
-			for (int i = 0; i < circle_points.size() - 1; i++) {
-				RenderingServer::get_singleton()->canvas_item_add_line(
-						ci,
-						circle_points[i],
-						circle_points[i + 1],
-						circle_color,
-						Math::round(2 * EDSCALE),
-						true);
-			}
+			Vector<Color> circle_colors;
+			circle_colors.resize(circle_points.size());
+			circle_colors.fill(circle_color);
+			RenderingServer::get_singleton()->canvas_item_add_polyline(ci, circle_points, circle_colors, Math::round(2 * EDSCALE), true);
 
 			const int segments = 64;
 			float display_angle = _edit.rotation_angle;
@@ -4134,16 +4198,16 @@ void Node3DEditorViewport::_draw() {
 					edge_color,
 					Math::round(2 * EDSCALE),
 					true);
+		}
 
-			if (_edit.show_rotation_line) {
-				handle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.25, 1.0, handle_color.a);
-				RenderingServer::get_singleton()->canvas_item_add_line(
-						ci,
-						_edit.mouse_pos,
-						center,
-						handle_color,
-						Math::round(2 * EDSCALE));
-			}
+		if (_edit.show_rotation_line) {
+			handle_color = handle_color.from_hsv(handle_color.get_h(), handle_color.get_s() * 0.25, 1.0, handle_color.a);
+			RenderingServer::get_singleton()->canvas_item_add_line(
+					ci,
+					_edit.mouse_pos,
+					center,
+					handle_color,
+					Math::round(2 * EDSCALE));
 		}
 	}
 	if (previewing) {
@@ -4541,12 +4605,14 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_SSIL:
 		case VIEW_DISPLAY_DEBUG_PSSM_SPLITS:
 		case VIEW_DISPLAY_DEBUG_DECAL_ATLAS:
+		case VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS:
 		case VIEW_DISPLAY_DEBUG_SDFGI:
 		case VIEW_DISPLAY_DEBUG_SDFGI_PROBES:
 		case VIEW_DISPLAY_DEBUG_GI_BUFFER:
 		case VIEW_DISPLAY_DEBUG_DISABLE_LOD:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS:
+		case VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_DECALS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES:
 		case VIEW_DISPLAY_DEBUG_OCCLUDERS:
@@ -4571,10 +4637,12 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 				VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
 				VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+				VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
 				VIEW_DISPLAY_DEBUG_SDFGI,
 				VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 				VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
 				VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+				VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
 				VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
 				VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 				VIEW_DISPLAY_DEBUG_OCCLUDERS,
@@ -4601,10 +4669,12 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_DISABLE_LOD,
 				Viewport::DEBUG_DRAW_PSSM_SPLITS,
 				Viewport::DEBUG_DRAW_DECAL_ATLAS,
+				Viewport::DEBUG_DRAW_AREA_LIGHT_ATLAS,
 				Viewport::DEBUG_DRAW_SDFGI,
 				Viewport::DEBUG_DRAW_SDFGI_PROBES,
 				Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
 				Viewport::DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+				Viewport::DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
 				Viewport::DEBUG_DRAW_CLUSTER_DECALS,
 				Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 				Viewport::DEBUG_DRAW_OCCLUDERS,
@@ -5008,16 +5078,19 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D view_rotation_xform = xform;
 	view_rotation_xform.orthonormalize();
-	bool shrink_view_ring = arc_replaces_ring >= 0 && arc_replaces_ring < 3;
-	Vector3 view_ring_scale = shrink_view_ring ? scale * spatial_editor->gizmo_view_rotation_shrink : scale;
-	view_rotation_xform.basis.scale(view_ring_scale);
-	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
 
 	bool can_show_trackball = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_gizmo_during_rotation;
 	bool show_trackball_sphere = can_show_trackball && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) && !hide_gizmo_during_trackball;
-	RenderingServer::get_singleton()->instance_set_transform(trackball_sphere_instance, view_rotation_xform);
+	Transform3D trackball_xform = view_rotation_xform;
+	trackball_xform.basis.scale(scale);
+	RenderingServer::get_singleton()->instance_set_transform(trackball_sphere_instance, trackball_xform);
 	RenderingServer::get_singleton()->instance_set_visible(trackball_sphere_instance, show_trackball_sphere);
+
+	bool shrink_view_ring = arc_replaces_ring >= 0 && arc_replaces_ring < 3;
+	Vector3 view_ring_scale = shrink_view_ring ? scale : scale * (spatial_editor->gizmo_view_rotation_scale / GIZMO_CIRCLE_SIZE);
+	view_rotation_xform.basis.scale(view_ring_scale);
+	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
 
 	bool show_axes = spatial_editor->is_gizmo_visible() && _edit.mode != TRANSFORM_NONE && !hide_gizmo_during_trackball;
 	RenderingServer *rs = RenderingServer::get_singleton();
@@ -6702,6 +6775,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 			TTRC("Displays the shadow map used for directional shadow mapping.\nRequires a visible DirectionalLight3D node with shadows enabled to have a visible effect."));
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Atlas"), VIEW_DISPLAY_DEBUG_DECAL_ATLAS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Atlas"), VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Lighting"), VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
@@ -6733,6 +6807,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 			TTRC("Highlights tiles of pixels that are affected by at least one OmniLight3D."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SpotLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Highlights tiles of pixels that are affected by at least one SpotLight3D."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Highlights tiles of pixels that are affected by at least one AreaLight3D."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_DECALS, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Highlights tiles of pixels that are affected by at least one Decal."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("ReflectionProbe Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
@@ -7504,6 +7580,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["viewports"] = vpdata;
 
 	d["vertex_snap_origin_mode"] = vertex_snap_origin_mode;
+	d["vertex_snap_use_collision"] = vertex_snap_use_collision;
 	d["show_grid"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
@@ -7584,6 +7661,14 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
 		transform_menu->get_popup()->set_item_checked(idx_vertex, !vertex_snap_origin_mode);
 		transform_menu->get_popup()->set_item_checked(idx_origin, vertex_snap_origin_mode);
+	}
+
+	if (d.has("vertex_snap_use_collision")) {
+		vertex_snap_use_collision = d["vertex_snap_use_collision"];
+		int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+		int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+		transform_menu->get_popup()->set_item_checked(idx_mesh, !vertex_snap_use_collision);
+		transform_menu->get_popup()->set_item_checked(idx_collision, vertex_snap_use_collision);
 	}
 
 	if (d.has("local_coords")) {
@@ -7768,6 +7853,10 @@ void Node3DEditor::_update_vertex_snap_tooltips() {
 			vformat(TTR("Hold %s to highlight a vertex on the currently selected node,\nthen drag to move the node and snap it to vertices on neighboring nodes.\n\nFor nodes without a vertex-based representation,\nSnap Origin to Vertex is always used instead."), snap_key));
 	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN),
 			vformat(TTR("Hold %s to highlight another node's vertex,\nthen click to teleport the selected node to the highlighted vertex."), snap_key));
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH),
+			TTR("Snap to vertices of visual meshes.\nHold Shift while vertex snapping to temporarily snap to collision shapes instead."));
+	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION),
+			TTR("Snap to vertices of collision shapes.\nHold Shift while vertex snapping to temporarily snap to mesh vertices instead."));
 }
 
 void Node3DEditor::_xform_dialog_action() {
@@ -7948,6 +8037,20 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
 			transform_menu->get_popup()->set_item_checked(idx_vertex, false);
 			transform_menu->get_popup()->set_item_checked(idx_origin, true);
+		} break;
+		case MENU_VERTEX_SNAP_SOURCE_MESH: {
+			vertex_snap_use_collision = false;
+			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu->get_popup()->set_item_checked(idx_mesh, true);
+			transform_menu->get_popup()->set_item_checked(idx_collision, false);
+		} break;
+		case MENU_VERTEX_SNAP_SOURCE_COLLISION: {
+			vertex_snap_use_collision = true;
+			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			transform_menu->get_popup()->set_item_checked(idx_mesh, false);
+			transform_menu->get_popup()->set_item_checked(idx_collision, true);
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
@@ -8515,8 +8618,7 @@ void fragment() {
 				for (int j = 0; j < n; ++j) {
 					Basis basis = Basis(ivec, j * step);
 
-					real_t circle_size = (i == 3) ? gizmo_view_rotation_scale : GIZMO_CIRCLE_SIZE;
-					Vector3 vertex = basis.xform(ivec2 * circle_size);
+					Vector3 vertex = basis.xform(ivec2 * GIZMO_CIRCLE_SIZE);
 
 					for (int k = 0; k < m; ++k) {
 						Vector2 ofs = Vector2(Math::cos((Math::TAU * k) / m), Math::sin((Math::TAU * k) / m));
@@ -9578,6 +9680,8 @@ void Node3DEditor::_notification(int p_what) {
 					active_selection_box_mat_xray->set_albedo(active_selection_box_color * Color(1, 1, 1, 0.15));
 				}
 
+				gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
+
 				// Update grid color by rebuilding grid.
 				_finish_grid();
 				_init_grid();
@@ -10309,9 +10413,7 @@ void Node3DEditor::PreviewSunEnvPopup::shortcut_input(const Ref<InputEvent> &p_e
 Node3DEditor::Node3DEditor() {
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
-	float vp_radius = (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
-	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * vp_radius;
-	gizmo_view_rotation_shrink = 1.0 / vp_radius;
+	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
 
 	viewport_environment.instantiate();
 	VBoxContainer *vbc = this;
@@ -10564,6 +10666,11 @@ Node3DEditor::Node3DEditor() {
 	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
 	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
 	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
+
+	p->add_separator();
+	p->add_radio_check_item(TTRC("Snap to Mesh Vertices"), MENU_VERTEX_SNAP_SOURCE_MESH);
+	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH), true);
+	p->add_radio_check_item(TTRC("Snap to Collision Vertices"), MENU_VERTEX_SNAP_SOURCE_COLLISION);
 	_update_vertex_snap_tooltips();
 
 	p->add_separator();
@@ -11064,6 +11171,10 @@ bool Node3DEditor::is_gizmo_visible() const {
 		return gizmo.visible && selected->is_transform_gizmo_visible();
 	}
 	return gizmo.visible;
+}
+
+bool Node3DEditor::is_vertex_snap_use_collision() const {
+	return vertex_snap_use_collision != Input::get_singleton()->is_key_pressed(Key::SHIFT);
 }
 
 real_t Node3DEditor::get_translate_snap() const {

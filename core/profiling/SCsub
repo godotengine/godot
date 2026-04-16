@@ -11,10 +11,12 @@ Import("env")
 
 env.add_source_files(env.core_sources, "*.cpp")
 
+default_perfetto_install_dir = "../../thirdparty/perfetto"
+
 
 def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
     if not path.is_dir():
-        print("profiler_path must be empty or point to a directory.")
+        print(f"Perfetto profiler path '{path.absolute()}' is invalid.")
         Exit(255)
 
     if (path / "sdk" / "perfetto.cc").is_file():
@@ -24,7 +26,7 @@ def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
         # perfetto sdk directory.
         return path
 
-    print("Invalid profiler_path. Unable to find perfetto.cc.")
+    print("Invalid perfetto profiler path. Unable to find perfetto.cc.")
     Exit(255)
 
 
@@ -76,10 +78,14 @@ if env["profiler"]:
         env_tracy.disable_warnings()
         env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
     elif env["profiler"] == "perfetto":
-        if not env["profiler_path"]:
-            print("profiler_path must be set when using the perfetto profiler. Aborting.")
+        if env["profiler_path"]:
+            profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
+        elif (default_perfetto_path := pathlib.Path(default_perfetto_install_dir)).is_dir():
+            profiler_path = find_perfetto_path(default_perfetto_path)
+        else:
+            print("Perfetto must be installed or profiler_path must be set when using the perfetto profiler. Aborting.")
             Exit(255)
-        profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
+
         env.Prepend(CPPPATH=[str(profiler_path.absolute())])
 
         env_perfetto = env.Clone()

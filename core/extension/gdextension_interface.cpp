@@ -547,6 +547,11 @@ static void gdextension_variant_get_type_name(GDExtensionVariantType p_type, GDE
 	memnew_placement(r_ret, String(name));
 }
 
+static GDExtensionVariantType gdextension_variant_get_type_by_name(GDExtensionConstStringPtr p_type) {
+	const String *type = (const String *)p_type;
+	return static_cast<GDExtensionVariantType>(Variant::get_type_by_name(*type));
+}
+
 static GDExtensionBool gdextension_variant_can_convert(GDExtensionVariantType p_from, GDExtensionVariantType p_to) {
 	return Variant::can_convert((Variant::Type)p_from, (Variant::Type)p_to);
 }
@@ -1652,11 +1657,16 @@ static GDExtensionObjectPtr gdextension_classdb_construct_object(GDExtensionCons
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	return (GDExtensionObjectPtr)ClassDB::instantiate_no_placeholders(classname);
 }
-#endif
 
 static GDExtensionObjectPtr gdextension_classdb_construct_object2(GDExtensionConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	return (GDExtensionObjectPtr)ClassDB::instantiate_without_postinitialization(classname);
+}
+#endif
+
+static GDExtensionObjectPtr gdextension_classdb_construct_object3(GDExtensionConstStringNamePtr p_classname) {
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
+	return (GDExtensionObjectPtr)ClassDB::instantiate_without_postinitialization_with_refcount(classname);
 }
 
 static void *gdextension_classdb_get_class_tag(GDExtensionConstStringNamePtr p_classname) {
@@ -1743,6 +1753,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(variant_has_key);
 	REGISTER_INTERFACE_FUNC(variant_get_object_instance_id);
 	REGISTER_INTERFACE_FUNC(variant_get_type_name);
+	REGISTER_INTERFACE_FUNC(variant_get_type_by_name);
 	REGISTER_INTERFACE_FUNC(variant_can_convert);
 	REGISTER_INTERFACE_FUNC(variant_can_convert_strict);
 	REGISTER_INTERFACE_FUNC(get_variant_from_type_constructor);
@@ -1856,8 +1867,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(callable_custom_get_userdata);
 #ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
-#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(classdb_construct_object2);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(classdb_construct_object3);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);
 	REGISTER_INTERFACE_FUNC(editor_add_plugin);

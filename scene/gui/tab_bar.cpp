@@ -135,10 +135,15 @@ Size2 TabBar::get_minimum_size() const {
 	}
 
 	if (clip_tabs) {
-		ms.width = max_tab_width + buttons_size;
-	}
-
-	if (combined_max.width >= 0) {
+		int clip_min_width = max_tab_width + buttons_size;
+		if (combined_max.width >= 0) {
+			int fitted_width = stop_adding ? (computed_max_width + buttons_size) : computed_max_width;
+			ms.width = MAX(clip_min_width, fitted_width);
+			ms.width = MIN(ms.width, int(combined_max.width));
+		} else {
+			ms.width = clip_min_width;
+		}
+	} else if (combined_max.width >= 0) {
 		ms.width = stop_adding ? combined_max.width : MIN(computed_max_width, combined_max.width);
 	}
 

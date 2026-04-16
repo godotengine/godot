@@ -787,7 +787,17 @@ StringName EditorProperty::get_edited_property() const {
 
 Variant EditorProperty::get_edited_property_display_value() const {
 	ERR_FAIL_NULL_V(object, Variant());
+
 	Control *control = Object::cast_to<Control>(object);
+	if (!control) {
+		MultiNodeEdit *multi = Object::cast_to<MultiNodeEdit>(object);
+		if (multi) {
+			Node *root = EditorNode::get_singleton()->get_edited_scene();
+			NodePath np = multi->get_node(0);
+			control = Object::cast_to<Control>(root->get_node_or_null(np));
+		}
+	}
+
 	// If checked but it's empty, it means that the set value has just been undone, and should show the default value as well.
 	if (control && checkable && (!checked || get_edited_property_value() == Variant()) && String(property).begins_with("theme_override_")) {
 		return control->get_used_theme_item(property);
@@ -1536,6 +1546,11 @@ void EditorProperty::menu_option(int p_option) {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
+		default: {
+			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_option, this);
+			}
+		}
 	}
 }
 
@@ -1702,6 +1717,9 @@ void EditorProperty::_update_popup() {
 		menu->add_separator();
 		menu->add_icon_item(theme_cache.help_icon, TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
+
+	Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths);
 }
 
 ////////////////////////////////////////////////
@@ -3936,6 +3954,26 @@ void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_ca
 	}
 }
 
+EditorInspector *EditorInspector::create_default_inspector(LineEdit *p_filter_line_edit) {
+	EditorInspector *inspector = memnew(EditorInspector);
+	inspector->set_autoclear(true);
+	inspector->set_show_categories(true, true);
+	inspector->set_use_doc_hints(true);
+	inspector->set_hide_script(false);
+	inspector->set_hide_metadata(false);
+	inspector->set_use_settings_name_style(false);
+	inspector->set_property_name_style(EditorPropertyNameProcessor::get_default_inspector_style());
+	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
+	inspector->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
+
+	if (p_filter_line_edit != nullptr) {
+		inspector->register_text_enter(p_filter_line_edit);
+		inspector->set_use_filter(true);
+	}
+
+	return inspector;
+}
+
 void EditorInspector::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
 	ERR_FAIL_COND(inspector_plugin_count == MAX_PLUGINS);
 
@@ -6163,8 +6201,12 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 	ClassDB::bind_method("get_selected_path", &EditorInspector::get_selected_path);
 	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
+	ClassDB::bind_method("collapse_all_folding", &EditorInspector::collapse_all_folding);
+	ClassDB::bind_method("expand_all_folding", &EditorInspector::expand_all_folding);
+	ClassDB::bind_method("expand_revertable", &EditorInspector::expand_revertable);
 
 	ClassDB::bind_static_method("EditorInspector", D_METHOD("instantiate_property_editor", "object", "type", "path", "hint", "hint_text", "usage", "wide"), &EditorInspector::instantiate_property_editor, DEFVAL(false));
+	ClassDB::bind_static_method("EditorInspector", D_METHOD("create_default_inspector", "filter_line_edit"), &EditorInspector::create_default_inspector, DEFVAL(Variant()));
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));

@@ -879,21 +879,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	mc->set_theme_type_variation("NoBorderHorizontalBottom");
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	inspector = memnew(EditorInspector);
+	inspector = EditorInspector::create_default_inspector(search);
 	mc->add_child(inspector);
-	inspector->set_autoclear(true);
-	inspector->set_show_categories(true, true);
-	inspector->set_use_doc_hints(true);
-	inspector->set_hide_script(false);
-	inspector->set_hide_metadata(false);
-	inspector->set_use_settings_name_style(false);
-	inspector->set_property_name_style(property_name_style);
-	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
-	inspector->register_text_enter(search);
-	inspector->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
-
-	inspector->set_use_filter(true);
-
 	inspector->connect("resource_selected", callable_mp(this, &InspectorDock::_resource_selected));
 
 	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &InspectorDock::_files_moved));

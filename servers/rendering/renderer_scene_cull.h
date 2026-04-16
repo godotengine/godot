@@ -782,6 +782,9 @@ public:
 			float spot_attenuation;
 			bool has_shadow;
 			RSE::LightDirectionalSkyMode sky_mode;
+			Vector2 area_size;
+			bool area_normalize_energy;
+			RID area_texture;
 		};
 
 		Vector<LightCache> light_cache;
@@ -1164,6 +1167,7 @@ public:
 	virtual void render_probes();
 
 	TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
+	PackedByteArray bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps);
 
 	//pass to scene render
 

@@ -92,6 +92,8 @@ private:
 	void _global_menu_scene(const Variant &p_tag);
 	void _global_menu_new_window(const Variant &p_tag);
 
+	void _project_settings_changed();
+
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 protected:

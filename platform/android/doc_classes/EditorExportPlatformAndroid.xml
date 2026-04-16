@@ -11,16 +11,6 @@
 		<link title="Android plugins documentation index">$DOCS_URL/tutorials/platform/index.html</link>
 	</tutorials>
 	<members>
-		<member name="apk_expansion/SALT" type="String" setter="" getter="">
-			Array of random bytes that the licensing policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
-		</member>
-		<member name="apk_expansion/enable" type="bool" setter="" getter="">
-			If [code]true[/code], project resources are stored in the separate APK expansion file, instead of the APK.
-			[b]Note:[/b] APK expansion should be enabled to use PCK encryption. See [url=https://developer.android.com/google/play/expansion-files]APK Expansion Files[/url]
-		</member>
-		<member name="apk_expansion/public_key" type="String" setter="" getter="">
-			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Google Play Console".
-		</member>
 		<member name="architectures/arm64-v8a" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
 		</member>
@@ -631,6 +621,22 @@
 		<member name="shader_baker/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
 			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
+		</member>
+		<member name="splash_screen/background_color" type="Color" setter="" getter="">
+			The background color used for the system splash screen window.
+			If not set, it will fallback to [member EditorExportPlatformAndroid.launcher_icons/adaptive_background_432x432].
+			[b]Note:[/b] This is only applied if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is enabled.
+		</member>
+		<member name="splash_screen/branding_image" type="String" setter="" getter="">
+			System splash screen branding image file. If left empty, no branding image will be used. See [url=https://developer.android.com/develop/ui/views/launch/splash-screen#dimensions]splash-screen dimensions[/url].
+			[b]Note:[/b] Can be used to set an image to be shown at the bottom of the splash screen.
+		</member>
+		<member name="splash_screen/disable_godot_boot_splash" type="bool" setter="" getter="">
+			If [code]true[/code], Godot's boot splash will not be shown, and the system boot splash will remain visible for a longer time, until the mainloop starts.
+		</member>
+		<member name="splash_screen/icon" type="String" setter="" getter="">
+			System splash screen icon file. If left empty, it will fall back to [member EditorExportPlatformAndroid.launcher_icons/adaptive_foreground_432x432]. See [url=https://developer.android.com/develop/ui/views/launch/splash-screen#dimensions]splash-screen dimensions[/url].
+			[b]Note:[/b] You can provide an [url=https://developer.android.com/reference/android/graphics/drawable/AnimatedVectorDrawable]AnimatedVectorDrawable (AVD)[/url] XML. However, the XML file will only be used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is enabled. If not, it will fall back to [member EditorExportPlatformAndroid.launcher_icons/adaptive_background_432x432].
 		</member>
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.

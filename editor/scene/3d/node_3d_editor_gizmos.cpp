@@ -71,6 +71,7 @@ void EditorNode3DGizmo::clear() {
 	billboard_handle = false;
 	collision_segments.clear();
 	collision_meshes.clear();
+	collision_meshes_are_snap_source = false;
 	instances.clear();
 	handles.clear();
 	handle_ids.clear();

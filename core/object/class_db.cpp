@@ -36,6 +36,8 @@
 #include "core/templates/sort_array.h"
 #include "core/version.h"
 
+#define ERR_FAIL_NO_CLASS(m_type, m_class) ERR_FAIL_NULL_MSG(m_type, vformat("Cannot get class \"%s\".", m_class))
+
 #ifdef DEBUG_ENABLED
 
 MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount) {
@@ -532,7 +534,42 @@ StringName ClassDB::get_compatibility_class(const StringName &p_class) {
 	return StringName();
 }
 
-Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize, bool p_exposed_only) {
+Object *ClassDB::_instantiate_from_gdextension(ObjectGDExtension *p_object_gd_extension, bool p_notify_postinitialize, bool p_with_refcount) {
+	if (p_with_refcount) {
+		if (p_object_gd_extension->create_instance3 != nullptr) {
+			// Caller expects refcount=1, creation func returns with refcount=1. It's a match.
+			return (Object *)p_object_gd_extension->create_instance3(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+		}
+#ifndef DISABLE_DEPRECATED
+		Object *object = (Object *)p_object_gd_extension->create_instance2(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+		if (object != nullptr && object->is_ref_counted()) {
+			// Caller expects a refcount, creation func didn't increment, so do it now.
+			((RefCounted *)object)->init_ref();
+		}
+		return object;
+#endif
+	} else {
+#ifndef DISABLE_DEPRECATED
+		if (p_object_gd_extension->create_instance2 != nullptr) {
+			// Caller expects no refcount, creation func returns without refcount. It's a match.
+			return (Object *)p_object_gd_extension->create_instance2(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+		}
+#endif
+		if (p_object_gd_extension->create_instance3 != nullptr) {
+			Object *object = (Object *)p_object_gd_extension->create_instance3(p_object_gd_extension->class_userdata, p_notify_postinitialize);
+			if (object != nullptr && object->is_ref_counted()) {
+				// Caller expects no refcount, but refcount was already incremented by creation func.
+				// Must fall back to RefCounted's refcount_init trick.
+				((RefCounted *)object)->deinit_ref();
+			}
+			return object;
+		}
+	}
+
+	ERR_FAIL_V_MSG(nullptr, vformat("Internal error; ObjectGDExtension of %s has neither create_instance2 nor create_instance3.", p_object_gd_extension->class_name));
+}
+
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize, bool p_exposed_only, bool p_with_refcount) {
 	ClassInfo *ti;
 	{
 		Locker::Lock lock(Locker::STATE_READ);
@@ -568,11 +605,11 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 	if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
 		bool can_create_placeholder = false;
 		if (ti->gdextension) {
-			if (ti->gdextension->create_instance2) {
+			if (ti->gdextension->create_instance3) {
 				can_create_placeholder = true;
 			}
 #ifndef DISABLE_DEPRECATED
-			else if (ti->gdextension->create_instance) {
+			else if (ti->gdextension->create_instance || ti->gdextension->create_instance2) {
 				can_create_placeholder = true;
 			}
 #endif // DISABLE_DEPRECATED
@@ -584,23 +621,32 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 
 		if (can_create_placeholder) {
 			ObjectGDExtension *extension = get_placeholder_extension(ti->gdtype->get_name());
-			return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+			return _instantiate_from_gdextension(extension, p_notify_postinitialize, p_with_refcount);
 		}
 	}
 #endif // TOOLS_ENABLED
 
-	if (ti->gdextension && ti->gdextension->create_instance2) {
+	if (ti->gdextension && ti->gdextension->create_instance3) {
 		ObjectGDExtension *extension = ti->gdextension;
-		return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+		return _instantiate_from_gdextension(extension, p_notify_postinitialize, p_with_refcount);
 	}
 #ifndef DISABLE_DEPRECATED
-	else if (ti->gdextension && ti->gdextension->create_instance) {
+	else if (ti->gdextension && ti->gdextension->create_instance2) {
+		ObjectGDExtension *extension = ti->gdextension;
+		return _instantiate_from_gdextension(extension, p_notify_postinitialize, p_with_refcount);
+	} else if (ti->gdextension && ti->gdextension->create_instance) {
 		ObjectGDExtension *extension = ti->gdextension;
 		return (Object *)extension->create_instance(extension->class_userdata);
 	}
 #endif // DISABLE_DEPRECATED
 	else {
-		return ti->creation_func(p_notify_postinitialize);
+		Object *object = ti->creation_func(p_notify_postinitialize);
+		if (p_with_refcount && object != nullptr && object->is_ref_counted()) {
+			// creation_func creates the object with an (effective) refcount of 1,
+			// so establish the expected refcount=1 now.
+			((RefCounted *)object)->init_ref();
+		}
+		return object;
 	}
 }
 
@@ -628,11 +674,15 @@ bool ClassDB::_can_instantiate(ClassInfo *p_class_info, bool p_exposed_only) {
 		return true;
 	}
 
-	if (p_class_info->gdextension->create_instance2) {
+	if (p_class_info->gdextension->create_instance3) {
 		return true;
 	}
 
 #ifndef DISABLE_DEPRECATED
+	if (p_class_info->gdextension->create_instance2) {
+		return true;
+	}
+
 	if (p_class_info->gdextension->create_instance) {
 		return true;
 	}
@@ -650,6 +700,10 @@ Object *ClassDB::instantiate_no_placeholders(const StringName &p_class) {
 
 Object *ClassDB::instantiate_without_postinitialization(const StringName &p_class) {
 	return _instantiate_internal(p_class, true, false);
+}
+
+Object *ClassDB::instantiate_without_postinitialization_with_refcount(const StringName &p_class) {
+	return _instantiate_internal(p_class, true, false, true, true);
 }
 
 #ifdef TOOLS_ENABLED
@@ -738,7 +792,7 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->call_virtual_with_data = nullptr;
 	placeholder_extension->recreate_instance = &PlaceholderExtensionInstance::placeholder_class_recreate_instance;
 
-	placeholder_extension->create_gdtype();
+	placeholder_extension->gdtype = ti->gdtype;
 
 	return placeholder_extension;
 }
@@ -826,9 +880,9 @@ bool ClassDB::is_abstract(const StringName &p_class) {
 			return true;
 		}
 #ifndef DISABLE_DEPRECATED
-		return ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance == nullptr;
+		return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance2 == nullptr;
 #else
-		return ti->gdextension->create_instance2 == nullptr;
+		return ti->gdextension->create_instance3 == nullptr;
 #endif //  DISABLE_DEPRECATED
 	}
 
@@ -1142,7 +1196,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->gdtype->bind_integer_constant(p_enum, p_name, p_constant, p_is_bitfield);
 }
@@ -1151,7 +1205,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	for (const KeyValue<StringName, int64_t> &E : type->gdtype->get_integer_constant_map(p_no_inheritance)) {
 		p_constants->push_back(E.key);
@@ -1216,7 +1270,7 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_enum);
 	ERR_FAIL_NULL(enum_info);
@@ -1231,7 +1285,7 @@ void ClassDB::set_method_error_return_values(const StringName &p_class, const St
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->method_error_values[p_method] = p_values;
 #endif // DEBUG_ENABLED
@@ -1282,7 +1336,7 @@ void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->gdtype->add_signal(p_signal);
 }
@@ -1291,7 +1345,7 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	for (const KeyValue<StringName, const MethodInfo *> &kv : type->gdtype->get_signal_map(p_no_inheritance)) {
 		p_signals->push_back(*kv.value);
@@ -1324,7 +1378,7 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	String prefix = p_prefix;
 	if (p_indent_depth > 0) {
@@ -1337,7 +1391,7 @@ void ClassDB::add_property_group(const StringName &p_class, const String &p_name
 void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	String prefix = p_prefix;
 	if (p_indent_depth > 0) {
@@ -1354,7 +1408,7 @@ void ClassDB::add_property_array_count(const StringName &p_class, const String &
 void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
 }
@@ -1365,7 +1419,7 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	MethodBind *mb_set = nullptr;
 	if (p_setter) {
@@ -1430,7 +1484,7 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 #ifdef TOOLS_ENABLED
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
+	ERR_FAIL_NO_CLASS(type, p_class);
 
 	ERR_FAIL_COND(!type->property_map.has(p_property));
 	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
@@ -2350,3 +2404,5 @@ ClassDB::Locker::Lock::~Lock() {
 		Locker::thread_state = STATE_UNLOCKED;
 	}
 }
+
+#undef ERR_FAIL_NO_CLASS

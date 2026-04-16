@@ -21,7 +21,9 @@
 			<return type="int" />
 			<param index="0" name="weights" type="PackedFloat32Array" />
 			<description>
-				Returns a random index with non-uniform weights. Prints an error and returns [code]-1[/code] if the array is empty.
+				Returns a random integer between [code]0[/code] and the size of the array that is passed as a parameter. Each value in the array should be a floating-point number that represents the relative likelihood that it will be returned as an index. A higher value means the value is more likely to be returned as an index, while a value of [code]0[/code] means it will never be returned as an index.
+				For example, if [code skip-lint][0.5, 1, 1, 2][/code] is passed as a parameter, then the method is twice as likely to return [code]3[/code] (the index of the value [code]2[/code]) and twice as unlikely to return [code]0[/code] (the index of the value [code]0.5[/code]) compared to the indices [code]1[/code] and [code]2[/code].
+				Prints an error and returns [code]-1[/code] if the array is empty.
 				[codeblocks]
 				[gdscript]
 				var rng = RandomNumberGenerator.new()

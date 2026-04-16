@@ -414,6 +414,10 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	virtual String _to_string() override;
 
+	// Localization
+
+	virtual StringName _get_translation_context_with_override(const StringName &p_context) const { return p_context; }
+
 	Variant _get_node_rpc_config_bind() const {
 		return get_node_rpc_config().duplicate(true);
 	}
@@ -826,10 +830,12 @@ public:
 	virtual void set_translation_domain(const StringName &p_domain) override;
 	void set_translation_domain_inherited();
 
-	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const {
+		return can_auto_translate() ? tr(p_message, _get_translation_context_with_override(p_context)) : p_message;
+	}
 	_FORCE_INLINE_ String atr_n(const String &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const {
 		if (can_auto_translate()) {
-			return tr_n(p_message, p_message_plural, p_n, p_context);
+			return tr_n(p_message, p_message_plural, p_n, _get_translation_context_with_override(p_context));
 		}
 		return p_n == 1 ? p_message : String(p_message_plural);
 	}

@@ -104,7 +104,7 @@
 			The Script tab, which contains the script editor and class reference browser. If this feature is disabled, the Script tab won't display.
 		</constant>
 		<constant name="FEATURE_ASSET_LIB" value="2" enum="Feature">
-			The AssetLib tab. If this feature is disabled, the AssetLib tab won't display.
+			The Asset Store tab. If this feature is disabled, the Asset Store tab won't display.
 		</constant>
 		<constant name="FEATURE_SCENE_TREE" value="3" enum="Feature">
 			Scene tree editing. If this feature is disabled, the Scene tree dock will still be visible but will be read-only.

@@ -39,10 +39,10 @@
 template <typename T>
 class VectorView {
 	const T *_ptr = nullptr;
-	const uint32_t _size = 0;
+	uint32_t _size = 0;
 
 public:
-	const T &operator[](uint32_t p_index) {
+	const T &operator[](uint32_t p_index) const {
 		DEV_ASSERT(p_index < _size);
 		return _ptr[p_index];
 	}
@@ -682,6 +682,23 @@ public:
 			float float_value;
 			bool bool_value;
 		};
+
+		bool operator==(const PipelineSpecializationConstant &p_rhs) const {
+			if (type != p_rhs.type) {
+				return false;
+			}
+			if (constant_id != p_rhs.constant_id) {
+				return false;
+			}
+			if (int_value != p_rhs.int_value) {
+				return false;
+			}
+			return true;
+		}
+
+		bool operator!=(const PipelineSpecializationConstant &p_rhs) const {
+			return !(*this == p_rhs);
+		}
 	};
 
 	/*******************/

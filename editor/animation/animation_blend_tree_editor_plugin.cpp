@@ -36,7 +36,6 @@
 #include "core/object/class_db.h"
 #include "core/templates/rb_set.h"
 #include "editor/editor_node.h"
-#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
@@ -1044,9 +1043,6 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-
 			if (is_visible_in_tree()) {
 				update_graph();
 			}
@@ -1061,8 +1057,6 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 			if (graph_update_queued) {
 				return;
 			}
-
-			update_error_message(tree, error_panel, error_label);
 
 			LocalVector<AnimationNodeBlendTree::NodeConnection> conns;
 			blend_tree->get_node_connections(&conns);
@@ -1312,12 +1306,6 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_options.push_back(AddOption("BlendSpace2D", "AnimationNodeBlendSpace2D"));
 	add_options.push_back(AddOption("StateMachine", "AnimationNodeStateMachine"));
 	_update_options_menu();
-
-	error_panel = memnew(PanelContainer);
-	add_child(error_panel);
-	error_label = create_error_label_node();
-	error_panel->add_child(error_label);
-
 	filter_dialog = memnew(AcceptDialog);
 	add_child(filter_dialog);
 	filter_dialog->set_title(TTR("Edit Filtered Tracks:"));

@@ -79,6 +79,12 @@
 				Returns whether the jiggle modifier is taking physics colliders into account when solving.
 			</description>
 		</method>
+		<method name="reset">
+			<return type="void" />
+			<description>
+				Resets the internal jiggle simulation state to the current bone positions, clearing velocity, acceleration, and accumulated forces.
+			</description>
+		</method>
 		<method name="set_collision_mask">
 			<return type="void" />
 			<param index="0" name="collision_mask" type="int" />
