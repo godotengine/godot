@@ -34,6 +34,7 @@ TEST_FORCE_LINK(test_node)
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -918,6 +919,9 @@ TEST_CASE("[SceneTree][Node] Test the process priority") {
 	memdelete(node4);
 }
 
+void check_parsed_scene(Ref<PackedScene> p_scene) {
+}
+
 TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	Node *scene = memnew(Node);
 	scene->set_name("TestScene");
@@ -957,24 +961,43 @@ TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	packed_scene.instantiate();
 	packed_scene->pack(scene);
 
-	Node *parsed_node = packed_scene->instantiate();
-	SceneTree::get_singleton()->get_root()->add_child(parsed_node);
-	CHECK(parsed_node != nullptr);
+	String binary_scene_path = TestUtils::get_temp_path("nested_test_scene.scn");
+	ResourceSaver::save(packed_scene, binary_scene_path);
 
-	Node *parsed_node_with_props = parsed_node->get_node(path);
-	CHECK(parsed_node_with_props == node_with_props);
-
-	Array parsed_nested_array = parsed_node_with_props->get_meta("nested_array");
-	CHECK(parsed_nested_array.size() == array_property.size());
-	for (int i = 0; i < array_property.size(); i++) {
-		CHECK(parsed_nested_array[i] == array_property[i]);
+	String text_scene_path = TestUtils::get_temp_path("nested_test_scene.tscn");
+	ResourceSaver::save(packed_scene, text_scene_path);
+#define CHECK_PARSED_SCENE(p_scene) \
+	parsed_node = p_scene->instantiate(); \
+	SceneTree::get_singleton()->get_root()->add_child(parsed_node); \
+	CHECK(parsed_node != nullptr); \
+\
+	parsed_node_with_props= parsed_node->get_node(path); \
+	CHECK(parsed_node_with_props == node_with_props); \
+ \
+	parsed_nested_array = parsed_node_with_props->get_meta("nested_array"); \
+	CHECK(parsed_nested_array.size() == array_property.size()); \
+	for (int i = 0; i < array_property.size(); i++) { \
+		CHECK(parsed_nested_array[i] == array_property[i]); \
+	} \
+ \
+	parsed_nested_dictionary = parsed_node_with_props->get_meta("nested_dictionary"); \
+	CHECK(parsed_nested_dictionary.size() == dictionary_property.size()); \
+	for (KeyValue kv : dictionary_property) { \
+		CHECK(kv.value == parsed_nested_dictionary[kv.key]); \
 	}
 
-	Dictionary parsed_nested_dictionary = parsed_node_with_props->get_meta("nested_dictionary");
-	CHECK(parsed_nested_dictionary.size() == dictionary_property.size());
-	for (KeyValue kv : dictionary_property) {
-		CHECK(kv.value == parsed_nested_dictionary[kv.key]);
-	}
+	Node *parsed_node;
+	Node *parsed_node_with_props;
+	Dictionary parsed_nested_dictionary;
+	Array parsed_nested_array;
+
+	Ref<PackedScene> text_packed_scene = ResourceLoader::load(text_scene_path, "PackedScene");
+	CHECK(text_packed_scene.is_valid());
+	CHECK_PARSED_SCENE(text_packed_scene);
+
+	Ref<PackedScene> binary_packed_scene = ResourceLoader::load(binary_scene_path, "PackedScene");
+	CHECK(binary_packed_scene.is_valid());
+	CHECK_PARSED_SCENE(binary_packed_scene);
 
 	memdelete(node_with_props);
 	memdelete(node_one);
