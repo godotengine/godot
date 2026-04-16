@@ -1669,6 +1669,14 @@ void EditorPropertyObjectID::update_property() {
 	}
 }
 
+void EditorPropertyObjectID::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			edit->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+		} break;
+	}
+}
+
 void EditorPropertyObjectID::setup(const String &p_base_type) {
 	base_type = p_base_type;
 }
