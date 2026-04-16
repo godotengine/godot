@@ -421,6 +421,7 @@ class EditorPropertyObjectID : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;
