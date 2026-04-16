@@ -529,12 +529,7 @@ Vector<uint8_t> AudioStreamWAV::get_data() const {
 	return Vector<uint8_t>(data);
 }
 
-Error AudioStreamWAV::save_to_wav(const String &p_path) {
-	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM || format == AudioStreamWAV::FORMAT_QOA) {
-		WARN_PRINT("Saving IMA_ADPCM and QOA samples is not supported yet");
-		return ERR_UNAVAILABLE;
-	}
-
+Error AudioStreamWAV::_save_to_wav(const Ref<FileAccess> &p_file) const {
 	int sub_chunk_2_size = data_bytes; //Subchunk2Size = Size of data in bytes
 
 	// Format code
@@ -560,29 +555,20 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 			break;
 	}
 
-	String file_path = p_path;
-	if (file_path.substr(file_path.length() - 4, 4).to_lower() != ".wav") {
-		file_path += ".wav";
-	}
-
-	Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE); //Overrides existing file if present
-
-	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_WRITE);
-
 	// Create WAV Header
-	file->store_string("RIFF"); //ChunkID
-	file->store_32(sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
-	file->store_string("WAVE"); //Format
-	file->store_string("fmt "); //Subchunk1ID
-	file->store_32(16); //Subchunk1Size = 16
-	file->store_16(format_code); //AudioFormat
-	file->store_16(n_channels); //Number of Channels
-	file->store_32(sample_rate); //SampleRate
-	file->store_32(sample_rate * n_channels * byte_pr_sample); //ByteRate
-	file->store_16(n_channels * byte_pr_sample); //BlockAlign = NumChannels * BytePrSample
-	file->store_16(byte_pr_sample * 8); //BitsPerSample
-	file->store_string("data"); //Subchunk2ID
-	file->store_32(sub_chunk_2_size); //Subchunk2Size
+	p_file->store_string("RIFF"); //ChunkID
+	p_file->store_32(sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
+	p_file->store_string("WAVE"); //Format
+	p_file->store_string("fmt "); //Subchunk1ID
+	p_file->store_32(16); //Subchunk1Size = 16
+	p_file->store_16(format_code); //AudioFormat
+	p_file->store_16(n_channels); //Number of Channels
+	p_file->store_32(sample_rate); //SampleRate
+	p_file->store_32(sample_rate * n_channels * byte_pr_sample); //ByteRate
+	p_file->store_16(n_channels * byte_pr_sample); //BlockAlign = NumChannels * BytePrSample
+	p_file->store_16(byte_pr_sample * 8); //BitsPerSample
+	p_file->store_string("data"); //Subchunk2ID
+	p_file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
 	const uint8_t *read_data = data.ptr();
@@ -590,14 +576,14 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			for (uint64_t i = 0; i < data_bytes; i++) {
 				uint8_t data_point = (read_data[i] + 128);
-				file->store_8(data_point);
+				p_file->store_8(data_point);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_16_BITS:
 		case AudioStreamWAV::FORMAT_QOA:
 			for (uint64_t i = 0; i < data_bytes / 2; i++) {
 				uint16_t data_point = decode_uint16(&read_data[i * 2]);
-				file->store_16(data_point);
+				p_file->store_16(data_point);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_IMA_ADPCM:
@@ -606,6 +592,38 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	}
 
 	return OK;
+}
+
+Error AudioStreamWAV::save_to_wav(const String &p_path) {
+	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM || format == AudioStreamWAV::FORMAT_QOA) {
+		WARN_PRINT("Saving IMA_ADPCM and QOA samples is not supported yet");
+		return ERR_UNAVAILABLE;
+	}
+
+	String file_path = p_path;
+	if (!file_path.has_extension("wav")) {
+		file_path += ".wav";
+	}
+
+	Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_FILE_CANT_WRITE, "Failed to open .wav file for writing.");
+	return _save_to_wav(file);
+}
+
+PackedByteArray AudioStreamWAV::save_to_wav_buffer() {
+	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM || format == AudioStreamWAV::FORMAT_QOA) {
+		WARN_PRINT("Saving IMA_ADPCM and QOA samples is not supported yet");
+		return PackedByteArray();
+	}
+
+	PackedByteArray file_data;
+	ERR_FAIL_COND_V_MSG(file_data.resize(44 + data_bytes) != OK, PackedByteArray(), "Failed to allocate memory for WAV file buffer.");
+
+	Ref<FileAccessMemory> file;
+	file.instantiate();
+	ERR_FAIL_COND_V_MSG(file->open_custom(file_data.ptrw(), file_data.size()) != OK, PackedByteArray(), "Failed to open memory file for WAV file buffer.");
+	ERR_FAIL_COND_V_MSG(_save_to_wav(file) != OK, PackedByteArray(), "Failed to write WAV data to buffer.");
+	return file_data;
 }
 
 Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
@@ -1235,6 +1253,7 @@ void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamWAV::get_tags);
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamWAV::save_to_wav);
+	ClassDB::bind_method(D_METHOD("save_to_wav_buffer"), &AudioStreamWAV::save_to_wav_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA ADPCM,Quite OK Audio"), "set_format", "get_format");

@@ -128,6 +128,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	Error _save_to_wav(const Ref<FileAccess> &p_file) const;
 
 public:
 	static Ref<AudioStreamWAV> load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options);
@@ -162,6 +163,7 @@ public:
 	Vector<uint8_t> get_data() const;
 
 	Error save_to_wav(const String &p_path);
+	PackedByteArray save_to_wav_buffer();
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
