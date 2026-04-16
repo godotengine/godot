@@ -33,8 +33,8 @@
 TEST_FORCE_LINK(test_node)
 
 #include "core/io/file_access.h"
-#include "core/io/resource_saver.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -971,15 +971,15 @@ TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	SceneTree::get_singleton()->get_root()->add_child(parsed_node); \
 	CHECK(parsed_node != nullptr); \
 \
-	parsed_node_with_props= parsed_node->get_node(path); \
+	parsed_node_with_props = parsed_node->get_node(path); \
 	CHECK(parsed_node_with_props == node_with_props); \
- \
+\
 	parsed_nested_array = parsed_node_with_props->get_meta("nested_array"); \
 	CHECK(parsed_nested_array.size() == array_property.size()); \
 	for (int i = 0; i < array_property.size(); i++) { \
 		CHECK(parsed_nested_array[i] == array_property[i]); \
 	} \
- \
+\
 	parsed_nested_dictionary = parsed_node_with_props->get_meta("nested_dictionary"); \
 	CHECK(parsed_nested_dictionary.size() == dictionary_property.size()); \
 	for (KeyValue kv : dictionary_property) { \
