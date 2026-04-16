@@ -38,6 +38,7 @@
 #include "core/object/script_language.h"
 #include "core/version.h"
 #include "scene/property_utils.h"
+#include "scene/resources/node_binding.h"
 #include "scene/resources/packed_scene.h"
 
 //#define print_bl(m_what) print_line(m_what)
@@ -91,6 +92,7 @@ enum {
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
 	OBJECT_EXTERNAL_RESOURCE_INDEX = 3,
+	OBJECT_NODE_BINDING = 4,
 	// Version 2: Added 64-bit support for float and int.
 	// Version 3: Changed NodePath encoding.
 	// Version 4: New string ID for ext/subresources, breaks forward compat.
@@ -449,6 +451,19 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 							}
 						}
 					}
+				} break;
+				case OBJECT_NODE_BINDING: {
+					Variant path;
+					error = parse_variant(path);
+					if (error != Error::OK) {
+						return error;
+					} else if (path.get_type() != Variant::NODE_PATH) {
+						error = ERR_INVALID_DATA;
+						ERR_FAIL_V_MSG(error, vformat("Could not load the node path properly, found: %s.", path));
+					}
+					NodeBinding *new_binding = memnew(NodeBinding);
+					new_binding->path = path;
+					r_v = new_binding;
 				} break;
 				default: {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
@@ -1807,7 +1822,12 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::OBJECT: {
 			f->store_32(VARIANT_OBJECT);
 			Ref<Resource> res = p_property;
-			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
+			NodeBinding *maybe_node_binding = Object::cast_to<NodeBinding>(p_property.get_validated_object());
+			if (maybe_node_binding) {
+				f->store_32(OBJECT_NODE_BINDING);
+				write_variant(f, maybe_node_binding->path, resource_map, external_resources, string_map);
+				return;
+			} else if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
 				f->store_32(OBJECT_EMPTY);
 				return; // Don't save it.
 			}
