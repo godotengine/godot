@@ -67,14 +67,6 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (p_event->is_pressed() && status.touch_index == -1) {
-		status.device_id = p_event->get_device();
-	}
-
-	if (p_event->get_device() != status.device_id) {
-		return;
-	}
-
 	Ref<InputEventScreenTouch> touch = p_event;
 	if (touch.is_valid()) {
 		if (status.touch_index == -1) {
