@@ -146,7 +146,7 @@ void AndroidInputHandler::_cancel_all_touch() {
 	touch.clear();
 }
 
-void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_canceled, bool p_double_tap) {
+void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_canceled) {
 	if (touch.size()) {
 		//end all if exist
 		for (int i = 0; i < touch.size(); i++) {
@@ -156,7 +156,7 @@ void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_canceled, bool
 			ev->set_pressed(p_pressed);
 			ev->set_canceled(p_canceled);
 			ev->set_position(touch[i].pos);
-			ev->set_double_tap(p_double_tap);
+			ev->set_double_tap(touch[i].double_tap);
 			Input::get_singleton()->parse_input_event(ev);
 		}
 	}
@@ -167,7 +167,7 @@ void AndroidInputHandler::_release_all_touch() {
 	touch.clear();
 }
 
-void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points, bool p_double_tap) {
+void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points) {
 	switch (p_event) {
 		case AMOTION_EVENT_ACTION_DOWN: { //gesture begin
 			// Release any remaining touches or mouse event
@@ -180,10 +180,11 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 				touch.write[i].pos = p_points[i].pos;
 				touch.write[i].pressure = p_points[i].pressure;
 				touch.write[i].tilt = p_points[i].tilt;
+				touch.write[i].double_tap = p_points[i].double_tap;
 			}
 
 			//send touch
-			_parse_all_touch(true, false, p_double_tap);
+			_parse_all_touch(true, false);
 
 		} break;
 		case AMOTION_EVENT_ACTION_MOVE: { //motion

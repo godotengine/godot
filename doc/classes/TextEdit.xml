@@ -702,6 +702,11 @@
 				Returns the current version of the [TextEdit]. The version is a count of recorded operations by the undo/redo history.
 			</description>
 		</method>
+		<method name="get_virtual_keyboard_show_on_double_tap" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -1250,6 +1255,12 @@
 			<param index="0" name="callback" type="Callable" />
 			<description>
 				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code].
+			</description>
+		</method>
+		<method name="set_virtual_keyboard_show_on_double_tap">
+			<return type="void" />
+			<param index="0" name="show_on_double_tap" type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="skip_selection_for_next_occurrence">

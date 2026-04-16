@@ -2257,9 +2257,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
 
+	int event_device_id = p_gui_input->get_device();
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		Vector2i mpos = mb->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
@@ -2507,14 +2508,174 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
-			}
 
-			if (editable) {
-				_show_virtual_keyboard();
+				if (editable) {
+					_show_virtual_keyboard();
+				}
 			}
 		}
 	}
 
+	Ref<InputEventScreenTouch> touch = p_gui_input;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		if (touch->is_pressed() && !touch->is_double_tap()) {
+			// We treat a single touch press event as the initiation of touch dragging.
+			touch_dragging_starting = true;
+			drag_accum = Vector2();
+			drag_from = Vector2(prev_h_scroll, prev_v_scroll);
+		}
+
+		if ((touch->is_pressed() && touch->is_double_tap()) || (touch->is_released() && !touch->is_double_tap() && !touch_dragging_in_progress)) {
+			// Otherwise, if we receive a double touch press event, or a single touch release event with no touch dragging having occurred,
+			// we process as a regular tap, similar to how mouse click are handled above omitting logic not relevant to touch taps.
+			// Notice that a key difference from the mouse click handling logic and double tap events is that for single tap, we apply the logic below on release instead of on press.
+			// This is because we're unsure whether single tap press event will end as a single tap press->release event, or turn into a drag (press->drag->release) event.
+			Vector2i touch_pos = touch->get_position();
+			if (is_layout_rtl()) {
+				touch_pos.x = get_size().x - touch_pos.x;
+			}
+			_reset_caret_blink_timer();
+
+			apply_ime();
+
+			Point2i pos = get_line_column_at_pos(touch_pos);
+			int line = pos.y;
+			int col = pos.x;
+
+			// Gutters.
+			Vector2i current_hovered_gutter = _get_hovered_gutter(touch_pos);
+			if (current_hovered_gutter != hovered_gutter) {
+				hovered_gutter = current_hovered_gutter;
+				queue_redraw();
+			}
+			if (hovered_gutter != Vector2i(-1, -1)) {
+				emit_signal(SNAME("gutter_clicked"), hovered_gutter.y, hovered_gutter.x);
+				return;
+			}
+			int left_margin = get_line_start_margin();
+			if (touch_pos.x < left_margin + gutters_width + gutter_padding) {
+				return;
+			}
+
+			// Minimap.
+			if (draw_minimap) {
+				_update_minimap_click();
+				if (dragging_minimap) {
+					return;
+				}
+			}
+
+			// Update caret.
+
+			int caret = carets.size() - 1;
+
+			if (!touch->is_double_tap()) {
+				// A regular click clears all other carets.
+				caret = 0;
+				remove_secondary_carets();
+				deselect();
+
+				_push_current_op();
+				set_caret_line(line, false, true, -1, caret);
+				set_caret_column(col, false, caret);
+				selection_drag_attempt = false;
+
+				// Start regular select mode.
+				set_selection_mode(SelectionMode::SELECTION_MODE_POINTER);
+				_update_selection_mode_pointer(true);
+			} else {
+				// Start double-click select word mode.
+				set_selection_mode(SelectionMode::SELECTION_MODE_WORD);
+				_update_selection_mode_word(true);
+			}
+
+			// Click inline objects.
+			if (inline_object_click_handler.is_valid()) {
+				int xmargin_beg = left_margin + gutters_width + gutter_padding;
+				int wrap_i = get_line_wrap_index_at_column(pos.y, pos.x);
+				const float wrap_indent = _get_wrap_indent_offset(pos.y, wrap_i, is_layout_rtl());
+
+				Ref<TextParagraph> ldata = text.get_line_data(line);
+				for (const Variant &inline_key : ldata->get_line_objects(wrap_i)) {
+					if (!is_inline_info_valid(inline_key)) {
+						continue;
+					}
+					Dictionary info = inline_key.duplicate();
+					info["line"] = line;
+					Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, inline_key);
+					obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
+
+					if (touch_pos.x > obj_rect.position.x && touch_pos.x < obj_rect.get_end().x) {
+						Rect2 col_rect = get_rect_at_line_column(line, col);
+						col_rect.position += get_screen_position() + Vector2(col_rect.size.x, 0);
+						col_rect.size = obj_rect.size;
+						set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_NONE);
+						inline_object_click_handler.call(info, col_rect);
+						break;
+					}
+				}
+			}
+
+			queue_accessibility_update();
+			queue_redraw();
+		}
+
+		if (touch->is_released()) {
+			if (!touch_dragging_in_progress) {
+				// If touch dragging did not occur, we perform some tidy up similar to what's done for the mouse click logic.
+				if (has_ime_text()) {
+					// Ignore mouse up in IME input mode.
+				} else {
+					if (!drag_action && selection_drag_attempt && is_mouse_over_selection()) {
+						// This is not a drag and drop attempt, update the caret.
+						selection_drag_attempt = false;
+						remove_secondary_carets();
+						deselect();
+
+						Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+						set_caret_line(pos.y, false, true, -1, 0);
+						set_caret_column(pos.x, true, 0);
+					}
+					dragging_minimap = false;
+					dragging_selection = false;
+					can_drag_minimap = false;
+					set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
+					click_select_held->stop();
+					if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
+						DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+					}
+
+					if (editable && (!virtual_keyboard_show_on_double_tap || touch->is_double_tap())) {
+						// Virtual keyboard is shown on double tap to prevent unintentional activation.
+						_show_virtual_keyboard();
+					}
+				}
+			}
+			// This signals the end of a single touch press, a double tap, or a drag event, so we reset the touch dragging flags.
+			touch_dragging_starting = false;
+			touch_dragging_in_progress = false;
+		}
+	}
+
+	Ref<InputEventScreenDrag> drag = p_gui_input;
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		if (touch_dragging_starting) {
+			// Follow up from a single tap touch event handled above; we perform touch dragging.
+			touch_dragging_in_progress = true;
+			Vector2 motion = drag->get_relative();
+			drag_accum.y -= motion.y / (20.0 * theme_cache.base_scale);
+			drag_accum.x -= motion.x / theme_cache.base_scale;
+
+			Vector2 diff = drag_from + drag_accum;
+			h_scroll->scroll_to(diff.x);
+			v_scroll->scroll_to(diff.y);
+		} else {
+			// Likely follow up from a double tap touch event; we apply similar logic as the mouse motion logic.
+			_on_drag_or_mouse_motion_event(drag->get_position(), true);
+		}
+	}
+
+#ifndef ANDROID_ENABLED
 	const Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 		const real_t delta = pan_gesture->get_delta().y;
@@ -2531,65 +2692,12 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		return;
 	}
+#endif
 
 	Ref<InputEventMouseMotion> mm = p_gui_input;
 
-	if (mm.is_valid()) {
-		Vector2i mpos = mm->get_position();
-		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
-		}
-
-		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && get_viewport()->gui_get_drag_data() == Variant()) {
-			// Update if not in drag and drop.
-			_reset_caret_blink_timer();
-
-			if (draw_minimap && !dragging_selection) {
-				_update_minimap_drag();
-			}
-
-			if (!dragging_minimap && !has_ime_text()) {
-				switch (selecting_mode) {
-					case SelectionMode::SELECTION_MODE_POINTER: {
-						_update_selection_mode_pointer();
-					} break;
-					case SelectionMode::SELECTION_MODE_WORD: {
-						_update_selection_mode_word();
-					} break;
-					case SelectionMode::SELECTION_MODE_LINE: {
-						_update_selection_mode_line();
-					} break;
-					default: {
-						break;
-					}
-				}
-			}
-		}
-
-		// Update hovered gutter.
-		Vector2i current_hovered_gutter = _get_hovered_gutter(mpos);
-		if (current_hovered_gutter != hovered_gutter) {
-			hovered_gutter = current_hovered_gutter;
-			queue_redraw();
-		}
-
-		if (drag_action && can_drop_data(mpos, get_viewport()->gui_get_drag_data())) {
-			apply_ime();
-			// Update drag and drop caret.
-			drag_caret_force_displayed = true;
-			Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
-
-			if (drag_caret_index == -1) {
-				// Force create a new caret for drag and drop.
-				carets.push_back(Caret());
-				drag_caret_index = carets.size() - 1;
-			}
-
-			drag_caret_force_displayed = true;
-			set_caret_line(pos.y, false, true, -1, drag_caret_index);
-			set_caret_column(pos.x, true, drag_caret_index);
-			dragging_selection = true;
-		}
+	if (mm.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		_on_drag_or_mouse_motion_event(mm->get_position(), mm->get_button_mask().has_flag(MouseButtonMask::LEFT));
 	}
 
 	if (draw_minimap && !dragging_selection) {
@@ -2881,6 +2989,63 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
+	}
+}
+
+void TextEdit::_on_drag_or_mouse_motion_event(Vector2i p_event_position, bool p_is_left_click_or_drag) {
+	if (is_layout_rtl()) {
+		p_event_position.x = get_size().x - p_event_position.x;
+	}
+
+	if (p_is_left_click_or_drag && get_viewport()->gui_get_drag_data() == Variant()) {
+		// Update if not in drag and drop.
+		_reset_caret_blink_timer();
+
+		if (draw_minimap && !dragging_selection) {
+			_update_minimap_drag();
+		}
+
+		if (!dragging_minimap && !has_ime_text()) {
+			switch (selecting_mode) {
+				case SelectionMode::SELECTION_MODE_POINTER: {
+					_update_selection_mode_pointer();
+				} break;
+				case SelectionMode::SELECTION_MODE_WORD: {
+					_update_selection_mode_word();
+				} break;
+				case SelectionMode::SELECTION_MODE_LINE: {
+					_update_selection_mode_line();
+				} break;
+				default: {
+					break;
+				}
+			}
+		}
+	}
+
+	// Update hovered gutter.
+	Vector2i current_hovered_gutter = _get_hovered_gutter(p_event_position);
+	if (current_hovered_gutter != hovered_gutter) {
+		hovered_gutter = current_hovered_gutter;
+		queue_redraw();
+	}
+
+	if (drag_action && can_drop_data(p_event_position, get_viewport()->gui_get_drag_data())) {
+		apply_ime();
+		// Update drag and drop caret.
+		drag_caret_force_displayed = true;
+		Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+
+		if (drag_caret_index == -1) {
+			// Force create a new caret for drag and drop.
+			carets.push_back(Caret());
+			drag_caret_index = carets.size() - 1;
+		}
+
+		drag_caret_force_displayed = true;
+		set_caret_line(pos.y, false, true, -1, drag_caret_index);
+		set_caret_column(pos.x, true, drag_caret_index);
+		dragging_selection = true;
 	}
 }
 
@@ -3942,6 +4107,14 @@ void TextEdit::set_virtual_keyboard_show_on_focus(bool p_show_on_focus) {
 
 bool TextEdit::get_virtual_keyboard_show_on_focus() const {
 	return virtual_keyboard_show_on_focus;
+}
+
+void TextEdit::set_virtual_keyboard_show_on_double_tap(bool p_show_on_double_tap) {
+	virtual_keyboard_show_on_double_tap = p_show_on_double_tap;
+}
+
+bool TextEdit::get_virtual_keyboard_show_on_double_tap() const {
+	return virtual_keyboard_show_on_double_tap;
 }
 
 void TextEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
@@ -7210,6 +7383,9 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_show_on_focus", "show_on_focus"), &TextEdit::set_virtual_keyboard_show_on_focus);
 	ClassDB::bind_method(D_METHOD("get_virtual_keyboard_show_on_focus"), &TextEdit::get_virtual_keyboard_show_on_focus);
+
+	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_show_on_double_tap", "show_on_double_tap"), &TextEdit::set_virtual_keyboard_show_on_double_tap);
+	ClassDB::bind_method(D_METHOD("get_virtual_keyboard_show_on_double_tap"), &TextEdit::get_virtual_keyboard_show_on_double_tap);
 
 	ClassDB::bind_method(D_METHOD("set_middle_mouse_paste_enabled", "enabled"), &TextEdit::set_middle_mouse_paste_enabled);
 	ClassDB::bind_method(D_METHOD("is_middle_mouse_paste_enabled"), &TextEdit::is_middle_mouse_paste_enabled);

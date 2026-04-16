@@ -951,14 +951,12 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-#ifndef ANDROID_ENABLED
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
 		_zoom_to(zoom_factor * std::pow(magnify_gesture->get_factor(), 0.25f));
 		accept_event();
 		return;
 	}
-#endif
 
 	Ref<InputEventKey> k = p_event;
 
@@ -1887,7 +1885,7 @@ void CodeTextEditor::_zoom_out() {
 }
 
 void CodeTextEditor::_zoom_to(float p_zoom_factor) {
-	if (zoom_factor == p_zoom_factor) {
+	if (Math::is_equal_approx(zoom_factor, p_zoom_factor)) {
 		return;
 	}
 
@@ -1962,6 +1960,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_draw_bookmarks_gutter(true);
 
 	text_editor->set_virtual_keyboard_show_on_focus(false);
+	text_editor->set_virtual_keyboard_show_on_double_tap(true);
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);

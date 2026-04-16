@@ -362,10 +362,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JN
 		tp.pos = Point2(p[1], p[2]);
 		tp.pressure = p[3];
 		tp.tilt = Vector2(p[4], p[5]);
+		tp.double_tap = p_double_tap;
 		points.push_back(tp);
 	}
 
-	input_handler->process_touch_event(ev, pointer, points, p_double_tap);
+	input_handler->process_touch_event(ev, pointer, points);
 }
 
 // Called on the UI thread

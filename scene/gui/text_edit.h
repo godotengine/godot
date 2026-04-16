@@ -345,6 +345,7 @@ private:
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
 	bool virtual_keyboard_show_on_focus = true;
+	bool virtual_keyboard_show_on_double_tap = true;
 	bool middle_mouse_paste_enabled = true;
 	bool empty_selection_clipboard_enabled = true;
 
@@ -509,6 +510,13 @@ private:
 	Timer *click_select_held = nullptr;
 	uint64_t last_dblclk = 0;
 	Vector2 last_dblclk_pos;
+
+	bool touch_dragging_starting = false;
+	bool touch_dragging_in_progress = false;
+	Vector2 drag_accum;
+	Vector2 drag_from;
+
+	void _on_drag_or_mouse_motion_event(Vector2i p_event_position, bool p_is_left_click_or_drag);
 
 	void _selection_changed(int p_caret = -1);
 	void _click_selection_held();
@@ -844,6 +852,9 @@ public:
 
 	void set_virtual_keyboard_show_on_focus(bool p_show_on_focus);
 	bool get_virtual_keyboard_show_on_focus() const;
+
+	void set_virtual_keyboard_show_on_double_tap(bool p_show_on_double_tap);
+	bool get_virtual_keyboard_show_on_double_tap() const;
 
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;
