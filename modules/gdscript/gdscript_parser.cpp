@@ -3589,18 +3589,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
 	complete_extents(call);
 
-	// Anonymous class: detect COLON after .new() call.
+	// Anonymous class body after .new() call.
 	if (call->function_name == SNAME("new") && check(GDScriptTokenizer::Token::COLON) && call->callee != nullptr && call->callee->type == Node::SUBSCRIPT) {
 		SubscriptNode *callee_subscript = static_cast<SubscriptNode *>(call->callee);
 		if (callee_subscript->is_attribute) {
-			// Extract the base class identifier chain from the callee base expression.
-			// For "MyClass.new()" the base is IdentifierNode("MyClass").
-			// For "Outer.Inner.new()" the base is SubscriptNode(Outer, Inner).
+			// Collect the base class identifier chain from the callee.
 			Vector<IdentifierNode *> base_chain;
 			ExpressionNode *base_expr = callee_subscript->base;
 			String base_class_name;
 
-			// Walk the subscript chain to collect identifiers.
 			while (base_expr != nullptr) {
 				if (base_expr->type == Node::IDENTIFIER) {
 					base_chain.insert(0, static_cast<IdentifierNode *>(base_expr));
@@ -3621,11 +3618,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			}
 
 			if (base_chain.size() > 0) {
-				// Create synthetic anonymous class.
 				ClassNode *n_class = alloc_node<ClassNode>();
 				ClassNode *previous_class = current_class;
 
-				// Generate name: @AnonymousClass_<BaseName>_<N>
 				String anon_name = vformat("@AnonymousClass_%s_%d", base_class_name, anonymous_class_count++);
 				IdentifierNode *class_id = alloc_node<IdentifierNode>();
 				complete_extents(class_id);
@@ -3643,7 +3638,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 					n_class->fqcn = anon_name;
 				}
 
-				// Set up extends from the base class identifier chain.
 				n_class->extends_used = true;
 				for (int i = 0; i < base_chain.size(); i++) {
 					IdentifierNode *extend_id = alloc_node<IdentifierNode>();
@@ -3652,7 +3646,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 					n_class->extends.push_back(extend_id);
 				}
 
-				// Manage indentation context (following lambda pattern).
+				// Reset multiline state for the class body.
 				bool multiline_context = multiline_stack.back()->get();
 				push_multiline(false);
 				if (multiline_context) {
@@ -3661,7 +3655,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 
 				current_class = n_class;
 
-				// Consume colon and parse class body.
 				advance(); // Consume COLON.
 				bool multiline_body = match(GDScriptTokenizer::Token::NEWLINE);
 				if (multiline_body) {
@@ -3683,7 +3676,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 					consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the anonymous class body.)");
 				}
 
-				// Clean up spurious indent/dedent/newline tokens (following lambda pattern).
 				pop_multiline();
 				if (multiline_context) {
 					while (check(GDScriptTokenizer::Token::DEDENT) || check(GDScriptTokenizer::Token::INDENT) || check(GDScriptTokenizer::Token::NEWLINE)) {
@@ -3694,19 +3686,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 
 				current_class = previous_class;
 
-				// Register anonymous class as inner class of the enclosing class.
 				if (current_class) {
 					current_class->add_member(n_class);
 				}
 
-				// Rewrite the call to target the anonymous class instead of the original base.
+				// Rewrite the call to target the anonymous class.
 				IdentifierNode *anon_ref = alloc_node<IdentifierNode>();
 				complete_extents(anon_ref);
 				anon_ref->name = StringName(anon_name);
 				callee_subscript->base = anon_ref;
 
-				// Signal that the anonymous class body ended the statement
-				// (like lambda_ended does for lambda expressions).
 				lambda_ended = true;
 			}
 		}
