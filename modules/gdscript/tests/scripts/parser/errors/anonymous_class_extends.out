@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+Cannot use "extends" inside an anonymous class body; the base class is inferred from the ".new()" call.

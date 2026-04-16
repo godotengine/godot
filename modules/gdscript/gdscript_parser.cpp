@@ -3669,8 +3669,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 					}
 				}
 
+				if (check(GDScriptTokenizer::Token::EXTENDS)) {
+					push_error(R"*(Cannot use "extends" inside an anonymous class body; the base class is inferred from the ".new()" call.)*");
+				}
+
 				parse_class_body(multiline_body);
 				complete_extents(n_class);
+
+				if (n_class->members.is_empty()) {
+					push_error(R"*(Anonymous class body is empty; omit the ":" to instantiate the base class directly.)*");
+				}
 
 				if (multiline_body) {
 					consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the anonymous class body.)");

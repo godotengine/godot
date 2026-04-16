@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+Anonymous class body is empty; omit the ":" to instantiate the base class directly.
