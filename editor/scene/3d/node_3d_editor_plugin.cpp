@@ -2054,10 +2054,10 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
-		const Key code = k->get_physical_keycode();
-		if (code >= Key::KEY_0 && code <= Key::KEY_9) {
-			k->set_keycode(code - Key::KEY_0 + Key::KP_0);
+	if (k.is_valid() && k->is_pressed()) {
+		const Key code = view_3d_controller->emulate_numpad_key(k->get_physical_keycode());
+		if (code != k->get_physical_keycode()) {
+			k->set_keycode(code);
 		}
 	}
 
@@ -2801,13 +2801,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		Ref<InputEvent> event_mod = p_event;
-		if (EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
-			const Key code = k->get_physical_keycode();
-			if (code >= Key::KEY_0 && code <= Key::KEY_9) {
-				event_mod = p_event->duplicate();
-				Ref<InputEventKey> k_mod = event_mod;
-				k_mod->set_keycode(code - Key::KEY_0 + Key::KP_0);
-			}
+		const Key code = view_3d_controller->emulate_numpad_key(k->get_physical_keycode());
+		if (code != k->get_physical_keycode()) {
+			event_mod = p_event->duplicate();
+			Ref<InputEventKey> k_mod = event_mod;
+			k_mod->set_keycode(code);
 		}
 
 		if (_edit.mode == TRANSFORM_NONE) {

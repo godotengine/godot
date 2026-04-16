@@ -81,6 +81,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/3d/navigation/invert_y_axis"] = EDITOR_GET("editors/3d/navigation/invert_y_axis");
 	settings["editors/3d/navigation/warped_mouse_panning"] = EDITOR_GET("editors/3d/navigation/warped_mouse_panning");
 	settings["editors/3d/navigation/pan_mouse_button"] = EDITOR_GET("editors/3d/navigation/pan_mouse_button");
+	settings["editors/3d/freelook/freelook_activation_modifier"] = EDITOR_GET("editors/3d/freelook/freelook_activation_modifier");
 	settings["editors/3d/freelook/freelook_navigation_scheme"] = EDITOR_GET("editors/3d/freelook/freelook_navigation_scheme");
 	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
 	settings["editors/3d/freelook/freelook_sensitivity"] = EDITOR_GET("editors/3d/freelook/freelook_sensitivity");
@@ -116,6 +117,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["spatial_editor/freelook_right"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_right"));
 	settings["spatial_editor/freelook_up"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_up"));
 	settings["spatial_editor/freelook_down"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_down"));
+	settings["spatial_editor/freelook_toggle"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_toggle"));
 	settings["spatial_editor/freelook_speed_modifier"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier"));
 	settings["spatial_editor/freelook_slow_modifier"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("spatial_editor/freelook_slow_modifier"));
 #endif // _3D_DISABLED

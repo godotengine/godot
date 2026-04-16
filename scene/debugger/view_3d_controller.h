@@ -33,6 +33,7 @@
 #ifndef _3D_DISABLED
 
 #include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
 
 namespace View3DControllerConsts {
 constexpr float DISTANCE_DEFAULT = 4;
@@ -247,7 +248,7 @@ private:
 		}
 	};
 
-	bool _is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_null = false);
+	bool _is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_empty = false);
 	bool _is_shortcut_empty(const ShortcutName p_name);
 	NavigationMode _get_nav_mode_from_shortcuts(NavigationMouseButton p_mouse_button, const Vector<ShortcutCheck> &p_shortcut_checks, bool p_not_empty);
 
@@ -269,6 +270,8 @@ public:
 
 	inline Transform3D to_camera_transform() const { return _to_camera_transform(cursor); }
 	inline Transform3D interp_to_camera_transform() const { return _to_camera_transform(cursor_interp); }
+
+	Key emulate_numpad_key(const Key p_code) const;
 
 	void set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut);
 
