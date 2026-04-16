@@ -81,7 +81,7 @@ Variant PostImportPluginSkeletonRestFixer::get_internal_option_visibility(Intern
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 2 && bool(p_options["retarget/bone_renamer/rename_bones"]) == false;
 		}
 	}
-	return true;
+	return Variant();
 }
 
 void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options) {
