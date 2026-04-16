@@ -9,13 +9,13 @@ status_levels:
 platforms:
   Windows:
     state: editor-tested
-    public_binaries: "The release workflow on this branch now packages Windows, but visible public Releases are still Linux-only until the first Windows publish lands."
+    public_binaries: "Nightly Windows editor zips published to GitHub Releases (godotgs-windows-x86_64-<tag>.zip)."
     evidence:
       - "SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts windows."
       - "Gaussian Production Gates builds a Windows editor and runs windows-vulkan runtime validation in .github/workflows/gaussian_production_gates.yml."
       - "Release Builds compiles and publishes the Windows editor in .github/workflows/release_builds.yml."
       - "The production evidence route in tests/ci/collect_production_evidence.ps1 exercises non-headless Vulkan runtime scripts on Windows."
-    notes: "Windows is the strongest in-repo validation lane currently, but visible public Releases are still Linux-only until the first Windows publish lands."
+    notes: "Windows is the strongest in-repo validation lane and now ships nightly editor zips. No stable v* release is published yet."
   Linux:
     state: sample-project-tested
     public_binaries: "Primary fast public binary lane: Linux editor CI artifacts and nightly prereleases."

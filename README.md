@@ -2,19 +2,26 @@
 
 GodotGS is a Godot 4.5 fork with an in-tree Gaussian Splatting module for importing, rendering, and tuning splat-based scenes in the editor and at runtime.
 <video src="https://github.com/user-attachments/assets/71542f8d-ccf6-433c-b920-66fdf9ae8c84" autoplay loop muted playsinline></video>
+
+## Download
+
+Nightly editor builds for Linux and Windows are published as prereleases on GitHub. Pick the latest:
+
+- **[GitHub Releases](https://github.com/klausi3D/godotGS/releases)** — pick the most recent `nightly-YYYYMMDD` entry at the top. Each nightly includes `godotgs-windows-x86_64-<date>.zip` for Windows and `godotgs-linux-x86_64-<date>.tar.xz` for Linux.
+- macOS users currently need to [build from source](docs/BUILDING.md)
+
+No named stable (`v*`) release is published yet, so nightly is the only public install path today. See [Release Channels](docs/development/release-channels.md) for the full publishing model.
+
 ## Current Status
 
 | Area | State |
 | --- | --- |
 | Maturity | Alpha |
-| Fastest public evaluation path | Linux nightly editor |
-| Windows | Release packaging path exists; public Releases are still Linux-only |
+| Public binaries | Linux nightly editor + Windows nightly editor |
 | macOS | Source build first |
-| Public binaries | Linux editor |
+| Stable release | Not yet published |
 | Compatibility truth | [Compatibility Matrix](docs/reference/compatibility-matrix.md) |
 | Performance truth | [Performance Dashboard](docs/performance/index.md) |
-
-No named non-nightly release is published yet. If you want the fastest way to evaluate the project, use the Linux nightly path first. The release workflow on this branch now packages Windows, but the visible public Releases surface is still Linux-only until the first Windows publish lands. macOS still starts with a source build.
 
 ## Who This Is For
 
@@ -31,7 +38,7 @@ No named non-nightly release is published yet. If you want the fastest way to ev
 
 ## Current Public Evidence
 
-- Compatibility snapshot: Windows is `editor-tested` on the self-hosted Vulkan Forward+ lane with `NVIDIA GeForce RTX 3090`; the release workflow on this branch now packages Windows, but the visible public Releases surface is still Linux-only. Linux is `sample-project-tested` on `ubuntu-24.04` with `xvfb` and `mesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.1`; macOS is currently `build-supported`.
+- Compatibility snapshot: Windows is `editor-tested` on the self-hosted Vulkan Forward+ lane with `NVIDIA GeForce RTX 3090` and now ships a nightly editor zip. Linux is `sample-project-tested` on `ubuntu-24.04` with `xvfb` and `mesa-vulkan-drivers 25.2.8-0ubuntu0.24.04.1` and ships a nightly editor tarball. macOS is currently `build-supported`.
 - Benchmark snapshot: the public dashboard currently contains one committed `static_baseline` row at 74.0 average FPS and 15.62 ms P99 frame time.
 - Visual proof: real editor screenshots and short workflow clips are still pending. The current figures are technical diagrams, not product captures.
 

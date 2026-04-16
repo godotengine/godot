@@ -326,28 +326,56 @@ jobs:
           }
           python -m SCons @args
 
-      - name: Resolve Godot binary
+      - name: Resolve Godot binaries
         id: godot_bin
         shell: pwsh
         run: |
-          $candidates = @(
-            "bin\godot.windows.editor.dev.x86_64.console.exe",
-            "bin\godot.windows.editor.dev.x86_64.exe",
-            "bin\godot.windows.editor.x86_64.console.exe",
-            "bin\godot.windows.editor.x86_64.exe"
-          )
-          $resolved = $null
-          foreach ($candidate in $candidates) {
-            if (Test-Path -LiteralPath $candidate) {
-              $resolved = (Resolve-Path -LiteralPath $candidate).Path
-              break
-            }
+          # Godot's Windows build emits a pair: the main GUI editor exe and a
+          # small *.console.exe launcher that re-spawns the main exe with stdout
+          # attached. Both must ship in the release zip. Without the main exe
+          # (~230 MB), the launcher (~160 KB) cannot find its sibling and the
+          # download is unusable.
+          $allExes = @(Get-ChildItem -Path "bin" -Filter "godot.windows.editor*.x86_64.exe" -File -ErrorAction SilentlyContinue)
+          $mainExes = @($allExes | Where-Object { $_.Name -notlike "*.console.exe" })
+          $consoleExes = @($allExes | Where-Object { $_.Name -like "*.console.exe" })
+
+          # A clean build (the runner does `git clean -ffdx` before invoking
+          # scons) produces exactly one main exe and at most one console
+          # wrapper per channel. Fail fast if the glob matches more than one
+          # main exe — it means bin\ has stale artifacts from a previous
+          # build with a different flavor, and silently picking one variant
+          # is what caused the original broken-zip bug this commit fixes.
+          if ($mainExes.Count -eq 0) {
+            Write-Host "bin\ contents:"
+            Get-ChildItem -Path "bin" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
+            throw "Could not find main Godot editor exe in bin\ (looked for godot.windows.editor*.x86_64.exe excluding .console.exe)."
           }
-          if (-not $resolved) {
-            throw "Could not find built Godot binary in expected bin\ paths."
+          if ($mainExes.Count -gt 1) {
+            Write-Host "bin\ contents:"
+            Get-ChildItem -Path "bin" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
+            $mainNames = ($mainExes | ForEach-Object { $_.Name }) -join ", "
+            throw "Ambiguous main editor in bin\ — expected exactly one match for 'godot.windows.editor*.x86_64.exe' (excluding .console.exe), found $($mainExes.Count): $mainNames. Clean bin\ before rebuilding."
           }
-          Write-Host "Resolved Godot binary: $resolved"
-          "path=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if ($consoleExes.Count -gt 1) {
+            Write-Host "bin\ contents:"
+            Get-ChildItem -Path "bin" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
+            $consoleNames = ($consoleExes | ForEach-Object { $_.Name }) -join ", "
+            throw "Ambiguous console wrapper in bin\ — expected at most one '*.console.exe', found $($consoleExes.Count): $consoleNames. Clean bin\ before rebuilding."
+          }
+
+          $main = $mainExes[0]
+          Write-Host "Resolved main editor: $($main.FullName) ($([math]::Round($main.Length / 1MB, 1)) MB)"
+          "main_path=$($main.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "main_name=$($main.Name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+          if ($consoleExes.Count -eq 1) {
+            $console = $consoleExes[0]
+            Write-Host "Resolved console wrapper: $($console.FullName) ($([math]::Round($console.Length / 1KB, 1)) KB)"
+            "console_path=$($console.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            "console_name=$($console.Name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          } else {
+            Write-Host "No .console.exe wrapper found; shipping main editor only."
+          }
 
       - name: Package artifacts + checksums
         id: package
@@ -356,9 +384,16 @@ jobs:
           $ErrorActionPreference = "Stop"
           New-Item -ItemType Directory -Force -Path dist | Out-Null
 
-          $binaryPath = "${{ steps.godot_bin.outputs.path }}"
-          $binaryName = Split-Path -Leaf $binaryPath
-          Copy-Item -LiteralPath $binaryPath -Destination (Join-Path "dist" $binaryName) -Force
+          $mainPath = "${{ steps.godot_bin.outputs.main_path }}"
+          $mainName = "${{ steps.godot_bin.outputs.main_name }}"
+          Copy-Item -LiteralPath $mainPath -Destination (Join-Path "dist" $mainName) -Force
+
+          $consolePath = "${{ steps.godot_bin.outputs.console_path }}"
+          $consoleName = "${{ steps.godot_bin.outputs.console_name }}"
+          $hasConsole = -not [string]::IsNullOrWhiteSpace($consolePath)
+          if ($hasConsole) {
+            Copy-Item -LiteralPath $consolePath -Destination (Join-Path "dist" $consoleName) -Force
+          }
 
           $versionLabel = "${{ needs.release_metadata.outputs.tag }}"
           if ([string]::IsNullOrWhiteSpace($versionLabel)) {
@@ -379,17 +414,28 @@ jobs:
             "publish=${{ needs.release_metadata.outputs.publish }}"
             "tag=${{ needs.release_metadata.outputs.tag }}"
             "commit=${{ github.sha }}"
-            "binary=$binaryName"
-            "generated_at_utc=$(Get-Date -AsUTC -Format o)"
+            "binary=$mainName"
           )
+          if ($hasConsole) {
+            $buildInfoLines += "console_binary=$consoleName"
+          }
+          $buildInfoLines += "generated_at_utc=$(Get-Date -AsUTC -Format o)"
           $buildInfoLines | Set-Content -Path $buildInfoPath -Encoding utf8
+
+          $filesToCompress = @($mainName, "BUILD-INFO.txt")
+          if ($hasConsole) {
+            $filesToCompress = @($mainName, $consoleName, "BUILD-INFO.txt")
+          }
 
           Push-Location $distPath
           try {
-            Compress-Archive -Path $binaryName, "BUILD-INFO.txt" -DestinationPath $archivePath -Force
+            Compress-Archive -Path $filesToCompress -DestinationPath $archivePath -Force
           } finally {
             Pop-Location
           }
+
+          $archiveSizeMB = [math]::Round((Get-Item $archivePath).Length / 1MB, 1)
+          Write-Host "Built archive $archiveName ($archiveSizeMB MB) containing: $($filesToCompress -join ', ')"
 
           $hash = Get-FileHash -Algorithm SHA256 -Path $archivePath
           "{0}  {1}" -f $hash.Hash.ToLower(), $archiveName | Out-File -FilePath $checksumPath -Encoding ascii

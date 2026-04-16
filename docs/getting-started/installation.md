@@ -16,7 +16,7 @@ Use this page when you need prerequisites, toolchain setup, or an editor built f
 
 | Option | When to use it | Next step |
 | --- | --- | --- |
-| Reuse a public or local editor | You already have a Linux nightly or a binary you built locally. Windows release packaging exists in the workflow, but a visible public Windows release is not yet available. | [Public Evaluator](quick-start.md) |
+| Reuse a public or local editor | You already have a nightly editor download or a binary you built locally. See [Downloads](downloads.md) for the public nightly binaries. | [Public Evaluator](quick-start.md) |
 | Build an editor locally | You need a fresh binary from this checkout, or you are on macOS and need a source build. | [Build from Source](../BUILDING.md) |
 | Build an editor for validation | You plan to run guard, QA, or runtime validation commands. | [Build / Test / CI Command Reference](../reference/build-test-ci.md) |
 

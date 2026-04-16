@@ -10,7 +10,7 @@ hide:
 
 Reach a first visible splat quickly and decide whether godotGS is the right evaluation target for your project.
 
-Alpha today. Linux nightly is the fastest evaluation path, the Windows release packaging path exists in the workflow but is not yet visible on Releases, and macOS still means building from source.
+Alpha today. Linux and Windows nightly editor builds are published on GitHub Releases; macOS still means building from source.
 
 Visual captures for the user journey are still pending, so the linked workflow pages stay text-first until real editor screenshots are available.
 
@@ -22,11 +22,19 @@ Visual captures for the user journey are still pending, so the linked workflow p
 
 <div class="grid cards" markdown>
 
+- __Download a nightly editor__
+
+    ---
+
+    Get a Linux tarball or Windows zip from GitHub Releases. macOS users still need a source build.
+
+    [Open downloads](downloads.md)
+
 - __Try in 5 minutes__
 
     ---
 
-    Use the Linux nightly editor path when you want the shortest honest evaluation loop through the public evaluator; Windows users still need a source build until the first Windows public release lands.
+    Use the latest Linux or Windows nightly editor for the shortest honest evaluation loop through the public evaluator.
 
     [Open try in 5 minutes](try-in-5-minutes.md)
 

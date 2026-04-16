@@ -1,14 +1,16 @@
 # Try in 5 Minutes
 
-This is the shortest honest path to a visible result: download the Linux nightly editor, open the sample project, and confirm the public evaluator in the viewport. The Windows release path exists in the workflow, but a public Windows release has not landed yet, so Windows users should use [Build from Source](../BUILDING.md) for now. macOS still starts with [Build from Source](../BUILDING.md).
+This is the shortest honest path to a visible result: download the latest nightly editor for your platform, open the sample project, and confirm the public evaluator in the viewport. macOS still starts with [Build from Source](../BUILDING.md).
 
-## 1. Get the Linux Nightly Editor
+## 1. Get the Nightly Editor
 
-Open the repository releases page and download the newest Linux nightly editor archive:
+Open the [GitHub Releases](https://github.com/klausi3D/godotGS/releases) page, pick the most recent `nightly-YYYYMMDD` entry at the top of the list, and download the archive that matches your platform:
 
-- [GitHub Releases](https://github.com/klausi3D/godotGS/releases)
+- **Linux:** `godotgs-linux-x86_64-<date>.tar.xz`
+- **Windows:** `godotgs-windows-x86_64-<date>.zip` (contains both the GUI editor and the console wrapper — pick whichever fits your workflow)
+- **macOS:** no published binary; stop here and use [Build from Source](../BUILDING.md).
 
-If you are on Windows, stop here and use [Build from Source](../BUILDING.md). The Windows release path is already wired into the workflow, but it is not yet visible on Releases. If you are on macOS, stop here and use [Build from Source](../BUILDING.md).
+See the [Downloads page](downloads.md) for verification and integrity-check details.
 
 ## 2. Open the Project
 

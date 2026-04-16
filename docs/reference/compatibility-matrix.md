@@ -1,6 +1,6 @@
 # Compatibility Matrix
 
-Last generated: 2026-04-08
+Last generated: 2026-04-16
 
 ## Purpose
 Use this matrix to track evidence-backed platform status for godotGS Gaussian Splatting.
@@ -31,7 +31,7 @@ The state shown for each platform is the strongest evidence level currently docu
 
 | Platform | Current state | Public binaries | Evidence | Notes |
 | --- | --- | --- | --- | --- |
-| Windows | `editor-tested` | The release workflow on this branch now packages Windows, but visible public Releases are still Linux-only until the first Windows publish lands. | SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts windows.<br>Gaussian Production Gates builds a Windows editor and runs windows-vulkan runtime validation in .github/workflows/gaussian_production_gates.yml.<br>Release Builds compiles and publishes the Windows editor in .github/workflows/release_builds.yml.<br>The production evidence route in tests/ci/collect_production_evidence.ps1 exercises non-headless Vulkan runtime scripts on Windows. | Windows is the strongest in-repo validation lane currently, but visible public Releases are still Linux-only until the first Windows publish lands. |
+| Windows | `editor-tested` | Nightly Windows editor zips published to GitHub Releases (godotgs-windows-x86_64-<tag>.zip). | SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts windows.<br>Gaussian Production Gates builds a Windows editor and runs windows-vulkan runtime validation in .github/workflows/gaussian_production_gates.yml.<br>Release Builds compiles and publishes the Windows editor in .github/workflows/release_builds.yml.<br>The production evidence route in tests/ci/collect_production_evidence.ps1 exercises non-headless Vulkan runtime scripts on Windows. | Windows is the strongest in-repo validation lane and now ships nightly editor zips. No stable v* release is published yet. |
 | Linux | `sample-project-tested` | Primary fast public binary lane: Linux editor CI artifacts and nightly prereleases. | SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts linuxbsd.<br>Release Builds compiles and publishes the Linux editor in .github/workflows/release_builds.yml.<br>Baseline QA builds a Linux editor, imports the project, and runs baseline QA under xvfb in .github/workflows/baseline_qa.yml. | Linux remains the fastest public evaluation path. The documented validation includes a sample-project QA lane under xvfb, but it is still not an interactive editor validation row. |
 | macOS | `build-supported` | No public macOS binaries at present; build from source. | SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py accepts macos. | The repo allows macOS builds, but no published smoke, editor, or sample-project evidence is checked in yet. |
 | Android | `unsupported` | None. | Android is not listed in SUPPORTED_PLATFORMS in modules/gaussian_splatting/config.py. | The build system rejects this platform. |

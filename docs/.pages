@@ -1,6 +1,7 @@
 nav:
   - Start Here:
       - getting-started/index.md
+      - getting-started/downloads.md
       - getting-started/try-in-5-minutes.md
       - getting-started/installation.md
       - getting-started/quick-start.md
