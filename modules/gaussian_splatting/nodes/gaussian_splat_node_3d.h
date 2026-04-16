@@ -167,6 +167,21 @@ private:
 
     // Color grading
     Ref<class ColorGradingResource> color_grading;
+    // Tracks whether the cached color_grading has already been pushed to the
+    // current renderer/data window while this node was active content. Cleared
+    // when the node loses its data or renderer relationship; left intact across
+    // detach/re-attach so passive tree transitions do not re-clobber peers on a
+    // shared renderer. Detached or data-less edits can re-arm a pending replay by
+    // setting this back to false.
+    bool grading_pushed_for_current_data = false;
+    // Tracks an explicit user grading edit (setter or resource "changed" signal)
+    // that could not be pushed immediately because the node was detached or had
+    // no local source data. Persists until the node next becomes active content
+    // and the cached color_grading — including null — is delivered to the
+    // renderer. Distinguishes user-explicit intent (which is allowed to push
+    // null and override peers under last-writer-wins) from implicit init replay
+    // (which must reject null to avoid wiping a peer that already pushed).
+    bool grading_explicit_pending = false;
 
     // Performance monitoring
     uint32_t visible_splat_count = 0;
@@ -342,6 +357,17 @@ private:
 
     void _on_asset_changed();
     void _on_color_grading_changed();
+    bool _has_local_source_data() const;
+    bool _can_push_color_grading_to_renderer() const;
+    bool _push_color_grading_to_renderer(bool p_allow_null);
+
+    // Push the cached color_grading to the renderer if it has not been
+    // pushed yet for the current renderer/data window AND the node is active
+    // content. The replay path covers async asset load, procedural data
+    // setup, and deferred sync after detached edits. Skipping when the flag
+    // is already true prevents hot-reload / reimport from re-pushing this
+    // node's grading and clobbering a peer on a shared renderer.
+    void _replay_color_grading_if_pending();
     void _on_transform_changed();
     void _update_parent_visibility_tracking();
     void _clear_parent_visibility_tracking();

@@ -1325,8 +1325,7 @@ bool GaussianSplatNodeRendererHelper::can_apply_renderer_settings() const {
         return false;
     }
 
-    const bool has_local_source_data = owner.renderer_data.is_valid() || owner.splat_asset.is_valid() || owner.runtime_asset.is_valid();
-    if (!has_local_source_data) {
+    if (!owner._has_local_source_data()) {
         return false;
     }
 
@@ -1371,8 +1370,16 @@ void GaussianSplatNodeRendererHelper::ensure_renderer() {
         GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
         if (director) {
             owner.renderer = director->get_shared_renderer(owner.get_world_3d().ptr());
+            // A new renderer reference begins a fresh data-ready window;
+            // any prior flag value referred to the previous reference and
+            // is no longer meaningful. The conditional push below re-arms
+            // the flag if it actually pushes. (Bot P2 on PR #245: tree-
+            // exit must NOT reset this flag because the renderer
+            // reference persists; only renderer-reference change should.)
+            owner.grading_pushed_for_current_data = false;
             if (owner.renderer.is_valid()) {
                 apply_renderer_settings();
+                owner._replay_color_grading_if_pending();
             }
         }
     }
@@ -1418,18 +1425,16 @@ void GaussianSplatNodeRendererHelper::apply_renderer_settings() {
     owner.renderer->set_painterly_stroke_length(owner.stroke_width);
     owner.renderer->set_painterly_gamma(MAX(owner.temporal_blend, 0.01f));
     owner.renderer->set_opacity_multiplier(owner.opacity);
-    {
-        bool renderer_shared = false;
-        GaussianSplatSceneDirector *director = GaussianSplatSceneDirector::get_singleton();
-        if (director) {
-            renderer_shared = director->get_instance_count_for_renderer(owner.renderer.ptr()) > 1u ||
-                    director->has_world_submission_for_renderer(owner.renderer.ptr());
-        }
-        if (renderer_shared) {
-            owner.renderer->set_color_grading(Ref<ColorGradingResource>());
-        } else {
-            owner.renderer->set_color_grading(owner.color_grading);
-        }
+    // Color grading per-frame push is gated on single-owner. Pushing while
+    // sharing would clobber another node's set_color_grading() call (the
+    // original P1 fix). Skipping always means a sharing-collapse transition
+    // (e.g. another node leaving) leaves the renderer with the departed
+    // node's last grading and never restores the remaining owner's
+    // (the third P1 fix). Single-owner per-frame push covers both: it
+    // resyncs after a transition without ever clobbering anyone, since by
+    // definition no other node could have written.
+    if (!_is_renderer_shared_with_other_content(owner)) {
+        owner.renderer->set_color_grading(owner.color_grading);
     }
     {
         GaussianStreamingSystem::ConfigOverrides overrides;

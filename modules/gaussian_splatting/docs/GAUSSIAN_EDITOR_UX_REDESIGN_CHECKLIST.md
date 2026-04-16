@@ -53,7 +53,7 @@ The Gaussian bottom panel is no longer part of the normal editor flow.
 - [ ] ~~Added `GaussianSplatNode3D` instantiation on viewport drop with undo/redo integration.~~ **Audit 2026-04-03: NOT implemented.** No code creates a new node on viewport drop.
 - [x] Removed the Gaussian bottom panel from `GaussianEditorPlugin` primary workflow.
 - [x] Gated painterly brush tools UI behind `painterly/enabled` and valid data. Brush UI no longer appears unconditionally for every node.
-- [x] Broadened shared-renderer color grading guard to cover both multi-instance and active world submissions. Renamed `_is_multi_instance_shared_renderer_active` to `_is_renderer_shared_with_other_content` and added `has_world_submission_for_renderer` check. Shared-renderer mode no longer leaks one node's grading to others or to world content.
+- [x] Broadened shared-renderer color grading guard to cover both multi-instance and active world submissions. Renamed `_is_multi_instance_shared_renderer_active` to `_is_renderer_shared_with_other_content` and added `has_world_submission_for_renderer` check. Shared-renderer mode no longer leaks one node's grading to others or to world content. **Superseded by PR #245**: the `rendering/color_grading` property now stays visible on every node and per-node grading reaches the renderer regardless of sharing (last-writer-wins between distinct setter calls; per-frame resync only fires single-owner). Per-instance grading in the instance pipeline is still the proper long-term fix.
 - [x] Added disabled states to bake/restore color grading buttons (disabled when no data, no grading, or wrong bake state).
 - [x] Added 4 color grading tests: single-node push, enter/exit tree survival, signal propagation, and world submission blocking node grading push with recovery.
 - [x] Reimport from the advanced import settings dialog now force-refreshes the loaded asset, sidecar-backed settings, preview scene, and stats without reopening the dialog.
@@ -92,8 +92,8 @@ Run these steps in the editor on a clean project copy:
 17. Drag a `.ply` file onto an existing `GaussianSplatNode3D` and confirm asset-first load (not `ply_file_path` fallback if already imported).
 18. Modify the asset, reimport it from the advanced import settings dialog, and confirm the dialog preview/stats refresh without reopening.
 19. Trigger any hot-reload path available on this branch and confirm all registered live nodes tied to the changed source/asset path refresh without losing their asset links or crashing.
-20. Add two `GaussianSplatNode3D` instances sharing one renderer. Confirm color grading property is hidden on both nodes.
-21. Remove one node. Confirm color grading reappears on the remaining node and reaches the renderer.
+20. Add two `GaussianSplatNode3D` instances sharing one renderer. Confirm `rendering/color_grading` property remains visible on both nodes (per-node grading is now the design intent — see PR #245).
+21. Remove one node. Confirm the remaining node's grading is restored on the renderer (single-owner per-frame resync).
 22. Confirm brush tools UI does not appear when `painterly/enabled` is false.
 23. Enable `painterly/enabled` on a node with valid data. Confirm brush tools appear.
 24. Confirm bake button is disabled when no `ColorGradingResource` is assigned. Assign one and confirm bake becomes enabled.

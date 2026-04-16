@@ -351,6 +351,7 @@ void GaussianSplatNode3D::_notification_enter_world() {
     _ensure_renderer();
     _update_render_instance();
     _register_shared_renderer();
+    _replay_color_grading_if_pending();
     debug_helper.apply_renderer_debug_settings();
     _update_debug_hud_visibility();
     notify_property_list_changed();
@@ -367,6 +368,15 @@ void GaussianSplatNode3D::_notification_exit_tree() {
     _update_cached_render_target(nullptr);
     renderer_helper.release_renderer_settings_ownership();
     _unregister_shared_renderer();
+
+    // NOTE: do NOT reset grading_pushed_for_current_data here. The
+    // owner.renderer reference is not cleared on tree-exit (only
+    // fetched when null in ensure_renderer), so the data-ready window
+    // for this renderer reference continues across exit/re-enter.
+    // Resetting here would let _update_asset re-clobber a peer's
+    // grading on a shared renderer after a transient detach. The flag
+    // is cleared in the right places: _clear_asset (data going away)
+    // and ensure_renderer (new renderer reference).
 
     // Release GPU storage when detached to avoid keeping allocations alive.
     // Storage will be reallocated on re-enter if needed.
@@ -447,7 +457,11 @@ void GaussianSplatNode3D::_notification(int p_what) {
 
 void GaussianSplatNode3D::_validate_property(PropertyInfo &p_property) const {
     if (_is_renderer_shared_with_other_content(renderer)) {
-        if (p_property.name.begins_with("painterly/") || p_property.name == "rendering/color_grading" ||
+        // Color grading stays visible on every node even when the renderer is
+        // shared: each node pushes its own grading to the renderer (last
+        // write wins until per-submission grading lands). Painterly and
+        // debug overlays remain renderer-wide and are still hidden here.
+        if (p_property.name.begins_with("painterly/") ||
                 p_property.name == "debug/show_tile_grid" ||
                 p_property.name == "debug/show_density_heatmap" ||
                 p_property.name == "debug/show_performance_hud" ||
@@ -833,6 +847,12 @@ void GaussianSplatNode3D::_finalize_manual_splat_setup(int splat_count) {
     _mark_render_state_dirty();
     update_gizmos();
     update_configuration_warnings();
+
+    // Procedural data path: set_splat_data bypasses set_splat_asset and
+    // _update_asset, so the cached color_grading would never reach the
+    // renderer for this node. Same first-data-ready replay as
+    // _update_asset. (Bot P1 on PR #245.)
+    _replay_color_grading_if_pending();
 }
 
 void GaussianSplatNode3D::set_quality_preset(QualityPreset p_preset) {
@@ -1543,10 +1563,80 @@ void GaussianSplatNode3D::_load_asset() {
 void GaussianSplatNode3D::_update_asset() {
     asset_helper.update_asset();
     update_gizmos();
+    _replay_color_grading_if_pending();
+}
+
+bool GaussianSplatNode3D::_has_local_source_data() const {
+    return renderer_data.is_valid() || splat_asset.is_valid() || runtime_asset.is_valid();
+}
+
+bool GaussianSplatNode3D::_can_push_color_grading_to_renderer() const {
+    return renderer.is_valid() && is_inside_tree() && is_inside_world() && _has_local_source_data();
+}
+
+bool GaussianSplatNode3D::_push_color_grading_to_renderer(bool p_allow_null) {
+    if (!_can_push_color_grading_to_renderer()) {
+        return false;
+    }
+    if (!p_allow_null && color_grading.is_null()) {
+        return false;
+    }
+
+    renderer->set_color_grading(color_grading);
+    renderer->invalidate_cached_render();
+    grading_pushed_for_current_data = true;
+    // The push satisfies any pending explicit edit too; clear so a later
+    // replay does not re-fire and clobber a peer that wrote in between.
+    grading_explicit_pending = false;
+    return true;
+}
+
+void GaussianSplatNode3D::_replay_color_grading_if_pending() {
+    // First-safe replay. Pushes the cached color_grading to the renderer
+    // exactly once per renderer/data window, gated on the
+    // grading_pushed_for_current_data flag and active-content checks.
+    //
+    // Why the flag matters: _update_asset (and the procedural
+    // _finalize_manual_splat_setup) can fire repeatedly — hot-reload /
+    // reimport via _on_asset_changed → _update_asset, multiple
+    // set_splat_data calls, etc. On a shared renderer, an unguarded push
+    // here would let node A's refresh overwrite node B's grading even
+    // though no grading setter ran on either. The flag fires this push
+    // exactly once per data-ready window:
+    //  - cleared by _clear_asset (data going away)
+    //  - cleared inside ensure_renderer when a NEW renderer reference is
+    //    fetched (the old window ends)
+    //  - set by every push site (this helper, ensure_renderer initial-
+    //    sync, setter, signal handler) so subsequent implicit refreshes
+    //    don't re-push
+    //
+    // NOT cleared on NOTIFICATION_EXIT_TREE: owner.renderer reference
+    // persists across exit/re-enter, so the renderer/data window persists
+    // too. Resetting here would let _update_asset re-clobber a peer after a
+    // transient detach. Detached edits re-arm the replay by explicitly
+    // clearing the flag in the setter/signal paths instead.
+    //
+    // Two-track replay:
+    //   - grading_explicit_pending: a user setter/signal call could not
+    //     push immediately (detached, or no data yet). User intent must
+    //     reach the renderer once the node activates, INCLUDING null
+    //     grading — last-writer-wins applies to explicit edits.
+    //   - grading_pushed_for_current_data: implicit init replay. Only
+    //     fires for non-null grading because pushing null implicitly
+    //     would wipe a peer's already-pushed grading on a shared
+    //     renderer (the original "empty node hijacks renderer" P1).
+    if (grading_explicit_pending) {
+        _push_color_grading_to_renderer(true);
+    } else if (!grading_pushed_for_current_data) {
+        _push_color_grading_to_renderer(false);
+    }
 }
 
 void GaussianSplatNode3D::_clear_asset() {
     asset_helper.clear_asset();
+    // Data is going away — next data-ready transition (new asset, async load
+    // completion, or hot-reload after a reset) should push grading once again.
+    grading_pushed_for_current_data = false;
 }
 
 void GaussianSplatNode3D::_update_bounds() {
@@ -2078,13 +2168,15 @@ void GaussianSplatNode3D::_on_asset_changed() {
 }
 
 void GaussianSplatNode3D::_on_color_grading_changed() {
-    if (renderer.is_valid()) {
-        if (_is_renderer_shared_with_other_content(renderer)) {
-            renderer->set_color_grading(Ref<ColorGradingResource>());
-        } else {
-            renderer->set_color_grading(color_grading);
-        }
-        renderer->invalidate_cached_render();
+    if (!_push_color_grading_to_renderer(true)) {
+        // Detached or data-less resource mutation: queue an explicit
+        // replay so the user's change (including null) reaches the
+        // renderer when this node next becomes active content. Arming
+        // the implicit-replay flag too keeps both replay tracks in
+        // sync; the explicit track wins because the replay helper
+        // checks it first.
+        grading_explicit_pending = true;
+        grading_pushed_for_current_data = false;
     }
 }
 
@@ -2151,13 +2243,18 @@ void GaussianSplatNode3D::set_color_grading(const Ref<ColorGradingResource> &p_g
         color_grading->connect("changed", grading_changed);
     }
 
-    if (renderer.is_valid()) {
-        if (_is_renderer_shared_with_other_content(renderer)) {
-            renderer->set_color_grading(Ref<ColorGradingResource>());
-        } else {
-            renderer->set_color_grading(color_grading);
-        }
-        renderer->invalidate_cached_render();
+    if (!_push_color_grading_to_renderer(true)) {
+        // Detached or data-less setter: queue an explicit replay so the
+        // user's edit (including null) reaches the renderer once this
+        // node becomes active content. Without this, an explicit
+        // set_color_grading(null) made while detached would never reach
+        // the renderer because the implicit replay path rejects null
+        // (to protect peers from passive-init clobbering). Arming the
+        // implicit-replay flag too keeps both replay tracks in sync;
+        // the explicit track wins because the replay helper checks it
+        // first.
+        grading_explicit_pending = true;
+        grading_pushed_for_current_data = false;
     }
 
     _mark_render_state_dirty();
