@@ -796,6 +796,10 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
+void MeshLibraryEditorPlugin::open_editor() {
+	mesh_library_editor->open();
+}
+
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
 	singleton = this;
 

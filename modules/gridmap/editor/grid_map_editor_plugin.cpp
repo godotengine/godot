@@ -1183,7 +1183,7 @@ void GridMapEditor::_update_mesh_library() {
 
 		if (mesh_library_editor_plugin) {
 			mesh_library_editor_plugin->edit(*mesh_library);
-			mesh_library_editor_plugin->make_visible(true);
+			mesh_library_editor_plugin->open_editor();
 		}
 	} else if (mesh_library_editor_plugin) {
 		mesh_library_editor_plugin->edit(nullptr);
