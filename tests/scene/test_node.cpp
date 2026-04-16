@@ -919,9 +919,6 @@ TEST_CASE("[SceneTree][Node] Test the process priority") {
 	memdelete(node4);
 }
 
-void check_parsed_scene(Ref<PackedScene> p_scene) {
-}
-
 TEST_CASE("[SceneTree][Node][PackedScene] Nested arrays and dictionaries") {
 	Node *scene = memnew(Node);
 	scene->set_name("TestScene");
