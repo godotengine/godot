@@ -95,8 +95,9 @@ class EditorAudioBus : public PanelContainer {
 	Ref<StyleBoxFlat> peak_indicator_stylebox_l;
 	Ref<StyleBoxFlat> peak_indicator_stylebox_r;
 
-	// VU size - peak indicator size
-	const float peak_indicator_range = 126.0;
+	const float vu_width = 16;
+	const float vu_height = 128;
+	float peak_indicator_range;
 
 	OptionButton *send = nullptr;
 
