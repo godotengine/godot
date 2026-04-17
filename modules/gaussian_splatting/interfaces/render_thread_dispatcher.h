@@ -48,7 +48,7 @@ private:
     std::atomic<uint64_t> completed_request_id{0};
     std::atomic<uint64_t> timeout_usec{15000000};
     std::atomic<uint64_t> latest_data_request_id{0};
-    std::atomic<int> latest_data_result{int(OK)};
+    std::atomic<Error> latest_data_result{OK};
 };
 
 #endif // GS_RENDER_THREAD_DISPATCHER_H

@@ -36,13 +36,11 @@ That snapshot is what backs the public performance dashboard until more committe
 
 Compatibility extras are still accepted (`--capture-lane`, `--no-captures`, `--no-dashboard`) but the command above is the supported path.
 
-## Single-Process Execution
+## Runner Execution
 
-`run_benchmark.py` launches one Godot process and delegates all lanes to:
+`tests/runtime/run_benchmark.py` is the canonical entry point.
 
-- `res://scenes/benchmark_orchestrator.tscn`
-
-The orchestrator loads each lane scene sequentially in-process and writes lane JSON reports with the existing suite-compatible structure.
+It launches one Godot subprocess per benchmark lane, writes per-lane JSON and log files into the selected output directory, then aggregates those lane results into the suite report and summary.
 
 ## Profiles
 
@@ -188,9 +186,8 @@ Generated artifacts:
 
 - `benchmark_suite_report.json`
 - `benchmark_suite_summary.md`
-- `benchmark_orchestrator.log`
-- `benchmark_orchestrator_report.json`
 - `<lane_id>.json` per lane
+- `<lane_id>.log` per lane
 - optional dashboard artifacts (`benchmark_suite_dashboard.html`, `benchmark_suite_*.svg`)
 
 The public docs surface should prefer the snapshot table above for the current committed result and keep the charts focused on the exported lane data.

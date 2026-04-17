@@ -192,14 +192,14 @@ static uint32_t _get_adaptive_overlap_budget_suggestion(const TileRenderer *p_re
 	return CLAMP(state->suggested_budget_records, min_budget, hard_cap);
 }
 
-static uint32_t _get_adaptive_overlap_budget_floor(const TileRenderer *p_renderer) {
+static uint32_t _get_adaptive_overlap_budget_floor(TileRenderer *p_renderer) {
 	if (!_is_adaptive_overlap_budget_enabled()) {
 		return 0u;
 	}
 	const uint32_t hard_cap = _get_adaptive_overlap_budget_hard_cap();
 	const uint32_t min_budget = _get_adaptive_overlap_budget_min();
 	TileRenderer::AdaptiveOverlapBudgetRuntimeState &state =
-			const_cast<TileRenderer *>(p_renderer)->access_adaptive_overlap_budget_runtime_state();
+			p_renderer->access_adaptive_overlap_budget_runtime_state();
 	if (state.suggested_budget_records == 0u) {
 		state.suggested_budget_records = min_budget;
 	}
@@ -207,20 +207,20 @@ static uint32_t _get_adaptive_overlap_budget_floor(const TileRenderer *p_rendere
 	return state.suggested_budget_records;
 }
 
-static uint32_t _update_adaptive_overlap_budget(const TileRenderer *p_renderer, uint32_t p_raw_records) {
+static uint32_t _update_adaptive_overlap_budget(TileRenderer *p_renderer, uint32_t p_raw_records) {
 	constexpr uint32_t SHRINK_TRIGGER_UTILIZATION_PERCENT = 55u;
 	constexpr uint32_t SHRINK_HYSTERESIS_FRAMES = 120u;
 	constexpr uint32_t SHRINK_STEP_PERCENT = 90u; // shrink by at most 10% per hysteresis window
 
 	if (!_is_adaptive_overlap_budget_enabled()) {
-		const_cast<TileRenderer *>(p_renderer)->clear_adaptive_overlap_budget_runtime_state();
+		p_renderer->clear_adaptive_overlap_budget_runtime_state();
 		return 0u;
 	}
 
 	const uint32_t hard_cap = _get_adaptive_overlap_budget_hard_cap();
 	const uint32_t min_budget = _get_adaptive_overlap_budget_min();
 	TileRenderer::AdaptiveOverlapBudgetRuntimeState &state =
-			const_cast<TileRenderer *>(p_renderer)->access_adaptive_overlap_budget_runtime_state();
+			p_renderer->access_adaptive_overlap_budget_runtime_state();
 	_record_adaptive_overlap_raw_usage(state, p_raw_records);
 
 	const uint32_t raw_budget_basis = MAX(p_raw_records, state.recent_raw_usage_peak);
@@ -2915,17 +2915,17 @@ SortingMetrics TileRenderer::get_sorter_metrics() const {
 }
 
 TileRenderer::DebugCounterSnapshot TileRenderer::get_debug_counters() const {
-    RenderingDevice *device = const_cast<TileRenderer *>(this)->_get_resource_device();
+    RenderingDevice *device = _get_resource_device();
     return debug_stats.get_debug_counters(device, frame_state.current_frame_serial);
 }
 
 TileRenderer::OverflowStatsSnapshot TileRenderer::get_overflow_stats() const {
-    RenderingDevice *device = const_cast<TileRenderer *>(this)->_get_resource_device();
+    RenderingDevice *device = _get_resource_device();
     return debug_stats.get_overflow_stats(device, frame_state.current_frame_serial);
 }
 
 TileRenderer::SplatAuditSnapshot TileRenderer::get_splat_audit_snapshot() const {
-    RenderingDevice *device = const_cast<TileRenderer *>(this)->_get_resource_device();
+    RenderingDevice *device = _get_resource_device();
     return debug_stats.get_splat_audit_snapshot(device, frame_state.current_frame_serial);
 }
 

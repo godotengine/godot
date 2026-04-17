@@ -32,14 +32,23 @@ def run_python(script: Path, *args: str) -> int:
     return run([sys.executable, str(script), *args], f"Running {script.name}")
 
 
+_BENCHMARK_REPORT_SEARCH_ROOTS = [
+    ROOT / "tests" / "output" / "benchmark_suite",
+    ROOT / "tests" / "output" / "benchmark_evidence",
+]
 _BENCHMARK_REPORT_PATHS = [
-    ROOT / "tests" / "output" / "benchmark_run" / "benchmark_suite_report.json",
     DOCS / "assets" / "data" / "benchmark_suite_report.json",
 ]
 
 
 def _find_benchmark_report() -> Path | None:
     """Return the first existing benchmark report (fresh local data preferred over committed baseline)."""
+    discovered_reports: list[Path] = []
+    for root in _BENCHMARK_REPORT_SEARCH_ROOTS:
+        if root.is_dir():
+            discovered_reports.extend(root.rglob("benchmark_suite_report.json"))
+    if discovered_reports:
+        return max(discovered_reports, key=lambda path: path.stat().st_mtime)
     for candidate in _BENCHMARK_REPORT_PATHS:
         if candidate.is_file():
             return candidate

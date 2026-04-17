@@ -28,6 +28,7 @@
 #include <limits>
 #include <mutex>
 #include <new>
+#include <utility>
 
 static String _inject_sort_pad_depth_define(const String &p_source) {
     const String define_line = "#define GS_SORT_PAD_DEPTH_VALUE " +
@@ -788,7 +789,7 @@ bool GPUSortingPipeline::_publish_sorted_results(const Vector<uint8_t> &p_sorted
     }
 
     SortPublicationPayload payload;
-    payload.sorted_indices = resolved_indices;
+    payload.sorted_indices = std::move(resolved_indices);
     payload.sort_indices_buffer = sort_indices_buffer;
     payload.default_device = sort_resource_device ? sort_resource_device : rd;
     sort_result_sink->publish_sorted_indices(payload);

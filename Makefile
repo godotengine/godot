@@ -85,7 +85,7 @@ docs-site:
 
 # Benchmarking
 benchmark:
-	$(call WITH_GODOT_BINARY,GODOT_BINARY="$$godot_bin" python3 tests/runtime/run_benchmark_suite.py --godot-binary "$$godot_bin" --profile quick)
+	$(call WITH_GODOT_BINARY,GODOT_BINARY="$$godot_bin" python3 tests/runtime/run_benchmark.py --godot-binary "$$godot_bin" --profile quick)
 
 # Cleanup
 clean:

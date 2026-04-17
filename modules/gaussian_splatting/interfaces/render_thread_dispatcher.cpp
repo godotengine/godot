@@ -144,9 +144,9 @@ uint64_t RenderThreadDispatcher::get_latest_data_request_id() const {
 }
 
 void RenderThreadDispatcher::set_latest_data_result(Error p_error) {
-    latest_data_result.store(int(p_error), std::memory_order_release);
+    latest_data_result.store(p_error, std::memory_order_release);
 }
 
 Error RenderThreadDispatcher::get_latest_data_result() const {
-    return Error(latest_data_result.load(std::memory_order_acquire));
+    return latest_data_result.load(std::memory_order_acquire);
 }

@@ -27,6 +27,9 @@ concurrency:
   group: docs-pages
   cancel-in-progress: false
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   deploy:
     name: Build and Deploy Versioned Docs

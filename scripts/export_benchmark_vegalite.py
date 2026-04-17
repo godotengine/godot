@@ -10,8 +10,11 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 
+DEFAULT_REPORT_SEARCH_ROOTS = [
+    ROOT / "tests" / "output" / "benchmark_suite",
+    ROOT / "tests" / "output" / "benchmark_evidence",
+]
 DEFAULT_REPORT_PATHS = [
-    ROOT / "tests" / "output" / "benchmark_run" / "benchmark_suite_report.json",
     ROOT / "docs" / "assets" / "data" / "benchmark_suite_report.json",
 ]
 
@@ -42,6 +45,12 @@ def _safe_float(value: Any) -> float | None:
 def find_report(explicit_path: Path | None) -> Path | None:
     if explicit_path is not None:
         return explicit_path if explicit_path.is_file() else None
+    discovered_reports: list[Path] = []
+    for root in DEFAULT_REPORT_SEARCH_ROOTS:
+        if root.is_dir():
+            discovered_reports.extend(root.rglob("benchmark_suite_report.json"))
+    if discovered_reports:
+        return max(discovered_reports, key=lambda path: path.stat().st_mtime)
     for candidate in DEFAULT_REPORT_PATHS:
         if candidate.is_file():
             return candidate
