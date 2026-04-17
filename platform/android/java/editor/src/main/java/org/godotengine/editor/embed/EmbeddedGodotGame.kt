@@ -143,7 +143,7 @@ class EmbeddedGodotGame : GodotGame() {
 			hideResizeUI()
 			if (isChecked) {
 				val lp = window.attributes
-				lockedAspectRatio = lp.width.toFloat() / lp.height.toFloat()
+				lockedAspectRatio = lp.width.toFloat() / lp.height.toFloat().coerceAtLeast(1f)
 			}
 			saveWindowBounds(updatePiPParams = false)
 		}
@@ -297,16 +297,25 @@ class EmbeddedGodotGame : GodotGame() {
 		}
 
 		// Final aspect-lock check
-		if (!isFreeResize && newH > maxAllowedHeight) {
-			newH = maxAllowedHeight
-			newW = (newH * lockedAspectRatio).toInt()
+		if (!isFreeResize) {
+			// Cap height based on both max height and width-constrained limit.
+			// effectiveMaxHeight helps ensure that the width (newW) calculated below is guaranteed to be <= maxAllowedWidth.
+			val maxHeightFromWidth = (maxAllowedWidth / lockedAspectRatio).toInt()
+			val effectiveMaxHeight = minOf(maxAllowedHeight, maxHeightFromWidth)
 
-			// Re-adjust pivots if it hits the vertical cap
-			if (activeCorner == (Gravity.TOP or Gravity.START) || activeCorner == (Gravity.TOP or Gravity.END)) {
-				layoutParams.y = initialWinY + (initialHeight - newH)
-			}
-			if (activeCorner == (Gravity.TOP or Gravity.START) || activeCorner == (Gravity.BOTTOM or Gravity.START)) {
-				layoutParams.x = initialWinX + (initialWidth - newW)
+			val clampedH = newH.coerceIn(MIN_WINDOW_SIZE, effectiveMaxHeight)
+
+			if (clampedH != newH) {
+				newH = clampedH
+				newW = (newH * lockedAspectRatio).toInt()
+
+				// Re-adjust pivots for the new clamped dimensions
+				if (activeCorner == (Gravity.TOP or Gravity.START) || activeCorner == (Gravity.TOP or Gravity.END)) {
+					layoutParams.y = initialWinY + (initialHeight - newH)
+				}
+				if (activeCorner == (Gravity.TOP or Gravity.START) || activeCorner == (Gravity.BOTTOM or Gravity.START)) {
+					layoutParams.x = initialWinX + (initialWidth - newW)
+				}
 			}
 		}
 
@@ -355,7 +364,7 @@ class EmbeddedGodotGame : GodotGame() {
 		layoutParams.y = prefs.getInt(KEY_Y, screenBounds.height() - layoutHeightInPx)
 		layoutParams.width = layoutWidthInPx
 		layoutParams.height = layoutHeightInPx
-		lockedAspectRatio = layoutParams.width.toFloat() / layoutParams.height.toFloat()
+		lockedAspectRatio = layoutParams.width.toFloat() / layoutParams.height.toFloat().coerceAtLeast(1f)
 		updateLabelText(layoutWidthInPx, layoutHeightInPx)
 	}
 
@@ -418,6 +427,9 @@ class EmbeddedGodotGame : GodotGame() {
 			requestedOrientation = gameRequestedOrientation
 			layoutParams.x = 0
 			layoutParams.y = 0
+			if (resizingEnabled) {
+				disableResizeRunnable.run()
+			}
 		} else {
 			loadWindowBounds(layoutParams)
 
