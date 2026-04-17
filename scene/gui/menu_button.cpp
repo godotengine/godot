@@ -86,7 +86,8 @@ void MenuButton::show_popup() {
 
 	emit_signal(SNAME("about_to_popup"));
 	Rect2 rect = get_screen_rect();
-	rect.position.y += rect.size.height + theme_cache.popup_offset;
+	rect.position.x += theme_cache.popup_offset_x;
+	rect.position.y += rect.size.height + theme_cache.popup_offset_y;
 	if (get_viewport()->is_embedding_subwindows() && popup->get_force_native()) {
 		Transform2D xform = get_viewport()->get_popup_base_transform_native();
 		rect = xform.xform(rect);
@@ -214,7 +215,8 @@ void MenuButton::_bind_methods() {
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuButton, popup_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuButton, popup_offset_x);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuButton, popup_offset_y);
 
 	PopupMenu::Item defaults(true);
 

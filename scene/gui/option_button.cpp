@@ -556,7 +556,8 @@ void OptionButton::show_popup() {
 	}
 
 	Rect2 rect = get_screen_rect();
-	rect.position.y += rect.size.height + theme_cache.popup_offset;
+	rect.position.x += theme_cache.popup_offset_x;
+	rect.position.y += rect.size.height + theme_cache.popup_offset_y;
 	if (get_viewport()->is_embedding_subwindows() && popup->get_force_native()) {
 		Transform2D xform = get_viewport()->get_popup_base_transform_native();
 		rect = xform.xform(rect);
@@ -635,7 +636,8 @@ void OptionButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_disabled_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, popup_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, popup_offset_x);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, popup_offset_y);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);

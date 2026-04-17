@@ -296,8 +296,9 @@
 		<theme_item name="modulate_arrow" data_type="constant" type="int" default="0">
 			If different than [code]0[/code], the arrow icon will be modulated to the font color.
 		</theme_item>
-		<theme_item name="popup_offset" data_type="constant" type="int" default="0">
-			The vertical space between the button and the popup.
+		<theme_item name="popup_offset_x" data_type="constant" type="int" default="0">
+		</theme_item>
+		<theme_item name="popup_offset_y" data_type="constant" type="int" default="0">
 		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon to be drawn on the right end of the button.
