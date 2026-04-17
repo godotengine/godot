@@ -90,6 +90,7 @@ public:
 	XrSpatialContextEXT get_spatial_context_handle(RID p_spatial_context) const;
 
 	// Discovery query
+	Ref<OpenXRFutureResult> discover_spatial_entities_with_component_data(RID p_spatial_context, const TypedArray<OpenXRSpatialComponentData> &p_component_data, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback);
 	Ref<OpenXRFutureResult> discover_spatial_entities(RID p_spatial_context, const Vector<XrSpatialComponentTypeEXT> &p_component_types, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback);
 
 	// Update query

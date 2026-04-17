@@ -71,7 +71,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 
 		// This window must not match those in BaseGodotEditor.RUN_GAME_INFO etc
 		@JvmStatic
-		private final val DEFAULT_WINDOW_ID = 664;
+		private val DEFAULT_WINDOW_ID = 664
 	}
 
 	/**
@@ -81,6 +81,12 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 	private val autoEnterPiP = AtomicBoolean(false)
 	private val gameViewSourceRectHint = Rect()
 	private val commandLineParams = ArrayList<String>()
+
+	// The bounds of what the aspect ratio can be are between 2.39:1 and 1:2.39 (inclusive).
+	// If aspect ratio does not fall between these values, app will crash.
+	private val minPiPRatio = Rational(100, 239)
+	private val maxPiPRatio = Rational(239, 100)
+
 	/**
 	 * Interaction with the [Godot] object is delegated to the [GodotFragment] class.
 	 */
@@ -321,21 +327,30 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 	 */
 	protected open fun isPiPEnabled() = false
 
-	internal fun updatePiPParams(enableAutoEnter: Boolean = autoEnterPiP.get(), aspectRatio: Rational? = pipAspectRatio.get()) {
+	fun updatePiPParams(enableAutoEnter: Boolean = autoEnterPiP.get(), aspectRatio: Rational? = pipAspectRatio.get()) {
+		val fixedAspectRatio = aspectRatio?.let {
+			if (it < minPiPRatio || it > maxPiPRatio) {
+				Log.w(TAG, "The bounds of the aspect ratio must be between 2.39:1 and 1:2.39 (inclusive). Coercing to valid range.")
+				it.coerceIn(minPiPRatio, maxPiPRatio)
+			} else {
+				it
+			}
+		}
+
 		if (isPiPModeSupported()) {
 			autoEnterPiP.set(enableAutoEnter)
-			pipAspectRatio.set(aspectRatio)
+			pipAspectRatio.set(fixedAspectRatio)
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				val builder = PictureInPictureParams.Builder()
 					.setSourceRectHint(gameViewSourceRectHint)
-					.setAspectRatio(aspectRatio)
+					.setAspectRatio(fixedAspectRatio)
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 					builder.setSeamlessResizeEnabled(false)
 						.setAutoEnterEnabled(enableAutoEnter)
 				}
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-					builder.setExpandedAspectRatio(aspectRatio)
+					builder.setExpandedAspectRatio(fixedAspectRatio)
 				}
 				setPictureInPictureParams(builder.build())
 			}

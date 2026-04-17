@@ -251,7 +251,8 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	Ref<InputEventScreenDrag> screen_drag = p_event;
 
 	bool is_accept_event = mouse_button.is_null() && screen_touch.is_null() && screen_drag.is_null();
-	if (p_event->is_pressed() && (is_accept_event || status.hovering)) {
+	bool is_touch_press_inside = screen_touch.is_valid() && screen_touch->is_pressed() && status.pressing_inside;
+	if (p_event->is_pressed() && (is_accept_event || status.hovering || is_touch_press_inside)) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
 		if (!status.pressed_down_with_focus) {

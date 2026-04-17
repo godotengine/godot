@@ -75,11 +75,9 @@ void EditorRunNative::_notification(int p_what) {
 					}
 				}
 				if (popup->get_item_count() == 0) {
-					remote_debug->set_disabled(true);
-					remote_debug->set_tooltip_text(TTRC("No Remote Deploy export presets configured."));
+					remote_debug->hide();
 				} else {
-					remote_debug->set_disabled(false);
-					remote_debug->set_tooltip_text(TTRC("Remote Deploy"));
+					remote_debug->show();
 				}
 
 				first = false;
@@ -188,7 +186,7 @@ EditorRunNative::EditorRunNative() {
 	remote_debug->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	remote_debug->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTRC("Remote Deploy"));
-	remote_debug->set_disabled(true);
+	remote_debug->hide();
 
 	add_child(remote_debug);
 

@@ -108,9 +108,19 @@ Error EmbeddedDebugger::_msg_event(const Array &p_args) {
 	Ref<InputEvent> event;
 	decode_input_event(data, event);
 
+	// Events arrive in points (normalized by the editor). Scale to the
+	// game's pixel coordinate space.
+	float scale = ds->screen_get_max_scale();
+
 	{
 		Ref<InputEventMouse> e = event;
 		if (e.is_valid()) {
+			e->set_position(e->get_position() * scale);
+			e->set_global_position(e->get_global_position() * scale);
+			Ref<InputEventMouseMotion> mm = e;
+			if (mm.is_valid()) {
+				mm->set_relative(mm->get_relative() * scale);
+			}
 			input->set_mouse_position(e->get_position());
 		}
 	}
@@ -118,6 +128,7 @@ Error EmbeddedDebugger::_msg_event(const Array &p_args) {
 	{
 		Ref<InputEventMagnifyGesture> e = event;
 		if (e.is_valid()) {
+			e->set_position(e->get_position() * scale);
 			input->set_mouse_position(e->get_position());
 		}
 	}
@@ -125,6 +136,7 @@ Error EmbeddedDebugger::_msg_event(const Array &p_args) {
 	{
 		Ref<InputEventPanGesture> e = event;
 		if (e.is_valid()) {
+			e->set_position(e->get_position() * scale);
 			input->set_mouse_position(e->get_position());
 		}
 	}

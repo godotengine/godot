@@ -15,7 +15,7 @@
 				Return the component type for the component we store data for.
 			</description>
 		</method>
-		<method name="_get_structure_data" qualifiers="virtual const">
+		<method name="_get_structure_data" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="next" type="int" />
 			<description>
@@ -26,14 +26,20 @@
 			<return type="void" />
 			<param index="0" name="capacity" type="int" />
 			<description>
-				Set the expected capacity as provided by the spatial entities query system. Buffers should be initialized with the correct storage.
+				Sets the expected capacity as provided by the spatial entities query system. Buffers should be initialized with the correct storage.
+			</description>
+		</method>
+		<method name="get_component_type" qualifiers="const">
+			<return type="int" />
+			<description>
+				Gets this [OpenXRSpatialComponentData]'s [code]XrSpatialComponentTypeEXT[/code].
 			</description>
 		</method>
 		<method name="set_capacity">
 			<return type="void" />
 			<param index="0" name="capacity" type="int" />
 			<description>
-				Set the expected capacity as provided by the spatial entities query system. Buffers should be initialized with the correct storage.
+				Sets the expected capacity as provided by the spatial entities query system. Buffers should be initialized with the correct storage.
 			</description>
 		</method>
 	</methods>
