@@ -47,6 +47,7 @@
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -744,6 +745,8 @@ Error Main::test_setup() {
 
 	OS::get_singleton()->initialize();
 
+	CoreGlobals::print_ready = true;
+
 	engine = memnew(Engine);
 
 	register_core_types();
@@ -869,6 +872,9 @@ Error Main::test_setup() {
 // The order is the same as in `Main::cleanup()`.
 void Main::test_cleanup() {
 	ERR_FAIL_COND(!_start_success);
+
+	// Printing in the usual way can become problematic during/after cleanup.
+	CoreGlobals::print_ready = false;
 
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
@@ -1005,6 +1011,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
+
+	CoreGlobals::print_ready = true;
 
 #if !defined(OVERRIDE_PATH_ENABLED) && !defined(TOOLS_ENABLED)
 	String old_cwd = OS::get_singleton()->get_cwd();
@@ -5166,6 +5174,9 @@ void Main::cleanup(bool p_force) {
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
+
+	// Printing in the usual way can become problematic during/after cleanup.
+	CoreGlobals::print_ready = false;
 
 #ifdef DEBUG_ENABLED
 	if (input) {

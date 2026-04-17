@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/math_defs.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"

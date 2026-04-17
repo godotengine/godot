@@ -32,6 +32,7 @@
 #include "editor_inspector.compat.inc"
 
 #include "core/input/input.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
@@ -2021,7 +2022,10 @@ void EditorInspectorCategory::_popup_context_menu(const Point2i &p_position) {
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
 		add_child(menu);
 	}
-	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::CATEGORY);
+
+	if (!is_favorite) {
+		menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::CATEGORY);
+	}
 
 	if (menu_icon_dirty) {
 		if (is_favorite) {

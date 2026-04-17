@@ -40,6 +40,8 @@
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/io/resource_uid.h"
 #include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"

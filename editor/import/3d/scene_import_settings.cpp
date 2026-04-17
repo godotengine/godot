@@ -31,6 +31,8 @@
 #include "scene_import_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

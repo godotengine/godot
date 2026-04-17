@@ -31,6 +31,7 @@
 #include "dynamic_font_import_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"

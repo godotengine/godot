@@ -48,7 +48,9 @@
 #endif
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 #include "gl_manager_windows_angle.h"
+#endif // ANGLE_ENABLED
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
@@ -255,7 +257,9 @@ class DisplayServerWindows : public DisplayServer {
 	Point2i center;
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	GLManagerANGLE_Windows *gl_manager_angle = nullptr;
+#endif
 	GLManagerNative_Windows *gl_manager_native = nullptr;
 #endif
 
@@ -314,7 +318,9 @@ class DisplayServerWindows : public DisplayServer {
 		bool exclusive = false;
 		bool rendering_context_window_created = false;
 		bool gl_native_window_created = false;
+#ifdef ANGLE_ENABLED
 		bool gl_angle_window_created = false;
+#endif
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;

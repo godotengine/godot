@@ -189,7 +189,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 
 	ERR_FAIL_COND(view_count == 0);
 
-	bool use_internal_buffer = scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF || apply_environment_effects_in_post;
+	bool use_internal_buffer = scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF || apply_environment_effects_in_post || apply_canvas_bg_exposure;
 	GLenum depth_format = GL_DEPTH24_STENCIL8;
 	uint32_t depth_format_size = 4;
 	bool use_multiview = view_count > 1;
@@ -561,6 +561,10 @@ void RenderSceneBuffersGLES3::_clear_back_buffers() {
 
 void RenderSceneBuffersGLES3::set_apply_environment_effects_in_post(bool p_apply_in_post) {
 	apply_environment_effects_in_post = p_apply_in_post;
+}
+
+void RenderSceneBuffersGLES3::set_apply_canvas_bg_exposure(bool p_apply_canvas_bg_exposure) {
+	apply_canvas_bg_exposure = p_apply_canvas_bg_exposure;
 }
 
 void RenderSceneBuffersGLES3::check_glow_buffers() {

@@ -35,8 +35,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
 
@@ -656,29 +654,6 @@ public:
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
 
-	Ref<GDScript> get_script_by_fully_qualified_name(const String &p_name);
-
 	GDScriptLanguage();
 	~GDScriptLanguage();
-};
-
-class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderGDScript, ResourceFormatLoader);
-
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
-	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
-};
-
-class ResourceFormatSaverGDScript : public ResourceFormatSaver {
-	GDSOFTCLASS(ResourceFormatSaverGDScript, ResourceFormatSaver);
-
-public:
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
-	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };

@@ -37,6 +37,7 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
+#include "core/io/resource_loader.h"
 #include "core/math/color.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"

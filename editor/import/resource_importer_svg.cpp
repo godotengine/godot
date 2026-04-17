@@ -31,6 +31,7 @@
 #include "resource_importer_svg.h"
 
 #include "core/io/file_access.h"
+#include "core/io/resource_saver.h"
 #include "scene/resources/dpi_texture.h"
 
 String ResourceImporterSVG::get_importer_name() const {
