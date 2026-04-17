@@ -3456,6 +3456,7 @@ DisplayServerWindows::ScreenHdrData DisplayServerWindows::_get_screen_hdr_data(D
 }
 
 void DisplayServerWindows::_winrt_adv_color_info_cb(DisplayServerEnums::WindowID p_id) {
+	ERR_FAIL_COND(!windows.has(p_id));
 	WindowData &wd = windows[p_id];
 
 	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(p_id, true);
@@ -4746,6 +4747,8 @@ DisplayServerEnums::VSyncMode DisplayServerWindows::window_get_vsync_mode(Displa
 bool DisplayServerWindows::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
 #if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
 		return false; // HDR output is not supported by the rendering device.
@@ -4759,6 +4762,8 @@ bool DisplayServerWindows::window_is_hdr_output_supported(DisplayServerEnums::Wi
 
 void DisplayServerWindows::window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
 
 #if defined(RD_ENABLED)
 	ERR_FAIL_COND_EDMSG(p_enable && (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) == false, "HDR output is not supported by the rendering device.");
@@ -4792,6 +4797,8 @@ bool DisplayServerWindows::window_is_hdr_output_enabled(DisplayServerEnums::Wind
 
 void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
 
 	WindowData &wd = windows[p_window];
 
@@ -4837,6 +4844,8 @@ float DisplayServerWindows::window_get_hdr_output_current_reference_luminance(Di
 
 void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
 
 	WindowData &wd = windows[p_window];
 
