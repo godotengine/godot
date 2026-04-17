@@ -77,10 +77,9 @@ void PainterlyMaterialManager::clear_resources() {
     stroke_density_sample_count = 0;
     stroke_density_buffer_size = 0;
 
-    // IMPORTANT: Do NOT call free() on resources here!
-    // Resources belong to a specific RenderingDevice that may have been destroyed.
-    // Attempting to free with a different/stale device pointer causes "invalid ID" errors.
-    // The resources will be cleaned up automatically when their owning device is destroyed.
+    if (stroke_density_buffer.is_valid() && rd && rd->buffer_is_valid(stroke_density_buffer)) {
+        rd->free(stroke_density_buffer);
+    }
     stroke_density_buffer = RID();
 }
 
@@ -150,11 +149,11 @@ void PainterlyMaterialManager::update_resources() {
                               (stroke_density_buffer_size != required_size);
 
         if (needs_recreation) {
-            // Invalidate existing buffer if it exists (don't free - device owns resources)
-            if (stroke_density_buffer.is_valid()) {
-                stroke_density_buffer = RID();
-                stroke_density_buffer_size = 0;
+            if (stroke_density_buffer.is_valid() && rd->buffer_is_valid(stroke_density_buffer)) {
+                rd->free(stroke_density_buffer);
             }
+            stroke_density_buffer = RID();
+            stroke_density_buffer_size = 0;
 
             // Create new buffer with correct size
             stroke_density_buffer = rd->storage_buffer_create(data.size(), data);
@@ -170,11 +169,11 @@ void PainterlyMaterialManager::update_resources() {
             rd->buffer_update(stroke_density_buffer, 0, data.size(), data.ptr());
         }
     } else {
-        // No samples, invalidate the buffer if it exists (don't free - device owns resources)
-        if (stroke_density_buffer.is_valid()) {
-            stroke_density_buffer = RID();
-            stroke_density_buffer_size = 0;
+        if (stroke_density_buffer.is_valid() && rd->buffer_is_valid(stroke_density_buffer)) {
+            rd->free(stroke_density_buffer);
         }
+        stroke_density_buffer = RID();
+        stroke_density_buffer_size = 0;
     }
 
     material_dirty = false;

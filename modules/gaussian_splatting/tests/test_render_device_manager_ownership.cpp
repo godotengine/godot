@@ -296,6 +296,90 @@ TEST_CASE("[GaussianSplatting] RenderDeviceManager diagnostics use stable device
     memdelete(target_rd);
 }
 
+TEST_CASE("[GaussianSplatting] RenderDeviceManager frees tracked uniform set via free_owned_resource") {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	CHECK(rs != nullptr);
+	if (!rs) {
+		return;
+	}
+
+	RenderingDevice *rd = _create_local_test_device();
+	bool owns_rd = true;
+	if (!rd) {
+		rd = rs->get_rendering_device();
+		owns_rd = false;
+	}
+	CHECK(rd != nullptr);
+	if (!rd) {
+		return;
+	}
+
+	Ref<RenderDeviceManager> manager;
+	manager.instantiate();
+	Error init_err = manager->initialize(rd);
+	CHECK(init_err == OK);
+	if (init_err != OK) {
+		if (owns_rd) {
+			memdelete(rd);
+		}
+		return;
+	}
+
+	RID buffer = rd->storage_buffer_create(64);
+	CHECK(buffer.is_valid());
+	if (!buffer.is_valid()) {
+		manager->shutdown();
+		if (owns_rd) {
+			memdelete(rd);
+		}
+		return;
+	}
+
+	Vector<RD::Uniform> uniforms;
+	RD::Uniform u;
+	u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+	u.binding = 0;
+	u.append_id(buffer);
+	uniforms.push_back(u);
+
+	RID shader_src_code = rd->shader_create_from_spirv(RD::ShaderStageSPIRVData());
+	if (!shader_src_code.is_valid()) {
+		rd->free(buffer);
+		manager->shutdown();
+		if (owns_rd) {
+			memdelete(rd);
+		}
+		return;
+	}
+
+	RID uniform_set = rd->uniform_set_create(uniforms, shader_src_code, 0);
+	if (!uniform_set.is_valid()) {
+		rd->free(shader_src_code);
+		rd->free(buffer);
+		manager->shutdown();
+		if (owns_rd) {
+			memdelete(rd);
+		}
+		return;
+	}
+
+	manager->track_resource(uniform_set, rd, true, "test_uniform_set");
+	CHECK(rd->uniform_set_is_valid(uniform_set));
+
+	RID managed_set = uniform_set;
+	manager->free_owned_resource(rd, managed_set);
+
+	CHECK_FALSE(managed_set.is_valid());
+	CHECK_FALSE(rd->uniform_set_is_valid(uniform_set));
+
+	rd->free(shader_src_code);
+	rd->free(buffer);
+	manager->shutdown();
+	if (owns_rd) {
+		memdelete(rd);
+	}
+}
+
 } // namespace TestGaussianSplatting
 
 #endif // TESTS_ENABLED

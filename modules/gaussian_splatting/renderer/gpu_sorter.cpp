@@ -3293,9 +3293,7 @@ bool OneSweepSort::is_ready() const {
 }
 
 void OneSweepSort::wait_for_completion() {
-    // Uniform sets auto-free when dependencies are freed (Godot PR 103113)
-
-    uniform_sets.clear();
+    _free_uniform_sets_safe(uniform_owner, uniform_owner_generation, resource_device, uniform_sets);
     uniform_owner = nullptr;
 
     current_sort_value = 0;
