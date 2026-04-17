@@ -38,7 +38,7 @@ TEST_FORCE_LINK(test_node)
 #include "core/object/class_db.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // IWYU pragma:keep. Needed for get_root()
+#include "scene/main/window.h" // IWYU pragma: keep. Needed for get_root()
 #include "scene/resources/packed_scene.h"
 #include "tests/test_utils.h"
 
