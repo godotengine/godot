@@ -5072,7 +5072,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	tree_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	button_panel = memnew(PanelContainer);
-	button_panel->set_theme_type_variation("PanelContainerTabbarInner");
+	button_panel->set_theme_type_variation("PanelContainerButtonGroup");
 	main_vbox->add_child(button_panel);
 
 	HBoxContainer *button_hb = memnew(HBoxContainer);

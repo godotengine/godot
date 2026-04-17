@@ -36,6 +36,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/debugger/runtime_node_select.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/menu_button.h"
 
 class EmbeddedProcessBase;
 class VSeparator;
@@ -124,10 +125,9 @@ class GameView : public VBoxContainer {
 		CAMERA_RESET_3D,
 		CAMERA_MODE_INGAME,
 		CAMERA_MODE_EDITORS,
+		SELECTION_HIDE,
 		SELECTION_AVOID_LOCKED,
 		SELECTION_PREFER_GROUP,
-		WINDOW_RUN_GAME_EMBEDDED,
-		WINDOW_MAKE_FLOATING_ON_PLAY,
 		WINDOW_SIZE_MODE_FIXED,
 		WINDOW_SIZE_MODE_KEEP_ASPECT,
 		WINDOW_SIZE_MODE_STRETCH,
@@ -153,6 +153,13 @@ class GameView : public VBoxContainer {
 		EMBED_NOT_AVAILABLE_HEADLESS,
 	};
 
+	enum EmbedMode {
+		EMBED_TYPE_DISABLED,
+		EMBED_TYPE_FLOATING,
+		EMBED_TYPE_EDITOR,
+		EMBED_TYPE_MAX,
+	};
+
 	inline static GameView *singleton = nullptr;
 
 	Ref<GameViewDebugger> debugger;
@@ -174,6 +181,7 @@ class GameView : public VBoxContainer {
 
 	bool debug_mute_audio = false;
 
+	bool selection_hide = true;
 	bool selection_avoid_locked = false;
 	bool selection_prefer_group = false;
 
@@ -183,18 +191,19 @@ class GameView : public VBoxContainer {
 	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
 	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
 
-	Button *hide_selection = nullptr;
 	MenuButton *selection_options_menu = nullptr;
-
-	Button *debug_mute_audio_button = nullptr;
 
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
 
+	Button *debug_mute_audio_button = nullptr;
+
 	HBoxContainer *embedding_hb = nullptr;
 	MenuButton *game_window_options_menu = nullptr;
 	Label *game_size_label = nullptr;
-	Control *game_size_placeholder = nullptr;
+	HBoxContainer *game_hb = nullptr;
+	MenuButton *game_embed_mode_menu = nullptr;
+	Button *game_embed_mode_button[EmbedMode::EMBED_TYPE_MAX];
 	Panel *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
@@ -213,7 +222,6 @@ class GameView : public VBoxContainer {
 	bool renderer_supports_hdr_output = false;
 
 	MenuButton *speed_state_button = nullptr;
-	Button *reset_speed_button = nullptr;
 
 	void _sessions_changed();
 
@@ -225,12 +233,14 @@ class GameView : public VBoxContainer {
 
 	void _node_type_pressed(int p_option);
 	void _select_mode_pressed(int p_option);
+	void _game_embed_mode_pressed(int p_option);
 	void _selection_options_menu_id_pressed(int p_id);
 	void _game_window_options_menu_menu_id_pressed(int p_id);
 
 	void _reset_time_scales();
 	void _speed_state_menu_pressed(int p_id);
 	void _update_speed_buttons();
+	void _update_speed_state_icon(int p_id);
 	void _update_speed_state_color();
 	void _update_speed_state_size();
 
@@ -248,12 +258,11 @@ class GameView : public VBoxContainer {
 	EmbedAvailability _get_embed_available();
 	void _update_ui();
 	void _update_embed_menu_options();
+	void _update_embed_buttons();
 	void _update_game_window_size_label();
 	void _update_embed_window_size();
 	void _update_arguments_for_instance(int p_idx, List<String> &r_arguments);
 	void _show_update_window_wrapper();
-
-	void _hide_selection_toggled(bool p_pressed);
 
 	void _debug_mute_audio_button_pressed();
 	void _setup_complete();
