@@ -785,8 +785,9 @@ Error BitonicSort::sort(RID keys_buffer, RID values_buffer, uint32_t count) {
         return ERR_CANT_CREATE;
     }
 
-    // Dont manually free uniform sets - they auto-free when buffer dependencies are freed
-    // (Godot PR 103113). Manual frees cause "invalid ID" if sets were already auto-freed.
+    if (uniform_set.is_valid() && uniform_owner && uniform_owner->uniform_set_is_valid(uniform_set)) {
+        uniform_owner->free(uniform_set);
+    }
     uniform_set = RID();
     uniform_owner = nullptr;
     uniform_owner_generation = 0;

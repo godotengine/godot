@@ -493,12 +493,14 @@ void RenderDeviceManager::free_owned_resource(RenderingDevice *p_fallback_device
 		return;
 	}
 
-	// Explicitly audited auto-free resource classes (Godot PR 103113):
-	// uniform sets, compute pipelines, render pipelines, and framebuffers.
-	// They are released by dependency teardown and must not be explicitly freed.
 	constexpr uint8_t AUTO_FREE_TYPES = RESOURCE_TYPE_UNIFORM_SET | RESOURCE_TYPE_COMPUTE_PIPELINE |
 			RESOURCE_TYPE_RENDER_PIPELINE | RESOURCE_TYPE_FRAMEBUFFER;
 	if (type_flags & AUTO_FREE_TYPES) {
+		const bool still_valid = uniform_set_valid || compute_pipeline_valid ||
+				render_pipeline_valid || framebuffer_valid;
+		if (still_valid) {
+			device->free(p_rid);
+		}
 		forget_resource(p_rid);
 		p_rid = RID();
 		return;
