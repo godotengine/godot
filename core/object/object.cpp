@@ -2383,8 +2383,9 @@ void ObjectDB::debug_objects(DebugFunc p_func, void *p_user_data) {
 	spin_lock.lock();
 
 	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
-		if (object_slots[i].validator) {
-			p_func(object_slots[i].object, p_user_data);
+		const ObjectSlot &slot = object_blocks[i / OBJECTDB_BLOCK_SIZE][i % OBJECTDB_BLOCK_SIZE];
+		if (slot.get_data().validator) {
+			p_func(slot.object.get(), p_user_data);
 			count--;
 		}
 	}
@@ -2440,7 +2441,8 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 SpinLock ObjectDB::spin_lock;
 uint32_t ObjectDB::slot_count = 0;
 uint32_t ObjectDB::slot_max = 0;
-ObjectDB::ObjectSlot *ObjectDB::object_slots = nullptr;
+SafeNumeric<uint32_t> ObjectDB::block_max{ 0 };
+ObjectDB::ObjectSlot **ObjectDB::object_blocks = nullptr;
 uint64_t ObjectDB::validator_counter = 0;
 
 int ObjectDB::get_object_count() {
@@ -2450,39 +2452,45 @@ int ObjectDB::get_object_count() {
 ObjectID ObjectDB::add_instance(Object *p_object) {
 	spin_lock.lock();
 	if (unlikely(slot_count == slot_max)) {
-		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
-
-		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
-		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
-		for (uint32_t i = slot_max; i < new_slot_max; i++) {
-			object_slots[i].object = nullptr;
-			object_slots[i].is_ref_counted = false;
-			object_slots[i].next_free = i;
-			object_slots[i].validator = 0;
+		uint32_t block_idx = block_max.get();
+		CRASH_COND(block_idx == OBJECTDB_BLOCK_MAX_COUNT);
+		object_blocks[block_idx] = static_cast<ObjectSlot *>(memalloc(sizeof(ObjectSlot) * OBJECTDB_BLOCK_SIZE));
+		for (uint32_t i = 0; i < OBJECTDB_BLOCK_SIZE; i++) {
+			ObjectSlot &new_slot = *memnew_placement(&object_blocks[block_idx][i], ObjectSlot);
+			ObjectSlotData data{};
+			data.block_idx = block_idx;
+			data.slot_idx = i;
+			new_slot.set_data(data);
 		}
-		slot_max = new_slot_max;
+		block_max.add(1);
+		slot_max += OBJECTDB_BLOCK_SIZE;
 	}
 
-	uint32_t slot = object_slots[slot_count].next_free;
-	if (object_slots[slot].object != nullptr) {
-		spin_lock.unlock();
-		ERR_FAIL_COND_V(object_slots[slot].object != nullptr, ObjectID());
+	// Get the free slot.
+	ObjectSlotData next_free_slot_data = object_blocks[slot_count / OBJECTDB_BLOCK_SIZE][slot_count % OBJECTDB_BLOCK_SIZE].get_data();
+	ObjectSlot &slot = object_blocks[next_free_slot_data.block_idx][next_free_slot_data.slot_idx];
+	ObjectSlotData slot_data = slot.get_data();
+	{
+		Object *slot_object = slot.object.get();
+		if (slot_object != nullptr) {
+			spin_lock.unlock();
+			ERR_FAIL_COND_V(slot_object != nullptr, ObjectID());
+		}
 	}
-	object_slots[slot].object = p_object;
-	object_slots[slot].is_ref_counted = p_object->is_ref_counted();
+
+	slot.object.set(p_object);
+	slot_data.is_ref_counted = p_object->is_ref_counted();
 	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
 	if (unlikely(validator_counter == 0)) {
 		validator_counter = 1;
 	}
-	object_slots[slot].validator = validator_counter;
+	slot_data.validator = validator_counter;
+	slot.set_data(slot_data);
 
-	uint64_t id = validator_counter;
-	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
-	id |= uint64_t(slot);
-
-	if (p_object->is_ref_counted()) {
-		id |= OBJECTDB_REFERENCE_BIT;
-	}
+	ObjectSlotData instance_data = slot_data;
+	instance_data.block_idx = next_free_slot_data.block_idx;
+	instance_data.slot_idx = next_free_slot_data.slot_idx;
+	uint64_t id = static_cast<uint64_t>(instance_data);
 
 	slot_count++;
 
@@ -2492,40 +2500,72 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 }
 
 void ObjectDB::remove_instance(Object *p_object) {
-	uint64_t t = p_object->get_instance_id();
-	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; //slot is always valid on valid object
+	ObjectSlotData remove_data{ static_cast<uint64_t>(p_object->get_instance_id()) };
 
 	spin_lock.lock();
 
+	ObjectSlot &remove_slot = object_blocks[remove_data.block_idx][remove_data.slot_idx];
+	ObjectSlotData remove_slot_data = remove_slot.get_data();
+
 #ifdef DEBUG_ENABLED
 
-	if (object_slots[slot].object != p_object) {
+	if (remove_slot_data.validator != remove_data.validator) {
 		spin_lock.unlock();
-		ERR_FAIL_COND(object_slots[slot].object != p_object);
+		ERR_FAIL_COND(remove_slot_data.validator != remove_data.validator);
 	}
 	{
-		uint64_t validator = (t >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-		if (object_slots[slot].validator != validator) {
+		Object *object_to_remove = remove_slot.object.get();
+		if (object_to_remove != p_object) {
 			spin_lock.unlock();
-			ERR_FAIL_COND(object_slots[slot].validator != validator);
+			ERR_FAIL_COND(object_to_remove != p_object);
 		}
 	}
 
 #endif
+
+	//invalidate, so checks against it fail
+	remove_slot_data.validator = 0;
+	remove_slot_data.is_ref_counted = false;
+	remove_slot.set_data(remove_slot_data);
+	remove_slot.object.set(nullptr);
 	//decrease slot count
 	slot_count--;
 	//set the free slot properly
-	object_slots[slot_count].next_free = slot;
-	//invalidate, so checks against it fail
-	object_slots[slot].validator = 0;
-	object_slots[slot].is_ref_counted = false;
-	object_slots[slot].object = nullptr;
+	ObjectSlot &top_slot = object_blocks[slot_count / OBJECTDB_BLOCK_SIZE][slot_count % OBJECTDB_BLOCK_SIZE];
+	ObjectSlotData top_slot_data = top_slot.get_data();
+	top_slot_data.block_idx = remove_data.block_idx;
+	top_slot_data.slot_idx = remove_data.slot_idx;
+	top_slot.set_data(top_slot_data);
 
 	spin_lock.unlock();
 }
 
+Object *ObjectDB::get_instance(ObjectID p_instance_id) {
+	ObjectSlotData instance_data{ static_cast<uint64_t>(p_instance_id) };
+
+	// This should never happen unless RID is corrupted.
+	ERR_FAIL_COND_V(instance_data.block_idx >= block_max.get() || instance_data.slot_idx >= OBJECTDB_BLOCK_SIZE, nullptr);
+
+	const ObjectSlot &slot = object_blocks[instance_data.block_idx][instance_data.slot_idx];
+
+	if (unlikely(instance_data.validator != slot.get_data().validator)) {
+		return nullptr;
+	}
+
+	Object *object = slot.object.get();
+
+	// Make sure the slot didn't change while getting the object.
+	if (unlikely(instance_data.validator != slot.get_data().validator)) {
+		return nullptr;
+	}
+
+	return object;
+}
+
 void ObjectDB::setup() {
-	//nothing to do now
+	spin_lock.lock();
+	object_blocks = static_cast<ObjectSlot **>(memalloc_zeroed(sizeof(ObjectSlot *) * OBJECTDB_BLOCK_MAX_COUNT));
+	spin_lock.unlock();
 }
 
 void ObjectDB::cleanup() {
@@ -2542,8 +2582,11 @@ void ObjectDB::cleanup() {
 			Callable::CallError call_error;
 
 			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
-				if (object_slots[i].validator) {
-					Object *obj = object_slots[i].object;
+				uint32_t block_idx = i / OBJECTDB_BLOCK_SIZE;
+				uint32_t slot_idx = i % OBJECTDB_BLOCK_SIZE;
+				const ObjectSlot &slot = object_blocks[block_idx][slot_idx];
+				if (slot.get_data().validator) {
+					Object *obj = slot.object.get();
 
 					String extra_info;
 					if (obj->is_class("Node")) {
@@ -2556,7 +2599,10 @@ void ObjectDB::cleanup() {
 						extra_info = " - Reference count: " + itos((static_cast<RefCounted *>(obj))->get_reference_count());
 					}
 
-					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
+					ObjectSlotData slot_data = slot.get_data();
+					slot_data.block_idx = block_idx;
+					slot_data.slot_idx = slot_idx;
+					uint64_t id = static_cast<uint64_t>(slot_data);
 					DEV_ASSERT(id == (uint64_t)obj->get_instance_id()); // We could just use the id from the object, but this check may help catching memory corruption catastrophes.
 					print_line("Leaked instance: " + String(obj->get_class()) + ":" + uitos(id) + extra_info);
 
@@ -2567,8 +2613,12 @@ void ObjectDB::cleanup() {
 		}
 	}
 
-	if (object_slots) {
-		memfree(object_slots);
+	for (uint32_t i = 0; i < block_max.get(); i++) {
+		memfree(object_blocks[i]);
+	}
+	if (object_blocks) {
+		memfree(object_blocks);
+		object_blocks = nullptr;
 	}
 
 	spin_lock.unlock();
