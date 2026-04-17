@@ -464,6 +464,18 @@ String OS_AppleEmbedded::get_locale() const {
 	return String::utf8([localeIdentifier UTF8String]).replace_char('-', '_');
 }
 
+Vector<String> OS_AppleEmbedded::get_preferred_locales() const {
+	Vector<String> out;
+	for (NSString *locale_code in [NSLocale preferredLanguages]) {
+		out.push_back(String([locale_code UTF8String]).replace_char('-', '_'));
+	}
+	if (out.is_empty()) {
+		NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+		out.push_back(String::utf8([localeIdentifier UTF8String]).replace_char('-', '_'));
+	}
+	return out;
+}
+
 String OS_AppleEmbedded::get_unique_id() const {
 	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 	return String::utf8([uuid UTF8String]);

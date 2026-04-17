@@ -337,8 +337,8 @@
 				- [code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
 				- [code skip-lint]Script[/code] - 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
 				- [code]COUNTRY[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
-				- [code]VARIANT[/code] - language variant, region and sort order. The variant can have any number of underscored keywords.
-				- [code]extra[/code] - semicolon separated list of additional key words. This may include currency, calendar, sort order and numbering system information.
+				- [code]VARIANT[/code] - language variant, region, and sort order. The variant can have any number of underscored keywords.
+				- [code]extra[/code] - semicolon separated list of additional key words. This may include currency, calendar, sort order, and numbering system information.
 				If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
 			</description>
 		</method>
@@ -431,6 +431,18 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] On Web platforms, it is still possible to determine the host platform's OS with feature tags. See [method has_feature].
+			</description>
+		</method>
+		<method name="get_preferred_locales" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of locales preferred by the user, in order of preference. Each locale is as a [String] on the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. Every substring after [code]language[/code] is optional and may not exist.
+				- [code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
+				- [code skip-lint]Script[/code] - 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				- [code]COUNTRY[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
+				- [code]VARIANT[/code] - language variant, region, and sort order. The variant can have any number of underscored keywords.
+				- [code]extra[/code] - semicolon separated list of additional key words. This may include currency, calendar, sort order, and numbering system information.
+				[b]Note:[/b] This method is implemented on macOS, iOS, and Windows.
 			</description>
 		</method>
 		<method name="get_process_exit_code" qualifiers="const">

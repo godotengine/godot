@@ -249,6 +249,7 @@ public:
 	Vector<String> get_video_adapter_driver_info() const;
 
 	String get_locale() const;
+	Vector<String> get_preferred_locales() const;
 	String get_locale_language() const;
 
 	String get_model_name() const;

@@ -45,6 +45,8 @@ public:
 	static bool create_queue();
 	static void destroy_queue();
 
+	static Vector<String> get_preferred_locales();
+
 	static WinRTWindowData *create_wd(HWND p_window, const Callable &p_color_cb, int64_t p_window_id);
 	static bool window_has_display_info(const WinRTWindowData *p_data);
 	static void window_get_advanced_color_info(const WinRTWindowData *p_data, bool &r_hdr_supported, float &r_min_luminance, float &r_max_luminance, float &r_max_average_luminance, float &r_sdr_white_level);
