@@ -144,6 +144,11 @@ void main() {
     vec4 source_linear = source_color;
     vec4 destination_linear = destination_color;
 
+    if (params.composite_with_destination != 0 && source_linear.a <= 0.0) {
+        imageStore(u_destination_image, destination_coord, destination_color);
+        return;
+    }
+
     if (params.destination_is_srgb != 0 && params.composite_with_destination != 0) {
         destination_linear.rgb = srgb_to_linear(destination_linear.rgb);
     }
@@ -152,21 +157,22 @@ void main() {
 
     if (params.composite_with_destination != 0) {
         vec3 src_rgb = source_linear.rgb;
-        vec3 dst_rgb = destination_linear.rgb * destination_linear.a;
+        // Treat destination as fully opaque (alpha=1). Godot's post-tonemap
+        // framebuffer does not carry meaningful alpha — sky, meshes, and
+        // background are all opaque content with undefined alpha channel.
+        // Using destination_linear.a here caused black blocks wherever the
+        // framebuffer alpha was 0/undefined.
+        vec3 dst_rgb = destination_linear.rgb;
 
         if (params.source_is_premultiplied == 0) {
             src_rgb *= source_linear.a;
         }
 
-        float out_alpha = source_linear.a + destination_linear.a * (1.0 - source_linear.a);
+        // Premultiplied source over opaque destination.
         vec3 out_rgb = src_rgb + dst_rgb * (1.0 - source_linear.a);
 
-        if (out_alpha > 1e-6) {
-            result_color.rgb = out_rgb / out_alpha;
-        } else {
-            result_color.rgb = vec3(0.0);
-        }
-        result_color.a = out_alpha;
+        result_color.rgb = out_rgb;
+        result_color.a = 1.0;
     }
 
     if (params.destination_is_srgb != 0) {

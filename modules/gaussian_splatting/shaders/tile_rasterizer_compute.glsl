@@ -324,7 +324,11 @@ void main() {
     }
 
     float coverage_alpha = final_color.a;
-    final_color.a = clamp(final_color.a + pixel_dither.r, 0.0, 1.0);
+    float dithered_alpha = clamp(final_color.a + pixel_dither.r, 0.0, 1.0);
+    if (final_color.a > 0.0) {
+        final_color.rgb *= dithered_alpha / final_color.a;
+    }
+    final_color.a = dithered_alpha;
     if (params.force_solid_coverage != 0u) {
         final_color.a = max(final_color.a, params.alpha_floor);
     }

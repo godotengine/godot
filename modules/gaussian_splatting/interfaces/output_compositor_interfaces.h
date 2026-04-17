@@ -35,6 +35,7 @@ struct OutputCopyResult {
 struct FramebufferCopyParams {
     RID source_texture;
     RID framebuffer;
+    RID destination_texture;
     Size2i viewport_size;
     bool composite_with_destination = false;
     bool source_is_premultiplied = false;

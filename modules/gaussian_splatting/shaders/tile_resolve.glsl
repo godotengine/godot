@@ -166,6 +166,8 @@ void main() {
         return;
     }
 
+    gs_frag_coord_substitute = vec4(vec2(gl_GlobalInvocationID.xy), 0.0, 0.0);
+
     vec2 viewport_size = vec2(max(resolve_params.viewport_width, 1), max(resolve_params.viewport_height, 1));
     vec2 uv = (vec2(coord) + vec2(0.5)) / viewport_size;
 
@@ -362,7 +364,7 @@ void main() {
 
         if (shadow_strength > 0.0 && sh_occlusion > 0.0) {
             float sh_factor = 1.0 - shadow_strength * clamp(sh_occlusion, 0.0, 1.0);
-            sh_factor = max(sh_factor, 0.3);
+            sh_factor = max(sh_factor, 0.0);
             final_rgb *= sh_factor;
         }
         if (use_clustered) {

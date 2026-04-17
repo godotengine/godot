@@ -57,22 +57,22 @@ bool sc_projector_use_mipmaps() {
 	return false;
 }
 
-// Compute-shader fallback: soft shadow sampling is disabled.
+// Match Godot's SHADOW_QUALITY_SOFT_LOW default (4 taps) so gaussian
+// splat shadows have comparable quality to mesh shadows. Without PCF,
+// each pixel gets a binary 0/1 shadow from a single compare, producing
+// harsh per-pixel outlines.
 uint sc_soft_shadow_samples() {
-	return 0u;
+	return 4u;
 }
 
-// Compute-shader fallback: penumbra sampling is disabled.
 uint sc_penumbra_shadow_samples() {
 	return 0u;
 }
 
-// Compute-shader fallback: directional soft shadow sampling is disabled.
 uint sc_directional_soft_shadow_samples() {
-	return 0u;
+	return 4u;
 }
 
-// Compute-shader fallback: directional penumbra sampling is disabled.
 uint sc_directional_penumbra_shadow_samples() {
 	return 0u;
 }

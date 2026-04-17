@@ -324,14 +324,14 @@ RasterResult TileRasterizer::render(const RasterParams &p_params) {
         if (!result.depth_owner) {
             result.depth_owner = render_device;
         }
-        result.has_depth = tile_renderer->has_depth_output() && result.depth_texture.is_valid();
+        result.has_depth = result.depth_texture.is_valid();
         result.depth_copy_compatible = result.has_depth && tile_renderer->is_depth_copy_compatible();
 
-        RenderingDevice *main_device = _get_contract_main_device(device_manager);
+        RenderingDevice *contract_device = _get_contract_main_device(device_manager);
         RenderDeviceManager *manager_ptr = device_manager.is_valid() ? device_manager.ptr() : nullptr;
 
         OutputOwnershipContractResult color_contract = _enforce_texture_owner_contract(
-                "tile_color_output", result.output_texture, result.output_owner, manager_ptr, main_device);
+                "tile_color_output", result.output_texture, result.output_owner, manager_ptr, contract_device);
         if (color_contract == OutputOwnershipContractResult::VIOLATION) {
             GS_LOG_ERROR_DEFAULT("[TileRasterizer] Color output contract failed; output is disabled for this frame");
             clear_output_resource_tracking();
@@ -347,7 +347,7 @@ RasterResult TileRasterizer::render(const RasterParams &p_params) {
 
         if (result.has_depth) {
             OutputOwnershipContractResult depth_contract = _enforce_texture_owner_contract(
-                    "tile_depth_output", result.depth_texture, result.depth_owner, manager_ptr, main_device);
+                    "tile_depth_output", result.depth_texture, result.depth_owner, manager_ptr, contract_device);
             if (depth_contract == OutputOwnershipContractResult::VIOLATION) {
                 GS_LOG_WARN_DEFAULT("[TileRasterizer] Depth output contract failed; depth output is disabled for this frame");
                 result.depth_texture = RID();
@@ -395,14 +395,14 @@ RasterResult TileRasterizer::render_direct(RenderingDevice *p_device, const Tile
         if (!result.depth_owner) {
             result.depth_owner = render_device;
         }
-        result.has_depth = tile_renderer->has_depth_output() && result.depth_texture.is_valid();
+        result.has_depth = result.depth_texture.is_valid();
         result.depth_copy_compatible = result.has_depth && tile_renderer->is_depth_copy_compatible();
 
-        RenderingDevice *main_device = _get_contract_main_device(device_manager);
+        RenderingDevice *contract_device = _get_contract_main_device(device_manager);
         RenderDeviceManager *manager_ptr = device_manager.is_valid() ? device_manager.ptr() : nullptr;
 
         OutputOwnershipContractResult color_contract = _enforce_texture_owner_contract(
-                "tile_color_output", result.output_texture, result.output_owner, manager_ptr, main_device);
+                "tile_color_output", result.output_texture, result.output_owner, manager_ptr, contract_device);
         if (color_contract == OutputOwnershipContractResult::VIOLATION) {
             GS_LOG_ERROR_DEFAULT("[TileRasterizer] Color output contract failed; output is disabled for this frame");
             clear_output_resource_tracking();
@@ -418,7 +418,7 @@ RasterResult TileRasterizer::render_direct(RenderingDevice *p_device, const Tile
 
         if (result.has_depth) {
             OutputOwnershipContractResult depth_contract = _enforce_texture_owner_contract(
-                    "tile_depth_output", result.depth_texture, result.depth_owner, manager_ptr, main_device);
+                    "tile_depth_output", result.depth_texture, result.depth_owner, manager_ptr, contract_device);
             if (depth_contract == OutputOwnershipContractResult::VIOLATION) {
                 GS_LOG_WARN_DEFAULT("[TileRasterizer] Depth output contract failed; depth output is disabled for this frame");
                 result.depth_texture = RID();

@@ -645,7 +645,15 @@ void gs_rasterize_pixel(vec2 frag_coord, uint range_start, uint splat_count, uin
     }
 
     float coverage_alpha = final_color.a;
-    final_color.a = clamp(final_color.a + pixel_dither.r, 0.0, 1.0);
+    // Scale RGB proportionally when dithering alpha to preserve the premultiplied
+    // invariant (RGB = color * alpha). Without this, the resolve's unpremultiply
+    // (RGB /= alpha) amplifies the mismatch at low-alpha cloud edges, producing
+    // a visible dark fringe.
+    float dithered_alpha = clamp(final_color.a + pixel_dither.r, 0.0, 1.0);
+    if (final_color.a > 0.0) {
+        final_color.rgb *= dithered_alpha / final_color.a;
+    }
+    final_color.a = dithered_alpha;
 
     // Optional solid-coverage mode: enforce a minimum alpha wherever splats contributed.
     if (params.force_solid_coverage != 0u) {

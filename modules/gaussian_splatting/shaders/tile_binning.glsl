@@ -1145,15 +1145,11 @@ void main() {
             vec3 view_dir = view_dir_scene;
 
             vec2 uv = screen_pos / max(params.viewport_size, vec2(1.0));
+            gs_frag_coord_substitute = vec4(screen_pos, 0.0, 0.0);
 
             hvec3 h_normal_base = hvec3(normal_view);
             hvec3 h_view = hvec3(view_dir);
-            // Use neutral grey albedo for lighting by default. If indirect SH is disabled,
-            // fall back to SH color as albedo so splat colors still show up.
-            hvec3 h_albedo = hvec3(0.5);
-            if (params.lighting_config.y <= 0.001) {
-                h_albedo = hvec3(sh_albedo);
-            }
+            hvec3 h_albedo = hvec3(sh_albedo);
             half roughness = half(1.0);
             half metallic = half(0.0);
             half specular = half(0.5);
@@ -1198,11 +1194,6 @@ void main() {
 
             if (shadow_strength > 0.0 && sh_occlusion > 0.0) {
                 float sh_factor = 1.0 - shadow_strength * clamp(sh_occlusion, 0.0, 1.0);
-                // Preserve minimum ambient so shadowed SH regions are not fully black.
-                // The SH base colour already encodes baked indirect illumination that
-                // should survive real-time shadow.  A floor of 0.3 keeps ~30 % of the
-                // baked radiance visible in full shadow.
-                sh_factor = max(sh_factor, 0.3);
                 final_color *= sh_factor;
             }
 
@@ -1211,6 +1202,17 @@ void main() {
             diffuse_light *= (half(1.0) - metallic);
             vec3 direct = vec3(diffuse_light + specular_light) * params.lighting_config.x;
             final_color += direct;
+
+            // Blend engine ambient out as SH indirect approaches full strength to avoid
+            // double-counting baked indirect from the SH DC term.
+            SceneData scene_data = scene_data_block.data;
+            if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT)) {
+                float ambient_blend = 1.0 - clamp(params.lighting_config.y, 0.0, 1.0);
+                if (ambient_blend > 0.0) {
+                    vec3 ambient = scene_data.ambient_light_color_energy.rgb;
+                    final_color += ambient * vec3(h_albedo) * ambient_blend;
+                }
+            }
         }
     }
 

@@ -925,11 +925,9 @@ bool OutputCompositor::copy_to_framebuffer(const FramebufferCopyParams &p_params
         viewport_size = Size2i(1920, 1080); // Fallback
     }
 
-    // Get source texture format to determine sRGB handling
-    RenderingDevice *check_rd = main_rd;
     bool srgb_destination = false;
-    if (check_rd) {
-        srgb_destination = _is_texture_srgb(check_rd, p_params.source_texture);
+    if (p_params.destination_texture.is_valid()) {
+        srgb_destination = _is_texture_srgb(main_rd, p_params.destination_texture);
     }
 
     Rect2i dest_rect(Vector2i(0, 0), Size2i(viewport_size.x, viewport_size.y));
@@ -1218,6 +1216,7 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
                 FramebufferCopyParams params;
                 params.source_texture = p_final_output;
                 params.framebuffer = render_target_framebuffer;
+                params.destination_texture = present_render_target;
                 params.viewport_size = viewport_size;
                 params.composite_with_destination = true;
                 params.source_is_premultiplied = true;
