@@ -1797,7 +1797,7 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) { // area is 0
 		return;
 	}
-	if (dot(area_direction, vertex - area_lights[idx].position) <= 0) {
+	if (dot(area_direction, vertex - area_lights[idx].position) <= 0.0) {
 		return; // vertex is behind light
 	}
 
@@ -1829,7 +1829,7 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), metallic, 1.0);
 	vec3 fresnel_color = f0 * max(ltc_fresnel.x, 0.0) + (f90 - f0) * max(ltc_fresnel.y, 0.0);
 
-	float light_length = max(0, dist);
+	float light_length = max(0.0, dist);
 	float light_attenuation_raw = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
 	float light_attenuation_ltc = light_attenuation_raw * light_length * light_length; // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 
