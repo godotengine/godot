@@ -1241,7 +1241,7 @@
 			The editor color preset to use.
 		</member>
 		<member name="interface/theme/contrast" type="float" setter="" getter="">
-			The contrast factor to use when deriving the editor theme's base color (see [member interface/theme/base_color]). When using a positive values, the derived colors will be [i]darker[/i] than the base color. This contrast factor can be set to a negative value, which will make the derived colors [i]brighter[/i] than the base color. Negative contrast rates often look better for light themes.
+			The contrast factor to use when deriving the editor theme's base color (see [member interface/theme/base_color]). When using positive values, the derived colors will be [i]darker[/i] than the base color. This contrast factor can be set to a negative value, which will make the derived colors [i]brighter[/i] than the base color. Negative contrast rates often look better for light themes.
 		</member>
 		<member name="interface/theme/corner_radius" type="int" setter="" getter="">
 			The corner radius to use for interface elements (in pixels). [code]0[/code] is square.
