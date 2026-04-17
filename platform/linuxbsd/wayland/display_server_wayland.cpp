@@ -1559,6 +1559,7 @@ bool DisplayServerWayland::window_is_hdr_output_requested(DisplayServerEnums::Wi
 }
 
 bool DisplayServerWayland::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_hdr_output_enabled(p_window_id);
@@ -1579,6 +1580,7 @@ float DisplayServerWayland::window_get_hdr_output_reference_luminance(DisplaySer
 }
 
 float DisplayServerWayland::window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0.0);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_hdr_output_reference_luminance(p_window_id);
@@ -1599,6 +1601,7 @@ float DisplayServerWayland::window_get_hdr_output_max_luminance(DisplayServerEnu
 }
 
 float DisplayServerWayland::window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0.0);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_hdr_output_max_luminance(p_window_id);
@@ -1608,6 +1611,7 @@ float DisplayServerWayland::window_get_hdr_output_current_max_luminance(DisplayS
 }
 
 float DisplayServerWayland::window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 1.0);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_output_max_linear_value(p_window_id);
