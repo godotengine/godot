@@ -1049,6 +1049,8 @@ private:
 		warnings.push_back(ShaderWarning(p_code, p_line, p_subject, p_extra_args));
 	}
 	void _check_warning_accums();
+
+	Vector<Vector2i> fragment_loop_regions;
 #endif // DEBUG_ENABLED
 
 	String code;
@@ -1247,6 +1249,8 @@ public:
 
 	void set_warning_flags(uint32_t p_flags);
 	uint32_t get_warning_flags() const;
+
+	Vector<Vector2i> get_fragment_loop_regions();
 #endif // DEBUG_ENABLED
 
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
@@ -1274,7 +1278,6 @@ public:
 	Vector<FilePosition> get_include_positions();
 	CompletionType get_completion_type() const { return completion_type; }
 	int get_error_line();
-
 	ShaderNode *get_shader();
 
 	String token_debug(const String &p_code);

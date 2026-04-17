@@ -1345,6 +1345,7 @@ void ShaderLanguage::clear() {
 	used_structs.clear();
 	used_local_vars.clear();
 	warnings.clear();
+	fragment_loop_regions.clear();
 #endif // DEBUG_ENABLED
 
 	error_line = 0;
@@ -8775,6 +8776,15 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			// while() {}
 			bool is_do = tk.type == TK_CF_DO;
 
+#ifdef DEBUG_ENABLED
+			bool record_region = !p_block->parent_block && current_function == "fragment";
+
+			Vector2i region;
+			if (record_region) {
+				region.x = pos.tk_line;
+			}
+#endif // DEBUG_ENABLED
+
 			BlockNode *do_block = nullptr;
 			if (is_do) {
 				do_block = alloc_node<BlockNode>();
@@ -8784,7 +8794,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				if (err) {
 					return err;
 				}
-
+#ifdef DEBUG_ENABLED
+				if (record_region) {
+					region.y = tk_line;
+					fragment_loop_regions.push_back(region);
+				}
+#endif // DEBUG_ENABLED
 				tk = _get_token();
 				if (tk.type != TK_CF_WHILE) {
 					_set_expected_after_error("while", "do");
@@ -8825,6 +8840,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				if (err) {
 					return err;
 				}
+#ifdef DEBUG_ENABLED
+				if (record_region) {
+					region.y = tk_line;
+					fragment_loop_regions.push_back(region);
+				}
+#endif // DEBUG_ENABLED
 			} else {
 				cf->expressions.push_back(n);
 				cf->blocks.push_back(do_block);
@@ -8837,6 +8858,15 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 			}
 		} else if (tk.type == TK_CF_FOR) {
+#ifdef DEBUG_ENABLED
+			bool record_region = !p_block->parent_block && current_function == "fragment";
+
+			Vector2i region;
+			if (record_region) {
+				region.x = pos.tk_line;
+			}
+#endif // DEBUG_ENABLED
+
 			// for() {}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_OPEN) {
@@ -8898,6 +8928,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (err != OK) {
 				return err;
 			}
+#ifdef DEBUG_ENABLED
+			if (record_region) {
+				region.y = tk_line;
+				fragment_loop_regions.push_back(region);
+			}
+#endif // DEBUG_ENABLED
 
 		} else if (tk.type == TK_CF_RETURN) {
 			//check return type
@@ -11437,6 +11473,9 @@ void ShaderLanguage::set_warning_flags(uint32_t p_flags) {
 }
 uint32_t ShaderLanguage::get_warning_flags() const {
 	return warning_flags;
+}
+Vector<Vector2i> ShaderLanguage::get_fragment_loop_regions() {
+	return fragment_loop_regions;
 }
 #endif // DEBUG_ENABLED
 

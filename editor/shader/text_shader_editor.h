@@ -70,6 +70,7 @@ private:
 
 	int line = -1;
 	bool in_comment = false;
+	Vector<Vector2i> *frag_loop_regions = nullptr;
 
 	static HashMap<String, String> spatial_assignments;
 	static HashMap<String, String> canvas_assignments;
@@ -92,7 +93,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_shader_code(const String &p_code, int p_line, bool p_in_comment);
+	void set_shader_code(const String &p_code, int p_line, bool p_in_comment, Vector<Vector2i> &p_frag_loop_regions);
 	void show_shader_compile_error();
 	void recompile(const String &p_code);
 	void sync_shader_parameters();
@@ -139,6 +140,7 @@ class ShaderTextEditor : public CodeTextEditor {
 	HashMap<int, TextShaderPreview *> previews;
 	Control *preview_box = nullptr;
 	TextShaderPreviewLineLayer *preview_line_layer = nullptr;
+	Vector<Vector2i> frag_loop_regions;
 
 	void _check_shader_mode();
 	void _update_warning_panel();

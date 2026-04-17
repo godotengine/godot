@@ -463,7 +463,7 @@ void TextShaderPreview::show_shader_compile_error() {
 }
 
 void TextShaderPreview::recompile(const String &p_code) {
-	set_shader_code(p_code, line, in_comment);
+	set_shader_code(p_code, line, in_comment, *frag_loop_regions);
 }
 
 Ref<ShaderMaterial> TextShaderPreview::_get_source_material() const {
@@ -529,10 +529,11 @@ MarginContainer *TextShaderPreview::get_surface_container() const {
 	return surface_container;
 }
 
-void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p_in_comment) {
+void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p_in_comment, Vector<Vector2i> &p_frag_loop_regions) {
 	line = p_line;
 	in_comment = p_in_comment;
 	goto_button->set_text(vformat(TTR("Go to Line %d"), line + 1));
+	frag_loop_regions = &p_frag_loop_regions;
 
 	String shader_type = ShaderLanguage::get_shader_type(p_code);
 	bool mode_3d = shader_type == "spatial";
@@ -554,15 +555,23 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 	int start;
 	int end;
 
+	Vector2i loop_region;
+	bool in_loop_region = false;
+
+	for (const Vector2i &region : *frag_loop_regions) {
+		if (p_line >= region.x && p_line <= region.y) {
+			loop_region = region;
+			in_loop_region = true;
+			break;
+		}
+	}
+
 	if (in_comment || !_find_statement(lines, p_line, var_name, start, end)) {
 		_show_error(TTRC("The selected line needs to be an assignment."));
 		return;
 	}
 
 	String type = _find_var_type(lines, var_name, end, mode_3d);
-
-	// All code before assignment stays as it was.
-	PackedStringArray truncated_lines = lines.slice(0, end + 1);
 
 	String injection;
 	HashMap<String, String> &assignments = mode_3d ? spatial_assignments : canvas_assignments;
@@ -571,14 +580,33 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 		return;
 	}
 	injection = assignments[type].replace("%s", var_name);
-	truncated_lines.append(injection);
+
+	PackedStringArray truncated_lines;
+	PackedStringArray loop_lines;
+	if (in_loop_region) {
+		loop_lines = lines.slice(loop_region.x, loop_region.y + 1);
+		truncated_lines = lines.slice(0, loop_region.x);
+	} else {
+		truncated_lines = lines.slice(0, end + 1);
+		truncated_lines.append(injection);
+	}
+
+	String temp = "\n";
+	temp = temp.join(truncated_lines);
+
+	int open_braces = temp.count("{");
+	int closed_braces = temp.count("}");
+	int needed_closures = open_braces - closed_braces;
 
 	String full_truncated_text = "\n";
-	full_truncated_text = full_truncated_text.join(truncated_lines);
+	if (in_loop_region) {
+		truncated_lines.append_array(loop_lines);
+		truncated_lines.insert(end + 1, injection);
 
-	int open_braces = full_truncated_text.count("{");
-	int closed_braces = full_truncated_text.count("}");
-	int needed_closures = open_braces - closed_braces;
+		full_truncated_text = full_truncated_text.join(truncated_lines);
+	} else {
+		full_truncated_text = temp;
+	}
 
 	for (int i = 0; i < needed_closures; i++) {
 		full_truncated_text += "\n}";
@@ -744,7 +772,7 @@ void ShaderTextEditor::toggle_shader_preview(int p_line) {
 	if (last_compile_result != OK) {
 		preview->show_shader_compile_error();
 	} else {
-		preview->set_shader_code(tx->get_text(), p_line, tx->is_in_comment(p_line) != -1);
+		preview->set_shader_code(tx->get_text(), p_line, tx->is_in_comment(p_line) != -1, frag_loop_regions);
 	}
 
 	preview->connect("goto_btn_pressed", callable_mp(this, &ShaderTextEditor::goto_shader_preview).bind(p_line));
@@ -1171,6 +1199,9 @@ void ShaderTextEditor::_validate_script() {
 		last_compile_result = sl.compile(code, comp_info);
 
 		if (last_compile_result != OK) {
+#ifdef DEBUG_ENABLED
+			frag_loop_regions.clear();
+#endif // DEBUG_ENABLED
 			Vector<ShaderLanguage::FilePosition> include_positions = sl.get_include_positions();
 
 			String err_text;
@@ -1205,9 +1236,11 @@ void ShaderTextEditor::_validate_script() {
 			}
 		} else {
 			set_error("");
-
+#ifdef DEBUG_ENABLED
+			frag_loop_regions = sl.get_fragment_loop_regions();
+#endif // DEBUG_ENABLED
 			for (KeyValue<int, TextShaderPreview *> pair : previews) {
-				pair.value->set_shader_code(code, pair.key, get_text_editor()->is_in_comment(pair.key) != -1);
+				pair.value->set_shader_code(code, pair.key, get_text_editor()->is_in_comment(pair.key) != -1, frag_loop_regions);
 			}
 		}
 
