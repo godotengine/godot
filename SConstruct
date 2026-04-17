@@ -44,22 +44,24 @@ def _helper_module(name, path):
         setattr(parent_module, child_name, child_module)
 
 
-_helper_module("gles3_builders", "gles3_builders.py")
-_helper_module("glsl_builders", "glsl_builders.py")
 _helper_module("methods", "methods.py")
-_helper_module("platform_methods", "platform_methods.py")
 _helper_module("version", "version.py")
+_helper_module("platform_methods", "platform/platform_methods.py")
+_helper_module("gles3_builders", "drivers/gles3/gles3_builders.py")
+_helper_module("glsl_builders", "servers/rendering/glsl_builders.py")
 _helper_module("core.core_builders", "core/core_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("misc.utility.color", "misc/utility/color.py")
+_helper_module("misc.utility.scu_builders", "misc/utility/scu_builders.py")
 
 # Local
 import gles3_builders
 import glsl_builders
+from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases, generate_vs_project
+
 import methods
-import scu_builders
 from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
-from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
+from misc.utility.scu_builders import generate_scu_files
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -709,7 +711,7 @@ if env["scu_build"]:
     if read_scu_limit != 0:
         max_includes_per_scu = read_scu_limit
 
-    methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
+    methods.set_scu_folders(generate_scu_files(max_includes_per_scu))
 
 if env["rendering_device"]:
     if env["platform"] == "web":
@@ -1263,7 +1265,7 @@ SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
 if env["vsproj"]:
     methods.generate_cpp_hint_file("cpp.hint")
     env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
-    methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
+    generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
 
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):
