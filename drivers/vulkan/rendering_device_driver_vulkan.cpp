@@ -2892,7 +2892,7 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 			// VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR, srcStageMask must not include any of the
 			// VK_PIPELINE_STAGE_*_SHADER_BIT stages except VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR
 			if ((src_access & VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR) != 0) {
-				accel_src_stages &= _remove_pipeline_stage_shader_bits(accel_src_stages);
+				accel_src_stages = _remove_pipeline_stage_shader_bits(accel_src_stages);
 			}
 
 			// If the rayQuery feature is not enabled and a memory barrier dstAccessMask includes
