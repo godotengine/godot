@@ -123,6 +123,7 @@ public:
 	virtual String get_bundle_resource_dir() const override;
 
 	virtual String get_locale() const override;
+	virtual Vector<String> get_preferred_locales() const override;
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;

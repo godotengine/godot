@@ -308,6 +308,7 @@ public:
 	bool is_separate_thread_rendering_enabled() const { return _separate_thread_render; }
 
 	virtual String get_locale() const;
+	virtual Vector<String> get_preferred_locales() const { return Vector<String>{ get_locale() }; }
 	String get_locale_language() const;
 
 	virtual uint64_t get_embedded_pck_offset() const;

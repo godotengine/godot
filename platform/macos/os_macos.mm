@@ -585,6 +585,14 @@ String OS_MacOS::get_locale() const {
 	return String([locale_code UTF8String]).replace_char('-', '_');
 }
 
+Vector<String> OS_MacOS::get_preferred_locales() const {
+	Vector<String> out;
+	for (NSString *locale_code in [NSLocale preferredLanguages]) {
+		out.push_back(String([locale_code UTF8String]).replace_char('-', '_'));
+	}
+	return out;
+}
+
 Vector<String> OS_MacOS::get_system_fonts() const {
 	HashSet<String> font_names;
 	CFArrayRef fonts = CTFontManagerCopyAvailableFontFamilyNames();

@@ -59,7 +59,6 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "servers/display/display_server.h"
 
@@ -423,32 +422,35 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		String lang_hint;
-		const String host_lang = OS::get_singleton()->get_locale();
-
 		// Skip locales which we can't render properly.
 		const LocalVector<String> locales_to_skip = _get_skipped_locales();
 		if (!locales_to_skip.is_empty()) {
 			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
 		}
 
+		String lang_hint;
 		String best = "en";
 		int best_score = 0;
-		for (const String &locale : get_editor_locales()) {
-			// Test against language code without regional variants (e.g. ur_PK).
-			String lang_code = locale.get_slicec('_', 0);
-			if (locales_to_skip.has(lang_code)) {
-				continue;
+		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			for (const String &locale : get_editor_locales()) {
+				// Test against language code without regional variants (e.g. ur_PK).
+				String lang_code = locale.get_slicec('_', 0);
+				if (locales_to_skip.has(lang_code)) {
+					continue;
+				}
+
+				lang_hint += ";";
+				const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
+				lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
+
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+				if (score > 0 && score >= best_score) {
+					best = locale;
+					best_score = score;
+				}
 			}
-
-			lang_hint += ";";
-			const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
-			lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
-
-			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-			if (score > 0 && score >= best_score) {
-				best = locale;
-				best_score = score;
+			if (best_score > 0) {
+				break;
 			}
 		}
 		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
@@ -2031,21 +2033,25 @@ String EditorSettings::get_language() const {
 	if (auto_language.is_empty()) {
 		// Skip locales which we can't render properly.
 		const LocalVector<String> locales_to_skip = _get_skipped_locales();
-		const String host_lang = OS::get_singleton()->get_locale();
 
 		String best = "en";
 		int best_score = 0;
-		for (const String &locale : get_editor_locales()) {
-			// Test against language code without regional variants (e.g. ur_PK).
-			String lang_code = locale.get_slicec('_', 0);
-			if (locales_to_skip.has(lang_code)) {
-				continue;
-			}
+		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			for (const String &locale : get_editor_locales()) {
+				// Test against language code without regional variants (e.g. ur_PK).
+				String lang_code = locale.get_slicec('_', 0);
+				if (locales_to_skip.has(lang_code)) {
+					continue;
+				}
 
-			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-			if (score > 0 && score >= best_score) {
-				best = locale;
-				best_score = score;
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+				if (score > 0 && score >= best_score) {
+					best = locale;
+					best_score = score;
+				}
+			}
+			if (best_score > 0) {
+				break;
 			}
 		}
 		auto_language = best;
