@@ -2547,12 +2547,6 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Shift also allows forcing box selection when item was clicked.
 			if (!ci || (b->is_shift_pressed() && b->is_pressed())) {
 				// Start a box selection.
-				if (!b->is_shift_pressed()) {
-					// Clear the selection if not additive.
-					editor_selection->clear();
-					viewport->queue_redraw();
-					selected_from_canvas = true;
-				};
 
 				if (b->is_pressed()) {
 					drag_from = click;
@@ -2622,15 +2616,17 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					SWAP(bsfrom.y, bsto.y);
 				}
 
-				_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), scene, &selitems);
-				if (selitems.size() == 1 && editor_selection->get_selection().is_empty()) {
-					EditorNode::get_singleton()->push_item(selitems.front()->get());
+				if (bsfrom.distance_to(bsto) <= DRAG_THRESHOLD) {
+					_click_select(transform.affine_inverse().xform(b->get_position()), b->is_shift_pressed());
+				} else {
+					_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), scene, &selitems);
+					if (selitems.size() == 1 && editor_selection->get_selection().is_empty()) {
+						EditorNode::get_singleton()->push_item(selitems.front()->get());
+					}
+					for (CanvasItem *E : selitems) {
+						editor_selection->add_node(E);
+					}
 				}
-				for (CanvasItem *E : selitems) {
-					editor_selection->add_node(E);
-				}
-
-				_click_select(transform.affine_inverse().xform(b->get_position()), b->is_shift_pressed());
 			}
 
 			_reset_drag();
@@ -5275,13 +5271,9 @@ void CanvasItemEditor::_click_select(const Point2 &p_pos, bool p_append) {
 			ci = selection[0].item;
 		} else {
 			// When selecting canvas items by repeated clicking, each click selects a canvas item one layer higher.
-			for (int i = 0; i < selection.size(); i++) {
+			for (int64_t i = 0; i < selection.size(); i++) {
 				if (editor_selection->is_selected(selection[i].item)) {
-					i++;
-					if (i == selection.size()) {
-						i = 0;
-					}
-					ci = selection[i].item;
+					ci = selection[(i + 1) % selection.size()].item;
 					break;
 				}
 			}
