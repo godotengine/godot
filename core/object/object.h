@@ -428,6 +428,7 @@ private:
 	SafeRefCount _lock_index;
 #endif // DEBUG_ENABLED
 	ObjectID _instance_id;
+	SafeFlag _predelete_ok;
 	bool _predelete();
 	void _initialize();
 	void _postinitialize();
@@ -437,7 +438,6 @@ private:
 	bool _block_signals : 1;
 	bool _can_translate : 1;
 	bool _emitting : 1;
-	bool _predelete_ok : 1;
 
 public:
 	bool _is_queued_for_deletion : 1; // Set to true by SceneTree::queue_delete().
@@ -484,9 +484,11 @@ private:
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 	int _get_method_argument_count_bind(const StringName &p_name) const;
 
-	_FORCE_INLINE_ void _construct_object(bool p_reference);
-
 	friend class RefCounted;
+	_FORCE_INLINE_ void _set_id_reference_bit() { _instance_id = _instance_id.operator uint64_t() | OBJECTID_REFERENCE_BIT; }
+
+	friend class ObjectDB;
+	_FORCE_INLINE_ bool _is_in_predelete() const { return _predelete_ok.is_set(); }
 
 	BinaryMutex _instance_binding_mutex;
 	struct InstanceBinding {
@@ -497,8 +499,6 @@ private:
 	};
 	InstanceBinding *_instance_bindings = nullptr;
 	uint32_t _instance_binding_count = 0;
-
-	Object(bool p_reference);
 
 protected:
 	StringName _translation_domain;
@@ -880,31 +880,131 @@ bool Object::derives_from() const {
 }
 
 class ObjectDB {
-// This needs to add up to 63, 1 bit is for reference.
+#define OBJECTDB_BLOCK_BITS 10
+#define OBJECTDB_BLOCK_MASK ((uint64_t(1) << OBJECTDB_BLOCK_BITS) - 1)
+#define OBJECTDB_SLOT_BITS 14
+#define OBJECTDB_SLOT_MASK ((uint64_t(1) << OBJECTDB_SLOT_BITS) - 1)
 #define OBJECTDB_VALIDATOR_BITS 39
 #define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
-#define OBJECTDB_SLOT_MAX_COUNT_BITS 24
-#define OBJECTDB_SLOT_MAX_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_COUNT_BITS) - 1)
-#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
+#define OBJECTDB_LOCK_BIT (uint64_t(1) << 63)
 
-	struct ObjectSlot { // 128 bits per slot.
-		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
-		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
-		uint64_t is_ref_counted : 1;
-		Object *object = nullptr;
+#define OBJECTDB_LOWER_BITS (OBJECTDB_SLOT_BITS + OBJECTDB_BLOCK_BITS)
+#define OBJECTDB_LOWER_MASK ((uint64_t(1) << OBJECTDB_LOWER_BITS) - 1)
+
+#define OBJECTDB_BLOCK_MAX_COUNT (uint64_t(1) << OBJECTDB_BLOCK_BITS)
+#define OBJECTDB_BLOCK_SIZE (uint64_t(1) << OBJECTDB_SLOT_BITS)
+
+	static_assert((OBJECTDB_LOWER_BITS + OBJECTDB_VALIDATOR_BITS) == 63, "This needs to add up to 63, 1 bit is for extra information.");
+
+	// The slots have 2 states: inactive and active.
+	// The lower 24 bits are used for different purposes.
+	// Inactive slot stores the next free slot index:
+	// ┌────────────┬────────────┬───────────────┬──────────────┐
+	// │ block: 10  │ slot: 14   │ validator: 39 │ is_locked: 1 │
+	// └────────────┴────────────┴───────────────┴──────────────┘
+	// Active slot stores the number of instances returned by get_locked_instance:
+	// ┌─────────────────────────┬───────────────┬──────────────┐
+	// │ readers: 24             │ validator: 39 │ is_locked: 1 │
+	// └─────────────────────────┴───────────────┴──────────────┘
+
+	struct BackoffPause {
+		static constexpr int MAX_PAUSES = 64;
+		int backoff = 1;
+		_ALWAYS_INLINE_ void pause() {
+			for (int i = 0; i < backoff; ++i) {
+				_cpu_pause();
+			}
+			backoff = backoff < MAX_PAUSES ? backoff << 1 : MAX_PAUSES;
+		}
 	};
 
-	static SpinLock spin_lock;
-	static uint32_t slot_count;
-	static uint32_t slot_max;
-	static ObjectSlot *object_slots;
-	static uint64_t validator_counter;
+	struct SlotIndex {
+		uint32_t packed_index = 0;
+
+		_ALWAYS_INLINE_ uint16_t block() const { return packed_index & OBJECTDB_BLOCK_MASK; }
+		_ALWAYS_INLINE_ uint16_t slot() const { return (packed_index >> OBJECTDB_BLOCK_BITS) & OBJECTDB_SLOT_MASK; }
+		_ALWAYS_INLINE_ bool is_null() const { return (packed_index & OBJECTDB_LOWER_MASK) == 0; }
+		_ALWAYS_INLINE_ operator uint32_t() const { return packed_index & OBJECTDB_LOWER_MASK; }
+
+		_ALWAYS_INLINE_ SlotIndex() = default;
+		_ALWAYS_INLINE_ SlotIndex(uint16_t p_block, uint16_t p_slot) : packed_index(p_block | (p_slot << OBJECTDB_BLOCK_BITS)) {}
+		_ALWAYS_INLINE_ explicit SlotIndex(ObjectID p_id) : SlotIndex(p_id.operator uint64_t()) {}
+		_ALWAYS_INLINE_ explicit SlotIndex(uint64_t p_num) : packed_index(p_num) {}
+		_ALWAYS_INLINE_ explicit SlotIndex(uint32_t p_num) : packed_index(p_num) {}
+	};
+
+	struct SlotData {
+		uint64_t packed_data = 0;
+
+		_ALWAYS_INLINE_ SlotIndex index() const { return SlotIndex{ packed_data }; }
+		_ALWAYS_INLINE_ uint64_t validator() const { return (packed_data >> OBJECTDB_LOWER_BITS) & OBJECTDB_VALIDATOR_MASK; }
+		_ALWAYS_INLINE_ bool has_readers() const { return (packed_data & OBJECTDB_LOWER_MASK) > 1; }
+		_ALWAYS_INLINE_ bool compare_validator(ObjectID p_instance_id) const {
+			static constexpr uint64_t SHIFTED_VALIDATOR_MASK = OBJECTDB_VALIDATOR_MASK << OBJECTDB_LOWER_BITS;
+			return (packed_data & SHIFTED_VALIDATOR_MASK) == ((p_instance_id.operator uint64_t() & SHIFTED_VALIDATOR_MASK));
+		}
+
+		_ALWAYS_INLINE_ static SlotData create(uint32_t p_lower_bits_data, SlotData p_old_data) {
+			static constexpr uint64_t SHIFTED_VALIDATOR_MASK = OBJECTDB_VALIDATOR_MASK << OBJECTDB_LOWER_BITS;
+			return SlotData{ p_lower_bits_data | ((p_old_data.operator uint64_t() + (1 << OBJECTDB_LOWER_BITS)) & SHIFTED_VALIDATOR_MASK) };
+		}
+		_ALWAYS_INLINE_ SlotData with_index(SlotIndex p_index) const {
+			return SlotData{ p_index | (packed_data & ~OBJECTDB_LOWER_MASK) };
+		}
+		_ALWAYS_INLINE_ ObjectID to_id(SlotIndex p_index, bool p_is_ref_counted = false) const {
+			return ObjectID(p_index | (packed_data & ~(OBJECTDB_LOWER_MASK | OBJECTDB_LOCK_BIT)) | (p_is_ref_counted ? OBJECTID_REFERENCE_BIT : 0));
+		}
+		_ALWAYS_INLINE_ operator uint64_t() const { return packed_data; }
+	};
+
+	struct ObjectSlot { // 128 bits per slot.
+		std::atomic<uint64_t> safe_data{ 0 };
+		Object *object = nullptr;
+
+		_ALWAYS_INLINE_ SlotData lock() {
+			BackoffPause backoff;
+			SlotData data = SlotData{ safe_data.load(std::memory_order_relaxed) };
+			// Loop if locked, or compare exchange failed to set the locked bit. Uses Test and Test-And-Set (TTAS) variation.
+			while ((data & OBJECTDB_LOCK_BIT) || !safe_data.compare_exchange_weak(data.packed_data, data | OBJECTDB_LOCK_BIT, std::memory_order_acquire, std::memory_order_relaxed)) {
+				backoff.pause();
+				data.packed_data = safe_data.load(std::memory_order_relaxed);
+			}
+			return data;
+		}
+		_ALWAYS_INLINE_ void unlock(SlotData p_previous_data) {
+			// Assumes the lock bit is not set for speed :D (make sure it is not set before calling this).
+			// Pure store is faster than RMW fetch_and and we always have previous data from lock().
+			DEV_ASSERT((p_previous_data & OBJECTDB_LOCK_BIT) == 0);
+			safe_data.store(p_previous_data, std::memory_order_release);
+		}
+	};
+
+	class SlotsQueue;
+
+public:
+#ifdef THREADS_ENABLED
+	// Can only use alignas(Thread::CACHE_LINE_BYTES) with threads, because without threads its align is
+	// alignas(sizeof(void *)), which on web is smaller than needed align for SafeNumeric<uint64_t>.
+	static constexpr size_t SAFE_NUMERIC_ALIGN = Thread::CACHE_LINE_BYTES;
+#else
+	static constexpr size_t SAFE_NUMERIC_ALIGN = alignof(SafeNumeric<uint64_t>);
+#endif
+
+private:
+	alignas(SAFE_NUMERIC_ALIGN) static SafeNumeric<uint64_t> slot_count;
+	static SafeFlag is_allocating;
+	static SafeNumeric<uint32_t> block_max;
+	static SafeNumeric<uint32_t> block_max_iterate;
+	static ObjectSlot *object_blocks[OBJECTDB_BLOCK_MAX_COUNT];
+	static uint32_t version;
 
 	friend class Object;
 	friend void unregister_core_types();
 	static void cleanup();
 
+	_NO_INLINE_ static ObjectSlot *_allocate_free_slot(SlotIndex &r_index);
 	static ObjectID add_instance(Object *p_object);
+	static void wait_until_unlocked(Object *p_object);
 	static void remove_instance(Object *p_object);
 
 	friend void register_core_types();
@@ -913,35 +1013,21 @@ class ObjectDB {
 public:
 	typedef void (*DebugFunc)(Object *p_obj, void *p_user_data);
 
-	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
-		uint64_t id = p_instance_id;
-		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
-
-		ERR_FAIL_COND_V(slot >= slot_max, nullptr); // This should never happen unless RID is corrupted.
-
-		spin_lock.lock();
-
-		uint64_t validator = (id >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-
-		if (unlikely(object_slots[slot].validator != validator)) {
-			spin_lock.unlock();
-			return nullptr;
-		}
-
-		Object *object = object_slots[slot].object;
-
-		spin_lock.unlock();
-
-		return object;
-	}
-
+	static Object *get_instance(ObjectID p_instance_id);
 	template <typename T>
 	_ALWAYS_INLINE_ static T *get_instance(ObjectID p_instance_id) {
 		return Object::cast_to<T>(get_instance(p_instance_id));
 	}
 
+	static Object *get_locked_instance(ObjectID p_instance_id);
 	template <typename T>
-	_ALWAYS_INLINE_ static Ref<T> get_ref(ObjectID p_instance_id); // Defined in ref_counted.h
+	_ALWAYS_INLINE_ static T *get_locked_instance(ObjectID p_instance_id) {
+		return Object::cast_to<T>(get_locked_instance(p_instance_id));
+	}
+	static void unlock_instance(Object *p_instance);
+
+	template <typename T>
+	static Ref<T> get_ref(ObjectID p_instance_id); // Defined in ref_counted.h
 
 	static void debug_objects(DebugFunc p_func, void *p_user_data);
 	static int get_object_count();

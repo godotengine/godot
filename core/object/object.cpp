@@ -136,9 +136,10 @@ Object::Connection::Connection(const Variant &p_variant) {
 }
 
 bool Object::_predelete() {
-	_predelete_ok = true;
+	_predelete_ok.set_to(true);
+	ObjectDB::wait_until_unlocked(this);
 	notification(NOTIFICATION_PREDELETE, true);
-	if (!_predelete_ok) {
+	if (!_predelete_ok.is_set()) {
 		return false;
 	}
 
@@ -179,7 +180,7 @@ bool Object::_predelete() {
 }
 
 void Object::cancel_free() {
-	_predelete_ok = false;
+	_predelete_ok.set_to(false);
 }
 
 void Object::_initialize() {
@@ -2356,16 +2357,14 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 }
 #endif
 
-void Object::_construct_object(bool p_reference) {
+Object::Object() {
 	_block_signals = false;
 	_can_translate = true;
 	_emitting = false;
 	_is_queued_for_deletion = false;
-	_predelete_ok = false;
+	_predelete_ok.set_to(false);
 
-	// ObjectDB::add_instance relies on AncestralClass::REF_COUNTED
-	// being already set in the case of references.
-	_ancestry = p_reference ? (uint32_t)AncestralClass::REF_COUNTED : 0;
+	_ancestry = 0;
 
 	_instance_id = ObjectDB::add_instance(this);
 
@@ -2378,19 +2377,9 @@ void Object::_construct_object(bool p_reference) {
 #endif
 }
 
-Object::Object(bool p_reference) {
-	_construct_object(p_reference);
-}
-
-Object::Object() {
-	_construct_object(false);
-}
-
 void Object::detach_from_objectdb() {
-	if (_instance_id != ObjectID()) {
-		ObjectDB::remove_instance(this);
-		_instance_id = ObjectID();
-	}
+	ObjectDB::remove_instance(this);
+	_instance_id = ObjectID();
 }
 
 Object::~Object() {
@@ -2426,11 +2415,9 @@ Object::~Object() {
 		}
 	}
 
-	if (_instance_id != ObjectID()) {
-		ObjectDB::remove_instance(this);
-		_instance_id = ObjectID();
-	}
-	_predelete_ok = true;
+	ObjectDB::remove_instance(this);
+	_instance_id = ObjectID();
+	_predelete_ok.set_to(true);
 
 	if (_instance_bindings != nullptr) {
 		for (uint32_t i = 0; i < _instance_binding_count; i++) {
@@ -2454,15 +2441,21 @@ void postinitialize_handler(Object *p_object) {
 }
 
 void ObjectDB::debug_objects(DebugFunc p_func, void *p_user_data) {
-	spin_lock.lock();
-
-	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
-		if (object_slots[i].validator) {
-			p_func(object_slots[i].object, p_user_data);
-			count--;
+	for (uint32_t block_idx = 0; block_idx < block_max_iterate.get(); block_idx++) {
+		for (uint32_t slot_idx = 0; slot_idx < OBJECTDB_BLOCK_SIZE; slot_idx++) {
+			ObjectSlot &slot = object_blocks[block_idx][slot_idx];
+			SlotData slot_data = slot.lock();
+			if (!slot.object || slot.object->_is_in_predelete()) {
+				slot.unlock(slot_data);
+				continue;
+			}
+			slot.unlock(SlotData{ slot_data + 1 }); // Add reader.
+			// Keep the slot unlocked when calling the debug function, but lock the instance.
+			p_func(slot.object, p_user_data);
+			slot_data = slot.lock();
+			slot.unlock(SlotData{ slot_data - 1 }); // Remove reader.
 		}
 	}
-	spin_lock.unlock();
 }
 
 #ifdef TOOLS_ENABLED
@@ -2511,91 +2504,299 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 }
 #endif
 
-SpinLock ObjectDB::spin_lock;
-uint32_t ObjectDB::slot_count = 0;
-uint32_t ObjectDB::slot_max = 0;
-ObjectDB::ObjectSlot *ObjectDB::object_slots = nullptr;
-uint64_t ObjectDB::validator_counter = 0;
+class ObjectDB::SlotsQueue {
+	class Queue {
+		uint32_t count = 0;
+		SlotIndex head;
+		SlotIndex tail;
+
+	public:
+		uint32_t size() const { return count; }
+		bool is_empty() const { return head.is_null(); }
+
+		void enqueue(SlotIndex p_slot_index) {
+#ifdef DEV_ENABLED
+			{
+				// The new tail should already be pointing to a null index.
+				ObjectSlot &new_tail = ObjectDB::object_blocks[p_slot_index.block()][p_slot_index.slot()];
+				SlotData new_tail_data = SlotData{ new_tail.safe_data.load(std::memory_order_relaxed) };
+				DEV_ASSERT(new_tail_data.index().is_null());
+			}
+#endif
+			if (is_empty()) {
+				head = p_slot_index;
+				tail = p_slot_index;
+				count = 1;
+			} else {
+				ObjectSlot *tail_slot = &ObjectDB::object_blocks[tail.block()][tail.slot()];
+				SlotData tail_data = tail_slot->lock();
+				// Point the old tail to a new tail.
+				tail_slot->unlock(tail_data.with_index(p_slot_index));
+				tail = p_slot_index;
+				count++;
+			}
+		}
+
+		ObjectSlot *dequeue(SlotIndex &r_index) {
+			// Check the emptiness outside for flexebility.
+			DEV_ASSERT(!is_empty());
+			ObjectSlot *slot = &ObjectDB::object_blocks[head.block()][head.slot()];
+			r_index = head;
+			head = SlotData{ slot->safe_data.load(std::memory_order_relaxed) }.index();
+			if (head.is_null()) {
+				tail = SlotIndex();
+			}
+			count--;
+			return slot;
+		}
+	};
+
+	class BufferQueue {
+		Queue front_queue;
+		Queue back_queue;
+
+	public:
+		uint32_t local_version = 0;
+
+		void enqueue(SlotIndex p_slot_index);
+		ObjectSlot *try_dequeue(SlotIndex &r_index);
+		void reset(uint32_t p_new_version);
+
+		~BufferQueue();
+	};
+
+	static SpinLock spin_lock;
+	static LocalVector<Queue> queues;
+	static thread_local BufferQueue queue;
+
+	static constexpr uint32_t QUEUE_MAX_SIZE = 2048;
+
+public:
+	_ALWAYS_INLINE_ static void enqueue(SlotIndex p_slot_index) {
+		if (unlikely(ObjectDB::version != queue.local_version)) {
+			queue.reset(ObjectDB::version);
+		}
+		queue.enqueue(p_slot_index);
+	}
+
+	_ALWAYS_INLINE_ static ObjectSlot *try_dequeue(SlotIndex &r_index) {
+		if (unlikely(ObjectDB::version != queue.local_version)) {
+			queue.reset(ObjectDB::version);
+		}
+		return queue.try_dequeue(r_index);
+	}
+
+	static void reset() {
+		spin_lock.lock();
+		queues.clear();
+		spin_lock.unlock();
+	}
+};
+
+void ObjectDB::SlotsQueue::BufferQueue::enqueue(SlotIndex p_slot_index) {
+	if (front_queue.size() < QUEUE_MAX_SIZE) {
+		front_queue.enqueue(p_slot_index);
+		return;
+	}
+	back_queue.enqueue(p_slot_index);
+	if (back_queue.size() >= QUEUE_MAX_SIZE) {
+		spin_lock.lock();
+		queues.push_back(back_queue);
+		back_queue = Queue();
+		spin_lock.unlock();
+	}
+}
+
+ObjectDB::ObjectSlot *ObjectDB::SlotsQueue::BufferQueue::try_dequeue(SlotIndex &r_index) {
+	if (front_queue.is_empty()) {
+		if (!back_queue.is_empty()) {
+			front_queue = back_queue;
+			back_queue = Queue();
+		} else {
+			spin_lock.lock();
+			if (queues.is_empty()) {
+				spin_lock.unlock();
+				return nullptr;
+			}
+			// Only the queues with slots are stored in the global queue array.
+			front_queue = queues[queues.size() - 1];
+			queues.remove_at_unordered(queues.size() - 1);
+			spin_lock.unlock();
+		}
+	}
+	return front_queue.dequeue(r_index);
+}
+
+void ObjectDB::SlotsQueue::BufferQueue::reset(uint32_t p_new_version) {
+	front_queue = Queue();
+	back_queue = Queue();
+	local_version = p_new_version;
+}
+
+ObjectDB::SlotsQueue::BufferQueue::~BufferQueue() {
+	spin_lock.lock();
+	// Store queues if they are from the same ObjectDB iteration.
+	if (ObjectDB::version == local_version) {
+		if (!front_queue.is_empty()) {
+			queues.push_back(front_queue);
+		}
+		if (!back_queue.is_empty()) {
+			queues.push_back(back_queue);
+		}
+	}
+	spin_lock.unlock();
+}
+
+SpinLock ObjectDB::SlotsQueue::spin_lock;
+LocalVector<ObjectDB::SlotsQueue::Queue> ObjectDB::SlotsQueue::queues;
+thread_local ObjectDB::SlotsQueue::BufferQueue ObjectDB::SlotsQueue::queue;
+
+alignas(ObjectDB::SAFE_NUMERIC_ALIGN) SafeNumeric<uint64_t> ObjectDB::slot_count{ 0 };
+SafeFlag ObjectDB::is_allocating{ false };
+SafeNumeric<uint32_t> ObjectDB::block_max{ 0 };
+SafeNumeric<uint32_t> ObjectDB::block_max_iterate{ 0 };
+ObjectDB::ObjectSlot *ObjectDB::object_blocks[OBJECTDB_BLOCK_MAX_COUNT];
+uint32_t ObjectDB::version = 1;
 
 int ObjectDB::get_object_count() {
-	return slot_count;
+	return slot_count.get();
+}
+
+ObjectDB::ObjectSlot *ObjectDB::_allocate_free_slot(SlotIndex &r_index) {
+	BackoffPause backoff;
+	ObjectSlot *slot;
+	do {
+		// Only 1 thread can allocate, loop the others.
+		if (!is_allocating.set_if_clear()) {
+			backoff.pause();
+			continue;
+		}
+		uint32_t current_block_max = SafeNumericInternal::relaxed_get(&block_max);
+		// Can't use `CRASH_COND` as it will try to allocate a new object.
+		if (unlikely(current_block_max >= OBJECTDB_BLOCK_MAX_COUNT)) {
+			fprintf(stderr, "FATAL: ObjectDB is out of memory.\n");
+			_err_flush_stdout();
+			GENERATE_TRAP();
+		}
+		// Keep exponential growth by allocating several blocks at once.
+		uint32_t new_block_max = current_block_max > 0 ? current_block_max * 2 : 1;
+		new_block_max = new_block_max < OBJECTDB_BLOCK_MAX_COUNT ? new_block_max : OBJECTDB_BLOCK_MAX_COUNT;
+
+		for (uint32_t new_block_idx = current_block_max; new_block_idx < new_block_max; new_block_idx++) {
+			ObjectSlot *new_block = static_cast<ObjectSlot *>(memalloc(sizeof(ObjectSlot) * OBJECTDB_BLOCK_SIZE));
+			object_blocks[new_block_idx] = new_block;
+			SafeNumericInternal::relaxed_postadd(&block_max, uint32_t(1));
+
+			for (uint32_t i = 0; i < OBJECTDB_BLOCK_SIZE; i++) {
+				// Atomic type inside needs initialization.
+				memnew_placement(&new_block[i], ObjectSlot);
+				// By default packed data 0 is a null so we can pass it to enqueue directly.
+				SlotsQueue::enqueue(SlotIndex(new_block_idx, i));
+			}
+
+			// Use a separate variable to know which blocks are fully initialized,
+			// so all slots can be locked safely when iterating blocks.
+			SafeNumericInternal::relaxed_postadd(&block_max_iterate, uint32_t(1));
+		}
+		is_allocating.clear();
+	} while (!(slot = SlotsQueue::try_dequeue(r_index)));
+	return slot;
 }
 
 ObjectID ObjectDB::add_instance(Object *p_object) {
-	spin_lock.lock();
-	if (unlikely(slot_count == slot_max)) {
-		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
-
-		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
-		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
-		for (uint32_t i = slot_max; i < new_slot_max; i++) {
-			object_slots[i].object = nullptr;
-			object_slots[i].is_ref_counted = false;
-			object_slots[i].next_free = i;
-			object_slots[i].validator = 0;
-		}
-		slot_max = new_slot_max;
+	SlotIndex slot_index;
+	ObjectSlot *slot = SlotsQueue::try_dequeue(slot_index);
+	if (unlikely(!slot)) {
+		// Keep infrequent allocations in a separate function.
+		slot = _allocate_free_slot(slot_index);
 	}
 
-	uint32_t slot = object_slots[slot_count].next_free;
-	if (object_slots[slot].object != nullptr) {
-		spin_lock.unlock();
-		ERR_FAIL_COND_V(object_slots[slot].object != nullptr, ObjectID());
+	SlotData slot_data = slot->lock();
+	if (unlikely(slot->object != nullptr)) {
+		Object *object = slot->object;
+		slot->unlock(slot_data);
+		ERR_FAIL_COND_V(object != nullptr, ObjectID());
 	}
-	object_slots[slot].object = p_object;
-	object_slots[slot].is_ref_counted = p_object->is_ref_counted();
-	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
-	if (unlikely(validator_counter == 0)) {
-		validator_counter = 1;
+	slot->object = p_object;
+	// Create a slot with 1 default reader, and advance the slot's local validator.
+	SlotData new_data = SlotData::create(1, slot_data);
+	slot->unlock(new_data);
+
+	SafeNumericInternal::relaxed_postadd(&slot_count, uint64_t(1));
+
+	// Store the slot's index in the ObjectID.
+	return ObjectID(new_data.to_id(slot_index));
+}
+
+void ObjectDB::wait_until_unlocked(Object *p_object) {
+	ObjectID instance_id = p_object->get_instance_id();
+	if (unlikely(instance_id == ObjectID())) {
+		return;
 	}
-	object_slots[slot].validator = validator_counter;
+	SlotIndex index = SlotIndex{ instance_id };
+	ObjectSlot *slot = &object_blocks[index.block()][index.slot()];
 
-	uint64_t id = validator_counter;
-	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
-	id |= uint64_t(slot);
-
-	if (p_object->is_ref_counted()) {
-		id |= OBJECTDB_REFERENCE_BIT;
+	// Needs lock to wait for the end of possible ObjectDB::get_ref or ObjectDB::get_locked_instance.
+	// Allowing them to progress further without waiting is dangerous as it can begin the destructor
+	// and destroy the derived parts during their call.
+	SlotData slot_data = slot->lock();
+#ifdef DEBUG_ENABLED
+	if (unlikely(!slot_data.compare_validator(instance_id))) {
+		slot->unlock(slot_data);
+		ERR_FAIL_COND(!slot_data.compare_validator(instance_id));
 	}
+#endif
+	slot->unlock(slot_data);
 
-	slot_count++;
-
-	spin_lock.unlock();
-
-	return ObjectID(id);
+	// Wait for all locked readers to exit. It will wait until all instances
+	// gotten from `ObjectDB::get_locked_instance` are unlocked.
+	BackoffPause backoff;
+	while (slot_data.has_readers()) {
+		backoff.pause();
+		slot_data.packed_data = slot->safe_data.load(std::memory_order_relaxed);
+	}
 }
 
 void ObjectDB::remove_instance(Object *p_object) {
-	uint64_t t = p_object->get_instance_id();
-	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; //slot is always valid on valid object
+	ObjectID instance_id = p_object->get_instance_id();
+	if (unlikely(instance_id == ObjectID())) {
+		return;
+	}
+	SlotIndex index = SlotIndex{ instance_id };
+	ObjectSlot *slot = &object_blocks[index.block()][index.slot()];
 
-	spin_lock.lock();
-
+	SlotData slot_data = slot->lock();
 #ifdef DEBUG_ENABLED
-
-	if (object_slots[slot].object != p_object) {
-		spin_lock.unlock();
-		ERR_FAIL_COND(object_slots[slot].object != p_object);
+	if (unlikely(!slot_data.compare_validator(instance_id))) {
+		slot->unlock(slot_data);
+		ERR_FAIL_COND(!slot_data.compare_validator(instance_id));
 	}
-	{
-		uint64_t validator = (t >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-		if (object_slots[slot].validator != validator) {
-			spin_lock.unlock();
-			ERR_FAIL_COND(object_slots[slot].validator != validator);
-		}
-	}
-
 #endif
-	//decrease slot count
-	slot_count--;
-	//set the free slot properly
-	object_slots[slot_count].next_free = slot;
-	//invalidate, so checks against it fail
-	object_slots[slot].validator = 0;
-	object_slots[slot].is_ref_counted = false;
-	object_slots[slot].object = nullptr;
+	slot->object = nullptr;
+	// Set null index on a new tail.
+	slot->unlock(slot_data.with_index(SlotIndex()));
 
-	spin_lock.unlock();
+	SlotsQueue::enqueue(SlotIndex{ instance_id });
+	SafeNumericInternal::relaxed_postsub(&slot_count, uint64_t(1));
+}
+
+void ObjectDB::unlock_instance(Object *p_object) {
+	ObjectID instance_id = p_object ? p_object->get_instance_id() : ObjectID();
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(instance_id == ObjectID(), "Don't pass null or detached instances.");
+#endif
+	SlotIndex index = SlotIndex{ instance_id };
+	ObjectSlot *slot = &object_blocks[index.block()][index.slot()];
+
+	SlotData slot_data = slot->lock();
+#ifdef DEBUG_ENABLED
+	if (unlikely(!slot_data.compare_validator(instance_id) || !slot_data.has_readers())) {
+		slot->unlock(slot_data);
+		ERR_FAIL_COND(!slot_data.compare_validator(instance_id));
+		ERR_FAIL_COND(!slot_data.has_readers());
+	}
+#endif
+	slot->unlock(SlotData{ slot_data - 1 });
 }
 
 void ObjectDB::setup() {
@@ -2603,10 +2804,9 @@ void ObjectDB::setup() {
 }
 
 void ObjectDB::cleanup() {
-	spin_lock.lock();
-
-	if (slot_count > 0) {
-		WARN_PRINT(vformat("%d ObjectDB %s leaked at exit (run with `--verbose` for details).", slot_count, slot_count == 1 ? "instance was" : "instances were"));
+	uint32_t count = slot_count.get();
+	if (count > 0) {
+		WARN_PRINT(vformat("%d ObjectDB %s leaked at exit (run with `--verbose` for details).", count, count == 1 ? "instance was" : "instances were"));
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
@@ -2615,9 +2815,15 @@ void ObjectDB::cleanup() {
 			const MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
-			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
-				if (object_slots[i].validator) {
-					Object *obj = object_slots[i].object;
+			for (uint32_t block_idx = 0; block_idx < block_max_iterate.get(); block_idx++) {
+				for (uint32_t slot_idx = 0; slot_idx < OBJECTDB_BLOCK_SIZE; slot_idx++) {
+					ObjectSlot &slot = object_blocks[block_idx][slot_idx];
+					SlotData slot_data = slot.lock();
+					if (!slot.object || slot.object->_is_in_predelete()) {
+						slot.unlock(slot_data);
+						continue;
+					}
+					Object *obj = slot.object;
 
 					String extra_info;
 					if (obj->is_class("Node")) {
@@ -2630,22 +2836,62 @@ void ObjectDB::cleanup() {
 						extra_info = " - Reference count: " + itos((static_cast<RefCounted *>(obj))->get_reference_count());
 					}
 
-					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
+					uint64_t id = slot_data.to_id(SlotIndex(block_idx, slot_idx), obj->is_ref_counted());
 					DEV_ASSERT(id == (uint64_t)obj->get_instance_id()); // We could just use the id from the object, but this check may help catching memory corruption catastrophes.
 					print_line("Leaked instance: " + String(obj->get_class()) + ":" + uitos(id) + extra_info);
 
-					count--;
+					slot.unlock(slot_data);
 				}
 			}
 			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
 	}
 
-	if (object_slots) {
-		memfree(object_slots);
-		object_slots = nullptr;
+	SlotsQueue::reset();
+
+	for (uint32_t i = 0; i < block_max.get(); i++) {
+		memfree(object_blocks[i]);
+		object_blocks[i] = nullptr;
 	}
-	slot_count = 0;
-	slot_max = 0;
-	spin_lock.unlock();
+	block_max.set(0);
+	block_max_iterate.set(0);
+
+	slot_count.set(0);
+	version++;
+}
+
+Object *ObjectDB::get_instance(ObjectID p_instance_id) {
+	SlotIndex index{ p_instance_id };
+	ERR_FAIL_COND_V(index.block() >= SafeNumericInternal::relaxed_get(&block_max), nullptr); // This should never happen unless RID is corrupted.
+
+	ObjectSlot &slot = object_blocks[index.block()][index.slot()];
+	SlotData slot_data = slot.lock();
+	Object *object;
+	// Only invalidate different validators, if the slot is empty it will still
+	// return nullptr with the same validator correctly.
+	if (likely(slot_data.compare_validator(p_instance_id))) {
+		object = slot.object;
+	} else {
+		object = nullptr;
+	}
+	slot.unlock(slot_data);
+	return object;
+}
+
+Object *ObjectDB::get_locked_instance(ObjectID p_instance_id) {
+	SlotIndex index{ p_instance_id };
+	ERR_FAIL_COND_V(index.block() >= SafeNumericInternal::relaxed_get(&block_max), nullptr); // This should never happen unless RID is corrupted.
+
+	ObjectSlot &slot = object_blocks[index.block()][index.slot()];
+	SlotData slot_data = slot.lock();
+	Object *object;
+	// Only return objects outside of _predelete.
+	if (likely(slot_data.compare_validator(p_instance_id) && slot.object && !slot.object->_is_in_predelete())) {
+		object = slot.object;
+		slot_data.packed_data += 1;
+	} else {
+		object = nullptr;
+	}
+	slot.unlock(slot_data);
+	return object;
 }
