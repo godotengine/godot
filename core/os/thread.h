@@ -185,6 +185,8 @@ private:
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
 
+	_FORCE_INLINE_ static void yield() {}
+
 	_FORCE_INLINE_ ID get_id() const { return 0; }
 	_FORCE_INLINE_ static ID get_caller_id() { return MAIN_ID; }
 	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }

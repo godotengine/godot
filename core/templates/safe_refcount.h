@@ -60,6 +60,8 @@
 
 template <typename T>
 class SafeNumeric {
+	friend class SafeNumericInternal;
+
 	std::atomic<T> value;
 
 	static_assert(std::atomic<T>::is_always_lock_free);
@@ -118,6 +120,19 @@ public:
 	// Returns the original value instead of the new one
 	_ALWAYS_INLINE_ T postsub(T p_value) {
 		return value.fetch_sub(p_value, std::memory_order_acq_rel);
+	}
+
+	_FORCE_INLINE_ bool compare_exchange(T &p_expected, T p_new_value) {
+		return compare_exchange<true>(p_expected, p_new_value);
+	}
+
+	template <bool p_strong>
+	_FORCE_INLINE_ bool compare_exchange(T &p_expected, T p_new_value) {
+		if constexpr (p_strong) {
+			return value.compare_exchange_strong(p_expected, p_new_value, std::memory_order_acq_rel);
+		} else {
+			return value.compare_exchange_weak(p_expected, p_new_value, std::memory_order_acq_rel);
+		}
 	}
 
 	_ALWAYS_INLINE_ T exchange_if_greater(T p_value) {
@@ -227,5 +242,17 @@ public:
 
 	_ALWAYS_INLINE_ void init(uint32_t p_value = 1) {
 		count.set(p_value);
+	}
+};
+
+// For use when you want to perform relaxed operations with `SafeNumeric`.
+// Use with caution. You need to be sure that relaxed memory order is
+// appropriate for your use case.
+
+class SafeNumericInternal {
+public:
+	template <typename T>
+	_ALWAYS_INLINE_ static T relaxed_get(const SafeNumeric<T> *p_numeric) {
+		return p_numeric->value.load(std::memory_order_relaxed);
 	}
 };
