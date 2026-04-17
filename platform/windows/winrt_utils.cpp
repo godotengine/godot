@@ -132,7 +132,15 @@ bool WinRTUtils::create_queue() {
 }
 
 void WinRTUtils::destroy_queue() {
-	controller.ShutdownQueueAsync();
+	IAsyncAction action = controller.ShutdownQueueAsync();
+	while (action.Status() == AsyncStatus::Started) {
+		MSG msg = {};
+		while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+	}
+	ERR_FAIL_COND_MSG(action.Status() == AsyncStatus::Error, "DispatcherQueueController shutdown failed.");
 }
 
 bool WinRTUtils::try_show_onecore_emoji_picker() {
