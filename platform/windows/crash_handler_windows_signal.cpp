@@ -94,9 +94,7 @@ public:
 		ret.image_name = temp;
 		GetModuleBaseName(process, module, temp, sizeof(temp));
 		ret.module_name = temp;
-		std::vector<char> img(ret.image_name.begin(), ret.image_name.end());
-		std::vector<char> mod(ret.module_name.begin(), ret.module_name.end());
-		SymLoadModule64(process, nullptr, &img[0], &mod[0], (DWORD64)ret.base_address, ret.load_size);
+		SymLoadModule64(process, nullptr, ret.image_name.c_str(), ret.module_name.c_str(), (DWORD64)ret.base_address, ret.load_size);
 		return ret;
 	}
 };
@@ -141,9 +139,7 @@ int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, 
 		}
 		print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(fname), String::utf8(filename), lineno));
 	} else if ((int64_t)ch_data->pc > 0) {
-		print_error(vformat("[%d] %x (%s+%x) - <couldn't map PC to fn name>", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
-	} else {
-		print_error(vformat("[%d] ???", ch_data->index++));
+		print_error(vformat("[%d] %x (%s+%x) - ???", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
 	}
 	return 0;
 }
@@ -286,6 +282,10 @@ extern void CrashHandlerException(int signal) {
 
 	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
+
+	if (data.sym_ok) {
+		SymCleanup(data.process);
+	}
 
 	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
 		if (!backtrace->is_empty()) {
