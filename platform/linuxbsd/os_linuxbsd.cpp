@@ -542,40 +542,76 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 	return values;
 }
 
+// Return true when `p_binary` resolves to an executable file in any `$PATH` entry.
+// Needed by `shell_open` because `create_process()` returns OK as soon as `fork()`
+// succeeds — `execvp` failures in the child are invisible to the parent, so the
+// fallback chain below would otherwise treat a missing handler as a silent success.
+static bool _binary_in_path(const String &p_binary) {
+	const char *path_env = getenv("PATH");
+	if (!path_env) {
+		return false;
+	}
+	PackedStringArray dirs = String::utf8(path_env).split(":");
+	for (const String &dir : dirs) {
+		if (dir.is_empty()) {
+			continue;
+		}
+		const String full = dir.path_join(p_binary);
+		if (access(full.utf8().get_data(), X_OK) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 Error OS_LinuxBSD::shell_open(const String &p_uri) {
 	List<String> args;
 	args.push_back(p_uri);
 
 	// Use create_process() instead of execute() to avoid blocking the main thread.
 	// This prevents the UI from freezing when opening file managers or other applications.
-	Error ok = create_process("xdg-open", args);
-	if (ok == OK) {
-		return OK;
+	// Each handler is gated on $PATH availability so that a missing binary falls
+	// through to the next one instead of being treated as success — see #114521.
+	if (_binary_in_path("xdg-open")) {
+		Error ok = create_process("xdg-open", args);
+		if (ok == OK) {
+			return OK;
+		}
 	}
 	// GNOME
 	args.push_front("open"); // The command is `gio open`, so we need to add it to args
-	ok = create_process("gio", args);
-	if (ok == OK) {
-		return OK;
+	if (_binary_in_path("gio")) {
+		Error ok = create_process("gio", args);
+		if (ok == OK) {
+			return OK;
+		}
 	}
 	args.pop_front();
-	ok = create_process("gvfs-open", args);
-	if (ok == OK) {
-		return OK;
+	if (_binary_in_path("gvfs-open")) {
+		Error ok = create_process("gvfs-open", args);
+		if (ok == OK) {
+			return OK;
+		}
 	}
 	// KDE
-	ok = create_process("kde-open5", args);
-	if (ok == OK) {
-		return OK;
+	if (_binary_in_path("kde-open5")) {
+		Error ok = create_process("kde-open5", args);
+		if (ok == OK) {
+			return OK;
+		}
 	}
-	ok = create_process("kde-open", args);
-	if (ok == OK) {
-		return OK;
+	if (_binary_in_path("kde-open")) {
+		Error ok = create_process("kde-open", args);
+		if (ok == OK) {
+			return OK;
+		}
 	}
 	// XFCE
-	ok = create_process("exo-open", args);
-	if (ok == OK) {
-		return OK;
+	if (_binary_in_path("exo-open")) {
+		Error ok = create_process("exo-open", args);
+		if (ok == OK) {
+			return OK;
+		}
 	}
 	return FAILED;
 }
