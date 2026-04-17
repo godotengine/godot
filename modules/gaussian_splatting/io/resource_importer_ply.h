@@ -23,7 +23,14 @@ public:
 
     virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-    virtual bool can_import_threaded() const override { return true; }
+    // Import runs on a WorkerThreadPool thread when this returns true, but our
+    // thumbnail path (ResourceSaver::save -> ImageTexture::_get("image") ->
+    // RenderingServer::texture_2d_get) is FUNC1RC = synchronous push_and_ret to
+    // the render thread. In `--headless --import` the main thread sits in
+    // EditorFileSystem's ep->step busy-loop and never pumps the RS command
+    // queue, so every worker deadlocks. Force serial import until the
+    // thumbnail pipeline no longer takes a sync RS round-trip.
+    virtual bool can_import_threaded() const override { return false; }
     virtual bool has_advanced_options() const override;
     virtual void show_advanced_options(const String &p_path) override;
 

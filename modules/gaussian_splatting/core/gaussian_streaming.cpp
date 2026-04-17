@@ -3215,13 +3215,6 @@ Error GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx
     Vector<PackedGaussian> chunk_data;
     SHCompressionMetrics metrics;
     if (!_pack_chunk_data(asset_id, chunk_idx, *asset, chunk, chunk_data, metrics)) {
-        static int _diag_pack = 0;
-        if (++_diag_pack <= 5) {
-            print_line(vformat("[DIAG-SYNC-LOAD] _pack_chunk_data FAILED asset=%d chunk=%d data=%s payload=%s",
-                    asset_id, chunk_idx,
-                    asset->data.is_valid() ? "valid" : "null",
-                    asset->payload_source.is_valid() ? "valid" : "null"));
-        }
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
         return FAILED;
     }
@@ -3229,14 +3222,6 @@ Error GaussianStreamingSystem::_load_chunk(uint32_t asset_id, uint32_t chunk_idx
     if (!_upload_chunk_to_gpu(submission_rd, buffer_offset, chunk_data, asset_id, chunk_idx, buffer_slot, chunk.count)) {
         _rollback_pending_chunk(asset_id, chunk_idx, chunk, true);
         return FAILED;
-    }
-    {
-        static int _diag_sync = 0;
-        if (++_diag_sync <= 5) {
-            print_line(vformat("[DIAG-SYNC-LOAD] chunk=%d slot=%d count=%d packed_bytes=%d offset=%d",
-                    chunk_idx, buffer_slot, chunk.count,
-                    chunk_data.size() * int(sizeof(PackedGaussian)), buffer_offset));
-        }
     }
     _finalize_chunk_load(asset_id, chunk_idx, chunk, buffer_slot, asset_chunks.size());
     return OK;
@@ -3431,16 +3416,6 @@ bool GaussianStreamingSystem::_upload_chunk_to_gpu(RenderingDevice *submission_r
     }
     if (upload_bytes > persistent_buffer_size || buffer_offset > persistent_buffer_size - upload_bytes) {
         return false;
-    }
-
-    static int upload_debug_count = 0;
-    if (++upload_debug_count <= 5 && chunk_data.size() > 0) {
-        const PackedGaussian &g0 = chunk_data[0];
-        print_line(vformat("[DIAG-UPLOAD] asset=%d chunk=%d slot=%d offset=%d count=%d pos=(%.3f,%.3f,%.3f) scale=(%.6f,%.6f,%.6f) opacity=%.3f",
-                asset_id, chunk_idx, buffer_slot, buffer_offset, chunk_count,
-                g0.position[0], g0.position[1], g0.position[2],
-                g0.scale[0], g0.scale[1], g0.scale[2],
-                g0.opacity));
     }
 
     submission_rd->buffer_update(persistent_buffer, buffer_offset,

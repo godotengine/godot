@@ -1321,15 +1321,6 @@ struct RenderPipelineStages::RasterCompositeStage {
 		r_raster_output.raster_path = "unknown";
 		r_raster_output.sorted_splat_count = raster_input.sorted_splat_count;
 
-		{
-			static int _diag_raster = 0;
-			if (++_diag_raster <= 15 || _diag_raster % 60 == 0) {
-				print_line(vformat("[DIAG-RASTER] sorted_count=%d domain=%d viewport=%dx%d",
-						raster_input.sorted_splat_count,
-						(int)raster_input.sorted_index_domain,
-						raster_input.viewport_size.x, raster_input.viewport_size.y));
-			}
-		}
 		r_raster_output.content_generation = raster_input.content_generation;
 		{
 			Ref<TileRenderer> tile_renderer = renderer->get_tile_renderer();
@@ -1899,19 +1890,6 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 		render_params.interactive_state_uniform =
 			subsystem_state.interactive_state_manager->ensure_state_uniform_buffer(renderer, tile_device);
 	}
-	{
-		static int _diag_dispatch = 0;
-		if (++_diag_dispatch <= 15 || _diag_dispatch % 60 == 0) {
-			print_line(vformat("[DIAG-DISPATCH] splat_count=%d total_gauss=%d gauss_buf=%s sort_idx=%s splat_ref=%s chunk_meta=%s inst_buf=%s max_vis=%d",
-					render_params.splat_count, render_params.total_gaussians,
-					render_params.gaussian_buffer.is_valid() ? "Y" : "N",
-					render_params.sorted_indices.is_valid() ? "Y" : "N",
-					render_params.splat_ref_buffer.is_valid() ? "Y" : "N",
-					render_params.chunk_meta_buffer.is_valid() ? "Y" : "N",
-					render_params.instance_buffer.is_valid() ? "Y" : "N",
-					render_params.max_visible_splats));
-		}
-	}
 	RasterResult raster_result = subsystem_state.rasterizer->render_direct(tile_device, render_params);
 
 	r_color_output = raster_result.output_texture;
@@ -1931,19 +1909,6 @@ Error RenderPipelineStages::RasterStage::render_tile_fallback(const Size2i &p_vi
 
 	RasterStats raster_stats = subsystem_state.rasterizer->get_render_stats();
 	performance_state.metrics.raster_path = raster_stats.last_raster_used_compute ? "compute" : "fragment";
-	{
-		static int _diag_rr = 0;
-		if (++_diag_rr <= 10 || _diag_rr % 60 == 0) {
-			print_line(vformat("[DIAG-RRESULT] splats=%d overlaps=%d tiles=%d empty=%d max_per_tile=%d avg=%.1f compute=%s",
-					render_params.splat_count,
-					raster_stats.overlap_records,
-					raster_stats.total_tiles,
-					raster_stats.empty_tiles,
-					raster_stats.max_splats_in_tile,
-					raster_stats.average_splats_per_tile,
-					raster_stats.last_raster_used_compute ? "yes" : "no"));
-		}
-	}
 	if (pipeline && pipeline->debug_state_orchestrator) {
 		pipeline->debug_state_orchestrator->update_raster_metrics(raster_perf, raster_stats);
 	}

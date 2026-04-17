@@ -2011,15 +2011,6 @@ bool GaussianSplatRenderer::_try_render_resident_frame(RenderDataRD *p_render_da
     }
 #endif
 
-    {
-        static int _diag_res = 0;
-        if (++_diag_res <= 10 || _diag_res % 60 == 0) {
-            print_line(vformat("[DIAG-RESIDENT] has_dataset=%s has_buffer_mgr=%s",
-                    has_gaussian_dataset ? "YES" : "no",
-                    has_buffer_manager_data ? "YES" : "no"));
-        }
-    }
-
     if (!has_gaussian_dataset && !has_buffer_manager_data) {
         if (r_reason) {
             *r_reason = "no_render_data";
@@ -2087,14 +2078,6 @@ void GaussianSplatRenderer::_render_resident_frame(RenderDataRD *p_render_data, 
 void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
     // Render flow: render_scene_instance -> (streaming ? render_streaming_frame : render_resident_frame)
     // -> RenderPipelineStages::render_sorted_splats_with_context -> raster/composite.
-
-    {
-        static int _diag_rsi = 0;
-        if (++_diag_rsi <= 10 || _diag_rsi % 60 == 0) {
-            print_line(vformat("[DIAG-RSI] render_scene_instance called count=%d render_data=%s",
-                    _diag_rsi, p_render_data ? "valid" : "NULL"));
-        }
-    }
 
     if (debug_state_orchestrator) {
         DebugState &debug_state = get_debug_state();
@@ -2256,16 +2239,6 @@ void GaussianSplatRenderer::render_scene_instance(RenderDataRD *p_render_data) {
                         backend_plan.streaming_requested ? "YES" : "no",
                         backend_plan.streaming_ready ? "YES" : "no"),
                 false);
-    }
-    {
-        static int _diag_route = 0;
-        if (++_diag_route <= 10 || _diag_route % 60 == 0) {
-            print_line(vformat("[DIAG-ROUTE] prefer_resident=%s streaming_req=%s streaming_ready=%s visible=%d",
-                    backend_plan.prefer_resident_backend ? "YES" : "no",
-                    backend_plan.streaming_requested ? "YES" : "no",
-                    backend_plan.streaming_ready ? "YES" : "no",
-                    (int)get_frame_state().visible_splat_count.load(std::memory_order_relaxed)));
-        }
     }
     if (backend_plan.prefer_resident_backend) {
         String resident_attempt_reason;

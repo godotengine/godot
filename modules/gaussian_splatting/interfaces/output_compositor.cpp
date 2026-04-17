@@ -909,21 +909,6 @@ bool OutputCompositor::copy_to_framebuffer(const FramebufferCopyParams &p_params
         return false;
     }
 
-    RenderingDevice *godot_rd = RenderingDevice::get_singleton();
-    {
-        static int _diag_device = 0;
-        if (++_diag_device <= 5) {
-            bool valid_on_manager = main_rd->texture_is_valid(p_params.source_texture);
-            bool valid_on_godot = godot_rd && godot_rd->texture_is_valid(p_params.source_texture);
-            print_line(vformat("[DIAG-COPY-DEVICE] main_rd=%d godot_rd=%d same=%s src_valid_mgr=%s src_valid_godot=%s fb_valid_godot=%s",
-                    (uint64_t)main_rd, (uint64_t)godot_rd,
-                    (main_rd == godot_rd) ? "YES" : "NO",
-                    valid_on_manager ? "yes" : "NO",
-                    valid_on_godot ? "yes" : "NO",
-                    (godot_rd && godot_rd->framebuffer_is_valid(p_params.framebuffer)) ? "yes" : "NO"));
-        }
-    }
-
     if (!main_rd->texture_is_valid(p_params.source_texture)) {
         GS_LOG_ERROR_DEFAULT("[OutputCompositor] Source texture is not valid on main RenderingDevice; framebuffer copy unsupported");
         return false;
@@ -1158,19 +1143,6 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
     final_render_texture = p_final_output;
     output_cache.has_valid_render = p_final_output.is_valid();
 
-    {
-        static int _diag_compositor = 0;
-        if (++_diag_compositor <= 10) {
-            print_line(vformat("[DIAG-COMPOSITOR] render_buffers_rd=%s final_output=%s viewport=%dx%d defer=%s painterly=%s cached_depth=%s",
-                    render_buffers_rd ? "valid" : "NULL",
-                    p_final_output.is_valid() ? "valid" : "invalid",
-                    p_viewport_size.x, p_viewport_size.y,
-                    p_defer_commit ? "yes" : "no",
-                    p_painterly_active ? "yes" : "no",
-                    p_cached_depth.is_valid() ? "valid" : "invalid"));
-        }
-    }
-
     if (render_buffers_rd && p_final_output.is_valid()) {
         Size2i viewport_size = p_viewport_size;
         if (viewport_size.x <= 0 || viewport_size.y <= 0) {
@@ -1237,20 +1209,6 @@ void OutputCompositor::integrate_final_output(GaussianSplatRenderer *p_renderer,
         const bool missing_required_scene_depth = scene_depth_test_requested && (!has_source_depth || !has_scene_depth);
         const bool allow_scene_blend_fallback = scene_depth_policy == GS_SCENE_COMPOSITE_DEPTH_POLICY_RELAXED;
 
-        {
-            static int _diag_comp2 = 0;
-            if (++_diag_comp2 <= 10) {
-                print_line(vformat("[DIAG-COMPOSITOR2] composited=%s render_target=%s rt_fb=%s depth_test_req=%s src_depth=%s scene_depth=%s missing=%s allow_fallback=%s",
-                        composited ? "yes" : "no",
-                        composite_target.is_valid() ? "valid" : "invalid",
-                        render_target_framebuffer.is_valid() ? "valid" : "invalid",
-                        scene_depth_test_requested ? "yes" : "no",
-                        has_source_depth ? "yes" : "no",
-                        has_scene_depth ? "yes" : "no",
-                        missing_required_scene_depth ? "yes" : "no",
-                        allow_scene_blend_fallback ? "yes" : "no"));
-            }
-        }
 
         if (!composited && (render_target_framebuffer.is_valid() || composite_target.is_valid())) {
             if (missing_required_scene_depth && !allow_scene_blend_fallback) {
