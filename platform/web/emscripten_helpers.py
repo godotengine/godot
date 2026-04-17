@@ -1,9 +1,8 @@
 import json
 import os
 
-from SCons.Util import WhereIs
-
 from platform_methods import get_build_version
+from SCons.Util import WhereIs
 
 
 def run_closure_compiler(target, source, env, for_signature):
