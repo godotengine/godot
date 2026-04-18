@@ -7300,8 +7300,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 				gl.index = 0;
 				gl.advance = 0.0;
 			}
-			if ((p_sd->text[glyph_info[i].cluster] == 0x0009) || u_isblank(p_sd->text[glyph_info[i].cluster]) || is_linebreak(p_sd->text[glyph_info[i].cluster])) {
-				adv_rem = 0.0; // Reset on blank.
+			if ((p_sd->text[glyph_info[i].cluster] == 0x0009) || is_linebreak(p_sd->text[glyph_info[i].cluster])) {
+				adv_rem = 0.0; // Reset on tabs and line breaks.
 			}
 			if (gl.index != 0) {
 				FontGlyph fgl;
