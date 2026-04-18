@@ -100,6 +100,8 @@ public:
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 
+	virtual void print_stack_trace(int p_skip_called = 0, int p_skip_callers = 0) override;
+
 	virtual MainLoop *get_main_loop() const override;
 
 	virtual uint64_t get_embedded_pck_offset() const override;

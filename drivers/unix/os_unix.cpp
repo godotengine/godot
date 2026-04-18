@@ -37,6 +37,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
+#include "drivers/unix/stack_trace_unix.h"
 #include "drivers/unix/thread_posix.h"
 
 #ifndef UNIX_SOCKET_UNAVAILABLE
@@ -195,6 +196,29 @@ void OS_Unix::finalize_core() {
 Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 	return Vector<String>();
 }
+
+#if defined(__APPLE__) || defined(LINUXBSD_ENABLED)
+// Unix-style stack trace printing works on macOS, iOS, Linux, and BSDs, but does NOT work on Android or Web.
+void OS_Unix::print_stack_trace(int p_skip_called, int p_skip_callers) {
+#ifndef DEV_ENABLED
+	printerr("Warning: Godot is not compiled in DEV mode, so stack trace printing may be unreliable. Compile Godot with `dev_build=yes` for more complete stack traces.\n");
+#endif // DEV_ENABLED
+	p_skip_called += 1; // Skip the first one on the stack trace (this method, print_stack_trace)
+	p_skip_callers += 2; // Skip the final 2 callers (main method / program entry point).
+	void *callstack[StackTraceUnix::MAX_FRAMES];
+	const int frames = backtrace(callstack, StackTraceUnix::MAX_FRAMES);
+	if (frames <= 0) {
+		return;
+	}
+	const Vector<String> symbols = StackTraceUnix::collect_symbol_strings(callstack, frames);
+	// Print out the desired stack trace frames.
+	for (int i = p_skip_called; i < frames - p_skip_callers; i++) {
+		if (i < symbols.size()) {
+			print("%s\n", symbols[i].utf8().get_data());
+		}
+	}
+}
+#endif // defined(__APPLE__) || defined(LINUXBSD_ENABLED)
 
 String OS_Unix::get_stdin_string(int64_t p_buffer_size) {
 	Vector<uint8_t> data;

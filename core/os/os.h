@@ -170,6 +170,7 @@ public:
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
+	virtual void print_stack_trace(int p_skip_called = 0, int p_skip_callers = 0);
 
 	virtual String get_stdin_string(int64_t p_buffer_size = 1024) = 0;
 	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) = 0;

@@ -113,6 +113,8 @@ public:
 
 	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 
+	virtual void print_stack_trace(int p_skip_called = 0, int p_skip_callers = 0) override;
+
 	virtual MainLoop *get_main_loop() const override;
 
 	virtual String get_config_path() const override;

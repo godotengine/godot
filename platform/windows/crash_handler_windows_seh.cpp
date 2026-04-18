@@ -164,9 +164,9 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	module_handles.resize(cbNeeded / sizeof(HMODULE));
 	EnumProcessModules(process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
 	std::transform(module_handles.begin(), module_handles.end(), std::back_inserter(modules), get_mod_info(process));
-	void *base = modules[0].base_address;
+	void *base_address = modules[0].base_address;
 
-	print_error(vformat("Load address: %x\n", (uint64_t)base));
+	print_error(vformat("Load address: %x\n", (uint64_t)base_address));
 
 	// Setup stuff:
 	CONTEXT *context = ep->ContextRecord;
@@ -199,25 +199,30 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 #endif
 
 	line.SizeOfStruct = sizeof(line);
-	IMAGE_NT_HEADERS *h = ImageNtHeader(base);
-	DWORD image_type = h->FileHeader.Machine;
+	IMAGE_NT_HEADERS *image_nt_headers = ImageNtHeader(base_address);
+	if (image_nt_headers == nullptr) {
+		SymCleanup(process);
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+	const DWORD image_type = image_nt_headers->FileHeader.Machine;
+	constexpr int MAX_FRAMES = 256;
 
-	int n = 0;
+	int frame_count = 0;
 	do {
 		if (skip_first) {
 			skip_first = false;
 		} else {
 			if (frame.AddrPC.Offset != 0) {
-				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
+				std::string symbol_name = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
 				IMAGEHLP_MODULE64 mod_info;
 				memset(&mod_info, 0, sizeof(IMAGEHLP_MODULE64));
 				mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
-				uint64_t offset = (uint64_t)base;
+				uint64_t frame_base_address = (uint64_t)base_address;
 				String mod_name = "main";
 				if (SymGetModuleInfo64(process, frame.AddrPC.Offset, &mod_info)) {
-					offset = mod_info.BaseOfImage;
-					if (offset != (uint64_t)base) {
+					frame_base_address = mod_info.BaseOfImage;
+					if (frame_base_address != (uint64_t)base_address) {
 						if (mod_info.ImageName[0] != 0) {
 							mod_name = String((const char *)mod_info.ImageName).to_lower().get_file();
 						} else if (mod_info.ModuleName[0] != 0) {
@@ -228,21 +233,21 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 					}
 				}
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+					print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", frame_count, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - frame_base_address, symbol_name.c_str(), (char *)line.FileName, (int)line.LineNumber));
 				} else {
-					print_error(vformat("[%d] %x (%s+%x) - %s", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str()));
+					print_error(vformat("[%d] %x (%s+%x) - %s", frame_count, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - frame_base_address, symbol_name.c_str()));
 				}
 			} else {
-				print_error(vformat("[%d] ???", n));
+				print_error(vformat("[%d] ???", frame_count));
 			}
 
-			n++;
+			frame_count++;
 		}
 
 		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr)) {
 			break;
 		}
-	} while (frame.AddrReturn.Offset != 0 && n < 256);
+	} while (frame.AddrReturn.Offset != 0 && frame_count < MAX_FRAMES);
 
 	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");

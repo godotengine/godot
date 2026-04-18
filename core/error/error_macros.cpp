@@ -254,3 +254,8 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 	}
 #endif
 }
+
+void print_stack_trace(int p_skip_called, int p_skip_callers) {
+	// Platform-specific implementations are done in OS, this error function is just a convenience wrapper.
+	OS::get_singleton()->print_stack_trace(p_skip_called + 1, p_skip_callers);
+}

@@ -150,6 +150,10 @@ void OS::printerr(const char *p_format, ...) {
 	va_end(argp);
 }
 
+void OS::print_stack_trace(int p_skip_called, int p_skip_callers) {
+	printerr("Stack trace printing is not supported on this platform.\n");
+}
+
 void OS::alert(const String &p_alert, const String &p_title) {
 	fprintf(stderr, "%s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
 }

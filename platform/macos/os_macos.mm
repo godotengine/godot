@@ -39,6 +39,8 @@
 #import "display_server_macos_embedded.h"
 #endif
 
+#include "stack_trace_macos.h"
+
 #include "core/config/engine.h"
 #include "core/crypto/crypto_core.h"
 #include "core/input/input.h"
@@ -48,6 +50,7 @@
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
+#include "drivers/unix/stack_trace_unix.h"
 #include "main/main.h"
 
 #ifdef SDL_ENABLED
@@ -424,6 +427,93 @@ Error OS_MacOS::open_dynamic_library(const String &p_path, void *&p_library_hand
 	}
 
 	return OK;
+}
+
+void OS_MacOS::print_stack_trace(int p_skip_called, int p_skip_callers) {
+#ifndef DEV_ENABLED
+	printerr("Warning: Godot is not compiled in DEV mode, so stack trace printing may be unreliable. Compile Godot with `dev_build=yes` for more complete stack traces.\n");
+#endif // DEV_ENABLED
+	p_skip_called += 1; // Skip the first one on the stack trace (this method, print_stack_trace).
+	p_skip_callers += 23; // Skip the final 23 callers (main method / program entry point and lots of NSApplication stuff).
+	void *callstack[StackTraceUnix::MAX_FRAMES];
+	const int frames = backtrace(callstack, StackTraceUnix::MAX_FRAMES);
+	if (frames <= 0) {
+		return;
+	}
+	const Vector<String> symbols = StackTraceUnix::collect_symbol_strings(callstack, frames);
+	const String exec_path = get_executable_path();
+	const uint64_t load_addr = StackTraceUnix::find_executable_load_address(exec_path);
+	const Vector<uint64_t> addresses = StackTraceUnix::collect_addresses(callstack, frames);
+	const Vector<String> atos_results = StackTraceMacOS::symbolize_with_atos(const_cast<OS_MacOS *>(this), exec_path, load_addr, addresses);
+	const int from = MIN(p_skip_called, frames);
+	const int to = MAX(from, frames - p_skip_callers);
+	for (int i = from; i < to; i++) {
+		Dl_info info = {};
+		const bool has_dl_info = dladdr(callstack[i], &info) != 0;
+		String symbol_name = i < symbols.size() ? symbols[i] : String("<unknown symbol>");
+		// Try to use atos result if available.
+		if (i < atos_results.size()) {
+			const String atos_line = atos_results[i];
+			// Check if atos returned a valid result (not just hex address).
+			if (!StackTraceMacOS::is_unresolved_atos_line(atos_line)) {
+				symbol_name = atos_line;
+			} else if (has_dl_info && info.dli_sname != nullptr) {
+				// Fall back to dladdr demangling, but keep raw backtrace context when useful.
+				const String demangled_name = StackTraceUnix::demangle_symbol_name(info.dli_sname);
+				if (!demangled_name.is_empty()) {
+					if (symbol_name.is_empty() || symbol_name.contains("??")) {
+						symbol_name = demangled_name;
+					} else if (!symbol_name.contains(demangled_name)) {
+						symbol_name = vformat("%s [%s]", symbol_name, demangled_name);
+					}
+				}
+			}
+		} else if (has_dl_info && info.dli_sname != nullptr) {
+			// Fallback if atos didn't provide results, while preserving raw symbol detail.
+			const String demangled_name = StackTraceUnix::demangle_symbol_name(info.dli_sname);
+			if (!demangled_name.is_empty()) {
+				if (symbol_name.is_empty() || symbol_name.contains("??")) {
+					symbol_name = demangled_name;
+				} else if (!symbol_name.contains(demangled_name)) {
+					symbol_name = vformat("%s [%s]", symbol_name, demangled_name);
+				}
+			}
+		}
+		const uint64_t address = (uint64_t)callstack[i];
+		String module_name = "main";
+		uint64_t base_address = load_addr;
+		if (has_dl_info) {
+			base_address = (uint64_t)info.dli_fbase;
+			if (info.dli_fname != nullptr && info.dli_fname[0] != '\0') {
+				const String module_path = String(info.dli_fname).replace("/./", "/");
+				if (module_path != exec_path) {
+					module_name = module_path.to_lower().get_file();
+				}
+			}
+		}
+		const String frame_index_padded = String::num_int64(i - (from - 1)).lpad(2);
+		// Format the output similar to Linux/BSD version.
+		String line;
+		if (is_print_verbose_enabled()) {
+			line = vformat("[%s] %x (%s+%x)\t- %s", frame_index_padded, address, module_name, address - base_address, symbol_name);
+		} else {
+			line = vformat("[%s] %s\t- %s", frame_index_padded, module_name, symbol_name);
+		}
+		// Attempt to extract file location from atos output if available.
+		// atos typically outputs: "symbol_name (at file:line)" format.
+		String location;
+		if (i < atos_results.size()) {
+			location = StackTraceMacOS::extract_atos_location(atos_results[i]);
+		}
+		if (location.is_empty()) {
+			line += " (unknown file)\n";
+		} else if (is_print_verbose_enabled()) {
+			line += vformat(" (%s)\n", location);
+		} else {
+			line += vformat(" (%s)\n", location.get_file());
+		}
+		print("%s", line.utf8().get_data());
+	}
 }
 
 MainLoop *OS_MacOS::get_main_loop() const {

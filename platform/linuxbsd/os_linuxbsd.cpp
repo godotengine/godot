@@ -36,6 +36,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
+#include "drivers/unix/stack_trace_unix.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -53,6 +54,8 @@
 #include "wayland/detect_prime_egl.h"
 #include "wayland/display_server_wayland.h"
 #endif
+
+#include "stack_trace_linuxbsd.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -540,6 +543,66 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 		}
 	}
 	return values;
+}
+
+void OS_LinuxBSD::print_stack_trace(int p_skip_called, int p_skip_callers) {
+#ifndef DEV_ENABLED
+	printerr("Warning: Godot is not compiled in DEV mode, so stack trace printing may be unreliable. Compile Godot with `dev_build=yes` for more complete stack traces.\n");
+#endif // DEV_ENABLED
+	p_skip_called += 1; // Skip the first one on the stack trace (this method, print_stack_trace).
+	p_skip_callers += 3; // Skip the final 3 callers (main method / program entry point).
+	void *callstack[StackTraceUnix::MAX_FRAMES];
+	const int frames = backtrace(callstack, StackTraceUnix::MAX_FRAMES);
+	if (frames <= 0) {
+		return;
+	}
+	const Vector<String> symbols = StackTraceUnix::collect_symbol_strings(callstack, frames);
+	const String exec_path = get_executable_path();
+	const String debug_exec_path = FileAccess::exists(exec_path + ".debugsymbols") ? exec_path + ".debugsymbols" : exec_path;
+	const uintptr_t relocation = StackTraceLinuxBSD::get_relocation_offset();
+	const Vector<uint64_t> addresses = StackTraceUnix::collect_addresses(callstack, frames);
+	const String addr2line_exe = StackTraceLinuxBSD::find_addr2line_executable();
+	const Vector<String> addr2line_results = StackTraceLinuxBSD::symbolize_with_addr2line(const_cast<OS_LinuxBSD *>(this), addr2line_exe, addresses, relocation, debug_exec_path);
+	const int from = MIN(p_skip_called, frames);
+	const int to = MAX(from, frames - p_skip_callers);
+	for (int i = from; i < to; i++) {
+		const uint64_t address = (uint64_t)callstack[i];
+		String module_name = "main";
+		uint64_t base_address = relocation;
+		Dl_info info = {};
+		if (dladdr(callstack[i], &info) != 0) {
+			base_address = (uint64_t)info.dli_fbase;
+			if (info.dli_fname != nullptr && info.dli_fname[0] != '\0') {
+				const String module_path = String(info.dli_fname).replace("/./", "/");
+				if (module_path != exec_path) {
+					module_name = module_path.to_lower().get_file();
+				}
+			}
+		}
+		const String frame_index_padded = String::num_int64(i - (from - 1)).lpad(2);
+		String line;
+		if (!addr2line_results.is_empty() && i < addr2line_results.size()) {
+			// addr2line with -f -p -C gives "function at file:line" per frame, use it directly.
+			const String a2l = addr2line_results[i].replace("/./", "/");
+			if (is_print_verbose_enabled()) {
+				line = vformat("[%s] %x (%s+%x)\t- %s\n", frame_index_padded, address, module_name, address - base_address, a2l);
+			} else {
+				line = vformat("[%s] %s\t- %s\n", frame_index_padded, module_name, a2l);
+			}
+		} else {
+			// Fall back to dladdr/cxxabi demangling when addr2line is unavailable.
+			String symbol_name = i < symbols.size() ? symbols[i] : String("<unknown symbol>");
+			if (info.dli_sname != nullptr) {
+				symbol_name = StackTraceUnix::demangle_symbol_name(info.dli_sname);
+			}
+			if (is_print_verbose_enabled()) {
+				line = vformat("[%s] %x (%s+%x)\t- %s (unknown file)\n", frame_index_padded, address, module_name, address - base_address, symbol_name);
+			} else {
+				line = vformat("[%s] %s\t- %s (unknown file)\n", frame_index_padded, module_name, symbol_name);
+			}
+		}
+		print("%s", line.utf8().get_data());
+	}
 }
 
 Error OS_LinuxBSD::shell_open(const String &p_uri) {
