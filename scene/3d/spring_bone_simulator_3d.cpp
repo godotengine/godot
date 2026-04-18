@@ -377,10 +377,7 @@ void SpringBoneSimulator3D::_validate_dynamic_prop(PropertyInfo &p_property) con
 
 			// Joints option.
 			if (is_config_individual(which)) {
-				if (split[2] == "rotation_axis" || split[2] == "rotation_axis_vector" || split[2] == "radius" || split[2] == "radius_damping_curve" ||
-						split[2] == "stiffness" || split[2] == "stiffness_damping_curve" ||
-						split[2] == "drag" || split[2] == "drag_damping_curve" ||
-						split[2] == "gravity" || split[2] == "gravity_damping_curve" || split[2] == "gravity_direction") {
+				if (split[2] == "rotation_axis" || split[2] == "rotation_axis_vector") {
 					p_property.usage = PROPERTY_USAGE_NONE;
 				}
 			} else {
