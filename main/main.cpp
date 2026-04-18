@@ -3945,6 +3945,9 @@ void Main::setup_boot_logo() {
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
 #endif
+
+		DisplayServer::get_singleton()->process_events();
+
 		if (boot_logo.is_valid()) {
 			RenderingServer::get_singleton()->set_boot_image_with_stretch(boot_logo, boot_bg_color, boot_stretch_mode, boot_logo_filter);
 
