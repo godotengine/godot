@@ -65,7 +65,7 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Download Swappy
-        run: python ./misc/scripts/install_swappy_android.py
+        run: python ./misc/build_deps/download_swappy_android.py
 
       - name: Compilation
         uses: ./.github/actions/godot-build

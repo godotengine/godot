@@ -3,7 +3,7 @@ import platform
 import sys
 from typing import TYPE_CHECKING
 
-from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
+from methods import download_accesskit, get_compiler_version, print_error, print_info, print_warning, using_gcc
 from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
@@ -512,6 +512,9 @@ def configure(env: "SConsEnvironment"):
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
     if env["accesskit"]:
+        if not os.path.exists(env["accesskit_sdk_path"]) and env["download_dependencies"]:
+            download_accesskit()
+
         if os.path.exists(env["accesskit_sdk_path"]):
             env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["arch"] == "arm64":
@@ -529,7 +532,7 @@ def configure(env: "SConsEnvironment"):
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
-                f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_accesskit.py')}`.\n"
                 "See the documentation for more information:\n"
                 "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html\n"
                 "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."

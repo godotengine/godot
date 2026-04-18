@@ -136,11 +136,14 @@ def get_mvk_sdk_path(osname):
 
 
 def detect_mvk(env, osname):
+    deps_folder = os.path.join("bin", "build_deps")
+    local_deps_mvk = os.path.join(deps_folder, "moltenvk/MoltenVK/MoltenVK/static/MoltenVK.xcframework")
     mvk_list = [
         get_mvk_sdk_path(osname),
         "/opt/homebrew/Frameworks/MoltenVK.xcframework",
         "/usr/local/homebrew/Frameworks/MoltenVK.xcframework",
         "/opt/local/Frameworks/MoltenVK.xcframework",
+        local_deps_mvk,
     ]
     if env["vulkan_sdk_path"] != "":
         mvk_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
@@ -157,6 +160,12 @@ def detect_mvk(env, osname):
         if mvk_path and os.path.isfile(os.path.join(mvk_path, f"{osname}/libMoltenVK.a")):
             print(f"MoltenVK found at: {mvk_path}")
             return mvk_path
+
+    if env["download_dependencies"]:
+        methods.download_mvk()
+        if local_deps_mvk and os.path.isfile(os.path.join(local_deps_mvk, f"{osname}/libMoltenVK.a")):
+            print(f"MoltenVK found at: {local_deps_mvk}")
+            return local_deps_mvk
 
     return ""
 

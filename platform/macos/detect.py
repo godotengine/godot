@@ -2,7 +2,15 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from methods import detect_darwin_sdk_path, get_compiler_version, is_apple_clang, print_error, print_warning
+from methods import (
+    detect_darwin_sdk_path,
+    download_accesskit,
+    download_angle,
+    get_compiler_version,
+    is_apple_clang,
+    print_error,
+    print_warning,
+)
 from platform_methods import detect_arch, detect_mvk, validate_arch
 
 if TYPE_CHECKING:
@@ -213,6 +221,9 @@ def configure(env: "SConsEnvironment"):
     ## Dependencies
 
     if env["accesskit"]:
+        if not os.path.exists(env["accesskit_sdk_path"]) and env["download_dependencies"]:
+            download_accesskit()
+
         if os.path.exists(env["accesskit_sdk_path"]):
             env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["arch"] == "arm64" or env["arch"] == "universal":
@@ -224,7 +235,7 @@ def configure(env: "SConsEnvironment"):
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
-                f"You can install them by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                f"You can install them by running `python3 {os.path.join('misc', 'build_deps', 'download_accesskit.py')}`.\n"
                 "See the documentation for more information:\n"
                 "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_macos.html\n"
                 "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
@@ -285,7 +296,11 @@ def configure(env: "SConsEnvironment"):
         if env["angle"]:
             angle_path = env["angle_libs"] + "-" + env["arch"] + "-macos"
             if not os.path.exists(angle_path):
-                angle_path = env["angle_libs"]
+                angle_path = env["angle_libs"]  # Try path without suffix (custom build or manual download).
+            if not os.path.exists(angle_path) and env["download_dependencies"]:
+                download_angle([env["arch"] + "-macos"])
+                angle_path = env["angle_libs"] + "-" + env["arch"] + "-macos"
+
             if os.path.exists(angle_path):
                 env.Prepend(CPPPATH=["#thirdparty/angle/include"])
                 env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])
@@ -296,7 +311,7 @@ def configure(env: "SConsEnvironment"):
             else:
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
-                    f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
+                    f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_angle.py')}`.\n"
                     "See the documentation for more information:\n"
                     "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
                     "Alternatively, disable this driver by compiling with `angle=no` explicitly."

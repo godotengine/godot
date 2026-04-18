@@ -6,16 +6,18 @@ import glob
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 import textwrap
+import urllib.request
 import zlib
 from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
 from typing import Generator, TextIO, cast
 
-from misc.utility.color import print_error, print_info, print_warning
+from misc.utility.color import Ansi, color_print, print_error, print_info, print_warning
 from platform_methods import detect_arch
 
 # Get the "Godot" folder name ahead of time
@@ -31,6 +33,286 @@ _scu_folders = set()
 def set_scu_folders(scu_folders):
     global _scu_folders
     _scu_folders = scu_folders
+
+
+def download_accesskit():
+    # Base Godot dependencies path
+    # If cross-compiling (no LOCALAPPDATA), we install in `bin`
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        deps_folder = os.path.join("bin", "build_deps")
+
+    # AccessKit
+    ac_version = "0.21.2"
+
+    # Create dependencies folder
+    if not os.path.exists(deps_folder):
+        os.makedirs(deps_folder)
+
+    ac_filename = "accesskit-c-" + ac_version + ".zip"
+    ac_archive = os.path.join(deps_folder, "accesskit.zip")
+    ac_folder = os.path.join(deps_folder, "accesskit")
+
+    if os.path.isfile(ac_archive):
+        os.remove(ac_archive)
+
+    color_print(f"{Ansi.GREEN}Installing AccessKit...")
+
+    print(f"Downloading AccessKit {ac_filename} ...")
+    urllib.request.urlretrieve(
+        f"https://github.com/godotengine/godot-accesskit-c-static/releases/download/{ac_version}/{ac_filename}",
+        ac_archive,
+    )
+    if os.path.exists(ac_folder):
+        print(f"Removing existing local AccessKit installation in {ac_folder} ...")
+        shutil.rmtree(ac_folder)
+    print(f"Extracting AccessKit {ac_filename} to {ac_folder} ...")
+    shutil.unpack_archive(ac_archive, deps_folder)
+    os.remove(ac_archive)
+    os.rename(os.path.join(deps_folder, "accesskit-c-" + ac_version), ac_folder)
+
+    print("AccessKit installed successfully.\n")
+
+
+def download_angle(archs):
+    # Base Godot dependencies path
+    # If cross-compiling (no LOCALAPPDATA), we install in `bin`
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        deps_folder = os.path.join("bin", "build_deps")
+
+    # ANGLE
+    # Check for latest version: https://github.com/godotengine/godot-angle-static/releases/latest
+    angle_version = "chromium/7219"
+    angle_folder = os.path.join(deps_folder, "angle")
+
+    # Create dependencies folder
+    if not os.path.exists(deps_folder):
+        os.makedirs(deps_folder)
+
+    color_print(f"{Ansi.GREEN}Installing ANGLE...")
+
+    # Mesa NIR
+    print(f"Downloading ANGLE {angle_version} ...")
+
+    for arch in archs:
+        angle_filename = f"godot-angle-static-{arch}-release.zip"
+        angle_archive = os.path.join(deps_folder, angle_filename)
+        angle_folder = os.path.join(deps_folder, f"angle-{arch}")
+
+        if os.path.isfile(angle_archive):
+            os.remove(angle_archive)
+        print(f"Downloading ANGLE {angle_filename} ...")
+        urllib.request.urlretrieve(
+            f"https://github.com/godotengine/godot-angle-static/releases/download/{angle_version}/{angle_filename}",
+            angle_archive,
+        )
+        if os.path.exists(angle_folder):
+            print(f"Removing existing local ANGLE installation in {angle_folder} ...")
+            shutil.rmtree(angle_folder)
+        print(f"Extracting ANGLE {angle_filename} to {angle_folder} ...")
+        shutil.unpack_archive(angle_archive, angle_folder)
+        os.remove(angle_archive)
+    print("ANGLE installed successfully.\n")
+
+
+def download_winrt():
+    # Base Godot dependencies path
+    # If cross-compiling (no LOCALAPPDATA), we install in `bin`
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        deps_folder = os.path.join("bin", "build_deps")
+
+    # WinRT
+    winrt_version = "72"
+
+    # Create dependencies folder
+    if not os.path.exists(deps_folder):
+        os.makedirs(deps_folder)
+
+    winrt_filename = "winrt-headers.zip"
+    winrt_archive = os.path.join(deps_folder, winrt_filename)
+    winrt_folder = os.path.join(deps_folder, "winrt_mingw")
+
+    if os.path.isfile(winrt_archive):
+        os.remove(winrt_archive)
+
+    color_print(f"{Ansi.GREEN}Installing WinRT...")
+
+    print(f"Downloading WinRT {winrt_filename} ...")
+    urllib.request.urlretrieve(
+        f"https://github.com/godotengine/winrt-mingw/releases/download/{winrt_version}/{winrt_filename}",
+        winrt_archive,
+    )
+    if os.path.exists(winrt_folder):
+        print(f"Removing existing local WinRT installation in {winrt_folder} ...")
+        shutil.rmtree(winrt_folder)
+    print(f"Extracting WinRT {winrt_filename} to {winrt_folder} ...")
+    shutil.unpack_archive(winrt_archive, winrt_folder)
+    os.remove(winrt_archive)
+
+    print("WinRT installed successfully.\n")
+
+
+def download_mvk():
+    # Base Godot dependencies path
+    # If cross-compiling (no LOCALAPPDATA), we install in `bin`
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        deps_folder = os.path.join("bin", "build_deps")
+
+    # MoltenVK
+    mvk_version = "1.4.1"
+
+    # Create dependencies folder
+    if not os.path.exists(deps_folder):
+        os.makedirs(deps_folder)
+
+    mvk_filename = "MoltenVK-all.tar.xz"
+    mvk_archive = os.path.join(deps_folder, mvk_filename)
+    mvk_folder = os.path.join(deps_folder, "moltenvk")
+
+    if os.path.isfile(mvk_archive):
+        os.remove(mvk_archive)
+
+    color_print(f"{Ansi.GREEN}Installing MoltenVK...")
+
+    print(f"Downloading MoltenVK {mvk_filename} ...")
+    urllib.request.urlretrieve(
+        f"https://github.com/godotengine/moltenvk-osxcross/releases/download/moltenvk-{mvk_version}/{mvk_filename}",
+        mvk_archive,
+    )
+    if os.path.exists(mvk_folder):
+        print(f"Removing existing local MoltenVK installation in {mvk_folder} ...")
+        shutil.rmtree(mvk_folder)
+    print(f"Extracting MoltenVK {mvk_filename} to {mvk_folder} ...")
+    shutil.unpack_archive(mvk_archive, mvk_folder)
+    os.remove(mvk_archive)
+
+    print("MoltenVK installed successfully.\n")
+
+
+def download_d3d12(mingw_prefix, archs):
+    # Base Godot dependencies path
+    # If cross-compiling (no LOCALAPPDATA), we install in `bin`
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        deps_folder = os.path.join("bin", "build_deps")
+
+    # Mesa NIR
+    # Sync with `drivers/d3d12/SCsub` when updating Mesa.
+    # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
+    mesa_version = "25.3.1-1"
+    # WinPixEventRuntime
+    # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
+    pix_version = "1.0.240308001"
+    pix_archive = os.path.join(deps_folder, f"WinPixEventRuntime_{pix_version}.nupkg")
+    pix_folder = os.path.join(deps_folder, "pix")
+    # DirectX 12 Agility SDK
+    # Check for latest version: https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12 (check downloaded filename)
+    # After updating this, remember to change the default value of the `rendering/rendering_device/d3d12/agility_sdk_version`
+    # project setting to match the minor version (e.g. for `1.618.5`, it should be `618`).
+    agility_sdk_version = "1.618.5"
+    agility_sdk_archive = os.path.join(deps_folder, f"Agility_SDK_{agility_sdk_version}.nupkg")
+    agility_sdk_folder = os.path.join(deps_folder, "agility_sdk")
+
+    # Create dependencies folder
+    if not os.path.exists(deps_folder):
+        os.makedirs(deps_folder)
+
+    color_print(f"{Ansi.GREEN}Installing D3D12 dependencies...")
+
+    # Mesa NIR
+    color_print(f"{Ansi.BOLD}[1/3] Mesa NIR")
+    for arch in archs:
+        mesa_filename = "godot-nir-static-" + arch + "-release.zip"
+        mesa_archive = os.path.join(deps_folder, mesa_filename)
+        mesa_folder = os.path.join(deps_folder, "mesa-" + arch)
+
+        if os.path.isfile(mesa_archive):
+            os.remove(mesa_archive)
+        print(f"Downloading Mesa NIR {mesa_filename} ...")
+        urllib.request.urlretrieve(
+            f"https://github.com/godotengine/godot-nir-static/releases/download/{mesa_version}/{mesa_filename}",
+            mesa_archive,
+        )
+        if os.path.exists(mesa_folder):
+            print(f"Removing existing local Mesa NIR installation in {mesa_folder} ...")
+            shutil.rmtree(mesa_folder)
+        print(f"Extracting Mesa NIR {mesa_filename} to {mesa_folder} ...")
+        shutil.unpack_archive(mesa_archive, mesa_folder)
+        os.remove(mesa_archive)
+    print("Mesa NIR installed successfully.\n")
+
+    # WinPixEventRuntime
+
+    # MinGW needs DLLs converted with dlltool.
+    # We rely on finding gendef/dlltool to detect if we have MinGW.
+    # Check existence of needed tools for generating mingw library.
+    pathstr = os.environ.get("PATH", "")
+    if mingw_prefix:
+        pathstr = os.path.join(mingw_prefix, "bin") + os.pathsep + pathstr
+    gendef = shutil.which("x86_64-w64-mingw32-gendef", path=pathstr) or shutil.which("gendef", path=pathstr) or ""
+    dlltool = shutil.which("x86_64-w64-mingw32-dlltool", path=pathstr) or shutil.which("dlltool", path=pathstr) or ""
+    has_mingw = gendef != "" and dlltool != ""
+
+    color_print(f"{Ansi.BOLD}[2/3] WinPixEventRuntime")
+    if os.path.isfile(pix_archive):
+        os.remove(pix_archive)
+    print(f"Downloading WinPixEventRuntime {pix_version} ...")
+    urllib.request.urlretrieve(f"https://www.nuget.org/api/v2/package/WinPixEventRuntime/{pix_version}", pix_archive)
+    if os.path.exists(pix_folder):
+        print(f"Removing existing local WinPixEventRuntime installation in {pix_folder} ...")
+        shutil.rmtree(pix_folder)
+    print(f"Extracting WinPixEventRuntime {pix_version} to {pix_folder} ...")
+    shutil.unpack_archive(pix_archive, pix_folder, "zip")
+    os.remove(pix_archive)
+    if has_mingw:
+        print("Adapting WinPixEventRuntime to also support MinGW alongside MSVC.")
+        cwd = os.getcwd()
+        os.chdir(pix_folder)
+        subprocess.run([gendef, "./bin/x64/WinPixEventRuntime.dll"])
+        subprocess.run(
+            [dlltool]
+            + "--machine i386:x86-64 --no-leading-underscore -d WinPixEventRuntime.def -D WinPixEventRuntime.dll -l ./bin/x64/libWinPixEventRuntime.a".split()
+        )
+        subprocess.run([gendef, "./bin/ARM64/WinPixEventRuntime.dll"])
+        subprocess.run(
+            [dlltool]
+            + "--machine arm64 --no-leading-underscore -d WinPixEventRuntime.def -D WinPixEventRuntime.dll -l ./bin/ARM64/libWinPixEventRuntime.a".split()
+        )
+        os.chdir(cwd)
+    else:
+        print(
+            'MinGW support requires "dlltool" and "gendef" dependencies, so only MSVC support is provided for WinPixEventRuntime. Did you forget to provide a `--mingw_prefix`?'
+        )
+    print(f"WinPixEventRuntime {pix_version} installed successfully.\n")
+
+    # DirectX 12 Agility SDK
+    color_print(f"{Ansi.BOLD}[3/3] DirectX 12 Agility SDK")
+    if os.path.isfile(agility_sdk_archive):
+        os.remove(agility_sdk_archive)
+    print(f"Downloading DirectX 12 Agility SDK {agility_sdk_version} ...")
+    urllib.request.urlretrieve(
+        f"https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/{agility_sdk_version}", agility_sdk_archive
+    )
+    if os.path.exists(agility_sdk_folder):
+        print(f"Removing existing local DirectX 12 Agility SDK installation in {agility_sdk_folder} ...")
+        shutil.rmtree(agility_sdk_folder)
+    print(f"Extracting DirectX 12 Agility SDK {agility_sdk_version} to {agility_sdk_folder} ...")
+    shutil.unpack_archive(agility_sdk_archive, agility_sdk_folder, "zip")
+    os.remove(agility_sdk_archive)
+    print(f"DirectX 12 Agility SDK {agility_sdk_version} installed successfully.\n")
 
 
 def add_source_files_orig(self, sources, files, allow_gen=False):

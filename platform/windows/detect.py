@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING
 
 import methods
-from methods import print_error, print_warning
+from methods import download_accesskit, download_angle, download_d3d12, download_winrt, print_error, print_warning
 from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
@@ -434,6 +434,9 @@ def configure_msvc(env: "SConsEnvironment"):
         LIBS += ["psapi", "dbghelp"]
 
     if env["accesskit"]:
+        if not os.path.exists(env["accesskit_sdk_path"]) and env["download_dependencies"]:
+            download_accesskit()
+
         if os.path.exists(env["accesskit_sdk_path"]):
             env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["arch"] == "arm64":
@@ -456,7 +459,7 @@ def configure_msvc(env: "SConsEnvironment"):
         else:
             print_error(
                 "The screen reader support driver requires dependencies to be installed.\n"
-                f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_accesskit.py')}`.\n"
                 "See the documentation for more information:\n"
                 "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
                 "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
@@ -472,7 +475,7 @@ def configure_msvc(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["SDL_ENABLED"])
 
     if env["d3d12"]:
-        check_d3d12_installed(env, env["arch"] + "-msvc")
+        check_d3d12_installed(env, env["arch"] + "-msvc", "")
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
@@ -500,6 +503,9 @@ def configure_msvc(env: "SConsEnvironment"):
             angle_path = env["angle_libs"] + "-" + env["arch"] + "-msvc"
             if not os.path.exists(angle_path):
                 angle_path = env["angle_libs"]
+            if not os.path.exists(angle_path) and env["download_dependencies"]:
+                download_angle([env["arch"] + "-msvc"])
+                angle_path = env["angle_libs"] + "-" + env["arch"] + "-msvc"
             if os.path.exists(angle_path):
                 env.Prepend(CPPPATH=["#thirdparty/angle/include"])
                 env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])
@@ -513,7 +519,7 @@ def configure_msvc(env: "SConsEnvironment"):
             else:
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
-                    f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
+                    f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_angle.py')}`.\n"
                     "See the documentation for more information:\n"
                     "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
                     "Alternatively, disable this driver by compiling with `angle=no` explicitly."
@@ -830,6 +836,8 @@ def configure_mingw(env: "SConsEnvironment"):
     )
 
     if env["winrt"]:
+        if not os.path.exists(env["winrt_path"]) and env["download_dependencies"]:
+            download_winrt()
         if not os.path.exists(env["winrt_path"]):
             prefix = os.getenv("MINGW_PREFIX", "")
             msys = os.getenv("MSYSTEM", "")
@@ -837,7 +845,7 @@ def configure_mingw(env: "SConsEnvironment"):
                 if not os.path.exists(os.path.join(prefix, "include/winrt")):
                     print_warning(
                         "The WinRT/OneCore API requires dependencies to be installed.\n"
-                        f"You can install them by installing `cppwinrt` MSYS2 package or by running `python {os.path.join('misc', 'scripts', 'install_winrt.py')}`.\n"
+                        f"You can install them by installing `cppwinrt` MSYS2 package or by running `python {os.path.join('misc', 'build_deps', 'download_winrt.py')}`.\n"
                         "See the documentation for more information:\n"
                         "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
                         "Alternatively, disable this driver by compiling with `winrt=no` explicitly."
@@ -846,7 +854,7 @@ def configure_mingw(env: "SConsEnvironment"):
             else:
                 print_warning(
                     "The WinRT/OneCore API requires dependencies to be installed.\n"
-                    f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_winrt.py')}`.\n"
+                    f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_winrt.py')}`.\n"
                     "See the documentation for more information:\n"
                     "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
                     "Alternatively, disable this driver by compiling with `winrt=no` explicitly."
@@ -854,6 +862,9 @@ def configure_mingw(env: "SConsEnvironment"):
                 env["winrt"] = False
 
     if env["accesskit"]:
+        if not os.path.exists(env["accesskit_sdk_path"]) and env["download_dependencies"]:
+            download_accesskit()
+
         if os.path.exists(env["accesskit_sdk_path"]):
             env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["use_llvm"]:
@@ -886,7 +897,7 @@ def configure_mingw(env: "SConsEnvironment"):
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
-                f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_accesskit.py')}`.\n"
                 "See the documentation for more information:\n"
                 "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
                 "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
@@ -906,9 +917,9 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["d3d12"]:
         if env["use_llvm"]:
-            check_d3d12_installed(env, env["arch"] + "-llvm")
+            check_d3d12_installed(env, env["arch"] + "-llvm", env["mingw_prefix"])
         else:
-            check_d3d12_installed(env, env["arch"] + "-gcc")
+            check_d3d12_installed(env, env["arch"] + "-gcc", env["mingw_prefix"])
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -938,6 +949,9 @@ def configure_mingw(env: "SConsEnvironment"):
             angle_path = env["angle_libs"] + "-" + env["arch"] + ("-llvm" if env["use_llvm"] else "-gcc")
             if not os.path.exists(angle_path):
                 angle_path = env["angle_libs"]
+            if not os.path.exists(angle_path) and env["download_dependencies"]:
+                download_angle([env["arch"] + ("-llvm" if env["use_llvm"] else "-gcc")])
+                angle_path = env["angle_libs"] + "-" + env["arch"] + ("-llvm" if env["use_llvm"] else "-gcc")
             if os.path.exists(angle_path):
                 env.Prepend(CPPPATH=["#thirdparty/angle/include"])
                 env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])
@@ -953,7 +967,7 @@ def configure_mingw(env: "SConsEnvironment"):
             else:
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
-                    f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
+                    f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_angle.py')}`.\n"
                     "See the documentation for more information:\n"
                     "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
                     "Alternatively, disable this driver by compiling with `angle=no` explicitly."
@@ -1009,11 +1023,17 @@ def configure(env: "SConsEnvironment"):
         configure_mingw(env)
 
 
-def check_d3d12_installed(env, suffix):
+def check_d3d12_installed(env, suffix, mingw_prefix):
+    if (
+        not os.path.exists(env["mesa_libs"])
+        and not os.path.exists(env["mesa_libs"] + "-" + suffix)
+        and env["download_dependencies"]
+    ):
+        download_d3d12(mingw_prefix, [suffix])
     if not os.path.exists(env["mesa_libs"]) and not os.path.exists(env["mesa_libs"] + "-" + suffix):
         print_error(
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
-            f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_d3d12_sdk_windows.py')}`.\n"
+            f"You can install them by running `python {os.path.join('misc', 'build_deps', 'download_d3d12_sdk_windows.py')}`.\n"
             "See the documentation for more information:\n"
             "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
             "Alternatively, disable this driver by compiling with `d3d12=no` explicitly."

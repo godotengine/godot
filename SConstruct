@@ -165,6 +165,7 @@ opts.Add(
     )
 )
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases, ignorecase=2))
+opts.Add(BoolVariable("download_dependencies", "Automatically download and install dependencies", True))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
 opts.Add(
     EnumVariable(
