@@ -56,9 +56,9 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
-#include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void ExportTemplateManager::_request_mirrors() {
 	mirrors_list->clear();
@@ -471,28 +471,6 @@ void ExportTemplateManager::_update_template_tree() {
 	_fill_template_tree(installed_templates_tree, installed_template_files, is_current_version);
 }
 
-void ExportTemplateManager::_update_template_tree_theme(Tree *p_tree) {
-	if (is_downloading()) {
-		// Prevents hiding progress bar.
-		Ref<StyleBoxEmpty> empty_style;
-		empty_style.instantiate();
-
-		p_tree->add_theme_style_override(SNAME("hovered"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_dimmed"), empty_style);
-		p_tree->add_theme_style_override(SNAME("selected"), empty_style);
-		p_tree->add_theme_style_override(SNAME("selected_focus"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_selected"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_selected_focus"), empty_style);
-	} else {
-		p_tree->remove_theme_style_override(SNAME("hovered"));
-		p_tree->remove_theme_style_override(SNAME("hovered_dimmed"));
-		p_tree->remove_theme_style_override(SNAME("selected"));
-		p_tree->remove_theme_style_override(SNAME("selected_focus"));
-		p_tree->remove_theme_style_override(SNAME("hovered_selected"));
-		p_tree->remove_theme_style_override(SNAME("hovered_selected_focus"));
-	}
-}
-
 void ExportTemplateManager::_fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version) {
 	bool is_installed_tree = (p_tree == installed_templates_tree);
 	bool is_available_tree = !is_installed_tree; // For readability.
@@ -807,8 +785,6 @@ void ExportTemplateManager::_install_templates(TreeItem *p_files) {
 	_update_template_tree();
 	_process_download_queue();
 	_update_install_button();
-	_update_template_tree_theme(installed_templates_tree);
-	_update_template_tree_theme(available_templates_tree);
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
 	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
@@ -878,8 +854,6 @@ void ExportTemplateManager::_process_download_queue() {
 		queued_templates.clear();
 		downloading_items.clear();
 		set_process_internal(false);
-		_update_template_tree_theme(installed_templates_tree);
-		_update_template_tree_theme(available_templates_tree);
 		_update_install_button();
 		EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
 	} else {
@@ -1117,7 +1091,8 @@ float ExportTemplateManager::_get_download_progress(const TreeItem *p_item) cons
 
 void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p_rect) {
 	Tree *owning_tree = p_item->get_tree();
-	owning_tree->draw_rect(p_rect, Color(0, 0, 0, 0.5));
+	RID ci = owning_tree->get_custom_drawing_canvas_item();
+	RS::get_singleton()->canvas_item_add_rect(ci, p_rect, Color(0, 0, 0, 0.5));
 
 	if (!_item_is_file(p_item)) {
 		float progress = 0.0;
@@ -1135,7 +1110,7 @@ void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p
 			has_fail = has_fail || meta->download_status == DownloadStatus::FAILED;
 		}
 		progress /= item_count;
-		owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), has_fail ? theme_cache.download_failed_color : theme_cache.download_progress_color);
+		RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), has_fail ? theme_cache.download_failed_color : theme_cache.download_progress_color);
 		return;
 	}
 
@@ -1147,21 +1122,22 @@ void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p
 		case DownloadStatus::PENDING: {
 			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
 			const Ref<Texture2D> progress_texture = theme_cache.progress_icons[frame / 4 % 8];
-			owning_tree->draw_texture(progress_texture, Vector2(p_rect.get_end().x - progress_texture->get_width(), p_rect.position.y + p_rect.size.y * 0.5 - progress_texture->get_height() * 0.5));
+			const Rect2 rect = Rect2(Vector2(p_rect.get_end().x - progress_texture->get_width(), p_rect.position.y + p_rect.size.y * 0.5 - progress_texture->get_height() * 0.5), progress_texture->get_size());
+			RS::get_singleton()->canvas_item_add_texture_rect(ci, rect, progress_texture->get_rid());
 		} break;
 
 		case DownloadStatus::IN_PROGRESS: {
 			float progress = _get_download_progress(p_item);
 			meta->progress_cache = progress;
-			owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), theme_cache.download_progress_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), theme_cache.download_progress_color);
 		} break;
 
 		case DownloadStatus::COMPLETED: {
-			owning_tree->draw_rect(p_rect, theme_cache.download_progress_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, p_rect, theme_cache.download_progress_color);
 		} break;
 
 		case DownloadStatus::FAILED: {
-			owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * _get_download_progress(p_item), p_rect.size.y)), theme_cache.download_failed_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * _get_download_progress(p_item), p_rect.size.y)), theme_cache.download_failed_color);
 		} break;
 	}
 }
