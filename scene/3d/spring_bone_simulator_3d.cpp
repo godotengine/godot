@@ -353,63 +353,65 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 
 void SpringBoneSimulator3D::_validate_dynamic_prop(PropertyInfo &p_property) const {
 	PackedStringArray split = p_property.name.split("/");
-	if (split.size() > 2 && split[0] == "bone_chains") {
-		int which = split[1].to_int();
+	if (split[0] == "bone_chains") {
+		if (split.size() > 2) {
+			int which = split[1].to_int();
 
-		// Extended end bone option.
-		bool force_hide = false;
-		if (split[2] == "extend_end_bone" && get_end_bone(which) == -1) {
-			p_property.usage = PROPERTY_USAGE_NONE;
-			force_hide = true;
-		}
-		if (force_hide || (split[2] == "end_bone" && !is_end_bone_extended(which) && split.size() > 3)) {
-			p_property.usage = PROPERTY_USAGE_NONE;
-		}
-
-		// Center option.
-		if (get_center_from(which) != CENTER_FROM_BONE && (split[2] == "center_bone" || split[2] == "center_bone_name")) {
-			p_property.usage = PROPERTY_USAGE_NONE;
-		}
-		if (get_center_from(which) != CENTER_FROM_NODE && split[2] == "center_node") {
-			p_property.usage = PROPERTY_USAGE_NONE;
-		}
-
-		// Joints option.
-		if (is_config_individual(which)) {
-			if (split[2] == "rotation_axis" || split[2] == "rotation_axis_vector" || split[2] == "radius" || split[2] == "radius_damping_curve" ||
-					split[2] == "stiffness" || split[2] == "stiffness_damping_curve" ||
-					split[2] == "drag" || split[2] == "drag_damping_curve" ||
-					split[2] == "gravity" || split[2] == "gravity_damping_curve" || split[2] == "gravity_direction") {
+			// Extended end bone option.
+			bool force_hide = false;
+			if (split[2] == "extend_end_bone" && get_end_bone(which) == -1) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+				force_hide = true;
+			}
+			if (force_hide || (split[2] == "end_bone" && !is_end_bone_extended(which) && split.size() > 3)) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
-		} else {
-			if (split[2] == "joints" || split[2] == "joint_count") {
-				// Don't storage them since they are overridden by _update_joints().
-				p_property.usage ^= PROPERTY_USAGE_STORAGE;
-				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-			}
-			if (split[2] == "rotation_axis_vector" && get_rotation_axis(which) != ROTATION_AXIS_CUSTOM) {
+
+			// Center option.
+			if (get_center_from(which) != CENTER_FROM_BONE && (split[2] == "center_bone" || split[2] == "center_bone_name")) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
-		}
+			if (get_center_from(which) != CENTER_FROM_NODE && split[2] == "center_node") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
 
+			// Joints option.
+			if (is_config_individual(which)) {
+				if (split[2] == "rotation_axis" || split[2] == "rotation_axis_vector" || split[2] == "radius" || split[2] == "radius_damping_curve" ||
+						split[2] == "stiffness" || split[2] == "stiffness_damping_curve" ||
+						split[2] == "drag" || split[2] == "drag_damping_curve" ||
+						split[2] == "gravity" || split[2] == "gravity_damping_curve" || split[2] == "gravity_direction") {
+					p_property.usage = PROPERTY_USAGE_NONE;
+				}
+			} else {
+				if (split[2] == "joints" || split[2] == "joint_count") {
+					// Don't storage them since they are overridden by _update_joints().
+					p_property.usage ^= PROPERTY_USAGE_STORAGE;
+					p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+				}
+				if (split[2] == "rotation_axis_vector" && get_rotation_axis(which) != ROTATION_AXIS_CUSTOM) {
+					p_property.usage = PROPERTY_USAGE_NONE;
+				}
+			}
+		}
+		if (split.size() > 3) {
+			int which = split[1].to_int();
+			int joint = split[3].to_int();
+			// Joints option.
+			if (split[2] == "joints" && split.size() > 4) {
+				if (split[4] == "rotation_axis_vector" && get_joint_rotation_axis(which, joint) != ROTATION_AXIS_CUSTOM) {
+					p_property.usage = PROPERTY_USAGE_NONE;
+				}
+			}
+		}
+	} else {
 		// Collisions option.
 		if (are_all_child_collisions_enabled()) {
-			if (split[2] == "collisions" || split[2] == "collision_count") {
+			if (split[0] == "collisions" || split[0] == "collision_count") {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 		} else {
-			if (split[2] == "exclude_collisions" || split[2] == "exclude_collision_count") {
-				p_property.usage = PROPERTY_USAGE_NONE;
-			}
-		}
-	}
-	if (split.size() > 3 && split[0] == "bone_chains") {
-		int which = split[1].to_int();
-		int joint = split[3].to_int();
-		// Joints option.
-		if (split[2] == "joints" && split.size() > 4) {
-			if (split[4] == "rotation_axis_vector" && get_joint_rotation_axis(which, joint) != ROTATION_AXIS_CUSTOM) {
+			if (split[0] == "exclude_collisions" || split[0] == "exclude_collision_count") {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 		}
