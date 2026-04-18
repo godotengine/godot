@@ -2338,7 +2338,9 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		consume(GDScriptTokenizer::Token::TK_IN, R"(Expected "in" after "for" variable type specifier.)");
 	}
 
+	outer_colon_reserved = true;
 	n_for->list = parse_expression(false);
+	outer_colon_reserved = false;
 
 	if (!n_for->list) {
 		push_error(R"(Expected iterable after "in".)");
@@ -2376,7 +2378,9 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	IfNode *n_if = alloc_node<IfNode>();
 
+	outer_colon_reserved = true;
 	n_if->condition = parse_expression(false);
+	outer_colon_reserved = false;
 	if (n_if->condition == nullptr) {
 		push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
 	}
@@ -2423,7 +2427,9 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	MatchNode *match_node = alloc_node<MatchNode>();
 
+	outer_colon_reserved = true;
 	match_node->test = parse_expression(false);
+	outer_colon_reserved = false;
 	if (match_node->test == nullptr) {
 		push_error(R"(Expected expression to test after "match".)");
 	}
@@ -2734,7 +2740,9 @@ GDScriptParser::IdentifierNode *GDScriptParser::PatternNode::get_bind(const Stri
 GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	WhileNode *n_while = alloc_node<WhileNode>();
 
+	outer_colon_reserved = true;
 	n_while->condition = parse_expression(false);
+	outer_colon_reserved = false;
 	if (n_while->condition == nullptr) {
 		push_error(R"(Expected conditional expression after "while".)");
 	}
@@ -3302,8 +3310,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 				break;
 			}
 
-			// Key.
+			// Key. The ":" belongs to the dictionary entry, not to a `.new():` anonymous class body.
+			outer_colon_reserved = true;
 			ExpressionNode *key = parse_expression(false, true); // Stop on "=" so we can check for Lua table style.
+			outer_colon_reserved = false;
 
 			if (key == nullptr) {
 				push_error(R"(Expected expression as dictionary key.)");
@@ -3590,34 +3600,48 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	complete_extents(call);
 
 	// Anonymous class body after .new() call.
-	if (call->function_name == SNAME("new") && check(GDScriptTokenizer::Token::COLON) && call->callee != nullptr && call->callee->type == Node::SUBSCRIPT) {
+	// Skip when the surrounding statement owns the colon (e.g., `for i in Thing.new():`).
+	if (!outer_colon_reserved && call->function_name == SNAME("new") && check(GDScriptTokenizer::Token::COLON) && call->callee != nullptr && call->callee->type == Node::SUBSCRIPT) {
 		SubscriptNode *callee_subscript = static_cast<SubscriptNode *>(call->callee);
 		if (callee_subscript->is_attribute) {
 			// Collect the base class identifier chain from the callee.
 			Vector<IdentifierNode *> base_chain;
 			ExpressionNode *base_expr = callee_subscript->base;
 			String base_class_name;
+			String base_preload_path;
 
-			while (base_expr != nullptr) {
-				if (base_expr->type == Node::IDENTIFIER) {
-					base_chain.insert(0, static_cast<IdentifierNode *>(base_expr));
-					base_class_name = static_cast<IdentifierNode *>(base_expr)->name.operator String();
-					break;
-				} else if (base_expr->type == Node::SUBSCRIPT) {
-					SubscriptNode *sub = static_cast<SubscriptNode *>(base_expr);
-					if (sub->is_attribute && sub->attribute) {
-						base_chain.insert(0, sub->attribute);
-						if (base_class_name.is_empty()) {
-							base_class_name = sub->attribute->name.operator String();
-						}
+			// preload("path.gd").new(): — extract the literal path as the base.
+			if (base_expr != nullptr && base_expr->type == Node::PRELOAD) {
+				PreloadNode *pl = static_cast<PreloadNode *>(base_expr);
+				if (pl->path != nullptr && pl->path->type == Node::LITERAL) {
+					LiteralNode *lit = static_cast<LiteralNode *>(pl->path);
+					if (lit->value.get_type() == Variant::STRING) {
+						base_preload_path = String(lit->value);
+						base_class_name = base_preload_path.get_file().get_basename();
 					}
-					base_expr = sub->base;
-				} else {
-					break;
+				}
+			} else {
+				while (base_expr != nullptr) {
+					if (base_expr->type == Node::IDENTIFIER) {
+						base_chain.insert(0, static_cast<IdentifierNode *>(base_expr));
+						base_class_name = static_cast<IdentifierNode *>(base_expr)->name.operator String();
+						break;
+					} else if (base_expr->type == Node::SUBSCRIPT) {
+						SubscriptNode *sub = static_cast<SubscriptNode *>(base_expr);
+						if (sub->is_attribute && sub->attribute) {
+							base_chain.insert(0, sub->attribute);
+							if (base_class_name.is_empty()) {
+								base_class_name = sub->attribute->name.operator String();
+							}
+						}
+						base_expr = sub->base;
+					} else {
+						break;
+					}
 				}
 			}
 
-			if (base_chain.size() > 0) {
+			if (base_chain.size() > 0 || !base_preload_path.is_empty()) {
 				ClassNode *n_class = alloc_node<ClassNode>();
 				ClassNode *previous_class = current_class;
 
@@ -3639,11 +3663,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 				}
 
 				n_class->extends_used = true;
-				for (int i = 0; i < base_chain.size(); i++) {
-					IdentifierNode *extend_id = alloc_node<IdentifierNode>();
-					complete_extents(extend_id);
-					extend_id->name = base_chain[i]->name;
-					n_class->extends.push_back(extend_id);
+				if (!base_preload_path.is_empty()) {
+					n_class->extends_path = base_preload_path;
+				} else {
+					for (int i = 0; i < base_chain.size(); i++) {
+						IdentifierNode *extend_id = alloc_node<IdentifierNode>();
+						complete_extents(extend_id);
+						extend_id->name = base_chain[i]->name;
+						n_class->extends.push_back(extend_id);
+					}
 				}
 
 				// Reset multiline state for the class body.
@@ -3673,7 +3701,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 					push_error(R"*(Cannot use "extends" inside an anonymous class body; the base class is inferred from the ".new()" call.)*");
 				}
 
-				parse_class_body(multiline_body);
+				if (multiline_body) {
+					parse_class_body(true);
+				} else {
+					// Inline body: only a single "func" definition is allowed.
+					if (check(GDScriptTokenizer::Token::FUNC)) {
+						parse_class_member(&GDScriptParser::parse_function, AnnotationInfo::FUNCTION, "function", false);
+					} else {
+						push_error(R"*(Inline anonymous class body must be a single "func" definition; use an indented block for multiple members.)*");
+					}
+				}
 				complete_extents(n_class);
 
 				if (n_class->members.is_empty()) {

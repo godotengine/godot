@@ -1400,6 +1400,7 @@ private:
 	LambdaNode *current_lambda = nullptr;
 	SuiteNode *current_suite = nullptr;
 	int anonymous_class_count = 0;
+	bool outer_colon_reserved = false; // Outer context owns the ":" (for/while/if/match headers, dictionary keys), so `.new():` must not eat it.
 
 	CompletionContext completion_context;
 	List<CompletionCall> completion_call_stack;
