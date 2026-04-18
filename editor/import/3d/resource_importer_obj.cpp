@@ -569,7 +569,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 	return OK;
 }
 
-Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	List<Ref<ImporterMesh>> meshes;
 
 	// LOD, shadow mesh and lightmap UV2 generation are handled by ResourceImporterScene in this case,
@@ -592,6 +592,14 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 		mi->set_name(m->get_name());
 		scene->add_child(mi, true);
 		mi->set_owner(scene);
+
+		// Record tris count to meta
+		if (r_meta != nullptr) {
+			Ref<ArrayMesh> arr_mesh = m->get_mesh();
+			for (int i = 0; i < arr_mesh->get_surface_count(); i++) {
+				r_meta->tris_count += arr_mesh->surface_get_array_index_len(i) / 3;
+			}
+		}
 	}
 
 	if (r_err) {
