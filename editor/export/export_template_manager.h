@@ -215,7 +215,6 @@ class ExportTemplateManager : public AcceptDialog {
 	void _initialize_template_data();
 	void _update_version_list();
 	void _update_template_tree();
-	void _update_template_tree_theme(Tree *p_tree);
 	void _fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version);
 	void _update_template_tree_with_folding();
 	void _update_install_button();
