@@ -5301,7 +5301,7 @@ void CanvasItemEditor::_click_select(const Point2 &p_pos, bool p_append) {
 		if (p_append) {
 			ci = selection[0].item;
 		} else {
-			// When selecting canvas items by repeated clicking, each click selects a canvas item one layer higher.
+			// When selecting canvas items by repeated clicking, each click cycles through overlapping items in view order.
 			for (int64_t i = 0; i < selection.size(); i++) {
 				if (editor_selection->is_selected(selection[i].item)) {
 					ci = selection[(i + 1) % selection.size()].item;
