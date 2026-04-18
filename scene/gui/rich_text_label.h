@@ -386,7 +386,6 @@ private:
 			int min_width = 0;
 			int max_width = 0;
 			int width = 0;
-			int width_with_padding = 0;
 		};
 
 		LocalVector<Column> columns;
