@@ -187,22 +187,38 @@ void ExportTemplateManager::_open_mirror() {
 	OS::get_singleton()->shell_open(_get_current_mirror_url());
 }
 
-void ExportTemplateManager::_delete_confirmed() {
-	const String selected_version = version_list->get_item_text(version_list->get_current());
-	const String template_directory = _get_template_folder_path(selected_version);
+void ExportTemplateManager::_delete_all() {
+	item_to_delete = installed_templates_tree->get_root();
+	confirm_delete->set_text(TTRC("Remove all installed template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
+	confirm_delete->popup_centered();
+}
 
-	if (_item_is_file(item_to_delete)) {
-		OS::get_singleton()->move_to_trash(template_directory.path_join(item_to_delete->get_text(0)));
-		file_metadata.erase(item_to_delete->get_text(0));
-	} else {
-		for (TreeItem *child = item_to_delete->get_first_child(); child; child = child->get_next()) {
-			if (!_get_file_metadata(child)->is_missing) {
-				OS::get_singleton()->move_to_trash(template_directory.path_join(child->get_text(0)));
-			}
-			file_metadata.erase(child->get_text(0));
-		}
+void ExportTemplateManager::_delete_confirmed() {
+	_delete_file(item_to_delete);
+
+	const String selected_version = version_list->get_item_text(version_list->get_current());
+	if (selected_version != GODOT_VERSION_FULL_CONFIG) {
+		// Deleting all installed templates removes the version from list.
+		_update_version_list();
 	}
 	_update_template_tree();
+	item_to_delete = nullptr;
+}
+
+void ExportTemplateManager::_delete_file(const TreeItem *p_item) {
+	if (_item_is_file(p_item)) {
+		const String selected_version = version_list->get_item_text(version_list->get_current());
+		const String full_path = _get_template_folder_path(selected_version).path_join(p_item->get_text(0));
+
+		if (FileAccess::exists(full_path)) {
+			OS::get_singleton()->move_to_trash(full_path);
+		}
+		file_metadata.erase(p_item->get_text(0));
+	} else {
+		for (TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
+			_delete_file(child);
+		}
+	}
 }
 
 void ExportTemplateManager::_initialize_template_data() {
@@ -384,18 +400,50 @@ void ExportTemplateManager::_initialize_template_data() {
 
 	// Template directory status.
 	DirAccess::make_dir_recursive_absolute(_get_template_folder_path(GODOT_VERSION_FULL_CONFIG));
+	_update_version_list();
+}
+
+void ExportTemplateManager::_update_version_list() {
+	String current_selected;
+	if (version_list->get_current() > -1) {
+		current_selected = version_list->get_item_text(version_list->get_current());
+	}
+	version_list->clear();
+
 	Ref<DirAccess> templates_dir = DirAccess::open(EditorPaths::get_singleton()->get_export_templates_dir());
 	ERR_FAIL_COND(templates_dir.is_null());
 
+	int current_version_id = -1;
 	for (const String &dir : templates_dir->get_directories()) {
 		if (dir == GODOT_VERSION_FULL_CONFIG) {
 			version_list->add_item(dir);
 			version_list->set_item_custom_fg_color(-1, theme_cache.current_version_color);
-			version_list->select(version_list->get_item_count() - 1);
+			current_version_id = version_list->get_item_count() - 1;
 		} else {
+			bool recognized = false;
+			for (const String &file : DirAccess::get_files_at(templates_dir->get_current_dir().path_join(dir))) {
+				for (const KeyValue<TemplateID, TemplateInfo> &KV : template_data) {
+					if (KV.value.file_list.has(file)) {
+						recognized = true;
+						break;
+					}
+				}
+				if (recognized) {
+					break;
+				}
+			}
+			if (!recognized) {
+				continue;
+			}
 			version_list->add_item(dir);
+			if (dir == current_selected) {
+				version_list->select(version_list->get_item_count() - 1);
+			}
 		}
 		version_list->set_item_metadata(-1, dir);
+	}
+	if (version_list->get_current() == -1) {
+		version_list->select(current_version_id);
 	}
 }
 
@@ -612,6 +660,9 @@ void ExportTemplateManager::_fill_template_tree(Tree *p_tree, const HashMap<Temp
 		_apply_item_folding(platform_item);
 	}
 
+	if (is_installed_tree) {
+		delete_all_button->set_disabled(p_tree->get_root()->get_child_count() == 0);
+	}
 	if (p_tree->get_root()->get_child_count() == 0) {
 		TreeItem *empty = p_tree->create_item();
 		empty->set_text(0, is_available_tree ? TTR("All templates installed.") : TTR("No templates installed."));
@@ -708,6 +759,7 @@ void ExportTemplateManager::_tree_button_clicked(TreeItem *p_item, int p_column,
 
 		case ButtonID::REMOVE: {
 			item_to_delete = p_item;
+			confirm_delete->set_text(TTRC("Remove the selected template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 			confirm_delete->popup_centered();
 		} break;
 
@@ -1033,7 +1085,7 @@ String ExportTemplateManager::_get_item_path(TreeItem *p_item) const {
 	return p_item->get_meta(PATH_META, String());
 }
 
-bool ExportTemplateManager::_item_is_file(TreeItem *p_item) const {
+bool ExportTemplateManager::_item_is_file(const TreeItem *p_item) const {
 	return p_item->get_meta(FILE_META, false).operator bool();
 }
 
@@ -1142,6 +1194,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			open_folder_button->set_button_icon(get_editor_theme_icon("Folder"));
 			install_button->set_button_icon(get_editor_theme_icon("AssetStore"));
 			open_mirror->set_button_icon(get_editor_theme_icon("ExternalLink"));
+			delete_all_button->set_button_icon(get_editor_theme_icon("Remove"));
 
 			theme_cache.install_icon = get_editor_theme_icon("AssetStore");
 			theme_cache.remove_icon = get_editor_theme_icon("Remove");
@@ -1396,12 +1449,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	side_vb->add_child(version_list);
 	version_list->connect(SceneStringName(item_selected), callable_mp(this, &ExportTemplateManager::_version_selected).unbind(1));
 
-	open_folder_button = memnew(Button);
-	open_folder_button->set_tooltip_text(TTRC("Open templates directory."));
-	open_folder_button->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
-	side_vb->add_child(open_folder_button);
-	open_folder_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_directory));
-
 	VSplitContainer *center_split = memnew(VSplitContainer);
 	center_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_split->add_child(center_split);
@@ -1429,9 +1476,23 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_templates_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	center_split->add_child(installed_templates_container);
 
+	HBoxContainer *installed_header = memnew(HBoxContainer);
+	installed_templates_container->add_child(installed_header);
+
 	Label *template_header = memnew(Label(TTRC("Installed Templates")));
 	template_header->set_theme_type_variation("HeaderSmall");
-	installed_templates_container->add_child(template_header);
+	installed_header->add_child(template_header);
+
+	open_folder_button = memnew(Button);
+	open_folder_button->set_tooltip_text(TTRC("Open templates directory."));
+	open_folder_button->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
+	installed_header->add_child(open_folder_button);
+	open_folder_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_directory));
+
+	delete_all_button = memnew(Button);
+	delete_all_button->set_tooltip_text(TTRC("Remove all installed templates."));
+	installed_header->add_child(delete_all_button);
+	delete_all_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_delete_all));
 
 	installed_templates_tree = memnew(Tree);
 	installed_templates_tree->set_accessibility_name(TTRC("Installed Templates"));
@@ -1456,7 +1517,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
 	confirm_delete = memnew(ConfirmationDialog);
-	confirm_delete->set_text(TTRC("Remove the selected template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 	add_child(confirm_delete);
 	confirm_delete->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_delete_confirmed));
 
