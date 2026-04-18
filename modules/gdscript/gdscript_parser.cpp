@@ -3277,6 +3277,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	ArrayNode *array = alloc_node<ArrayNode>();
 
+	// Brackets create a new expression scope; outer ":" reservation does not apply inside.
+	bool previous_colon_reserved = outer_colon_reserved;
+	outer_colon_reserved = false;
+
 	if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
 		do {
 			if (check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
@@ -3296,11 +3300,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after array elements.)");
 	complete_extents(array);
 
+	outer_colon_reserved = previous_colon_reserved;
 	return array;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	DictionaryNode *dictionary = alloc_node<DictionaryNode>();
+
+	// Braces create a new expression scope for values; keys reserve ":" for the entry separator.
+	bool previous_colon_reserved = outer_colon_reserved;
 
 	bool decided_style = false;
 	if (!check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
@@ -3401,11 +3409,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after dictionary elements.)");
 	complete_extents(dictionary);
 
+	outer_colon_reserved = previous_colon_reserved;
 	return dictionary;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	// Parens create a new expression scope, so any outer ":" reservation does not apply inside.
+	bool previous_colon_reserved = outer_colon_reserved;
+	outer_colon_reserved = false;
 	ExpressionNode *grouped = parse_expression(false);
+	outer_colon_reserved = previous_colon_reserved;
 	pop_multiline();
 	if (grouped == nullptr) {
 		push_error(R"(Expected grouping expression.)");
@@ -3460,7 +3473,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 	make_completion_context(COMPLETION_SUBSCRIPT, subscript);
 
 	subscript->base = p_previous_operand;
+	// Brackets create a new expression scope; outer ":" reservation does not apply inside.
+	bool previous_colon_reserved = outer_colon_reserved;
+	outer_colon_reserved = false;
 	subscript->index = parse_expression(false);
+	outer_colon_reserved = previous_colon_reserved;
 
 #ifdef TOOLS_ENABLED
 	if (subscript->index != nullptr && subscript->index->type == Node::LITERAL) {
@@ -3565,13 +3582,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		}
 	}
 
-	// Arguments.
+	// Arguments. Parens create a new expression scope; outer ":" reservation does not apply inside.
 	CompletionType ct = COMPLETION_CALL_ARGUMENTS;
 	if (call->function_name == SNAME("load")) {
 		ct = COMPLETION_RESOURCE_PATH;
 	}
 	push_completion_call(call);
 	int argument_index = 0;
+	bool previous_colon_reserved = outer_colon_reserved;
+	outer_colon_reserved = false;
 	do {
 		make_completion_context(ct, call, argument_index);
 		set_last_completion_call_arg(argument_index);
@@ -3594,6 +3613,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		argument_index++;
 	} while (match(GDScriptTokenizer::Token::COMMA));
 	pop_completion_call();
+	outer_colon_reserved = previous_colon_reserved;
 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
@@ -3704,9 +3724,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 				if (multiline_body) {
 					parse_class_body(true);
 				} else {
-					// Inline body: only a single "func" definition is allowed.
+					// Inline body: only a single "func" definition is allowed. `in_lambda` lets
+					// the function body terminate on any non-statement-end token (e.g., `)`).
 					if (check(GDScriptTokenizer::Token::FUNC)) {
+						bool previous_in_lambda = in_lambda;
+						in_lambda = true;
 						parse_class_member(&GDScriptParser::parse_function, AnnotationInfo::FUNCTION, "function", false);
+						in_lambda = previous_in_lambda;
 					} else {
 						push_error(R"*(Inline anonymous class body must be a single "func" definition; use an indented block for multiple members.)*");
 					}
