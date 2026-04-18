@@ -1384,6 +1384,9 @@
 		<member name="project_manager/directory_naming_convention" type="int" setter="" getter="">
 			Directory naming convention for the project manager. Options are "No Convention" (project name is directory name), "kebab-case" (default), "snake_case", "camelCase", "PascalCase", or "Title Case".
 		</member>
+		<member name="project_manager/show_warning_on_tag_deletion" type="bool" setter="" getter="">
+			If [code]true[/code], shows a warning popup when deleting a tag from the Project List directly. Does not show when using the Manage Tags dialog.
+		</member>
 		<member name="project_manager/sorting_order" type="int" setter="" getter="">
 			The sorting order to use in the project manager. When changing the sorting order in the project manager, this setting is set permanently in the editor settings.
 		</member>

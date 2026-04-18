@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/project_manager/project_list.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/scroll_container.h"
 
@@ -45,7 +46,6 @@ class OptionButton;
 class PanelContainer;
 class PopupMenu;
 class ProjectDialog;
-class ProjectList;
 class QuickSettingsDialog;
 class RichTextLabel;
 class TabContainer;
@@ -122,7 +122,7 @@ class ProjectManager : public Control {
 
 	AcceptDialog *error_dialog = nullptr;
 
-	void _show_error(const String &p_message, const Size2 &p_min_size = Size2());
+	void _show_error(const String &p_message, const Size2 &p_min_size = Size2(), bool p_autowrap = false);
 	void _dim_window();
 
 	// Quick settings.
@@ -220,6 +220,7 @@ class ProjectManager : public Control {
 	// Project tag management.
 
 	HashSet<String> tag_set;
+	String tag_to_del;
 	PackedStringArray current_project_tags;
 	PackedStringArray forbidden_tag_characters{ "/", "\\", "-" };
 
@@ -233,8 +234,11 @@ class ProjectManager : public Control {
 	LineEdit *new_tag_name = nullptr;
 	Label *tag_error = nullptr;
 
-	void _manage_project_tags();
+	ConfirmationDialog *del_tag_warning_dialog = nullptr;
+	CheckBox *del_tag_warning_cb = nullptr;
+
 	void _add_project_tag(const String &p_tag);
+	void _remove_project_tag();
 	void _delete_project_tag(const String &p_tag);
 	void _apply_project_tags();
 	void _set_new_tag_name(const String p_name);
@@ -285,6 +289,8 @@ public:
 	// Project tag management.
 
 	void add_new_tag(const String &p_tag);
+	void manage_project_tags();
+	void show_remove_tag_warning_dialog(const String &p_tag);
 
 	// Theme.
 	Ref<Theme> get_theme() const { return theme; }
