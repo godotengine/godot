@@ -1,2 +1,3 @@
 GDTEST_OK
+~~ WARNING at line 17: (UNSAFE_METHOD_ACCESS) The method "name_of()" is not present on the inferred type "Object" (but may be present on a subtype).
 nested
