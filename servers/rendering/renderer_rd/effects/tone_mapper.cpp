@@ -35,18 +35,6 @@
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 #include "core/config/project_settings.h"
-#include "core/math/math_defs.h"
-#include "servers/rendering/renderer_rd/effects/copy_effects.h"
-#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
-#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
-#include "servers/rendering/rendering_server_default.h"
-#include "servers/rendering/rendering_server_globals.h"
 
 using namespace RendererRD;
 
