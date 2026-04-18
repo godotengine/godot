@@ -62,7 +62,7 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_FXAA (1 << 4)
 #define FLAG_USE_8_BIT_DEBANDING (1 << 5)
 #define FLAG_CONVERT_TO_SRGB (1 << 6)
-
+	
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
 	uint flags;
@@ -84,6 +84,9 @@ layout(push_constant, std430) uniform Params {
 	float luminance_multiplier;
 
 	vec4 tonemapper_params;
+
+	float fxaa_subpixel_quality;
+	uint fxaa_iterations;
 }
 params;
 
@@ -541,8 +544,9 @@ float rgb2luma(vec3 rgb) {
 vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float EDGE_THRESHOLD_MIN = 0.0312;
 	const float EDGE_THRESHOLD_MAX = 0.125;
-	const int ITERATIONS = 12;
-	const float SUBPIXEL_QUALITY = 0.75;
+
+	const uint ITERATIONS = params.fxaa_iterations;
+	const float SUBPIXEL_QUALITY = params.fxaa_subpixel_quality;
 
 #ifdef USE_MULTIVIEW
 	float lumaUp = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(0, 1)).xyz * exposure * params.luminance_multiplier);

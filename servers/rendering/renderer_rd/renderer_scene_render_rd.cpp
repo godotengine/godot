@@ -719,6 +719,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		if (rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
 			tonemap.use_fxaa = true;
+			tonemap.fxaa_subpixel_quality = GLOBAL_GET("rendering/anti_aliasing/quality/fxaa_subpixel_quality");
+			tonemap.fxaa_iterations = GLOBAL_GET("rendering/anti_aliasing/quality/fxaa_iterations");
 		}
 
 		tonemap.texture_size = Vector2i(color_size.x, color_size.y);

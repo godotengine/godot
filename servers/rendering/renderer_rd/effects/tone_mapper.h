@@ -122,6 +122,9 @@ private:
 		float luminance_multiplier; //  4 - 96
 
 		float tonemapper_params[4]; //  16 - 112
+
+		float fxaa_subpixel_quality;
+		uint32_t fxaa_iterations;
 	};
 
 	struct TonemapPushConstantMobile {
@@ -195,6 +198,9 @@ public:
 		RID color_correction_texture;
 
 		bool use_fxaa = false;
+		float fxaa_subpixel_quality = 0.75f;
+		uint32_t fxaa_iterations = 12;
+
 		enum DebandingMode {
 			DEBANDING_MODE_DISABLED,
 			DEBANDING_MODE_8_BIT,

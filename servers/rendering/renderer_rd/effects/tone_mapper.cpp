@@ -34,6 +34,20 @@
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
+#include "core/config/project_settings.h"
+#include "core/math/math_defs.h"
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_globals.h"
+
 using namespace RendererRD;
 
 ToneMapper::ToneMapper(bool p_use_mobile_version) {
@@ -141,6 +155,9 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.glow_texture_size[0] = p_settings.glow_texture_size.x;
 	tonemap.push_constant.glow_texture_size[1] = p_settings.glow_texture_size.y;
 	tonemap.push_constant.glow_mode = p_settings.glow_mode;
+
+	tonemap.push_constant.fxaa_subpixel_quality = p_settings.fxaa_subpixel_quality;
+	tonemap.push_constant.fxaa_iterations = p_settings.fxaa_iterations;
 
 	int mode = p_settings.glow_use_bicubic_upscale ? TONEMAP_MODE_BICUBIC_GLOW_FILTER : TONEMAP_MODE_NORMAL;
 	if (p_settings.use_1d_color_correction) {
