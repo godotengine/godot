@@ -77,6 +77,7 @@ private:
 	static HashMap<String, String> builtin_canvas_types;
 
 	String _get_enclosing_function(const PackedStringArray &p_lines, int p_line) const;
+	bool _is_inside_loop(const PackedStringArray &p_lines, int p_line) const;
 	bool _find_statement(const PackedStringArray &p_lines, int p_line, String &r_var_name, int &r_start, int &r_end) const;
 	String _find_var_type(const PackedStringArray &p_lines, const String &p_var_name, int p_line, bool p_mode_3d);
 	bool _match_uniforms(const Ref<ShaderMaterial> &p_source, const Ref<ShaderMaterial> &p_target) const;
