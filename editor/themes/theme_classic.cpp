@@ -1581,25 +1581,39 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 			Ref<StyleBoxFlat> tag = p_config.button_style->duplicate();
 			tag->set_bg_color(p_config.dark_theme ? tag->get_bg_color().lightened(0.2) : tag->get_bg_color().darkened(0.2));
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius_all(0);
 			p_theme->set_stylebox(CoreStringName(normal), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_hover->duplicate();
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius_all(0);
 			p_theme->set_stylebox(SceneStringName(hover), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_pressed->duplicate();
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius_all(0);
 			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTagButton", tag);
+
+			p_theme->set_type_variation("ProjectTagAddRemoveButton", "Button");
+
+			Ref<StyleBoxFlat> add_remove = p_config.button_style->duplicate();
+			add_remove->set_corner_radius(CORNER_TOP_LEFT, 0);
+			add_remove->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+			add_remove->set_corner_radius(CORNER_TOP_RIGHT, 4);
+			add_remove->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			p_theme->set_stylebox(CoreStringName(normal), "ProjectTagAddRemoveButton", add_remove);
+
+			add_remove = p_config.button_style_hover->duplicate();
+			add_remove->set_corner_radius(CORNER_TOP_LEFT, 0);
+			add_remove->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+			add_remove->set_corner_radius(CORNER_TOP_RIGHT, 4);
+			add_remove->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			p_theme->set_stylebox(SceneStringName(hover), "ProjectTagAddRemoveButton", add_remove);
+
+			add_remove = p_config.button_style_pressed->duplicate();
+			add_remove->set_corner_radius(CORNER_TOP_LEFT, 0);
+			add_remove->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+			add_remove->set_corner_radius(CORNER_TOP_RIGHT, 4);
+			add_remove->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTagAddRemoveButton", add_remove);
 		}
 	}
 
