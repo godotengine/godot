@@ -73,8 +73,8 @@ bool SpringBoneSimulator3D::_set(const StringName &p_path, const Variant &p_valu
 			set_center_bone(which, p_value);
 		} else if (what == "center_bone_name") {
 			set_center_bone_name(which, p_value);
-		} else if (what == "individual_config") {
-			set_individual_config(which, p_value);
+		} else if (what == "override_individual_joints") {
+			set_override_individual_joints(which, p_value);
 		} else if (what == "rotation_axis") {
 			set_rotation_axis(which, static_cast<RotationAxis>((int)p_value));
 		} else if (what == "rotation_axis_vector") {
@@ -194,8 +194,8 @@ bool SpringBoneSimulator3D::_get(const StringName &p_path, Variant &r_ret) const
 			r_ret = get_center_bone(which);
 		} else if (what == "center_bone_name") {
 			r_ret = get_center_bone_name(which);
-		} else if (what == "individual_config") {
-			r_ret = is_config_individual(which);
+		} else if (what == "override_individual_joints") {
+			r_ret = is_override_individual_joints(which);
 		} else if (what == "rotation_axis") {
 			r_ret = (int)get_rotation_axis(which);
 		} else if (what == "rotation_axis_vector") {
@@ -327,7 +327,7 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		props.push_back(PropertyInfo(Variant::NODE_PATH, path + "center_node"));
 		props.push_back(PropertyInfo(Variant::STRING, path + "center_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
 		props.push_back(PropertyInfo(Variant::INT, path + "center_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-		props.push_back(PropertyInfo(Variant::BOOL, path + "individual_config"));
+		props.push_back(PropertyInfo(Variant::BOOL, path + "override_individual_joints"));
 		props.push_back(PropertyInfo(Variant::INT, path + "rotation_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_rotation_axis()));
 		props.push_back(PropertyInfo(Variant::VECTOR3, path + "rotation_axis_vector"));
 		props.push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
@@ -376,7 +376,7 @@ void SpringBoneSimulator3D::_validate_dynamic_prop(PropertyInfo &p_property) con
 			}
 
 			// Joints option.
-			if (is_config_individual(which)) {
+			if (is_override_individual_joints(which)) {
 				if (split[2] == "rotation_axis" || split[2] == "rotation_axis_vector") {
 					p_property.usage = PROPERTY_USAGE_NONE;
 				}
@@ -649,7 +649,7 @@ int SpringBoneSimulator3D::get_center_bone(int p_index) const {
 
 void SpringBoneSimulator3D::set_rotation_axis(int p_index, RotationAxis p_axis) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (is_config_individual(p_index)) {
+	if (is_override_individual_joints(p_index)) {
 		return; // Joint config is individual mode.
 	}
 	spring_bone_chains[p_index]->rotation_axis = p_axis;
@@ -664,7 +664,7 @@ SkeletonModifier3D::RotationAxis SpringBoneSimulator3D::get_rotation_axis(int p_
 
 void SpringBoneSimulator3D::set_rotation_axis_vector(int p_index, const Vector3 &p_vector) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (is_config_individual(p_index) || spring_bone_chains[p_index]->rotation_axis != ROTATION_AXIS_CUSTOM) {
+	if (is_override_individual_joints(p_index) || spring_bone_chains[p_index]->rotation_axis != ROTATION_AXIS_CUSTOM) {
 		return; // Joint config is individual mode.
 	}
 	spring_bone_chains[p_index]->rotation_axis_vector = p_vector;
@@ -831,16 +831,16 @@ void SpringBoneSimulator3D::clear_bone_chains() {
 
 // Individual joint settings
 
-void SpringBoneSimulator3D::set_individual_config(int p_index, bool p_enabled) {
+void SpringBoneSimulator3D::set_override_individual_joints(int p_index, bool p_enabled) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	spring_bone_chains[p_index]->individual_config = p_enabled;
+	spring_bone_chains[p_index]->override_individual_joints = p_enabled;
 	_make_joints_dirty(p_index, true);
 	notify_property_list_changed();
 }
 
-bool SpringBoneSimulator3D::is_config_individual(int p_index) const {
+bool SpringBoneSimulator3D::is_override_individual_joints(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)spring_bone_chains.size(), false);
-	return spring_bone_chains[p_index]->individual_config;
+	return spring_bone_chains[p_index]->override_individual_joints;
 }
 
 String SpringBoneSimulator3D::get_joint_bone_name(int p_index, int p_joint) const {
@@ -875,7 +875,7 @@ int SpringBoneSimulator3D::get_joint_bone(int p_index, int p_joint) const {
 
 void SpringBoneSimulator3D::set_joint_radius(int p_index, int p_joint, float p_radius) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (!is_config_individual(p_index)) {
+	if (!is_override_individual_joints(p_index)) {
 		return; // Joints are read-only.
 	}
 	const LocalVector<SpringBone3DJointSetting *> &joints = spring_bone_chains[p_index]->joints;
@@ -895,7 +895,7 @@ float SpringBoneSimulator3D::get_joint_radius(int p_index, int p_joint) const {
 
 void SpringBoneSimulator3D::set_joint_stiffness(int p_index, int p_joint, float p_stiffness) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (!is_config_individual(p_index)) {
+	if (!is_override_individual_joints(p_index)) {
 		return; // Joints are read-only.
 	}
 	const LocalVector<SpringBone3DJointSetting *> &joints = spring_bone_chains[p_index]->joints;
@@ -912,7 +912,7 @@ float SpringBoneSimulator3D::get_joint_stiffness(int p_index, int p_joint) const
 
 void SpringBoneSimulator3D::set_joint_drag(int p_index, int p_joint, float p_drag) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (!is_config_individual(p_index)) {
+	if (!is_override_individual_joints(p_index)) {
 		return; // Joints are read-only.
 	}
 	const LocalVector<SpringBone3DJointSetting *> &joints = spring_bone_chains[p_index]->joints;
@@ -929,7 +929,7 @@ float SpringBoneSimulator3D::get_joint_drag(int p_index, int p_joint) const {
 
 void SpringBoneSimulator3D::set_joint_gravity(int p_index, int p_joint, float p_gravity) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (!is_config_individual(p_index)) {
+	if (!is_override_individual_joints(p_index)) {
 		return; // Joints are read-only.
 	}
 	const LocalVector<SpringBone3DJointSetting *> &joints = spring_bone_chains[p_index]->joints;
@@ -947,7 +947,7 @@ float SpringBoneSimulator3D::get_joint_gravity(int p_index, int p_joint) const {
 void SpringBoneSimulator3D::set_joint_gravity_direction(int p_index, int p_joint, const Vector3 &p_gravity_direction) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
 	ERR_FAIL_COND(p_gravity_direction.is_zero_approx());
-	if (!is_config_individual(p_index)) {
+	if (!is_override_individual_joints(p_index)) {
 		return; // Joints are read-only.
 	}
 	const LocalVector<SpringBone3DJointSetting *> &joints = spring_bone_chains[p_index]->joints;
@@ -964,7 +964,7 @@ Vector3 SpringBoneSimulator3D::get_joint_gravity_direction(int p_index, int p_jo
 
 void SpringBoneSimulator3D::set_joint_rotation_axis(int p_index, int p_joint, RotationAxis p_axis) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (!is_config_individual(p_index)) {
+	if (!is_override_individual_joints(p_index)) {
 		return; // Joints are read-only.
 	}
 	const LocalVector<SpringBone3DJointSetting *> &joints = spring_bone_chains[p_index]->joints;
@@ -990,7 +990,7 @@ SkeletonModifier3D::RotationAxis SpringBoneSimulator3D::get_joint_rotation_axis(
 
 void SpringBoneSimulator3D::set_joint_rotation_axis_vector(int p_index, int p_joint, const Vector3 &p_vector) {
 	ERR_FAIL_INDEX(p_index, (int)spring_bone_chains.size());
-	if (!is_config_individual(p_index) || spring_bone_chains[p_index]->rotation_axis != ROTATION_AXIS_CUSTOM) {
+	if (!is_override_individual_joints(p_index) || spring_bone_chains[p_index]->rotation_axis != ROTATION_AXIS_CUSTOM) {
 		return; // Joints are read-only.
 	}
 	const LocalVector<SpringBone3DJointSetting *> &joints = spring_bone_chains[p_index]->joints;
@@ -1238,8 +1238,8 @@ void SpringBoneSimulator3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_bone_chains"), &SpringBoneSimulator3D::clear_bone_chains);
 
 	// Individual Joint Settings
-	ClassDB::bind_method(D_METHOD("set_individual_config", "index", "enabled"), &SpringBoneSimulator3D::set_individual_config);
-	ClassDB::bind_method(D_METHOD("is_config_individual", "index"), &SpringBoneSimulator3D::is_config_individual);
+	ClassDB::bind_method(D_METHOD("set_override_individual_joints", "index", "enabled"), &SpringBoneSimulator3D::set_override_individual_joints);
+	ClassDB::bind_method(D_METHOD("is_override_individual_joints", "index"), &SpringBoneSimulator3D::is_override_individual_joints);
 
 	ClassDB::bind_method(D_METHOD("get_joint_bone_name", "index", "joint"), &SpringBoneSimulator3D::get_joint_bone_name);
 	ClassDB::bind_method(D_METHOD("get_joint_bone", "index", "joint"), &SpringBoneSimulator3D::get_joint_bone);
@@ -1520,7 +1520,7 @@ void SpringBoneSimulator3D::_update_joints(bool p_reset) {
 		if (!spring_bone_chains[i]->joints_dirty) {
 			continue;
 		}
-		if (spring_bone_chains[i]->individual_config) {
+		if (spring_bone_chains[i]->override_individual_joints) {
 			spring_bone_chains[i]->simulation_dirty = p_reset;
 			spring_bone_chains[i]->joints_dirty = false;
 			continue; // Abort.

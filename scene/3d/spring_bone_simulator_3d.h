@@ -132,7 +132,7 @@ public:
 		Transform3D cached_center;
 		Transform3D cached_inverted_center;
 
-		bool individual_config = false;
+		bool override_individual_joints = false;
 		LocalVector<SpringBone3DJointSetting *> joints;
 
 		bool simulation_dirty = false;
@@ -253,8 +253,8 @@ public:
 	void set_joint_rotation_axis_vector(int p_index, int p_joint, const Vector3 &p_vector);
 	Vector3 get_joint_rotation_axis_vector(int p_index, int p_joint) const;
 
-	void set_individual_config(int p_index, bool p_enabled);
-	bool is_config_individual(int p_index) const;
+	void set_override_individual_joints(int p_index, bool p_enabled);
+	bool is_override_individual_joints(int p_index) const;
 
 	String get_joint_bone_name(int p_index, int p_joint) const;
 	int get_joint_bone(int p_index, int p_joint) const;
