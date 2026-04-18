@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/project_manager/project_list.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/scroll_container.h"
 
@@ -45,7 +46,6 @@ class OptionButton;
 class PanelContainer;
 class PopupMenu;
 class ProjectDialog;
-class ProjectList;
 class QuickSettingsDialog;
 class RichTextLabel;
 class TabContainer;
@@ -143,6 +143,7 @@ class ProjectManager : public Control {
 
 	void _update_list_placeholder();
 
+	Vector<ProjectList::Item> compat_projects;
 	ProjectList *project_list = nullptr;
 	bool initialized = false;
 
@@ -233,12 +234,16 @@ class ProjectManager : public Control {
 	LineEdit *new_tag_name = nullptr;
 	Label *tag_error = nullptr;
 
-	void _manage_project_tags();
 	void _add_project_tag(const String &p_tag);
 	void _delete_project_tag(const String &p_tag);
-	void _apply_project_tags();
+	void _apply_project_tags(bool p_is_list = false);
+	void _apply_compat_tags(bool p_is_project_open_request = false);
 	void _set_new_tag_name(const String p_name);
 	void _create_new_tag();
+
+	// Tag compatibility quit method.
+
+	void _quit_tree(bool p_is_project_open_request = false);
 
 	// Project converter/migration tool.
 
@@ -284,6 +289,8 @@ public:
 	// Project tag management.
 
 	void add_new_tag(const String &p_tag);
+	void manage_project_tags();
+	void remove_project_tag(const String &p_tag);
 
 	ProjectManager();
 	~ProjectManager();

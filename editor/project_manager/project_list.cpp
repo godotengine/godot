@@ -103,12 +103,22 @@ void ProjectListItemControl::_notification(int p_what) {
 
 			if (project_is_missing) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
+				add_tag_button->hide();
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			} else {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+				add_tag_button->show();
 #endif
 			}
-
+			if (tag_container->get_child_count() > 0) {
+				add_tag_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+				add_tag_button->set_custom_maximum_size(Vector2(24, 24) * EDSCALE);
+				add_tag_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			} else {
+				add_tag_button->set_custom_maximum_size(Vector2(-1, 30 * EDSCALE));
+				add_tag_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+				add_tag_button->set_text("Add Tag");
+			}
 			if (touch_menu_button) {
 				touch_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			}
@@ -240,6 +250,10 @@ void ProjectListItemControl::_explore_button_pressed() {
 	emit_signal(SNAME("explore_pressed"));
 }
 
+void ProjectListItemControl::_add_tag_button_pressed() {
+	emit_signal(SNAME("add_tag_pressed"));
+}
+
 void ProjectListItemControl::_request_menu() {
 	emit_signal(SNAME("request_menu"), Vector2(touch_menu_button->get_position()));
 }
@@ -261,6 +275,7 @@ void ProjectListItemControl::set_tags(const PackedStringArray &p_tags, ProjectLi
 		ProjectTag *tag_control = memnew(ProjectTag(tag));
 		tag_container->add_child(tag_control);
 		tag_control->connect_button_to(callable_mp(p_parent_list, &ProjectList::add_search_tag).bind(tag));
+		tag_control->connect_add_remove_button_to(callable_mp(p_parent_list, &ProjectList::_remove_project_tag).bind(tag));
 	}
 }
 
@@ -422,9 +437,20 @@ void ProjectListItemControl::set_is_grayed(bool p_grayed) {
 	}
 }
 
+ProjectTag *ProjectListItemControl::get_tag_control(const String &p_tag) {
+	for (int i = 0; i < tag_container->get_child_count(); i++) {
+		ProjectTag *tag_control = Object::cast_to<ProjectTag>(tag_container->get_child(i));
+		if (tag_control && tag_control->get_tag() == p_tag) {
+			return tag_control;
+		}
+	}
+	return nullptr;
+}
+
 void ProjectListItemControl::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("favorite_pressed"));
 	ADD_SIGNAL(MethodInfo("explore_pressed"));
+	ADD_SIGNAL(MethodInfo("add_tag_pressed"));
 	ADD_SIGNAL(MethodInfo("request_menu"));
 }
 
@@ -479,6 +505,15 @@ ProjectListItemControl::ProjectListItemControl() {
 		tag_container->set_alignment(FlowContainer::ALIGNMENT_END);
 		tag_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		title_hb->add_child(tag_container);
+
+		add_tag_button = memnew(Button);
+		add_tag_button->set_name("AddTagButton");
+		add_tag_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+		add_tag_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		add_tag_button->set_mouse_filter(MOUSE_FILTER_PASS);
+		add_tag_button->set_tooltip_text(TTRC("Add tag"));
+		title_hb->add_child(add_tag_button);
+		add_tag_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_add_tag_button_pressed));
 	}
 
 	// Bottom half, containing the path and view folder button.
@@ -742,8 +777,8 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	}
 
 	const String description = cf->get_value("application", "config/description", "");
-	const PackedStringArray tags = cf->get_value("application", "config/tags", PackedStringArray());
 	const String main_scene = cf->get_value("application", "run/main_scene", "");
+	PackedStringArray tags = cf->get_value("application", "config/tags", PackedStringArray());
 
 	String icon = cf->get_value("application", "config/icon", "");
 	if (icon.begins_with("uid://")) {
@@ -799,9 +834,8 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		grayed = true;
 		missing = true;
 	}
-
-	for (const String &tag : tags) {
-		ProjectManager::get_singleton()->add_new_tag(tag);
+	if (!missing) {
+		tags = get_tags(project_name, p_path, tags);
 	}
 
 	// We can't use OS::get_user_dir() because it attempts to load paths from the current loaded project through ProjectSettings,
@@ -827,6 +861,38 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	recovery_mode = FileAccess::exists(recovery_mode_lock_file);
 
 	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, recovery_mode, config_version);
+}
+
+PackedStringArray ProjectList::get_tags(const String &p_project_name, const String &p_path, const PackedStringArray &p_tags) {
+	PackedStringArray tags = p_tags;
+	const String config_path = p_path.path_join(".tags");
+	bool exists = true;
+
+	ConfigFile tag_config;
+	if (!FileAccess::exists(config_path)) {
+		exists = false;
+		tag_config.set_value(p_project_name, "tags", tags);
+		tag_config.save(config_path);
+	}
+	if (exists) {
+		tag_config.load(config_path);
+
+		// Tag file imported from another project.
+		if (!tag_config.has_section(p_project_name)) {
+			PackedStringArray sections = tag_config.get_sections();
+			tags = tag_config.get_value(sections[0], "tags", PackedStringArray());
+			tag_config.erase_section(sections[0]);
+			tag_config.set_value(p_project_name, "tags", tags);
+			tag_config.save(config_path);
+		} else {
+			tags = tag_config.get_value(p_project_name, "tags", PackedStringArray());
+		}
+	}
+
+	for (const String &tag : tags) {
+		ProjectManager::get_singleton()->add_new_tag(tag);
+	}
+	return tags;
 }
 
 void ProjectList::_update_icons_async() {
@@ -1141,10 +1207,10 @@ void ProjectList::_create_project_item_control(int p_index) {
 
 	hb->connect(SceneStringName(gui_input), callable_mp(this, &ProjectList::_list_item_input).bind(hb));
 	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_on_favorite_pressed).bind(hb));
-
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_on_explore_pressed).bind(item.path));
 #endif
+	hb->connect("add_tag_pressed", callable_mp(this, &ProjectList::_on_add_tag_pressed));
 	hb->connect("request_menu", callable_mp(this, &ProjectList::_open_menu).bind(hb));
 
 	project_list_vbox->add_child(hb);
@@ -1274,6 +1340,14 @@ void ProjectList::_on_favorite_pressed(Node *p_hb) {
 
 void ProjectList::_on_explore_pressed(const String &p_path) {
 	OS::get_singleton()->shell_show_in_file_manager(p_path, true);
+}
+
+void ProjectList::_on_add_tag_pressed() {
+	ProjectManager::get_singleton()->manage_project_tags();
+}
+
+void ProjectList::_remove_project_tag(const String &p_tag) {
+	ProjectManager::get_singleton()->remove_project_tag(p_tag);
 }
 
 void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {

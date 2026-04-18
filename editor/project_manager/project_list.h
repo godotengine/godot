@@ -42,6 +42,7 @@ class PopupMenu;
 class ProjectList;
 class TextureButton;
 class TextureRect;
+class ProjectTag;
 
 class ProjectListItemControl : public HBoxContainer {
 	GDCLASS(ProjectListItemControl, HBoxContainer)
@@ -49,6 +50,7 @@ class ProjectListItemControl : public HBoxContainer {
 	VBoxContainer *main_vbox = nullptr;
 	TextureButton *favorite_button = nullptr;
 	Button *explore_button = nullptr;
+	Button *add_tag_button = nullptr;
 
 	TextureRect *project_icon = nullptr;
 	Label *project_title = nullptr;
@@ -82,6 +84,8 @@ class ProjectListItemControl : public HBoxContainer {
 	void _update_favorite_button_focus_color();
 	void _favorite_button_pressed();
 	void _explore_button_pressed();
+	void _add_tag_button_pressed();
+
 	void _request_menu();
 
 	ProjectList *get_list() const;
@@ -110,6 +114,8 @@ public:
 	void set_is_favorite(bool p_favorite);
 	void set_is_missing(bool p_missing);
 	void set_is_grayed(bool p_grayed);
+
+	ProjectTag *get_tag_control(const String &p_tag);
 
 	ProjectListItemControl();
 };
@@ -242,6 +248,7 @@ private:
 	void _migrate_config();
 
 	static Item load_project_data(const String &p_property_key, bool p_favorite);
+	static PackedStringArray get_tags(const String &p_project_name, const String &p_path, const PackedStringArray &p_tags);
 	void _update_icons_async();
 	void _load_project_icon(int p_index);
 
@@ -258,7 +265,9 @@ private:
 	void _list_item_input(const Ref<InputEvent> &p_ev, Control *p_hb);
 	void _on_favorite_pressed(Node *p_hb);
 	void _on_explore_pressed(const String &p_path);
+	void _on_add_tag_pressed();
 
+	void _remove_project_tag(const String &p_tag);
 	void _open_menu(const Vector2 &p_at, Control *p_hb);
 	void _menu_option(int p_option);
 	void _update_menu_icons();
