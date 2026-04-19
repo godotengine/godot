@@ -124,13 +124,26 @@ void ObjectGDExtension::create_gdtype() {
 void ObjectGDExtension::destroy_gdtype() {
 	ERR_FAIL_COND(!gdtype);
 
-	memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+	if (!is_placeholder) {
+#endif
+		memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+	}
+#endif
+
 	gdtype = nullptr;
 }
 
 ObjectGDExtension::~ObjectGDExtension() {
 	if (gdtype) {
-		memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+		if (!is_placeholder) {
+#endif
+			memdelete(const_cast<GDType *>(gdtype));
+#ifdef TOOLS_ENABLED
+		}
+#endif
 	}
 }
 
