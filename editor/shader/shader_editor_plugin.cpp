@@ -49,6 +49,9 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "servers/display/display_server.h"
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+#include "modules/visual_shader/editor/visual_shader_editor_plugin.h"
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 Ref<Resource> ShaderEditorPlugin::_get_current_shader() {
 	int index = shader_tabs->get_current_tab();
@@ -531,6 +534,14 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 					editor->trim_final_newlines();
 				}
 			}
+
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+			VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
+			if (vs_editor) {
+				vs_editor->save_external_data(); // Saves the whole edited group stack.
+			}
+#endif //MODULE_VISUAL_SHADER_ENABLED
+
 			if (edited_shaders[index].shader.is_valid()) {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader);
 			} else {
@@ -553,6 +564,13 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 					editor->trim_final_newlines();
 				}
 			}
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+			VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
+			if (vs_editor) {
+				vs_editor->save_external_data(); // Saves the whole edited group stack.
+			}
+#endif //MODULE_VISUAL_SHADER_ENABLED
+
 			String path;
 			if (edited_shaders[index].shader.is_valid()) {
 				path = edited_shaders[index].shader->get_path();

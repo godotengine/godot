@@ -49,6 +49,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_CANVAS_ITEM; }
 
 	VisualShaderNodeSDFToScreenUV();
 };
@@ -71,6 +72,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_CANVAS_ITEM; }
 
 	VisualShaderNodeScreenUVToSDF();
 };
@@ -92,6 +94,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_CANVAS_ITEM; }
 
 	VisualShaderNodeTextureSDF();
 };
@@ -113,6 +116,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_CANVAS_ITEM; }
 
 	VisualShaderNodeTextureSDFNormal();
 };
@@ -134,6 +138,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_CANVAS_ITEM; }
 
 	VisualShaderNodeSDFRaymarch();
 };
