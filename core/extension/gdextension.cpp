@@ -240,7 +240,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs) {
-	const GDExtensionClassCreationInfo5 class_info5 = {
+	const GDExtensionClassCreationInfo6 class_info6 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
 		true, // GDExtensionBool is_exposed;
@@ -257,30 +257,30 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
 		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
 		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
-		nullptr, // GDExtensionClassCreateInstance2 create_instance_func; /* this one is mandatory */
+		nullptr, // GDExtensionClassCreateInstance3 create_instance_func; /* this one is mandatory */
 		p_extension_funcs->free_instance_func, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		nullptr, // GDExtensionClassRecreateInstance recreate_instance_func;
-		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
-		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
-		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
+		nullptr, // GDExtensionClassGetVirtual2 get_virtual_func;
+		nullptr, // GDExtensionClassGetVirtualCallData2 get_virtual_call_data_func;
+		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
 		p_extension_funcs->class_userdata, // void *class_userdata;
 	};
 
 	const ClassCreationDeprecatedInfo legacy = {
-		false,
+		false, // bool legacy_unexposed_class;
 		p_extension_funcs->notification_func, // GDExtensionClassNotification notification_func;
 		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance create_instance_func;
-		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
+		nullptr, // GDExtensionClassCreateInstance2 create_instance2_func;
+		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid_func;
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
-		nullptr,
-		false, // p_creation_is_with_refcount
+		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 	};
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info6, &legacy);
 }
 
 void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs) {
-	const GDExtensionClassCreationInfo5 class_info5 = {
+	const GDExtensionClassCreationInfo6 class_info6 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
 		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
@@ -297,12 +297,12 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
 		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
 		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
-		nullptr, // GDExtensionClassCreateInstance2 create_instance_func; /* this one is mandatory */
+		nullptr, // GDExtensionClassCreateInstance3 create_instance_func; /* this one is mandatory */
 		p_extension_funcs->free_instance_func, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		p_extension_funcs->recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
-		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
-		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
-		p_extension_funcs->call_virtual_with_data_func, // GDExtensionClassCallVirtualWithData call_virtual_func;
+		nullptr, // GDExtensionClassGetVirtual2 get_virtual_func;
+		nullptr, // GDExtensionClassGetVirtualCallData2 get_virtual_call_data_func;
+		p_extension_funcs->call_virtual_with_data_func, // GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
 		p_extension_funcs->class_userdata, // void *class_userdata;
 	};
 
@@ -311,16 +311,16 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		nullptr, // GDExtensionClassNotification notification_func;
 		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance create_instance_func;
-		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
+		nullptr, // GDExtensionClassCreateInstance2 create_instance2_func;
+		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid_func;
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
-		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtual get_virtual_func;
-		false, // p_creation_is_with_refcount
+		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 	};
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info6, &legacy);
 }
 
 void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs) {
-	const GDExtensionClassCreationInfo5 class_info5 = {
+	const GDExtensionClassCreationInfo6 class_info6 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
 		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
@@ -329,7 +329,7 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
 		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
 		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
-		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
@@ -337,12 +337,12 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
 		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
 		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
-		nullptr, // GDExtensionClassCreateInstance2 create_instance_func; /* this one is mandatory */
+		nullptr, // GDExtensionClassCreateInstance3 create_instance_func; /* this one is mandatory */
 		p_extension_funcs->free_instance_func, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		p_extension_funcs->recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
-		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
-		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
-		p_extension_funcs->call_virtual_with_data_func, // GDExtensionClassCallVirtualWithData call_virtual_func;
+		nullptr, // GDExtensionClassGetVirtual2 get_virtual_func;
+		nullptr, // GDExtensionClassGetVirtualCallData2 get_virtual_call_data_func;
+		p_extension_funcs->call_virtual_with_data_func, // GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
 		p_extension_funcs->class_userdata, // void *class_userdata;
 	};
 
@@ -350,34 +350,93 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 		!p_extension_funcs->is_exposed, // bool legacy_unexposed_class;
 		nullptr, // GDExtensionClassNotification notification_func;
 		nullptr, // GDExtensionClassFreePropertyList free_property_list_func;
-		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance2 create_instance_func;
-		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid;
+		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance create_instance_func;
+		nullptr, // GDExtensionClassCreateInstance2 create_instance2_func;
+		p_extension_funcs->get_rid_func, // GDExtensionClassGetRID get_rid_func;
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
-		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtual get_virtual_func;
-		false, // p_creation_is_with_refcount
+		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 	};
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info6, &legacy);
 }
 
 void GDExtension::_register_extension_class4(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs) {
-	GDExtensionClassCreationInfo5 class_info5 = *p_extension_funcs;
+	const GDExtensionClassCreationInfo6 class_info6 = {
+		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
+		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
+		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
+		p_extension_funcs->is_runtime, // GDExtensionBool is_runtime;
+		p_extension_funcs->icon_path, // GDExtensionConstStringPtr icon_path;
+		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
+		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
+		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList2 free_property_list_func;
+		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
+		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
+		p_extension_funcs->notification_func, // GDExtensionClassNotification2 notification_func;
+		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
+		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
+		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
+		nullptr, // GDExtensionClassCreateInstance3 create_instance_func; /* this one is mandatory */
+		p_extension_funcs->free_instance_func, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
+		p_extension_funcs->recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
+		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual2 get_virtual_func;
+		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtualCallData2 get_virtual_call_data_func;
+		p_extension_funcs->call_virtual_with_data_func, // GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
+		p_extension_funcs->class_userdata, // void *class_userdata;
+	};
+
 	const ClassCreationDeprecatedInfo legacy = {
 		!p_extension_funcs->is_exposed, // bool legacy_unexposed_class;
 		nullptr, // GDExtensionClassNotification notification_func;
 		nullptr, // GDExtensionClassFreePropertyList free_property_list_func;
-		nullptr, // GDExtensionClassCreateInstance2 create_instance_func;
-		nullptr, // GDExtensionClassGetRID get_rid;
+		nullptr, // GDExtensionClassCreateInstance create_instance_func;
+		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance2 create_instance2_func;
+		nullptr, // GDExtensionClassGetRID get_rid_func;
 		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
-		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
-		false, // p_creation_is_with_refcount
+		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 	};
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info6, &legacy);
 }
 
 void GDExtension::_register_extension_class5(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs) {
-	ClassCreationDeprecatedInfo legacy = {};
-	legacy.p_creation_is_with_refcount = false;
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, p_extension_funcs, &legacy);
+	const GDExtensionClassCreationInfo6 class_info6 = {
+		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
+		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
+		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
+		p_extension_funcs->is_runtime, // GDExtensionBool is_runtime;
+		p_extension_funcs->icon_path, // GDExtensionConstStringPtr icon_path;
+		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
+		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
+		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList2 free_property_list_func;
+		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
+		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
+		p_extension_funcs->notification_func, // GDExtensionClassNotification2 notification_func;
+		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
+		p_extension_funcs->reference_func, // GDExtensionClassReference reference_func;
+		p_extension_funcs->unreference_func, // GDExtensionClassUnreference unreference_func;
+		nullptr, // GDExtensionClassCreateInstance3 create_instance_func; /* this one is mandatory */
+		p_extension_funcs->free_instance_func, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
+		p_extension_funcs->recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
+		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual2 get_virtual_func;
+		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtualCallData2 get_virtual_call_data_func;
+		p_extension_funcs->call_virtual_with_data_func, // GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
+		p_extension_funcs->class_userdata, // void *class_userdata;
+	};
+
+	const ClassCreationDeprecatedInfo legacy = {
+		false, // bool legacy_unexposed_class;
+		nullptr, // GDExtensionClassNotification notification_func;
+		nullptr, // GDExtensionClassFreePropertyList free_property_list_func;
+		nullptr, // GDExtensionClassCreateInstance create_instance_func;
+		p_extension_funcs->create_instance_func, // GDExtensionClassCreateInstance2 create_instance2_func;
+		nullptr, // GDExtensionClassGetRID get_rid_func;
+		nullptr, // GDExtensionClassGetVirtual get_virtual_func;
+		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
+	};
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info6, &legacy);
 }
 #endif // DISABLE_DEPRECATED
 
@@ -385,7 +444,7 @@ void GDExtension::_register_extension_class6(GDExtensionClassLibraryPtr p_librar
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, p_extension_funcs);
 }
 
-void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs) {
+void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo6 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
@@ -471,6 +530,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 		extension->gdextension.notification = p_deprecated_funcs->notification_func;
 		extension->gdextension.free_property_list = p_deprecated_funcs->free_property_list_func;
 		extension->gdextension.create_instance = p_deprecated_funcs->create_instance_func;
+		extension->gdextension.create_instance2 = p_deprecated_funcs->create_instance2_func;
 		extension->gdextension.get_rid = p_deprecated_funcs->get_rid_func;
 		extension->gdextension.get_virtual = p_deprecated_funcs->get_virtual_func;
 		extension->gdextension.get_virtual_call_data = p_deprecated_funcs->get_virtual_call_data_func;
@@ -481,14 +541,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.reference = p_extension_funcs->reference_func;
 	extension->gdextension.unreference = p_extension_funcs->unreference_func;
 	extension->gdextension.class_userdata = p_extension_funcs->class_userdata;
-#ifndef DISABLE_DEPRECATED
-	if (p_deprecated_funcs && !p_deprecated_funcs->p_creation_is_with_refcount) {
-		extension->gdextension.create_instance2 = p_extension_funcs->create_instance_func;
-	} else
-#endif
-	{
-		extension->gdextension.create_instance3 = p_extension_funcs->create_instance_func;
-	}
+	extension->gdextension.create_instance3 = p_extension_funcs->create_instance_func;
 	extension->gdextension.free_instance = p_extension_funcs->free_instance_func;
 	extension->gdextension.recreate_instance = p_extension_funcs->recreate_instance_func;
 	extension->gdextension.get_virtual2 = p_extension_funcs->get_virtual_func;

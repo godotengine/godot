@@ -1164,6 +1164,10 @@
                     "name": "p_class_userdata",
                     "type": "void*"
                 }
+            ],
+            "description": [
+                "Called to construct an instance of the class.",
+                "For classes descending from RefCounted, the reference count should be zero."
             ]
         },
         {
@@ -1181,6 +1185,10 @@
                     "name": "p_notify_postinitialize",
                     "type": "GDExtensionBool"
                 }
+            ],
+            "description": [
+                "Called to construct an instance of the class.",
+                "For classes descending from RefCounted, the reference count should be zero."
             ]
         },
         {
@@ -1198,6 +1206,10 @@
                     "name": "p_notify_postinitialize",
                     "type": "GDExtensionBool"
                 }
+            ],
+            "description": [
+                "Called to construct an instance of the class.",
+                "For classes descending from RefCounted, the reference count should already be incremented by 1."
             ]
         },
         {
@@ -1389,7 +1401,7 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1487,7 +1499,7 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1612,7 +1624,7 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1741,7 +1753,7 @@
                     "name": "create_instance_func",
                     "type": "GDExtensionClassCreateInstance2",
                     "description": [
-                        "(Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract."
+                        "Class constructor. Required unless the class is virtual or abstract."
                     ]
                 },
                 {
@@ -1797,8 +1809,124 @@
         },
         {
             "name": "GDExtensionClassCreationInfo6",
-            "kind": "alias",
-            "type": "GDExtensionClassCreationInfo5"
+            "kind": "struct",
+            "members": [
+                {
+                    "name": "is_virtual",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "is_abstract",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "is_exposed",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "is_runtime",
+                    "type": "GDExtensionBool"
+                },
+                {
+                    "name": "icon_path",
+                    "type": "GDExtensionConstStringPtr"
+                },
+                {
+                    "name": "set_func",
+                    "type": "GDExtensionClassSet"
+                },
+                {
+                    "name": "get_func",
+                    "type": "GDExtensionClassGet"
+                },
+                {
+                    "name": "get_property_list_func",
+                    "type": "GDExtensionClassGetPropertyList"
+                },
+                {
+                    "name": "free_property_list_func",
+                    "type": "GDExtensionClassFreePropertyList2"
+                },
+                {
+                    "name": "property_can_revert_func",
+                    "type": "GDExtensionClassPropertyCanRevert"
+                },
+                {
+                    "name": "property_get_revert_func",
+                    "type": "GDExtensionClassPropertyGetRevert"
+                },
+                {
+                    "name": "validate_property_func",
+                    "type": "GDExtensionClassValidateProperty"
+                },
+                {
+                    "name": "notification_func",
+                    "type": "GDExtensionClassNotification2"
+                },
+                {
+                    "name": "to_string_func",
+                    "type": "GDExtensionClassToString"
+                },
+                {
+                    "name": "reference_func",
+                    "type": "GDExtensionClassReference"
+                },
+                {
+                    "name": "unreference_func",
+                    "type": "GDExtensionClassUnreference"
+                },
+                {
+                    "name": "create_instance_func",
+                    "type": "GDExtensionClassCreateInstance3",
+                    "description": [
+                        "Class constructor. Required unless the class is virtual or abstract."
+                    ]
+                },
+                {
+                    "name": "free_instance_func",
+                    "type": "GDExtensionClassFreeInstance",
+                    "description": [
+                        "Destructor; mandatory."
+                    ]
+                },
+                {
+                    "name": "recreate_instance_func",
+                    "type": "GDExtensionClassRecreateInstance"
+                },
+                {
+                    "name": "get_virtual_func",
+                    "type": "GDExtensionClassGetVirtual2",
+                    "description": [
+                        "Queries a virtual function by name and returns a callback to invoke the requested virtual function."
+                    ]
+                },
+                {
+                    "name": "get_virtual_call_data_func",
+                    "type": "GDExtensionClassGetVirtualCallData2",
+                    "description": [
+                        "Paired with `call_virtual_with_data_func`, this is an alternative to `get_virtual_func` for extensions that",
+                        "need or benefit from extra data when calling virtual functions.",
+                        "Returns user data that will be passed to `call_virtual_with_data_func`.",
+                        "Returning `NULL` from this function signals to Godot that the virtual function is not overridden.",
+                        "Data returned from this function should be managed by the extension and must be valid until the extension is deinitialized.",
+                        "You should supply either `get_virtual_func`, or `get_virtual_call_data_func` with `call_virtual_with_data_func`."
+                    ]
+                },
+                {
+                    "name": "call_virtual_with_data_func",
+                    "type": "GDExtensionClassCallVirtualWithData",
+                    "description": [
+                        "Used to call virtual functions when `get_virtual_call_data_func` is not null."
+                    ]
+                },
+                {
+                    "name": "class_userdata",
+                    "type": "void*",
+                    "description": [
+                        "Per-class user data, later accessible in instance bindings."
+                    ]
+                }
+            ]
         },
         {
             "name": "GDExtensionClassLibraryPtr",
@@ -8640,8 +8768,7 @@
                     "name": "p_extension_funcs",
                     "type": "const GDExtensionClassCreationInfo6*",
                     "description": [
-                        "A pointer to a GDExtensionClassCreationInfo6 struct.",
-                        "In contrast to GDExtensionClassCreationInfo5, the creation function must return RefCounted subtypes with a refcount of 1."
+                        "A pointer to a GDExtensionClassCreationInfo6 struct."
                     ]
                 }
             ],
