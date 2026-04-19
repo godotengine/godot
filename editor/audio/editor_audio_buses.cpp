@@ -1029,8 +1029,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	active_gradient_colors = { EDITOR_GET("editors/audio_buses/active_min_db_color"), EDITOR_GET("editors/audio_buses/active_normalized_db_color"), EDITOR_GET("editors/audio_buses/active_max_db_color") };
 	active_gradient->set_colors(active_gradient_colors);
 	active_bus_texture->set_gradient(active_gradient);
-	active_bus_texture->set_width(16);
-	active_bus_texture->set_height(128);
+	active_bus_texture->set_width(vu_width * EDSCALE);
+	active_bus_texture->set_height(vu_height * EDSCALE);
 	active_bus_texture->set_fill_from(Vector2(0.0, 1.0));
 	active_bus_texture->set_fill_to(Vector2(0.0, 0.0));
 	inactive_bus_texture = memnew(GradientTexture2D);
@@ -1039,8 +1039,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	inactive_gradient_colors = { EDITOR_GET("editors/audio_buses/inactive_min_db_color"), EDITOR_GET("editors/audio_buses/inactive_normalized_db_color"), EDITOR_GET("editors/audio_buses/inactive_max_db_color") };
 	inactive_gradient->set_colors(inactive_gradient_colors);
 	inactive_bus_texture->set_gradient(inactive_gradient);
-	inactive_bus_texture->set_width(16);
-	inactive_bus_texture->set_height(128);
+	inactive_bus_texture->set_width(vu_width * EDSCALE);
+	inactive_bus_texture->set_height(vu_height * EDSCALE);
 	inactive_bus_texture->set_fill_from(Vector2(0.0, 1.0));
 	inactive_bus_texture->set_fill_to(Vector2(0.0, 0.0));
 
@@ -1049,11 +1049,13 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	peak_indicator_stylebox_r = memnew(StyleBoxFlat);
 	peak_indicator_stylebox_r->set_bg_color(Color(1.0, 1.0, 1.0, 0.75));
 
+	peak_indicator_range = vu_height * EDSCALE - 2.0;
+
 	cc = 0;
 	for (int i = 0; i < CHANNELS_MAX; i++) {
 		channel[i].vu_l = memnew(TextureProgressBar);
 		channel[i].vu_l->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
-		channel[i].vu_l->set_custom_minimum_size(Size2(16.0, 128.0));
+		channel[i].vu_l->set_custom_minimum_size(Size2(vu_width, vu_height) * EDSCALE);
 		channel[i].vu_l->set_progress_texture(active_bus_texture);
 		channel[i].vu_l->set_under_texture(active_bus_texture);
 		channel[i].vu_l->set_over_texture(inactive_bus_texture);
@@ -1066,7 +1068,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_l->set_accessibility_name(vformat(TTR("Channel %d, Left VU"), i));
 
 		channel[i].peak_indicator_l = memnew(Panel);
-		channel[i].peak_indicator_l->set_custom_minimum_size(Size2(16.0, 2.0));
+		channel[i].peak_indicator_l->set_custom_minimum_size(Size2(vu_width * EDSCALE, 2.0));
 		channel[i].peak_indicator_l->add_theme_style_override(SceneStringName(panel), peak_indicator_stylebox_l);
 		channel[i].vu_l->add_child(channel[i].peak_indicator_l);
 		channel[i].peak_indicator_l->set_position(Point2(0.0, peak_indicator_range));
@@ -1079,7 +1081,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 		channel[i].vu_r = memnew(TextureProgressBar);
 		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
-		channel[i].vu_r->set_custom_minimum_size(Size2(16.0, 128.0));
+		channel[i].vu_r->set_custom_minimum_size(Size2(vu_width, vu_height) * EDSCALE);
 		channel[i].vu_r->set_progress_texture(active_bus_texture);
 		channel[i].vu_r->set_under_texture(active_bus_texture);
 		channel[i].vu_r->set_over_texture(inactive_bus_texture);
@@ -1092,7 +1094,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_r->set_accessibility_name(vformat(TTR("Channel %d, Right VU"), i));
 
 		channel[i].peak_indicator_r = memnew(Panel);
-		channel[i].peak_indicator_r->set_custom_minimum_size(Size2(16.0, 2.0));
+		channel[i].peak_indicator_r->set_custom_minimum_size(Size2(vu_width * EDSCALE, 2.0));
 		channel[i].peak_indicator_r->add_theme_style_override(SceneStringName(panel), peak_indicator_stylebox_r);
 		channel[i].vu_r->add_child(channel[i].peak_indicator_r);
 		channel[i].peak_indicator_r->set_position(Point2(0.0, peak_indicator_range));

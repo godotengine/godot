@@ -8,7 +8,7 @@ float acos_approx(float p_x) {
 	float x = abs(p_x);
 	float res = -0.156583f * x + (M_PI / 2.0);
 	res *= sqrt(1.0f - x);
-	return (p_x >= 0) ? res : M_PI - res;
+	return (p_x >= 0.0) ? res : M_PI - res;
 }
 
 vec3 integrate_edge_hill(vec3 p0, vec3 p1) {
