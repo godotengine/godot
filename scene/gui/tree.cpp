@@ -2444,22 +2444,22 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					if (p_item->cells[0].selected) {
 						if (is_row_hovered) {
 							if (has_focus(true)) {
-								theme_cache.hovered_selected_focus->draw(ci, row_rect);
+								theme_cache.hovered_selected_focus->draw(stylebox_ci, row_rect);
 							} else {
-								theme_cache.hovered_selected->draw(ci, row_rect);
+								theme_cache.hovered_selected->draw(stylebox_ci, row_rect);
 							}
 						} else {
 							if (has_focus(true)) {
-								theme_cache.selected_focus->draw(ci, row_rect);
+								theme_cache.selected_focus->draw(stylebox_ci, row_rect);
 							} else {
-								theme_cache.selected->draw(ci, row_rect);
+								theme_cache.selected->draw(stylebox_ci, row_rect);
 							}
 						}
 					} else if (!drop_mode_flags) {
 						if (is_cell_button_hovered) {
-							theme_cache.hovered_dimmed->draw(ci, row_rect);
+							theme_cache.hovered_dimmed->draw(stylebox_ci, row_rect);
 						} else {
-							theme_cache.hovered->draw(ci, row_rect);
+							theme_cache.hovered->draw(stylebox_ci, row_rect);
 						}
 					}
 				}
@@ -2471,9 +2471,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				// Cell hover.
 				if (is_cell_hovered && !p_item->cells[i].selected && !drop_mode_flags) {
 					if (is_cell_button_hovered) {
-						theme_cache.hovered_dimmed->draw(ci, r);
+						theme_cache.hovered_dimmed->draw(stylebox_ci, r);
 					} else {
-						theme_cache.hovered->draw(ci, r);
+						theme_cache.hovered->draw(stylebox_ci, r);
 					}
 				}
 			}
@@ -2487,15 +2487,15 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					if (p_item->cells[i].selected) {
 						if (is_cell_hovered) {
 							if (has_focus(true)) {
-								theme_cache.hovered_selected_focus->draw(ci, r);
+								theme_cache.hovered_selected_focus->draw(stylebox_ci, r);
 							} else {
-								theme_cache.hovered_selected->draw(ci, r);
+								theme_cache.hovered_selected->draw(stylebox_ci, r);
 							}
 						} else {
 							if (has_focus(true)) {
-								theme_cache.selected_focus->draw(ci, r);
+								theme_cache.selected_focus->draw(stylebox_ci, r);
 							} else {
-								theme_cache.selected->draw(ci, r);
+								theme_cache.selected->draw(stylebox_ci, r);
 							}
 						}
 					}
@@ -5231,6 +5231,14 @@ void Tree::_notification(int p_what) {
 					header_clip_rect.size.x = MAX(0.0f, v_scroll_rect.position.x - header_clip_rect.position.x);
 				}
 			}
+			rendering_server->canvas_item_clear(stylebox_ci);
+			rendering_server->canvas_item_set_custom_rect(stylebox_ci, !is_visibility_clip_disabled(), main_clip_rect);
+			rendering_server->canvas_item_set_clip(stylebox_ci, true);
+
+			rendering_server->canvas_item_clear(custom_ci);
+			rendering_server->canvas_item_set_custom_rect(custom_ci, !is_visibility_clip_disabled(), main_clip_rect);
+			rendering_server->canvas_item_set_clip(custom_ci, true);
+
 			rendering_server->canvas_item_clear(header_ci);
 			rendering_server->canvas_item_set_custom_rect(header_ci, !is_visibility_clip_disabled(), header_clip_rect);
 			rendering_server->canvas_item_set_clip(header_ci, true);
@@ -5238,10 +5246,6 @@ void Tree::_notification(int p_what) {
 			rendering_server->canvas_item_clear(content_ci);
 			rendering_server->canvas_item_set_custom_rect(content_ci, !is_visibility_clip_disabled(), main_clip_rect);
 			rendering_server->canvas_item_set_clip(content_ci, true);
-
-			rendering_server->canvas_item_clear(custom_ci);
-			rendering_server->canvas_item_set_custom_rect(custom_ci, !is_visibility_clip_disabled(), main_clip_rect);
-			rendering_server->canvas_item_set_clip(custom_ci, true);
 
 			rendering_server->canvas_item_clear(drop_indicator_ci);
 			rendering_server->canvas_item_set_custom_rect(drop_indicator_ci, !is_visibility_clip_disabled(), main_clip_rect);
@@ -5558,6 +5562,8 @@ void Tree::set_self_modulate(const Color &p_self_modulate) {
 	CanvasItem::set_self_modulate(p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(header_ci, p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(content_ci, p_self_modulate);
+	RS::get_singleton()->canvas_item_set_self_modulate(custom_ci, p_self_modulate);
+	RS::get_singleton()->canvas_item_set_self_modulate(stylebox_ci, p_self_modulate);
 }
 
 void Tree::_update_all() {
@@ -7429,6 +7435,14 @@ Tree::Tree() {
 
 	RenderingServer *rs = RenderingServer::get_singleton();
 
+	stylebox_ci = rs->canvas_item_create();
+	rs->canvas_item_set_parent(stylebox_ci, get_canvas_item());
+	rs->canvas_item_set_use_parent_material(stylebox_ci, true);
+
+	custom_ci = rs->canvas_item_create();
+	rs->canvas_item_set_parent(custom_ci, get_canvas_item());
+	rs->canvas_item_set_use_parent_material(custom_ci, true);
+
 	content_ci = rs->canvas_item_create();
 	rs->canvas_item_set_parent(content_ci, get_canvas_item());
 	rs->canvas_item_set_use_parent_material(content_ci, true);
@@ -7436,10 +7450,6 @@ Tree::Tree() {
 	header_ci = rs->canvas_item_create();
 	rs->canvas_item_set_parent(header_ci, get_canvas_item());
 	rs->canvas_item_set_use_parent_material(header_ci, true);
-
-	custom_ci = rs->canvas_item_create();
-	rs->canvas_item_set_parent(custom_ci, get_canvas_item());
-	rs->canvas_item_set_use_parent_material(custom_ci, true);
 
 	drop_indicator_ci = rs->canvas_item_create();
 	rs->canvas_item_set_parent(drop_indicator_ci, get_canvas_item());
@@ -7500,4 +7510,6 @@ Tree::~Tree() {
 	RenderingServer::get_singleton()->free_rid(content_ci);
 	RenderingServer::get_singleton()->free_rid(custom_ci);
 	RenderingServer::get_singleton()->free_rid(header_ci);
+	RenderingServer::get_singleton()->free_rid(custom_ci);
+	RenderingServer::get_singleton()->free_rid(stylebox_ci);
 }
