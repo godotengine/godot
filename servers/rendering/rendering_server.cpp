@@ -3749,6 +3749,8 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/quality/smaa_edge_detection_threshold", PROPERTY_HINT_RANGE, "0.01,0.2,0.01"), 0.05);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/quality/fxaa_subpixel_quality", PROPERTY_HINT_RANGE, "0.0,1.0"), 0.75f);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/quality/fxaa_edge_threshold_min", PROPERTY_HINT_RANGE, "0.0,1.0"), 0.0312f);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/quality/fxaa_edge_threshold_max", PROPERTY_HINT_RANGE, "0.0,1.0"), 0.125f);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/fxaa_iterations", PROPERTY_HINT_RANGE, "1,32"), 12);
 
 	GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);

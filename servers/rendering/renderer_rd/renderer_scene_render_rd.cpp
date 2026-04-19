@@ -720,6 +720,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		if (rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
 			tonemap.use_fxaa = true;
 			tonemap.fxaa_subpixel_quality = GLOBAL_GET("rendering/anti_aliasing/quality/fxaa_subpixel_quality");
+			tonemap.fxaa_edge_threshold_min = GLOBAL_GET("rendering/anti_aliasing/quality/fxaa_edge_threshold_min");
+			tonemap.fxaa_edge_threshold_max = GLOBAL_GET("rendering/anti_aliasing/quality/fxaa_edge_threshold_max");
 			tonemap.fxaa_iterations = GLOBAL_GET("rendering/anti_aliasing/quality/fxaa_iterations");
 		}
 
