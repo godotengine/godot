@@ -424,7 +424,7 @@ void SpringBoneSimulator3D::_notification(int p_what) {
 			}
 #endif // TOOLS_ENABLED
 			_make_collisions_dirty();
-			_make_all_joints_dirty();
+			_rebuild_bone_chains();
 		} break;
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
@@ -1297,13 +1297,13 @@ void SpringBoneSimulator3D::_bind_methods() {
 }
 
 void SpringBoneSimulator3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
-	if (p_old && p_old->is_connected(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_make_all_joints_dirty))) {
-		p_old->disconnect(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_make_all_joints_dirty));
+	if (p_old && p_old->is_connected(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_rebuild_bone_chains))) {
+		p_old->disconnect(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_rebuild_bone_chains));
 	}
-	if (p_new && !p_new->is_connected(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_make_all_joints_dirty))) {
-		p_new->connect(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_make_all_joints_dirty));
+	if (p_new && !p_new->is_connected(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_rebuild_bone_chains))) {
+		p_new->connect(SNAME("rest_updated"), callable_mp(this, &SpringBoneSimulator3D::_rebuild_bone_chains));
 	}
-	_make_all_joints_dirty();
+	_rebuild_bone_chains();
 }
 
 void SpringBoneSimulator3D::_validate_bone_names() {
@@ -1334,6 +1334,12 @@ void SpringBoneSimulator3D::_make_joints_dirty(int p_index, bool p_reset) {
 }
 
 void SpringBoneSimulator3D::_make_all_joints_dirty() {
+	for (uint32_t i = 0; i < spring_bone_chains.size(); i++) {
+		_make_joints_dirty(i);
+	}
+}
+
+void SpringBoneSimulator3D::_rebuild_bone_chains() {
 	for (uint32_t i = 0; i < spring_bone_chains.size(); i++) {
 		_update_joint_array(i);
 	}

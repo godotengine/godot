@@ -182,6 +182,7 @@ protected:
 
 	void _make_joints_dirty(int p_index, bool p_reset = false);
 	void _make_all_joints_dirty();
+	void _rebuild_bone_chains();
 
 	void _update_joint_array(int p_index);
 	void _update_joints(bool p_reset);
