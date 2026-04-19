@@ -34,8 +34,6 @@
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
-#include "core/config/project_settings.h"
-
 using namespace RendererRD;
 
 ToneMapper::ToneMapper(bool p_use_mobile_version) {
