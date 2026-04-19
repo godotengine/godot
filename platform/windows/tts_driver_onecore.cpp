@@ -190,7 +190,7 @@ Array TTSDriverOneCore::get_voices() const {
 		Dictionary voice_d;
 		voice_d["id"] = String::utf16((const char16_t *)vid.c_str(), vid.size());
 		voice_d["name"] = String::utf16((const char16_t *)vname.c_str(), vname.size());
-		voice_d["language"] = String::utf16((const char16_t *)vlang.c_str(), vlang.size());
+		voice_d["language"] = String::utf16((const char16_t *)vlang.c_str(), vlang.size()).replace_char('-', '_');
 		list.push_back(voice_d);
 	}
 	return list;
