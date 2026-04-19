@@ -114,7 +114,6 @@ class ExportTemplateManager : public AcceptDialog {
 		WEB_EXTENSIONS_NOTHREADS,
 
 		ANDROID,
-		ANDROID_SOURCE,
 
 		IOS,
 
