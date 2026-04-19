@@ -97,7 +97,7 @@ void SpringBoneSimulator3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	SpringBoneSimulator3D *simulator = Object::cast_to<SpringBoneSimulator3D>(p_gizmo->get_node_3d());
 	p_gizmo->clear();
 
-	if (!simulator->get_setting_count()) {
+	if (!simulator->get_bone_chain_count()) {
 		return;
 	}
 
@@ -135,7 +135,7 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 	}
 	weights[0] = 1;
 
-	for (int i = 0; i < p_simulator->get_setting_count(); i++) {
+	for (int i = 0; i < p_simulator->get_bone_chain_count(); i++) {
 		int current_bone = -1;
 		int prev_bone = -1;
 		int joint_end = p_simulator->get_joint_count(i) - 1;

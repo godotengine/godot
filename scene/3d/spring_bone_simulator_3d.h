@@ -108,7 +108,7 @@ public:
 		SpringBone3DVerletInfo *verlet = nullptr;
 	};
 
-	struct SpringBone3DSetting {
+	struct SpringBoneChain {
 		bool joints_dirty = false;
 
 		String root_bone_name;
@@ -140,12 +140,12 @@ public:
 
 protected:
 
-// Common Properties
+	// Common Properties
 
-	LocalVector<SpringBone3DSetting *> settings;
+	LocalVector<SpringBoneChain *> spring_bone_chains;
 	Vector3 external_force;
 	bool mutable_bone_axes = true;
-	
+
 	float radius = 0.02;
 	Ref<Curve> radius_damping_curve;
 	float stiffness = 1.0;
@@ -177,7 +177,7 @@ protected:
 
 	virtual void _set_active(bool p_active) override;
 	virtual void _process_modification(double p_delta) override;
-	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
+	void _init_joints(Skeleton3D *p_skeleton, SpringBoneChain *p_setting);
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, LocalVector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
 	void _make_joints_dirty(int p_index, bool p_reset = false);
@@ -187,7 +187,7 @@ protected:
 	void _update_joints(bool p_reset);
 	void _set_joint_bone(int p_index, int p_joint, int p_bone);
 
-	void _update_bone_axis(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
+	void _update_bone_axis(Skeleton3D *p_skeleton, SpringBoneChain *p_setting);
 
 #ifdef TOOLS_ENABLED
 	bool gizmo_dirty = false;
@@ -293,9 +293,9 @@ public:
 	void set_gravity_direction(const Vector3 &p_gravity_direction);
 	Vector3 get_gravity_direction() const;
 
-	void set_setting_count(int p_count);
-	int get_setting_count() const;
-	void clear_settings();
+	void set_bone_chain_count(int p_count);
+	int get_bone_chain_count() const;
+	void clear_bone_chains();
 
 	// Collisions
 
