@@ -314,16 +314,9 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = "Android";
-		info.description = TTRC("Basic Android APK template.");
-		info.file_list = { "android_debug.apk", "android_release.apk" };
+		info.description = TTRC("Android APK template and source for Gradle builds.");
+		info.file_list = { "android_debug.apk", "android_release.apk", "android_source.zip" };
 		template_data[TemplateID::ANDROID] = info;
-	}
-	{
-		TemplateInfo info;
-		info.name = TTR("Android Source");
-		info.description = TTRC("Template for Gradle builds for Android.");
-		info.file_list = { "android_source.zip" };
-		template_data[TemplateID::ANDROID_SOURCE] = info;
 	}
 
 	{
@@ -371,7 +364,7 @@ void ExportTemplateManager::_initialize_template_data() {
 		PlatformInfo info;
 		info.name = "Android";
 		info.icon = _get_platform_icon("Android");
-		info.templates = { TemplateID::ANDROID, TemplateID::ANDROID_SOURCE };
+		info.templates = { TemplateID::ANDROID };
 		info.group = TTR("Mobile", "Platform Group");
 		platform_map[PlatformID::ANDROID] = info;
 	}
@@ -1162,8 +1155,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			template_data[TemplateID::WEB_EXTENSIONS].name = TTR("Web with Extensions");
 			template_data[TemplateID::WEB_NOTHREADS].name = TTR("Web Single-Threaded");
 			template_data[TemplateID::WEB_EXTENSIONS_NOTHREADS].name = TTR("Web with Extensions Single-Threaded");
-			template_data[TemplateID::ANDROID_SOURCE].name = TTR("Android Source");
-			template_data[TemplateID::ANDROID_SOURCE].name = TTR("ICU Data");
+			template_data[TemplateID::ICU_DATA].name = TTR("ICU Data");
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
