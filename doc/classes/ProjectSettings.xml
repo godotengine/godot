@@ -2853,18 +2853,6 @@
 			[b]Note:[/b] [Control] nodes are snapped to the nearest pixel by default. This is controlled by [member gui/common/snap_controls_to_pixels].
 			[b]Note:[/b] It is not recommended to use this setting together with [member rendering/2d/snap/snap_2d_transforms_to_pixel], as movement may appear even less smooth. Prefer only enabling that setting instead.
 		</member>
-		<member name="rendering/anti_aliasing/quality/fxaa_edge_threshold_max" type="float" setter="" getter="" default="0.125">
-			Sets the maximum threshold for dealing with subpixel aliasing. A higher value restricts smoothing to sharp edges, but may leave some aliasing. A lower value detects more edges, but may increase blurring.
-		</member>
-		<member name="rendering/anti_aliasing/quality/fxaa_edge_threshold_min" type="float" setter="" getter="" default="0.0312">
-			Sets the minimum threshold for dealing with subpixel aliasing. A higher value prevents the algorithm from processing low contrast areas, reducing blurring but increasing aliasing. A lower value increases blurring but decreases aliasing.
-		</member>
-		<member name="rendering/anti_aliasing/quality/fxaa_iterations" type="int" setter="" getter="" default="12">
-			Sets the maximum steps along an edge the algorithm will perform. A higher value may result in more effective aliasing on long edges, with a moderate performance decrease.
-		</member>
-		<member name="rendering/anti_aliasing/quality/fxaa_subpixel_quality" type="float" setter="" getter="" default="0.75">
-			Sets the strength of the subpixel blur used by the algorithm. Lower values may result in a sharper image, but with more aliasing. Higher values may result in a less sharp, but less aliased image.
-		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_2d" type="int" setter="" getter="" default="0">
 			Sets the number of multisample antialiasing (MSAA) samples to use for 2D/Canvas rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. This has no effect on shader-induced aliasing or texture aliasing.
 			[b]Note:[/b] MSAA is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
