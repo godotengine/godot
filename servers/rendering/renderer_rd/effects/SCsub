@@ -33,7 +33,7 @@ def areatex_builder(target, source, env):
 #define AREATEX_SIZE (AREATEX_HEIGHT * AREATEX_PITCH)
 
 inline constexpr const unsigned char area_tex_png[] = {{
-    {methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 """)
 
@@ -52,7 +52,7 @@ def searchtex_builder(target, source, env):
 #define SEARCHTEX_SIZE (SEARCHTEX_HEIGHT * SEARCHTEX_PITCH)
 
 inline constexpr const unsigned char search_tex_png[] = {{
-    {methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 """)
 
