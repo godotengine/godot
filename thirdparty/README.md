@@ -1100,12 +1100,15 @@ Patches:
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.12 (735ff73ce5959cf005eb99ce517c9bcecab89dfb, 2025)
+- Version: 1.0.13 (4946b5d92e13bcc8102ac2c8efd129596a90bf75, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
+- `exr_reader.hh`
+- `streamreader.hh`
 - `tinyexr.{cc,h}`
+- `LICENSE`
 
 Patches:
 
