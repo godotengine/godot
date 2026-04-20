@@ -1602,6 +1602,8 @@ private:
 	/// [Monarch] Reginleif addition. Grants ability to parse generic parameter lists.
 	void parse_generic_parameters();
 
+	void consume_indents_and_newlines();
+
 	void parse_extends();
 	void parse_class_body(bool p_is_multiline);
 	template <typename T>

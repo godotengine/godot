@@ -439,6 +439,15 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 	completion_call_stack.back()->get().argument = p_argument;
 }
 
+
+void GDScriptParser::consume_indents_and_newlines() {
+	while  (check(GDScriptTokenizer::Token::NEWLINE) ||
+			check(GDScriptTokenizer::Token::INDENT)  ||
+			check(GDScriptTokenizer::Token::DEDENT)) { 
+				advance(); 
+			}
+}
+
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body) {
 	clear();
 
@@ -992,42 +1001,31 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 
 	if (use_braces) {
 
-		advance();
-		match(GDScriptTokenizer::Token::NEWLINE);
-		parse_class_body(true);
-		consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected "}" after class body.)");
-	
-	} else {
-		if (multiline && !consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after class declaration.)")){
-			current_class = previous_class;
-			complete_extents(n_class);
-			return n_class;
+			advance();
+			consume_indents_and_newlines();
+			parse_class_body(true);
+			consume_indents_and_newlines();
+			consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected "}" after class body.)");
+
+		} else {
+			if (multiline && !consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after class declaration.)")) {
+				current_class = previous_class;
+				complete_extents(n_class);
+				return n_class;
+			}
+			parse_class_body(multiline);
+
+			if (multiline) {
+				consume(GDScriptTokenizer::Token::DEDENT, R"(Expected indented block after class declaration.)");
+			}
 		}
-		parse_class_body(multiline);
 
-		if (multiline) { 
-			consume(GDScriptTokenizer::Token::DEDENT, R"(Expected indented block after class declaration.)");
-		}
-	}
+		complete_extents(n_class);
 
-	if (match(GDScriptTokenizer::Token::EXTENDS)) {
-		if (n_class->extends_used) {
-			push_error(R"(Cannot use "extends" more than once in the same class.)");
-		}
-		parse_extends();
-		end_statement("superclass");
-	}
-
-	parse_class_body(multiline);
-	complete_extents(n_class);
-
-	if (multiline) {
-		consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the class body.)");
-	}
-
-	current_class = previous_class;
-	return n_class;
+		current_class = previous_class;
+		return n_class;
 }
+
 
 void GDScriptParser::parse_class_name() {
 
@@ -1265,6 +1263,9 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				advance();
 				break;
 			case GDScriptTokenizer::Token::DEDENT:
+				class_end = true;
+				break;
+			case GDScriptTokenizer::Token::BRACE_CLOSE:
 				class_end = true;
 				break;
 			case GDScriptTokenizer::Token::LITERAL:
