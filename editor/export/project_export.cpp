@@ -791,10 +791,13 @@ void ProjectExportDialog::_delete_preset() {
 void ProjectExportDialog::_delete_preset_confirm() {
 	int idx = presets->get_current();
 	_edit_preset(idx - 1);
-	export_button->set_disabled(true);
-	get_ok_button()->set_disabled(true);
 	EditorExport::get_singleton()->remove_export_preset(idx);
 	_update_presets();
+
+	if (presets->get_item_count() == 0) {
+		export_button->set_disabled(true);
+		get_ok_button()->set_disabled(true);
+	}
 
 	// The Export All button might become enabled (if all other presets have an export path defined),
 	// or it could be disabled (if there are no presets anymore).
