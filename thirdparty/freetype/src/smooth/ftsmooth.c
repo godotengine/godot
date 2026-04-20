@@ -4,7 +4,7 @@
  *
  *   Anti-aliasing renderer interface (body).
  *
- * Copyright (C) 2000-2025 by
+ * Copyright (C) 2000-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -80,6 +80,7 @@
   {
     unsigned char*  origin;  /* pixmap origin at the bottom-left */
     int             pitch;   /* pitch to go down one row */
+    unsigned char   wght[5]; /* filtering weights */
 
   } TOrigin;
 
@@ -274,6 +275,32 @@
   }
 
 
+  /* This function applies a horizontal filter in direct rendering mode */
+  static void
+  ft_smooth_lcd_spans( int             y,
+                       int             count,
+                       const FT_Span*  spans,
+                       void*           target_ )   /* TOrigin* */
+  {
+    TOrigin*  target = (TOrigin*)target_;
+
+    unsigned char*  dst_line = target->origin - y * target->pitch - 2;
+    unsigned char*  dst;
+    unsigned short  w;
+
+
+    for ( ; count--; spans++ )
+      for ( dst = dst_line + spans->x, w = spans->len; w--; dst++ )
+      {
+        dst[0] += ( spans->coverage * target->wght[0] + 85 ) >> 8;
+        dst[1] += ( spans->coverage * target->wght[1] + 85 ) >> 8;
+        dst[2] += ( spans->coverage * target->wght[2] + 85 ) >> 8;
+        dst[3] += ( spans->coverage * target->wght[3] + 85 ) >> 8;
+        dst[4] += ( spans->coverage * target->wght[4] + 85 ) >> 8;
+      }
+  }
+
+
   static FT_Error
   ft_smooth_raster_lcd( FT_Renderer  render,
                         FT_Outline*  outline,
@@ -285,11 +312,47 @@
     FT_Vector*  vec;
 
     FT_Raster_Params  params;
+    TOrigin           target;
 
 
-    params.target = bitmap;
-    params.source = outline;
-    params.flags  = FT_RASTER_FLAG_AA;
+    if ( render->root.library->lcd_weights[2] )
+    {
+      /* Reject outlines that are too wide for 16-bit FT_Span.       */
+      /* Other limits are applied upstream with the same error code. */
+      if ( bitmap->width > 0x7FFF )
+        return FT_THROW( Raster_Overflow );
+
+      /* Set up direct rendering for instant filtering. */
+      params.source     = outline;
+      params.flags      = FT_RASTER_FLAG_AA | FT_RASTER_FLAG_DIRECT;
+      params.gray_spans = ft_smooth_lcd_spans;
+      params.user       = &target;
+
+      params.clip_box.xMin = 0;
+      params.clip_box.yMin = 0;
+      params.clip_box.xMax = bitmap->width;
+      params.clip_box.yMax = bitmap->rows;
+
+      if ( bitmap->pitch < 0 )
+        target.origin = bitmap->buffer;
+      else
+        target.origin = bitmap->buffer
+                        + ( bitmap->rows - 1 ) * (unsigned int)bitmap->pitch;
+
+      target.pitch = bitmap->pitch;
+
+      target.wght[0] = render->root.library->lcd_weights[0];
+      target.wght[1] = render->root.library->lcd_weights[1];
+      target.wght[2] = render->root.library->lcd_weights[2];
+      target.wght[3] = render->root.library->lcd_weights[3];
+      target.wght[4] = render->root.library->lcd_weights[4];
+    }
+    else
+    {
+      params.target = bitmap;
+      params.source = outline;
+      params.flags  = FT_RASTER_FLAG_AA;
+    }
 
     /* implode outline */
     for ( vec = points; vec < points_end; vec++ )
@@ -306,6 +369,32 @@
   }
 
 
+  /* This function applies a vertical filter in direct rendering mode */
+  static void
+  ft_smooth_lcdv_spans( int             y,
+                        int             count,
+                        const FT_Span*  spans,
+                        void*           target_ )   /* TOrigin* */
+  {
+    TOrigin*  target = (TOrigin*)target_;
+
+    int             pitch    = target->pitch;
+    unsigned char*  dst_line = target->origin - ( y + 2 ) * pitch;
+    unsigned char*  dst;
+    unsigned short  w;
+
+
+    for ( ; count--; spans++ )
+      for ( dst = dst_line + spans->x, w = spans->len; w--; dst++ )
+      {
+        dst[        0] += ( spans->coverage * target->wght[0] + 85 ) >> 8;
+        dst[    pitch] += ( spans->coverage * target->wght[1] + 85 ) >> 8;
+        dst[2 * pitch] += ( spans->coverage * target->wght[2] + 85 ) >> 8;
+        dst[3 * pitch] += ( spans->coverage * target->wght[3] + 85 ) >> 8;
+        dst[4 * pitch] += ( spans->coverage * target->wght[4] + 85 ) >> 8;
+      }
+  }
+
   static FT_Error
   ft_smooth_raster_lcdv( FT_Renderer  render,
                          FT_Outline*  outline,
@@ -317,11 +406,42 @@
     FT_Vector*  vec;
 
     FT_Raster_Params  params;
+    TOrigin           target;
 
 
-    params.target = bitmap;
-    params.source = outline;
-    params.flags  = FT_RASTER_FLAG_AA;
+    if ( render->root.library->lcd_weights[2] )
+    {
+      /* Set up direct rendering for instant filtering. */
+      params.source     = outline;
+      params.flags      = FT_RASTER_FLAG_AA | FT_RASTER_FLAG_DIRECT;
+      params.gray_spans = ft_smooth_lcdv_spans;
+      params.user       = &target;
+
+      params.clip_box.xMin = 0;
+      params.clip_box.yMin = 0;
+      params.clip_box.xMax = bitmap->width;
+      params.clip_box.yMax = bitmap->rows;
+
+      if ( bitmap->pitch < 0 )
+        target.origin = bitmap->buffer;
+      else
+        target.origin = bitmap->buffer
+                        + ( bitmap->rows - 1 ) * (unsigned int)bitmap->pitch;
+
+      target.pitch = bitmap->pitch;
+
+      target.wght[0] = render->root.library->lcd_weights[0];
+      target.wght[1] = render->root.library->lcd_weights[1];
+      target.wght[2] = render->root.library->lcd_weights[2];
+      target.wght[3] = render->root.library->lcd_weights[3];
+      target.wght[4] = render->root.library->lcd_weights[4];
+    }
+    else
+    {
+      params.target = bitmap;
+      params.source = outline;
+      params.flags  = FT_RASTER_FLAG_AA;
+    }
 
     /* implode outline */
     for ( vec = points; vec < points_end; vec++ )
@@ -494,12 +614,6 @@
     else
       y_shift += 64 * (FT_Int)bitmap->rows;
 
-    if ( origin )
-    {
-      x_shift += origin->x;
-      y_shift += origin->y;
-    }
-
     /* translate outline to render it into the bitmap */
     if ( x_shift || y_shift )
       FT_Outline_Translate( outline, x_shift, y_shift );
@@ -527,33 +641,6 @@
         error = ft_smooth_raster_lcd ( render, outline, bitmap );
       else if ( mode == FT_RENDER_MODE_LCD_V )
         error = ft_smooth_raster_lcdv( render, outline, bitmap );
-
-#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-
-      /* finally apply filtering */
-      {
-        FT_Byte*                 lcd_weights;
-        FT_Bitmap_LcdFilterFunc  lcd_filter_func;
-
-
-        /* Per-face LCD filtering takes priority if set up. */
-        if ( slot->face && slot->face->internal->lcd_filter_func )
-        {
-          lcd_weights     = slot->face->internal->lcd_weights;
-          lcd_filter_func = slot->face->internal->lcd_filter_func;
-        }
-        else
-        {
-          lcd_weights     = slot->library->lcd_weights;
-          lcd_filter_func = slot->library->lcd_filter_func;
-        }
-
-        if ( lcd_filter_func )
-          lcd_filter_func( bitmap, lcd_weights );
-      }
-
-#endif /* FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
-
     }
 
   Exit:
