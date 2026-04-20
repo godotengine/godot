@@ -343,6 +343,8 @@ bool TextShaderPreview::_is_inside_loop(const PackedStringArray &p_lines, int p_
 			if (func_regex->search(clean_line).is_valid()) {
 				return false;
 			}
+
+			brace_stack = 0;
 		}
 	}
 
