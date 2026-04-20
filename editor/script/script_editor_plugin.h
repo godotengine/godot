@@ -433,6 +433,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 	Vector<Ref<Script>> get_open_scripts() const;
+	ScriptEditorBase *get_script_editor(Ref<Resource> p_script) const;
 
 	ScriptEditorBase *get_current_editor() const { return _get_current_editor(); }
 
