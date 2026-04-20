@@ -40,7 +40,7 @@ using rebase_tent_result_scratch_t = hb_pair_t<rebase_tent_result_t, rebase_tent
 struct TupleVariationHeader
 {
   friend struct tuple_delta_t;
-  unsigned get_size (unsigned axis_count_times_2) const
+  size_t get_size (unsigned axis_count_times_2) const
   {
     // This function is super hot in mega-var-fonts with hundreds of masters.
     unsigned ti = tupleIndex;
@@ -934,7 +934,7 @@ struct TupleVariationData
     return_trace (c->check_struct (this));
   }
 
-  unsigned get_size (unsigned axis_count_times_2) const
+  size_t get_size (unsigned axis_count_times_2) const
   {
     unsigned total_size = min_size;
     unsigned count = tupleVarCount.get_count ();

@@ -379,7 +379,11 @@ struct hb_hashmap_t
 
   void clear ()
   {
-    if (unlikely (!successful)) return;
+    /* Early-out on already-empty.  Protects the Null singleton
+     * (zero-initialized) from any writes.  Any non-empty hashmap
+     * is a real heap instance with writable items, so clearing
+     * under !successful is safe. */
+    if (!population && !occupancy) return;
 
     for (auto &_ : hb_iter (items, size ()))
     {

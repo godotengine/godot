@@ -1426,10 +1426,10 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 						hb_raster_paint_reset(p_font_data->hb_rdr);
 						hb_raster_paint_set_scale_factor(p_font_data->hb_rdr, 64.0, 64.0);
 						if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
-							hb_raster_paint_set_transform(p_font_data->hb_rdr, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, 1.f, 0.f, 0.f, -1.f, xshift, 0.f);
 						} else {
 							Transform2D tr = p_font_data->transform * Transform2D::FLIP_Y;
-							hb_raster_paint_set_transform(p_font_data->hb_rdr, tr[0][0], tr[1][0], tr[0][1], tr[1][1], 0.f, 0.f);
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, tr[0][0], tr[1][0], tr[0][1], tr[1][1], xshift, 0.f);
 						}
 						hb_raster_paint_clear_custom_palette_colors(p_font_data->hb_rdr);
 						if (!p_font_data->palette_custom_colors_hb.is_empty()) {
@@ -1439,7 +1439,12 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 								}
 							}
 						}
-						bool ok = hb_raster_paint_glyph(p_font_data->hb_rdr, fd->hb_handle, (hb_codepoint_t)glyph_index, xshift, 0, p_font_data->palette_index, (hb_color_t)0xFFFFFFFF);
+#if HB_VERSION_ATLEAST(14, 2, 0)
+						hb_raster_paint_set_palette(p_font_data->hb_rdr, p_font_data->palette_index);
+						bool ok = hb_raster_paint_glyph_or_fail(p_font_data->hb_rdr, fd->hb_handle, (hb_codepoint_t)glyph_index);
+#else
+						bool ok = hb_raster_paint_glyph(p_font_data->hb_rdr, fd->hb_handle, (hb_codepoint_t)glyph_index, 0, 0, p_font_data->palette_index, (hb_color_t)0xFFFFFFFF);
+#endif
 						if (ok) {
 							is_rasterized = true;
 							fix_edge = false;
@@ -1458,12 +1463,16 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 						hb_raster_draw_reset(p_font_data->hb_mono);
 						hb_raster_draw_set_scale_factor(p_font_data->hb_mono, 64.0, 64.0);
 						if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
-							hb_raster_draw_set_transform(p_font_data->hb_mono, 1.f, 0.f, 0.f, -1.f, 0.f, 0.f);
+							hb_raster_draw_set_transform(p_font_data->hb_mono, 1.f, 0.f, 0.f, -1.f, xshift, 0.f);
 						} else {
 							Transform2D tr = p_font_data->transform * Transform2D::FLIP_Y;
-							hb_raster_draw_set_transform(p_font_data->hb_mono, tr[0][0], tr[1][0], tr[0][1], tr[1][1], 0.f, 0.f);
+							hb_raster_draw_set_transform(p_font_data->hb_mono, tr[0][0], tr[1][0], tr[0][1], tr[1][1], xshift, 0.f);
 						}
-						hb_raster_draw_glyph(p_font_data->hb_mono, fd->hb_handle, (hb_codepoint_t)glyph_index, xshift, 0);
+#if HB_VERSION_ATLEAST(14, 2, 0)
+						hb_raster_draw_glyph(p_font_data->hb_mono, fd->hb_handle, (hb_codepoint_t)glyph_index);
+#else
+						hb_raster_draw_glyph(p_font_data->hb_mono, fd->hb_handle, (hb_codepoint_t)glyph_index), 0, 0;
+#endif
 						hb_raster_image_t *img = hb_raster_draw_render(p_font_data->hb_mono);
 						hb_raster_extents_t ext = { 0, 0, 0, 0, 0 };
 						if (img) {
