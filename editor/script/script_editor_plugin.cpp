@@ -3661,6 +3661,16 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 	return out_scripts;
 }
 
+ScriptEditorBase *ScriptEditor::get_script_editor(Ref<Resource> p_script) const {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se && se->get_edited_resource() == p_script) {
+			return se;
+		}
+	}
+	return nullptr;
+}
+
 TypedArray<ScriptEditorBase> ScriptEditor::_get_open_script_editors() const {
 	TypedArray<ScriptEditorBase> script_editors;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
@@ -4489,6 +4499,8 @@ void ScriptEditorPlugin::edited_scene_changed() {
 }
 
 ScriptEditorPlugin::ScriptEditorPlugin() {
+	script_editor_plugin = this;
+
 	ED_SHORTCUT("script_editor/reopen_closed_script", TTRC("Reopen Closed Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::T);
 	ED_SHORTCUT("script_editor/clear_recent", TTRC("Clear Recent Scripts"));
 	ED_SHORTCUT("script_editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
