@@ -446,7 +446,7 @@ License: BSD-3-clause
 
 Files: thirdparty/minizip/*
 Comment: MiniZip
-Copyright: 1998-2010, Gilles Vollant
+Copyright: 1998-2026, Gilles Vollant
  2007-2008, Even Rouault
  2009-2010, Mathias Svensson
 License: Zlib
