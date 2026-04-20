@@ -35,6 +35,8 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 
+#include <cstdlib>
+
 void MovieWriterOGV::push_audio(const int32_t *p_audio_data) {
 	// Read and process more audio.
 	float **vorbis_buffer = vorbis_analysis_buffer(&vd, audio_frames);
