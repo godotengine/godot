@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-#include "tvgFrameModule.h"
+#include "tvgLoader.h"
 #include "tvgAnimation.h"
 
 
@@ -42,7 +42,7 @@ Result Animation::frame(float no) noexcept
     if (!loader) return Result::InsufficientCondition;
     if (!loader->animatable()) return Result::NonSupport;
 
-    if (static_cast<FrameModule*>(loader)->frame(no)) {
+    if (static_cast<AnimLoader*>(loader)->frame(no)) {
         PAINT(pImpl->picture)->mark(RenderUpdateFlag::All);
         return Result::Success;
     }
@@ -63,7 +63,7 @@ float Animation::curFrame() const noexcept
     if (!loader) return 0;
     if (!loader->animatable()) return 0;
 
-    return static_cast<FrameModule*>(loader)->curFrame();
+    return static_cast<AnimLoader*>(loader)->curFrame();
 }
 
 
@@ -74,7 +74,7 @@ float Animation::totalFrame() const noexcept
     if (!loader) return 0;
     if (!loader->animatable()) return 0;
 
-    return static_cast<FrameModule*>(loader)->totalFrame();
+    return static_cast<AnimLoader*>(loader)->totalFrame();
 }
 
 
@@ -85,7 +85,7 @@ float Animation::duration() const noexcept
     if (!loader) return 0;
     if (!loader->animatable()) return 0;
 
-    return static_cast<FrameModule*>(loader)->duration();
+    return static_cast<AnimLoader*>(loader)->duration();
 }
 
 
@@ -95,7 +95,7 @@ Result Animation::segment(float begin, float end) noexcept
     if (!loader) return Result::InsufficientCondition;
     if (!loader->animatable()) return Result::NonSupport;
 
-    return static_cast<FrameModule*>(loader)->segment(begin, end);
+    return static_cast<AnimLoader*>(loader)->segment(begin, end);
 }
 
 
@@ -106,7 +106,7 @@ Result Animation::segment(float *begin, float *end) noexcept
     if (!loader->animatable()) return Result::NonSupport;
     if (!begin && !end) return Result::InvalidArguments;
 
-    static_cast<FrameModule*>(loader)->segment(begin, end);
+    static_cast<AnimLoader*>(loader)->segment(begin, end);
 
     return Result::Success;
 }

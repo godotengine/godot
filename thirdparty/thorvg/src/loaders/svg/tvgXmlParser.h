@@ -23,7 +23,7 @@
 #ifndef _TVG_XML_PARSER_H_
 #define _TVG_XML_PARSER_H_
 
-#include "tvgSvgLoaderCommon.h"
+#include "tvgSvgCommon.h"
 
 #define NUMBER_OF_XML_ENTITIES 9
 const char* const xmlEntity[] = {"&#10;", "&quot;", "&nbsp;", "&apos;", "&amp;", "&lt;", "&gt;", "&#035;", "&#039;"};

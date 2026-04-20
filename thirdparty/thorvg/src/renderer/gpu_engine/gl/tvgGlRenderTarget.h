@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,41 +20,40 @@
  * SOFTWARE.
  */
 
-#include "tvgSwCommon.h"
+#ifndef _TVG_GL_RENDER_RENDER_TARGET_H_
+#define _TVG_GL_RENDER_RENDER_TARGET_H_
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
+#include "tvgGlCommon.h"
 
-static thread_local SwMpool* _pool = nullptr;
-static Array<SwMpool*> _pools;
-static uint32_t _threads = 0;
-static Key _key;
-
-/************************************************************************/
-/* External Class Implementation                                        */
-/************************************************************************/
-
-SwMpool* mpoolReq()
+struct GlRenderTarget
 {
-    if (!_pool) {
-        _pool = new SwMpool(_threads);
-        ScopedLock lock(_key);
-        _pools.push(_pool);
-    }
-    return _pool;
-}
+    GlRenderTarget();
+    ~GlRenderTarget();
 
-void mpoolInit(uint32_t threads)
-{
-    _threads = threads;
-}
+    void init(uint32_t width, uint32_t height, GLint resolveId);
+    void reset();
 
-void mpoolTerm()
+    bool invalid() const { return fbo == 0; }
+
+    RenderRegion viewport{};
+    uint32_t width = 0, height = 0;
+    GLuint resolvedFbo = 0, fbo = 0, colorTex = 0;
+
+private:
+    GLuint colorBuffer = 0;
+    GLuint depthStencilBuffer = 0;
+};
+
+
+struct GlRenderTargetPool
 {
-    for (auto p : _pools) {
-        delete p;
-        _pool = nullptr;
-    }
-    _pools.reset();
-}
+    GlRenderTargetPool(uint32_t maxWidth, uint32_t maxHeight);
+    ~GlRenderTargetPool();
+    GlRenderTarget* getRenderTarget(const RenderRegion& vp, GLuint resolveId = 0);
+private:
+    uint32_t maxWidth = 0;
+    uint32_t maxHeight = 0;
+    Array<GlRenderTarget*> pool;
+};
+
+#endif //_TVG_GL_RENDER_RENDER_TARGET_H_
