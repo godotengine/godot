@@ -1137,6 +1137,11 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
 			}
+
+			if (animation_data.animation.is_valid()) {
+				int max_frames = (int)Math::round(animation_data.animation->get_length() * animation_fps);
+				animation_frame_spin_box->set_max(max_frames);
+			}
 		}
 
 		if (animation_player->is_playing() && animation_loop_mode != Animation::LoopMode::LOOP_NONE) {
@@ -1432,6 +1437,7 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			if (animation_player != nullptr) {
 				animation_slider->set_value_no_signal(animation_player->get_current_animation_position() / animation_player->get_current_animation_length());
+				animation_frame_spin_box->set_value_no_signal(animation_player->get_current_animation_position() * animation_fps);
 			}
 		} break;
 
