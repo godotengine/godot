@@ -191,6 +191,11 @@ public:
 		// Construct a placeholder.
 		Object *obj = native_parent->creation_func(static_cast<bool>(p_notify_postinitialize));
 
+		// Classes descending from RefCounted are expected to be returned with a refcount of 1.
+		if (RefCounted *ref_counted = Object::cast_to<RefCounted>(obj)) {
+			ref_counted->init_ref();
+		}
+
 		// ClassDB::set_object_extension_instance() won't be called for placeholders.
 		// We need need to make sure that all the things it would have done (even if
 		// done in a different way to support placeholders) will also be done here.
@@ -780,8 +785,9 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->class_userdata = ti;
 #ifndef DISABLE_DEPRECATED
 	placeholder_extension->create_instance = nullptr;
+	placeholder_extension->create_instance2 = nullptr;
 #endif // DISABLE_DEPRECATED
-	placeholder_extension->create_instance2 = &PlaceholderExtensionInstance::placeholder_class_create_instance;
+	placeholder_extension->create_instance3 = &PlaceholderExtensionInstance::placeholder_class_create_instance;
 	placeholder_extension->free_instance = &PlaceholderExtensionInstance::placeholder_class_free_instance;
 #ifndef DISABLE_DEPRECATED
 	placeholder_extension->get_virtual = nullptr;
@@ -880,7 +886,7 @@ bool ClassDB::is_abstract(const StringName &p_class) {
 			return true;
 		}
 #ifndef DISABLE_DEPRECATED
-		return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance2 == nullptr;
+		return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance == nullptr;
 #else
 		return ti->gdextension->create_instance3 == nullptr;
 #endif //  DISABLE_DEPRECATED
