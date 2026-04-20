@@ -919,6 +919,7 @@ public:
 		bool is_abstract = false;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
+		bool has_explicit_body = false; ///[Monarch] Set to true if the parser saw { or : followed by a real suite
 		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
