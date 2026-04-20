@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-#include <algorithm>
 #include "tvgSwCommon.h"
 #include "tvgTaskScheduler.h"
 #include "tvgSwRenderer.h"
@@ -34,12 +33,11 @@
 /************************************************************************/
 
 static int32_t _rendererCnt = -1;
-static mutex _rendererMtx;
+static StrictKey _rendererMtx;
 
 struct SwTask : Task
 {
-    SwSurface* surface = nullptr;
-    SwMpool* mpool = nullptr;
+    SwRenderer* renderer;
     RenderRegion clipBox;      //clipping region applied to the task, may differ from curBox which is the actual rendering region
     RenderRegion curBox{};     //current rendering region
     RenderRegion prvBox{};     //previous rendering region
@@ -63,8 +61,8 @@ struct SwTask : Task
 
     void invisible()
     {
-        curBox.reset();
-        if (!nodirty) dirtyRegion->add(prvBox, curBox);
+        valid = false;
+        if (!nodirty) dirtyRegion->add(prvBox, {});
     }
 
     bool ready(bool condition)
@@ -80,7 +78,12 @@ struct SwTask : Task
         return false;
     }
 
-    virtual void dispose() = 0;
+    bool complete()
+    {
+        prvBox = valid ? curBox : RenderRegion{};
+        return true;
+    }
+
     virtual bool clip(SwRle* target) = 0;
     virtual ~SwTask() {}
 };
@@ -92,13 +95,18 @@ struct SwShapeTask : SwTask
     const RenderShape* rshape = nullptr;
     bool clipper = false;
 
+    ~SwShapeTask()
+    {
+        shapeFree(shape);
+    }
+
     /* We assume that if the stroke width is greater than 2,
        the shape's outline beneath the stroke could be adequately covered by the stroke drawing.
        Therefore, antialiasing is disabled under this condition.
        Additionally, the stroke style should not be dashed. */
     bool antialiasing(float strokeWidth)
     {
-        return strokeWidth < 2.0f || rshape->stroke->dash.count > 0 || rshape->stroke->first || rshape->trimpath() || rshape->stroke->color.a < 255;
+        return renderer->antiAlias && (strokeWidth < 2.0f || rshape->stroke->dash.count > 0 || rshape->stroke->first || rshape->trimpath() || rshape->stroke->color.a < 255);
     }
 
     float validStrokeWidth(bool clipper)
@@ -121,15 +129,14 @@ struct SwShapeTask : SwTask
     {
         auto strokeWidth = validStrokeWidth(clipper);
         auto updateShape = flags[0] & (RenderUpdateFlag::Path | RenderUpdateFlag::Transform | RenderUpdateFlag::Clip);
-        auto updateFill = (flags[0] & (RenderUpdateFlag::Color | RenderUpdateFlag::Gradient));
+        auto updateFill = flags[0] & (RenderUpdateFlag::Color | RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform);
 
         //Shape
         if (updateShape) {
             shapeReset(shape);
             if (rshape->fill || rshape->color.a > 0 || clipper) {
-                if (shapePrepare(shape, rshape, transform, clipBox, curBox, mpool, tid, clips.count > 0 ? true : false)) {
-                    if (!shapeGenRle(shape, curBox, mpool, tid, antialiasing(strokeWidth))) goto err;
-                } else {
+                auto composite = clips.count > 0 ? true : false;
+                if (!shapeGenRle(shape, rshape, transform, clipBox, curBox, renderer->mpool, tid, composite, antialiasing(strokeWidth))) {
                     updateFill = false;
                     curBox.reset();
                 }
@@ -137,29 +144,21 @@ struct SwShapeTask : SwTask
         }
         //Fill
         if (updateFill) {
-            if (auto fill = rshape->fill) {
-                auto ctable = (flags[0] & RenderUpdateFlag::Gradient) ? true : false;
-                if (ctable) shapeResetFill(shape);
-                if (!shapeGenFillColors(shape, fill, transform, surface, opacity, ctable)) goto err;
-            }
+            if (!shapeGenFillColors(shape.fill, rshape->fill, transform, renderer->surface, opacity, (flags[0] & RenderUpdateFlag::Gradient))) goto err;
         }
         //Stroke
-        if (updateShape || flags[0] & RenderUpdateFlag::Stroke) {
-            if (strokeWidth > 0.0f) {
-                shapeResetStroke(shape, rshape, transform, mpool, tid);
-                if (!shapeGenStrokeRle(shape, rshape, transform, clipBox, curBox, mpool, tid)) goto err;
-                if (auto fill = rshape->strokeFill()) {
-                    auto ctable = (flags[0] & RenderUpdateFlag::GradientStroke) ? true : false;
-                    if (ctable) shapeResetStrokeFill(shape);
-                    if (!shapeGenStrokeFillColors(shape, fill, transform, surface, opacity, ctable)) goto err;
-                }
-            } else {
-                shapeDelStroke(shape);
+        if (strokeWidth > 0.0f) {
+            auto updateStroke = updateShape || (flags[0] & RenderUpdateFlag::Stroke);
+            if (updateStroke && !shapeGenStrokeRle(shape, rshape, transform, clipBox, curBox, renderer->mpool, tid, renderer->antiAlias)) goto err;
+            auto ctable = flags[0] & RenderUpdateFlag::GradientStroke;
+            if (ctable || flags[0] & RenderUpdateFlag::Transform) {
+                if (!shapeGenFillColors(shape.stroke->fill, rshape->strokeFill(), transform, renderer->surface, opacity, ctable)) goto err;
             }
+        } else {
+            shapeDelStroke(shape);
         }
 
-        //Clear current task memorypool here if the clippers would use the same memory pool
-        shapeDelOutline(shape, mpool, tid);
+        shapeDelOutline(shape);
 
         //Clip Path
         ARRAY_FOREACH(p, clips) {
@@ -176,13 +175,7 @@ struct SwShapeTask : SwTask
     err:
         shapeReset(shape);
         rleReset(shape.strokeRle);
-        shapeDelOutline(shape, mpool, tid);
         invisible();
-    }
-
-    void dispose() override
-    {
-       shapeFree(shape);
     }
 };
 
@@ -191,6 +184,11 @@ struct SwImageTask : SwTask
 {
     SwImage image;
     RenderSurface* source;                //Image source
+
+    ~SwImageTask()
+    {
+        imageFree(image);
+    }
 
     bool clip(SwRle* target) override
     {
@@ -201,7 +199,7 @@ struct SwImageTask : SwTask
     void run(unsigned tid) override
     {
         //Convert colorspace if it's not aligned.
-        rasterConvertCS(source, surface->cs);
+        rasterConvertCS(source, renderer->surface->cs);
         rasterPremultiply(source);
 
         image.data = source->data;
@@ -209,6 +207,7 @@ struct SwImageTask : SwTask
         image.h = source->h;
         image.stride = source->stride;
         image.channelSize = source->channelSize;
+        image.alphaIgnored = source->alphaIgnored;
 
         auto updateImage = flags[0] & (RenderUpdateFlag::Image | RenderUpdateFlag::Clip | RenderUpdateFlag::Transform);
         auto updateColor = flags[0] & (RenderUpdateFlag::Color);
@@ -217,13 +216,11 @@ struct SwImageTask : SwTask
         if ((updateImage || updateColor) && (opacity > 0)) {
             if (updateImage) imageReset(image);
             if (!image.data || image.w == 0 || image.h == 0) goto err;
-            if (!imagePrepare(image, transform, clipBox, curBox, mpool, tid)) goto err;
+            if (!imagePrepare(image, transform, clipBox, curBox, renderer->mpool, tid)) goto err;
             valid = true;
             if (clips.count > 0) {
-                if (!imageGenRle(image, curBox, mpool, tid, false)) goto err;
+                if (!imageGenRle(image, curBox, renderer->mpool, tid, false)) goto err;
                 if (image.rle) {
-                    //Clear current task memorypool here if the clippers would use the same memory pool
-                    imageDelOutline(image, mpool, tid);
                     ARRAY_FOREACH(p, clips) {
                         auto clipper = static_cast<SwTask*>(*p);
                         if (!clipper->clip(image.rle)) goto err;
@@ -238,13 +235,7 @@ struct SwImageTask : SwTask
         curBox.reset();
         imageReset(image);
     end:
-        imageDelOutline(image, mpool, tid);
         if (!nodirty) dirtyRegion->add(prvBox, curBox);
-    }
-
-    void dispose() override
-    {
-       imageFree(image);
     }
 };
 
@@ -279,21 +270,18 @@ bool SwRenderer::sync()
 {
     //clear if the rendering was not triggered.
     ARRAY_FOREACH(p, tasks) {
+        (*p)->done();
         if ((*p)->disposed) delete(*p);
-        else {
-            (*p)->done();
-            (*p)->pushed = false;
-        }
+        else (*p)->pushed = false;
     }
     tasks.clear();
 
     return true;
 }
 
-
-bool SwRenderer::target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, ColorSpace cs)
+Result SwRenderer::target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, ColorSpace cs)
 {
-    if (!data || stride == 0 || w == 0 || h == 0 || w > stride) return false;
+    if (!data || stride == 0 || w == 0 || h == 0 || w > stride) return Result::InvalidArguments;
 
     clearCompositors();
 
@@ -436,8 +424,7 @@ bool SwRenderer::renderImage(RenderData data)
             }
         }
     }
-    task->prvBox = task->curBox;
-    return true;
+    return task->complete();
 }
 
 
@@ -496,8 +483,7 @@ bool SwRenderer::renderShape(RenderData data)
             }
         }
     }
-    task->prvBox = task->curBox;
-    return true;
+    return task->complete();
 }
 
 
@@ -508,52 +494,52 @@ bool SwRenderer::blend(BlendMethod method)
 
     switch (method) {
         case BlendMethod::Multiply:
-            surface->blender = opBlendMultiply;
+            surface->blender = blendMultiply;
             break;
         case BlendMethod::Screen:
-            surface->blender = opBlendScreen;
+            surface->blender = blendScreen;
             break;
         case BlendMethod::Overlay:
-            surface->blender = opBlendOverlay;
+            surface->blender = blendOverlay;
             break;
         case BlendMethod::Darken:
-            surface->blender = opBlendDarken;
+            surface->blender = blendDarken;
             break;
         case BlendMethod::Lighten:
-            surface->blender = opBlendLighten;
+            surface->blender = blendLighten;
             break;
         case BlendMethod::ColorDodge:
-            surface->blender = opBlendColorDodge;
+            surface->blender = blendColorDodge;
             break;
         case BlendMethod::ColorBurn:
-            surface->blender = opBlendColorBurn;
+            surface->blender = blendColorBurn;
             break;
         case BlendMethod::HardLight:
-            surface->blender = opBlendHardLight;
+            surface->blender = blendHardLight;
             break;
         case BlendMethod::SoftLight:
-            surface->blender = opBlendSoftLight;
+            surface->blender = blendSoftLight;
             break;
         case BlendMethod::Difference:
-            surface->blender = opBlendDifference;
+            surface->blender = blendDifference;
             break;
         case BlendMethod::Exclusion:
-            surface->blender = opBlendExclusion;
+            surface->blender = blendExclusion;
             break;
         case BlendMethod::Hue:
-            surface->blender = opBlendHue;
+            surface->blender = blendHue;
             break;
         case BlendMethod::Saturation:
-            surface->blender = opBlendSaturation;
+            surface->blender = blendSaturation;
             break;
         case BlendMethod::Color:
-            surface->blender = opBlendColor;
+            surface->blender = blendColor;
             break;
         case BlendMethod::Luminosity:
-            surface->blender = opBlendLuminosity;
+            surface->blender = blendLuminosity;
             break;
         case BlendMethod::Add:
-            surface->blender = opBlendAdd;
+            surface->blender = blendAdd;
             break;
         default:
             surface->blender = nullptr;
@@ -706,7 +692,7 @@ bool SwRenderer::bounds(RenderData data, Point* pt4, const Matrix& m)
     auto task = static_cast<SwShapeTask*>(data);
     task->done();
 
-    return shapeStrokeBBox(task->shape, task->rshape, pt4, m, task->mpool);
+    return shapeStrokeBBox(task->shape, task->rshape, pt4, m, task->renderer->mpool);
 }
 
 
@@ -717,7 +703,7 @@ bool SwRenderer::intersectsShape(RenderData data, const RenderRegion& region)
 
     if (!task->valid || !task->bounds().intersected(region)) return false;
     if (rleIntersect(task->shape.strokeRle, region)) return true;
-    return task->shape.rle ? rleIntersect(task->shape.rle, region): task->shape.fastTrack;
+    return task->shape.fastTrack || rleIntersect(task->shape.rle, region);
 }
 
 
@@ -831,9 +817,6 @@ ColorSpace SwRenderer::colorSpace()
 void SwRenderer::dispose(RenderData data)
 {
     auto task = static_cast<SwTask*>(data);
-    task->done();
-    task->dispose();
-
     if (task->pushed) task->disposed = true;
     else delete(task);
 }
@@ -843,8 +826,7 @@ SwTask* SwRenderer::prepareCommon(SwTask* task, const Matrix& transform, const A
 {
     if (task->disposed) return task;
 
-    task->surface = surface;
-    task->mpool = mpool;
+    task->renderer = this;
     task->clipBox = RenderRegion::intersect(vport, {{0, 0}, {int32_t(surface->w), int32_t(surface->h)}});
     task->transform = transform;
     task->clips = clips;
@@ -873,8 +855,7 @@ SwTask* SwRenderer::prepareCommon(SwTask* task, const Matrix& transform, const A
     return task;
 }
 
-
-RenderData SwRenderer::prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags)
+RenderData SwRenderer::prepare(RenderSurface* surface, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags)
 {
     auto task = static_cast<SwImageTask*>(data);
     if (task) task->done();
@@ -887,7 +868,7 @@ RenderData SwRenderer::prepare(RenderSurface* surface, RenderData data, const Ma
     return prepareCommon(task, transform, clips, opacity, flags, (opacity == 0));
 }
 
-RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper)
+RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper)
 {
     auto task = static_cast<SwShapeTask*>(data);
     if (task) task->done();
@@ -934,5 +915,7 @@ SwRenderer::SwRenderer(uint32_t threads, EngineOption op)
 
     mpool = mpoolReq();
 
-    if (op == EngineOption::None) dirtyRegion.support = false;
+    auto byDefault = (op == EngineOption::Default);
+    dirtyRegion.support = (byDefault || (op & EngineOption::SmartRender));
+    antiAlias = (byDefault || !(op & EngineOption::Aliased));
 }

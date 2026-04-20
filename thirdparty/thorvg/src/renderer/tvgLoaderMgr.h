@@ -20,11 +20,28 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_SVG_SCENE_BUILDER_H_
-#define _TVG_SVG_SCENE_BUILDER_H_
+#ifndef _TVG_LOADER_MGR_H_
+#define _TVG_LOADER_MGR_H_
 
-#include "tvgCommon.h"
+#include "tvgLoader.h"
 
-Scene* svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath, SvgViewFlag viewFlag);
+namespace tvg
+{
 
-#endif //_TVG_SVG_SCENE_BUILDER_H_
+struct LoaderMgr
+{
+    static bool init();
+    static bool term();
+    static Loader* loader(const char* filename, const LoaderOps& ops, bool& invalid);
+    static Loader* loader(const char* data, uint32_t size, const char* mimeType, const LoaderOps& ops);
+    static Loader* loader(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, Ownership owner);
+    static Loader* loader(const char* name, const char* data, uint32_t size, const char* mimeType, const LoaderOps& ops);
+    static Loader* font(const char* name);
+    static Loader* anyfont();
+    static bool retrieve(const char* filename);
+    static bool retrieve(Loader* loader);
+};
+
+}  // namespace tvg
+
+#endif  //_TVG_LOADER_MGR_H_
