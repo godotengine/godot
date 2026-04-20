@@ -1344,6 +1344,16 @@
 			Default [InputEventAction] to move down in the UI.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_emoji_and_symbols" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to open the emoji and symbol picker menu.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_emoji_and_symbols.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to open the emoji and symbol picker menu.
+		</member>
+		<member name="input/ui_emoji_and_symbols.windows" type="Dictionary" setter="" getter="">
+			Windows specific override for the shortcut to open the emoji and symbol picker menu.
+		</member>
 		<member name="input/ui_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the end position of a [Control] (e.g. last item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_END] on typical desktop UI systems.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.

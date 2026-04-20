@@ -2722,6 +2722,11 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				accept_event();
 				return;
 			}
+			if (k->is_action("ui_emoji_and_symbols", true)) {
+				show_emoji_and_symbol_picker();
+				accept_event();
+				return;
+			}
 			if (k->is_action("ui_copy", true)) {
 				copy();
 				accept_event();
@@ -8149,7 +8154,7 @@ void TextEdit::_update_context_menu() {
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
-		MENU_ITEM_DISABLED(menu, MENU_EMOJI_AND_SYMBOL, !editable || !emoji_menu_enabled)
+		MENU_ITEM_ACTION_DISABLED(menu, MENU_EMOJI_AND_SYMBOL, "ui_emoji_and_symbols", !editable || !emoji_menu_enabled);
 	}
 	MENU_ITEM_ACTION_DISABLED(menu, MENU_CUT, "ui_cut", !editable)
 	MENU_ITEM_ACTION(menu, MENU_COPY, "ui_copy")

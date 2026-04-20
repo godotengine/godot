@@ -433,6 +433,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
 	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
 	{ "ui_accessibility_drag_and_drop",                TTRC("Accessibility: Keyboard Drag and Drop") },
+	{ "ui_emoji_and_symbols",                          TTRC("Emoji & Symbols") },
 	{ "",                                              ""}
 	/* clang-format on */
 };
@@ -541,6 +542,17 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::C | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::INSERT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_copy", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	default_builtin_cache.insert("ui_emoji_and_symbols", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::SPACE | KeyModifierMask::META | KeyModifierMask::CTRL));
+	default_builtin_cache.insert("ui_emoji_and_symbols.macos", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::PERIOD | KeyModifierMask::META));
+	default_builtin_cache.insert("ui_emoji_and_symbols.windows", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::M | KeyModifierMask::CTRL));

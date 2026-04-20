@@ -2109,7 +2109,7 @@ void TextShaderEditor::_shader_preview_item_pressed(int p_idx) {
 void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
-		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_emoji_and_symbols"), EDIT_EMOJI_AND_SYMBOL);
 		context_menu->add_separator();
 	}
 	if (p_selection) {
