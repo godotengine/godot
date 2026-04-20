@@ -631,6 +631,14 @@
 		</method>
 	</methods>
 	<members>
+		<member name="hexagon_tile_overlap" type="float" setter="set_hexagon_tile_overlap" getter="get_hexagon_tile_overlap" default="0.25">
+			Determines how much the rectangular bounding boxes of hexagonal tiles overlap along the [member tile_offset_axis].
+			A value of [code]0.0[/code] creates no overlap, resulting in a shape visually identical to Half-Offset Square tiles.
+			A value of [code]0.25[/code] creates a 25% overlap, resulting in a regular hexagon. This effectively shifts tiles toward each other by 25% of their size along the [member tile_offset_axis].
+			A value of [code]0.5[/code] creates a 50% overlap, shifting the tiles by half of their size, resulting in a shape visually identical to Isometric tiles.
+
+			Using values outside the [code]0.0[/code] to [code]0.5[/code] range is not recommended and may lead to unexpected behavior.
+		</member>
 		<member name="tile_layout" type="int" setter="set_tile_layout" getter="get_tile_layout" enum="TileSet.TileLayout" default="0">
 			For all half-offset shapes (Isometric, Hexagonal and Half-Offset square), changes the way tiles are indexed in the [TileMapLayer] grid.
 		</member>
