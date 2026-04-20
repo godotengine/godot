@@ -487,8 +487,10 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 	return list;
 }
 
-Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	if (p_notify) {
+		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	}
 
 	const String custom_debug = p_preset->get("custom_template/debug");
 	const String custom_release = p_preset->get("custom_template/release");

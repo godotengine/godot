@@ -138,8 +138,10 @@ bool EditorExportPlatformPC::has_valid_project_configuration(const Ref<EditorExp
 	return true;
 }
 
-Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	if (p_notify) {
+		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	}
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
 	if (err == OK) {
