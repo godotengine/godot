@@ -84,6 +84,11 @@ layout(push_constant, std430) uniform Params {
 	float luminance_multiplier;
 
 	vec4 tonemapper_params;
+
+	float fxaa_subpixel_quality;
+	float fxaa_edge_threshold_min;
+	float fxaa_edge_threshold_max;
+	uint fxaa_iterations;
 }
 params;
 
@@ -539,10 +544,11 @@ float rgb2luma(vec3 rgb) {
 }
 
 vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
-	const float EDGE_THRESHOLD_MIN = 0.0312;
-	const float EDGE_THRESHOLD_MAX = 0.125;
-	const int ITERATIONS = 12;
-	const float SUBPIXEL_QUALITY = 0.75;
+	const float EDGE_THRESHOLD_MIN = params.fxaa_edge_threshold_min;
+	const float EDGE_THRESHOLD_MAX = params.fxaa_edge_threshold_max;
+
+	const uint ITERATIONS = params.fxaa_iterations;
+	const float SUBPIXEL_QUALITY = params.fxaa_subpixel_quality;
 
 #ifdef USE_MULTIVIEW
 	float lumaUp = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(0, 1)).xyz * exposure * params.luminance_multiplier);
