@@ -2430,6 +2430,16 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							if (instance->mesh_instance.is_valid()) {
 								RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 							}
+
+							if (instance->base_type == RSE::INSTANCE_PARTICLES) {
+								RSG::particles_storage->particles_request_process(instance->base);
+								RS::get_singleton()->call_on_render_thread(callable_mp_static(&RendererSceneCull::_scene_particles_set_view_axis).bind(instance->base, -p_cam_transform.basis.get_column(2).normalized(), p_cam_transform.basis.get_column(1).normalized()));
+								animated_material_found = true;
+							}
+
+							if (instance->redraw_if_visible) {
+								animated_material_found = true;
+							}
 						}
 
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
@@ -2512,6 +2522,16 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							if (instance->mesh_instance.is_valid()) {
 								RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 							}
+
+							if (instance->base_type == RSE::INSTANCE_PARTICLES) {
+								RSG::particles_storage->particles_request_process(instance->base);
+								RS::get_singleton()->call_on_render_thread(callable_mp_static(&RendererSceneCull::_scene_particles_set_view_axis).bind(instance->base, -p_cam_transform.basis.get_column(2).normalized(), p_cam_transform.basis.get_column(1).normalized()));
+								animated_material_found = true;
+							}
+
+							if (instance->redraw_if_visible) {
+								animated_material_found = true;
+							}
 						}
 
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
@@ -2581,6 +2601,16 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 					if (instance->mesh_instance.is_valid()) {
 						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 					}
+
+					if (instance->base_type == RSE::INSTANCE_PARTICLES) {
+						RSG::particles_storage->particles_request_process(instance->base);
+						RS::get_singleton()->call_on_render_thread(callable_mp_static(&RendererSceneCull::_scene_particles_set_view_axis).bind(instance->base, -p_cam_transform.basis.get_column(2).normalized(), p_cam_transform.basis.get_column(1).normalized()));
+						animated_material_found = true;
+					}
+
+					if (instance->redraw_if_visible) {
+						animated_material_found = true;
+					}
 				}
 				shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 			}
@@ -2646,6 +2676,16 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					if (instance->mesh_instance.is_valid()) {
 						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
+					}
+
+					if (instance->base_type == RSE::INSTANCE_PARTICLES) {
+						RSG::particles_storage->particles_request_process(instance->base);
+						RS::get_singleton()->call_on_render_thread(callable_mp_static(&RendererSceneCull::_scene_particles_set_view_axis).bind(instance->base, -p_cam_transform.basis.get_column(2).normalized(), p_cam_transform.basis.get_column(1).normalized()));
+						animated_material_found = true;
+					}
+
+					if (instance->redraw_if_visible) {
+						animated_material_found = true;
 					}
 				}
 
@@ -3230,6 +3270,21 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (keep) {
 						cull_result.geometry_instances.push_back(idata.instance_geometry);
 					}
+				} else if (((1 << base_type) & RSE::INSTANCE_GEOMETRY_MASK) && (idata.flags & InstanceData::FLAG_CAST_SHADOWS_ONLY)) {
+					bool request_redraw = (idata.flags & InstanceData::FLAG_REDRAW_IF_VISIBLE);
+
+					if (base_type == RSE::INSTANCE_PARTICLES && !RSG::particles_storage->particles_is_inactive(idata.base_rid)) {
+						cull_data.cull->lock.lock();
+						RSG::particles_storage->particles_request_process(idata.base_rid);
+						cull_data.cull->lock.unlock();
+
+						RS::get_singleton()->call_on_render_thread(callable_mp_static(&RendererSceneCull::_scene_particles_set_view_axis).bind(idata.base_rid, -cull_data.cam_transform.basis.get_column(2).normalized(), cull_data.cam_transform.basis.get_column(1).normalized()));
+						request_redraw = true;
+					}
+
+					if (request_redraw) {
+						RenderingServerDefault::redraw_request();
+					}
 				}
 			}
 
@@ -3244,6 +3299,22 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						if (((1 << base_type) & RSE::INSTANCE_GEOMETRY_MASK) && idata.flags & InstanceData::FLAG_CAST_SHADOWS && (LAYER_CHECK & cull_data.cull->shadows[j].caster_mask)) {
 							cull_result.directional_shadows[j].cascade_geometry_instances[k].push_back(idata.instance_geometry);
 							mesh_visible = true;
+
+							bool request_redraw = (idata.flags & InstanceData::FLAG_REDRAW_IF_VISIBLE);
+
+							// Drive particle simulation for emitters in directional shadow but outside main camera frustum (GH-17267).
+							if (base_type == RSE::INSTANCE_PARTICLES) {
+								cull_data.cull->lock.lock();
+								RSG::particles_storage->particles_request_process(idata.base_rid);
+								cull_data.cull->lock.unlock();
+
+								RS::get_singleton()->call_on_render_thread(callable_mp_static(&RendererSceneCull::_scene_particles_set_view_axis).bind(idata.base_rid, -cull_data.cam_transform.basis.get_column(2).normalized(), cull_data.cam_transform.basis.get_column(1).normalized()));
+								request_redraw = true;
+							}
+
+							if (request_redraw) {
+								RenderingServerDefault::redraw_request();
+							}
 						}
 					}
 				}
@@ -3630,6 +3701,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				RENDER_TIMESTAMP("> Render Light3D " + itos(i));
 				if (_light_instance_update_shadow(ins, p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_orthogonal, p_camera_data->vaspect, p_shadow_atlas, scenario, p_screen_mesh_lod_threshold, p_visible_layers)) {
 					light->make_shadow_dirty();
+					RenderingServerDefault::redraw_request();
 				}
 				RENDER_TIMESTAMP("< Render Light3D " + itos(i));
 			} else {
