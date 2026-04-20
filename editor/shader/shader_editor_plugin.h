@@ -123,12 +123,16 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	void _switch_to_editor(ShaderEditor *p_editor);
 
+	static inline ShaderEditorPlugin *shader_editor_plugin = nullptr;
+
 protected:
 	void _notification(int p_what);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	static ShaderEditorPlugin *get_singleton() { return shader_editor_plugin; }
+
 	virtual String get_plugin_name() const override { return "Shader"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

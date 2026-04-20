@@ -446,6 +446,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 	Vector<Ref<Script>> get_open_scripts() const;
+	ScriptEditorBase *get_script_editor(Ref<Resource> p_script) const;
 
 	ScriptEditorBase *get_current_editor() const { return _get_current_editor(); }
 
@@ -489,10 +490,14 @@ class ScriptEditorPlugin : public EditorPlugin {
 	void _save_last_editor(const String &p_editor);
 	void _window_visibility_changed(bool p_visible);
 
+	static inline ScriptEditorPlugin *script_editor_plugin = nullptr;
+
 protected:
 	void _notification(int p_what);
 
 public:
+	static ScriptEditorPlugin *get_singleton() { return script_editor_plugin; }
+
 	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
 
 	virtual String get_plugin_name() const override { return TTRC("Script"); }
