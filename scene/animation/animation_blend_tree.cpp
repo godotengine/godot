@@ -439,6 +439,7 @@ void AnimationNodeOneShot::get_parameter_list(LocalVector<PropertyInfo> *r_list)
 	r_list->push_back(PropertyInfo(Variant::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
 	r_list->push_back(PropertyInfo(Variant::BOOL, internal_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
 	r_list->push_back(PropertyInfo(Variant::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort,Fade Out"));
+	r_list->push_back(PropertyInfo(Variant::OBJECT, observer, PROPERTY_HINT_RESOURCE_TYPE, AnimationNodeObserverOneShot::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, fade_in_remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, fade_out_remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -560,6 +561,21 @@ bool AnimationNodeOneShot::has_filter() const {
 	return true;
 }
 
+void AnimationNodeOneShot::_check_and_notify_state_changes(AnimationNodeInstance &p_instance, bool p_prev_active, bool p_prev_internal_active, double p_prev_fade_in_remaining) {
+	Ref<AnimationNodeObserverOneShot> observer_ref = p_instance.get_parameter_observer();
+	if (observer_ref.is_valid()) {
+		if (!p_prev_active && p_instance.get_parameter_active()) {
+			observer_ref->emit_signal("started");
+		} else if (p_prev_active && !p_instance.get_parameter_active()) {
+			observer_ref->emit_signal(SceneStringName(finished));
+		} else if (Animation::is_greater_approx(p_prev_fade_in_remaining, 0) && Math::is_zero_approx(p_instance.get_parameter_fade_in_remaining())) {
+			observer_ref->emit_signal("fade_in_finished");
+		} else if (get_fade_out_time() > 0 && p_prev_internal_active && !p_instance.get_parameter_internal_active()) {
+			observer_ref->emit_signal("fade_out_started");
+		}
+	}
+}
+
 AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	OneShotRequest cur_request = static_cast<OneShotRequest>(p_instance.get_parameter_request());
 	bool cur_active = p_instance.get_parameter_active();
@@ -579,6 +595,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(ProcessState &p_proce
 	double abs_delta = Math::abs(p_delta);
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
+	double prev_fade_in_remaining = cur_fade_in_remaining;
 
 	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
 
@@ -628,6 +645,9 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(ProcessState &p_proce
 	bool os_seek = p_seek;
 
 	if (!is_shooting) {
+		if (!p_test_only) {
+			_check_and_notify_state_changes(p_instance, cur_active, cur_internal_active, prev_fade_in_remaining);
+		}
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
 		pi.weight = 1.0;
 		return blend_input(p_process_state, p_instance, 0, pi, FILTER_IGNORE, sync, p_test_only);
@@ -728,6 +748,9 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(ProcessState &p_proce
 	p_instance.set_parameter_fade_in_remaining(cur_fade_in_remaining, p_process_state.is_testing);
 	p_instance.set_parameter_fade_out_remaining(cur_fade_out_remaining, p_process_state.is_testing);
 
+	if (!p_test_only) {
+		_check_and_notify_state_changes(p_instance, cur_active, cur_internal_active, prev_fade_in_remaining);
+	}
 	return cur_internal_active ? os_nti : main_nti;
 }
 
@@ -1165,6 +1188,7 @@ void AnimationNodeTransition::get_parameter_list(LocalVector<PropertyInfo> *r_li
 	r_list->push_back(PropertyInfo(Variant::INT, current_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY)); // To avoid finding the index every frame, use this internally.
 	r_list->push_back(PropertyInfo(Variant::INT, prev_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::OBJECT, observer, PROPERTY_HINT_RESOURCE_TYPE, AnimationNodeObserverTransition::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 }
 
 Variant AnimationNodeTransition::get_parameter_default_value(const StringName &p_parameter) const {
@@ -1287,6 +1311,16 @@ bool AnimationNodeTransition::is_allow_transition_to_self() const {
 	return allow_transition_to_self;
 }
 
+void AnimationNodeTransition::_signal_state_change(const AnimationNodeInstance &p_instance, bool p_starting, int p_state, bool p_test_only) {
+	if (p_test_only) {
+		return;
+	}
+	Ref<AnimationNodeObserverTransition> observer_ref = p_instance.get_parameter_observer();
+	if (observer_ref.is_valid()) {
+		observer_ref->emit_signal(p_starting ? SceneStringName(state_started) : SceneStringName(state_finished), get_input_name(p_state));
+	}
+}
+
 AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	const String &cur_transition_request = p_instance.get_parameter_transition_request();
 	int cur_current_index = p_instance.get_parameter_current_index();
@@ -1333,6 +1367,10 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(ProcessState &p_pr
 				}
 			} else {
 				switched = true;
+				if (xfade_time == 0) {
+					_signal_state_change(p_instance, false, cur_current_index, p_test_only);
+				}
+				_signal_state_change(p_instance, true, new_idx, p_test_only);
 				cur_prev_index = cur_current_index;
 				p_instance.set_parameter_prev_index(cur_current_index, p_process_state.is_testing);
 				cur_current_index = new_idx;
@@ -1346,6 +1384,9 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(ProcessState &p_pr
 	}
 
 	if (clear_remaining_fade) {
+		if (xfade_time > 0 && Animation::is_greater_approx(cur_prev_xfading, 0.0)) {
+			_signal_state_change(p_instance, false, cur_prev_index, p_test_only);
+		}
 		cur_prev_xfading = 0;
 		p_instance.set_parameter_prev_xfading(0, p_process_state.is_testing);
 		cur_prev_index = -1;
@@ -1416,6 +1457,9 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(ProcessState &p_pr
 		blend_input(p_process_state, p_instance, cur_prev_index, pi, FILTER_IGNORE, true, p_test_only);
 		if (!p_seek) {
 			if (Animation::is_less_or_equal_approx(cur_prev_xfading, 0)) {
+				if (xfade_time > 0) {
+					_signal_state_change(p_instance, false, cur_prev_index, p_test_only);
+				}
 				p_instance.set_parameter_prev_index(-1, p_process_state.is_testing);
 			}
 			cur_prev_xfading -= Math::abs(p_playback_info.delta);
