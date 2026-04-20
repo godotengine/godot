@@ -311,7 +311,6 @@ size_t meshopt_generateVertexRemap(unsigned int* destination, const unsigned int
 	using namespace meshopt;
 
 	assert(indices || index_count == vertex_count);
-	assert(!indices || index_count % 3 == 0);
 	assert(vertex_size > 0 && vertex_size <= 256);
 
 	meshopt_Allocator allocator;
@@ -325,7 +324,6 @@ size_t meshopt_generateVertexRemapMulti(unsigned int* destination, const unsigne
 	using namespace meshopt;
 
 	assert(indices || index_count == vertex_count);
-	assert(index_count % 3 == 0);
 	assert(stream_count > 0 && stream_count <= 16);
 
 	for (size_t i = 0; i < stream_count; ++i)
@@ -345,7 +343,6 @@ size_t meshopt_generateVertexRemapCustom(unsigned int* destination, const unsign
 	using namespace meshopt;
 
 	assert(indices || index_count == vertex_count);
-	assert(!indices || index_count % 3 == 0);
 	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 
@@ -393,8 +390,6 @@ void meshopt_remapVertexBuffer(void* destination, const void* vertices, size_t v
 
 void meshopt_remapIndexBuffer(unsigned int* destination, const unsigned int* indices, size_t index_count, const unsigned int* remap)
 {
-	assert(index_count % 3 == 0);
-
 	for (size_t i = 0; i < index_count; ++i)
 	{
 		unsigned int index = indices ? indices[i] : unsigned(i);
