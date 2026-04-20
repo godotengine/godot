@@ -20,6 +20,7 @@ Why not contribute to Godot itself? Well, I WANT to. But I have a few issues wit
 ## Shit I added
 - generics
 - nested types
+- completely optional braces {} based scoping
 
 ## Caveats
 - Godot's `core` is rotten. Generics can LIE to you at runtime because static analysis is turned off for Variant-typed variables!!! (I didn't add this, this is Godot's default behaviour) Use static typing everywhere lest you want to run into undefined behaviour with generics.
@@ -36,13 +37,4 @@ i don't hate the godot dev team, i fucking love them!!!
 i just don't like the whole 'approachability over correctness' philosophy that is used to explain away the absence of BASIC fucking language features. that's it. 
 
 ## Lmao why not c#
-Because I don't want to use C#.
-
-More importantly, this project ain't about replacing GDScript at all but instead *improving* it.
-
-GDScript is extremely quick to work with and has very low mental overhead. That's its biggest strength. The problem is that it lacks some static guarantees, which makes certain mistakes way too easy to make.
-
-So instead of switching languages entirely and lose the ability to export to web (something I REALLY need for game jams, as a borderline game jam addict (help me)), I find it infinitely easier to go ahead and fix those issues :)
-
-If you prefer C#, that's completely fine dude! But 'just use C# lol' doesn't answer the question of why GDScript shouldn't be better.
-
+because i don't wanna. if you want to, good! go ahead.
