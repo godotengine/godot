@@ -98,8 +98,12 @@ HashMap<String, bool *> OpenXRFBFoveationExtension::get_requested_extensions(XrV
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (rendering_driver == "vulkan") {
 		request_extensions[XR_FB_FOVEATION_VULKAN_EXTENSION_NAME] = &fb_foveation_vulkan_ext;
-		request_extensions[XR_META_FOVEATION_EYE_TRACKED_EXTENSION_NAME] = &meta_foveation_eye_tracked_ext;
 		request_extensions[XR_META_VULKAN_SWAPCHAIN_CREATE_INFO_EXTENSION_NAME] = &meta_vulkan_swapchain_create_info_ext;
+
+		bool fov_eye_tracked = GLOBAL_GET("xr/openxr/foveation_eye_tracked");
+		if (fov_eye_tracked) {
+			request_extensions[XR_META_FOVEATION_EYE_TRACKED_EXTENSION_NAME] = &meta_foveation_eye_tracked_ext;
+		}
 	}
 #endif // XR_USE_GRAPHICS_API_VULKAN
 

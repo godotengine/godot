@@ -70,22 +70,28 @@ void Camera3D::fti_update_servers_property() {
 	if (camera.is_valid()) {
 		float f = Engine::get_singleton()->get_physics_interpolation_fraction();
 
+		bool update_fov = fov.interpolate(f);
+		bool update_near = _near.interpolate(f);
+		bool update_far = _far.interpolate(f);
+		bool update_size = size.interpolate(f);
+		bool update_frustum_offset = frustum_offset.interpolate(f);
+
+		// If there have been changes due to interpolated values, OR we are forcing an update, update the servers.
 		switch (mode) {
 			default:
 				break;
 			case PROJECTION_PERSPECTIVE: {
-				// If there have been changes due to interpolation, update the servers.
-				if (fov.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_fov || update_near || update_far) {
 					RS::get_singleton()->camera_set_perspective(camera, fov.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_ORTHOGONAL: {
-				if (size.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_near || update_far) {
 					RS::get_singleton()->camera_set_orthogonal(camera, size.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;
 			case PROJECTION_FRUSTUM: {
-				if (size.interpolate(f) || frustum_offset.interpolate(f) || _near.interpolate(f) || _far.interpolate(f)) {
+				if (update_size || update_frustum_offset || update_near || update_far) {
 					RS::get_singleton()->camera_set_frustum(camera, size.interpolated(), frustum_offset.interpolated(), _near.interpolated(), _far.interpolated());
 				}
 			} break;

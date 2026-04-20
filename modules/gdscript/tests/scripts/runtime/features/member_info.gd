@@ -3,7 +3,7 @@ class_name TestMemberInfo
 class MyClass:
 	pass
 
-enum MyEnum {}
+enum MyEnum { NONE }
 
 static var test_static_var_untyped
 static var test_static_var_weak_null = null
@@ -16,14 +16,19 @@ var test_var_weak_int = 1
 @export var test_var_weak_int_exported = 1
 var test_var_weak_variant_type = TYPE_NIL
 @export var test_var_weak_variant_type_exported = TYPE_NIL
+
 var test_var_hard_variant: Variant
 var test_var_hard_int: int
 var test_var_hard_variant_type: Variant.Type
 @export var test_var_hard_variant_type_exported: Variant.Type
 var test_var_hard_node_process_mode: Node.ProcessMode
-@warning_ignore("enum_variable_without_default")
 var test_var_hard_my_enum: MyEnum
+var test_var_hard_resource: Resource
+var test_var_hard_this: TestMemberInfo
+var test_var_hard_my_class: MyClass
+
 var test_var_hard_array: Array
+var test_var_hard_array_variant: Array[Variant]
 var test_var_hard_array_int: Array[int]
 var test_var_hard_array_variant_type: Array[Variant.Type]
 var test_var_hard_array_node_process_mode: Array[Node.ProcessMode]
@@ -31,7 +36,9 @@ var test_var_hard_array_my_enum: Array[MyEnum]
 var test_var_hard_array_resource: Array[Resource]
 var test_var_hard_array_this: Array[TestMemberInfo]
 var test_var_hard_array_my_class: Array[MyClass]
+
 var test_var_hard_dictionary: Dictionary
+var test_var_hard_dictionary_variant_variant: Dictionary[Variant, Variant]
 var test_var_hard_dictionary_int_variant: Dictionary[int, Variant]
 var test_var_hard_dictionary_variant_int: Dictionary[Variant, int]
 var test_var_hard_dictionary_int_int: Dictionary[int, int]
@@ -41,9 +48,6 @@ var test_var_hard_dictionary_my_enum: Dictionary[MyEnum, MyEnum]
 var test_var_hard_dictionary_resource: Dictionary[Resource, Resource]
 var test_var_hard_dictionary_this: Dictionary[TestMemberInfo, TestMemberInfo]
 var test_var_hard_dictionary_my_class: Dictionary[MyClass, MyClass]
-var test_var_hard_resource: Resource
-var test_var_hard_this: TestMemberInfo
-var test_var_hard_my_class: MyClass
 
 static func test_static_func(): pass
 

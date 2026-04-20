@@ -170,7 +170,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 	{
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
-		instances.insert(instance->owner);
+		instances.add(&instance->script_instance_list);
 	}
 
 	_super_implicit_constructor(this, instance, r_error);
@@ -180,7 +180,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		instance->owner->set_script_instance(nullptr);
 		{
 			MutexLock lock(GDScriptLanguage::singleton->mutex);
-			instances.erase(p_owner);
+			instances.remove(&instance->script_instance_list);
 		}
 		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 	}
@@ -198,7 +198,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 			instance->owner->set_script_instance(nullptr);
 			{
 				MutexLock lock(GDScriptLanguage::singleton->mutex);
-				instances.erase(p_owner);
+				instances.remove(&instance->script_instance_list);
 			}
 			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 		}
@@ -433,12 +433,6 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 #else
 	return nullptr;
 #endif
-}
-
-bool GDScript::instance_has(const Object *p_this) const {
-	MutexLock lock(GDScriptLanguage::singleton->mutex);
-
-	return instances.has((Object *)p_this);
 }
 
 bool GDScript::has_source_code() const {
@@ -750,7 +744,7 @@ Error GDScript::reload(bool p_keep_state) {
 	{
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
 
-		has_instances = instances.size();
+		has_instances = instances.first() != nullptr;
 	}
 
 	// Check condition but reset flag before early return
@@ -1105,6 +1099,12 @@ void GDScript::set_path(const String &p_path, bool p_take_over) {
 	String old_path = path;
 	path = p_path;
 	path_valid = true;
+
+	String old_base = GDScript::canonicalize_path(old_path);
+	if (!old_base.is_empty() && fully_qualified_name.begins_with(old_base)) {
+		fully_qualified_name = GDScript::canonicalize_path(p_path) + fully_qualified_name.substr(old_base.length());
+	}
+
 	if (is_root_script()) {
 		GDScriptCache::move_script(old_path, p_path);
 	}
@@ -2039,8 +2039,8 @@ GDScriptInstance::~GDScriptInstance() {
 		}
 	}
 
-	if (script.is_valid() && owner) {
-		script->instances.erase(owner);
+	if (script.is_valid()) {
+		script->instances.remove(&script_instance_list);
 	}
 }
 
@@ -2466,15 +2466,13 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 			//save state and remove script from instances
 			HashMap<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[scr];
 
-			while (scr->instances.front()) {
-				Object *obj = scr->instances.front()->get();
+			while (scr->instances.first()) {
+				GDScriptInstance *instance = scr->instances.first()->self();
 				//save instance info
 				List<Pair<StringName, Variant>> state;
-				if (obj->get_script_instance()) {
-					obj->get_script_instance()->get_property_state(state);
-					map[obj->get_instance_id()] = state;
-					obj->set_script(Variant());
-				}
+				instance->get_property_state(state);
+				map[instance->get_owner()->get_instance_id()] = state;
+				instance->get_owner()->set_script(Variant());
 			}
 
 			//same thing for placeholders

@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/property_utils.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
@@ -188,8 +189,27 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				data_list.push_back(usage_data);
 			}
 
-			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage_data->info == F) {
+			// Make sure only properties with matching PropertyInfo data will appear.
+			if (usage_data->info.name == F.name &&
+					usage_data->info.type == F.type &&
+					usage_data->info.class_name == F.class_name &&
+					usage_data->info.hint == F.hint &&
+					usage_data->info.hint_string == F.hint_string) {
+				if (usage_data->info.usage != F.usage) {
+					// Checkable properties (mostly theme items) need special treatment.
+					if (usage_data->info.usage & PROPERTY_USAGE_CHECKABLE && F.usage & PROPERTY_USAGE_CHECKABLE) {
+						if (usage_data->info.usage & PROPERTY_USAGE_CHECKED) {
+							F.usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+						} else {
+							F.usage &= ~(PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED);
+						}
+
+						if (usage_data->info.usage != F.usage) {
+							continue;
+						}
+					}
+				}
+
 				usage_data->uses++;
 			}
 		}
@@ -243,7 +263,16 @@ bool MultiNodeEdit::_property_get_revert(const StringName &p_name, Variant &r_pr
 			continue;
 		}
 
-		r_property = ClassDB::class_get_default_property_value(node->get_class_name(), p_name);
+		// Check if property can revert before using class default.
+		if (node->property_can_revert(p_name)) {
+			r_property = node->property_get_revert(p_name);
+		} else {
+			bool is_valid = false;
+			r_property = PropertyUtils::get_property_default_value(node, p_name, &is_valid);
+			if (!is_valid) {
+				r_property = ClassDB::class_get_default_property_value(node->get_class_name(), p_name);
+			}
+		}
 		return true;
 	}
 

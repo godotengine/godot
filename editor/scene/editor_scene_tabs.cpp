@@ -182,21 +182,21 @@ void EditorSceneTabs::_update_context_menu() {
 
 	scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), EditorNode::SCENE_NEW_SCENE);
 	if (tab_id >= 0) {
-		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene"), EditorNode::SCENE_SAVE_SCENE);
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene"), SCENE_SAVE_SCENE);
 		DISABLE_LAST_OPTION_IF(no_root_node);
-		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene_as"), EditorNode::SCENE_SAVE_AS_SCENE);
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene_as"), SCENE_SAVE_AS_SCENE);
 		DISABLE_LAST_OPTION_IF(no_root_node);
 	}
 
-	bool can_save_all_scenes = false;
+	bool has_unsaved_scenes = false;
 	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
-		if (!EditorNode::get_editor_data().get_scene_path(i).is_empty() && EditorNode::get_editor_data().get_edited_scene_root(i)) {
-			can_save_all_scenes = true;
+		if (EditorNode::get_singleton()->is_scene_unsaved(i)) {
+			has_unsaved_scenes = true;
 			break;
 		}
 	}
 	scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), EditorNode::SCENE_SAVE_ALL_SCENES);
-	DISABLE_LAST_OPTION_IF(!can_save_all_scenes);
+	DISABLE_LAST_OPTION_IF(!has_unsaved_scenes);
 
 	if (tab_id >= 0) {
 		const String scene_path = EditorNode::get_editor_data().get_scene_path(tab_id);
@@ -207,11 +207,11 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(!ResourceLoader::exists(scene_path));
 		scene_tabs_context_menu->add_item(TTR("Play This Scene"), SCENE_RUN);
 		DISABLE_LAST_OPTION_IF(no_root_node);
-		scene_tabs_context_menu->add_item(TTR("Set as Main Scene"), EditorNode::SCENE_TAB_SET_AS_MAIN_SCENE);
+		scene_tabs_context_menu->add_item(TTR("Set as Main Scene"), SCENE_SET_AS_MAIN_SCENE);
 		DISABLE_LAST_OPTION_IF(no_root_node || (!main_scene_path.is_empty() && ResourceUID::ensure_path(main_scene_path) == scene_path));
 
 		scene_tabs_context_menu->add_separator();
-		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_scene"), EditorNode::SCENE_CLOSE);
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_scene"), SCENE_CLOSE);
 		scene_tabs_context_menu->set_item_text(-1, TTR("Close Tab"));
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), EditorNode::SCENE_OPEN_PREV);
 		scene_tabs_context_menu->set_item_text(-1, TTR("Undo Close Tab"));
@@ -238,6 +238,10 @@ void EditorSceneTabs::_update_context_menu() {
 #undef DISABLE_LAST_OPTION_IF
 
 	last_hovered_tab = tab_id;
+}
+
+int EditorSceneTabs::get_option_tab() const {
+	return last_hovered_tab >= 0 ? last_hovered_tab : scene_tabs->get_current_tab();
 }
 
 void EditorSceneTabs::_custom_menu_option(int p_option) {
@@ -290,6 +294,7 @@ void EditorSceneTabs::update_scene_tabs() {
 
 void EditorSceneTabs::_update_tab_titles() {
 	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
+	const String main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 
 	// Get all scene names, which may be ambiguous.
 	Vector<String> disambiguated_scene_names;
@@ -311,6 +316,18 @@ void EditorSceneTabs::_update_tab_titles() {
 
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorNode::get_editor_data().get_scene_history_id(i));
 		scene_tabs->set_tab_title(i, disambiguated_scene_names[i] + (unsaved ? "(*)" : ""));
+
+		if (!main_scene_path.is_empty() && main_scene_path == EditorNode::get_editor_data().get_scene_path(i)) {
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_DISABLED, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.7));
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_NORMAL, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.7));
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_HOVER, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_PRESSED, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		} else {
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_DISABLED, get_theme_color(SNAME("font_disabled_color"), SNAME("TabBar")));
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_NORMAL, get_theme_color(SNAME("font_unselected_color"), SNAME("TabBar")));
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_HOVER, get_theme_color(SNAME("font_hovered_color"), SNAME("TabBar")));
+			scene_tabs->set_font_color_override(i, TabBar::DRAW_PRESSED, get_theme_color(SNAME("font_selected_color"), SNAME("TabBar")));
+		}
 
 		if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
 			RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
@@ -421,6 +438,12 @@ int EditorSceneTabs::get_current_tab() const {
 	return scene_tabs->get_current_tab();
 }
 
+void EditorSceneTabs::_project_settings_changed() {
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("application/run/main_scene")) {
+		update_scene_tabs();
+	}
+}
+
 void EditorSceneTabs::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab_index")));
 	ADD_SIGNAL(MethodInfo("tab_closed", PropertyInfo(Variant::INT, "tab_index")));
@@ -438,7 +461,6 @@ EditorSceneTabs::EditorSceneTabs() {
 	tabbar_panel->add_child(tabbar_container);
 
 	scene_tabs = memnew(TabBar);
-	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
 	scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
@@ -499,4 +521,6 @@ EditorSceneTabs::EditorSceneTabs() {
 	tab_preview->set_size(Size2(96, 96) * EDSCALE);
 	tab_preview->set_position(Point2(2, 2) * EDSCALE);
 	tab_preview_panel->add_child(tab_preview);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSceneTabs::_project_settings_changed));
 }

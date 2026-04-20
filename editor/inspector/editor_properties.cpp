@@ -66,8 +66,13 @@
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
-#include "scene/resources/visual_shader_nodes.h"
 #include "servers/display/display_server.h"
+
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+#include "modules/visual_shader/vs_nodes/visual_shader_nodes.h"
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 ///////////////////// NIL /////////////////////////
 
@@ -1650,10 +1655,10 @@ void EditorPropertyObjectID::update_property() {
 		type = "Object";
 	}
 
-	ObjectID id = _get_object_id();
+	const ObjectID id = _get_object_id();
 	if (id.is_valid()) {
-		edit->set_text(type + " ID: " + uitos(id));
-		edit->set_tooltip_text(type + " ID: " + uitos(id));
+		edit->set_text(type + ": " + uitos(id));
+		edit->set_tooltip_text(type + ": " + uitos(id));
 		edit->set_disabled(false);
 		edit->set_button_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
@@ -1661,6 +1666,14 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_tooltip_text("");
 		edit->set_disabled(true);
 		edit->set_button_icon(Ref<Texture2D>());
+	}
+}
+
+void EditorPropertyObjectID::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			edit->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+		} break;
 	}
 }
 
@@ -3438,12 +3451,14 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	Ref<ViewportTexture> vpt = p_resource;
 	if (vpt.is_valid()) {
 		r = Object::cast_to<Resource>(get_edited_object());
+#ifdef MODULE_VISUAL_SHADER_ENABLED
 		if (Object::cast_to<VisualShaderNodeTexture>(r)) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture in a Texture2D node because the texture will not be bound to a scene.\nUse a Texture2DParameter node instead and set the texture in the \"Shader Parameters\" tab."));
 			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));

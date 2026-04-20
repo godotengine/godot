@@ -838,6 +838,15 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 	return Ref<Texture2D>();
 }
 
+struct ScriptErrorLineComparator {
+	bool operator()(const ScriptLanguage::ScriptError &p_a, const ScriptLanguage::ScriptError &p_b) const {
+		if (p_a.line != p_b.line) {
+			return p_a.line < p_b.line;
+		}
+		return p_a.column < p_b.column;
+	}
+};
+
 void ScriptTextEditor::_validate_script() {
 	CodeEdit *te = code_editor->get_text_editor();
 
@@ -851,6 +860,8 @@ void ScriptTextEditor::_validate_script() {
 
 	Ref<Script> script = edited_res;
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
+		errors.sort_custom<ScriptErrorLineComparator>();
+
 		List<ScriptLanguage::ScriptError>::Element *E = errors.front();
 		while (E) {
 			List<ScriptLanguage::ScriptError>::Element *next_E = E->next();

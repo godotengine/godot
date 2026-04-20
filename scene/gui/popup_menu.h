@@ -140,7 +140,7 @@ class PopupMenu : public Popup {
 	Point2 last_submenu_mouse_position;
 	int submenu_mouse_exited_ticks_msec = -1;
 	bool mouse_movement_was_tested = false;
-	Point2 scroll_container_offset_start;
+	Point2 panel_offset_start;
 	float submenu_timer_popup_delay = 0.2;
 	const float CLOSE_SUSPENDED_TIMER_DELAY = 0.5;
 	String _get_accel_text(const Item &p_item) const;
@@ -272,6 +272,8 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
+
+	virtual String _get_accessibility_name() const override;
 
 #ifndef DISABLE_DEPRECATED
 	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);

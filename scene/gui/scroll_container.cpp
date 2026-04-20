@@ -51,16 +51,24 @@ Size2 ScrollContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 child_min_size = c->get_combined_minimum_size();
+		Size2 child_min_size = c->get_bound_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 
 	Size2 min_size;
 	const Size2 size = get_size();
 
+	bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || vertical_scroll_mode == SCROLL_MODE_RESERVE || ((vertical_scroll_mode == SCROLL_MODE_AUTO || vertical_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && (largest_child_min_size.y > size.y));
+	bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || horizontal_scroll_mode == SCROLL_MODE_RESERVE || ((horizontal_scroll_mode == SCROLL_MODE_AUTO || horizontal_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && (largest_child_min_size.x > size.x));
+
 	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.x = largest_child_min_size.x;
-		bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || vertical_scroll_mode == SCROLL_MODE_RESERVE || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.y > size.y);
+		if (v_scroll_show && v_scroll->get_parent() == this) {
+			min_size.x += v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+		}
+	} else if (horizontal_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) {
+		float h_max_size = get_combined_maximum_size().x;
+		min_size.x = h_max_size >= 0 ? MIN(largest_child_min_size.x, h_max_size) : largest_child_min_size.x;
 		if (v_scroll_show && v_scroll->get_parent() == this) {
 			min_size.x += v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
 		}
@@ -68,7 +76,12 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	if (vertical_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.y = largest_child_min_size.y;
-		bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || horizontal_scroll_mode == SCROLL_MODE_RESERVE || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > size.x);
+		if (h_scroll_show && h_scroll->get_parent() == this) {
+			min_size.y += h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
+		}
+	} else if (vertical_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) {
+		float v_max_size = get_combined_maximum_size().y;
+		min_size.y = v_max_size >= 0 ? MIN(largest_child_min_size.y, v_max_size) : largest_child_min_size.y;
 		if (h_scroll_show && h_scroll->get_parent() == this) {
 			min_size.y += h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
 		}
@@ -78,6 +91,23 @@ Size2 ScrollContainer::get_minimum_size() const {
 	min_size += margins.position + margins.size;
 
 	return min_size;
+}
+
+Size2 ScrollContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	if (h_scroll && (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE)) {
+		ms.y -= h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
+	}
+	if (v_scroll && (_is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE)) {
+		ms.x -= v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+	}
+
+	return ms;
 }
 
 void ScrollContainer::_cancel_drag() {
@@ -98,11 +128,11 @@ void ScrollContainer::_cancel_drag() {
 
 bool ScrollContainer::_is_h_scroll_visible() const {
 	// Scrolls may have been moved out for reasons.
-	return h_scroll->is_visible() && h_scroll->get_parent() == this;
+	return h_scroll && h_scroll->is_visible() && h_scroll->get_parent() == this;
 }
 
 bool ScrollContainer::_is_v_scroll_visible() const {
-	return v_scroll->is_visible() && v_scroll->get_parent() == this;
+	return v_scroll && v_scroll->is_visible() && v_scroll->get_parent() == this;
 }
 
 Rect2 ScrollContainer::_get_margins() const {
@@ -293,8 +323,8 @@ void ScrollContainer::_update_scrollbar_position() {
 
 	Rect2 margins = _get_margins();
 
-	Size2 hmin = h_scroll->is_visible() ? h_scroll->get_combined_minimum_size() : Size2();
-	Size2 vmin = v_scroll->is_visible() ? v_scroll->get_combined_minimum_size() : Size2();
+	Size2 hmin = h_scroll->is_visible() ? h_scroll->get_bound_minimum_size() : Size2();
+	Size2 vmin = v_scroll->is_visible() ? v_scroll->get_bound_minimum_size() : Size2();
 
 	int lmar = is_layout_rtl() ? margins.size.x : margins.position.x;
 	int rmar = is_layout_rtl() ? margins.position.x : margins.size.x;
@@ -374,13 +404,20 @@ void ScrollContainer::_reposition_children() {
 		}
 
 		Size2 minsize = c->get_combined_minimum_size();
+		Size2 maxsize = c->get_combined_maximum_size();
 		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
 
 		if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.width = MAX(size.width, minsize.width);
+			if (maxsize.width >= 0) {
+				r.size.width = MIN(r.size.width, maxsize.width);
+			}
 		}
 		if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.height = MAX(size.height, minsize.height);
+			if (maxsize.height >= 0) {
+				r.size.height = MIN(r.size.height, maxsize.height);
+			}
 		}
 
 		r.position += ofs;
@@ -392,6 +429,8 @@ void ScrollContainer::_reposition_children() {
 		focus_panel->set_position(Vector2(0, 0));
 		focus_panel->set_size(get_size());
 	}
+
+	update_maximum_size();
 	queue_redraw();
 }
 
@@ -595,11 +634,11 @@ void ScrollContainer::_update_scrollbars() {
 	Size2 size = get_size();
 	size -= margins.position + margins.size;
 
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	Size2 hmin = h_scroll->get_bound_minimum_size();
+	Size2 vmin = v_scroll->get_bound_minimum_size();
 
-	h_scroll->set_visible(horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((horizontal_scroll_mode == SCROLL_MODE_AUTO || horizontal_scroll_mode == SCROLL_MODE_RESERVE) && largest_child_min_size.width > size.width));
-	v_scroll->set_visible(vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((vertical_scroll_mode == SCROLL_MODE_AUTO || vertical_scroll_mode == SCROLL_MODE_RESERVE) && largest_child_min_size.height > size.height));
+	h_scroll->set_visible(horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((horizontal_scroll_mode == SCROLL_MODE_AUTO || horizontal_scroll_mode == SCROLL_MODE_RESERVE || horizontal_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && largest_child_min_size.width > size.width));
+	v_scroll->set_visible(vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((vertical_scroll_mode == SCROLL_MODE_AUTO || vertical_scroll_mode == SCROLL_MODE_RESERVE || vertical_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && largest_child_min_size.height > size.height));
 
 	h_scroll->set_max(largest_child_min_size.width);
 	h_scroll->set_page(_is_v_scroll_visible() ? size.width - vmin.width : size.width);
@@ -868,8 +907,8 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_horizontal_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_horizontal_custom_step", "get_horizontal_custom_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_vertical_custom_step", "get_vertical_custom_step");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve,Maximize First"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve,Maximize First"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_by_default"), "set_scroll_horizontal_by_default", "is_scroll_horizontal_by_default");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
 
@@ -882,6 +921,7 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_RESERVE);
+	BIND_ENUM_CONSTANT(SCROLL_MODE_MAXIMIZE_FIRST);
 
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_ALL);
@@ -961,4 +1001,5 @@ ScrollContainer::ScrollContainer() {
 	deadzone = GLOBAL_GET_CACHED(int, "gui/common/default_scroll_deadzone");
 
 	set_clip_contents(true);
+	set_propagate_maximum_size(false);
 }

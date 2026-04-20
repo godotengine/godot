@@ -461,11 +461,13 @@ float RenderingContextDriverMetal::surface_get_hdr_output_max_luminance(SurfaceI
 }
 
 void RenderingContextDriverMetal::surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_linear_luminance_scale = p_linear_luminance_scale;
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
-	return surface->hdr_reference_luminance;
+	return surface->hdr_linear_luminance_scale;
 }
 
 float RenderingContextDriverMetal::surface_get_hdr_output_max_value(SurfaceID p_surface) const {

@@ -271,9 +271,9 @@ EditorPlugin *EditorData::get_handling_main_editor(Object *p_object) {
 
 Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
-	for (int i = editor_plugins.size() - 1; i > -1; i--) {
-		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
-			sub_plugins.push_back(editor_plugins[i]);
+	for (EditorPlugin *plugin : editor_plugins) {
+		if (!plugin->has_main_screen() && plugin->handles(p_object)) {
+			sub_plugins.push_back(plugin);
 		}
 	}
 	return sub_plugins;

@@ -920,15 +920,26 @@ bool EditorFileSystem::_update_scan_actions() {
 				const String new_file_path = ia.dir->get_file_path(idx);
 				const ResourceUID::ID existing_id = ResourceLoader::get_resource_uid(new_file_path);
 				if (existing_id != ResourceUID::INVALID_ID) {
-					const String old_path = ResourceUID::get_singleton()->get_id_path(existing_id);
-					if (old_path != new_file_path && FileAccess::exists(old_path)) {
+					const bool id_known = ResourceUID::get_singleton()->has_id(existing_id);
+					const String old_path = id_known ? ResourceUID::get_singleton()->get_id_path(existing_id) : String();
+
+					if (id_known && old_path != new_file_path && FileAccess::exists(old_path)) {
 						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
 						ResourceSaver::set_uid(new_file_path, new_id);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
+						ia.new_file->uid = new_id;
 					} else {
 						// Re-assign the UID to file, just in case it was pulled from cache.
 						ResourceSaver::set_uid(new_file_path, existing_id);
+
+						if (id_known) {
+							ResourceUID::get_singleton()->set_id(existing_id, new_file_path);
+						} else {
+							ResourceUID::get_singleton()->add_id(existing_id, new_file_path);
+						}
+
+						ia.new_file->uid = existing_id;
 					}
 				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
@@ -3036,6 +3047,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		fs->files[cpos]->import_dest_paths = dest_paths;
 		fs->files[cpos]->deps = _get_dependencies(p_file);
 		fs->files[cpos]->type = importer->get_resource_type();
+		fs->files[cpos]->resource_script_class = ResourceLoader::get_resource_script_class(p_file);
 		fs->files[cpos]->uid = uid;
 		fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 	}

@@ -2517,6 +2517,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("directional_light_create"), &RenderingServer::directional_light_create);
 	ClassDB::bind_method(D_METHOD("omni_light_create"), &RenderingServer::omni_light_create);
 	ClassDB::bind_method(D_METHOD("spot_light_create"), &RenderingServer::spot_light_create);
+	ClassDB::bind_method(D_METHOD("area_light_create"), &RenderingServer::area_light_create);
 
 	ClassDB::bind_method(D_METHOD("light_set_color", "light", "color"), &RenderingServer::light_set_color);
 	ClassDB::bind_method(D_METHOD("light_set_param", "light", "param", "value"), &RenderingServer::light_set_param);
@@ -2536,6 +2537,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_directional_set_blend_splits", "light", "enable"), &RenderingServer::light_directional_set_blend_splits);
 	ClassDB::bind_method(D_METHOD("light_directional_set_sky_mode", "light", "mode"), &RenderingServer::light_directional_set_sky_mode);
 
+	ClassDB::bind_method(D_METHOD("light_area_set_size", "light", "size"), &RenderingServer::light_area_set_size);
+	ClassDB::bind_method(D_METHOD("light_area_set_normalize_energy", "light", "enable"), &RenderingServer::light_area_set_normalize_energy);
+
 	ClassDB::bind_method(D_METHOD("light_projectors_set_filter", "filter"), &RenderingServer::light_projectors_set_filter);
 	ClassDB::bind_method(D_METHOD("lightmaps_set_bicubic_filter", "enable"), &RenderingServer::lightmaps_set_bicubic_filter);
 
@@ -2549,6 +2553,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::LIGHT_DIRECTIONAL);
 	BIND_ENUM_CONSTANT(RSE::LIGHT_OMNI);
 	BIND_ENUM_CONSTANT(RSE::LIGHT_SPOT);
+	BIND_ENUM_CONSTANT(RSE::LIGHT_AREA);
 
 	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_ENERGY);
 	BIND_ENUM_CONSTANT(RSE::LIGHT_PARAM_INDIRECT_ENERGY);
@@ -2711,7 +2716,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_lifetime", "particles", "lifetime"), &RenderingServer::particles_set_lifetime);
 	ClassDB::bind_method(D_METHOD("particles_set_one_shot", "particles", "one_shot"), &RenderingServer::particles_set_one_shot);
 	ClassDB::bind_method(D_METHOD("particles_set_pre_process_time", "particles", "time"), &RenderingServer::particles_set_pre_process_time);
-	ClassDB::bind_method(D_METHOD("particles_request_process_time", "particles", "time"), &RenderingServer::particles_request_process_time);
+	ClassDB::bind_method(D_METHOD("particles_request_process_time", "particles", "process_time", "process_time_residual"), &RenderingServer::particles_request_process_time, DEFVAL(0.0f));
 	ClassDB::bind_method(D_METHOD("particles_set_explosiveness_ratio", "particles", "ratio"), &RenderingServer::particles_set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_randomness_ratio", "particles", "ratio"), &RenderingServer::particles_set_randomness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_interp_to_end", "particles", "factor"), &RenderingServer::particles_set_interp_to_end);
@@ -2726,7 +2731,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_collision_base_size", "particles", "size"), &RenderingServer::particles_set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("particles_set_transform_align", "particles", "align"), &RenderingServer::particles_set_transform_align);
 	ClassDB::bind_method(D_METHOD("particles_set_transform_align_channel_filter", "particles", "channel_filter"), &RenderingServer::particles_set_transform_align_channel_filter);
-	ClassDB::bind_method(D_METHOD("particles_set_transform_align_axis", "particles", "p_rotation_axis"), &RenderingServer::particles_set_transform_align_axis);
+	ClassDB::bind_method(D_METHOD("particles_set_transform_align_axis", "particles", "rotation_axis"), &RenderingServer::particles_set_transform_align_axis);
 	ClassDB::bind_method(D_METHOD("particles_set_trails", "particles", "enable", "length_sec"), &RenderingServer::particles_set_trails);
 	ClassDB::bind_method(D_METHOD("particles_set_trail_bind_poses", "particles", "bind_poses"), &RenderingServer::_particles_set_trail_bind_poses);
 
@@ -2915,6 +2920,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_FSR2);
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_NEAREST);
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_UPDATE_DISABLED);
@@ -3073,7 +3079,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RSE::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "curve", "begin", "end"), &RenderingServer::environment_set_fog_depth);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi", "env", "enable", "cascades", "min_cell_size", "y_scale", "use_occlusion", "bounce_feedback", "read_sky", "energy", "normal_bias", "probe_bias"), &RenderingServer::environment_set_sdfgi);
-	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "p_detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
+	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
 
 	ClassDB::bind_method(D_METHOD("environment_glow_set_use_bicubic_upscale", "enable"), &RenderingServer::environment_glow_set_use_bicubic_upscale);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr_half_size", "half_size"), &RenderingServer::environment_set_ssr_half_size);
@@ -3749,11 +3755,11 @@ void RenderingServer::init() {
 		String mode_hints;
 		String mode_hints_metal;
 		{
-			Vector<String> mode_hints_arr = { "Bilinear (Fastest)", "FSR 1.0 (Fast)", "FSR 2.2 (Slow)" };
+			Vector<String> mode_hints_arr = { "Nearest (Fastest):5", "Bilinear (Fastest):0", "FSR 1.0 (Fast):1", "FSR 2.2 (Slow):2" };
 			mode_hints = String(",").join(mode_hints_arr);
 
-			mode_hints_arr.push_back("MetalFX (Spatial)");
-			mode_hints_arr.push_back("MetalFX (Temporal)");
+			mode_hints_arr.push_back("MetalFX (Spatial - Fast):3");
+			mode_hints_arr.push_back("MetalFX (Temporal - Slow):4");
 			mode_hints_metal = String(",").join(mode_hints_arr);
 		}
 
@@ -3761,8 +3767,8 @@ void RenderingServer::init() {
 		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.ios", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
 		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.macos", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
 	}
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), 1.0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), 0.2f);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/scale", PROPERTY_HINT_RANGE, "0.1,2.0,0.0001"), 1.0);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.2f);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/default_filters/texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), 0.0f);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), RSE::DECAL_FILTER_LINEAR_MIPMAPS);

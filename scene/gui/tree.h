@@ -498,6 +498,7 @@ private:
 	TreeItem *drop_mode_over = nullptr;
 	int drop_mode_section = 0;
 	bool drop_mode_unchanged = false;
+	bool dragging_within_self = false;
 
 	TreeItem *single_select_defer = nullptr;
 	int single_select_defer_column = 0;

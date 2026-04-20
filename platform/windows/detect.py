@@ -194,16 +194,24 @@ def get_opts():
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
+        BoolVariable("winrt", "Use WinRT API (OneCore TTS support).", True),
         # Screen reader support.
         (
             "accesskit_sdk_path",
             "Path to the AccessKit C SDK",
             os.path.join(deps_folder, "accesskit"),
         ),
+        # OpenGL over Direct3D 11.
         (
             "angle_libs",
             "Path to the ANGLE static libraries",
             os.path.join(deps_folder, "angle"),
+        ),
+        # WinRT.
+        (
+            "winrt_path",
+            "Path to the WinRT headers (MinGW only)",
+            os.path.join(deps_folder, "winrt_mingw"),
         ),
         # Direct3D 12 support.
         (
@@ -418,6 +426,8 @@ def configure_msvc(env: "SConsEnvironment"):
         "wbemuuid",
         "ntdll",
         "hid",
+        "mincore",
+        "coremessaging",
     ]
 
     if env.debug_features:
@@ -487,6 +497,8 @@ def configure_msvc(env: "SConsEnvironment"):
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
         angle_path = env["angle_libs"] + "-" + env["arch"] + "-msvc"
+        if not os.path.exists(angle_path):
+            angle_path = env["angle_libs"]
         if os.path.exists(angle_path):
             env.Prepend(CPPPATH=["#thirdparty/angle/include"])
             env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])
@@ -811,8 +823,34 @@ def configure_mingw(env: "SConsEnvironment"):
             "wbemuuid",
             "ntdll",
             "hid",
+            "mincore",
+            "coremessaging",
         ]
     )
+
+    if env["winrt"]:
+        if not os.path.exists(env["winrt_path"]):
+            prefix = os.getenv("MINGW_PREFIX", "")
+            msys = os.getenv("MSYSTEM", "")
+            if msys != "" and prefix != "":
+                if not os.path.exists(os.path.join(prefix, "include/winrt")):
+                    print_warning(
+                        "The WinRT/OneCore API requires dependencies to be installed.\n"
+                        f"You can install them by installing `cppwinrt` MSYS2 package or by running `python {os.path.join('misc', 'scripts', 'install_winrt.py')}`.\n"
+                        "See the documentation for more information:\n"
+                        "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
+                        "Alternatively, disable this driver by compiling with `winrt=no` explicitly."
+                    )
+                env["winrt"] = False
+            else:
+                print_warning(
+                    "The WinRT/OneCore API requires dependencies to be installed.\n"
+                    f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_winrt.py')}`.\n"
+                    "See the documentation for more information:\n"
+                    "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
+                    "Alternatively, disable this driver by compiling with `winrt=no` explicitly."
+                )
+                env["winrt"] = False
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
@@ -897,6 +935,8 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
         if env["angle"]:
             angle_path = env["angle_libs"] + "-" + env["arch"] + ("-llvm" if env["use_llvm"] else "-gcc")
+            if not os.path.exists(angle_path):
+                angle_path = env["angle_libs"]
             if os.path.exists(angle_path):
                 env.Prepend(CPPPATH=["#thirdparty/angle/include"])
                 env.AppendUnique(CPPDEFINES=["ANGLE_ENABLED", "EGL_STATIC"])

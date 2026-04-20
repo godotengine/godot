@@ -48,8 +48,9 @@ NoiseTexture2D::~NoiseTexture2D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free_rid(texture);
 	}
-	if (noise_thread.is_started()) {
-		noise_thread.wait_to_finish();
+	if (current_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		regen_queued = false;
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(current_task_id);
 	}
 }
 
@@ -131,17 +132,19 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 }
 
 void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
+	if (current_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(current_task_id);
+		current_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	}
 	_set_texture_image(p_image);
-	noise_thread.wait_to_finish();
 	if (regen_queued) {
-		noise_thread.start(_thread_function, this);
+		current_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &NoiseTexture2D::_thread_function), false, "Noise Texture 2D Image generation");
 		regen_queued = false;
 	}
 }
 
-void NoiseTexture2D::_thread_function(void *p_ud) {
-	NoiseTexture2D *tex = static_cast<NoiseTexture2D *>(p_ud);
-	callable_mp(tex, &NoiseTexture2D::_thread_done).call_deferred(tex->_generate_texture());
+void NoiseTexture2D::_thread_function() {
+	callable_mp(this, &NoiseTexture2D::_thread_done).call_deferred(_generate_texture());
 }
 
 void NoiseTexture2D::_queue_update() {
@@ -208,8 +211,8 @@ void NoiseTexture2D::_update_texture() {
 		first_time = false;
 	}
 	if (use_thread) {
-		if (!noise_thread.is_started()) {
-			noise_thread.start(_thread_function, this);
+		if (current_task_id == WorkerThreadPool::INVALID_TASK_ID) {
+			current_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &NoiseTexture2D::_thread_function), false, "Noise Texture 2D Image generation");
 			regen_queued = false;
 		} else {
 			regen_queued = true;

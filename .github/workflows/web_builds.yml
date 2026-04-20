@@ -39,7 +39,7 @@ jobs:
           submodules: recursive
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v14
+        uses: emscripten-core/setup-emsdk@v16
         with:
           version: ${{ env.EM_VERSION }}
           no-cache: true

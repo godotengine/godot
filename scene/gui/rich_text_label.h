@@ -130,7 +130,13 @@ public:
 		UPDATE_REGION = 1 << 4,
 		UPDATE_PAD = 1 << 5,
 		UPDATE_TOOLTIP = 1 << 6,
-		UPDATE_WIDTH_IN_PERCENT = 1 << 7,
+		UPDATE_WIDTH_UNIT = 1 << 7,
+	};
+
+	enum ImageUnit {
+		IMAGE_UNIT_PIXEL,
+		IMAGE_UNIT_PERCENT,
+		IMAGE_UNIT_EM,
 	};
 
 protected:
@@ -153,7 +159,8 @@ protected:
 	void _push_strikethrough_bind_compat_106300();
 	void _add_image_bind_compat_107347(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false, const String &p_alt_text = String());
 	void _update_image_bind_compat_107347(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
-
+	void _add_image_bind_compat_112617(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
+	void _update_image_bind_compat_112617(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -201,25 +208,25 @@ private:
 		ItemType type = ITEM_FRAME;
 		List<Item *> subitems;
 		List<Item *>::Element *E = nullptr;
-		ObjectID owner;
 		int line = 0; // `line` is the index number of the paragraph (Line) this item is inside of (zero if the first paragraph).
 		RID rid;
 
 		RID accessibility_item_element;
 
 		void _clear_children() { // Only ever called on main or a paragraph (Line).
-			RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
 			while (subitems.size()) {
 				Item *subitem = subitems.front()->get();
-				if (subitem && subitem->rid.is_valid() && owner_rtl) {
-					owner_rtl->items.free(subitem->rid);
-				}
 				memdelete(subitem);
 				subitems.pop_front();
 			}
 		}
 
-		virtual ~Item() { _clear_children(); }
+		virtual ~Item() {
+			_clear_children();
+			if (rid.is_valid()) {
+				items.free(rid);
+			}
+		}
 	};
 
 	struct ItemFrame : public Item {
@@ -261,6 +268,7 @@ private:
 		int ol_size = 0;
 		Color ol_color;
 		Rect2 dropcap_margins;
+		ObjectID owner;
 		ItemDropcap() { type = ITEM_DROPCAP; }
 		~ItemDropcap();
 	};
@@ -270,14 +278,15 @@ private:
 		String alt_text;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 		bool pad = false;
-		bool width_in_percent = false;
-		bool height_in_percent = false;
+		ImageUnit width_unit = IMAGE_UNIT_PIXEL;
+		ImageUnit height_unit = IMAGE_UNIT_PIXEL;
 		Rect2 region;
 		Size2 size;
 		Size2 rq_size;
 		Color color;
 		Variant key;
 		String tooltip;
+		ObjectID owner;
 		ItemImage() { type = ITEM_IMAGE; }
 		~ItemImage();
 	};
@@ -288,6 +297,7 @@ private:
 		bool variation = false;
 		bool def_size = false;
 		int font_size = 0;
+		ObjectID owner;
 		ItemFont() { type = ITEM_FONT; }
 		~ItemFont();
 	};
@@ -579,7 +589,7 @@ private:
 
 	void _texture_changed(RID p_item);
 
-	static inline RID_PtrOwner<Item, true> items;
+	static inline RID_PtrOwner<Item, true> items{ 65536, 1048576 };
 	List<String> tag_stack;
 	HashSet<RID> hr_list;
 
@@ -716,12 +726,17 @@ private:
 	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
 	Rect2 _get_text_rect();
+	int _get_wrap_width(const Rect2 &p_text_rect) const;
+
+	void _maximum_size_changed();
+
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
 	void _invalidate_fonts();
 
-	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
+	Size2 _get_image_size(const Ref<Texture2D> &p_image, float p_width = 0, float p_height = 0, const Rect2 &p_region = Rect2());
+	Size2 _get_item_image_final_size(ItemImage *p_img, float p_orig_width, float p_base_font_size);
 
 	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
 	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l);
@@ -808,8 +823,8 @@ public:
 	String get_parsed_text() const;
 	void add_text(const String &p_text);
 	void add_hr(int p_width = 90, int p_height = 2, const Color &p_color = Color(1.0, 1.0, 1.0), HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, bool p_width_in_percent = true, bool p_height_in_percent = false);
-	void add_image(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
-	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
+	void add_image(const Ref<Texture2D> &p_image, float p_width = 0, float p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), ImageUnit p_width_unit = IMAGE_UNIT_PIXEL, ImageUnit p_height_unit = IMAGE_UNIT_PIXEL, const String &p_alt_text = String());
+	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, float p_width = 0, float p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), ImageUnit p_width_unit = IMAGE_UNIT_PIXEL, ImageUnit p_height_unit = IMAGE_UNIT_PIXEL);
 	void add_newline();
 	bool remove_paragraph(int p_paragraph, bool p_no_invalidate = false);
 	bool invalidate_paragraph(int p_paragraph);
@@ -1021,3 +1036,4 @@ VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 VARIANT_ENUM_CAST(RichTextLabel::MetaUnderline);
 VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
+VARIANT_ENUM_CAST(RichTextLabel::ImageUnit);

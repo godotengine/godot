@@ -312,6 +312,10 @@ public:
 		bool can_maximize = true;
 		bool can_fullscreen = true;
 
+		xdg_toplevel_icon_v1 *xdg_icon = nullptr;
+		wl_buffer *icon_buffer = nullptr;
+		bool icon_set = false;
+
 		HashSet<struct wl_output *> wl_outputs;
 
 		// NOTE: If for whatever reason this callback is destroyed _while_ the event
@@ -474,6 +478,13 @@ public:
 		HashSet<String> mime_types;
 	};
 
+	struct TouchPoint {
+		DisplayServerEnums::WindowID touched_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		Point2 position;
+		uint32_t down_time = 0;
+		uint32_t motion_time = 0;
+	};
+
 	struct SeatState {
 		RegistryState *registry = nullptr;
 
@@ -557,6 +568,12 @@ public:
 		uint32_t last_key_pressed_serial = 0;
 
 		struct wl_data_device *wl_data_device = nullptr;
+
+		// Touch.
+		struct wl_touch *wl_touch = nullptr;
+		AHashMap<int32_t, TouchPoint> touch_points_buffer;
+		AHashMap<int32_t, TouchPoint> touch_points;
+		int32_t last_touch_id = -1;
 
 		// Drag and drop.
 		DisplayServerEnums::WindowID dnd_id = DisplayServerEnums::INVALID_WINDOW_ID;
@@ -694,6 +711,7 @@ private:
 	struct wl_registry *wl_registry = nullptr;
 
 	struct wl_seat *wl_seat_current = nullptr;
+	bool has_touch = false;
 
 	bool frame = true;
 
@@ -708,6 +726,8 @@ private:
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;
 #endif // LIBDECOR_ENABLED
+
+	static void _clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd);
 
 	// Main polling method.
 	static void _poll_events_thread(void *p_data);
@@ -753,6 +773,14 @@ private:
 	static void _wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
+
+	static void _wl_touch_on_down(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, struct wl_surface *surface, int32_t id, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_touch_on_up(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, int32_t id);
+	static void _wl_touch_on_motion(void *data, struct wl_touch *wl_touch, uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_touch_on_frame(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_cancel(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor);
+	static void _wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation);
 
 	static void _wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
 	static void _wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id);
@@ -931,6 +959,16 @@ private:
 		.key = _wl_keyboard_on_key,
 		.modifiers = _wl_keyboard_on_modifiers,
 		.repeat_info = _wl_keyboard_on_repeat_info,
+	};
+
+	static constexpr struct wl_touch_listener wl_touch_listener = {
+		.down = _wl_touch_on_down,
+		.up = _wl_touch_on_up,
+		.motion = _wl_touch_on_motion,
+		.frame = _wl_touch_on_frame,
+		.cancel = _wl_touch_on_cancel,
+		.shape = _wl_touch_on_shape,
+		.orientation = _wl_touch_on_orientation,
 	};
 
 	static constexpr struct wl_data_device_listener wl_data_device_listener = {
@@ -1218,11 +1256,16 @@ public:
 
 	void beep() const;
 
-	void set_icon(const Ref<Image> &p_icon);
+	void set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id);
+	void set_default_icon(const Ref<Image> &p_icon);
 
 	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
 	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
+
+	// Checks if a window exists for this ID (NOT if its data is valid). Useful to
+	// detect deleted windows.
+	bool window_exists(DisplayServerEnums::WindowID p_window_id);
 
 	void window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id);
 
@@ -1260,6 +1303,8 @@ public:
 
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
+
+	bool input_has_touch() const;
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(const Point2i &p_hint);

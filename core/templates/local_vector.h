@@ -190,7 +190,7 @@ public:
 		_resize<!std::is_trivially_constructible_v<T>>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and set new values to 0 / false / nullptr.
 	_FORCE_INLINE_ void resize_initialized(U p_size) { _resize<true>(p_size); }
 
 	/// Resize and keep memory uninitialized.

@@ -139,6 +139,23 @@ bool EditorBottomPanel::can_switch_dock() const {
 	return !is_locked();
 }
 
+Rect2 EditorBottomPanel::get_floating_dock_rect(EditorDock *p_dock) {
+	if (p_dock->is_visible_in_tree()) {
+		return DockTabContainer::get_default_floating_dock_rect(p_dock);
+	}
+	// If dock is  not visible, its size may not be initialized.
+	Rect2 ret;
+	ret.size = get_size();
+
+	int *stored_size = dock_offsets.getptr(p_dock->get_effective_layout_key());
+	if (stored_size) {
+		ret.size.y = -(*stored_size);
+	}
+	ret.size.y -= get_tab_bar()->get_size().y;
+	ret.position = get_tab_bar()->get_screen_position() - Vector2(0, ret.size.y);
+	return ret;
+}
+
 void EditorBottomPanel::load_selected_tab(int p_idx) {
 	EditorDock *selected_dock = get_dock(p_idx);
 	if (!selected_dock) {

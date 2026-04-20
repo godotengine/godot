@@ -1588,8 +1588,19 @@ void TileDataCollisionEditor::_property_selected(const StringName &p_path, int p
 }
 
 void TileDataCollisionEditor::_polygons_changed() {
+	// Clear old labels first to prevent duplicates.
+	for (Node *child : iterate_children()) {
+		if (Object::cast_to<Label>(child)) {
+			child->queue_free();
+		}
+	}
 	// Update the dummy object properties and their editors.
 	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
+		Label *header = memnew(Label);
+		header->set_text(vformat(TTR("Polygon %d"), i));
+		header->set_theme_type_variation("HeaderSmall");
+		add_child(header);
+
 		StringName one_way_property = vformat("polygon_%d_one_way", i);
 		StringName one_way_margin_property = vformat("polygon_%d_one_way_margin", i);
 
@@ -1606,25 +1617,28 @@ void TileDataCollisionEditor::_polygons_changed() {
 		if (!property_editors.has(one_way_property)) {
 			EditorProperty *one_way_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::BOOL, one_way_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 			one_way_property_editor->set_object_and_property(dummy_object, one_way_property);
-			one_way_property_editor->set_label(one_way_property);
+			one_way_property_editor->set_label(TTRC("One Way"));
 			one_way_property_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 			one_way_property_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
 			one_way_property_editor->set_tooltip_text(one_way_property_editor->get_edited_property());
 			one_way_property_editor->update_property();
 			add_child(one_way_property_editor);
 			property_editors[one_way_property] = one_way_property_editor;
+		} else {
+			move_child(property_editors[one_way_property], -1);
 		}
-
 		if (!property_editors.has(one_way_margin_property)) {
 			EditorProperty *one_way_margin_property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::FLOAT, one_way_margin_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 			one_way_margin_property_editor->set_object_and_property(dummy_object, one_way_margin_property);
-			one_way_margin_property_editor->set_label(one_way_margin_property);
+			one_way_margin_property_editor->set_label(TTRC("One Way Margin"));
 			one_way_margin_property_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 			one_way_margin_property_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
 			one_way_margin_property_editor->set_tooltip_text(one_way_margin_property_editor->get_edited_property());
 			one_way_margin_property_editor->update_property();
 			add_child(one_way_margin_property_editor);
 			property_editors[one_way_margin_property] = one_way_margin_property_editor;
+		} else {
+			move_child(property_editors[one_way_margin_property], -1);
 		}
 	}
 
@@ -1768,6 +1782,11 @@ void TileDataCollisionEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			polygon_editor->set_polygons_color(get_tree()->get_debug_collisions_color());
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready()) {
+				_polygons_changed();
+			}
+		} break;
 	}
 }
 
@@ -1784,7 +1803,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 
 	EditorProperty *linear_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::VECTOR2, "linear_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	linear_velocity_editor->set_object_and_property(dummy_object, "linear_velocity");
-	linear_velocity_editor->set_label("linear_velocity");
+	linear_velocity_editor->set_label(TTRC("Linear Velocity"));
 	linear_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 	linear_velocity_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
 	linear_velocity_editor->set_tooltip_text(linear_velocity_editor->get_edited_property());
@@ -1794,7 +1813,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 
 	EditorProperty *angular_velocity_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, Variant::FLOAT, "angular_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	angular_velocity_editor->set_object_and_property(dummy_object, "angular_velocity");
-	angular_velocity_editor->set_label("angular_velocity");
+	angular_velocity_editor->set_label(TTRC("Angular Velocity"));
 	angular_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 	angular_velocity_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
 	angular_velocity_editor->set_tooltip_text(angular_velocity_editor->get_edited_property());

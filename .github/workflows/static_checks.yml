@@ -40,7 +40,7 @@ jobs:
           files_yaml_from_source_file: .github/changed_files.yml
 
       - name: Style checks via pre-commit
-        uses: pre-commit/action@v3.0.1
+        uses: ./.github/actions/pre-commit
         env:
           CHANGED_FILES: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
         with:

@@ -37,6 +37,7 @@
 
 struct _MinSizeCache {
 	int min_size = 0;
+	int max_size = -1;
 	bool will_stretch = false;
 	int final_size = 0;
 };
@@ -45,6 +46,8 @@ void BoxContainer::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 	Size2i new_size = get_size();
+	Size2 combined_max_size = get_combined_maximum_size();
+	bool propagating_max_size = vertical ? is_propagating_maximum_size() && combined_max_size.height >= 0 : is_propagating_maximum_size() && combined_max_size.width >= 0;
 
 	bool rtl = is_layout_rtl();
 
@@ -61,18 +64,28 @@ void BoxContainer::_resort() {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		if (propagating_max_size) {
+			c->set_parent_maximum_size_cache(combined_max_size);
+		}
+		Size2i min_size = c->get_combined_minimum_size();
+		Size2i max_size = c->get_combined_maximum_size();
 		_MinSizeCache msc;
 
 		if (vertical) { /* VERTICAL */
-			stretch_min += size.height;
-			msc.min_size = size.height;
+			stretch_min += min_size.height;
+			msc.min_size = min_size.height;
+			msc.max_size = max_size.height;
 			msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
 
 		} else { /* HORIZONTAL */
-			stretch_min += size.width;
-			msc.min_size = size.width;
+			stretch_min += min_size.width;
+			msc.min_size = min_size.width;
+			msc.max_size = max_size.width;
 			msc.will_stretch = c->get_h_size_flags().has_flag(SIZE_EXPAND);
+		}
+
+		if (msc.max_size >= 0 && msc.max_size < msc.min_size) {
+			msc.max_size = msc.min_size;
 		}
 
 		if (msc.will_stretch) {
@@ -99,10 +112,15 @@ void BoxContainer::_resort() {
 	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
-	bool has_stretched = false;
-	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist
+	if (propagating_max_size) {
+		if (vertical) {
+			stretch_avail = MIN(stretch_avail, combined_max_size.height);
+		} else {
+			stretch_avail = MIN(stretch_avail, combined_max_size.width);
+		}
+	}
 
-		has_stretched = true;
+	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist
 		bool refit_successful = true; //assume refit-test will go well
 		float error = 0.0; // Keep track of accumulated error in pixels
 
@@ -117,22 +135,32 @@ void BoxContainer::_resort() {
 
 			if (msc.will_stretch) { //wants to stretch
 				//let's see if it can really stretch
-				float final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				float stretch_ratio = c->get_stretch_ratio();
+				float final_pixel_size = stretch_avail * stretch_ratio / stretch_ratio_total;
 				// Add leftover fractional pixels to error accumulator
 				error += final_pixel_size - (int)final_pixel_size;
 				if (final_pixel_size < msc.min_size) {
 					//if available stretching area is too small for widget,
 					//then remove it from stretching area
 					msc.will_stretch = false;
-					stretch_ratio_total -= c->get_stretch_ratio();
+					stretch_ratio_total -= stretch_ratio;
 					refit_successful = false;
 					stretch_avail -= msc.min_size;
 					msc.final_size = msc.min_size;
 					break;
+				} else if (msc.max_size >= 0 && final_pixel_size > msc.max_size) {
+					// If stretching would exceed the Control's maximum size,
+					// cap it and redistribute its unused share.
+					msc.will_stretch = false;
+					stretch_ratio_total -= stretch_ratio;
+					refit_successful = false;
+					stretch_avail -= msc.max_size;
+					msc.final_size = msc.max_size;
+					break;
 				} else {
 					msc.final_size = final_pixel_size;
 					// Dump accumulated error if one pixel or more
-					if (error >= 1) {
+					if (error >= 1 && (msc.max_size < 0 || msc.final_size < msc.max_size)) {
 						msc.final_size += 1;
 						error -= 1;
 					}
@@ -148,34 +176,48 @@ void BoxContainer::_resort() {
 	/** Final pass, draw and stretch elements **/
 
 	int ofs = 0;
-	if (!has_stretched) {
-		if (!vertical) {
-			switch (alignment) {
-				case ALIGNMENT_BEGIN:
-					if (rtl) {
-						ofs = stretch_diff;
-					}
-					break;
-				case ALIGNMENT_CENTER:
-					ofs = stretch_diff / 2;
-					break;
-				case ALIGNMENT_END:
-					if (!rtl) {
-						ofs = stretch_diff;
-					}
-					break;
-			}
-		} else {
-			switch (alignment) {
-				case ALIGNMENT_BEGIN:
-					break;
-				case ALIGNMENT_CENTER:
-					ofs = stretch_diff / 2;
-					break;
-				case ALIGNMENT_END:
-					ofs = stretch_diff;
-					break;
-			}
+	int final_stretch_diff = stretch_max - stretch_min;
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
+			continue;
+		}
+
+		ERR_FAIL_COND(!min_size_cache.has(c));
+		_MinSizeCache &msc = min_size_cache[c];
+		final_stretch_diff -= msc.final_size - msc.min_size;
+	}
+
+	if (final_stretch_diff < 0) {
+		final_stretch_diff = 0;
+	}
+
+	if (!vertical) {
+		switch (alignment) {
+			case ALIGNMENT_BEGIN:
+				if (rtl) {
+					ofs = final_stretch_diff;
+				}
+				break;
+			case ALIGNMENT_CENTER:
+				ofs = final_stretch_diff / 2;
+				break;
+			case ALIGNMENT_END:
+				if (!rtl) {
+					ofs = final_stretch_diff;
+				}
+				break;
+		}
+	} else {
+		switch (alignment) {
+			case ALIGNMENT_BEGIN:
+				break;
+			case ALIGNMENT_CENTER:
+				ofs = final_stretch_diff / 2;
+				break;
+			case ALIGNMENT_END:
+				ofs = final_stretch_diff;
+				break;
 		}
 	}
 
@@ -195,6 +237,7 @@ void BoxContainer::_resort() {
 		delta = -1;
 	}
 
+	int accumulated_size = 0;
 	for (int i = start; i != end; i += delta) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -229,8 +272,17 @@ void BoxContainer::_resort() {
 			rect = Rect2(from, 0, size, new_size.height);
 		}
 
+		if (propagating_max_size) {
+			if (vertical) {
+				c->set_parent_maximum_size_cache(Size2(combined_max_size.width, MAX(combined_max_size.height - accumulated_size, 0)));
+			} else {
+				c->set_parent_maximum_size_cache(Size2(MAX(combined_max_size.width - accumulated_size, 0), combined_max_size.height));
+			}
+		}
+
 		fit_child_in_rect(c, rect);
 
+		accumulated_size += size + theme_cache.separation;
 		ofs = to;
 		idx++;
 	}
@@ -249,7 +301,7 @@ Size2 BoxContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		Size2i size = c->get_bound_minimum_size();
 
 		if (vertical) { /* VERTICAL */
 

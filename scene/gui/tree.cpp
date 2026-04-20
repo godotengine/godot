@@ -1461,6 +1461,10 @@ Color TreeItem::get_button_color(int p_column, int p_index) const {
 
 void TreeItem::set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip) {
 	ERR_FAIL_INDEX(p_column, cells.size());
+	if (p_index < 0) {
+		p_index += cells[p_column].buttons.size();
+	}
+
 	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 	cells.write[p_column].buttons.write[p_index].tooltip = p_tooltip;
 
@@ -3819,8 +3823,8 @@ Rect2 Tree::_get_content_rect() const {
 	const Rect2 content_rect = Rect2(background->get_offset(), Size2(width, height));
 
 	// Scrollbars won't affect Tree's content rect if they're not visible or placed inside the stylebox margin area.
-	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_combined_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
-	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_combined_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
+	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_bound_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
+	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_bound_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
 	const Point2 scroll_begin = _get_scrollbar_layout_rect().get_end() - Vector2(v_size, h_size);
 	const Size2 offset = (content_rect.get_end() - scroll_begin).maxf(0);
 
@@ -4377,7 +4381,7 @@ void Tree::_determine_hovered_item() {
 				drop_mode_over = (section != COLUMN_NOT_FOUND) ? it : nullptr;
 
 				// Check if the drop target is a descendant of any selected item.
-				if (drop_mode_over) {
+				if (drop_mode_over && dragging_within_self) {
 					TreeItem *check = drop_mode_over->get_parent();
 					while (check) {
 						if (check->is_any_column_selected()) {
@@ -4400,19 +4404,23 @@ void Tree::_determine_hovered_item() {
 			}
 
 			drop_mode_unchanged = false;
-			if (drop_mode_over && selected_item) {
-				TreeItem *child = selected_item;
-				TreeItem *parent = selected_item->get_parent();
-				if (drop_mode_over == selected_item) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == -1 && drop_mode_over->get_prev() == child && parent == drop_mode_over->get_parent()) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == 1 && drop_mode_over->get_next() == child && parent == drop_mode_over->get_parent()) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == 0 && drop_mode_over == parent && child == parent->get_last_child()) {
-					drop_mode_unchanged = true;
-				} else if (drop_mode_section == 2 && drop_mode_over == parent && child == parent->get_first_child()) {
-					drop_mode_unchanged = true;
+			if (drop_mode_over && selected_item && dragging_within_self) {
+				if (selected_item == root && drop_mode_over == root) {
+					drop_mode_over = nullptr; // Prevent root from being dragged onto itself.
+				} else {
+					TreeItem *child = selected_item;
+					TreeItem *parent = selected_item->get_parent();
+					if (drop_mode_over == child) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == -1 && drop_mode_over->get_prev() == child && parent == drop_mode_over->get_parent()) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == 1 && drop_mode_over->get_next() == child && parent == drop_mode_over->get_parent()) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == 0 && drop_mode_over == parent && child == parent->get_last_child()) {
+						drop_mode_unchanged = true;
+					} else if (drop_mode_section == 2 && drop_mode_over == parent && child == parent->get_first_child()) {
+						drop_mode_unchanged = true;
+					}
 				}
 			}
 		}
@@ -4641,8 +4649,8 @@ void Tree::update_scrollbars() {
 	const real_t height = control_size.y - background->get_margin(SIDE_TOP) - background->get_margin(SIDE_BOTTOM);
 	const Rect2 content_rect = Rect2(background->get_offset(), Size2(width, height));
 
-	const Size2 hmin = h_scroll->get_combined_minimum_size();
-	const Size2 vmin = v_scroll->get_combined_minimum_size();
+	const Size2 hmin = h_scroll->get_bound_minimum_size();
+	const Size2 vmin = v_scroll->get_bound_minimum_size();
 
 	const Size2 internal_min_size = get_internal_min_size();
 	const int title_button_height = _get_title_button_height();
@@ -5106,6 +5114,7 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			drop_mode_flags = 0;
+			dragging_within_self = false;
 			_reset_drop_mode_over();
 			scrolling = false;
 			set_process_internal(false);
@@ -5562,10 +5571,10 @@ Size2 Tree::get_minimum_size() const {
 	Vector2 content_min_size = get_internal_min_size();
 	if (h_scroll_enabled) {
 		content_min_size.x = 0;
-		min_size.y += h_scroll->get_combined_minimum_size().height;
+		min_size.y += h_scroll->get_bound_minimum_size().height;
 	}
 	if (v_scroll_enabled) {
-		min_size.x += v_scroll->get_combined_minimum_size().width;
+		min_size.x += v_scroll->get_bound_minimum_size().width;
 		content_min_size.y = 0;
 	}
 
@@ -6900,12 +6909,14 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
 
 	if (it) {
-		TreeItem *check = it->get_parent();
-		while (check) {
-			if (check->is_any_column_selected()) {
-				return COLUMN_NOT_FOUND;
+		if (dragging_within_self) {
+			TreeItem *check = it->get_parent();
+			while (check) {
+				if (check->is_any_column_selected()) {
+					return COLUMN_NOT_FOUND;
+				}
+				check = check->get_parent();
 			}
-			check = check->get_parent();
 		}
 		return section;
 	}
@@ -6926,7 +6937,7 @@ Variant Tree::get_drag_data(const Point2 &p_point) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}
-
+	dragging_within_self = true;
 	return Control::get_drag_data(p_point);
 }
 

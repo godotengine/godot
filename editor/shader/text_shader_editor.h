@@ -36,6 +36,11 @@
 #include "scene/gui/rich_text_label.h"
 #include "servers/rendering/shader_warnings.h"
 
+class MaterialEditor;
+class Environment;
+class ShaderMaterial;
+class Timer;
+
 class GDShaderSyntaxHighlighter : public CodeHighlighter {
 	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
 
@@ -49,6 +54,71 @@ public:
 	void add_disabled_branch_region(const Point2i &p_region);
 	void clear_disabled_branch_regions();
 	void set_disabled_branch_color(const Color &p_color);
+};
+
+class TextShaderPreview : public VBoxContainer {
+	GDCLASS(TextShaderPreview, VBoxContainer);
+
+private:
+	Label *error_label = nullptr;
+	Button *goto_button = nullptr;
+	Button *delete_button = nullptr;
+	MarginContainer *surface_container = nullptr;
+	MaterialEditor *surface = nullptr;
+	Ref<ShaderMaterial> shader_material;
+	Ref<Environment> env;
+
+	int line = -1;
+	bool in_comment = false;
+
+	static HashMap<String, String> spatial_assignments;
+	static HashMap<String, String> canvas_assignments;
+	static HashMap<String, String> builtin_spatial_types;
+	static HashMap<String, String> builtin_canvas_types;
+
+	String _get_enclosing_function(const PackedStringArray &p_lines, int p_line) const;
+	bool _find_statement(const PackedStringArray &p_lines, int p_line, String &r_var_name, int &r_start, int &r_end) const;
+	String _find_var_type(const PackedStringArray &p_lines, const String &p_var_name, int p_line, bool p_mode_3d);
+	bool _match_uniforms(const Ref<ShaderMaterial> &p_source, const Ref<ShaderMaterial> &p_target) const;
+	void _sync_shader_parameters(const Ref<ShaderMaterial> &p_source, Ref<ShaderMaterial> &p_target);
+	void _reset_shader_parameters(Ref<ShaderMaterial> &p_target);
+	void _show_error(const String &p_error);
+	void _goto_pressed();
+	void _delete_pressed();
+	Ref<ShaderMaterial> _get_source_material() const;
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	void set_shader_code(const String &p_code, int p_line, bool p_in_comment);
+	void show_shader_compile_error();
+	void recompile(const String &p_code);
+	void sync_shader_parameters();
+	MarginContainer *get_surface_container() const;
+
+	TextShaderPreview();
+};
+
+class TextShaderPreviewLineLayer : public Control {
+	GDCLASS(TextShaderPreviewLineLayer, Control);
+
+private:
+	Color line_color;
+	HashMap<int, TextShaderPreview *> *previews = nullptr;
+	ScrollContainer *scroll_container = nullptr;
+	CodeEdit *code_editor = nullptr;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void set_previews(HashMap<int, TextShaderPreview *> &p_previews);
+	void set_code_editor(CodeEdit *p_code_editor);
+	void set_scroll_container(ScrollContainer *p_scroll_container);
+
+	TextShaderPreviewLineLayer();
 };
 
 class ShaderTextEditor : public CodeTextEditor {
@@ -66,6 +136,9 @@ class ShaderTextEditor : public CodeTextEditor {
 	Ref<ShaderInclude> shader_inc;
 	List<ShaderWarning> warnings;
 	Error last_compile_result = Error::OK;
+	HashMap<int, TextShaderPreview *> previews;
+	Control *preview_box = nullptr;
+	TextShaderPreviewLineLayer *preview_line_layer = nullptr;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
@@ -93,12 +166,23 @@ public:
 
 	Ref<Shader> get_edited_shader() const;
 	Ref<ShaderInclude> get_edited_shader_include() const;
+	TextShaderPreviewLineLayer *get_preview_line_layer() const;
+	TextShaderPreview *get_preview(int p_line) const;
 
 	void set_edited_shader(const Ref<Shader> &p_shader);
 	void set_edited_shader(const Ref<Shader> &p_shader, const String &p_code);
 	void set_edited_shader_include(const Ref<ShaderInclude> &p_include);
 	void set_edited_shader_include(const Ref<ShaderInclude> &p_include, const String &p_code);
 	void set_edited_code(const String &p_code);
+
+	void toggle_shader_preview(int p_line);
+	void remove_shader_preview(int p_line);
+	void goto_shader_preview(int p_line);
+	void set_preview_box(Control *p_box);
+	void clear_previews();
+	void redraw_preview_lines();
+	void recompile_previews();
+	void update_parameters();
 
 	ShaderTextEditor();
 };
@@ -132,18 +216,26 @@ class TextShaderEditor : public ShaderEditor {
 		BOOKMARK_GOTO_NEXT,
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
+		PREVIEW_TOGGLE,
+		PREVIEW_REMOVE_ALL,
+		PREVIEW_GOTO_NEXT,
+		PREVIEW_GOTO_PREV,
 		HELP_DOCS,
 		EDIT_EMOJI_AND_SYMBOL,
 		EDIT_JOIN_LINES,
 	};
 
 	HBoxContainer *menu_bar_hbox = nullptr;
+	VBoxContainer *preview_box = nullptr;
 	MenuButton *edit_menu = nullptr;
 	MenuButton *search_menu = nullptr;
 	PopupMenu *bookmarks_menu = nullptr;
+	PopupMenu *previews_menu = nullptr;
 	Button *site_search = nullptr;
 	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
+	Timer *preview_timer = nullptr;
+	ScrollContainer *preview_sbox = nullptr;
 
 	GotoLinePopup *goto_line_popup = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
@@ -166,6 +258,7 @@ class TextShaderEditor : public ShaderEditor {
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(const Variant &p_line);
 	void _update_warnings(bool p_validate);
+	void _focus_preview_line(int p_line);
 
 	void _script_validated(bool p_valid) {
 		compilation_success = p_valid;
@@ -176,15 +269,20 @@ class TextShaderEditor : public ShaderEditor {
 
 	bool trim_trailing_whitespace_on_save = false;
 	bool trim_final_newlines_on_save = false;
+	bool pending_update_shader_previews = false;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	void _make_context_menu(bool p_selection, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &p_ev);
+	void _on_shader_preview_toggled(int p_line);
+	void _update_shader_previews();
 
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
+	void _update_shader_preview_list();
+	void _shader_preview_item_pressed(int p_idx);
 
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
@@ -201,12 +299,13 @@ public:
 	bool was_compilation_successful() const { return compilation_success; }
 	bool get_trim_trailing_whitespace_on_save() const { return trim_trailing_whitespace_on_save; }
 	bool get_trim_final_newlines_on_save() const { return trim_final_newlines_on_save; }
-	void ensure_select_current();
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void trim_trailing_whitespace();
 	void trim_final_newlines();
 	void tag_saved_version();
 	ShaderTextEditor *get_code_editor() { return code_editor; }
+
+	static void register_editor();
 
 	TextShaderEditor();
 };

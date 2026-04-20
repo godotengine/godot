@@ -153,14 +153,14 @@ void register_editor_types() {
 	EditorStringNames::create();
 
 	GDREGISTER_CLASS(EditorPaths);
-	GDREGISTER_CLASS(EditorPlugin);
+	GDREGISTER_VIRTUAL_CLASS(EditorPlugin);
 	GDREGISTER_CLASS(EditorTranslationParserPlugin);
 	GDREGISTER_CLASS(EditorImportPlugin);
 	GDREGISTER_CLASS(EditorScript);
 	GDREGISTER_CLASS(EditorDock);
 	GDREGISTER_CLASS(EditorSelection);
 	GDREGISTER_CLASS(EditorFileDialog);
-	GDREGISTER_CLASS(EditorSettings);
+	GDREGISTER_VIRTUAL_CLASS(EditorSettings);
 	GDREGISTER_ABSTRACT_CLASS(EditorToaster);
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
@@ -201,7 +201,7 @@ void register_editor_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);
 
 	GDREGISTER_CLASS(EditorScenePostImport);
-	GDREGISTER_CLASS(EditorCommandPalette);
+	GDREGISTER_VIRTUAL_CLASS(EditorCommandPalette);
 	GDREGISTER_CLASS(EditorDebuggerPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
 

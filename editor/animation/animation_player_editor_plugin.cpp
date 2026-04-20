@@ -2485,10 +2485,6 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		// if AnimationTree editor is visible, do not occupy the bottom panel
-		if (AnimationTreeEditor::get_singleton() && AnimationTreeEditor::get_singleton()->is_visible_in_tree()) {
-			return;
-		}
 		anim_editor->make_visible();
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();

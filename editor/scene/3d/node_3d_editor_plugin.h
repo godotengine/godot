@@ -152,6 +152,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+		VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
@@ -164,6 +165,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 		VIEW_DISPLAY_DEBUG_OCCLUDERS,
@@ -196,11 +198,19 @@ private:
 	Node3D *ruler_start_point = nullptr;
 	Node3D *ruler_end_point = nullptr;
 	Ref<ImmediateMesh> geometry;
+	Ref<ImmediateMesh> geometry_xray;
 	MeshInstance3D *ruler_line = nullptr;
 	MeshInstance3D *ruler_line_xray = nullptr;
 	Label *ruler_label = nullptr;
 	Ref<StandardMaterial3D> ruler_material;
 	Ref<StandardMaterial3D> ruler_material_xray;
+	Ref<StandardMaterial3D> ruler_triangle_material;
+	Ref<StandardMaterial3D> ruler_triangle_material_xray;
+	MeshInstance3D *ruler_triangle_lines = nullptr;
+	MeshInstance3D *ruler_triangle_lines_xray = nullptr;
+	Label *ruler_label_x = nullptr;
+	Label *ruler_label_y = nullptr;
+	Label *ruler_label_z = nullptr;
 
 	int index;
 	void _menu_option(int p_option);
@@ -386,6 +396,7 @@ private:
 	void _update_view_3d_controller(bool p_update_all = true);
 
 	void _cursor_interpolated();
+	void _cursor_distance_scaled();
 
 	void _freelook_changed();
 	void _freelook_speed_scaled();
@@ -617,7 +628,6 @@ public:
 	};
 
 	real_t gizmo_view_rotation_scale = 1.0;
-	real_t gizmo_view_rotation_shrink = 1.0;
 
 private:
 	EditorSelection *editor_selection = nullptr;
@@ -732,6 +742,8 @@ private:
 		MENU_RULER,
 		MENU_VERTEX_SNAP_BASE_VERTEX,
 		MENU_VERTEX_SNAP_BASE_ORIGIN,
+		MENU_VERTEX_SNAP_SOURCE_MESH,
+		MENU_VERTEX_SNAP_SOURCE_COLLISION,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -750,6 +762,7 @@ private:
 	bool snap_enabled = false;
 	bool snap_key_enabled = false;
 	bool vertex_snap_origin_mode = false;
+	bool vertex_snap_use_collision = false;
 	EditorSpinSlider *snap_translate = nullptr;
 	EditorSpinSlider *snap_rotate = nullptr;
 	EditorSpinSlider *snap_scale = nullptr;
@@ -936,6 +949,7 @@ public:
 	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
+	bool is_vertex_snap_use_collision() const;
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
 	real_t get_scale_snap() const;

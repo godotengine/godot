@@ -72,7 +72,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 
 	JPH::SoftBodySharedSettings *_create_shared_settings();
 
-	void _apply_environmental_forces(float p_step, JPH::Body &p_jolt_body);
+	void _apply_environmental_forces(float p_step);
 
 	void _update_mass();
 	void _update_pressure();
@@ -115,7 +115,7 @@ public:
 
 	virtual Vector3 get_velocity_at_position(const Vector3 &p_position) const override;
 
-	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) override;
+	virtual void pre_step(float p_step) override;
 
 	void set_mesh(const RID &p_mesh);
 

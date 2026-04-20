@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileSet" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -503,7 +503,7 @@
 		</method>
 		<method name="set_coords_level_tile_proxy">
 			<return type="void" />
-			<param index="0" name="p_source_from" type="int" />
+			<param index="0" name="source_from" type="int" />
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="source_to" type="int" />
 			<param index="3" name="coords_to" type="Vector2i" />

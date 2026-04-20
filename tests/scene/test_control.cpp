@@ -1101,6 +1101,74 @@ TEST_CASE("[SceneTree][Control] Anchoring") {
 	memdelete(test_control);
 }
 
+TEST_CASE("[SceneTree][Control] Custom maximum size") {
+	Control *test_control = memnew(Control);
+	test_control->set_custom_maximum_size(Size2(4, 2));
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_control);
+	test_control->set_size(Size2(4, 2));
+	CHECK_MESSAGE(
+			test_control->get_size().is_equal_approx(Vector2(4, 2)),
+			"Size is allowed to increase to match custom maximum size.");
+
+	test_control->set_size(Size2(3, 1));
+	CHECK_MESSAGE(
+			test_control->get_size().is_equal_approx(Vector2(3, 1)),
+			"Size does not change if below custom maximum size.");
+
+	test_control->set_size(Size2(5, 4));
+	CHECK_MESSAGE(
+			test_control->get_size().is_equal_approx(Vector2(4, 2)),
+			"Size is limited to custom maximum size.");
+
+	test_control->set_size(Size2(5, 1));
+	CHECK_MESSAGE(
+			test_control->get_size().is_equal_approx(Vector2(4, 1)),
+			"Adjust only x axis if x is above custom maximum size.");
+
+	test_control->set_size(Size2(3, 3));
+	CHECK_MESSAGE(
+			test_control->get_size().is_equal_approx(Vector2(3, 2)),
+			"Adjust only y axis if y is above custom maximum size.");
+
+	test_control->set_custom_minimum_size(Size2(5, 3));
+	SceneTree::get_singleton()->process(0);
+	CHECK_MESSAGE(
+			test_control->get_size().is_equal_approx(Vector2(4, 2)),
+			"Custom maximum size overrides custom minimum size.");
+
+	Control *test_child = memnew(Control);
+	test_control->add_child(test_child);
+
+	CHECK_MESSAGE(
+			test_child->get_combined_maximum_size().is_equal_approx(Vector2(-1, -1)),
+			"Child combined maximum size does not factor in parent's custom maximum size if not propagating.");
+
+	test_child->set_size(Size2(5, 3));
+	CHECK_MESSAGE(
+			test_child->get_size().is_equal_approx(Vector2(5, 3)),
+			"Child size is not constrained by parent's custom maximum size if not propagating.");
+
+	test_control->set_propagate_maximum_size(true);
+
+	CHECK_MESSAGE(
+			test_child->get_combined_maximum_size().is_equal_approx(Vector2(4, 2)),
+			"Child combined maximum size factors in parent's custom maximum size if propagating.");
+
+	test_child->set_size(Size2(5, 3));
+	CHECK_MESSAGE(
+			test_child->get_size().is_equal_approx(Vector2(4, 2)),
+			"Child size is constrained by parent's custom maximum size if propagating.");
+
+	test_child->set_size(Size2(3, 1));
+	CHECK_MESSAGE(
+			test_child->get_size().is_equal_approx(Vector2(3, 1)),
+			"Child size can be smaller than parent's custom maximum size.");
+
+	memdelete(test_child);
+	memdelete(test_control);
+}
+
 TEST_CASE("[SceneTree][Control] Custom minimum size") {
 	Control *test_control = memnew(Control);
 	test_control->set_custom_minimum_size(Size2(4, 2));

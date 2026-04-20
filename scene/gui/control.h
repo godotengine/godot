@@ -239,6 +239,16 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
+
+		mutable Size2 maximum_size_cache;
+		mutable bool maximum_size_valid = false;
+
+		mutable Size2 parent_maximum_size_cache = Size2(-1, -1);
+
+		Size2 last_maximum_size;
+		bool updating_last_maximum_size = false;
+		bool block_maximum_size_adjust = false;
+
 		mutable Size2 minimum_size_cache;
 		mutable bool minimum_size_valid = false;
 
@@ -255,7 +265,10 @@ private:
 		BitField<SizeFlags> h_size_flags = SIZE_FILL;
 		BitField<SizeFlags> v_size_flags = SIZE_FILL;
 		real_t expand = 1.0;
-		Point2 custom_minimum_size;
+		Size2 custom_maximum_size = Size2(-1, -1);
+		Size2 custom_minimum_size;
+
+		bool propagate_maximum_size = false;
 
 		// Input events and rendering.
 
@@ -320,6 +333,7 @@ private:
 		// Extra properties.
 
 		String tooltip;
+		StringName translation_context;
 		AutoTranslateMode tooltip_auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 	} data;
@@ -353,6 +367,8 @@ private:
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
 
+	void _update_maximum_size_cache() const;
+	void _update_maximum_size();
 	void _update_minimum_size_cache() const;
 	void _update_minimum_size();
 	void _size_changed();
@@ -404,6 +420,10 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
+	// Localization
+
+	virtual StringName _get_translation_context_with_override(const StringName &p_context) const override;
+
 	// Theming.
 
 	virtual void _update_theme_item_cache();
@@ -429,10 +449,16 @@ protected:
 	static void _bind_compatibility_methods();
 #endif //DISABLE_DEPRECATED
 
+	// Node overrides.
+
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
+	GDVIRTUAL0RC(Vector2, _get_maximum_size)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
 	GDVIRTUAL1RC(AutoTranslateMode, _get_tooltip_auto_translate_mode_at, Vector2)
@@ -572,15 +598,31 @@ public:
 	Vector2 get_pivot_offset() const;
 	Vector2 get_combined_pivot_offset() const;
 
+	void set_propagate_maximum_size(bool p_propagate);
+	bool is_propagating_maximum_size();
+
+	void update_maximum_size();
 	void update_minimum_size();
 
+	void set_block_maximum_size_adjust(bool p_block);
 	void set_block_minimum_size_adjust(bool p_block);
+
+	virtual Size2 get_maximum_size() const;
+	virtual Size2 get_combined_maximum_size() const;
+	virtual Size2 get_inner_combined_maximum_size() const;
+
+	void set_custom_maximum_size(const Size2 &p_custom);
+	Size2 get_custom_maximum_size() const;
+
+	void set_parent_maximum_size_cache(const Size2 &p_size);
 
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
+
+	virtual Size2 get_bound_minimum_size() const;
 
 	bool is_layout_pending() const;
 	bool is_layout_pending_in_tree() const;
@@ -683,6 +725,8 @@ public:
 
 	void set_accessibility_name(const String &p_name);
 	String get_accessibility_name() const;
+
+	virtual String _get_accessibility_name() const;
 
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
@@ -797,6 +841,8 @@ public:
 
 	String get_tooltip_text() const;
 	void set_tooltip_text(const String &text);
+	StringName get_translation_context() const;
+	void set_translation_context(const StringName &p_context);
 	virtual String get_tooltip(const Point2 &p_pos) const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 

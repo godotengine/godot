@@ -354,6 +354,10 @@ void SceneTree::_update_group_order(SceneTreeGroup &g) {
 	g.changed = false;
 }
 
+RequiredResult<Window> SceneTree::get_root() const {
+	return root;
+}
+
 void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
 	Vector<Node *> nodes_copy;
 
@@ -1804,7 +1808,7 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 	return ret;
 }
 
-Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
+RequiredResult<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
 	if (p_for_path.is_empty()) {
 		return multiplayer;

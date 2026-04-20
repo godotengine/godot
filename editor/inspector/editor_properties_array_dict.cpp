@@ -494,6 +494,7 @@ void EditorPropertyArray::update_property() {
 		paginator->update(page_index, max_page);
 		paginator->set_visible(max_page > 0);
 
+		float name_size = 0;
 		for (Slot &slot : slots) {
 			bool slot_visible = &slot != &reorder_slot && slot.index < size;
 			slot.container->set_visible(slot_visible);
@@ -524,6 +525,7 @@ void EditorPropertyArray::update_property() {
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
+				new_prop->set_name_split_ratio(0.0);
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
 				if (value_type == Variant::OBJECT) {
@@ -551,6 +553,15 @@ void EditorPropertyArray::update_property() {
 				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
 				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 			}
+			if (name_size == 0) {
+				int max_index = (page_index + 1) * page_length - 1;
+				const String ms = String("M").repeat(itos(max_index).length());
+
+				Ref<Font> font = theme_cache.font;
+				int font_size = theme_cache.font_size;
+				name_size = slots[0].reorder_button->get_minimum_size().x + theme_cache.horizontal_separation + font->get_string_size(ms, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+			}
+			slot.prop->set_name_fixed_size(name_size);
 			slot.prop->update_property();
 		}
 
@@ -1400,6 +1411,8 @@ void EditorPropertyDictionary::update_property() {
 					new_prop->set_use_folding(is_using_folding());
 					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 					new_prop->set_draw_label(false);
+					new_prop->set_mouse_filter(MOUSE_FILTER_PASS);
+					new_prop->set_mouse_behavior_recursive(MOUSE_BEHAVIOR_DISABLED);
 					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
 					if (arr_prop) {
 						arr_prop->set_preview_value(true);
