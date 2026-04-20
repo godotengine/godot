@@ -158,6 +158,8 @@ class GDScriptAnalyzer {
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const Ref<GDScriptParserRef> &p_dependant_parser);
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, GDScriptParser *p_dependant_parser);
 	Ref<GDScript> get_depended_shallow_script(const String &p_path, Error &r_error);
+	bool find_non_native_function(const GDScriptParser::DataType &p_type, const StringName &p_function, GDScriptParser::FunctionNode *&r_found_function) const;
+	bool is_iterable_type(const GDScriptParser::DataType &p_type, GDScriptParser::DataType &r_return_type) const;
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope);
 #endif
