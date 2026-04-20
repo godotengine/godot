@@ -1813,6 +1813,9 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
   if (item_length == -1)
     item_length = text_length - item_offset;
 
+  item_offset = hb_min (item_offset, (unsigned) text_length);
+  item_length = hb_clamp (item_length, 0, text_length - (int) item_offset);
+
   if (unlikely (item_length < 0 ||
 		item_length > INT_MAX / 8 ||
 		!buffer->ensure (buffer->len + item_length * sizeof (T) / 4)))

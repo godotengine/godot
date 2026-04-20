@@ -134,7 +134,7 @@ generalize_commands (hb_vector_t<cs_command_t> &commands)
   }
 
   /* Replace commands with generalized result */
-  commands.resize (0);
+  commands.clear ();
   for (unsigned i = 0; i < result.length; i++)
     commands.push (result[i]);
 }

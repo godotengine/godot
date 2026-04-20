@@ -615,6 +615,160 @@ hb_blob_create_from_file (const char *file_name)
   return likely (blob) ? blob : hb_blob_get_empty ();
 }
 
+#if defined(HAVE_MMAP) && !defined(HB_NO_MMAP)
+static hb_blob_t *
+_hb_blob_try_mmap (const char *file_name)
+{
+  hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
+  if (unlikely (!file)) return nullptr;
+  auto file_guard = hb_make_scope_guard ([&]() { hb_free (file); });
+
+  int fd = open (file_name, O_RDONLY | O_BINARY, 0);
+  if (unlikely (fd == -1)) return nullptr;
+  auto fd_guard = hb_make_scope_guard ([&]() { close (fd); });
+
+  struct stat st;
+  if (unlikely (fstat (fd, &st) == -1)) return nullptr;
+
+  file->length = (unsigned long) st.st_size;
+
+#ifdef _PATH_RSRCFORKSPEC
+  if (unlikely (file->length == 0))
+  {
+    int rfd = _open_resource_fork (file_name, file);
+    if (rfd != -1)
+    {
+      close (fd);
+      fd = rfd;
+    }
+  }
+#endif
+
+  file->contents = (char *) mmap (nullptr, file->length, PROT_READ,
+				  MAP_PRIVATE | MAP_NORESERVE, fd, 0);
+  if (unlikely (file->contents == MAP_FAILED)) return nullptr;
+
+  file_guard.release ();
+  /* fd_guard closes fd on return (ownership ends after mmap). */
+  return hb_blob_create_or_fail (file->contents, file->length,
+				 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
+				 (hb_destroy_func_t) _hb_mapped_file_destroy);
+}
+#elif defined(_WIN32) && !defined(HB_NO_MMAP)
+static hb_blob_t *
+_hb_blob_try_mmap (const char *file_name)
+{
+  hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
+  if (unlikely (!file)) return nullptr;
+  auto file_guard = hb_make_scope_guard ([&]() { hb_free (file); });
+
+  unsigned int size = strlen (file_name) + 1;
+  wchar_t *wchar_file_name = (wchar_t *) hb_malloc (sizeof (wchar_t) * size);
+  if (unlikely (!wchar_file_name)) return nullptr;
+
+  /* Assume file name is given in UTF-8 encoding */
+  int conversion = MultiByteToWideChar (CP_UTF8, MB_ERR_INVALID_CHARS, file_name, -1, wchar_file_name, size);
+  if (conversion <= 0)
+  {
+    /* Conversion failed due to invalid UTF-8 characters,
+       Repeat conversion based on system code page */
+    mbstowcs (wchar_file_name, file_name, size);
+  }
+
+  HANDLE fd;
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+  {
+    CREATEFILE2_EXTENDED_PARAMETERS ceparams = { 0 };
+    ceparams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
+    ceparams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED & 0xFFFF;
+    ceparams.dwFileFlags = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED & 0xFFF00000;
+    ceparams.dwSecurityQosFlags = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED & 0x000F0000;
+    ceparams.lpSecurityAttributes = nullptr;
+    ceparams.hTemplateFile = nullptr;
+    fd = CreateFile2 (wchar_file_name, GENERIC_READ, FILE_SHARE_READ,
+		      OPEN_EXISTING, &ceparams);
+  }
+#else
+  fd = CreateFileW (wchar_file_name, GENERIC_READ, FILE_SHARE_READ, nullptr,
+		    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED,
+		    nullptr);
+#endif
+  hb_free (wchar_file_name);
+
+  if (unlikely (fd == INVALID_HANDLE_VALUE)) return nullptr;
+  auto fd_guard = hb_make_scope_guard ([&]() { CloseHandle (fd); });
+
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+  {
+    LARGE_INTEGER length;
+    GetFileSizeEx (fd, &length);
+    file->length = length.LowPart;
+    file->mapping = CreateFileMappingFromApp (fd, nullptr, PAGE_READONLY, length.QuadPart, nullptr);
+  }
+#else
+  file->length = (unsigned long) GetFileSize (fd, nullptr);
+  file->mapping = CreateFileMapping (fd, nullptr, PAGE_READONLY, 0, 0, nullptr);
+#endif
+  if (unlikely (!file->mapping)) return nullptr;
+
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+  file->contents = (char *) MapViewOfFileFromApp (file->mapping, FILE_MAP_READ, 0, 0);
+#else
+  file->contents = (char *) MapViewOfFile (file->mapping, FILE_MAP_READ, 0, 0, 0);
+#endif
+  if (unlikely (!file->contents)) return nullptr;
+
+  file_guard.release ();
+  /* fd_guard closes fd on return. */
+  return hb_blob_create_or_fail (file->contents, file->length,
+				 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
+				 (hb_destroy_func_t) _hb_mapped_file_destroy);
+}
+#endif
+
+/* Read a file without knowing its size beforehand.  Used as a fallback
+ * for systems without mmap or to read from pipes. */
+static hb_blob_t *
+_hb_blob_read_file (const char *file_name)
+{
+  unsigned long len = 0, allocated = BUFSIZ * 16;
+  char *data = (char *) hb_malloc (allocated);
+  if (unlikely (!data)) return nullptr;
+  auto data_guard = hb_make_scope_guard ([&]() { hb_free (data); });
+
+  FILE *fp = fopen (file_name, "rb");
+  if (unlikely (!fp)) return nullptr;
+  HB_SCOPE_GUARD (fclose (fp));
+
+  while (!feof (fp))
+  {
+    if (allocated - len < BUFSIZ)
+    {
+      allocated *= 2;
+      /* Don't allocate and go more than ~536MB, our mmap reader still
+	 can cover files like that but lets limit our fallback reader */
+      if (unlikely (allocated > (2 << 28))) return nullptr;
+      char *new_data = (char *) hb_realloc (data, allocated);
+      if (unlikely (!new_data)) return nullptr;
+      data = new_data;
+    }
+
+    unsigned long addition = fread (data + len, 1, allocated - len, fp);
+
+    int err = ferror (fp);
+#ifdef EINTR // armcc doesn't have it
+    if (unlikely (err == EINTR)) continue;
+#endif
+    if (unlikely (err)) return nullptr;
+
+    len += addition;
+  }
+
+  data_guard.release ();
+  return hb_blob_create_or_fail (data, len, HB_MEMORY_MODE_WRITABLE, data,
+				 (hb_destroy_func_t) hb_free);
+}
+
 /**
  * hb_blob_create_from_file_or_fail:
  * @file_name: A filename
@@ -636,158 +790,10 @@ hb_blob_create_from_file_or_fail (const char *file_name)
 {
   /* Adopted from glib's gmappedfile.c with Matthias Clasen and
      Allison Lortie permission but changed a lot to suit our need. */
-#if defined(HAVE_MMAP) && !defined(HB_NO_MMAP)
-  hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
-  if (unlikely (!file)) return nullptr;
-
-  int fd = open (file_name, O_RDONLY | O_BINARY, 0);
-  if (unlikely (fd == -1)) goto fail_without_close;
-
-  struct stat st;
-  if (unlikely (fstat (fd, &st) == -1)) goto fail;
-
-  file->length = (unsigned long) st.st_size;
-
-#ifdef _PATH_RSRCFORKSPEC
-  if (unlikely (file->length == 0))
-  {
-    int rfd = _open_resource_fork (file_name, file);
-    if (rfd != -1)
-    {
-      close (fd);
-      fd = rfd;
-    }
-  }
+#if (defined(HAVE_MMAP) || defined(_WIN32)) && !defined(HB_NO_MMAP)
+  if (hb_blob_t *blob = _hb_blob_try_mmap (file_name))
+    return blob;
 #endif
-
-  file->contents = (char *) mmap (nullptr, file->length, PROT_READ,
-				  MAP_PRIVATE | MAP_NORESERVE, fd, 0);
-
-  if (unlikely (file->contents == MAP_FAILED)) goto fail;
-
-  close (fd);
-
-  return hb_blob_create_or_fail (file->contents, file->length,
-				 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
-				 (hb_destroy_func_t) _hb_mapped_file_destroy);
-
-fail:
-  close (fd);
-fail_without_close:
-  hb_free (file);
-
-#elif defined(_WIN32) && !defined(HB_NO_MMAP)
-  hb_mapped_file_t *file = (hb_mapped_file_t *) hb_calloc (1, sizeof (hb_mapped_file_t));
-  if (unlikely (!file)) return nullptr;
-
-  HANDLE fd;
-  int conversion;
-  unsigned int size = strlen (file_name) + 1;
-  wchar_t * wchar_file_name = (wchar_t *) hb_malloc (sizeof (wchar_t) * size);
-  if (unlikely (!wchar_file_name)) goto fail_without_close;
-
-  /* Assume file name is given in UTF-8 encoding */
-  conversion = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, file_name, -1, wchar_file_name, size);
-  if (conversion <= 0)
-  {
-    /* Conversion failed due to invalid UTF-8 characters,
-       Repeat conversion based on system code page */
-    mbstowcs(wchar_file_name, file_name, size);
-  }
-#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
-  {
-    CREATEFILE2_EXTENDED_PARAMETERS ceparams = { 0 };
-    ceparams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
-    ceparams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED & 0xFFFF;
-    ceparams.dwFileFlags = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED & 0xFFF00000;
-    ceparams.dwSecurityQosFlags = FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED & 0x000F0000;
-    ceparams.lpSecurityAttributes = nullptr;
-    ceparams.hTemplateFile = nullptr;
-    fd = CreateFile2 (wchar_file_name, GENERIC_READ, FILE_SHARE_READ,
-		      OPEN_EXISTING, &ceparams);
-  }
-#else
-  fd = CreateFileW (wchar_file_name, GENERIC_READ, FILE_SHARE_READ, nullptr,
-		    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED,
-		    nullptr);
-#endif
-  hb_free (wchar_file_name);
-
-  if (unlikely (fd == INVALID_HANDLE_VALUE)) goto fail_without_close;
-
-#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
-  {
-    LARGE_INTEGER length;
-    GetFileSizeEx (fd, &length);
-    file->length = length.LowPart;
-    file->mapping = CreateFileMappingFromApp (fd, nullptr, PAGE_READONLY, length.QuadPart, nullptr);
-  }
-#else
-  file->length = (unsigned long) GetFileSize (fd, nullptr);
-  file->mapping = CreateFileMapping (fd, nullptr, PAGE_READONLY, 0, 0, nullptr);
-#endif
-  if (unlikely (!file->mapping)) goto fail;
-
-#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
-  file->contents = (char *) MapViewOfFileFromApp (file->mapping, FILE_MAP_READ, 0, 0);
-#else
-  file->contents = (char *) MapViewOfFile (file->mapping, FILE_MAP_READ, 0, 0, 0);
-#endif
-  if (unlikely (!file->contents)) goto fail;
-
-  CloseHandle (fd);
-  return hb_blob_create_or_fail (file->contents, file->length,
-				 HB_MEMORY_MODE_READONLY_MAY_MAKE_WRITABLE, (void *) file,
-				 (hb_destroy_func_t) _hb_mapped_file_destroy);
-
-fail:
-  CloseHandle (fd);
-fail_without_close:
-  hb_free (file);
-
-#endif
-
-  /* The following tries to read a file without knowing its size beforehand
-     It's used as a fallback for systems without mmap or to read from pipes */
-  unsigned long len = 0, allocated = BUFSIZ * 16;
-  char *data = (char *) hb_malloc (allocated);
-  if (unlikely (!data)) return nullptr;
-
-  FILE *fp = fopen (file_name, "rb");
-  if (unlikely (!fp)) goto fread_fail_without_close;
-
-  while (!feof (fp))
-  {
-    if (allocated - len < BUFSIZ)
-    {
-      allocated *= 2;
-      /* Don't allocate and go more than ~536MB, our mmap reader still
-	 can cover files like that but lets limit our fallback reader */
-      if (unlikely (allocated > (2 << 28))) goto fread_fail;
-      char *new_data = (char *) hb_realloc (data, allocated);
-      if (unlikely (!new_data)) goto fread_fail;
-      data = new_data;
-    }
-
-    unsigned long addition = fread (data + len, 1, allocated - len, fp);
-
-    int err = ferror (fp);
-#ifdef EINTR // armcc doesn't have it
-    if (unlikely (err == EINTR)) continue;
-#endif
-    if (unlikely (err)) goto fread_fail;
-
-    len += addition;
-  }
-	fclose (fp);
-
-  return hb_blob_create_or_fail (data, len, HB_MEMORY_MODE_WRITABLE, data,
-				 (hb_destroy_func_t) hb_free);
-
-fread_fail:
-  fclose (fp);
-fread_fail_without_close:
-  hb_free (data);
-  return nullptr;
+  return _hb_blob_read_file (file_name);
 }
 #endif /* !HB_NO_OPEN */

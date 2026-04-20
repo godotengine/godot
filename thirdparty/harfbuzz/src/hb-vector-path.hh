@@ -24,23 +24,35 @@
  * Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_RASTER_SVG_GRADIENT_HH
-#define HB_RASTER_SVG_GRADIENT_HH
+#ifndef HB_VECTOR_PATH_HH
+#define HB_VECTOR_PATH_HH
 
 #include "hb.hh"
+#include "hb-vector.hh"
+#include "hb-vector.h"
+#include "hb-draw.h"
+#include "hb-vector-buf.hh"
 
-#include "hb-raster-svg-color.hh"
-#include "hb-raster-svg-defs.hh"
+/* Lightweight path sink: serializes hb_draw_* calls into an
+ * external char buffer as either SVG path-data or PDF path
+ * operators, depending on format.  Used by the vector paint
+ * backends to accumulate arbitrary clip paths (and by the
+ * SVG backend to emit glyph outlines into defs). */
+struct hb_vector_path_sink_t
+{
+  hb_vector_buf_t *path;
+  unsigned precision;
+  float x_scale;
+  float y_scale;
+};
 
-HB_INTERNAL void
-hb_raster_svg_process_gradient_def (hb_svg_defs_t *defs,
-                          hb_svg_xml_parser_t &parser,
-                          hb_svg_token_type_t tok,
-                          hb_svg_gradient_type_t type,
-                          hb_paint_funcs_t *pfuncs,
-                          void *paint_data,
-                          hb_color_t foreground,
-                          hb_face_t *face,
-                          unsigned palette);
+HB_INTERNAL hb_draw_funcs_t *
+hb_vector_svg_path_draw_funcs_get ();
 
-#endif /* HB_RASTER_SVG_GRADIENT_HH */
+HB_INTERNAL hb_draw_funcs_t *
+hb_vector_pdf_path_draw_funcs_get ();
+
+HB_INTERNAL hb_draw_funcs_t *
+hb_vector_path_draw_funcs_get (hb_vector_format_t format);
+
+#endif /* HB_VECTOR_PATH_HH */

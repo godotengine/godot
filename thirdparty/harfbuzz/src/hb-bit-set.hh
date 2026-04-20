@@ -117,9 +117,15 @@ struct hb_bit_set_t
 
   void clear ()
   {
-    resize (0);
-    if (likely (successful))
-      population = 0;
+    /* Early-out on already-empty.  Protects the Null singleton
+     * (which is zero-initialized) from any writes.  Any non-empty
+     * instance is a real heap object with writable storage, so
+     * clearing through the vector's always-safe clear() is fine
+     * even if we entered error state. */
+    if (!pages.length && !population) return;
+    pages.clear ();
+    page_map.clear ();
+    population = 0;
   }
   bool is_empty () const
   {
