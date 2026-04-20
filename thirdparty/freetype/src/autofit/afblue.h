@@ -7,7 +7,7 @@
  *
  *   Auto-fitter data for blue strings (specification).
  *
- * Copyright (C) 2013-2025 by
+ * Copyright (C) 2013-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
