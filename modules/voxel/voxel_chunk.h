@@ -10,8 +10,8 @@ public:
 
     enum VoxelType { AIR = 0, STONE, DIRT, GRASS };
 
-    void set_voxel(int x, int y, int z, VoxelType type);
-    VoxelType get_voxel(int x, int y, int z) const;
+    void set_voxel(int x, int y, int z, int type);
+    int get_voxel(int x, int y, int z) const;
     void rebuild_mesh();
 
 protected:

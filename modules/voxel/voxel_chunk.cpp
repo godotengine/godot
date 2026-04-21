@@ -1,4 +1,5 @@
 #include "voxel_chunk.h"
+#include "core/object/class_db.h"
 #include "scene/resources/surface_tool.h"
 
 void VoxelChunk::_bind_methods() {
@@ -16,14 +17,14 @@ bool VoxelChunk::_is_air(int x, int y, int z) const {
     return voxels[x][y][z] == AIR;
 }
 
-void VoxelChunk::set_voxel(int x, int y, int z, VoxelType type) {
+void VoxelChunk::set_voxel(int x, int y, int z, int type) {
     if (!_in_bounds(x, y, z)) return;
-    voxels[x][y][z] = type;
+    voxels[x][y][z] = (VoxelType)type;
 }
 
-VoxelChunk::VoxelType VoxelChunk::get_voxel(int x, int y, int z) const {
+int VoxelChunk::get_voxel(int x, int y, int z) const {
     if (!_in_bounds(x, y, z)) return AIR;
-    return voxels[x][y][z];
+    return (int)voxels[x][y][z];
 }
 
 void VoxelChunk::rebuild_mesh() {
