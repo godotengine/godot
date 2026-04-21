@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+Import("env")
+Import("env_modules")
+
+env_voxel = env_modules.Clone()
+env_voxel.add_source_files(env.modules_sources, "*.cpp")
