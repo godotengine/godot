@@ -224,6 +224,24 @@ Vector4 Vector4::clampf(real_t p_min, real_t p_max) const {
 			CLAMP(w, p_min, p_max));
 }
 
+Vector4i Vector4::floori () const {
+	return Vector4i {
+		static_cast<int32_t>(Math::floor(x)),
+		static_cast<int32_t>(Math::floor(y)),
+		static_cast<int32_t>(Math::floor(z)),
+		static_cast<int32_t>(Math::floor(w)),
+	};
+}
+
+Vector4i Vector4::ceili () const {
+	return Vector4i {
+		static_cast<int32_t>(Math::ceil(x)),
+		static_cast<int32_t>(Math::ceil(y)),
+		static_cast<int32_t>(Math::ceil(z)),
+		static_cast<int32_t>(Math::ceil(w)),
+	};
+}
+
 Vector4::operator String() const {
 	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ", " + String::num_real(z, true) + ", " + String::num_real(w, true) + ")";
 }

@@ -2176,6 +2176,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector2, floor, sarray(), varray());
 	bind_method(Vector2, ceil, sarray(), varray());
 	bind_method(Vector2, round, sarray(), varray());
+	bind_method(Vector2, floori, sarray(), varray());
+	bind_method(Vector2, ceili, sarray(), varray());
 	bind_method(Vector2, aspect, sarray(), varray());
 	bind_method(Vector2, dot, sarray("with"), varray());
 	bind_method(Vector2, slide, sarray("n"), varray());
@@ -2192,6 +2194,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector2, minf, sarray("with"), varray());
 	bind_method(Vector2, max, sarray("with"), varray());
 	bind_method(Vector2, maxf, sarray("with"), varray());
+	bind_method(Vector2, wrapped, sarray("min", "max"), varray());
+	bind_method(Vector2, wrappedf, sarray("min", "max"), varray());
 
 	bind_static_method(Vector2, from_angle, sarray("angle"), varray());
 
@@ -2287,6 +2291,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3, floor, sarray(), varray());
 	bind_method(Vector3, ceil, sarray(), varray());
 	bind_method(Vector3, round, sarray(), varray());
+	bind_method(Vector3, floori, sarray(), varray());
+	bind_method(Vector3, ceili, sarray(), varray());
 	bind_method(Vector3, posmod, sarray("mod"), varray());
 	bind_method(Vector3, posmodv, sarray("modv"), varray());
 	bind_method(Vector3, project, sarray("b"), varray());
@@ -2299,6 +2305,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3, minf, sarray("with"), varray());
 	bind_method(Vector3, max, sarray("with"), varray());
 	bind_method(Vector3, maxf, sarray("with"), varray());
+	bind_method(Vector3, wrapped, sarray("min", "max"), varray());
+	bind_method(Vector3, wrappedf, sarray("min", "max"), varray());
 	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
 
 	/* Vector3i */
@@ -2331,6 +2339,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector4, floor, sarray(), varray());
 	bind_method(Vector4, ceil, sarray(), varray());
 	bind_method(Vector4, round, sarray(), varray());
+	bind_method(Vector4, floori, sarray(), varray());
+	bind_method(Vector4, ceili, sarray(), varray());
 	bind_method(Vector4, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector4, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
 	bind_method(Vector4, cubic_interpolate_in_time, sarray("b", "pre_a", "post_b", "weight", "b_t", "pre_a_t", "post_b_t"), varray());
@@ -2582,6 +2592,11 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(AABB, get_endpoint, sarray("idx"), varray());
 	bind_methodv(AABB, intersects_segment, &AABB::intersects_segment_bind, sarray("from", "to"), varray());
 	bind_methodv(AABB, intersects_ray, &AABB::intersects_ray_bind, sarray("from", "dir"), varray());
+	bind_method(AABB, is_point, sarray(), varray());
+	bind_method(AABB, is_point_approx, sarray(), varray());
+	bind_method(AABB, translated, sarray("by"), varray());
+	bind_method(AABB, scaled, sarray("scale"), varray());
+	bind_method(AABB, extruded, sarray("v"), varray());
 
 	/* Transform3D */
 

@@ -101,6 +101,7 @@ void register_named_setters_getters() {
 
 	REGISTER_MEMBER(AABB, position);
 	REGISTER_MEMBER(AABB, size);
+	REGISTER_MEMBER(AABB, start);
 	REGISTER_MEMBER(AABB, end);
 
 	REGISTER_MEMBER(Transform2D, x);

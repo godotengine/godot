@@ -119,6 +119,34 @@ Vector2 Vector2::round() const {
 	return Vector2(Math::round(x), Math::round(y));
 }
 
+Vector2i Vector2::floori () const {
+	return Vector2i {
+		static_cast<int32_t>(Math::floor(x)),
+		static_cast<int32_t>(Math::floor(y)),
+	};
+}
+
+Vector2i Vector2::ceili () const {
+	return Vector2i {
+		static_cast<int32_t>(Math::ceil(x)),
+		static_cast<int32_t>(Math::ceil(y)),
+	};
+}
+
+Vector2 Vector2::wrapped(const Vector2 & p_min, const Vector2 & p_max) const {
+	return Vector2 {
+		Math::wrapf(x, p_min.x, p_max.x),
+		Math::wrapf(y, p_min.y, p_max.y),
+	};
+}
+
+Vector2 Vector2::wrappedf(real_t p_min, real_t p_max) const {
+	return Vector2 {
+		Math::wrapf(x, p_min, p_max),
+		Math::wrapf(y, p_min, p_max),
+	};
+}
+
 Vector2 Vector2::rotated(real_t p_by) const {
 	real_t sine = Math::sin(p_by);
 	real_t cosi = Math::cos(p_by);

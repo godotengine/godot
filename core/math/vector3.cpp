@@ -154,6 +154,39 @@ bool Vector3::is_finite() const {
 	return Math::is_finite(x) && Math::is_finite(y) && Math::is_finite(z);
 }
 
+Vector3 Vector3::wrapped(const Vector3 & p_min, const Vector3 & p_max) const {
+	return Vector3{
+		Math::wrapf(x, p_min.x, p_max.x),
+		Math::wrapf(y, p_min.y, p_max.y),
+		Math::wrapf(z, p_min.z, p_max.z),
+	};
+}
+
+Vector3 Vector3::wrappedf(real_t p_min, real_t p_max) const
+{
+	return Vector3 {
+		Math::wrapf(x, p_min, p_max),
+		Math::wrapf(y, p_min, p_max),
+		Math::wrapf(z, p_min, p_max),
+	};
+}
+
+Vector3i Vector3::floori () const {
+	return Vector3i {
+		static_cast<int32_t>(Math::floor(x)),
+		static_cast<int32_t>(Math::floor(y)),
+		static_cast<int32_t>(Math::floor(z)),
+	};
+}
+
+Vector3i Vector3::ceili () const {
+	return Vector3i {
+		static_cast<int32_t>(Math::ceil(x)),
+		static_cast<int32_t>(Math::ceil(y)),
+		static_cast<int32_t>(Math::ceil(z)),
+	};
+}
+
 Vector3::operator String() const {
 	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ", " + String::num_real(z, true) + ")";
 }

@@ -416,6 +416,50 @@ void AABB::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
 	}
 }
 
+AABB AABB::translated(const Vector3 & p_amount) const
+{
+	AABB bbox = *this;
+	bbox.position += p_amount;
+	return bbox;
+}
+
+AABB AABB::scaled(const Vector3 & p_amount) const
+{
+	AABB bbox = *this;
+	bbox.position *= p_amount;
+	bbox.size *= p_amount;
+	return bbox;
+}
+
+void AABB::extrude(const Vector3 & v)
+{
+	#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+	#endif
+	auto p0 = position;
+	auto p1 = position + size;
+	const auto x = v.x;
+	const auto y = v.y;
+	const auto z = v.z;
+	if (x < 0) { p0.x += x; }
+	if (y < 0) { p0.y += y; }
+	if (z < 0) { p0.z += z; }
+	if (x > 0) { p1.x += x; }
+	if (y > 0) { p1.y += y; }
+	if (z > 0) { p1.z += z; }
+	position = p0;
+	size = p1-p0;
+}
+
+AABB AABB::extruded(const Vector3 & v) const
+{
+	AABB bbox = *this;
+	bbox.extrude(v);
+	return bbox;
+}
+
 Variant AABB::intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const {
 	Vector3 inters;
 	if (intersects_segment(p_from, p_to, &inters)) {

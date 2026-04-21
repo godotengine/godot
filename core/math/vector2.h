@@ -189,6 +189,11 @@ struct [[nodiscard]] Vector2 {
 	Vector2 clamp(const Vector2 &p_min, const Vector2 &p_max) const;
 	Vector2 clampf(real_t p_min, real_t p_max) const;
 	real_t aspect() const { return width / height; }
+	Vector2i floori () const;
+	Vector2i ceili () const;
+
+	Vector2 wrapped (const Vector2& p_min, const Vector2& p_max) const;
+	Vector2 wrappedf (real_t p_min, real_t p_max) const;
 
 	explicit operator String() const;
 	operator Vector2i() const;

@@ -165,6 +165,8 @@ struct [[nodiscard]] Vector3 {
 	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
 	_FORCE_INLINE_ Vector3 round() const;
+	Vector3i floori() const;
+	Vector3i ceili() const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
@@ -185,6 +187,9 @@ struct [[nodiscard]] Vector3 {
 	bool is_same(const Vector3 &p_v) const;
 	bool is_zero_approx() const;
 	bool is_finite() const;
+
+	Vector3 wrapped (const Vector3& p_min, const Vector3& p_max) const;
+	Vector3 wrappedf (real_t p_min, real_t p_max) const;
 
 	/* Operators */
 

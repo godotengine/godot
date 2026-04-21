@@ -310,6 +310,7 @@ SETGET_STRUCT_FUNC(Rect2i, Vector2i, end, set_end, get_end)
 
 SETGET_STRUCT(AABB, Vector3, position)
 SETGET_STRUCT(AABB, Vector3, size)
+SETGET_STRUCT_FUNC(AABB, Vector3, start, set_start, get_start)
 SETGET_STRUCT_FUNC(AABB, Vector3, end, set_end, get_end)
 
 SETGET_STRUCT_CUSTOM(Transform2D, Vector2, x, columns[0])

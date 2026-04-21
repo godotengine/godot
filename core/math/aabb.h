@@ -128,9 +128,32 @@ struct [[nodiscard]] AABB {
 		return position + size;
 	}
 
+	_FORCE_INLINE_ void set_start(const Vector3 &p_start) {
+		Vector3 pev = position;
+		position = p_start;
+		size += pev-position;
+	}
+
+	_FORCE_INLINE_ Vector3 get_start() const {
+		return position;
+	}
+
 	_FORCE_INLINE_ Vector3 get_center() const {
 		return position + (size * 0.5f);
 	}
+
+	_FORCE_INLINE_ bool is_point() const {
+		return ((size.x+0)==0) && ((size.y+0)==0) && ((size.z+0)==0);
+	}
+	_FORCE_INLINE_ bool is_point_approx() const {
+		return Math::is_zero_approx(size.x) && Math::is_zero_approx(size.y) && Math::is_zero_approx(size.z);
+	}
+
+	AABB translated (const Vector3& p_amount) const;
+	AABB scaled (const Vector3& p_amount) const;
+
+	void extrude(const Vector3 & v);
+	AABB extruded(const Vector3& v) const;
 
 	uint32_t hash() const {
 		uint32_t h = hash_murmur3_one_real(position.x);
