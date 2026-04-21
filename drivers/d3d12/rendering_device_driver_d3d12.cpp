@@ -4794,6 +4794,9 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 
 		cmd_buf_info->graphics_pso = pipeline_info->pso.Get();
 		cmd_buf_info->compute_pso = nullptr;
+
+		cmd_buf_info->nir_graphics_runtime_data_root_param_idx = shader_info_in->nir_runtime_data_root_param_idx;
+		cmd_buf_info->nir_compute_runtime_data_root_param_idx = UINT32_MAX;
 	}
 
 	if (cmd_buf_info->graphics_root_signature_crc != shader_info_in->root_signature_crc) {
@@ -5376,6 +5379,9 @@ void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p
 
 		cmd_buf_info->compute_pso = pipeline_info->pso.Get();
 		cmd_buf_info->graphics_pso = nullptr;
+
+		cmd_buf_info->nir_compute_runtime_data_root_param_idx = shader_info_in->nir_runtime_data_root_param_idx;
+		cmd_buf_info->nir_graphics_runtime_data_root_param_idx = UINT32_MAX;
 	}
 
 	if (cmd_buf_info->compute_root_signature_crc != shader_info_in->root_signature_crc) {
@@ -5430,6 +5436,14 @@ void RenderingDeviceDriverD3D12::command_compute_dispatch(CommandBufferID p_cmd_
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	if (!barrier_capabilities.enhanced_barriers_supported) {
 		_resource_transitions_flush(cmd_buf_info);
+	}
+
+	if (cmd_buf_info->nir_compute_runtime_data_root_param_idx != UINT32_MAX) {
+		dxil_spirv_compute_runtime_data runtime_data = {};
+		runtime_data.group_count_x = p_x_groups;
+		runtime_data.group_count_y = p_y_groups;
+		runtime_data.group_count_z = p_z_groups;
+		cmd_buf_info->cmd_list->SetComputeRoot32BitConstants(cmd_buf_info->nir_compute_runtime_data_root_param_idx, sizeof(dxil_spirv_compute_runtime_data) / sizeof(uint32_t), &runtime_data, 0);
 	}
 
 	cmd_buf_info->cmd_list->Dispatch(p_x_groups, p_y_groups, p_z_groups);
