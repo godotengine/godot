@@ -117,6 +117,26 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="extruded" qualifiers="const">
+			<return type="AABB" />
+			<param index="0" name="by" type="Vector3" />
+			<description>
+				Returns a copy of this bounding box to be "extruded" by the given [param by].
+				If a component of the vector is negative, the minimum end of the AABB will be moved. If positive, the maximum end is moved.
+				This can be useful for algorithms involving "swept" AABBs.
+				[codeblocks]
+				[gdscript]
+				var box = AABB(Vector3(0, 0, 2), Vector3(5, 2, 5))
+				var speed = Vector3(1, 2, -3)
+				
+				box = box.extruded(speed)
+				print(box.position) # Prints (0.0, 0.0, -1.0)
+				print(box.size)     # Prints (6.0, 4.0, 5.0)
+				
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_center" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -344,6 +364,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="start" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
+			The starting point. Get-wise, this is the same as [member position]. Setting to this value affects both [member position] and [member size], keeping [member end] where it is in space.
+		</member>
 		<member name="end" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
 			The ending point. This is usually the corner on the top-right and back of the bounding box, and is equivalent to [code]position + size[/code]. Setting this point affects the [member size].
 		</member>

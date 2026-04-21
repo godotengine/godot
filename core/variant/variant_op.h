@@ -408,6 +408,325 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
 
+// v2 shifting
+template <>
+class OperatorEvaluatorShiftLeft<Vector2i, Vector2i, int64_t> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = VariantInternalAccessor<Vector2i>::get(&p_left);
+		const int64_t &b = VariantInternalAccessor<int64_t>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector2i>::get(r_ret) = VariantInternalAccessor<Vector2i>::get(left) << VariantInternalAccessor<int64_t>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) << PtrToArg<int64_t>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftLeft<Vector2i, Vector2i, Vector2i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = VariantInternalAccessor<Vector2i>::get(&p_left);
+		const Vector2i &b = VariantInternalAccessor<Vector2i>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b.x < 0 || b.y < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector2i>::get(r_ret) = VariantInternalAccessor<Vector2i>::get(left) << VariantInternalAccessor<Vector2i>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) << PtrToArg<Vector2i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftRight<Vector2i, Vector2i, int64_t> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = VariantInternalAccessor<Vector2i>::get(&p_left);
+		const int64_t &b = VariantInternalAccessor<int64_t>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector2i>::get(r_ret) = VariantInternalAccessor<Vector2i>::get(left) >> VariantInternalAccessor<int64_t>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) >> PtrToArg<int64_t>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftRight<Vector2i, Vector2i, Vector2i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &a = VariantInternalAccessor<Vector2i>::get(&p_left);
+		const Vector2i &b = VariantInternalAccessor<Vector2i>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b.x < 0 || b.y < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector2i>::get(r_ret) = VariantInternalAccessor<Vector2i>::get(left) >> VariantInternalAccessor<Vector2i>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) >> PtrToArg<Vector2i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector2i>::VARIANT_TYPE; }
+};
+
+
+
+// v3 shifting
+template <>
+class OperatorEvaluatorShiftLeft<Vector3i, Vector3i, int64_t> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = VariantInternalAccessor<Vector3i>::get(&p_left);
+		const int64_t &b = VariantInternalAccessor<int64_t>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector3i>::get(r_ret) = VariantInternalAccessor<Vector3i>::get(left) << VariantInternalAccessor<int64_t>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) << PtrToArg<int64_t>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftLeft<Vector3i, Vector3i, Vector3i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = VariantInternalAccessor<Vector3i>::get(&p_left);
+		const Vector3i &b = VariantInternalAccessor<Vector3i>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b.x < 0 || b.y < 0 || b.z < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector3i>::get(r_ret) = VariantInternalAccessor<Vector3i>::get(left) << VariantInternalAccessor<Vector3i>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) << PtrToArg<Vector3i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftRight<Vector3i, Vector3i, int64_t> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = VariantInternalAccessor<Vector3i>::get(&p_left);
+		const int64_t &b = VariantInternalAccessor<int64_t>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector3i>::get(r_ret) = VariantInternalAccessor<Vector3i>::get(left) >> VariantInternalAccessor<int64_t>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) >> PtrToArg<int64_t>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftRight<Vector3i, Vector3i, Vector3i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &a = VariantInternalAccessor<Vector3i>::get(&p_left);
+		const Vector3i &b = VariantInternalAccessor<Vector3i>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b.x < 0 || b.y < 0 || b.z < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector3i>::get(r_ret) = VariantInternalAccessor<Vector3i>::get(left) >> VariantInternalAccessor<Vector3i>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) >> PtrToArg<Vector3i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector3i>::VARIANT_TYPE; }
+};
+
+// v4 shifting
+template <>
+class OperatorEvaluatorShiftLeft<Vector4i, Vector4i, int64_t> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector4i &a = VariantInternalAccessor<Vector4i>::get(&p_left);
+		const int64_t &b = VariantInternalAccessor<int64_t>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector4i>::get(r_ret) = VariantInternalAccessor<Vector4i>::get(left) << VariantInternalAccessor<int64_t>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector4i>::encode(PtrToArg<Vector4i>::convert(left) << PtrToArg<int64_t>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector4i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftLeft<Vector4i, Vector4i, Vector4i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector4i &a = VariantInternalAccessor<Vector4i>::get(&p_left);
+		const Vector4i &b = VariantInternalAccessor<Vector4i>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b.x < 0 || b.y < 0 || b.z < 0 || b.w < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector4i>::get(r_ret) = VariantInternalAccessor<Vector4i>::get(left) << VariantInternalAccessor<Vector4i>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector4i>::encode(PtrToArg<Vector4i>::convert(left) << PtrToArg<Vector4i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector4i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftRight<Vector4i, Vector4i, int64_t> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector4i &a = VariantInternalAccessor<Vector4i>::get(&p_left);
+		const int64_t &b = VariantInternalAccessor<int64_t>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector4i>::get(r_ret) = VariantInternalAccessor<Vector4i>::get(left) >> VariantInternalAccessor<int64_t>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector4i>::encode(PtrToArg<Vector4i>::convert(left) >> PtrToArg<int64_t>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector4i>::VARIANT_TYPE; }
+};
+
+template <>
+class OperatorEvaluatorShiftRight<Vector4i, Vector4i, Vector4i> {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector4i &a = VariantInternalAccessor<Vector4i>::get(&p_left);
+		const Vector4i &b = VariantInternalAccessor<Vector4i>::get(&p_right);
+
+#if defined(DEBUG_ENABLED)
+		if (b.x < 0 || b.y < 0 || b.z < 0 || b.w < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantInternalAccessor<Vector4i>::get(r_ret) = VariantInternalAccessor<Vector4i>::get(left) >> VariantInternalAccessor<Vector4i>::get(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<Vector4i>::encode(PtrToArg<Vector4i>::convert(left) >> PtrToArg<Vector4i>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector4i>::VARIANT_TYPE; }
+};
+
+
+
 template <typename R, typename A, typename B>
 class OperatorEvaluatorBitOr : public CommonEvaluate<OperatorEvaluatorBitOr<R, A, B>> {
 public:

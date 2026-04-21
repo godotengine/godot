@@ -2218,6 +2218,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector2i, mini, sarray("with"), varray());
 	bind_method(Vector2i, max, sarray("with"), varray());
 	bind_method(Vector2i, maxi, sarray("with"), varray());
+	bind_method(Vector2i, dot, sarray("with"), varray());
 
 	/* Rect2 */
 
@@ -2327,6 +2328,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3i, mini, sarray("with"), varray());
 	bind_method(Vector3i, max, sarray("with"), varray());
 	bind_method(Vector3i, maxi, sarray("with"), varray());
+	bind_method(Vector3i, dot, sarray("with"), varray());
 
 	/* Vector4 */
 

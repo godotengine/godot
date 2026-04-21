@@ -298,6 +298,89 @@
 				Divides each component of the [Vector4i] by the given [int].
 			</description>
 		</operator>
+
+		<operator name="operator &amp;">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Bitwise-ANDs each component of the [Vector4i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator &amp;">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+				Bitwise-ANDs each component of the [Vector4i] by the components of the given [Vector4i].
+			</description>
+		</operator>
+
+		<operator name="operator |">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Bitwise-ORs each component of the [Vector4i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator |">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+				Bitwise-ORs each component of the [Vector4i] by the components of the given [Vector4i].
+			</description>
+		</operator>
+
+		<operator name="operator ^">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Bitwise-XORs each component of the [Vector4i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator ^">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+				Bitwise-XORs each component of the [Vector4i] by the components of the given [Vector4i].
+			</description>
+		</operator>
+
+		<operator name="operator &gt;&gt;">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Bitwise-shifts right each component of the [Vector4i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+				Bitwise-shifts right each component of the [Vector4i] by the components of the given [Vector4i].
+			</description>
+		</operator>
+
+		<operator name="operator &lt;&lt;">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Bitwise-shifts left each component of the [Vector4i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+				Bitwise-shifts left each component of the [Vector4i] by the components of the given [Vector4i].
+			</description>
+		</operator>
+
+		<operator name="~">
+			<return type="Vector4i" />
+			<description>
+				Returns the bitwise-NOT value of the [Vector4i]. This is the same as writing [code]Vector4i(~v.x, ~v.y, ~v.z, ~v.w)[/code].
+			</description>
+		</operator>
+
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="Vector4i" />

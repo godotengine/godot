@@ -124,6 +124,30 @@ struct [[nodiscard]] Vector4i {
 	constexpr Vector4i &operator%=(int32_t p_scalar);
 	constexpr Vector4i operator%(int32_t p_scalar) const;
 
+	constexpr Vector4i &operator>>=(int32_t p_i);
+	constexpr Vector4i operator>>(int32_t p_i) const;
+	constexpr Vector4i &operator<<=(int32_t p_i);
+	constexpr Vector4i operator<<(int32_t p_i) const;
+	constexpr Vector4i &operator&=(int32_t p_i);
+	constexpr Vector4i operator&(int32_t p_i) const;
+	constexpr Vector4i &operator|=(int32_t p_i);
+	constexpr Vector4i operator|(int32_t p_i) const;
+	constexpr Vector4i &operator^=(int32_t p_i);
+	constexpr Vector4i operator^(int32_t p_i) const;
+
+	constexpr Vector4i &operator>>=(const Vector4i& p_v);
+	constexpr Vector4i operator>>(const Vector4i& p_v) const;
+	constexpr Vector4i &operator<<=(const Vector4i& p_v);
+	constexpr Vector4i operator<<(const Vector4i& p_v) const;
+	constexpr Vector4i &operator&=(const Vector4i& p_v);
+	constexpr Vector4i operator&(const Vector4i& p_v) const;
+	constexpr Vector4i &operator|=(const Vector4i& p_v);
+	constexpr Vector4i operator|(const Vector4i& p_v) const;
+	constexpr Vector4i &operator^=(const Vector4i& p_v);
+	constexpr Vector4i operator^(const Vector4i& p_v) const;
+
+	constexpr Vector4i operator~() const;
+
 	constexpr Vector4i operator-() const;
 
 	constexpr bool operator==(const Vector4i &p_v) const;
@@ -289,6 +313,124 @@ constexpr Vector4i &Vector4i::operator%=(int32_t p_scalar) {
 
 constexpr Vector4i Vector4i::operator%(int32_t p_scalar) const {
 	return Vector4i(x % p_scalar, y % p_scalar, z % p_scalar, w % p_scalar);
+}
+
+// v bitwise int
+inline constexpr Vector4i & Vector4i::operator>>=(int32_t p_i)
+{
+	x >>= p_i;
+	y >>= p_i;
+	z >>= p_i;
+	w >>= p_i;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator>>(int32_t p_i) const {
+	return Vector4i(x >> p_i, y >> p_i, z >> p_i, w >> p_i);
+}
+inline constexpr Vector4i & Vector4i::operator<<=(int32_t p_i)
+{
+	x <<= p_i;
+	y <<= p_i;
+	z <<= p_i;
+	w <<= p_i;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator<<(int32_t p_i) const {
+	return Vector4i(x << p_i, y << p_i, z << p_i, w << p_i);
+}
+inline constexpr Vector4i & Vector4i::operator&=(int32_t p_i)
+{
+	x &= p_i;
+	y &= p_i;
+	z &= p_i;
+	w &= p_i;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator&(int32_t p_i) const {
+	return Vector4i(x & p_i, y & p_i, z & p_i, w & p_i);
+}
+inline constexpr Vector4i & Vector4i::operator|=(int32_t p_i)
+{
+	x |= p_i;
+	y |= p_i;
+	z |= p_i;
+	w |= p_i;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator|(int32_t p_i) const {
+	return Vector4i(x | p_i, y | p_i, z | p_i, w | p_i);
+}
+inline constexpr Vector4i & Vector4i::operator^=(int32_t p_i)
+{
+	x ^= p_i;
+	y ^= p_i;
+	z ^= p_i;
+	w ^= p_i;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator^(int32_t p_i) const {
+	return Vector4i(x ^ p_i, y ^ p_i, z ^ p_i, w ^ p_i);
+}
+
+// v bitwise v
+inline constexpr Vector4i & Vector4i::operator>>=(const Vector4i& p_v)
+{
+	x >>= p_v.x;
+	y >>= p_v.y;
+	z >>= p_v.z;
+	w >>= p_v.w;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator>>(const Vector4i& p_v) const {
+	return Vector4i(x >> p_v.x, y >> p_v.y, z >> p_v.z, w >> p_v.w);
+}
+inline constexpr Vector4i & Vector4i::operator<<=(const Vector4i& p_v)
+{
+	x <<= p_v.x;
+	y <<= p_v.y;
+	z <<= p_v.z;
+	w <<= p_v.w;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator<<(const Vector4i& p_v) const {
+	return Vector4i(x << p_v.x, y << p_v.y, z << p_v.z, w << p_v.w);
+}
+inline constexpr Vector4i & Vector4i::operator&=(const Vector4i& p_v)
+{
+	x &= p_v.x;
+	y &= p_v.y;
+	z &= p_v.z;
+	w &= p_v.w;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator&(const Vector4i& p_v) const {
+	return Vector4i(x & p_v.x, y & p_v.y, z & p_v.z, w & p_v.w);
+}
+inline constexpr Vector4i & Vector4i::operator|=(const Vector4i& p_v)
+{
+	x |= p_v.x;
+	y |= p_v.y;
+	z |= p_v.z;
+	w |= p_v.w;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator|(const Vector4i& p_v) const {
+	return Vector4i(x | p_v.x, y | p_v.y, z | p_v.z, w | p_v.w);
+}
+inline constexpr Vector4i & Vector4i::operator^=(const Vector4i& p_v)
+{
+	x ^= p_v.x;
+	y ^= p_v.y;
+	z ^= p_v.z;
+	w ^= p_v.w;
+	return *this;
+}
+constexpr Vector4i Vector4i::operator^(const Vector4i& p_v) const {
+	return Vector4i(x ^ p_v.x, y ^ p_v.y, z ^ p_v.z, w ^ p_v.w);
+}
+
+constexpr Vector4i Vector4i::operator~() const {
+	return Vector4i(~x, ~y, ~z, ~w);
 }
 
 constexpr Vector4i Vector4i::operator-() const {

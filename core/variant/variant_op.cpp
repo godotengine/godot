@@ -483,6 +483,54 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorBitAnd<int64_t, int64_t, int64_t>>(Variant::OP_BIT_AND, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorBitXor<int64_t, int64_t, int64_t>>(Variant::OP_BIT_XOR, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorBitNeg<int64_t, int64_t>>(Variant::OP_BIT_NEGATE, Variant::INT, Variant::NIL);
+	
+	// v2 bit
+	register_op<OperatorEvaluatorShiftLeft<Vector2i, Vector2i, int64_t>>(Variant::OP_SHIFT_LEFT, Variant::VECTOR2I, Variant::INT);
+	register_op<OperatorEvaluatorShiftRight<Vector2i, Vector2i, int64_t>>(Variant::OP_SHIFT_RIGHT, Variant::VECTOR2I, Variant::INT);
+	register_op<OperatorEvaluatorBitOr<Vector2i, Vector2i, int64_t>>(Variant::OP_BIT_OR, Variant::VECTOR2I, Variant::INT);
+	register_op<OperatorEvaluatorBitAnd<Vector2i, Vector2i, int64_t>>(Variant::OP_BIT_AND, Variant::VECTOR2I, Variant::INT);
+	register_op<OperatorEvaluatorBitXor<Vector2i, Vector2i, int64_t>>(Variant::OP_BIT_XOR, Variant::VECTOR2I, Variant::INT);
+	
+	register_op<OperatorEvaluatorShiftLeft<Vector2i, Vector2i, Vector2i>>(Variant::OP_SHIFT_LEFT, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorShiftRight<Vector2i, Vector2i, Vector2i>>(Variant::OP_SHIFT_RIGHT, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorBitOr<Vector2i, Vector2i, Vector2i>>(Variant::OP_BIT_OR, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorBitAnd<Vector2i, Vector2i, Vector2i>>(Variant::OP_BIT_AND, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorBitXor<Vector2i, Vector2i, Vector2i>>(Variant::OP_BIT_XOR, Variant::VECTOR2I, Variant::VECTOR2I);
+	
+	register_op<OperatorEvaluatorBitNeg<Vector2i, Vector2i>>(Variant::OP_BIT_NEGATE, Variant::VECTOR2I, Variant::NIL);
+
+
+	// v3 bit
+	register_op<OperatorEvaluatorShiftLeft<Vector3i, Vector3i, int64_t>>(Variant::OP_SHIFT_LEFT, Variant::VECTOR3I, Variant::INT);
+	register_op<OperatorEvaluatorShiftRight<Vector3i, Vector3i, int64_t>>(Variant::OP_SHIFT_RIGHT, Variant::VECTOR3I, Variant::INT);
+	register_op<OperatorEvaluatorBitOr<Vector3i, Vector3i, int64_t>>(Variant::OP_BIT_OR, Variant::VECTOR3I, Variant::INT);
+	register_op<OperatorEvaluatorBitAnd<Vector3i, Vector3i, int64_t>>(Variant::OP_BIT_AND, Variant::VECTOR3I, Variant::INT);
+	register_op<OperatorEvaluatorBitXor<Vector3i, Vector3i, int64_t>>(Variant::OP_BIT_XOR, Variant::VECTOR3I, Variant::INT);
+	
+	register_op<OperatorEvaluatorShiftLeft<Vector3i, Vector3i, Vector3i>>(Variant::OP_SHIFT_LEFT, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorShiftRight<Vector3i, Vector3i, Vector3i>>(Variant::OP_SHIFT_RIGHT, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorBitOr<Vector3i, Vector3i, Vector3i>>(Variant::OP_BIT_OR, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorBitAnd<Vector3i, Vector3i, Vector3i>>(Variant::OP_BIT_AND, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorBitXor<Vector3i, Vector3i, Vector3i>>(Variant::OP_BIT_XOR, Variant::VECTOR3I, Variant::VECTOR3I);
+	
+	register_op<OperatorEvaluatorBitNeg<Vector3i, Vector3i>>(Variant::OP_BIT_NEGATE, Variant::VECTOR3I, Variant::NIL);
+
+
+	// v4 bit
+	register_op<OperatorEvaluatorShiftLeft<Vector4i, Vector4i, int64_t>>(Variant::OP_SHIFT_LEFT, Variant::VECTOR4I, Variant::INT);
+	register_op<OperatorEvaluatorShiftRight<Vector4i, Vector4i, int64_t>>(Variant::OP_SHIFT_RIGHT, Variant::VECTOR4I, Variant::INT);
+	register_op<OperatorEvaluatorBitOr<Vector4i, Vector4i, int64_t>>(Variant::OP_BIT_OR, Variant::VECTOR4I, Variant::INT);
+	register_op<OperatorEvaluatorBitAnd<Vector4i, Vector4i, int64_t>>(Variant::OP_BIT_AND, Variant::VECTOR4I, Variant::INT);
+	register_op<OperatorEvaluatorBitXor<Vector4i, Vector4i, int64_t>>(Variant::OP_BIT_XOR, Variant::VECTOR4I, Variant::INT);
+	
+	register_op<OperatorEvaluatorShiftLeft<Vector4i, Vector4i, Vector4i>>(Variant::OP_SHIFT_LEFT, Variant::VECTOR4I, Variant::VECTOR4I);
+	register_op<OperatorEvaluatorShiftRight<Vector4i, Vector4i, Vector4i>>(Variant::OP_SHIFT_RIGHT, Variant::VECTOR4I, Variant::VECTOR4I);
+	register_op<OperatorEvaluatorBitOr<Vector4i, Vector4i, Vector4i>>(Variant::OP_BIT_OR, Variant::VECTOR4I, Variant::VECTOR4I);
+	register_op<OperatorEvaluatorBitAnd<Vector4i, Vector4i, Vector4i>>(Variant::OP_BIT_AND, Variant::VECTOR4I, Variant::VECTOR4I);
+	register_op<OperatorEvaluatorBitXor<Vector4i, Vector4i, Vector4i>>(Variant::OP_BIT_XOR, Variant::VECTOR4I, Variant::VECTOR4I);
+	
+	register_op<OperatorEvaluatorBitNeg<Vector4i, Vector4i>>(Variant::OP_BIT_NEGATE, Variant::VECTOR4I, Variant::NIL);
+
 
 	register_op<OperatorEvaluatorAlwaysTrue>(Variant::OP_EQUAL, Variant::NIL, Variant::NIL);
 	register_op<OperatorEvaluatorEqual<bool, bool>>(Variant::OP_EQUAL, Variant::BOOL, Variant::BOOL);
