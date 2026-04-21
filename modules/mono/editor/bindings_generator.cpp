@@ -62,6 +62,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define INDENT4 INDENT3 INDENT1
 
 #define MEMBER_BEGIN "\n" INDENT1
+#define MEMBER_BEGIN_L2 "\n" INDENT2
 
 #define OPEN_BLOCK "{\n"
 #define CLOSE_BLOCK "}\n"
@@ -2449,14 +2450,17 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	if (!itype.is_singleton && (is_derived_type || itype.has_virtual_methods)) {
 		// Generate method names cache fields
 
+		output << MEMBER_BEGIN "private static class ProxyNames\n"
+			   << OPEN_BLOCK_L1;
+
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
 				continue;
 			}
 
-			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
-				   << INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT1 "private static readonly StringName "
+			output << MEMBER_BEGIN_L2 "// ReSharper disable once InconsistentNaming\n"
+				   << INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+				   << INDENT2 "internal static readonly StringName "
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
 				   << " = \"" << imethod.proxy_name << "\";\n";
 		}
@@ -2464,14 +2468,14 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// Generate signal names cache fields
 
 		for (const SignalInterface &isignal : itype.signals_) {
-			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
-				   << INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT1 "private static readonly StringName "
+			output << MEMBER_BEGIN_L2 "// ReSharper disable once InconsistentNaming\n"
+				   << INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+				   << INDENT2 "internal static readonly StringName "
 				   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
 				   << " = \"" << isignal.proxy_name << "\";\n";
 		}
 
-		// TODO: Only generate HasGodotClassMethod and InvokeGodotClassMethod if there's any method
+		output << CLOSE_BLOCK_L1;
 
 		// Generate InvokeGodotClassMethod
 
@@ -2503,10 +2507,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// pointers of generated wrappers for each method, as lookup will only happen once.
 
 			// We check both native names (snake_case) and proxy names (PascalCase)
-			output << INDENT2 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
+			output << INDENT2 "if ((method == ProxyNames." << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
 				   << " || method == MethodName." << imethod.proxy_name
 				   << ") && args.Count == " << itos(imethod.arguments.size())
-				   << " && " << CS_METHOD_HAS_GODOT_CLASS_METHOD << "((godot_string_name)"
+				   << " && " << CS_METHOD_HAS_GODOT_CLASS_METHOD << "((godot_string_name)ProxyNames."
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ".NativeValue))\n"
 				   << INDENT2 "{\n";
 
@@ -2570,77 +2574,81 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate HasGodotClassMethod
 
-		output << MEMBER_BEGIN "/// <summary>\n"
-			   << INDENT1 "/// Check if the type contains a method with the given name.\n"
-			   << INDENT1 "/// This method is used by Godot to check if a method exists before invoking it.\n"
-			   << INDENT1 "/// Do not call or override this method.\n"
-			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+		if (!is_derived_type || itype.has_virtual_methods) {
+			output << MEMBER_BEGIN "/// <summary>\n"
+				   << INDENT1 "/// Check if the type contains a method with the given name.\n"
+				   << INDENT1 "/// This method is used by Godot to check if a method exists before invoking it.\n"
+				   << INDENT1 "/// Do not call or override this method.\n"
+				   << INDENT1 "/// </summary>\n"
+				   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
 
-		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
-			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
-			   << INDENT1 "{\n";
+			output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+				   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
+				   << INDENT1 "{\n";
 
-		for (const MethodInterface &imethod : itype.methods) {
-			if (!imethod.is_virtual) {
-				continue;
+			for (const MethodInterface &imethod : itype.methods) {
+				if (!imethod.is_virtual) {
+					continue;
+				}
+
+				// We check for native names (snake_case). If we detect one, we call HasGodotClassMethod
+				// again, but this time with the respective proxy name (PascalCase). It's the job of
+				// user derived classes to override the method and check for those. Our C# source
+				// generators take care of generating those override methods.
+				output << INDENT2 "if (method == MethodName." << imethod.proxy_name
+					   << ")\n" INDENT2 "{\n"
+					   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_METHOD "(ProxyNames."
+					   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
+					   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
+					   << INDENT4 "return true;\n"
+					   << INDENT3 "}\n" INDENT2 "}\n";
 			}
 
-			// We check for native names (snake_case). If we detect one, we call HasGodotClassMethod
-			// again, but this time with the respective proxy name (PascalCase). It's the job of
-			// user derived classes to override the method and check for those. Our C# source
-			// generators take care of generating those override methods.
-			output << INDENT2 "if (method == MethodName." << imethod.proxy_name
-				   << ")\n" INDENT2 "{\n"
-				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_METHOD "("
-				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
-				   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
-				   << INDENT4 "return true;\n"
-				   << INDENT3 "}\n" INDENT2 "}\n";
-		}
+			if (is_derived_type) {
+				output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_METHOD "(method);\n";
+			} else {
+				output << INDENT2 "return false;\n";
+			}
 
-		if (is_derived_type) {
-			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_METHOD "(method);\n";
-		} else {
-			output << INDENT2 "return false;\n";
+			output << INDENT1 "}\n";
 		}
-
-		output << INDENT1 "}\n";
 
 		// Generate HasGodotClassSignal
 
-		output << MEMBER_BEGIN "/// <summary>\n"
-			   << INDENT1 "/// Check if the type contains a signal with the given name.\n"
-			   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
-			   << INDENT1 "/// Do not call or override this method.\n"
-			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>\n";
+		if (!is_derived_type || itype.signals_.size() > 0) {
+			output << MEMBER_BEGIN "/// <summary>\n"
+				   << INDENT1 "/// Check if the type contains a signal with the given name.\n"
+				   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
+				   << INDENT1 "/// Do not call or override this method.\n"
+				   << INDENT1 "/// </summary>\n"
+				   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>\n";
 
-		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
-			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
-			   << INDENT1 "{\n";
+			output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+				   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
+				   << INDENT1 "{\n";
 
-		for (const SignalInterface &isignal : itype.signals_) {
-			// We check for native names (snake_case). If we detect one, we call HasGodotClassSignal
-			// again, but this time with the respective proxy name (PascalCase). It's the job of
-			// user derived classes to override the method and check for those. Our C# source
-			// generators take care of generating those override methods.
-			output << INDENT2 "if (signal == SignalName." << isignal.proxy_name
-				   << ")\n" INDENT2 "{\n"
-				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_SIGNAL "("
-				   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
-				   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
-				   << INDENT4 "return true;\n"
-				   << INDENT3 "}\n" INDENT2 "}\n";
+			for (const SignalInterface &isignal : itype.signals_) {
+				// We check for native names (snake_case). If we detect one, we call HasGodotClassSignal
+				// again, but this time with the respective proxy name (PascalCase). It's the job of
+				// user derived classes to override the method and check for those. Our C# source
+				// generators take care of generating those override methods.
+				output << INDENT2 "if (signal == SignalName." << isignal.proxy_name
+					   << ")\n" INDENT2 "{\n"
+					   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(ProxyNames."
+					   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
+					   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
+					   << INDENT4 "return true;\n"
+					   << INDENT3 "}\n" INDENT2 "}\n";
+			}
+
+			if (is_derived_type) {
+				output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(signal);\n";
+			} else {
+				output << INDENT2 "return false;\n";
+			}
+
+			output << INDENT1 "}\n";
 		}
-
-		if (is_derived_type) {
-			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(signal);\n";
-		} else {
-			output << INDENT2 "return false;\n";
-		}
-
-		output << INDENT1 "}\n";
 	}
 
 	//Generate StringName for all class members
@@ -2915,7 +2923,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	StringBuilder cs_in_statements;
 	bool cs_in_expr_is_unsafe = false;
 
-	String icall_params = method_bind_field;
+	String icall_params = "MethodBinds." + method_bind_field;
 
 	if (!p_imethod.is_static) {
 		String self_reference = "this";
@@ -3064,9 +3072,13 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	// Generate method
 	{
+		p_output << MEMBER_BEGIN "private static partial class MethodBinds\n"
+				 << OPEN_BLOCK_L1;
+
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call && !p_use_span) {
-			p_output << MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-					 << INDENT1 "private static readonly IntPtr " << method_bind_field << " = ";
+			// Lazily initialized, so no initializer in declaration.
+			p_output << MEMBER_BEGIN_L2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+					 << INDENT2 "internal static readonly IntPtr " << method_bind_field << " = ";
 
 			if (p_itype.is_singleton) {
 				// Singletons are static classes. They don't derive GodotObject,
@@ -3078,6 +3090,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 					 << p_imethod.proxy_name << ", " << itos(p_imethod.hash) << "ul"
 					 << ");\n";
 		}
+
+		p_output << CLOSE_BLOCK_L1;
 
 		if (p_imethod.method_doc && p_imethod.method_doc->description.size()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_imethod.method_doc->description), &p_itype);
@@ -3583,8 +3597,6 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 		if (p_icall.is_vararg) {
 			String vararg_arg = "arg" + argc_str;
 			String real_argc_str = itos(p_icall.get_arguments_count() - 1); // Arguments count without vararg
-
-			p_icall.get_arguments_count();
 
 			r_output << INDENT2 "int vararg_length = " << vararg_arg << ".Length;\n"
 					 << INDENT2 "int total_length = " << real_argc_str << " + vararg_length;\n";
