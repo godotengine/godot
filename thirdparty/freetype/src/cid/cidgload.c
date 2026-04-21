@@ -4,7 +4,7 @@
  *
  *   CID-keyed Type1 Glyph Loader (body).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -192,6 +192,37 @@
 
       p         = (FT_Byte*)glyph_data.pointer;
       fd_select = cid_get_offset( &p, cid->fd_bytes );
+
+      if ( fd_select >= cid->num_dicts )
+      {
+        /*
+         * fd_select == 0xFF is often used to indicate that the CID
+         * has no charstring to be rendered, similar to GID = 0xFFFF
+         * in TrueType fonts.
+         */
+        if ( ( cid->fd_bytes == 1 && fd_select == 0xFFU   ) ||
+             ( cid->fd_bytes == 2 && fd_select == 0xFFFFU ) )
+        {
+          FT_TRACE1(( "cid_load_glyph: fail for glyph index %u:\n",
+                      glyph_index ));
+          FT_TRACE1(( "                FD number %lu is the maximum\n",
+                      fd_select ));
+          FT_TRACE1(( "                integer fitting into %u byte%s\n",
+                      cid->fd_bytes, cid->fd_bytes == 1 ? "" : "s" ));
+        }
+        else
+        {
+          FT_TRACE0(( "cid_load_glyph: fail for glyph index %u:\n",
+                      glyph_index ));
+          FT_TRACE0(( "                FD number %lu is larger\n",
+                      fd_select ));
+          FT_TRACE0(( "                than number of dictionaries (%u)\n",
+                      cid->num_dicts ));
+        }
+
+        error = FT_THROW( Invalid_Offset );
+        goto Exit;
+      }
 
       glyph_length = glyph_data.length - cid->fd_bytes;
 

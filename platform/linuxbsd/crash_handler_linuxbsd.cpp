@@ -105,7 +105,15 @@ static void handle_crash(int sig) {
 	uintptr_t relocation = 0;
 #endif //__GLIBC__
 
-	print_error(vformat("Load address: %x\n", (uint64_t)relocation));
+	void *load_addr = nullptr;
+	{
+		Dl_info info;
+		if (dladdr(bt_buffer[size - 1], &info)) {
+			load_addr = info.dli_fbase;
+		}
+	}
+
+	print_error(vformat("Load address: %x\n", (uint64_t)load_addr));
 
 	if (strings) {
 		int ret;
@@ -146,40 +154,76 @@ static void handle_crash(int sig) {
 		args.push_back("-C");
 
 		// Try to get the file/line number using addr2line
-		String output;
-		Error err = OS::get_singleton()->execute(exe_name, args, &output, &ret);
+		String addr2line_output;
+		Error err = OS::get_singleton()->execute(exe_name, args, &addr2line_output, &ret);
 		if (err == OK) {
-			Vector<String> addr2line_results = output.substr(0, output.length() - 1).split("\n", false);
+			Vector<String> addr2line_results = addr2line_output.substr(0, addr2line_output.length() - 1).split("\n", false);
 
 			for (size_t i = 1; i < size; i++) {
-				// Simplify printed file paths to remove redundant `/./` sections (e.g. `/opt/godot/./core` -> `/opt/godot/core`).
-				print_error(vformat("[%d] %x - %s", (int64_t)i, (uint64_t)bt_buffer[i], addr2line_results[i].replace("/./", "/")));
-			}
-		} else {
-			// Otherwise fall back to trace symbols.
-			for (size_t i = 1; i < size; i++) {
-				char fname[1024];
+				String output = addr2line_results[i].replace("/./", "/");
+				String mod_name = "main";
+				uint64_t mod_off = (uint64_t)load_addr;
+				bool addr2line_fail = output.strip_edges().ends_with("??:0");
+				if (addr2line_fail) {
+					output = String(strings[i]);
+				}
+
 				Dl_info info;
-
-				snprintf(fname, 1024, "%s", strings[i]);
-
-				// Try to demangle the function name to provide a more readable one.
-				if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
-					if (info.dli_sname[0] == '_') {
+				if (dladdr(bt_buffer[i], &info)) {
+					mod_off = (uint64_t)info.dli_fbase;
+					if (mod_off != (uint64_t)load_addr) {
+						mod_name = String(info.dli_fname).get_file();
+					}
+					if (addr2line_fail && info.dli_sname && info.dli_sname[0] == '_') {
 						int status = 0;
 						char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
 
 						if (status == 0 && demangled) {
-							snprintf(fname, 1024, "%s", demangled);
+							output = String(demangled);
 						}
 
 						if (demangled) {
 							free(demangled);
 						}
 					}
+				} else {
+					mod_name = "<unknown module>";
 				}
 
-				print_error(vformat("[%d] %x - %s", (int64_t)i, (uint64_t)bt_buffer[i], fname));
+				// Simplify printed file paths to remove redundant `/./` sections (e.g. `/opt/godot/./core` -> `/opt/godot/core`).
+				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
+			}
+		} else {
+			// Otherwise fall back to trace symbols.
+			for (size_t i = 1; i < size; i++) {
+				String output = String(strings[i]);
+				String mod_name = "main";
+				uint64_t mod_off = (uint64_t)load_addr;
+
+				Dl_info info;
+				// Try to demangle the function name to provide a more readable one.
+				if (dladdr(bt_buffer[i], &info)) {
+					mod_off = (uint64_t)info.dli_fbase;
+					if (mod_off != (uint64_t)load_addr) {
+						mod_name = String(info.dli_fname).get_file();
+					}
+					if (info.dli_sname && info.dli_sname[0] == '_') {
+						int status = 0;
+						char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+
+						if (status == 0 && demangled) {
+							output = String(demangled);
+						}
+
+						if (demangled) {
+							free(demangled);
+						}
+					}
+				} else {
+					mod_name = "<unknown module>";
+				}
+
+				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
 			}
 		}
 
