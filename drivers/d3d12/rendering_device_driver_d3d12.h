@@ -491,6 +491,9 @@ private:
 		ID3D12PipelineState *graphics_pso = nullptr;
 		ID3D12PipelineState *compute_pso = nullptr;
 
+		uint32_t nir_graphics_runtime_data_root_param_idx = UINT32_MAX;
+		uint32_t nir_compute_runtime_data_root_param_idx = UINT32_MAX;
+
 		DynParams dyn_params;
 		bool pending_dyn_params = true;
 
