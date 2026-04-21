@@ -358,6 +358,7 @@
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
 			If [code]true[/code], the currently selected cell may be selected again.
+			[b]Note:[/b] When set to [code]true[/code] and [member select_mode] is [constant SELECT_SINGLE] or [constant SELECT_ROW], items marked as editable via [method TreeItem.set_editable] must be clicked again after selecting in order to edit them.
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
 			If [code]true[/code], a right mouse button click can select items.
