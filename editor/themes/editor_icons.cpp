@@ -5,7 +5,7 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
-/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2014-present VoxelForge contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
@@ -109,7 +109,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	// The names of the icons to exclude when adjusting for saturation.
 	HashSet<StringName> saturation_exceptions;
 	saturation_exceptions.insert("DefaultProjectIcon");
-	saturation_exceptions.insert("Godot");
+	saturation_exceptions.insert("VoxelForge");
 	saturation_exceptions.insert("Logo");
 	saturation_exceptions.insert("TitleBarLogo");
 

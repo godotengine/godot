@@ -5,7 +5,7 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
-/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2014-present VoxelForge contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
@@ -170,7 +170,7 @@ void EditorColorMap::create() {
 	add_conversion_exception("EditorPathSmoothHandle");
 	add_conversion_exception("EditorBoneHandle");
 	add_conversion_exception("Editor3DHandle");
-	add_conversion_exception("Godot");
+	add_conversion_exception("VoxelForge");
 	add_conversion_exception("Sky");
 	add_conversion_exception("EditorControlAnchor");
 	add_conversion_exception("DefaultProjectIcon");
