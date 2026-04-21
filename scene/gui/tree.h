@@ -556,9 +556,10 @@ private:
 
 	bool popup_edit_committed = true;
 	RID accessibility_scroll_element;
-	RID header_ci; // Separate canvas item for drawing column headers
-	RID content_ci; // Separate canvas item for drawing tree rows
-	RID custom_ci; // Separate canvas item for drawing custom content
+	RID stylebox_ci; // Separate canvas item for drawing native styleboxes.
+	RID custom_ci; // Separate canvas item for drawing custom content.
+	RID header_ci; // Separate canvas item for drawing column headers.
+	RID content_ci; // Separate canvas item for drawing tree rows.
 	RID drop_indicator_ci;
 
 	VBoxContainer *popup_editor_vb = nullptr;
