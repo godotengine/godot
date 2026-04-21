@@ -427,7 +427,6 @@ def configure_msvc(env: "SConsEnvironment"):
         "ntdll",
         "hid",
         "mincore",
-        "coremessaging",
     ]
 
     if env.debug_features:
@@ -825,7 +824,6 @@ def configure_mingw(env: "SConsEnvironment"):
             "ntdll",
             "hid",
             "mincore",
-            "coremessaging",
         ]
     )
 
