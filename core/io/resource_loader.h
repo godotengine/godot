@@ -181,6 +181,7 @@ private:
 	struct ThreadLoadTask {
 		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
 		Thread::ID thread_id = 0; // Used if running on an user thread (e.g., simple non-threaded load).
+		int thread_index = -1;
 		ConditionVariable *cond_var = nullptr; // In not in the worker pool or already awaiting, this is used as a secondary awaiting mechanism.
 		uint32_t awaiters_count = 0;
 		LoadToken *load_token = nullptr;
@@ -200,6 +201,8 @@ private:
 		bool need_wait : 1;
 		bool in_progress_check : 1; // Measure against recursion cycles in progress reporting. Cycles are not expected, but can happen due to how it's currently implemented.
 		bool use_sub_threads : 1;
+		bool started_load : 1;
+		bool connections_propagated : 1;
 
 		struct ResourceChangedConnection {
 			Resource *source = nullptr;
@@ -212,7 +215,9 @@ private:
 				awaited(false),
 				need_wait(true),
 				in_progress_check(false),
-				use_sub_threads(false) {}
+				use_sub_threads(false),
+				started_load(false),
+				connections_propagated(false) {}
 	};
 	static void _run_load_task(void *p_userdata);
 
