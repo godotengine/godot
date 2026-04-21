@@ -986,6 +986,9 @@
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
 		</member>
+		<member name="interface/editor/appearance/max_sticky_tree_items" type="int" setter="" getter="">
+			The maximum number of tree items allowed to stick to the top while its children are in view. A value of [code]0[/code] disables sticking.
+		</member>
 		<member name="interface/editor/appearance/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
 		</member>
