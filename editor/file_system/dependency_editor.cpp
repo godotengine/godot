@@ -893,7 +893,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 	Label *owners_label = memnew(Label);
 	owners_label->set_theme_type_variation("HeaderSmall");
-	owners_label->set_text(TTR("Dependencies of files to be deleted:"));
+	owners_label->set_text(TTR("Owners of files to be deleted:"));
 	vb_owners->add_child(owners_label);
 
 	mc = memnew(MarginContainer);
@@ -906,7 +906,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	owners->set_hide_root(true);
 	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
-	owners->set_accessibility_name(TTRC("Dependencies"));
+	owners->set_accessibility_name(TTRC("Owners"));
 	mc->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
