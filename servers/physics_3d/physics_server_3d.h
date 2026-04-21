@@ -258,6 +258,8 @@ public:
 		SHAPE_HEIGHTMAP, ///< dict( int:"width", int:"depth",float:"cell_size", float_array:"heights"
 		SHAPE_SOFT_BODY, ///< Used internally, can't be created from the physics server.
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
+		SHAPE_TAPERED_CAPSULE, ///< dict( float:"radius_top", float:"radius_bottom", float:"height"):tapered capsule
+		SHAPE_TAPERED_CYLINDER, ///< dict( float:"radius_top", float:"radius_bottom", float:"height"):tapered cylinder
 	};
 
 	RID shape_create(ShapeType p_shape);
@@ -268,6 +270,8 @@ public:
 	virtual RID box_shape_create() = 0;
 	virtual RID capsule_shape_create() = 0;
 	virtual RID cylinder_shape_create() = 0;
+	virtual RID tapered_capsule_shape_create() = 0;
+	virtual RID tapered_cylinder_shape_create() = 0;
 	virtual RID convex_polygon_shape_create() = 0;
 	virtual RID concave_polygon_shape_create() = 0;
 	virtual RID heightmap_shape_create() = 0;
@@ -1046,6 +1050,7 @@ public:
 	int find_server_id(const String &p_name);
 	int get_servers_count();
 	String get_server_name(int p_id);
+	String get_default_server_name();
 	PhysicsServer3D *new_default_server();
 	PhysicsServer3D *new_server(const String &p_name);
 

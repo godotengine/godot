@@ -680,8 +680,12 @@ RID PhysicsServer3D::shape_create(ShapeType p_shape) {
 			return box_shape_create();
 		case SHAPE_CAPSULE:
 			return capsule_shape_create();
+		case SHAPE_TAPERED_CAPSULE:
+			return tapered_capsule_shape_create();
 		case SHAPE_CYLINDER:
 			return cylinder_shape_create();
+		case SHAPE_TAPERED_CYLINDER:
+			return tapered_cylinder_shape_create();
 		case SHAPE_CONVEX_POLYGON:
 			return convex_polygon_shape_create();
 		case SHAPE_CONCAVE_POLYGON:
@@ -1213,6 +1217,13 @@ int PhysicsServer3DManager::get_servers_count() {
 String PhysicsServer3DManager::get_server_name(int p_id) {
 	ERR_FAIL_INDEX_V(p_id, get_servers_count(), "");
 	return physics_servers[p_id].name;
+}
+
+String PhysicsServer3DManager::get_default_server_name() {
+	if (default_server_id == -1) {
+		return "";
+	}
+	return physics_servers[default_server_id].name;
 }
 
 PhysicsServer3D *PhysicsServer3DManager::new_default_server() {

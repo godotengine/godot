@@ -46,6 +46,8 @@
 #include "scene/resources/3d/height_map_shape_3d.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/tapered_capsule_shape_3d.h"
+#include "scene/resources/3d/tapered_cylinder_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
@@ -126,6 +128,10 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 		return helper->cylinder_get_handle_name(p_id);
 	}
 
+	if (Object::cast_to<TaperedCapsuleShape3D>(*s) || Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		return helper->tapered_capsule_cylinder_get_handle_name(p_id);
+	}
+
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
 		return "Length";
 	}
@@ -159,6 +165,16 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> cs2 = s;
 		return Vector2(cs2->get_radius(), cs2->get_height());
+	}
+
+	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
+		Ref<TaperedCapsuleShape3D> tcs = s;
+		return Vector3(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_mid_height());
+	}
+
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
+		return Vector3(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_height());
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -248,6 +264,29 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 		cs2->set_radius(radius);
 		cs->set_global_position(position);
 	}
+
+	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
+		Ref<TaperedCapsuleShape3D> tcs = s;
+
+		real_t top_radius = tcs->get_top_radius();
+		real_t bottom_radius = tcs->get_bottom_radius();
+		real_t mid_height = tcs->get_mid_height();
+		helper->tapered_capsule_set_handle(sg, p_id, top_radius, bottom_radius, mid_height);
+		tcs->set_top_radius(top_radius);
+		tcs->set_bottom_radius(bottom_radius);
+		tcs->set_mid_height(mid_height);
+	}
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
+
+		real_t top_radius = tcs->get_top_radius();
+		real_t bottom_radius = tcs->get_bottom_radius();
+		real_t height = tcs->get_height();
+		helper->tapered_cylinder_set_handle(sg, p_id, top_radius, bottom_radius, height);
+		tcs->set_top_radius(top_radius);
+		tcs->set_bottom_radius(bottom_radius);
+		tcs->set_height(height);
+	}
 }
 
 void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -284,6 +323,16 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> ss = s;
 		helper->cylinder_commit_handle(p_id, TTR("Change Cylinder Shape Radius"), TTR("Change Cylinder Shape Height"), p_cancel, cs, *ss, *ss);
+	}
+
+	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
+		Ref<TaperedCapsuleShape3D> tcs = s;
+		helper->tapered_capsule_commit_handle(p_id, p_cancel, *tcs);
+	}
+
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
+		helper->tapered_cylinder_commit_handle(p_id, p_cancel, *tcs);
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -379,8 +428,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		points.resize(3 * 8 * points_in_octant * 2);
 		Vector3 *points_ptrw = points.ptrw();
 
-		float previous_x = radius;
-		float previous_y = 0.f;
+		real_t previous_x = radius;
+		real_t previous_y = 0.f;
 
 		for (uint32_t i = 0; i < points_in_octant; ++i) {
 			r += inc;
@@ -496,8 +545,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	points_ptrw[index++] = Vector3(0, from_y + y, -from_x); \
 	points_ptrw[index++] = Vector3(0, to_y + y, -to_x);
 
-		float previous_x = radius;
-		float previous_y = 0.f;
+		real_t previous_x = radius;
+		real_t previous_y = 0.f;
 
 		for (uint32_t i = 0; i < points_in_octant; ++i) {
 			r += inc;
@@ -564,7 +613,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		// 4 vertical lines and 2 full circles.
 		points.resize(4 * 2 + 2 * 8 * points_in_octant * 2);
 		Vector3 *points_ptrw = points.ptrw();
-		float y_value = height * 0.5;
+		real_t y_value = height * 0.5;
 
 		// Vertical lines.
 		points_ptrw[index++] = Vector3(0.f, y_value, radius);
@@ -576,8 +625,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		points_ptrw[index++] = Vector3(-radius, y_value, 0.f);
 		points_ptrw[index++] = Vector3(-radius, -y_value, 0.f);
 
-		float previous_x = radius;
-		float previous_y = 0.f;
+		real_t previous_x = radius;
+		real_t previous_y = 0.f;
 
 		for (uint32_t i = 0; i < points_in_octant; ++i) {
 			r += inc;
@@ -678,6 +727,32 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			handles.push_back(Vector3(0, 0, rs->get_length()));
 			p_gizmo->add_handles(handles, handles_material);
 		}
+	}
+
+	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
+		Ref<TaperedCapsuleShape3D> tcs = s;
+
+		Vector<Vector3> points;
+		Vector<Vector3> lines = tcs->get_debug_mesh_lines();
+		p_gizmo->add_lines(lines, material, false, collision_color);
+		p_gizmo->add_collision_segments(lines);
+
+		// Add handles for tapered capsule
+		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_mid_height());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
+		Ref<TaperedCylinderShape3D> tcs = s;
+
+		Vector<Vector3> points;
+		Vector<Vector3> lines = tcs->get_debug_mesh_lines();
+		p_gizmo->add_lines(lines, material, false, collision_color);
+		p_gizmo->add_collision_segments(lines);
+
+		// Add handles for tapered cylinder
+		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_height());
+		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	if (Object::cast_to<HeightMapShape3D>(*s)) {

@@ -265,6 +265,160 @@ void Gizmo3DHelper::cylinder_commit_handle(int p_id, const String &p_radius_acti
 	ur->commit_action();
 }
 
+Vector<Vector3> Gizmo3DHelper::tapered_capsule_cylinder_get_handles(real_t p_top_radius, real_t p_bottom_radius, real_t p_height) {
+	Vector<Vector3> handles;
+	handles.push_back(Vector3(p_top_radius, p_height * 0.5, 0)); // Radius Top handle on cylinder lip
+	handles.push_back(Vector3(p_bottom_radius, -p_height * 0.5, 0)); // Radius Bottom handle on cylinder lip
+	handles.push_back(Vector3(0, p_height * 0.5, 0)); // Mid Height handle at cylinder top center
+	return handles;
+}
+
+String Gizmo3DHelper::tapered_capsule_cylinder_get_handle_name(int p_id) {
+	switch (p_id) {
+		case 0:
+			return "Radius Top";
+		case 1:
+			return "Radius Bottom";
+		case 2:
+			return "Height";
+	}
+	return "";
+}
+
+void Gizmo3DHelper::tapered_capsule_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_top_radius, real_t &r_bottom_radius, real_t &r_mid_height) {
+	if (p_id == 0 || p_id == 1) { // Radius handles
+		// Compute the smallest radius so that the ray from the camera is tangent to that circle
+		bool is_top = p_id == 0;
+		Vector3 center = Vector3(0, is_top ? r_mid_height / 2 : -r_mid_height / 2, 0);
+		real_t d = (Geometry3D::get_closest_point_to_segment(center, p_segment) - center).length();
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+		if (d < CMP_EPSILON) {
+			d = CMP_EPSILON;
+		}
+		if (is_top) {
+			r_top_radius = d;
+		} else {
+			r_bottom_radius = d;
+		}
+	} else if (p_id == 2) { // Mid Height handle
+		Vector3 ra, rb;
+		Geometry3D::get_closest_points_between_segments(Vector3(0, -r_mid_height * 0.5, 0), Vector3(0, r_mid_height * 0.5 + 4096, 0), p_segment[0], p_segment[1], ra, rb);
+		real_t d = ra.y + r_mid_height * 0.5;
+		if (d < 0.001) {
+			d = 0.001;
+		}
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+		r_mid_height = d;
+	}
+}
+
+void Gizmo3DHelper::tapered_capsule_commit_handle(int p_id, bool p_cancel, Object *p_object) {
+	if (p_cancel) {
+		Vector3 restore = initial_value;
+		p_object->set("top_radius", restore.x);
+		p_object->set("bottom_radius", restore.y);
+		p_object->set("mid_height", restore.z);
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	String action_name;
+	Vector3 restore = initial_value;
+	switch (p_id) {
+		case 0:
+			action_name = TTR("Change Tapered Capsule Radius Top");
+			ur->create_action(action_name);
+			ur->add_do_method(p_object, "set_top_radius", p_object->get("top_radius"));
+			ur->add_undo_method(p_object, "set_top_radius", restore.x);
+			break;
+		case 1:
+			action_name = TTR("Change Tapered Capsule Radius Bottom");
+			ur->create_action(action_name);
+			ur->add_do_method(p_object, "set_bottom_radius", p_object->get("bottom_radius"));
+			ur->add_undo_method(p_object, "set_bottom_radius", restore.y);
+			break;
+		case 2:
+			action_name = TTR("Change Tapered Capsule Mid Height");
+			ur->create_action(action_name);
+			ur->add_do_method(p_object, "set_mid_height", p_object->get("mid_height"));
+			ur->add_undo_method(p_object, "set_mid_height", restore.z);
+			break;
+	}
+	ur->commit_action();
+}
+
+void Gizmo3DHelper::tapered_cylinder_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_top_radius, real_t &r_bottom_radius, real_t &r_height) {
+	Vector3 ra, rb;
+
+	if (p_id == 0 || p_id == 1) { // Radius handles
+		// Compute the smallest radius so that the ray from the camera is tangent to a cylinder of that radius
+		bool is_top = p_id == 0;
+		Vector3 p0(p_segment[0].x, 0, p_segment[0].z);
+		Vector3 p1(p_segment[1].x, 0, p_segment[1].z);
+		real_t d = Geometry3D::get_closest_point_to_segment(Vector3(), p0, p1).length();
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+		if (d < CMP_EPSILON) {
+			d = CMP_EPSILON;
+		}
+		if (is_top) {
+			r_top_radius = d;
+		} else {
+			r_bottom_radius = d;
+		}
+	} else if (p_id == 2) { // Height handle
+		Geometry3D::get_closest_points_between_segments(Vector3(0, -r_height * 0.5, 0), Vector3(0, r_height * 0.5 + 4096, 0), p_segment[0], p_segment[1], ra, rb);
+		real_t d = ra.y + r_height * 0.5;
+		if (d < 0.001) {
+			d = 0.001;
+		}
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+		r_height = d;
+	}
+}
+
+void Gizmo3DHelper::tapered_cylinder_commit_handle(int p_id, bool p_cancel, Object *p_object) {
+	if (p_cancel) {
+		Vector3 restore = initial_value;
+		p_object->set("top_radius", restore.x);
+		p_object->set("bottom_radius", restore.y);
+		p_object->set("height", restore.z);
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	String action_name;
+	Vector3 restore = initial_value;
+	switch (p_id) {
+		case 0:
+			action_name = TTR("Change Tapered Cylinder Radius Top");
+			ur->create_action(action_name);
+			ur->add_do_method(p_object, "set_top_radius", p_object->get("top_radius"));
+			ur->add_undo_method(p_object, "set_top_radius", restore.x);
+			break;
+		case 1:
+			action_name = TTR("Change Tapered Cylinder Radius Bottom");
+			ur->create_action(action_name);
+			ur->add_do_method(p_object, "set_bottom_radius", p_object->get("bottom_radius"));
+			ur->add_undo_method(p_object, "set_bottom_radius", restore.y);
+			break;
+		case 2:
+			action_name = TTR("Change Tapered Cylinder Mid Height");
+			ur->create_action(action_name);
+			ur->add_do_method(p_object, "set_height", p_object->get("height"));
+			ur->add_undo_method(p_object, "set_height", restore.z);
+			break;
+	}
+	ur->commit_action();
+}
+
 Vector<Vector3> Gizmo3DHelper::cone_frustum_get_handles(real_t p_height, real_t p_radius_top, real_t p_radius_bottom) {
 	Vector<Vector3> handles;
 	handles.push_back(Vector3(0, p_height * 0.5, 0));

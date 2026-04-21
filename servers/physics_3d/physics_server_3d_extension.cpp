@@ -144,6 +144,8 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_sphere_shape_create);
 	GDVIRTUAL_BIND(_box_shape_create);
 	GDVIRTUAL_BIND(_capsule_shape_create);
+	GDVIRTUAL_BIND(_tapered_capsule_shape_create);
+	GDVIRTUAL_BIND(_tapered_cylinder_shape_create);
 	GDVIRTUAL_BIND(_cylinder_shape_create);
 	GDVIRTUAL_BIND(_convex_polygon_shape_create);
 	GDVIRTUAL_BIND(_concave_polygon_shape_create);
