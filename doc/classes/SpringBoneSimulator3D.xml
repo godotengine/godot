@@ -18,29 +18,26 @@
 	<methods>
 		<method name="are_all_child_collisions_enabled" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if all child [SpringBoneCollision3D]s are contained in the collision list at [param index] in the settings.
+				Returns [code]true[/code] if all child [SpringBoneCollision3D]s are contained in the collision list.
+			</description>
+		</method>
+		<method name="clear_bone_chains">
+			<return type="void" />
+			<description>
+				Clears all bone chains.
 			</description>
 		</method>
 		<method name="clear_collisions">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Clears all collisions from the collision list at [param index] in the settings when [method are_all_child_collisions_enabled] is [code]false[/code].
+				Clears all collisions from the collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="clear_exclude_collisions">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
 			<description>
 				Clears all exclude collisions from the collision list at [param index] in the settings when [method are_all_child_collisions_enabled] is [code]true[/code].
-			</description>
-		</method>
-		<method name="clear_settings">
-			<return type="void" />
-			<description>
-				Clears all settings.
 			</description>
 		</method>
 		<method name="get_center_bone" qualifiers="const">
@@ -73,31 +70,27 @@
 		</method>
 		<method name="get_collision_count" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the collision count of the bone chain's collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
+				Returns the collision count of the node's collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="get_collision_path" qualifiers="const">
 			<return type="NodePath" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="collision" type="int" />
+			<param index="0" name="collision" type="int" />
 			<description>
-				Returns the node path of the [SpringBoneCollision3D] at [param collision] in the bone chain's collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
+				Returns the node path of the [SpringBoneCollision3D] at [param collision] in the node's collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="get_drag" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the drag force damping curve of the bone chain.
+				Returns the drag force damping curve.
 			</description>
 		</method>
 		<method name="get_drag_damping_curve" qualifiers="const">
 			<return type="Curve" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the drag force damping curve of the bone chain.
+				Returns the drag force damping curve.
 			</description>
 		</method>
 		<method name="get_end_bone" qualifiers="const">
@@ -130,38 +123,33 @@
 		</method>
 		<method name="get_exclude_collision_count" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the exclude collision count of the bone chain's exclude collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
+				Returns the exclude collision count of the node's exclude collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
 			</description>
 		</method>
 		<method name="get_exclude_collision_path" qualifiers="const">
 			<return type="NodePath" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="collision" type="int" />
+			<param index="0" name="collision" type="int" />
 			<description>
-				Returns the node path of the [SpringBoneCollision3D] at [param collision] in the bone chain's exclude collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
+				Returns the node path of the [SpringBoneCollision3D] at [param collision] in the node's exclude collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="index" type="int" />
 			<description>
 				Returns the gravity amount of the bone chain.
 			</description>
 		</method>
 		<method name="get_gravity_damping_curve" qualifiers="const">
 			<return type="Curve" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the gravity amount damping curve of the bone chain.
+				Returns the gravity amount damping curve.
 			</description>
 		</method>
 		<method name="get_gravity_direction" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the gravity direction of the bone chain.
+				Returns the gravity direction.
 			</description>
 		</method>
 		<method name="get_joint_bone" qualifiers="const">
@@ -246,16 +234,14 @@
 		</method>
 		<method name="get_radius" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the joint radius of the bone chain.
+				Returns the joint radius.
 			</description>
 		</method>
 		<method name="get_radius_damping_curve" qualifiers="const">
 			<return type="Curve" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the joint radius damping curve of the bone chain.
+				Returns the joint radius damping curve.
 			</description>
 		</method>
 		<method name="get_root_bone" qualifiers="const">
@@ -289,23 +275,14 @@
 		</method>
 		<method name="get_stiffness" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the stiffness force of the bone chain.
+				Returns the stiffness force.
 			</description>
 		</method>
 		<method name="get_stiffness_damping_curve" qualifiers="const">
 			<return type="Curve" />
-			<param index="0" name="index" type="int" />
 			<description>
-				Returns the stiffness force damping curve of the bone chain.
-			</description>
-		</method>
-		<method name="is_config_individual" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="index" type="int" />
-			<description>
-				Returns [code]true[/code] if the config can be edited individually for each joint.
+				Returns the stiffness force damping curve.
 			</description>
 		</method>
 		<method name="is_end_bone_extended" qualifiers="const">
@@ -313,6 +290,13 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the end bone is extended to have a tail.
+			</description>
+		</method>
+		<method name="is_override_individual_joints" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the config can be edited individually for each joint.
 			</description>
 		</method>
 		<method name="reset">
@@ -359,44 +343,39 @@
 		</method>
 		<method name="set_collision_count">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="count" type="int" />
+			<param index="0" name="count" type="int" />
 			<description>
-				Sets the number of collisions in the collision list at [param index] in the settings when [method are_all_child_collisions_enabled] is [code]false[/code].
+				Sets the number of collisions in the collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="set_collision_path">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="collision" type="int" />
-			<param index="2" name="node_path" type="NodePath" />
+			<param index="0" name="collision" type="int" />
+			<param index="1" name="node_path" type="NodePath" />
 			<description>
-				Sets the node path of the [SpringBoneCollision3D] at [param collision] in the bone chain's collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
+				Sets the node path of the [SpringBoneCollision3D] at [param collision] in the node's collision list when [method are_all_child_collisions_enabled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="set_drag">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="drag" type="float" />
+			<param index="0" name="drag" type="float" />
 			<description>
-				Sets the drag force of the bone chain. The greater the value, the more suppressed the wiggling.
+				Sets the drag force. The greater the value, the more suppressed the wiggling.
 				The value is scaled by [method set_drag_damping_curve] and cached in each joint setting in the joint list.
 			</description>
 		</method>
 		<method name="set_drag_damping_curve">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="curve" type="Curve" />
+			<param index="0" name="curve" type="Curve" />
 			<description>
-				Sets the drag force damping curve of the bone chain.
+				Sets the drag force damping curve.
 			</description>
 		</method>
 		<method name="set_enable_all_child_collisions">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="enabled" type="bool" />
+			<param index="0" name="enabled" type="bool" />
 			<description>
-				If [param enabled] is [code]true[/code], all child [SpringBoneCollision3D]s are colliding and [method set_exclude_collision_path] is enabled as an exclusion list at [param index] in the settings.
+				If [param enabled] is [code]true[/code], all child [SpringBoneCollision3D]s are colliding and [method set_exclude_collision_path] is enabled as an exclusion list.
 				If [param enabled] is [code]false[/code], you need to manually register all valid collisions with [method set_collision_path].
 			</description>
 		</method>
@@ -435,19 +414,17 @@
 		</method>
 		<method name="set_exclude_collision_count">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="count" type="int" />
+			<param index="0" name="count" type="int" />
 			<description>
-				Sets the number of exclude collisions in the exclude collision list at [param index] in the settings when [method are_all_child_collisions_enabled] is [code]true[/code].
+				Sets the number of exclude collisions in the exclude collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_exclude_collision_path">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="collision" type="int" />
-			<param index="2" name="node_path" type="NodePath" />
+			<param index="0" name="collision" type="int" />
+			<param index="1" name="node_path" type="NodePath" />
 			<description>
-				Sets the node path of the [SpringBoneCollision3D] at [param collision] in the bone chain's exclude collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
+				Sets the node path of the [SpringBoneCollision3D] at [param collision] in the node's exclude collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_extend_end_bone">
@@ -461,37 +438,26 @@
 		</method>
 		<method name="set_gravity">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="gravity" type="float" />
+			<param index="0" name="gravity" type="float" />
 			<description>
-				Sets the gravity amount of the bone chain. This value is not an acceleration, but a constant velocity of movement in [method set_gravity_direction].
+				Sets the gravity amount. This value is not an acceleration, but a constant velocity of movement in [method set_gravity_direction].
 				If [param gravity] is not [code]0[/code], the modified pose will not return to the original pose since it is always affected by gravity.
 				The value is scaled by [method set_gravity_damping_curve] and cached in each joint setting in the joint list.
 			</description>
 		</method>
 		<method name="set_gravity_damping_curve">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="curve" type="Curve" />
+			<param index="0" name="curve" type="Curve" />
 			<description>
-				Sets the gravity amount damping curve of the bone chain.
+				Sets the gravity amount damping curve.
 			</description>
 		</method>
 		<method name="set_gravity_direction">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="gravity_direction" type="Vector3" />
+			<param index="0" name="gravity_direction" type="Vector3" />
 			<description>
-				Sets the gravity direction of the bone chain. This value is internally normalized and then multiplied by [method set_gravity].
+				Sets the gravity direction. This value is internally normalized and then multiplied by [method set_gravity].
 				The value is cached in each joint setting in the joint list.
-			</description>
-		</method>
-		<method name="set_individual_config">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="enabled" type="bool" />
-			<description>
-				If [param enabled] is [code]true[/code], the config can be edited individually for each joint.
 			</description>
 		</method>
 		<method name="set_joint_drag">
@@ -561,21 +527,26 @@
 				Sets the stiffness force at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
 			</description>
 		</method>
-		<method name="set_radius">
+		<method name="set_override_individual_joints">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
-			<param index="1" name="radius" type="float" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
-				Sets the joint radius of the bone chain. It is used to move and slide with the [SpringBoneCollision3D] in the collision list.
+			</description>
+		</method>
+		<method name="set_radius">
+			<return type="void" />
+			<param index="0" name="radius" type="float" />
+			<description>
+				Sets the joint radius. It is used to move and slide with the [SpringBoneCollision3D] in the collision list.
 				The value is scaled by [method set_radius_damping_curve] and cached in each joint setting in the joint list.
 			</description>
 		</method>
 		<method name="set_radius_damping_curve">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="curve" type="Curve" />
+			<param index="0" name="curve" type="Curve" />
 			<description>
-				Sets the joint radius damping curve of the bone chain.
+				Sets the joint radius damping curve.
 			</description>
 		</method>
 		<method name="set_root_bone">
@@ -583,7 +554,6 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="bone" type="int" />
 			<description>
-				Sets the root bone index of the bone chain.
 			</description>
 		</method>
 		<method name="set_root_bone_name">
@@ -591,7 +561,6 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="bone_name" type="String" />
 			<description>
-				Sets the root bone name of the bone chain.
 			</description>
 		</method>
 		<method name="set_rotation_axis">
@@ -599,7 +568,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="axis" type="int" enum="SkeletonModifier3D.RotationAxis" />
 			<description>
-				Sets the rotation axis of the bone chain. If set to a specific axis, it acts like a hinge joint. The value is cached in each joint setting in the joint list.
+				Sets the rotation axis. If set to a specific axis, it acts like a hinge joint. The value is cached in each joint setting in the joint list.
 				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant SkeletonModifier3D.ROTATION_AXIS_CUSTOM], you can specify any axis.
 				[b]Note:[/b] The rotation axis vector and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
 			</description>
@@ -609,27 +578,25 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="vector" type="Vector3" />
 			<description>
-				Sets the rotation axis vector of the bone chain. The value is cached in each joint setting in the joint list.
+				Sets the rotation axis vector. The value is cached in each joint setting in the joint list.
 				This vector is normalized by an internal process and represents the axis around which the bone chain can rotate.
 				If the vector length is [code]0[/code], it is considered synonymous with [constant SkeletonModifier3D.ROTATION_AXIS_ALL].
 			</description>
 		</method>
 		<method name="set_stiffness">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="stiffness" type="float" />
+			<param index="0" name="stiffness" type="float" />
 			<description>
-				Sets the stiffness force of the bone chain. The greater the value, the faster it recovers to its initial pose.
+				Sets the stiffness force. The greater the value, the faster it recovers to its initial pose.
 				If [param stiffness] is [code]0[/code], the modified pose will not return to the original pose.
 				The value is scaled by [method set_stiffness_damping_curve] and cached in each joint setting in the joint list.
 			</description>
 		</method>
 		<method name="set_stiffness_damping_curve">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="curve" type="Curve" />
+			<param index="0" name="curve" type="Curve" />
 			<description>
-				Sets the stiffness force damping curve of the bone chain.
+				Sets the stiffness force damping curve.
 			</description>
 		</method>
 	</methods>
@@ -642,7 +609,7 @@
 			If [code]true[/code], the solver retrieves the bone axis from the bone pose every frame.
 			If [code]false[/code], the solver retrieves the bone axis from the bone rest and caches it, which increases performance slightly, but position changes in the bone pose made before processing this [SpringBoneSimulator3D] are ignored.
 		</member>
-		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
+		<member name="setting_count" type="int" setter="set_bone_chain_count" getter="get_bone_chain_count" default="0">
 			The number of settings.
 		</member>
 	</members>
