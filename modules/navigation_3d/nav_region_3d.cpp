@@ -33,7 +33,6 @@
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_builder_3d.h"
 #include "3d/nav_region_iteration_3d.h"
-#include "nav_area_3d.h"
 #include "nav_map_3d.h"
 
 #include "core/config/project_settings.h"
@@ -191,6 +190,23 @@ void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
 	request_sync();
 }
 
+void NavRegion3D::set_areas_navigation_layers(uint16_t p_area, uint32_t layers) {
+	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers(p_area) == layers) {
+		return;
+	}
+	navmesh->set_area_navigation_layers(p_area, layers);
+	iteration_dirty = true;
+
+	request_sync();
+}
+
+uint32_t NavRegion3D::get_areas_navigation_layers(uint16_t p_area) const {
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_navigation_layers(p_area);
+	}
+	return 0;
+}
+
 void NavRegion3D::scratch_polygons() {
 	iteration_dirty = true;
 
@@ -258,7 +274,7 @@ void NavRegion3D::_build_iteration() {
 
 	if (navmesh.is_valid()) {
 		// Read data from latest bake result.
-		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.polygons_meta_ids, iteration_build.navmesh_data.polygons_meta_indices);
+		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_ids, iteration_build.navmesh_data.area_indices);
 	}
 
 	iteration_build.map_cell_size = map->get_merge_rasterizer_cell_size();
@@ -280,27 +296,27 @@ void NavRegion3D::_build_iteration() {
 	new_iteration->owner_use_edge_connections = get_use_edge_connections();
 
 	print_line("NavRegion3D::_build_iteration");
-	int i = 0;
-	for (uint16_t area_id : iteration_build.navmesh_data.polygons_meta_ids) {
-		uint32_t navigation_layers = 0;
+	// int i = 0;
+	// for (uint16_t area_id : iteration_build.navmesh_data.area_ids) {
+	// 	uint32_t navigation_layers = 0;
 
-		for (const NavArea3D *m_area : map->get_areas()) {
-			uint16_t m_area_id = m_area->get_id();
-			if (m_area_id == area_id) {
-				print_line("update layers");
-				navigation_layers = m_area->get_iteration();
-				break; // This _is_ the area you're looking for.
-			}
-		}
+	// 	for (const NavArea3D *m_area : map->get_areas()) {
+	// 		uint16_t m_area_id = m_area->get_id();
+	// 		if (m_area_id == area_id) {
+	// 			print_line("update layers");
+	// 			navigation_layers = m_area->get_iteration();
+	// 			break; // This _is_ the area you're looking for.
+	// 		}
+	// 	}
 
-		if (navigation_layers > 0) {
-			for (int polygon_index : iteration_build.navmesh_data.polygons_meta_indices[i]) {
-				iteration_build.navmesh_data.polygons_meta.write[polygon_index] = navigation_layers;
-			}
-		}
+	// 	if (navigation_layers > 0) {
+	// 		for (int polygon_index : iteration_build.navmesh_data.area_indices[i]) {
+	// 			iteration_build.navmesh_data.polygons_meta.write[polygon_index] = navigation_layers;
+	// 		}
+	// 	}
 
-		i++;
-	}
+	// 	i++;
+	// }
 
 	iteration_build.region_iteration = new_iteration;
 

@@ -42,9 +42,10 @@ class NavigationMesh : public Resource {
 	Vector<Vector<int>> polygons;
 	Vector<uint32_t> polygons_meta; // The navigation layer bitmask per polygon. See `NavMeshGenerator3D::generator_bake_from_source_geometry_data`.
 
-	// Allows changing navigation_layers in `polygons_meta` (generated from areas) at runtime.
-	Vector<uint16_t> polygons_meta_ids; // Saves `ProjectedArea::id`. Each element represents a ProjectedArea.
-	Vector<Vector<int>> polygons_meta_indices; // Each element in the outer vector represents a ProjectedArea. The inner vector is a collection of `polygons_meta` indices. Assigend during baking process.
+	// Allows changing area's navigation_layers in `polygons_meta` (only those generated from areas) at runtime.
+	Vector<uint16_t> area_ids; // Saves `ProjectedArea::id`. Each element represents a ProjectedArea.
+	Vector<uint32_t> area_navlayers; // Saves `ProjectedArea::navigation_layers`.
+	Vector<Vector<int>> area_indices; // Each element in the outer vector represents a ProjectedArea. The inner vector is a collection of `polygons_meta` indices. Assigned during baking process.
 
 	Ref<ArrayMesh> debug_mesh;
 
@@ -62,6 +63,15 @@ protected:
 
 	void _set_polygons_meta(const Array &p_polygons_meta);
 	Array _get_polygons_meta() const;
+
+	void _set_area_ids(const Array &p_area_ids);
+	Array _get_area_ids() const;
+
+	void _set_area_navlayers(const Array &p_area_navlayers);
+	Array _get_area_navlayers() const;
+
+	void _set_area_indices(const Array &p_area_indices);
+	Array _get_area_indices() const;
 
 public:
 	enum SamplePartitionType {
@@ -202,6 +212,9 @@ public:
 	void clear_polygons();
 	void set_polygons(const Vector<Vector<int>> &p_polygons);
 	Vector<Vector<int>> get_polygons() const;
+	Vector<uint16_t> get_area_ids() const;
+	void set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers);
+	uint32_t get_area_navigation_layers(uint16_t p_area_id) const;
 
 	int get_polygon_meta_count() const;
 	uint32_t get_polygon_meta(int p_idx);
@@ -209,8 +222,8 @@ public:
 	void clear();
 
 	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons);
-	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_polygons_meta_ids, const Vector<Vector<int>> &p_polygons_meta_indices);
-	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_polygons_meta_ids, Vector<Vector<int>> &r_polygons_meta_indices);
+	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_area_ids, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices);
+	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_area_ids, Vector<Vector<int>> &r_area_indices);
 
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();

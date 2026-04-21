@@ -34,7 +34,6 @@
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_iteration_3d.h"
 #include "nav_agent_3d.h"
-#include "nav_area_3d.h"
 #include "nav_link_3d.h"
 #include "nav_obstacle_3d.h"
 #include "nav_region_3d.h"
@@ -245,16 +244,6 @@ void NavMap3D::remove_region(NavRegion3D *p_region) {
 	}
 }
 
-void NavMap3D::add_area(NavArea3D *p_area) {
-	DEV_ASSERT(!areas.has(p_area));
-
-	areas.push_back(p_area);
-}
-
-void NavMap3D::remove_area(NavArea3D *p_area) {
-	areas.erase_unordered(p_area);
-}
-
 void NavMap3D::add_link(NavLink3D *p_link) {
 	DEV_ASSERT(!links.has(p_link));
 
@@ -445,7 +434,15 @@ void NavMap3D::sync() {
 	performance_data.pm_agent_count = agents.size();
 	performance_data.pm_link_count = links.size();
 	performance_data.pm_obstacle_count = obstacles.size();
-	performance_data.pm_area_count = areas.size();
+
+	int area_count = 0;
+	for (NavRegion3D *region : regions) {
+		Ref<NavigationMesh> navmesh = region->get_navigation_mesh();
+		if (navmesh.is_valid()) {
+			area_count += navmesh->get_area_ids().size();
+		}
+	}
+	performance_data.pm_area_count = area_count;
 
 	_sync_async_tasks();
 
@@ -750,15 +747,6 @@ void NavMap3D::add_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_r
 	sync_dirty_requests.obstacles.list.add(p_sync_request);
 }
 
-void NavMap3D::add_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request) {
-	if (p_sync_request->in_list()) {
-		return;
-	}
-	RWLockWrite write_lock(sync_dirty_requests.areas.rwlock);
-	sync_dirty_requests.areas.list.add(p_sync_request);
-	print_line("NavMap3D::add_area_sync_dirty_request");
-}
-
 void NavMap3D::remove_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_request) {
 	if (!p_sync_request->in_list()) {
 		return;
@@ -789,34 +777,42 @@ void NavMap3D::remove_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_syn
 	sync_dirty_requests.obstacles.list.remove(p_sync_request);
 }
 
-void NavMap3D::remove_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request) {
-	if (!p_sync_request->in_list()) {
-		return;
-	}
-	RWLockWrite write_lock(sync_dirty_requests.areas.rwlock);
-	sync_dirty_requests.areas.list.remove(p_sync_request);
-}
-
 void NavMap3D::_sync_dirty_map_update_requests() {
 	// If entire map settings changed make all regions dirty.
 	if (map_settings_dirty) {
 		for (NavRegion3D *region : regions) {
-			region->scratch_polygons();
+			if (!region->is_iteration_dirty()) {
+				region->scratch_polygons();
+			}
 		}
 		iteration_dirty = true;
 	}
 
 	// Sync NavAreas: needs to happen before region, because region's navmesh polygon meta data needs to be updated in region->sync().
-	RWLockWrite write_lock_areas(sync_dirty_requests.areas.rwlock);
-	for (SelfList<NavArea3D> *element = sync_dirty_requests.areas.list.first(); element; element = element->next()) {
-		bool requires_map_update = element->self()->sync();
-		if (requires_map_update) {
-			print_line("dirty map");
-			// FIXME: this does not make the region dirty…
-			iteration_dirty = true;
-		}
-	}
-	sync_dirty_requests.areas.list.clear();
+	// RWLockWrite write_lock_areas(sync_dirty_requests.areas.rwlock);
+	// for (SelfList<NavArea3D> *element = sync_dirty_requests.areas.list.first(); element; element = element->next()) {
+	// 	bool requires_map_update = element->self()->sync();
+	// 	if (requires_map_update) {
+	// 		print_line("requires_map_update");
+	// 		RID region_rid = element->self()->get_region();
+	// 		print_line("look for region: ", region_rid.get_id());
+	// 		// NOTE: Area id is only unique per navmesh/region.
+	// 		for (NavRegion3D *region : regions) {
+	// 			if (region->get_self() != region_rid) {
+	// 				print_line("wrong region: ", region->get_self().get_id());
+	// 				continue;
+	// 			}
+	// 			print_line("region found");
+	// 			if (!region->is_iteration_dirty()) {
+	// 				region->scratch_polygons();
+	// 				print_line("mark map dirty");
+	// 			}
+	// 			break;
+	// 		}
+	// 		iteration_dirty = true;
+	// 	}
+	// }
+	// sync_dirty_requests.areas.list.clear();
 
 	// Sync NavRegions.
 	RWLockWrite write_lock_regions(sync_dirty_requests.regions.rwlock);

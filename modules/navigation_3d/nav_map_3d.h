@@ -47,11 +47,10 @@
 
 class NavLink3D;
 class NavRegion3D;
-class NavArea3D;
 class NavAgent3D;
 class NavObstacle3D;
 
-// Holds regions, agents, obstacles, areas, and links.
+// Holds regions (holds areas), agents, obstacles, and links.
 // Handles (or delegates to thirdparty library):
 // * parsing of NavArea3D objects created via server
 // * map iterations/syncs
@@ -83,10 +82,6 @@ class NavMap3D : public NavRid3D {
 
 	/// Map regions
 	LocalVector<NavRegion3D *> regions;
-
-	/// Map areas
-	// NOTE: only affect navmesh baking, not syncs/iterations.
-	LocalVector<NavArea3D *> areas;
 
 	/// Map links
 	LocalVector<NavLink3D *> links;
@@ -128,10 +123,6 @@ class NavMap3D : public NavRid3D {
 			RWLock rwlock;
 			SelfList<NavRegion3D>::List list;
 		} regions;
-		struct {
-			RWLock rwlock;
-			SelfList<NavArea3D>::List list;
-		} areas;
 		struct {
 			RWLock rwlock;
 			SelfList<NavLink3D>::List list;
@@ -228,12 +219,6 @@ public:
 		return regions;
 	}
 
-	void add_area(NavArea3D *p_area);
-	void remove_area(NavArea3D *p_area);
-	const LocalVector<NavArea3D *> &get_areas() const {
-		return areas;
-	}
-
 	void add_link(NavLink3D *p_link);
 	void remove_link(NavLink3D *p_link);
 	const LocalVector<NavLink3D *> &get_links() const {
@@ -286,13 +271,11 @@ public:
 	void add_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request);
 	void add_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request);
 	void add_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request);
-	void add_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 
 	void remove_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_request);
 	void remove_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request);
 	void remove_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request);
 	void remove_obstacle_sync_dirty_request(SelfList<NavObstacle3D> *p_sync_request);
-	void remove_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 
 	void set_use_async_iterations(bool p_enabled);
 	bool get_use_async_iterations() const;

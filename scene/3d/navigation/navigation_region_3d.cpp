@@ -268,6 +268,21 @@ PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+// void NavigationRegion3D::_validate_property(PropertyInfo &property) const {
+// }
+
+void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	if (!navigation_mesh.is_valid()) {
+		return;
+	}
+
+	for (int16_t id : navigation_mesh->get_area_ids()) {
+		const String prep = vformat("areas/%d/", id);
+		// navigation layers overwrites.
+		p_list->push_back(PropertyInfo(Variant::INT, prep + "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_DEFAULT));
+	}
+}
+
 void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationRegion3D::get_rid);
 
@@ -317,24 +332,50 @@ void NavigationRegion3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("bake_finished"));
 }
 
+bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) {
+	String path = p_path;
 #ifndef DISABLE_DEPRECATED
-// Compatibility with earlier 4.0 betas.
-bool NavigationRegion3D::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "navmesh") {
+	// Compatibility with earlier 4.0 betas.
+	if (path == "navmesh") {
 		set_navigation_mesh(p_value);
+		return true;
+	}
+#endif // DISABLE_DEPRECATED
+	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
+		print_line("_set");
+		int which = path.get_slicec('/', 1).to_int();
+		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
+			return false;
+		}
+		navigation_mesh->set_area_navigation_layers((uint16_t)which, p_value);
+		notify_property_list_changed(); // Make areas in navigation_mesh (in)visible in inspector.
+		// FIXME: update navigation server 3d.
 		return true;
 	}
 	return false;
 }
 
-bool NavigationRegion3D::_get(const StringName &p_name, Variant &r_ret) const {
-	if (p_name == "navmesh") {
+bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
+	String path = p_path;
+	// print_line("path: ", path);
+#ifndef DISABLE_DEPRECATED
+	// Compatibility with earlier 4.0 betas.
+	if (path == "navmesh") {
 		r_ret = get_navigation_mesh();
+		return true;
+	}
+#endif // DISABLE_DEPRECATED
+	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
+		// print_line("_get");
+		int which = path.get_slicec('/', 1).to_int();
+		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
+			return false;
+		}
+		r_ret = (int)navigation_mesh->get_area_navigation_layers((uint16_t)which);
 		return true;
 	}
 	return false;
 }
-#endif // DISABLE_DEPRECATED
 
 void NavigationRegion3D::_navigation_mesh_changed() {
 	_update_bounds();
@@ -362,6 +403,7 @@ void NavigationRegion3D::_navigation_mesh_changed() {
 	emit_signal(SNAME("navigation_mesh_changed"));
 
 	update_gizmos();
+	notify_property_list_changed(); // Make areas in navigation_mesh (in)visible in inspector.
 	update_configuration_warnings();
 }
 

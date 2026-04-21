@@ -30,6 +30,7 @@
 
 #include "navigation_mesh_source_geometry_data_3d.h"
 
+#include "../../3d/navigation/navigation_mesh_area_3d.h"
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
 
@@ -337,15 +338,26 @@ Array NavigationMeshSourceGeometryData3D::get_projected_obstructions() const {
 	return ret;
 }
 
-uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_box(const AABB &p_aabb, uint32_t p_navigation_layers, int p_priority) {
-	ERR_FAIL_COND_V(!p_aabb.has_surface(), 0);
+uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_box(const Vector3 &size, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority) {
+	ERR_FAIL_COND_V(!size.is_finite(), 0);
+	ERR_FAIL_COND_V(size.is_zero_approx(), 0);
+
+	Vector<Vector3> vertices;
+	vertices.resize(4);
+	vertices.write[0] = Vector3(-size.x * 0.5, 0.0, -size.z * 0.5);
+	vertices.write[1] = Vector3(size.x * 0.5, 0.0, -size.z * 0.5);
+	vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
+	vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
+
+	const Transform3D gt = root_node_transform * p_xform;
+	AABB bounds = NavigationMeshArea3D::_xform_bounds(vertices, gt, size.y);
 
 	ProjectedArea projected_area;
 
 	projected_area.id = next_free_area_id;
 	next_free_area_id++;
 
-	projected_area.aabb = p_aabb;
+	projected_area.aabb = bounds;
 	projected_area.navigation_layers = p_navigation_layers;
 	projected_area.priority = p_priority;
 	projected_area.shape_type = ProjectedArea::ShapeType::BOX;
@@ -384,7 +396,7 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_cylinder(const V
 	return projected_area.id;
 }
 
-uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, uint32_t p_navigation_layers, int p_priority) {
+uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority) {
 	ERR_FAIL_COND_V(p_vertices.size() < 3, 0);
 	ERR_FAIL_COND_V(p_height < 0.0, 0);
 
@@ -394,7 +406,7 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Ve
 	next_free_area_id++;
 
 	projected_area.vertices.resize(p_vertices.size() * 3);
-	projected_area.elevation = p_elevation;
+	projected_area.elevation = root_node_transform.origin.y + p_elevation;
 	projected_area.height = p_height;
 	projected_area.navigation_layers = p_navigation_layers;
 	projected_area.priority = p_priority;
@@ -404,13 +416,16 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Ve
 
 	AABB area_aabb;
 	area_aabb.position = p_vertices[0];
+	const Transform3D gt = root_node_transform * p_xform;
 
 	int vertex_index = 0;
 	for (const Vector3 &vertex : p_vertices) {
-		area_vertices_ptrw[vertex_index++] = vertex.x;
-		area_vertices_ptrw[vertex_index++] = vertex.y;
-		area_vertices_ptrw[vertex_index++] = vertex.z;
-		area_aabb.expand_to(vertex);
+		const Vector3 v = gt.xform(vertex);
+
+		area_vertices_ptrw[vertex_index++] = v.x;
+		area_vertices_ptrw[vertex_index++] = 0.0;
+		area_vertices_ptrw[vertex_index++] = v.z;
+		area_aabb.expand_to(v);
 	}
 	projected_area.aabb = area_aabb;
 
@@ -607,9 +622,9 @@ void NavigationMeshSourceGeometryData3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_projected_obstructions", "projected_obstructions"), &NavigationMeshSourceGeometryData3D::set_projected_obstructions);
 	ClassDB::bind_method(D_METHOD("get_projected_obstructions"), &NavigationMeshSourceGeometryData3D::get_projected_obstructions);
 
-	ClassDB::bind_method(D_METHOD("add_projected_area_box", "aabb", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_box);
+	ClassDB::bind_method(D_METHOD("add_projected_area_box", "size", "xform", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_box);
 	ClassDB::bind_method(D_METHOD("add_projected_area_cylinder", "position", "radius", "height", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_cylinder);
-	ClassDB::bind_method(D_METHOD("add_projected_area_polygon", "vertices", "elevation", "height", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_polygon);
+	ClassDB::bind_method(D_METHOD("add_projected_area_polygon", "vertices", "elevation", "height", "xform", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_polygon);
 	ClassDB::bind_method(D_METHOD("clear_projected_areas"), &NavigationMeshSourceGeometryData3D::clear_projected_obstructions);
 	ClassDB::bind_method(D_METHOD("set_projected_areas", "projected_areas"), &NavigationMeshSourceGeometryData3D::set_projected_areas);
 	ClassDB::bind_method(D_METHOD("get_projected_areas"), &NavigationMeshSourceGeometryData3D::get_projected_areas);

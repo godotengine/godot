@@ -27,12 +27,6 @@
 				[b]Note:[/b] When running a query against this area, the cost of the first matching navigation layer is taken.
 			</description>
 		</method>
-		<method name="get_rid" qualifiers="const">
-			<return type="RID" />
-			<description>
-				Returns the [RID] of this area on the [NavigationServer3D].
-			</description>
-		</method>
 		<method name="set_navigation_layer_value">
 			<return type="void" />
 			<param index="0" name="layer_number" type="int" />
@@ -46,8 +40,6 @@
 		<member name="bake_priority" type="int" setter="set_bake_priority" getter="get_bake_priority" default="0">
 			The priority of the area. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins.
 			[b]Note:[/b] This affects the baking of the [NavigationMesh] only, not queries.
-		</member>
-		<member name="dynamic" type="bool" setter="set_dynamic" getter="is_dynamic" default="true">
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationMeshArea3D] is enabled or disabled. Requires a navigation mesh rebake to take any real effect.

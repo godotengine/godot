@@ -36,9 +36,10 @@
 		</method>
 		<method name="add_projected_area_box">
 			<return type="int" />
-			<param index="0" name="aabb" type="AABB" />
-			<param index="1" name="navigation_layers" type="int" />
-			<param index="2" name="priority" type="int" />
+			<param index="0" name="size" type="Vector3" />
+			<param index="1" name="xform" type="Transform3D" />
+			<param index="2" name="navigation_layers" type="int" />
+			<param index="3" name="priority" type="int" />
 			<description>
 				Adds a new projected area of shape type box to the source geometry. The areas axis-aligned bounding box is defined by an [param aabb].
 			</description>
@@ -59,8 +60,9 @@
 			<param index="0" name="vertices" type="PackedVector3Array" />
 			<param index="1" name="elevation" type="float" />
 			<param index="2" name="height" type="float" />
-			<param index="3" name="navigation_layers" type="int" />
-			<param index="4" name="priority" type="int" />
+			<param index="3" name="xform" type="Transform3D" />
+			<param index="4" name="navigation_layers" type="int" />
+			<param index="5" name="priority" type="int" />
 			<description>
 				Adds a new projected area of shape type polygon to the source geometry. The [param vertices] are considered projected on a xz-axes plane, placed at the global y-axis [param elevation] and extruded by [param height].
 			</description>

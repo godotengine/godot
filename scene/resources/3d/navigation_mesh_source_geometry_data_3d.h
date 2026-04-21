@@ -79,7 +79,7 @@ public:
 	struct ProjectedArea {
 		static inline uint32_t VERSION = 1; // Increase on format changes.
 
-		int id; // Random ID assigned during parsing process, to help connect to a server RID afterwards. And an area node, if existant.
+		int id; // Random ID assigned during parsing process, to help connect to a server RID afterwards. And an area node, if existent.
 
 		Vector<float> vertices; // Used by POLYGON only.
 		AABB aabb; // Bounds.
@@ -137,9 +137,9 @@ public:
 	void set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
 	void get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions, Vector<ProjectedArea> &p_projected_areas);
 
-	uint16_t add_projected_area_box(const AABB &p_aabb, uint32_t p_navigation_layers, int p_priority = 0);
+	uint16_t add_projected_area_box(const Vector3 &p_size, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority = 0);
 	uint16_t add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
-	uint16_t add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, uint32_t p_navigation_layers, int p_priority = 0);
+	uint16_t add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority = 0);
 
 	AABB get_bounds();
 

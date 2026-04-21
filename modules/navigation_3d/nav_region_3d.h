@@ -76,6 +76,7 @@ public:
 	~NavRegion3D();
 
 	uint32_t get_iteration_id() const { return iteration_id; }
+	bool is_iteration_dirty() const { return iteration_dirty; }
 
 	void scratch_polygons();
 
@@ -114,6 +115,9 @@ public:
 	virtual void set_travel_cost(real_t p_travel_cost) override;
 #endif // DISABLE_DEPRECATED
 	virtual void set_owner_id(ObjectID p_owner_id) override;
+
+	void set_areas_navigation_layers(uint16_t p_area, uint32_t layers);
+	uint32_t get_areas_navigation_layers(uint16_t p_area) const;
 
 	// Called by map, see `NavMap3D::sync()`:
 	bool sync();
