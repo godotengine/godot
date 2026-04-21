@@ -230,7 +230,7 @@ void CreditsRoll::roll_credits() {
 		_create_nothing(400 * EDSCALE);
 		_create_label(TTRC("Thank you for choosing Godot Engine!"), LabelSize::BIG_HEADER);
 	}
-	// Needs to be set here, so it stays centered even if the window is resized.
+	// Needs to be set here, otherwise the starting position will be incorrect.
 	content->set_anchors_and_offsets_preset(Control::PRESET_VCENTER_WIDE);
 
 	Window *root = get_tree()->get_root();
@@ -247,5 +247,6 @@ CreditsRoll::CreditsRoll() {
 	add_child(background);
 
 	content = memnew(VBoxContainer);
+	content->set_grow_direction_preset(Control::PRESET_VCENTER_WIDE);
 	add_child(content);
 }

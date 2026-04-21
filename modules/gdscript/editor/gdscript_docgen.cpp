@@ -443,9 +443,6 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					method_doc.return_type = "void";
 				} else if (!m_func->get_datatype().is_variant()) {
 					_doctype_from_gdtype(m_func->get_datatype(), method_doc.return_type, method_doc.return_enum, true);
-				} else if (!m_func->body->has_return) {
-					// If no `return` statement, then return type is `void`, not `Variant`.
-					method_doc.return_type = "void";
 				} else {
 					method_doc.return_type = "Variant";
 				}

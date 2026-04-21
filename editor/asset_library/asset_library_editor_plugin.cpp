@@ -1063,6 +1063,18 @@ void EditorAssetLibrary::_notification(int p_what) {
 				to_delete.pop_front();
 			}
 
+			const bool no_downloads = downloads_hb->get_child_count() == 0;
+			if (no_downloads == downloads_scroll->is_visible()) {
+				downloads_scroll->set_visible(!no_downloads);
+
+				if (Engine::get_singleton()->is_project_manager_hint()) {
+					library_mc->set_theme_type_variation(no_downloads ? "NoBorderAssetLibProjectManager" : "NoBorderAssetLibProjectManagerHorizontal");
+				} else {
+					library_mc->set_theme_type_variation(no_downloads ? "NoBorderAssetLib" : "NoBorderAssetLibHorizontal");
+				}
+				library_scroll->set_scroll_hint_mode(no_downloads ? ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT : ScrollContainer::SCROLL_HINT_MODE_ALL);
+			}
+
 			if (image_queue.is_empty()) {
 				set_process(false);
 			}
