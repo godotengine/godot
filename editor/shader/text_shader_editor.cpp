@@ -316,6 +316,41 @@ String TextShaderPreview::_get_enclosing_function(const PackedStringArray &p_lin
 	return String(); // Global scope.
 }
 
+bool TextShaderPreview::_is_inside_loop(const PackedStringArray &p_lines, int p_line) const {
+	int brace_stack = 0;
+
+	Ref<RegEx> loop_regex;
+	loop_regex.instantiate();
+	loop_regex->compile(R"(\b(for|while|do)\b)");
+
+	Ref<RegEx> func_regex;
+	func_regex.instantiate();
+	func_regex->compile(R"(\b(?!for\b|while\b|do\b|if\b|else\b|return\b|switch\b)\w+\s+\w+\s*\()");
+
+	for (int i = p_line; i >= 0; i--) {
+		String clean_line = p_lines[i].split("//")[0].strip_edges();
+		if (clean_line.is_empty()) {
+			continue;
+		}
+
+		brace_stack += clean_line.count("}");
+		brace_stack -= clean_line.count("{");
+
+		if (brace_stack < 0) {
+			if (loop_regex->search(clean_line).is_valid()) {
+				return true;
+			}
+			if (func_regex->search(clean_line).is_valid()) {
+				return false;
+			}
+
+			brace_stack = 0;
+		}
+	}
+
+	return false;
+}
+
 bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_line, String &r_var_name, int &r_start, int &r_end) const {
 	Ref<RegEx> var_regex;
 	var_regex.instantiate();
@@ -547,6 +582,11 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 
 	if (enclosing_function != "fragment") {
 		_show_error(TTRC("Preview only supports assignments in the `fragment()` function."));
+		return;
+	}
+
+	if (_is_inside_loop(lines, p_line)) {
+		_show_error(TTRC("Preview is not supported inside loops."));
 		return;
 	}
 

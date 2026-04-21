@@ -4,7 +4,7 @@
  *
  *   The FreeType Multiple Masters and GX var services (specification).
  *
- * Copyright (C) 2003-2025 by
+ * Copyright (C) 2003-2026 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and Dominik Röttsches.
  *
  * This file is part of the FreeType project, and may only be used,

@@ -56,9 +56,9 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
-#include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void ExportTemplateManager::_request_mirrors() {
 	mirrors_list->clear();
@@ -187,22 +187,38 @@ void ExportTemplateManager::_open_mirror() {
 	OS::get_singleton()->shell_open(_get_current_mirror_url());
 }
 
-void ExportTemplateManager::_delete_confirmed() {
-	const String selected_version = version_list->get_item_text(version_list->get_current());
-	const String template_directory = _get_template_folder_path(selected_version);
+void ExportTemplateManager::_delete_all() {
+	item_to_delete = installed_templates_tree->get_root();
+	confirm_delete->set_text(TTRC("Remove all installed template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
+	confirm_delete->popup_centered();
+}
 
-	if (_item_is_file(item_to_delete)) {
-		OS::get_singleton()->move_to_trash(template_directory.path_join(item_to_delete->get_text(0)));
-		file_metadata.erase(item_to_delete->get_text(0));
-	} else {
-		for (TreeItem *child = item_to_delete->get_first_child(); child; child = child->get_next()) {
-			if (!_get_file_metadata(child)->is_missing) {
-				OS::get_singleton()->move_to_trash(template_directory.path_join(child->get_text(0)));
-			}
-			file_metadata.erase(child->get_text(0));
-		}
+void ExportTemplateManager::_delete_confirmed() {
+	_delete_file(item_to_delete);
+
+	const String selected_version = version_list->get_item_text(version_list->get_current());
+	if (selected_version != GODOT_VERSION_FULL_CONFIG) {
+		// Deleting all installed templates removes the version from list.
+		_update_version_list();
 	}
 	_update_template_tree();
+	item_to_delete = nullptr;
+}
+
+void ExportTemplateManager::_delete_file(const TreeItem *p_item) {
+	if (_item_is_file(p_item)) {
+		const String selected_version = version_list->get_item_text(version_list->get_current());
+		const String full_path = _get_template_folder_path(selected_version).path_join(p_item->get_text(0));
+
+		if (FileAccess::exists(full_path)) {
+			OS::get_singleton()->move_to_trash(full_path);
+		}
+		file_metadata.erase(p_item->get_text(0));
+	} else {
+		for (TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
+			_delete_file(child);
+		}
+	}
 }
 
 void ExportTemplateManager::_initialize_template_data() {
@@ -298,16 +314,9 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = "Android";
-		info.description = TTRC("Basic Android APK template.");
-		info.file_list = { "android_debug.apk", "android_release.apk" };
+		info.description = TTRC("Android APK template and source for Gradle builds.");
+		info.file_list = { "android_debug.apk", "android_release.apk", "android_source.zip" };
 		template_data[TemplateID::ANDROID] = info;
-	}
-	{
-		TemplateInfo info;
-		info.name = TTR("Android Source");
-		info.description = TTRC("Template for Gradle builds for Android.");
-		info.file_list = { "android_source.zip" };
-		template_data[TemplateID::ANDROID_SOURCE] = info;
 	}
 
 	{
@@ -355,7 +364,7 @@ void ExportTemplateManager::_initialize_template_data() {
 		PlatformInfo info;
 		info.name = "Android";
 		info.icon = _get_platform_icon("Android");
-		info.templates = { TemplateID::ANDROID, TemplateID::ANDROID_SOURCE };
+		info.templates = { TemplateID::ANDROID };
 		info.group = TTR("Mobile", "Platform Group");
 		platform_map[PlatformID::ANDROID] = info;
 	}
@@ -383,19 +392,51 @@ void ExportTemplateManager::_initialize_template_data() {
 	}
 
 	// Template directory status.
-	DirAccess::make_dir_recursive_absolute(_get_template_folder_path(VERSION_FULL_CONFIG));
+	DirAccess::make_dir_recursive_absolute(_get_template_folder_path(GODOT_VERSION_FULL_CONFIG));
+	_update_version_list();
+}
+
+void ExportTemplateManager::_update_version_list() {
+	String current_selected;
+	if (version_list->get_current() > -1) {
+		current_selected = version_list->get_item_text(version_list->get_current());
+	}
+	version_list->clear();
+
 	Ref<DirAccess> templates_dir = DirAccess::open(EditorPaths::get_singleton()->get_export_templates_dir());
 	ERR_FAIL_COND(templates_dir.is_null());
 
+	int current_version_id = -1;
 	for (const String &dir : templates_dir->get_directories()) {
 		if (dir == GODOT_VERSION_FULL_CONFIG) {
 			version_list->add_item(dir);
 			version_list->set_item_custom_fg_color(-1, theme_cache.current_version_color);
-			version_list->select(version_list->get_item_count() - 1);
+			current_version_id = version_list->get_item_count() - 1;
 		} else {
+			bool recognized = false;
+			for (const String &file : DirAccess::get_files_at(templates_dir->get_current_dir().path_join(dir))) {
+				for (const KeyValue<TemplateID, TemplateInfo> &KV : template_data) {
+					if (KV.value.file_list.has(file)) {
+						recognized = true;
+						break;
+					}
+				}
+				if (recognized) {
+					break;
+				}
+			}
+			if (!recognized) {
+				continue;
+			}
 			version_list->add_item(dir);
+			if (dir == current_selected) {
+				version_list->select(version_list->get_item_count() - 1);
+			}
 		}
 		version_list->set_item_metadata(-1, dir);
+	}
+	if (version_list->get_current() == -1) {
+		version_list->select(current_version_id);
 	}
 }
 
@@ -421,28 +462,6 @@ void ExportTemplateManager::_update_template_tree() {
 
 	_fill_template_tree(available_templates_tree, installed_template_files, is_current_version);
 	_fill_template_tree(installed_templates_tree, installed_template_files, is_current_version);
-}
-
-void ExportTemplateManager::_update_template_tree_theme(Tree *p_tree) {
-	if (is_downloading()) {
-		// Prevents hiding progress bar.
-		Ref<StyleBoxEmpty> empty_style;
-		empty_style.instantiate();
-
-		p_tree->add_theme_style_override(SNAME("hovered"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_dimmed"), empty_style);
-		p_tree->add_theme_style_override(SNAME("selected"), empty_style);
-		p_tree->add_theme_style_override(SNAME("selected_focus"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_selected"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_selected_focus"), empty_style);
-	} else {
-		p_tree->remove_theme_style_override(SNAME("hovered"));
-		p_tree->remove_theme_style_override(SNAME("hovered_dimmed"));
-		p_tree->remove_theme_style_override(SNAME("selected"));
-		p_tree->remove_theme_style_override(SNAME("selected_focus"));
-		p_tree->remove_theme_style_override(SNAME("hovered_selected"));
-		p_tree->remove_theme_style_override(SNAME("hovered_selected_focus"));
-	}
 }
 
 void ExportTemplateManager::_fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version) {
@@ -612,6 +631,9 @@ void ExportTemplateManager::_fill_template_tree(Tree *p_tree, const HashMap<Temp
 		_apply_item_folding(platform_item);
 	}
 
+	if (is_installed_tree) {
+		delete_all_button->set_disabled(p_tree->get_root()->get_child_count() == 0);
+	}
 	if (p_tree->get_root()->get_child_count() == 0) {
 		TreeItem *empty = p_tree->create_item();
 		empty->set_text(0, is_available_tree ? TTR("All templates installed.") : TTR("No templates installed."));
@@ -708,6 +730,7 @@ void ExportTemplateManager::_tree_button_clicked(TreeItem *p_item, int p_column,
 
 		case ButtonID::REMOVE: {
 			item_to_delete = p_item;
+			confirm_delete->set_text(TTRC("Remove the selected template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 			confirm_delete->popup_centered();
 		} break;
 
@@ -755,8 +778,6 @@ void ExportTemplateManager::_install_templates(TreeItem *p_files) {
 	_update_template_tree();
 	_process_download_queue();
 	_update_install_button();
-	_update_template_tree_theme(installed_templates_tree);
-	_update_template_tree_theme(available_templates_tree);
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
 	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
@@ -826,8 +847,6 @@ void ExportTemplateManager::_process_download_queue() {
 		queued_templates.clear();
 		downloading_items.clear();
 		set_process_internal(false);
-		_update_template_tree_theme(installed_templates_tree);
-		_update_template_tree_theme(available_templates_tree);
 		_update_install_button();
 		EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
 	} else {
@@ -1033,7 +1052,7 @@ String ExportTemplateManager::_get_item_path(TreeItem *p_item) const {
 	return p_item->get_meta(PATH_META, String());
 }
 
-bool ExportTemplateManager::_item_is_file(TreeItem *p_item) const {
+bool ExportTemplateManager::_item_is_file(const TreeItem *p_item) const {
 	return p_item->get_meta(FILE_META, false).operator bool();
 }
 
@@ -1065,7 +1084,8 @@ float ExportTemplateManager::_get_download_progress(const TreeItem *p_item) cons
 
 void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p_rect) {
 	Tree *owning_tree = p_item->get_tree();
-	owning_tree->draw_rect(p_rect, Color(0, 0, 0, 0.5));
+	RID ci = owning_tree->get_custom_drawing_canvas_item();
+	RS::get_singleton()->canvas_item_add_rect(ci, p_rect, Color(0, 0, 0, 0.5));
 
 	if (!_item_is_file(p_item)) {
 		float progress = 0.0;
@@ -1083,7 +1103,7 @@ void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p
 			has_fail = has_fail || meta->download_status == DownloadStatus::FAILED;
 		}
 		progress /= item_count;
-		owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), has_fail ? theme_cache.download_failed_color : theme_cache.download_progress_color);
+		RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), has_fail ? theme_cache.download_failed_color : theme_cache.download_progress_color);
 		return;
 	}
 
@@ -1095,21 +1115,22 @@ void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p
 		case DownloadStatus::PENDING: {
 			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
 			const Ref<Texture2D> progress_texture = theme_cache.progress_icons[frame / 4 % 8];
-			owning_tree->draw_texture(progress_texture, Vector2(p_rect.get_end().x - progress_texture->get_width(), p_rect.position.y + p_rect.size.y * 0.5 - progress_texture->get_height() * 0.5));
+			const Rect2 rect = Rect2(Vector2(p_rect.get_end().x - progress_texture->get_width(), p_rect.position.y + p_rect.size.y * 0.5 - progress_texture->get_height() * 0.5), progress_texture->get_size());
+			RS::get_singleton()->canvas_item_add_texture_rect(ci, rect, progress_texture->get_rid());
 		} break;
 
 		case DownloadStatus::IN_PROGRESS: {
 			float progress = _get_download_progress(p_item);
 			meta->progress_cache = progress;
-			owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), theme_cache.download_progress_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), theme_cache.download_progress_color);
 		} break;
 
 		case DownloadStatus::COMPLETED: {
-			owning_tree->draw_rect(p_rect, theme_cache.download_progress_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, p_rect, theme_cache.download_progress_color);
 		} break;
 
 		case DownloadStatus::FAILED: {
-			owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * _get_download_progress(p_item), p_rect.size.y)), theme_cache.download_failed_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * _get_download_progress(p_item), p_rect.size.y)), theme_cache.download_failed_color);
 		} break;
 	}
 }
@@ -1134,14 +1155,14 @@ void ExportTemplateManager::_notification(int p_what) {
 			template_data[TemplateID::WEB_EXTENSIONS].name = TTR("Web with Extensions");
 			template_data[TemplateID::WEB_NOTHREADS].name = TTR("Web Single-Threaded");
 			template_data[TemplateID::WEB_EXTENSIONS_NOTHREADS].name = TTR("Web with Extensions Single-Threaded");
-			template_data[TemplateID::ANDROID_SOURCE].name = TTR("Android Source");
-			template_data[TemplateID::ANDROID_SOURCE].name = TTR("ICU Data");
+			template_data[TemplateID::ICU_DATA].name = TTR("ICU Data");
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			open_folder_button->set_button_icon(get_editor_theme_icon("Folder"));
 			install_button->set_button_icon(get_editor_theme_icon("AssetStore"));
 			open_mirror->set_button_icon(get_editor_theme_icon("ExternalLink"));
+			delete_all_button->set_button_icon(get_editor_theme_icon("Remove"));
 
 			theme_cache.install_icon = get_editor_theme_icon("AssetStore");
 			theme_cache.remove_icon = get_editor_theme_icon("Remove");
@@ -1396,12 +1417,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	side_vb->add_child(version_list);
 	version_list->connect(SceneStringName(item_selected), callable_mp(this, &ExportTemplateManager::_version_selected).unbind(1));
 
-	open_folder_button = memnew(Button);
-	open_folder_button->set_tooltip_text(TTRC("Open templates directory."));
-	open_folder_button->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
-	side_vb->add_child(open_folder_button);
-	open_folder_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_directory));
-
 	VSplitContainer *center_split = memnew(VSplitContainer);
 	center_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_split->add_child(center_split);
@@ -1429,9 +1444,23 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_templates_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	center_split->add_child(installed_templates_container);
 
+	HBoxContainer *installed_header = memnew(HBoxContainer);
+	installed_templates_container->add_child(installed_header);
+
 	Label *template_header = memnew(Label(TTRC("Installed Templates")));
 	template_header->set_theme_type_variation("HeaderSmall");
-	installed_templates_container->add_child(template_header);
+	installed_header->add_child(template_header);
+
+	open_folder_button = memnew(Button);
+	open_folder_button->set_tooltip_text(TTRC("Open templates directory."));
+	open_folder_button->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
+	installed_header->add_child(open_folder_button);
+	open_folder_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_directory));
+
+	delete_all_button = memnew(Button);
+	delete_all_button->set_tooltip_text(TTRC("Remove all installed templates."));
+	installed_header->add_child(delete_all_button);
+	delete_all_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_delete_all));
 
 	installed_templates_tree = memnew(Tree);
 	installed_templates_tree->set_accessibility_name(TTRC("Installed Templates"));
@@ -1456,7 +1485,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
 	confirm_delete = memnew(ConfirmationDialog);
-	confirm_delete->set_text(TTRC("Remove the selected template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 	add_child(confirm_delete);
 	confirm_delete->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_delete_confirmed));
 

@@ -45,14 +45,6 @@ Copyright: 2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
-Files: icon.png
- icon.svg
- logo.png
- logo.svg
-Comment: Godot Engine logo
-Copyright: 2017, Andrea Calabró
-License: CC-BY-4.0
-
 Files: core/math/convex_hull.cpp
  core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
@@ -65,6 +57,11 @@ Files: misc/dist/linux/org.godotengine.Godot.appdata.xml
 Comment: Linux AppStream Metadata File
 Copyright: 2017-2022, Rémi Verschelde
 License: CC0-1.0
+
+Files: misc/logo/*
+Comment: Godot Engine logo
+Copyright: 2017, Andrea Calabró
+License: CC-BY-4.0
 
 Files: modules/betsy/alpha_stitch.glsl
  modules/betsy/bc1.glsl
@@ -429,7 +426,7 @@ License: Apache-2.0
 
 Files: thirdparty/meshoptimizer/*
 Comment: meshoptimizer
-Copyright: 2016-2024, Arseny Kapoulkine
+Copyright: 2016-2026, Arseny Kapoulkine
 License: Expat
 
 Files: thirdparty/metal-cpp/*
@@ -449,7 +446,7 @@ License: BSD-3-clause
 
 Files: thirdparty/minizip/*
 Comment: MiniZip
-Copyright: 1998-2010, Gilles Vollant
+Copyright: 1998-2026, Gilles Vollant
  2007-2008, Even Rouault
  2009-2010, Mathias Svensson
 License: Zlib
@@ -678,7 +675,7 @@ License: Expat
 
 Files: thirdparty/zlib/*
 Comment: zlib
-Copyright: 1995-2025, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2026, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: thirdparty/zstd/*
