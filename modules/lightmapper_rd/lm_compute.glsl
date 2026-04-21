@@ -493,7 +493,9 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		r_light_dir = normalize(closest_point - p_position);
 		shadow_dir = normalize(light_pos - p_position);
 		attenuation = get_omni_attenuation(dist, 1.0 / light_data.range, light_data.attenuation) * dist * dist; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+#ifndef MODE_LIGHT_PROBES
 		attenuation *= ltc_diffuse;
+#endif // MODE_LIGHT_PROBES
 		soft_shadowing_disk_size = light_data.size / dist;
 	} else {
 		light_pos = light_data.position;
