@@ -1,7 +1,7 @@
 def can_build(env, platform):
-    if platform == "web":
+    if platform == "web" and env["proxy_to_pthread"]:
         # WebXR is incompatible with proxy_to_pthread.
-        return not env["proxy_to_pthread"]
+        return False
 
     return env["opengl3"] and not env["disable_xr"]
 
