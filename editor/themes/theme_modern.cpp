@@ -650,6 +650,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_constant("icon_h_separation", "Tree", p_config.base_margin * 1.5 * EDSCALE);
 			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("dragging_unfold_wait_msec", "Tree", p_config.dragging_hover_wait_msec);
+			p_theme->set_constant("scroll_max_sticky_items", "Tree", p_config.max_sticky_tree_items);
 			p_theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 			p_theme->set_constant("scroll_speed", "Tree", 12);
 			p_theme->set_constant("outline_size", "Tree", 0);
