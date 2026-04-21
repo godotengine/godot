@@ -8,7 +8,7 @@
 		If you setup [method set_root_bone] and [method set_end_bone], it is treated as one bone chain. Note that it does not support a branched chain like Y-shaped chains.
 		When a bone chain is created, an array is generated from the bones that exist in between and listed in the joint list.
 		Several properties can be applied to each joint, such as [method set_joint_stiffness], [method set_joint_drag], and [method set_joint_gravity].
-		For simplicity, you can set values to all joints at the same time by using a [Curve]. If you want to specify detailed values individually, set [method set_individual_config] to [code]true[/code].
+		For simplicity, you can set values to all joints at the same time by using a [Curve]. If you want to specify detailed values individually, set [method set_override_individual_joints] to [code]true[/code].
 		For physical simulation, [SpringBoneSimulator3D] can have children as self-standing collisions that are not related to [PhysicsServer3D], see also [SpringBoneCollision3D].
 		[b]Warning:[/b] A scaled [SpringBoneSimulator3D] will likely not behave as expected. Make sure that the parent [Skeleton3D] and its bones are not scaled.
 		[b]Note:[/b] Most methods in this class take an [code]index[/code] parameter. This parameter specifies which setting list entry to return if the IK has multiple entries (e.g. [code]settings/&lt;index&gt;/root_bone_name[/code]).
@@ -37,7 +37,7 @@
 		<method name="clear_exclude_collisions">
 			<return type="void" />
 			<description>
-				Clears all exclude collisions from the collision list at [param index] in the settings when [method are_all_child_collisions_enabled] is [code]true[/code].
+				Clears all exclude collisions from the collision list when [method are_all_child_collisions_enabled] is [code]true[/code].
 			</description>
 		</method>
 		<method name="get_center_bone" qualifiers="const">
@@ -466,7 +466,7 @@
 			<param index="1" name="joint" type="int" />
 			<param index="2" name="drag" type="float" />
 			<description>
-				Sets the drag force at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
+				Sets the drag force at [param joint] in the bone chain's joint list when [method is_override_individual_joints] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_joint_gravity">
@@ -475,7 +475,7 @@
 			<param index="1" name="joint" type="int" />
 			<param index="2" name="gravity" type="float" />
 			<description>
-				Sets the gravity amount at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
+				Sets the gravity amount at [param joint] in the bone chain's joint list when [method is_override_individual_joints] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_joint_gravity_direction">
@@ -484,7 +484,7 @@
 			<param index="1" name="joint" type="int" />
 			<param index="2" name="gravity_direction" type="Vector3" />
 			<description>
-				Sets the gravity direction at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
+				Sets the gravity direction at [param joint] in the bone chain's joint list when [method is_override_individual_joints] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_joint_radius">
@@ -493,7 +493,7 @@
 			<param index="1" name="joint" type="int" />
 			<param index="2" name="radius" type="float" />
 			<description>
-				Sets the joint radius at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
+				Sets the joint radius at [param joint] in the bone chain's joint list when [method is_override_individual_joints] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_joint_rotation_axis">
@@ -502,7 +502,7 @@
 			<param index="1" name="joint" type="int" />
 			<param index="2" name="axis" type="int" enum="SkeletonModifier3D.RotationAxis" />
 			<description>
-				Sets the rotation axis at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
+				Sets the rotation axis at [param joint] in the bone chain's joint list when [method is_override_individual_joints] is [code]true[/code].
 				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant SkeletonModifier3D.ROTATION_AXIS_CUSTOM], you can specify any axis.
 				[b]Note:[/b] The rotation axis and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
 			</description>
@@ -524,7 +524,7 @@
 			<param index="1" name="joint" type="int" />
 			<param index="2" name="stiffness" type="float" />
 			<description>
-				Sets the stiffness force at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
+				Sets the stiffness force at [param joint] in the bone chain's joint list when [method is_override_individual_joints] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_override_individual_joints">
