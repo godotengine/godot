@@ -882,6 +882,13 @@ namespace Godot.Bridge
         {
             try
             {
+                // Zero-initialize output parameters, in case an exception is thrown, to know if they've been set.
+                *outTypeInfo = default;
+                *outMethodsDest = default;
+                *outRpcFunctionsDest = default;
+                *outEventSignalsDest = default;
+                *outBaseScript = default;
+
                 // Performance is not critical here as this will be replaced with source generators.
                 var scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
                 Debug.Assert(!scriptType.IsGenericTypeDefinition,
@@ -1057,11 +1064,14 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *outTypeInfo = default;
-                *outMethodsDest = NativeFuncs.godotsharp_array_new();
-                *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new();
-                *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new();
-                *outBaseScript = default;
+                // We zero-initialized them at the start of this method. Replace them only
+                // if they haven't been assigned a new instance. Otherwise, it would cause a leak.
+                if (outMethodsDest->IsAllocated)
+                    *outMethodsDest = NativeFuncs.godotsharp_array_new();
+                if (outRpcFunctionsDest->IsAllocated)
+                    *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new();
+                if (outEventSignalsDest->IsAllocated)
+                    *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new();
             }
         }
 
