@@ -139,7 +139,6 @@ public:
 	};
 
 protected:
-
 	// Common Properties
 
 	LocalVector<SpringBoneChain *> spring_bone_chains;

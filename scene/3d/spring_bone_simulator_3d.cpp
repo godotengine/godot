@@ -200,7 +200,7 @@ bool SpringBoneSimulator3D::_get(const StringName &p_path, Variant &r_ret) const
 			r_ret = (int)get_rotation_axis(which);
 		} else if (what == "rotation_axis_vector") {
 			r_ret = get_rotation_axis_vector(which);
-		}else if (what == "joint_count") {
+		} else if (what == "joint_count") {
 			r_ret = get_joint_count(which);
 		} else if (what == "joints") {
 			int idx = path.get_slicec('/', 3).to_int();
@@ -292,14 +292,14 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 
 	LocalVector<PropertyInfo> props;
 
-	props.push_back(PropertyInfo(Variant::FLOAT,   "radius/value", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
-	props.push_back(PropertyInfo(Variant::OBJECT,  "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
-	props.push_back(PropertyInfo(Variant::FLOAT,   "stiffness/value", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"));
-	props.push_back(PropertyInfo(Variant::OBJECT,  "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
-	props.push_back(PropertyInfo(Variant::FLOAT,   "drag/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
-	props.push_back(PropertyInfo(Variant::OBJECT,  "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
-	props.push_back(PropertyInfo(Variant::FLOAT,   "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
-	props.push_back(PropertyInfo(Variant::OBJECT,  "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
+	props.push_back(PropertyInfo(Variant::FLOAT, "radius/value", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
+	props.push_back(PropertyInfo(Variant::OBJECT, "radius/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
+	props.push_back(PropertyInfo(Variant::FLOAT, "stiffness/value", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"));
+	props.push_back(PropertyInfo(Variant::OBJECT, "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
+	props.push_back(PropertyInfo(Variant::FLOAT, "drag/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
+	props.push_back(PropertyInfo(Variant::OBJECT, "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
+	props.push_back(PropertyInfo(Variant::FLOAT, "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
+	props.push_back(PropertyInfo(Variant::OBJECT, "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()));
 	props.push_back(PropertyInfo(Variant::VECTOR3, "gravity/direction"));
 
 	props.push_back(PropertyInfo(Variant::BOOL, "enable_all_child_collisions"));
