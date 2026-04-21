@@ -49,7 +49,7 @@ jobs:
         shell: sh
         id: angle-sdk
         run: |
-          if python ./misc/scripts/install_angle.py; then
+          if python ./misc/build_deps/download_angle.py; then
             echo "ANGLE_ENABLED=yes" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::ANGLE SDK installation failed, building without ANGLE support."
@@ -60,7 +60,7 @@ jobs:
         shell: sh
         id: accesskit-sdk
         run: |
-          if python3 ./misc/scripts/install_accesskit.py; then
+          if python3 ./misc/build_deps/download_accesskit.py; then
             echo "ACCESSKIT_ENABLED=yes" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::AccessKit SDK installation failed, building without AccessKit support."
@@ -70,7 +70,7 @@ jobs:
       - name: Setup Vulkan SDK
         id: vulkan-sdk
         run: |
-          if sh misc/scripts/install_vulkan_sdk_macos.sh; then
+          if sh misc/build_deps/install_vulkan_sdk_macos.sh; then
             echo "VULKAN_ENABLED=yes" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::macOS: Vulkan SDK installation failed, building without Vulkan support."
