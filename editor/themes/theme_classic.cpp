@@ -1240,7 +1240,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 		p_theme->set_type_variation("LabelVMarginless", "Label");
 		Ref<StyleBoxEmpty> v_marginless_style = EditorThemeManager::make_empty_stylebox(p_config.base_empty_style->get_margin(SIDE_LEFT), 0, p_config.base_empty_style->get_margin(SIDE_RIGHT), 0);
-		p_theme->set_stylebox(CoreStringName(normal), "Label", v_marginless_style);
+		p_theme->set_stylebox(CoreStringName(normal), "LabelVMarginless", v_marginless_style);
 	}
 
 	// SpinBox.
