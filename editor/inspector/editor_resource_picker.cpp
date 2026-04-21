@@ -299,16 +299,15 @@ void EditorResourcePicker::_update_menu_items() {
 	_ensure_resource_menu();
 	edit_menu->clear();
 
-	// Add options for creating specific subtypes of the base resource type.
 	if (is_editable()) {
-		set_create_options(edit_menu);
-
 		// Add an option to load a resource from a file using the QuickOpen dialog.
 		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("LoadQuick")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
+		edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 		edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
 
 		// Add an option to load a resource from a file using the regular file dialog.
 		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
+		edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 	}
 
 	// Add options for changing existing value of the resource.
@@ -321,18 +320,22 @@ void EditorResourcePicker::_update_menu_items() {
 		if (is_edited_resource_foreign_import) {
 			// The 'Search' icon is a magnifying glass, which seems appropriate, but maybe a bespoke icon is preferred here.
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Search")), TTR("Inspect"), OBJ_MENU_INSPECT);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 		} else {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Edit"), OBJ_MENU_INSPECT);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 			edit_menu->set_item_disabled(-1, force_allow_unique);
 		}
 
 		if (is_editable()) {
 			if (!_is_custom_type_script()) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+				edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 				edit_menu->set_item_disabled(-1, force_allow_unique);
 			}
 			bool unique_enabled = _is_uniqueness_enabled();
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 			edit_menu->set_item_disabled(-1, !unique_enabled);
 
 			String modifier = "Ctrl";
@@ -354,6 +357,7 @@ void EditorResourcePicker::_update_menu_items() {
 			if (_has_sub_resources(edited_resource)) {
 				unique_enabled = _is_uniqueness_enabled(true);
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+				edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 				edit_menu->set_item_disabled(-1, !unique_enabled);
 				if (!unique_enabled) {
 					Ref<Resource> parent_res = _has_parent_resource();
@@ -364,14 +368,17 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 			edit_menu->set_item_disabled(-1, force_allow_unique);
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 			edit_menu->set_item_disabled(-1, force_allow_unique);
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
 			edit_menu->add_separator();
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 		}
 	}
 
@@ -400,12 +407,15 @@ void EditorResourcePicker::_update_menu_items() {
 		edit_menu->add_separator();
 
 		if (edited_resource.is_valid()) {
-			edit_menu->add_item(TTRC("Copy"), OBJ_MENU_COPY);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTRC("Copy"), OBJ_MENU_COPY);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 		}
 
 		if (paste_valid) {
-			edit_menu->add_item(TTRC("Paste"), OBJ_MENU_PASTE);
-			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste"), OBJ_MENU_PASTE);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
+			edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_HIDE);
 		}
 	}
 
@@ -428,6 +438,11 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);
 			relative_id++;
 		}
+	}
+
+	// Add options for creating specific subtypes of the base resource type.
+	if (is_editable()) {
+		set_create_options(edit_menu);
 	}
 }
 
@@ -657,15 +672,17 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 		_ensure_allowed_types();
 		HashSet<StringName> allowed_types(allowed_types_without_convert);
-		if (!allowed_types.is_empty()) {
-			edit_menu->add_separator(TTRC("New"));
-		}
 
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
 
 			if (!ClassDB::can_instantiate(t)) {
 				continue;
+			}
+
+			if (idx == 0) {
+				edit_menu->add_separator(TTRC("New"));
+				edit_menu->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_SHOW);
 			}
 
 			inheritors_array.push_back(t);
@@ -681,10 +698,6 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			}
 
 			idx++;
-		}
-
-		if (edit_menu->get_item_count()) {
-			edit_menu->add_separator();
 		}
 	}
 }
@@ -1240,6 +1253,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 		return;
 	}
 	edit_menu = memnew(PopupMenu);
+	edit_menu->set_search_bar_enabled_on_item_count(1);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
@@ -1519,6 +1533,9 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
+	menu_node->add_separator(TTRC("New"));
+	menu_node->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_SHOW);
+
 	if (!(script_owner && script_owner->has_meta(SceneStringName(_custom_type_script)))) {
 		menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script..."), OBJ_MENU_NEW_SCRIPT);
 	}
@@ -1529,7 +1546,6 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script..."), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}
-	menu_node->add_separator();
 }
 
 bool EditorScriptPicker::handle_menu_selected(int p_which) {
@@ -1575,8 +1591,9 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
+	menu_node->add_separator(TTRC("New"));
+	menu_node->set_item_search_behavior(-1, PopupMenu::SEARCH_ALWAYS_SHOW);
 	menu_node->add_icon_item(get_editor_theme_icon(SNAME("Shader")), TTR("New Shader..."), OBJ_MENU_NEW_SHADER);
-	menu_node->add_separator();
 }
 
 bool EditorShaderPicker::handle_menu_selected(int p_which) {

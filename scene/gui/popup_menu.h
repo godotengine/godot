@@ -45,6 +45,14 @@ class Timer;
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
+public:
+	enum SearchBehavior {
+		SEARCH_NORMAL,
+		SEARCH_ALWAYS_HIDE,
+		SEARCH_ALWAYS_SHOW,
+	};
+
+private:
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
 	struct Item {
@@ -65,6 +73,7 @@ class PopupMenu : public Popup {
 
 		bool checked = false;
 		bool visible = true;
+		SearchBehavior search_behavior = SEARCH_NORMAL;
 		enum {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
@@ -242,6 +251,7 @@ class PopupMenu : public Popup {
 	void _search_bar_input(const Ref<InputEvent> &p_event);
 	void _search_bar_text_changed(const String &p_new_text);
 	void _filter_items(const String &p_query);
+	void _update_wrapped_size(bool p_keep_width = false);
 
 	void _close_pressed();
 	void _menu_changed();
@@ -378,6 +388,9 @@ public:
 	int get_item_max_states(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
+	void set_item_search_behavior(int p_idx, SearchBehavior p_behavior);
+	SearchBehavior get_item_search_behavior(int p_idx) const;
+
 	void set_focused_item(int p_idx);
 	int get_focused_item() const;
 
@@ -443,3 +456,5 @@ public:
 	PopupMenu();
 	~PopupMenu();
 };
+
+VARIANT_ENUM_CAST(PopupMenu::SearchBehavior);

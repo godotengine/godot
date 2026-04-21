@@ -248,6 +248,10 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	for (int i = 0; i < items.size(); i++) {
 		_shape_item(i);
 
+		if (!items[i].visible) {
+			continue;
+		}
+
 		icon_max_w = MAX(_get_item_icon_size(i).width, icon_max_w);
 
 		if (items[i].checkable_type && !items[i].separator) {
@@ -399,7 +403,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	const Point2 panel_offset_end = Point2(-panel->get_offset(SIDE_RIGHT), -panel->get_offset(SIDE_BOTTOM)) * win_scale;
 	const Vector2 scaled_this_size = this_rect.size * win_scale;
 	const float scaled_theme_v_separation = theme_cache.v_separation * win_scale;
-	const float scroll_offset = control->get_position().y;
+	const float scroll_offset = control->get_position().y + scroll_container->get_position().y;
 	const float scaled_ofs_cache = items[p_over]._ofs_cache * win_scale;
 	const float scaled_height_cache = items[p_over]._height_cache * win_scale;
 
@@ -498,6 +502,19 @@ void PopupMenu::_submenu_timeout() {
 
 void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (p_event.is_valid()) {
+		if (search_bar->is_visible() && search_bar->has_focus()) {
+			if (p_event->is_action("ui_select", true)) {
+				// Let this propagate to `search_bar`.
+				return;
+			}
+
+			if (p_event->is_action("ui_cancel", true) && !search_bar->get_text().is_empty()) {
+				search_bar->clear();
+				set_input_as_handled();
+				return;
+			}
+		}
+
 		_input_from_window_internal(p_event);
 	} else {
 		WARN_PRINT_ONCE("PopupMenu has received an invalid InputEvent. Consider filtering out invalid events.");
@@ -915,13 +932,15 @@ void PopupMenu::_draw_items() {
 	Point2 ofs;
 
 	// Loop through all items and draw each.
+	bool first_visible = true;
 	for (int i = 0; i < items.size(); i++) {
 		if (!items[i].visible) {
 			continue;
 		}
 
-		// For the first item only add half a separation. For all other items, add a whole separation to the offset.
-		ofs.y += i > 0 ? theme_cache.v_separation : theme_cache.v_separation / 2;
+		// For the first visible item only add half a separation. For all other items, add a whole separation to the offset.
+		ofs.y += first_visible ? theme_cache.v_separation / 2 : theme_cache.v_separation;
+		first_visible = false;
 
 		_shape_item(i);
 
@@ -1077,17 +1096,31 @@ void PopupMenu::_draw_items() {
 }
 
 void PopupMenu::_search_bar_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			search_bar->accept_event();
-		}
+	if (p_event->is_action("ui_up", true) || p_event->is_action("ui_down", true) || p_event->is_action("ui_page_up") || p_event->is_action("ui_page_down")) {
+		// Prevent `LineEdit` from moving the caret when navigating through the list of items.
+		search_bar->accept_event();
+		return;
 	}
 }
 
 void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 	_filter_items(p_new_text);
+
+	prev_mouse_over = mouse_over;
+	mouse_over = -1;
+
+	if (!p_new_text.is_empty()) {
+		for (int i = 0; i < items.size(); i++) {
+			if (!items[i].separator && !items[i].disabled && items[i].visible) {
+				mouse_over = i;
+				emit_signal(SNAME("id_focused"), items[i].id);
+				scroll_to_item(i);
+				break;
+			}
+		}
+	}
+
+	_update_wrapped_size(true);
 
 	queue_accessibility_update();
 	control->queue_redraw();
@@ -1097,35 +1130,64 @@ void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 }
 
 void PopupMenu::_filter_items(const String &p_query) {
-	PackedStringArray search_names;
-	for (int i = 0; i < items.size(); i++) {
-		search_names.append(items[i].text);
-	}
-
-	Vector<FuzzySearchResult> results;
-	FuzzySearch fuzzy;
-	fuzzy.set_query(p_query, false);
-	fuzzy.search_all(search_names, results);
-
 	for (PopupMenu::Item &item : items) {
-		bool submenu_visible = false;
 		if (item.submenu) {
 			item.submenu->_filter_items(p_query);
-			for (PopupMenu::Item &submenu_item : item.submenu->items) {
+		}
+	}
+
+	for (PopupMenu::Item &item : items) {
+		item.visible = true;
+	}
+
+	if (p_query.is_empty()) {
+		return;
+	}
+
+	PackedStringArray search_candidates;
+	search_candidates.reserve(items.size());
+
+	Vector<int> search_candidate_to_item;
+	search_candidate_to_item.reserve(items.size());
+
+	for (int i = 0; i < items.size(); i++) {
+		Item &item = items.write[i];
+
+		if (item.search_behavior == SEARCH_ALWAYS_HIDE) {
+			item.visible = false;
+			continue;
+		} else if (item.search_behavior == SEARCH_ALWAYS_SHOW) {
+			item.visible = true;
+			continue;
+		} else {
+			item.visible = false;
+		}
+
+		if (item.submenu) {
+			for (const PopupMenu::Item &submenu_item : item.submenu->items) {
 				if (submenu_item.visible) {
-					submenu_visible = true;
+					item.visible = true;
 					break;
 				}
 			}
 		}
 
-		item.visible = p_query.length() == 0 || submenu_visible;
+		if (!item.separator) {
+			search_candidates.append(item.text);
+			search_candidate_to_item.append(i);
+		}
 	}
 
-	for (const FuzzySearchResult &res : results) {
-		items.write[res.original_index].visible = res.score > 0;
-		if (items[res.original_index].visible && items[res.original_index].submenu) {
-			for (PopupMenu::Item &submenu_item : items[res.original_index].submenu->items) {
+	Vector<FuzzySearchResult> results;
+	FuzzySearch fuzzy;
+	fuzzy.set_query(p_query, false);
+	fuzzy.search_all(search_candidates, results);
+
+	for (const FuzzySearchResult &result : results) {
+		PopupMenu::Item &item = items.write[search_candidate_to_item[result.original_index]];
+		item.visible = true;
+		if (item.submenu) {
+			for (PopupMenu::Item &submenu_item : item.submenu->items) {
 				submenu_item.visible = true;
 			}
 		}
@@ -1336,7 +1398,14 @@ void PopupMenu::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU);
-			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, items.size());
+
+			int item_count = 0;
+			for (const Item &item : items) {
+				if (item.visible && !item.separator) {
+					item_count++;
+				}
+			}
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, item_count);
 
 			if (accessibility_scroll_element.is_null()) {
 				accessibility_scroll_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
@@ -1349,23 +1418,25 @@ void PopupMenu::_notification(int p_what) {
 
 			float scroll_width = scroll_container->get_v_scroll_bar()->is_visible_in_tree() ? scroll_container->get_v_scroll_bar()->get_size().width : 0;
 			float display_width = control->get_size().width - scroll_width;
-			Point2 ofs;
+			Point2 ofs = scroll_container->get_global_position();
 
+			int item_index = 0;
+			bool first_visible = true;
 			for (int i = 0; i < items.size(); i++) {
 				const Item &item = items.write[i];
-				if (!item.visible) {
-					continue;
-				}
 
-				// Avoid discrepancy between min size and drawn items due to rounding.
-				ofs.y += i > 0 ? theme_cache.v_separation : theme_cache.v_separation - (theme_cache.v_separation / 2);
-
-				Point2 item_ofs = ofs;
 				if (item.accessibility_item_element.is_null()) {
 					item.accessibility_item_element = AccessibilityServer::get_singleton()->create_sub_element(accessibility_scroll_element, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_ITEM);
 					item.accessibility_item_dirty = true;
 				}
 
+				if (item.visible) {
+					// Avoid discrepancy between min size and drawn items due to rounding.
+					ofs.y += first_visible ? 0 : theme_cache.v_separation;
+					first_visible = false;
+				}
+
+				Point2 item_ofs = ofs;
 				item_ofs.x += item.indent * theme_cache.indent;
 				float h = _get_item_height(i);
 
@@ -1385,18 +1456,26 @@ void PopupMenu::_notification(int p_what) {
 					}
 
 					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &PopupMenu::_accessibility_action_click).bind(i));
-					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, i);
+					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, item_index);
 					AccessibilityServer::get_singleton()->update_set_list_item_level(item.accessibility_item_element, 0);
 					AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, i == mouse_over);
 					AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, item.xl_text);
 					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
+					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !item.visible);
 					AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
 
 					AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(item_ofs, Size2(display_width, h + theme_cache.v_separation)));
 
 					item.accessibility_item_dirty = false;
 				}
-				ofs.y += h;
+
+				if (item.visible) {
+					ofs.y += h;
+
+					if (!item.separator) {
+						item_index++;
+					}
+				}
 			}
 			prev_mouse_over = -1;
 
@@ -1518,7 +1597,7 @@ void PopupMenu::_notification(int p_what) {
 						if (!match_found) {
 							// If the last item is not selectable, try re-searching from the start.
 							for (int i = 0; i < search_from; i++) {
-								if (!items[i].separator && !items[i].disabled) {
+								if (!items[i].separator && !items[i].disabled && items[i].visible) {
 									mouse_over = i;
 									emit_signal(SNAME("id_focused"), items[i].id);
 									scroll_to_item(i);
@@ -1538,7 +1617,7 @@ void PopupMenu::_notification(int p_what) {
 
 						bool match_found = false;
 						for (int i = search_from; i >= 0; i--) {
-							if (!items[i].separator && !items[i].disabled) {
+							if (!items[i].separator && !items[i].disabled && items[i].visible) {
 								mouse_over = i;
 								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
@@ -1551,7 +1630,7 @@ void PopupMenu::_notification(int p_what) {
 						if (!match_found) {
 							// If the first item is not selectable, try re-searching from the end.
 							for (int i = items.size() - 1; i >= search_from; i--) {
-								if (!items[i].separator && !items[i].disabled) {
+								if (!items[i].separator && !items[i].disabled && items[i].visible) {
 									mouse_over = i;
 									emit_signal(SNAME("id_focused"), items[i].id);
 									scroll_to_item(i);
@@ -2518,6 +2597,27 @@ int PopupMenu::get_item_state(int p_idx) const {
 	return items[p_idx].state;
 }
 
+void PopupMenu::set_item_search_behavior(int p_idx, SearchBehavior p_behavior) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+	if (items[p_idx].search_behavior == p_behavior) {
+		return;
+	}
+	items.write[p_idx].search_behavior = p_behavior;
+	_filter_items(search_bar->get_text());
+	control->queue_redraw();
+}
+
+PopupMenu::SearchBehavior PopupMenu::get_item_search_behavior(int p_idx) const {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX_V(p_idx, items.size(), SEARCH_NORMAL);
+	return items[p_idx].search_behavior;
+}
+
 void PopupMenu::set_item_as_separator(int p_idx, bool p_separator) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -3376,6 +3476,9 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_multistate_max", "index"), &PopupMenu::get_item_max_states);
 	ClassDB::bind_method(D_METHOD("get_item_multistate", "index"), &PopupMenu::get_item_state);
 
+	ClassDB::bind_method(D_METHOD("set_item_search_behavior", "index", "behavior"), &PopupMenu::set_item_search_behavior);
+	ClassDB::bind_method(D_METHOD("get_item_search_behavior", "index"), &PopupMenu::get_item_search_behavior);
+
 	ClassDB::bind_method(D_METHOD("set_focused_item", "index"), &PopupMenu::set_focused_item);
 	ClassDB::bind_method(D_METHOD("get_focused_item"), &PopupMenu::get_focused_item);
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &PopupMenu::set_item_count);
@@ -3434,6 +3537,10 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("menu_changed"));
+
+	BIND_ENUM_CONSTANT(SEARCH_NORMAL);
+	BIND_ENUM_CONSTANT(SEARCH_ALWAYS_HIDE);
+	BIND_ENUM_CONSTANT(SEARCH_ALWAYS_SHOW);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, hover_style, "hover");
@@ -3605,20 +3712,25 @@ void PopupMenu::_pre_popup() {
 	}
 
 	set_content_scale_factor(popup_scale);
-	if (is_wrapping_controls()) {
-		Size2 minsize = get_contents_minimum_size() * popup_scale;
-		Size2 maxsize = get_max_size();
-		if (maxsize.height > 0) {
-			minsize.height = MIN(minsize.height, maxsize.height);
-		}
-		if (maxsize.width > 0) {
-			minsize.width = MIN(minsize.width, maxsize.width);
-		}
-		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		Size2i sz = get_size(); // Shrinkwraps to min size.
-		set_size(Vector2i(shrink_width ? 0 : sz.x, shrink_height ? 0 : sz.y));
+	_update_wrapped_size();
+}
+
+void PopupMenu::_update_wrapped_size(bool p_keep_width) {
+	if (!is_wrapping_controls()) {
+		return;
 	}
+	Size2 minsize = get_contents_minimum_size() * get_content_scale_factor();
+	Size2 maxsize = get_max_size();
+	if (maxsize.height > 0) {
+		minsize.height = MIN(minsize.height, maxsize.height);
+	}
+	if (maxsize.width > 0) {
+		minsize.width = MIN(minsize.width, maxsize.width);
+	}
+	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
+	Size2i sz = get_size(); // Shrinkwraps to min size.
+	set_size(Vector2i(shrink_width && !p_keep_width ? 0 : sz.x, shrink_height ? 0 : sz.y));
 }
 
 void PopupMenu::set_visible(bool p_visible) {
@@ -3634,7 +3746,7 @@ void PopupMenu::set_visible(bool p_visible) {
 		if (!parent_popup) {
 			search_bar->set_visible(is_search_bar_enabled());
 			if (search_bar->is_visible()) {
-				search_bar->edit(true);
+				search_bar->edit();
 			}
 		}
 	}
