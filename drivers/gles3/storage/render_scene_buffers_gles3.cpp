@@ -381,6 +381,10 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			glGenFramebuffers(1, &msaa3d.fbo);
 			glBindFramebuffer(GL_FRAMEBUFFER, msaa3d.fbo);
 
+			// Initialize msaa3d.color to fit check in already setup.
+			// Without this, the MSAA buffer path will recreate resources every frame.
+			glGenRenderbuffers(1, &msaa3d.color);
+
 			_rt_attach_textures(internal3d.color, internal3d.depth, msaa3d.samples, view_count, true);
 
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
