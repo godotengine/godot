@@ -452,7 +452,9 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		shadow_dir = r_light_dir;
 		dist = length(bake_params.world_size);
 		attenuation = 1.0;
+#ifndef MODE_LIGHT_PROBES
 		attenuation *= max(0.0, dot(p_normal, r_light_dir));
+#endif // MODE_LIGHT_PROBES
 		soft_shadowing_disk_size = light_data.size;
 	} else if (light_data.type == LIGHT_TYPE_AREA) {
 		r_light_dir = vec3(0.0); // has to be initialized!
@@ -519,15 +521,17 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
 			attenuation *= 1.0 - pow(spot_rim, light_data.inv_spot_attenuation);
 		}
+#ifndef MODE_LIGHT_PROBES
 		attenuation *= max(0.0, dot(p_normal, r_light_dir));
+#endif // MODE_LIGHT_PROBES
 	}
 
-#ifndef MODE_LIGHT_PROBES
-	attenuation *= max(0.0, dot(p_normal, r_light_dir));
+//#ifndef MODE_LIGHT_PROBES
+	//attenuation *= max(0.0, dot(p_normal, r_light_dir));
 	if (attenuation * light_data.energy <= 0.0001) {
 		return;
 	}
-#endif // MODE_LIGHT_PROBES
+//#endif // MODE_LIGHT_PROBES
 
 	float penumbra = 0.0;
 	vec3 penumbra_color = vec3(0.0);
@@ -1152,7 +1156,6 @@ void main() {
 				vec3 light;
 				float shadow;
 				trace_direct_light(position, vec3(0.0), i, false, light, light_dir, noise, 1.0, shadow);
-
 				accumilate_probe_light(light_dir, light, probe_sh_accum);
 			}
 		}

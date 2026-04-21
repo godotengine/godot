@@ -143,7 +143,7 @@ void LightmapperRD::add_spot_light(const String &p_name, int p_bake_mode, const 
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect, float p_max_mipmap) {
+void LightmapperRD::add_area_light(const String &p_name, int p_bake_mode, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect, float p_max_mipmap) {
 	Light l;
 	l.type = LIGHT_TYPE_AREA;
 	l.position[0] = p_position.x;
@@ -165,7 +165,7 @@ void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Ve
 	l.color[2] = p_color.b;
 	l.energy = p_energy;
 	l.indirect_energy = p_indirect_energy;
-	l.static_bake = p_static;
+	l.bake_mode = p_bake_mode;
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 

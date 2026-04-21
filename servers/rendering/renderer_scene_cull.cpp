@@ -622,9 +622,6 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			} break;
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-				if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-					return;
-				}
 
 				if (scenario && instance->visible && RSG::light_storage->light_get_type(instance->base) != RSE::LIGHT_DIRECTIONAL && light->bake_mode == RSE::LIGHT_BAKE_DYNAMIC) {
 					scenario->dynamic_lights.erase(light->instance);
@@ -635,9 +632,11 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 					ERR_PRINT("BUG, indexing did not unpair geometries from light.");
 				}
 #endif
-				if (scenario && light->D) {
-					scenario->directional_lights.erase(light->D);
-					light->D = nullptr;
+				if (light->bake_mode != RSE::LIGHT_BAKE_STATIC_BAKED) {
+					if (scenario && light->D) {
+						scenario->directional_lights.erase(light->D);
+						light->D = nullptr;
+					}
 				}
 				RSG::light_storage->light_instance_free(light->instance);
 			} break;
@@ -726,12 +725,10 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			}
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light = memnew(InstanceLightData);
-				if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-					return;
-				}
-
-				if (scenario && RSG::light_storage->light_get_type(p_base) == RSE::LIGHT_DIRECTIONAL) {
-					light->D = scenario->directional_lights.push_back(instance);
+				if (RSG::light_storage->light_get_bake_mode(p_base) != RSE::LIGHT_BAKE_STATIC_BAKED) {
+					if (scenario && RSG::light_storage->light_get_type(p_base) == RSE::LIGHT_DIRECTIONAL) {
+						light->D = scenario->directional_lights.push_back(instance);
+					}
 				}
 
 				light->instance = RSG::light_storage->light_instance_create(p_base);
@@ -857,20 +854,20 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 		switch (instance->base_type) {
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-				//if (light->bake_mode != RSE::LIGHT_BAKE_STATIC_BAKED) {
-					if (instance->visible && RSG::light_storage->light_get_type(instance->base) != RSE::LIGHT_DIRECTIONAL && light->bake_mode == RSE::LIGHT_BAKE_DYNAMIC) {
-						instance->scenario->dynamic_lights.erase(light->instance);
-					}
+				//if (RSG::light_storage->light_get_bake_mode(instance->base) != RSE::LIGHT_BAKE_STATIC_BAKED) {
+				if (instance->visible && RSG::light_storage->light_get_type(instance->base) != RSE::LIGHT_DIRECTIONAL && light->bake_mode == RSE::LIGHT_BAKE_DYNAMIC) {
+					instance->scenario->dynamic_lights.erase(light->instance);
+				}
 
 #ifdef DEBUG_ENABLED
-					if (light->geometries.size()) {
-						ERR_PRINT("BUG, indexing did not unpair geometries from light.");
-					}
+				if (light->geometries.size()) {
+					ERR_PRINT("BUG, indexing did not unpair geometries from light.");
+				}
 #endif
-					if (light->D) {
-						instance->scenario->directional_lights.erase(light->D);
-						light->D = nullptr;
-					}
+				if (light->D) {
+					instance->scenario->directional_lights.erase(light->D);
+					light->D = nullptr;
+				}
 				//}
 			} break;
 			case RSE::INSTANCE_REFLECTION_PROBE: {
@@ -922,11 +919,11 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 		switch (instance->base_type) {
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-				if (light->bake_mode != RSE::LIGHT_BAKE_STATIC_BAKED) {
-					if (RSG::light_storage->light_get_type(instance->base) == RSE::LIGHT_DIRECTIONAL) {
-						light->D = scenario->directional_lights.push_back(instance);
-					}
+				//if (RSG::light_storage->light_get_bake_mode(instance->base) != RSE::LIGHT_BAKE_STATIC_BAKED) {
+				if (RSG::light_storage->light_get_type(instance->base) == RSE::LIGHT_DIRECTIONAL) {
+					light->D = scenario->directional_lights.push_back(instance);
 				}
+				//}
 			} break;
 			case RSE::INSTANCE_VOXEL_GI: {
 				InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(instance->base_data);
@@ -1088,9 +1085,9 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 
 	if (instance->base_type == RSE::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-		if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-			return;
-		}
+		//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+		//	return;
+		//}
 		if (instance->scenario && RSG::light_storage->light_get_type(instance->base) != RSE::LIGHT_DIRECTIONAL && light->bake_mode == RSE::LIGHT_BAKE_DYNAMIC) {
 			if (p_visible) {
 				instance->scenario->dynamic_lights.push_back(light->instance);
@@ -1647,8 +1644,8 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 	if (p_instance->base_type == RSE::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 		
-		//if (bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) { // this one
-			//return;
+		//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) { // this one
+		//	return;
 		//}
 		//if (light->bake_mode != RSE::LIGHT_BAKE_STATIC_BAKED) {
 
@@ -1824,9 +1821,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 			} break;
 			case RSE::INSTANCE_LIGHT: {
 				InstanceLightData *light_data = static_cast<InstanceLightData *>(p_instance->base_data);
-				if (light_data->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
-					return;
-				}
+				//if (light_data->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+				//	return;
+				//}
 				idata.instance_data_rid = light_data->instance.get_id();
 				light_data->uses_projector = RSG::light_storage->light_has_projector(p_instance->base);
 				light_data->uses_softshadow = RSG::light_storage->light_get_type(p_instance->base) == RSE::LIGHT_AREA || RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE) > CMP_EPSILON;
@@ -2182,6 +2179,10 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
+	//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+	//	return;
+	//}
+
 	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
 
@@ -2399,6 +2400,10 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
+
+	//if (light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
+	//	return false;
+	//}
 
 	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
@@ -3403,7 +3408,10 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			if (!E->visible || !(E->layer_mask & p_visible_layers)) {
 				continue;
 			}
-
+			if (RSG::light_storage->light_get_bake_mode(E->base) == RSE::LIGHT_BAKE_STATIC_BAKED) {
+				continue;
+			}
+			
 			if (directional_lights.size() >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS) {
 				break;
 			}
@@ -3967,13 +3975,14 @@ void RendererSceneCull::render_probes() {
 			int idx = 0; //must count visible lights
 			for (Instance *E : probe->lights) {
 				Instance *instance = E;
+				if (!instance->visible) {
+					continue;
+				}
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 				if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC_BAKED) {
 					continue;
 				}
-				if (!instance->visible) {
-					continue;
-				}
+
 				if (cache_dirty) {
 					//do nothing, since idx must count all visible lights anyway
 				} else if (idx >= light_cache_size) {
