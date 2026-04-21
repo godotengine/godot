@@ -31,12 +31,14 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/templates/local_vector.h"
 #include "scene/main/node.h"
 
 class PackedScene;
 
 class SceneState : public RefCounted {
 	GDCLASS(SceneState, RefCounted);
+	friend class PackedScene;
 
 	Vector<StringName> names;
 	Vector<Variant> variants;
@@ -161,6 +163,7 @@ public:
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
+	Node *_instantiate(GenEditState p_edit_state, LocalVector<DeferredNodePathProperties> *r_parent_deferred_node_paths) const;
 
 	Array setup_resources_in_array(Array &array_to_scan, const SceneState::NodeData &n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *node, const StringName sname, int i, Node **ret_nodes, SceneState::GenEditState p_edit_state) const;
 	Dictionary setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
@@ -271,6 +274,7 @@ public:
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const;
+	Node *_instantiate(GenEditState p_edit_state, LocalVector<SceneState::DeferredNodePathProperties> *r_parent_deferred_node_paths) const;
 
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
