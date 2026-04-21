@@ -146,12 +146,9 @@ static D3D12_SHADER_VISIBILITY stages_to_d3d12_visibility(uint32_t p_stages_mask
 	}
 }
 
-uint32_t RenderingDXIL::patch_specialization_constant(
+static int64_t _get_specialization_constant_patch_value(
 		RenderingDeviceCommons::PipelineSpecializationConstantType p_type,
-		const void *p_value,
-		const uint64_t (&p_stages_bit_offsets)[D3D12_BITCODE_OFFSETS_NUM_STAGES],
-		HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_stages_bytecodes,
-		bool p_is_first_patch) {
+		const void *p_value) {
 	int64_t patch_val = 0;
 	switch (p_type) {
 		case RenderingDeviceCommons::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT: {
@@ -173,44 +170,81 @@ uint32_t RenderingDXIL::patch_specialization_constant(
 		patch_val = ((-patch_val) << 1) | 1;
 	}
 
-	auto tamper_bits = [](uint8_t *p_start, uint64_t p_bit_offset, uint64_t p_tb_value) -> uint64_t {
-		uint64_t original = 0;
-		uint32_t curr_input_byte = p_bit_offset / 8;
-		uint8_t curr_input_bit = p_bit_offset % 8;
-		auto get_curr_input_bit = [&]() -> bool {
-			return ((p_start[curr_input_byte] >> curr_input_bit) & 1);
-		};
-		auto move_to_next_input_bit = [&]() {
-			if (curr_input_bit == 7) {
-				curr_input_bit = 0;
-				curr_input_byte++;
-			} else {
-				curr_input_bit++;
-			}
-		};
-		auto tamper_input_bit = [&](bool p_new_bit) {
-			p_start[curr_input_byte] &= ~((uint8_t)1 << curr_input_bit);
-			if (p_new_bit) {
-				p_start[curr_input_byte] |= (uint8_t)1 << curr_input_bit;
-			}
-		};
-		uint8_t value_bit_idx = 0;
-		for (uint32_t i = 0; i < 5; i++) { // 32 bits take 5 full bytes in VBR.
-			for (uint32_t j = 0; j < 7; j++) {
-				bool input_bit = get_curr_input_bit();
-				original |= (uint64_t)(input_bit ? 1 : 0) << value_bit_idx;
-				tamper_input_bit((p_tb_value >> value_bit_idx) & 1);
-				move_to_next_input_bit();
-				value_bit_idx++;
-			}
-#ifdef DEV_ENABLED
-			bool input_bit = get_curr_input_bit();
-			DEV_ASSERT((i < 4 && input_bit) || (i == 4 && !input_bit));
-#endif
-			move_to_next_input_bit();
-		}
-		return original;
+	return patch_val;
+}
+
+static uint64_t _tamper_bits(uint8_t *p_start, uint64_t p_bit_offset, uint64_t p_tb_value) {
+	uint64_t original = 0;
+	uint32_t curr_input_byte = p_bit_offset / 8;
+	uint8_t curr_input_bit = p_bit_offset % 8;
+	auto get_curr_input_bit = [&]() -> bool {
+		return ((p_start[curr_input_byte] >> curr_input_bit) & 1);
 	};
+	auto move_to_next_input_bit = [&]() {
+		if (curr_input_bit == 7) {
+			curr_input_bit = 0;
+			curr_input_byte++;
+		} else {
+			curr_input_bit++;
+		}
+	};
+	auto tamper_input_bit = [&](bool p_new_bit) {
+		p_start[curr_input_byte] &= ~((uint8_t)1 << curr_input_bit);
+		if (p_new_bit) {
+			p_start[curr_input_byte] |= (uint8_t)1 << curr_input_bit;
+		}
+	};
+	uint8_t value_bit_idx = 0;
+	for (uint32_t i = 0; i < 5; i++) { // 32 bits take 5 full bytes in VBR.
+		for (uint32_t j = 0; j < 7; j++) {
+			bool input_bit = get_curr_input_bit();
+			original |= (uint64_t)(input_bit ? 1 : 0) << value_bit_idx;
+			tamper_input_bit((p_tb_value >> value_bit_idx) & 1);
+			move_to_next_input_bit();
+			value_bit_idx++;
+		}
+#ifdef DEV_ENABLED
+		bool input_bit = get_curr_input_bit();
+		DEV_ASSERT((i < 4 && input_bit) || (i == 4 && !input_bit));
+#endif
+		move_to_next_input_bit();
+	}
+	return original;
+}
+
+static void _patch_specialization_constant(
+		int64_t p_patch_value,
+		const uint64_t p_bit_offset,
+		Vector<uint8_t> &r_bytecode,
+		bool p_is_first_patch) {
+#ifdef DEV_ENABLED
+	uint64_t orig_patch_val = _tamper_bits(r_bytecode.ptrw(), p_bit_offset, (uint64_t)p_patch_value);
+	// Checking against the value the NIR patch should have set.
+	DEV_ASSERT(!p_is_first_patch || ((orig_patch_val >> 1) & GODOT_NIR_SC_SENTINEL_MAGIC_MASK) == GODOT_NIR_SC_SENTINEL_MAGIC);
+	uint64_t readback_patch_val = _tamper_bits(r_bytecode.ptrw(), p_bit_offset, (uint64_t)p_patch_value);
+	DEV_ASSERT(readback_patch_val == (uint64_t)p_patch_value);
+#else
+	_tamper_bits(r_bytecode.ptrw(), p_bit_offset, (uint64_t)p_patch_value);
+#endif
+}
+
+void RenderingDXIL::patch_specialization_constant(
+		RenderingDeviceCommons::PipelineSpecializationConstantType p_type,
+		const void *p_value,
+		const uint64_t p_bit_offset,
+		Vector<uint8_t> &r_bytecode,
+		bool p_is_first_patch) {
+	int64_t patch_val = _get_specialization_constant_patch_value(p_type, p_value);
+	_patch_specialization_constant(patch_val, p_bit_offset, r_bytecode, p_is_first_patch);
+}
+
+uint32_t RenderingDXIL::patch_specialization_constant(
+		RenderingDeviceCommons::PipelineSpecializationConstantType p_type,
+		const void *p_value,
+		const uint64_t (&p_stages_bit_offsets)[D3D12_BITCODE_OFFSETS_NUM_STAGES],
+		HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_stages_bytecodes,
+		bool p_is_first_patch) {
+	int64_t patch_val = _get_specialization_constant_patch_value(p_type, p_value);
 	uint32_t stages_patched_mask = 0;
 	for (int stage = 0; stage < RenderingDeviceCommons::SHADER_STAGE_MAX; stage++) {
 		if (!r_stages_bytecodes.has((RenderingDeviceCommons::ShaderStage)stage)) {
@@ -224,15 +258,7 @@ uint32_t RenderingDXIL::patch_specialization_constant(
 		}
 
 		Vector<uint8_t> &bytecode = r_stages_bytecodes[(RenderingDeviceCommons::ShaderStage)stage];
-#ifdef DEV_ENABLED
-		uint64_t orig_patch_val = tamper_bits(bytecode.ptrw(), offset, (uint64_t)patch_val);
-		// Checking against the value the NIR patch should have set.
-		DEV_ASSERT(!p_is_first_patch || ((orig_patch_val >> 1) & GODOT_NIR_SC_SENTINEL_MAGIC_MASK) == GODOT_NIR_SC_SENTINEL_MAGIC);
-		uint64_t readback_patch_val = tamper_bits(bytecode.ptrw(), offset, (uint64_t)patch_val);
-		DEV_ASSERT(readback_patch_val == (uint64_t)patch_val);
-#else
-		tamper_bits(bytecode.ptrw(), offset, (uint64_t)patch_val);
-#endif
+		_patch_specialization_constant(patch_val, offset, bytecode, p_is_first_patch);
 
 		stages_patched_mask |= (1 << stage);
 	}
@@ -286,10 +312,15 @@ uint32_t RenderingShaderContainerD3D12::_from_bytes_reflection_specialization_ex
 
 uint32_t RenderingShaderContainerD3D12::_from_bytes_footer_extra_data(const uint8_t *p_bytes) {
 	ContainerFooterD3D12 footer = *(const ContainerFooterD3D12 *)(p_bytes);
+
 	root_signature_crc = footer.root_signature_crc;
 	root_signature_bytes.resize(footer.root_signature_length);
 	memcpy(root_signature_bytes.ptrw(), p_bytes + sizeof(ContainerFooterD3D12), root_signature_bytes.size());
-	return sizeof(ContainerFooterD3D12) + footer.root_signature_length;
+
+	shader_config_data_d3d12.resize(shaders.size());
+	memcpy(shader_config_data_d3d12.ptrw(), p_bytes + sizeof(ContainerFooterD3D12) + footer.root_signature_length, shader_config_data_d3d12.size() * sizeof(ShaderConfigDataD3D12));
+
+	return sizeof(ContainerFooterD3D12) + footer.root_signature_length + (shader_config_data_d3d12.size() * sizeof(ShaderConfigDataD3D12));
 }
 
 uint32_t RenderingShaderContainerD3D12::_to_bytes_reflection_extra_data(uint8_t *p_bytes) const {
@@ -325,13 +356,14 @@ uint32_t RenderingShaderContainerD3D12::_to_bytes_footer_extra_data(uint8_t *p_b
 		footer.root_signature_length = root_signature_bytes.size();
 		footer.root_signature_crc = root_signature_crc;
 		memcpy(p_bytes + sizeof(ContainerFooterD3D12), root_signature_bytes.ptr(), root_signature_bytes.size());
+		memcpy(p_bytes + sizeof(ContainerFooterD3D12) + root_signature_bytes.size(), shader_config_data_d3d12.ptr(), shader_config_data_d3d12.size() * sizeof(ShaderConfigDataD3D12));
 	}
 
-	return sizeof(ContainerFooterD3D12) + root_signature_bytes.size();
+	return sizeof(ContainerFooterD3D12) + root_signature_bytes.size() + (shader_config_data_d3d12.size() * sizeof(ShaderConfigDataD3D12));
 }
 
 #if NIR_ENABLED
-bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStage> p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
+bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStage> p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed, Vector<ShaderConfigDataD3D12> &r_shader_configs) {
 	r_stages_processed.clear();
 
 	dxil_spirv_runtime_conf dxil_runtime_conf = {};
@@ -359,6 +391,11 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 			MESA_SHADER_TESS_CTRL, // SHADER_STAGE_TESSELATION_CONTROL
 			MESA_SHADER_TESS_EVAL, // SHADER_STAGE_TESSELATION_EVALUATION
 			MESA_SHADER_COMPUTE, // SHADER_STAGE_COMPUTE
+			MESA_SHADER_RAYGEN, // SHADER_STAGE_RAYGEN,
+			MESA_SHADER_ANY_HIT, // SHADER_STAGE_ANY_HIT
+			MESA_SHADER_CLOSEST_HIT, // SHADER_STAGE_CLOSEST_HIT
+			MESA_SHADER_MISS, // SHADER_STAGE_MISS
+			MESA_SHADER_INTERSECTION, // SHADER_STAGE_INTERSECTION
 		};
 
 		Span<uint32_t> code = p_spirv[i].spirv();
@@ -385,6 +422,36 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 		dxil_spirv_nir_prep(shader);
 		dxil_spirv_metadata dxil_metadata = {};
 		dxil_spirv_nir_passes(shader, &dxil_runtime_conf, &dxil_metadata);
+
+		bool has_payload = stage == RenderingDeviceCommons::SHADER_STAGE_ANY_HIT ||
+				stage == RenderingDeviceCommons::SHADER_STAGE_CLOSEST_HIT ||
+				stage == RenderingDeviceCommons::SHADER_STAGE_MISS;
+
+		bool has_attribute = stage == RenderingDeviceCommons::SHADER_STAGE_ANY_HIT ||
+				stage == RenderingDeviceCommons::SHADER_STAGE_CLOSEST_HIT;
+
+		ShaderConfigDataD3D12 shader_config = {};
+		if (has_payload) {
+			shader_config.payload_size_in_bytes = sizeof(uint32_t);
+
+			nir_foreach_variable_with_modes(var, shader, nir_var_shader_call_data) {
+				unsigned size, alignment;
+				glsl_get_natural_size_align_bytes(var->type, &size, &alignment);
+				shader_config.payload_size_in_bytes = size;
+			}
+		}
+
+		if (has_attribute) {
+			shader_config.attribute_size_in_bytes = sizeof(uint32_t);
+
+			nir_foreach_variable_with_modes(var, shader, nir_var_ray_hit_attrib) {
+				unsigned size, alignment;
+				glsl_get_natural_size_align_bytes(var->type, &size, &alignment);
+				shader_config.attribute_size_in_bytes = size;
+			}
+		}
+
+		r_shader_configs.push_back(shader_config);
 
 		r_stages_nir_shaders[stage] = shader;
 	}
@@ -469,6 +536,19 @@ bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_
 		nir_to_dxil_options.validator_version_max = NO_DXIL_VALIDATION;
 		nir_to_dxil_options.godot_nir_callbacks = &godot_nir_callbacks;
 
+		// Minimum 6.3 is required for raytracing stages.
+		switch (stage) {
+			case RDC::SHADER_STAGE_RAYGEN:
+			case RDC::SHADER_STAGE_ANY_HIT:
+			case RDC::SHADER_STAGE_CLOSEST_HIT:
+			case RDC::SHADER_STAGE_MISS:
+			case RDC::SHADER_STAGE_INTERSECTION: {
+				nir_to_dxil_options.shader_model_max = MAX(nir_to_dxil_options.shader_model_max, SHADER_MODEL_6_3);
+			} break;
+			default: {
+			}
+		}
+
 		dxil_logger logger = {};
 		logger.log = [](void *p_priv, const char *p_msg) {
 #ifdef DEBUG_ENABLED
@@ -490,7 +570,7 @@ bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_
 	return true;
 }
 
-bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(Span<ReflectShaderStage> p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
+bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(Span<ReflectShaderStage> p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed, Vector<ShaderConfigDataD3D12> &r_shader_configs) {
 	r_dxil_blobs.clear();
 
 	HashMap<int, nir_shader *> stages_nir_shaders;
@@ -509,7 +589,7 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(Span<ReflectShaderSta
 
 	// This is based on spirv2dxil.c. May need updates when it changes.
 	// Also, this has to stay around until after linking.
-	if (!_convert_spirv_to_nir(p_spirv, &compiler_options, stages_nir_shaders, r_stages, r_stages_processed)) {
+	if (!_convert_spirv_to_nir(p_spirv, &compiler_options, stages_nir_shaders, r_stages, r_stages_processed, r_shader_configs)) {
 		free_nir_shaders();
 		return false;
 	}
@@ -655,6 +735,9 @@ bool RenderingShaderContainerD3D12::_generate_root_signature(BitField<RenderingD
 					range_type = uniform.writable ? D3D12_DESCRIPTOR_RANGE_TYPE_UAV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 				} break;
 				case RDC::UNIFORM_TYPE_INPUT_ATTACHMENT: {
+					range_type = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+				} break;
+				case RDC::UNIFORM_TYPE_ACCELERATION_STRUCTURE: {
 					range_type = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 				} break;
 				default: {
@@ -911,7 +994,7 @@ bool RenderingShaderContainerD3D12::_set_code_from_spirv(const ReflectShader &p_
 	HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> dxil_blobs;
 	Vector<RenderingDeviceCommons::ShaderStage> stages;
 	BitField<RenderingDeviceCommons::ShaderStage> stages_processed = {};
-	if (!_convert_spirv_to_dxil(p_spirv, dxil_blobs, stages, stages_processed)) {
+	if (!_convert_spirv_to_dxil(p_spirv, dxil_blobs, stages, stages_processed, shader_config_data_d3d12)) {
 		return false;
 	}
 
@@ -972,6 +1055,7 @@ RenderingShaderContainerD3D12::ShaderReflectionD3D12 RenderingShaderContainerD3D
 	reflection.reflection_specialization_data_d3d12 = reflection_specialization_data_d3d12;
 	reflection.root_signature_bytes = root_signature_bytes;
 	reflection.root_signature_crc = root_signature_crc;
+	reflection.shader_config_data_d3d12 = shader_config_data_d3d12;
 
 	// Transform data vector into a vector of vectors that's easier to user.
 	uint32_t uniform_index = 0;

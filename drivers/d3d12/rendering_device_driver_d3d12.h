@@ -109,6 +109,11 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool aniso_filter_with_point_mip_supported = false;
 	};
 
+	struct RaytracingCapabilities {
+		bool ray_query_supported = false;
+		bool raytracing_pipeline_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
@@ -125,6 +130,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	BarrierCapabilities barrier_capabilities;
 	MiscFeaturesSupport misc_features_support;
 	SamplerCapabilities sampler_capabilities;
+	RaytracingCapabilities raytracing_capabilities;
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
 	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
@@ -485,11 +491,13 @@ private:
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmd_allocator;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd_list;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList1> cmd_list_1;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4> cmd_list_4;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> cmd_list_5;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7> cmd_list_7;
 
 		ID3D12PipelineState *graphics_pso = nullptr;
 		ID3D12PipelineState *compute_pso = nullptr;
+		ID3D12StateObject *raytracing_pso = nullptr;
 
 		DynParams dyn_params;
 		bool pending_dyn_params = true;
@@ -638,7 +646,20 @@ private:
 		Microsoft::WRL::ComPtr<ID3D12RootSignatureDeserializer> root_signature_deserializer;
 		const D3D12_ROOT_SIGNATURE_DESC *root_signature_desc = nullptr; // Owned by the deserializer.
 		uint32_t root_signature_crc = 0;
+
+		struct ShaderConfig {
+			uint32_t payload_size_in_bytes = 0;
+			uint32_t attribute_size_in_bytes = 0;
+		};
+
+		HashMap<ShaderStage, ShaderConfig> stages_shader_config;
 	};
+
+	bool _shader_apply_specialization_constants(
+			const ShaderInfo *p_shader_info,
+			VectorView<PipelineSpecializationConstant> p_specialization_constants,
+			ShaderStage p_stage,
+			Vector<uint8_t> &r_bytecode);
 
 	bool _shader_apply_specialization_constants(
 			const ShaderInfo *p_shader_info,
@@ -835,6 +856,18 @@ public:
 
 	// ---- ACCELERATION STRUCTURES ----
 
+private:
+	struct AccelerationStructureInfo {
+		TightLocalVector<D3D12_RAYTRACING_GEOMETRY_DESC> geometries;
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC build_desc = {};
+		BufferID buffer;
+		uint32_t scratch_buffer_size = 0;
+		LocalVector<BufferInfo *> input_buffer_infos; // For legacy barriers.
+	};
+
+	bool _acceleration_structure_create(AccelerationStructureInfo *r_acceleration_structure_info);
+
+public:
 	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) override final;
 	virtual AccelerationStructureID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) override final;
 	virtual void acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) override final;
@@ -842,16 +875,27 @@ public:
 	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) override final;
 
 	// ----- PIPELINE -----
+private:
+	struct RaytracingPipelineInfo {
+		Microsoft::WRL::ComPtr<ID3D12StateObject> pso;
+		const ShaderInfo *layout_defining_shader_info = nullptr;
+		TightLocalVector<const void *> shader_identifiers;
+	};
 
+public:
 	virtual RaytracingPipelineID raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) override final;
 	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) override final;
 
 	virtual bool raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) override final;
 
-	// ----- COMMANDS -----
+private:
+	D3D12_GPU_VIRTUAL_ADDRESS_RANGE _sbt_to_gpu_virtual_address_range(const ShaderBindingTable &p_sbt);
+	D3D12_GPU_VIRTUAL_ADDRESS_RANGE_AND_STRIDE _sbt_to_gpu_virtual_address_range_and_stride(const ShaderBindingTable &p_sbt);
 
+public:
+	// ----- COMMANDS -----
 	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
-	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) override final;
+	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count, VectorView<AccelerationStructureID> p_blases) override final;
 	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
 	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
 	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) override final;
@@ -950,6 +994,8 @@ private:
 			ShaderInfo,
 			UniformSetInfo,
 			RenderPassInfo,
+			AccelerationStructureInfo,
+			RaytracingPipelineInfo,
 			TimestampQueryPoolInfo>;
 	PagedAllocator<VersatileResource, true> resources_allocator;
 
