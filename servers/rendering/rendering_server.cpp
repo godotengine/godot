@@ -2236,7 +2236,7 @@ void RenderingServer::get_argument_options(const StringName &p_function, int p_i
 		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" ||
 				pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
 			for (const StringName &E : global_shader_parameter_get_list()) {
-				r_options->push_back(E.operator String().quote());
+				r_options->push_back(E.string().quote());
 			}
 		} else if (pf == "has_os_feature") {
 			for (const String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {

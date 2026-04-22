@@ -1633,7 +1633,7 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 		// Compatibility: In 4.5 and earlier, AnimationMixer used a single "libraries" Dictionary property.
 		// In 4.6+, each library is stored as a separate "libraries/<name>" property.
 		// If we're looking for "libraries/<name>" and didn't find it, check the old format.
-		String prop_str = p_property.operator String();
+		String prop_str = p_property.string();
 		if (prop_str.begins_with("libraries/")) {
 			StringName node_type = get_node_type(p_node);
 			if (node_type != StringName() && ClassDB::is_parent_class(node_type, SNAME("AnimationMixer"))) {

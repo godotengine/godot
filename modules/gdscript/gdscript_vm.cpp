@@ -53,7 +53,7 @@ static String _get_element_type(Variant::Type builtin_type, const StringName &na
 	if (script_type.is_valid() && script_type->is_valid()) {
 		return GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
-		return native_type.operator String();
+		return native_type.string();
 	} else {
 		return Variant::get_type_name(builtin_type);
 	}
@@ -517,7 +517,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		String err_func = name;
 		if (!_script->local_name.is_empty()) {
-			err_func = String(_script->local_name) + "." + err_func;
+			err_func = _script->local_name.string() + "." + err_func;
 		}
 		int err_line = _initial_line;
 		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
@@ -1273,7 +1273,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					err_text = "Invalid access to property or key '" + index->operator String() + "' on a base object of type '" + _get_var_type(src) + "'.";
+					err_text = "Invalid access to property or key '" + index->string() + "' on a base object of type '" + _get_var_type(src) + "'.";
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -2135,7 +2135,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
-					err_text = _get_call_error("static function '" + methodname->operator String() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs, argc, *ret, err);
+					err_text = _get_call_error("static function '" + methodname->string() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs, argc, *ret, err);
 					OPCODE_BREAK;
 				}
 #endif
@@ -2181,7 +2181,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 				if (err.error != Callable::CallError::CALL_OK) {
-					err_text = _get_call_error("static function '" + method->get_name().operator String() + "' in type '" + method->get_instance_class().operator String() + "'", argptrs, argc, *ret, err);
+					err_text = _get_call_error("static function '" + method->get_name().string() + "' in type '" + method->get_instance_class().string() + "'", argptrs, argc, *ret, err);
 					OPCODE_BREAK;
 				}
 
@@ -3967,7 +3967,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		String err_func = name;
 		if (!_script->local_name.is_empty()) {
-			err_func = String(_script->local_name) + "." + err_func;
+			err_func = _script->local_name.string() + "." + err_func;
 		}
 		int err_line = line;
 		if (err_text.is_empty()) {

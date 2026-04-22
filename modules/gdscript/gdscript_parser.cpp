@@ -2821,7 +2821,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 #ifdef DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.operator String());
+		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.string());
 	}
 #endif
 	return identifier;
@@ -2834,7 +2834,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
 	complete_extents(identifier);
 	identifier->name = previous.get_identifier();
-	if (identifier->name.operator String().is_empty()) {
+	if (identifier->name.string().is_empty()) {
 		print_line("Empty identifier found.");
 	}
 	identifier->suite = current_suite;
@@ -4837,7 +4837,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 						} else {
 							enum_hint_string += ",";
 						}
-						enum_hint_string += E.key.operator String().capitalize().xml_escape();
+						enum_hint_string += E.key.string().capitalize().xml_escape();
 						enum_hint_string += ":";
 						enum_hint_string += String::num_int64(E.value).xml_escape();
 					}
@@ -4914,7 +4914,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 							} else {
 								enum_hint_string += ",";
 							}
-							enum_hint_string += E.key.operator String().capitalize().xml_escape();
+							enum_hint_string += E.key.string().capitalize().xml_escape();
 							enum_hint_string += ":";
 							enum_hint_string += String::num_int64(E.value).xml_escape();
 						}
@@ -5352,15 +5352,15 @@ String GDScriptParser::DataType::to_string() const {
 			if (is_meta_type) {
 				return GDScriptNativeClass::get_class_static();
 			}
-			return native_type.operator String();
+			return native_type.string();
 		case CLASS:
 			if (class_type->identifier != nullptr) {
-				return class_type->identifier->name.operator String();
+				return class_type->identifier->name.string();
 			}
 			return class_type->fqcn;
 		case SCRIPT: {
 			if (is_meta_type) {
-				return script_type.is_valid() ? script_type->get_class_name().operator String() : "";
+				return script_type.is_valid() ? script_type->get_class_name().string() : "";
 			}
 			String name = script_type.is_valid() ? script_type->get_name() : "";
 			if (!name.is_empty()) {
@@ -5370,7 +5370,7 @@ String GDScriptParser::DataType::to_string() const {
 			if (!name.is_empty()) {
 				return name;
 			}
-			return native_type.operator String();
+			return native_type.string();
 		}
 		case ENUM: {
 			// native_type contains either the native class defining the enum
@@ -6106,7 +6106,7 @@ void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
 		if (i > 0) {
 			push_text(" , ");
 		}
-		push_text(p_lambda->captures[i]->name.operator String());
+		push_text(p_lambda->captures[i]->name.string());
 	}
 	push_line(" ]");
 }

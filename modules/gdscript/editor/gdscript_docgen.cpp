@@ -305,7 +305,7 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 		case GDP::Node::CALL: {
 			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
 			if (call->get_callee_type() == GDP::Node::IDENTIFIER) {
-				return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+				return call->function_name.string() + (call->arguments.is_empty() ? "()" : "(...)");
 			}
 		} break;
 		case GDP::Node::DICTIONARY: {
