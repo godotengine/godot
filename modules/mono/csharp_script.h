@@ -437,6 +437,7 @@ class CSharpLanguage : public ScriptLanguage {
 	EditorPlugin *godotsharp_editor = nullptr;
 
 	static void _editor_init_callback();
+	static void _flush_deferred_editor_data_entries();
 #endif
 
 	static void *_instance_binding_create_callback(void *p_token, void *p_instance);

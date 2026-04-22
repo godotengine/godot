@@ -1090,6 +1090,8 @@ void CSharpLanguage::_editor_init_callback() {
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;
+
+	_flush_deferred_editor_data_entries();
 }
 #endif
 
@@ -2223,6 +2225,30 @@ void CSharpScript::_bind_methods() {
 }
 
 #ifdef TOOLS_ENABLED
+// Assembly-backed (csharp://) script registrations can happen before EditorNode exists
+// (during `ScriptServer::init_languages()` in `Main::setup2`, which runs well before
+// `memnew(EditorNode)`). In that window we can't populate the EditorData icon/name maps,
+// so we queue them and flush from `CSharpLanguage::_editor_init_callback` once EditorNode
+// is alive. Without this, EditorData misses the fast-path class-name → icon lookup for
+// assembly-backed `[GlobalClass]` types until something triggers a re-registration.
+struct DeferredEditorDataEntry {
+	StringName class_name;
+	String icon_path;
+	String script_path;
+};
+static Vector<DeferredEditorDataEntry> _deferred_editor_data_entries;
+
+void CSharpLanguage::_flush_deferred_editor_data_entries() {
+	if (!EditorNode::get_singleton()) {
+		return;
+	}
+	for (const DeferredEditorDataEntry &entry : _deferred_editor_data_entries) {
+		EditorNode::get_editor_data().script_class_set_icon_path(entry.class_name, entry.icon_path);
+		EditorNode::get_editor_data().script_class_set_name(entry.script_path, entry.class_name);
+	}
+	_deferred_editor_data_entries.clear();
+}
+
 static void _register_csharp_global_class(const String &p_script_path, const CSharpScript::TypeInfo &p_type_info) {
 	if (!p_type_info.is_global_class) {
 		return;
@@ -2235,6 +2261,8 @@ static void _register_csharp_global_class(const String &p_script_path, const CSh
 		if (EditorNode::get_singleton()) {
 			EditorNode::get_editor_data().script_class_set_icon_path(p_type_info.class_name, p_type_info.icon_path);
 			EditorNode::get_editor_data().script_class_set_name(p_script_path, p_type_info.class_name);
+		} else {
+			_deferred_editor_data_entries.push_back({ p_type_info.class_name, p_type_info.icon_path, p_script_path });
 		}
 	} else {
 		EditorFileSystem *efs = EditorFileSystem::get_singleton();
