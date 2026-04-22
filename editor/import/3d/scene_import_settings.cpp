@@ -61,6 +61,7 @@ class SceneImportSettingsData : public Object {
 	List<ResourceImporter::ImportOption> options;
 	Vector<String> animation_list;
 	Ref<Animation> animation;
+	float animation_fps = 30.0;
 
 	bool hide_options = false;
 	String path;
@@ -102,6 +103,13 @@ class SceneImportSettingsData : public Object {
 		if (String(p_name) == "properties/animation_length") {
 			if (animation.is_valid()) {
 				r_ret = animation->get_length();
+				return true;
+			}
+			return false;
+		}
+		if (String(p_name) == "properties/animation_frames") {
+			if (animation.is_valid()) {
+				r_ret = (int)Math::round(animation->get_length() * animation_fps);
 				return true;
 			}
 			return false;
@@ -176,8 +184,10 @@ class SceneImportSettingsData : public Object {
 		}
 		Ref<ResourceImporterScene> resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
 		if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION) {
-			PropertyInfo duration_prop(Variant::FLOAT, "properties/animation_length", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY);
-			r_list->push_back(duration_prop);
+			PropertyInfo animation_length_prop(Variant::FLOAT, "properties/animation_length", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY);
+			r_list->push_back(animation_length_prop);
+			PropertyInfo animation_frames_prop(Variant::INT, "properties/animation_frames", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY);
+			r_list->push_back(animation_frames_prop);
 		}
 		for (const ResourceImporter::ImportOption &E : options) {
 			PropertyInfo option = E.option;
@@ -811,7 +821,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 	}
 
 	if (defaults.has(SNAME("animation/fps"))) {
-		animation_fps = (float)defaults[SNAME("animation/fps")];
+		animation_fps = defaults[SNAME("animation/fps")];
 	}
 
 	// Regardless of p_scene_import_type, use PackedScene for pre_import because we want to see the full thing.
@@ -938,6 +948,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
 		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
 		scene_import_settings_data->animation = ad.animation;
+		scene_import_settings_data->animation_fps = animation_fps;
 
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
@@ -1051,7 +1062,7 @@ void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name)
 	}
 	if (p_name == "animation/fps") {
 		if (scene_import_settings_data->current.has("animation/fps")) {
-			animation_fps = (float)scene_import_settings_data->current["animation/fps"];
+			animation_fps = scene_import_settings_data->current["animation/fps"];
 		}
 	}
 	if ((p_name == "use_external/enabled") || (p_name == "use_external/path") || (p_name == "use_external/fallback_path")) {
@@ -1164,7 +1175,8 @@ void SceneImportSettingsDialog::_animation_frame_spin_box_value_changed(double p
 	}
 
 	const double animation_length = animation_map[selected_id].animation->get_length();
-	double position = p_value / (animation_fps * animation_length);
+	int frames = (int)Math::round(animation_length * animation_fps);
+	double position = CLAMP(p_value / frames, 0.0, 1.0);
 	animation_slider->set_value(position);
 }
 
@@ -1180,8 +1192,8 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 	const double animation_length = animation_map[selected_id].animation->get_length();
 	animation_player->seek(p_value * animation_length, true);
 
-	int frame = CLAMP((int)(animation_length * p_value * animation_fps), 0, (int)(animation_length * animation_fps));	
-	print_line(vformat("Animation length: %f, p_value: %f, frame: %d", animation_length, p_value, frame));
+	int frames = (int)Math::round(animation_length * animation_fps);
+	int frame = CLAMP((int)Math::round(p_value * frames), 0, frames);
 	animation_frame_spin_box->set_value_no_signal(frame);
 }
 
