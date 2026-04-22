@@ -415,6 +415,12 @@ static bool is_generic_in_open_context(const GDScriptParser::DataType& p_generic
 	return p_generic.kind == GDScriptParser::DataType::GENERIC_TYPE && p_generic.generic_owner_class != nullptr && p_generic.generic_owner_class == p_current_class;
 }
 
+
+/// Same as is_generic_in_open_context(), but works on parameters belonging to function level generics.
+static bool is_generic_fn_in_open_context(const GDScriptParser::DataType& p_generic, const GDScriptParser::FunctionNode* p_current_fn) {
+	return p_generic.kind == GDScriptParser::DataType::GENERIC_TYPE && p_generic.generic_owner_function != nullptr && p_generic.generic_owner_function == p_current_fn;
+}
+
 static bool param_type_still_has_open_generics(const GDScriptParser::DataType &p_type) {
     if (p_type.kind == GDScriptParser::DataType::GENERIC_TYPE) {
         return true;
@@ -653,7 +659,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 		const StringName this_name = param -> name;
 
 		if (seen_generic_params.has(this_name)) {
-			push_error(vformat(R"([Reginleif] Caught duplicate generic parameter '%s'.)", this_name), param);
+			push_error(vformat(R"([Reginleif] Caught duplicate generic parameter '%s'. Consider naming it something else.)", this_name), param);
 			continue;
 		}
 
@@ -993,6 +999,16 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		p_type->set_datatype(result);
 		return result;
 	}
+
+	///HACK: could remove some of the code duplication here.
+	if (parser->current_function && parser->current_function->is_generic_parameter(first_id)) {
+		result.kind = GDScriptParser::DataType::GENERIC_TYPE;
+		result.generic_param = first;
+		result.generic_owner_function = parser->current_function;
+		p_type->set_datatype(result);
+		return result;
+	}
+
 
 	if (first_id->suite && first_id->suite->has_local(first)) {
 		const GDScriptParser::SuiteNode::Local &local = first_id->suite->get_local(first);
@@ -2123,6 +2139,21 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
 	}
 #endif // DEBUG_ENABLED
+
+	HashSet<StringName> seen_generic_params;
+	for (GDScriptParser::IdentifierNode* param : p_function->generic_parameters) {
+		if (param == nullptr) {
+			continue;
+		}
+
+		const StringName this_name = param->name;
+		if (seen_generic_params.has(this_name)) {
+			push_error(vformat(R"([Reginleif] Caught duplicate generic parameter '%s'. Consider naming it something else.)", this_name), param);
+			continue;
+		}
+		seen_generic_params.insert(this_name);
+	}
+
 
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
@@ -6769,7 +6800,7 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		}
 	}
 #endif // DEBUG_ENABLED
-	return check_type_compatibility(p_target, p_source, p_allow_implicit_conversion, p_source_node, parser->current_class);
+	return check_type_compatibility(p_target, p_source, p_allow_implicit_conversion, p_source_node, parser->current_class, parser->current_function);
 }
 
 // NOTE:`is_type_compatible()` considers typed arrays/dictionaries compatible with untyped ones (but the operation is unsafe).
@@ -6788,7 +6819,7 @@ bool GDScriptAnalyzer::is_type_compatible_strict_collections(const GDScriptParse
 }
 
 // TODO: Add safe/unsafe return variable (for variant cases)
-bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node, const GDScriptParser::ClassNode* p_class) {
+bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node, const GDScriptParser::ClassNode* p_class, const GDScriptParser::FunctionNode* p_func) {
 	// These return "true" so it doesn't affect users negatively.
 	ERR_FAIL_COND_V_MSG(!p_target.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset target type");
 	ERR_FAIL_COND_V_MSG(!p_source.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset value type");
@@ -6805,8 +6836,13 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 	/// case 1, both sides are generic, in which case, same param owner and name is the only hard equality 
 	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE &&
 		p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-	
-		if (p_target.generic_owner_class == p_source.generic_owner_class) {
+			
+		///HACK: I REALLY need to make a short helper for insane equalities like these...
+		const bool same_generic_owner =
+				(p_target.generic_owner_class != nullptr && p_target.generic_owner_class == p_source.generic_owner_class) ||
+				(p_target.generic_owner_function != nullptr && p_target.generic_owner_function == p_source.generic_owner_function);
+
+		if (same_generic_owner) {
 			return p_target == p_source;
 		}
 		return true;
@@ -6816,7 +6852,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 	/// case 2, source is a free param. only valid if target is the same T, and anything else
 	/// is a definition site error.
 	if (p_source.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-		if (is_generic_in_open_context(p_source, p_class)) {
+		if (is_generic_in_open_context(p_target, p_class) || is_generic_fn_in_open_context(p_target, p_func)) {
 			return p_target.kind == GDScriptParser::DataType::GENERIC_TYPE && p_target == p_source;
 		}
 		return true;
@@ -6824,7 +6860,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 
 	/// case 3, target is generic, source is concrete, should always be fine
 	if (p_target.kind == GDScriptParser::DataType::GENERIC_TYPE) {
-		if (is_generic_in_open_context(p_target, p_class)) {
+		if (is_generic_in_open_context(p_target, p_class) || is_generic_fn_in_open_context(p_target, p_func)) {
 			return false;
 		}
 		return true;

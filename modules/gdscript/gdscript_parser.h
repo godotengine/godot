@@ -144,6 +144,9 @@ public:
 
 		/// [Monarch] Reginleif addition. Holds the class node that declared the generic params.
 		ClassNode* generic_owner_class = nullptr;
+		/// [Monarch] I was new to the codebase when I wrote the generic owner class stuff. Man I wish I had the same level of enthusiasm
+		///           and diligence to comment shit properly back then. But yeah, have a function owner field, bucko
+		FunctionNode* generic_owner_function = nullptr;
 		/// [Monarch] Reginleif addition. A dedicated generic parameter field!
 		StringName generic_param;
 		/// [Monarch] Reginleif addition. Stores concrete type argument bindings for generic classes.
@@ -248,7 +251,9 @@ public:
 
 				/// [Monarch] Now scoped to the declaring class so that Shit[T] doesnt equal Ass[T]
 				case GENERIC_TYPE:
-					return generic_owner_class == p_other.generic_owner_class && generic_param == p_other.generic_param;
+					return generic_owner_class == p_other.generic_owner_class && 
+					       generic_param == p_other.generic_param && 
+						   generic_owner_function == p_other.generic_owner_function;
 				
 				case RESOLVING:
 				case UNRESOLVED:
@@ -282,6 +287,7 @@ public:
 			generic_owner_class = p_other.generic_owner_class;
 			generic_param = p_other.generic_param;
 			generic_type_bindings = p_other.generic_type_bindings;
+			generic_owner_function = p_other.generic_owner_function;
 		}
 
 		DataType() = default;
@@ -911,6 +917,7 @@ public:
 
 	struct FunctionNode : public Node {
 		IdentifierNode *identifier = nullptr;
+		Vector<IdentifierNode*> generic_parameters;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
 		ParameterNode *rest_parameter = nullptr;
@@ -934,6 +941,16 @@ public:
 		bool resolved_body = false;
 
 		_FORCE_INLINE_ bool is_vararg() const { return rest_parameter != nullptr; }
+		///
+		_FORCE_INLINE_ bool has_generic_parameters() const { return generic_parameters.size() > 0; }
+		bool is_generic_parameter(const IdentifierNode* p_identifier) const {
+			for (IdentifierNode* generic_ident : generic_parameters) {
+				if (generic_ident->name == p_identifier->name) {
+					return true;
+				}
+			}
+			return false;
+		}
 
 		FunctionNode() {
 			type = FUNCTION;
@@ -1600,7 +1617,7 @@ private:
 	void parse_class_name();
 
 	/// [Monarch] Reginleif addition. Grants ability to parse generic parameter lists.
-	void parse_generic_parameters();
+	void parse_generic_parameters(Vector<IdentifierNode*>& p_generic_params);
 
 	void consume_indents_and_newlines();
 

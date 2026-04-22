@@ -985,7 +985,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 
 		/// [Monarch] inner classes have C++ style generic support, completely different from the outer classes' generics,
 		/// and can shadow them.
-		parse_generic_parameters();
+		parse_generic_parameters(current_class->generic_parameters);
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
@@ -1038,7 +1038,7 @@ void GDScriptParser::parse_class_name() {
 
 		/// [Monarch] Reginleif addition. Parses a comma-separated, rectangular bracket-bound identifier list.
 		/// Should do nothing if there is no generic parameter list to parse.
-		parse_generic_parameters();
+		parse_generic_parameters(current_class->generic_parameters);
 	}
 
 	if (script_path.begins_with("res://") && script_path.contains("::")) {
@@ -1060,7 +1060,7 @@ void GDScriptParser::parse_class_name() {
 /// So parsing [T] and [T,U,V] and so on is possible. It'll collect the identifiers into a Vec<IdentifierNode*>,
 /// then expect a bracket close.
 
-void GDScriptParser::parse_generic_parameters() {
+void GDScriptParser::parse_generic_parameters(Vector<IdentifierNode*>& p_generic_parameters) {
 
 	if (!match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
 		return; ///no generics
@@ -1072,7 +1072,7 @@ void GDScriptParser::parse_generic_parameters() {
 		return;
 	}
 
-	current_class->generic_parameters.push_back(parse_identifier());
+	p_generic_parameters.push_back(parse_identifier());
 
 	///grab other idents...
 	while (match(GDScriptTokenizer::Token::COMMA)) {
@@ -1085,7 +1085,7 @@ void GDScriptParser::parse_generic_parameters() {
             return;
         }
 
-        current_class->generic_parameters.push_back(parse_identifier());
+        p_generic_parameters.push_back(parse_identifier());
     }
 
     consume(GDScriptTokenizer::Token::BRACKET_CLOSE,
@@ -1891,6 +1891,7 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	current_function = function;
 
 	function->identifier = parse_identifier();
+	parse_generic_parameters(function->generic_parameters);
 
 	SuiteNode *body = alloc_node<SuiteNode>();
 
