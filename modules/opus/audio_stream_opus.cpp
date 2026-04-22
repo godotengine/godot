@@ -210,7 +210,7 @@ void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_MSG(opus_file == nullptr, "Could not open opus stream.");
 
 	int64_t length_i = op_pcm_total(opus_file, -1);
-	length = (length_i > 0) ? (float(length_i) / OPUS_SAMPLERATE) : 0;
+	length = (length_i > 0) ? (double(length_i) / OPUS_SAMPLERATE) : 0;
 
 	// Tags (parsed same as OGG Vorbis)
 	const OpusTags *opus_tags = op_tags(opus_file, -1);
@@ -269,11 +269,11 @@ bool AudioStreamOpus::has_loop() const {
 	return loop;
 }
 
-void AudioStreamOpus::set_loop_offset(float p_seconds) {
+void AudioStreamOpus::set_loop_offset(double p_seconds) {
 	loop_offset = p_seconds;
 }
 
-float AudioStreamOpus::get_loop_offset() const {
+double AudioStreamOpus::get_loop_offset() const {
 	return loop_offset;
 }
 
