@@ -753,7 +753,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += Variant::get_type_name(type);
 				text += ".";
-				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]].operator String();
+				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]].string();
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -1004,7 +1004,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += DADDR(1 + captures_count);
 				text += "create lambda from ";
-				text += lambda->name.operator String();
+				text += lambda->name.string();
 				text += "function, captures (";
 
 				for (int i = 0; i < captures_count; i++) {
@@ -1024,7 +1024,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += DADDR(1 + captures_count);
 				text += "create self lambda from ";
-				text += lambda->name.operator String();
+				text += lambda->name.string();
 				text += "function, captures (";
 
 				for (int i = 0; i < captures_count; i++) {

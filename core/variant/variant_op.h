@@ -1129,11 +1129,11 @@ class OperatorEvaluatorInStringFind<Left, StringName> : public CommonEvaluate<Op
 public:
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Left &str_a = VariantInternalAccessor<Left>::get(left);
-		const String str_b = VariantInternalAccessor<StringName>::get(right).operator String();
+		const String str_b = VariantInternalAccessor<StringName>::get(right).string();
 		VariantInternalAccessor<bool>::get(r_ret) = str_b.find(str_a) != -1;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<StringName>::convert(right).operator String().find(PtrToArg<Left>::convert(left)) != -1, r_ret);
+		PtrToArg<bool>::encode(PtrToArg<StringName>::convert(right).string().find(PtrToArg<Left>::convert(left)) != -1, r_ret);
 	}
 	using ReturnType = bool;
 };

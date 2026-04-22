@@ -632,7 +632,7 @@ void AnimationPlayer::set_assigned_animation(const StringName &p_animation) {
 		float speed = playback.current.speed_scale;
 		play(p_animation, -1.0, speed, std::signbit(speed));
 	} else {
-		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation.operator String()));
+		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation.string()));
 		playback.current.pos = 0;
 		playback.current.is_enabled = true;
 		playback.current.animation_name = p_animation;

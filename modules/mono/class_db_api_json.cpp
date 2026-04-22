@@ -59,7 +59,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			List<StringName> snames;
 
 			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
-				String name = F.key.operator String();
+				String name = F.key.string();
 
 				ERR_CONTINUE(name.is_empty());
 
