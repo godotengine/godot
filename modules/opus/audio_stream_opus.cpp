@@ -388,13 +388,7 @@ void AudioStreamOpus::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
 
-AudioStreamOpus::AudioStreamOpus() {
-	data = nullptr;
-	data_len = 0;
-	length = 0;
-	loop_offset = 0;
-	loop = false;
-}
+AudioStreamOpus::AudioStreamOpus() {}
 
 AudioStreamOpus::~AudioStreamOpus() {
 	clear_data();

@@ -88,11 +88,11 @@ class AudioStreamOpus : public AudioStream {
 
 	friend class AudioStreamPlaybackOpus;
 
-	void *data;
-	uint32_t data_len;
-	float length;
-	bool loop;
-	float loop_offset;
+	void *data = nullptr;
+	uint32_t data_len = 0;
+	float length = 0;
+	bool loop = false;
+	float loop_offset = 0;
 	void clear_data();
 
 	double bpm = 0;
