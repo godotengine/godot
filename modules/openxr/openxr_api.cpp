@@ -30,17 +30,24 @@
 
 #include "openxr_api.h"
 
+#include "action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_interface.h"
 #include "openxr_util.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/os/memory.h"
 #include "core/profiling/profiling.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_globals.h"
 
-#include "openxr_platform_inc.h"
+#ifdef ANDROID_ENABLED
+#include "core/os/os.h"
+#endif
+
+#include "openxr_platform_inc.h" // IWYU pragma: keep.
 
 #ifdef VULKAN_ENABLED
 #include "extensions/platform/openxr_vulkan_extension.h"
@@ -1848,9 +1855,9 @@ const Vector<OpenXRExtensionWrapper *> &OpenXRAPI::get_registered_extension_wrap
 	return registered_extension_wrappers;
 }
 
-void OpenXRAPI::register_extension_metadata() {
+void OpenXRAPI::register_extension_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) {
 	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
-		extension_wrapper->on_register_metadata();
+		extension_wrapper->on_register_metadata(p_interaction_profile_metadata);
 	}
 }
 
@@ -2428,15 +2435,6 @@ void OpenXRAPI::pre_render() {
 	// Process any swapchains that were queued to be freed
 	OpenXRSwapChainInfo::free_queued();
 
-	Size2i swapchain_size = get_recommended_target_size();
-	if (swapchain_size != render_state.main_swapchain_size) {
-		// Out with the old.
-		free_main_swapchains();
-
-		// In with the new.
-		create_main_swapchains(swapchain_size);
-	}
-
 	void *view_locate_info_next_pointer = nullptr;
 	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
 		void *np = extension->set_view_locate_info_and_get_next_pointer(view_locate_info_next_pointer);
@@ -2522,6 +2520,39 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 
 	if (instance == XR_NULL_HANDLE || session == XR_NULL_HANDLE || !render_state.running || !render_state.view_pose_valid || !render_state.should_render) {
 		return false;
+	}
+
+	Size2i swapchain_size = get_recommended_target_size();
+	bool should_recreate_swapchain = (swapchain_size != render_state.main_swapchain_size);
+
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext) {
+		bool subsampled_images_enabled = fov_ext->is_foveation_with_subsampled_images_enabled();
+
+		// Mark subsampled images as enabled on the render target (so we try to use them).
+		RSG::texture_storage->render_target_set_subsampled_enabled(p_render_target, subsampled_images_enabled);
+
+		// But check if they are "allowed", because they may not work if we are using
+		// any incompatible rendering features.
+		bool subsampled_images_allowed = RSG::texture_storage->render_target_is_subsampled_allowed(p_render_target);
+		fov_ext->set_foveation_with_subsampled_images_active(subsampled_images_allowed);
+
+		bool use_subsampled_images = subsampled_images_enabled && subsampled_images_allowed;
+		if (render_state.use_subsampled_images != use_subsampled_images) {
+			render_state.use_subsampled_images = use_subsampled_images;
+			if (!subsampled_images_allowed) {
+				WARN_PRINT("Foveation with subsampled images was enabled, but rendering features are in use that have forced it to be disabled.");
+			}
+			should_recreate_swapchain = true;
+		}
+	}
+
+	if (should_recreate_swapchain) {
+		// Out with the old.
+		free_main_swapchains();
+
+		// In with the new.
+		create_main_swapchains(swapchain_size);
 	}
 
 	// Acquire our images
@@ -2874,6 +2905,21 @@ void OpenXRAPI::set_foveation_dynamic(bool p_foveation_dynamic) {
 	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
 	if (fov_ext != nullptr && fov_ext->is_enabled()) {
 		fov_ext->set_foveation_dynamic(p_foveation_dynamic ? XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB : XR_FOVEATION_DYNAMIC_DISABLED_FB);
+	}
+}
+
+bool OpenXRAPI::get_foveation_with_subsampled_images() const {
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext != nullptr) {
+		return fov_ext->is_foveation_with_subsampled_images_enabled();
+	}
+	return false;
+}
+
+void OpenXRAPI::set_foveation_with_subsampled_images(bool p_enabled) {
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext != nullptr) {
+		fov_ext->set_foveation_with_subsampled_images_enabled(p_enabled);
 	}
 }
 

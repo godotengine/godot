@@ -50,6 +50,20 @@ struct hb_blob_t
     }
   }
 
+  void replace_buffer (const char       *new_data,
+		       unsigned          new_length,
+		       hb_memory_mode_t  new_mode,
+		       void             *new_user_data,
+		       hb_destroy_func_t new_destroy)
+  {
+    destroy_user_data ();
+    data = new_data;
+    length = new_length;
+    mode = new_mode;
+    user_data = new_user_data;
+    destroy = new_destroy;
+  }
+
   HB_INTERNAL bool try_make_writable ();
   HB_INTERNAL bool try_make_writable_inplace ();
   HB_INTERNAL bool try_make_writable_inplace_unix ();

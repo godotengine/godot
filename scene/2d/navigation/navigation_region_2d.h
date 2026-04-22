@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/2d/node_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 
 class NavigationRegion2D : public Node2D {

@@ -32,11 +32,17 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/shader/editor_shader_language_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/shader_include.h"
 #include "servers/rendering/shader_types.h"
 
@@ -333,7 +339,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 	int preferred_type = -1;
 	// Select preferred type if specified.
 	for (int i = 0; i < type_menu->get_item_count(); i++) {
-		if (type_menu->get_item_text(i) == p_preferred_type) {
+		if (type_menu->get_item_text(i) == p_preferred_type && !(p_load_enabled && p_preferred_type.contains("Include"))) {
 			preferred_type = i;
 			break;
 		}
@@ -344,7 +350,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 		String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
 		if (!last_lang.is_empty()) {
 			for (int i = 0; i < type_menu->get_item_count(); i++) {
-				if (type_menu->get_item_text(i) == last_lang) {
+				if (type_menu->get_item_text(i) == last_lang && !(p_load_enabled && last_lang.contains("Include"))) {
 					preferred_type = i;
 					break;
 				}

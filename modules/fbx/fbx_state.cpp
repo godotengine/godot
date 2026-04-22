@@ -30,6 +30,8 @@
 
 #include "fbx_state.h"
 
+#include "core/object/class_db.h"
+
 void FBXState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_allow_geometry_helper_nodes"), &FBXState::get_allow_geometry_helper_nodes);
 	ClassDB::bind_method(D_METHOD("set_allow_geometry_helper_nodes", "allow"), &FBXState::set_allow_geometry_helper_nodes);

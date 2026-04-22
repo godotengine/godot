@@ -31,14 +31,11 @@
 #pragma once
 
 #include "audio_driver_web.h"
+#include "godot_js.h"
 #include "webmidi_driver.h"
 
-#include "godot_js.h"
-
 #include "core/input/input_event.h"
-#include "core/templates/rb_map.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio/audio_server.h"
 
 #include <emscripten/html5.h>
 

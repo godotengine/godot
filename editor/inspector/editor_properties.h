@@ -81,6 +81,7 @@ class EditorPropertyVariant : public EditorProperty {
 
 	void _change_type(int p_to_type);
 	void _popup_edit_menu();
+	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -414,10 +415,13 @@ class EditorPropertyObjectID : public EditorProperty {
 	GDCLASS(EditorPropertyObjectID, EditorProperty);
 	Button *edit = nullptr;
 	String base_type;
+
+	ObjectID _get_object_id() const;
 	void _edit_pressed();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;
@@ -776,6 +780,8 @@ public:
 	void set_use_sub_inspector(bool p_enable);
 	void set_use_filter(bool p_use);
 	void fold_resource();
+
+	virtual void set_keying(bool p_keying) override;
 
 	virtual bool is_colored(ColorationMode p_mode) override;
 

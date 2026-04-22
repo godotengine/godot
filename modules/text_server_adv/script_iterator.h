@@ -30,31 +30,16 @@
 
 #pragma once
 
-#ifdef GDEXTENSION
-
-// Headers for building as GDExtension plug-in.
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/templates/vector.hpp>
-#include <godot_cpp/variant/string.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-
-// Headers for building as built-in module.
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
-#endif
-
+#include <hb-icu.h>
+#include <hb.h>
 #include <unicode/uchar.h>
 #include <unicode/uloc.h>
 #include <unicode/uscript.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
-
-#include <hb-icu.h>
-#include <hb.h>
 
 class ScriptIterator {
 	static const int PAREN_STACK_DEPTH = 128;

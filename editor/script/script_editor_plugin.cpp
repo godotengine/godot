@@ -36,15 +36,18 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
+#include "core/variant/dictionary.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/doc/editor_help.h"
 #include "editor/doc/editor_help_search.h"
-#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/signals_dock.h"
@@ -75,6 +78,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
@@ -201,12 +205,6 @@ void ScriptEditor::_goto_script_line(Ref<RefCounted> p_script, int p_line) {
 	if (scr.is_valid() && (scr->has_source_code() || scr->get_path().is_resource_file())) {
 		if (edit(p_script, p_line, 0)) {
 			EditorNode::get_singleton()->push_item(p_script.ptr());
-
-			if (TextEditorBase *current = Object::cast_to<TextEditorBase>(_get_current_editor())) {
-				current->goto_line_centered(p_line);
-			}
-
-			_save_history();
 		}
 	}
 }
@@ -314,7 +312,9 @@ void ScriptEditor::_save_history() {
 		Node *n = tab_container->get_current_tab_control();
 
 		if (Object::cast_to<TextEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			Dictionary nav_state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			nav_state["ensure_caret_visible"] = true;
+			history.write[history_pos].state = nav_state;
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -373,7 +373,9 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		Node *n = tab_container->get_current_tab_control();
 
 		if (Object::cast_to<TextEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			Dictionary nav_state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+			nav_state["ensure_caret_visible"] = true;
+			history.write[history_pos].state = nav_state;
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -1100,7 +1102,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			open_find_in_files_dialog("");
 		} break;
 		case REPLACE_IN_FILES: {
-			_on_replace_in_files_requested("");
+			open_find_in_files_dialog("", true);
 		} break;
 		case SEARCH_HELP: {
 			help_search_dialog->popup_dialog();
@@ -1480,7 +1482,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated() ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
 				_apply_editor_settings();
@@ -2125,8 +2127,27 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	String path = ResourceLoader::path_remap(local_path);
 
-	TextFile *text_file = memnew(TextFile);
-	Ref<TextFile> text_res(text_file);
+	// Reuse an already-open TextFile resource to avoid creating duplicates.
+	// This prevents opening the same file multiple times as "unsaved" tabs.
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (!seb) {
+			continue;
+		}
+
+		if (seb->edited_file_data.path == local_path) {
+			Ref<TextFile> existing_text_file = seb->get_edited_resource();
+			if (existing_text_file.is_valid()) {
+				if (r_error) {
+					*r_error = OK;
+				}
+				return existing_text_file;
+			}
+		}
+	}
+
+	Ref<TextFile> text_file;
+	text_file.instantiate();
 	Error err = text_file->load_text(path);
 
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load text file '" + path + "'.");
@@ -2142,7 +2163,7 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 		*r_error = OK;
 	}
 
-	return text_res;
+	return text_file;
 }
 
 Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_path) {
@@ -2229,7 +2250,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 					}
 
 					if (p_line >= 0) {
-						teb->goto_line(p_line, p_col);
+						teb->goto_line_centered(p_line, p_col);
 					}
 				} else if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
@@ -2327,8 +2348,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		teb->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 		teb->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 		teb->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
-		teb->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog));
-		teb->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
+		teb->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(false));
+		teb->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(true));
 		teb->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
 		if (script_editor_cache->has_section(p_resource->get_path())) {
@@ -2356,7 +2377,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
 		if (p_line >= 0) {
-			teb->goto_line(p_line, p_col);
+			teb->goto_line_centered(p_line, p_col);
 		}
 	}
 
@@ -2376,6 +2397,18 @@ PackedStringArray ScriptEditor::get_unsaved_scripts() const {
 		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (seb && seb->is_unsaved()) {
 			unsaved_list.append(seb->get_name());
+		}
+	}
+	return unsaved_list;
+}
+
+PackedStringArray ScriptEditor::get_unsaved_files() const {
+	PackedStringArray unsaved_list;
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (seb && seb->is_unsaved()) {
+			unsaved_list.append(seb->get_edited_resource()->get_path());
 		}
 	}
 	return unsaved_list;
@@ -2545,7 +2578,9 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 		}
 
 		if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
+			Dictionary state = teb->get_edit_state();
 			teb->reload_text();
+			teb->set_edit_state(state);
 		}
 	}
 
@@ -2567,10 +2602,8 @@ void ScriptEditor::_auto_format_text(ScriptEditorBase *p_seb) {
 	}
 }
 
-void ScriptEditor::open_find_in_files_dialog(const String &text) {
-	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
-	find_in_files_dialog->set_search_text(text);
-	find_in_files_dialog->popup_centered();
+void ScriptEditor::open_find_in_files_dialog(const String &p_initial_text, bool p_replace) {
+	find_in_files->open_dialog(p_initial_text, p_replace);
 }
 
 void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
@@ -2608,6 +2641,20 @@ Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 		return text_file;
 	}
 	return Ref<Resource>();
+}
+
+Error ScriptEditor::close_file(const String &p_file) {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (seb && seb->get_edited_resource()->get_path() == p_file) {
+			if (seb->is_unsaved()) {
+				seb->get_edited_resource()->reload_from_file();
+			}
+			_close_tab(i, false, _get_current_editor() == seb);
+			return OK;
+		}
+	}
+	return ERR_FILE_NOT_FOUND;
 }
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
@@ -3003,7 +3050,7 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 	// the shortcut to be used regardless of the click location.
 	// This feature can be disabled to avoid interfering with other uses of the additional
 	// mouse buttons, such as push-to-talk in a VoIP program.
-	if (EDITOR_GET("interface/editor/mouse_extra_buttons_navigate_history")) {
+	if (EDITOR_GET("interface/editor/input/mouse_extra_buttons_navigate_history")) {
 		const Ref<InputEventMouseButton> mb = p_event;
 
 		// Navigate the script history using additional mouse buttons present on some mice.
@@ -3440,7 +3487,9 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 	Node *n = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<TextEditorBase>(n)) {
-		history.write[history_pos].state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+		Dictionary nav_state = Object::cast_to<TextEditorBase>(n)->get_navigation_state();
+		nav_state["ensure_caret_visible"] = true;
+		history.write[history_pos].state = nav_state;
 	}
 	if (Object::cast_to<EditorHelp>(n)) {
 		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -3609,18 +3658,11 @@ void ScriptEditor::_script_changed() {
 	SignalsDock::get_singleton()->update_lists();
 }
 
-void ScriptEditor::_on_replace_in_files_requested(const String &text) {
-	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::REPLACE_MODE);
-	find_in_files_dialog->set_search_text(text);
-	find_in_files_dialog->set_replace_text("");
-	find_in_files_dialog->popup_centered();
-}
-
 void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end) {
 	if (ResourceLoader::exists(fpath)) {
 		Ref<Resource> res = ResourceLoader::load(fpath);
 
-		if (fpath.get_extension() == "gdshader") {
+		if (fpath.has_extension("gdshader") || fpath.has_extension("gdshaderinc")) {
 			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
@@ -3629,7 +3671,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 				text_shader_editor->goto_line_selection(line_number - 1, begin, end);
 			}
 			return;
-		} else if (fpath.get_extension() == "tscn") {
+		} else if (fpath.has_extension("tscn")) {
 			const PackedStringArray lines = FileAccess::get_file_as_string(fpath).split("\n");
 			if (line_number > lines.size()) {
 				return;
@@ -3702,26 +3744,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 	}
 }
 
-void ScriptEditor::_start_find_in_files(bool with_replace) {
-	FindInFilesPanel *panel = find_in_files->get_panel_for_results(with_replace ? TTR("Replace:") + " " + find_in_files_dialog->get_search_text() : TTR("Find:") + " " + find_in_files_dialog->get_search_text());
-	FindInFiles *f = panel->get_finder();
-
-	f->set_search_text(find_in_files_dialog->get_search_text());
-	f->set_match_case(find_in_files_dialog->is_match_case());
-	f->set_whole_words(find_in_files_dialog->is_whole_words());
-	f->set_folder(find_in_files_dialog->get_folder());
-	f->set_filter(find_in_files_dialog->get_filter());
-	f->set_includes(find_in_files_dialog->get_includes());
-	f->set_excludes(find_in_files_dialog->get_excludes());
-
-	panel->set_with_replace(with_replace);
-	panel->set_replace_text(find_in_files_dialog->get_replace_text());
-	panel->start_search();
-
-	find_in_files->make_visible();
-}
-
-void ScriptEditor::_on_find_in_files_modified_files(const PackedStringArray &paths) {
+void ScriptEditor::_on_find_in_files_modified_files() {
 	_test_script_times_on_disk();
 	_update_modified_scripts_for_external_editor();
 }
@@ -3772,7 +3795,10 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_docs_from_script", "script"), &ScriptEditor::update_docs_from_script);
 	ClassDB::bind_method(D_METHOD("clear_docs_from_script", "script"), &ScriptEditor::clear_docs_from_script);
 
+	ClassDB::bind_method(D_METHOD("get_unsaved_files"), &ScriptEditor::get_unsaved_files);
+
 	ClassDB::bind_method(D_METHOD("save_all_scripts"), &ScriptEditor::save_all_scripts);
+	ClassDB::bind_method(D_METHOD("close_file", "path"), &ScriptEditor::close_file);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static())));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static())));
@@ -3801,6 +3827,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_split = memnew(HSplitContainer);
 	main_container->add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	script_split->set_drag_nested_intersections(true);
 
 #ifdef ANDROID_ENABLED
 	virtual_keyboard_spacer = memnew(Control);
@@ -3811,6 +3838,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	list_split = memnew(VSplitContainer);
 	script_split->add_child(list_split);
 	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	list_split->set_drag_nested_intersections(true);
 
 	scripts_vbox = memnew(VBoxContainer);
 	scripts_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -4127,14 +4155,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	add_child(help_search_dialog);
 	help_search_dialog->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 
-	find_in_files_dialog = memnew(FindInFilesDialog);
-	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(false));
-	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
-	add_child(find_in_files_dialog);
-
-	find_in_files = memnew(FindInFilesContainer);
-	EditorDockManager::get_singleton()->add_dock(find_in_files);
-	find_in_files->close();
+	find_in_files = memnew(FindInFiles);
 	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 
@@ -4158,6 +4179,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	register_syntax_highlighter(config_file_syntax_highlighter);
 
 	_update_online_doc();
+}
+
+ScriptEditor::~ScriptEditor() {
+	memdelete(find_in_files);
 }
 
 void ScriptEditorPlugin::_focus_another_editor() {

@@ -30,6 +30,7 @@
 
 #include "xr_interface.h"
 
+#include "core/object/class_db.h"
 #include "servers/xr/xr_server.h"
 
 void XRInterface::_bind_methods() {

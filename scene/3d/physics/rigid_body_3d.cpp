@@ -31,6 +31,9 @@
 #include "rigid_body_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/resources/physics_material.h"
 
 void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
@@ -144,9 +147,12 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
-	set_ignore_transform_notification(true);
-	set_global_transform(p_state->get_transform());
-	set_ignore_transform_notification(false);
+	Transform3D new_transform = p_state->get_transform();
+	if (likely(new_transform != get_global_transform())) {
+		set_ignore_transform_notification(true);
+		set_global_transform(new_transform);
+		set_ignore_transform_notification(false);
+	}
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();

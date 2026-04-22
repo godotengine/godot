@@ -30,6 +30,8 @@
 
 #include "file_access_compressed.h"
 
+#include "core/math/math_funcs_binary.h"
+
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
 	magic = p_magic.ascii().get_data();
 	magic = (magic + "    ").substr(0, 4);

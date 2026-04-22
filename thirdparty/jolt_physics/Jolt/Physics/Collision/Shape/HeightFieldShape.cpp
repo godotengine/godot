@@ -185,9 +185,9 @@ uint32 HeightFieldShapeSettings::CalculateBitsPerSampleForError(float inMaxError
 									// Not accurate enough, increase bits per sample
 									bits_per_sample++;
 
-									// Don't go above 8 bits per sample
-									if (bits_per_sample == 8)
-										return bits_per_sample;
+									// Don't go above cMaxBitsPerSample bits per sample
+									if (bits_per_sample == cMaxBitsPerSample)
+										return cMaxBitsPerSample;
 								}
 							}
 						}
@@ -416,7 +416,7 @@ void HeightFieldShape::StoreMaterialIndices(const HeightFieldShapeSettings &inSe
 
 void HeightFieldShape::CacheValues()
 {
-	mSampleMask = uint8((uint32(1) << mBitsPerSample) - 1);
+	mSampleMask = uint16((uint32(1) << mBitsPerSample) - 1);
 }
 
 void HeightFieldShape::AllocateBuffers()
@@ -424,7 +424,7 @@ void HeightFieldShape::AllocateBuffers()
 	uint num_blocks = GetNumBlocks();
 	uint max_stride = (num_blocks + 1) >> 1;
 	mRangeBlocksSize = sGridOffsets[sGetMaxLevel(num_blocks) - 1] + Square(max_stride);
-	mHeightSamplesSize = (mSampleCount * mSampleCount * mBitsPerSample + 7) / 8 + 1;
+	mHeightSamplesSize = (mSampleCount * mSampleCount * mBitsPerSample + 7) / 8 + 2; // Since we read 3 bytes per sample, we need 2 extra bytes of padding
 	mActiveEdgesSize = (Square(mSampleCount - 1) * 3 + 7) / 8 + 1; // See explanation at HeightFieldShape::CalculateActiveEdges
 
 	JPH_ASSERT(mRangeBlocks == nullptr && mHeightSamples == nullptr && mActiveEdges == nullptr);
@@ -457,9 +457,9 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
 	}
 
 	// Check bits per sample
-	if (inSettings.mBitsPerSample < 1 || inSettings.mBitsPerSample > 8)
+	if (inSettings.mBitsPerSample < 1 || inSettings.mBitsPerSample > HeightFieldShapeConstants::cMaxBitsPerSample)
 	{
-		outResult.SetError("HeightFieldShape: Bits per sample must be in the range [1, 8]!");
+		outResult.SetError("HeightFieldShape: Bits per sample must be in the range [1, 16]!");
 		return;
 	}
 
@@ -727,9 +727,10 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
 			uint byte_pos = sample >> 3;
 			uint bit_pos = sample & 0b111;
 			output_value <<= bit_pos;
-			JPH_ASSERT(byte_pos + 1 < mHeightSamplesSize);
+			JPH_ASSERT(byte_pos + 2 < mHeightSamplesSize); // We read max 16 bits which could be spread out over 3 bytes
 			mHeightSamples[byte_pos] |= uint8(output_value);
 			mHeightSamples[byte_pos + 1] |= uint8(output_value >> 8);
+			mHeightSamples[byte_pos + 2] |= uint8(output_value >> 16);
 			sample += inSettings.mBitsPerSample;
 		}
 
@@ -816,7 +817,7 @@ inline void HeightFieldShape::GetBlockOffsetAndScale(uint inBlockX, uint inBlock
 	outBlockScale = float(block.mMax[n] - block.mMin[n]) / float(mSampleMask);
 }
 
-inline uint8 HeightFieldShape::GetHeightSample(uint inX, uint inY) const
+inline uint16 HeightFieldShape::GetHeightSample(uint inX, uint inY) const
 {
 	JPH_ASSERT(inX < mSampleCount);
 	JPH_ASSERT(inY < mSampleCount);
@@ -827,16 +828,16 @@ inline uint8 HeightFieldShape::GetHeightSample(uint inX, uint inY) const
 	uint bit_pos = sample & 0b111;
 
 	// Fetch the height sample value
-	JPH_ASSERT(byte_pos + 1 < mHeightSamplesSize);
+	JPH_ASSERT(byte_pos + 2 < mHeightSamplesSize); // We read max 16 bits which could be spread out over 3 bytes
 	const uint8 *height_samples = mHeightSamples + byte_pos;
-	uint16 height_sample = uint16(height_samples[0]) | uint16(uint16(height_samples[1]) << 8);
-	return uint8(height_sample >> bit_pos) & mSampleMask;
+	uint32 height_sample = uint32(height_samples[0]) | (uint32(height_samples[1]) << 8) | (uint32(height_samples[2]) << 16);
+	return uint16(height_sample >> bit_pos) & mSampleMask;
 }
 
 inline Vec3 HeightFieldShape::GetPosition(uint inX, uint inY, float inBlockOffset, float inBlockScale, bool &outNoCollision) const
 {
 	// Get quantized value
-	uint8 height_sample = GetHeightSample(inX, inY);
+	uint16 height_sample = GetHeightSample(inX, inY);
 	outNoCollision = height_sample == mSampleMask;
 
 	// Add 0.5 to the quantized value to minimize the error (see constructor)
@@ -980,7 +981,7 @@ void HeightFieldShape::GetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY
 						uint output_y = block_y * mBlockSize + sample_y;
 
 						// Get quantized value
-						uint8 height_sample = GetHeightSample(inX + output_x, inY + output_y);
+						uint16 height_sample = GetHeightSample(inX + output_x, inY + output_y);
 
 						// Dequantize
 						float h = height_sample != mSampleMask? offset + height_sample * scale : cNoCollisionValue;
@@ -1129,7 +1130,7 @@ void HeightFieldShape::SetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY
 				{
 					// Quantize height
 					float h = heights[sample_y * heights_stride + sample_x];
-					uint8 quantized_height = h != cNoCollisionValue? uint8(Clamp((int)floor((h - offset) / scale), 0, int(mSampleMask) - 1)) : mSampleMask;
+					uint16 quantized_height = h != cNoCollisionValue? uint16(Clamp((int)floor((h - offset) / scale), 0, int(mSampleMask) - 1)) : mSampleMask;
 
 					// Determine bit position of sample
 					uint sample = ((affected_y + sample_y) * mSampleCount + affected_x + sample_x) * uint(mBitsPerSample);
@@ -1137,13 +1138,14 @@ void HeightFieldShape::SetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY
 					uint bit_pos = sample & 0b111;
 
 					// Update the height value sample
-					JPH_ASSERT(byte_pos + 1 < mHeightSamplesSize);
+					JPH_ASSERT(byte_pos + 2 < mHeightSamplesSize); // We read max 16 bits which could be spread out over 3 bytes
 					uint8 *height_samples = mHeightSamples + byte_pos;
-					uint16 height_sample = uint16(height_samples[0]) | uint16(uint16(height_samples[1]) << 8);
-					height_sample &= ~(uint16(mSampleMask) << bit_pos);
-					height_sample |= uint16(quantized_height) << bit_pos;
+					uint32 height_sample = uint32(height_samples[0]) | (uint32(height_samples[1]) << 8) | (uint32(height_samples[2]) << 16);
+					height_sample &= ~(uint32(mSampleMask) << bit_pos);
+					height_sample |= uint32(quantized_height) << bit_pos;
 					height_samples[0] = uint8(height_sample);
 					height_samples[1] = uint8(height_sample >> 8);
+					height_samples[2] = uint8(height_sample >> 16);
 				}
 		}
 

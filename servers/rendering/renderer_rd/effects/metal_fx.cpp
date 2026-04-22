@@ -32,9 +32,9 @@
 
 #include "metal_fx.h"
 
-#include "../storage_rd/render_scene_buffers_rd.h"
 #include "drivers/metal/pixel_formats.h"
 #include "drivers/metal/rendering_device_driver_metal3.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 
 #include <MetalFX/MetalFX.hpp>
 

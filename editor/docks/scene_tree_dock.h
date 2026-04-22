@@ -38,8 +38,8 @@
 class CheckBox;
 class EditorData;
 class EditorSelection;
-class HBoxContainer;
 class MenuButton;
+class PanelContainer;
 class RenameDialog;
 class ReparentDialog;
 class Shader;
@@ -128,7 +128,7 @@ class SceneTreeDock : public EditorDock {
 	Button *button_custom = nullptr;
 	Button *button_clipboard = nullptr;
 
-	HBoxContainer *button_hb = nullptr;
+	PanelContainer *button_panel = nullptr;
 	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree = nullptr;
 	Tree *remote_tree = nullptr;
@@ -242,8 +242,8 @@ class SceneTreeDock : public EditorDock {
 	TreeItem *tree_item_inspected = nullptr;
 	Node *node_hovered_now = nullptr;
 	Node *node_hovered_previously = nullptr;
-	bool select_node_hovered_at_end_of_drag = false;
-	bool hovered_but_reparenting = false;
+	Object *edited_object_at_drag_start = nullptr;
+	bool scene_tree_drag_active = false;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -285,6 +285,7 @@ class SceneTreeDock : public EditorDock {
 	void _local_tree_selected();
 
 	void _update_create_root_dialog(bool p_initializing = false);
+	void _update_create_root_dialog_visibility();
 	void _favorite_root_selected(const String &p_class);
 
 	void _feature_profile_changed();

@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "viewport.h"
+
+#include "core/object/class_db.h"
+
 #ifndef XR_DISABLED
 bool Viewport::_is_using_xr_115799() {
 	return is_using_xr();
@@ -42,4 +46,4 @@ void Viewport::_bind_compatibility_methods() {
 #endif
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

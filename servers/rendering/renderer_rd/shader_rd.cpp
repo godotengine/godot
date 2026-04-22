@@ -30,9 +30,11 @@
 
 #include "shader_rd.h"
 
+#include "core/config/engine.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
 #include "servers/rendering/shader_include_db.h"

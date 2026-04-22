@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
-#include "thirdparty/misc/yuv2rgb.h"
+#include <thirdparty/misc/yuv2rgb.h>
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
@@ -798,7 +799,8 @@ Ref<Resource> ResourceFormatLoaderTheora::load(const String &p_path, const Strin
 		return Ref<Resource>();
 	}
 
-	VideoStreamTheora *stream = memnew(VideoStreamTheora);
+	Ref<VideoStreamTheora> stream;
+	stream.instantiate();
 	stream->set_file(p_path);
 
 	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);

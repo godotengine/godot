@@ -30,7 +30,9 @@
 
 #include "audio_stream_interactive.h"
 
+#include "core/config/engine.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 
 AudioStreamInteractive::AudioStreamInteractive() {
 }

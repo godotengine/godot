@@ -30,6 +30,7 @@
 
 #include "ip.h"
 
+#include "core/object/class_db.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/hash_map.h"

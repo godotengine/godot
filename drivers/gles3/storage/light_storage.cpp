@@ -55,7 +55,7 @@ LightStorage::LightStorage() {
 	directional_shadow.size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
 	directional_shadow.use_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
 
-	// lightmap_probe_capture_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
+	lightmap_probe_capture_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
 }
 
 LightStorage::~LightStorage() {
@@ -117,6 +117,14 @@ void LightStorage::spot_light_initialize(RID p_rid) {
 	_light_initialize(p_rid, RSE::LIGHT_SPOT);
 }
 
+RID LightStorage::area_light_allocate() {
+	return light_owner.allocate_rid();
+}
+
+void LightStorage::area_light_initialize(RID p_rid) {
+	_light_initialize(p_rid, RSE::LIGHT_AREA);
+}
+
 void LightStorage::light_free(RID p_rid) {
 	light_set_projector(p_rid, RID()); //clear projector
 
@@ -171,7 +179,11 @@ void LightStorage::light_set_param(RID p_light, RSE::LightParam p_param, float p
 void LightStorage::light_set_shadow(RID p_light, bool p_enabled) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
-	light->shadow = p_enabled;
+	if (light->type == RSE::LIGHT_AREA) {
+		light->shadow = false;
+	} else {
+		light->shadow = p_enabled;
+	}
 
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
@@ -327,6 +339,36 @@ RSE::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(
 	return light->directional_shadow_mode;
 }
 
+void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_size = p_size.maxf(0.0f);
+	// The range in which objects are illuminated change, so the z-range of the shadow map needs to adjust accordingly.
+	light->version++;
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+
+Vector2 LightStorage::light_area_get_size(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_size;
+}
+
+void LightStorage::light_area_set_normalize_energy(RID p_light, bool p_enabled) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_normalize_energy = p_enabled;
+}
+
+bool LightStorage::light_area_get_normalize_energy(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_normalize_energy;
+}
+
+void LightStorage::light_area_set_texture(RID p_light, RID p_texture) {
+	// not implemented
+}
+RID LightStorage::light_area_get_texture(RID p_light) const {
+	return RID(); // not implemented
+}
+
 RSE::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, RSE::LIGHT_BAKE_DISABLED);
@@ -368,6 +410,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 		case RSE::LIGHT_OMNI: {
 			float r = light->param[RSE::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
+		};
+		case RSE::LIGHT_AREA: {
+			float len = light->param[RSE::LIGHT_PARAM_RANGE];
+
+			float width = light->area_size.x / 2.0 + len;
+			float height = light->area_size.y / 2.0 + len;
+
+			return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 		};
 		case RSE::LIGHT_DIRECTIONAL: {
 			return AABB();
@@ -662,7 +712,7 @@ Dependency *LightStorage::reflection_probe_get_dependency(RID p_probe) const {
 /* REFLECTION ATLAS */
 
 RID LightStorage::reflection_atlas_create() {
-	ReflectionAtlas ra;
+	ReflectionAtlas ra = {};
 	ra.count = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_count");
 	ra.size = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_size");
 

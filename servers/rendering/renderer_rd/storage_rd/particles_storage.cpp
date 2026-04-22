@@ -375,10 +375,11 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	particles->pre_process_time = p_time;
 }
 
-void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_residual) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 	particles->request_process_time = p_request_process_time;
+	particles->request_process_time_residual = p_request_process_time_residual;
 }
 
 void ParticlesStorage::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
@@ -491,6 +492,20 @@ void ParticlesStorage::particles_set_transform_align(RID p_particles, RSE::Parti
 	ERR_FAIL_NULL(particles);
 
 	particles->transform_align = p_transform_align;
+}
+
+void ParticlesStorage::particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_src = p_transform_align_channel_filter;
+}
+
+void ParticlesStorage::particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_axis = p_rotation_axis;
 }
 
 void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_material) {
@@ -822,7 +837,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
 	}
 
-	double new_phase = Math::fmod((double)p_particles->phase + (p_delta / p_particles->lifetime), 1.0);
+	double new_phase = Math::fmod((double)(p_particles->phase + (p_delta / p_particles->lifetime)), 1.0);
 
 	//move back history (if there is any)
 	for (uint32_t i = p_particles->frame_history.size() - 1; i > 0; i--) {
@@ -1222,7 +1237,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
-	if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+	if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 		return;
 	}
 
@@ -1297,6 +1312,9 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	copy_push_constant.align_up[2] = p_up_axis.z;
 
 	copy_push_constant.align_mode = particles->transform_align;
+	copy_push_constant.align_src = particles->transform_align_src;
+	copy_push_constant.align_axis = uint32_t(particles->transform_align_axis);
+	copy_push_constant.pad2 = uint32_t(0);
 
 	if (do_sort) {
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -1444,13 +1462,13 @@ void ParticlesStorage::update_particles() {
 			particles->prev_phase = 0;
 			particles->clear = true;
 			particles->restart_request = false;
+			particles->frame_remainder = 0.0;
 		}
 
 		if (particles->inactive && !particles->emitting) {
 			//go next
 			continue;
 		}
-
 		if (particles->emitting) {
 			if (particles->inactive) {
 				//restart system from scratch
@@ -1541,13 +1559,12 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-		double todo = particles->request_process_time;
-		if (particles->clear) {
-			todo += particles->pre_process_time;
-		}
+		float todo = particles->clear ? particles->pre_process_time : 0;
+		todo = todo > particles->request_process_time ? todo : particles->request_process_time;
+		todo = todo > particles->request_process_time_residual ? todo : particles->request_process_time_residual;
 
 		if (todo > 0.0) {
-			double frame_time;
+			real_t frame_time;
 			if (fixed_fps > 0) {
 				frame_time = 1.0 / fixed_fps;
 			} else {
@@ -1557,23 +1574,42 @@ void ParticlesStorage::update_particles() {
 			float tmp_scale = particles->speed_scale;
 			// We need this otherwise the speed scale of the particle system influences the TODO.
 			particles->speed_scale = 1.0;
-			while (todo >= 0) {
-				_particles_process(particles, frame_time);
-				todo -= frame_time;
+			if (particles->clear) {
+				todo = particles->pre_process_time;
+				while (todo > 0.0) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
 			}
-			particles->request_process_time = 0.0;
+			if (particles->request_process_time > 0.0) {
+				todo = particles->request_process_time;
+				while (todo > 0.0) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (particles->request_process_time_residual > 0.0) {
+				particles->emitting = false;
+				todo = particles->request_process_time_residual;
+				while (todo > 0.0) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
 			particles->speed_scale = tmp_scale;
 		}
 
-		double time_scale = MAX(particles->speed_scale, 0.0);
+		particles->request_process_time = 0.0;
+		particles->request_process_time_residual = 0.0;
 
+		float time_scale = MAX(particles->speed_scale, 0.0);
 		if (fixed_fps > 0) {
-			double frame_time = 1.0 / fixed_fps;
-			double delta = RendererCompositorRD::get_singleton()->get_frame_delta_time();
+			float frame_time = 1.0 / fixed_fps;
+			float delta = (float)RendererCompositorRD::get_singleton()->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
-			} else if (delta <= 0.0) { //unlikely but..
-				delta = 0.001;
+			} else if (delta < 0.0) {
+				delta = 0.0;
 			}
 			todo = particles->frame_remainder + delta * time_scale;
 
@@ -1586,7 +1622,6 @@ void ParticlesStorage::update_particles() {
 		} else {
 			_particles_process(particles, RendererCompositorRD::get_singleton()->get_frame_delta_time() * time_scale);
 		}
-
 		// Ensure that memory is initialized (the code above should ensure that _particles_process is always called at least once upon clearing).
 		DEV_ASSERT(!particles->clear);
 
@@ -1614,14 +1649,37 @@ void ParticlesStorage::update_particles() {
 				// In local mode, particle positions are calculated locally (relative to the node position)
 				// and they're also drawn locally.
 				// It works as expected, so we just pass an identity transform.
-				RendererRD::MaterialStorage::store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
+				//RendererRD::MaterialStorage::store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
+				copy_push_constant.inv_emission_transform[0] = 1.0;
+				copy_push_constant.inv_emission_transform[1] = 0.0;
+				copy_push_constant.inv_emission_transform[2] = 0.0;
+				copy_push_constant.inv_emission_transform[3] = 0.0;
+				copy_push_constant.inv_emission_transform[4] = 1.0;
+				copy_push_constant.inv_emission_transform[5] = 0.0;
+				copy_push_constant.inv_emission_transform[6] = 0.0;
+				copy_push_constant.inv_emission_transform[7] = 0.0;
+				copy_push_constant.inv_emission_transform[8] = 1.0;
+				copy_push_constant.inv_emission_transform[9] = 0.0;
+				copy_push_constant.inv_emission_transform[10] = 0.0;
+				copy_push_constant.inv_emission_transform[11] = 0.0;
 			} else {
 				// In global mode, particle positions are calculated globally (relative to the canvas origin)
 				// but they're drawn locally.
 				// So, we need to pass the inverse of the emission transform to bring the
 				// particles to local coordinates before drawing.
 				Transform3D inv = particles->emission_transform.affine_inverse();
-				RendererRD::MaterialStorage::store_transform(inv, copy_push_constant.inv_emission_transform);
+				copy_push_constant.inv_emission_transform[0] = inv.basis.rows[0][0];
+				copy_push_constant.inv_emission_transform[1] = inv.basis.rows[1][0];
+				copy_push_constant.inv_emission_transform[2] = inv.basis.rows[2][0];
+				copy_push_constant.inv_emission_transform[3] = inv.basis.rows[0][1];
+				copy_push_constant.inv_emission_transform[4] = inv.basis.rows[1][1];
+				copy_push_constant.inv_emission_transform[5] = inv.basis.rows[2][1];
+				copy_push_constant.inv_emission_transform[6] = inv.basis.rows[0][2];
+				copy_push_constant.inv_emission_transform[7] = inv.basis.rows[1][2];
+				copy_push_constant.inv_emission_transform[8] = inv.basis.rows[2][2];
+				copy_push_constant.inv_emission_transform[9] = inv.origin.x;
+				copy_push_constant.inv_emission_transform[10] = inv.origin.y;
+				copy_push_constant.inv_emission_transform[11] = inv.origin.z;
 			}
 
 			copy_push_constant.total_particles = total_amount;
@@ -1630,6 +1688,8 @@ void ParticlesStorage::update_particles() {
 			copy_push_constant.align_up[0] = 0;
 			copy_push_constant.align_up[1] = 0;
 			copy_push_constant.align_up[2] = 0;
+			copy_push_constant.align_src = particles->transform_align_src;
+			copy_push_constant.align_axis = uint32_t(particles->transform_align_axis);
 
 			if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
 				copy_push_constant.trail_size = particles->trail_bind_poses.size();

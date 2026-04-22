@@ -109,7 +109,8 @@ protected:
 	GDVIRTUAL1_REQUIRED(_stage_file, String);
 	GDVIRTUAL1_REQUIRED(_unstage_file, String);
 	GDVIRTUAL1_REQUIRED(_discard_file, String);
-	GDVIRTUAL1_REQUIRED(_commit, String);
+	GDVIRTUAL2(_commit, String, bool);
+	GDVIRTUAL0R(bool, _allow_amends);
 	GDVIRTUAL2R_REQUIRED(TypedArray<Dictionary>, _get_diff, String, int);
 	GDVIRTUAL0R_REQUIRED(bool, _shut_down);
 	GDVIRTUAL0R_REQUIRED(String, _get_vcs_name);
@@ -126,6 +127,10 @@ protected:
 	GDVIRTUAL2_REQUIRED(_push, String, bool);
 	GDVIRTUAL1_REQUIRED(_fetch, String);
 	GDVIRTUAL2R_REQUIRED(TypedArray<Dictionary>, _get_line_diff, String, String);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL1_COMPAT(_commit_bind_compat_117968, _commit, String);
+#endif
 
 public:
 	static EditorVCSInterface *get_singleton();
@@ -144,7 +149,8 @@ public:
 	void stage_file(const String &p_file_path);
 	void unstage_file(const String &p_file_path);
 	void discard_file(const String &p_file_path);
-	void commit(const String &p_msg);
+	void commit(const String &p_msg, bool p_amend);
+	bool allow_amends();
 	List<DiffFile> get_diff(const String &p_identifier, TreeArea p_area);
 	bool shut_down();
 	String get_vcs_name();

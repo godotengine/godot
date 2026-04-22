@@ -36,7 +36,6 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef FAILED // Overrides Error::FAILED
 

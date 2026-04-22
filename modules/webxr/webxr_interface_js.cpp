@@ -40,9 +40,11 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
+#include "servers/display/display_server.h"
 #include "servers/xr/xr_hand_tracker.h"
 
 #include <emscripten.h>
+
 #include <cstdlib>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {

@@ -35,9 +35,9 @@
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
 
+#include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/marshalls.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
@@ -50,7 +50,6 @@
 #include "main/main.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
-#include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server.h"
 
 #include <avrt.h>
@@ -83,7 +82,7 @@ extern "C" {
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_windows.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
@@ -203,7 +202,7 @@ bool OS_Windows::is_using_con_wrapper() const {
 	DWORD count = GetConsoleProcessList(&pids[0], 256);
 	for (DWORD i = 0; i < count; i++) {
 		HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pids[i]);
-		if (process != NULL) {
+		if (process != nullptr) {
 			WCHAR proc_name[MAX_PATH];
 			DWORD len = MAX_PATH;
 			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
@@ -2121,7 +2120,7 @@ PackedByteArray OS_Windows::get_stdin_buffer(int64_t p_buffer_size) {
 
 OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2152,7 +2151,7 @@ OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
 
 OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2178,7 +2177,7 @@ OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
 
 OS_Windows::StdHandleType OS_Windows::get_stderr_type() const {
 	HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2511,6 +2510,19 @@ String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
 }
 
+String OS_Windows::expand_path(const String &p_path) const {
+	String path = p_path;
+
+	if (path.begins_with("~/") || path.begins_with("~\\") || path == "~") {
+		String home = get_environment("USERPROFILE");
+		if (!home.is_empty()) {
+			path = home + path.substr(1);
+		}
+	}
+
+	return path;
+}
+
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
@@ -2730,7 +2742,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	bool ok = true;
 #ifdef GLES3_ENABLED
 	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
-	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+	if (test_gl_manager_native->window_create(DisplayServerEnums::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
 		RasterizerGLES3::make_current(true);
 	} else {
 		ok = false;

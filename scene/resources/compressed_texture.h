@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/resource_loader.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server_enums.h"
 
@@ -88,7 +87,7 @@ public:
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
 	static TextureFormatRequestCallback request_normal_callback;
 
-	Image::Format get_format() const;
+	virtual Image::Format get_format() const override;
 	Error load(const String &p_path);
 	String get_load_path() const;
 
@@ -108,16 +107,6 @@ public:
 	virtual Ref<Image> get_image() const override;
 
 	~CompressedTexture2D();
-};
-
-class ResourceFormatLoaderCompressedTexture2D : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderCompressedTexture2D, ResourceFormatLoader);
-
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
 };
 
 class CompressedTextureLayered : public TextureLayered {
@@ -174,16 +163,6 @@ public:
 
 	CompressedTextureLayered(LayeredType p_layered_type);
 	~CompressedTextureLayered();
-};
-
-class ResourceFormatLoaderCompressedTextureLayered : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderCompressedTextureLayered, ResourceFormatLoader);
-
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
 };
 
 class CompressedTexture2DArray : public CompressedTextureLayered {
@@ -260,14 +239,4 @@ public:
 	virtual Vector<Ref<Image>> get_data() const override;
 
 	~CompressedTexture3D();
-};
-
-class ResourceFormatLoaderCompressedTexture3D : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderCompressedTexture3D, ResourceFormatLoader);
-
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
 };

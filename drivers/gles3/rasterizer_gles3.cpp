@@ -32,10 +32,13 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_types.h"
 
@@ -76,17 +79,20 @@
 #endif
 #endif
 
-#if !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
-// We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS or the web.
-#define CAN_DEBUG
+#include <platform_gl.h>
+
+#if defined(EGL_ENABLED) || defined(ANDROID_ENABLED)
+#include <platform_egl.h>
 #endif
 
-#include "platform_gl.h"
+#if defined(GLAD_ENABLED) || defined(EGL_ENABLED) || defined(ANDROID_ENABLED)
+// We can debug GL if we use GLAD or EGL, so not on iOS or Web.
+#define GL_DEBUG_CALLBACK
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#ifdef _WIN32
 #define strcpy strcpy_s
 #endif
+#endif // GLAD_ENABLED || EGL_ENABLED || ANDROID_ENABLED
 
 #ifdef WINDOWS_ENABLED
 bool RasterizerGLES3::screen_flipped_y = false;
@@ -123,7 +129,7 @@ void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
 	}
 }
 
-#ifdef CAN_DEBUG
+#ifdef GL_DEBUG_CALLBACK
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	// These are ultimately annoying, so removing for now.
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB || type == _EXT_DEBUG_TYPE_MARKER_ARB) {
@@ -174,7 +180,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINT(output);
 }
-#endif
+#endif // GL_DEBUG_CALLBACK
 
 typedef void(GLAPIENTRY *DEBUGPROCARB)(GLenum source,
 		GLenum type,
@@ -211,9 +217,16 @@ void RasterizerGLES3::finalize() {
 	memdelete(config);
 }
 
+void RasterizerGLES3::make_current(bool p_gles_over_gl) {
+	RasterizerUtilGLES3::set_gles_over_gl(p_gles_over_gl);
+	OS::get_singleton()->set_gles_over_gl(p_gles_over_gl);
+	_create_func = _create_current;
+	low_end = true;
+}
+
 RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
 
-#ifdef EGL_ENABLED
+#if defined(GLAD_ENABLED) && defined(EGL_ENABLED)
 void *_egl_load_function_wrapper(const char *p_name) {
 	return (void *)eglGetProcAddress(p_name);
 }
@@ -251,17 +264,24 @@ RasterizerGLES3::RasterizerGLES3() {
 		if (!glad_loaded && gladLoaderLoadGL()) {
 			glad_loaded = true;
 		}
+#ifdef GLES_API_ENABLED
 	} else {
 		if (!glad_loaded && gladLoaderLoadGLES2()) {
 			glad_loaded = true;
 		}
+#endif
 	}
 
 	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
 	// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
 	// or we need to actually test for this situation before constructing this.
 	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
+#endif // GLAD_ENABLED
 
+#ifdef GL_DEBUG_CALLBACK
+	// Setup OpenGL debug callback, via DebugMessageCallbackARB (GLAD or EGL).
+
+#ifdef GLAD_ENABLED
 	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (GLAD_GL_ARB_debug_output) {
@@ -273,10 +293,7 @@ RasterizerGLES3::RasterizerGLES3() {
 			}
 		}
 	}
-#endif // GLAD_ENABLED
 
-	// For debugging
-#ifdef CAN_DEBUG
 #ifdef GL_API_ENABLED
 	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
@@ -289,6 +306,9 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 #endif // GL_API_ENABLED
+#endif // GLAD_ENABLED
+
+#if defined(EGL_ENABLED) || defined(ANDROID_ENABLED)
 #ifdef GLES_API_ENABLED
 	if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
@@ -306,9 +326,13 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 #endif // GLES_API_ENABLED
-#endif // CAN_DEBUG
+#endif // EGL_ENABLED || ANDROID_ENABLED
+
+#endif // GL_DEBUG_CALLBACK
 
 	{
+		// Setup shader cache.
+
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
 		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
@@ -367,7 +391,7 @@ RasterizerGLES3::RasterizerGLES3() {
 RasterizerGLES3::~RasterizerGLES3() {
 }
 
-void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first) {
+void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_blit.render_target);
 
 	ERR_FAIL_NULL(rt);
@@ -442,7 +466,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 }
 
 // is this p_screen useless in a multi window environment?
-void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
+void RasterizerGLES3::blit_render_targets_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) {
 	for (int i = 0; i < p_amount; i++) {
 		_blit_render_target_to_screen(p_screen, p_render_targets[i], i == 0);
 	}

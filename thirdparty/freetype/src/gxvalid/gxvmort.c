@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT mort table validation (body).
  *
- * Copyright (C) 2005-2025 by
+ * Copyright (C) 2005-2026 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

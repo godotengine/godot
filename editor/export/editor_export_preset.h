@@ -33,6 +33,7 @@
 class EditorExportPlatform;
 
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class EditorExportPreset : public RefCounted {
 	GDCLASS(EditorExportPreset, RefCounted);

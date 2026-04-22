@@ -32,6 +32,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
+#include "core/variant/type_info.h"
 
 /**
 	The XR interface is a template class on top of which we build interface to different AR, VR and tracking SDKs.

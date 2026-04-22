@@ -36,6 +36,7 @@
 
 class CheckBox;
 class CheckButton;
+class HSplitContainer;
 class EditorFileDialog;
 class EditorFileSystemDirectory;
 class EditorInspector;
@@ -73,6 +74,7 @@ public:
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
 
+	HSplitContainer *main_split = nullptr;
 	TabContainer *sections = nullptr;
 
 	MenuButton *add_preset = nullptr;

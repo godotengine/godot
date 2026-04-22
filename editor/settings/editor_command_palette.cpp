@@ -30,7 +30,10 @@
 
 #include "editor_command_palette.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
@@ -185,7 +188,7 @@ void EditorCommandPalette::_confirmed() {
 	const String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
 	if (!command_key.is_empty()) {
 		hide();
-		callable_mp(this, &EditorCommandPalette::execute_command).call_deferred(command_key);
+		execute_command(command_key);
 	}
 }
 

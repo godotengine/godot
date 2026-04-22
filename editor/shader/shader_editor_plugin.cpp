@@ -30,6 +30,8 @@
 
 #include "shader_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
@@ -38,14 +40,15 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/window_wrapper.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/shader/shader_create_dialog.h"
 #include "editor/shader/text_shader_editor.h"
 #include "editor/shader/text_shader_language_plugin.h"
-#include "editor/shader/visual_shader_language_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
+#include "servers/display/display_server.h"
 
 Ref<Resource> ShaderEditorPlugin::_get_current_shader() {
 	int index = shader_tabs->get_current_tab();
@@ -878,6 +881,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	files_split = memnew(HSplitContainer);
 	files_split->set_split_offset(200 * EDSCALE);
 	files_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	files_split->set_drag_nested_intersections(true);
 	shader_dock->add_child(files_split);
 
 	context_menu = memnew(PopupMenu);
@@ -926,10 +930,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	Ref<TextShaderLanguagePlugin> text_shader_lang;
 	text_shader_lang.instantiate();
 	EditorShaderLanguagePlugin::register_shader_language(text_shader_lang);
-
-	Ref<VisualShaderLanguagePlugin> visual_shader_lang;
-	visual_shader_lang.instantiate();
-	EditorShaderLanguagePlugin::register_shader_language(visual_shader_lang);
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {

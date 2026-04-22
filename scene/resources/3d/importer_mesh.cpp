@@ -32,11 +32,14 @@
 
 #include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "scene/resources/surface_tool.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "core/math/convex_hull.h"
 #endif // PHYSICS_3D_DISABLED
+
+#include <cfloat> // FLT_EPSILON
 
 Ref<ImporterMesh> ImporterMesh::merge_importer_meshes(const TypedArray<ImporterMesh> &p_importer_meshes, const TypedArray<Transform3D> &p_relative_transforms, bool p_deduplicate_surfaces) {
 	// Setup and safety checks.

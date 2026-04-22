@@ -13,6 +13,7 @@ mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
 mode_cube_to_octahedral = #define CUBE_TO_OCTAHEDRAL \n#define USE_COPY_SECTION
 mode_cube_to_panorama = #define CUBE_TO_PANORAMA
+mode_apply_linear_exposure_to_srgb = #define MODE_SIMPLE_COPY \n#define MODE_MULTIPLY \n#define APPLY_LINEAR_EXPOSURE_TO_SRGB
 
 #[specializations]
 
@@ -104,15 +105,19 @@ uniform float upscale;
 uniform float aspect_ratio;
 #endif // APPLY_LENS_DISTORTION
 
+#ifdef APPLY_LINEAR_EXPOSURE_TO_SRGB
+uniform float exposure;
+#endif
+
 layout(location = 0) out vec4 frag_color;
 
-// This expects 0-1 range input, outside that range it behaves poorly.
+// This approximation expects non-negative input; negative input behaves poorly.
 vec3 srgb_to_linear(vec3 color) {
 	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
 }
 
-// This expects 0-1 range input.
+// This approximation expects non-negative input; negative input is undefined behavior.
 vec3 linear_to_srgb(vec3 color) {
 	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
 	return max(vec3(1.055) * pow(color, vec3(0.416666667)) - vec3(0.055), vec3(0.0));
@@ -162,6 +167,12 @@ void main() {
 #ifdef CONVERT_LINEAR_TO_SRGB
 		// Reading from a *_SRGB texture source will have converted data to linear,
 		// but we should output in sRGB!
+		color.rgb = linear_to_srgb(color.rgb);
+#endif
+
+#ifdef APPLY_LINEAR_EXPOSURE_TO_SRGB
+		color.rgb = srgb_to_linear(color.rgb);
+		color.rgb *= exposure;
 		color.rgb = linear_to_srgb(color.rgb);
 #endif
 

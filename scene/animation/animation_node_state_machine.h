@@ -164,7 +164,7 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;
 
@@ -181,7 +181,7 @@ public:
 	void set_node_position(const StringName &p_name, const Vector2 &p_position);
 	Vector2 get_node_position(const StringName &p_name) const;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual void get_child_nodes(LocalVector<ChildNode> *r_child_nodes) override;
 
 	bool has_transition(const StringName &p_from, const StringName &p_to) const;
 	bool has_transition_from(const StringName &p_from) const;
@@ -212,7 +212,7 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
@@ -289,32 +289,32 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	bool is_grouped = false;
 
-	void _clear_fading(AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
+	void _clear_fading(AnimationNode::ProcessState &p_process_state, AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
 	void _signal_state_change(AnimationTree *p_animation_tree, const StringName &p_state, bool p_started);
 	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true);
 	void _start_main(const StringName &p_state, bool p_reset = true);
 	void _next_main();
 	void _stop_main();
 
-	bool _make_travel_path(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, Vector<StringName> &r_path, bool p_test_only);
+	bool _make_travel_path(AnimationNode::ProcessState &p_process_state, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, Vector<StringName> &r_path, bool p_test_only);
 	String _validate_path(AnimationNodeStateMachine *p_state_machine, const String &p_path);
-	bool _travel(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, bool p_test_only);
-	void _start(AnimationNodeStateMachine *p_state_machine);
+	bool _travel(AnimationNode::ProcessState &p_process_state, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, bool p_test_only);
+	void _start(AnimationNode::ProcessState &p_process_state, AnimationNodeStateMachine *p_state_machine);
 
-	void _clear_path_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only);
-	bool _travel_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_is_allow_transition_to_self, bool p_is_parent_same_state, bool p_test_only);
+	void _clear_path_children(AnimationNode::ProcessState &p_process_state, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only);
+	bool _travel_children(AnimationNode::ProcessState &p_process_state, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_is_allow_transition_to_self, bool p_is_parent_same_state, bool p_test_only);
 	void _start_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_test_only);
 
-	AnimationNode::NodeTimeInfo process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
-	AnimationNode::NodeTimeInfo _process(AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
+	AnimationNode::NodeTimeInfo process(AnimationNode::ProcessState &p_process_state, AnimationNodeInstance &p_instance, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
+	AnimationNode::NodeTimeInfo _process(AnimationNode::ProcessState &p_process_state, AnimationNodeInstance &p_instance, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
 
-	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
-	bool _transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only);
-	NextInfo _find_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine) const;
+	bool _check_advance_condition(AnimationNode::ProcessState &p_process_state, AnimationNodeInstance &p_instance, const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
+	bool _transition_to_next_recursive(AnimationNode::ProcessState &p_process_state, AnimationNodeInstance &p_instance, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only);
+	NextInfo _find_next(AnimationNode::ProcessState &p_process_state, AnimationNodeInstance &p_instance, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine) const;
 	Ref<AnimationNodeStateMachineTransition> _check_group_transition(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const AnimationNodeStateMachine::Transition &p_transition, Ref<AnimationNodeStateMachine> &r_state_machine, bool &r_bypass) const;
-	bool _can_transition_to_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, NextInfo p_next, bool p_test_only);
+	bool _can_transition_to_next(AnimationNode::ProcessState &p_process_state, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, NextInfo p_next, bool p_test_only);
 
-	void _set_current(AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
+	void _set_current(AnimationNode::ProcessState &p_process_state, AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
 	void _set_grouped(bool p_is_grouped);
 	void _set_base_path(const String &p_base_path);
 	Ref<AnimationNodeStateMachinePlayback> _get_parent_playback(AnimationTree *p_tree) const;

@@ -30,6 +30,10 @@
 
 #include "static_body_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/resources/physics_material.h"
+
 #ifndef NAVIGATION_3D_DISABLED
 #include "core/math/convex_hull.h"
 #include "scene/resources/3d/box_shape_3d.h"
@@ -42,7 +46,6 @@
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
-#include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 

@@ -54,7 +54,9 @@ private:
 	Button *popup_button = nullptr;
 
 	bool tabs_visible = true;
+#ifndef DISABLE_DEPRECATED
 	bool all_tabs_in_front = false;
+#endif
 	TabPosition tabs_position = POSITION_TOP;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
@@ -127,7 +129,9 @@ private:
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
+	void _repaint_call_deferred();
 	void _repaint();
+	void _repaint_internal();
 	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
@@ -154,6 +158,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
+	void _maximum_size_changed();
 
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
@@ -185,8 +191,10 @@ public:
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_all_tabs_in_front(bool p_is_front);
 	bool is_all_tabs_in_front() const;
+#endif
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
@@ -227,6 +235,7 @@ public:
 	Control *get_current_tab_control() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;

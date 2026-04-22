@@ -183,10 +183,20 @@ struct GetTypeInfo<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	}
 };
 
-template <class T>
+template <typename T>
+struct GetTypeInfo<Ref<T>> {
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
+	}
+};
+
+template <typename T>
 class RequiredParam;
 
-template <class T>
+template <typename T>
 class RequiredResult;
 
 template <typename T>
@@ -279,6 +289,13 @@ inline StringName __constant_get_bitfield_name(T param) {
 	return GetTypeInfo<BitField<T>>::get_class_info().class_name;
 }
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
+
+#define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum, m_enum)
+#define VARIANT_BITFIELD_CAST(m_enum) MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum)
+
+// Use only for backwards compatibility when the location of an enum changes.
+#define VARIANT_ENUM_CAST_EXT(m_enum, m_bound_name) MAKE_ENUM_TYPE_INFO(m_enum, m_bound_name)
+#define VARIANT_BITFIELD_CAST_EXT(m_enum, m_bound_name) MAKE_BITFIELD_TYPE_INFO(m_enum, m_bound_name)
 
 // No initialization by default, except for scalar types.
 template <typename T>

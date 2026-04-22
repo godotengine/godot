@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/script_language.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "scene/gui/margin_container.h"
@@ -164,7 +164,7 @@ private:
 	EditorPerformanceProfiler *performance_profiler = nullptr;
 	EditorExpressionEvaluator *expression_evaluator = nullptr;
 
-	OS::ProcessID remote_pid = 0;
+	ProcessID remote_pid = 0;
 	bool move_to_foreground = true;
 	bool can_request_idle_draw = false;
 

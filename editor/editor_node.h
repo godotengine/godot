@@ -31,10 +31,12 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/os/process_id.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_folding.h"
+#include "servers/display/display_server_enums.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -215,10 +217,11 @@ public:
 
 		// Non-menu options.
 		SCENE_TAB_CLOSE,
-		SCENE_TAB_SET_AS_MAIN_SCENE,
+		SCENE_TAB_SAVE_SCENE,
+		SCENE_TAB_SAVE_AS_AND_RUN,
+		SCENE_TAB_SAVE_AS_MAIN_SCENE,
 		SAVE_AND_RUN,
 		SAVE_AND_RUN_MAIN_SCENE,
-		SAVE_AND_SET_MAIN_SCENE,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -316,7 +319,7 @@ private:
 	bool exiting = false;
 	bool dimmed = false;
 
-	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+	DisplayServerEnums::WindowMode prev_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
 	Control *vp_base = nullptr;
@@ -371,6 +374,7 @@ private:
 
 	ConfirmationDialog *confirmation = nullptr;
 	bool stop_project_confirmation = false;
+	bool stop_download_confirmation = false;
 	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
@@ -476,6 +480,7 @@ private:
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
+	LocalVector<ObjectID> hdr_viewports;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -631,8 +636,6 @@ private:
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	bool has_main_screen() const { return true; }
-
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
 	bool _find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
@@ -731,9 +734,10 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
-	void init_plugins();
+	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
+	void init_plugins();
 
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);
@@ -940,6 +944,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
+	void register_hdr_viewport(Viewport *p_viewport);
 
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
@@ -948,8 +953,8 @@ public:
 
 	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
-	void stop_child_process(OS::ProcessID p_pid);
+	ProcessID has_child_process(ProcessID p_pid) const;
+	void stop_child_process(ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	void update_preview_themes(int p_mode);

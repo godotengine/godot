@@ -30,7 +30,10 @@
 
 #include "editor_debugger_node.h"
 
+#include "core/config/engine.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"
@@ -50,6 +53,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
@@ -68,9 +72,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	set_layout_key("Debugger");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Dock"), KeyModifierMask::ALT | Key::D));
 	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
-	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
-	set_global(false);
-	set_transient(true);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 
 	_update_margins();
 
@@ -309,6 +311,17 @@ void EditorDebuggerNode::stop(bool p_force) {
 	inspect_edited_object_wait = false;
 
 	current_uri.clear();
+	// Also close all debugging sessions.
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		// If the server is also still active, let the debugger notify that it stopped.
+		// Otherwise, just stop it silently.
+		if (server.is_valid() || dbg->is_session_active()) {
+			dbg->_stop_and_notify();
+		} else {
+			dbg->stop();
+		}
+	});
+
 	if (server.is_valid()) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
@@ -321,12 +334,6 @@ void EditorDebuggerNode::stop(bool p_force) {
 		server.unref();
 	}
 
-	// Also close all debugging sessions.
-	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		if (dbg->is_session_active()) {
-			dbg->_stop_and_notify();
-		}
-	});
 	_break_state_changed();
 	breakpoints.clear();
 	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::REMOTE_HISTORY, false);

@@ -48,8 +48,12 @@ class EditorSceneTabs : public MarginContainer {
 
 public:
 	enum {
-		SCENE_SHOW_IN_FILESYSTEM = 1000, // Prevents conflicts with EditorNode options.
+		SCENE_SAVE_SCENE = 1000, // Prevents conflicts with EditorNode options.
+		SCENE_SAVE_AS_SCENE,
+		SCENE_SHOW_IN_FILESYSTEM,
 		SCENE_RUN,
+		SCENE_SET_AS_MAIN_SCENE,
+		SCENE_CLOSE,
 		SCENE_CLOSE_OTHERS,
 		SCENE_CLOSE_RIGHT,
 	};
@@ -88,6 +92,8 @@ private:
 	void _global_menu_scene(const Variant &p_tag);
 	void _global_menu_new_window(const Variant &p_tag);
 
+	void _project_settings_changed();
+
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 protected:
@@ -102,6 +108,7 @@ public:
 
 	void set_current_tab(int p_tab);
 	int get_current_tab() const;
+	int get_option_tab() const;
 
 	void update_scene_tabs();
 

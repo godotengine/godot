@@ -31,6 +31,7 @@
 #include "world_3d.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"

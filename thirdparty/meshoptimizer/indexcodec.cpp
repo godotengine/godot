@@ -19,12 +19,6 @@ const int kDecodeIndexVersion = 1;
 typedef unsigned int VertexFifo[16];
 typedef unsigned int EdgeFifo[16][2];
 
-static const unsigned int kTriangleIndexOrder[3][3] = {
-    {0, 1, 2},
-    {1, 2, 0},
-    {2, 0, 1},
-};
-
 static const unsigned char kCodeAuxEncodingTable[16] = {
     0x00, 0x76, 0x87, 0x56, 0x67, 0x78, 0xa9, 0x86, 0x65, 0x89, 0x68, 0x98, 0x01, 0x69,
     0, 0, // last two entries aren't used for encoding
@@ -194,6 +188,8 @@ size_t meshopt_encodeIndexBuffer(unsigned char* buffer, size_t buffer_size, cons
 
 	int fecmax = version >= 1 ? 13 : 15;
 
+	static const int rotations[] = {0, 1, 2, 0, 1};
+
 	// use static encoding table; it's possible to pack the result and then build an optimal table and repack
 	// for now we keep it simple and use the table that has been generated based on symbol frequency on a training mesh set
 	const unsigned char* codeaux_table = kCodeAuxEncodingTable;
@@ -211,7 +207,7 @@ size_t meshopt_encodeIndexBuffer(unsigned char* buffer, size_t buffer_size, cons
 		if (fer >= 0 && (fer >> 2) < 15)
 		{
 			// note: getEdgeFifo implicitly rotates triangles by matching a/b to existing edge
-			const unsigned int* order = kTriangleIndexOrder[fer & 3];
+			const int* order = rotations + (fer & 3);
 
 			unsigned int a = indices[i + order[0]], b = indices[i + order[1]], c = indices[i + order[2]];
 
@@ -247,7 +243,7 @@ size_t meshopt_encodeIndexBuffer(unsigned char* buffer, size_t buffer_size, cons
 		else
 		{
 			int rotation = rotateTriangle(indices[i + 0], indices[i + 1], indices[i + 2], next);
-			const unsigned int* order = kTriangleIndexOrder[rotation];
+			const int* order = rotations + rotation;
 
 			unsigned int a = indices[i + order[0]], b = indices[i + order[1]], c = indices[i + order[2]];
 

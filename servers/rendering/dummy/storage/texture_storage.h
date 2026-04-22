@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 namespace RendererDummy {
@@ -137,6 +138,10 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); }
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; }
 
+	/* AREA LIGHT ATLAS API */
+	virtual void texture_add_to_area_light_atlas(RID p_texture) override {}
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) override {}
+
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
 	virtual void decal_initialize(RID p_rid) override {}
@@ -214,6 +219,12 @@ public:
 
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override {}
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const override { return Rect2i(); }
+
+	virtual void render_target_set_subsampled_enabled(RID p_render_target, bool p_enabled) override {}
+	virtual bool render_target_is_subsampled_enabled(RID p_render_target) const override { return false; }
+
+	virtual void render_target_set_subsampled_allowed(RID p_render_target, bool p_allowed) override {}
+	virtual bool render_target_is_subsampled_allowed(RID p_render_target) const override { return false; }
 
 	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }
 

@@ -31,6 +31,7 @@
 #include "skeleton_ik_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child(const BoneId p_bone_id) {
 	for (int i = children.size() - 1; 0 <= i; --i) {

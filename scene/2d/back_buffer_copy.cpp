@@ -30,6 +30,8 @@
 
 #include "back_buffer_copy.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void BackBufferCopy::_update_copy_mode() {

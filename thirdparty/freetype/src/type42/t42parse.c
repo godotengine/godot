@@ -4,7 +4,7 @@
  *
  *   Type 42 font parser (body).
  *
- * Copyright (C) 2002-2025 by
+ * Copyright (C) 2002-2026 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -65,7 +65,7 @@
     T1_FIELD_STRING( "FullName",           full_name,           0 )
     T1_FIELD_STRING( "FamilyName",         family_name,         0 )
     T1_FIELD_STRING( "Weight",             weight,              0 )
-    T1_FIELD_NUM   ( "ItalicAngle",        italic_angle,        0 )
+    T1_FIELD_FIXED ( "ItalicAngle",        italic_angle,        0 )
     T1_FIELD_BOOL  ( "isFixedPitch",       is_fixed_pitch,      0 )
     T1_FIELD_NUM   ( "UnderlinePosition",  underline_position,  0 )
     T1_FIELD_NUM   ( "UnderlineThickness", underline_thickness, 0 )

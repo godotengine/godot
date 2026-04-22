@@ -250,6 +250,45 @@ private:
 
 	void _texture_format_from_rd(RD::DataFormat p_rd_format, TextureFromRDFormat &r_format);
 
+	/* AREA LIGHT ATLAS API */
+
+	struct AreaLightAtlas {
+		struct Texture {
+			int users;
+			Rect2 uv_rect;
+		};
+
+		struct SortItem {
+			RID texture;
+			Size2i pixel_size;
+			Size2i size;
+			Point2i pos;
+
+			bool operator<(const SortItem &p_item) const {
+				//sort larger to smaller
+				if (size.height == p_item.size.height) {
+					return size.width > p_item.size.width;
+				} else {
+					return size.height > p_item.size.height;
+				}
+			}
+		};
+
+		HashMap<RID, Texture> textures;
+		bool dirty = true;
+		int mipmaps = 8;
+
+		RID texture;
+		struct MipMap {
+			RID fb;
+			RID texture;
+			Size2i size;
+		};
+		Vector<MipMap> texture_mipmaps;
+
+		Size2i size;
+	} area_light_atlas;
+
 	/* DECAL API */
 
 	struct DecalAtlas {
@@ -404,6 +443,8 @@ private:
 		RID vrs_texture;
 
 		Rect2i render_region;
+		bool subsampled_enabled = false;
+		bool subsampled_allowed = true;
 
 		// overridden textures
 		struct RTOverridden {
@@ -633,6 +674,33 @@ public:
 		return Size2i(tex->width_2d, tex->height_2d);
 	}
 
+	/* AREA LIGHT API */
+	void update_area_light_atlas();
+
+	RID area_light_atlas_get_texture() const;
+
+	_FORCE_INLINE_ Rect2 area_light_atlas_get_texture_rect(RID p_texture) {
+		AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(p_texture);
+		if (!t) {
+			return Rect2();
+		}
+
+		return t->uv_rect;
+	}
+
+	_FORCE_INLINE_ int area_light_atlas_get_mipmaps() {
+		return area_light_atlas.mipmaps;
+	}
+	_FORCE_INLINE_ Size2i area_light_atlas_get_size() {
+		return area_light_atlas.size;
+	}
+
+	void area_light_atlas_mark_dirty_on_texture(RID p_texture);
+	void area_light_atlas_remove_texture(RID p_texture);
+
+	virtual void texture_add_to_area_light_atlas(RID p_texture) override;
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) override;
+
 	/* DECAL API */
 
 	void update_decal_atlas();
@@ -838,6 +906,12 @@ public:
 
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override;
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const override;
+
+	virtual void render_target_set_subsampled_enabled(RID p_render_target, bool p_enabled) override;
+	virtual bool render_target_is_subsampled_enabled(RID p_render_target) const override;
+
+	virtual void render_target_set_subsampled_allowed(RID p_render_target, bool p_allowed) override;
+	virtual bool render_target_is_subsampled_allowed(RID p_render_target) const override;
 
 	virtual RID render_target_get_texture(RID p_render_target) override;
 

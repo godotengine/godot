@@ -35,11 +35,13 @@
 #ifdef MODULE_GLTF_ENABLED
 #include "../openxr_uuid.h"
 #include "../util.h"
-#include "core/templates/rid_owner.h"
-#include "modules/gltf/gltf_document.h"
 #include "openxr_extension_wrapper.h"
+
+#include "core/templates/rid_owner.h"
 #include "scene/3d/node_3d.h"
 #include "servers/xr/xr_pose.h"
+
+#include "modules/gltf/gltf_document.h"
 
 #include <openxr/openxr.h>
 

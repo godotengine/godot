@@ -30,6 +30,8 @@
 
 #include "nine_patch_rect.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void NinePatchRect::_notification(int p_what) {

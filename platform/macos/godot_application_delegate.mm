@@ -262,7 +262,7 @@ constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEve
 		return;
 	}
 
-	DisplayServer::WindowID window_id = ds->get_focused_window();
+	DisplayServerEnums::WindowID window_id = ds->get_focused_window();
 	NSEventModifierFlags flags = static_cast<NSEventModifierFlags>(mod);
 
 	for (const CGKeyCode key : modifiers) {
@@ -322,8 +322,8 @@ constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEve
 	}
 
 	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
-	if (ds && ds->has_window(DisplayServerMacOS::MAIN_WINDOW_ID)) {
-		ds->send_window_event(ds->get_window(DisplayServerMacOS::MAIN_WINDOW_ID), DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+	if (ds && ds->has_window(DisplayServerEnums::MAIN_WINDOW_ID)) {
+		ds->send_window_event(ds->get_window(DisplayServerEnums::MAIN_WINDOW_ID), DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 	}
 
 	return NSTerminateCancel;

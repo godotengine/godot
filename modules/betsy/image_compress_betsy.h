@@ -33,8 +33,8 @@
 #include "core/io/image.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/command_queue_mt.h"
-#include "servers/rendering/rendering_device_binds.h" // RDShaderFile
 
+class RDShaderFile;
 class RenderingDevice;
 class RenderingContextDriver;
 

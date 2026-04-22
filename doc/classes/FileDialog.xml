@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FileDialog" inherits="ConfirmationDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FileDialog" inherits="ConfirmationDialog" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A dialog for selecting files or directories in the filesystem.
 	</brief_description>
@@ -257,6 +257,18 @@
 		</member>
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
+		</member>
+		<member name="option_{index}/default" type="int" setter="" getter="" default="0">
+			The default value for the option at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. option_count - 1[/code] range.
+		</member>
+		<member name="option_{index}/name" type="String" setter="" getter="" default="&quot;&quot;">
+			The name of the option at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. option_count - 1[/code] range.
+		</member>
+		<member name="option_{index}/values" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
+			The list of values for the option at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. option_count - 1[/code] range.
 		</member>
 		<member name="overwrite_warning_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], the [FileDialog] will warn the user before overwriting files in save mode.

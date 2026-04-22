@@ -4,7 +4,7 @@
  *
  *   FreeType utility file for memory and list management (body).
  *
- * Copyright (C) 2002-2025 by
+ * Copyright (C) 2002-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -424,11 +424,10 @@
     while ( cur )
     {
       FT_ListNode  next = cur->next;
-      void*        data = cur->data;
 
 
       if ( destroy )
-        destroy( memory, data, user );
+        destroy( memory, cur->data, user );
 
       FT_FREE( cur );
       cur = next;

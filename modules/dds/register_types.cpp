@@ -33,6 +33,8 @@
 #include "image_saver_dds.h"
 #include "texture_loader_dds.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "scene/resources/texture.h"
 
 static Ref<ResourceFormatDDS> resource_loader_dds;

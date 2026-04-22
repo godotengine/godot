@@ -38,6 +38,7 @@ TEST_FORCE_LINK(test_navigation_agent_3d)
 
 #include "scene/3d/navigation/navigation_agent_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 namespace TestNavigationAgent3D {

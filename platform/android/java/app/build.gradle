@@ -41,6 +41,7 @@ dependencies {
 
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
+    implementation "androidx.documentfile:documentfile:$versions.documentfileVersion"
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")

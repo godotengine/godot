@@ -31,6 +31,8 @@
 #include "code_editor.h"
 
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
@@ -572,10 +574,7 @@ bool FindReplaceBar::search_next() {
 }
 
 void FindReplaceBar::_hide_bar() {
-	if (replace_text->has_focus() || search_text->has_focus()) {
-		text_editor->grab_focus();
-	}
-
+	text_editor->grab_focus();
 	text_editor->set_search_text("");
 	result_line = -1;
 	result_col = -1;
@@ -695,6 +694,11 @@ void FindReplaceBar::_replace_text_submitted(const String &p_text) {
 		_replace();
 		search_next();
 	}
+}
+
+void FindReplaceBar::_replace_button_pressed() {
+	_replace();
+	search_next();
 }
 
 void FindReplaceBar::_toggle_replace_pressed() {
@@ -830,6 +834,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	// Replace toolbar.
 	replace_text = memnew(LineEdit);
+	replace_text->set_keep_editing_on_text_submit(true);
 	vbc_lineedit->add_child(replace_text);
 	replace_text->set_placeholder(TTRC("Replace"));
 	replace_text->set_tooltip_text(TTRC("Replace"));
@@ -840,7 +845,7 @@ FindReplaceBar::FindReplaceBar() {
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
 	replace->set_text(TTRC("Replace"));
-	replace->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_replace));
+	replace->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_replace_button_pressed));
 
 	replace_all = memnew(Button);
 	hbc_button_replace->add_child(replace_all);
@@ -908,6 +913,11 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 	}
 	if (ED_IS_SHORTCUT("script_text_editor/delete_line", key_event)) {
 		text_editor->delete_lines();
+		accept_event();
+		return;
+	}
+	if (ED_IS_SHORTCUT("script_text_editor/join_lines", key_event)) {
+		text_editor->join_lines();
 		accept_event();
 		return;
 	}
@@ -1090,6 +1100,9 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
 			tex = get_editor_theme_icon(SNAME("MemberMethod"));
+			break;
+		case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+			tex = get_editor_theme_icon(SNAME("Keyword"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 			tex = get_editor_theme_icon(SNAME("BoxMesh"));
@@ -1371,6 +1384,24 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->end_complex_operation();
 }
 
+void CodeTextEditor::adjust_viewport_to_caret() {
+	call_on_all_layout_pending_finished(callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).bind(0));
+}
+
+void CodeTextEditor::center_viewport_to_caret() {
+	call_on_all_layout_pending_finished(callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).bind(0));
+}
+
+void CodeTextEditor::center_viewport_to_caret_if_line_invisible(int p_line) {
+	if (text_editor->is_layout_pending_in_tree()) {
+		text_editor->call_on_all_layout_pending_finished(callable_mp(this, &CodeTextEditor::center_viewport_to_caret_if_line_invisible).bind(0));
+		return;
+	}
+	if (!text_editor->is_line_in_viewport(p_line)) {
+		text_editor->center_viewport_to_caret();
+	}
+}
+
 void CodeTextEditor::goto_line(int p_line, int p_column) {
 	text_editor->remove_secondary_carets();
 	text_editor->deselect();
@@ -1379,8 +1410,7 @@ void CodeTextEditor::goto_line(int p_line, int p_column) {
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
-	// Defer in case the CodeEdit was just created and needs to be resized.
-	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
+	adjust_viewport_to_caret();
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
@@ -1389,7 +1419,7 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->select(p_line, p_begin, p_line, p_end);
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
-	callable_mp((TextEdit *)text_editor, &TextEdit::adjust_viewport_to_caret).call_deferred(0);
+	adjust_viewport_to_caret();
 }
 
 void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
@@ -1400,7 +1430,7 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
 	text_editor->cancel_code_completion();
-	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
+	center_viewport_to_caret();
 }
 
 void CodeTextEditor::set_executing_line(int p_line) {
@@ -1451,15 +1481,21 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	Dictionary state = p_state;
 
 	/* update the row first as it sets the column to 0 */
-	text_editor->set_caret_line(state["row"]);
-	text_editor->set_caret_column(state["column"]);
-	if (int(state["scroll_position"]) == -1) {
-		// Special case for previous state.
-		text_editor->center_viewport_to_caret();
+	if (state.get("ensure_caret_visible", false)) {
+		text_editor->set_caret_line(state["row"], false);
+		text_editor->set_caret_column(state["column"], false);
+		center_viewport_to_caret_if_line_invisible(state["row"]);
 	} else {
-		text_editor->set_v_scroll(state["scroll_position"]);
+		text_editor->set_caret_line(state["row"]);
+		text_editor->set_caret_column(state["column"]);
+		if (int(state["scroll_position"]) == -1) {
+			// Special case for previous state.
+			center_viewport_to_caret();
+		} else {
+			text_editor->set_v_scroll(state["scroll_position"]);
+		}
+		text_editor->set_h_scroll(state["h_scroll_position"]);
 	}
-	text_editor->set_h_scroll(state["h_scroll_position"]);
 
 	if (state.get("selection", false)) {
 		text_editor->select(state["selection_from_line"], state["selection_from_column"], state["selection_to_line"], state["selection_to_column"]);
@@ -1470,21 +1506,27 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	if (state.has("folded_lines")) {
 		const PackedInt32Array folded_lines = state["folded_lines"];
 		for (const int &line : folded_lines) {
-			text_editor->fold_line(line);
+			if (line < text_editor->get_line_count()) {
+				text_editor->fold_line(line);
+			}
 		}
 	}
 
 	if (state.has("breakpoints")) {
 		const PackedInt32Array breakpoints = state["breakpoints"];
 		for (const int &line : breakpoints) {
-			text_editor->set_line_as_breakpoint(line, true);
+			if (line < text_editor->get_line_count()) {
+				text_editor->set_line_as_breakpoint(line, true);
+			}
 		}
 	}
 
 	if (state.has("bookmarks")) {
 		const PackedInt32Array bookmarks = state["bookmarks"];
 		for (const int &line : bookmarks) {
-			text_editor->set_line_as_bookmarked(line, true);
+			if (line < text_editor->get_line_count()) {
+				text_editor->set_line_as_bookmarked(line, true);
+			}
 		}
 	}
 
@@ -1602,10 +1644,15 @@ void CodeTextEditor::_update_text_editor_theme() {
 	}
 
 	_update_font_ligatures();
+
+	update_editor_settings();
+	if (text_editor->get_code_completion_selected_index() != -1) {
+		_complete_request();
+	}
 }
 
 void CodeTextEditor::_update_font_ligatures() {
-	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
+	int ot_mode = EDITOR_GET("interface/editor/fonts/code_font_contextual_ligatures");
 
 	Ref<FontVariation> fc = text_editor->get_theme_font(SceneStringName(font));
 	if (fc.is_valid()) {
@@ -1616,7 +1663,7 @@ void CodeTextEditor::_update_font_ligatures() {
 				fc->set_opentype_features(ftrs);
 			} break;
 			case 2: { // Custom.
-				Vector<String> subtag = String(EDITOR_GET("interface/editor/code_font_custom_opentype_features")).split(",");
+				Vector<String> subtag = String(EDITOR_GET("interface/editor/fonts/code_font_custom_opentype_features")).split(",");
 				Dictionary ftrs;
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
@@ -1634,7 +1681,7 @@ void CodeTextEditor::_update_font_ligatures() {
 				fc->set_opentype_features(ftrs);
 			} break;
 		}
-		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/code_font_custom_variations")).split(",");
+		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/fonts/code_font_custom_variations")).split(",");
 		Dictionary variations_mono;
 		for (int i = 0; i < variation_tags.size(); i++) {
 			Vector<String> subtag_a = variation_tags[i].split("=");
@@ -1855,7 +1902,7 @@ void CodeTextEditor::_zoom_to(float p_zoom_factor) {
 
 void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 	zoom_factor = CLAMP(p_zoom_factor, 0.25f, 3.0f);
-	int neutral_font_size = int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE;
+	int neutral_font_size = int(EDITOR_GET("interface/editor/fonts/code_font_size")) * EDSCALE;
 	int new_font_size = Math::round(zoom_factor * neutral_font_size);
 
 	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
@@ -1878,7 +1925,7 @@ void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
 	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
-	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "p_zoom_factor")));
+	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "zoom_factor")));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {

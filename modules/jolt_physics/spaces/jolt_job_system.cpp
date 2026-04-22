@@ -30,14 +30,12 @@
 
 #include "jolt_job_system.h"
 
-#include "../jolt_project_settings.h"
-
 #include "core/debugger/engine_debugger.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
-#include "Jolt/Physics/PhysicsSettings.h"
+#include <Jolt/Physics/PhysicsSettings.h>
 
 void JoltJobSystem::Job::_execute(void *p_user_data) {
 	Job *job = static_cast<Job *>(p_user_data);

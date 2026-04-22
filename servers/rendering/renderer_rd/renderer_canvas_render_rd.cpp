@@ -30,6 +30,7 @@
 
 #include "renderer_canvas_render_rd.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_defs.h"
@@ -1571,6 +1572,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
 
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
+	actions.usage_flag_pointers["texture_sdf_normal"] = &uses_sdf;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 
 	actions.uniforms = &uniforms;

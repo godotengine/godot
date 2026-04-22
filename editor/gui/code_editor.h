@@ -117,6 +117,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 	void _replace_text_submitted(const String &p_text);
+	void _replace_button_pressed();
 	void _toggle_replace_pressed();
 
 protected:
@@ -255,6 +256,10 @@ public:
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
+
+	void adjust_viewport_to_caret();
+	void center_viewport_to_caret();
+	void center_viewport_to_caret_if_line_invisible(int p_line);
 
 	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);

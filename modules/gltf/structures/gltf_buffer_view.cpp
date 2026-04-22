@@ -33,6 +33,8 @@
 
 #include "../gltf_state.h"
 
+#include "core/object/class_db.h"
+
 void GLTFBufferView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_buffer_view_data", "state"), &GLTFBufferView::load_buffer_view_data);
 

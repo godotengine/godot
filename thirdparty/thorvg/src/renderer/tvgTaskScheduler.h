@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,22 @@
 #ifndef _TVG_TASK_SCHEDULER_H_
 #define _TVG_TASK_SCHEDULER_H_
 
-#include <mutex>
-#include <condition_variable>
-
 #include "tvgCommon.h"
 #include "tvgInlist.h"
 
+#ifdef THORVG_THREAD_SUPPORT
+    #include <atomic>
+    #include <thread>
+    #include <mutex>
+    #include <condition_variable>
+#endif
+
 namespace tvg {
 
+
 #ifdef THORVG_THREAD_SUPPORT
+
+using ThreadID = std::thread::id;
 
 struct Task
 {
@@ -79,6 +86,8 @@ private:
 
 #else  //THORVG_THREAD_SUPPORT
 
+using ThreadID = uint8_t;
+
 struct Task
 {
 public:
@@ -103,6 +112,8 @@ struct TaskScheduler
     static void init(uint32_t threads);
     static void term();
     static void request(Task* task);
+    static bool onthread();  //figure out whether on worker thread or not
+    static ThreadID tid();
 };
 
 }  //namespace

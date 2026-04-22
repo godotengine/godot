@@ -30,6 +30,8 @@
 
 #include "fog_volume.h"
 
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 #include "servers/rendering/rendering_server.h"

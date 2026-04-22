@@ -30,6 +30,7 @@
 
 #include "time.h" // NOLINT(modernize-deprecated-headers) False positive with C-Header of the same name.
 
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 #define UNIX_EPOCH_YEAR_AD 1970 // 1970

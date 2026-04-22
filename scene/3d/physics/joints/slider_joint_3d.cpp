@@ -30,6 +30,8 @@
 
 #include "slider_joint_3d.h"
 
+#include "core/object/class_db.h"
+
 void SliderJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &SliderJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &SliderJoint3D::get_param);

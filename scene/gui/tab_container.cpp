@@ -30,10 +30,13 @@
 
 #include "tab_container.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 TabContainer::CachedTab &TabContainer::get_pending_tab(int p_idx) const {
 	if (p_idx >= pending_tabs.size()) {
@@ -114,18 +117,18 @@ void TabContainer::_notification(int p_what) {
 				}
 				Control *control = _as_tab_control(child_node);
 				if (!control) {
-					DisplayServer::get_singleton()->accessibility_update_add_child(ae, child_node->get_accessibility_element());
+					AccessibilityServer::get_singleton()->update_add_child(ae, child_node->get_accessibility_element());
 				} else {
 					if (!tab_panels.has(child_node)) {
-						tab_panels[child_node] = DisplayServer::get_singleton()->accessibility_create_sub_element(ae, DisplayServer::AccessibilityRole::ROLE_TAB_PANEL);
+						tab_panels[child_node] = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TAB_PANEL);
 					}
 					RID panel = tab_panels[child_node];
 					RID tab = tab_bar->get_tab_accessibility_element(tab_index);
 
-					DisplayServer::get_singleton()->accessibility_update_add_related_controls(tab, panel);
-					DisplayServer::get_singleton()->accessibility_update_add_related_labeled_by(panel, tab);
-					DisplayServer::get_singleton()->accessibility_update_set_flag(panel, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, tab_index != tab_cur);
-					DisplayServer::get_singleton()->accessibility_update_add_child(panel, child_node->get_accessibility_element());
+					AccessibilityServer::get_singleton()->update_add_related_controls(tab, panel);
+					AccessibilityServer::get_singleton()->update_add_related_labeled_by(panel, tab);
+					AccessibilityServer::get_singleton()->update_set_flag(panel, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, tab_index != tab_cur);
+					AccessibilityServer::get_singleton()->update_add_child(panel, child_node->get_accessibility_element());
 
 					tab_index++;
 				}
@@ -198,6 +201,7 @@ void TabContainer::_notification(int p_what) {
 			}
 
 			updating_visibility = false;
+			_maximum_size_changed();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -268,7 +272,17 @@ void TabContainer::_on_theme_changed() {
 	theme_changing = false;
 }
 
+void TabContainer::_repaint_call_deferred() {
+	layout_pending_start();
+	callable_mp(this, &TabContainer::_repaint_internal).call_deferred();
+}
+
 void TabContainer::_repaint() {
+	layout_pending_start();
+	_repaint_internal();
+}
+
+void TabContainer::_repaint_internal() {
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
@@ -312,6 +326,7 @@ void TabContainer::_repaint() {
 	updating_visibility = false;
 
 	update_minimum_size();
+	layout_pending_finish();
 }
 
 void TabContainer::_update_margins() {
@@ -328,6 +343,7 @@ void TabContainer::_update_margins() {
 	if (get_tab_count() == 0) {
 		internal_container->set_offset(SIDE_LEFT, left_margin);
 		internal_container->set_offset(SIDE_RIGHT, -right_margin);
+		_maximum_size_changed();
 		return;
 	}
 
@@ -347,6 +363,7 @@ void TabContainer::_update_margins() {
 
 			if (has_popup) {
 				internal_container->set_offset(SIDE_RIGHT, -right_margin);
+				_maximum_size_changed();
 				return;
 			}
 
@@ -365,6 +382,8 @@ void TabContainer::_update_margins() {
 		case TabBar::ALIGNMENT_MAX:
 			break; // Can't happen, but silences warning.
 	}
+
+	_maximum_size_changed();
 }
 
 Vector<Control *> TabContainer::_get_tab_controls() const {
@@ -491,7 +510,7 @@ void TabContainer::_on_tab_hovered(int p_tab) {
 }
 
 void TabContainer::_on_tab_changed(int p_tab) {
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint();
 	queue_redraw();
 	queue_accessibility_update();
 
@@ -500,7 +519,7 @@ void TabContainer::_on_tab_changed(int p_tab) {
 
 void TabContainer::_on_tab_selected(int p_tab) {
 	if (p_tab != get_previous_tab()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 
 	emit_signal(SNAME("tab_selected"), p_tab);
@@ -592,7 +611,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 	notify_property_list_changed();
 }
@@ -618,7 +637,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	Container::remove_child_notify(p_child);
 
 	if (tab_panels.has(p_child)) {
-		DisplayServer::get_singleton()->accessibility_free_element(tab_panels[p_child]);
+		AccessibilityServer::get_singleton()->free_element(tab_panels[p_child]);
 		tab_panels.erase(p_child);
 	}
 
@@ -654,7 +673,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
-		callable_mp(this, &TabContainer::_repaint).call_deferred();
+		_repaint_call_deferred();
 	}
 	notify_property_list_changed();
 }
@@ -771,7 +790,7 @@ void TabContainer::set_tabs_position(TabPosition p_tabs_position) {
 
 	tab_bar->set_tab_style_v_flip(tabs_position == POSITION_BOTTOM);
 
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 	queue_redraw();
 }
 
@@ -803,7 +822,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	tabs_visible = p_visible;
 	tab_bar->set_visible(tabs_visible);
 
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 	queue_redraw();
 }
 
@@ -811,20 +830,18 @@ bool TabContainer::are_tabs_visible() const {
 	return tabs_visible;
 }
 
+#ifndef DISABLE_DEPRECATED
 void TabContainer::set_all_tabs_in_front(bool p_in_front) {
-	if (p_in_front == all_tabs_in_front) {
-		return;
-	}
-
 	all_tabs_in_front = p_in_front;
-
-	remove_child(tab_bar);
-	add_child(tab_bar, false, all_tabs_in_front ? INTERNAL_MODE_FRONT : INTERNAL_MODE_BACK);
+	if (all_tabs_in_front) {
+		WARN_PRINT_ONCE("Due to internal changes, `all_tabs_in_front` doesn't do anything anymore, as they're always in front.");
+	}
 }
 
 bool TabContainer::is_all_tabs_in_front() const {
 	return all_tabs_in_front;
 }
+#endif
 
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
@@ -944,7 +961,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
-	callable_mp(this, &TabContainer::_repaint).call_deferred();
+	_repaint_call_deferred();
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {
@@ -997,7 +1014,7 @@ Size2 TabContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 cms = c->get_combined_minimum_size();
+		Size2 cms = c->get_bound_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(cms);
 	}
 	ms.height += largest_child_min_size.height;
@@ -1008,6 +1025,52 @@ Size2 TabContainer::get_minimum_size() const {
 	ms.height += panel_ms.height;
 
 	return ms;
+}
+
+Size2 TabContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (tabs_visible && tab_bar) {
+		Size2 tab_bar_ms = tab_bar->get_minimum_size();
+		ms.height -= tab_bar_ms.height;
+
+		if (theme_cache.tabbar_style.is_valid()) {
+			ms.height -= theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+		}
+	}
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
+}
+
+void TabContainer::_maximum_size_changed() {
+	if (!tab_bar) {
+		return;
+	}
+
+	Size2 ms = get_combined_maximum_size();
+	if (theme_cache.tabbar_style.is_valid()) {
+		if (ms.width >= 0) {
+			ms.width -= theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
+			if (get_popup() && popup_button) {
+				ms.width -= popup_button->get_minimum_size().x;
+			}
+			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
+					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
+				ms.width -= theme_cache.side_margin;
+			}
+			ms.width = MAX(ms.width, 0);
+		}
+		if (ms.height >= 0) {
+			ms.height -= theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+			ms.height = MAX(ms.height, 0);
+		}
+	}
+	internal_container->set_parent_maximum_size_cache(Size2(-1, -1));
+	tab_bar->set_custom_maximum_size(ms);
 }
 
 void TabContainer::set_popup(Node *p_popup) {
@@ -1124,8 +1187,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabContainer::get_clip_tabs);
 	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_all_tabs_in_front", "is_front"), &TabContainer::set_all_tabs_in_front);
 	ClassDB::bind_method(D_METHOD("is_all_tabs_in_front"), &TabContainer::is_all_tabs_in_front);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
@@ -1174,7 +1239,9 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_tabs_position", "get_tabs_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_all_tabs_in_front", "is_all_tabs_in_front");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
@@ -1238,10 +1305,12 @@ void TabContainer::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &TabContainer::set_tab_icon, &TabContainer::get_tab_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabContainer::set_tab_disabled, &TabContainer::is_tab_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "hidden"), defaults.hidden, &TabContainer::set_tab_hidden, &TabContainer::is_tab_hidden);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 TabContainer::TabContainer() {
+	connect(SceneStringName(maximum_size_changed), callable_mp(this, &TabContainer::_maximum_size_changed));
+
 	internal_container = memnew(HBoxContainer);
 	internal_container->add_theme_constant_override(SNAME("separation"), 0);
 	internal_container->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);

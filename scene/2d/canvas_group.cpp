@@ -30,6 +30,7 @@
 
 #include "canvas_group.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 void CanvasGroup::set_fit_margin(real_t p_fit_margin) {

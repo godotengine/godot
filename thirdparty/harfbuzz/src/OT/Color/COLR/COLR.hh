@@ -1814,10 +1814,7 @@ struct ClipList
   {
     auto *rec = clips.as_array ().bsearch (gid);
     if (rec)
-    {
-      rec->get_extents (extents, this, instancer);
-      return true;
-    }
+      return rec->get_extents (extents, this, instancer);
     return false;
   }
 

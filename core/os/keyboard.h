@@ -30,7 +30,9 @@
 
 #pragma once
 
-#include "core/string/ustring.h"
+class String;
+
+#include <cstdint>
 
 // Keep the values in this enum in sync with `_keycodes` in `keyboard.cpp`,
 // and the bindings in `core_constants.cpp`.

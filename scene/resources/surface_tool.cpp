@@ -30,6 +30,7 @@
 
 #include "surface_tool.h"
 
+#include "core/object/class_db.h"
 #include "core/templates/a_hash_map.h"
 
 #define EQ_VERTEX_DIST 0.00001

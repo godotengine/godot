@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "tile_atlas_view.h"
-#include "tile_data_editors.h"
-
+#include "editor/scene/2d/tiles/tile_atlas_view.h"
+#include "editor/scene/2d/tiles/tile_data_editors.h"
 #include "scene/gui/split_container.h"
 #include "scene/resources/2d/tile_set.h"
 
@@ -60,8 +59,8 @@ public:
 	};
 
 	// -- Proxy object for an atlas source, needed by the inspector --
-	class TileSetAtlasSourceProxyObject : public Object {
-		GDCLASS(TileSetAtlasSourceProxyObject, Object);
+	class TileSetAtlasSourceProxyObject : public RefCounted {
+		GDCLASS(TileSetAtlasSourceProxyObject, RefCounted);
 
 	private:
 		Ref<TileSet> tile_set;
@@ -83,8 +82,8 @@ public:
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
-	class AtlasTileProxyObject : public Object {
-		GDCLASS(AtlasTileProxyObject, Object);
+	class AtlasTileProxyObject : public RefCounted {
+		GDCLASS(AtlasTileProxyObject, RefCounted);
 
 	private:
 		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor = nullptr;
@@ -147,13 +146,13 @@ private:
 	void _tile_data_editors_tree_selected();
 
 	// -- Inspector --
-	AtlasTileProxyObject *tile_proxy_object = nullptr;
+	Ref<AtlasTileProxyObject> tile_proxy_object;
 	EditorInspector *tile_inspector = nullptr;
 	Label *tile_inspector_no_tile_selected_label = nullptr;
 	String selected_property;
 	void _inspector_property_selected(const String &p_property);
 
-	TileSetAtlasSourceProxyObject *atlas_source_proxy_object = nullptr;
+	Ref<TileSetAtlasSourceProxyObject> atlas_source_proxy_object;
 	EditorInspector *atlas_source_inspector = nullptr;
 
 	// -- Atlas view --
@@ -284,7 +283,7 @@ private:
 
 	void _tile_set_changed();
 	void _tile_proxy_object_changed(const String &p_what);
-	void _atlas_source_proxy_object_changed(const String &p_what);
+	void _atlas_source_proxy_object_changed(const String &p_what, const Ref<TileSetAtlasSourceProxyObject> &p_object);
 
 	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value);
 
