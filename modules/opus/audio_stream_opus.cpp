@@ -41,6 +41,8 @@ int AudioStreamPlaybackOpus::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int todo = p_frames;
 	bool mixed_was_zero = false; // for detecting infinite loop
 
+	bool use_loop = looping_override ? looping : opus_stream->loop;
+
 	while (todo && active) {
 		float *buffer = (float *)(p_buffer + p_frames - todo);
 		int mixed = op_read_float_stereo(opus_file, buffer, todo * 2);
@@ -60,7 +62,7 @@ int AudioStreamPlaybackOpus::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 		if (mixed == 0) {
 			//end of file!
-			if (opus_stream->loop && !mixed_was_zero) {
+			if (use_loop && !mixed_was_zero) {
 				//loop
 				seek(opus_stream->loop_offset);
 				loops++;
@@ -104,6 +106,29 @@ double AudioStreamPlaybackOpus::get_playback_position() const {
 	return double(frames_mixed) / OPUS_SAMPLERATE;
 }
 
+void AudioStreamPlaybackOpus::tag_used_streams() {
+	opus_stream->tag_used(get_playback_position());
+}
+
+void AudioStreamPlaybackOpus::set_parameter(const StringName &p_name, const Variant &p_value) {
+	if (p_name == SNAME("looping")) {
+		if (p_value == Variant()) {
+			looping_override = false;
+			looping = false;
+		} else {
+			looping_override = true;
+			looping = p_value;
+		}
+	}
+}
+
+Variant AudioStreamPlaybackOpus::get_parameter(const StringName &p_name) const {
+	if (looping_override && p_name == SNAME("looping")) {
+		return looping;
+	}
+	return Variant();
+}
+
 void AudioStreamPlaybackOpus::seek(double p_time) {
 	if (!active) {
 		return;
@@ -116,6 +141,25 @@ void AudioStreamPlaybackOpus::seek(double p_time) {
 
 	int error = op_pcm_seek(opus_file, frames_mixed);
 	ERR_FAIL_COND_MSG(error != 0, "Opus seek failed.");
+}
+
+void AudioStreamPlaybackOpus::set_is_sample(bool p_is_sample) {
+	_is_sample = p_is_sample;
+}
+
+bool AudioStreamPlaybackOpus::get_is_sample() const {
+	return _is_sample;
+}
+
+Ref<AudioSamplePlayback> AudioStreamPlaybackOpus::get_sample_playback() const {
+	return sample_playback;
+}
+
+void AudioStreamPlaybackOpus::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
 }
 
 AudioStreamPlaybackOpus::~AudioStreamPlaybackOpus() {
@@ -304,6 +348,10 @@ Dictionary AudioStreamOpus::get_tags() const {
 
 bool AudioStreamOpus::is_monophonic() const {
 	return false;
+}
+
+void AudioStreamOpus::get_parameter_list(List<Parameter> *r_parameters) {
+	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
 
 void AudioStreamOpus::_bind_methods() {
