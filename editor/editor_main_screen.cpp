@@ -126,28 +126,22 @@ int EditorMainScreen::_get_current_main_editor() const {
 	return 0;
 }
 
-// Wraps around a span
-static int _wrap(int value, int min, int max) {
-    int range = max - min + 1;
-    return min + ((((value - min) % range) + range) % range);
-}
-
-int EditorMainScreen::_select_helper(int next_pos) {
+int EditorMainScreen::_wrap_selection(int next_pos) {
 	int editor = _get_current_main_editor();
 
 	do {
-		editor = _wrap(editor + next_pos, 0, editor_table.size());
+		editor = Math::wrapi(editor + next_pos, 0, editor_table.size());
 	} while (!buttons[editor]->is_visible());
 
 	return editor;
 }
 
 void EditorMainScreen::select_next() {
-	select(_select_helper(1));
+	select(_wrap_selection(1));
 }
 
 void EditorMainScreen::select_prev() {
-	select(_select_helper(-1));
+	select(_wrap_selection(-1));
 }
 
 void EditorMainScreen::select_by_name(const String &p_name) {

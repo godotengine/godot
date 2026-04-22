@@ -62,7 +62,7 @@ private:
 	int _get_current_main_editor() const;
 
 	// positive value selects next, negative, previous.
-	int _select_helper(int next_pos);
+	int _wrap_selection(int next_pos);
 
 protected:
 	void _notification(int p_what);
