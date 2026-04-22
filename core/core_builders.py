@@ -66,7 +66,7 @@ def encryption_key_builder(target, source, env):
 #include <cstdint>
 
 uint8_t script_encryption_key[32] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};"""
         )
 
@@ -87,7 +87,7 @@ def make_certs_header(target, source, env):
 inline constexpr int _certs_compressed_size = {len(buffer)};
 inline constexpr int _certs_uncompressed_size = {decomp_size};
 inline constexpr unsigned char _certs_compressed[] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 """)
 

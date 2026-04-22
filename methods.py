@@ -8,7 +8,6 @@ import os
 import re
 import subprocess
 import sys
-import textwrap
 import zlib
 from collections import OrderedDict
 from io import StringIO
@@ -1596,14 +1595,8 @@ def compress_buffer(buffer: bytes) -> bytes:
     return zlib.compress(buffer, zlib.Z_BEST_COMPRESSION)
 
 
-def format_buffer(buffer: bytes, indent: int = 0, width: int = 120, initial_indent: bool = False) -> str:
-    return textwrap.fill(
-        ", ".join(str(byte) for byte in buffer),
-        width=width,
-        initial_indent="\t" * indent if initial_indent else "",
-        subsequent_indent="\t" * indent,
-        tabsize=4,
-    )
+def format_buffer(buffer: bytes, indent: int = 0, width: int = 120) -> str:
+    return re.sub(f"(.{{0,{width - indent - 1}}},) ", ("\t" * indent) + "\\g<1>\n", ", ".join(map(str, buffer)))
 
 
 ############################################################

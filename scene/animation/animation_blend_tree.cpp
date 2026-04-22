@@ -1909,7 +1909,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	BIND_CONSTANT(CONNECTION_ERROR_SAME_NODE);
 	BIND_CONSTANT(CONNECTION_ERROR_CONNECTION_EXISTS);
 
-	ADD_SIGNAL(MethodInfo(SNAME("node_changed"), PropertyInfo(Variant::STRING_NAME, "node_name")));
+	ADD_SIGNAL(MethodInfo("node_changed", PropertyInfo(Variant::STRING_NAME, "node_name")));
 }
 
 void AnimationNodeBlendTree::_initialize_node_tree() {
