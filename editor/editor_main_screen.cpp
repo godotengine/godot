@@ -126,14 +126,17 @@ int EditorMainScreen::_get_current_main_editor() const {
 	return 0;
 }
 
+// Wraps around a span
+static int _wrap(int value, int min, int max) {
+    int range = max - min + 1;
+    return min + ((((value - min) % range) + range) % range);
+}
+
 int EditorMainScreen::_select_helper(int next_pos) {
 	int editor = _get_current_main_editor();
+
 	do {
-		if (editor == editor_table.size() - 1) {
-			editor = 0;
-		} else {
-			editor += next_pos;
-		}
+		editor = _wrap(editor + next_pos, 0, editor_table.size());
 	} while (!buttons[editor]->is_visible());
 
 	return editor;
