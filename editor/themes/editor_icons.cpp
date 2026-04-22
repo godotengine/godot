@@ -35,7 +35,6 @@
 #include "editor/themes/editor_icons.gen.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/dpi_texture.h"
-#include "scene/resources/image_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
 
@@ -112,6 +111,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	saturation_exceptions.insert("DefaultProjectIcon");
 	saturation_exceptions.insert("Godot");
 	saturation_exceptions.insert("Logo");
+	saturation_exceptions.insert("TitleBarLogo");
 
 	// Accent color conversion map.
 	// It is used on some icons (checkbox, radio, toggle, etc.), regardless of the dark

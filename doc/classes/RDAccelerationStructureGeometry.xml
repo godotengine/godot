@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDAccelerationStructureGeometry" inherits="RefCounted" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Acceleration structure geometry (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		[RDAccelerationStructureGeometry] describes a set of triangles used as raytracing geometry in the [method RenderingDevice.blas_create] method.
+		The geometry is always in triangle list form, either indexed or non-indexed. Triangle strips are not supported.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="RenderingDevice.AccelerationStructureGeometryFlagBits" is_bitfield="true" default="0">
+			Flags for the geometry.
+		</member>
+		<member name="index_buffer" type="RID" setter="set_index_buffer" getter="get_index_buffer" default="RID()">
+			Buffer containing vertex indices. If [code]null[/code], triangles are non-indexed.
+		</member>
+		<member name="index_count" type="int" setter="set_index_count" getter="get_index_count" default="0">
+			Number of indices used by this geometry in [member index_buffer].
+		</member>
+		<member name="index_offset" type="int" setter="set_index_offset" getter="get_index_offset" default="0">
+			Byte offset of the first index in [member index_buffer].
+		</member>
+		<member name="vertex_buffer" type="RID" setter="set_vertex_buffer" getter="get_vertex_buffer" default="RID()">
+			Buffer containing vertices.
+		</member>
+		<member name="vertex_count" type="int" setter="set_vertex_count" getter="get_vertex_count" default="0">
+			Number of vertices used by this geometry in [member vertex_buffer].
+		</member>
+		<member name="vertex_format" type="int" setter="set_vertex_format" getter="get_vertex_format" enum="RenderingDevice.DataFormat" default="232">
+			Format of the vertices in [member vertex_buffer].
+		</member>
+		<member name="vertex_offset" type="int" setter="set_vertex_offset" getter="get_vertex_offset" default="0">
+			Byte offset of the first vertex in [member vertex_buffer].
+		</member>
+		<member name="vertex_stride" type="int" setter="set_vertex_stride" getter="get_vertex_stride" default="0">
+			Number of bytes between each vertex in [member vertex_buffer].
+		</member>
+	</members>
+</class>

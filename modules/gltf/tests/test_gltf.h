@@ -34,25 +34,19 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "../editor/editor_scene_importer_gltf.h"
+#include "../gltf_document.h"
+#include "../gltf_state.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/object/class_db.h"
-#include "drivers/png/image_loader_png.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
-#include "editor/inspector/editor_resource_preview.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/skeleton_3d.h"
-#include "scene/main/window.h"
-#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/compressed_texture.h"
-#include "scene/resources/material.h"
+#include "scene/resources/compressed_texture_resource_format.h"
 #include "scene/resources/packed_scene.h"
 #include "tests/test_utils.h"
-
-#include "modules/gltf/editor/editor_scene_importer_gltf.h"
-#include "modules/gltf/gltf_document.h"
-#include "modules/gltf/gltf_state.h"
 
 namespace TestGltf {
 

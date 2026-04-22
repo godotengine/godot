@@ -30,16 +30,16 @@
 
 #pragma once
 
-#include "../effects/vrs.h"
-#ifdef METAL_ENABLED
-#include "../effects/metal_fx.h"
-#endif
-
 #include "core/templates/hash_map.h"
+#include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
+
+#ifdef METAL_ENABLED
+#include "servers/rendering/renderer_rd/effects/metal_fx.h"
+#endif
 
 #define RB_SCOPE_BUFFERS SNAME("render_buffers")
 #define RB_SCOPE_VRS SNAME("VRS")
@@ -48,8 +48,12 @@
 #define RB_TEX_COLOR SNAME("color")
 #define RB_TEX_COLOR_MSAA SNAME("color_msaa")
 #define RB_TEX_COLOR_UPSCALED SNAME("color_upscaled")
+#define RB_TEX_COLOR_SUBSAMPLED SNAME("color_subsampled")
+#define RB_TEX_COLOR_MSAA_SUBSAMPLED SNAME("color_msaa_subsampled")
 #define RB_TEX_DEPTH SNAME("depth")
 #define RB_TEX_DEPTH_MSAA SNAME("depth_msaa")
+#define RB_TEX_DEPTH_SUBSAMPLED SNAME("depth_subsampled")
+#define RB_TEX_DEPTH_MSAA_SUBSAMPLED SNAME("depth_msaa_subsampled")
 #define RB_TEX_VELOCITY SNAME("velocity")
 #define RB_TEX_VELOCITY_MSAA SNAME("velocity_msaa")
 
@@ -281,6 +285,11 @@ public:
 	RID get_depth_msaa(uint32_t p_layer) {
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
 	}
+
+	RID get_color_subsampled();
+	RID get_color_msaa_subsampled();
+	RID get_depth_subsampled();
+	RID get_depth_msaa_subsampled();
 
 	// back buffer (color)
 	RID get_back_buffer_texture() const {

@@ -30,7 +30,9 @@
 
 #include "png_driver_common.h"
 
+#ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
+#endif
 
 #include <png.h>
 

@@ -283,18 +283,12 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		if (debugger_id == p_debugger) { // Can use remote id.
 			if (inspected_object_ids.has(uint64_t(node.id))) {
 				ids_present.append(node.id);
-
-				if (selection_uncollapse_all) {
-					selection_uncollapse_all = false;
-
+				select_items.push_back(item);
+				if (should_scroll) {
 					// Temporarily set to `false`, to allow caching the unfolds.
 					updating_scene_tree = false;
 					item->uncollapse_tree();
 					updating_scene_tree = true;
-				}
-
-				select_items.push_back(item);
-				if (should_scroll) {
 					scroll_item = item;
 				}
 			}
@@ -416,7 +410,6 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
-	selection_uncollapse_all = true;
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
 
@@ -522,16 +515,12 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			String text = get_selected_path();
 			if (text.is_empty()) {
 				return;
-			} else if (text == "/root") {
+			}
+			// Keep full remote path but strip the "/root" prefix for user-facing copy.
+			if (text == "/root") {
 				text = ".";
-			} else {
-				text = text.replace("/root/", "");
-				int slash = text.find_char('/');
-				if (slash < 0) {
-					text = ".";
-				} else {
-					text = text.substr(slash + 1);
-				}
+			} else if (text.begins_with("/root/")) {
+				text = text.substr(String("/root/").length());
 			}
 			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;

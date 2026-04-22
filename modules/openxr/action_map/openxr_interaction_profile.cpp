@@ -30,6 +30,8 @@
 
 #include "openxr_interaction_profile.h"
 
+#include "openxr_interaction_profile_metadata.h"
+
 #include "core/object/class_db.h"
 
 void OpenXRIPBinding::_bind_methods() {

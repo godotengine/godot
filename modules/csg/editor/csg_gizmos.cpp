@@ -32,7 +32,6 @@
 
 #include "core/math/geometry_3d.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
@@ -428,6 +427,10 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	collision_array[Mesh::ARRAY_VERTEX] = faces;
 	collision_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, collision_array);
 	p_gizmo->add_collision_triangles(collision_mesh->generate_triangle_mesh());
+
+	if (cs->is_using_collision() && cs->is_root_shape()) {
+		p_gizmo->set_collision_meshes_are_snap_source(true);
+	}
 
 	if (p_gizmo->is_selected()) {
 		// Draw a translucent representation of the CSG node

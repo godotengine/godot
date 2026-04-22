@@ -54,7 +54,9 @@ private:
 	Button *popup_button = nullptr;
 
 	bool tabs_visible = true;
+#ifndef DISABLE_DEPRECATED
 	bool all_tabs_in_front = false;
+#endif
 	TabPosition tabs_position = POSITION_TOP;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
@@ -157,6 +159,8 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
+	void _maximum_size_changed();
+
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
@@ -187,8 +191,10 @@ public:
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_all_tabs_in_front(bool p_is_front);
 	bool is_all_tabs_in_front() const;
+#endif
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
@@ -229,6 +235,7 @@ public:
 	Control *get_current_tab_control() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;

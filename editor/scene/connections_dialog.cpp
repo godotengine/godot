@@ -1618,6 +1618,18 @@ void ConnectionsDock::update_tree() {
 
 			ClassDB::get_signal_list(native_base, &class_signals, true);
 
+			// Hide underscored native signals as they are meant to be private.
+			for (List<MethodInfo>::Element *E = class_signals.front(); E;) {
+				List<MethodInfo>::Element *N = E->next();
+				const MethodInfo &mi = E->get();
+
+				if (mi.name.is_empty() || mi.name[0] == '_') {
+					class_signals.erase(E);
+				}
+
+				E = N;
+			}
+
 			native_base = ClassDB::get_parent_class(native_base);
 		}
 

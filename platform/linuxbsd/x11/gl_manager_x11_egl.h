@@ -32,11 +32,8 @@
 
 #if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/templates/local_vector.h"
 #include "drivers/egl/egl_manager.h"
 #include "servers/display/display_server_enums.h"
-
-#include <X11/Xlib.h>
 
 class GLManagerEGL_X11 : public EGLManager {
 private:

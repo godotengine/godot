@@ -152,6 +152,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+		VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
@@ -164,6 +165,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 		VIEW_DISPLAY_DEBUG_OCCLUDERS,
@@ -196,11 +198,19 @@ private:
 	Node3D *ruler_start_point = nullptr;
 	Node3D *ruler_end_point = nullptr;
 	Ref<ImmediateMesh> geometry;
+	Ref<ImmediateMesh> geometry_xray;
 	MeshInstance3D *ruler_line = nullptr;
 	MeshInstance3D *ruler_line_xray = nullptr;
 	Label *ruler_label = nullptr;
 	Ref<StandardMaterial3D> ruler_material;
 	Ref<StandardMaterial3D> ruler_material_xray;
+	Ref<StandardMaterial3D> ruler_triangle_material;
+	Ref<StandardMaterial3D> ruler_triangle_material_xray;
+	MeshInstance3D *ruler_triangle_lines = nullptr;
+	MeshInstance3D *ruler_triangle_lines_xray = nullptr;
+	Label *ruler_label_x = nullptr;
+	Label *ruler_label_y = nullptr;
+	Label *ruler_label_z = nullptr;
 
 	int index;
 	void _menu_option(int p_option);
@@ -222,6 +232,7 @@ private:
 	Button *translation_preview_button = nullptr;
 	Button *follow_mode = nullptr;
 	CheckBox *preview_camera = nullptr;
+	CheckBox *pilot_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
 	MenuButton *view_display_menu = nullptr;
@@ -258,7 +269,7 @@ private:
 	ViewportNavigationControl *position_control = nullptr;
 	ViewportNavigationControl *look_control = nullptr;
 	ViewportRotationControl *rotation_control = nullptr;
-	Gradient *frame_time_gradient = nullptr;
+	Ref<Gradient> frame_time_gradient;
 	PanelContainer *frame_time_panel = nullptr;
 	VBoxContainer *frame_time_vbox = nullptr;
 	Label *cpu_time_label = nullptr;
@@ -352,7 +363,6 @@ private:
 		Vector3 center;
 		Point2 mouse_pos;
 		Point2 original_mouse_pos;
-		bool snap = false;
 		bool show_rotation_line = false;
 		bool is_trackball = false;
 		Ref<EditorNode3DGizmo> gizmo;
@@ -386,6 +396,7 @@ private:
 	void _update_view_3d_controller(bool p_update_all = true);
 
 	void _cursor_interpolated();
+	void _cursor_distance_scaled();
 
 	void _freelook_changed();
 	void _freelook_speed_scaled();
@@ -426,13 +437,16 @@ private:
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
 	int times_focused_consecutively = 0;
+	bool pilot_preview_enabled = false;
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
+	void _sync_cursor_from_transform(const Transform3D &p_transform);
 	void _update_centered_labels();
 	void _disable_follow_mode();
 	void _reset_follow_mode_count();
 	void _toggle_camera_preview(bool);
+	void _toggle_pilot_preview(bool);
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();
@@ -495,6 +509,7 @@ public:
 	void update_transform_gizmo_highlight();
 
 	void set_can_preview(Camera3D *p_preview);
+	void switch_preview_camera(Camera3D *p_new_camera);
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 	void reset();
@@ -572,6 +587,9 @@ public:
 
 	void add_viewport(Node3DEditorViewport *p_viewport, int p_index);
 
+	Dictionary get_split_state() const;
+	void set_split_state(const Dictionary &p_state);
+
 	Node3DEditorViewportContainer();
 };
 
@@ -610,7 +628,6 @@ public:
 	};
 
 	real_t gizmo_view_rotation_scale = 1.0;
-	real_t gizmo_view_rotation_shrink = 1.0;
 
 private:
 	EditorSelection *editor_selection = nullptr;
@@ -723,6 +740,10 @@ private:
 		MENU_UNGROUP_SELECTED,
 		MENU_SNAP_TO_FLOOR,
 		MENU_RULER,
+		MENU_VERTEX_SNAP_BASE_VERTEX,
+		MENU_VERTEX_SNAP_BASE_ORIGIN,
+		MENU_VERTEX_SNAP_SOURCE_MESH,
+		MENU_VERTEX_SNAP_SOURCE_COLLISION,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -740,6 +761,8 @@ private:
 
 	bool snap_enabled = false;
 	bool snap_key_enabled = false;
+	bool vertex_snap_origin_mode = false;
+	bool vertex_snap_use_collision = false;
 	EditorSpinSlider *snap_translate = nullptr;
 	EditorSpinSlider *snap_rotate = nullptr;
 	EditorSpinSlider *snap_scale = nullptr;
@@ -758,6 +781,7 @@ private:
 
 	void _snap_changed();
 	void _snap_update();
+	void _update_vertex_snap_tooltips();
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
@@ -924,6 +948,8 @@ public:
 	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
 	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
+	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
+	bool is_vertex_snap_use_collision() const;
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
 	real_t get_scale_snap() const;

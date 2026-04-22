@@ -31,6 +31,7 @@
 #include "editor_resource_picker.h"
 
 #include "core/input/input.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -322,11 +323,13 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Search")), TTR("Inspect"), OBJ_MENU_INSPECT);
 		} else {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Edit")), TTR("Edit"), OBJ_MENU_INSPECT);
+			edit_menu->set_item_disabled(-1, force_allow_unique);
 		}
 
 		if (is_editable()) {
 			if (!_is_custom_type_script()) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+				edit_menu->set_item_disabled(-1, force_allow_unique);
 			}
 			bool unique_enabled = _is_uniqueness_enabled();
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
@@ -361,7 +364,9 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+			edit_menu->set_item_disabled(-1, force_allow_unique);
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
+			edit_menu->set_item_disabled(-1, force_allow_unique);
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
@@ -1235,6 +1240,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 		return;
 	}
 	edit_menu = memnew(PopupMenu);
+	edit_menu->set_search_bar_enabled_on_item_count(10);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));

@@ -49,6 +49,11 @@ static inline Color _select_color(const Color &p_override_color, const Color &p_
 
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;
+	Size2 combined_max = get_combined_maximum_size();
+	int computed_max_width = 0;
+	bool stop_adding = combined_max.width < 0;
+
+	int buttons_size = get_tab_count() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0;
 
 	if (tabs.is_empty()) {
 		return ms;
@@ -115,13 +120,31 @@ Size2 TabBar::get_minimum_size() const {
 			ms.width += theme_cache.tab_separation;
 		}
 
+		if (!stop_adding) {
+			int buttons_eff_size = clip_tabs ? (i != tabs.size() - 1 ? buttons_size : 0) : 0;
+			if (computed_max_width + ms.width - ofs + buttons_eff_size >= combined_max.width) {
+				stop_adding = true;
+			} else {
+				computed_max_width += ms.width - ofs;
+			}
+		}
+
 		if (ms.width - ofs > max_tab_width) {
 			max_tab_width = ms.width - ofs;
 		}
 	}
 
 	if (clip_tabs) {
-		ms.width = max_tab_width + (get_tab_count() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0);
+		int clip_min_width = max_tab_width + buttons_size;
+		if (combined_max.width >= 0) {
+			int fitted_width = stop_adding ? (computed_max_width + buttons_size) : computed_max_width;
+			ms.width = MAX(clip_min_width, fitted_width);
+			ms.width = MIN(ms.width, int(combined_max.width));
+		} else {
+			ms.width = clip_min_width;
+		}
+	} else if (combined_max.width >= 0) {
+		ms.width = stop_adding ? combined_max.width : MIN(computed_max_width, combined_max.width);
 	}
 
 	return ms;
@@ -1205,7 +1228,11 @@ void TabBar::_update_cache(bool p_update_hover) {
 		return;
 	}
 
-	int limit = get_size().width;
+	Size2 combined_max = get_combined_maximum_size();
+	int combined_max_width = combined_max.width >= 0 ? int(combined_max.width) - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width() : INT_MAX;
+	int effective_max_width = max_width > 0 ? MIN(max_width, combined_max_width) : combined_max_width;
+
+	int limit = combined_max.width > 0 ? combined_max.width : get_size().width;
 	int limit_minus_buttons = limit - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
 	int w = 0;
@@ -1218,10 +1245,10 @@ void TabBar::_update_cache(bool p_update_hover) {
 		tabs.write[i].size_cache = get_tab_width(i);
 		tabs.write[i].accessibility_item_dirty = true;
 
-		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
+		tabs.write[i].truncated = effective_max_width > 0 && effective_max_width < INT_MAX && tabs[i].size_cache > effective_max_width;
 		if (tabs[i].truncated) {
 			int size_textless = tabs[i].size_cache - tabs[i].size_text;
-			int mw = MAX(size_textless, max_width);
+			int mw = MAX(size_textless, effective_max_width);
 
 			tabs.write[i].size_text = MAX(mw - size_textless, 1);
 			tabs.write[i].text_buf->set_width(tabs[i].size_text);
@@ -2197,7 +2224,7 @@ void TabBar::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "tooltip"), defaults.tooltip, &TabBar::set_tab_tooltip, &TabBar::get_tab_tooltip);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabBar::set_tab_disabled, &TabBar::is_tab_disabled);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 TabBar::TabBar() {

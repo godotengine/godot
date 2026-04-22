@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include "container.h"
-
-#include "scroll_bar.h"
+#include "scene/gui/container.h"
+#include "scene/gui/scroll_bar.h"
 
 class PanelContainer;
 class TextureRect;
@@ -47,6 +46,7 @@ public:
 		SCROLL_MODE_SHOW_ALWAYS,
 		SCROLL_MODE_SHOW_NEVER,
 		SCROLL_MODE_RESERVE,
+		SCROLL_MODE_MAXIMIZE_FIRST,
 	};
 
 	enum ScrollHintMode {
@@ -87,6 +87,7 @@ private:
 	bool follow_focus = false;
 	int scroll_border = 20;
 	int scroll_speed = 12;
+	bool scroll_horizontal_by_default = false;
 
 	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
 	bool tile_scroll_hint = false;
@@ -118,6 +119,7 @@ private:
 
 protected:
 	Size2 get_minimum_size() const override;
+	Size2 get_inner_combined_maximum_size() const override;
 
 	void _gui_focus_changed(Control *p_control);
 	void _reposition_children();
@@ -155,6 +157,9 @@ public:
 
 	void set_vertical_scroll_mode(ScrollMode p_mode);
 	ScrollMode get_vertical_scroll_mode() const;
+
+	void set_scroll_horizontal_by_default(bool p_enable);
+	bool is_scroll_horizontal_by_default() const;
 
 	void set_deadzone(int p_deadzone);
 	int get_deadzone() const;

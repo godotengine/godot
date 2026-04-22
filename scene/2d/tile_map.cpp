@@ -92,18 +92,7 @@ void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMap
 			local[j] = ptr[j];
 		}
 
-#ifdef BIG_ENDIAN_ENABLED
-		SWAP(local[0], local[3]);
-		SWAP(local[1], local[2]);
-		SWAP(local[4], local[7]);
-		SWAP(local[5], local[6]);
-		//TODO: ask someone to check this...
-		if (FORMAT >= FORMAT_2) {
-			SWAP(local[8], local[11]);
-			SWAP(local[9], local[10]);
-		}
-#endif // BIG_ENDIAN_ENABLED
-	   // Extracts position in TileMap.
+		// Extracts position in TileMap.
 		int16_t x = decode_uint16(&local[0]);
 		int16_t y = decode_uint16(&local[2]);
 
@@ -1041,7 +1030,7 @@ TileMap::TileMap() {
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);
 #endif // NAVIGATION_2D_DISABLED
 		base_property_helper.register_property(PropertyInfo(Variant::PACKED_INT32_ARRAY, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Vector<int>(), &TileMap::_set_layer_tile_data, &TileMap::_get_tile_map_data_using_compatibility_format);
-		PropertyListHelper::register_base_helper(&base_property_helper);
+		PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 
 		memdelete(defaults);
 	}

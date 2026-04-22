@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
 void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {

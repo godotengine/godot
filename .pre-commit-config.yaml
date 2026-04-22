@@ -46,7 +46,7 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.0
+    rev: v0.15.8
     hooks:
       - id: ruff-check
         args: [--color=always]
@@ -110,10 +110,16 @@ repos:
         additional_dependencies: [xmlschema]
 
       - id: validate-codeowners
-        name: validate codeowners
+        name: validate-codeowners
         language: python
         entry: python misc/scripts/validate_codeowners.py
         args: [--unowned]
+
+      - id: validate-includes
+        name: validate-includes
+        language: python
+        entry: python misc/scripts/validate_includes.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc)$
 
       - id: eslint
         name: eslint

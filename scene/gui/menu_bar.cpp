@@ -708,6 +708,7 @@ void MenuBar::remove_child_notify(Node *p_child) {
 	menu_cache.remove_at(idx);
 
 	p_child->remove_meta("_menu_name");
+	p_child->update_configuration_warnings();
 	p_child->remove_meta("_menu_tooltip");
 
 	p_child->disconnect("renamed", callable_mp(this, &MenuBar::_refresh_menu_names));
@@ -900,6 +901,7 @@ void MenuBar::set_menu_title(int p_menu, const String &p_title) {
 	} else {
 		pm->set_meta("_menu_name", p_title);
 	}
+	pm->update_configuration_warnings();
 	menu_cache.write[p_menu].name = p_title;
 	shape(menu_cache.write[p_menu]);
 	if (!global_menu_tag.is_empty() && menu_cache[p_menu].submenu_rid.is_valid()) {

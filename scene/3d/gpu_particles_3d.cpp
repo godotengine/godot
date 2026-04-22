@@ -470,11 +470,32 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 		}
 	} else if (p_property.name == "seed" && !use_fixed_seed) {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "transform_align_axis") {
+		if (transform_align == TRANSFORM_ALIGN_DISABLED || transform_align == TRANSFORM_ALIGN_Z_BILLBOARD ||
+				transform_align == TRANSFORM_ALIGN_Y_TO_VELOCITY || transform_align == TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "transform_align_channel_filter") {
+		if (!(transform_align == TRANSFORM_ALIGN_Z_BILLBOARD)) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 
-void GPUParticles3D::request_particles_process(real_t p_requested_process_time) {
-	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
+void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_residual);
+	// Setting emitting independently from set_emitting is important here
+	// we assume to be in a controlled process situation.
+	// setting RS emission to true is necessary to ensure particles will emit when
+	// regular process time is > than zero but the particles are already in trailing mode.
+	// this could also be done on the GScript/tool side.
+	if (p_requested_process_time > 0.0) {
+		emitting = true;
+		RS::get_singleton()->particles_set_emitting(particles, true);
+	}
+	if (p_request_process_time_residual > 0.0) {
+		emitting = false;
+	}
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -629,13 +650,34 @@ Ref<Skin> GPUParticles3D::get_skin() const {
 }
 
 void GPUParticles3D::set_transform_align(TransformAlign p_align) {
-	ERR_FAIL_INDEX(uint32_t(p_align), 4);
+	if (p_align != transform_align) {
+		notify_property_list_changed();
+	}
 	transform_align = p_align;
 	RS::get_singleton()->particles_set_transform_align(particles, RSE::ParticlesTransformAlign(transform_align));
 }
 
 GPUParticles3D::TransformAlign GPUParticles3D::get_transform_align() const {
 	return transform_align;
+}
+
+void GPUParticles3D::set_transform_align_channel_filter(RSE::ParticlesTransformAlignCustomSrc p_align_channel_filter) {
+	ERR_FAIL_INDEX(uint32_t(p_align_channel_filter), uint32_t(RSE::ParticlesTransformAlignCustomSrc::PARTICLES_ALIGN_CHANNEL_FILTER_MAX));
+	transform_align_channel_filter = p_align_channel_filter;
+	RS::get_singleton()->particles_set_transform_align_channel_filter(particles, transform_align_channel_filter);
+}
+
+RSE::ParticlesTransformAlignCustomSrc GPUParticles3D::get_transform_align_channel_filter() const {
+	return transform_align_channel_filter;
+}
+
+void GPUParticles3D::set_transform_align_axis(RSE::ParticlesTransformAlignAxis p_axis) {
+	transform_align_axis = p_axis;
+	RS::get_singleton()->particles_set_transform_align_axis(particles, p_axis);
+}
+
+RSE::ParticlesTransformAlignAxis GPUParticles3D::get_transform_align_axis() const {
+	return transform_align_axis;
 }
 
 void GPUParticles3D::convert_from_particles(Node *p_particles) {
@@ -809,12 +851,18 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform_align", "align"), &GPUParticles3D::set_transform_align);
 	ClassDB::bind_method(D_METHOD("get_transform_align"), &GPUParticles3D::get_transform_align);
 
+	ClassDB::bind_method(D_METHOD("set_transform_align_channel_filter", "channel_filter"), &GPUParticles3D::set_transform_align_channel_filter);
+	ClassDB::bind_method(D_METHOD("get_transform_align_channel_filter"), &GPUParticles3D::get_transform_align_channel_filter);
+
+	ClassDB::bind_method(D_METHOD("set_transform_align_axis", "align"), &GPUParticles3D::set_transform_align_axis);
+	ClassDB::bind_method(D_METHOD("get_transform_align_axis"), &GPUParticles3D::get_transform_align_axis);
+
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &GPUParticles3D::convert_from_particles);
 
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles3D::get_amount_ratio);
 
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles3D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &GPUParticles3D::request_particles_process, DEFVAL(0.0));
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
@@ -843,7 +891,11 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime,View Depth"), "set_draw_order", "get_draw_order");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Z-Billboard,Y to Velocity,Z-Billboard + Y to Velocity"), "set_transform_align", "get_transform_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align", PROPERTY_HINT_ENUM, "Disabled,Billboard,Align to Velocity,Trails,Local Billboard"), "set_transform_align", "get_transform_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align_axis", PROPERTY_HINT_ENUM, "X,Y"), "set_transform_align_axis", "get_transform_align_axis");
+	ADD_SUBGROUP("Advanced", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_align_channel_filter", PROPERTY_HINT_ENUM, "Disabled,X,Y,Z,W"), "set_transform_align_channel_filter", "get_transform_align_channel_filter");
+
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
@@ -873,6 +925,7 @@ void GPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Z_BILLBOARD);
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Y_TO_VELOCITY);
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY);
+	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_LOCAL_BILLBOARD);
 
 	ADD_PROPERTY_DEFAULT("seed", 0);
 }
@@ -902,6 +955,8 @@ GPUParticles3D::GPUParticles3D() {
 	set_speed_scale(1);
 	set_collision_base_size(collision_base_size);
 	set_transform_align(TRANSFORM_ALIGN_DISABLED);
+	set_transform_align_channel_filter(RSE::ParticlesTransformAlignCustomSrc::PARTICLES_ALIGN_CHANNEL_FILTER_X);
+	set_transform_align_axis(RSE::ParticlesTransformAlignAxis::PARTICLES_ALIGN_AXIS_Y);
 	set_use_fixed_seed(false);
 }
 

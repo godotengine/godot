@@ -31,7 +31,6 @@
 #include "editor_dock.h"
 
 #include "core/input/shortcut.h"
-#include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/docks/dock_tab_container.h"
@@ -300,8 +299,12 @@ void EditorDock::update_tab_style() {
 		} break;
 	}
 
-	if (shortcut.is_valid() && shortcut->has_valid_event()) {
-		tooltip += (tooltip.is_empty() ? "" : "\n") + TTR(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+	if (shortcut.is_valid()) {
+		tooltip += (tooltip.is_empty() ? "" : "\n") + TTR(shortcut->get_name());
+
+		if (shortcut->has_valid_event()) {
+			tooltip += " (" + shortcut->get_as_text() + ")";
+		}
 	}
 	parent_dock_container->set_tab_tooltip(index, tooltip);
 

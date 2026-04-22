@@ -53,7 +53,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallbacks"), &Font::get_fallbacks);
 
 	// Output.
-	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph", "baseline_offset"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph", "baseline_offset", "palette_index", "custom_colors"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0.0), DEFVAL(0), DEFVAL(Vector<Color>()));
 	ClassDB::bind_method(D_METHOD("get_rids"), &Font::get_rids);
 
 	// Font metrics.
@@ -69,6 +69,10 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font_style"), &Font::get_font_style);
 	ClassDB::bind_method(D_METHOD("get_font_weight"), &Font::get_font_weight);
 	ClassDB::bind_method(D_METHOD("get_font_stretch"), &Font::get_font_stretch);
+
+	ClassDB::bind_method(D_METHOD("get_palette_count"), &Font::get_palette_count);
+	ClassDB::bind_method(D_METHOD("get_palette_name", "index"), &Font::get_palette_name);
+	ClassDB::bind_method(D_METHOD("get_palette_colors", "index"), &Font::get_palette_colors);
 
 	ClassDB::bind_method(D_METHOD("get_spacing", "spacing"), &Font::get_spacing);
 	ClassDB::bind_method(D_METHOD("get_opentype_features"), &Font::get_opentype_features);
@@ -268,6 +272,18 @@ real_t Font::get_underline_thickness(int p_font_size) const {
 
 String Font::get_font_name() const {
 	return TS->font_get_name(_get_rid());
+}
+
+int64_t Font::get_palette_count() const {
+	return TS->font_get_palette_count(_get_rid());
+}
+
+String Font::get_palette_name(int64_t p_index) const {
+	return TS->font_get_palette_name(_get_rid(), p_index);
+}
+
+Vector<Color> Font::get_palette_colors(int64_t p_index) const {
+	return TS->font_get_palette_colors(_get_rid(), p_index);
 }
 
 Dictionary Font::get_ot_name_strings() const {
@@ -2366,7 +2382,7 @@ real_t FontFile::get_oversampling() const {
 	return oversampling_override;
 }
 
-RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
 	int make_linked_from = -1;
@@ -2378,6 +2394,8 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 			match = match && (TS->font_get_face_index(cache[i]) == p_face_index);
 			match = match && (TS->font_get_embolden(cache[i]) == p_strength);
 			match = match && (TS->font_get_transform(cache[i]) == p_transform);
+			match = match && (TS->font_get_used_palette(cache[i]) == p_palette_index);
+			match = match && (TS->font_get_palette_custom_colors(cache[i]) == p_custom_colors);
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing_top);
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
@@ -2427,6 +2445,8 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
 		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
+		TS->font_set_used_palette(cache[idx], p_palette_index);
+		TS->font_set_palette_custom_colors(cache[idx], p_custom_colors);
 	} else {
 		_ensure_rid(idx);
 		TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
@@ -2438,6 +2458,8 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
 		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
+		TS->font_set_used_palette(cache[idx], p_palette_index);
+		TS->font_set_palette_custom_colors(cache[idx], p_custom_colors);
 	}
 	return cache[idx];
 }
@@ -2905,6 +2927,12 @@ void FontVariation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_baseline_offset", "baseline_offset"), &FontVariation::set_baseline_offset);
 	ClassDB::bind_method(D_METHOD("get_baseline_offset"), &FontVariation::get_baseline_offset);
 
+	ClassDB::bind_method(D_METHOD("get_palette_index"), &FontVariation::get_palette_index);
+	ClassDB::bind_method(D_METHOD("set_palette_index", "palette_index"), &FontVariation::set_palette_index);
+
+	ClassDB::bind_method(D_METHOD("get_palette_custom_colors"), &FontVariation::get_palette_custom_colors);
+	ClassDB::bind_method(D_METHOD("set_palette_custom_colors", "colors"), &FontVariation::set_palette_custom_colors);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_font", PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static()), "set_base_font", "get_base_font");
 
 	ADD_GROUP("Variation", "variation_");
@@ -2924,6 +2952,46 @@ void FontVariation::_bind_methods() {
 
 	ADD_GROUP("Baseline", "baseline_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "baseline_offset", PROPERTY_HINT_RANGE, "-2,2,0.005"), "set_baseline_offset", "get_baseline_offset");
+
+	ADD_GROUP("Palette", "palette_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "palette_index", PROPERTY_HINT_NONE, ""), "set_palette_index", "get_palette_index");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "palette_custom_colors", PROPERTY_HINT_NONE, ""), "set_palette_custom_colors", "get_palette_custom_colors");
+}
+
+void FontVariation::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "palette_custom_colors") {
+		Ref<Font> f = _get_base_font_or_default();
+		if (f.is_valid()) {
+			int64_t pal_count = f->get_palette_count();
+			if (pal_count == 0 || f->get_palette_colors(0).is_empty()) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		} else {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "palette_index") {
+		Ref<Font> f = _get_base_font_or_default();
+		if (f.is_valid()) {
+			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint_string = String();
+
+			int64_t pal_count = f->get_palette_count();
+			if (pal_count == 0) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			} else {
+				for (int64_t i = 0; i < pal_count; i++) {
+					if (!p_property.hint_string.is_empty()) {
+						p_property.hint_string += ",";
+					}
+					p_property.hint_string += f->get_palette_name(i);
+				}
+			}
+		} else {
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.hint_string = String();
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
 }
 
 void FontVariation::_update_rids() const {
@@ -2965,6 +3033,8 @@ void FontVariation::reset_state() {
 		extra_spacing[i] = 0;
 	}
 	baseline_offset = 0.0;
+	palette_index = 0;
+	custom_colors.clear();
 
 	Font::reset_state();
 }
@@ -3120,10 +3190,32 @@ float FontVariation::get_baseline_offset() const {
 	return baseline_offset;
 }
 
-RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+void FontVariation::set_palette_index(int64_t p_palette_index) {
+	if (palette_index != p_palette_index) {
+		palette_index = p_palette_index;
+		_invalidate_rids();
+	}
+}
+
+int64_t FontVariation::get_palette_index() const {
+	return palette_index;
+}
+
+void FontVariation::set_palette_custom_colors(const Vector<Color> &p_colors) {
+	if (custom_colors != p_colors) {
+		custom_colors = p_colors;
+		_invalidate_rids();
+	}
+}
+
+Vector<Color> FontVariation::get_palette_custom_colors() const {
+	return custom_colors;
+}
+
+RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, p_palette_index, p_custom_colors);
 	}
 	return RID();
 }
@@ -3131,7 +3223,7 @@ RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int
 RID FontVariation::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset);
+		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset, palette_index, custom_colors);
 	}
 	return RID();
 }
@@ -3651,7 +3743,7 @@ int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
 	}
 }
 
-RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		Dictionary var = p_variation_coordinates;
@@ -3667,9 +3759,9 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 
 		if (!face_indices.is_empty()) {
 			int face_index = CLAMP(p_face_index, 0, face_indices.size() - 1);
-			return f->find_variation(var, face_indices[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+			return f->find_variation(var, face_indices[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, p_palette_index, p_custom_colors);
 		} else {
-			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, p_palette_index, p_custom_colors);
 		}
 	}
 	return RID();

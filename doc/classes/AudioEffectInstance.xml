@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectInstance" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioEffectInstance" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Manipulates the audio it receives for a given effect.
 	</brief_description>
@@ -14,7 +14,7 @@
 		<method name="_process" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="src_buffer" type="const void*" />
-			<param index="1" name="dst_buffer" type="AudioFrame*" />
+			<param index="1" name="r_dst_buffer" type="AudioFrame*" />
 			<param index="2" name="frame_count" type="int" />
 			<description>
 				Called by the [AudioServer] to process this effect. When [method _process_silence] is not overridden or it returns [code]false[/code], this method is called only when the bus is active.

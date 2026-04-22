@@ -30,9 +30,11 @@
 
 #pragma once
 
+#include "../fastnoise_lite.h"
 #include "../noise_texture_3d.h"
 
 #include "core/object/callable_mp.h"
+#include "core/object/message_queue.h"
 #include "tests/test_macros.h"
 
 namespace TestNoiseTexture3D {

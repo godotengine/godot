@@ -36,6 +36,7 @@
 #include "core/input/input.h"
 #include "editor/editor_node.h"
 #include "editor/gui/window_wrapper.h"
+#include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
 HashMap<String, GameViewDebuggerMacOS::ParseMessageFunc> GameViewDebuggerMacOS::parse_message_handlers;
@@ -122,8 +123,10 @@ bool GameViewDebuggerMacOS::_msg_joy_stop(const Array &p_args) {
 bool GameViewDebuggerMacOS::_msg_warp_mouse(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 1, false, "warp_mouse: invalid number of arguments.");
 
+	// Position arrives in points; convert to editor pixels.
 	Vector2i pos = p_args[0];
-	embedded_process->get_layer_host()->warp_mouse(pos);
+	float scale = DisplayServer::get_singleton()->screen_get_max_scale();
+	embedded_process->get_layer_host()->warp_mouse(Vector2i(scale * pos));
 	return true;
 }
 

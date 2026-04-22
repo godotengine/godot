@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
@@ -65,8 +66,13 @@
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
-#include "scene/resources/visual_shader_nodes.h"
 #include "servers/display/display_server.h"
+
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+#include "modules/visual_shader/vs_nodes/visual_shader_nodes.h"
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 ///////////////////// NIL /////////////////////////
 
@@ -794,16 +800,7 @@ void EditorPropertyPath::_update_uid_icon() {
 
 void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	const Dictionary drag_data = p_data;
-	if (!drag_data.has("type")) {
-		return;
-	}
-	if (String(drag_data["type"]) != "files") {
-		return;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return;
-	}
 
 	_path_selected(filesPaths[0]);
 }
@@ -813,17 +810,31 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 	if (!drag_data.has("type")) {
 		return false;
 	}
-	if (String(drag_data["type"]) != "files") {
-		return false;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return false;
-	}
+	if (folder) {
+		if (String(drag_data["type"]) != "files_and_dirs") {
+			return false;
+		}
+		if (filesPaths.size() > 1) {
+			for (const String &p : filesPaths) {
+				if (!p.ends_with("/")) {
+					return false;
+				}
+			}
+		}
+		return true;
+	} else {
+		if (String(drag_data["type"]) != "files") {
+			return false;
+		}
+		if (filesPaths.is_empty()) {
+			return false;
+		}
 
-	for (const String &extension : extensions) {
-		if (filesPaths[0].ends_with(extension.substr(1))) {
-			return true;
+		for (const String &extension : extensions) {
+			if (filesPaths[0].ends_with(extension.substr(1))) {
+				return true;
+			}
 		}
 	}
 
@@ -1649,10 +1660,10 @@ void EditorPropertyObjectID::update_property() {
 		type = "Object";
 	}
 
-	ObjectID id = _get_object_id();
+	const ObjectID id = _get_object_id();
 	if (id.is_valid()) {
-		edit->set_text(type + " ID: " + uitos(id));
-		edit->set_tooltip_text(type + " ID: " + uitos(id));
+		edit->set_text(type + ": " + uitos(id));
+		edit->set_tooltip_text(type + ": " + uitos(id));
 		edit->set_disabled(false);
 		edit->set_button_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
@@ -1660,6 +1671,14 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_tooltip_text("");
 		edit->set_disabled(true);
 		edit->set_button_icon(Ref<Texture2D>());
+	}
+}
+
+void EditorPropertyObjectID::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			edit->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+		} break;
 	}
 }
 
@@ -3437,12 +3456,14 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	Ref<ViewportTexture> vpt = p_resource;
 	if (vpt.is_valid()) {
 		r = Object::cast_to<Resource>(get_edited_object());
+#ifdef MODULE_VISUAL_SHADER_ENABLED
 		if (Object::cast_to<VisualShaderNodeTexture>(r)) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture in a Texture2D node because the texture will not be bound to a scene.\nUse a Texture2DParameter node instead and set the texture in the \"Shader Parameters\" tab."));
 			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
@@ -3744,6 +3765,13 @@ void EditorPropertyResource::fold_resource() {
 		resource_picker->set_toggle_pressed(false);
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
 		update_property();
+	}
+}
+
+void EditorPropertyResource::set_keying(bool p_keying) {
+	EditorProperty::set_keying(p_keying);
+	if (sub_inspector) {
+		sub_inspector->set_keying(p_keying);
 	}
 }
 

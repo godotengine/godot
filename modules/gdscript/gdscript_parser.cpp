@@ -254,6 +254,19 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	errors.push_back(err);
 }
 
+void GDScriptParser::push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin) {
+	panic_mode = true;
+
+	ParserError err;
+	err.message = p_message;
+	err.start_line = p_origin.start_line;
+	err.start_column = p_origin.start_column;
+	err.end_line = p_origin.end_line;
+	err.end_column = p_origin.end_column;
+
+	errors.push_back(err);
+}
+
 #ifdef DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_NULL(p_source);
@@ -486,7 +499,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
 	while (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::NEWLINE) {
 		if (current.type == GDScriptTokenizer::Token::ERROR) {
-			push_error(current.literal);
+			push_error(current.literal, current);
 		}
 		current = tokenizer->scan();
 	}
@@ -549,7 +562,7 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
 	while (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::NEWLINE) {
 		if (current.type == GDScriptTokenizer::Token::ERROR) {
-			push_error(current.literal);
+			push_error(current.literal, current);
 		}
 		current = tokenizer->scan();
 	}
@@ -577,7 +590,7 @@ GDScriptTokenizer::Token GDScriptParser::advance() {
 	previous = current;
 	current = tokenizer->scan();
 	while (current.type == GDScriptTokenizer::Token::ERROR) {
-		push_error(current.literal);
+		push_error(current.literal, current);
 		current = tokenizer->scan();
 	}
 	if (previous.type != GDScriptTokenizer::Token::DEDENT) { // `DEDENT` belongs to the next non-empty line.
@@ -938,6 +951,8 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	ClassNode *n_class = alloc_node<ClassNode>();
 
+	make_completion_context(COMPLETION_DECLARATION, n_class);
+
 	ClassNode *previous_class = current_class;
 	current_class = n_class;
 	n_class->outer = previous_class;
@@ -993,6 +1008,12 @@ void GDScriptParser::parse_class_name() {
 		current_class->identifier = parse_identifier();
 		current_class->fqcn = String(current_class->identifier->name);
 	}
+
+	if (script_path.begins_with("res://") && script_path.contains("::")) {
+		push_error(R"("class_name" isn't allowed in built-in scripts.)");
+	}
+
+	make_completion_context(COMPLETION_DECLARATION, current_class);
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		// Allow extends on the same line.
@@ -1226,6 +1247,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static) {
 
 GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property) {
 	VariableNode *variable = alloc_node<VariableNode>();
+
+	make_completion_context(COMPLETION_DECLARATION, variable);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
 		complete_extents(variable);
@@ -1463,6 +1486,8 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	ConstantNode *constant = alloc_node<ConstantNode>();
 
+	make_completion_context(COMPLETION_DECLARATION, constant);
+
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected constant name after "const".)")) {
 		complete_extents(constant);
 		return nullptr;
@@ -1531,6 +1556,8 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	SignalNode *signal = alloc_node<SignalNode>();
 
+	make_completion_context(COMPLETION_DECLARATION, signal);
+
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected signal name after "signal".)")) {
 		complete_extents(signal);
 		return nullptr;
@@ -1576,6 +1603,8 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	EnumNode *enum_node = alloc_node<EnumNode>();
 	bool named = false;
+
+	make_completion_context(COMPLETION_DECLARATION, enum_node);
 
 	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		enum_node->identifier = parse_identifier();
@@ -5369,6 +5398,35 @@ String GDScriptParser::DataType::to_string() const {
 	ERR_FAIL_V_MSG("<unresolved type>", "Kind set outside the enum range.");
 }
 
+String GDScriptParser::DataType::to_property_info_hint_string() const {
+	switch (kind) {
+		case BUILTIN:
+			return Variant::get_type_name(builtin_type);
+		case NATIVE:
+			return native_type;
+		case SCRIPT:
+			if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
+				return script_type->get_global_name();
+			} else {
+				return native_type;
+			}
+		case CLASS:
+			if (class_type != nullptr && class_type->get_global_name() != StringName()) {
+				return class_type->get_global_name();
+			} else {
+				return native_type;
+			}
+		case ENUM:
+			return String(native_type).replace("::", ".");
+		case VARIANT:
+			return "Variant";
+		case RESOLVING:
+		case UNRESOLVED:
+			break;
+	}
+	ERR_FAIL_V_MSG("Variant", "GDScript bug: Unexpected type kind.");
+}
+
 PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) const {
 	PropertyInfo result;
 	result.name = p_name;
@@ -5384,106 +5442,21 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 			result.type = builtin_type;
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
 				const DataType elem_type = get_container_element_type(0);
-				switch (elem_type.kind) {
-					case BUILTIN:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						result.hint_string = Variant::get_type_name(elem_type.builtin_type);
-						break;
-					case NATIVE:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						result.hint_string = elem_type.native_type;
-						break;
-					case SCRIPT:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						if (elem_type.script_type.is_valid() && elem_type.script_type->get_global_name() != StringName()) {
-							result.hint_string = elem_type.script_type->get_global_name();
-						} else {
-							result.hint_string = elem_type.native_type;
-						}
-						break;
-					case CLASS:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						if (elem_type.class_type != nullptr && elem_type.class_type->get_global_name() != StringName()) {
-							result.hint_string = elem_type.class_type->get_global_name();
-						} else {
-							result.hint_string = elem_type.native_type;
-						}
-						break;
-					case ENUM:
-						result.hint = PROPERTY_HINT_ARRAY_TYPE;
-						result.hint_string = String(elem_type.native_type).replace("::", ".");
-						break;
-					case VARIANT:
-					case RESOLVING:
-					case UNRESOLVED:
-						break;
+				if (elem_type.is_variant()) {
+					break;
 				}
+
+				result.hint = PROPERTY_HINT_ARRAY_TYPE;
+				result.hint_string = elem_type.to_property_info_hint_string();
 			} else if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
 				const DataType key_type = get_container_element_type_or_variant(0);
 				const DataType value_type = get_container_element_type_or_variant(1);
-				if ((key_type.kind == VARIANT && value_type.kind == VARIANT) || key_type.kind == RESOLVING ||
-						key_type.kind == UNRESOLVED || value_type.kind == RESOLVING || value_type.kind == UNRESOLVED) {
+				if (key_type.is_variant() && value_type.is_variant()) {
 					break;
 				}
-				String key_hint, value_hint;
-				switch (key_type.kind) {
-					case BUILTIN:
-						key_hint = Variant::get_type_name(key_type.builtin_type);
-						break;
-					case NATIVE:
-						key_hint = key_type.native_type;
-						break;
-					case SCRIPT:
-						if (key_type.script_type.is_valid() && key_type.script_type->get_global_name() != StringName()) {
-							key_hint = key_type.script_type->get_global_name();
-						} else {
-							key_hint = key_type.native_type;
-						}
-						break;
-					case CLASS:
-						if (key_type.class_type != nullptr && key_type.class_type->get_global_name() != StringName()) {
-							key_hint = key_type.class_type->get_global_name();
-						} else {
-							key_hint = key_type.native_type;
-						}
-						break;
-					case ENUM:
-						key_hint = String(key_type.native_type).replace("::", ".");
-						break;
-					default:
-						key_hint = "Variant";
-						break;
-				}
-				switch (value_type.kind) {
-					case BUILTIN:
-						value_hint = Variant::get_type_name(value_type.builtin_type);
-						break;
-					case NATIVE:
-						value_hint = value_type.native_type;
-						break;
-					case SCRIPT:
-						if (value_type.script_type.is_valid() && value_type.script_type->get_global_name() != StringName()) {
-							value_hint = value_type.script_type->get_global_name();
-						} else {
-							value_hint = value_type.native_type;
-						}
-						break;
-					case CLASS:
-						if (value_type.class_type != nullptr && value_type.class_type->get_global_name() != StringName()) {
-							value_hint = value_type.class_type->get_global_name();
-						} else {
-							value_hint = value_type.native_type;
-						}
-						break;
-					case ENUM:
-						value_hint = String(value_type.native_type).replace("::", ".");
-						break;
-					default:
-						value_hint = "Variant";
-						break;
-				}
+
 				result.hint = PROPERTY_HINT_DICTIONARY_TYPE;
-				result.hint_string = key_hint + ";" + value_hint;
+				result.hint_string = key_type.to_property_info_hint_string() + ";" + value_type.to_property_info_hint_string();
 			}
 			break;
 		case NATIVE:

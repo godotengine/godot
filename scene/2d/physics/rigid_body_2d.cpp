@@ -148,9 +148,10 @@ struct _RigidBody2DInOut {
 };
 
 void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
-	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
+	Transform2D new_transform = p_state->get_transform();
+	if (likely(new_transform != get_global_transform())) {
 		set_block_transform_notify(true);
-		set_global_transform(p_state->get_transform());
+		set_global_transform(new_transform);
 		set_block_transform_notify(false);
 	}
 

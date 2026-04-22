@@ -421,6 +421,7 @@ class EditorPropertyObjectID : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;
@@ -779,6 +780,8 @@ public:
 	void set_use_sub_inspector(bool p_enable);
 	void set_use_filter(bool p_use);
 	void fold_resource();
+
+	virtual void set_keying(bool p_keying) override;
 
 	virtual bool is_colored(ColorationMode p_mode) override;
 

@@ -79,11 +79,12 @@ private:
 	void _poll();
 	void _write_out();
 	void _read_in();
+	void _disconnect_with_error(const String &p_reason);
 	static Error _try_connect(Ref<StreamPeerSocket> p_stream);
 
 public:
-	static RemoteDebuggerPeer *create_tcp(const String &p_uri);
-	static RemoteDebuggerPeer *create_unix(const String &p_uri);
+	static Ref<RemoteDebuggerPeer> create_tcp(const String &p_uri);
+	static Ref<RemoteDebuggerPeer> create_unix(const String &p_uri);
 
 	bool is_peer_connected() override;
 	int get_max_message_size() const override;

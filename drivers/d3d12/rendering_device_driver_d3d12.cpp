@@ -30,55 +30,20 @@
 
 #include "rendering_device_driver_d3d12.h"
 
-#include "d3d12_hooks.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
 #include "core/os/os.h"
+#include "drivers/d3d12/d3d12_hooks.h"
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
 
-#include "thirdparty/zlib/zlib.h"
-
-#include "d3d12_godot_nir_bridge.h"
-#include "rendering_context_driver_d3d12.h"
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wswitch")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
-GODOT_CLANG_WARNING_IGNORE("-Wlogical-not-parentheses")
-GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
-GODOT_CLANG_WARNING_IGNORE("-Wswitch")
-GODOT_MSVC_WARNING_PUSH
-GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
-GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
-
+#include <drivers/d3d12/godot_d3d12ma.h>
+#include <drivers/d3d12/godot_nir.h>
 #include <dxgi1_6.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <thirdparty/d3d12ma/D3D12MemAlloc.h>
-
-#include <nir_spirv.h>
-#include <nir_to_dxil.h>
-#include <spirv_to_dxil.h>
-extern "C" {
-#include <dxil_spirv_nir.h>
-}
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-GODOT_MSVC_WARNING_POP
 
 #if !defined(_MSC_VER)
-#include <guiddef.h>
-
 #include <thirdparty/directx_headers/include/dxguids/dxguids.h>
+
+#include <guiddef.h>
 #endif
 
 using Microsoft::WRL::ComPtr;
@@ -4829,6 +4794,9 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 
 		cmd_buf_info->graphics_pso = pipeline_info->pso.Get();
 		cmd_buf_info->compute_pso = nullptr;
+
+		cmd_buf_info->nir_graphics_runtime_data_root_param_idx = shader_info_in->nir_runtime_data_root_param_idx;
+		cmd_buf_info->nir_compute_runtime_data_root_param_idx = UINT32_MAX;
 	}
 
 	if (cmd_buf_info->graphics_root_signature_crc != shader_info_in->root_signature_crc) {
@@ -5411,6 +5379,9 @@ void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p
 
 		cmd_buf_info->compute_pso = pipeline_info->pso.Get();
 		cmd_buf_info->graphics_pso = nullptr;
+
+		cmd_buf_info->nir_compute_runtime_data_root_param_idx = shader_info_in->nir_runtime_data_root_param_idx;
+		cmd_buf_info->nir_graphics_runtime_data_root_param_idx = UINT32_MAX;
 	}
 
 	if (cmd_buf_info->compute_root_signature_crc != shader_info_in->root_signature_crc) {
@@ -5465,6 +5436,14 @@ void RenderingDeviceDriverD3D12::command_compute_dispatch(CommandBufferID p_cmd_
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	if (!barrier_capabilities.enhanced_barriers_supported) {
 		_resource_transitions_flush(cmd_buf_info);
+	}
+
+	if (cmd_buf_info->nir_compute_runtime_data_root_param_idx != UINT32_MAX) {
+		dxil_spirv_compute_runtime_data runtime_data = {};
+		runtime_data.group_count_x = p_x_groups;
+		runtime_data.group_count_y = p_y_groups;
+		runtime_data.group_count_z = p_z_groups;
+		cmd_buf_info->cmd_list->SetComputeRoot32BitConstants(cmd_buf_info->nir_compute_runtime_data_root_param_idx, sizeof(dxil_spirv_compute_runtime_data) / sizeof(uint32_t), &runtime_data, 0);
 	}
 
 	cmd_buf_info->cmd_list->Dispatch(p_x_groups, p_y_groups, p_z_groups);
@@ -5529,20 +5508,16 @@ RDD::PipelineID RenderingDeviceDriverD3D12::compute_pipeline_create(ShaderID p_s
 
 // ---- ACCELERATION STRUCTURES ----
 
-RDD::AccelerationStructureID RenderingDeviceDriverD3D12::blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) {
+RDD::AccelerationStructureID RenderingDeviceDriverD3D12::blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) {
 	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the D3D12 driver.");
 }
 
-uint32_t RenderingDeviceDriverD3D12::tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) {
-	ERR_FAIL_V_MSG(0, "Ray tracing is not currently supported by the D3D12 driver.");
+RDD::AccelerationStructureID RenderingDeviceDriverD3D12::tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) {
+	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the D3D12 driver.");
 }
 
-void RenderingDeviceDriverD3D12::tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) {
+void RenderingDeviceDriverD3D12::acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the D3D12 driver.");
-}
-
-RDD::AccelerationStructureID RenderingDeviceDriverD3D12::tlas_create(BufferID p_instance_buffer) {
-	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the D3D12 driver.");
 }
 
 void RenderingDeviceDriverD3D12::acceleration_structure_free(AccelerationStructureID p_acceleration_structure) {
@@ -5555,7 +5530,7 @@ uint32_t RenderingDeviceDriverD3D12::acceleration_structure_get_scratch_size_byt
 
 // ----- PIPELINE -----
 
-RDD::RaytracingPipelineID RenderingDeviceDriverD3D12::raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::RaytracingPipelineID RenderingDeviceDriverD3D12::raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) {
 	ERR_FAIL_V_MSG(RaytracingPipelineID(), "Ray tracing is not currently supported by the D3D12 driver.");
 }
 
@@ -5563,9 +5538,17 @@ void RenderingDeviceDriverD3D12::raytracing_pipeline_free(RDD::RaytracingPipelin
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the D3D12 driver.");
 }
 
+bool RenderingDeviceDriverD3D12::raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) {
+	ERR_FAIL_V_MSG(false, "Ray tracing is not currently supported by the D3D12 driver.");
+}
+
 // ----- COMMANDS -----
 
-void RenderingDeviceDriverD3D12::command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+void RenderingDeviceDriverD3D12::command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the D3D12 driver.");
+}
+
+void RenderingDeviceDriverD3D12::command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the D3D12 driver.");
 }
 
@@ -5577,7 +5560,7 @@ void RenderingDeviceDriverD3D12::command_bind_raytracing_uniform_set(CommandBuff
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the D3D12 driver.");
 }
 
-void RenderingDeviceDriverD3D12::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceDriverD3D12::command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the D3D12 driver.");
 }
 

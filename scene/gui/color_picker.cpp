@@ -33,6 +33,8 @@
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/io/image.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -102,7 +104,7 @@ void ColorPicker::_notification(int p_what) {
 #ifdef MACOS_ENABLED
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible_in_tree()) {
-				perm_hb->set_visible(!OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
+				perm_hb->set_visible(sampler_visible && !OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
 			}
 		} break;
 #endif
@@ -1945,6 +1947,9 @@ void ColorPicker::set_sampler_visible(bool p_visible) {
 	}
 	sampler_visible = p_visible;
 	sample_hbc->set_visible(p_visible);
+#ifdef MACOS_ENABLED
+	perm_hb->set_visible(p_visible && !OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
+#endif
 }
 
 bool ColorPicker::is_sampler_visible() const {
@@ -2328,7 +2333,6 @@ ColorPicker::ColorPicker() {
 	perm_link->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_req_permission));
 	perm_hb->add_child(perm_link);
 	real_vbox->add_child(perm_hb);
-	perm_hb->set_visible(false);
 }
 
 void ColorPicker::_req_permission() {

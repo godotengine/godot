@@ -30,10 +30,11 @@
 
 #include "metal_objects_shared.h"
 
-#include "rendering_device_driver_metal.h"
+#include "drivers/metal/rendering_device_driver_metal.h"
 
 #include <os/signpost.h>
 #include <simd/simd.h>
+
 #include <shared_mutex>
 #include <string>
 
@@ -633,11 +634,11 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 #pragma mark - Metal Library
 
 static const char *SHADER_STAGE_NAMES[] = {
-	[RDC::SHADER_STAGE_VERTEX] = "vert",
-	[RDC::SHADER_STAGE_FRAGMENT] = "frag",
-	[RDC::SHADER_STAGE_TESSELATION_CONTROL] = "tess_ctrl",
-	[RDC::SHADER_STAGE_TESSELATION_EVALUATION] = "tess_eval",
-	[RDC::SHADER_STAGE_COMPUTE] = "comp",
+	"vert", // RDC::SHADER_STAGE_VERTEX
+	"frag", // RDC::SHADER_STAGE_FRAGMENT
+	"tess_ctrl", // RDC::SHADER_STAGE_TESSELATION_CONTROL
+	"tess_eval", // RDC::SHADER_STAGE_TESSELATION_EVALUATION
+	"comp", // RDC::SHADER_STAGE_COMPUTE
 };
 
 void ShaderCacheEntry::notify_free() const {

@@ -684,23 +684,24 @@ typedef void (*hb_paint_pop_group_func_t) (hb_paint_funcs_t *funcs,
 
 /**
  * hb_paint_custom_palette_color_func_t:
- * @funcs: paint functions object
- * @paint_data: The data accompanying the paint functions in hb_font_paint_glyph()
- * @color_index: the color index
- * @color: (out): fetched color
- * @user_data: User data pointer passed to hb_paint_funcs_set_pop_group_func()
+ * @funcs: paint functions object.
+ * @paint_data: data accompanying the paint functions in hb_font_paint_glyph().
+ * @color_index: color index to fetch.
+ * @color: (out): fetched color.
+ * @user_data: user data pointer passed to hb_paint_funcs_set_custom_palette_color_func().
  *
- * A virtual method for the #hb_paint_funcs_t to fetch a color from the custom
- * color palette.
+ * A virtual method for #hb_paint_funcs_t to fetch a custom palette override
+ * color for @color_index.
  *
- * Custom palette colors override the colors from the fonts selected color
- * palette. It is not necessary to override all palette entries; for entries
- * that should be taken from the font palette, return `false`.
+ * Custom palette colors override colors from the font's selected color palette.
+ * It is not necessary to override all palette entries; return `false` for
+ * entries that should be taken from the font palette.
  *
- * This function might get called multiple times, but the custom palette is
- * expected to remain unchanged for duration of a hb_font_paint_glyph() call.
+ * This function might be called multiple times, but the custom palette is
+ * expected to remain unchanged for the duration of one
+ * hb_font_paint_glyph() call.
  *
- * Return value: `true` if found, `false` otherwise
+ * Return value: `true` if a custom color is provided, `false` otherwise.
  *
  * Since: 7.0.0
  */
@@ -934,12 +935,12 @@ hb_paint_funcs_set_pop_group_func (hb_paint_funcs_t          *funcs,
 
 /**
  * hb_paint_funcs_set_custom_palette_color_func:
- * @funcs: A paint functions struct
- * @func: (closure user_data) (destroy destroy) (scope notified): The custom-palette-color callback
- * @user_data: Data to pass to @func
- * @destroy: (nullable): Function to call when @user_data is no longer needed
+ * @funcs: a paint functions struct.
+ * @func: (closure user_data) (destroy destroy) (scope notified): custom-palette-color callback.
+ * @user_data: data to pass to @func.
+ * @destroy: (nullable): function to call when @user_data is no longer needed.
  *
- * Sets the custom-palette-color callback on the paint functions struct.
+ * Sets the custom-palette-color callback on @funcs.
  *
  * Since: 7.0.0
  */

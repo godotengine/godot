@@ -34,7 +34,7 @@
 #include "core/string/print_string.h"
 
 #define BCDEC_IMPLEMENTATION
-#include "thirdparty/misc/bcdec.h"
+#include <thirdparty/misc/bcdec.h>
 
 inline void bcdec_bc6h_half_s(const void *compressedBlock, void *decompressedBlock, int destinationPitch) {
 	bcdec_bc6h_half(compressedBlock, decompressedBlock, destinationPitch, true);

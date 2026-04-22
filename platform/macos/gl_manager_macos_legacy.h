@@ -32,6 +32,8 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
+#include "platform_gl.h"
+
 #include "core/error/error_list.h"
 #include "core/templates/rb_map.h"
 #include "servers/display/display_server_enums.h"
@@ -44,7 +46,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is de
 
 typedef CGLError (*CGLEnablePtr)(CGLContextObj ctx, CGLContextEnable pname);
 typedef CGLError (*CGLSetParameterPtr)(CGLContextObj ctx, CGLContextParameter pname, const GLint *params);
-typedef CGLContextObj (*CGLGetCurrentContextPtr)(void);
+typedef CGLContextObj (*CGLGetCurrentContextPtr)();
 
 class GLManagerLegacy_MacOS {
 	struct GLWindow {

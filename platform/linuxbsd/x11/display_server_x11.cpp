@@ -59,7 +59,6 @@
 #else // !SOWRAP_ENABLED
 #include <X11/XKBlib.h>
 #include <X11/Xutil.h>
-
 #include <X11/extensions/Xext.h>
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xrender.h>
@@ -3165,6 +3164,109 @@ void DisplayServerX11::window_set_mode(DisplayServerEnums::WindowMode p_mode, Di
 	}
 }
 
+void DisplayServerX11::window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.icon_set = true;
+
+	Ref<Image> img;
+	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+		img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+	}
+	wd.icon = img;
+	_update_window_icon(wd);
+}
+
+bool DisplayServerX11::g_set_icon_error = false;
+
+int DisplayServerX11::set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
+	g_set_icon_error = true;
+	return 0;
+}
+
+void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
+	Ref<Image> w_icon;
+	if (p_wd.icon_set) {
+		w_icon = p_wd.icon;
+	} else {
+		w_icon = icon;
+	}
+
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&DisplayServerX11::set_icon_errorhandler);
+
+	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
+
+	if (w_icon.is_valid()) {
+		while (true) {
+			int w = w_icon->get_width();
+			int h = w_icon->get_height();
+
+			if (g_set_icon_error) {
+				g_set_icon_error = false;
+
+				WARN_PRINT(vformat("Icon too large (%dx%d), attempting to downscale icon.", w, h));
+
+				int new_width, new_height;
+				if (w > h) {
+					new_width = w / 2;
+					new_height = h * new_width / w;
+				} else {
+					new_height = h / 2;
+					new_width = w * new_height / h;
+				}
+
+				w = new_width;
+				h = new_height;
+
+				if (!w || !h) {
+					WARN_PRINT("Unable to set icon.");
+					break;
+				}
+
+				w_icon->resize(w, h, Image::INTERPOLATE_CUBIC);
+			}
+
+			// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
+			Vector<long> pd;
+
+			pd.resize(2 + w * h);
+
+			pd.write[0] = w;
+			pd.write[1] = h;
+
+			const uint8_t *r = w_icon->get_data().ptr();
+
+			long *wr = &pd.write[2];
+			uint8_t const *pr = r;
+
+			for (int i = 0; i < w * h; i++) {
+				long v = 0;
+				//    A             R             G            B
+				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
+				*wr++ = v;
+				pr += 4;
+			}
+
+			if (net_wm_icon != None) {
+				XChangeProperty(x11_display, p_wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
+			}
+
+			if (!g_set_icon_error) {
+				break;
+			}
+		}
+	} else {
+		XDeleteProperty(x11_display, p_wd.x11_window, net_wm_icon);
+	}
+
+	XFlush(x11_display);
+	XSetErrorHandler(oldHandler);
+}
+
 DisplayServerEnums::WindowMode DisplayServerX11::window_get_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -4410,11 +4512,15 @@ void DisplayServerX11::_xim_preedit_caret_callback(::XIM xim, ::XPointer client_
 
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
+	print_verbose("Input method stopped.");
+
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 	ds->xim = nullptr;
+	ds->warn_xim_just_stopped = true;
 
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
 		E.value.xic = nullptr;
+		E.value.ime_active = false;
 	}
 }
 
@@ -5733,91 +5839,18 @@ void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
 
-bool g_set_icon_error = false;
-int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
-	g_set_icon_error = true;
-	return 0;
-}
-
 void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
-	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(p_icon.is_null());
 
-	WindowData &wd = windows[DisplayServerEnums::MAIN_WINDOW_ID];
+	icon = p_icon->duplicate();
+	icon->convert(Image::FORMAT_RGBA8);
 
-	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&set_icon_errorhandler);
-
-	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
-
-	if (p_icon.is_valid()) {
-		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
-
-		Ref<Image> img = p_icon->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		while (true) {
-			int w = img->get_width();
-			int h = img->get_height();
-
-			if (g_set_icon_error) {
-				g_set_icon_error = false;
-
-				WARN_PRINT(vformat("Icon too large (%dx%d), attempting to downscale icon.", w, h));
-
-				int new_width, new_height;
-				if (w > h) {
-					new_width = w / 2;
-					new_height = h * new_width / w;
-				} else {
-					new_height = h / 2;
-					new_width = w * new_height / h;
-				}
-
-				w = new_width;
-				h = new_height;
-
-				if (!w || !h) {
-					WARN_PRINT("Unable to set icon.");
-					break;
-				}
-
-				img->resize(w, h, Image::INTERPOLATE_CUBIC);
-			}
-
-			// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
-			Vector<long> pd;
-
-			pd.resize(2 + w * h);
-
-			pd.write[0] = w;
-			pd.write[1] = h;
-
-			const uint8_t *r = img->get_data().ptr();
-
-			long *wr = &pd.write[2];
-			uint8_t const *pr = r;
-
-			for (int i = 0; i < w * h; i++) {
-				long v = 0;
-				//    A             R             G            B
-				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
-				*wr++ = v;
-				pr += 4;
-			}
-
-			if (net_wm_icon != None) {
-				XChangeProperty(x11_display, wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
-			}
-
-			if (!g_set_icon_error) {
-				break;
-			}
+	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+			continue;
 		}
-	} else {
-		XDeleteProperty(x11_display, wd.x11_window, net_wm_icon);
+		_update_window_icon(E.value);
 	}
-
-	XFlush(x11_display);
-	XSetErrorHandler(oldHandler);
 }
 
 void DisplayServerX11::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
@@ -6292,69 +6325,83 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, D
 }
 
 void DisplayServerX11::_create_xic(WindowData &wd) {
-	if (xim && xim_style) {
-		// Block events polling while changing input focus
-		// because it triggers some event polling internally.
-		MutexLock mutex_lock(events_mutex);
-
-		// Force on-the-spot for the over-the-spot style.
-		if ((xim_style & XIMPreeditPosition) != 0) {
-			xim_style &= ~XIMPreeditPosition;
-			xim_style |= XIMPreeditCallbacks;
+	wd.xic = nullptr;
+	if (!xim) {
+		// An input method is not required for the application to run.
+		// However, it is still assumed that the user requires an input method for text input;
+		// therefore, in order to avoid generating spam, a warning is issued only once whenever
+		// the input method becomes inactive.
+		if (warn_xim_just_stopped) {
+			WARN_PRINT("Failed to create wd.xic as the input method or its xim server may not have started yet.");
+			warn_xim_just_stopped = false;
 		}
-		if ((xim_style & XIMPreeditCallbacks) != 0) {
-			::XIMCallback preedit_start_callback;
-			preedit_start_callback.client_data = (::XPointer)(this);
-			preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
-
-			::XIMCallback preedit_done_callback;
-			preedit_done_callback.client_data = (::XPointer)(this);
-			preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
-
-			::XIMCallback preedit_draw_callback;
-			preedit_draw_callback.client_data = (::XPointer)(this);
-			preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
-
-			::XIMCallback preedit_caret_callback;
-			preedit_caret_callback.client_data = (::XPointer)(this);
-			preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
-
-			::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
-					XNPreeditStartCallback, &preedit_start_callback,
-					XNPreeditDoneCallback, &preedit_done_callback,
-					XNPreeditDrawCallback, &preedit_draw_callback,
-					XNPreeditCaretCallback, &preedit_caret_callback,
-					(char *)nullptr);
-
-			wd.xic = XCreateIC(xim,
-					XNInputStyle, xim_style,
-					XNClientWindow, wd.x11_xim_window,
-					XNFocusWindow, wd.x11_xim_window,
-					XNPreeditAttributes, preedit_attributes,
-					(char *)nullptr);
-			XFree(preedit_attributes);
-		} else {
-			wd.xic = XCreateIC(xim,
-					XNInputStyle, xim_style,
-					XNClientWindow, wd.x11_xim_window,
-					XNFocusWindow, wd.x11_xim_window,
-					(char *)nullptr);
+		return;
+	}
+	if (xim_style == 0L) {
+		if (warn_xim_just_stopped) {
+			WARN_PRINT("Failed to create wd.xic as the input method may not support any styles.");
+			warn_xim_just_stopped = false;
 		}
+		return;
+	}
 
-		long im_event_mask = 0;
-		if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
-			WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value.");
-			XDestroyIC(wd.xic);
-			wd.xic = nullptr;
-		}
-		if (wd.xic) {
-			XUnsetICFocus(wd.xic);
-		} else {
-			WARN_PRINT("XCreateIC couldn't create wd.xic.");
-		}
+	// Block events polling while changing input focus
+	// because it triggers some event polling internally.
+	MutexLock mutex_lock(events_mutex);
+
+	// Force on-the-spot for the over-the-spot style.
+	if ((xim_style & XIMPreeditPosition) != 0) {
+		xim_style &= ~XIMPreeditPosition;
+		xim_style |= XIMPreeditCallbacks;
+	}
+	if ((xim_style & XIMPreeditCallbacks) != 0) {
+		::XIMCallback preedit_start_callback;
+		preedit_start_callback.client_data = (::XPointer)(this);
+		preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
+
+		::XIMCallback preedit_done_callback;
+		preedit_done_callback.client_data = (::XPointer)(this);
+		preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
+
+		::XIMCallback preedit_draw_callback;
+		preedit_draw_callback.client_data = (::XPointer)(this);
+		preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
+
+		::XIMCallback preedit_caret_callback;
+		preedit_caret_callback.client_data = (::XPointer)(this);
+		preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
+
+		::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
+				XNPreeditStartCallback, &preedit_start_callback,
+				XNPreeditDoneCallback, &preedit_done_callback,
+				XNPreeditDrawCallback, &preedit_draw_callback,
+				XNPreeditCaretCallback, &preedit_caret_callback,
+				(char *)nullptr);
+
+		wd.xic = XCreateIC(xim,
+				XNInputStyle, xim_style,
+				XNClientWindow, wd.x11_xim_window,
+				XNFocusWindow, wd.x11_xim_window,
+				XNPreeditAttributes, preedit_attributes,
+				(char *)nullptr);
+		XFree(preedit_attributes);
 	} else {
+		wd.xic = XCreateIC(xim,
+				XNInputStyle, xim_style,
+				XNClientWindow, wd.x11_xim_window,
+				XNFocusWindow, wd.x11_xim_window,
+				(char *)nullptr);
+	}
+
+	ERR_FAIL_NULL_MSG(wd.xic, "XCreateIC couldn't create wd.xic.");
+
+	long im_event_mask = 0;
+	if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
+		WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value.");
+		XDestroyIC(wd.xic);
 		wd.xic = nullptr;
-		WARN_PRINT("XCreateIC couldn't create wd.xic.");
+	} else {
+		XUnsetICFocus(wd.xic);
 	}
 }
 
@@ -6651,6 +6698,8 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 		XDefineCursor(x11_display, wd.x11_window, cursors[current_cursor]);
 	}
 
+	_update_window_icon(wd);
+
 	return id;
 }
 
@@ -6713,6 +6762,8 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 
 void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer client_data,
 		::XPointer call_data) {
+	print_verbose("Input method started.");
+
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 
 	ds->xim = XOpenIM(display, nullptr, nullptr, nullptr);
@@ -6720,38 +6771,40 @@ void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer 
 	if (ds->xim == nullptr) {
 		WARN_PRINT("XOpenIM failed.");
 		ds->xim_style = 0L;
-	} else {
-		::XIMCallback im_destroy_callback;
-		im_destroy_callback.client_data = client_data;
-		im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
-		if (XSetIMValues(ds->xim, XNDestroyCallback, &im_destroy_callback,
-					nullptr) != nullptr) {
-			WARN_PRINT("Error setting XIM destroy callback.");
-		}
+		return;
+	}
 
-		::XIMStyles *xim_styles = nullptr;
-		ds->xim_style = 0L;
-		char *imvalret = XGetIMValues(ds->xim, XNQueryInputStyle, &xim_styles, nullptr);
-		if (imvalret != nullptr || xim_styles == nullptr) {
-			fprintf(stderr, "Input method doesn't support any styles\n");
-		}
+	::XIMCallback im_destroy_callback;
+	im_destroy_callback.client_data = client_data;
+	im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
+	if (XSetIMValues(ds->xim, XNDestroyCallback, &im_destroy_callback,
+				nullptr) != nullptr) {
+		WARN_PRINT("Error setting XIM destroy callback.");
+	}
 
-		if (xim_styles) {
-			ds->xim_style = 0L;
-			for (int i = 0; i < xim_styles->count_styles; i++) {
-				const ::XIMStyle &style = xim_styles->supported_styles[i];
+	::XIMStyles *xim_styles = nullptr;
+	ds->xim_style = 0L;
+	char *imvalret = XGetIMValues(ds->xim, XNQueryInputStyle, &xim_styles, nullptr);
+	if (imvalret != nullptr || xim_styles == nullptr) {
+		fprintf(stderr, "Input method doesn't support any styles\n");
+	}
 
-				if (!_is_xim_style_supported(style)) {
-					continue;
-				}
+	if (xim_styles) {
+		for (int i = 0; i < xim_styles->count_styles; i++) {
+			const ::XIMStyle &style = xim_styles->supported_styles[i];
 
-				ds->xim_style = _get_best_xim_style(ds->xim_style, style);
+			if (!_is_xim_style_supported(style)) {
+				continue;
 			}
 
-			XFree(xim_styles);
+			ds->xim_style = _get_best_xim_style(ds->xim_style, style);
 		}
-		XFree(imvalret);
+
+		ds->warn_xim_just_stopped = false;
+
+		XFree(xim_styles);
 	}
+	XFree(imvalret);
 
 	// The input method has been (re)started.
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {

@@ -35,7 +35,7 @@
 #include "modules/glslang/shader_compile.h"
 #endif
 
-#include "shader_include_db.h"
+#include "servers/rendering/shader_include_db.h"
 
 Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
 	Vector<String> lines = p_text.split("\n");

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TabBar" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TabBar" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A control that provides a horizontal bar with tabs.
 	</brief_description>
@@ -281,6 +281,22 @@
 		</member>
 		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
 			The number of tabs currently in the bar.
+		</member>
+		<member name="tab_{index}/disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the tab at [code]index[/code] is disabled.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. tab_count - 1[/code] range.
+		</member>
+		<member name="tab_{index}/icon" type="Texture2D" setter="" getter="">
+			If [code]true[/code], the tab at [code]index[/code] is hidden.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. tab_count - 1[/code] range.
+		</member>
+		<member name="tab_{index}/title" type="String" setter="" getter="" default="&quot;&quot;">
+			The title text of the tab at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. tab_count - 1[/code] range.
+		</member>
+		<member name="tab_{index}/tooltip" type="String" setter="" getter="" default="&quot;&quot;">
+			The tooltip text of the tab at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. tab_count - 1[/code] range.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabBar]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].

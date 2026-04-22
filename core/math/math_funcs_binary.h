@@ -38,7 +38,7 @@ namespace Math {
 
 // Returns `true` if a positive integer is a power of 2, `false` otherwise.
 template <typename T>
-inline bool is_power_of_2(const T x) {
+constexpr bool is_power_of_2(const T x) {
 	return x && ((x & (x - 1)) == 0);
 }
 
@@ -129,7 +129,7 @@ constexpr int32_t get_shift_from_power_of_2(uint32_t p_bits) {
 }
 
 template <typename T>
-_FORCE_INLINE_ T nearest_power_of_2_templated(T p_number) {
+constexpr T nearest_power_of_2_templated(T p_number) {
 	--p_number;
 
 	// The number of operations on x is the base two logarithm

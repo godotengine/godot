@@ -40,7 +40,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/style_box_texture.h" // IWYU pragma: keep. Used by `EditorThemeManager::make_stylebox`.
 
 void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, EditorThemeManager::ThemeConfiguration &p_config) {
 	// Colors.
@@ -611,7 +611,6 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("font_disabled_color", "Tree", p_config.font_disabled_color);
 			p_theme->set_color("font_outline_color", "Tree", p_config.font_outline_color);
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
-			p_theme->set_color("drop_position_color", "Tree", p_config.accent_color);
 
 			p_theme->set_constant("v_separation", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("h_separation", "Tree", (p_config.increased_margin + 2) * EDSCALE);
@@ -661,7 +660,8 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("relationship_line_color", "Tree", relationship_line_color);
 			p_theme->set_color("parent_hl_line_color", "Tree", parent_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", children_line_color);
-			p_theme->set_color("drop_position_color", "Tree", p_config.accent_color);
+			p_theme->set_color("drop_on_item_color", "Tree", p_config.accent_color);
+			p_theme->set_color("drop_position_color", "Tree", p_config.icon_normal_color);
 
 			Ref<StyleBoxFlat> style_tree_btn = p_config.base_style->duplicate();
 			style_tree_btn->set_bg_color(p_config.highlight_color);
@@ -1045,6 +1045,9 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 		// FileDialog.
 		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon("Folder", EditorStringName(EditorIcons)));
+		p_theme->set_icon("file", "FileDialog", p_theme->get_icon("File", EditorStringName(EditorIcons)));
+		p_theme->set_icon("folder_thumbnail", "FileDialog", p_theme->get_icon("FolderBigThumb", EditorStringName(EditorIcons)));
+		p_theme->set_icon("file_thumbnail", "FileDialog", p_theme->get_icon("FileBigThumb", EditorStringName(EditorIcons)));
 		p_theme->set_icon("parent_folder", "FileDialog", p_theme->get_icon("ArrowUp", EditorStringName(EditorIcons)));
 		p_theme->set_icon("back_folder", "FileDialog", p_theme->get_icon("Back", EditorStringName(EditorIcons)));
 		p_theme->set_icon("forward_folder", "FileDialog", p_theme->get_icon("Forward", EditorStringName(EditorIcons)));
@@ -1130,6 +1133,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 			int v_sep = (p_config.enable_touch_optimizations ? 12 : p_config.forced_even_separation) * EDSCALE;
 			p_theme->set_constant("v_separation", "PopupMenu", v_sep);
+			p_theme->set_constant("search_bar_separation", "PopupMenu", v_sep);
 			p_theme->set_constant("outline_size", "PopupMenu", 0);
 			p_theme->set_constant("item_start_padding", "PopupMenu", p_config.separation_margin);
 			p_theme->set_constant("item_end_padding", "PopupMenu", p_config.separation_margin);
@@ -1231,6 +1235,12 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
 		p_theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
 		p_theme->set_constant("outline_size", "Label", 0);
+
+		// Label with no vertical margins.
+
+		p_theme->set_type_variation("LabelVMarginless", "Label");
+		Ref<StyleBoxEmpty> v_marginless_style = EditorThemeManager::make_empty_stylebox(p_config.base_empty_style->get_margin(SIDE_LEFT), 0, p_config.base_empty_style->get_margin(SIDE_RIGHT), 0);
+		p_theme->set_stylebox(CoreStringName(normal), "LabelVMarginless", v_marginless_style);
 	}
 
 	// SpinBox.
@@ -1845,6 +1855,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		// Flat button variations.
 		{
+			p_theme->set_type_variation(SceneStringName(FlatButton), "Button");
+
 			Ref<StyleBoxEmpty> style_flat_button = EditorThemeManager::make_empty_stylebox();
 			Ref<StyleBoxFlat> style_flat_button_hover = p_config.button_style_hover->duplicate();
 			Ref<StyleBoxFlat> style_flat_button_pressed = p_config.button_style_pressed->duplicate();
@@ -1870,10 +1882,21 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", style_flat_button_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", style_flat_button);
 
+			// Variation for buttons that shouldn't tint their icons.
+
 			p_theme->set_type_variation("FlatButtonNoIconTint", "FlatButton");
 			p_theme->set_color("icon_pressed_color", "FlatButtonNoIconTint", p_config.icon_normal_color);
 			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.mono_color);
 			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.mono_color);
+
+			// Variation for the AssetLib thumbnails.
+
+			p_theme->set_type_variation("ThumbnailButton", SceneStringName(FlatButton));
+			p_theme->set_color("icon_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
+
+			// Variation for Editor Log filter buttons.
 
 			p_theme->set_type_variation("FlatMenuButtonNoIconTint", "FlatMenuButton");
 			p_theme->set_color("icon_pressed_color", "FlatMenuButtonNoIconTint", p_config.icon_normal_color);
@@ -2057,6 +2080,10 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		// Secondary trees and item lists.
 		p_theme->set_type_variation("TreeSecondary", "Tree");
 		p_theme->set_type_variation("ItemListSecondary", "ItemList");
+
+		// EditorAudioBusEffectsTree
+		p_theme->set_type_variation("EditorAudioBusEffectsTree", "Tree");
+		p_theme->set_constant("h_separation", "EditorAudioBusEffectsTree", 0);
 
 		// ForegroundPanel.
 		p_theme->set_type_variation("PanelForeground", "Panel");
@@ -2390,11 +2417,11 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_type_variation("EditorHelpBitTooltipContent", "EditorHelpBitContent");
 	}
 
-	// Asset Library.
+	// Asset Store.
 	p_theme->set_stylebox("bg", "AssetLib", p_config.base_empty_style);
 	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.content_panel_style);
 	p_theme->set_stylebox("downloads", "AssetLib", p_theme->get_stylebox(SceneStringName(panel), SNAME("Tree")));
-	p_theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5)); // FIXME: Use a defined color instead.
+	p_theme->set_color("faded_text", "AssetLib", p_config.font_disabled_color);
 	p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 
 	// Debugger.
@@ -2504,6 +2531,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
+		}
+
+		// BlendSpace graph.
+		{
+			Ref<StyleBox> bs_panel_style = p_config.tree_panel_style->duplicate();
+			bs_panel_style->set_content_margin_all(0);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphBlendSpace", bs_panel_style);
 		}
 	}
 

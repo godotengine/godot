@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,32 @@
 #include "tvgCommon.h"
 #include "tvgArray.h"
 #include "tvgInlist.h"
+#include "tvgColor.h"
+
+using SvgColor = tvg::RGB;
+
+#define STR_AS(A, B) !strcmp((A), (B))
+
+struct Box
+{
+    float x, y, w, h;
+
+    void intersect(const Box& box)
+    {
+        auto x1 = x + w;
+        auto y1 = y + h;
+        auto x2 = box.x + box.w;
+        auto y2 = box.y + box.h;
+
+        x = x > box.x ? x : box.x;
+        y = y > box.y ? y : box.y;
+        w = (x1 < x2 ? x1 : x2) - x;
+        h = (y1 < y2 ? y1 : y2) - y;
+
+        if (w < 0.0f) w = 0.0f;
+        if (h < 0.0f) h = 0.0f;
+    }
+};
 
 struct SvgNode;
 struct SvgStyleGradient;
@@ -55,6 +81,8 @@ enum class SvgNodeType
     Mask,
     CssStyle,
     Symbol,
+    Filter,
+    GaussianBlur,
     Unknown
 };
 
@@ -81,14 +109,19 @@ enum class SvgFillFlags
     ClipPath = 0x16
 };
 
-constexpr bool operator &(SvgFillFlags a, SvgFillFlags b)
+constexpr bool operator&(SvgFillFlags a, SvgFillFlags b)
 {
     return int(a) & int(b);
 }
 
-constexpr SvgFillFlags operator |(SvgFillFlags a, SvgFillFlags b)
+constexpr SvgFillFlags operator|(SvgFillFlags a, SvgFillFlags b)
 {
     return SvgFillFlags(int(a) | int(b));
+}
+
+constexpr void operator|=(SvgFillFlags& a, const SvgFillFlags b)
+{
+    a = SvgFillFlags(int(a) | int(b));
 }
 
 enum class SvgStrokeFlags
@@ -105,16 +138,20 @@ enum class SvgStrokeFlags
     DashOffset = 0x200
 };
 
-constexpr bool operator &(SvgStrokeFlags a, SvgStrokeFlags b)
+constexpr bool operator&(SvgStrokeFlags a, SvgStrokeFlags b)
 {
     return int(a) & int(b);
 }
 
-constexpr SvgStrokeFlags operator |(SvgStrokeFlags a, SvgStrokeFlags b)
+constexpr SvgStrokeFlags operator|(SvgStrokeFlags a, SvgStrokeFlags b)
 {
     return SvgStrokeFlags(int(a) | int(b));
 }
 
+constexpr void operator|=(SvgStrokeFlags& a, const SvgStrokeFlags b)
+{
+    a = SvgStrokeFlags(int(a) | int(b));
+}
 
 enum class SvgGradientType
 {
@@ -143,16 +180,22 @@ enum class SvgStyleFlags
     PaintOrder = 0x10000,
     StrokeMiterlimit = 0x20000,
     StrokeDashOffset = 0x40000,
+    Filter = 0x80000
 };
 
-constexpr bool operator &(SvgStyleFlags a, SvgStyleFlags b)
+constexpr bool operator&(SvgStyleFlags a, SvgStyleFlags b)
 {
     return int(a) & int(b);
 }
 
-constexpr SvgStyleFlags operator |(SvgStyleFlags a, SvgStyleFlags b)
+constexpr SvgStyleFlags operator|(SvgStyleFlags a, SvgStyleFlags b)
 {
     return SvgStyleFlags(int(a) | int(b));
+}
+
+constexpr void operator|=(SvgStyleFlags& a, const SvgStyleFlags b)
+{
+    a = SvgStyleFlags(int(a) | int(b));
 }
 
 enum class SvgStopStyleFlags
@@ -162,12 +205,12 @@ enum class SvgStopStyleFlags
     StopColor = 0x02
 };
 
-constexpr bool operator &(SvgStopStyleFlags a, SvgStopStyleFlags b)
+constexpr bool operator&(SvgStopStyleFlags a, SvgStopStyleFlags b)
 {
     return int(a) & int(b);
 }
 
-constexpr SvgStopStyleFlags operator |(SvgStopStyleFlags a, SvgStopStyleFlags b)
+constexpr SvgStopStyleFlags operator|(SvgStopStyleFlags a, SvgStopStyleFlags b)
 {
     return SvgStopStyleFlags(int(a) | int(b));
 }
@@ -199,16 +242,17 @@ constexpr SvgGradientFlags operator |(SvgGradientFlags a, SvgGradientFlags b)
     return SvgGradientFlags(int(a) | int(b));
 }
 
-enum class SvgFillRule
-{
-    Winding = 0,
-    OddEven = 1
-};
-
 enum class SvgMaskType
 {
     Luminance = 0,
     Alpha
+};
+
+enum class SvgXmlSpace
+{
+    None,
+    Default,
+    Preserve
 };
 
 //Length type to recalculate %, pt, pc, mm, cm etc
@@ -268,12 +312,8 @@ enum class AspectRatioMeetOrSlice
 
 struct SvgDocNode
 {
-    float w;       //unit: point or in percentage see: SvgViewFlag
-    float h;       //unit: point or in percentage see: SvgViewFlag
-    float vx;
-    float vy;
-    float vw;
-    float vh;
+    float w, h;   //unit: point or in percentage see: SvgViewFlag
+    Box vbox;
     SvgViewFlag viewFlag;
     SvgNode* defs;
     SvgNode* style;
@@ -312,37 +352,23 @@ struct SvgUseNode
 
 struct SvgEllipseNode
 {
-    float cx;
-    float cy;
-    float rx;
-    float ry;
+    float cx, cy, rx, ry;
 };
 
 struct SvgCircleNode
 {
-    float cx;
-    float cy;
-    float r;
+    float cx, cy, r;
 };
 
 struct SvgRectNode
 {
-    float x;
-    float y;
-    float w;
-    float h;
-    float rx;
-    float ry;
-    bool hasRx;
-    bool hasRy;
+    float x, y, w, h, rx, ry;
+    bool hasRx, hasRy;
 };
 
 struct SvgLineNode
 {
-    float x1;
-    float y1;
-    float x2;
-    float y2;
+    float x1, y1, x2, y2;
 };
 
 struct SvgImageNode
@@ -384,12 +410,26 @@ struct SvgTextNode
     float fontSize;
 };
 
+struct SvgGaussianBlurNode
+{
+    float stdDevX, stdDevY;
+    Box box;
+    bool isPercentage[4];
+    bool hasBox;
+    bool edgeModeWrap;
+};
+
+struct SvgFilterNode
+{
+    Box box;
+    bool isPercentage[4];
+    bool filterUserSpace;
+    bool primitiveUserSpace;
+};
+
 struct SvgLinearGradient
 {
-    float x1;
-    float y1;
-    float x2;
-    float y2;
+    float x1, y1, x2, y2;
     bool isX1Percentage;
     bool isY1Percentage;
     bool isX2Percentage;
@@ -398,12 +438,7 @@ struct SvgLinearGradient
 
 struct SvgRadialGradient
 {
-    float cx;
-    float cy;
-    float fx;
-    float fy;
-    float r;
-    float fr;
+    float cx, cy, fx, fy, r, fr;
     bool isCxPercentage;
     bool isCyPercentage;
     bool isFxPercentage;
@@ -417,13 +452,6 @@ struct SvgComposite
     char *url;
     SvgNode* node;
     bool applying;              //flag for checking circular dependency.
-};
-
-struct SvgColor
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
 };
 
 struct SvgPaint
@@ -457,11 +485,11 @@ struct SvgStyleGradient
     void clear()
     {
         stops.reset();
-        free(transform);
-        free(radial);
-        free(linear);
-        free(ref);
-        free(id);
+        tvg::free(transform);
+        tvg::free(radial);
+        tvg::free(linear);
+        tvg::free(ref);
+        tvg::free(id);
     }
 };
 
@@ -487,12 +515,19 @@ struct SvgStyleStroke
     SvgDash dash;
 };
 
+struct SvgFilter
+{
+    char *url;
+    SvgNode* node;
+};
+
 struct SvgStyleProperty
 {
     SvgStyleFill fill;
     SvgStyleStroke stroke;
     SvgComposite clipPath;
     SvgComposite mask;
+    SvgFilter filter;
     int opacity;
     SvgColor color;
     char* cssClass;
@@ -529,7 +564,10 @@ struct SvgNode
         SvgCssStyleNode cssStyle;
         SvgSymbolNode symbol;
         SvgTextNode text;
+        SvgFilterNode filter;
+        SvgGaussianBlurNode gaussianBlur;
     } node;
+    SvgXmlSpace xmlSpace = SvgXmlSpace::None;
     ~SvgNode();
 };
 
@@ -539,10 +577,7 @@ struct SvgParser
     SvgStyleGradient* styleGrad;
     Fill::ColorStop gradStop;
     SvgStopStyleFlags flags;
-    struct
-    {
-        float x, y, w, h;
-    } global;
+    Box global;
     struct
     {
         bool parsedFx;
@@ -590,11 +625,6 @@ struct SvgLoaderData
     bool result = false;
     OpenedTagType openedTag = OpenedTagType::Other;
     SvgNode* currentGraphicsNode = nullptr;
-};
-
-struct Box
-{
-    float x, y, w, h;
 };
 
 #endif

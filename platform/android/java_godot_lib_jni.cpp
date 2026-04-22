@@ -52,9 +52,8 @@
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "servers/rendering/rendering_server.h"
-
 #include "servers/camera/camera_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"
@@ -163,7 +162,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 	}
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_godot_native_bridge, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
 	godot_init_profiler();
 
 	JavaVM *jvm;
@@ -173,7 +172,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 	setup_android_class_loader();
 
 	// create our wrapper classes
-	godot_java = new GodotJavaWrapper(env, p_godot_instance);
+	godot_java = new GodotJavaWrapper(env, p_godot_native_bridge);
 	godot_io_java = new GodotIOJavaWrapper(env, p_godot_io);
 
 	FileAccessAndroid::setup(p_asset_manager);

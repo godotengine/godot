@@ -648,8 +648,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			instruction_args = nullptr;
 		}
 
-		for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
-			type_init_function_table[E.value](&stack[E.key]);
+		for (const Pair<int, Variant::Type> &E : temporary_slots) {
+			type_init_function_table[E.second](&stack[E.first]);
 		}
 	}
 
@@ -660,7 +660,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		memnew_placement(&stack[ADDR_STACK_SELF], Variant);
 		script = _script;
 	}
-	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
+
+	// We must call a `Variant` constructor here, as accessing an object without doing so is undefined behavior.
+	memnew_placement(&stack[ADDR_STACK_CLASS], Variant);
+	VariantInternal::object_assign_without_ref_unsafe(&stack[ADDR_STACK_CLASS], script);
+
 	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
 
 	String err_text;
@@ -2818,8 +2822,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						Variant::construct(ret_type, retvalue, const_cast<const Variant **>(&r), 1, ce);
 					} else {
 #ifdef DEBUG_ENABLED
-						err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
-								Variant::get_type_name(r->get_type()), Variant::get_type_name(ret_type));
+						err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
+								_get_var_type(r), Variant::get_type_name(ret_type));
 #endif // DEBUG_ENABLED
 
 						// Construct a base type anyway so type constraints are met.
@@ -2848,9 +2852,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				if (r->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "Array[%s]".)",
-							Variant::get_type_name(r->get_type()), Variant::get_type_name(builtin_type));
-#endif
+					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "Array[%s]".)",
+							_get_var_type(r), Variant::get_type_name(builtin_type));
+#endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
 
@@ -2858,7 +2862,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return an array of type "%s" where expected return type is "Array[%s]".)",
+					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "Array[%s]".)",
 							_get_var_type(r), _get_element_type(builtin_type, native_type, *script_type));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
@@ -2890,7 +2894,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				if (r->get_type() != Variant::DICTIONARY) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return a value of type "%s" where expected return type is "Dictionary[%s, %s]".)",
+					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "Dictionary[%s, %s]".)",
 							_get_var_type(r), _get_element_type(key_builtin_type, key_native_type, *key_script_type),
 							_get_element_type(value_builtin_type, value_native_type, *value_script_type));
 #endif // DEBUG_ENABLED
@@ -2902,7 +2906,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (dictionary->get_typed_key_builtin() != ((uint32_t)key_builtin_type) || dictionary->get_typed_key_class_name() != key_native_type || dictionary->get_typed_key_script() != *key_script_type ||
 						dictionary->get_typed_value_builtin() != ((uint32_t)value_builtin_type) || dictionary->get_typed_value_class_name() != value_native_type || dictionary->get_typed_value_script() != *value_script_type) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return a dictionary of type "%s" where expected return type is "Dictionary[%s, %s]".)",
+					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "Dictionary[%s, %s]".)",
 							_get_var_type(r), _get_element_type(key_builtin_type, key_native_type, *key_script_type),
 							_get_element_type(value_builtin_type, value_native_type, *value_script_type));
 #endif // DEBUG_ENABLED
@@ -2926,8 +2930,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
-					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
-							Variant::get_type_name(r->get_type()), nc->get_name());
+#ifdef DEBUG_ENABLED
+					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
+							_get_var_type(r), nc->get_name());
+#endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
 
@@ -2944,8 +2950,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif // DEBUG_ENABLED
 				if (ret_obj && !ClassDB::is_parent_class(ret_obj->get_class_name(), nc->get_name())) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
-							ret_obj->get_class_name(), nc->get_name());
+					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
+							_get_var_type(r), nc->get_name());
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
@@ -2967,8 +2973,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
-							Variant::get_type_name(r->get_type()), GDScript::debug_get_script_name(Ref<Script>(base_type)));
+					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
+							_get_var_type(r), GDScript::debug_get_script_name(Ref<Script>(base_type)));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
@@ -2989,8 +2995,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ScriptInstance *ret_inst = ret_obj->get_script_instance();
 					if (!ret_inst) {
 #ifdef DEBUG_ENABLED
-						err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
-								ret_obj->get_class_name(), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
+						err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
+								_get_var_type(r), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
@@ -3008,8 +3014,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					if (!valid) {
 #ifdef DEBUG_ENABLED
-						err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
-								GDScript::debug_get_script_name(ret_obj->get_script_instance()->get_script()), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
+						err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
+								_get_var_type(r), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
@@ -3807,7 +3813,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int globalname_idx = _code_ptr[ip + 2];
 				GD_ERR_BREAK(globalname_idx < 0 || globalname_idx >= _global_names_count);
 				const StringName *globalname = &_global_names_ptr[globalname_idx];
-				GD_ERR_BREAK(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname));
+				if (unlikely(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname))) {
+					err_text = vformat(R"(Trying to access non-existent autoload singleton "%s".)", *globalname);
+					OPCODE_BREAK;
+				}
 
 				GET_VARIANT_PTR(dst, 0);
 				*dst = GDScriptLanguage::get_singleton()->get_named_globals_map()[*globalname];
@@ -4007,7 +4016,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->exit_function();
 	}
 
-	for (int i = 0; i < _stack_size; i++) {
+	// We deliberately avoid calling the destructor for `ADDR_STACK_CLASS`, since we initialized it
+	// without incrementing any reference count that it might have.
+	stack[ADDR_STACK_SELF].~Variant();
+	stack[ADDR_STACK_NIL].~Variant();
+
+	for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 		stack[i].~Variant();
 	}
 

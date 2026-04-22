@@ -34,8 +34,6 @@
 #include "mono_gd/gd_mono.h"
 
 #include "core/doc_data.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
@@ -47,6 +45,7 @@
 class CSharpScript;
 class CSharpInstance;
 class CSharpLanguage;
+class ResourceFormatLoaderCSharpScript;
 
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
@@ -60,6 +59,7 @@ class CSharpScript : public Script {
 
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
+	friend class ResourceFormatLoaderCSharpScript;
 
 public:
 	struct TypeInfo {
@@ -211,6 +211,7 @@ private:
 	static void GD_CLR_STDCALL _add_property_info_list_callback(CSharpScript *p_script, const String *p_current_class_name, void *p_props, int32_t p_count);
 #ifdef TOOLS_ENABLED
 	static void GD_CLR_STDCALL _add_property_default_values_callback(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
+	static void _register_csharp_global_class(const String &p_script_path, const CSharpScript::TypeInfo &p_type_info);
 #endif
 	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
@@ -236,7 +237,6 @@ public:
 	StringName get_instance_base_type() const override;
 	ScriptInstance *instance_create(Object *p_this) override;
 	PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
-	bool instance_has(const Object *p_this) const override;
 
 	bool has_source_code() const override;
 	String get_source_code() const override;
@@ -584,23 +584,4 @@ public:
 
 	CSharpLanguage();
 	~CSharpLanguage();
-};
-
-class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderCSharpScript, ResourceFormatLoader);
-
-public:
-	Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	void get_recognized_extensions(List<String> *p_extensions) const override;
-	bool handles_type(const String &p_type) const override;
-	String get_resource_type(const String &p_path) const override;
-};
-
-class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {
-	GDSOFTCLASS(ResourceFormatSaverCSharpScript, ResourceFormatSaver);
-
-public:
-	Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
-	bool recognize(const Ref<Resource> &p_resource) const override;
 };

@@ -67,9 +67,14 @@ public class GodotApp extends GodotActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		SplashScreen.installSplashScreen(this);
+		SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
 		EdgeToEdge.enable(this);
 		super.onCreate(savedInstanceState);
+
+		Godot godot = getGodot();
+		if (godot != null && godot.getDisableGodotSplash()) {
+			splashScreen.setKeepOnScreenCondition(() -> godot.getRunStatus() != Godot.RunStatus.STARTED);
+		}
 	}
 
 	@Override

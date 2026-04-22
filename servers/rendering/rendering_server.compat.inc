@@ -66,6 +66,10 @@ void RenderingServer::_viewport_set_size_compat_115799(RID p_viewport, int p_wid
 	viewport_set_size(p_viewport, p_width, p_height, 1);
 }
 
+void RenderingServer::_particles_request_process_time_bind_compat_109142(RID p_particles, real_t p_request_process_time) {
+	particles_request_process_time(p_particles, p_request_process_time, 0.0);
+}
+
 void RenderingServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("multimesh_allocate_data", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &RenderingServer::_multimesh_allocate_data_bind_compat_99455, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect"), &RenderingServer::_environment_set_fog_bind_compat_84792);
@@ -75,6 +79,7 @@ void RenderingServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("instance_set_interpolated", "instance", "interpolated"), &RenderingServer::_instance_set_interpolated_bind_compat_104269);
 	ClassDB::bind_compatibility_method(D_METHOD("instance_reset_physics_interpolation", "instance"), &RenderingServer::_instance_reset_physics_interpolation_bind_compat_104269);
 	ClassDB::bind_compatibility_method(D_METHOD("viewport_set_size", "viewport", "width", "height"), &RenderingServer::_viewport_set_size_compat_115799);
+	ClassDB::bind_compatibility_method(D_METHOD("particles_request_process_time", "particles", "process_time"), &RenderingServer::_particles_request_process_time_bind_compat_109142);
 }
 
 #endif // DISABLE_DEPRECATED

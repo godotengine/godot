@@ -30,6 +30,7 @@
 
 #include "theme_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/doc/editor_help.h"
@@ -2674,19 +2675,20 @@ void ThemeTypeEditor::_update_type_items() {
 			if (E.value) {
 				if (edited_theme->has_font(E.key, edited_type)) {
 					item_editor->set_edited_resource(edited_theme->get_font(E.key, edited_type));
+					item_editor->set_force_allow_unique(false);
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed).bind(E.key));
 			} else {
 				if (ThemeDB::get_singleton()->get_default_theme()->has_font(E.key, edited_type)) {
 					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_font(E.key, edited_type));
+					item_editor->set_force_allow_unique(true);
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
-				item_editor->set_editable(false);
 			}
+			item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed).bind(E.key));
 
 			_add_focusable(item_editor);
 			font_items_list->add_child(item_control);
@@ -2747,19 +2749,20 @@ void ThemeTypeEditor::_update_type_items() {
 			if (E.value) {
 				if (edited_theme->has_icon(E.key, edited_type)) {
 					item_editor->set_edited_resource(edited_theme->get_icon(E.key, edited_type));
+					item_editor->set_force_allow_unique(false);
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed).bind(E.key));
 			} else {
 				if (ThemeDB::get_singleton()->get_default_theme()->has_icon(E.key, edited_type)) {
 					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_icon(E.key, edited_type));
+					item_editor->set_force_allow_unique(true);
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
-				item_editor->set_editable(false);
 			}
+			item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed).bind(E.key));
 
 			_add_focusable(item_editor);
 			icon_items_list->add_child(item_control);
@@ -2821,11 +2824,11 @@ void ThemeTypeEditor::_update_type_items() {
 			if (E.value) {
 				if (edited_theme->has_stylebox(E.key, edited_type)) {
 					item_editor->set_edited_resource(edited_theme->get_stylebox(E.key, edited_type));
+					item_editor->set_force_allow_unique(false);
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed).bind(E.key));
 
 				Button *pin_leader_button = memnew(Button);
 				pin_leader_button->set_flat(true);
@@ -2838,11 +2841,12 @@ void ThemeTypeEditor::_update_type_items() {
 			} else {
 				if (ThemeDB::get_singleton()->get_default_theme()->has_stylebox(E.key, edited_type)) {
 					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_stylebox(E.key, edited_type));
+					item_editor->set_force_allow_unique(true);
 				} else {
 					item_editor->set_edited_resource(Ref<Resource>());
 				}
-				item_editor->set_editable(false);
 			}
+			item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed).bind(E.key));
 
 			item_control->add_child(item_editor);
 			_add_focusable(item_editor);
@@ -3281,7 +3285,7 @@ void ThemeTypeEditor::_font_item_changed(Ref<Font> p_value, String p_item_name) 
 	if (edited_theme->has_font(p_item_name, edited_type)) {
 		ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, edited_theme->get_font(p_item_name, edited_type));
 	} else {
-		ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
+		ur->add_undo_method(*edited_theme, "clear_font", p_item_name, edited_type);
 	}
 
 	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
@@ -3298,7 +3302,7 @@ void ThemeTypeEditor::_icon_item_changed(Ref<Texture2D> p_value, String p_item_n
 	if (edited_theme->has_icon(p_item_name, edited_type)) {
 		ur->add_undo_method(*edited_theme, "set_icon", p_item_name, edited_type, edited_theme->get_icon(p_item_name, edited_type));
 	} else {
-		ur->add_undo_method(*edited_theme, "set_icon", p_item_name, edited_type, Ref<Texture2D>());
+		ur->add_undo_method(*edited_theme, "clear_icon", p_item_name, edited_type);
 	}
 
 	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
@@ -3315,7 +3319,7 @@ void ThemeTypeEditor::_stylebox_item_changed(Ref<StyleBox> p_value, String p_ite
 	if (edited_theme->has_stylebox(p_item_name, edited_type)) {
 		ur->add_undo_method(*edited_theme, "set_stylebox", p_item_name, edited_type, edited_theme->get_stylebox(p_item_name, edited_type));
 	} else {
-		ur->add_undo_method(*edited_theme, "set_stylebox", p_item_name, edited_type, Ref<StyleBox>());
+		ur->add_undo_method(*edited_theme, "clear_stylebox", p_item_name, edited_type);
 	}
 
 	ur->add_do_method(this, "_change_pinned_stylebox");

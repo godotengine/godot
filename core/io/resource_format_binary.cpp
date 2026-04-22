@@ -115,14 +115,6 @@ static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 		if constexpr (sizeof(real_t) == 8) {
 			// Ideal case with double-precision
 			f->get_buffer((uint8_t *)dst, count * sizeof(double));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint64_t *dst = (uint64_t *)dst;
-				for (size_t i = 0; i < count; i++) {
-					dst[i] = BSWAP64(dst[i]);
-				}
-			}
-#endif
 		} else if constexpr (sizeof(real_t) == 4) {
 			// May be slower, but this is for compatibility. Eventually the data should be converted.
 			for (size_t i = 0; i < count; ++i) {
@@ -135,14 +127,6 @@ static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 		if constexpr (sizeof(real_t) == 4) {
 			// Ideal case with float-precision
 			f->get_buffer((uint8_t *)dst, count * sizeof(float));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *dst = (uint32_t *)dst;
-				for (size_t i = 0; i < count; i++) {
-					dst[i] = BSWAP32(dst[i]);
-				}
-			}
-#endif
 		} else if constexpr (sizeof(real_t) == 8) {
 			for (size_t i = 0; i < count; ++i) {
 				dst[i] = f->get_float();
@@ -526,15 +510,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			int32_t *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(int32_t));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *ptr = (uint32_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP32(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -545,15 +520,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			int64_t *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(int64_t));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint64_t *ptr = (uint64_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP64(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -564,15 +530,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			float *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(float));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *ptr = (uint32_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP32(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -583,15 +540,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			double *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(double));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint64_t *ptr = (uint64_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP64(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -642,15 +590,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			// Colors always use `float` even with double-precision support enabled
 			static_assert(sizeof(Color) == 4 * sizeof(float));
 			f->get_buffer((uint8_t *)w, len * sizeof(float) * 4);
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *ptr = (uint32_t *)w.ptr();
-				for (int i = 0; i < len * 4; i++) {
-					ptr[i] = BSWAP32(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -750,7 +689,7 @@ Error ResourceLoaderBinary::load() {
 		Ref<Resource> res;
 		Resource *r = nullptr;
 
-		MissingResource *missing_resource = nullptr;
+		Ref<MissingResource> missing_resource;
 
 		if (main) {
 			res = ResourceLoader::get_resource_ref_override(local_path);
@@ -776,7 +715,7 @@ Error ResourceLoaderBinary::load() {
 						missing_resource = memnew(MissingResource);
 						missing_resource->set_original_class(t);
 						missing_resource->set_recording_properties(true);
-						obj = missing_resource;
+						obj = missing_resource.ptr();
 					} else {
 						error = ERR_FILE_CORRUPT;
 						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource of unrecognized type in file: '%s'.", local_path, t));
@@ -832,7 +771,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			bool set_valid = true;
-			if (value.get_type() == Variant::OBJECT && missing_resource == nullptr && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+			if (value.get_type() == Variant::OBJECT && missing_resource.is_null() && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
 				// If the property being set is a missing resource (and the parent is not),
 				// then setting it will most likely not work.
 				// Instead, save it as metadata.
@@ -874,7 +813,7 @@ Error ResourceLoaderBinary::load() {
 			}
 		}
 
-		if (missing_resource) {
+		if (missing_resource.is_valid()) {
 			missing_resource->set_recording_properties(false);
 		}
 
@@ -1014,11 +953,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	ver_format = f->get_32();
 
 	print_bl("big endian: " + itos(big_endian));
-#ifdef BIG_ENDIAN_ENABLED
-	print_bl("endian swap: " + itos(!big_endian));
-#else
 	print_bl("endian swap: " + itos(big_endian));
-#endif
 	print_bl("real64: " + itos(use_real64));
 	print_bl("major: " + itos(ver_major));
 	print_bl("minor: " + itos(ver_minor));

@@ -39,8 +39,8 @@
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 
-#include "thirdparty/clipper2/include/clipper2/clipper.h"
-#include "thirdparty/misc/polypartition.h"
+#include <thirdparty/clipper2/include/clipper2/clipper.h>
+#include <thirdparty/misc/polypartition.h>
 
 NavMeshGenerator2D *NavMeshGenerator2D::singleton = nullptr;
 Mutex NavMeshGenerator2D::baking_navmesh_mutex;

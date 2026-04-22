@@ -39,10 +39,10 @@
 template <typename T>
 class VectorView {
 	const T *_ptr = nullptr;
-	const uint32_t _size = 0;
+	uint32_t _size = 0;
 
 public:
-	const T &operator[](uint32_t p_index) {
+	const T &operator[](uint32_t p_index) const {
 		DEV_ASSERT(p_index < _size);
 		return _ptr[p_index];
 	}
@@ -443,6 +443,7 @@ public:
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
+		bool is_subsampled = false;
 
 		bool operator==(const TextureFormat &b) const {
 			if (format != b.format) {
@@ -681,6 +682,23 @@ public:
 			float float_value;
 			bool bool_value;
 		};
+
+		bool operator==(const PipelineSpecializationConstant &p_rhs) const {
+			if (type != p_rhs.type) {
+				return false;
+			}
+			if (constant_id != p_rhs.constant_id) {
+				return false;
+			}
+			if (int_value != p_rhs.int_value) {
+				return false;
+			}
+			return true;
+		}
+
+		bool operator!=(const PipelineSpecializationConstant &p_rhs) const {
+			return !(*this == p_rhs);
+		}
 	};
 
 	/*******************/
@@ -886,6 +904,35 @@ public:
 		DYNAMIC_STATE_STENCIL_COMPARE_MASK = (1 << 4),
 		DYNAMIC_STATE_STENCIL_WRITE_MASK = (1 << 5),
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
+	};
+
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	enum AccelerationStructureType {
+		ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL,
+		ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL,
+	};
+
+	enum AccelerationStructureFlagBits {
+		ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT = (1 << 1),
+		ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT = (1 << 2),
+		ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT = (1 << 3),
+		ACCELERATION_STRUCTURE_LOW_MEMORY_BIT = (1 << 4),
+	};
+
+	enum AccelerationStructureGeometryFlagBits {
+		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT = (1 << 1),
+	};
+
+	enum AccelerationStructureInstanceFlagBits {
+		ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT = (1 << 0),
+		ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FLIP_FACING_BIT = (1 << 1),
+		ACCELERATION_STRUCTURE_INSTANCE_FORCE_OPAQUE_BIT = (1 << 2),
+		ACCELERATION_STRUCTURE_INSTANCE_FORCE_NO_OPAQUE_BIT = (1 << 3),
 	};
 
 	/**************/

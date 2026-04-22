@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/string/translation_server.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"

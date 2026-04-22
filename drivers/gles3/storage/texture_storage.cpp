@@ -1237,6 +1237,7 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 	texture.alloc_height = texture.height;
 	texture.mipmaps = image->get_mipmap_count() + 1;
 	texture.format = image->get_format();
+	texture.drawable_type = p_format;
 	texture.type = Texture::TYPE_2D;
 	texture.target = GL_TEXTURE_2D;
 	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
@@ -3346,7 +3347,7 @@ GLuint TextureStorage::render_target_get_depth(RID p_render_target) const {
 
 bool TextureStorage::render_target_get_depth_has_stencil(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_NULL_V(rt, 0);
+	ERR_FAIL_NULL_V(rt, false);
 
 	return rt->depth_has_stencil;
 }

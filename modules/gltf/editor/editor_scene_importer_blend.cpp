@@ -35,6 +35,7 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
@@ -197,19 +198,29 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_lights"] = false;
 	}
-	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_vertex_color"] = "MATERIAL";
+	if (p_options.has(SNAME("blender/meshes/vertex_colors"))) {
+		int32_t color_option = p_options["blender/meshes/vertex_colors"];
+		if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+			switch (color_option) {
+				case BLEND_VERTEX_COLOR_MATERIAL: {
+					parameters_map["export_vertex_color"] = "MATERIAL";
+				} break;
+				case BLEND_VERTEX_COLOR_ACTIVE: {
+					parameters_map["export_vertex_color"] = "ACTIVE";
+				} break;
+				case BLEND_VERTEX_COLOR_NONE: {
+					parameters_map["export_vertex_color"] = "NONE";
+				} break;
+			}
 		} else {
-			parameters_map["export_vertex_color"] = "NONE";
-		}
-	} else {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_colors"] = true;
-		} else {
-			parameters_map["export_colors"] = false;
+			if (color_option == BLEND_VERTEX_COLOR_NONE) {
+				parameters_map["export_colors"] = false;
+			} else {
+				parameters_map["export_colors"] = true;
+			}
 		}
 	}
+
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
@@ -322,6 +333,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		int naming_version = p_options["gltf/naming_version"];
 		gltf->set_naming_version(naming_version);
 	}
+	if (p_options.has("gltf/texture_map_mode")) {
+		int texture_map_mode = p_options["gltf/texture_map_mode"];
+		gltf->set_texture_map_mode((GLTFDocument::TextureMapMode)texture_map_mode);
+	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
@@ -375,7 +390,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
 	ADD_OPTION_ENUM("blender/nodes/modifiers", "No Modifiers,All Modifiers", BLEND_MODIFIERS_ALL);
-	ADD_OPTION_BOOL("blender/meshes/colors", false);
+	ADD_OPTION_ENUM("blender/meshes/vertex_colors", "Material,Active,None", BLEND_VERTEX_COLOR_ACTIVE);
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
 	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
@@ -390,9 +405,24 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
 
 	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_map_mode", PROPERTY_HINT_ENUM, "Do Not Remap,Remap to StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFDocument::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL));
 }
 
-///////////////////////////
+void EditorSceneFormatImporterBlend::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
+	if (p_import_params.has("blender/meshes/colors")) { // Legacy boolean option support.
+		if (bool(p_import_params["blender/meshes/colors"])) {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_MATERIAL;
+		} else {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_NONE;
+		}
+		p_import_params.erase("blender/meshes/colors");
+	}
+	if (!p_import_params.has("gltf/texture_map_mode")) {
+		// If an existing import file is missing the glTF
+		// texture map mode, we need to use "Do Not Remap".
+		p_import_params["gltf/naming_version"] = (int64_t)GLTFDocument::TEXTURE_MAP_MODE_DO_NOT_REMAP;
+	}
+}
 
 static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	int major, minor;

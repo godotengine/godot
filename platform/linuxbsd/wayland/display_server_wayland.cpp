@@ -59,12 +59,12 @@
 
 #ifdef GLES3_ENABLED
 #include "detect_prime_egl.h"
+#include "wayland/egl_manager_wayland.h"
+#include "wayland/egl_manager_wayland_gles.h"
 
 #include "core/io/file_access.h"
 #include "drivers/egl/egl_manager.h"
 #include "drivers/gles3/rasterizer_gles3.h"
-#include "wayland/egl_manager_wayland.h"
-#include "wayland/egl_manager_wayland_gles.h"
 #endif
 
 #ifdef DBUS_ENABLED
@@ -255,6 +255,7 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
+		case DisplayServerEnums::FEATURE_TOUCHSCREEN:
 		case DisplayServerEnums::FEATURE_MOUSE:
 		case DisplayServerEnums::FEATURE_MOUSE_WARP:
 		case DisplayServerEnums::FEATURE_CLIPBOARD:
@@ -270,7 +271,8 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
 		case DisplayServerEnums::FEATURE_SUBWINDOWS:
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
-		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS: {
+		case DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS:
+		case DisplayServerEnums::FEATURE_HDR_OUTPUT: {
 			return true;
 		} break;
 
@@ -735,6 +737,12 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	return wayland_thread.screen_get_data(p_screen).refresh_rate;
+}
+
+bool DisplayServerWayland::is_touchscreen_available() const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	return wayland_thread.input_has_touch() || (Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse());
 }
 
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
@@ -1272,6 +1280,13 @@ void DisplayServerWayland::window_set_mode(DisplayServerEnums::WindowMode p_mode
 	wayland_thread.window_try_set_mode(p_window_id, p_mode);
 }
 
+void DisplayServerWayland::window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	wayland_thread.set_icon(p_icon, p_window_id);
+}
+
 DisplayServerEnums::WindowMode DisplayServerWayland::window_get_mode(DisplayServerEnums::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1480,6 +1495,130 @@ void DisplayServerWayland::window_start_resize(DisplayServerEnums::WindowResizeE
 
 	ERR_FAIL_INDEX(int(p_edge), DisplayServerEnums::WINDOW_EDGE_MAX);
 	wayland_thread.window_start_resize(p_edge, p_window);
+}
+
+void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
+	DisplayServerEnums::WindowID window_id = p_window.id;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		// The `display/window/hdr/request_hdr_output` project setting makes the main window "request" HDR.
+		// On Windows, this means enable HDR for the main window if it is on an HDR screen.
+		// Since all screens support HDR on Wayland, we use whether the window "prefers" HDR or not instead.
+		bool hdr_preferred = p_window.color_profile.target_max_luminance > p_window.color_profile.reference_luminance;
+		bool hdr_desired = wayland_thread.supports_hdr() && hdr_preferred && p_window.hdr_requested;
+
+		if (rendering_context->window_get_hdr_output_enabled(window_id) != hdr_desired) {
+			rendering_context->window_set_hdr_output_enabled(window_id, hdr_desired);
+			_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, window_id);
+		}
+
+		if (hdr_desired) {
+			rendering_context->window_set_hdr_output_max_luminance(window_id, p_window.color_profile.target_max_luminance);
+			rendering_context->window_set_hdr_output_reference_luminance(window_id, p_window.color_profile.reference_luminance);
+			rendering_context->window_set_hdr_output_linear_luminance_scale(window_id, p_window.color_profile.target_max_luminance);
+
+			p_window.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			p_window.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+		} else {
+			p_window.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			p_window.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+		}
+
+		if (p_window.visible) {
+			MutexLock mutex_lock(wayland_thread.mutex);
+			wayland_thread.window_set_color_profile(window_id, p_window.color_profile);
+		}
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+
+	return wd.color_profile.target_max_luminance > wd.color_profile.reference_luminance;
+}
+
+void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id) {
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(p_enabled && !(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
+#endif
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+	wd.hdr_requested = p_enabled;
+
+	_window_update_hdr_state(wd);
+}
+
+bool DisplayServerWayland::window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+	return wd.hdr_requested;
+}
+
+bool DisplayServerWayland::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window_id);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	if (p_reference_luminance >= 0.0f) {
+		ERR_PRINT_ONCE("Manually setting reference white luminance is not supported on Linux devices, as they provide a user-facing brightness setting that directly controls reference white luminance.");
+	}
+}
+
+float DisplayServerWayland::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	return -1.0;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0.0);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+void DisplayServerWayland::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	if (p_max_luminance >= 0.0f) {
+		ERR_PRINT_ONCE("Manually setting max luminance is not supported on Linux devices as they provide a built-in method of calibrating max luminance without the need for additional apps or tools.");
+	}
+}
+
+float DisplayServerWayland::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	return -1.0;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0.0);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+float DisplayServerWayland::window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 1.0);
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_output_max_linear_value(p_window_id);
+	}
+#endif
+
+	return 1.0f;
 }
 
 void DisplayServerWayland::cursor_set_shape(DisplayServerEnums::CursorShape p_shape) {
@@ -1736,6 +1875,41 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
+#if defined(RD_ENABLED)
+	// Enabling HDR may have failed, in which case we need to clear the color profile.
+	// NOTE: this happens _before_ reading events because the rendering driver is only updated the frame _after_ we try to enable HDR.
+	if (rendering_device && (!OS::get_singleton()->is_in_low_processor_usage_mode() || RS::get_singleton()->has_changed())) {
+		for (KeyValue<DisplayServerEnums::WindowID, WindowData> &pair : windows) {
+			const RD::ColorSpace color_space = rendering_device->screen_get_color_space(pair.key);
+
+			bool dirty_srgb = color_space == RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+			bool dirty_linear = color_space == RDD::COLOR_SPACE_REC709_LINEAR && pair.value.color_profile.named_transfer_function != WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+
+			if (dirty_srgb) {
+				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+
+				if (pair.value.visible) {
+					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
+				}
+
+				rendering_context->window_set_hdr_output_enabled(pair.key, false);
+				_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, pair.key);
+			} else if (dirty_linear) {
+				pair.value.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+				pair.value.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+
+				if (pair.value.visible) {
+					wayland_thread.window_set_color_profile(pair.key, pair.value.color_profile);
+				}
+
+				rendering_context->window_set_hdr_output_enabled(pair.key, true);
+				_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, pair.key);
+			}
+		}
+	}
+#endif
+
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
@@ -1752,7 +1926,23 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandThread::WindowRectMessage> winrect_msg = msg;
 		if (winrect_msg.is_valid()) {
+			int scale = winrect_msg->buffer_scale;
+
+			WaylandThread::WindowState *ws = wayland_thread.window_get_state(winrect_msg->id);
+			ERR_CONTINUE(ws == nullptr);
+
+			if (scale == 0) {
+				// This should *never* happen. We fallback to the latest scale but it might
+				// have changed in the meantime to something invalid (non-integer divisor),
+				// leading to a protocol error.
+				ERR_PRINT("Wayland Thread did not report buffer scale at the time of resize.");
+				scale = wayland_thread.window_state_get_preferred_buffer_scale(ws);
+			}
+
+			wayland_thread.window_state_set_buffer_scale(ws, scale);
+
 			_update_window_rect(winrect_msg->rect, winrect_msg->id);
+
 			continue;
 		}
 
@@ -1777,42 +1967,59 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandThread::InputEventMessage> inputev_msg = msg;
 		if (inputev_msg.is_valid()) {
+			bool process_popups = false;
+			Point2 position;
+			DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
+
 			Ref<InputEventMouseButton> mb = inputev_msg->event;
+			if (mb.is_valid()) {
+				process_popups = (mb->is_pressed() && mb->get_button_mask() != last_mouse_monitor_mask);
+				position = mb->get_position();
+				window_id = mb->get_window_id();
+
+				last_mouse_monitor_mask = mb->get_button_mask();
+			}
+
+			Ref<InputEventScreenTouch> st = inputev_msg->event;
+			if (st.is_valid()) {
+				process_popups = st->is_pressed() && (st->is_pressed() != last_touch_monitor_pressed);
+				position = st->get_position();
+				window_id = st->get_window_id();
+
+				last_touch_monitor_pressed = st->is_pressed();
+			}
 
 			bool handled = false;
-			if (mb.is_valid()) {
-				BitField<MouseButtonMask> mouse_mask = mb->get_button_mask();
-				if (!popup_menu_list.is_empty() && mb->is_pressed() && mouse_mask != last_mouse_monitor_mask) {
-					// Popup menu handling.
-					List<DisplayServerEnums::WindowID>::Element *E = popup_menu_list.back();
-					List<DisplayServerEnums::WindowID>::Element *C = nullptr;
 
-					// Looking for the oldest popup to close.
-					while (E) {
-						WindowData &wd = windows[E->get()];
-						Point2 global_pos = mb->get_position() + window_get_position(mb->get_window_id());
-						if (wd.rect.has_point(global_pos)) {
-							break;
-						} else if (wd.safe_rect.has_point(global_pos)) {
-							break;
-						}
+			if (!popup_menu_list.is_empty() && process_popups) {
+				List<DisplayServerEnums::WindowID>::Element *E = popup_menu_list.back();
+				List<DisplayServerEnums::WindowID>::Element *C = nullptr;
 
-						C = E;
-						E = E->prev();
+				Point2 global_pos = position + window_get_position(window_id);
+
+				// Looking for the oldest popup to close.
+				while (E) {
+					WindowData &wd = windows[E->get()];
+					if (wd.rect.has_point(global_pos)) {
+						break;
+					} else if (wd.safe_rect.has_point(global_pos)) {
+						break;
 					}
 
-					if (C) {
-						handled = true;
-						_send_window_event(DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST, C->get());
-					}
+					C = E;
+					E = E->prev();
 				}
 
-				last_mouse_monitor_mask = mouse_mask;
+				if (C) {
+					handled = true;
+					_send_window_event(DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST, C->get());
+				}
 			}
 
 			if (!handled) {
 				Input::get_singleton()->parse_input_event(inputev_msg->event);
 			}
+
 			continue;
 		}
 
@@ -1865,6 +2072,16 @@ void DisplayServerWayland::process_events() {
 
 				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 			}
+			continue;
+		}
+
+		Ref<WaylandThread::ColorProfileMessage> color_profile_msg = msg;
+		if (color_profile_msg.is_valid()) {
+			WindowData &wd = windows[color_profile_msg->id];
+			wd.color_profile = color_profile_msg->color_profile;
+
+			_window_update_hdr_state(wd);
+			_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, wd.id);
 			continue;
 		}
 	}
@@ -1969,7 +2186,8 @@ void DisplayServerWayland::swap_buffers() {
 
 void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
 	MutexLock mutex_lock(wayland_thread.mutex);
-	wayland_thread.set_icon(p_icon);
+
+	wayland_thread.set_default_icon(p_icon);
 }
 
 void DisplayServerWayland::set_context(DisplayServerEnums::Context p_context) {

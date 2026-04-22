@@ -187,13 +187,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data);
 
-	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome);
+	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome, Ref<Image> &splash_icon, Ref<Image> &splash_branding_image);
 
 	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
 			const Ref<Image> &p_main_image,
 			const Ref<Image> &p_foreground,
 			const Ref<Image> &p_background,
-			const Ref<Image> &p_monochrome);
+			const Ref<Image> &p_monochrome,
+			const Ref<Image> &p_splash_icon,
+			const Ref<Image> &p_splash_branding_image);
 
 	static void _create_editor_debug_keystore_if_needed();
 
@@ -268,10 +270,6 @@ public:
 	String _resolve_export_plugin_android_library_path(const String &p_android_library_path) const;
 
 	bool _is_clean_build_required(const Ref<EditorExportPreset> &p_preset);
-
-	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-
-	Error save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 
 	void get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, Vector<uint8_t> &r_command_line_flags);
 

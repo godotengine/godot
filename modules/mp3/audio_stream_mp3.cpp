@@ -37,7 +37,7 @@
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
 
-#include "thirdparty/dr_libs/dr_bridge.h"
+#include <thirdparty/dr_libs/dr_bridge.h>
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {

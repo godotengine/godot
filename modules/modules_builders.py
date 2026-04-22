@@ -36,7 +36,9 @@ def register_module_types_builder(target, source, env):
 
 #include "modules/modules_enabled.gen.h"
 
+// IWYU pragma: begin_keep.
 {mod_inc}
+// IWYU pragma: end_keep.
 
 void initialize_modules(ModuleInitializationLevel p_level) {{
 {mod_init}
@@ -52,5 +54,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {{
 def modules_tests_builder(target, source, env):
     headers = sorted([os.path.relpath(src.path, methods.base_folder).replace("\\", "/") for src in source])
     with methods.generated_wrapper(str(target[0])) as file:
+        file.write("// IWYU pragma: begin_keep.\n")
         for header in headers:
             file.write(f'#include "{header}"\n')
+        file.write("// IWYU pragma: end_keep.\n")

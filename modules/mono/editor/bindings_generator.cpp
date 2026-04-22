@@ -39,7 +39,6 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
-#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
@@ -4256,12 +4255,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
 
-		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
+		for (const KeyValue<StringName, const MethodInfo *> &E : signal_map) {
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = E.value;
+			const MethodInfo &method_info = *E.value;
 
 			if (method_info.name.begins_with("_")) {
 				// Signals starting with an underscore are internal and not meant to be exposed.

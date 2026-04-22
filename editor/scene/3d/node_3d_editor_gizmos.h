@@ -58,6 +58,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 
 	Vector<Vector3> collision_segments;
 	LocalVector<Ref<TriangleMesh>> collision_meshes;
+	bool collision_meshes_are_snap_source = false;
 
 	Vector<Vector3> handles;
 	Vector<int> handle_ids;
@@ -102,7 +103,10 @@ public:
 	void add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p_material = Ref<Material>(), const Transform3D &p_xform = Transform3D(), const Ref<SkinReference> &p_skin_reference = Ref<SkinReference>());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
+	void set_collision_meshes_are_snap_source(bool p_enable) { collision_meshes_are_snap_source = p_enable; }
+	bool get_collision_meshes_are_snap_source() const { return collision_meshes_are_snap_source; }
 	const LocalVector<Ref<TriangleMesh>> &get_collision_meshes() const { return collision_meshes; }
+	const Vector<Vector3> &get_collision_segments() const { return collision_segments; }
 	void add_unscaled_billboard(const Ref<Material> &p_material, real_t p_scale = 1, const Color &p_modulate = Color(1, 1, 1));
 	void add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, const Vector<int> &p_ids = Vector<int>(), bool p_billboard = false, bool p_secondary = false);
 	void add_solid_box(const Ref<Material> &p_material, Vector3 p_size, Vector3 p_position = Vector3(), const Transform3D &p_xform = Transform3D());

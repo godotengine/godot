@@ -30,9 +30,8 @@
 
 #include "gdtype.h"
 
-#include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/os/thread.h"
-#include "core/variant/variant.h"
 
 GDType::GDType(const GDType *p_super_type, StringName p_name) :
 		super_type(p_super_type), name(std::move(p_name)) {
@@ -49,6 +48,9 @@ GDType::~GDType() {
 	for (const KeyValue<StringName, const EnumInfo *> &kv : self_enum_map) {
 		memdelete(const_cast<EnumInfo *>(kv.value));
 	}
+	for (const KeyValue<StringName, const MethodInfo *> &kv : self_signal_map) {
+		memdelete(const_cast<MethodInfo *>(kv.value));
+	}
 }
 
 void GDType::initialize() {
@@ -63,6 +65,7 @@ void GDType::initialize() {
 
 		constant_map = super_type->constant_map;
 		enum_map = super_type->enum_map;
+		signal_map = super_type->signal_map;
 	}
 
 	init_state = InitState::MUTABLE;
@@ -71,7 +74,7 @@ void GDType::initialize() {
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
-	ERR_FAIL_COND(self_constant_map.has(p_name));
+	ERR_FAIL_COND_MSG(self_constant_map.has(p_name), vformat("Class '%s' already has constant '%s'.", String(name), String(p_name)));
 
 	constant_map[p_name] = p_constant;
 	self_constant_map[p_name] = p_constant;
@@ -107,4 +110,17 @@ const GDType::EnumInfo *GDType::get_integer_constant_enum(const StringName &p_na
 	}
 
 	return nullptr;
+}
+
+void GDType::add_signal(MethodInfo p_signal) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+
+	const StringName signal_name(p_signal.name);
+	ERR_FAIL_COND_MSG(signal_map.has(signal_name), vformat("Class '%s' already has signal '%s'.", String(name), String(signal_name)));
+
+	const MethodInfo *ptr = memnew(MethodInfo(std::move(p_signal)));
+
+	signal_map[signal_name] = ptr;
+	self_signal_map[signal_name] = ptr;
 }

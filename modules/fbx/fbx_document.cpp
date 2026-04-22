@@ -37,6 +37,7 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
+#include "core/io/resource_loader.h"
 #include "core/math/color.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -56,11 +57,6 @@
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_file_system.h"
 #endif
-
-// FIXME: Hardcoded to avoid editor dependency.
-#define FBX_IMPORT_USE_NAMED_SKIN_BINDS 16
-#define FBX_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
-#define FBX_IMPORT_FORCE_DISABLE_MESH_COMPRESSION 64
 
 #include <ufbx.h>
 
@@ -2170,8 +2166,8 @@ Error FBXDocument::append_from_buffer(const PackedByteArray &p_bytes, const Stri
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_bytes.ptr(), ERR_INVALID_DATA);
 	Error err = FAILED;
-	state->use_named_skin_binds = p_flags & FBX_IMPORT_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & FBX_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	state->use_named_skin_binds = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
@@ -2268,8 +2264,8 @@ Error FBXDocument::append_from_file(const String &p_path, Ref<GLTFState> p_state
 		p_state.instantiate();
 	}
 	state->filename = p_path.get_file().get_basename();
-	state->use_named_skin_binds = p_flags & FBX_IMPORT_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & FBX_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	state->use_named_skin_binds = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);

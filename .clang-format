@@ -117,14 +117,25 @@ Cpp11BracedListStyle: false
 #   - BOOST_FOREACH
 # IfMacros:
 #   - KJ_IF_MAYBE
-# IncludeBlocks: Preserve
+IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: ^".*"$
-    Priority: 1
-  - Regex: ^<.*\.h>$
-    Priority: 2
+  - Regex: ^"(core|drivers|editor|main|scene|servers|tests)/.*"$
+    Priority: 20
+  - Regex: ^"(modules|platform)/.*"$
+    Priority: 30
+  - Regex: ^<thirdparty/.*>$
+    Priority: 40
+  - Regex: ^<(windows|Jolt/Jolt|platform_gl)\.h>$
+    Priority: 50
+  - Regex: ^<.*\.(h|hpp)>$
+    Priority: 60
   - Regex: ^<.*>$
-    Priority: 3
+    Priority: 70
+  - Regex: ^".*\.compat\.inc"$
+    Priority: 0
+    SortPriority: 1
+  - Regex: ^".*"$
+    Priority: 10
 # IncludeIsMainRegex: (Test)?$
 # IncludeIsMainSourceRegex: ""
 # IndentAccessModifiers: false

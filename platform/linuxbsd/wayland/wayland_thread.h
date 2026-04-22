@@ -52,7 +52,8 @@
 // These must go after the Wayland client include to work properly.
 #include "wayland/protocol/idle_inhibit.gen.h"
 #include "wayland/protocol/primary_selection.gen.h"
-// These four protocol headers name wl_pointer method arguments as `pointer`,
+
+// These protocol headers name wl_pointer method arguments as `pointer`,
 // which is the same name as X11's pointer typedef. This trips some very
 // annoying shadowing warnings. A `#define` works around this issue.
 #define pointer wl_pointer
@@ -62,6 +63,8 @@
 #include "wayland/protocol/pointer_warp.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
 #undef pointer
+
+#include "wayland/protocol/color_management.gen.h"
 #include "wayland/protocol/fractional_scale.gen.h"
 #include "wayland/protocol/tablet.gen.h"
 #include "wayland/protocol/text_input.gen.h"
@@ -74,10 +77,11 @@
 #include "wayland/protocol/xdg_system_bell.gen.h"
 #include "wayland/protocol/xdg_toplevel_icon.gen.h"
 
-#include "wayland/protocol/godot_embedding_compositor.gen.h"
-
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
+
+// Custom internal protocol.
+#include "wayland/protocol/godot_embedding_compositor.gen.h"
 
 #ifdef LIBDECOR_ENABLED
 #ifdef SOWRAP_ENABLED
@@ -87,17 +91,27 @@
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
+#include "wayland_embedder.h"
+
 #include "core/input/input_event.h"
 #include "core/os/process_id.h"
 #include "core/os/thread.h"
 #include "servers/display/display_server_enums.h"
 
-#include "wayland_embedder.h"
-
 class Image;
 
 class WaylandThread {
 public:
+	struct ColorProfile {
+		uint32_t named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+		uint32_t named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+
+		// The luminances the compositor recommends.
+		float target_min_luminance = 0;
+		float target_max_luminance = 0;
+		float reference_luminance = 0;
+	};
+
 	// Messages used for exchanging information between Godot's and Wayland's thread.
 	class Message : public RefCounted {
 		GDSOFTCLASS(Message, RefCounted);
@@ -119,9 +133,17 @@ public:
 		GDSOFTCLASS(WindowRectMessage, WindowMessage);
 
 	public:
-		// NOTE: This is in "scaled" terms. For example, if there's a 1920x1080 rect
-		// with a scale factor of 2, the actual value of `rect` will be 3840x2160.
+		// The window size in "absolute units" (pre-scaled). Basically the desired
+		// resolution of the underlying buffer.
 		Rect2i rect;
+
+		// Used to synchronize buffer size and scale together, otherwise we risk a
+		// protocol error. Note that this doesn't control scaling in general, only the
+		// concept of "surface buffer scale". See the protocol documentation of
+		// `wl_surface::set_buffer_scale` for more details.
+		//
+		// Defaults to 0 so that we can catch malformed messages.
+		int buffer_scale = 0;
 	};
 
 	class WindowEventMessage : public WindowMessage {
@@ -160,7 +182,17 @@ public:
 		String text;
 	};
 
+	class ColorProfileMessage : public WindowMessage {
+		GDSOFTCLASS(ColorProfileMessage, WindowMessage);
+
+	public:
+		WaylandThread *wayland_thread;
+		ColorProfile color_profile;
+	};
+
 	struct RegistryState {
+		HashSet<uint32_t> global_names;
+
 		WaylandThread *wayland_thread;
 
 		// Core Wayland globals.
@@ -195,6 +227,9 @@ public:
 
 		struct wp_viewporter *wp_viewporter = nullptr;
 		uint32_t wp_viewporter_name = 0;
+
+		struct wp_color_manager_v1 *wp_color_manager = nullptr;
+		uint32_t wp_color_manager_name = 0;
 
 		struct wp_fractional_scale_manager_v1 *wp_fractional_scale_manager = nullptr;
 		uint32_t wp_fractional_scale_manager_name = 0;
@@ -277,6 +312,10 @@ public:
 		bool can_maximize = true;
 		bool can_fullscreen = true;
 
+		xdg_toplevel_icon_v1 *xdg_icon = nullptr;
+		wl_buffer *icon_buffer = nullptr;
+		bool icon_set = false;
+
 		HashSet<struct wl_output *> wl_outputs;
 
 		// NOTE: If for whatever reason this callback is destroyed _while_ the event
@@ -306,12 +345,6 @@ public:
 		// Currently applied buffer scale.
 		int buffer_scale = 1;
 
-		// Buffer scale must be applied right before rendering but _after_ committing
-		// everything else or otherwise we might have an inconsistent state (e.g.
-		// double scale and odd resolution). This flag assists with that; when set,
-		// on the next frame, we'll commit whatever is set in `buffer_scale`.
-		bool buffer_scale_changed = false;
-
 		// NOTE: The preferred buffer scale is currently only dynamically calculated.
 		// It can be accessed by calling `window_state_get_preferred_buffer_scale`.
 
@@ -324,6 +357,9 @@ public:
 
 		// What the compositor is recommending us.
 		double preferred_fractional_scale = 0;
+
+		struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback = nullptr;
+		struct wp_color_management_surface_v1 *wp_color_management_surface = nullptr;
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
@@ -442,6 +478,13 @@ public:
 		HashSet<String> mime_types;
 	};
 
+	struct TouchPoint {
+		DisplayServerEnums::WindowID touched_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		Point2 position;
+		uint32_t down_time = 0;
+		uint32_t motion_time = 0;
+	};
+
 	struct SeatState {
 		RegistryState *registry = nullptr;
 
@@ -526,6 +569,12 @@ public:
 
 		struct wl_data_device *wl_data_device = nullptr;
 
+		// Touch.
+		struct wl_touch *wl_touch = nullptr;
+		AHashMap<int32_t, TouchPoint> touch_points_buffer;
+		AHashMap<int32_t, TouchPoint> touch_points;
+		int32_t last_touch_id = -1;
+
 		// Drag and drop.
 		DisplayServerEnums::WindowID dnd_id = DisplayServerEnums::INVALID_WINDOW_ID;
 		struct wl_data_offer *wl_data_offer_dnd = nullptr;
@@ -567,6 +616,15 @@ public:
 		uint32_t buffer_data_size = 0;
 
 		Point2i hotspot;
+	};
+
+	struct ColorManagementState {
+		// Compositor features.
+		uint32_t supported_render_intents = 0;
+		uint32_t supported_render_feature = 0;
+		uint32_t supported_transfer_function = 0;
+		uint32_t supported_primaries = 0;
+		bool supports_hdr = false;
 	};
 
 	struct EmbeddingCompositorState {
@@ -653,6 +711,7 @@ private:
 	struct wl_registry *wl_registry = nullptr;
 
 	struct wl_seat *wl_seat_current = nullptr;
+	bool has_touch = false;
 
 	bool frame = true;
 
@@ -667,6 +726,8 @@ private:
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;
 #endif // LIBDECOR_ENABLED
+
+	static void _clipboard_send(Vector<uint8_t> &p_data, const char *p_media_type, int32_t p_fd);
 
 	// Main polling method.
 	static void _poll_events_thread(void *p_data);
@@ -713,6 +774,14 @@ private:
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
+	static void _wl_touch_on_down(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, struct wl_surface *surface, int32_t id, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_touch_on_up(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, int32_t id);
+	static void _wl_touch_on_motion(void *data, struct wl_touch *wl_touch, uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_touch_on_frame(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_cancel(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor);
+	static void _wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation);
+
 	static void _wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
 	static void _wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id);
 	static void _wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device);
@@ -746,6 +815,31 @@ private:
 	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 
 	// wayland-protocols event handlers.
+	static void _wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent);
+	static void _wp_color_manager_on_supported_feature(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t feature);
+	static void _wp_color_manager_on_supported_tf_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t tf);
+	static void _wp_color_manager_on_supported_primaries_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t primaries);
+	static void _wp_color_manager_on_done(void *data, struct wp_color_manager_v1 *wp_color_manager_v1);
+
+	static void _wp_color_management_surface_feedback_on_preferred_changed(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity);
+	static void _wp_color_management_surface_feedback_on_preferred_changed2(void *data, struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1, uint32_t identity_high, uint32_t identity_low);
+
+	static void _wp_image_description_on_failed(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t cause, const char *msg);
+	static void _wp_image_description_on_ready(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t identity);
+	static void _wp_image_description_on_ready2(void *data, struct wp_image_description_v1 *wp_image_description_v1, uint32_t identity_high, uint32_t indentity_low);
+
+	static void _wp_image_description_info_on_done(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1);
+	static void _wp_image_description_info_on_icc_file(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t icc, uint32_t icc_size);
+	static void _wp_image_description_info_on_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y);
+	static void _wp_image_description_info_on_primaries_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t primaries);
+	static void _wp_image_description_info_on_tf_power(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t eexp);
+	static void _wp_image_description_info_on_tf_named(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t tf);
+	static void _wp_image_description_info_on_luminances(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum, uint32_t reference_lum);
+	static void _wp_image_description_info_on_target_primaries(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, int32_t r_x, int32_t r_y, int32_t g_x, int32_t g_y, int32_t b_x, int32_t b_y, int32_t w_x, int32_t w_y);
+	static void _wp_image_description_info_on_target_luminance(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t min_lum, uint32_t max_lum);
+	static void _wp_image_description_info_on_target_max_cll(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_cll);
+	static void _wp_image_description_info_on_target_max_fall(void *data, struct wp_image_description_info_v1 *wp_image_description_info_v1, uint32_t max_fall);
+
 	static void _wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale);
 
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
@@ -867,6 +961,16 @@ private:
 		.repeat_info = _wl_keyboard_on_repeat_info,
 	};
 
+	static constexpr struct wl_touch_listener wl_touch_listener = {
+		.down = _wl_touch_on_down,
+		.up = _wl_touch_on_up,
+		.motion = _wl_touch_on_motion,
+		.frame = _wl_touch_on_frame,
+		.cancel = _wl_touch_on_cancel,
+		.shape = _wl_touch_on_shape,
+		.orientation = _wl_touch_on_orientation,
+	};
+
 	static constexpr struct wl_data_device_listener wl_data_device_listener = {
 		.data_offer = _wl_data_device_on_data_offer,
 		.enter = _wl_data_device_on_enter,
@@ -914,6 +1018,39 @@ private:
 	};
 
 	// wayland-protocols event listeners.
+	static constexpr struct wp_color_manager_v1_listener wp_color_manager_listener = {
+		.supported_intent = _wp_color_manager_on_supported_intent,
+		.supported_feature = _wp_color_manager_on_supported_feature,
+		.supported_tf_named = _wp_color_manager_on_supported_tf_named,
+		.supported_primaries_named = _wp_color_manager_on_supported_primaries_named,
+		.done = _wp_color_manager_on_done,
+	};
+
+	static constexpr struct wp_color_management_surface_feedback_v1_listener wp_color_management_surface_feedback_listener = {
+		.preferred_changed = _wp_color_management_surface_feedback_on_preferred_changed,
+		.preferred_changed2 = _wp_color_management_surface_feedback_on_preferred_changed2,
+	};
+
+	static constexpr struct wp_image_description_v1_listener wp_image_description_listener = {
+		.failed = _wp_image_description_on_failed,
+		.ready = _wp_image_description_on_ready,
+		.ready2 = _wp_image_description_on_ready2,
+	};
+
+	static constexpr struct wp_image_description_info_v1_listener wp_image_description_info_listener = {
+		.done = _wp_image_description_info_on_done,
+		.icc_file = _wp_image_description_info_on_icc_file,
+		.primaries = _wp_image_description_info_on_primaries,
+		.primaries_named = _wp_image_description_info_on_primaries_named,
+		.tf_power = _wp_image_description_info_on_tf_power,
+		.tf_named = _wp_image_description_info_on_tf_named,
+		.luminances = _wp_image_description_info_on_luminances,
+		.target_primaries = _wp_image_description_info_on_target_primaries,
+		.target_luminance = _wp_image_description_info_on_target_luminance,
+		.target_max_cll = _wp_image_description_info_on_target_max_cll,
+		.target_max_fall = _wp_image_description_info_on_target_max_fall,
+	};
+
 	static constexpr struct wp_fractional_scale_v1_listener wp_fractional_scale_listener = {
 		.preferred_scale = _wp_fractional_scale_on_preferred_scale,
 	};
@@ -1092,6 +1229,7 @@ public:
 	static OfferState *wl_data_offer_get_offer_state(struct wl_data_offer *p_offer);
 
 	static OfferState *wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer);
+	static ColorManagementState *wp_color_manager_get_state(wp_color_manager_v1 *p_color_manager);
 
 	static EmbeddingCompositorState *godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor);
 
@@ -1108,6 +1246,7 @@ public:
 	static int window_state_get_preferred_buffer_scale(WindowState *p_ws);
 	static double window_state_get_scale_factor(const WindowState *p_ws);
 	static void window_state_update_size(WindowState *p_ws, int p_width, int p_height);
+	static void window_state_set_buffer_scale(WindowState *p_ws, int p_buffer_scale);
 
 	static Vector2i scale_vector2i(const Vector2i &p_vector, double p_amount);
 
@@ -1117,11 +1256,16 @@ public:
 
 	void beep() const;
 
-	void set_icon(const Ref<Image> &p_icon);
+	void set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id);
+	void set_default_icon(const Ref<Image> &p_icon);
 
 	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
 	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
+
+	// Checks if a window exists for this ID (NOT if its data is valid). Useful to
+	// detect deleted windows.
+	bool window_exists(DisplayServerEnums::WindowID p_window_id);
 
 	void window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id);
 
@@ -1154,8 +1298,13 @@ public:
 	void window_set_idle_inhibition(DisplayServerEnums::WindowID p_window_id, bool p_enable);
 	bool window_get_idle_inhibition(DisplayServerEnums::WindowID p_window_id) const;
 
+	// Optional - require wp_color_management_v1
+	void window_set_color_profile(DisplayServerEnums::WindowID p_window_id, ColorProfile p_profile);
+
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
+
+	bool input_has_touch() const;
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(const Point2i &p_hint);
@@ -1195,6 +1344,8 @@ public:
 	Vector<uint8_t> primary_get_mime(const String &p_mime) const;
 
 	void primary_set_text(const String &p_text);
+
+	bool supports_hdr() const;
 
 	void commit_surfaces();
 
