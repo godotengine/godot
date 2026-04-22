@@ -4126,6 +4126,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 		call_type = return_type;
 
+		if (is_constructor && !call_generic_bindings.is_empty()) {
+			for (const KeyValue<StringName, GDScriptParser::DataType>& E : call_generic_bindings) {
+				call_type.generic_type_bindings[E.key] = E.value;
+			}
+		}
+
 	} else {
 		bool found = false;
 
@@ -6427,6 +6433,13 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		return true;
 	}
 
+	if (p_is_constructor) {
+		r_return_type = p_base_type;
+		r_return_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+		r_return_type.is_meta_type = false;
+		return true;
+	}
+
 	Ref<Script> base_script = p_base_type.script_type;
 
 	while (base_script.is_valid() && base_script->has_method(function_name)) {
@@ -6446,14 +6459,6 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		if (ClassDB::get_method_info(script_class, function_name, &info)) {
 			return function_signature_from_info(info, r_return_type, r_par_types, r_default_arg_count, r_method_flags);
 		}
-	}
-
-	if (p_is_constructor) {
-		// Native types always have a default constructor.
-		r_return_type = p_base_type;
-		r_return_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-		r_return_type.is_meta_type = false;
-		return true;
 	}
 
 	MethodInfo info;
