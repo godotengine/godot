@@ -86,6 +86,29 @@ static _FORCE_INLINE_ bool is_full(uint8_t ctrl) {
 	return (ctrl & 0x80) == 0;
 }
 
+// Bit avalanche / "finalizer" applied to user hashes before splitting them
+// into H1 (group selector) and H2 (fingerprint).
+//
+// SwissTable selects buckets and fingerprints from disjoint bit ranges of a
+// 32-bit hash. Several Godot keys use hash functions whose bits are not well
+// mixed -- DJB2 String hashing in particular leaves the high bits highly
+// correlated when keys share a common prefix (e.g. "key_0".."key_N"). That
+// causes both probe-chain pile-ups (poor H1) and frequent fingerprint
+// collisions (poor H2), which in turn force cache-missing Element derefs to
+// do real key compares.
+//
+// We mix once at the public boundary (just before h1/h2) so callers don't
+// have to know about it. This is the splitmix32-style finalizer; cheap (a
+// few cycles) and breaks low-entropy correlations across all 32 bits.
+static _FORCE_INLINE_ uint32_t mix(uint32_t hash) {
+	hash ^= hash >> 16;
+	hash *= 0x7feb352dU;
+	hash ^= hash >> 15;
+	hash *= 0x846ca68bU;
+	hash ^= hash >> 16;
+	return hash;
+}
+
 // Derive the 7-bit fingerprint to store in a control byte from a 32-bit hash.
 // We use the top 7 bits of the 32-bit hash to spread the fingerprint across
 // keys whose H1 (low bits) collide. Top bit is masked off so the value never

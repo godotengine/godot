@@ -75,10 +75,14 @@ template <typename TKey, typename TValue>
 struct HashMapElement {
 	HashMapElement *next = nullptr;
 	HashMapElement *prev = nullptr;
+	// Cached full 32-bit hash. Stored at insert time so probes can
+	// short-circuit before a (potentially expensive) key compare, and so
+	// rehashing on grow doesn't have to re-run Hasher on the key.
+	uint32_t hash = 0;
 	KeyValue<TKey, TValue> data;
 	HashMapElement() {}
-	HashMapElement(const TKey &p_key, const TValue &p_value) :
-			data(p_key, p_value) {}
+	HashMapElement(const TKey &p_key, const TValue &p_value, uint32_t p_hash) :
+			hash(p_hash), data(p_key, p_value) {}
 };
 
 template <typename TKey, typename TValue,
@@ -115,7 +119,13 @@ private:
 	uint32_t _pending_capacity = 0;
 
 	_FORCE_INLINE_ static uint32_t _hash(const TKey &p_key) {
-		return Hasher::hash(p_key);
+		// Apply a SwissTable-friendly bit mixer at the boundary so callers
+		// don't have to. Several Godot hashers (notably String/DJB2) leave
+		// the high bits weakly mixed; splitting them into h1/h2 directly
+		// would cluster fingerprints and inflate probe chains. The same
+		// mixed value is what we cache on Element::hash, so that grow and
+		// the hash short-circuit in _lookup keep working consistently.
+		return SwissTable::mix(Hasher::hash(p_key));
 	}
 
 	static _FORCE_INLINE_ uint32_t _round_up_capacity(uint32_t p_min) {
@@ -127,7 +137,11 @@ private:
 	}
 
 	// Find the slot containing p_key. Returns true if found, with r_slot_idx
-	// set to the slot index in _ctrl/_slots.
+	// set to the slot index in _ctrl/_slots. Uses the cached 32-bit hash on
+	// each candidate element to short-circuit before the (potentially
+	// expensive) key compare; with a 7-bit fingerprint we expect a false
+	// match every ~128 slots, and with a stored 32-bit hash false matches
+	// almost never escalate to a real key compare.
 	bool _lookup(const TKey &p_key, uint32_t p_hash, uint32_t &r_slot_idx) const {
 		if (_capacity == 0 || _size == 0) {
 			return false;
@@ -144,12 +158,68 @@ private:
 				const uint32_t i = it.next();
 				const uint32_t slot_idx = (group_idx + i) & _capacity_mask;
 				Element *elem = _slots[slot_idx];
-				if (Comparator::compare(elem->data.key, p_key)) {
+				if (elem->hash == p_hash && Comparator::compare(elem->data.key, p_key)) {
 					r_slot_idx = slot_idx;
 					return true;
 				}
 			}
 			if (g.match_empty()) {
+				return false;
+			}
+			probe_dist += kGroupWidth;
+			group_idx = (group_idx + probe_dist) & _capacity_mask;
+		}
+	}
+
+	// Find the slot containing p_key OR the first empty/deleted slot the
+	// probe sequence visits. Single-pass replacement for "_lookup then
+	// _find_insert_slot"; saves one probe walk per insert miss.
+	//
+	// Returns true if the key was found at r_slot_idx; r_slot_idx is the
+	// existing slot. Returns false if the key was not found; r_slot_idx
+	// is the slot where a new entry should be placed (always either kEmpty
+	// or kDeleted -- caller must pass through to _set_ctrl / accounting).
+	//
+	// Caller must ensure _capacity > 0 and _growth_left > 0 before calling
+	// (an empty/full table cannot satisfy both halves of the contract).
+	bool _find_or_prepare_insert(const TKey &p_key, uint32_t p_hash, uint32_t &r_slot_idx) const {
+		const uint8_t h2 = SwissTable::h2(p_hash);
+		uint32_t group_idx = SwissTable::h1(p_hash) & _capacity_mask;
+		uint32_t probe_dist = 0;
+		uint32_t insert_slot = 0;
+		bool have_insert_slot = false;
+
+		while (true) {
+			SwissTable::Group g(_ctrl + group_idx);
+			// Look for a matching fingerprint first; if any candidate's full
+			// hash matches and key compares equal, we've found the entry.
+			Mask m = g.match(h2);
+			auto it = m.iter();
+			while (it.has_next()) {
+				const uint32_t i = it.next();
+				const uint32_t slot_idx = (group_idx + i) & _capacity_mask;
+				Element *elem = _slots[slot_idx];
+				if (elem->hash == p_hash && Comparator::compare(elem->data.key, p_key)) {
+					r_slot_idx = slot_idx;
+					return true;
+				}
+			}
+			// Record the first kEmpty/kDeleted slot we encounter so we have
+			// somewhere to put the new entry once we conclude the key isn't
+			// present anywhere along the probe chain.
+			if (!have_insert_slot) {
+				Mask ed = g.match_empty_or_deleted();
+				if (ed) {
+					const uint32_t i = ed.lowest_set_bit();
+					insert_slot = (group_idx + i) & _capacity_mask;
+					have_insert_slot = true;
+				}
+			}
+			// kEmpty terminates the probe chain: the key cannot appear past
+			// this group, so the recorded insert slot (which exists, since
+			// this group has at least one empty byte) is the answer.
+			if (g.match_empty()) {
+				r_slot_idx = insert_slot;
 				return false;
 			}
 			probe_dist += kGroupWidth;
@@ -197,9 +267,11 @@ private:
 		_deleted = 0;
 
 		// Reinsert by walking the existing insertion-order linked list. This
-		// preserves order while letting us drop the old index table.
+		// preserves order while letting us drop the old index table. We
+		// reuse the cached hash on each Element so grow doesn't have to
+		// re-run Hasher (a real win for non-trivial keys like String).
 		for (Element *e = _head_element; e != nullptr; e = e->next) {
-			const uint32_t hash = _hash(e->data.key);
+			const uint32_t hash = e->hash;
 			const uint32_t slot = _find_insert_slot(hash);
 			_set_ctrl(slot, SwissTable::h2(hash));
 			_slots[slot] = e;
@@ -290,16 +362,15 @@ private:
 		p_elem->next = nullptr;
 	}
 
-	Element *_insert_internal(const TKey &p_key, const TValue &p_value, uint32_t p_hash, bool p_front_insert) {
-		_ensure_allocated();
-		if (_growth_left == 0) {
-			_grow();
-		}
-		const uint32_t slot = _find_insert_slot(p_hash);
-		const bool was_deleted = SwissTable::is_deleted(_ctrl[slot]);
-		Element *elem = Allocator::new_allocation(Element(p_key, p_value));
-		_set_ctrl(slot, SwissTable::h2(p_hash));
-		_slots[slot] = elem;
+	// Place a brand-new element at the given (already chosen) slot. The slot
+	// must currently be kEmpty or kDeleted, and the caller must have already
+	// guaranteed _growth_left > 0.
+	_FORCE_INLINE_ Element *_emplace_at_slot(const TKey &p_key, const TValue &p_value,
+			uint32_t p_hash, uint32_t p_slot, bool p_front_insert) {
+		const bool was_deleted = SwissTable::is_deleted(_ctrl[p_slot]);
+		Element *elem = Allocator::new_allocation(Element(p_key, p_value, p_hash));
+		_set_ctrl(p_slot, SwissTable::h2(p_hash));
+		_slots[p_slot] = elem;
 		_link_after_alloc(elem, p_front_insert);
 		_size++;
 		if (was_deleted) {
@@ -307,6 +378,15 @@ private:
 		}
 		_growth_left--;
 		return elem;
+	}
+
+	Element *_insert_internal(const TKey &p_key, const TValue &p_value, uint32_t p_hash, bool p_front_insert) {
+		_ensure_allocated();
+		if (_growth_left == 0) {
+			_grow();
+		}
+		const uint32_t slot = _find_insert_slot(p_hash);
+		return _emplace_at_slot(p_key, p_value, p_hash, slot, p_front_insert);
 	}
 
 	void _clear_data() {
@@ -436,8 +516,9 @@ public:
 
 		// Mutate the key in place. KeyValue::key is `const TKey`; the cast is
 		// safe because the entry is uniquely owned and no caller may hold a
-		// concurrent reference to it.
+		// concurrent reference to it. Update the cached hash to match.
 		const_cast<TKey &>(elem->data.key) = p_new_key;
+		elem->hash = new_hash;
 
 		// Reinsert into a fresh slot under the new hash.
 		const uint32_t target = _find_insert_slot(new_hash);
@@ -593,23 +674,40 @@ public:
 
 	TValue &operator[](const TKey &p_key) {
 		const uint32_t hash = _hash(p_key);
+		_ensure_allocated();
+		if (_growth_left == 0) {
+			_grow();
+		}
 		uint32_t slot = 0;
-		if (_capacity > 0 && _size > 0 && _lookup(p_key, hash, slot)) {
+		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot)) {
 			return _slots[slot]->data.value;
 		}
-		return _insert_internal(p_key, TValue(), hash, false)->data.value;
+		// Single-pass path: when the table is empty we still need to pick a
+		// slot. _find_or_prepare_insert handles that, but only when called;
+		// when _size == 0 we skip it and fall back to the simpler probe.
+		if (_size == 0) {
+			slot = _find_insert_slot(hash);
+		}
+		return _emplace_at_slot(p_key, TValue(), hash, slot, false)->data.value;
 	}
 
 	/* Insert */
 
 	Iterator insert(const TKey &p_key, const TValue &p_value, bool p_front_insert = false) {
 		const uint32_t hash = _hash(p_key);
+		_ensure_allocated();
+		if (_growth_left == 0) {
+			_grow();
+		}
 		uint32_t slot = 0;
-		if (_capacity > 0 && _size > 0 && _lookup(p_key, hash, slot)) {
+		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot)) {
 			_slots[slot]->data.value = p_value;
 			return Iterator(_slots[slot]);
 		}
-		return Iterator(_insert_internal(p_key, p_value, hash, p_front_insert));
+		if (_size == 0) {
+			slot = _find_insert_slot(hash);
+		}
+		return Iterator(_emplace_at_slot(p_key, p_value, hash, slot, p_front_insert));
 	}
 
 	/* Constructors */
@@ -719,9 +817,8 @@ public:
 		if (c == SwissTable::kEmpty || c == SwissTable::kDeleted) {
 			return 0;
 		}
-		// Reconstruction of the full hash isn't possible from h2; expose the
-		// fingerprint byte instead, which is what callers need for diagnostics.
-		return c;
+		Element *e = _slots[p_idx];
+		return e != nullptr ? e->hash : 0;
 	}
 	Iterator debug_get_element(uint32_t p_idx) {
 		if (_size == 0 || _capacity == 0) {

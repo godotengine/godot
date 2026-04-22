@@ -91,6 +91,11 @@ private:
 
 	// Dense entries store (insertion order is NOT preserved on erase).
 	KV *_elements = nullptr;
+	// Parallel cached 32-bit hashes, sized identically to _elements. Stored
+	// at insert time so probes can short-circuit before a (potentially
+	// expensive) key compare and so rehashing on grow doesn't have to re-run
+	// Hasher on the key.
+	uint32_t *_hashes = nullptr;
 	uint32_t _elements_capacity = 0;
 
 	uint32_t _capacity = 0; // Power of two, or 0 if unallocated.
@@ -100,7 +105,13 @@ private:
 	uint32_t _deleted = 0; // Tombstones currently in the index table.
 
 	static _FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
-		return Hasher::hash(p_key);
+		// Apply a SwissTable-friendly bit mixer at the boundary so callers
+		// don't have to. Several Godot hashers (notably String/DJB2) leave
+		// the high bits weakly mixed; splitting them into h1/h2 directly
+		// would cluster fingerprints and inflate probe chains. The same
+		// mixed value is what we cache in _hashes[i], so that grow and the
+		// hash short-circuit in _lookup keep working consistently.
+		return SwissTable::mix(Hasher::hash(p_key));
 	}
 
 	// Round up to a power of two no smaller than min, and at least kGroupWidth.
@@ -114,7 +125,8 @@ private:
 
 	// Find the slot containing p_key. Returns true if found, with r_slot_idx
 	// set to the slot index in _ctrl/_slots and r_element_idx to the index in
-	// _elements.
+	// _elements. Uses the cached 32-bit hash on each candidate to short-
+	// circuit before the (potentially expensive) key compare.
 	bool _lookup(const TKey &p_key, uint32_t p_hash, uint32_t &r_slot_idx, uint32_t &r_element_idx) const {
 		if (_capacity == 0) {
 			return false;
@@ -131,7 +143,7 @@ private:
 				uint32_t i = it.next();
 				uint32_t slot_idx = (group_idx + i) & _capacity_mask;
 				uint32_t elem_idx = _slots[slot_idx];
-				if (Comparator::compare(_elements[elem_idx].key, p_key)) {
+				if (_hashes[elem_idx] == p_hash && Comparator::compare(_elements[elem_idx].key, p_key)) {
 					r_slot_idx = slot_idx;
 					r_element_idx = elem_idx;
 					return true;
@@ -145,6 +157,52 @@ private:
 			probe_dist += kGroupWidth;
 			// Quadratic probing across groups; bounded by capacity (always succeeds
 			// because we maintain at least one empty slot in the table).
+			group_idx = (group_idx + probe_dist) & _capacity_mask;
+		}
+	}
+
+	// Combined "lookup if present, otherwise pick insert slot" probe used
+	// by insert and operator[]. Returns true if the key is already in the
+	// table (with r_slot_idx / r_element_idx set to the existing entry);
+	// returns false with r_slot_idx pointing at a kEmpty/kDeleted slot
+	// where the new entry should be placed.
+	//
+	// Caller must ensure _capacity > 0 and _growth_left > 0.
+	bool _find_or_prepare_insert(const TKey &p_key, uint32_t p_hash,
+			uint32_t &r_slot_idx, uint32_t &r_element_idx) const {
+		const uint8_t h2 = SwissTable::h2(p_hash);
+		uint32_t group_idx = SwissTable::h1(p_hash) & _capacity_mask;
+		uint32_t probe_dist = 0;
+		uint32_t insert_slot = 0;
+		bool have_insert_slot = false;
+
+		while (true) {
+			SwissTable::Group g(_ctrl + group_idx);
+			Mask m = g.match(h2);
+			auto it = m.iter();
+			while (it.has_next()) {
+				const uint32_t i = it.next();
+				const uint32_t slot_idx = (group_idx + i) & _capacity_mask;
+				const uint32_t elem_idx = _slots[slot_idx];
+				if (_hashes[elem_idx] == p_hash && Comparator::compare(_elements[elem_idx].key, p_key)) {
+					r_slot_idx = slot_idx;
+					r_element_idx = elem_idx;
+					return true;
+				}
+			}
+			if (!have_insert_slot) {
+				Mask ed = g.match_empty_or_deleted();
+				if (ed) {
+					const uint32_t i = ed.lowest_set_bit();
+					insert_slot = (group_idx + i) & _capacity_mask;
+					have_insert_slot = true;
+				}
+			}
+			if (g.match_empty()) {
+				r_slot_idx = insert_slot;
+				return false;
+			}
+			probe_dist += kGroupWidth;
 			group_idx = (group_idx + probe_dist) & _capacity_mask;
 		}
 	}
@@ -240,9 +298,10 @@ private:
 		_growth_left = SwissTable::capacity_to_growth(new_capacity);
 		_deleted = 0;
 
-		// Reinsert all live elements (entries themselves don't move).
+		// Reinsert all live elements (entries themselves don't move). We
+		// reuse the cached hashes so grow doesn't have to re-run Hasher.
 		for (uint32_t i = 0; i < _size; i++) {
-			const uint32_t hash = _hash(_elements[i].key);
+			const uint32_t hash = _hashes[i];
 			const uint32_t slot = _find_insert_slot(hash);
 			_set_ctrl(slot, SwissTable::h2(hash));
 			_slots[slot] = i;
@@ -261,6 +320,8 @@ private:
 		}
 		_elements = reinterpret_cast<KV *>(
 				Memory::realloc_static(_elements, sizeof(KV) * p_new_capacity));
+		_hashes = reinterpret_cast<uint32_t *>(
+				Memory::realloc_static(_hashes, sizeof(uint32_t) * p_new_capacity));
 		_elements_capacity = p_new_capacity;
 	}
 
@@ -283,25 +344,32 @@ private:
 		_grow_entries(_entries_capacity_for(_capacity));
 	}
 
-	// Insert with the assumption that p_key does not already exist.
-	uint32_t _insert_new(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
-		if (_growth_left == 0) {
-			_grow();
-		}
-		const uint32_t slot = _find_insert_slot(p_hash);
-		// If we picked a deleted slot, we don't lose growth (deleted slots do
-		// count against growth_left already through _deleted accounting).
-		const bool was_deleted = SwissTable::is_deleted(_ctrl[slot]);
-		_set_ctrl(slot, SwissTable::h2(p_hash));
+	// Place a new element at the given (already chosen) slot. The slot must
+	// currently be kEmpty or kDeleted, and the caller must have already
+	// guaranteed _growth_left > 0 and that the entries array has room.
+	_FORCE_INLINE_ uint32_t _emplace_at_slot(const TKey &p_key, const TValue &p_value,
+			uint32_t p_hash, uint32_t p_slot) {
+		const bool was_deleted = SwissTable::is_deleted(_ctrl[p_slot]);
+		_set_ctrl(p_slot, SwissTable::h2(p_hash));
 		const uint32_t element_idx = _size;
-		_slots[slot] = element_idx;
+		_slots[p_slot] = element_idx;
 		memnew_placement(&_elements[element_idx], KV(p_key, p_value));
+		_hashes[element_idx] = p_hash;
 		_size++;
 		if (was_deleted) {
 			_deleted--;
 		}
 		_growth_left--;
 		return element_idx;
+	}
+
+	// Insert with the assumption that p_key does not already exist.
+	uint32_t _insert_new(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
+		if (_growth_left == 0) {
+			_grow();
+		}
+		const uint32_t slot = _find_insert_slot(p_hash);
+		return _emplace_at_slot(p_key, p_value, p_hash, slot);
 	}
 
 	void _init_from(const AHashMap &p_other) {
@@ -323,6 +391,8 @@ private:
 				memnew_placement(&_elements[i], KV(p_other._elements[i]));
 			}
 		}
+		// Copy parallel hash array.
+		memcpy(_hashes, p_other._hashes, sizeof(uint32_t) * p_other._size);
 		_size = p_other._size;
 		// Copy ctrl table verbatim, including mirror bytes.
 		memcpy(_ctrl, p_other._ctrl, p_other._capacity + kGroupWidth);
@@ -419,15 +489,18 @@ public:
 		// Swap-with-tail to keep entries dense. We need to update the moved
 		// entry's slot mapping BEFORE doing the actual move, because a
 		// post-move lookup would find the slot but read the (now-garbage)
-		// data at the old tail index when comparing keys.
+		// data at the old tail index when comparing keys. We use the cached
+		// hash on the tail entry to drive the lookup so we don't re-run
+		// Hasher on the moved key.
 		if (element_idx < _size) {
 			uint32_t moved_slot = 0;
 			uint32_t moved_idx = 0;
-			bool found = _lookup(_elements[_size].key, _hash(_elements[_size].key), moved_slot, moved_idx);
+			bool found = _lookup(_elements[_size].key, _hashes[_size], moved_slot, moved_idx);
 			(void)found;
 			DEV_ASSERT(found && moved_idx == _size);
 			_slots[moved_slot] = element_idx;
 			memcpy(static_cast<void *>(&_elements[element_idx]), static_cast<const void *>(&_elements[_size]), sizeof(KV));
+			_hashes[element_idx] = _hashes[_size];
 		}
 
 		return true;
@@ -455,15 +528,16 @@ public:
 		}
 		_set_ctrl(old_slot, new_ctrl);
 
-		// Mutate the key in place.
+		// Mutate the key in place and update the cached hash.
 		const_cast<TKey &>(_elements[element_idx].key) = p_new_key;
+		const uint32_t new_hash = _hash(p_new_key);
+		_hashes[element_idx] = new_hash;
 
 		// Insert into the new position. We may need to grow if the deleted slot
 		// converted to empty consumed our growth budget; check growth_left.
 		if (_growth_left == 0) {
 			_grow();
 		}
-		const uint32_t new_hash = _hash(p_new_key);
 		const uint32_t slot = _find_insert_slot(new_hash);
 		const bool was_deleted = SwissTable::is_deleted(_ctrl[slot]);
 		_set_ctrl(slot, SwissTable::h2(new_hash));
@@ -611,13 +685,19 @@ public:
 
 	TValue &operator[](const TKey &p_key) {
 		const uint32_t hash = _hash(p_key);
+		_ensure_allocated();
+		if (_growth_left == 0) {
+			_grow();
+		}
 		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		if (_capacity != 0 && _lookup(p_key, hash, slot, element_idx)) {
+		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot, element_idx)) {
 			return _elements[element_idx].value;
 		}
-		_ensure_allocated();
-		element_idx = _insert_new(p_key, TValue(), hash);
+		if (_size == 0) {
+			slot = _find_insert_slot(hash);
+		}
+		element_idx = _emplace_at_slot(p_key, TValue(), hash, slot);
 		return _elements[element_idx].value;
 	}
 
@@ -625,14 +705,20 @@ public:
 
 	Iterator insert(const TKey &p_key, const TValue &p_value) {
 		const uint32_t hash = _hash(p_key);
+		_ensure_allocated();
+		if (_growth_left == 0) {
+			_grow();
+		}
 		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		if (_capacity != 0 && _lookup(p_key, hash, slot, element_idx)) {
+		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot, element_idx)) {
 			_elements[element_idx].value = p_value;
 			return Iterator(_elements + element_idx, _elements, _elements + _size);
 		}
-		_ensure_allocated();
-		element_idx = _insert_new(p_key, p_value, hash);
+		if (_size == 0) {
+			slot = _find_insert_slot(hash);
+		}
+		element_idx = _emplace_at_slot(p_key, p_value, hash, slot);
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
 	}
 
@@ -680,6 +766,7 @@ public:
 		_ctrl = p_other._ctrl;
 		_slots = p_other._slots;
 		_elements = p_other._elements;
+		_hashes = p_other._hashes;
 		_elements_capacity = p_other._elements_capacity;
 		_capacity = p_other._capacity;
 		_capacity_mask = p_other._capacity_mask;
@@ -690,6 +777,7 @@ public:
 		p_other._ctrl = nullptr;
 		p_other._slots = nullptr;
 		p_other._elements = nullptr;
+		p_other._hashes = nullptr;
 		p_other._elements_capacity = 0;
 		p_other._capacity = 0;
 		p_other._capacity_mask = 0;
@@ -734,6 +822,10 @@ public:
 			Memory::free_static(_elements);
 			_elements = nullptr;
 			_elements_capacity = 0;
+		}
+		if (_hashes != nullptr) {
+			Memory::free_static(_hashes);
+			_hashes = nullptr;
 		}
 		if (_ctrl != nullptr) {
 			Memory::free_static(_ctrl);
