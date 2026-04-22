@@ -39,10 +39,10 @@ class AudioStreamOpus;
 class AudioStreamPlaybackOpus : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackOpus, AudioStreamPlaybackResampled);
 
-	OggOpusFile *opus_file;
-	uint32_t frames_mixed;
-	bool active;
-	int loops;
+	OggOpusFile *opus_file = nullptr;
+	uint32_t frames_mixed = 0;
+	bool active = false;
+	int loops = 0;
 
 	friend class AudioStreamOpus;
 
