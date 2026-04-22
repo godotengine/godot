@@ -42,11 +42,16 @@ class AudioStreamPlaybackOpus : public AudioStreamPlaybackResampled {
 	OggOpusFile *opus_file = nullptr;
 	uint32_t frames_mixed = 0;
 	bool active = false;
+	bool looping_override = false;
+	bool looping = false;
 	int loops = 0;
 
 	friend class AudioStreamOpus;
 
 	Ref<AudioStreamOpus> opus_stream;
+
+	bool _is_sample = false;
+	Ref<AudioSamplePlayback> sample_playback;
 
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
@@ -61,6 +66,16 @@ public:
 
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
+
+	virtual void tag_used_streams() override;
+
+	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
+	virtual Variant get_parameter(const StringName &p_name) const override;
+
+	virtual void set_is_sample(bool p_is_sample) override;
+	virtual bool get_is_sample() const override;
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 
 	AudioStreamPlaybackOpus() {}
 	~AudioStreamPlaybackOpus();
@@ -119,6 +134,8 @@ public:
 	virtual double get_length() const override;
 
 	virtual bool is_monophonic() const override;
+
+	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 
 	virtual bool can_be_sampled() const override {
 		return true;
