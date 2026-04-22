@@ -2528,13 +2528,13 @@ void AnimationMixer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE);
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS);
 
-	ADD_SIGNAL(MethodInfo(SNAME("animation_list_changed")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_libraries_updated")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
-	ADD_SIGNAL(MethodInfo(SNAME("mixer_applied")));
-	ADD_SIGNAL(MethodInfo(SNAME("mixer_updated"))); // For updating dummy player.
+	ADD_SIGNAL(MethodInfo("animation_list_changed"));
+	ADD_SIGNAL(MethodInfo("animation_libraries_updated"));
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("caches_cleared"));
+	ADD_SIGNAL(MethodInfo("mixer_applied"));
+	ADD_SIGNAL(MethodInfo("mixer_updated")); // For updating dummy player.
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
