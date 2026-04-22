@@ -46,11 +46,13 @@ struct NavRegionIterationBuild3D {
 	Vector3 map_cell_size;
 	Transform3D region_transform;
 
+	// An iteration of class NavigationMesh:
 	struct NavMeshData {
 		Vector<Vector3> vertices;
 		Vector<Vector<int>> polygons;
 		Vector<uint32_t> polygons_meta; // Will be stored in `Nav3D::Polygon` later on.
-		Vector<uint16_t> area_ids;
+		Vector<uint16_t> area_ids; // FIXME: might not be needed. Delete in that case.
+		Vector<uint32_t> area_navlayers; // Holds the changes that need to be written to polygons_meta.
 		Vector<Vector<int>> area_indices;
 
 		void clear() {
@@ -58,6 +60,7 @@ struct NavRegionIterationBuild3D {
 			polygons.clear();
 			polygons_meta.clear();
 			area_ids.clear();
+			area_navlayers.clear();
 			area_indices.clear();
 		}
 	} navmesh_data;

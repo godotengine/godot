@@ -30,9 +30,9 @@
 
 #include "navigation_mesh_source_geometry_data_3d.h"
 
-#include "../../3d/navigation/navigation_mesh_area_3d.h"
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
+#include "scene/3d/navigation/navigation_mesh_area_3d.h"
 
 void NavigationMeshSourceGeometryData3D::set_vertices(const Vector<float> &p_vertices) {
 	RWLockWrite write_lock(geometry_rwlock);

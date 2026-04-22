@@ -41,7 +41,8 @@
 			<param index="2" name="navigation_layers" type="int" />
 			<param index="3" name="priority" type="int" />
 			<description>
-				Adds a new projected area of shape type box to the source geometry. The areas axis-aligned bounding box is defined by an [param aabb].
+				Adds a new projected area of shape type box to the source geometry.
+				[b]Note:[/b] The box [param xform] must be axis-aligned.
 			</description>
 		</method>
 		<method name="add_projected_area_cylinder">
@@ -119,6 +120,7 @@
 			<return type="Array" />
 			<description>
 				Returns the projected areas as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
+				- [code]id[/code] - The internal area ID unique to this object.
 				- [code]vertices[/code] - A [PackedVector3Array] that defines the outline points of the projected shape. Used by areas of type [enum NavigationServer3D.AreaShapeType3D] [constant NavigationServer3D.AREA_SHAPE_POLYGON].
 				- [code]aabb[/code] - A global [AABB] of the projected shape. Used by all area types.
 				- [code]position[/code] - A [Vector3] that defines the global position of the area shape. Used by all area types.

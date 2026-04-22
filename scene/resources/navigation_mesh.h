@@ -223,7 +223,7 @@ public:
 
 	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons);
 	void set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_area_ids, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices);
-	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_area_ids, Vector<Vector<int>> &r_area_indices);
+	void get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_area_ids, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices);
 
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();

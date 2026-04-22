@@ -342,14 +342,13 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 	}
 #endif // DISABLE_DEPRECATED
 	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
-		print_line("_set");
+		print_line("_set_areas_layers");
 		int which = path.get_slicec('/', 1).to_int();
 		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
 			return false;
 		}
-		navigation_mesh->set_area_navigation_layers((uint16_t)which, p_value);
+		NavigationServer3D::get_singleton()->region_set_areas_navigation_layers(region, (uint16_t)which, p_value);
 		notify_property_list_changed(); // Make areas in navigation_mesh (in)visible in inspector.
-		// FIXME: update navigation server 3d.
 		return true;
 	}
 	return false;
@@ -371,7 +370,7 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
 			return false;
 		}
-		r_ret = (int)navigation_mesh->get_area_navigation_layers((uint16_t)which);
+		r_ret = (int)NavigationServer3D::get_singleton()->region_get_areas_navigation_layers(region, (uint16_t)which);
 		return true;
 	}
 	return false;

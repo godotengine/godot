@@ -530,12 +530,13 @@ void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Ve
 	area_indices = p_area_indices;
 }
 
-void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_area_ids, Vector<Vector<int>> &r_area_indices) {
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_area_ids, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices) {
 	RWLockRead read_lock(rwlock);
 	r_vertices = vertices;
 	r_polygons = polygons;
 	r_polygons_meta = polygons_meta;
 	r_area_ids = area_ids;
+	r_area_navlayers = area_navlayers;
 	r_area_indices = area_indices;
 }
 

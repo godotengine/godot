@@ -274,7 +274,7 @@ void NavRegion3D::_build_iteration() {
 
 	if (navmesh.is_valid()) {
 		// Read data from latest bake result.
-		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_ids, iteration_build.navmesh_data.area_indices);
+		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_ids, iteration_build.navmesh_data.area_navlayers, iteration_build.navmesh_data.area_indices);
 	}
 
 	iteration_build.map_cell_size = map->get_merge_rasterizer_cell_size();
@@ -296,27 +296,13 @@ void NavRegion3D::_build_iteration() {
 	new_iteration->owner_use_edge_connections = get_use_edge_connections();
 
 	print_line("NavRegion3D::_build_iteration");
-	// int i = 0;
-	// for (uint16_t area_id : iteration_build.navmesh_data.area_ids) {
-	// 	uint32_t navigation_layers = 0;
-
-	// 	for (const NavArea3D *m_area : map->get_areas()) {
-	// 		uint16_t m_area_id = m_area->get_id();
-	// 		if (m_area_id == area_id) {
-	// 			print_line("update layers");
-	// 			navigation_layers = m_area->get_iteration();
-	// 			break; // This _is_ the area you're looking for.
-	// 		}
-	// 	}
-
-	// 	if (navigation_layers > 0) {
-	// 		for (int polygon_index : iteration_build.navmesh_data.area_indices[i]) {
-	// 			iteration_build.navmesh_data.polygons_meta.write[polygon_index] = navigation_layers;
-	// 		}
-	// 	}
-
-	// 	i++;
-	// }
+	int i = 0;
+	for (uint32_t navigation_layers : iteration_build.navmesh_data.area_navlayers) {
+		for (int polygon_index : iteration_build.navmesh_data.area_indices[i]) {
+			iteration_build.navmesh_data.polygons_meta.write[polygon_index] = navigation_layers;
+		}
+		i++;
+	}
 
 	iteration_build.region_iteration = new_iteration;
 
