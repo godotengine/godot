@@ -327,6 +327,10 @@ public:
 
 	Vector3i get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const;
 
+#ifndef PHYSICS_3D_DISABLED
+	RID get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const;
+#endif
+
 	Array get_meshes() const;
 
 	void clear_baked_meshes();
