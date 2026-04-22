@@ -34,10 +34,9 @@ const GodotWebGL2 = {
 
 	// This is implemented as "glGetBufferSubData" in new emscripten versions.
 	// Since we have to support older (pre 2.0.17) emscripten versions, we add this wrapper function instead.
-	godot_webgl2_glGetBufferSubData__proxy: 'sync',
-	godot_webgl2_glGetBufferSubData__sig: 'vippp',
-	godot_webgl2_glGetBufferSubData__deps: ['$GL', 'emscripten_webgl_get_current_context'],
-	godot_webgl2_glGetBufferSubData: function (target, offset, size, data) {
+	godot_webgl2_wrapper_glGetBufferSubData__sig: 'vippp',
+	godot_webgl2_wrapper_glGetBufferSubData__deps: ['$GL', 'emscripten_webgl_get_current_context'],
+	godot_webgl2_wrapper_glGetBufferSubData: function (target, offset, size, data) {
 		const gl_context_handle = _emscripten_webgl_get_current_context();
 		const gl = GL.getContext(gl_context_handle);
 		if (gl) {
@@ -46,7 +45,6 @@ const GodotWebGL2 = {
 	},
 
 	godot_webgl2_glFramebufferTextureMultiviewOVR__deps: ['emscripten_webgl_get_current_context'],
-	godot_webgl2_glFramebufferTextureMultiviewOVR__proxy: 'sync',
 	godot_webgl2_glFramebufferTextureMultiviewOVR__sig: 'viiiiii',
 	godot_webgl2_glFramebufferTextureMultiviewOVR: function (target, attachment, texture, level, base_view_index, num_views) {
 		const context = GL.currentContext;
@@ -63,7 +61,6 @@ const GodotWebGL2 = {
 	},
 
 	godot_webgl2_glFramebufferTextureMultisampleMultiviewOVR__deps: ['emscripten_webgl_get_current_context'],
-	godot_webgl2_glFramebufferTextureMultisampleMultiviewOVR__proxy: 'sync',
 	godot_webgl2_glFramebufferTextureMultisampleMultiviewOVR__sig: 'viiiiiii',
 	godot_webgl2_glFramebufferTextureMultisampleMultiviewOVR: function (target, attachment, texture, level, samples, base_view_index, num_views) {
 		const context = GL.currentContext;

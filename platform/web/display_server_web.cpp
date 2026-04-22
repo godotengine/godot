@@ -59,6 +59,8 @@
 #define DOM_BUTTON_XBUTTON1 3
 #define DOM_BUTTON_XBUTTON2 4
 
+void setup_canvas_proxying(bool p_canvas_is_on_runtime);
+
 DisplayServerWeb *DisplayServerWeb::get_singleton() {
 	return static_cast<DisplayServerWeb *>(DisplayServer::get_singleton());
 }
@@ -1120,10 +1122,13 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, DisplayServ
 	native_menu = memnew(NativeMenu); // Dummy native menu.
 
 	// Ensure the canvas ID.
-	godot_js_config_canvas_id_get(canvas_id, 256);
+	canvas_id = godot_js_config_canvas_id_allocate();
 
 	// Handle contextmenu, webglcontextlost
 	godot_js_display_setup_canvas(p_resolution.x, p_resolution.y, (p_window_mode == DisplayServerEnums::WINDOW_MODE_FULLSCREEN || p_window_mode == DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN), OS::get_singleton()->is_hidpi_allowed() ? 1 : 0);
+
+	int initial_size[2];
+	godot_js_display_window_size_get(initial_size, initial_size + 1);
 
 	// Check if it's windows.
 	swap_cancel_ok = godot_js_display_is_swap_ok_cancel() == 1;
@@ -1140,6 +1145,11 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, DisplayServ
 		attributes.antialias = false;
 		attributes.majorVersion = 2;
 		attributes.explicitSwapControl = true;
+#ifdef OFFSCREENCANVAS_ENABLED
+		// Enable fallback in case offscreen canvas is enabled, but is not available.
+		attributes.renderViaOffscreenBackBuffer = true;
+		attributes.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_FALLBACK;
+#endif
 
 		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
 		webgl2_inited = webgl_ctx && emscripten_webgl_make_context_current(webgl_ctx) == EMSCRIPTEN_RESULT_SUCCESS;
@@ -1160,6 +1170,12 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, DisplayServ
 #else
 	RasterizerDummy::make_current();
 #endif
+
+	// Register canvas thread.
+	setup_canvas_proxying(godot_js_display_check_canvas() != 0);
+
+	// Refresh offscreen canvas if needed.
+	emscripten_set_canvas_element_size(canvas_id, initial_size[0], initial_size[1]);
 
 	// JS Input interface (js/libs/library_godot_input.js)
 	godot_js_input_mouse_button_cb(&DisplayServerWeb::mouse_button_callback);
@@ -1196,6 +1212,8 @@ DisplayServerWeb::~DisplayServerWeb() {
 		emscripten_webgl_destroy_context(webgl_ctx);
 	}
 #endif
+	godot_js_config_canvas_id_free();
+	canvas_id = nullptr;
 }
 
 bool DisplayServerWeb::has_feature(DisplayServerEnums::Feature p_feature) const {

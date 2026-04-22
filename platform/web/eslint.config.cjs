@@ -26,6 +26,8 @@ const emscriptenGlobals = {
 	'UTF8ToString': true,
 	'UTF8Decoder': true,
 	'_emscripten_webgl_get_current_context': true,
+	'_emscripten_set_canvas_element_size': true,
+	'_emscripten_get_canvas_element_size': true,
 	'_free': true,
 	'_malloc': true,
 	'autoAddDeps': true,

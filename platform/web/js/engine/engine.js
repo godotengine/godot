@@ -249,6 +249,21 @@ const Engine = (function () {
 				}
 				return Promise.resolve();
 			},
+
+			/**
+			 * Sets the size of the canvas used by the engine.
+			 *
+			 * If offscreen canvas is used the control from the main canvas is transferred to the
+			 * offscreen canvas, which makes it impossible to set size on the main canvas directly.
+			 */
+			setCanvasSize: function (width, height) {
+				if (this.rtenv) {
+					this.rtenv['setCanvasSize'](width, height);
+				} else if (this.config.canvas && !this.config.canvas.controlTransferredOffscreen) {
+					this.config.canvas.width = width;
+					this.config.canvas.height = height;
+				}
+			},
 		};
 
 		Engine.prototype = proto;
@@ -260,6 +275,7 @@ const Engine = (function () {
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 		Engine.prototype['installServiceWorker'] = Engine.prototype.installServiceWorker;
+		Engine.prototype['setCanvasSize'] = Engine.prototype.setCanvasSize;
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;
 		Engine.prototype['unload'] = Engine.unload;

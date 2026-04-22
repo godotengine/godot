@@ -591,8 +591,12 @@ function startEditor(zip) {
 		const width = window.innerWidth;
 		const height = window.innerHeight - headerHeight;
 		if (lastScale !== scale || lastWidth !== width || lastHeight !== height) {
-			editorCanvas.width = width * scale;
-			editorCanvas.height = height * scale;
+			if (editor) {
+				editor.setCanvasSize(width * scale, height * scale);
+			} else {
+				editorCanvas.width = width * scale;
+				editorCanvas.height = height * scale;
+			}
 			editorCanvas.style.width = `${width}px`;
 			editorCanvas.style.height = `${height}px`;
 			lastScale = scale;
@@ -669,11 +673,13 @@ function startEditor(zip) {
 		'canvasResizePolicy': 1,
 		'onExit': function () {
 			gameCanvas = replaceCanvas(gameCanvas);
+			this.canvas = gameCanvas;
 			setGameTabEnabled(false);
 			showTab('editor');
 			game = null;
 		},
 	};
+	gameConfig.onExit = gameConfig.onExit.bind(gameConfig);
 
 	let OnEditorExit = function () {
 		showTab('loader');
@@ -745,6 +751,7 @@ function startEditor(zip) {
 		'canvasResizePolicy': 0,
 		'onExit': function () {
 			editorCanvas = replaceCanvas(editorCanvas);
+			editor.config.update({ 'canvas': editorCanvas });
 			if (OnEditorExit) {
 				OnEditorExit();
 			}
