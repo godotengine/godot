@@ -915,13 +915,15 @@ void PopupMenu::_draw_items() {
 	Point2 ofs;
 
 	// Loop through all items and draw each.
+	bool first_visible = true;
 	for (int i = 0; i < items.size(); i++) {
 		if (!items[i].visible) {
 			continue;
 		}
 
-		// For the first item only add half a separation. For all other items, add a whole separation to the offset.
-		ofs.y += i > 0 ? theme_cache.v_separation : theme_cache.v_separation / 2;
+		// For the first visible item only add half a separation. For all other items, add a whole separation to the offset.
+		ofs.y += first_visible ? theme_cache.v_separation / 2 : theme_cache.v_separation;
+		first_visible = false;
 
 		_shape_item(i);
 
