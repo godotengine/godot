@@ -128,9 +128,10 @@ int EditorMainScreen::_get_current_main_editor() const {
 
 int EditorMainScreen::_wrap_selection(int next_pos) {
 	int editor = _get_current_main_editor();
+	const int max = editor_table.size();
 
 	do {
-		editor = Math::wrapi(editor + next_pos, 0, editor_table.size());
+		editor = Math::wrapi(editor + next_pos, 0, max);
 	} while (!buttons[editor]->is_visible());
 
 	return editor;
