@@ -34,7 +34,25 @@ TEST_FORCE_LINK(test_a_hash_map)
 
 #include "core/templates/a_hash_map.h"
 
+#include <unordered_map>
+
 namespace TestAHashMap {
+
+// Hasher that funnels every key into the same H1 group (low bits all zero)
+// to exercise quadratic probing under adversarial collisions.
+struct AHM_SameGroupHasher {
+	static _FORCE_INLINE_ uint32_t hash(int p_key) {
+		return (static_cast<uint32_t>(p_key) << 7);
+	}
+};
+
+// Hasher whose H1 AND H2 are constant -- forces full key compares for every
+// probe step.
+struct AHM_SameSlotHasher {
+	static _FORCE_INLINE_ uint32_t hash(int /*p_key*/) {
+		return 0;
+	}
+};
 
 TEST_CASE("[AHashMap] List initialization") {
 	AHashMap<int, String> map{ { 0, "A" }, { 1, "B" }, { 2, "C" }, { 3, "D" }, { 4, "E" } };
@@ -309,6 +327,152 @@ TEST_CASE("[AHashMap] Array methods") {
 	CHECK(map.erase_by_index(index));
 	CHECK(!map.erase_by_index(index));
 	CHECK(map.get_index(1) == -1);
+}
+
+TEST_CASE("[AHashMap] Swap-on-erase keeps tail key reachable") {
+	AHashMap<int, int> map;
+	for (int i = 0; i < 32; i++) {
+		map.insert(i, i + 1000);
+	}
+	// Erase from the middle and head; check that all the surviving keys are
+	// still reachable and that the dense entries array stays packed.
+	map.erase(0);
+	map.erase(15);
+	map.erase(31);
+	CHECK(map.size() == 29);
+	for (int i = 1; i < 31; i++) {
+		if (i == 15) {
+			continue;
+		}
+		REQUIRE(map.has(i));
+		CHECK(map[i] == i + 1000);
+	}
+
+	// All entries returned by get_by_index() must reflect what get() returns
+	// for that key (i.e. the swap-on-erase didn't desync the slot mapping).
+	for (uint32_t i = 0; i < map.size(); i++) {
+		const KeyValue<int, int> &kv = map.get_by_index(i);
+		CHECK(map.get(kv.key) == kv.value);
+		CHECK((uint32_t)map.get_index(kv.key) == i);
+	}
+}
+
+TEST_CASE("[AHashMap] Adversarial same-group collisions") {
+	AHashMap<int, int, AHM_SameGroupHasher> map;
+	const int N = 200;
+	for (int i = 0; i < N; i++) {
+		map.insert(i, i * 7);
+	}
+	CHECK(map.size() == (uint32_t)N);
+	for (int i = 0; i < N; i++) {
+		REQUIRE(map.has(i));
+		CHECK(map[i] == i * 7);
+	}
+	for (int i = 1; i < N; i += 2) {
+		map.erase(i);
+	}
+	for (int i = 0; i < N; i++) {
+		if (i & 1) {
+			CHECK(!map.has(i));
+		} else {
+			CHECK(map[i] == i * 7);
+		}
+	}
+}
+
+TEST_CASE("[AHashMap] Adversarial same-slot collisions") {
+	AHashMap<int, int, AHM_SameSlotHasher> map;
+	const int N = 64;
+	for (int i = 0; i < N; i++) {
+		map.insert(i, i * 3);
+	}
+	for (int i = 0; i < N; i++) {
+		CHECK(map[i] == i * 3);
+	}
+	for (int i = 0; i < N; i++) {
+		map.erase(i);
+		CHECK(!map.has(i));
+	}
+	CHECK(map.size() == 0);
+}
+
+TEST_CASE("[AHashMap] std::unordered_map oracle fuzz") {
+	AHashMap<int, int> map;
+	std::unordered_map<int, int> oracle;
+	uint32_t rng = 0xDEADBEEFu;
+	auto next = [&]() {
+		rng ^= rng << 13;
+		rng ^= rng >> 17;
+		rng ^= rng << 5;
+		return rng;
+	};
+	for (int step = 0; step < 4000; step++) {
+		const int key = static_cast<int>(next() % 200);
+		const uint32_t op = next() % 4;
+		if (op == 0) {
+			const int v = static_cast<int>(next());
+			map.insert(key, v);
+			oracle[key] = v;
+		} else if (op == 1) {
+			map.erase(key);
+			oracle.erase(key);
+		} else if (op == 2) {
+			const int *p = map.getptr(key);
+			auto it = oracle.find(key);
+			if (it == oracle.end()) {
+				CHECK(p == nullptr);
+			} else {
+				REQUIRE(p != nullptr);
+				CHECK(*p == it->second);
+			}
+		} else {
+			CHECK(map.has(key) == (oracle.count(key) > 0));
+		}
+		CHECK(map.size() == (uint32_t)oracle.size());
+	}
+	for (const auto &kv : oracle) {
+		const int *p = map.getptr(kv.first);
+		REQUIRE(p != nullptr);
+		CHECK(*p == kv.second);
+	}
+}
+
+TEST_CASE("[AHashMap] Memory recycling across churn") {
+	AHashMap<int, int> map;
+	const int N = 1024;
+	for (int cycle = 0; cycle < 5; cycle++) {
+		for (int i = 0; i < N; i++) {
+			map.insert(i, i + cycle);
+		}
+		CHECK(map.size() == (uint32_t)N);
+		for (int i = 0; i < N; i++) {
+			CHECK(map[i] == i + cycle);
+		}
+		for (int i = 0; i < N; i++) {
+			map.erase(i);
+		}
+		CHECK(map.size() == 0);
+	}
+}
+
+TEST_CASE("[AHashMap] get_elements_ptr stays packed after erase") {
+	AHashMap<int, int> map;
+	const int N = 50;
+	for (int i = 0; i < N; i++) {
+		map.insert(i, i);
+	}
+	for (int i = 0; i < N; i += 3) {
+		map.erase(i);
+	}
+	const uint32_t live = map.size();
+	const KeyValue<int, int> *raw = map.get_elements_ptr();
+	REQUIRE(raw != nullptr);
+	for (uint32_t i = 0; i < live; i++) {
+		// Each entry must be reachable by both index AND key, and they must
+		// agree.
+		CHECK(raw[i].value == map.get(raw[i].key));
+		CHECK((uint32_t)map.get_index(raw[i].key) == i);
+	}
 }
 
 } // namespace TestAHashMap

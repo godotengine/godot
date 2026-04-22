@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "core/math/math_funcs_binary.h"
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/hashfuncs.h"
 #include "core/templates/pair.h"
+#include "core/templates/swiss_table_simd.h"
 
 #include <initializer_list>
 
@@ -43,243 +43,298 @@ class StringName;
 class Variant;
 
 /**
- * An array-based implementation of a hash map. It is very efficient in terms of performance and
- * memory usage. Works like a dynamic array, adding elements to the end of the array, and
- * allows you to access array elements by their index by using `get_by_index` method.
- * Example:
- * ```
- *  AHashMap<int, Object *> map;
+ * An array-based implementation of a hash map. Very efficient in performance
+ * and memory usage. Uses a SwissTable-style control-byte index (SIMD-scanned)
+ * pointing into a contiguous packed entries array. Insertion order is NOT
+ * preserved across erases: erase swaps the removed element with the last one
+ * in the entries array (constant-time erase, dense storage).
  *
- *  int get_object_id_by_number(int p_number) {
- *		int id = map.get_index(p_number);
- *		return id;
- *  }
+ * Element pointers and indices are NOT stable across erases that move the
+ * tail. Pointers/iterators may also be invalidated by inserts that grow the
+ * table. If you need pointer stability or insertion-order preservation across
+ * erases, use HashMap instead.
  *
- *  Object *get_object_by_id(int p_id) {
- *		map.get_by_index(p_id).value;
- *  }
- * ```
- * Still, don`t erase the elements because ID can break.
- *
- * When an element erase, its place is taken by the element from the end.
- *
- *        <-------------
- *      |               |
- *  6 8 X 9 32 -1 5 -10 7 X X X
- *  6 8 7 9 32 -1 5 -10 X X X X
- *
+ * Public API mirrors the older Robin-Hood implementation:
+ *   - get / getptr / has / find
+ *   - insert / insert_new / operator[]
+ *   - erase / erase_by_index / replace_key
+ *   - get_index (key -> entry index) / get_by_index (entry index -> KeyValue)
+ *   - get_elements_ptr (raw pointer to dense entries array)
+ *   - reserve / clear / reset
  *
  * Use RBMap if you need to iterate over sorted elements.
  *
  * Use HashMap if:
- *   - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
+ *   - You need to keep an iterator or const pointer to Key and you intend to
+ *     add/remove elements in the meantime.
  *   - You need to preserve the insertion order when using erase.
- *
- * It is recommended to use `HashMap` if `KeyValue` size is very large.
  */
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
 class AHashMap {
 public:
-	// Must be a power of two.
+	// Power of two; must be at least kGroupWidth (16 for SSE2/WASM, 8 otherwise).
 	static constexpr uint32_t INITIAL_CAPACITY = 16;
-	static constexpr uint32_t EMPTY_HASH = 0;
-	static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the memcpy() optimization.");
+	using KV = KeyValue<TKey, TValue>;
 
 private:
-	struct Metadata {
-		uint32_t hash;
-		uint32_t element_idx;
-	};
+	using Mask = typename SwissTable::Group::Mask;
+	static constexpr uint32_t kGroupWidth = SwissTable::Group::kWidth;
 
-	static_assert(sizeof(Metadata) == 8);
+	// Index table:
+	//   _ctrl: capacity + kGroupWidth control bytes (the trailing bytes mirror
+	//          the leading ones so group probing can wrap-overshoot safely).
+	//   _slots: capacity entry indices (uint32_t each), parallel to _ctrl[0..capacity).
+	uint8_t *_ctrl = nullptr;
+	uint32_t *_slots = nullptr;
 
-	typedef KeyValue<TKey, TValue> MapKeyValue;
-	MapKeyValue *_elements = nullptr;
-	Metadata *_metadata = nullptr;
+	// Dense entries store (insertion order is NOT preserved on erase).
+	KV *_elements = nullptr;
+	uint32_t _elements_capacity = 0;
 
-	// Due to optimization, this is `capacity - 1`. Use + 1 to get normal capacity.
-	uint32_t _capacity_mask = 0;
+	uint32_t _capacity = 0; // Power of two, or 0 if unallocated.
+	uint32_t _capacity_mask = 0; // _capacity - 1.
 	uint32_t _size = 0;
+	uint32_t _growth_left = 0; // Number of inserts allowed before next grow/rehash.
+	uint32_t _deleted = 0; // Tombstones currently in the index table.
 
-	uint32_t _hash(const TKey &p_key) const {
-		uint32_t hash = Hasher::hash(p_key);
-
-		if (unlikely(hash == EMPTY_HASH)) {
-			hash = EMPTY_HASH + 1;
-		}
-
-		return hash;
+	static _FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
+		return Hasher::hash(p_key);
 	}
 
-	static _FORCE_INLINE_ uint32_t _get_resize_count(uint32_t p_capacity_mask) {
-		return p_capacity_mask ^ (p_capacity_mask + 1) >> 2; // = get_capacity() * 0.75 - 1; Works only if p_capacity_mask = 2^n - 1.
+	// Round up to a power of two no smaller than min, and at least kGroupWidth.
+	static _FORCE_INLINE_ uint32_t _round_up_capacity(uint32_t p_min) {
+		uint32_t cap = kGroupWidth;
+		while (cap < p_min) {
+			cap <<= 1;
+		}
+		return cap;
 	}
 
-	static _FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_meta_idx, uint32_t p_hash, uint32_t p_capacity) {
-		const uint32_t original_idx = p_hash & p_capacity;
-		return (p_meta_idx - original_idx + p_capacity + 1) & p_capacity;
-	}
-
-	bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
-		if (unlikely(_elements == nullptr)) {
-			return false; // Failed lookups, no _elements.
-		}
-		return _lookup_idx_with_hash(p_key, r_element_idx, r_meta_idx, _hash(p_key));
-	}
-
-	bool _lookup_idx_with_hash(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx, uint32_t p_hash) const {
-		if (unlikely(_elements == nullptr)) {
-			return false; // Failed lookups, no _elements.
-		}
-
-		uint32_t meta_idx = p_hash & _capacity_mask;
-		Metadata metadata = _metadata[meta_idx];
-		if (metadata.hash == p_hash && Comparator::compare(_elements[metadata.element_idx].key, p_key)) {
-			r_element_idx = metadata.element_idx;
-			r_meta_idx = meta_idx;
-			return true;
-		}
-
-		if (metadata.hash == EMPTY_HASH) {
+	// Find the slot containing p_key. Returns true if found, with r_slot_idx
+	// set to the slot index in _ctrl/_slots and r_element_idx to the index in
+	// _elements.
+	bool _lookup(const TKey &p_key, uint32_t p_hash, uint32_t &r_slot_idx, uint32_t &r_element_idx) const {
+		if (_capacity == 0) {
 			return false;
 		}
-
-		// A collision occurred.
-		meta_idx = (meta_idx + 1) & _capacity_mask;
-		uint32_t distance = 1;
-		while (true) {
-			metadata = _metadata[meta_idx];
-			if (metadata.hash == p_hash && Comparator::compare(_elements[metadata.element_idx].key, p_key)) {
-				r_element_idx = metadata.element_idx;
-				r_meta_idx = meta_idx;
-				return true;
-			}
-
-			if (metadata.hash == EMPTY_HASH) {
-				return false;
-			}
-
-			if (distance > _get_probe_length(meta_idx, metadata.hash, _capacity_mask)) {
-				return false;
-			}
-
-			meta_idx = (meta_idx + 1) & _capacity_mask;
-			distance++;
-		}
-	}
-
-	uint32_t _insert_metadata(uint32_t p_hash, uint32_t p_element_idx) {
-		uint32_t meta_idx = p_hash & _capacity_mask;
-
-		if (_metadata[meta_idx].hash == EMPTY_HASH) {
-			_metadata[meta_idx] = Metadata{ p_hash, p_element_idx };
-			return meta_idx;
-		}
-
-		uint32_t distance = 1;
-		meta_idx = (meta_idx + 1) & _capacity_mask;
-		Metadata metadata;
-		metadata.hash = p_hash;
-		metadata.element_idx = p_element_idx;
+		const uint8_t h2 = SwissTable::h2(p_hash);
+		uint32_t group_idx = SwissTable::h1(p_hash) & _capacity_mask;
+		uint32_t probe_dist = 0;
 
 		while (true) {
-			if (_metadata[meta_idx].hash == EMPTY_HASH) {
-#ifdef DEV_ENABLED
-				if (unlikely(distance > 12)) {
-					WARN_PRINT("Excessive collision count, is the right hash function being used?");
+			SwissTable::Group g(_ctrl + group_idx);
+			Mask m = g.match(h2);
+			auto it = m.iter();
+			while (it.has_next()) {
+				uint32_t i = it.next();
+				uint32_t slot_idx = (group_idx + i) & _capacity_mask;
+				uint32_t elem_idx = _slots[slot_idx];
+				if (Comparator::compare(_elements[elem_idx].key, p_key)) {
+					r_slot_idx = slot_idx;
+					r_element_idx = elem_idx;
+					return true;
 				}
-#endif
-				_metadata[meta_idx] = metadata;
-				return meta_idx;
 			}
-
-			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(meta_idx, _metadata[meta_idx].hash, _capacity_mask);
-			if (existing_probe_len < distance) {
-				SWAP(metadata, _metadata[meta_idx]);
-				distance = existing_probe_len;
+			// If this group has any empty slot, the key cannot be further along
+			// the probe sequence (deletes are tombstones, empties are not).
+			if (g.match_empty()) {
+				return false;
 			}
-
-			meta_idx = (meta_idx + 1) & _capacity_mask;
-			distance++;
+			probe_dist += kGroupWidth;
+			// Quadratic probing across groups; bounded by capacity (always succeeds
+			// because we maintain at least one empty slot in the table).
+			group_idx = (group_idx + probe_dist) & _capacity_mask;
 		}
 	}
 
-	void _resize_and_rehash(uint32_t p_new_capacity) {
-		uint32_t real_old_capacity = _capacity_mask + 1;
-		// Capacity can't be 0 and must be 2^n - 1.
-		_capacity_mask = MAX(4u, p_new_capacity);
-		uint32_t real_capacity = Math::next_power_of_2(_capacity_mask);
-		_capacity_mask = real_capacity - 1;
-
-		Metadata *old_map_data = _metadata;
-
-		_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static_zeroed(sizeof(Metadata) * real_capacity));
-		_elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(_elements, sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
-
-		if (_size != 0) {
-			for (uint32_t i = 0; i < real_old_capacity; i++) {
-				Metadata metadata = old_map_data[i];
-				if (metadata.hash != EMPTY_HASH) {
-					_insert_metadata(metadata.hash, metadata.element_idx);
-				}
+	// Find the first empty-or-deleted slot where a new element with p_hash can
+	// be inserted. Caller is responsible for ensuring growth_left > 0.
+	uint32_t _find_insert_slot(uint32_t p_hash) const {
+		uint32_t group_idx = SwissTable::h1(p_hash) & _capacity_mask;
+		uint32_t probe_dist = 0;
+		while (true) {
+			SwissTable::Group g(_ctrl + group_idx);
+			Mask m = g.match_empty_or_deleted();
+			if (m) {
+				uint32_t i = m.lowest_set_bit();
+				return (group_idx + i) & _capacity_mask;
 			}
+			probe_dist += kGroupWidth;
+			group_idx = (group_idx + probe_dist) & _capacity_mask;
 		}
-
-		Memory::free_static(old_map_data);
 	}
 
-	int32_t _insert_element(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
-		if (unlikely(_elements == nullptr)) {
-			// Allocate on demand to save memory.
+	// Decide whether an erased slot can become kEmpty (so it doesn't
+	// permanently consume probe-chain length) or must remain a kDeleted
+	// tombstone. With unaligned probing, the promotion to kEmpty is only
+	// safe when no probe sequence could ever have been forced to skip past
+	// this slot while it was full -- approximated by requiring an empty in
+	// both the kGroupWidth-window immediately after AND immediately before
+	// the slot, with no run of kGroupWidth full bytes in between. This
+	// matches absl::container_internal::WasNeverFull.
+	_FORCE_INLINE_ uint8_t _ctrl_after_erase(uint32_t p_slot_idx) const {
+		// Single-group tables: no probe sequence ever leaves the group, so
+		// converting an erased slot to empty is always safe.
+		if (_capacity <= kGroupWidth) {
+			return SwissTable::kEmpty;
+		}
+		// Trailing: number of consecutive non-empty bytes starting AT the
+		// slot (looking forward). We scan up to kGroupWidth bytes; the
+		// trailing-mirror region of _ctrl makes the read safe even if the
+		// slot is near the end of the index table.
+		uint32_t trailing = 0;
+		while (trailing < kGroupWidth && _ctrl[p_slot_idx + trailing] != SwissTable::kEmpty) {
+			trailing++;
+		}
+		if (trailing == kGroupWidth) {
+			return SwissTable::kDeleted;
+		}
+		// Leading: number of consecutive non-empty bytes ending JUST BEFORE
+		// the slot (looking backward, with wrap).
+		uint32_t leading = 0;
+		while (leading < kGroupWidth) {
+			const uint32_t idx = (p_slot_idx + _capacity - 1 - leading) & _capacity_mask;
+			if (_ctrl[idx] == SwissTable::kEmpty) {
+				break;
+			}
+			leading++;
+		}
+		// Promote to empty only when the run of non-empties surrounding the
+		// slot is shorter than one full group window -- meaning no probe
+		// could have been forced to scan a full group through this slot.
+		if (trailing + leading < kGroupWidth) {
+			return SwissTable::kEmpty;
+		}
+		return SwissTable::kDeleted;
+	}
 
-			uint32_t real_capacity = _capacity_mask + 1;
-			_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static_zeroed(sizeof(Metadata) * real_capacity));
-			_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
+	// Set the control byte and the trailing mirror byte (if applicable).
+	_FORCE_INLINE_ void _set_ctrl(uint32_t p_slot_idx, uint8_t p_value) {
+		_ctrl[p_slot_idx] = p_value;
+		// Mirror the first (kGroupWidth - 1) control bytes at the tail so that
+		// group probing can read past the end without bounds checks.
+		const uint32_t mirrored = ((p_slot_idx - (kGroupWidth - 1)) & _capacity_mask) + (kGroupWidth - 1);
+		_ctrl[mirrored] = p_value;
+	}
+
+	// (Re)allocate the index table to the given capacity (power of two), then
+	// reinsert all existing elements.
+	void _resize_table(uint32_t p_new_capacity) {
+		const uint32_t new_capacity = MAX(p_new_capacity, kGroupWidth);
+		// Allocate ctrl with kGroupWidth-1 trailing mirror bytes.
+		uint8_t *new_ctrl = reinterpret_cast<uint8_t *>(
+				Memory::alloc_static(sizeof(uint8_t) * (new_capacity + kGroupWidth)));
+		uint32_t *new_slots = reinterpret_cast<uint32_t *>(
+				Memory::alloc_static(sizeof(uint32_t) * new_capacity));
+		memset(new_ctrl, SwissTable::kEmpty, new_capacity + kGroupWidth);
+
+		uint8_t *old_ctrl = _ctrl;
+		uint32_t *old_slots = _slots;
+
+		_ctrl = new_ctrl;
+		_slots = new_slots;
+		_capacity = new_capacity;
+		_capacity_mask = new_capacity - 1;
+		_growth_left = SwissTable::capacity_to_growth(new_capacity);
+		_deleted = 0;
+
+		// Reinsert all live elements (entries themselves don't move).
+		for (uint32_t i = 0; i < _size; i++) {
+			const uint32_t hash = _hash(_elements[i].key);
+			const uint32_t slot = _find_insert_slot(hash);
+			_set_ctrl(slot, SwissTable::h2(hash));
+			_slots[slot] = i;
+			_growth_left--;
 		}
 
-		if (unlikely(_size > _get_resize_count(_capacity_mask))) {
-			_resize_and_rehash(_capacity_mask * 2);
+		if (old_ctrl != nullptr) {
+			Memory::free_static(old_ctrl);
+			Memory::free_static(old_slots);
 		}
+	}
 
-		memnew_placement(&_elements[_size], MapKeyValue(p_key, p_value));
+	void _grow_entries(uint32_t p_new_capacity) {
+		if (p_new_capacity <= _elements_capacity) {
+			return;
+		}
+		_elements = reinterpret_cast<KV *>(
+				Memory::realloc_static(_elements, sizeof(KV) * p_new_capacity));
+		_elements_capacity = p_new_capacity;
+	}
 
-		_insert_metadata(p_hash, _size);
+	// Compute the entry-array capacity needed to support a given index-table
+	// capacity (we hold up to growth-left elements).
+	static _FORCE_INLINE_ uint32_t _entries_capacity_for(uint32_t p_index_capacity) {
+		return SwissTable::capacity_to_growth(p_index_capacity);
+	}
+
+	void _ensure_allocated() {
+		if (_capacity == 0) {
+			_resize_table(MAX((uint32_t)INITIAL_CAPACITY, kGroupWidth));
+			_grow_entries(_entries_capacity_for(_capacity));
+		}
+	}
+
+	void _grow() {
+		const uint32_t new_capacity = _capacity == 0 ? MAX((uint32_t)INITIAL_CAPACITY, kGroupWidth) : (_capacity * 2);
+		_resize_table(new_capacity);
+		_grow_entries(_entries_capacity_for(_capacity));
+	}
+
+	// Insert with the assumption that p_key does not already exist.
+	uint32_t _insert_new(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
+		if (_growth_left == 0) {
+			_grow();
+		}
+		const uint32_t slot = _find_insert_slot(p_hash);
+		// If we picked a deleted slot, we don't lose growth (deleted slots do
+		// count against growth_left already through _deleted accounting).
+		const bool was_deleted = SwissTable::is_deleted(_ctrl[slot]);
+		_set_ctrl(slot, SwissTable::h2(p_hash));
+		const uint32_t element_idx = _size;
+		_slots[slot] = element_idx;
+		memnew_placement(&_elements[element_idx], KV(p_key, p_value));
 		_size++;
-		return _size - 1;
+		if (was_deleted) {
+			_deleted--;
+		}
+		_growth_left--;
+		return element_idx;
 	}
 
 	void _init_from(const AHashMap &p_other) {
-		_capacity_mask = p_other._capacity_mask;
-		uint32_t real_capacity = _capacity_mask + 1;
-		_size = p_other._size;
-
 		if (p_other._size == 0) {
 			return;
 		}
-
-		_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static(sizeof(Metadata) * real_capacity));
-		_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
-
+		_resize_table(p_other._capacity);
+		// Match the source's full entries-array capacity, not just its current
+		// size. The index table copied below was sized for `p_other._capacity`
+		// and still has growth_left slots available without rehashing; if we
+		// only allocate `p_other._size` entries here, subsequent inserts will
+		// happily write past the entries array before the next grow.
+		_grow_entries(MAX(p_other._size, _entries_capacity_for(_capacity)));
+		// Copy entries.
 		if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
-			void *destination = _elements;
-			const void *source = p_other._elements;
-			memcpy(destination, source, sizeof(MapKeyValue) * _size);
+			memcpy(static_cast<void *>(_elements), static_cast<const void *>(p_other._elements), sizeof(KV) * p_other._size);
 		} else {
-			for (uint32_t i = 0; i < _size; i++) {
-				memnew_placement(&_elements[i], MapKeyValue(p_other._elements[i]));
+			for (uint32_t i = 0; i < p_other._size; i++) {
+				memnew_placement(&_elements[i], KV(p_other._elements[i]));
 			}
 		}
-
-		memcpy(_metadata, p_other._metadata, sizeof(Metadata) * real_capacity);
+		_size = p_other._size;
+		// Copy ctrl table verbatim, including mirror bytes.
+		memcpy(_ctrl, p_other._ctrl, p_other._capacity + kGroupWidth);
+		memcpy(_slots, p_other._slots, sizeof(uint32_t) * p_other._capacity);
+		_growth_left = p_other._growth_left;
+		_deleted = p_other._deleted;
 	}
 
 public:
 	/* Standard Godot Container API */
 
-	_FORCE_INLINE_ uint32_t get_capacity() const { return _capacity_mask + 1; }
+	_FORCE_INLINE_ uint32_t get_capacity() const { return _capacity; }
 	_FORCE_INLINE_ uint32_t size() const { return _size; }
 
 	_FORCE_INLINE_ bool is_empty() const {
@@ -287,255 +342,223 @@ public:
 	}
 
 	void clear() {
-		if (_elements == nullptr || _size == 0) {
+		if (_capacity == 0 || _size == 0) {
 			return;
 		}
-
-		memset(_metadata, EMPTY_HASH, (_capacity_mask + 1) * sizeof(Metadata));
 		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
 			for (uint32_t i = 0; i < _size; i++) {
 				_elements[i].key.~TKey();
 				_elements[i].value.~TValue();
 			}
 		}
-
+		memset(_ctrl, SwissTable::kEmpty, _capacity + kGroupWidth);
 		_size = 0;
+		_deleted = 0;
+		_growth_left = SwissTable::capacity_to_growth(_capacity);
 	}
 
 	TValue &get(const TKey &p_key) {
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup(p_key, _hash(p_key), slot, element_idx);
 		CRASH_COND_MSG(!exists, "AHashMap key not found.");
 		return _elements[element_idx].value;
 	}
 
 	const TValue &get(const TKey &p_key) const {
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup(p_key, _hash(p_key), slot, element_idx);
 		CRASH_COND_MSG(!exists, "AHashMap key not found.");
 		return _elements[element_idx].value;
 	}
 
 	const TValue *getptr(const TKey &p_key) const {
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-
-		if (exists) {
+		if (_lookup(p_key, _hash(p_key), slot, element_idx)) {
 			return &_elements[element_idx].value;
 		}
 		return nullptr;
 	}
 
 	TValue *getptr(const TKey &p_key) {
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-
-		if (exists) {
+		if (_lookup(p_key, _hash(p_key), slot, element_idx)) {
 			return &_elements[element_idx].value;
 		}
 		return nullptr;
 	}
 
 	bool has(const TKey &p_key) const {
-		uint32_t _idx = 0;
-		uint32_t meta_idx = 0;
-		return _lookup_idx(p_key, _idx, meta_idx);
+		uint32_t slot = 0;
+		uint32_t element_idx = 0;
+		return _lookup(p_key, _hash(p_key), slot, element_idx);
 	}
 
 	bool erase(const TKey &p_key) {
-		uint32_t meta_idx = 0;
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-
-		if (!exists) {
+		if (!_lookup(p_key, _hash(p_key), slot, element_idx)) {
 			return false;
 		}
-
-		uint32_t next_meta_idx = (meta_idx + 1) & _capacity_mask;
-		while (_metadata[next_meta_idx].hash != EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
-			SWAP(_metadata[next_meta_idx], _metadata[meta_idx]);
-
-			meta_idx = next_meta_idx;
-			next_meta_idx = (next_meta_idx + 1) & _capacity_mask;
+		const uint8_t new_ctrl = _ctrl_after_erase(slot);
+		if (new_ctrl == SwissTable::kEmpty) {
+			_growth_left++;
+		} else {
+			_deleted++;
 		}
+		_set_ctrl(slot, new_ctrl);
 
-		_metadata[meta_idx].hash = EMPTY_HASH;
+		// Destroy the element.
 		_elements[element_idx].key.~TKey();
 		_elements[element_idx].value.~TValue();
 		_size--;
 
+		// Swap-with-tail to keep entries dense. We need to update the moved
+		// entry's slot mapping BEFORE doing the actual move, because a
+		// post-move lookup would find the slot but read the (now-garbage)
+		// data at the old tail index when comparing keys.
 		if (element_idx < _size) {
-			memcpy((void *)&_elements[element_idx], (const void *)&_elements[_size], sizeof(MapKeyValue));
-			uint32_t moved_element_idx = 0;
-			uint32_t moved_meta_idx = 0;
-			_lookup_idx(_elements[_size].key, moved_element_idx, moved_meta_idx);
-			_metadata[moved_meta_idx].element_idx = element_idx;
+			uint32_t moved_slot = 0;
+			uint32_t moved_idx = 0;
+			bool found = _lookup(_elements[_size].key, _hash(_elements[_size].key), moved_slot, moved_idx);
+			(void)found;
+			DEV_ASSERT(found && moved_idx == _size);
+			_slots[moved_slot] = element_idx;
+			memcpy(static_cast<void *>(&_elements[element_idx]), static_cast<const void *>(&_elements[_size]), sizeof(KV));
 		}
 
 		return true;
 	}
 
-	// Replace the key of an entry in-place, without invalidating iterators or changing the entries position during iteration.
-	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
+	// Replace the key of an entry in-place, without invalidating its index in
+	// the entries array. p_old_key must exist; p_new_key must not unless equal
+	// to p_old_key.
 	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
 		if (p_old_key == p_new_key) {
 			return true;
 		}
-		uint32_t meta_idx = 0;
+		uint32_t old_slot = 0;
 		uint32_t element_idx = 0;
-		ERR_FAIL_COND_V(_lookup_idx(p_new_key, element_idx, meta_idx), false);
-		ERR_FAIL_COND_V(!_lookup_idx(p_old_key, element_idx, meta_idx), false);
-		MapKeyValue &element = _elements[element_idx];
-		const_cast<TKey &>(element.key) = p_new_key;
+		ERR_FAIL_COND_V(!_lookup(p_old_key, _hash(p_old_key), old_slot, element_idx), false);
+		uint32_t new_slot_check = 0;
+		uint32_t check_idx = 0;
+		ERR_FAIL_COND_V(_lookup(p_new_key, _hash(p_new_key), new_slot_check, check_idx), false);
 
-		uint32_t next_meta_idx = (meta_idx + 1) & _capacity_mask;
-		while (_metadata[next_meta_idx].hash != EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
-			SWAP(_metadata[next_meta_idx], _metadata[meta_idx]);
-
-			meta_idx = next_meta_idx;
-			next_meta_idx = (next_meta_idx + 1) & _capacity_mask;
+		const uint8_t new_ctrl = _ctrl_after_erase(old_slot);
+		if (new_ctrl == SwissTable::kEmpty) {
+			_growth_left++;
+		} else {
+			_deleted++;
 		}
+		_set_ctrl(old_slot, new_ctrl);
 
-		_metadata[meta_idx].hash = EMPTY_HASH;
+		// Mutate the key in place.
+		const_cast<TKey &>(_elements[element_idx].key) = p_new_key;
 
-		uint32_t hash = _hash(p_new_key);
-		_insert_metadata(hash, element_idx);
+		// Insert into the new position. We may need to grow if the deleted slot
+		// converted to empty consumed our growth budget; check growth_left.
+		if (_growth_left == 0) {
+			_grow();
+		}
+		const uint32_t new_hash = _hash(p_new_key);
+		const uint32_t slot = _find_insert_slot(new_hash);
+		const bool was_deleted = SwissTable::is_deleted(_ctrl[slot]);
+		_set_ctrl(slot, SwissTable::h2(new_hash));
+		_slots[slot] = element_idx;
+		if (was_deleted) {
+			_deleted--;
+		}
+		_growth_left--;
 
 		return true;
 	}
 
-	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
-	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
 	void reserve(uint32_t p_new_capacity) {
-		if (_elements == nullptr) {
-			_capacity_mask = MAX(4u, p_new_capacity);
-			_capacity_mask = Math::next_power_of_2(_capacity_mask) - 1;
-			return; // Unallocated yet.
-		}
-		if (p_new_capacity <= get_capacity()) {
-			if (p_new_capacity < size()) {
+		if (p_new_capacity <= _entries_capacity_for(_capacity)) {
+			if (_capacity != 0 && p_new_capacity < _size) {
 				WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 			}
 			return;
 		}
-		_resize_and_rehash(p_new_capacity);
+		// Choose smallest power-of-two index capacity that fits p_new_capacity
+		// elements at 7/8 load factor.
+		uint32_t needed_index_capacity = SwissTable::growth_to_lower_bound_capacity(p_new_capacity);
+		uint32_t cap = _round_up_capacity(needed_index_capacity);
+		_resize_table(cap);
+		_grow_entries(MAX(p_new_capacity, _entries_capacity_for(_capacity)));
 	}
 
 	/** Iterator API **/
 
 	struct ConstIterator {
-		_FORCE_INLINE_ const MapKeyValue &operator*() const {
-			return *pair;
-		}
-		_FORCE_INLINE_ const MapKeyValue *operator->() const {
-			return pair;
-		}
+		_FORCE_INLINE_ const KV &operator*() const { return *pair; }
+		_FORCE_INLINE_ const KV *operator->() const { return pair; }
 		_FORCE_INLINE_ ConstIterator &operator++() {
 			pair++;
 			return *this;
 		}
-
 		_FORCE_INLINE_ ConstIterator &operator--() {
 			pair--;
-			if (pair < begin) {
-				pair = end;
+			if (pair < begin_ptr) {
+				pair = end_ptr;
 			}
 			return *this;
 		}
-
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return pair == b.pair; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return pair != b.pair; }
+		_FORCE_INLINE_ explicit operator bool() const { return pair != end_ptr; }
 
-		_FORCE_INLINE_ explicit operator bool() const {
-			return pair != end;
-		}
-
-		_FORCE_INLINE_ ConstIterator(MapKeyValue *p_key, MapKeyValue *p_begin, MapKeyValue *p_end) {
-			pair = p_key;
-			begin = p_begin;
-			end = p_end;
-		}
+		_FORCE_INLINE_ ConstIterator(const KV *p_pair, const KV *p_begin, const KV *p_end) :
+				pair(p_pair), begin_ptr(p_begin), end_ptr(p_end) {}
 		_FORCE_INLINE_ ConstIterator() {}
-		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) {
-			pair = p_it.pair;
-			begin = p_it.begin;
-			end = p_it.end;
-		}
-		_FORCE_INLINE_ void operator=(const ConstIterator &p_it) {
-			pair = p_it.pair;
-			begin = p_it.begin;
-			end = p_it.end;
-		}
+		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) = default;
+		_FORCE_INLINE_ ConstIterator &operator=(const ConstIterator &p_it) = default;
 
 	private:
-		MapKeyValue *pair = nullptr;
-		MapKeyValue *begin = nullptr;
-		MapKeyValue *end = nullptr;
+		const KV *pair = nullptr;
+		const KV *begin_ptr = nullptr;
+		const KV *end_ptr = nullptr;
 	};
 
 	struct Iterator {
-		_FORCE_INLINE_ MapKeyValue &operator*() const {
-			return *pair;
-		}
-		_FORCE_INLINE_ MapKeyValue *operator->() const {
-			return pair;
-		}
+		_FORCE_INLINE_ KV &operator*() const { return *pair; }
+		_FORCE_INLINE_ KV *operator->() const { return pair; }
 		_FORCE_INLINE_ Iterator &operator++() {
 			pair++;
 			return *this;
 		}
 		_FORCE_INLINE_ Iterator &operator--() {
 			pair--;
-			if (pair < begin) {
-				pair = end;
+			if (pair < begin_ptr) {
+				pair = end_ptr;
 			}
 			return *this;
 		}
-
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return pair == b.pair; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return pair != b.pair; }
+		_FORCE_INLINE_ explicit operator bool() const { return pair != end_ptr; }
 
-		_FORCE_INLINE_ explicit operator bool() const {
-			return pair != end;
-		}
-
-		_FORCE_INLINE_ Iterator(MapKeyValue *p_key, MapKeyValue *p_begin, MapKeyValue *p_end) {
-			pair = p_key;
-			begin = p_begin;
-			end = p_end;
-		}
+		_FORCE_INLINE_ Iterator(KV *p_pair, KV *p_begin, KV *p_end) :
+				pair(p_pair), begin_ptr(p_begin), end_ptr(p_end) {}
 		_FORCE_INLINE_ Iterator() {}
-		_FORCE_INLINE_ Iterator(const Iterator &p_it) {
-			pair = p_it.pair;
-			begin = p_it.begin;
-			end = p_it.end;
-		}
-		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
-			pair = p_it.pair;
-			begin = p_it.begin;
-			end = p_it.end;
-		}
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) = default;
+		_FORCE_INLINE_ Iterator &operator=(const Iterator &p_it) = default;
 
 		operator ConstIterator() const {
-			return ConstIterator(pair, begin, end);
+			return ConstIterator(pair, begin_ptr, end_ptr);
 		}
 
 	private:
-		MapKeyValue *pair = nullptr;
-		MapKeyValue *begin = nullptr;
-		MapKeyValue *end = nullptr;
+		KV *pair = nullptr;
+		KV *begin_ptr = nullptr;
+		KV *end_ptr = nullptr;
 	};
 
-	_FORCE_INLINE_ Iterator begin() {
-		return Iterator(_elements, _elements, _elements + _size);
-	}
-	_FORCE_INLINE_ Iterator end() {
-		return Iterator(_elements + _size, _elements, _elements + _size);
-	}
+	_FORCE_INLINE_ Iterator begin() { return Iterator(_elements, _elements, _elements + _size); }
+	_FORCE_INLINE_ Iterator end() { return Iterator(_elements + _size, _elements, _elements + _size); }
 	_FORCE_INLINE_ Iterator last() {
 		if (unlikely(_size == 0)) {
 			return Iterator(nullptr, nullptr, nullptr);
@@ -544,10 +567,9 @@ public:
 	}
 
 	Iterator find(const TKey &p_key) {
-		uint32_t meta_idx = 0;
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		if (!exists) {
+		if (!_lookup(p_key, _hash(p_key), slot, element_idx)) {
 			return end();
 		}
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
@@ -559,12 +581,8 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ ConstIterator begin() const {
-		return ConstIterator(_elements, _elements, _elements + _size);
-	}
-	_FORCE_INLINE_ ConstIterator end() const {
-		return ConstIterator(_elements + _size, _elements, _elements + _size);
-	}
+	_FORCE_INLINE_ ConstIterator begin() const { return ConstIterator(_elements, _elements, _elements + _size); }
+	_FORCE_INLINE_ ConstIterator end() const { return ConstIterator(_elements + _size, _elements, _elements + _size); }
 	_FORCE_INLINE_ ConstIterator last() const {
 		if (unlikely(_size == 0)) {
 			return ConstIterator(nullptr, nullptr, nullptr);
@@ -573,10 +591,9 @@ public:
 	}
 
 	ConstIterator find(const TKey &p_key) const {
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		if (!exists) {
+		if (!_lookup(p_key, _hash(p_key), slot, element_idx)) {
 			return end();
 		}
 		return ConstIterator(_elements + element_idx, _elements, _elements + _size);
@@ -585,76 +602,73 @@ public:
 	/* Indexing */
 
 	const TValue &operator[](const TKey &p_key) const {
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
+		bool exists = _lookup(p_key, _hash(p_key), slot, element_idx);
 		CRASH_COND(!exists);
 		return _elements[element_idx].value;
 	}
 
 	TValue &operator[](const TKey &p_key) {
+		const uint32_t hash = _hash(p_key);
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
-
-		if (exists) {
-			return _elements[element_idx].value;
-		} else {
-			element_idx = _insert_element(p_key, TValue(), hash);
+		if (_capacity != 0 && _lookup(p_key, hash, slot, element_idx)) {
 			return _elements[element_idx].value;
 		}
+		_ensure_allocated();
+		element_idx = _insert_new(p_key, TValue(), hash);
+		return _elements[element_idx].value;
 	}
 
 	/* Insert */
 
 	Iterator insert(const TKey &p_key, const TValue &p_value) {
+		const uint32_t hash = _hash(p_key);
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
-
-		if (!exists) {
-			element_idx = _insert_element(p_key, p_value, hash);
-		} else {
+		if (_capacity != 0 && _lookup(p_key, hash, slot, element_idx)) {
 			_elements[element_idx].value = p_value;
+			return Iterator(_elements + element_idx, _elements, _elements + _size);
 		}
+		_ensure_allocated();
+		element_idx = _insert_new(p_key, p_value, hash);
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
 	}
 
 	// Inserts an element without checking if it already exists.
 	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
 		DEV_ASSERT(!has(p_key));
-		uint32_t hash = _hash(p_key);
-		uint32_t element_idx = _insert_element(p_key, p_value, hash);
+		_ensure_allocated();
+		const uint32_t element_idx = _insert_new(p_key, p_value, _hash(p_key));
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
 	}
 
 	/* Array methods. */
 
-	// Unsafe. Changing keys and going outside the bounds of an array can lead to undefined behavior.
-	KeyValue<TKey, TValue> *get_elements_ptr() {
+	// Unsafe. Pointer is invalidated by any reserve/insert that grows the
+	// entries array, and by erases that swap with the tail.
+	KV *get_elements_ptr() {
 		return _elements;
 	}
 
 	// Returns the element index. If not found, returns -1.
 	int get_index(const TKey &p_key) {
+		uint32_t slot = 0;
 		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		if (!exists) {
+		if (!_lookup(p_key, _hash(p_key), slot, element_idx)) {
 			return -1;
 		}
-		return element_idx;
+		return static_cast<int>(element_idx);
 	}
 
-	KeyValue<TKey, TValue> &get_by_index(uint32_t p_index) {
+	KV &get_by_index(uint32_t p_index) {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, _size);
 		return _elements[p_index];
 	}
 
 	bool erase_by_index(uint32_t p_index) {
-		if (p_index >= size()) {
+		if (p_index >= _size) {
 			return false;
 		}
 		return erase(_elements[p_index].key);
@@ -663,15 +677,25 @@ public:
 	/* Constructors */
 
 	AHashMap(AHashMap &&p_other) {
+		_ctrl = p_other._ctrl;
+		_slots = p_other._slots;
 		_elements = p_other._elements;
-		_metadata = p_other._metadata;
+		_elements_capacity = p_other._elements_capacity;
+		_capacity = p_other._capacity;
 		_capacity_mask = p_other._capacity_mask;
 		_size = p_other._size;
+		_growth_left = p_other._growth_left;
+		_deleted = p_other._deleted;
 
+		p_other._ctrl = nullptr;
+		p_other._slots = nullptr;
 		p_other._elements = nullptr;
-		p_other._metadata = nullptr;
+		p_other._elements_capacity = 0;
+		p_other._capacity = 0;
 		p_other._capacity_mask = 0;
 		p_other._size = 0;
+		p_other._growth_left = 0;
+		p_other._deleted = 0;
 	}
 
 	explicit AHashMap(const AHashMap &p_other) {
@@ -680,26 +704,21 @@ public:
 
 	void operator=(const AHashMap &p_other) {
 		if (this == &p_other) {
-			return; // Ignore self assignment.
+			return;
 		}
-
 		reset();
-
 		_init_from(p_other);
 	}
 
 	AHashMap(uint32_t p_initial_capacity) {
-		// Capacity can't be 0 and must be 2^n - 1.
-		_capacity_mask = MAX(4u, p_initial_capacity);
-		_capacity_mask = Math::next_power_of_2(_capacity_mask) - 1;
-	}
-	AHashMap() :
-			_capacity_mask(INITIAL_CAPACITY - 1) {
+		reserve(p_initial_capacity);
 	}
 
-	AHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+	AHashMap() {}
+
+	AHashMap(std::initializer_list<KV> p_init) {
 		reserve(p_init.size());
-		for (const KeyValue<TKey, TValue> &E : p_init) {
+		for (const KV &E : p_init) {
 			insert(E.key, E.value);
 		}
 	}
@@ -713,11 +732,20 @@ public:
 				}
 			}
 			Memory::free_static(_elements);
-			Memory::free_static(_metadata);
 			_elements = nullptr;
+			_elements_capacity = 0;
 		}
-		_capacity_mask = INITIAL_CAPACITY - 1;
+		if (_ctrl != nullptr) {
+			Memory::free_static(_ctrl);
+			Memory::free_static(_slots);
+			_ctrl = nullptr;
+			_slots = nullptr;
+		}
+		_capacity = 0;
+		_capacity_mask = 0;
 		_size = 0;
+		_growth_left = 0;
+		_deleted = 0;
 	}
 
 	~AHashMap() {
