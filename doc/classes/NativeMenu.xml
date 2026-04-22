@@ -377,6 +377,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="get_search_bar_enabled_on_item_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns the minimum item count that enables the menu search bar.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="rid" type="RID" />
@@ -737,6 +745,16 @@
 			<param index="1" name="callback" type="Callable" />
 			<description>
 				Registers callable to emit after the menu is closed.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_search_bar_enabled_on_item_count">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="count" type="int" />
+			<description>
+				Sets the minimum item count that enables the menu search bar.
+				[b]Note:[/b] The search bar is not supported by the Application, Window, Help, and Dock menus.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>

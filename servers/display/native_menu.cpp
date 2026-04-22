@@ -60,6 +60,9 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minimum_width", "rid", "width"), &NativeMenu::set_minimum_width);
 	ClassDB::bind_method(D_METHOD("get_minimum_width", "rid"), &NativeMenu::get_minimum_width);
 
+	ClassDB::bind_method(D_METHOD("set_search_bar_enabled_on_item_count", "rid", "count"), &NativeMenu::set_search_bar_enabled_on_item_count);
+	ClassDB::bind_method(D_METHOD("get_search_bar_enabled_on_item_count", "rid"), &NativeMenu::get_search_bar_enabled_on_item_count);
+
 	ClassDB::bind_method(D_METHOD("is_opened", "rid"), &NativeMenu::is_opened);
 
 	ClassDB::bind_method(D_METHOD("add_submenu_item", "rid", "label", "submenu_rid", "tag", "index"), &NativeMenu::add_submenu_item, DEFVAL(Variant()), DEFVAL(-1));
@@ -228,6 +231,15 @@ void NativeMenu::set_minimum_width(const RID &p_rid, float p_width) {
 float NativeMenu::get_minimum_width(const RID &p_rid) const {
 	WARN_PRINT("Global menus are not supported on this platform.");
 	return 0.f;
+}
+
+void NativeMenu::set_search_bar_enabled_on_item_count(const RID &p_rid, int p_count) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+int NativeMenu::get_search_bar_enabled_on_item_count(const RID &p_rid) const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return 0;
 }
 
 int NativeMenu::add_submenu_item(const RID &p_rid, const String &p_label, const RID &p_submenu_rid, const Variant &p_tag, int p_index) {
