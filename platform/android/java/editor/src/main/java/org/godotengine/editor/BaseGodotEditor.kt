@@ -256,7 +256,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Skip permissions request if running in a device farm (e.g. firebase test lab) or if requested via the launch
 		// intent (e.g. instrumentation tests).
-		val skipPermissionsRequest = isRunningInInstrumentation() || ActivityManager.isRunningInUserTestHarness()
+		val skipPermissionsRequest = isRunningInInstrumentation() ||
+			Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()
 		if (!skipPermissionsRequest) {
 			// We exclude certain permissions from the set we request at startup, as they'll be
 			// requested on demand based on use cases.
@@ -804,7 +805,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			}
 
 			PermissionsUtil.REQUEST_INSTALL_PACKAGES_REQ_CODE -> {
-				if (!packageManager.canRequestPackageInstalls()) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
 					Toast.makeText(
 						this,
 						R.string.denied_install_packages_permission_error_msg,
