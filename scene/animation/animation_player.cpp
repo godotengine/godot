@@ -1067,8 +1067,8 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-4,4,0.001,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_quit_on_finish"), "set_movie_quit_on_finish_enabled", "is_movie_quit_on_finish_enabled");
 
-	ADD_SIGNAL(MethodInfo(SNAME("current_animation_changed"), PropertyInfo(Variant::STRING_NAME, "name")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_changed"), PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
+	ADD_SIGNAL(MethodInfo("current_animation_changed", PropertyInfo(Variant::STRING_NAME, "name")));
+	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 }
 
 AnimationPlayer::AnimationPlayer() {

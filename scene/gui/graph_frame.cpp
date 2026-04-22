@@ -199,7 +199,7 @@ void GraphFrame::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 
-	ADD_SIGNAL(MethodInfo(SNAME("autoshrink_changed")));
+	ADD_SIGNAL(MethodInfo("autoshrink_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel_selected);
