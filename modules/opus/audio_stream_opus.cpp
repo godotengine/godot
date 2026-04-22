@@ -119,6 +119,10 @@ void AudioStreamPlaybackOpus::seek(double p_time) {
 }
 
 AudioStreamPlaybackOpus::~AudioStreamPlaybackOpus() {
+	if (opus_file) {
+		op_free(opus_file);
+		opus_file = nullptr;
+	}
 }
 
 Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
