@@ -176,7 +176,4 @@ public:
 		return true;
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
-
-	AudioStreamOggVorbis();
-	virtual ~AudioStreamOggVorbis();
 };

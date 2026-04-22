@@ -146,7 +146,4 @@ public:
 	virtual Ref<AudioSample> generate_sample() const override;
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
-
-	AudioStreamMP3();
-	virtual ~AudioStreamMP3();
 };
