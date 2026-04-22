@@ -165,7 +165,7 @@ void ShaderCreateDialog::_create_new() {
 		if (is_built_in) {
 			Node *edited_scene = get_tree()->get_edited_scene_root();
 			if (likely(edited_scene)) {
-				shader->set_path(edited_scene->get_scene_file_path() + "::" + shader->generate_scene_unique_id());
+				EditorNode::setup_built_in_resource(shader, edited_scene->get_scene_file_path());
 			}
 		} else {
 			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());

@@ -630,15 +630,15 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				obj = EditorNode::get_editor_data().instantiate_custom_type(intype, "Resource");
 			}
 
-			Resource *resp = Object::cast_to<Resource>(obj);
-			ERR_BREAK(!resp);
-			resp->set_path(_get_owner_path() + "::" + resp->generate_scene_unique_id()); // Assign a base path for built-in Resources.
+			Ref<Resource> resp(obj);
+			ERR_BREAK(resp.is_null());
+			EditorNode::setup_built_in_resource(resp, _get_owner_path()); // Assign a base path for built-in Resources.
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
 			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
 			Ref<Resource> old_edited_resource = edited_resource;
-			edited_resource = Ref<Resource>(resp);
+			edited_resource = resp;
 			_resource_changed();
 		} break;
 	}

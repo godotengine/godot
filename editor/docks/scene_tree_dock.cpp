@@ -2664,7 +2664,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	}
 
 	if (p_script->is_built_in()) {
-		p_script->set_path(edited_scene->get_scene_file_path() + "::" + p_script->generate_scene_unique_id());
+		EditorNode::setup_built_in_resource(p_script, edited_scene->get_scene_file_path());
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
