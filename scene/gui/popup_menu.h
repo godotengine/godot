@@ -41,9 +41,12 @@ class PanelContainer;
 class VBoxContainer;
 class LineEdit;
 class Timer;
+class PopupMenuItems;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
+
+	friend class PopupMenuItems;
 
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
@@ -187,7 +190,7 @@ class PopupMenu : public Popup {
 	VBoxContainer *vbox_container = nullptr;
 	LineEdit *search_bar = nullptr;
 	ScrollContainer *scroll_container = nullptr;
-	Control *control = nullptr;
+	PopupMenuItems *control = nullptr;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
@@ -243,8 +246,9 @@ class PopupMenu : public Popup {
 
 	void _draw_items();
 	void _update_search_bar_visibility();
-	void _search_bar_input(const Ref<InputEvent> &p_event);
+	void _items_focus_entered();
 	void _search_bar_text_changed(const String &p_new_text);
+	void _search_bar_focus_entered();
 	void _filter_items(const String &p_query);
 
 	void _close_pressed();
@@ -453,4 +457,16 @@ public:
 
 	PopupMenu();
 	~PopupMenu();
+};
+
+class PopupMenuItems : public Control {
+	GDCLASS(PopupMenuItems, Control);
+
+	PopupMenu *popup = nullptr;
+
+public:
+	PopupMenuItems(PopupMenu *p_popup) : popup(p_popup) {}
+
+	virtual RID get_focused_accessibility_element() const override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 };
