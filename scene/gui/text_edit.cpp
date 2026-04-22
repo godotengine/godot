@@ -3459,16 +3459,8 @@ void TextEdit::_update_ime_window_position() {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
-
-	const int caret_index = 0;
-	const int caret_line = get_caret_line(caret_index);
-	const int caret_wrap_index = get_caret_wrap_index(caret_index);
-	const Ref<TextParagraph> ldata = text.get_line_data(caret_line);
-	const RID text_rid = ldata->get_line_rid(caret_wrap_index);
-	const float text_height = TS->shaped_text_get_size(text_rid).y;
-	const Point2 caret_draw_pos = get_caret_draw_pos(caret_index);
-
-	Point2 pos = get_global_position() + Point2(caret_draw_pos.x, caret_draw_pos.y - text_height);
+	Point2 pos = get_global_position() + get_caret_draw_pos();
+	pos.y -= TS->shaped_text_get_size(text.get_line_data(get_caret_line())->get_line_rid(get_caret_wrap_index())).y;
 	if (get_window()->get_embedder()) {
 		pos += get_viewport()->get_popup_base_transform().get_origin();
 	}
