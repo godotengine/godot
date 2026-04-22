@@ -90,9 +90,9 @@ class AudioStreamOpus : public AudioStream {
 
 	void *data = nullptr;
 	uint32_t data_len = 0;
-	float length = 0;
+	double length = 0;
 	bool loop = false;
-	float loop_offset = 0;
+	double loop_offset = 0;
 	void clear_data();
 
 	double bpm = 0;
@@ -110,8 +110,8 @@ public:
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
 
-	void set_loop_offset(float p_seconds);
-	float get_loop_offset() const;
+	void set_loop_offset(double p_seconds);
+	double get_loop_offset() const;
 
 	void set_bpm(double p_bpm);
 	virtual double get_bpm() const override;
