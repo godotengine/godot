@@ -2036,7 +2036,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	if (add_options) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options->push_back(E.key.string().quote());
 		}
 	}
 	MainLoop::get_argument_options(p_function, p_idx, r_options);

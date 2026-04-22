@@ -1831,7 +1831,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 		::ClassDB::get_class_list(classes);
 		for (const StringName &E : classes) {
 			if (::ClassDB::is_class_exposed(E)) {
-				r_options->push_back(E.operator String().quote());
+				r_options->push_back(E.string().quote());
 			}
 		}
 	}

@@ -1553,7 +1553,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			// Optimized version of the code below:
 			// String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
 			uint32_t c = node_hrcr_count.get();
-			String cn = p_child->get_class_name().operator String();
+			String cn = p_child->get_class_name().string();
 			const char32_t *cn_ptr = cn.ptr();
 			uint32_t cn_length = cn.length();
 			uint32_t c_chars = String::num_characters(c);
@@ -1996,7 +1996,7 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
-		if (cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (cptr[i]->data.name.string().match(p_pattern)) {
 			return cptr[i];
 		}
 
@@ -2027,7 +2027,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			continue;
 		}
 
-		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (p_pattern.is_empty() || cptr[i]->data.name.string().match(p_pattern)) {
 			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
 				ret.append(cptr[i]);
 			} else if (cptr[i]->get_script_instance()) {
@@ -2105,7 +2105,7 @@ Node *Node::find_parent(const String &p_pattern) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *p = data.parent;
 	while (p) {
-		if (p->data.name.operator String().match(p_pattern)) {
+		if (p->data.name.string().match(p_pattern)) {
 			return p;
 		}
 		p = p->data.parent;
@@ -2223,7 +2223,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
 		return; // Ignore.
@@ -2233,7 +2233,7 @@ void Node::_release_unique_name_in_owner() {
 
 void Node::_acquire_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = String(is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which));
@@ -3493,7 +3493,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options->push_back(E.key.string().quote());
 		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);

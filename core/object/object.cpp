@@ -276,9 +276,9 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 				*r_valid = true;
 			}
 			return;
-		} else if (p_name.operator String().begins_with("metadata/")) {
+		} else if (p_name.string().begins_with("metadata/")) {
 			// Must exist, otherwise duplicate() will not work.
-			set_meta(p_name.operator String().replace_first("metadata/", ""), p_value);
+			set_meta(p_name.string().replace_first("metadata/", ""), p_value);
 			if (r_valid) {
 				*r_valid = true;
 			}
@@ -522,7 +522,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	for (const KeyValue<StringName, Variant> &K : metadata) {
-		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.operator String());
+		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.string());
 		if (K.value.get_type() == Variant::OBJECT) {
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			Object *obj = K.value;
@@ -1033,7 +1033,7 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (E) {
 		E->value = p_value;
 	} else {
-		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_ascii_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
+		ERR_FAIL_COND_MSG(!p_name.string().is_valid_ascii_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 
 		const String &sname = p_name;

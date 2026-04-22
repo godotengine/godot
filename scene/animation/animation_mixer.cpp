@@ -302,9 +302,9 @@ Error AnimationMixer::add_animation_library(const StringName &p_name, const Ref<
 
 	for (const AnimationLibraryData &lib : animation_libraries) {
 		ERR_FAIL_COND_V_MSG(lib.name == p_name, ERR_ALREADY_EXISTS, "Can't add animation library twice with name: " + String(p_name));
-		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.operator String() + "', exists as '" + lib.name.operator String() + "'.");
+		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.string() + "', exists as '" + lib.name.string() + "'.");
 
-		if (lib.name.operator String() >= p_name.operator String()) {
+		if (lib.name.string() >= p_name.string()) {
 			break;
 		}
 

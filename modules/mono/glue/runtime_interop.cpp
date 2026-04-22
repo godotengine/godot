@@ -391,7 +391,7 @@ void godotsharp_node_path_new_from_string(NodePath *r_dest, const String *p_name
 }
 
 void godotsharp_string_name_as_string(String *r_dest, const StringName *p_name) {
-	memnew_placement(r_dest, String(p_name->operator String()));
+	memnew_placement(r_dest, String(p_name->string()));
 }
 
 void godotsharp_node_path_as_string(String *r_dest, const NodePath *p_np) {

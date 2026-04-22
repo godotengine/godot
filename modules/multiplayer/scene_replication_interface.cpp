@@ -520,7 +520,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 
 	// Encode scene ID, path ID, net ID, node name.
 	int path_id = multiplayer_cache->make_object_cache(p_spawner);
-	CharString cname = p_node->get_name().operator String().utf8();
+	CharString cname = p_node->get_name().string().utf8();
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 1 + 4 + 4 + 4 + 4 * sync_ids.size() + 4 + nlen + (is_custom ? 4 + spawn_arg_size : 0) + state_size);
 	uint8_t *ptr = packet_cache.ptrw();

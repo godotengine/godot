@@ -80,7 +80,7 @@ void ResourcePreloader::add_resource(const StringName &p_name, const Ref<Resourc
 		int idx = 2;
 
 		while (true) {
-			new_name = p_name.operator String() + " " + itos(idx);
+			new_name = p_name.string() + " " + itos(idx);
 			if (resources.has(new_name)) {
 				idx++;
 				continue;
