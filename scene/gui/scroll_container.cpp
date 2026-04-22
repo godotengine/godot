@@ -910,6 +910,14 @@ bool ScrollContainer::is_scroll_hint_tiled() {
 	return tile_scroll_hint;
 }
 
+bool ScrollContainer::is_allowing_focus_shadow() const {
+	return allow_focus_shadow;
+}
+
+void ScrollContainer::set_allow_focus_shadow(bool p_allow) {
+	allow_focus_shadow = p_allow;
+}
+
 bool ScrollContainer::is_following_focus() const {
 	return follow_focus;
 }
@@ -982,6 +990,9 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tile_scroll_hint", "tile_scroll_hint"), &ScrollContainer::set_tile_scroll_hint);
 	ClassDB::bind_method(D_METHOD("is_scroll_hint_tiled"), &ScrollContainer::is_scroll_hint_tiled);
 
+	ClassDB::bind_method(D_METHOD("set_allow_focus_shadow", "enabled"), &ScrollContainer::set_allow_focus_shadow);
+	ClassDB::bind_method(D_METHOD("is_allowing_focus_shadow"), &ScrollContainer::is_allowing_focus_shadow);
+
 	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
 	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
 
@@ -995,6 +1006,7 @@ void ScrollContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_focus_shadow"), "set_allow_focus_shadow", "is_allowing_focus_shadow");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_focus_border"), "set_draw_focus_border", "get_draw_focus_border");
 
