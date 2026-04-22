@@ -136,7 +136,16 @@ void LineEdit::_update_ime_window_position() {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
-	Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
+
+	Ref<StyleBox> style = theme_cache.normal;
+	if (!is_editable()) {
+		style = theme_cache.read_only;
+	}
+	const float text_height = TS->shaped_text_get_size(text_rid).y;
+	const int y_area = get_size().y - style->get_minimum_size().height;
+	const float text_top = style->get_offset().y + (y_area - text_height) / 2.0f;
+	const Vector2 caret_pixel_pos = get_caret_pixel_pos();
+	Point2 pos = Point2(caret_pixel_pos.x, text_top) + get_global_position();
 	if (get_window()->get_embedder()) {
 		pos += get_viewport()->get_popup_base_transform().get_origin();
 	}
