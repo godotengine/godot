@@ -5661,7 +5661,10 @@ void GDScriptAnalyzer::reduce_type_test(GDScriptParser::TypeTestNode *p_type_tes
 	}
 
 	if (!is_type_compatible(test_type, operand_type) && !is_type_compatible(operand_type, test_type)) {
-		if (operand_type.is_hard_type()) {
+
+		if (operand_type.kind == GDScriptParser::DataType::GENERIC_TYPE) {
+			/// do nothing :fire: because T is unknown at compile-time
+		} else if (operand_type.is_hard_type()) {
 			push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", operand_type.to_string(), test_type.to_string()), p_type_test->operand);
 		} else {
 			downgrade_node_type_source(p_type_test->operand);
