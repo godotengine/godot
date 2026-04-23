@@ -172,7 +172,7 @@ AudioStreamPlaybackOpus::~AudioStreamPlaybackOpus() {
 Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
 	Ref<AudioStreamPlaybackOpus> opus;
 
-	ERR_FAIL_COND_V_MSG(data == nullptr, nullptr,
+	ERR_FAIL_COND_V_MSG(data.is_empty(), nullptr,
 			"This AudioStreamOpus does not have an audio file assigned "
 			"to it. AudioStreamOpus should not be created from the "
 			"inspector or with `.new()`. Instead, load an audio file.");
@@ -183,7 +183,7 @@ Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
 	opus->active = false;
 	opus->loops = 0;
 
-	opus->opus_file = op_open_memory((const unsigned char *)data, data_len, nullptr);
+	opus->opus_file = op_open_memory(data.ptr(), data_len, nullptr);
 	ERR_FAIL_COND_V(!opus->opus_file, Ref<AudioStreamPlaybackOpus>());
 
 	return opus;
@@ -194,11 +194,8 @@ String AudioStreamOpus::get_stream_name() const {
 }
 
 void AudioStreamOpus::clear_data() {
-	if (data) {
-		memfree(data);
-		data = nullptr;
-		data_len = 0;
-	}
+	data.clear();
+	data_len = 0;
 }
 
 void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
@@ -238,27 +235,13 @@ void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
 	// Close file
 	op_free(opus_file);
 
-	// Clear existing data
-	clear_data();
-
 	// Copy data
-	data = memalloc(src_data_len);
-	memcpy(data, src_datar, src_data_len);
+	data = p_data;
 	data_len = src_data_len;
 }
 
 Vector<uint8_t> AudioStreamOpus::get_data() const {
-	Vector<uint8_t> vdata;
-
-	if (data_len && data) {
-		vdata.resize(data_len);
-		{
-			uint8_t *w = vdata.ptrw();
-			memcpy(w, data, data_len);
-		}
-	}
-
-	return vdata;
+	return Vector<uint8_t>(data);
 }
 
 void AudioStreamOpus::set_loop(bool p_enable) {
