@@ -159,8 +159,31 @@ struct BitMask {
 #endif
 	}
 
+	static _FORCE_INLINE_ uint32_t clz64(uint64_t v) {
+#if defined(__GNUC__) || defined(__clang__)
+		return static_cast<uint32_t>(__builtin_clzll(v));
+#elif defined(_MSC_VER)
+		unsigned long idx;
+		_BitScanReverse64(&idx, v);
+		return static_cast<uint32_t>(63 - idx);
+#else
+		uint32_t result = 0;
+		while ((v & (1ULL << 63)) == 0) {
+			v <<= 1;
+			++result;
+		}
+		return result;
+#endif
+	}
+
 	_FORCE_INLINE_ uint32_t lowest_set_bit() const {
 		return ctz64(mask) >> Shift;
+	}
+
+	// Slot index of the highest set match in the mask. Caller must ensure
+	// mask != 0. Symmetric to lowest_set_bit but walks from the top.
+	_FORCE_INLINE_ uint32_t highest_set_bit() const {
+		return (63u - clz64(mask)) >> Shift;
 	}
 
 	struct Iterator {

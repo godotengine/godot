@@ -238,30 +238,28 @@ private:
 		if (_capacity <= kGroupWidth) {
 			return SwissTable::kEmpty;
 		}
-		// Trailing: number of consecutive non-empty bytes starting AT the
-		// slot (looking forward). We scan up to kGroupWidth bytes; the
-		// trailing-mirror region of _ctrl makes the read safe even if the
-		// slot is near the end of the index table.
-		uint32_t trailing = 0;
-		while (trailing < kGroupWidth && _ctrl[p_slot_idx + trailing] != SwissTable::kEmpty) {
-			trailing++;
-		}
-		if (trailing == kGroupWidth) {
+		// SIMD-scan the kGroupWidth-byte windows AFTER and BEFORE p_slot_idx
+		// for kEmpty. Both reads are single unaligned loads -- the trailing
+		// read stays in-bounds because of the mirror tail past _capacity, and
+		// the leading read of the kGroupWidth bytes ending at p_slot_idx - 1
+		// is in-bounds for any p_slot_idx since the wrap case
+		// (p_slot_idx < kGroupWidth) lands its tail in that same mirror.
+		const SwissTable::Group g_after(_ctrl + p_slot_idx);
+		const Mask after_empty = g_after.match_empty();
+		if (!after_empty) {
 			return SwissTable::kDeleted;
 		}
-		// Leading: number of consecutive non-empty bytes ending JUST BEFORE
-		// the slot (looking backward, with wrap).
-		uint32_t leading = 0;
-		while (leading < kGroupWidth) {
-			const uint32_t idx = (p_slot_idx + _capacity - 1 - leading) & _capacity_mask;
-			if (_ctrl[idx] == SwissTable::kEmpty) {
-				break;
-			}
-			leading++;
-		}
-		// Promote to empty only when the run of non-empties surrounding the
-		// slot is shorter than one full group window -- meaning no probe
-		// could have been forced to scan a full group through this slot.
+		const uint32_t trailing = after_empty.lowest_set_bit();
+
+		const uint32_t lead_start = (p_slot_idx - kGroupWidth) & _capacity_mask;
+		const SwissTable::Group g_before(_ctrl + lead_start);
+		const Mask before_empty = g_before.match_empty();
+		// Slot at position k within g_before is (kGroupWidth - 1 - k) bytes
+		// before p_slot_idx, so the closest kEmpty corresponds to the highest
+		// set bit. No empty -> full kGroupWidth-byte run, force kDeleted.
+		const uint32_t leading = before_empty
+				? ((kGroupWidth - 1u) - before_empty.highest_set_bit())
+				: kGroupWidth;
 		if (trailing + leading < kGroupWidth) {
 			return SwissTable::kEmpty;
 		}

@@ -309,21 +309,28 @@ private:
 		if (_capacity <= kGroupWidth) {
 			return SwissTable::kEmpty;
 		}
-		uint32_t trailing = 0;
-		while (trailing < kGroupWidth && _ctrl[p_slot + trailing] != SwissTable::kEmpty) {
-			trailing++;
-		}
-		if (trailing == kGroupWidth) {
+		// SIMD-scan the kGroupWidth-byte windows AFTER and BEFORE p_slot for
+		// kEmpty. Both reads are single unaligned loads -- the trailing read
+		// stays in-bounds because of the mirror tail past _capacity, and the
+		// leading read of the kGroupWidth bytes ending at p_slot - 1 is also
+		// in-bounds for any p_slot since the wrap case (p_slot < kGroupWidth)
+		// lands its tail in that same mirror region.
+		const SwissTable::Group g_after(_ctrl + p_slot);
+		const Mask after_empty = g_after.match_empty();
+		if (!after_empty) {
 			return SwissTable::kDeleted;
 		}
-		uint32_t leading = 0;
-		while (leading < kGroupWidth) {
-			const uint32_t idx = (p_slot + _capacity - 1 - leading) & _capacity_mask;
-			if (_ctrl[idx] == SwissTable::kEmpty) {
-				break;
-			}
-			leading++;
-		}
+		const uint32_t trailing = after_empty.lowest_set_bit();
+
+		const uint32_t lead_start = (p_slot - kGroupWidth) & _capacity_mask;
+		const SwissTable::Group g_before(_ctrl + lead_start);
+		const Mask before_empty = g_before.match_empty();
+		// Slot at position k within g_before is (kGroupWidth - 1 - k) bytes
+		// before p_slot, so the closest kEmpty corresponds to the highest set
+		// bit. No empty -> full kGroupWidth-byte run, force kDeleted.
+		const uint32_t leading = before_empty
+				? ((kGroupWidth - 1u) - before_empty.highest_set_bit())
+				: kGroupWidth;
 		if (trailing + leading < kGroupWidth) {
 			return SwissTable::kEmpty;
 		}
@@ -345,21 +352,25 @@ private:
 		}
 	}
 
+	// Remove p_elem from the insertion-order list. Caller is expected to
+	// either delete p_elem immediately afterwards or re-link it before any
+	// further iteration -- we deliberately leave p_elem->{prev,next} dangling
+	// to avoid two pointless writes on the erase hot path.
 	void _unlink(Element *p_elem) {
-		if (_head_element == p_elem) {
-			_head_element = p_elem->next;
+		Element *const prev = p_elem->prev;
+		Element *const next = p_elem->next;
+		if (prev) {
+			prev->next = next;
+		} else {
+			// p_elem was the head.
+			_head_element = next;
 		}
-		if (_tail_element == p_elem) {
-			_tail_element = p_elem->prev;
+		if (next) {
+			next->prev = prev;
+		} else {
+			// p_elem was the tail.
+			_tail_element = prev;
 		}
-		if (p_elem->prev) {
-			p_elem->prev->next = p_elem->next;
-		}
-		if (p_elem->next) {
-			p_elem->next->prev = p_elem->prev;
-		}
-		p_elem->prev = nullptr;
-		p_elem->next = nullptr;
 	}
 
 	// Place a brand-new element at the given (already chosen) slot. The slot
@@ -482,7 +493,10 @@ public:
 			_deleted++;
 		}
 		_set_ctrl(slot, new_ctrl);
-		_slots[slot] = nullptr;
+		// Leave _slots[slot] dangling: any subsequent reader (lookup,
+		// resize, iteration) gates on _ctrl[slot] being kEmpty/kDeleted
+		// before consulting _slots, so this write is dead and skipping it
+		// shaves a small amount off the erase hot path.
 		_unlink(elem);
 		Allocator::delete_allocation(elem);
 		_size--;
