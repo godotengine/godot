@@ -1174,10 +1174,8 @@ void SceneImportSettingsDialog::_animation_frame_spin_box_value_changed(double p
 		return;
 	}
 
-	const double animation_length = animation_map[selected_id].animation->get_length();
-	int frames = (int)Math::round(animation_length * animation_fps);
-	double position = CLAMP(p_value / frames, 0.0, 1.0);
-	animation_slider->set_value(position);
+	int frames = (int)Math::round(animation_map[selected_id].animation->get_length() * animation_fps);
+	animation_slider->set_value(CLAMP(p_value / frames, 0.0, 1.0));
 }
 
 void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) {
