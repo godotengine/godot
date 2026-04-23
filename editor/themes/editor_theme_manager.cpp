@@ -528,7 +528,9 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/selection_color"] = p_config.selection_color;
 			colors["text_editor/theme/highlighting/brace_mismatch_color"] = p_config.dark_icon_and_font ? p_config.error_color : Color(1, 0.08, 0, 1);
 			colors["text_editor/theme/highlighting/current_line_color"] = alpha1;
-			colors["text_editor/theme/highlighting/line_length_guideline_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.dark_color_2;
+			// Contrast is positive in dark themes and negative in light themes. Lerping with a negative weight
+			// gives us lighter lines than base_color in dark themes and darker lines in light themes.
+			colors["text_editor/theme/highlighting/line_length_guideline_color"] = p_config.base_color.lerp(Color(0, 0, 0), p_config.contrast * -1.25).clamp();
 			colors["text_editor/theme/highlighting/word_highlighted_color"] = alpha1;
 			colors["text_editor/theme/highlighting/number_color"] = p_config.dark_icon_and_font ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
 			colors["text_editor/theme/highlighting/function_color"] = p_config.dark_icon_and_font ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
