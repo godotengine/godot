@@ -155,7 +155,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["arm32"] = "arm32";
 	capitalize_string_remaps["arm64"] = "arm64";
 	capitalize_string_remaps["arm64-v8a"] = "arm64-v8a";
-	capitalize_string_remaps["armeabi-v7a"] = "armabi-v7a";
+	capitalize_string_remaps["armeabi-v7a"] = "armeabi-v7a";
 	capitalize_string_remaps["arvr"] = "ARVR";
 	capitalize_string_remaps["astc"] = "ASTC";
 	capitalize_string_remaps["bbcode"] = "BBCode";
