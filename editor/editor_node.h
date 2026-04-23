@@ -285,7 +285,6 @@ private:
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 	LocalVector<String> pending_addons;
 	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
-	bool is_main_screen_editing = false;
 
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
@@ -331,9 +330,7 @@ private:
 	EditorRunBar *project_run_bar = nullptr;
 	HBoxContainer *right_menu_hb = nullptr;
 
-	// Spacers to center 2D / 3D / Script buttons.
 	HBoxContainer *left_spacer = nullptr;
-	Control *right_spacer = nullptr;
 
 	Control *menu_btn_spacer = nullptr;
 	MenuButton *main_menu_button = nullptr;

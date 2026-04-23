@@ -110,6 +110,7 @@ public:
 
 	void set_dock_context_popup(DockContextPopup *p_popup);
 	EditorDock *get_dock(int p_idx) const;
+	EditorDock *get_dock_by_name(const String &p_name) const;
 	void show_drag_hint();
 
 	static Rect2 get_default_floating_dock_rect(EditorDock *p_dock);

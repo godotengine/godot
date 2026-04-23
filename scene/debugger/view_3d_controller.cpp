@@ -732,7 +732,7 @@ void View3DController::set_freelook_enabled(const bool p_enabled) {
 			freelook_speed = freelook_base_speed * cursor.distance;
 		}
 
-		previous_mouse_position = SceneTree::get_singleton()->get_root()->get_mouse_position();
+		previous_mouse_position = Input::get_singleton()->get_mouse_position();
 
 		// Hide mouse like in an FPS (warping doesn't work).
 		if (Engine::get_singleton()->is_editor_hint()) {
