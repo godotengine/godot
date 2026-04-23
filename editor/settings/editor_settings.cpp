@@ -451,8 +451,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/localization/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
 	}
 
-	// Asset store
-	_initial_set("asset_library/use_threads", true);
+	/* Asset Store */
+
+	_initial_set("asset_store/use_threads", true);
+
+	Dictionary default_urls;
+	default_urls["godotengine.org (Official)"] = "https://store.godotengine.org/api/v1";
+	_initial_set("asset_store/available_urls", default_urls, true);
 
 	/* Interface */
 
@@ -1269,6 +1274,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	erase("run/output/always_close_output_on_stop");
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
 	erase("interface/editors/show_scene_tree_root_selection");
+	erase("asset_library/available_urls"); // Workaround bugged settings treating the previous default as a modified value (see GH-118755).
 
 	// Handle renamed settings.
 	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");
@@ -1315,6 +1321,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_setting("interface/editor/vsync_mode", "interface/editor/display/vsync_mode");
 	_rename_setting("interface/editor/update_continuously", "interface/editor/display/update_continuously");
 	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
+	_rename_setting("asset_library/use_threads", "asset_store/use_threads");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
