@@ -16,5 +16,11 @@
 		<member name="axis_value" type="float" setter="set_axis_value" getter="get_axis_value" default="0.0">
 			Current position of the joystick on the given axis. The value ranges from [code]-1.0[/code] to [code]1.0[/code]. A value of [code]0[/code] means the axis is in its resting position.
 		</member>
+		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false">
+			If [code]true[/code], the axis was already in the same position before this event. An echo event is a repeated axis event sent when the user is keeping the axis over the deadzone specified by [member ProjectSettings.input_devices/joypads/joypad_echo_events/axis_echo_events/deadzone].
+			[b]Note:[/b] To allow the engine to send joypad echo events, make sure [member ProjectSettings.input_devices/joypads/joypad_echo_events/send] is set to [code]true[/code].
+			To control when echo events are sent and how often, see [member ProjectSettings.input_devices/joypads/joypad_echo_events/wait_time] and [member ProjectSettings.input_devices/joypads/joypad_echo_events/count_per_second].
+			To allow the engine to send joypad echo events for the axes, make sure [member ProjectSettings.input_devices/joypads/joypad_echo_events/axis_echo_events/send] is set to [code]true[/code].
+		</member>
 	</members>
 </class>

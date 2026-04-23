@@ -8269,6 +8269,7 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	HashMap<String, Variant> settings;
 	settings["physics/3d/physics_engine"] = "Jolt Physics";
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
+	settings["input_devices/joypads/joypad_echo_events/send"] = true;
 	return settings;
 }
 

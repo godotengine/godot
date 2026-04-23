@@ -192,6 +192,43 @@ private:
 
 	HashMap<int, MotionInfo> joy_motion;
 
+	union JoyEchoId {
+		struct {
+			uint16_t input_id : 7; // 0-128 to allow both axes and buttons
+			uint16_t device : 4; // 16 joypad devices
+			uint16_t is_axis : 1;
+		};
+		uint16_t value;
+
+		JoyEchoId() {}
+
+		JoyEchoId(int p_device, JoyButton p_button) {
+			device = p_device;
+			input_id = (uint16_t)p_button;
+			is_axis = 0;
+		}
+
+		JoyEchoId(int p_device, JoyAxis p_axis) {
+			device = p_device;
+			input_id = (uint16_t)p_axis;
+			is_axis = 1;
+		}
+	};
+
+	static_assert(sizeof(JoyEchoId) == sizeof(JoyEchoId::value), "Bitpacking doesn't work properly on this platform.");
+
+	struct JoyEchoInfo {
+		bool waiting = true;
+		float time = 0.0;
+	};
+
+	HashMap<uint16_t, JoyEchoInfo> joy_echo;
+	bool joy_echo_send_events = false;
+	float joy_echo_wait_time = 0.0;
+	int joy_echo_count_per_second = 0;
+	bool joy_echo_send_axis_events = false;
+	float joy_echo_axis_deadzone = 0.0;
+
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
@@ -297,8 +334,8 @@ private:
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
 	JoyButton _get_output_button(const String &output);
 	JoyAxis _get_output_axis(const String &output);
-	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
-	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
+	void _button_event(int p_device, JoyButton p_index, bool p_pressed, bool p_echo = false);
+	void _axis_event(int p_device, JoyAxis p_axis, float p_value, bool p_echo = false);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
 	void _update_joypad_features(int p_device);
 
@@ -348,6 +385,8 @@ public:
 #ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
+
+	void _process(double p_delta);
 
 	static Input *get_singleton();
 

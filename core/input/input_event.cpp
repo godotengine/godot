@@ -1130,6 +1130,15 @@ float InputEventJoypadMotion::get_axis_value() const {
 	return axis_value;
 }
 
+void InputEventJoypadMotion::set_echo(bool p_enable) {
+	echo = p_enable;
+	emit_changed();
+}
+
+bool InputEventJoypadMotion::is_echo() const {
+	return echo;
+}
+
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventJoypadMotion> jm = p_event;
 	if (jm.is_null()) {
@@ -1200,7 +1209,8 @@ String InputEventJoypadMotion::as_text() const {
 }
 
 String InputEventJoypadMotion::_to_string() {
-	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
+	String e = is_echo() ? "true" : "false";
+	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f, echo=%s", axis, axis_value, e);
 }
 
 Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value, int p_device) {
@@ -1220,8 +1230,11 @@ void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_value", "axis_value"), &InputEventJoypadMotion::set_axis_value);
 	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
 
+	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventJoypadMotion::set_echo);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 ///////////////////////////////////
@@ -1245,6 +1258,15 @@ void InputEventJoypadButton::set_pressure(float p_pressure) {
 
 float InputEventJoypadButton::get_pressure() const {
 	return pressure;
+}
+
+void InputEventJoypadButton::set_echo(bool p_enable) {
+	echo = p_enable;
+	emit_changed();
+}
+
+bool InputEventJoypadButton::is_echo() const {
+	return echo;
 }
 
 bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
@@ -1320,7 +1342,8 @@ String InputEventJoypadButton::as_text() const {
 
 String InputEventJoypadButton::_to_string() {
 	String p = is_pressed() ? "true" : "false";
-	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f", button_index, p, pressure);
+	String e = is_echo() ? "true" : "false";
+	return vformat("InputEventJoypadButton: button_index=%d, pressed=%s, pressure=%.2f, echo=%s", button_index, p, pressure, e);
 }
 
 Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(JoyButton p_btn_index, int p_device) {
@@ -1341,9 +1364,12 @@ void InputEventJoypadButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButton::set_pressed);
 
+	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventJoypadButton::set_echo);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
 ///////////////////////////////////
