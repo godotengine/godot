@@ -278,7 +278,9 @@ void AudioStreamImportSettingsDialog::_play() {
 }
 
 void AudioStreamImportSettingsDialog::_stop() {
-	_load_master_state();
+	if (_player->is_playing()) {
+		_load_master_state();
+	}
 
 	_player->stop();
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
@@ -288,6 +290,8 @@ void AudioStreamImportSettingsDialog::_stop() {
 }
 
 void AudioStreamImportSettingsDialog::_on_finished() {
+	_load_master_state();
+
 	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
