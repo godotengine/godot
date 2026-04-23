@@ -1195,7 +1195,7 @@ void PopupMenu::_close_or_suspend() {
 	if (this_submenu_index != -1) { // Is a submenu.
 		PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
 		ERR_FAIL_NULL(parent_popup);
-		Point2 mouse_pos = is_embedded() ? parent_popup->get_mouse_position() : Point2(DisplayServer::get_singleton()->mouse_get_position() - parent_popup->get_position());
+		Point2 mouse_pos = is_embedded() ? parent_popup->get_mouse_position() * parent_popup->get_content_scale_factor() : Point2(DisplayServer::get_singleton()->mouse_get_position() - parent_popup->get_position());
 		if (parent_popup->_get_mouse_over(mouse_pos) == this_submenu_index) {
 			parent_popup->submenu_mouse_exited_ticks_msec = -1;
 			parent_popup->mouse_movement_was_tested = false;
@@ -2446,7 +2446,7 @@ void PopupMenu::_submenu_hidden() {
 	queue_accessibility_update();
 	control->queue_redraw();
 	if (!activated_by_keyboard) {
-		Point2 mouse_pos = is_embedded() ? get_mouse_position() : Point2(DisplayServer::get_singleton()->mouse_get_position() - get_position());
+		Point2 mouse_pos = is_embedded() ? get_mouse_position() * get_content_scale_factor() : Point2(DisplayServer::get_singleton()->mouse_get_position() - get_position());
 		_mouse_over_update(mouse_pos);
 	}
 }
@@ -3271,19 +3271,6 @@ bool PopupMenu::get_allow_search() const {
 	return allow_search;
 }
 
-String PopupMenu::get_tooltip(const Point2 &p_pos) const {
-	Point2 pos = p_pos;
-	// Adjust for the top style margin and search bar.
-	pos.y += scroll_container->get_global_position().y;
-
-	int over = _get_mouse_over(pos);
-	if (over < 0 || over >= items.size()) {
-		return "";
-	}
-
-	return items[over].tooltip;
-}
-
 void PopupMenu::set_search_bar_enabled(bool p_enabled) {
 	search_bar_enabled = p_enabled;
 	_update_search_bar_visibility();
@@ -3836,4 +3823,12 @@ PopupMenu::PopupMenu() {
 
 PopupMenu::~PopupMenu() {
 	unbind_global_menu();
+}
+
+String PopupMenuItems::get_tooltip(const Point2 &p_pos) const {
+	int over = popup->_get_mouse_over(get_global_transform_with_canvas().xform(p_pos) * popup->get_content_scale_factor());
+	if (over < 0 || over >= popup->items.size()) {
+		return "";
+	}
+	return popup->items[over].tooltip;
 }
