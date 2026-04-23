@@ -82,6 +82,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_region" type="bool" setter="set_accessibility_region" getter="is_accessibility_region" overrides="Container" default="true" />
 		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
 			The available layouts for this dock, as a bitmask. By default, the dock allows vertical and floating layouts.
 		</member>
