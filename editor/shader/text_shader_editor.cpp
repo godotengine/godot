@@ -46,8 +46,11 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/sky.h"
+#include "scene/resources/style_box_flat.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
@@ -112,24 +115,43 @@ void TextShaderPreviewLineLayer::_notification(int p_what) {
 			line_color = Color(EditorNode::get_singleton()->get_editor_theme()->get_color(SceneStringName(font_color), EditorStringName(Editor)), 0.7);
 		} break;
 		case NOTIFICATION_DRAW: {
-			const Rect2i visible_rect = scroll_container->get_global_rect();
-
-			for (const KeyValue<int, TextShaderPreview *> &E : *previews) {
-				const Control *surface_container = E.value->get_surface_container();
-
-				Point2 start_pos = surface_container->get_global_position() + surface_container->get_size() * Point2(1.0, 0.5) + Point2(1.0, 0.0) * EDSCALE;
-				if (!visible_rect.has_point(start_pos)) {
-					continue;
+			int total_gutter_width = code_editor->get_line_start_margin();
+			for (int i = 0; i < code_editor->get_gutter_count() - 1; i++) {
+				if (code_editor->is_gutter_drawn(i)) {
+					total_gutter_width += code_editor->get_gutter_width(i);
 				}
+			}
+
+			const Rect2i visible_rect = scroll_container->get_global_rect();
+			RenderingServer::get_singleton()->canvas_item_set_custom_rect(
+					get_canvas_item(), true,
+					Rect2(get_global_transform().affine_inverse().xform(Vector2(visible_rect.position)), visible_rect.size + Vector2(code_editor->get_total_gutter_width(), 0)));
+			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
+
+			int current_caret_line = code_editor->get_caret_line();
+			int idx = 0;
+			for (const KeyValue<int, TextShaderPreview *> &E : *previews) {
+				idx++;
+
+				const Control *panel_container = E.value->get_panel_container();
+				float alpha = (E.key == current_caret_line) ? 0.2 : (E.value->is_hovered() ? 0.15 : (idx % 2 == 0 ? 0.1 : 0.05));
+				const Color polygon_color = Color(line_color, alpha);
+				E.value->update_panel_color(polygon_color);
 
 				Point2i end_pos = code_editor->get_pos_at_line_column(E.key, 0);
 				if (end_pos.x == -1) {
 					continue;
 				}
-				end_pos.y -= code_editor->get_line_height() / 2;
-				end_pos.x = code_editor->get_line_start_margin() + code_editor->get_gutter_width(0) / 2.0;
 
-				draw_line(start_pos, code_editor->get_global_position() + end_pos, line_color, EDSCALE, true);
+				Point2 preview_size = panel_container->get_size();
+				const Point2 preview_bottom = panel_container->get_global_position() + preview_size;
+				const Point2 preview_top = preview_bottom - Point2(0, preview_size.y);
+				const Point2 line_bottom = code_editor->get_global_position() + Point2(0, end_pos.y);
+				const Point2 line_top = line_bottom - Point2(0, code_editor->get_line_height());
+				const Point2 line_bottom_gutter = line_bottom + Point2(total_gutter_width, 0);
+				const Point2 line_top_gutter = line_top + Point2(total_gutter_width, 0);
+
+				draw_polygon({ preview_top, line_top, line_top_gutter, line_bottom_gutter, line_bottom, preview_bottom }, { polygon_color, polygon_color, polygon_color, polygon_color, polygon_color, polygon_color });
 			}
 		} break;
 	}
@@ -141,6 +163,7 @@ void TextShaderPreviewLineLayer::set_previews(HashMap<int, TextShaderPreview *> 
 
 void TextShaderPreviewLineLayer::set_code_editor(CodeEdit *p_code_editor) {
 	code_editor = p_code_editor;
+	code_editor->connect("caret_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 void TextShaderPreviewLineLayer::set_scroll_container(ScrollContainer *p_scroll_container) {
@@ -152,6 +175,15 @@ TextShaderPreviewLineLayer::TextShaderPreviewLineLayer() {
 }
 
 /***  SHADER PREVIEW ****/
+
+class SquareMarginContainer : public MarginContainer {
+public:
+	Size2 get_minimum_size() const override {
+		Size2 ms = MarginContainer::get_minimum_size();
+		float side = MAX(get_size().x, ms.y);
+		return Size2(ms.x, side);
+	}
+};
 
 HashMap<String, String> TextShaderPreview::spatial_assignments = {
 	{ "bool", "ALBEDO = vec3(float(%s)); ALPHA = 1.0;" },
@@ -226,10 +258,6 @@ HashMap<String, String> TextShaderPreview::builtin_canvas_types = {
 };
 
 TextShaderPreview::TextShaderPreview() {
-	surface_container = memnew(MarginContainer);
-	surface_container->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
-	add_child(surface_container);
-
 	env.instantiate();
 	Ref<Sky> sky = memnew(Sky);
 	env->set_sky(sky);
@@ -237,40 +265,140 @@ TextShaderPreview::TextShaderPreview() {
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
 
-	surface = memnew(MaterialEditor);
-	surface_container->add_child(surface);
+	shader_material.instantiate();
 
-	error_label = memnew(Label);
-	error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	error_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	error_label->set_v_size_flags(SIZE_EXPAND_FILL);
-	error_label->hide();
-	surface_container->add_child(error_label);
+	panel = memnew(PanelContainer);
+	panel->set_custom_minimum_size(Size2(120, BUTTON_SIZE * 3) * EDSCALE); // Three buttons tall.
+	panel->connect(SceneStringName(mouse_entered), callable_mp(this, &TextShaderPreview::_on_hover_enter));
+	panel->connect(SceneStringName(mouse_exited), callable_mp(this, &TextShaderPreview::_on_hover_exit));
+	add_child(panel);
 
-	HBoxContainer *buttons_hbox = memnew(HBoxContainer);
-	add_child(buttons_hbox);
+	panel_style.instantiate();
 
-	goto_button = memnew(Button);
-	goto_button->connect(SceneStringName(pressed), callable_mp(this, &TextShaderPreview::_goto_pressed));
-	goto_button->set_h_size_flags(SIZE_EXPAND_FILL);
-	buttons_hbox->add_child(goto_button);
+	Control *fill = memnew(Control);
+	panel->add_child(fill);
+
+	surface_hover = memnew(Control);
+	surface_hover->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	surface_hover->set_size(Size2(BUTTON_SIZE, 0) * EDSCALE);
+	surface_hover->connect(SceneStringName(mouse_entered), callable_mp(this, &TextShaderPreview::_on_hover_enter));
+	surface_hover->connect(SceneStringName(mouse_exited), callable_mp(this, &TextShaderPreview::_on_hover_exit));
+	fill->add_child(surface_hover);
 
 	delete_button = memnew(Button);
+	delete_button->set_theme_type_variation("FlatMenuButton");
+	delete_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	delete_button->set_custom_minimum_size(Size2(BUTTON_SIZE, BUTTON_SIZE) * EDSCALE);
+	delete_button->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
+	delete_button->set_anchor_and_offset(SIDE_LEFT, 1.0, -BUTTON_SIZE * EDSCALE);
+	delete_button->set_anchor_and_offset(SIDE_TOP, 0.0, 0);
+	delete_button->set_anchor_and_offset(SIDE_RIGHT, 1.0, 0);
+	delete_button->set_anchor_and_offset(SIDE_BOTTOM, 0.0, BUTTON_SIZE * EDSCALE);
 	delete_button->connect(SceneStringName(pressed), callable_mp(this, &TextShaderPreview::_delete_pressed));
-	buttons_hbox->add_child(delete_button);
+	delete_button->hide();
+	delete_button->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	surface_hover->add_child(delete_button);
 
-	shader_material.instantiate();
+	goto_button = memnew(Button);
+	goto_button->set_theme_type_variation("FlatMenuButton");
+	goto_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	goto_button->set_custom_minimum_size(Size2(BUTTON_SIZE, BUTTON_SIZE) * EDSCALE);
+	goto_button->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
+	goto_button->set_anchor_and_offset(SIDE_LEFT, 1.0, -BUTTON_SIZE * EDSCALE);
+	goto_button->set_anchor_and_offset(SIDE_TOP, 0.5, -BUTTON_SIZE / 2 * EDSCALE);
+	goto_button->set_anchor_and_offset(SIDE_RIGHT, 1.0, 0);
+	goto_button->set_anchor_and_offset(SIDE_BOTTOM, 0.5, BUTTON_SIZE / 2 * EDSCALE);
+	goto_button->connect(SceneStringName(pressed), callable_mp(this, &TextShaderPreview::_goto_pressed));
+	goto_button->hide();
+	goto_button->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	surface_hover->add_child(goto_button);
+
+	// Material
+
+	surface_container = memnew(SquareMarginContainer);
+	surface_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	panel->add_child(surface_container);
+
+	surface = memnew(MaterialEditor);
+	surface->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	surface->set_autohide_buttons(true);
+	surface_container->add_child(surface);
+
+	// Error
+
+	error_container = memnew(MarginContainer);
+	error_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	panel->add_child(error_container);
+
+	VBoxContainer *error_box = memnew(VBoxContainer);
+	error_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	error_container->add_child(error_box);
+
+	error_icon = memnew(TextureRect);
+	error_icon->set_stretch_mode(TextureRect::STRETCH_KEEP);
+	error_box->add_child(error_icon);
+
+	error_label = memnew(Label);
+	error_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	error_label->set_v_size_flags(SIZE_EXPAND_FILL);
+	error_label->add_theme_constant_override("line_spacing", 0);
+	error_box->add_child(error_label);
+}
+
+void TextShaderPreview::_on_hover_enter() {
+	hovered = true;
+	delete_button->show();
+	goto_button->show();
+
+	DisplayServer::get_singleton()->cursor_set_shape(DisplayServerEnums::CURSOR_ARROW); // Since MaterialEditor doesn't set cursor.
+}
+
+void TextShaderPreview::_on_hover_exit() {
+	hovered = false;
+	delete_button->hide();
+	goto_button->hide();
 }
 
 void TextShaderPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			panel->add_theme_style_override(SceneStringName(panel), panel_style);
+
+			error_icon->set_texture(get_editor_theme_icon(SNAME("Error")));
+
+			Ref<StyleBoxEmpty> no_margins;
+			no_margins.instantiate();
+			no_margins->set_content_margin_all(0);
+			error_label->add_theme_style_override(CoreStringName(normal), no_margins);
 			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			delete_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
-		} break;
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			goto_button->set_text(vformat(TTR("Go to Line %d"), line + 1));
+
+			delete_button->set_button_icon(get_editor_theme_icon(SNAME("GuiClose")));
+
+			goto_button->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
+			goto_button->add_theme_font_size_override(SceneStringName(font_size), Math::round(12 * EDSCALE));
+
+			Ref<StyleBoxFlat> sq_hover = get_theme_stylebox(SceneStringName(hover), "FlatMenuButton")->duplicate();
+			sq_hover->set_corner_radius_all(0);
+			Ref<StyleBoxFlat> sq_pressed = get_theme_stylebox(SceneStringName(pressed), "FlatMenuButton")->duplicate();
+			sq_pressed->set_corner_radius_all(0);
+			Ref<StyleBoxFlat> sq_hover_pressed = get_theme_stylebox("hover_pressed", "FlatMenuButton")->duplicate();
+			sq_hover_pressed->set_corner_radius_all(0);
+
+			for (Button *btn : { delete_button, goto_button }) {
+				btn->add_theme_style_override(SceneStringName(hover), sq_hover);
+				btn->add_theme_style_override(SceneStringName(pressed), sq_pressed);
+				btn->add_theme_style_override("hover_pressed", sq_hover_pressed);
+			}
+
+			surface_container->add_theme_constant_override("margin_left", 0 * EDSCALE);
+			surface_container->add_theme_constant_override("margin_right", 0 * EDSCALE);
+			surface_container->add_theme_constant_override("margin_top", 0 * EDSCALE);
+			surface_container->add_theme_constant_override("margin_bottom", 0 * EDSCALE);
+
+			error_container->add_theme_constant_override("margin_left", 12 * EDSCALE);
+			error_container->add_theme_constant_override("margin_right", 12 * EDSCALE);
+			error_container->add_theme_constant_override("margin_top", 12 * EDSCALE);
+			error_container->add_theme_constant_override("margin_bottom", 12 * EDSCALE);
 		} break;
 	}
 }
@@ -490,7 +618,8 @@ void TextShaderPreview::_reset_shader_parameters(Ref<ShaderMaterial> &p_target) 
 void TextShaderPreview::_show_error(const String &p_error) {
 	surface->edit(Ref<Material>(), env);
 	error_label->set_text(p_error);
-	error_label->show();
+	surface_container->hide();
+	error_container->show();
 }
 
 void TextShaderPreview::show_shader_compile_error() {
@@ -560,20 +689,28 @@ void TextShaderPreview::sync_shader_parameters() {
 	}
 }
 
-MarginContainer *TextShaderPreview::get_surface_container() const {
-	return surface_container;
+void TextShaderPreview::update_panel_color(const Color &p_color) {
+	panel_style->set_bg_color(p_color);
+}
+
+PanelContainer *TextShaderPreview::get_panel_container() const {
+	return panel;
+}
+
+Control *TextShaderPreview::get_hover_control() const {
+	return surface_hover;
 }
 
 void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p_in_comment) {
 	line = p_line;
 	in_comment = p_in_comment;
-	goto_button->set_text(vformat(TTR("Go to Line %d"), line + 1));
+	goto_button->set_text(itos(line + 1));
 
 	String shader_type = ShaderLanguage::get_shader_type(p_code);
 	bool mode_3d = shader_type == "spatial";
 
 	if (shader_type != "canvas_item" && !mode_3d) {
-		_show_error(TTRC("Shader type must be either `canvas_item` or `spatial` to correctly set a preview."));
+		_show_error(TTRC("For previews, shader type must be CanvasItem or Spatial."));
 		return;
 	}
 
@@ -581,12 +718,12 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 	String enclosing_function = _get_enclosing_function(lines, p_line);
 
 	if (enclosing_function != "fragment") {
-		_show_error(TTRC("Preview only supports assignments in the `fragment()` function."));
+		_show_error(TTRC("Previewed line must be inside fragment() function."));
 		return;
 	}
 
 	if (_is_inside_loop(lines, p_line)) {
-		_show_error(TTRC("Preview is not supported inside loops."));
+		_show_error(TTRC("Preview not supported inside loops."));
 		return;
 	}
 
@@ -595,7 +732,7 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 	int end;
 
 	if (in_comment || !_find_statement(lines, p_line, var_name, start, end)) {
-		_show_error(TTRC("The selected line needs to be an assignment."));
+		_show_error(TTRC("Previewed line must contain an assignment."));
 		return;
 	}
 
@@ -607,7 +744,7 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 	String injection;
 	HashMap<String, String> &assignments = mode_3d ? spatial_assignments : canvas_assignments;
 	if (!assignments.has(type)) {
-		_show_error(TTRC("Preview unavailable for current assignment.\nSupported types are: `bool`, `int`, `float`, `vec2`, `vec3`, `vec4`."));
+		_show_error(TTRC("Preview only available for bool, int, float, vec2, vec3, vec4."));
 		return;
 	}
 	injection = assignments[type].replace("%s", var_name);
@@ -636,9 +773,10 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 		_reset_shader_parameters(shader_material);
 	}
 
-	surface->show();
-	error_label->hide();
+	error_container->hide();
+	surface_container->show();
 	surface->edit(shader_material.ptr(), env);
+	surface->show(); // Edit may have called hide() earlier on failed compilation.
 }
 
 /*** SHADER SCRIPT EDITOR ****/
@@ -789,6 +927,10 @@ void ShaderTextEditor::toggle_shader_preview(int p_line) {
 
 	preview->connect("goto_btn_pressed", callable_mp(this, &ShaderTextEditor::goto_shader_preview).bind(p_line));
 	preview->connect("remove_btn_pressed", callable_mp(this, &ShaderTextEditor::remove_shader_preview).bind(p_line));
+	preview->get_panel_container()->connect(SceneStringName(mouse_entered), callable_mp((CanvasItem *)preview_line_layer, &CanvasItem::queue_redraw));
+	preview->get_panel_container()->connect(SceneStringName(mouse_exited), callable_mp((CanvasItem *)preview_line_layer, &CanvasItem::queue_redraw));
+	preview->get_hover_control()->connect(SceneStringName(mouse_entered), callable_mp((CanvasItem *)preview_line_layer, &CanvasItem::queue_redraw));
+	preview->get_hover_control()->connect(SceneStringName(mouse_exited), callable_mp((CanvasItem *)preview_line_layer, &CanvasItem::queue_redraw));
 	preview_box->add_child(preview);
 }
 
@@ -1244,8 +1386,6 @@ void ShaderTextEditor::_validate_script() {
 				pair.value->show_shader_compile_error();
 			}
 		} else {
-			set_error("");
-
 			for (KeyValue<int, TextShaderPreview *> pair : previews) {
 				pair.value->set_shader_code(code, pair.key, get_text_editor()->is_in_comment(pair.key) != -1);
 			}
@@ -1540,6 +1680,15 @@ void TextShaderEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
+
+			Ref<StyleBoxFlat> tab_style = get_theme_stylebox(SNAME("tab_selected"), "TabBar");
+			Ref<StyleBoxFlat> preview_style = memnew(StyleBoxFlat);
+			preview_style->set_bg_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
+			preview_style->set_corner_radius_all(tab_style->get_corner_radius(CORNER_TOP_LEFT));
+			preview_panel->add_theme_style_override(SceneStringName(panel), preview_style);
+
+			update_params_btn->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
+			remove_all_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
@@ -1874,13 +2023,13 @@ void TextShaderEditor::_update_shader_previews() {
 		}
 	}
 
-	code_editor->redraw_preview_lines();
-
 	if (!found) {
 		preview_box->hide();
 		return;
 	}
 	preview_box->show();
+
+	preview_timer->start();
 }
 
 void TextShaderEditor::_update_bookmark_list() {
@@ -2017,9 +2166,9 @@ TextShaderEditor::TextShaderEditor() {
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &TextShaderEditor::_on_shader_preview_toggled));
-	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines));
+	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
 	code_editor->get_text_editor()->connect("theme_changed", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines), CONNECT_DEFERRED);
-	code_editor->get_text_editor()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1));
+	code_editor->get_text_editor()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1), CONNECT_DEFERRED);
 
 	code_editor->update_editor_settings();
 
@@ -2117,30 +2266,61 @@ TextShaderEditor::TextShaderEditor() {
 	HSplitContainer *main_box = memnew(HSplitContainer);
 	main_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_box->add_theme_constant_override("separation", 0);
+	main_box->connect("dragged", callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1), CONNECT_DEFERRED);
 
 	preview_box = memnew(VBoxContainer);
-	preview_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	preview_box->hide();
 
-	Button *update_params_btn = memnew(Button);
-	update_params_btn->set_text(TTRC("Update Parameters"));
-	preview_box->add_child(update_params_btn);
-	update_params_btn->connect(SceneStringName(pressed), callable_mp(code_editor, &ShaderTextEditor::update_parameters));
-	update_params_btn->set_tooltip_text(TTRC("Updates shader parameters in previews to match the values in the current `ShaderMaterial` inspector."));
+	preview_panel = memnew(PanelContainer);
+	preview_panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_box->add_child(preview_panel);
 
 	preview_sbox = memnew(ScrollContainer);
-	preview_sbox->set_v_size_flags(SIZE_EXPAND_FILL);
 	preview_sbox->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	preview_sbox->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1));
-	preview_sbox->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_RESERVE);
+	preview_sbox->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_AUTO);
+	preview_sbox->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines).unbind(1), CONNECT_DEFERRED);
 	code_editor->get_preview_line_layer()->set_scroll_container(preview_sbox);
+	preview_panel->add_child(preview_sbox);
+
+	HSplitContainer *preview_hsplit = memnew(HSplitContainer);
+	preview_hsplit->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_hsplit->set_h_size_flags(SIZE_EXPAND_FILL);
+	preview_hsplit->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN_COLLAPSED);
+	preview_hsplit->add_theme_constant_override("minimum_grab_thickness", 8 * EDSCALE);
+	preview_sbox->add_child(preview_hsplit);
 
 	VBoxContainer *preview_vbox = memnew(VBoxContainer);
+	preview_vbox->add_theme_constant_override("separation", 0);
 	preview_vbox->connect(SceneStringName(sort_children), callable_mp(code_editor, &ShaderTextEditor::redraw_preview_lines));
-	preview_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	code_editor->set_preview_box(preview_vbox);
-	preview_sbox->add_child(preview_vbox);
-	preview_box->add_child(preview_sbox);
+	preview_hsplit->add_child(preview_vbox);
+
+	Control *extended_gutter = memnew(Control);
+	extended_gutter->set_custom_minimum_size(Size2(32 * EDSCALE, 0)); // To match BUTTON_SIZE in TextShaderPreview.
+	extended_gutter->set_h_size_flags(SIZE_EXPAND_FILL);
+	extended_gutter->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	preview_hsplit->add_child(extended_gutter);
+
+	HBoxContainer *tools_row = memnew(HBoxContainer);
+	tools_row->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // To match code editor's toolbar.
+	preview_box->add_child(tools_row);
+
+	update_params_btn = memnew(Button);
+	update_params_btn->set_text(TTRC("Update Parameters"));
+	update_params_btn->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD);
+	update_params_btn->set_h_size_flags(SIZE_EXPAND_FILL);
+	update_params_btn->set_theme_type_variation("FlatMenuButton");
+	update_params_btn->connect(SceneStringName(pressed), callable_mp(code_editor, &ShaderTextEditor::update_parameters));
+	update_params_btn->set_tooltip_text(TTRC("Update shader parameters in previews to match the values in the current ShaderMaterial inspector."));
+	tools_row->add_child(update_params_btn);
+
+	remove_all_btn = memnew(Button);
+	remove_all_btn->set_theme_type_variation("FlatMenuButton");
+	remove_all_btn->connect(SceneStringName(pressed), callable_mp(this, &TextShaderEditor::_menu_option).bind(PREVIEW_REMOVE_ALL));
+	remove_all_btn->set_tooltip_text(TTRC("Remove all line shader previews."));
+	tools_row->add_child(remove_all_btn);
+
 	main_box->add_child(preview_box);
 	main_box->add_child(code_editor);
 
