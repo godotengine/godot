@@ -46,6 +46,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup_menu.h"
@@ -471,11 +472,12 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_title = memnew(Label);
 		project_title->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_title->set_name("ProjectName");
-		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		project_title->set_clip_text(true);
+		project_title->set_h_size_flags(Control::SIZE_FILL);
 		title_hb->add_child(project_title);
 
-		tag_container = memnew(HBoxContainer);
+		tag_container = memnew(HFlowContainer);
+		tag_container->set_alignment(FlowContainer::ALIGNMENT_END);
+		tag_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		title_hb->add_child(tag_container);
 	}
 
