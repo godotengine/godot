@@ -552,16 +552,7 @@ void EditorNode::_update_from_settings() {
 	get_viewport()->set_use_debanding(use_debanding);
 
 	// Enable HDR if requested.
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	DisplayServer::get_singleton()->window_request_hdr_output(hdr_requested);
-
-	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	scene_root->set_use_hdr_2d(use_hdr_2d || hdr_requested);
-	get_viewport()->set_use_hdr_2d(use_hdr_2d || hdr_requested);
-
-	if (hdr_requested && !use_hdr_2d) {
-		WARN_PRINT_ED("HDR 2D was automatically enabled because HDR output was requested in project settings. To avoid this warning, enable rendering/viewport/hdr_2d in the Project Settings.");
-	}
+	_refresh_hdr_request();
 
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
@@ -882,6 +873,7 @@ void EditorNode::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			if (editor_data.is_scene_changed(-1)) {
 				scene_tabs->update_scene_tabs();
+				_refresh_hdr_request();
 			}
 
 			if (update_spinner->is_visible()) {
@@ -4759,6 +4751,20 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 
 	_update_undo_redo_allowed();
 	_update_unsaved_cache();
+}
+
+void EditorNode::_refresh_hdr_request() {
+	// Enable the window HDR based on the setting
+	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+	DisplayServer::get_singleton()->window_request_hdr_output(hdr_requested);
+
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	scene_root->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+	get_viewport()->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+
+	if (hdr_requested && !use_hdr_2d) {
+		WARN_PRINT_ED("HDR 2D was automatically enabled because HDR output was requested in project settings. To avoid this warning, enable rendering/viewport/hdr_2d in the Project Settings.");
+	}
 }
 
 void EditorNode::_nav_to_selected_scene() {

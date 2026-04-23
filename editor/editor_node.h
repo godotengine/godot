@@ -727,6 +727,8 @@ private:
 
 	void _bottom_panel_resized();
 
+	void _refresh_hdr_request();
+
 protected:
 	friend class FileSystemDock;
 
