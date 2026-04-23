@@ -40,12 +40,7 @@ TEST_FORCE_LINK(test_hash_map_bench)
 #include "core/variant/variant.h"
 
 // Benchmarks for the SwissTable HashMap / AHashMap rewrites.
-//
-// These cases run only when the user explicitly opts in with
-// `--test-case=*HashMapBench*`, since they take seconds and would slow down
-// the regular CI sweep. The numbers printed here are absolute throughput; to
-// compare against the legacy Robin-Hood implementation, check out the parent
-// commit of this rewrite, build with the same flags, and re-run.
+// Run explicitly with `--test-case=*HashMapBench*`.
 
 namespace TestHashMapBench {
 
@@ -115,7 +110,7 @@ static void _bench_int_workload(const char *p_label, Make make_map) {
 	_report("iterate    ", iter_us, kElems * kIters);
 	_report("erase      ", erase_us, kElems * kIters);
 
-	// Keep results live so the optimizer can't elide.
+	// Keep results live.
 	CHECK((hit_sink + miss_sink + iter_sink) != INT64_MIN);
 }
 

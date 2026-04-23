@@ -706,9 +706,7 @@ struct is_zero_constructible<String> : std::true_type {};
 template <>
 struct HashMapComparatorDefault<String> {
 	static _FORCE_INLINE_ bool compare(const String &p_lhs, const String &p_rhs) {
-		// HashMap hit lookups often probe with keys that share the same COW
-		// buffer as the stored String, so bypass the span/memcmp path when the
-		// underlying storage is identical.
+		// Fast path for shared storage.
 		return (p_lhs.ptr() == p_rhs.ptr() && p_lhs.length() == p_rhs.length()) || (p_lhs == p_rhs);
 	}
 };

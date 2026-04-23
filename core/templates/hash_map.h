@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/memory.h"
-#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
+#include "core/string/print_string.h" // IWYU pragma: keep
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
@@ -73,11 +73,8 @@
 template <typename TKey, typename TValue>
 struct HashMapElement {
 	// Preserved for source compatibility with existing Allocator template
-	// arguments. Ordered HashMap now stores KeyValue payloads in a stable arena
-	// and keeps hash/order metadata in side arrays keyed by handle.
-	// Cached full 32-bit hash. Stored at insert time so probes can
-	// short-circuit before a (potentially expensive) key compare, and so
-	// rehashing on grow doesn't have to re-run Hasher on the key.
+	// arguments.
+	// Cached full 32-bit hash.
 	uint32_t hash = 0;
 	uint32_t next = UINT32_MAX;
 	uint32_t prev = UINT32_MAX;
@@ -285,12 +282,8 @@ private:
 		return cap;
 	}
 
-	// Find the slot containing p_key. Returns true if found, with r_slot_idx
-	// set to the slot index in _ctrl/_slots. Uses the cached 32-bit hash on
-	// each candidate element to short-circuit before the (potentially
-	// expensive) key compare; with a 7-bit fingerprint we expect a false
-	// match every ~128 slots, and with a stored 32-bit hash false matches
-	// almost never escalate to a real key compare.
+	// Find the slot containing p_key. Returns true if found and sets
+	// r_slot_idx to the slot index in _ctrl/_slots.
 	bool _lookup(const TKey &p_key, uint32_t p_hash, uint32_t &r_slot_idx) const {
 		if (_capacity == 0 || _size == 0) {
 			return false;
@@ -321,17 +314,9 @@ private:
 		}
 	}
 
-	// Find the slot containing p_key OR the first empty/deleted slot the
-	// probe sequence visits. Single-pass replacement for "_lookup then
-	// _find_insert_slot"; saves one probe walk per insert miss.
-	//
-	// Returns true if the key was found at r_slot_idx; r_slot_idx is the
-	// existing slot. Returns false if the key was not found; r_slot_idx
-	// is the slot where a new entry should be placed (always either kEmpty
-	// or kDeleted -- caller must pass through to _set_ctrl / accounting).
-	//
-	// Caller must ensure _capacity > 0 and _growth_left > 0 before calling
-	// (an empty/full table cannot satisfy both halves of the contract).
+	// Find the slot containing p_key or the first empty/deleted slot in the
+	// probe sequence. Returns true if found, false if r_slot_idx should be
+	// used for insertion. Caller must ensure _capacity > 0 and _growth_left > 0.
 	bool _find_or_prepare_insert(const TKey &p_key, uint32_t p_hash, uint32_t &r_slot_idx) const {
 		const uint8_t h2 = SwissTable::h2(p_hash);
 		uint32_t group_idx = SwissTable::h1(p_hash) & _capacity_mask;
@@ -341,8 +326,6 @@ private:
 
 		while (true) {
 			SwissTable::Group g(_ctrl + group_idx);
-			// Look for a matching fingerprint first; if any candidate's full
-			// hash matches and key compares equal, we've found the entry.
 			Mask m = g.match(h2);
 			auto it = m.iter();
 			while (it.has_next()) {
@@ -355,9 +338,6 @@ private:
 					return true;
 				}
 			}
-			// Record the first kEmpty/kDeleted slot we encounter so we have
-			// somewhere to put the new entry once we conclude the key isn't
-			// present anywhere along the probe chain.
 			if (!have_insert_slot) {
 				Mask ed = g.match_empty_or_deleted();
 				if (ed) {
@@ -366,9 +346,6 @@ private:
 					have_insert_slot = true;
 				}
 			}
-			// kEmpty terminates the probe chain: the key cannot appear past
-			// this group, so the recorded insert slot (which exists, since
-			// this group has at least one empty byte) is the answer.
 			if (g.match_empty()) {
 				r_slot_idx = insert_slot;
 				return false;
@@ -451,24 +428,11 @@ private:
 		_resize_table(new_capacity);
 	}
 
-	// Decide whether an erased slot can become kEmpty (so it doesn't
-	// permanently consume probe-chain length) or must remain a kDeleted
-	// tombstone. With unaligned probing, the promotion to kEmpty is only
-	// safe when no probe sequence could ever have been forced to skip past
-	// this slot while it was full -- approximated by requiring an empty in
-	// both the kGroupWidth-window immediately after AND immediately before
-	// the slot, with no run of kGroupWidth full bytes in between. This
-	// matches absl::container_internal::WasNeverFull.
+	// Decide whether an erased slot can become kEmpty or must remain a tombstone.
 	_FORCE_INLINE_ uint8_t _ctrl_after_erase(uint32_t p_slot) const {
 		if (_capacity <= kGroupWidth) {
 			return SwissTable::kEmpty;
 		}
-		// SIMD-scan the kGroupWidth-byte windows AFTER and BEFORE p_slot for
-		// kEmpty. Both reads are single unaligned loads -- the trailing read
-		// stays in-bounds because of the mirror tail past _capacity, and the
-		// leading read of the kGroupWidth bytes ending at p_slot - 1 is also
-		// in-bounds for any p_slot since the wrap case (p_slot < kGroupWidth)
-		// lands its tail in that same mirror region.
 		const SwissTable::Group g_after(_ctrl + p_slot);
 		const Mask after_empty = g_after.match_empty();
 		if (!after_empty) {
@@ -479,9 +443,6 @@ private:
 		const uint32_t lead_start = (p_slot - kGroupWidth) & _capacity_mask;
 		const SwissTable::Group g_before(_ctrl + lead_start);
 		const Mask before_empty = g_before.match_empty();
-		// Slot at position k within g_before is (kGroupWidth - 1 - k) bytes
-		// before p_slot, so the closest kEmpty corresponds to the highest set
-		// bit. No empty -> full kGroupWidth-byte run, force kDeleted.
 		const uint32_t leading = before_empty
 				? ((kGroupWidth - 1u) - before_empty.highest_set_bit())
 				: kGroupWidth;
@@ -742,9 +703,7 @@ public:
 		_set_ctrl(old_slot, new_ctrl);
 		_slots[old_slot] = kInvalidHandle;
 
-		// Mutate the key in place. KeyValue::key is `const TKey`; the cast is
-		// safe because the entry is uniquely owned and no caller may hold a
-		// concurrent reference to it. Update the cached hash to match.
+		// KeyValue::key is const TKey.
 		const_cast<TKey &>(payload->key) = p_new_key;
 		_entry_hashes[handle] = new_hash;
 
@@ -936,9 +895,6 @@ public:
 		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot)) {
 			return _payload_from_slot(slot)->value;
 		}
-		// Single-pass path: when the table is empty we still need to pick a
-		// slot. _find_or_prepare_insert handles that, but only when called;
-		// when _size == 0 we skip it and fall back to the simpler probe.
 		if (_size == 0) {
 			slot = _find_insert_slot(hash);
 		}

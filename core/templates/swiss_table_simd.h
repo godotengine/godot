@@ -39,25 +39,9 @@
  * SwissTable-style control-byte group scanning primitives, shared by HashMap
  * and AHashMap.
  *
- * Each control byte describes one slot in the index table:
- *   - kEmpty   (0x80) -- never used or rehashed-out.
- *   - kDeleted (0xFE) -- tombstone left by erase, may still be probed past.
- *   - 0..0x7F (kFull) -- 7-bit fingerprint (h2) of the contained key's hash.
- *
- * H1 (top bits) selects the starting probe group; H2 (low 7 bits, top bit
- * cleared) is stored in the control byte. Lookup loads a group of bytes,
- * SIMD-compares them against H2, and only follows up with a full key compare
- * on slots whose fingerprint matches.
- *
- * Group widths:
- *   - SSE2 / WASM SIMD128: 16 bytes
- *   - NEON: 8 bytes (we use the vshrn-pack trick to produce a 64-bit mask
- *     where each match byte is 0xF, and then condense to a 32-bit bitmask
- *     with one set bit per match)
- *   - SWAR scalar fallback: 8 bytes
- *
- * The Match return type (BitMask) abstracts the per-platform mask shape so
- * that callers can iterate set bits uniformly via lowest_set_bit() / next().
+ * Control bytes store empty, deleted, or a 7-bit hash fingerprint. Probing
+ * compares a group of control bytes against h2 and only does a full key
+ * comparison on matching slots.
  */
 
 namespace SwissTable {
@@ -66,40 +50,23 @@ inline constexpr uint8_t kEmpty = 0x80;
 inline constexpr uint8_t kDeleted = 0xFE;
 inline constexpr uint8_t kSentinel = 0xFF; // Reserved, currently unused.
 
-// True if the control byte represents an empty slot.
 static _FORCE_INLINE_ bool is_empty(uint8_t ctrl) {
 	return ctrl == kEmpty;
 }
 
-// True if the control byte represents a tombstone.
 static _FORCE_INLINE_ bool is_deleted(uint8_t ctrl) {
 	return ctrl == kDeleted;
 }
 
-// True if the control byte represents either empty or a tombstone.
 static _FORCE_INLINE_ bool is_empty_or_deleted(uint8_t ctrl) {
 	return (ctrl & 0x80) != 0;
 }
 
-// True if the control byte represents a full slot (top bit cleared).
 static _FORCE_INLINE_ bool is_full(uint8_t ctrl) {
 	return (ctrl & 0x80) == 0;
 }
 
-// Bit avalanche / "finalizer" applied to user hashes before splitting them
-// into H1 (group selector) and H2 (fingerprint).
-//
-// SwissTable selects buckets and fingerprints from disjoint bit ranges of a
-// 32-bit hash. Several Godot keys use hash functions whose bits are not well
-// mixed -- DJB2 String hashing in particular leaves the high bits highly
-// correlated when keys share a common prefix (e.g. "key_0".."key_N"). That
-// causes both probe-chain pile-ups (poor H1) and frequent fingerprint
-// collisions (poor H2), which in turn force cache-missing Element derefs to
-// do real key compares.
-//
-// We mix once at the public boundary (just before h1/h2) so callers don't
-// have to know about it. This is the splitmix32-style finalizer; cheap (a
-// few cycles) and breaks low-entropy correlations across all 32 bits.
+// Finalizer applied before splitting a 32-bit hash into h1 and h2.
 static _FORCE_INLINE_ uint32_t mix(uint32_t hash) {
 	hash ^= hash >> 16;
 	hash *= 0x7feb352dU;
@@ -109,35 +76,21 @@ static _FORCE_INLINE_ uint32_t mix(uint32_t hash) {
 	return hash;
 }
 
-// Derive the 7-bit fingerprint to store in a control byte from a 32-bit hash.
-// We use the top 7 bits of the 32-bit hash to spread the fingerprint across
-// keys whose H1 (low bits) collide. Top bit is masked off so the value never
-// collides with kEmpty/kDeleted.
+// Derive the 7-bit fingerprint stored in the control byte.
 static _FORCE_INLINE_ uint8_t h2(uint32_t hash) {
 	return static_cast<uint8_t>((hash >> 25) & 0x7F);
 }
 
-// "Probe sequence" group index. The fast path uses the low bits of the hash
-// to select the starting group; the caller is responsible for masking by
-// (capacity - 1). See the comment in BitMask for how H1 is consumed.
+// Starting group for the probe sequence.
 static _FORCE_INLINE_ uint32_t h1(uint32_t hash) {
 	return hash >> 7;
 }
 
-// Iterate set bits in a SIMD match bitmask. Each call to next() returns the
-// slot index of the next match (0..Width-1). The mask layout differs per
-// backend:
-//   - SSE2 / WASM SIMD128: 1 bit per matched byte (Shift = 0).
-//   - NEON: 4 bits per matched byte (Shift = 2).
-//   - SWAR: 8 bits per matched byte (Shift = 3).
-//
-// `next()` clears ALL bits belonging to the lowest match before returning, so
-// that the iteration step correctly advances past the per-match bit group.
+// Iterate set bits in a backend-specific SIMD match bitmask.
 template <uint32_t Width, uint32_t Shift>
 struct BitMask {
 	uint64_t mask;
 
-	// Bits belonging to one match. 1 for SSE2/WASM, 0xF for NEON, 0xFF for SWAR.
 	static constexpr uint64_t kMatchBits = (1ULL << (1u << Shift)) - 1;
 
 	_FORCE_INLINE_ explicit operator bool() const { return mask != 0; }
@@ -180,8 +133,6 @@ struct BitMask {
 		return ctz64(mask) >> Shift;
 	}
 
-	// Slot index of the highest set match in the mask. Caller must ensure
-	// mask != 0. Symmetric to lowest_set_bit but walks from the top.
 	_FORCE_INLINE_ uint32_t highest_set_bit() const {
 		return (63u - clz64(mask)) >> Shift;
 	}
@@ -194,9 +145,6 @@ struct BitMask {
 		_FORCE_INLINE_ uint32_t next() {
 			const uint32_t bit = ctz64(m);
 			const uint32_t idx = bit >> Shift;
-			// Clear all bits belonging to this match (one bit, one nibble, or
-			// one byte depending on Shift). The base aligns to the per-match
-			// stride (1, 4, or 8 bits).
 			const uint32_t base = bit & ~((1u << Shift) - 1u);
 			m &= ~(kMatchBits << base);
 			return idx;
@@ -210,9 +158,7 @@ struct BitMask {
 
 } // namespace SwissTable
 
-// =============================================================================
-// SSE2 implementation (x86_64 always-on, x86 with -msse2)
-// =============================================================================
+// SSE2 implementation.
 
 #if defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
 #define SWISS_TABLE_HAS_SSE2 1
@@ -227,28 +173,22 @@ struct GroupSSE2 {
 	__m128i ctrl;
 
 	_FORCE_INLINE_ explicit GroupSSE2(const uint8_t *p_ctrl) {
-		// Use unaligned load -- callers may probe across group boundaries.
 		ctrl = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p_ctrl));
 	}
 
-	// Slots whose control byte equals h2.
 	_FORCE_INLINE_ Mask match(uint8_t p_h2) const {
 		__m128i needle = _mm_set1_epi8(static_cast<char>(p_h2));
 		__m128i eq = _mm_cmpeq_epi8(ctrl, needle);
 		return Mask{ static_cast<uint64_t>(static_cast<uint16_t>(_mm_movemask_epi8(eq))) };
 	}
 
-	// Slots whose control byte is kEmpty.
 	_FORCE_INLINE_ Mask match_empty() const {
 		__m128i needle = _mm_set1_epi8(static_cast<char>(kEmpty));
 		__m128i eq = _mm_cmpeq_epi8(ctrl, needle);
 		return Mask{ static_cast<uint64_t>(static_cast<uint16_t>(_mm_movemask_epi8(eq))) };
 	}
 
-	// Slots whose control byte has the high bit set (empty OR deleted).
 	_FORCE_INLINE_ Mask match_empty_or_deleted() const {
-		// (ctrl & 0x80) != 0 is true for kEmpty and kDeleted.
-		// _mm_movemask_epi8 returns the high bit of each byte directly.
 		return Mask{ static_cast<uint64_t>(static_cast<uint16_t>(_mm_movemask_epi8(ctrl))) };
 	}
 };
@@ -256,9 +196,7 @@ struct GroupSSE2 {
 } // namespace SwissTable
 #endif
 
-// =============================================================================
-// NEON implementation (ARM64 / ARMv7 with NEON)
-// =============================================================================
+// NEON implementation.
 
 #if (defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(_M_ARM64)) && !defined(SWISS_TABLE_HAS_SSE2)
 #define SWISS_TABLE_HAS_NEON 1

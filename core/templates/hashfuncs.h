@@ -46,9 +46,7 @@ struct Pair;
  */
 
 // Deterministic folded-multiply hasher derived from foldhash's core mixing
-// primitive. We hash string code units by numeric value (rather than their
-// in-memory byte layout) so `char *`, `wchar_t *`, and `char32_t *` overloads
-// stay consistent for the same code points on the current platform.
+// primitive.
 inline constexpr uint64_t HASH_FOLD_SEED0 = 0x243f6a8885a308d3ULL;
 inline constexpr uint64_t HASH_FOLD_SEED1 = 0x13198a2e03707344ULL;
 inline constexpr uint64_t HASH_FOLD_SEED2 = 0xa4093822299f31d0ULL;
@@ -93,9 +91,7 @@ _FORCE_INLINE_ uint64_t hash_foldhash_pack_units(const T *p_data, int p_count) {
 	using U = std::make_unsigned_t<T>;
 	uint64_t word = 0;
 	for (int i = 0; i < p_count; i++) {
-		// Normalize every code unit to a 32-bit lane so equivalent logical
-		// strings hash the same regardless of whether they entered as char*,
-		// wchar_t*, char16_t*, char32_t*, or String.
+		// Pack code units into 32-bit lanes before mixing.
 		word |= uint64_t(uint32_t(U(p_data[i]))) << (i * 32);
 	}
 	return word;

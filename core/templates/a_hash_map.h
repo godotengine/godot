@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/memory.h"
-#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
+#include "core/string/print_string.h" // IWYU pragma: keep
 #include "core/templates/hashfuncs.h"
 #include "core/templates/pair.h"
 #include "core/templates/swiss_table_simd.h"
@@ -82,19 +82,13 @@ private:
 	using Mask = typename SwissTable::Group::Mask;
 	static constexpr uint32_t kGroupWidth = SwissTable::Group::kWidth;
 
-	// Index table:
-	//   _ctrl: capacity + kGroupWidth control bytes (the trailing bytes mirror
-	//          the leading ones so group probing can wrap-overshoot safely).
-	//   _slots: capacity entry indices (uint32_t each), parallel to _ctrl[0..capacity).
+	// Index table.
 	uint8_t *_ctrl = nullptr;
 	uint32_t *_slots = nullptr;
 
-	// Dense entries store (insertion order is NOT preserved on erase).
+	// Dense entries (insertion order is not preserved on erase).
 	KV *_elements = nullptr;
-	// Parallel cached 32-bit hashes, sized identically to _elements. Stored
-	// at insert time so probes can short-circuit before a (potentially
-	// expensive) key compare and so rehashing on grow doesn't have to re-run
-	// Hasher on the key.
+	// Parallel cached 32-bit hashes.
 	uint32_t *_hashes = nullptr;
 	uint32_t _elements_capacity = 0;
 
@@ -105,14 +99,10 @@ private:
 	uint32_t _deleted = 0; // Tombstones currently in the index table.
 
 	static _FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
-		// Hashers are expected to return SwissTable-ready 32-bit hashes now.
-		// We cache that exact value in _hashes[i] so grow and the hash short-
-		// circuit in _lookup stay consistent without paying a second boundary
-		// mix on every insert/lookup/erase.
 		return Hasher::hash(p_key);
 	}
 
-	// Round up to a power of two no smaller than min, and at least kGroupWidth.
+	// Round up to a power of two no smaller than min.
 	static _FORCE_INLINE_ uint32_t _round_up_capacity(uint32_t p_min) {
 		uint32_t cap = kGroupWidth;
 		while (cap < p_min) {
@@ -121,10 +111,7 @@ private:
 		return cap;
 	}
 
-	// Find the slot containing p_key. Returns true if found, with r_slot_idx
-	// set to the slot index in _ctrl/_slots and r_element_idx to the index in
-	// _elements. Uses the cached 32-bit hash on each candidate to short-
-	// circuit before the (potentially expensive) key compare.
+	// Find the slot containing p_key. Returns true if found.
 	bool _lookup(const TKey &p_key, uint32_t p_hash, uint32_t &r_slot_idx, uint32_t &r_element_idx) const {
 		if (_capacity == 0) {
 			return false;
@@ -147,24 +134,15 @@ private:
 					return true;
 				}
 			}
-			// If this group has any empty slot, the key cannot be further along
-			// the probe sequence (deletes are tombstones, empties are not).
 			if (g.match_empty()) {
 				return false;
 			}
 			probe_dist += kGroupWidth;
-			// Quadratic probing across groups; bounded by capacity (always succeeds
-			// because we maintain at least one empty slot in the table).
 			group_idx = (group_idx + probe_dist) & _capacity_mask;
 		}
 	}
 
-	// Combined "lookup if present, otherwise pick insert slot" probe used
-	// by insert and operator[]. Returns true if the key is already in the
-	// table (with r_slot_idx / r_element_idx set to the existing entry);
-	// returns false with r_slot_idx pointing at a kEmpty/kDeleted slot
-	// where the new entry should be placed.
-	//
+	// Find an existing key or the slot to insert into.
 	// Caller must ensure _capacity > 0 and _growth_left > 0.
 	bool _find_or_prepare_insert(const TKey &p_key, uint32_t p_hash,
 			uint32_t &r_slot_idx, uint32_t &r_element_idx) const {
@@ -222,26 +200,11 @@ private:
 		}
 	}
 
-	// Decide whether an erased slot can become kEmpty (so it doesn't
-	// permanently consume probe-chain length) or must remain a kDeleted
-	// tombstone. With unaligned probing, the promotion to kEmpty is only
-	// safe when no probe sequence could ever have been forced to skip past
-	// this slot while it was full -- approximated by requiring an empty in
-	// both the kGroupWidth-window immediately after AND immediately before
-	// the slot, with no run of kGroupWidth full bytes in between. This
-	// matches absl::container_internal::WasNeverFull.
+	// Decide whether an erased slot can become kEmpty or must remain a tombstone.
 	_FORCE_INLINE_ uint8_t _ctrl_after_erase(uint32_t p_slot_idx) const {
-		// Single-group tables: no probe sequence ever leaves the group, so
-		// converting an erased slot to empty is always safe.
 		if (_capacity <= kGroupWidth) {
 			return SwissTable::kEmpty;
 		}
-		// SIMD-scan the kGroupWidth-byte windows AFTER and BEFORE p_slot_idx
-		// for kEmpty. Both reads are single unaligned loads -- the trailing
-		// read stays in-bounds because of the mirror tail past _capacity, and
-		// the leading read of the kGroupWidth bytes ending at p_slot_idx - 1
-		// is in-bounds for any p_slot_idx since the wrap case
-		// (p_slot_idx < kGroupWidth) lands its tail in that same mirror.
 		const SwissTable::Group g_after(_ctrl + p_slot_idx);
 		const Mask after_empty = g_after.match_empty();
 		if (!after_empty) {
@@ -252,9 +215,6 @@ private:
 		const uint32_t lead_start = (p_slot_idx - kGroupWidth) & _capacity_mask;
 		const SwissTable::Group g_before(_ctrl + lead_start);
 		const Mask before_empty = g_before.match_empty();
-		// Slot at position k within g_before is (kGroupWidth - 1 - k) bytes
-		// before p_slot_idx, so the closest kEmpty corresponds to the highest
-		// set bit. No empty -> full kGroupWidth-byte run, force kDeleted.
 		const uint32_t leading = before_empty
 				? ((kGroupWidth - 1u) - before_empty.highest_set_bit())
 				: kGroupWidth;
@@ -373,15 +333,10 @@ private:
 			return;
 		}
 		_resize_table(p_other._capacity);
-		// Match the source's full entries-array capacity, not just its current
-		// size. The index table copied below was sized for `p_other._capacity`
-		// and still has growth_left slots available without rehashing; if we
-		// only allocate `p_other._size` entries here, subsequent inserts will
-		// happily write past the entries array before the next grow.
 		_grow_entries(MAX(p_other._size, _entries_capacity_for(_capacity)));
 		// Copy entries.
 		if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
-			memcpy(static_cast<void *>(_elements), static_cast<const void *>(p_other._elements), sizeof(KV) * p_other._size);
+			memcpy(_elements, p_other._elements, sizeof(KV) * p_other._size);
 		} else {
 			for (uint32_t i = 0; i < p_other._size; i++) {
 				memnew_placement(&_elements[i], KV(p_other._elements[i]));
@@ -482,12 +437,7 @@ public:
 		_elements[element_idx].value.~TValue();
 		_size--;
 
-		// Swap-with-tail to keep entries dense. We need to update the moved
-		// entry's slot mapping BEFORE doing the actual move, because a
-		// post-move lookup would find the slot but read the (now-garbage)
-		// data at the old tail index when comparing keys. We use the cached
-		// hash on the tail entry to drive the lookup so we don't re-run
-		// Hasher on the moved key.
+		// Swap with the tail to keep entries dense.
 		if (element_idx < _size) {
 			uint32_t moved_slot = 0;
 			uint32_t moved_idx = 0;
