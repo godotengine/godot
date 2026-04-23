@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamOpus" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		A class representing an Ogg Opus audio stream.
+		A class representing an Opus audio stream.
 	</brief_description>
 	<description>
-		The AudioStreamOpus class is a specialized [AudioStream] for handling Ogg Opus file formats. It offers functionality for loading and playing back Ogg Opus files, as well as managing looping and other playback properties. More info can be found in [ResourceImporterOpus].
+		The AudioStreamOpus class is a specialized [AudioStream] for handling Opus file formats. It offers functionality for loading and playing back Opus files, as well as managing looping and other playback properties. More info can be found in [ResourceImporterOpus].
 		This class is part of the audio stream system, which also supports WAV files through the [AudioStreamWAV] class, and MP3 files through the [AudioStreamMP3] class.
 	</description>
 	<tutorials>
@@ -16,14 +16,14 @@
 			<return type="AudioStreamOpus" />
 			<param index="0" name="stream_data" type="PackedByteArray" />
 			<description>
-				Creates a new [AudioStreamOpus] instance from the given buffer. The buffer must contain Ogg Opus data.
+				Creates a new [AudioStreamOpus] instance from the given buffer. The buffer must contain Opus data.
 			</description>
 		</method>
 		<method name="load_from_file" qualifiers="static">
 			<return type="AudioStreamOpus" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Creates a new [AudioStreamOpus] instance from the given file path. The file must be in Ogg Opus format.
+				Creates a new [AudioStreamOpus] instance from the given file path. The file must be in Opus format.
 			</description>
 		</method>
 	</methods>
@@ -38,7 +38,7 @@
 			The tempo of the audio track, measured in beats per minute.
 		</member>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
-			Contains the raw Ogg Opus data for this stream.
+			Contains the raw Opus data for this stream.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
 			If [code]true[/code], the stream will play again from the specified [member loop_offset] once it reaches the end of the audio track, or once it reaches the end of the last beat according to the amount specified in [member beat_count]. Useful for ambient sounds and background music.
@@ -47,7 +47,7 @@
 			Time in seconds at which the stream starts after being looped.
 		</member>
 		<member name="tags" type="Dictionary" setter="set_tags" getter="get_tags" default="{}">
-			Contains user-defined tags if found in the Ogg Opus data.
+			Contains user-defined tags if found in the Opus data.
 			Commonly used tags include [code]title[/code], [code]artist[/code], [code]album[/code], [code]tracknumber[/code], and [code]date[/code] ([code]date[/code] does not have a standard date format).
 			[b]Note:[/b] No tag is [i]guaranteed[/i] to be present in every file, so make sure to account for the keys not always existing.
 		</member>
