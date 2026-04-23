@@ -141,7 +141,4 @@ public:
 		return true;
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
-
-	AudioStreamOpus();
-	virtual ~AudioStreamOpus();
 };
