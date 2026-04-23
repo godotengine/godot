@@ -4011,8 +4011,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			push_error(vformat(R"(Cannot construct abstract class "%s".)", base_type.to_string()), p_call);
 		}
 	}
-
-	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
+	
+	///
+	GDScriptParser::FunctionNode* script_func = nullptr;
+	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags, nullptr, &script_func)) {
 		p_call->is_static = method_flags.has_flag(METHOD_FLAG_STATIC);
 		// If the method is implemented in the class hierarchy, the virtual/abstract flag will not be set for that `MethodInfo` and the search stops there.
 		// Virtual/abstract check only possible for super calls because class hierarchy is known. Objects may have scripts attached we don't know of at compile-time.
@@ -4099,6 +4101,35 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 		/// [Monarch] Infer generic bindings from call arguments (Stuff.from(3) => T = int resolution chain)
 		HashMap<StringName, GDScriptParser::DataType> call_generic_bindings(base_type.generic_type_bindings);
+		if (!p_call->explicit_type_arguments.is_empty()) {
+			if (script_func == nullptr || script_func->generic_parameters.is_empty()) {
+				push_error(vformat(R"([Reginleif] Cannot pass explicit type arguments to non-generic call '%s()'.)", p_call->function_name), p_call);
+				p_call->set_datatype(call_type);
+				return;
+			}
+
+			if (p_call->explicit_type_arguments.size() != script_func->generic_parameters.size()) {
+				push_error(vformat(
+						   R"([Reginleif] Generic call '%s()' expects %d type argument(s), but %d were provided.)",
+						   p_call->function_name,
+						   script_func->generic_parameters.size(),
+						   p_call->explicit_type_arguments.size()),
+						p_call);
+				p_call->set_datatype(call_type);
+				return;
+			}
+
+			for (int i = 0; i < p_call->explicit_type_arguments.size(); i++) {
+				const StringName param_name = script_func->generic_parameters[i]->name;
+				GDScriptParser::DataType explicit_type = type_from_metatype(resolve_datatype(p_call->explicit_type_arguments[i]));
+				if (explicit_type.kind == GDScriptParser::DataType::GENERIC_TYPE && explicit_type.generic_owner_function == script_func) {
+					push_error(vformat(R"([Reginleif] Explicit type argument %d for '%s()' cannot be an unresolved generic parameter '%s'.)", i + 1, p_call->function_name, explicit_type.generic_param), p_call->explicit_type_arguments[i]);
+					p_call->set_datatype(call_type);
+					return;
+				}
+				call_generic_bindings[param_name] = explicit_type;
+			}
+		}
 
 		List<GDScriptParser::DataType>::ConstIterator par_itr = par_types.begin();
 		for (int i = 0; i < p_call->arguments.size() && i < par_types.size(); ++i, ++par_itr) {
@@ -6352,11 +6383,14 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	return result;
 }
 
-bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class) {
+bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class, GDScriptParser::FunctionNode** r_script_func) {
 	r_method_flags = METHOD_FLAGS_DEFAULT;
 	r_default_arg_count = 0;
 	if (r_native_class) {
 		*r_native_class = StringName();
+	}
+	if (r_script_func) {
+		*r_script_func = nullptr;
 	}
 	StringName function_name = p_function;
 
@@ -6442,6 +6476,12 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 	}
 
 	if (found_function != nullptr) {
+
+		///
+		if (r_script_func) {
+			*r_script_func = found_function;
+		}
+
 		if (found_function->is_abstract) {
 			r_method_flags.set_flag(METHOD_FLAG_VIRTUAL_REQUIRED);
 		}

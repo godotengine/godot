@@ -547,6 +547,8 @@ public:
 		ExpressionNode *callee = nullptr;
 		Vector<ExpressionNode *> arguments;
 		StringName function_name;
+		///
+		Vector<TypeNode*> explicit_type_arguments;
 		bool is_super = false;
 		bool is_static = false;
 
@@ -1669,8 +1671,8 @@ private:
 	PatternNode *parse_match_pattern(PatternNode *p_root_pattern = nullptr);
 	WhileNode *parse_while();
 	// Expressions.
-	ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false);
-	ExpressionNode *parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign = false);
+	ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false, bool p_stop_on_colon = false); ///
+	ExpressionNode *parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign = false, bool p_stop_on_colon = false); ///
 	ExpressionNode *parse_literal(ExpressionNode *p_previous_operand, bool p_can_assign);
 	LiteralNode *parse_literal();
 	ExpressionNode *parse_self(ExpressionNode *p_previous_operand, bool p_can_assign);
@@ -1692,6 +1694,8 @@ private:
 	ExpressionNode *parse_await(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
+	///
+	ExpressionNode* parse_generic_call_with_type_arguments(ExpressionNode* p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
