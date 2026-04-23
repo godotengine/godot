@@ -1871,7 +1871,7 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	float cc_specular_ltc = 0.0;
 	vec2 cc_fresnel = vec2(0.0);
 	ltc_evaluate_specular(vertex_normal, eye_vec, sqrt(mix(0.001, 0.1, float(clearcoat_roughness))), points, ltc_lut1, ltc_lut2, cc_specular_ltc, cc_fresnel);
-	float Fr = 0.04 * max(cc_fresnel.x, 0.0) + (1.0 - 0.04) * max(cc_fresnel.y, 0.0) * clearcoat;
+	float Fr = (0.04 * max(cc_fresnel.x, 0.0) + (1.0 - 0.04) * max(cc_fresnel.y, 0.0)) * clearcoat;
 	cc_attenuation = 1.0 - Fr;
 	specular_light += cc_specular_ltc * Fr * light_color * light_attenuation_ltc * specular_amount;
 #endif // LIGHT_CLEARCOAT_USED

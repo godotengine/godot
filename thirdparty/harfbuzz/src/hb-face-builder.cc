@@ -180,10 +180,8 @@ _hb_face_builder_get_table_tags (const hb_face_t *face HB_UNUSED,
   {
     // Not much to do...
   }
-  sorted_tags.qsort ([] (const void* a, const void* b) {
-    return * (hb_tag_t *) a <  * (hb_tag_t *) b ? -1 :
-	   * (hb_tag_t *) a == * (hb_tag_t *) b ?  0 :
-	                                          +1;
+  sorted_tags.qsort ([] (const hb_tag_t &a, const hb_tag_t &b) {
+    return a < b;
   });
 
   auto array = sorted_tags.as_array ().sub_array (start_offset, table_count);
