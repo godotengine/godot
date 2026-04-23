@@ -55,7 +55,7 @@
 #include "scene/resources/style_box_flat.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
-	request->set_use_threads(EDITOR_GET("asset_library/use_threads"));
+	request->set_use_threads(EDITOR_GET("asset_store/use_threads"));
 
 	const String proxy_host = EDITOR_GET("network/http_proxy/host");
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
@@ -1106,10 +1106,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 }
 
 void EditorAssetLibrary::_update_repository_options() {
-	// TODO: Move to editor_settings.cpp
-	Dictionary default_urls;
-	default_urls["godotengine.org (Official)"] = "https://store.godotengine.org/api/v1";
-	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+	Dictionary available_urls = EDITOR_GET("asset_store/available_urls");
 	repository->clear();
 	int i = 0;
 	for (const KeyValue<Variant, Variant> &kv : available_urls) {
