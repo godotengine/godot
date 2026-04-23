@@ -43,6 +43,7 @@
 					if property == "fake_property":
 						print("Getting my property!")
 						return 4
+					return null
 
 				func _get_property_list():
 					return [
@@ -113,6 +114,7 @@
 					if property.begins_with("number_"):
 						var index = property.get_slice("_", 1).to_int()
 						return numbers[index]
+					return null
 
 				func _set(property, value):
 					if property.begins_with("number_"):
