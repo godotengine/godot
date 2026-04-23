@@ -574,9 +574,7 @@ Error SceneDebugger::_msg_report_window_focused(const Array &p_args) {
 
 	bool focused = p_args[0];
 	Input::get_singleton()->embedder_focused = focused;
-	if (Input::get_singleton()->_should_ignore_joypad_events()) {
-		Input::get_singleton()->release_pressed_events();
-	}
+	Input::get_singleton()->release_pressed_events();
 	return OK;
 }
 

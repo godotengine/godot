@@ -936,9 +936,10 @@ void SceneTree::_notification(int p_notification) {
 			if (Input::get_singleton()) {
 				Input::get_singleton()->application_focused = p_notification == NOTIFICATION_APPLICATION_FOCUS_IN;
 
-				if (Input::get_singleton()->_should_ignore_joypad_events()) {
-					Input::get_singleton()->release_pressed_events();
-				}
+				// `release_pressed_events()` already preserves joypad state when the
+				// unfocused joypad setting is disabled, but keyboard state still needs
+				// to be released after focus loss.
+				Input::get_singleton()->release_pressed_events();
 			}
 
 			// Pass these to nodes, since they are mirrored.
