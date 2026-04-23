@@ -2164,6 +2164,20 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				
 			}
 		}
+
+
+
+		if (GDScriptParser::get_builtin_type(this_name) < Variant::VARIANT_MAX) {
+			push_error(vformat(R"([Reginleif] Function generic parameter "%s" hides a built-in type.)", this_name), param);
+		} else if (class_exists(this_name)) {
+			push_error(vformat(R"([Reginleif] Function generic parameter "%s" hides a native class.)", this_name), param);
+		} else if (ScriptServer::is_global_class(this_name) &&
+				(!GDScript::is_canonically_equal_paths(ScriptServer::get_global_class_path(this_name), parser->script_path) || parser->current_class != parser->head)) {
+			push_error(vformat(R"([Reginleif] Function generic parameter "%s" hides a global script class.)", this_name), param);
+		} else if (ProjectSettings::get_singleton()->has_autoload(this_name) &&
+				ProjectSettings::get_singleton()->get_autoload(this_name).is_singleton) {
+			push_error(vformat(R"([Reginleif] Function generic parameter "%s" hides an autoload.)", this_name), param);
+		}
 	}
 
 
