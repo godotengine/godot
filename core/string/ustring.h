@@ -228,7 +228,7 @@ public:
 		return *this;
 	}
 
-	uint32_t hash() const { return hash_djb2(get_data()); }
+	uint32_t hash() const { return hash_foldhash(get_data(), length()); }
 
 protected:
 	void copy_from(const T *p_cstr) {

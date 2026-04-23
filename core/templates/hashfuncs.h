@@ -45,6 +45,133 @@ struct Pair;
  * Hashing functions
  */
 
+// Deterministic folded-multiply hasher derived from foldhash's core mixing
+// primitive. We hash string code units by numeric value (rather than their
+// in-memory byte layout) so `char *`, `wchar_t *`, and `char32_t *` overloads
+// stay consistent for the same code points on the current platform.
+inline constexpr uint64_t HASH_FOLD_SEED0 = 0x243f6a8885a308d3ULL;
+inline constexpr uint64_t HASH_FOLD_SEED1 = 0x13198a2e03707344ULL;
+inline constexpr uint64_t HASH_FOLD_SEED2 = 0xa4093822299f31d0ULL;
+inline constexpr uint64_t HASH_FOLD_SEED3 = 0x082efa98ec4e6c89ULL;
+inline constexpr uint64_t HASH_FOLD_SEED4 = 0x452821e638d01377ULL;
+
+_FORCE_INLINE_ uint32_t hash_fmix32(uint32_t h);
+
+_FORCE_INLINE_ uint64_t hash_folded_multiply(uint64_t p_x, uint64_t p_y) {
+#if defined(_MSC_VER) && defined(_M_X64)
+	uint64_t hi = 0;
+	const uint64_t lo = _umul128(p_x, p_y, &hi);
+	return lo ^ hi;
+#elif defined(_MSC_VER) && defined(_M_ARM64)
+	const uint64_t lo = p_x * p_y;
+	const uint64_t hi = __umulh(p_x, p_y);
+	return lo ^ hi;
+#elif defined(__SIZEOF_INT128__)
+	__extension__ typedef unsigned __int128 uint128;
+	const uint128 full = static_cast<uint128>(p_x) * static_cast<uint128>(p_y);
+	return static_cast<uint64_t>(full) ^ static_cast<uint64_t>(full >> 64);
+#else
+	const uint32_t lx = uint32_t(p_x);
+	const uint32_t ly = uint32_t(p_y);
+	const uint32_t hx = uint32_t(p_x >> 32);
+	const uint32_t hy = uint32_t(p_y >> 32);
+
+	const uint64_t ll = uint64_t(lx) * uint64_t(ly);
+	const uint64_t lh = uint64_t(lx) * uint64_t(hy);
+	const uint64_t hl = uint64_t(hx) * uint64_t(ly);
+	const uint64_t hh = uint64_t(hx) * uint64_t(hy);
+	return (hh ^ ll) ^ ((hl ^ lh) >> 32) ^ ((hl ^ lh) << 32);
+#endif
+}
+
+template <typename T>
+_FORCE_INLINE_ uint64_t hash_foldhash_pack_units(const T *p_data, int p_count) {
+	static_assert(std::is_integral_v<T>, "Foldhash packer requires integral code units.");
+	static_assert(sizeof(T) <= sizeof(uint32_t), "Foldhash packer requires code units up to 32 bits.");
+	ERR_FAIL_COND_V(p_count > 2, 0);
+
+	using U = std::make_unsigned_t<T>;
+	uint64_t word = 0;
+	for (int i = 0; i < p_count; i++) {
+		// Normalize every code unit to a 32-bit lane so equivalent logical
+		// strings hash the same regardless of whether they entered as char*,
+		// wchar_t*, char16_t*, char32_t*, or String.
+		word |= uint64_t(uint32_t(U(p_data[i]))) << (i * 32);
+	}
+	return word;
+}
+
+template <typename T>
+_FORCE_INLINE_ int hash_foldhash_cstr_len(const T *p_cstr) {
+	int len = 0;
+	while (p_cstr[len] != 0) {
+		len++;
+	}
+	return len;
+}
+
+template <typename T>
+_FORCE_INLINE_ uint32_t hash_foldhash_units(const T *p_data, int p_len) {
+	static_assert(std::is_integral_v<T>, "Foldhash unit hasher requires integral code units.");
+	constexpr int kLaneUnits = 2;
+
+	uint64_t acc = HASH_FOLD_SEED3 ^ (uint64_t(uint32_t(MAX(p_len, 0))) * HASH_FOLD_SEED4);
+	int i = 0;
+	while (i + 2 * kLaneUnits <= p_len) {
+		const uint64_t lo = hash_foldhash_pack_units(p_data + i, kLaneUnits);
+		const uint64_t hi = hash_foldhash_pack_units(p_data + i + kLaneUnits, kLaneUnits);
+		acc = hash_folded_multiply(lo ^ acc, hi ^ HASH_FOLD_SEED0);
+		i += 2 * kLaneUnits;
+	}
+
+	const int remaining = p_len - i;
+	if (remaining > 0) {
+		const int lo_count = MIN(remaining, kLaneUnits);
+		const int hi_count = remaining - lo_count;
+		const uint64_t lo = hash_foldhash_pack_units(p_data + i, lo_count);
+		const uint64_t hi = (hi_count > 0)
+				? hash_foldhash_pack_units(p_data + i + lo_count, hi_count)
+				: ((uint64_t(uint32_t(p_len)) << 32) | uint64_t(lo_count));
+		acc = hash_folded_multiply(lo ^ acc, hi ^ HASH_FOLD_SEED1);
+	}
+
+	const uint64_t final = hash_folded_multiply(acc ^ HASH_FOLD_SEED2,
+			(uint64_t(uint32_t(p_len)) << 32) ^ HASH_FOLD_SEED4);
+	return uint32_t(final) ^ uint32_t(final >> 32);
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const char *p_cstr) {
+	return hash_foldhash_units(reinterpret_cast<const uint8_t *>(p_cstr), hash_foldhash_cstr_len(p_cstr));
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const char *p_cstr, int p_len) {
+	return hash_foldhash_units(reinterpret_cast<const uint8_t *>(p_cstr), p_len);
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const wchar_t *p_cstr, int p_len) {
+	return hash_foldhash_units(p_cstr, p_len);
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const wchar_t *p_cstr) {
+	return hash_foldhash_units(p_cstr, hash_foldhash_cstr_len(p_cstr));
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const char16_t *p_cstr, int p_len) {
+	return hash_foldhash_units(p_cstr, p_len);
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const char16_t *p_cstr) {
+	return hash_foldhash_units(p_cstr, hash_foldhash_cstr_len(p_cstr));
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const char32_t *p_cstr, int p_len) {
+	return hash_foldhash_units(p_cstr, p_len);
+}
+
+_FORCE_INLINE_ uint32_t hash_foldhash(const char32_t *p_cstr) {
+	return hash_foldhash_units(p_cstr, hash_foldhash_cstr_len(p_cstr));
+}
+
 /**
  * DJB2 Hash function
  * @param C String
@@ -204,7 +331,12 @@ struct HashMapHasherDefaultImpl<T, std::enable_if_t<std::is_enum_v<T>>> {
 
 template <>
 struct HashMapHasherDefaultImpl<char *> {
-	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
+	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_foldhash(p_cstr); }
+};
+
+template <>
+struct HashMapHasherDefaultImpl<const char *> {
+	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_foldhash(p_cstr); }
 };
 
 template <>

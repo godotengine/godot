@@ -105,13 +105,11 @@ private:
 	uint32_t _deleted = 0; // Tombstones currently in the index table.
 
 	static _FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
-		// Apply a SwissTable-friendly bit mixer at the boundary so callers
-		// don't have to. Several Godot hashers (notably String/DJB2) leave
-		// the high bits weakly mixed; splitting them into h1/h2 directly
-		// would cluster fingerprints and inflate probe chains. The same
-		// mixed value is what we cache in _hashes[i], so that grow and the
-		// hash short-circuit in _lookup keep working consistently.
-		return SwissTable::mix(Hasher::hash(p_key));
+		// Hashers are expected to return SwissTable-ready 32-bit hashes now.
+		// We cache that exact value in _hashes[i] so grow and the hash short-
+		// circuit in _lookup stay consistent without paying a second boundary
+		// mix on every insert/lookup/erase.
+		return Hasher::hash(p_key);
 	}
 
 	// Round up to a power of two no smaller than min, and at least kGroupWidth.
