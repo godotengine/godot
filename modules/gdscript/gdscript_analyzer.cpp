@@ -992,14 +992,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	/// [Monarch] if the first identifier in the chain is a generic, then
 	/// make the generic_param StringName point at that generic, so that the DataType
 	/// fully registers itself as being "a proper Generic"
-	if (parser->current_class && parser->current_class->is_generic_parameter(first_id)) {
-		result.kind = GDScriptParser::DataType::GENERIC_TYPE;
-		result.generic_param = first;
-		result.generic_owner_class = parser->current_class;
-		p_type->set_datatype(result);
-		return result;
-	}
-
+	
 	///HACK: could remove some of the code duplication here.
 	if (parser->current_function && parser->current_function->is_generic_parameter(first_id)) {
 		result.kind = GDScriptParser::DataType::GENERIC_TYPE;
@@ -1008,7 +1001,14 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		p_type->set_datatype(result);
 		return result;
 	}
-
+	
+	if (parser->current_class && parser->current_class->is_generic_parameter(first_id)) {
+		result.kind = GDScriptParser::DataType::GENERIC_TYPE;
+		result.generic_param = first;
+		result.generic_owner_class = parser->current_class;
+		p_type->set_datatype(result);
+		return result;
+	}
 
 	if (first_id->suite && first_id->suite->has_local(first)) {
 		const GDScriptParser::SuiteNode::Local &local = first_id->suite->get_local(first);
@@ -2376,6 +2376,12 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 			push_error(R"([Reginleif] A lambda function must have a ":" or "{" followed by a body.)", p_function);
 		} else if (!p_function->is_abstract && !p_function->has_explicit_body) {
 			push_error(R"([Reginleif] A function must either have a ":" or "{" followed by a body, or be marked as "@abstract".)", p_function);
+		} else {
+			/// still need to check the return type even if the brace body is empty lol
+			GDScriptParser::DataType return_type = p_function->get_datatype();
+			if (return_type.is_hard_type() && !(return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL)) {
+				push_error(R"(Not all code paths return a value.)", p_function);
+			}
 		}
 		return;
 	} else {
