@@ -152,7 +152,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ao"] = "AO";
 	capitalize_string_remaps["api"] = "API";
 	capitalize_string_remaps["apk"] = "APK";
-	capitalize_string_remaps["32"] = "arm32";
+	capitalize_string_remaps["arm32"] = "arm32";
 	capitalize_string_remaps["arm64"] = "arm64";
 	capitalize_string_remaps["arm64-v8a"] = "arm-v8a";
 	capitalize_string_remaps["armeabi-v7a"] = "arm-v7a";
