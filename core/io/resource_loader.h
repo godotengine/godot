@@ -200,7 +200,8 @@ private:
 		bool need_wait : 1;
 		bool in_progress_check : 1; // Measure against recursion cycles in progress reporting. Cycles are not expected, but can happen due to how it's currently implemented.
 		bool use_sub_threads : 1;
-		bool load_claimed : 1; // Prevents concurrent execution of _run_load_task for the same task.
+		bool started_load : 1; // Distinguishes queued tasks from tasks already running in _run_load_task().
+		bool finished_load : 1; // Set once _run_load_task() is done touching this task.
 
 		struct ResourceChangedConnection {
 			Resource *source = nullptr;
@@ -214,7 +215,8 @@ private:
 				need_wait(true),
 				in_progress_check(false),
 				use_sub_threads(false),
-				load_claimed(false) {}
+				started_load(false),
+				finished_load(false) {}
 	};
 	static void _run_load_task(void *p_userdata);
 

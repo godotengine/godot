@@ -337,20 +337,32 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 void ResourceLoader::_run_load_task(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 
+	bool already_finished = false;
+	bool wait = false;
 	{
 		MutexLock thread_load_lock(thread_load_mutex);
 		if (cleaning_tasks) {
 			load_task.status = THREAD_LOAD_FAILED;
 			return;
 		}
-		if (load_task.status != THREAD_LOAD_IN_PROGRESS || load_task.load_claimed) {
-			// Another thread already completed or claimed this task (e.g., the
-			// original load finished or is already running while the deadlock
-			// prevention branch was about to re-run it).
-			load_task.load_token->unreference();
-			return;
+		if (load_task.started_load) {
+			already_finished = load_task.finished_load;
+			wait = !load_task.finished_load;
+		} else {
+			load_task.started_load = true;
 		}
-		load_task.load_claimed = true;
+	}
+
+	if (already_finished || wait) {
+		while (!already_finished) {
+			OS::get_singleton()->delay_usec(1000);
+			thread_load_mutex.lock();
+			already_finished = load_task.finished_load;
+			thread_load_mutex.unlock();
+		}
+
+		load_task.load_token->unreference();
+		return;
 	}
 
 	ThreadLoadTask *curr_load_task_backup = curr_load_task;
@@ -380,27 +392,6 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 
 	thread_load_mutex.lock();
-
-	if (load_task.status != THREAD_LOAD_IN_PROGRESS) {
-		// Another thread already completed this task while we were loading
-		// (race between deadlock prevention re-run and the original load).
-		// Discard our result and bail out. The discarded resource (res) is
-		// safely released when it goes out of scope; any cache interaction
-		// from set_path() during its loading is handled by the existing
-		// ResourceCache reconciliation logic above.
-		thread_load_mutex.unlock();
-
-		if (load_nesting == 0) {
-			if (own_mq_override) {
-				MessageQueue::set_thread_singleton_override(nullptr);
-				memdelete(own_mq_override);
-			}
-		}
-
-		curr_load_task = curr_load_task_backup;
-		load_task.load_token->unreference();
-		return;
-	}
 
 	load_task.resource = res;
 
@@ -501,6 +492,10 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 
 	curr_load_task = curr_load_task_backup;
+
+	thread_load_mutex.lock();
+	load_task.finished_load = true;
+	thread_load_mutex.unlock();
 }
 
 String ResourceLoader::_validate_local_path(const String &p_path) {
@@ -884,9 +879,8 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 				if (wait_err == ERR_BUSY) {
 					// The WorkerThreadPool has reported that the current task wants to await on an older one.
 					// That't not allowed for safety, to avoid deadlocks. Fortunately, though, in the context of
-					// resource loading that means that the task to wait for can be restarted here to break the
-					// cycle, with as much recursion into this process as needed.
-					// When the stack is eventually unrolled, the original load will have been notified to go on.
+					// resource loading that means that the task to wait for can be executed here to break the
+					// cycle, or synchronously joined here if another thread already started it.
 					load_task.load_token->reference();
 					_run_load_task(&load_task);
 				}
