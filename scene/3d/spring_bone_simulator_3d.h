@@ -49,7 +49,7 @@ class SpringBoneSimulator3D : public SkeletonModifier3D {
 
 	bool joints_dirty = false;
 
-	LocalVector<ObjectID> collisions; // To process collisions for sync position with skeleton.
+	LocalVector<ObjectID> collisions_internal; // To process collisions for sync position with skeleton.
 	bool collisions_dirty = false;
 	void _find_collisions();
 	void _process_collisions();
@@ -108,7 +108,7 @@ public:
 		SpringBone3DVerletInfo *verlet = nullptr;
 	};
 
-	struct SpringBone3DSetting {
+	struct SpringBoneChain {
 		bool joints_dirty = false;
 
 		String root_bone_name;
@@ -127,37 +127,40 @@ public:
 		String center_bone_name;
 		int center_bone = -1;
 
-		// Cache into joints.
-		bool individual_config = false;
-		float radius = 0.02;
-		Ref<Curve> radius_damping_curve;
-		float stiffness = 1.0;
-		Ref<Curve> stiffness_damping_curve;
-		float drag = 0.4;
-		Ref<Curve> drag_damping_curve;
-		float gravity = 0.0;
-		Ref<Curve> gravity_damping_curve;
-		Vector3 gravity_direction = Vector3(0, -1, 0);
 		RotationAxis rotation_axis = ROTATION_AXIS_ALL;
 		Vector3 rotation_axis_vector = Vector3(1, 0, 0);
-		LocalVector<SpringBone3DJointSetting *> joints;
-
-		// Cache into collisions.
-		bool enable_all_child_collisions = true;
-		LocalVector<NodePath> collisions;
-		LocalVector<NodePath> exclude_collisions;
-		LocalVector<ObjectID> cached_collisions;
-
-		// To process.
-		bool simulation_dirty = false;
 		Transform3D cached_center;
 		Transform3D cached_inverted_center;
+
+		bool override_individual_joints = false;
+		LocalVector<SpringBone3DJointSetting *> joints;
+
+		bool simulation_dirty = false;
 	};
 
 protected:
-	LocalVector<SpringBone3DSetting *> settings;
+	// Common Properties
+
+	LocalVector<SpringBoneChain *> spring_bone_chains;
 	Vector3 external_force;
 	bool mutable_bone_axes = true;
+
+	float radius = 0.02;
+	Ref<Curve> radius_damping_curve;
+	float stiffness = 1.0;
+	Ref<Curve> stiffness_damping_curve;
+	float drag = 0.4;
+	Ref<Curve> drag_damping_curve;
+	float gravity = 0.0;
+	Ref<Curve> gravity_damping_curve;
+	Vector3 gravity_direction = Vector3(0, -1, 0);
+
+	// Cache into collisions.
+	bool enable_all_child_collisions = true;
+	LocalVector<NodePath> collisions;
+	LocalVector<NodePath> exclude_collisions;
+
+	LocalVector<ObjectID> cached_collisions;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -173,17 +176,18 @@ protected:
 
 	virtual void _set_active(bool p_active) override;
 	virtual void _process_modification(double p_delta) override;
-	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
+	void _init_joints(Skeleton3D *p_skeleton, SpringBoneChain *p_setting);
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, LocalVector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
 	void _make_joints_dirty(int p_index, bool p_reset = false);
 	void _make_all_joints_dirty();
+	void _rebuild_bone_chains();
 
 	void _update_joint_array(int p_index);
 	void _update_joints(bool p_reset);
 	void _set_joint_bone(int p_index, int p_joint, int p_bone);
 
-	void _update_bone_axis(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
+	void _update_bone_axis(Skeleton3D *p_skeleton, SpringBoneChain *p_setting);
 
 #ifdef TOOLS_ENABLED
 	bool gizmo_dirty = false;
@@ -210,7 +214,7 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-	// Setting.
+	// Bone Chain Settings
 	void set_root_bone_name(int p_index, const String &p_bone_name);
 	String get_root_bone_name(int p_index) const;
 	void set_root_bone(int p_index, int p_bone);
@@ -242,40 +246,19 @@ public:
 	RotationAxis get_rotation_axis(int p_index) const;
 	void set_rotation_axis_vector(int p_index, const Vector3 &p_vector);
 	Vector3 get_rotation_axis_vector(int p_index) const;
-	void set_radius(int p_index, float p_radius);
-	float get_radius(int p_index) const;
-	void set_radius_damping_curve(int p_index, const Ref<Curve> &p_damping_curve);
-	Ref<Curve> get_radius_damping_curve(int p_index) const;
-	void set_stiffness(int p_index, float p_stiffness);
-	float get_stiffness(int p_index) const;
-	void set_stiffness_damping_curve(int p_index, const Ref<Curve> &p_damping_curve);
-	Ref<Curve> get_stiffness_damping_curve(int p_index) const;
-	void set_drag(int p_index, float p_drag);
-	float get_drag(int p_index) const;
-	void set_drag_damping_curve(int p_index, const Ref<Curve> &p_damping_curve);
-	Ref<Curve> get_drag_damping_curve(int p_index) const;
-	void set_gravity(int p_index, float p_gravity);
-	float get_gravity(int p_index) const;
-	void set_gravity_damping_curve(int p_index, const Ref<Curve> &p_damping_curve);
-	Ref<Curve> get_gravity_damping_curve(int p_index) const;
-	void set_gravity_direction(int p_index, const Vector3 &p_gravity_direction);
-	Vector3 get_gravity_direction(int p_index) const;
 
-	void set_setting_count(int p_count);
-	int get_setting_count() const;
-	void clear_settings();
-
-	// Individual joints.
-	void set_individual_config(int p_index, bool p_enabled);
-	bool is_config_individual(int p_index) const;
-
-	String get_joint_bone_name(int p_index, int p_joint) const;
-	int get_joint_bone(int p_index, int p_joint) const;
-
+	// Individual Joint Settings
 	void set_joint_rotation_axis(int p_index, int p_joint, RotationAxis p_axis);
 	RotationAxis get_joint_rotation_axis(int p_index, int p_joint) const;
 	void set_joint_rotation_axis_vector(int p_index, int p_joint, const Vector3 &p_vector);
 	Vector3 get_joint_rotation_axis_vector(int p_index, int p_joint) const;
+
+	void set_override_individual_joints(int p_index, bool p_enabled);
+	bool is_override_individual_joints(int p_index) const;
+
+	String get_joint_bone_name(int p_index, int p_joint) const;
+	int get_joint_bone(int p_index, int p_joint) const;
+
 	void set_joint_radius(int p_index, int p_joint, float p_radius);
 	float get_joint_radius(int p_index, int p_joint) const;
 	void set_joint_stiffness(int p_index, int p_joint, float p_stiffness);
@@ -290,25 +273,52 @@ public:
 	void set_joint_count(int p_index, int p_count);
 	int get_joint_count(int p_index) const;
 
-	// Individual collisions.
-	void set_enable_all_child_collisions(int p_index, bool p_enabled);
-	bool are_all_child_collisions_enabled(int p_index) const;
+	// Common Settings
+	void set_radius(float p_radius);
+	float get_radius() const;
+	void set_radius_damping_curve(const Ref<Curve> &p_damping_curve);
+	Ref<Curve> get_radius_damping_curve() const;
+	void set_stiffness(float p_stiffness);
+	float get_stiffness() const;
+	void set_stiffness_damping_curve(const Ref<Curve> &p_damping_curve);
+	Ref<Curve> get_stiffness_damping_curve() const;
+	void set_drag(float p_drag);
+	float get_drag() const;
+	void set_drag_damping_curve(const Ref<Curve> &p_damping_curve);
+	Ref<Curve> get_drag_damping_curve() const;
+	void set_gravity(float p_gravity);
+	float get_gravity() const;
+	void set_gravity_damping_curve(const Ref<Curve> &p_damping_curve);
+	Ref<Curve> get_gravity_damping_curve() const;
+	void set_gravity_direction(const Vector3 &p_gravity_direction);
+	Vector3 get_gravity_direction() const;
 
-	void set_exclude_collision_path(int p_index, int p_collision, const NodePath &p_node_path);
-	NodePath get_exclude_collision_path(int p_index, int p_collision) const;
+	void set_bone_chain_count(int p_count);
+	int get_bone_chain_count() const;
+	void clear_bone_chains();
 
-	void set_exclude_collision_count(int p_index, int p_count);
-	int get_exclude_collision_count(int p_index) const;
-	void clear_exclude_collisions(int p_index);
+	// Collisions
 
-	void set_collision_path(int p_index, int p_collision, const NodePath &p_node_path);
-	NodePath get_collision_path(int p_index, int p_collision) const;
+	void set_enable_all_child_collisions(bool p_enabled);
+	bool are_all_child_collisions_enabled() const;
 
-	void set_collision_count(int p_index, int p_count);
-	int get_collision_count(int p_index) const;
-	void clear_collisions(int p_index);
+	void set_exclude_collision_path(int p_collision, const NodePath &p_node_path);
+	NodePath get_exclude_collision_path(int p_collision) const;
 
-	LocalVector<ObjectID> get_valid_collision_instance_ids(int p_index);
+	void set_exclude_collision_count(int p_count);
+	int get_exclude_collision_count() const;
+	void clear_exclude_collisions();
+
+	void set_collision_path(int p_collision, const NodePath &p_node_path);
+	NodePath get_collision_path(int p_collision) const;
+
+	void set_collision_count(int p_count);
+	int get_collision_count() const;
+	void clear_collisions();
+
+	LocalVector<ObjectID> get_valid_collision_instance_ids();
+
+	// Misc
 
 	void set_external_force(const Vector3 &p_force);
 	Vector3 get_external_force() const;
