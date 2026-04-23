@@ -423,4 +423,60 @@ TEST_CASE("[HashMap] Reserve avoids subsequent rehash") {
 	}
 }
 
+TEST_CASE("[HashMap] Reserve tiers keep ordered semantics under churn") {
+	{
+		HashMap<int, int> small_map;
+		small_map.reserve(200);
+		for (int i = 0; i < 200; i++) {
+			small_map.insert(i, i * 2);
+		}
+		for (int i = 0; i < 200; i++) {
+			CHECK(small_map[i] == i * 2);
+		}
+	}
+
+	HashMap<int, int> map;
+	map.reserve(300);
+	for (int i = 0; i < 300; i++) {
+		map.insert(i, i * 10);
+	}
+
+	int *replaced_ptr = map.getptr(151);
+	REQUIRE(replaced_ptr != nullptr);
+
+	for (int i = 0; i < 300; i += 3) {
+		CHECK(map.erase(i));
+	}
+
+	for (int i = 1000; i < 1032; i++) {
+		map.insert(i, i, /*p_front_insert=*/true);
+	}
+
+	CHECK(map.replace_key(151, 1151));
+	CHECK(map.getptr(1151) == replaced_ptr);
+	CHECK(map[1151] == 1510);
+
+	int idx = 0;
+	for (const KeyValue<int, int> &kv : map) {
+		if (idx < 32) {
+			CHECK(kv.key == 1031 - idx);
+		} else {
+			int original = 1;
+			int live_index = idx - 32;
+			while ((original % 3) == 0) {
+				original++;
+			}
+			for (int skip = 0; skip < live_index; skip++) {
+				original++;
+				while ((original % 3) == 0) {
+					original++;
+				}
+			}
+			CHECK(kv.key == (original == 151 ? 1151 : original));
+		}
+		idx++;
+	}
+	CHECK(idx == 232);
+}
+
 } // namespace TestHashMap

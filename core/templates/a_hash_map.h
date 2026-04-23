@@ -90,6 +90,7 @@ private:
 	KV *_elements = nullptr;
 	// Parallel cached 32-bit hashes.
 	uint32_t *_hashes = nullptr;
+	uint32_t *_reverse_slots = nullptr;
 	uint32_t _elements_capacity = 0;
 
 	uint32_t _capacity = 0; // Power of two, or 0 if unallocated.
@@ -261,6 +262,7 @@ private:
 			const uint32_t slot = _find_insert_slot(hash);
 			_set_ctrl(slot, SwissTable::h2(hash));
 			_slots[slot] = i;
+			_reverse_slots[i] = slot;
 			_growth_left--;
 		}
 
@@ -278,6 +280,8 @@ private:
 				Memory::realloc_static(_elements, sizeof(KV) * p_new_capacity));
 		_hashes = reinterpret_cast<uint32_t *>(
 				Memory::realloc_static(_hashes, sizeof(uint32_t) * p_new_capacity));
+		_reverse_slots = reinterpret_cast<uint32_t *>(
+				Memory::realloc_static(_reverse_slots, sizeof(uint32_t) * p_new_capacity));
 		_elements_capacity = p_new_capacity;
 	}
 
@@ -300,6 +304,16 @@ private:
 		_grow_entries(_entries_capacity_for(_capacity));
 	}
 
+	void _prepare_insert() {
+		if (_growth_left == 0) {
+			if (_deleted != 0) {
+				_resize_table(_capacity);
+			} else {
+				_grow();
+			}
+		}
+	}
+
 	// Place a new element at the given (already chosen) slot. The slot must
 	// currently be kEmpty or kDeleted, and the caller must have already
 	// guaranteed _growth_left > 0 and that the entries array has room.
@@ -311,6 +325,7 @@ private:
 		_slots[p_slot] = element_idx;
 		memnew_placement(&_elements[element_idx], KV(p_key, p_value));
 		_hashes[element_idx] = p_hash;
+		_reverse_slots[element_idx] = p_slot;
 		_size++;
 		if (was_deleted) {
 			_deleted--;
@@ -321,9 +336,7 @@ private:
 
 	// Insert with the assumption that p_key does not already exist.
 	uint32_t _insert_new(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
-		if (_growth_left == 0) {
-			_grow();
-		}
+		_prepare_insert();
 		const uint32_t slot = _find_insert_slot(p_hash);
 		return _emplace_at_slot(p_key, p_value, p_hash, slot);
 	}
@@ -344,6 +357,7 @@ private:
 		}
 		// Copy parallel hash array.
 		memcpy(_hashes, p_other._hashes, sizeof(uint32_t) * p_other._size);
+		memcpy(_reverse_slots, p_other._reverse_slots, sizeof(uint32_t) * p_other._size);
 		_size = p_other._size;
 		// Copy ctrl table verbatim, including mirror bytes.
 		memcpy(_ctrl, p_other._ctrl, p_other._capacity + kGroupWidth);
@@ -363,7 +377,7 @@ public:
 	}
 
 	void clear() {
-		if (_capacity == 0 || _size == 0) {
+		if (_capacity == 0 || (_size == 0 && _deleted == 0)) {
 			return;
 		}
 		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
@@ -439,14 +453,11 @@ public:
 
 		// Swap with the tail to keep entries dense.
 		if (element_idx < _size) {
-			uint32_t moved_slot = 0;
-			uint32_t moved_idx = 0;
-			bool found = _lookup(_elements[_size].key, _hashes[_size], moved_slot, moved_idx);
-			(void)found;
-			DEV_ASSERT(found && moved_idx == _size);
+			const uint32_t moved_slot = _reverse_slots[_size];
 			_slots[moved_slot] = element_idx;
 			memcpy(static_cast<void *>(&_elements[element_idx]), static_cast<const void *>(&_elements[_size]), sizeof(KV));
 			_hashes[element_idx] = _hashes[_size];
+			_reverse_slots[element_idx] = moved_slot;
 		}
 
 		return true;
@@ -481,13 +492,12 @@ public:
 
 		// Insert into the new position. We may need to grow if the deleted slot
 		// converted to empty consumed our growth budget; check growth_left.
-		if (_growth_left == 0) {
-			_grow();
-		}
+		_prepare_insert();
 		const uint32_t slot = _find_insert_slot(new_hash);
 		const bool was_deleted = SwissTable::is_deleted(_ctrl[slot]);
 		_set_ctrl(slot, SwissTable::h2(new_hash));
 		_slots[slot] = element_idx;
+		_reverse_slots[element_idx] = slot;
 		if (was_deleted) {
 			_deleted--;
 		}
@@ -632,9 +642,7 @@ public:
 	TValue &operator[](const TKey &p_key) {
 		const uint32_t hash = _hash(p_key);
 		_ensure_allocated();
-		if (_growth_left == 0) {
-			_grow();
-		}
+		_prepare_insert();
 		uint32_t slot = 0;
 		uint32_t element_idx = 0;
 		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot, element_idx)) {
@@ -652,9 +660,7 @@ public:
 	Iterator insert(const TKey &p_key, const TValue &p_value) {
 		const uint32_t hash = _hash(p_key);
 		_ensure_allocated();
-		if (_growth_left == 0) {
-			_grow();
-		}
+		_prepare_insert();
 		uint32_t slot = 0;
 		uint32_t element_idx = 0;
 		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot, element_idx)) {
@@ -713,6 +719,7 @@ public:
 		_slots = p_other._slots;
 		_elements = p_other._elements;
 		_hashes = p_other._hashes;
+		_reverse_slots = p_other._reverse_slots;
 		_elements_capacity = p_other._elements_capacity;
 		_capacity = p_other._capacity;
 		_capacity_mask = p_other._capacity_mask;
@@ -724,6 +731,7 @@ public:
 		p_other._slots = nullptr;
 		p_other._elements = nullptr;
 		p_other._hashes = nullptr;
+		p_other._reverse_slots = nullptr;
 		p_other._elements_capacity = 0;
 		p_other._capacity = 0;
 		p_other._capacity_mask = 0;
@@ -772,6 +780,10 @@ public:
 		if (_hashes != nullptr) {
 			Memory::free_static(_hashes);
 			_hashes = nullptr;
+		}
+		if (_reverse_slots != nullptr) {
+			Memory::free_static(_reverse_slots);
+			_reverse_slots = nullptr;
 		}
 		if (_ctrl != nullptr) {
 			Memory::free_static(_ctrl);

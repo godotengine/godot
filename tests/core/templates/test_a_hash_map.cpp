@@ -475,4 +475,47 @@ TEST_CASE("[AHashMap] get_elements_ptr stays packed after erase") {
 	}
 }
 
+TEST_CASE("[AHashMap] Tombstone-heavy churn keeps slot mapping in sync") {
+	AHashMap<int, int> map;
+	const int N = 256;
+	for (int i = 0; i < N; i++) {
+		map.insert(i, i);
+	}
+	const uint32_t steady_capacity = map.get_capacity();
+	for (int cycle = 0; cycle < 4096; cycle++) {
+		const int key = cycle & (N - 1);
+		CHECK(map.erase(key));
+		map.insert(key, cycle + 1000);
+		CHECK(map.get(key) == cycle + 1000);
+		if ((cycle & 127) == 0) {
+			CHECK(map.get_capacity() == steady_capacity);
+			for (int i = 0; i < N; i++) {
+				const int index = map.get_index(i);
+				REQUIRE(index >= 0);
+				const KeyValue<int, int> &kv = map.get_by_index(index);
+				CHECK(kv.key == i);
+				CHECK(kv.value == map.get(i));
+			}
+		}
+	}
+}
+
+TEST_CASE("[AHashMap] Clear resets tombstones after full erase") {
+	AHashMap<int, int> map;
+	for (int i = 0; i < 128; i++) {
+		map.insert(i, i * 4);
+	}
+	for (int i = 0; i < 128; i++) {
+		CHECK(map.erase(i));
+	}
+	CHECK(map.size() == 0);
+	map.clear();
+	for (int i = 0; i < 128; i++) {
+		map.insert(i, i * 8);
+	}
+	for (int i = 0; i < 128; i++) {
+		CHECK(map.get(i) == i * 8);
+	}
+}
+
 } // namespace TestAHashMap

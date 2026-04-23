@@ -47,12 +47,12 @@
  *   - _ctrl[capacity + kGroupWidth]: control bytes (h2 / kEmpty / kDeleted),
  *     with the leading kGroupWidth bytes mirrored at the tail so groups can
  *     overshoot safely.
- *   - _slots[capacity]: handle per slot to the owning HashMapElement
- *     (kInvalidHandle if empty/deleted).
+ *   - _slots[capacity]: adaptive-width handle per slot to the owning
+ *     HashMapElement (kInvalidHandle if empty/deleted).
  *   - Entry payload storage lives in stable arena pages. Handles index into
  *     those pages and remain valid until that specific entry is erased.
- *   - Per-handle metadata (cached hash, prev/next insertion-order links,
- *     alive/free-list state) lives in dense side arrays, so lookup and
+ *   - Per-handle metadata (cached hash plus prev/next insertion-order or
+ *     free-list links) lives in one co-allocated dense block, so lookup and
  *     unlinking do not have to touch the full key/value payload unless a
  *     candidate slot survives the hash/fingerprint filters.
  *
@@ -103,15 +103,15 @@ private:
 
 	// Index table.
 	uint8_t *_ctrl = nullptr;
-	uint32_t *_slots = nullptr;
+	void *_slots = nullptr;
+	uint8_t _slot_width = sizeof(uint32_t);
 
-	// Stable entry payload arena and dense per-handle metadata.
+	// Stable entry payload arena and co-allocated dense per-handle metadata.
 	void **_payload_pages = nullptr;
-	uint8_t *_entry_alive = nullptr;
+	uint8_t *_entry_meta_block = nullptr;
 	uint32_t *_entry_hashes = nullptr;
 	uint32_t *_next_handles = nullptr;
 	uint32_t *_prev_handles = nullptr;
-	uint32_t *_free_next = nullptr;
 	uint32_t _entry_page_count = 0;
 	uint32_t _entry_capacity = 0;
 	uint32_t _entry_count = 0;
@@ -141,7 +141,54 @@ private:
 	}
 
 	_FORCE_INLINE_ Payload *_payload_from_slot(uint32_t p_slot_idx) const {
-		return _payload_from_handle(_slots[p_slot_idx]);
+		return _payload_from_handle(_get_slot(p_slot_idx));
+	}
+
+	_FORCE_INLINE_ static uint8_t _slot_width_for_handle_count(uint32_t p_handle_count) {
+		if (p_handle_count <= UINT8_MAX) {
+			return sizeof(uint8_t);
+		}
+		if (p_handle_count <= UINT16_MAX) {
+			return sizeof(uint16_t);
+		}
+		return sizeof(uint32_t);
+	}
+
+	_FORCE_INLINE_ uint8_t _slot_width_for_capacity(uint32_t p_capacity) const {
+		return _slot_width_for_handle_count(MAX(_entry_count, SwissTable::capacity_to_growth(p_capacity)));
+	}
+
+	_FORCE_INLINE_ uint32_t _get_slot(uint32_t p_slot_idx) const {
+		switch (_slot_width) {
+			case sizeof(uint8_t): {
+				const uint8_t handle = static_cast<const uint8_t *>(_slots)[p_slot_idx];
+				return handle == UINT8_MAX ? kInvalidHandle : handle;
+			}
+			case sizeof(uint16_t): {
+				const uint16_t handle = static_cast<const uint16_t *>(_slots)[p_slot_idx];
+				return handle == UINT16_MAX ? kInvalidHandle : handle;
+			}
+			default: {
+				const uint32_t handle = static_cast<const uint32_t *>(_slots)[p_slot_idx];
+				return handle == UINT32_MAX ? kInvalidHandle : handle;
+			}
+		}
+	}
+
+	_FORCE_INLINE_ void _set_slot(uint32_t p_slot_idx, uint32_t p_handle) {
+		switch (_slot_width) {
+			case sizeof(uint8_t): {
+				CRASH_COND(p_handle != kInvalidHandle && p_handle >= UINT8_MAX);
+				static_cast<uint8_t *>(_slots)[p_slot_idx] = p_handle == kInvalidHandle ? UINT8_MAX : static_cast<uint8_t>(p_handle);
+			} break;
+			case sizeof(uint16_t): {
+				CRASH_COND(p_handle != kInvalidHandle && p_handle >= UINT16_MAX);
+				static_cast<uint16_t *>(_slots)[p_slot_idx] = p_handle == kInvalidHandle ? UINT16_MAX : static_cast<uint16_t>(p_handle);
+			} break;
+			default: {
+				static_cast<uint32_t *>(_slots)[p_slot_idx] = p_handle;
+			} break;
+		}
 	}
 
 	void _ensure_entry_metadata_capacity(uint32_t p_min_capacity) {
@@ -153,35 +200,26 @@ private:
 			new_capacity <<= 1;
 		}
 
-		uint8_t *new_entry_alive = reinterpret_cast<uint8_t *>(Memory::alloc_static(sizeof(uint8_t) * new_capacity));
-		uint32_t *new_entry_hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
-		uint32_t *new_next_handles = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
-		uint32_t *new_prev_handles = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
-		uint32_t *new_free_next = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
+		uint8_t *new_entry_meta_block = reinterpret_cast<uint8_t *>(
+				Memory::alloc_static(sizeof(uint32_t) * new_capacity * 3));
+		uint32_t *new_entry_hashes = reinterpret_cast<uint32_t *>(new_entry_meta_block);
+		uint32_t *new_next_handles = new_entry_hashes + new_capacity;
+		uint32_t *new_prev_handles = new_next_handles + new_capacity;
 		if (_entry_capacity > 0) {
-			memcpy(new_entry_alive, _entry_alive, sizeof(uint8_t) * _entry_capacity);
 			memcpy(new_entry_hashes, _entry_hashes, sizeof(uint32_t) * _entry_capacity);
 			memcpy(new_next_handles, _next_handles, sizeof(uint32_t) * _entry_capacity);
 			memcpy(new_prev_handles, _prev_handles, sizeof(uint32_t) * _entry_capacity);
-			memcpy(new_free_next, _free_next, sizeof(uint32_t) * _entry_capacity);
-			Memory::free_static(_entry_alive);
-			Memory::free_static(_entry_hashes);
-			Memory::free_static(_next_handles);
-			Memory::free_static(_prev_handles);
-			Memory::free_static(_free_next);
+			Memory::free_static(_entry_meta_block);
 		}
-		memset(new_entry_alive + _entry_capacity, 0, sizeof(uint8_t) * (new_capacity - _entry_capacity));
 		for (uint32_t i = _entry_capacity; i < new_capacity; i++) {
 			new_entry_hashes[i] = 0;
 			new_next_handles[i] = kInvalidHandle;
 			new_prev_handles[i] = kInvalidHandle;
-			new_free_next[i] = kInvalidHandle;
 		}
-		_entry_alive = new_entry_alive;
+		_entry_meta_block = new_entry_meta_block;
 		_entry_hashes = new_entry_hashes;
 		_next_handles = new_next_handles;
 		_prev_handles = new_prev_handles;
-		_free_next = new_free_next;
 		_entry_capacity = new_capacity;
 	}
 
@@ -206,8 +244,8 @@ private:
 	uint32_t _allocate_handle() {
 		if (_free_head != kInvalidHandle) {
 			const uint32_t handle = _free_head;
-			_free_head = _free_next[handle];
-			_free_next[handle] = kInvalidHandle;
+			_free_head = _next_handles[handle];
+			_next_handles[handle] = kInvalidHandle;
 			return handle;
 		}
 
@@ -219,39 +257,19 @@ private:
 
 	void _destroy_entry(uint32_t p_handle) {
 		_payload_from_handle(p_handle)->~Payload();
-		_entry_alive[p_handle] = 0;
 		_entry_hashes[p_handle] = 0;
-		_next_handles[p_handle] = kInvalidHandle;
 		_prev_handles[p_handle] = kInvalidHandle;
-		_free_next[p_handle] = _free_head;
+		_next_handles[p_handle] = _free_head;
 		_free_head = p_handle;
 	}
 
 	void _free_all_entry_storage() {
-		if (_entry_alive != nullptr) {
-			for (uint32_t handle = 0; handle < _entry_count; handle++) {
-				if (_entry_alive[handle] != 0) {
-					_payload_from_handle(handle)->~Payload();
-				}
-			}
-			Memory::free_static(_entry_alive);
-			_entry_alive = nullptr;
-		}
-		if (_entry_hashes != nullptr) {
-			Memory::free_static(_entry_hashes);
+		if (_entry_meta_block != nullptr) {
+			Memory::free_static(_entry_meta_block);
+			_entry_meta_block = nullptr;
 			_entry_hashes = nullptr;
-		}
-		if (_next_handles != nullptr) {
-			Memory::free_static(_next_handles);
 			_next_handles = nullptr;
-		}
-		if (_prev_handles != nullptr) {
-			Memory::free_static(_prev_handles);
 			_prev_handles = nullptr;
-		}
-		if (_free_next != nullptr) {
-			Memory::free_static(_free_next);
-			_free_next = nullptr;
 		}
 		if (_payload_pages != nullptr) {
 			for (uint32_t i = 0; i < _entry_page_count; i++) {
@@ -299,7 +317,7 @@ private:
 			while (it.has_next()) {
 				const uint32_t i = it.next();
 				const uint32_t slot_idx = (group_idx + i) & _capacity_mask;
-				const uint32_t handle = _slots[slot_idx];
+				const uint32_t handle = _get_slot(slot_idx);
 				Payload *payload = _payload_from_handle(handle);
 				if (_entry_hashes[handle] == p_hash && Comparator::compare(payload->key, p_key)) {
 					r_slot_idx = slot_idx;
@@ -331,7 +349,7 @@ private:
 			while (it.has_next()) {
 				const uint32_t i = it.next();
 				const uint32_t slot_idx = (group_idx + i) & _capacity_mask;
-				const uint32_t handle = _slots[slot_idx];
+				const uint32_t handle = _get_slot(slot_idx);
 				Payload *payload = _payload_from_handle(handle);
 				if (_entry_hashes[handle] == p_hash && Comparator::compare(payload->key, p_key)) {
 					r_slot_idx = slot_idx;
@@ -380,18 +398,17 @@ private:
 		const uint32_t new_capacity = MAX(p_new_capacity, kGroupWidth);
 		uint8_t *new_ctrl = reinterpret_cast<uint8_t *>(
 				Memory::alloc_static(sizeof(uint8_t) * (new_capacity + kGroupWidth)));
-		uint32_t *new_slots = reinterpret_cast<uint32_t *>(
-				Memory::alloc_static(sizeof(uint32_t) * new_capacity));
+		const uint8_t new_slot_width = _slot_width_for_capacity(new_capacity);
+		void *new_slots = Memory::alloc_static(size_t(new_slot_width) * new_capacity);
 		memset(new_ctrl, SwissTable::kEmpty, new_capacity + kGroupWidth);
-		for (uint32_t i = 0; i < new_capacity; i++) {
-			new_slots[i] = kInvalidHandle;
-		}
+		memset(new_slots, 0xFF, size_t(new_slot_width) * new_capacity);
 
 		uint8_t *old_ctrl = _ctrl;
-		uint32_t *old_slots = _slots;
+		void *old_slots = _slots;
 
 		_ctrl = new_ctrl;
 		_slots = new_slots;
+		_slot_width = new_slot_width;
 		_capacity = new_capacity;
 		_capacity_mask = new_capacity - 1;
 		_growth_left = SwissTable::capacity_to_growth(new_capacity);
@@ -405,7 +422,7 @@ private:
 			const uint32_t hash = _entry_hashes[handle];
 			const uint32_t slot = _find_insert_slot(hash);
 			_set_ctrl(slot, SwissTable::h2(hash));
-			_slots[slot] = handle;
+			_set_slot(slot, handle);
 			_growth_left--;
 		}
 
@@ -498,10 +515,9 @@ private:
 		const bool was_deleted = SwissTable::is_deleted(_ctrl[p_slot]);
 		const uint32_t handle = _allocate_handle();
 		Payload *payload = memnew_placement(_payload_from_handle(handle), Payload(p_key, p_value));
-		_entry_alive[handle] = 1;
 		_entry_hashes[handle] = p_hash;
 		_set_ctrl(p_slot, SwissTable::h2(p_hash));
-		_slots[p_slot] = handle;
+		_set_slot(p_slot, handle);
 		_link_after_alloc(handle, p_front_insert);
 		_size++;
 		if (was_deleted) {
@@ -659,7 +675,7 @@ public:
 		if (!_lookup(p_key, _hash(p_key), slot)) {
 			return false;
 		}
-		const uint32_t handle = _slots[slot];
+		const uint32_t handle = _get_slot(slot);
 		const uint8_t new_ctrl = _ctrl_after_erase(slot);
 		if (new_ctrl == SwissTable::kEmpty) {
 			_growth_left++;
@@ -667,9 +683,9 @@ public:
 			_deleted++;
 		}
 		_set_ctrl(slot, new_ctrl);
-		// Leave _slots[slot] dangling: any subsequent reader (lookup,
+		// Leave the slot payload dangling: any subsequent reader (lookup,
 		// resize, iteration) gates on _ctrl[slot] being kEmpty/kDeleted
-		// before consulting _slots, so this write is dead and skipping it
+		// before consulting the slot array, so this write is dead and skipping it
 		// shaves a small amount off the erase hot path.
 		_unlink(handle);
 		_destroy_entry(handle);
@@ -690,7 +706,7 @@ public:
 		ERR_FAIL_COND_V(_lookup(p_new_key, new_hash, check_slot), false);
 		uint32_t old_slot = 0;
 		ERR_FAIL_COND_V(!_lookup(p_old_key, _hash(p_old_key), old_slot), false);
-		const uint32_t handle = _slots[old_slot];
+		const uint32_t handle = _get_slot(old_slot);
 		Payload *payload = _payload_from_handle(handle);
 
 		// Vacate the old slot.
@@ -701,7 +717,7 @@ public:
 			_deleted++;
 		}
 		_set_ctrl(old_slot, new_ctrl);
-		_slots[old_slot] = kInvalidHandle;
+		_set_slot(old_slot, kInvalidHandle);
 
 		// KeyValue::key is const TKey.
 		const_cast<TKey &>(payload->key) = p_new_key;
@@ -711,7 +727,7 @@ public:
 		const uint32_t target = _find_insert_slot(new_hash);
 		const bool was_deleted = SwissTable::is_deleted(_ctrl[target]);
 		_set_ctrl(target, SwissTable::h2(new_hash));
-		_slots[target] = handle;
+		_set_slot(target, handle);
 		if (was_deleted) {
 			_deleted--;
 		} else {
@@ -849,7 +865,7 @@ public:
 		if (!_lookup(p_key, _hash(p_key), slot)) {
 			return end();
 		}
-		return Iterator(this, _slots[slot]);
+		return Iterator(this, _get_slot(slot));
 	}
 
 	_FORCE_INLINE_ void remove(const Iterator &p_iter) {
@@ -873,7 +889,7 @@ public:
 		if (!_lookup(p_key, _hash(p_key), slot)) {
 			return end();
 		}
-		return ConstIterator(this, _slots[slot]);
+		return ConstIterator(this, _get_slot(slot));
 	}
 
 	/* Indexing */
@@ -912,13 +928,13 @@ public:
 		uint32_t slot = 0;
 		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot)) {
 			_payload_from_slot(slot)->value = p_value;
-			return Iterator(this, _slots[slot]);
+			return Iterator(this, _get_slot(slot));
 		}
 		if (_size == 0) {
 			slot = _find_insert_slot(hash);
 		}
 		_emplace_at_slot(p_key, p_value, hash, slot, p_front_insert);
-		return Iterator(this, _slots[slot]);
+		return Iterator(this, _get_slot(slot));
 	}
 
 	/* Constructors */
@@ -942,12 +958,12 @@ public:
 	HashMap(HashMap &&p_other) {
 		_ctrl = p_other._ctrl;
 		_slots = p_other._slots;
+		_slot_width = p_other._slot_width;
 		_payload_pages = p_other._payload_pages;
-		_entry_alive = p_other._entry_alive;
+		_entry_meta_block = p_other._entry_meta_block;
 		_entry_hashes = p_other._entry_hashes;
 		_next_handles = p_other._next_handles;
 		_prev_handles = p_other._prev_handles;
-		_free_next = p_other._free_next;
 		_entry_page_count = p_other._entry_page_count;
 		_entry_capacity = p_other._entry_capacity;
 		_entry_count = p_other._entry_count;
@@ -963,12 +979,12 @@ public:
 
 		p_other._ctrl = nullptr;
 		p_other._slots = nullptr;
+		p_other._slot_width = sizeof(uint32_t);
 		p_other._payload_pages = nullptr;
-		p_other._entry_alive = nullptr;
+		p_other._entry_meta_block = nullptr;
 		p_other._entry_hashes = nullptr;
 		p_other._next_handles = nullptr;
 		p_other._prev_handles = nullptr;
-		p_other._free_next = nullptr;
 		p_other._entry_page_count = 0;
 		p_other._entry_capacity = 0;
 		p_other._entry_count = 0;
@@ -1010,12 +1026,12 @@ public:
 
 		_ctrl = p_other._ctrl;
 		_slots = p_other._slots;
+		_slot_width = p_other._slot_width;
 		_payload_pages = p_other._payload_pages;
-		_entry_alive = p_other._entry_alive;
+		_entry_meta_block = p_other._entry_meta_block;
 		_entry_hashes = p_other._entry_hashes;
 		_next_handles = p_other._next_handles;
 		_prev_handles = p_other._prev_handles;
-		_free_next = p_other._free_next;
 		_entry_page_count = p_other._entry_page_count;
 		_entry_capacity = p_other._entry_capacity;
 		_entry_count = p_other._entry_count;
@@ -1031,12 +1047,12 @@ public:
 
 		p_other._ctrl = nullptr;
 		p_other._slots = nullptr;
+		p_other._slot_width = sizeof(uint32_t);
 		p_other._payload_pages = nullptr;
-		p_other._entry_alive = nullptr;
+		p_other._entry_meta_block = nullptr;
 		p_other._entry_hashes = nullptr;
 		p_other._next_handles = nullptr;
 		p_other._prev_handles = nullptr;
-		p_other._free_next = nullptr;
 		p_other._entry_page_count = 0;
 		p_other._entry_capacity = 0;
 		p_other._entry_count = 0;
@@ -1069,7 +1085,7 @@ public:
 		if (c == SwissTable::kEmpty || c == SwissTable::kDeleted) {
 			return 0;
 		}
-		const uint32_t handle = _slots[p_idx];
+		const uint32_t handle = _get_slot(p_idx);
 		return handle != kInvalidHandle ? _entry_hashes[handle] : 0;
 	}
 	Iterator debug_get_element(uint32_t p_idx) {
@@ -1077,7 +1093,7 @@ public:
 			return Iterator();
 		}
 		ERR_FAIL_INDEX_V(p_idx, _capacity, Iterator());
-		const uint32_t handle = _slots[p_idx];
+		const uint32_t handle = _get_slot(p_idx);
 		if (handle == kInvalidHandle) {
 			return Iterator();
 		}
