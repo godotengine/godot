@@ -2152,6 +2152,18 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			continue;
 		}
 		seen_generic_params.insert(this_name);
+
+		/// shadowing is cringe, said sonic the hedgehog
+		if (parser->current_class != nullptr) {
+			for (const GDScriptParser::IdentifierNode* class_param : parser->current_class->generic_parameters) {
+
+				if (class_param != nullptr && class_param->name == this_name) {
+					push_error(vformat(R"([Reginleif] Function generic parameter '%s' shadows a class-level generic parameter of the same name. Rename one of them.)", this_name), param);
+					break;
+				}
+				
+			}
+		}
 	}
 
 
