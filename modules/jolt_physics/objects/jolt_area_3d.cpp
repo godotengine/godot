@@ -135,6 +135,10 @@ bool JoltArea3D::_remove_shape_pair(Overlap &p_overlap, const JPH::SubShapeID &p
 }
 
 void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callback) {
+	// Jolt body IDs can change when the same Godot object leaves and re-enters a space in one frame.
+	// Coalesce by stable Godot identity before reporting monitor events.
+	HashMap<EventKey, int, EventKey> event_states;
+
 	for (OverlapsById::Iterator E = p_objects.begin(); E;) {
 		Overlap &overlap = E->value;
 
@@ -142,16 +146,16 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 			for (const ShapeIndexPair &shape_indices : overlap.pending_added) {
 				int &ref_count = overlap.ref_counts[shape_indices];
 				if (ref_count++ == 0) {
-					_report_event(p_callback, PhysicsServer3D::AREA_BODY_ADDED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
+					event_states[EventKey(overlap.rid, overlap.instance_id, shape_indices)]++;
 				}
 			}
 
 			for (const ShapeIndexPair &shape_indices : overlap.pending_removed) {
-				int &ref_count = overlap.ref_counts[shape_indices];
-				ERR_CONTINUE(ref_count <= 0);
-				if (--ref_count == 0) {
-					_report_event(p_callback, PhysicsServer3D::AREA_BODY_REMOVED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
-					overlap.ref_counts.erase(shape_indices);
+				HashMap<ShapeIndexPair, int, ShapeIndexPair>::Iterator ref_count = overlap.ref_counts.find(shape_indices);
+				ERR_CONTINUE(ref_count == overlap.ref_counts.end() || ref_count->value <= 0);
+				if (--ref_count->value == 0) {
+					event_states[EventKey(overlap.rid, overlap.instance_id, shape_indices)]--;
+					overlap.ref_counts.remove(ref_count);
 				}
 			}
 		}
@@ -167,6 +171,16 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 		}
 
 		E = next;
+	}
+
+	if (p_callback.is_valid()) {
+		for (const KeyValue<EventKey, int> &E : event_states) {
+			if (E.value > 0) {
+				_report_event(p_callback, PhysicsServer3D::AREA_BODY_ADDED, E.key.rid, E.key.instance_id, E.key.other_shape, E.key.self_shape);
+			} else if (E.value < 0) {
+				_report_event(p_callback, PhysicsServer3D::AREA_BODY_REMOVED, E.key.rid, E.key.instance_id, E.key.other_shape, E.key.self_shape);
+			}
+		}
 	}
 }
 
@@ -514,8 +528,9 @@ void JoltArea3D::body_exited(const JPH::BodyID &p_body_id, bool p_notify) {
 	}
 
 	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		overlap->pending_added.erase(E.value);
-		overlap->pending_removed.push_back(E.value);
+		if (!overlap->pending_added.erase(E.value)) {
+			overlap->pending_removed.push_back(E.value);
+		}
 	}
 
 	_events_changed();
@@ -538,8 +553,9 @@ void JoltArea3D::area_exited(const JPH::BodyID &p_body_id) {
 	}
 
 	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		overlap->pending_added.erase(E.value);
-		overlap->pending_removed.push_back(E.value);
+		if (!overlap->pending_added.erase(E.value)) {
+			overlap->pending_removed.push_back(E.value);
+		}
 	}
 
 	_events_changed();
