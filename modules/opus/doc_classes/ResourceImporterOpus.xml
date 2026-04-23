@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceImporterOpus" inherits="ResourceImporter" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Imports an Ogg Opus audio file for playback.
+		Imports an Opus audio file for playback.
 	</brief_description>
 	<description>
-		Ogg Opus is a lossy audio format, with better audio quality compared to [ResourceImporterMP3] and [ResourceImporterOggVorbis] at a given bitrate.
-		In most cases, it's recommended to use Ogg Opus over MP3. However, if you're using an MP3 sound source with no higher quality source available, then it's recommended to use the MP3 file directly to avoid double lossy compression.
-		Ogg Opus requires more CPU to decode than [ResourceImporterWAV]. If you need to play a lot of simultaneous sounds, it's recommended to use WAV for those sounds instead, especially if targeting low-end devices.
+		Opus is a lossy audio format, with better audio quality compared to [ResourceImporterMP3] and [ResourceImporterOggVorbis] at a given bitrate.
+		In most cases, it's recommended to use Opus over MP3. However, if you're using an MP3 sound source with no higher quality source available, then it's recommended to use the MP3 file directly to avoid double lossy compression.
+		Opus requires more CPU to decode than [ResourceImporterWAV]. If you need to play a lot of simultaneous sounds, it's recommended to use WAV for those sounds instead, especially if targeting low-end devices.
 	</description>
 	<tutorials>
 		<link title="Importing audio samples">$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html</link>
