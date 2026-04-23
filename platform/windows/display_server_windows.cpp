@@ -136,6 +136,13 @@ static void update_ime_form_positions(HIMC p_himc, const Point2i &p_pos) {
 	cps.ptCurrentPos.y = p_pos.y;
 	ImmSetCompositionWindow(p_himc, &cps);
 
+	LOGFONT logFont = {};
+
+	logFont.lfHeight = 1; // em height
+	logFont.lfQuality = CLEARTYPE_QUALITY;
+
+	ImmSetCompositionFontA(p_himc, &logFont);
+
 	CANDIDATEFORM cf = {};
 	cf.dwIndex = 0;
 
