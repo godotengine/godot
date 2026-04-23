@@ -844,13 +844,18 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(group_settings);
 
+	TabContainer *addons_container = memnew(TabContainer);
+	addons_container->set_theme_type_variation("TabContainerInner");
+	addons_container->set_name(TTRC("Addons"));
+	tab_container->add_child(addons_container);
+
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTRC("Plugins"));
-	tab_container->add_child(plugin_settings);
+	addons_container->add_child(plugin_settings);
 
 	gdextension_settings = memnew(ProjectSettingsGDExtension);
 	gdextension_settings->set_name(TTRC("GDExtension"));
-	tab_container->add_child(gdextension_settings);
+	addons_container->add_child(gdextension_settings);
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
