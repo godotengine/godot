@@ -184,7 +184,7 @@ Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
 	opus->loops = 0;
 
 	opus->opus_file = op_open_memory(data.ptr(), data_len, nullptr);
-	ERR_FAIL_COND_V(!opus->opus_file, Ref<AudioStreamPlaybackOpus>());
+	ERR_FAIL_NULL_V(opus->opus_file, Ref<AudioStreamPlaybackOpus>());
 
 	return opus;
 }
