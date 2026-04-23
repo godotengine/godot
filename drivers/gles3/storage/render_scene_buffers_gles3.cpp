@@ -371,7 +371,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			// hence we'll use our FBO cache here.
 			msaa3d.needs_resolve = false;
 			msaa3d.check_fbo_cache = true;
-		} else if (use_internal_buffer && msaa3d.fbo != 0) {
+		} else if (use_internal_buffer) {
 			// We can combine MSAA and scaling/effects.
 			msaa3d.needs_resolve = false;
 			msaa3d.check_fbo_cache = false;
