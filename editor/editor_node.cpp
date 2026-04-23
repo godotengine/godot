@@ -9398,6 +9398,7 @@ EditorNode::EditorNode() {
 	// More visually meaningful to have this later.
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin));
 	add_editor_plugin(memnew(AnimationTrackKeyEditEditorPlugin));
+	add_editor_plugin(memnew(AnimationMultiTrackKeyEditEditorPlugin));
 	add_editor_plugin(memnew(AnimationMarkerKeyEditEditorPlugin));
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());

@@ -8822,6 +8822,150 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 }
 
+// AnimationMultiTrackKeyEditEditor
+
+void AnimationMultiTrackKeyEditEditor::_time_edit_spun() {
+	_time_edit_entered();
+	_time_edit_exited();
+}
+
+void AnimationMultiTrackKeyEditEditor::_time_edit_entered() {
+	original_spinner_value = spinner->get_value();
+	key_data_caches.clear();
+	for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+		int track = E.key;
+		for (const float &F : E.value) {
+			float key_ofs = F;
+			int key = animation->track_find_key(track, key_ofs, Animation::FIND_MODE_APPROX);
+			if (key == -1) {
+				return;
+			}
+			real_t time = animation->track_get_key_time(track, key);
+			key_data_caches[track][time].transition = animation->track_get_key_transition(track, key);
+			key_data_caches[track][time].value = animation->track_get_key_value(track, key);
+		}
+	}
+}
+
+void AnimationMultiTrackKeyEditEditor::_time_edit_exited() {
+	real_t new_time = spinner->get_value();
+
+	if (Math::is_equal_approx(new_time, original_spinner_value)) {
+		return; // No change.
+	}
+
+	if (use_fps) {
+		real_t fps = animation->get_step();
+		if (fps > 0) {
+			fps = 1.0 / fps;
+		}
+		new_time /= fps;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	undo_redo->create_action(TTR("Animation Change Keyframe Time"));
+	for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+		int track = E.key;
+		int existing = animation->track_find_key(track, new_time, Animation::FIND_MODE_APPROX);
+
+		if (existing != -1) {
+			undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", track, animation->track_get_key_time(track, existing));
+		}
+
+		for (int i = 0; i < E.value.size(); ++i) {
+			real_t old_time = E.value.get(i);
+
+			Variant value = key_data_caches[track][old_time].value;
+			float transition = key_data_caches[track][old_time].transition;
+
+			if (i == 0) {
+				// only insert for the first key found in the track, the rest are discarded as they will be merged into the same time
+				undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, new_time, value, transition);
+				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, new_time);
+			}
+
+			if (!Math::is_equal_approx(old_time, new_time)) { // already removed
+				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", track, old_time);
+				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, old_time, value, transition);
+			}
+		}
+
+		if (existing != -1) {
+			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, animation->track_get_key_time(track, existing), animation->track_get_key_value(track, existing), animation->track_get_key_transition(track, existing));
+		}
+	}
+
+	// Reselect key.
+	AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+	if (ape) {
+		AnimationTrackEditor *ate = ape->get_track_editor();
+		if (ate) {
+			undo_redo->add_do_method(ate, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method(ate, "_clear_selection_for_anim", animation);
+			for (const KeyValue<int, List<float>> &E : key_ofs_map) {
+				int track = E.key;
+				undo_redo->add_do_method(ate, "_select_at_anim", animation, track, new_time);
+				for (const float &F : E.value) {
+					undo_redo->add_undo_method(ate, "_select_at_anim", animation, track, F);
+				}
+			}
+		}
+
+		undo_redo->add_do_method(ape, "_animation_update_key_frame");
+		undo_redo->add_undo_method(ape, "_animation_update_key_frame");
+	}
+
+	undo_redo->commit_action();
+}
+
+AnimationMultiTrackKeyEditEditor::AnimationMultiTrackKeyEditEditor(Ref<Animation> p_animation, const RBMap<int, NodePath> &p_base_map, const RBMap<int, List<float>> &p_key_ofs_map, bool p_use_fps) {
+	if (p_animation.is_null()) {
+		return;
+	}
+
+	animation = p_animation;
+	base_map = p_base_map;
+	key_ofs_map = p_key_ofs_map;
+	use_fps = p_use_fps;
+
+	set_label("Time");
+
+	spinner = memnew(EditorSpinSlider);
+	spinner->set_focus_mode(Control::FOCUS_CLICK);
+	spinner->set_min(0);
+	spinner->set_allow_greater(true);
+	spinner->set_allow_lesser(true);
+	add_child(spinner);
+
+	// when there are multiple different time values, use the first one
+	// since the internal spinner doesn't have an indeterminate state
+	float default_ofs = 0;
+	if (base_map.size() > 0) {
+		float first_track = base_map.begin()->key;
+		default_ofs = key_ofs_map[first_track].get(0);
+	}
+	if (use_fps) {
+		spinner->set_step(FPS_DECIMAL);
+		real_t fps = animation->get_step();
+		if (fps > 0) {
+			fps = 1.0 / fps;
+		}
+		spinner->set_value(default_ofs * fps);
+		spinner->set_max(animation->get_length() * fps);
+		spinner->connect("updown_pressed", callable_mp(this, &AnimationMultiTrackKeyEditEditor::_time_edit_spun), CONNECT_DEFERRED);
+	} else {
+		spinner->set_step(SECOND_DECIMAL);
+		spinner->set_value(default_ofs);
+		spinner->set_max(animation->get_length());
+	}
+
+	spinner->connect("grabbed", callable_mp(this, &AnimationMultiTrackKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
+	spinner->connect("ungrabbed", callable_mp(this, &AnimationMultiTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
+	spinner->connect("value_focus_entered", callable_mp(this, &AnimationMultiTrackKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
+	spinner->connect("value_focus_exited", callable_mp(this, &AnimationMultiTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
+}
+
 void AnimationMarkerEdit::_zoom_changed() {
 	queue_redraw();
 	play_position->queue_redraw();
