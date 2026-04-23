@@ -873,7 +873,6 @@ void EditorNode::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			if (editor_data.is_scene_changed(-1)) {
 				scene_tabs->update_scene_tabs();
-				_refresh_hdr_request();
 			}
 
 			if (update_spinner->is_visible()) {
@@ -4674,6 +4673,9 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	// Reset SDFGI after everything else so that any last-second scene modifications will be processed.
 	RenderingServer::get_singleton()->sdfgi_reset();
+
+	// Request HDR on scene change
+	_refresh_hdr_request();
 }
 
 bool EditorNode::is_changing_scene() const {
