@@ -371,7 +371,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			// hence we'll use our FBO cache here.
 			msaa3d.needs_resolve = false;
 			msaa3d.check_fbo_cache = true;
-		} else if (use_internal_buffer) {
+		} else if (use_internal_buffer && msaa3d.fbo != 0) {
 			// We can combine MSAA and scaling/effects.
 			msaa3d.needs_resolve = false;
 			msaa3d.check_fbo_cache = false;
@@ -380,10 +380,6 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			// On mobile this means MSAA never leaves tile memory = efficiency!
 			glGenFramebuffers(1, &msaa3d.fbo);
 			glBindFramebuffer(GL_FRAMEBUFFER, msaa3d.fbo);
-
-			// Initialize msaa3d.color to fit check in already setup.
-			// Without this, the MSAA buffer path will recreate resources every frame.
-			glGenRenderbuffers(1, &msaa3d.color);
 
 			_rt_attach_textures(internal3d.color, internal3d.depth, msaa3d.samples, view_count, true);
 
