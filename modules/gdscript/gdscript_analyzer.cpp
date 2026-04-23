@@ -2535,7 +2535,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		GDScriptParser::DataType initializer_type = p_assignable->initializer->get_datatype();
 
 		if (p_assignable->infer_datatype) {
-			if (has_unbound_generic_parameter(initializer_type)) {
+			if (has_unbound_generic_parameter(initializer_type) && initializer_type.kind != GDScriptParser::DataType::GENERIC_TYPE) {
 				push_error(vformat(R"([Reginleif] Cannot infer the type of "%s" %s because the value contains unresolved generic parameter(s).)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
 			} else if (!initializer_type.is_set() || initializer_type.has_no_type() || !initializer_type.is_hard_type()) {
 				push_error(vformat(R"(Cannot infer the type of "%s" %s because the value doesn't have a set type.)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
