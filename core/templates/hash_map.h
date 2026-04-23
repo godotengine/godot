@@ -33,8 +33,8 @@
 #include "core/os/memory.h"
 #include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/hashfuncs.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
-#include "core/templates/sort_list.h"
 #include "core/templates/swiss_table_simd.h"
 
 #include <initializer_list>
@@ -47,12 +47,14 @@
  *   - _ctrl[capacity + kGroupWidth]: control bytes (h2 / kEmpty / kDeleted),
  *     with the leading kGroupWidth bytes mirrored at the tail so groups can
  *     overshoot safely.
- *   - _slots[capacity]: pointer per slot to the owning HashMapElement (or null
- *     if empty/deleted).
- *   - HashMapElement holds key/value plus prev/next pointers for the
- *     intrusive insertion-order doubly linked list (rooted at _head_element /
- *     _tail_element). The physical placement of HashMapElement in memory is
- *     independent of its position in the index table.
+ *   - _slots[capacity]: handle per slot to the owning HashMapElement
+ *     (kInvalidHandle if empty/deleted).
+ *   - Entry payload storage lives in stable arena pages. Handles index into
+ *     those pages and remain valid until that specific entry is erased.
+ *   - Per-handle metadata (cached hash, prev/next insertion-order links,
+ *     alive/free-list state) lives in dense side arrays, so lookup and
+ *     unlinking do not have to touch the full key/value payload unless a
+ *     candidate slot survives the hash/fingerprint filters.
  *
  * Properties:
  *   - Pointer stability: once inserted, KeyValue addresses (and iterators
@@ -64,21 +66,21 @@
  *   - Lookups SIMD-scan a group at a time, then run a full key compare only
  *     on slots whose 7-bit fingerprint matches.
  *
- * The Allocator template parameter manages HashMapElement allocation. The
- * default uses the heap; PagedAllocator may be passed for pool-based storage.
- *
  * Use AHashMap if you don't need order preservation or pointer stability and
  * want the densest possible memory layout.
  */
 
 template <typename TKey, typename TValue>
 struct HashMapElement {
-	HashMapElement *next = nullptr;
-	HashMapElement *prev = nullptr;
+	// Preserved for source compatibility with existing Allocator template
+	// arguments. Ordered HashMap now stores KeyValue payloads in a stable arena
+	// and keeps hash/order metadata in side arrays keyed by handle.
 	// Cached full 32-bit hash. Stored at insert time so probes can
 	// short-circuit before a (potentially expensive) key compare, and so
 	// rehashing on grow doesn't have to re-run Hasher on the key.
 	uint32_t hash = 0;
+	uint32_t next = UINT32_MAX;
+	uint32_t prev = UINT32_MAX;
 	KeyValue<TKey, TValue> data;
 	HashMapElement() {}
 	HashMapElement(const TKey &p_key, const TValue &p_value, uint32_t p_hash) :
@@ -94,18 +96,33 @@ public:
 	static constexpr uint32_t INITIAL_CAPACITY = 16;
 	using KV = KeyValue<TKey, TValue>;
 	using Element = HashMapElement<TKey, TValue>;
+	using Payload = KV;
 
 private:
 	using Mask = typename SwissTable::Group::Mask;
 	static constexpr uint32_t kGroupWidth = SwissTable::Group::kWidth;
+	static constexpr uint32_t kInvalidHandle = UINT32_MAX;
+	static constexpr uint32_t kEntriesPerPage = 128;
 
 	// Index table.
 	uint8_t *_ctrl = nullptr;
-	Element **_slots = nullptr;
+	uint32_t *_slots = nullptr;
+
+	// Stable entry payload arena and dense per-handle metadata.
+	void **_payload_pages = nullptr;
+	uint8_t *_entry_alive = nullptr;
+	uint32_t *_entry_hashes = nullptr;
+	uint32_t *_next_handles = nullptr;
+	uint32_t *_prev_handles = nullptr;
+	uint32_t *_free_next = nullptr;
+	uint32_t _entry_page_count = 0;
+	uint32_t _entry_capacity = 0;
+	uint32_t _entry_count = 0;
+	uint32_t _free_head = kInvalidHandle;
 
 	// Insertion-order linked list head/tail.
-	Element *_head_element = nullptr;
-	Element *_tail_element = nullptr;
+	uint32_t _head_handle = kInvalidHandle;
+	uint32_t _tail_handle = kInvalidHandle;
 
 	uint32_t _capacity = 0; // Power of two, or 0 if unallocated.
 	uint32_t _capacity_mask = 0; // _capacity - 1.
@@ -117,6 +134,140 @@ private:
 	// reserve() before any actual allocation has happened. Once _ctrl is
 	// allocated this is no longer consulted.
 	uint32_t _pending_capacity = 0;
+
+	_FORCE_INLINE_ Payload *_payload_from_handle(uint32_t p_handle) const {
+		CRASH_COND(p_handle == kInvalidHandle || p_handle >= _entry_count);
+		const uint32_t page_idx = p_handle / kEntriesPerPage;
+		const uint32_t page_offset = p_handle % kEntriesPerPage;
+		uint8_t *page = static_cast<uint8_t *>(_payload_pages[page_idx]);
+		return reinterpret_cast<Payload *>(page + (sizeof(Payload) * page_offset));
+	}
+
+	_FORCE_INLINE_ Payload *_payload_from_slot(uint32_t p_slot_idx) const {
+		return _payload_from_handle(_slots[p_slot_idx]);
+	}
+
+	void _ensure_entry_metadata_capacity(uint32_t p_min_capacity) {
+		if (p_min_capacity <= _entry_capacity) {
+			return;
+		}
+		uint32_t new_capacity = MAX((uint32_t)16, _entry_capacity);
+		while (new_capacity < p_min_capacity) {
+			new_capacity <<= 1;
+		}
+
+		uint8_t *new_entry_alive = reinterpret_cast<uint8_t *>(Memory::alloc_static(sizeof(uint8_t) * new_capacity));
+		uint32_t *new_entry_hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
+		uint32_t *new_next_handles = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
+		uint32_t *new_prev_handles = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
+		uint32_t *new_free_next = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * new_capacity));
+		if (_entry_capacity > 0) {
+			memcpy(new_entry_alive, _entry_alive, sizeof(uint8_t) * _entry_capacity);
+			memcpy(new_entry_hashes, _entry_hashes, sizeof(uint32_t) * _entry_capacity);
+			memcpy(new_next_handles, _next_handles, sizeof(uint32_t) * _entry_capacity);
+			memcpy(new_prev_handles, _prev_handles, sizeof(uint32_t) * _entry_capacity);
+			memcpy(new_free_next, _free_next, sizeof(uint32_t) * _entry_capacity);
+			Memory::free_static(_entry_alive);
+			Memory::free_static(_entry_hashes);
+			Memory::free_static(_next_handles);
+			Memory::free_static(_prev_handles);
+			Memory::free_static(_free_next);
+		}
+		memset(new_entry_alive + _entry_capacity, 0, sizeof(uint8_t) * (new_capacity - _entry_capacity));
+		for (uint32_t i = _entry_capacity; i < new_capacity; i++) {
+			new_entry_hashes[i] = 0;
+			new_next_handles[i] = kInvalidHandle;
+			new_prev_handles[i] = kInvalidHandle;
+			new_free_next[i] = kInvalidHandle;
+		}
+		_entry_alive = new_entry_alive;
+		_entry_hashes = new_entry_hashes;
+		_next_handles = new_next_handles;
+		_prev_handles = new_prev_handles;
+		_free_next = new_free_next;
+		_entry_capacity = new_capacity;
+	}
+
+	void _ensure_entry_page(uint32_t p_handle) {
+		const uint32_t required_pages = (p_handle / kEntriesPerPage) + 1;
+		if (required_pages <= _entry_page_count) {
+			return;
+		}
+		void **new_pages = reinterpret_cast<void **>(
+				Memory::alloc_static(sizeof(void *) * required_pages));
+		if (_entry_page_count > 0) {
+			memcpy(new_pages, _payload_pages, sizeof(void *) * _entry_page_count);
+			Memory::free_static(_payload_pages);
+		}
+		for (uint32_t i = _entry_page_count; i < required_pages; i++) {
+			new_pages[i] = Memory::alloc_static(sizeof(Payload) * kEntriesPerPage);
+		}
+		_payload_pages = new_pages;
+		_entry_page_count = required_pages;
+	}
+
+	uint32_t _allocate_handle() {
+		if (_free_head != kInvalidHandle) {
+			const uint32_t handle = _free_head;
+			_free_head = _free_next[handle];
+			_free_next[handle] = kInvalidHandle;
+			return handle;
+		}
+
+		const uint32_t handle = _entry_count++;
+		_ensure_entry_metadata_capacity(_entry_count);
+		_ensure_entry_page(handle);
+		return handle;
+	}
+
+	void _destroy_entry(uint32_t p_handle) {
+		_payload_from_handle(p_handle)->~Payload();
+		_entry_alive[p_handle] = 0;
+		_entry_hashes[p_handle] = 0;
+		_next_handles[p_handle] = kInvalidHandle;
+		_prev_handles[p_handle] = kInvalidHandle;
+		_free_next[p_handle] = _free_head;
+		_free_head = p_handle;
+	}
+
+	void _free_all_entry_storage() {
+		if (_entry_alive != nullptr) {
+			for (uint32_t handle = 0; handle < _entry_count; handle++) {
+				if (_entry_alive[handle] != 0) {
+					_payload_from_handle(handle)->~Payload();
+				}
+			}
+			Memory::free_static(_entry_alive);
+			_entry_alive = nullptr;
+		}
+		if (_entry_hashes != nullptr) {
+			Memory::free_static(_entry_hashes);
+			_entry_hashes = nullptr;
+		}
+		if (_next_handles != nullptr) {
+			Memory::free_static(_next_handles);
+			_next_handles = nullptr;
+		}
+		if (_prev_handles != nullptr) {
+			Memory::free_static(_prev_handles);
+			_prev_handles = nullptr;
+		}
+		if (_free_next != nullptr) {
+			Memory::free_static(_free_next);
+			_free_next = nullptr;
+		}
+		if (_payload_pages != nullptr) {
+			for (uint32_t i = 0; i < _entry_page_count; i++) {
+				Memory::free_static(_payload_pages[i]);
+			}
+			Memory::free_static(_payload_pages);
+			_payload_pages = nullptr;
+		}
+		_entry_page_count = 0;
+		_entry_capacity = 0;
+		_entry_count = 0;
+		_free_head = kInvalidHandle;
+	}
 
 	_FORCE_INLINE_ static uint32_t _hash(const TKey &p_key) {
 		// Hashers are expected to return SwissTable-ready 32-bit hashes now.
@@ -155,8 +306,9 @@ private:
 			while (it.has_next()) {
 				const uint32_t i = it.next();
 				const uint32_t slot_idx = (group_idx + i) & _capacity_mask;
-				Element *elem = _slots[slot_idx];
-				if (elem->hash == p_hash && Comparator::compare(elem->data.key, p_key)) {
+				const uint32_t handle = _slots[slot_idx];
+				Payload *payload = _payload_from_handle(handle);
+				if (_entry_hashes[handle] == p_hash && Comparator::compare(payload->key, p_key)) {
 					r_slot_idx = slot_idx;
 					return true;
 				}
@@ -196,8 +348,9 @@ private:
 			while (it.has_next()) {
 				const uint32_t i = it.next();
 				const uint32_t slot_idx = (group_idx + i) & _capacity_mask;
-				Element *elem = _slots[slot_idx];
-				if (elem->hash == p_hash && Comparator::compare(elem->data.key, p_key)) {
+				const uint32_t handle = _slots[slot_idx];
+				Payload *payload = _payload_from_handle(handle);
+				if (_entry_hashes[handle] == p_hash && Comparator::compare(payload->key, p_key)) {
 					r_slot_idx = slot_idx;
 					return true;
 				}
@@ -250,12 +403,15 @@ private:
 		const uint32_t new_capacity = MAX(p_new_capacity, kGroupWidth);
 		uint8_t *new_ctrl = reinterpret_cast<uint8_t *>(
 				Memory::alloc_static(sizeof(uint8_t) * (new_capacity + kGroupWidth)));
-		Element **new_slots = reinterpret_cast<Element **>(
-				Memory::alloc_static(sizeof(Element *) * new_capacity));
+		uint32_t *new_slots = reinterpret_cast<uint32_t *>(
+				Memory::alloc_static(sizeof(uint32_t) * new_capacity));
 		memset(new_ctrl, SwissTable::kEmpty, new_capacity + kGroupWidth);
+		for (uint32_t i = 0; i < new_capacity; i++) {
+			new_slots[i] = kInvalidHandle;
+		}
 
 		uint8_t *old_ctrl = _ctrl;
-		Element **old_slots = _slots;
+		uint32_t *old_slots = _slots;
 
 		_ctrl = new_ctrl;
 		_slots = new_slots;
@@ -268,11 +424,11 @@ private:
 		// preserves order while letting us drop the old index table. We
 		// reuse the cached hash on each Element so grow doesn't have to
 		// re-run Hasher (a real win for non-trivial keys like String).
-		for (Element *e = _head_element; e != nullptr; e = e->next) {
-			const uint32_t hash = e->hash;
+		for (uint32_t handle = _head_handle; handle != kInvalidHandle; handle = _next_handles[handle]) {
+			const uint32_t hash = _entry_hashes[handle];
 			const uint32_t slot = _find_insert_slot(hash);
 			_set_ctrl(slot, SwissTable::h2(hash));
-			_slots[slot] = e;
+			_slots[slot] = handle;
 			_growth_left--;
 		}
 
@@ -335,18 +491,20 @@ private:
 		return SwissTable::kDeleted;
 	}
 
-	void _link_after_alloc(Element *p_elem, bool p_front_insert) {
-		if (_tail_element == nullptr) {
-			_head_element = p_elem;
-			_tail_element = p_elem;
+	void _link_after_alloc(uint32_t p_handle, bool p_front_insert) {
+		_prev_handles[p_handle] = kInvalidHandle;
+		_next_handles[p_handle] = kInvalidHandle;
+		if (_tail_handle == kInvalidHandle) {
+			_head_handle = p_handle;
+			_tail_handle = p_handle;
 		} else if (p_front_insert) {
-			_head_element->prev = p_elem;
-			p_elem->next = _head_element;
-			_head_element = p_elem;
+			_prev_handles[_head_handle] = p_handle;
+			_next_handles[p_handle] = _head_handle;
+			_head_handle = p_handle;
 		} else {
-			_tail_element->next = p_elem;
-			p_elem->prev = _tail_element;
-			_tail_element = p_elem;
+			_next_handles[_tail_handle] = p_handle;
+			_prev_handles[p_handle] = _tail_handle;
+			_tail_handle = p_handle;
 		}
 	}
 
@@ -354,42 +512,45 @@ private:
 	// either delete p_elem immediately afterwards or re-link it before any
 	// further iteration -- we deliberately leave p_elem->{prev,next} dangling
 	// to avoid two pointless writes on the erase hot path.
-	void _unlink(Element *p_elem) {
-		Element *const prev = p_elem->prev;
-		Element *const next = p_elem->next;
-		if (prev) {
-			prev->next = next;
+	void _unlink(uint32_t p_handle) {
+		const uint32_t prev = _prev_handles[p_handle];
+		const uint32_t next = _next_handles[p_handle];
+		if (prev != kInvalidHandle) {
+			_next_handles[prev] = next;
 		} else {
 			// p_elem was the head.
-			_head_element = next;
+			_head_handle = next;
 		}
-		if (next) {
-			next->prev = prev;
+		if (next != kInvalidHandle) {
+			_prev_handles[next] = prev;
 		} else {
 			// p_elem was the tail.
-			_tail_element = prev;
+			_tail_handle = prev;
 		}
 	}
 
 	// Place a brand-new element at the given (already chosen) slot. The slot
 	// must currently be kEmpty or kDeleted, and the caller must have already
 	// guaranteed _growth_left > 0.
-	_FORCE_INLINE_ Element *_emplace_at_slot(const TKey &p_key, const TValue &p_value,
+	_FORCE_INLINE_ Payload *_emplace_at_slot(const TKey &p_key, const TValue &p_value,
 			uint32_t p_hash, uint32_t p_slot, bool p_front_insert) {
 		const bool was_deleted = SwissTable::is_deleted(_ctrl[p_slot]);
-		Element *elem = Allocator::new_allocation(Element(p_key, p_value, p_hash));
+		const uint32_t handle = _allocate_handle();
+		Payload *payload = memnew_placement(_payload_from_handle(handle), Payload(p_key, p_value));
+		_entry_alive[handle] = 1;
+		_entry_hashes[handle] = p_hash;
 		_set_ctrl(p_slot, SwissTable::h2(p_hash));
-		_slots[p_slot] = elem;
-		_link_after_alloc(elem, p_front_insert);
+		_slots[p_slot] = handle;
+		_link_after_alloc(handle, p_front_insert);
 		_size++;
 		if (was_deleted) {
 			_deleted--;
 		}
 		_growth_left--;
-		return elem;
+		return payload;
 	}
 
-	Element *_insert_internal(const TKey &p_key, const TValue &p_value, uint32_t p_hash, bool p_front_insert) {
+	Payload *_insert_internal(const TKey &p_key, const TValue &p_value, uint32_t p_hash, bool p_front_insert) {
 		_ensure_allocated();
 		if (_growth_left == 0) {
 			_grow();
@@ -399,15 +560,60 @@ private:
 	}
 
 	void _clear_data() {
-		Element *current = _tail_element;
-		while (current != nullptr) {
-			Element *prev = current->prev;
-			Allocator::delete_allocation(current);
+		uint32_t current = _tail_handle;
+		while (current != kInvalidHandle) {
+			const uint32_t prev = _prev_handles[current];
+			_destroy_entry(current);
 			current = prev;
 		}
-		_head_element = nullptr;
-		_tail_element = nullptr;
+		_head_handle = kInvalidHandle;
+		_tail_handle = kInvalidHandle;
 		_size = 0;
+	}
+
+	template <typename C>
+	_FORCE_INLINE_ bool _handle_less(uint32_t p_lhs, uint32_t p_rhs, C &p_compare) const {
+		return p_compare(*_payload_from_handle(p_lhs), *_payload_from_handle(p_rhs));
+	}
+
+	template <typename C>
+	void _merge_sort_handles(uint32_t *p_handles, uint32_t *p_buffer, uint32_t p_begin, uint32_t p_end, C &p_compare) {
+		if (p_end - p_begin <= 1) {
+			return;
+		}
+		const uint32_t mid = p_begin + ((p_end - p_begin) >> 1);
+		_merge_sort_handles(p_handles, p_buffer, p_begin, mid, p_compare);
+		_merge_sort_handles(p_handles, p_buffer, mid, p_end, p_compare);
+
+		uint32_t left = p_begin;
+		uint32_t right = mid;
+		uint32_t out = p_begin;
+		while (left < mid && right < p_end) {
+			if (_handle_less(p_handles[right], p_handles[left], p_compare)) {
+				p_buffer[out++] = p_handles[right++];
+			} else {
+				p_buffer[out++] = p_handles[left++];
+			}
+		}
+		while (left < mid) {
+			p_buffer[out++] = p_handles[left++];
+		}
+		while (right < p_end) {
+			p_buffer[out++] = p_handles[right++];
+		}
+		for (uint32_t i = p_begin; i < p_end; i++) {
+			p_handles[i] = p_buffer[i];
+		}
+	}
+
+	void _rebuild_order_from_handles(const uint32_t *p_handles, uint32_t p_count) {
+		_head_handle = p_count > 0 ? p_handles[0] : kInvalidHandle;
+		_tail_handle = p_count > 0 ? p_handles[p_count - 1] : kInvalidHandle;
+		for (uint32_t i = 0; i < p_count; i++) {
+			const uint32_t handle = p_handles[i];
+			_prev_handles[handle] = (i > 0) ? p_handles[i - 1] : kInvalidHandle;
+			_next_handles[handle] = (i + 1 < p_count) ? p_handles[i + 1] : kInvalidHandle;
+		}
 	}
 
 public:
@@ -439,28 +645,37 @@ public:
 		if (size() < 2) {
 			return;
 		}
-		SortList<Element, KeyValue<TKey, TValue>, &Element::data, &Element::prev, &Element::next, C> sorter;
-		sorter.sort(_head_element, _tail_element);
+		LocalVector<uint32_t> handles;
+		handles.resize(_size);
+		uint32_t idx = 0;
+		for (uint32_t handle = _head_handle; handle != kInvalidHandle; handle = _next_handles[handle]) {
+			handles[idx++] = handle;
+		}
+		LocalVector<uint32_t> scratch;
+		scratch.resize(_size);
+		C compare;
+		_merge_sort_handles(handles.ptr(), scratch.ptr(), 0, _size, compare);
+		_rebuild_order_from_handles(handles.ptr(), _size);
 	}
 
 	TValue &get(const TKey &p_key) {
 		uint32_t slot = 0;
 		const bool exists = _lookup(p_key, _hash(p_key), slot);
 		CRASH_COND_MSG(!exists, "HashMap key not found.");
-		return _slots[slot]->data.value;
+		return _payload_from_slot(slot)->value;
 	}
 
 	const TValue &get(const TKey &p_key) const {
 		uint32_t slot = 0;
 		const bool exists = _lookup(p_key, _hash(p_key), slot);
 		CRASH_COND_MSG(!exists, "HashMap key not found.");
-		return _slots[slot]->data.value;
+		return _payload_from_slot(slot)->value;
 	}
 
 	const TValue *getptr(const TKey &p_key) const {
 		uint32_t slot = 0;
 		if (_lookup(p_key, _hash(p_key), slot)) {
-			return &_slots[slot]->data.value;
+			return &_payload_from_slot(slot)->value;
 		}
 		return nullptr;
 	}
@@ -468,7 +683,7 @@ public:
 	TValue *getptr(const TKey &p_key) {
 		uint32_t slot = 0;
 		if (_lookup(p_key, _hash(p_key), slot)) {
-			return &_slots[slot]->data.value;
+			return &_payload_from_slot(slot)->value;
 		}
 		return nullptr;
 	}
@@ -483,7 +698,7 @@ public:
 		if (!_lookup(p_key, _hash(p_key), slot)) {
 			return false;
 		}
-		Element *elem = _slots[slot];
+		const uint32_t handle = _slots[slot];
 		const uint8_t new_ctrl = _ctrl_after_erase(slot);
 		if (new_ctrl == SwissTable::kEmpty) {
 			_growth_left++;
@@ -495,8 +710,8 @@ public:
 		// resize, iteration) gates on _ctrl[slot] being kEmpty/kDeleted
 		// before consulting _slots, so this write is dead and skipping it
 		// shaves a small amount off the erase hot path.
-		_unlink(elem);
-		Allocator::delete_allocation(elem);
+		_unlink(handle);
+		_destroy_entry(handle);
 		_size--;
 		return true;
 	}
@@ -514,7 +729,8 @@ public:
 		ERR_FAIL_COND_V(_lookup(p_new_key, new_hash, check_slot), false);
 		uint32_t old_slot = 0;
 		ERR_FAIL_COND_V(!_lookup(p_old_key, _hash(p_old_key), old_slot), false);
-		Element *elem = _slots[old_slot];
+		const uint32_t handle = _slots[old_slot];
+		Payload *payload = _payload_from_handle(handle);
 
 		// Vacate the old slot.
 		const uint8_t new_ctrl = _ctrl_after_erase(old_slot);
@@ -524,19 +740,19 @@ public:
 			_deleted++;
 		}
 		_set_ctrl(old_slot, new_ctrl);
-		_slots[old_slot] = nullptr;
+		_slots[old_slot] = kInvalidHandle;
 
 		// Mutate the key in place. KeyValue::key is `const TKey`; the cast is
 		// safe because the entry is uniquely owned and no caller may hold a
 		// concurrent reference to it. Update the cached hash to match.
-		const_cast<TKey &>(elem->data.key) = p_new_key;
-		elem->hash = new_hash;
+		const_cast<TKey &>(payload->key) = p_new_key;
+		_entry_hashes[handle] = new_hash;
 
 		// Reinsert into a fresh slot under the new hash.
 		const uint32_t target = _find_insert_slot(new_hash);
 		const bool was_deleted = SwissTable::is_deleted(_ctrl[target]);
 		_set_ctrl(target, SwissTable::h2(new_hash));
-		_slots[target] = elem;
+		_slots[target] = handle;
 		if (was_deleted) {
 			_deleted--;
 		} else {
@@ -566,81 +782,107 @@ public:
 	/** Iterator API **/
 
 	struct ConstIterator {
-		_FORCE_INLINE_ const KeyValue<TKey, TValue> &operator*() const { return E->data; }
-		_FORCE_INLINE_ const KeyValue<TKey, TValue> *operator->() const { return &E->data; }
+		_FORCE_INLINE_ const KeyValue<TKey, TValue> &operator*() const { return *map->_payload_from_handle(handle); }
+		_FORCE_INLINE_ const KeyValue<TKey, TValue> *operator->() const { return map->_payload_from_handle(handle); }
 		_FORCE_INLINE_ ConstIterator &operator++() {
-			if (E) {
-				E = E->next;
+			if (handle != kInvalidHandle) {
+				handle = map->_next_handles[handle];
 			}
 			return *this;
 		}
 		_FORCE_INLINE_ ConstIterator &operator--() {
-			if (E) {
-				E = E->prev;
+			if (handle != kInvalidHandle) {
+				handle = map->_prev_handles[handle];
 			}
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return map == b.map && handle == b.handle; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return !(*this == b); }
+		_FORCE_INLINE_ bool operator==(std::nullptr_t) const { return handle == kInvalidHandle; }
+		_FORCE_INLINE_ bool operator!=(std::nullptr_t) const { return handle != kInvalidHandle; }
 
-		_FORCE_INLINE_ explicit operator bool() const { return E != nullptr; }
+		_FORCE_INLINE_ explicit operator bool() const { return handle != kInvalidHandle; }
 
-		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator(const HashMap *p_map, uint32_t p_handle) {
+			map = p_map;
+			handle = p_handle;
+		}
 		_FORCE_INLINE_ ConstIterator() {}
-		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) {
+			map = p_it.map;
+			handle = p_it.handle;
+		}
 		_FORCE_INLINE_ void operator=(const ConstIterator &p_it) {
-			E = p_it.E;
+			map = p_it.map;
+			handle = p_it.handle;
+		}
+		_FORCE_INLINE_ void operator=(std::nullptr_t) {
+			handle = kInvalidHandle;
 		}
 
 	private:
-		const Element *E = nullptr;
+		const HashMap *map = nullptr;
+		uint32_t handle = kInvalidHandle;
 	};
 
 	struct Iterator {
-		_FORCE_INLINE_ KeyValue<TKey, TValue> &operator*() const { return E->data; }
-		_FORCE_INLINE_ KeyValue<TKey, TValue> *operator->() const { return &E->data; }
+		_FORCE_INLINE_ KeyValue<TKey, TValue> &operator*() const { return *map->_payload_from_handle(handle); }
+		_FORCE_INLINE_ KeyValue<TKey, TValue> *operator->() const { return map->_payload_from_handle(handle); }
 		_FORCE_INLINE_ Iterator &operator++() {
-			if (E) {
-				E = E->next;
+			if (handle != kInvalidHandle) {
+				handle = map->_next_handles[handle];
 			}
 			return *this;
 		}
 		_FORCE_INLINE_ Iterator &operator--() {
-			if (E) {
-				E = E->prev;
+			if (handle != kInvalidHandle) {
+				handle = map->_prev_handles[handle];
 			}
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return map == b.map && handle == b.handle; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return !(*this == b); }
+		_FORCE_INLINE_ bool operator==(std::nullptr_t) const { return handle == kInvalidHandle; }
+		_FORCE_INLINE_ bool operator!=(std::nullptr_t) const { return handle != kInvalidHandle; }
 
-		_FORCE_INLINE_ explicit operator bool() const { return E != nullptr; }
+		_FORCE_INLINE_ explicit operator bool() const { return handle != kInvalidHandle; }
 
-		_FORCE_INLINE_ Iterator(Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ Iterator(HashMap *p_map, uint32_t p_handle) {
+			map = p_map;
+			handle = p_handle;
+		}
 		_FORCE_INLINE_ Iterator() {}
-		_FORCE_INLINE_ Iterator(const Iterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) {
+			map = p_it.map;
+			handle = p_it.handle;
+		}
 		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
-			E = p_it.E;
+			map = p_it.map;
+			handle = p_it.handle;
+		}
+		_FORCE_INLINE_ void operator=(std::nullptr_t) {
+			handle = kInvalidHandle;
 		}
 
 		operator ConstIterator() const {
-			return ConstIterator(E);
+			return ConstIterator(map, handle);
 		}
 
 	private:
-		Element *E = nullptr;
+		HashMap *map = nullptr;
+		uint32_t handle = kInvalidHandle;
 	};
 
 	_FORCE_INLINE_ Iterator begin() {
-		return Iterator(_head_element);
+		return Iterator(this, _head_handle);
 	}
 	_FORCE_INLINE_ Iterator end() {
-		return Iterator(nullptr);
+		return Iterator(this, kInvalidHandle);
 	}
 	_FORCE_INLINE_ Iterator last() {
-		return Iterator(_tail_element);
+		return Iterator(this, _tail_handle);
 	}
 
 	_FORCE_INLINE_ Iterator find(const TKey &p_key) {
@@ -648,7 +890,7 @@ public:
 		if (!_lookup(p_key, _hash(p_key), slot)) {
 			return end();
 		}
-		return Iterator(_slots[slot]);
+		return Iterator(this, _slots[slot]);
 	}
 
 	_FORCE_INLINE_ void remove(const Iterator &p_iter) {
@@ -658,13 +900,13 @@ public:
 	}
 
 	_FORCE_INLINE_ ConstIterator begin() const {
-		return ConstIterator(_head_element);
+		return ConstIterator(this, _head_handle);
 	}
 	_FORCE_INLINE_ ConstIterator end() const {
-		return ConstIterator(nullptr);
+		return ConstIterator(this, kInvalidHandle);
 	}
 	_FORCE_INLINE_ ConstIterator last() const {
-		return ConstIterator(_tail_element);
+		return ConstIterator(this, _tail_handle);
 	}
 
 	_FORCE_INLINE_ ConstIterator find(const TKey &p_key) const {
@@ -672,7 +914,7 @@ public:
 		if (!_lookup(p_key, _hash(p_key), slot)) {
 			return end();
 		}
-		return ConstIterator(_slots[slot]);
+		return ConstIterator(this, _slots[slot]);
 	}
 
 	/* Indexing */
@@ -681,7 +923,7 @@ public:
 		uint32_t slot = 0;
 		const bool exists = _lookup(p_key, _hash(p_key), slot);
 		CRASH_COND(!exists);
-		return _slots[slot]->data.value;
+		return _payload_from_slot(slot)->value;
 	}
 
 	TValue &operator[](const TKey &p_key) {
@@ -692,7 +934,7 @@ public:
 		}
 		uint32_t slot = 0;
 		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot)) {
-			return _slots[slot]->data.value;
+			return _payload_from_slot(slot)->value;
 		}
 		// Single-pass path: when the table is empty we still need to pick a
 		// slot. _find_or_prepare_insert handles that, but only when called;
@@ -700,7 +942,7 @@ public:
 		if (_size == 0) {
 			slot = _find_insert_slot(hash);
 		}
-		return _emplace_at_slot(p_key, TValue(), hash, slot, false)->data.value;
+		return _emplace_at_slot(p_key, TValue(), hash, slot, false)->value;
 	}
 
 	/* Insert */
@@ -713,13 +955,14 @@ public:
 		}
 		uint32_t slot = 0;
 		if (_size > 0 && _find_or_prepare_insert(p_key, hash, slot)) {
-			_slots[slot]->data.value = p_value;
-			return Iterator(_slots[slot]);
+			_payload_from_slot(slot)->value = p_value;
+			return Iterator(this, _slots[slot]);
 		}
 		if (_size == 0) {
 			slot = _find_insert_slot(hash);
 		}
-		return Iterator(_emplace_at_slot(p_key, p_value, hash, slot, p_front_insert));
+		_emplace_at_slot(p_key, p_value, hash, slot, p_front_insert);
+		return Iterator(this, _slots[slot]);
 	}
 
 	/* Constructors */
@@ -743,8 +986,18 @@ public:
 	HashMap(HashMap &&p_other) {
 		_ctrl = p_other._ctrl;
 		_slots = p_other._slots;
-		_head_element = p_other._head_element;
-		_tail_element = p_other._tail_element;
+		_payload_pages = p_other._payload_pages;
+		_entry_alive = p_other._entry_alive;
+		_entry_hashes = p_other._entry_hashes;
+		_next_handles = p_other._next_handles;
+		_prev_handles = p_other._prev_handles;
+		_free_next = p_other._free_next;
+		_entry_page_count = p_other._entry_page_count;
+		_entry_capacity = p_other._entry_capacity;
+		_entry_count = p_other._entry_count;
+		_free_head = p_other._free_head;
+		_head_handle = p_other._head_handle;
+		_tail_handle = p_other._tail_handle;
 		_capacity = p_other._capacity;
 		_capacity_mask = p_other._capacity_mask;
 		_size = p_other._size;
@@ -754,8 +1007,18 @@ public:
 
 		p_other._ctrl = nullptr;
 		p_other._slots = nullptr;
-		p_other._head_element = nullptr;
-		p_other._tail_element = nullptr;
+		p_other._payload_pages = nullptr;
+		p_other._entry_alive = nullptr;
+		p_other._entry_hashes = nullptr;
+		p_other._next_handles = nullptr;
+		p_other._prev_handles = nullptr;
+		p_other._free_next = nullptr;
+		p_other._entry_page_count = 0;
+		p_other._entry_capacity = 0;
+		p_other._entry_count = 0;
+		p_other._free_head = kInvalidHandle;
+		p_other._head_handle = kInvalidHandle;
+		p_other._tail_handle = kInvalidHandle;
 		p_other._capacity = 0;
 		p_other._capacity_mask = 0;
 		p_other._size = 0;
@@ -783,6 +1046,7 @@ public:
 			return *this;
 		}
 		_clear_data();
+		_free_all_entry_storage();
 		if (_ctrl != nullptr) {
 			Memory::free_static(_ctrl);
 			Memory::free_static(_slots);
@@ -790,8 +1054,18 @@ public:
 
 		_ctrl = p_other._ctrl;
 		_slots = p_other._slots;
-		_head_element = p_other._head_element;
-		_tail_element = p_other._tail_element;
+		_payload_pages = p_other._payload_pages;
+		_entry_alive = p_other._entry_alive;
+		_entry_hashes = p_other._entry_hashes;
+		_next_handles = p_other._next_handles;
+		_prev_handles = p_other._prev_handles;
+		_free_next = p_other._free_next;
+		_entry_page_count = p_other._entry_page_count;
+		_entry_capacity = p_other._entry_capacity;
+		_entry_count = p_other._entry_count;
+		_free_head = p_other._free_head;
+		_head_handle = p_other._head_handle;
+		_tail_handle = p_other._tail_handle;
 		_capacity = p_other._capacity;
 		_capacity_mask = p_other._capacity_mask;
 		_size = p_other._size;
@@ -801,8 +1075,18 @@ public:
 
 		p_other._ctrl = nullptr;
 		p_other._slots = nullptr;
-		p_other._head_element = nullptr;
-		p_other._tail_element = nullptr;
+		p_other._payload_pages = nullptr;
+		p_other._entry_alive = nullptr;
+		p_other._entry_hashes = nullptr;
+		p_other._next_handles = nullptr;
+		p_other._prev_handles = nullptr;
+		p_other._free_next = nullptr;
+		p_other._entry_page_count = 0;
+		p_other._entry_capacity = 0;
+		p_other._entry_count = 0;
+		p_other._free_head = kInvalidHandle;
+		p_other._head_handle = kInvalidHandle;
+		p_other._tail_handle = kInvalidHandle;
 		p_other._capacity = 0;
 		p_other._capacity_mask = 0;
 		p_other._size = 0;
@@ -829,23 +1113,24 @@ public:
 		if (c == SwissTable::kEmpty || c == SwissTable::kDeleted) {
 			return 0;
 		}
-		Element *e = _slots[p_idx];
-		return e != nullptr ? e->hash : 0;
+		const uint32_t handle = _slots[p_idx];
+		return handle != kInvalidHandle ? _entry_hashes[handle] : 0;
 	}
 	Iterator debug_get_element(uint32_t p_idx) {
 		if (_size == 0 || _capacity == 0) {
 			return Iterator();
 		}
 		ERR_FAIL_INDEX_V(p_idx, _capacity, Iterator());
-		Element *e = _slots[p_idx];
-		if (e == nullptr) {
+		const uint32_t handle = _slots[p_idx];
+		if (handle == kInvalidHandle) {
 			return Iterator();
 		}
-		return Iterator(e);
+		return Iterator(this, handle);
 	}
 
 	~HashMap() {
 		_clear_data();
+		_free_all_entry_storage();
 		if (_ctrl != nullptr) {
 			Memory::free_static(_ctrl);
 			Memory::free_static(_slots);

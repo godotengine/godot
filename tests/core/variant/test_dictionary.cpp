@@ -406,6 +406,27 @@ TEST_CASE("[Dictionary] Hash dictionary") {
 	CHECK_EQ(d2.hash(), original_hash);
 }
 
+TEST_CASE("[Dictionary] Hash follows iteration order") {
+	Dictionary ordered_a;
+	ordered_a[1] = "one";
+	ordered_a[2] = "two";
+	ordered_a[3] = "three";
+
+	Dictionary ordered_b;
+	ordered_b[3] = "three";
+	ordered_b[1] = "one";
+	ordered_b[2] = "two";
+
+	CHECK_EQ(ordered_a, ordered_b);
+	CHECK_NE(ordered_a.keys(), ordered_b.keys());
+	CHECK_NE(ordered_a.hash(), ordered_b.hash());
+
+	ordered_a.sort();
+	ordered_b.sort();
+	CHECK_EQ(ordered_a.keys(), ordered_b.keys());
+	CHECK_EQ(ordered_a.hash(), ordered_b.hash());
+}
+
 TEST_CASE("[Dictionary] Hash recursive dictionary") {
 	Dictionary d;
 	d[1] = d;

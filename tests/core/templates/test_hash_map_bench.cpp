@@ -219,6 +219,38 @@ TEST_CASE("[HashMapBench] HashMap<StringName,Variant>") {
 	CHECK(hit_sink != INT64_MIN);
 }
 
+TEST_CASE("[HashMapBench] HashMap<StringName,Variant> churn") {
+	print_line(vformat("[HashMap] StringName->Variant churn (%d cycles of erase+insert, table size 1024):", kElems));
+
+	Vector<StringName> keys;
+	keys.resize(1024);
+	for (int i = 0; i < 1024; i++) {
+		keys.write[i] = StringName("churn_" + itos(i));
+	}
+
+	uint64_t churn_us = 0;
+	int64_t sink = 0;
+	for (int rep = 0; rep < kIters; rep++) {
+		HashMap<StringName, Variant> m;
+		for (int i = 0; i < 1024; i++) {
+			m.insert(keys[i], Variant(i));
+		}
+		const uint64_t t0 = OS::get_singleton()->get_ticks_usec();
+		for (int i = 0; i < kElems; i++) {
+			const int k = i & 1023;
+			m.erase(keys[k]);
+			m.insert(keys[k], Variant(i));
+			const Variant *p = m.getptr(keys[k]);
+			if (p) {
+				sink += int64_t(*p);
+			}
+		}
+		churn_us += OS::get_singleton()->get_ticks_usec() - t0;
+	}
+	_report("churn (erase+insert)", churn_us, kElems * kIters);
+	CHECK(sink != INT64_MIN);
+}
+
 TEST_CASE("[HashMapBench] AHashMap<int,int> churn") {
 	print_line(vformat("[AHashMap] int->int churn (%d cycles of insert+erase, table size 1024):", kElems));
 
