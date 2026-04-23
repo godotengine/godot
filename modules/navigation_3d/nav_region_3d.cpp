@@ -116,6 +116,7 @@ void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 #endif // DEBUG_ENABLED
 
 	navmesh = p_navigation_mesh;
+	navmesh->set_navigation_layers(navigation_layers);
 	// FIXME: this breaks areas
 
 	iteration_dirty = true;
@@ -151,6 +152,11 @@ void NavRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
 		return;
 	}
 	navigation_layers = p_navigation_layers;
+
+	if (navmesh.is_valid()) {
+		navmesh->set_navigation_layers(navigation_layers);
+	}
+
 	iteration_dirty = true;
 
 	request_sync();

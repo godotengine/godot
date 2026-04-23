@@ -79,6 +79,16 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	}
 }
 
+void NavigationMesh::set_navigation_layers(uint32_t p_navigation_layers) {
+	RWLockWrite write_lock(rwlock);
+	navigation_layers = p_navigation_layers;
+}
+
+uint32_t NavigationMesh::get_navigation_layers() const {
+	RWLockRead read_lock(rwlock);
+	return navigation_layers;
+}
+
 void NavigationMesh::set_sample_partition_type(SamplePartitionType p_value) {
 	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
 	partition_type = p_value;

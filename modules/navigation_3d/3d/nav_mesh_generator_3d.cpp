@@ -499,10 +499,11 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	HashMap<uint32_t, uint32_t> area_id_to_navigation_layers;
 
 	navigation_layers_to_area_id[0] = RC_NULL_AREA; // Recast unsigned char RC_NULL_AREA = 0.
-	navigation_layers_to_area_id[1] = RC_WALKABLE_AREA;
+	uint32_t default_navlayers = p_navigation_mesh->get_navigation_layers();
+	navigation_layers_to_area_id[default_navlayers] = RC_WALKABLE_AREA;
 
 	area_id_to_navigation_layers[static_cast<uint32_t>(RC_NULL_AREA)] = 0;
-	area_id_to_navigation_layers[static_cast<uint32_t>(RC_WALKABLE_AREA)] = 1; // Default navigation layer for polygons not affected by areas.
+	area_id_to_navigation_layers[static_cast<uint32_t>(RC_WALKABLE_AREA)] = default_navlayers; // Default navigation layer for polygons not affected by areas.
 
 	uint32_t next_free_area_config_id = 1; // ID for unique bitmask configuration, i.e. some areas can share the same ID.
 	uint32_t AREA_ID_MAX = RC_WALKABLE_AREA; // Recast unsigned char RC_WALKABLE_AREA = 63 is maximum allowed area id.
@@ -510,13 +511,18 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	Vector<uint16_t> nav_area_ids = Vector<uint16_t>();
 	Vector<uint32_t> nav_area_navlayers = Vector<uint32_t>();
 
+	// TODO: if possible, allow using areas for cutting/carving mesh. then deprecate those features in obstacle.
+
 	if (!projected_areas.is_empty()) {
 		for (const NavigationMeshSourceGeometryData3D::ProjectedArea &projected_area : projected_areas) {
 			uint32_t area_navigation_layers = projected_area.navigation_layers;
-			nav_area_ids.push_back(projected_area.id);
-			nav_area_navlayers.push_back(projected_area.navigation_layers);
+			if (area_navigation_layers == default_navlayers) {
+				continue;
+			}
 
 			unsigned char recast_areaId = RC_WALKABLE_AREA;
+			nav_area_ids.push_back(projected_area.id);
+			nav_area_navlayers.push_back(area_navigation_layers);
 
 			HashMap<uint32_t, uint32_t>::Iterator existing_layer = navigation_layers_to_area_id.find(area_navigation_layers);
 			if (!existing_layer) {
@@ -680,7 +686,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 
 			nav_polygons.push_back(nav_indices);
 			nav_polygons_layers.push_back(navigation_layers);
-			if (navigation_layers != 1) {
+			if (navigation_layers != default_navlayers) {
 				// poly_count++;
 				const float *v1 = &detail_mesh->verts[index1 * 3];
 				const float *v2 = &detail_mesh->verts[index2 * 3];
