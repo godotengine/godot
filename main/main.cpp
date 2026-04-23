@@ -5051,6 +5051,7 @@ bool Main::iteration() {
 	if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		Input::get_singleton()->flush_buffered_events();
 	}
+	Input::get_singleton()->_process(process_step);
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
