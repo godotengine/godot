@@ -583,18 +583,20 @@ bool AnimationMixer::is_dummy() const {
 /* -- Caches for blending --------------------- */
 /* -------------------------------------------- */
 
-void AnimationMixer::_clear_caches() {
+void AnimationMixer::_clear_caches(bool p_clear_track_cache) {
 	_init_root_motion_cache();
 	_clear_audio_streams();
 	_clear_playing_caches();
+	capture_cache.clear();
+	if (!p_clear_track_cache) {
+		return;
+	}
 	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
 		memdelete(K.value);
 	}
 	track_cache.clear();
 	animation_track_num_to_track_cache.clear();
 	cache_valid = false;
-	capture_cache.clear();
-
 	emit_signal(SNAME("caches_cleared"));
 }
 
@@ -604,6 +606,15 @@ void AnimationMixer::_clear_audio_streams() {
 		playing_audio_stream_players[i]->call(SNAME("set_stream"), Ref<AudioStream>());
 	}
 	playing_audio_stream_players.clear();
+
+	// Unref the playback handle so it doesn't keep the AudioStreamPlaybackPolyphonic
+	// alive after the AudioStreamPlayer node may have been deleted while stopped.
+	// It is re-acquired lazily on the next play.
+	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
+		if (K.value->type == Animation::TYPE_AUDIO) {
+			static_cast<TrackCacheAudio *>(K.value)->audio_stream_playback.unref();
+		}
+	}
 }
 
 void AnimationMixer::_clear_playing_caches() {
