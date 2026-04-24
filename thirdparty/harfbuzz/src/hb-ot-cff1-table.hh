@@ -234,7 +234,7 @@ struct Encoding
     return_trace (true);
   }
 
-  unsigned int get_size () const
+  size_t get_size () const
   {
     unsigned int size = min_size;
     switch (table_format ())
@@ -262,7 +262,7 @@ struct Encoding
 
   void get_supplement_codes (hb_codepoint_t sid, hb_vector_t<hb_codepoint_t> &codes) const
   {
-    codes.resize (0);
+    codes.clear ();
     if (has_supplement ())
       suppEncData().get_codes (sid, codes);
   }
@@ -344,7 +344,7 @@ struct Charset0
     return 0;
   }
 
-  static unsigned int get_size (unsigned int num_glyphs)
+  static size_t get_size (unsigned int num_glyphs)
   {
     assert (num_glyphs > 0);
     return UnsizedArrayOf<HBUINT16>::get_size (num_glyphs - 1);
@@ -459,7 +459,7 @@ struct Charset1_2 {
     return 0;
   }
 
-  unsigned int get_size (unsigned int num_glyphs) const
+  size_t get_size (unsigned int num_glyphs) const
   {
     int glyph = (int) num_glyphs;
     unsigned num_ranges = 0;
@@ -475,7 +475,7 @@ struct Charset1_2 {
     return get_size_for_ranges (num_ranges);
   }
 
-  static unsigned int get_size_for_ranges (unsigned int num_ranges)
+  static size_t get_size_for_ranges (unsigned int num_ranges)
   {
     return UnsizedArrayOf<Charset_Range<TYPE> >::get_size (num_ranges);
   }
@@ -563,7 +563,7 @@ struct Charset
     return_trace (true);
   }
 
-  unsigned int get_size (unsigned int num_glyphs) const
+  size_t get_size (unsigned int num_glyphs) const
   {
     switch (format)
     {

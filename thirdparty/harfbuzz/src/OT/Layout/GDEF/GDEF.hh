@@ -616,7 +616,7 @@ struct GDEFVersion1_2
   public:
   DEFINE_SIZE_MIN (4 + 4 * Types::size);
 
-  unsigned int get_size () const
+  size_t get_size () const
   {
     return min_size +
 	   (version.to_int () >= 0x00010002u ? markGlyphSetsDef.static_size : 0) +
@@ -755,7 +755,7 @@ struct GDEF
     ComponentGlyph	= 4
   };
 
-  unsigned int get_size () const
+  size_t get_size () const
   {
     switch (u.version.major) {
     case 1: return u.version1.get_size ();

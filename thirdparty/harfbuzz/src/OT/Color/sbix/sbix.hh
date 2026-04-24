@@ -79,7 +79,7 @@ struct SBIXGlyph
 
 struct SBIXStrike
 {
-  static unsigned int get_size (unsigned num_glyphs)
+  static size_t get_size (unsigned num_glyphs)
   { return min_size + num_glyphs * HBUINT32::static_size; }
 
   bool sanitize (hb_sanitize_context_t *c) const

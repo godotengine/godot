@@ -112,12 +112,29 @@
 #define HB_SVG_MAX_PATH_SEGMENTS 262144
 #endif
 
+#ifndef HB_GPU_DRAW_MAX_CURVES
+#define HB_GPU_DRAW_MAX_CURVES 65536
+#endif
+
 #ifndef HB_SVG_MAX_DOCUMENT_SIZE
 #define HB_SVG_MAX_DOCUMENT_SIZE ((size_t) 16 << 20)
 #endif
 
 #ifndef HB_RASTER_MAX_BUFFER_SIZE
-#define HB_RASTER_MAX_BUFFER_SIZE ((size_t) 1 << 24)
+#define HB_RASTER_MAX_BUFFER_SIZE ((size_t) 1 << 30)
+#endif
+
+
+#ifndef HB_REPACKER_MAX_ITERATIONS
+#define HB_REPACKER_MAX_ITERATIONS 500
+#endif
+
+#ifndef HB_REPACKER_MAX_VERTICES
+#define HB_REPACKER_MAX_VERTICES 100000
+#endif
+
+#ifndef HB_REPACKER_MAX_SPACES
+#define HB_REPACKER_MAX_SPACES 1024
 #endif
 
 

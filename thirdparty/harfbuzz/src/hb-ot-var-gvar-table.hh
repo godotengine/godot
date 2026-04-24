@@ -447,7 +447,7 @@ struct gvar_GVAR
     auto it = hb_iter (c->plan->new_to_old_gid_list);
     if (it->first == 0 && !(c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
       it++;
-    unsigned int subset_data_size = 0;
+    size_t subset_data_size = 0;
     unsigned padding_size = 0;
     for (auto &_ : it)
     {
