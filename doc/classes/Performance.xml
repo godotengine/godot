@@ -311,6 +311,7 @@
 			Number of active navigation obstacles in the [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_3D_AREA_COUNT" value="60" enum="Monitor">
+			Number of active navigation areas in the [NavigationServer3D].
 		</constant>
 		<constant name="MONITOR_MAX" value="61" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.

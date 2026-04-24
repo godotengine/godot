@@ -26,12 +26,14 @@
 			<param index="0" name="area" type="int" />
 			<param index="1" name="layer_number" type="int" />
 			<description>
+				Returns whether or not the specified area's layer of the [member navigation_mesh] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_area_navigation_layers" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="area" type="int" />
 			<description>
+				Returns all navigation layers (a bitmask) the area belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
 			</description>
 		</method>
 		<method name="get_bounds" qualifiers="const">
@@ -77,6 +79,7 @@
 			<param index="1" name="layer_number" type="int" />
 			<param index="2" name="value" type="bool" />
 			<description>
+				Based on [param value], enables or disables the specified area's layer in the [member navigation_mesh], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_area_navigation_layers">
@@ -84,6 +87,7 @@
 			<param index="0" name="area" type="int" />
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
+				Sets all navigation layers (a bitmask) the area belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">

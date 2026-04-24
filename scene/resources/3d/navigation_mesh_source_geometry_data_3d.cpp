@@ -342,22 +342,22 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_box(const Vector
 	ERR_FAIL_COND_V(!size.is_finite(), 0);
 	ERR_FAIL_COND_V(size.is_zero_approx(), 0);
 
-	Vector<Vector3> vertices;
-	vertices.resize(4);
-	vertices.write[0] = Vector3(-size.x * 0.5, 0.0, -size.z * 0.5);
-	vertices.write[1] = Vector3(size.x * 0.5, 0.0, -size.z * 0.5);
-	vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
-	vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
+	Vector<Vector3> box_vertices;
+	box_vertices.resize(4);
+	box_vertices.write[0] = Vector3(-size.x * 0.5, 0.0, -size.z * 0.5);
+	box_vertices.write[1] = Vector3(size.x * 0.5, 0.0, -size.z * 0.5);
+	box_vertices.write[2] = Vector3(size.x * 0.5, 0.0, size.z * 0.5);
+	box_vertices.write[3] = Vector3(-size.x * 0.5, 0.0, size.z * 0.5);
 
 	const Transform3D gt = root_node_transform * p_xform;
-	AABB bounds = NavigationMeshArea3D::_xform_bounds(vertices, gt, size.y);
+	AABB box_bounds = NavigationMeshArea3D::_xform_bounds(box_vertices, gt, size.y);
 
 	ProjectedArea projected_area;
 
 	projected_area.id = next_free_area_id;
 	next_free_area_id++;
 
-	projected_area.aabb = bounds;
+	projected_area.aabb = box_bounds;
 	projected_area.navigation_layers = p_navigation_layers;
 	projected_area.priority = p_priority;
 	projected_area.shape_type = ProjectedArea::ShapeType::BOX;
@@ -384,10 +384,10 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_cylinder(const V
 	projected_area.priority = p_priority;
 	projected_area.shape_type = ProjectedArea::ShapeType::CYLINDER;
 
-	AABB area_aabb;
-	area_aabb.position = p_position + Vector3(-p_radius, 0.0, p_radius);
-	area_aabb.size = Vector3(p_radius * 2.0, p_height, p_radius * 2.0);
-	projected_area.aabb = area_aabb;
+	AABB cylinder_bounds;
+	cylinder_bounds.position = p_position + Vector3(-p_radius, 0.0, p_radius);
+	cylinder_bounds.size = Vector3(p_radius * 2.0, p_height, p_radius * 2.0);
+	projected_area.aabb = cylinder_bounds;
 
 	RWLockWrite write_lock(geometry_rwlock);
 	_projected_areas.push_back(projected_area);
@@ -414,8 +414,8 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Ve
 
 	float *area_vertices_ptrw = projected_area.vertices.ptrw();
 
-	AABB area_aabb;
-	area_aabb.position = p_vertices[0];
+	AABB polygon_bounds;
+	polygon_bounds.position = p_vertices[0];
 	const Transform3D gt = root_node_transform * p_xform;
 
 	int vertex_index = 0;
@@ -425,9 +425,9 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Ve
 		area_vertices_ptrw[vertex_index++] = v.x;
 		area_vertices_ptrw[vertex_index++] = 0.0;
 		area_vertices_ptrw[vertex_index++] = v.z;
-		area_aabb.expand_to(v);
+		polygon_bounds.expand_to(v);
 	}
-	projected_area.aabb = area_aabb;
+	projected_area.aabb = polygon_bounds;
 
 	RWLockWrite write_lock(geometry_rwlock);
 	_projected_areas.push_back(projected_area);

@@ -4,7 +4,7 @@
 		An area shape to affect navigation mesh geometry upon baking.
 	</brief_description>
 	<description>
-		An area shape to affect navigation mesh geometry upon baking. Has no impact on agent navigation queries.
+		An area that draws its shape onto the [NavigationMesh] geometry during baking with the goal to overwrite the default navigation layers (see [member NavigationRegion3D.navigation_layers]).
 		[NavigationMeshArea3D] is the base the different area shapes. It cannot be used directly.
 		[b]Note:[/b] To guarantee that the area affects the intended [NavigationMesh], make sure that
 		1. the area's origin is as close as possible to the source geometry, and

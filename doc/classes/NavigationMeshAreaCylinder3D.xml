@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMeshAreaCylinder3D" inherits="NavigationMeshArea3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An axis-aligned area with a projected shape of cylinder to affect navigation mesh geometry and traversal cost (when baked).
+		An axis-aligned cylinder shape to affect the navigation mesh baking.
 	</brief_description>
 	<description>
-		An axis-aligned area with a projected shape of cylinder to affect navigation mesh geometry and traversal cost (when baked).
+		An axis-aligned area that draws a cylinder shape detail onto the baked navigation mesh.
 		[b]Note:[/b] To guarantee that the area affects the intended [NavigationMesh], make sure that
 		1. the area's origin is as close as possible to the source geometry, and
 		2. the [member NavigationMeshArea3D.navigation_layers] are different from the [NavigationRegion3D] you intend to bake with.

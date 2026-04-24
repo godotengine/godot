@@ -937,6 +937,7 @@
 			<return type="int" />
 			<param index="0" name="region" type="RID" />
 			<description>
+				Returns the number of areas created for the given [param region] during the baking process of the [NavigationMesh].
 			</description>
 		</method>
 		<method name="region_get_area_navigation_layers" qualifiers="const">
@@ -944,6 +945,7 @@
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="area" type="int" />
 			<description>
+				Returns all navigation layers (a bitmask) the [param area] inside [param region] belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
 			</description>
 		</method>
 		<method name="region_get_bounds" qualifiers="const">
@@ -1101,6 +1103,7 @@
 			<param index="1" name="area" type="int" />
 			<param index="2" name="navigation_layers" type="int" />
 			<description>
+				Sets all navigation layers (a bitmask) the [param area] inside [param region] belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
 			</description>
 		</method>
 		<method name="region_set_enabled">
@@ -1245,7 +1248,7 @@
 	</signals>
 	<constants>
 		<constant name="AREA_SHAPE_NONE" value="0" enum="AreaShapeType3D">
-			Constant for areas of type none shape.
+			Constant for areas with an invalid shape.
 		</constant>
 		<constant name="AREA_SHAPE_BOX" value="1" enum="AreaShapeType3D">
 			Constant for areas of type box shape.
@@ -1287,6 +1290,7 @@
 			Constant to get the number of active navigation obstacles.
 		</constant>
 		<constant name="INFO_AREA_COUNT" value="10" enum="ProcessInfo">
+			Constant to get the number of active navigation areas.
 		</constant>
 	</constants>
 </class>
