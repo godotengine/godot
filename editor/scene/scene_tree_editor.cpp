@@ -1080,44 +1080,57 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 
 		p_parent->set_selectable(0, true);
 	} else if (keep_for_children) {
-		p_parent->set_visible(!hide_filtered_out_parents || is_root);
+		// 判断是否为文本搜索命中子孙节点的情况
+		bool is_text_search_matching_descendant = !filter.strip_edges().is_empty() && !keep;
 
-		if (!p_parent->is_visible()) {
-			TreeItem *filtered_parent = p_parent->get_parent();
-			while (filtered_parent) {
-				if (filtered_parent == tree->get_root() || (filtered_parent->is_selectable(0) && filtered_parent->is_visible())) {
-					break;
-				}
-				filtered_parent = filtered_parent->get_parent();
-			}
-
-			if (filtered_parent) {
-				for (Variant &item : p_parent->get_children()) {
-					TreeItem *ti = Object::cast_to<TreeItem>(item);
-					bool is_selected = ti->is_selected(0);
-
-					p_parent->remove_child(ti);
-					filtered_parent->add_child(ti);
-					TreeItem *prev = p_parent->get_prev();
-					if (prev) {
-						ti->move_after(prev);
-					}
-
-					if (is_selected) {
-						ti->select(0);
-					}
-
-					HashMap<Node *, CachedNode>::Iterator I = node_cache.get(get_node(p_parent->get_metadata(0)), false);
-					if (I) {
-						I->value.has_moved_children = true;
-					}
-				}
-
-				return false;
-			}
-		} else {
+		if (is_text_search_matching_descendant) {
+			// 文本搜索命中子孙节点时，保留完整层级路径
+			// 不根据 hide_filtered_out_parents 隐藏父节点，不移动子节点
+			// 父节点显示为灰色，不可选
+			// 注意：可见性已在第 1069 行设置为 keep_for_children || selectable = true
 			p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			p_parent->set_selectable(0, false);
+		} else {
+			// 其他情况（如类型过滤）继续走原来的逻辑
+			p_parent->set_visible(!hide_filtered_out_parents || is_root);
+
+			if (!p_parent->is_visible()) {
+				TreeItem *filtered_parent = p_parent->get_parent();
+				while (filtered_parent) {
+					if (filtered_parent == tree->get_root() || (filtered_parent->is_selectable(0) && filtered_parent->is_visible())) {
+						break;
+					}
+					filtered_parent = filtered_parent->get_parent();
+				}
+
+				if (filtered_parent) {
+					for (Variant &item : p_parent->get_children()) {
+						TreeItem *ti = Object::cast_to<TreeItem>(item);
+						bool is_selected = ti->is_selected(0);
+
+						p_parent->remove_child(ti);
+						filtered_parent->add_child(ti);
+						TreeItem *prev = p_parent->get_prev();
+						if (prev) {
+							ti->move_after(prev);
+						}
+
+						if (is_selected) {
+							ti->select(0);
+						}
+
+						HashMap<Node *, CachedNode>::Iterator I = node_cache.get(get_node(p_parent->get_metadata(0)), false);
+						if (I) {
+							I->value.has_moved_children = true;
+						}
+					}
+
+					return false;
+				}
+			} else {
+				p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+				p_parent->set_selectable(0, false);
+			}
 		}
 	}
 	if (is_root) {
