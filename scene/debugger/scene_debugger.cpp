@@ -527,7 +527,7 @@ Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args) {
 // region Embedded process screenshot.
 
 Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
 
 	Viewport *viewport = SceneTree::get_singleton()->get_root();
 	ERR_FAIL_NULL_V_MSG(viewport, ERR_UNCONFIGURED, "Cannot get a viewport from the main screen.");
@@ -537,6 +537,8 @@ Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(img.is_null(), ERR_UNCONFIGURED, "Cannot get an image from a viewport texture of the main screen.");
 	img->clear_mipmaps();
 
+	bool hdr = DisplayServer::get_singleton()->window_is_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID);
+	bool hdr_screenshot = p_args[1];
 	const String TEMP_DIR = OS::get_singleton()->get_temp_path();
 	uint32_t suffix_i = 0;
 	String path;
@@ -544,13 +546,17 @@ Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
 		String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
 		datetime += itos(Time::get_singleton()->get_ticks_usec());
 		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
-		path = TEMP_DIR.path_join("scr-" + suffix + ".png");
+		path = TEMP_DIR.path_join("scr-" + suffix + (hdr && hdr_screenshot ? ".exr" : ".png"));
 		if (!DirAccess::exists(path)) {
 			break;
 		}
 		suffix_i += 1;
 	}
-	img->save_png(path);
+	if (hdr && hdr_screenshot) {
+		img->save_exr(path, false, true, DisplayServer::get_singleton()->window_get_output_max_linear_value(DisplayServerEnums::MAIN_WINDOW_ID));
+	} else {
+		img->save_png(path);
+	}
 
 	Array arr;
 	arr.append(p_args[0]);

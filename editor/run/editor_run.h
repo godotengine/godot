@@ -39,7 +39,7 @@
 #include <climits> // INT_MAX
 
 typedef void (*EditorRunInstanceStarting)(int p_index, List<String> &r_arguments);
-typedef bool (*EditorRunInstanceRequestScreenshot)(const Callable &p_callback);
+typedef bool (*EditorRunInstanceRequestScreenshot)(const Callable &p_callback, bool p_hdr);
 
 class EditorRun {
 public:
@@ -79,7 +79,7 @@ public:
 	int get_child_process_count() const { return pids.size(); }
 	ProcessID get_current_process() const;
 
-	static bool request_screenshot(const Callable &p_callback);
+	static bool request_screenshot(const Callable &p_callback, bool p_hdr);
 
 	static WindowPlacement get_window_placement();
 
