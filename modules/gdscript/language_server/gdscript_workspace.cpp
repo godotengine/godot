@@ -438,6 +438,7 @@ Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::Document
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(p_file_path);
 	if (parser) {
 		const PackedStringArray &content = parser->get_lines();
+		String uri = get_file_uri(p_file_path);
 		for (int i = 0; i < content.size(); ++i) {
 			String line = content[i];
 
@@ -446,7 +447,7 @@ Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::Document
 				LSP::TextDocumentPositionParams params;
 
 				LSP::TextDocumentIdentifier text_doc;
-				text_doc.uri = get_file_uri(p_file_path);
+				text_doc.uri = uri;
 
 				params.textDocument = text_doc;
 				params.position.line = i;
@@ -468,7 +469,8 @@ Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::Document
 					}
 				}
 
-				character = line.find(identifier, range.end.character);
+				int next_search_index = MAX(character + 1, range.end.character);
+				character = line.find(identifier, next_search_index);
 			}
 		}
 	}
