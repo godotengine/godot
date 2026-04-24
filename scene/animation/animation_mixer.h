@@ -310,7 +310,7 @@ protected:
 	Vector<Node *> playing_audio_stream_players;
 
 	// Helpers.
-	void _clear_caches();
+	void _clear_caches(bool p_clear_track_cache = true);
 	void _clear_audio_streams();
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
