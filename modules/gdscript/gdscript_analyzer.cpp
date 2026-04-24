@@ -704,6 +704,14 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				ProjectSettings::get_singleton()->get_autoload(this_name).is_singleton) {
 			push_error(vformat(R"([Reginleif] Generic parameter "%s" hides an autoload singleton.)", this_name), param);
 		}
+
+		if (param->generic_upper_bound != nullptr) {
+			GDScriptParser::DataType bound_type = type_from_metatype(resolve_datatype(param->generic_upper_bound));
+			if (bound_type.kind == GDScriptParser::DataType::GENERIC_TYPE && bound_type.generic_param == this_name) {
+				///I just have to, man. you don't do this by mistake.
+				push_error(vformat(R"([Reginleif] ...are you binding %s... against... %s?! Reconsider that upper bound.)", this_name, this_name), param->generic_upper_bound);
+			}
+		}
 	}
 
 	GDScriptParser::DataType resolving_datatype;
@@ -1291,7 +1299,22 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			for(int i = 0; i < got; i++) {
 				GDScriptParser::TypeNode* contained_type = p_type->container_types[i];
 				GDScriptParser::DataType arg_type = type_from_metatype(resolve_datatype(contained_type));
-				StringName param_name = result.class_type->generic_parameters[i]->name;
+
+				GDScriptParser::IdentifierNode* generic_param = result.class_type->generic_parameters[i];
+				StringName param_name = generic_param->name;
+				if (generic_param->generic_upper_bound != nullptr) {
+					GDScriptParser::DataType upper_bound_type = type_from_metatype(resolve_datatype(generic_param->generic_upper_bound));
+					if (!upper_bound_type.is_variant() && !is_type_compatible(upper_bound_type, arg_type, true, contained_type)) {
+						push_error(vformat(
+								   R"([Reginleif] Type argument '%s' for generic parameter '%s' does not satisfy upper bound '%s'.)",
+								   arg_type.to_string(),
+								   param_name,
+								   upper_bound_type.to_string()),
+								contained_type);
+						return bad_type;
+					}
+				}
+
 				result.generic_type_bindings[param_name] = arg_type;
 			}
 
@@ -2178,6 +2201,14 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				ProjectSettings::get_singleton()->get_autoload(this_name).is_singleton) {
 			push_error(vformat(R"([Reginleif] Function generic parameter "%s" hides an autoload.)", this_name), param);
 		}
+
+		if (param->generic_upper_bound != nullptr) {
+			GDScriptParser::DataType bound_type = type_from_metatype(resolve_datatype(param->generic_upper_bound));
+			if (bound_type.kind == GDScriptParser::DataType::GENERIC_TYPE && bound_type.generic_param == this_name) {
+				///same treatment here.
+				push_error(vformat(R"([Reginleif] ...are you binding %s... against... %s?! Reconsider that upper bound.)", this_name, this_name), param->generic_upper_bound);
+			}
+		}
 	}
 
 
@@ -2376,6 +2407,23 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		parser->push_warning(p_function, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
 #endif // DEBUG_ENABLED
+
+	///static funcs should not be able to access class level generic params
+	if (p_function->is_static && parser->current_class != nullptr && parser->current_class->has_generic_parameters()) {
+		GDScriptParser::DataType return_type = p_function->get_datatype();
+		if (return_type.kind == GDScriptParser::DataType::GENERIC_TYPE &&
+				return_type.generic_owner_class == parser->current_class) {
+			push_error(vformat(R"([Reginleif] Static function "%s" cannot use class-level generic parameter "%s". Use a function-level generic instead.)", function_name, return_type.generic_param), p_function);
+		}
+
+		for (int i = 0; i < p_function->parameters.size(); i++) {
+			GDScriptParser::DataType param_type = p_function->parameters[i]->get_datatype();
+			if (param_type.kind == GDScriptParser::DataType::GENERIC_TYPE &&
+					param_type.generic_owner_class == parser->current_class) {
+				push_error(vformat(R"([Reginleif] Static function "%s" cannot use class-level generic parameter "%s" in parameter "%s". Use a function-level generic instead.)", function_name, param_type.generic_param, p_function->parameters[i]->identifier->name), p_function->parameters[i]);
+			}
+		}
+	}
 
 	method_info.default_arguments.append_array(p_function->default_arg_values);
 	method_info.return_val = p_function->get_datatype().to_property_info("");
@@ -4213,6 +4261,65 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				}
 			}
 		}
+
+
+		if (script_func != nullptr) {
+			for (const GDScriptParser::IdentifierNode* generic_param : script_func->generic_parameters) {
+
+				if (generic_param == nullptr || generic_param->generic_upper_bound == nullptr) {
+					continue;
+				}
+
+				const GDScriptParser::DataType* bound_arg = call_generic_bindings.getptr(generic_param->name);
+
+				if (bound_arg == nullptr) {
+					continue;
+				}
+
+				GDScriptParser::DataType upper_bound_type = type_from_metatype(resolve_datatype(generic_param->generic_upper_bound));
+				
+				if (!upper_bound_type.is_variant() && !is_type_compatible(upper_bound_type, *bound_arg, true, p_call)) {
+					push_error(vformat(
+							   R"([Reginleif] Type argument '%s' for generic parameter '%s' in '%s()' does not satisfy upper bound '%s'.)",
+							   bound_arg->to_string(),
+							   generic_param->name,
+							   p_call->function_name,
+							   upper_bound_type.to_string()),
+							p_call);
+					p_call->set_datatype(call_type);
+					return;
+				}
+			}
+		}
+
+		if (base_type.class_type != nullptr && base_type.class_type->has_generic_parameters()) {
+			for (const GDScriptParser::IdentifierNode* generic_param : base_type.class_type->generic_parameters) {
+
+				if (generic_param == nullptr || generic_param->generic_upper_bound == nullptr) {
+					continue;
+				}
+
+				const GDScriptParser::DataType* bound_arg = call_generic_bindings.getptr(generic_param->name);
+
+				if (bound_arg == nullptr) {
+					continue;
+				}
+
+				GDScriptParser::DataType upper_bound_type = type_from_metatype(resolve_datatype(generic_param->generic_upper_bound));
+				
+				if (!upper_bound_type.is_variant() && !is_type_compatible(upper_bound_type, *bound_arg, true, p_call)) {
+					push_error(vformat(
+							   R"([Reginleif] Type argument '%s' for class generic parameter '%s' does not satisfy upper bound '%s'.)",
+							   bound_arg->to_string(),
+							   generic_param->name,
+							   upper_bound_type.to_string()),
+							p_call);
+					p_call->set_datatype(call_type);
+					return;
+				}
+			}
+		}
+
 
 		if (!call_generic_bindings.is_empty()) {
 			return_type = resolve_generic_type(return_type, call_generic_bindings);

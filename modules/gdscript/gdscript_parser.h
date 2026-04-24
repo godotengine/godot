@@ -970,6 +970,7 @@ public:
 
 	struct IdentifierNode : public ExpressionNode {
 		StringName name;
+		TypeNode* generic_upper_bound = nullptr;
 		SuiteNode *suite = nullptr; // The block in which the identifier is used.
 
 		enum Source {
@@ -1620,6 +1621,7 @@ private:
 
 	/// [Monarch] Reginleif addition. Grants ability to parse generic parameter lists.
 	void parse_generic_parameters(Vector<IdentifierNode*>& p_generic_params);
+	TypeNode* parse_type_hint(bool p_allow_void = false);
 
 	void consume_indents_and_newlines();
 

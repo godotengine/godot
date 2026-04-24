@@ -1072,7 +1072,9 @@ void GDScriptParser::parse_generic_parameters(Vector<IdentifierNode*>& p_generic
 		return;
 	}
 
-	p_generic_parameters.push_back(parse_identifier());
+	IdentifierNode* first_param = parse_identifier();
+	first_param->generic_upper_bound = parse_type_hint();
+	p_generic_parameters.push_back(first_param);
 
 	///grab other idents...
 	while (match(GDScriptTokenizer::Token::COMMA)) {
@@ -1085,12 +1087,30 @@ void GDScriptParser::parse_generic_parameters(Vector<IdentifierNode*>& p_generic
             return;
         }
 
-        p_generic_parameters.push_back(parse_identifier());
+			IdentifierNode* param = parse_identifier();
+			param->generic_upper_bound = parse_type_hint();
+			p_generic_parameters.push_back(param);
     }
 
     consume(GDScriptTokenizer::Token::BRACKET_CLOSE,
             R"([Reginleif] Expected ']' after generic parameter list.)");
 
+}
+
+/// [Monarch] parses `: Type`
+GDScriptParser::TypeNode* GDScriptParser::parse_type_hint(bool p_allow_void) {
+	if (!match(GDScriptTokenizer::Token::COLON)) {
+		return nullptr;
+	}
+
+	///i sure love completion fuckery, i had to look up how completion worked for standard types to figure out how to do this
+	///"godot codebase is easy to learn from!" so true bestie
+	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, current_class);
+	TypeNode* type = parse_type(p_allow_void);
+	if (type == nullptr) {
+		push_error(R"([Reginleif] Expected type after ":".)");
+	}
+	return type;
 }
 
 
@@ -5659,23 +5679,39 @@ String GDScriptParser::DataType::to_string() const {
 				return vformat("Dictionary[%s, %s]", get_container_element_type_or_variant(0).to_string(), get_container_element_type_or_variant(1).to_string());
 			}
 			return Variant::get_type_name(builtin_type);
+		
 		case NATIVE:
 			if (is_meta_type) {
 				return GDScriptNativeClass::get_class_static();
 			}
 			return native_type.operator String();
-		case CLASS:
+		
+		///
+		case CLASS: {
+			String base_name;
 			if (class_type->identifier != nullptr) {
-				return class_type->identifier->name.operator String();
+				base_name = class_type->identifier->name.operator String();
+			} else {
+				base_name = class_type->fqcn;
 			}
-			if (class_type->has_generic_parameters()) {
-				String params = class_type->generic_parameters[0]->name;
-				for(int i = 1; i < class_type->generic_parameters.size(); i++) {
-					params += ", "+class_type->generic_parameters[i]->name;
+			if (!generic_type_bindings.is_empty()) {
+				base_name += "[";
+				bool first = true;
+				for (const GDScriptParser::IdentifierNode* param : class_type->generic_parameters) {
+					if (!first) { base_name += ", "; }
+					first = false;
+					const DataType* bound = generic_type_bindings.getptr(param->name);
+					if (bound != nullptr) {
+						base_name += bound->to_string();
+					} else {
+						base_name += param->name.operator String();
+					}
 				}
-				return "["+class_type->fqcn+"]";
+				base_name += "]";
 			}
-			return class_type->fqcn;
+			return base_name;
+		}
+
 		case SCRIPT: {
 			if (is_meta_type) {
 				return script_type.is_valid() ? script_type->get_class_name().operator String() : "";
