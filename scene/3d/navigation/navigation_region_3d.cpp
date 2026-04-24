@@ -203,9 +203,9 @@ void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area, int p_
 bool NavigationRegion3D::get_area_navigation_layer_value(uint16_t p_area, int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
-	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), 0, "Navigation mesh must be set.");
+	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), false, "Navigation mesh must be set.");
 	if (!_has_area(p_area)) {
-		return 0;
+		return false;
 	}
 
 	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area);

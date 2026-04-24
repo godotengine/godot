@@ -38,7 +38,7 @@ TEST_FORCE_LINK(test_navigation_mesh_area_3d)
 
 #include "scene/3d/navigation/navigation_mesh_area_3d.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
+#include "scene/main/window.h" // IWYU pragma: keep. For adding child to root node.
 
 namespace TestNavigationMeshArea3D {
 
