@@ -421,6 +421,14 @@ void JoltSoftBody3D::_areas_changed() {
 	wake_up();
 }
 
+void JoltSoftBody3D::_clear_areas() {
+	areas.clear();
+}
+
+void JoltSoftBody3D::_jolt_body_destroying() {
+	_clear_areas();
+}
+
 JoltSoftBody3D::JoltSoftBody3D() :
 		JoltObject3D(OBJECT_TYPE_SOFT_BODY) {
 	jolt_settings->mRestitution = 0.0f;
@@ -430,6 +438,8 @@ JoltSoftBody3D::JoltSoftBody3D() :
 }
 
 JoltSoftBody3D::~JoltSoftBody3D() {
+	_clear_areas();
+
 	if (jolt_settings != nullptr) {
 		delete jolt_settings;
 		jolt_settings = nullptr;

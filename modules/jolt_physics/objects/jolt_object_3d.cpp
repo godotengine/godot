@@ -39,17 +39,18 @@ void JoltObject3D::_remove_from_space() {
 		return;
 	}
 
-	space->remove_object(jolt_body->GetID());
-	jolt_body = nullptr;
+	space->remove_object(*this);
 }
 
 void JoltObject3D::_reset_space() {
 	ERR_FAIL_NULL(space);
 
+	space_changing_to = space;
 	_space_changing();
 	_remove_from_space();
 	_add_to_space();
 	_space_changed();
+	space_changing_to = nullptr;
 }
 
 void JoltObject3D::_update_object_layer() {
@@ -69,10 +70,16 @@ void JoltObject3D::_collision_mask_changed() {
 }
 
 JoltObject3D::JoltObject3D(ObjectType p_object_type) :
+		needs_destruction_element(this),
 		object_type(p_object_type) {
 }
 
-JoltObject3D::~JoltObject3D() = default;
+JoltObject3D::~JoltObject3D() {
+	JoltSpace3D *body_space = cached_body_space != nullptr ? cached_body_space : space;
+	if (jolt_body != nullptr && body_space != nullptr) {
+		destroy_jolt_body(body_space, false);
+	}
+}
 
 Object *JoltObject3D::get_instance() const {
 	return ObjectDB::get_instance(instance_id);
@@ -83,6 +90,7 @@ void JoltObject3D::set_space(JoltSpace3D *p_space) {
 		return;
 	}
 
+	space_changing_to = p_space;
 	_space_changing();
 
 	if (space != nullptr) {
@@ -96,6 +104,7 @@ void JoltObject3D::set_space(JoltSpace3D *p_space) {
 	}
 
 	_space_changed();
+	space_changing_to = nullptr;
 }
 
 void JoltObject3D::set_collision_layer(uint32_t p_layer) {
@@ -132,6 +141,40 @@ bool JoltObject3D::can_interact_with(const JoltObject3D &p_other) const {
 	} else {
 		ERR_FAIL_V_MSG(false, vformat("Unhandled object type: '%d'. This should not happen. Please report this.", p_other.get_type()));
 	}
+}
+
+void JoltObject3D::enqueue_needs_destruction(JoltSpace3D *p_space) {
+	if (p_space != nullptr) {
+		p_space->enqueue_needs_destruction(&needs_destruction_element);
+	}
+}
+
+void JoltObject3D::dequeue_needs_destruction(JoltSpace3D *p_space) {
+	if (p_space != nullptr) {
+		p_space->dequeue_needs_destruction(&needs_destruction_element);
+	}
+}
+
+void JoltObject3D::destroy_jolt_body(JoltSpace3D *p_space, bool p_notify) {
+	if (jolt_body == nullptr || p_space == nullptr) {
+		return;
+	}
+
+	dequeue_needs_destruction(p_space);
+
+	if (p_notify) {
+		_jolt_body_destroying();
+	}
+
+	JPH::BodyInterface &body_iface = p_space->get_body_iface();
+	const JPH::BodyID jolt_id = jolt_body->GetID();
+	if (body_iface.IsAdded(jolt_id)) {
+		body_iface.RemoveBody(jolt_id);
+	}
+	body_iface.DestroyBody(jolt_id);
+
+	jolt_body = nullptr;
+	cached_body_space = nullptr;
 }
 
 String JoltObject3D::to_string() const {

@@ -36,6 +36,7 @@
 #include "core/object/object.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
+#include "core/templates/self_list.h"
 
 #include <Jolt/Jolt.h>
 
@@ -60,9 +61,13 @@ public:
 	};
 
 protected:
+	SelfList<JoltObject3D> needs_destruction_element;
+
 	RID rid;
 	ObjectID instance_id;
 	JoltSpace3D *space = nullptr;
+	JoltSpace3D *space_changing_to = nullptr;
+	JoltSpace3D *cached_body_space = nullptr;
 	JPH::Body *jolt_body = nullptr;
 
 	uint32_t collision_layer = 1;
@@ -87,6 +92,7 @@ protected:
 
 	virtual void _space_changing() {}
 	virtual void _space_changed() {}
+	virtual void _jolt_body_destroying() {}
 
 public:
 	explicit JoltObject3D(ObjectType p_object_type);
@@ -124,6 +130,8 @@ public:
 	JoltSpace3D *get_space() const { return space; }
 	void set_space(JoltSpace3D *p_space);
 	bool in_space() const { return space != nullptr && jolt_body != nullptr; }
+	bool is_being_removed_from_space() const { return space != nullptr && space_changing_to == nullptr; }
+	JoltSpace3D *get_cached_body_space() const { return cached_body_space; }
 
 	uint32_t get_collision_layer() const { return collision_layer; }
 	void set_collision_layer(uint32_t p_layer);
@@ -144,6 +152,11 @@ public:
 	virtual bool can_interact_with(const JoltArea3D &p_other) const = 0;
 
 	virtual bool reports_contacts() const = 0;
+
+	void enqueue_needs_destruction(JoltSpace3D *p_space);
+	void dequeue_needs_destruction(JoltSpace3D *p_space);
+	void destroy_jolt_body(JoltSpace3D *p_space, bool p_notify = true);
+	void set_cached_body_space(JoltSpace3D *p_space) { cached_body_space = p_space; }
 
 	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) {}
 

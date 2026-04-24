@@ -88,7 +88,12 @@ JPH::EMotionType JoltBody3D::_get_motion_type() const {
 }
 
 void JoltBody3D::_add_to_space() {
-	jolt_shape = build_shapes(true);
+	const bool can_reuse_current_shape = jolt_body != nullptr && cached_body_space == space &&
+			space->get_body_iface().IsAdded(jolt_body->GetID()) && !shapes_dirty;
+	if (!can_reuse_current_shape) {
+		jolt_shape = build_shapes(true);
+		shapes_dirty = false;
+	}
 
 	JPH::CollisionGroup::GroupID group_id = 0;
 	JPH::CollisionGroup::SubGroupID sub_group_id = 0;
@@ -413,6 +418,10 @@ void JoltBody3D::_exit_all_areas() {
 	areas.clear();
 }
 
+void JoltBody3D::_clear_areas() {
+	areas.clear();
+}
+
 void JoltBody3D::_update_group_filter() {
 	JPH::GroupFilter *group_filter = !exceptions.is_empty() ? JoltGroupFilter::instance : nullptr;
 
@@ -443,9 +452,12 @@ void JoltBody3D::_space_changing() {
 	JoltShapedObject3D::_space_changing();
 
 	sleep_initially = is_sleeping();
+	const bool deferring_removal = space != nullptr && space_changing_to == nullptr && space->will_defer_object_destruction(*this);
 
 	_destroy_joint_constraints();
-	_exit_all_areas();
+	if (!deferring_removal) {
+		_exit_all_areas();
+	}
 	_dequeue_call_queries();
 }
 
@@ -457,6 +469,10 @@ void JoltBody3D::_space_changed() {
 	_update_joint_constraints();
 	_update_sleep_allowed();
 	_areas_changed();
+}
+
+void JoltBody3D::_jolt_body_destroying() {
+	_clear_areas();
 }
 
 void JoltBody3D::_areas_changed() {
@@ -502,6 +518,8 @@ JoltBody3D::JoltBody3D() :
 }
 
 JoltBody3D::~JoltBody3D() {
+	_clear_areas();
+
 	if (direct_state != nullptr) {
 		memdelete(direct_state);
 		direct_state = nullptr;

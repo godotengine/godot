@@ -93,6 +93,8 @@ class JoltSoftBody3D final : public JoltObject3D {
 	void _motion_changed();
 	void _transform_changed();
 	void _areas_changed();
+	void _clear_areas();
+	virtual void _jolt_body_destroying() override;
 
 public:
 	JoltSoftBody3D();

@@ -296,6 +296,7 @@ JPH::ShapeRefC JoltShapedObject3D::build_shapes(bool p_optimize_compound) {
 
 void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 	if (!in_space()) {
+		shapes_dirty = true;
 		_shapes_committed();
 		return;
 	}
@@ -320,6 +321,8 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 	} else {
 		_dequeue_needs_optimization();
 	}
+
+	shapes_dirty = false;
 
 	_shapes_committed();
 }

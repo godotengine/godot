@@ -136,11 +136,13 @@ private:
 	void _destroy_joint_constraints();
 
 	void _exit_all_areas();
+	void _clear_areas();
 
 	void _mode_changed();
 	virtual void _shapes_committed() override;
 	virtual void _space_changing() override;
 	virtual void _space_changed() override;
+	virtual void _jolt_body_destroying() override;
 	void _areas_changed();
 	void _joints_changed();
 	void _transform_changed();

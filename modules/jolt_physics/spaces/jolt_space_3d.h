@@ -61,6 +61,7 @@ class JoltSpace3D {
 	SelfList<JoltArea3D>::List area_call_queries_list;
 	SelfList<JoltShapedObject3D>::List shapes_changed_list;
 	SelfList<JoltShapedObject3D>::List needs_optimization_list;
+	SelfList<JoltObject3D>::List needs_destruction_list;
 
 	LocalVector<JPH::BodyID> pending_objects_sleeping;
 	LocalVector<JPH::BodyID> pending_objects_awake;
@@ -80,6 +81,10 @@ class JoltSpace3D {
 
 	bool active = false;
 	bool stepping = false;
+
+	void _apply_body_settings(JPH::Body &p_jolt_body, const JPH::BodyCreationSettings &p_settings);
+	JPH::Body *_try_reuse_body(JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings);
+	void _flush_needs_destruction();
 
 	void _pre_step(float p_step);
 	void _post_step(float p_step);
@@ -131,10 +136,11 @@ public:
 
 	float get_last_step() const { return last_step; }
 
-	JPH::Body *add_object(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping = false);
-	JPH::Body *add_object(const JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping = false);
-	void remove_object(const JPH::BodyID &p_jolt_id);
+	JPH::Body *add_object(JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping = false);
+	JPH::Body *add_object(JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping = false);
+	void remove_object(JoltObject3D &p_object);
 	void flush_pending_objects();
+	bool will_defer_object_destruction(const JoltObject3D &p_object) const;
 
 	void set_is_object_sleeping(const JPH::BodyID &p_jolt_id, bool p_enable);
 
@@ -148,6 +154,8 @@ public:
 
 	void enqueue_needs_optimization(SelfList<JoltShapedObject3D> *p_object);
 	void dequeue_needs_optimization(SelfList<JoltShapedObject3D> *p_object);
+	void enqueue_needs_destruction(SelfList<JoltObject3D> *p_object);
+	void dequeue_needs_destruction(SelfList<JoltObject3D> *p_object);
 
 	void add_joint(JPH::Constraint *p_jolt_ref);
 	void add_joint(JoltJoint3D *p_joint);

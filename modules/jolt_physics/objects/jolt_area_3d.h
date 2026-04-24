@@ -84,34 +84,6 @@ private:
 		}
 	};
 
-	struct EventKey {
-		RID rid;
-		ObjectID instance_id;
-		int other_shape = -1;
-		int self_shape = -1;
-
-		EventKey() = default;
-
-		EventKey(const RID &p_rid, ObjectID p_instance_id, const ShapeIndexPair &p_shape_indices) :
-				rid(p_rid),
-				instance_id(p_instance_id),
-				other_shape(p_shape_indices.other),
-				self_shape(p_shape_indices.self) {}
-
-		static uint32_t hash(const EventKey &p_key) {
-			uint32_t hash = hash_one_uint64(p_key.rid.get_id());
-			hash = hash_murmur3_one_64(p_key.instance_id, hash);
-			hash = hash_murmur3_one_32(p_key.other_shape, hash);
-			hash = hash_murmur3_one_32(p_key.self_shape, hash);
-			return hash_fmix32(hash);
-		}
-
-		friend bool operator==(const EventKey &p_lhs, const EventKey &p_rhs) {
-			return p_lhs.rid == p_rhs.rid && p_lhs.instance_id == p_rhs.instance_id &&
-					p_lhs.other_shape == p_rhs.other_shape && p_lhs.self_shape == p_rhs.self_shape;
-		}
-	};
-
 	struct Overlap {
 		HashMap<ShapeIDPair, ShapeIndexPair, ShapeIDPair> shape_pairs;
 		HashMap<ShapeIndexPair, int, ShapeIndexPair> ref_counts;

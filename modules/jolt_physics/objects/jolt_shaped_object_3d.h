@@ -54,6 +54,7 @@ protected:
 	JPH::ShapeRefC previous_jolt_shape;
 
 	JPH::BodyCreationSettings *jolt_settings = new JPH::BodyCreationSettings();
+	bool shapes_dirty = false;
 
 	virtual JPH::EMotionType _get_motion_type() const = 0;
 
