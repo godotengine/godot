@@ -183,7 +183,7 @@ Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
 	opus->active = false;
 	opus->loops = 0;
 
-	opus->opus_file = op_open_memory(data.ptr(), data_len, nullptr);
+	opus->opus_file = op_open_memory(data.ptr(), data.size(), nullptr);
 	ERR_FAIL_NULL_V(opus->opus_file, Ref<AudioStreamPlaybackOpus>());
 
 	return opus;
@@ -195,15 +195,11 @@ String AudioStreamOpus::get_stream_name() const {
 
 void AudioStreamOpus::clear_data() {
 	data.clear();
-	data_len = 0;
 }
 
 void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
-	int src_data_len = p_data.size();
-	const uint8_t *src_datar = p_data.ptr();
-
 	// Open file to fetch metadata
-	OggOpusFile *opus_file = op_open_memory(src_datar, src_data_len, nullptr);
+	OggOpusFile *opus_file = op_open_memory(p_data.ptr(), p_data.size(), nullptr);
 	ERR_FAIL_COND_MSG(opus_file == nullptr, "Could not open opus stream.");
 
 	int64_t length_i = op_pcm_total(opus_file, -1);
@@ -237,7 +233,6 @@ void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
 
 	// Copy data
 	data = p_data;
-	data_len = src_data_len;
 }
 
 Vector<uint8_t> AudioStreamOpus::get_data() const {
