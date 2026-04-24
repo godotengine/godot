@@ -599,7 +599,7 @@ TEST_SUITE("[Navigation3D]") {
 		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 		mesh_instance->set_mesh(plane_mesh);
 		node_3d->add_child(mesh_instance);
-	
+
 		{ // Box Area.
 			NavigationMeshAreaBox3D *area_box = memnew(NavigationMeshAreaBox3D);
 			mesh_instance->add_child(area_box);

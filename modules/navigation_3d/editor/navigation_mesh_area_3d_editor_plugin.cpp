@@ -528,7 +528,7 @@ void NavigationMeshArea3DEditorPlugin::edit(Object *p_object) {
 		area_box = nullptr;
 		area_cylinder = nullptr;
 		area_polygon = nullptr;
-		obstacle_editor->hide();
+		area_editor->hide();
 		rs->mesh_clear(point_lines_mesh_rid);
 		rs->mesh_clear(point_handle_mesh_rid);
 		rs->instance_set_scenario(point_lines_instance_rid, RID());
@@ -541,7 +541,7 @@ void NavigationMeshArea3DEditorPlugin::edit(Object *p_object) {
 	area_polygon = Object::cast_to<NavigationMeshAreaPolygon3D>(p_object);
 
 	if (!area_polygon) {
-		obstacle_editor->hide();
+		area_editor->hide();
 		rs->mesh_clear(point_lines_mesh_rid);
 		rs->mesh_clear(point_handle_mesh_rid);
 		rs->instance_set_scenario(point_lines_instance_rid, RID());
@@ -557,7 +557,7 @@ void NavigationMeshArea3DEditorPlugin::edit(Object *p_object) {
 	} else if (area_polygon) {
 		area_box = nullptr;
 		area_cylinder = nullptr;
-		obstacle_editor->show();
+		area_editor->show();
 		if (area_polygon->get_vertices().is_empty()) {
 			set_mode(MODE_CREATE);
 		} else {
@@ -579,9 +579,9 @@ bool NavigationMeshArea3DEditorPlugin::handles(Object *p_object) const {
 
 void NavigationMeshArea3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		obstacle_editor->show();
+		area_editor->show();
 	} else {
-		obstacle_editor->hide();
+		area_editor->hide();
 		edit(nullptr);
 	}
 }
@@ -620,7 +620,7 @@ void NavigationMeshArea3DEditorPlugin::_node_removed(Node *p_node) {
 		rs->mesh_clear(point_lines_mesh_rid);
 		rs->mesh_clear(point_handle_mesh_rid);
 
-		obstacle_editor->hide();
+		area_editor->hide();
 	}
 }
 
@@ -716,21 +716,21 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 		spoint = gi.xform(spoint);
 
 		Vector3 cpoint = Vector3(spoint.x, 0.0, spoint.z);
-		Vector<Vector3> obstacle_vertices = area_polygon->get_vertices();
+		Vector<Vector3> area_vertices = area_polygon->get_vertices();
 
 		real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 		switch (mode) {
 			case MODE_CREATE: {
 				if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-					if (obstacle_vertices.size() >= 3) {
+					if (area_vertices.size() >= 3) {
 						int closest_idx = -1;
 						Vector2 closest_edge_point;
 						real_t closest_dist = 1e10;
-						for (int i = 0; i < obstacle_vertices.size(); i++) {
+						for (int i = 0; i < area_vertices.size(); i++) {
 							Vector2 points[2] = {
-								p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
-								p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
+								p_camera->unproject_position(gt.xform(area_vertices[i])),
+								p_camera->unproject_position(gt.xform(area_vertices[(i + 1) % area_vertices.size()]))
 							};
 
 							Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
@@ -754,10 +754,10 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 								edge_intersection_point = gi.xform(edge_intersection_point);
 
 								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-								undo_redo->create_action(TTR("Edit Obstacle (Add Vertex)"));
-								undo_redo->add_undo_method(area_polygon, "set_vertices", obstacle_vertices);
-								obstacle_vertices.insert(closest_idx + 1, edge_intersection_point);
-								undo_redo->add_do_method(area_polygon, "set_vertices", obstacle_vertices);
+								undo_redo->create_action(TTR("Edit Area (Add Vertex)"));
+								undo_redo->add_undo_method(area_polygon, "set_vertices", area_vertices);
+								area_vertices.insert(closest_idx + 1, edge_intersection_point);
+								undo_redo->add_do_method(area_polygon, "set_vertices", area_vertices);
 								undo_redo->commit_action();
 								redraw();
 								return EditorPlugin::AFTER_GUI_INPUT_STOP;
@@ -796,11 +796,11 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 				if (mb->get_button_index() == MouseButton::LEFT) {
 					if (mb->is_pressed()) {
 						if (mb->is_ctrl_pressed()) {
-							if (obstacle_vertices.size() < 3) {
+							if (area_vertices.size() < 3) {
 								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-								undo_redo->create_action(TTR("Edit Obstacle (Add Vertex)"));
+								undo_redo->create_action(TTR("Edit Area (Add Vertex)"));
 								undo_redo->add_undo_method(area_polygon, "set_vertices", area_polygon->get_vertices());
-								obstacle_vertices.push_back(cpoint);
+								area_vertices.push_back(cpoint);
 								undo_redo->commit_action();
 								return EditorPlugin::AFTER_GUI_INPUT_STOP;
 							}
@@ -809,10 +809,10 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
-							for (int i = 0; i < obstacle_vertices.size(); i++) {
+							for (int i = 0; i < area_vertices.size(); i++) {
 								Vector2 points[2] = {
-									p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
-									p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
+									p_camera->unproject_position(gt.xform(area_vertices[i])),
+									p_camera->unproject_position(gt.xform(area_vertices[(i + 1) % area_vertices.size()]))
 								};
 
 								Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
@@ -829,11 +829,11 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 							}
 
 							if (closest_idx >= 0) {
-								pre_move_edit = obstacle_vertices;
-								obstacle_vertices.insert(closest_idx + 1, cpoint);
+								pre_move_edit = area_vertices;
+								area_vertices.insert(closest_idx + 1, cpoint);
 								edited_point = closest_idx + 1;
 								edited_point_pos = cpoint;
-								area_polygon->set_vertices(obstacle_vertices);
+								area_polygon->set_vertices(area_vertices);
 								redraw();
 								snap_ignore = true;
 
@@ -843,8 +843,8 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
-							for (int i = 0; i < obstacle_vertices.size(); i++) {
-								Vector2 cp = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
+							for (int i = 0; i < area_vertices.size(); i++) {
+								Vector2 cp = p_camera->unproject_position(gt.xform(area_vertices[i]));
 
 								real_t d = cp.distance_to(mouse_position);
 								if (d < closest_dist && d < grab_threshold) {
@@ -855,9 +855,9 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 							}
 
 							if (closest_idx >= 0) {
-								pre_move_edit = obstacle_vertices;
+								pre_move_edit = area_vertices;
 								edited_point = closest_idx;
-								edited_point_pos = obstacle_vertices[closest_idx];
+								edited_point_pos = area_vertices[closest_idx];
 								redraw();
 								snap_ignore = false;
 								return EditorPlugin::AFTER_GUI_INPUT_STOP;
@@ -867,13 +867,13 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 						snap_ignore = false;
 
 						if (edited_point != -1) {
-							ERR_FAIL_INDEX_V(edited_point, obstacle_vertices.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
-							obstacle_vertices.write[edited_point] = edited_point_pos;
+							ERR_FAIL_INDEX_V(edited_point, area_vertices.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
+							area_vertices.write[edited_point] = edited_point_pos;
 
 							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-							undo_redo->create_action(TTR("Edit Obstacle (Move Vertex)"));
+							undo_redo->create_action(TTR("Edit Area (Move Vertex)"));
 							undo_redo->add_undo_method(area_polygon, "set_vertices", area_polygon->get_vertices());
-							undo_redo->add_do_method(area_polygon, "set_vertices", obstacle_vertices);
+							undo_redo->add_do_method(area_polygon, "set_vertices", area_vertices);
 							undo_redo->commit_action();
 
 							edited_point = -1;
@@ -888,8 +888,8 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 				if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 					int closest_idx = -1;
 					real_t closest_dist = 1e10;
-					for (int i = 0; i < obstacle_vertices.size(); i++) {
-						Vector2 point = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
+					for (int i = 0; i < area_vertices.size(); i++) {
+						Vector2 point = p_camera->unproject_position(gt.xform(area_vertices[i]));
 						real_t d = point.distance_to(mouse_position);
 						if (d < closest_dist && d < grab_threshold) {
 							closest_dist = d;
@@ -901,10 +901,10 @@ EditorPlugin::AfterGUIInput NavigationMeshArea3DEditorPlugin::forward_3d_gui_inp
 						edited_point = -1;
 
 						EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-						undo_redo->create_action(TTR("Edit Obstacle (Remove Vertex)"));
-						undo_redo->add_undo_method(area_polygon, "set_vertices", obstacle_vertices);
-						obstacle_vertices.remove_at(closest_idx);
-						undo_redo->add_do_method(area_polygon, "set_vertices", obstacle_vertices);
+						undo_redo->create_action(TTR("Edit Area (Remove Vertex)"));
+						undo_redo->add_undo_method(area_polygon, "set_vertices", area_vertices);
+						area_vertices.remove_at(closest_idx);
+						undo_redo->add_do_method(area_polygon, "set_vertices", area_vertices);
 						undo_redo->commit_action();
 						redraw();
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
@@ -1087,15 +1087,15 @@ NavigationMeshArea3DEditorPlugin::NavigationMeshArea3DEditorPlugin() {
 	rs->instance_set_base(point_lines_instance_rid, point_lines_mesh_rid);
 	rs->instance_set_base(point_handles_instance_rid, point_handle_mesh_rid);
 
-	obstacle_editor = memnew(HBoxContainer);
-	obstacle_editor->hide();
+	area_editor = memnew(HBoxContainer);
+	area_editor->hide();
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
 
 	button_create = memnew(Button);
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
-	obstacle_editor->add_child(button_create);
+	area_editor->add_child(button_create);
 	button_create->set_tooltip_text(TTR("Add Vertex"));
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshArea3DEditorPlugin::set_mode).bind(NavigationMeshArea3DEditorPlugin::MODE_CREATE));
 	button_create->set_toggle_mode(true);
@@ -1103,21 +1103,21 @@ NavigationMeshArea3DEditorPlugin::NavigationMeshArea3DEditorPlugin() {
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
-	obstacle_editor->add_child(button_edit);
+	area_editor->add_child(button_edit);
 	button_edit->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshArea3DEditorPlugin::set_mode).bind(NavigationMeshArea3DEditorPlugin::MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 	button_edit->set_button_group(bg);
 
 	button_delete = memnew(Button);
 	button_delete->set_theme_type_variation(SceneStringName(FlatButton));
-	obstacle_editor->add_child(button_delete);
+	area_editor->add_child(button_delete);
 	button_delete->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshArea3DEditorPlugin::set_mode).bind(NavigationMeshArea3DEditorPlugin::MODE_DELETE));
 	button_delete->set_toggle_mode(true);
 	button_delete->set_button_group(bg);
 
 	button_clear = memnew(Button);
 	button_clear->set_theme_type_variation(SceneStringName(FlatButton));
-	obstacle_editor->add_child(button_clear);
+	area_editor->add_child(button_clear);
 	button_clear->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshArea3DEditorPlugin::set_mode).bind(NavigationMeshArea3DEditorPlugin::ACTION_CLEAR));
 	button_clear->set_toggle_mode(true);
 
@@ -1125,9 +1125,9 @@ NavigationMeshArea3DEditorPlugin::NavigationMeshArea3DEditorPlugin() {
 	button_clear_dialog->set_title(TTR("Please Confirm..."));
 	button_clear_dialog->set_text(TTR("Remove all vertices?"));
 	button_clear_dialog->connect(SceneStringName(confirmed), callable_mp(NavigationMeshArea3DEditorPlugin::singleton, &NavigationMeshArea3DEditorPlugin::action_clear_vertices));
-	obstacle_editor->add_child(button_clear_dialog);
+	area_editor->add_child(button_clear_dialog);
 
-	Node3DEditor::get_singleton()->add_control_to_menu_panel(obstacle_editor);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(area_editor);
 
 	Ref<NavigationMeshArea3DGizmoPlugin> gizmo_plugin = memnew(NavigationMeshArea3DGizmoPlugin());
 	area_3d_gizmo_plugin = gizmo_plugin;

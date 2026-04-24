@@ -514,10 +514,13 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	// TODO: if possible, allow using areas for cutting/carving mesh. then deprecate those features in obstacle.
 
 	if (!projected_areas.is_empty()) {
+		Vector<uint16_t> list_disallowed_areas;
+
 		for (const NavigationMeshSourceGeometryData3D::ProjectedArea &projected_area : projected_areas) {
 			uint32_t area_navigation_layers = projected_area.navigation_layers;
 			if (area_navigation_layers == default_navlayers) {
-				continue;
+				list_disallowed_areas.push_back(projected_area.id);
+				continue; // The layers are identical, therefore don't use it for marking an area.
 			}
 
 			unsigned char recast_areaId = RC_WALKABLE_AREA;
@@ -575,6 +578,16 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float area_hmax = projected_area.elevation + projected_area.height;
 
 				rcMarkConvexPolyArea(&ctx, area_verts, area_nverts, area_hmin, area_hmax, recast_areaId, *chf);
+			}
+		}
+
+		// Keeping vector length aligned with: nav_area_ids, nav_area_navlayers.
+		for (uint16_t id : list_disallowed_areas) {
+			for (int remove_at = 0; remove_at < projected_areas.size(); remove_at++) {
+				if (projected_areas[remove_at].id == id) {
+					projected_areas.remove_at(remove_at);
+					break;
+				}
 			}
 		}
 	}
@@ -662,7 +675,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	nav_area_indices.resize(nav_area_ids.size());
 
 	// print_line("START");
-	// int poly_count = 0;
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		// If the polygon is not affected by an area, it gets the RC_WALKABLE_AREA area id, i.e. we get the default navigation layers set above.
 		uint32_t navigation_layers = area_id_to_navigation_layers[static_cast<uint32_t>(poly_mesh->areas[i])];
@@ -675,7 +687,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 		for (unsigned int j = 0; j < detail_mesh_ntris; j++) {
 			Vector<int> nav_indices;
 			nav_indices.resize(3);
-			// Polygon order in recast is opposite than godot's
+			// Polygon order in recast is opposite than godot's.
 			int index1 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
 			int index2 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
 			int index3 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
@@ -687,13 +699,13 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 			nav_polygons.push_back(nav_indices);
 			nav_polygons_layers.push_back(navigation_layers);
 			if (navigation_layers != default_navlayers) {
-				// poly_count++;
+				// This polygon is part of an area.
 				const float *v1 = &detail_mesh->verts[index1 * 3];
 				const float *v2 = &detail_mesh->verts[index2 * 3];
 				const float *v3 = &detail_mesh->verts[index3 * 3];
 				const Vector<Vector3> vertices = { Vector3(v1[0], v1[1], v1[2]), Vector3(v2[0], v2[1], v2[2]), Vector3(v3[0], v3[1], v3[2]) };
 				bool match = false;
-				float grow = 1.0; // Necessary for vertices created by cylinder shape.
+				float grow = 1.0; // Necessary for vertices created by cylinder shape. Using for everybody for good measure.
 				const float grow_incr = 0.05;
 				while (!match) {
 					int area_index = 0;
@@ -717,8 +729,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 							break;
 						}
 
-						// try for cylinder sth. else in aabb?
-						// .intersects_segment
+						// TODO: try for cylinder sth. else in aabb?
+						// .intersects_segment maybe?
 						area_index++;
 					}
 					grow += grow_incr;
@@ -727,7 +739,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 		}
 	}
 
-	// print_line("polys: ", poly_count);
 	// print_line("END\n");
 
 	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_ids, nav_area_navlayers, nav_area_indices);

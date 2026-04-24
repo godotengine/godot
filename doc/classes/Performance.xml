@@ -233,6 +233,7 @@
 			Number of active navigation obstacles in the [NavigationServer2D] and [NavigationServer3D].
 		</constant>
 		<constant name="NAVIGATION_AREA_COUNT" value="34" enum="Monitor">
+			Number of baked navigation areas in the [NavigationServer3D].
 		</constant>
 		<constant name="PIPELINE_COMPILATIONS_CANVAS" value="35" enum="Monitor">
 			Number of pipeline compilations that were triggered by the 2D canvas renderer.

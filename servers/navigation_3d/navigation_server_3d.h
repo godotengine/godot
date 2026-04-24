@@ -137,8 +137,9 @@ public:
 	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) = 0;
 	virtual uint32_t region_get_navigation_layers(RID p_region) const = 0;
 
-	virtual void region_set_areas_navigation_layers(RID p_region, uint16_t p_area, uint32_t p_navigation_layers) = 0;
-	virtual uint32_t region_get_areas_navigation_layers(RID p_region, uint16_t p_area) const = 0;
+	virtual void region_set_area_navigation_layers(RID p_region, uint16_t p_area, uint32_t p_navigation_layers) = 0;
+	virtual uint32_t region_get_area_navigation_layers(RID p_region, uint16_t p_area) const = 0;
+	virtual int region_get_area_count(RID p_region) const = 0;
 
 	virtual void region_set_transform(RID p_region, Transform3D p_transform) = 0;
 	virtual Transform3D region_get_transform(RID p_region) const = 0;
@@ -526,7 +527,7 @@ public:
 	void set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value);
 	bool get_debug_navigation_avoidance_enable_obstacles_static() const;
 
-	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_material();
+	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_material(const bool p_use_vertex_color);
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_disabled_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_edge_disabled_material();

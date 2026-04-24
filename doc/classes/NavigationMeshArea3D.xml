@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMeshArea3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An area shape to affect navigation mesh geometry and traversal cost (when baked).
+		An area shape to affect navigation mesh geometry upon baking.
 	</brief_description>
 	<description>
-		An area shape to affect navigation mesh geometry and traversal cost (when baked).
-		[NavigationMeshArea3D] is a base for other resources. It cannot be used directly.
+		An area shape to affect navigation mesh geometry upon baking. Has no impact on agent navigation queries.
+		[NavigationMeshArea3D] is the base the different area shapes. It cannot be used directly.
 		[b]Note:[/b] To guarantee that the area affects the intended [NavigationMesh], make sure that
 		1. the area's origin is as close as possible to the source geometry, and
 		2. the [member navigation_layers] are different from the [NavigationRegion3D] you intend to bake with.
@@ -24,7 +24,6 @@
 			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
-				[b]Note:[/b] When running a query against this area, the cost of the first matching navigation layer is taken.
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">
@@ -38,17 +37,15 @@
 	</methods>
 	<members>
 		<member name="bake_priority" type="int" setter="set_bake_priority" getter="get_bake_priority" default="0">
-			The priority of the area. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins.
+			The priority of the area during the baking process. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins.
 			[b]Note:[/b] This affects the baking of the [NavigationMesh] only, not queries.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationMeshArea3D] is enabled or disabled. Requires a navigation mesh rebake to take any real effect.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
-			A bitfield determining all navigation layers the area applies to its affecting polygons. If multiple areas overlap for the same polygons the area with the highest [member bake_priority] wins. These navigation layers can be checked upon when doing path queries with [method NavigationServer3D.query_path] using a [NavigationPathQueryParameters3D] object.
-			States which layers should be considered for the cost calculation during a path query.
-			A query takes the first matching layer between the query parameter and the polygon. This means if the area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
-			[b]Note:[/b] Changing this at runtime requires a sync of the navigation map, which may cause performance problems.
+			Each navigation region has default [member NavigationRegion3D.navigation_layers]. This bitfield allows overwriting layers for the polygons that are part of this area during the baking process.
+			[b]Note:[/b] Changing this value at runtime requires baking the affected regions. For changes during runtime without having to bake the regions again, see [method NavigationRegion3D.set_areas_navigation_layers].
 		</member>
 	</members>
 </class>

@@ -127,7 +127,7 @@ protected:
 	void _node_removed(Node *p_node);
 
 public:
-	HBoxContainer *obstacle_editor = nullptr;
+	HBoxContainer *area_editor = nullptr;
 	static NavigationMeshArea3DEditorPlugin *singleton;
 
 	void redraw();

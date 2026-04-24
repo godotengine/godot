@@ -132,6 +132,87 @@ bool NavigationRegion3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
+bool NavigationRegion3D::_has_area(uint16_t p_area) const {
+	ERR_FAIL_COND_V_MSG(p_area == 0, false, vformat("Unknown navigation area: '%d'.", int(p_area)));
+	const int area_count = navigation_mesh->get_area_ids().size();
+	ERR_FAIL_COND_V_MSG(p_area > area_count, false, vformat("Unknown navigation area: '%d'.", int(p_area)));
+
+	return true;
+}
+
+void NavigationRegion3D::set_area_navigation_layers(uint16_t p_area, uint32_t p_navigation_layers) {
+	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Navigation mesh must be set.");
+	if (!_has_area(p_area)) {
+		return;
+	}
+
+	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area);
+	if (_navigation_layers == p_navigation_layers) {
+		return;
+	}
+
+	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area, p_navigation_layers);
+
+#ifdef DEBUG_ENABLED
+	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+		if (navigation_mesh.is_valid()) {
+			_update_debug_mesh();
+		}
+	}
+#endif // DEBUG_ENABLED
+	update_gizmos();
+}
+
+uint32_t NavigationRegion3D::get_area_navigation_layers(uint16_t p_area) const {
+	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), 0, "Navigation mesh must be set.");
+	if (!_has_area(p_area)) {
+		return 0;
+	}
+
+	return navigation_mesh->get_area_navigation_layers(p_area);
+}
+
+void NavigationRegion3D::set_area_navigation_layer_value(uint16_t p_area, int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Navigation mesh must be set.");
+	if (!_has_area(p_area)) {
+		return;
+	}
+
+	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area);
+
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+
+	NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, p_area, _navigation_layers);
+
+#ifdef DEBUG_ENABLED
+	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+		if (navigation_mesh.is_valid()) {
+			_update_debug_mesh();
+		}
+	}
+#endif // DEBUG_ENABLED
+	update_gizmos();
+}
+
+bool NavigationRegion3D::get_area_navigation_layer_value(uint16_t p_area, int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(!navigation_mesh.is_valid(), 0, "Navigation mesh must be set.");
+	if (!_has_area(p_area)) {
+		return 0;
+	}
+
+	uint32_t _navigation_layers = navigation_mesh->get_area_navigation_layers(p_area);
+
+	return _navigation_layers & (1 << (p_layer_number - 1));
+}
+
 #ifndef DISABLE_DEPRECATED
 void NavigationRegion3D::set_enter_cost(real_t p_enter_cost) {
 	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
@@ -304,6 +385,12 @@ void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationRegion3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationRegion3D::get_navigation_layer_value);
 
+	ClassDB::bind_method(D_METHOD("set_area_navigation_layers", "area", "navigation_layers"), &NavigationRegion3D::set_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_area_navigation_layers", "area"), &NavigationRegion3D::get_area_navigation_layers);
+
+	ClassDB::bind_method(D_METHOD("set_area_navigation_layer_value", "area", "layer_number", "value"), &NavigationRegion3D::set_area_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_area_navigation_layer_value", "area", "layer_number"), &NavigationRegion3D::get_area_navigation_layer_value);
+
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
 #ifndef DISABLE_DEPRECATED
@@ -342,12 +429,12 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 	}
 #endif // DISABLE_DEPRECATED
 	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
-		print_line("_set_areas_layers");
+		print_line("_set_area_layers");
 		int which = path.get_slicec('/', 1).to_int();
 		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
 			return false;
 		}
-		NavigationServer3D::get_singleton()->region_set_areas_navigation_layers(region, (uint16_t)which, p_value);
+		NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, (uint16_t)which, p_value);
 		notify_property_list_changed(); // Make areas in navigation_mesh (in)visible in inspector.
 		return true;
 	}
@@ -370,7 +457,7 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
 			return false;
 		}
-		r_ret = (int)NavigationServer3D::get_singleton()->region_get_areas_navigation_layers(region, (uint16_t)which);
+		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_navigation_layers(region, (uint16_t)which);
 		return true;
 	}
 	return false;
@@ -651,7 +738,8 @@ void NavigationRegion3D::_update_debug_mesh() {
 		}
 	}
 
-	Ref<StandardMaterial3D> face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
+	bool use_vertex_color = enabled_geometry_face_random_color || has_polygon_meta;
+	Ref<StandardMaterial3D> face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material(use_vertex_color);
 
 	Array face_mesh_array;
 	face_mesh_array.resize(Mesh::ARRAY_MAX);

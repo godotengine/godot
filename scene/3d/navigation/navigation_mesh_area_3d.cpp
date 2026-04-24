@@ -221,11 +221,7 @@ void NavigationMeshArea3D::navmesh_parse_init() {
 void NavigationMeshArea3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node) {
 	NavigationMeshArea3D *area = Object::cast_to<NavigationMeshArea3D>(p_node);
 
-	if (area == nullptr) {
-		return;
-	}
-
-	if (!area->is_enabled()) {
+	if (area == nullptr || !area->is_enabled()) {
 		return;
 	}
 

@@ -52,6 +52,8 @@ class NavigationRegion3D : public Node3D {
 
 	void _navigation_mesh_changed();
 
+	bool _has_area(uint16_t p_area) const;
+
 	AABB bounds;
 
 #ifdef DEBUG_ENABLED
@@ -91,6 +93,12 @@ public:
 
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
+
+	void set_area_navigation_layers(uint16_t p_area, uint32_t p_navigation_layers);
+	uint32_t get_area_navigation_layers(uint16_t p_area) const;
+
+	void set_area_navigation_layer_value(uint16_t p_area, int p_layer_number, bool p_value);
+	bool get_area_navigation_layer_value(uint16_t p_area, int p_layer_number) const;
 
 	RID get_region_rid() const;
 

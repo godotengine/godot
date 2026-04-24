@@ -105,8 +105,9 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer3D::region_get_map);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_layers", "region", "navigation_layers"), &NavigationServer3D::region_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_get_navigation_layers", "region"), &NavigationServer3D::region_get_navigation_layers);
-	ClassDB::bind_method(D_METHOD("region_set_areas_navigation_layers", "region", "area", "navigation_layers"), &NavigationServer3D::region_set_areas_navigation_layers);
-	ClassDB::bind_method(D_METHOD("region_get_areas_navigation_layers", "region", "area"), &NavigationServer3D::region_get_areas_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_set_area_navigation_layers", "region", "area", "navigation_layers"), &NavigationServer3D::region_set_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_get_area_navigation_layers", "region", "area"), &NavigationServer3D::region_get_area_navigation_layers);
+	ClassDB::bind_method(D_METHOD("region_get_area_count", "region"), &NavigationServer3D::region_get_area_count);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer3D::region_set_transform);
 	ClassDB::bind_method(D_METHOD("region_get_transform", "region"), &NavigationServer3D::region_get_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_mesh", "region", "navigation_mesh"), &NavigationServer3D::region_set_navigation_mesh);
@@ -446,12 +447,10 @@ void NavigationServer3D::_emit_avoidance_debug_changed_signal() {
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
-Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_material() {
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_material(const bool p_use_vertex_color) {
 	if (debug_navigation_geometry_face_material.is_valid()) {
 		return debug_navigation_geometry_face_material;
 	}
-
-	bool enabled_geometry_face_random_color = get_debug_navigation_enable_geometry_face_random_color();
 
 	Ref<StandardMaterial3D> face_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	face_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -459,7 +458,7 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_geometry_face_m
 	face_material->set_albedo(get_debug_navigation_geometry_face_color());
 	face_material->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	face_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	if (enabled_geometry_face_random_color) {
+	if (p_use_vertex_color) {
 		face_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		face_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	}

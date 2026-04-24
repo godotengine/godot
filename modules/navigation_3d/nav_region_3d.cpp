@@ -196,7 +196,7 @@ void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
 	request_sync();
 }
 
-void NavRegion3D::set_areas_navigation_layers(uint16_t p_area, uint32_t layers) {
+void NavRegion3D::set_area_navigation_layers(uint16_t p_area, uint32_t layers) {
 	if (!navmesh.is_valid() || navmesh->get_area_navigation_layers(p_area) == layers) {
 		return;
 	}
@@ -206,10 +206,20 @@ void NavRegion3D::set_areas_navigation_layers(uint16_t p_area, uint32_t layers) 
 	request_sync();
 }
 
-uint32_t NavRegion3D::get_areas_navigation_layers(uint16_t p_area) const {
+uint32_t NavRegion3D::get_area_navigation_layers(uint16_t p_area) const {
 	if (navmesh.is_valid()) {
 		return navmesh->get_area_navigation_layers(p_area);
 	}
+	return 0;
+}
+
+int NavRegion3D::get_area_count() const {
+	RWLockRead read_lock(iteration_rwlock);
+
+	if (navmesh.is_valid()) {
+		return navmesh->get_area_ids().size();
+	}
+
 	return 0;
 }
 
@@ -238,6 +248,7 @@ bool NavRegion3D::sync() {
 	print_line("NavRegion3D::sync");
 	bool requires_map_update = false;
 	if (!map) {
+		print_line("has no map");
 		return requires_map_update;
 	}
 
@@ -301,7 +312,7 @@ void NavRegion3D::_build_iteration() {
 	new_iteration->transform = get_transform();
 	new_iteration->owner_use_edge_connections = get_use_edge_connections();
 
-	print_line("NavRegion3D::_build_iteration");
+	print_line("NavRegion3D::_build_iteration !!");
 	int i = 0;
 	for (uint32_t navigation_layers : iteration_build.navmesh_data.area_navlayers) {
 		for (int polygon_index : iteration_build.navmesh_data.area_indices[i]) {

@@ -594,7 +594,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 
 	// if enabled add vertex colors to colorize each face individually
 	// NOTE: Cannot color faces, that were generated because of area meshes, differently using vertex colors - no access to region's navigation layers.
-	print_line("area coloring not supported");
+	// FIXME: colour faces if areas are used.
 	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {
 		RandomPCG rand;
@@ -616,7 +616,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	}
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material(enabled_geometry_face_random_color);
 	debug_mesh->surface_set_material(0, debug_geometry_face_material);
 
 	// if enabled build geometry edge line surface

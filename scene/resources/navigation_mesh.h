@@ -41,6 +41,7 @@ class NavigationMesh : public Resource {
 	uint32_t navigation_layers = 1; // Default value. Inherited by region. Can be overwritten in area_navlayers. Required for NavMeshGenerator3D.
 	Vector<Vector3> vertices;
 	Vector<Vector<int>> polygons;
+	// FIXME: leave this empty if no areas are used!
 	Vector<uint32_t> polygons_meta; // The navigation layer bitmask per polygon. See `NavMeshGenerator3D::generator_bake_from_source_geometry_data`.
 
 	// Allows changing area's navigation_layers in `polygons_meta` (only those generated from areas) at runtime.
