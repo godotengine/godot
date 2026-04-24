@@ -1891,7 +1891,7 @@ bool EditorNode::is_resource_internal_to_scene(Ref<Resource> p_resource) {
 	return inside_scene || p_resource->get_path().is_empty();
 }
 
-void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, bool p_subresources, bool p_allow_external) {
+void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, HashSet<Object *> &r_scanned_objects, bool p_subresources, bool p_allow_external) {
 	Variant::Type type = p_variant.get_type();
 	if (type == Variant::OBJECT && p_variant.get_validated_object() == nullptr) {
 		return;
@@ -1913,7 +1913,7 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 				}
 			}
 			if (Object::cast_to<Node>(v) == nullptr) {
-				gather_resources(v, r_list, p_subresources, p_allow_external);
+				gather_resources(v, r_list, r_scanned_objects, p_subresources, p_allow_external);
 			}
 		}
 		return;
@@ -1939,27 +1939,35 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 				}
 			}
 			if (Object::cast_to<Node>(kv.key) == nullptr) {
-				gather_resources(kv.key, r_list, p_subresources, p_allow_external);
+				gather_resources(kv.key, r_list, r_scanned_objects, p_subresources, p_allow_external);
 			}
 			if (Object::cast_to<Node>(kv.value) == nullptr) {
-				gather_resources(kv.value, r_list, p_subresources, p_allow_external);
+				gather_resources(kv.value, r_list, r_scanned_objects, p_subresources, p_allow_external);
 			}
 		}
 		return;
 	}
 
+	// Variant::Object
+
+	Object *object = p_variant;
+	if (r_scanned_objects.has(object)) {
+		return;
+	}
+	r_scanned_objects.insert(object);
+
 	List<PropertyInfo> pinfo;
-	p_variant.get_property_list(&pinfo);
+	object->get_property_list(&pinfo);
 
 	for (const PropertyInfo &E : pinfo) {
 		if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
 		}
 
-		Variant property_value = p_variant.get(E.name);
+		Variant property_value = object->get(E.name);
 		Variant::Type property_type = property_value.get_type();
 		if (property_type == Variant::ARRAY || property_type == Variant::DICTIONARY) {
-			gather_resources(property_value, r_list, p_subresources, p_allow_external);
+			gather_resources(property_value, r_list, r_scanned_objects, p_subresources, p_allow_external);
 			continue;
 		}
 		Ref<Resource> res = property_value;
@@ -1975,7 +1983,7 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 		}
 		r_list.push_back(res);
 		if (p_subresources) {
-			gather_resources(res, r_list, p_subresources, p_allow_external);
+			gather_resources(res, r_list, r_scanned_objects, p_subresources, p_allow_external);
 		}
 	}
 }
@@ -1986,7 +1994,8 @@ void EditorNode::update_resource_count(Node *p_node, bool p_remove) {
 	}
 
 	List<Ref<Resource>> res_list;
-	gather_resources(p_node, res_list, true);
+	HashSet<Object *> scanned_objects;
+	gather_resources(p_node, res_list, scanned_objects, true);
 
 	for (Ref<Resource> &R : res_list) {
 		List<Node *>::Element *E = resource_count[R].find(p_node);
@@ -2015,7 +2024,8 @@ List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
 void EditorNode::update_node_reference(const Variant &p_value, Node *p_node, bool p_remove) {
 	List<Ref<Resource>> list;
 	Ref<Resource> res = p_value;
-	gather_resources(p_value, list, true); //Gather all Resources and their SubResources to remove p_node from their lists.
+	HashSet<Object *> scanned_objects;
+	gather_resources(p_value, list, scanned_objects, true); //Gather all Resources and their SubResources to remove p_node from their lists.
 
 	if (res.is_valid() && is_resource_internal_to_scene(res)) {
 		// Avoid external Resources from being added in.
