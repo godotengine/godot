@@ -300,10 +300,13 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 Error DirAccessWindows::rename(String p_path, String p_new_path) {
 	String path = fix_path(p_path);
 	String new_path = fix_path(p_new_path);
+	bool does_dir_exist = dir_exists(path);
 
-	// If we're only changing file name case we need to do a little juggling
-	if (path.to_lower() == new_path.to_lower()) {
-		if (dir_exists(path)) {
+	if (!file_exists(path) && !does_dir_exist) {
+		return FAILED;
+	} else if (path.to_lower() == new_path.to_lower()) {
+		// If we're only changing file name case we need to do a little juggling
+		if (does_dir_exist) {
 			// The path is a dir; just rename
 			return MoveFileW((LPCWSTR)(path.utf16().get_data()), (LPCWSTR)(new_path.utf16().get_data())) != 0 ? OK : FAILED;
 		}
