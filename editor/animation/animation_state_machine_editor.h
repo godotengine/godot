@@ -54,7 +54,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Popup *name_edit_popup = nullptr;
 	LineEdit *name_edit = nullptr;
 
-	HBoxContainer *selection_tools_hb = nullptr;
 	Button *tool_erase = nullptr;
 
 	HBoxContainer *transition_tools_hb = nullptr;
