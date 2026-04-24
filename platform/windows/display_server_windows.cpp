@@ -158,6 +158,11 @@ bool DisplayServerWindows::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_WINDOW_DRAG:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
 			return true;
+		case DisplayServerEnums::FEATURE_EXTEND_TO_TITLE:
+			// OpenGL3 cannot composite over the DWM sheet-of-glass surface,
+			// so the feature is unavailable on the compatibility renderer using opengl3
+			// opengl3_angle works, as it translates to Vulkan/D3D12 which can composite properly.
+			return rendering_driver != "opengl3";
 		case DisplayServerEnums::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return (os_ver.dwBuildNumber >= 19041); // Fully supported on Windows 10 Vibranium R1 (2004)+ only, captured as black rect on older versions.
 		case DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER:
@@ -2134,6 +2139,52 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Displa
 	return size;
 }
 
+Vector3i DisplayServerWindows::window_get_safe_title_margins(DisplayServerEnums::WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Vector3i());
+	const WindowData &wd = windows[p_window];
+
+	if (!wd.extend_to_title || wd.fullscreen || wd.minimized || wd.borderless) {
+		return Vector3i();
+	}
+
+	// Button dimensions are driven by caption_buttons_offset: each button is
+	// (offset.x * 2) × (offset.y * 2) logical pixels; three buttons make the cluster.
+	UINT dpi = GetDpiForWindow(wd.hWnd);
+	float scale = (float)dpi / 96.0f;
+	int bw = (int)Math::round(wd.caption_buttons_offset.x * 2 * scale);
+	int bh = (int)Math::round(wd.caption_buttons_offset.y * 2 * scale);
+	int cw = bw * 3;
+	int ch = bh;
+
+	bool rtl = (GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0;
+
+	// x = left margin, y = right margin, z = height (all in physical pixels).
+	if (rtl) {
+		return Vector3i(cw, 0, ch);
+	} else {
+		return Vector3i(0, cw, ch);
+	}
+}
+
+void DisplayServerWindows::window_set_window_buttons_offset(const Vector2i &p_offset, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (!wd.extend_to_title) {
+		return;
+	}
+	if (wd.caption_buttons_offset == p_offset) {
+		return;
+	}
+
+	wd.caption_buttons_offset = p_offset;
+	_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
+}
+
 void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -2613,6 +2664,13 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 
 	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 
+	// Re-apply DWM frame extension if needed. Changing the window style (e.g. toggling
+	// borderless or returning from fullscreen) can silently reset the DWM frame state.
+	if (wd.extend_to_title && !wd.fullscreen && !wd.borderless) {
+		MARGINS margins = { -1, -1, -1, -1 };
+		DwmExtendFrameIntoClientArea(wd.hWnd, &margins);
+	}
+
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
@@ -2823,6 +2881,7 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_BORDERLESS: {
+			bool prev_borderless = wd.borderless;
 			wd.borderless = p_enabled;
 			if (wd.fullscreen) {
 				return;
@@ -2830,6 +2889,9 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 			_update_window_mouse_passthrough(p_window);
 			_update_window_style(p_window);
 			ShowWindow(wd.hWnd, (wd.no_focus || wd.is_popup) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show the window.
+			if (!p_enabled && wd.extend_to_title && prev_borderless != p_enabled) {
+				_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
+			}
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top.");
@@ -2892,6 +2954,28 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 				SetWindowDisplayAffinity(wd.hWnd, WDA_NONE);
 			}
 		} break;
+		case DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE: {
+			if (!has_feature(DisplayServerEnums::FEATURE_EXTEND_TO_TITLE)) {
+				return;
+			}
+			wd.extend_to_title = p_enabled;
+			if (wd.fullscreen || wd.borderless) {
+				// No need to apply DWM changes — they're meaningless
+				// on fullscreen/borderless windows. The state will be re-applied in
+				// _update_window_style() when leaving those modes.
+				break;
+			}
+			if (p_enabled) {
+				MARGINS margins = { -1, -1, -1, -1 };
+				DwmExtendFrameIntoClientArea(wd.hWnd, &margins);
+			} else {
+				MARGINS margins = { 0, 0, 0, 0 };
+				DwmExtendFrameIntoClientArea(wd.hWnd, &margins);
+			}
+			// Force a WM_NCCALCSIZE and redraw to apply the frame change.
+			SetWindowPos(wd.hWnd, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
+		} break;
 		case DisplayServerEnums::WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window == DisplayServerEnums::MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG(IsWindowVisible(wd.hWnd) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
@@ -2941,6 +3025,9 @@ bool DisplayServerWindows::window_get_flag(DisplayServerEnums::WindowFlags p_fla
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
 			return wd.hide_from_capture;
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE: {
+			return wd.extend_to_title;
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
@@ -5373,9 +5460,81 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				SendMessageW(windows[window_id].hWnd, WM_PAINT, 0, 0);
 			}
 		} break;
+		case WM_NCCALCSIZE: {
+			// When extend_to_title is active, make the entire window rect the client area
+			// so that game/engine content can draw over the entire window. DWM still technically draws
+			// the min/max/close buttons underneath, but we just ignore them by never returning hits on them in WM_NCHITTEST handling
+			// Removing them breaks features like snapping, shadows and maximize/restore animations
+			// Note that opengl3 can't draw over a full client area window - extend_to_title is feature flagged off
+			if (wParam == TRUE && windows.has(window_id)) {
+				const WindowData &ncwd = windows[window_id];
+				if (ncwd.extend_to_title && !ncwd.fullscreen && !ncwd.borderless) {
+					// use IsZoomed instead of ncwd.maximized, as we don't receive the WM_SIZE event before WM_NCCALCSIZE
+					if (IsZoomed(hWnd)) {
+						// When maximized, Windows positions the window with an invisible
+						// resize border (typically 8px) on each side that sits off-screen.
+						// Compensate for this so content starts at the visible screen edge.
+						int frame = GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+						NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
+						params->rgrc[0].top += frame;
+						params->rgrc[0].left += frame;
+						params->rgrc[0].right -= frame;
+						params->rgrc[0].bottom -= frame;
+					}
+					return 0; // Full window rect = client area; no NC chrome.
+				}
+			}
+		} break;
 		case WM_NCHITTEST: {
 			if (windows[window_id].mpass) {
 				return HTTRANSPARENT;
+			}
+			if (windows[window_id].extend_to_title &&
+					!windows[window_id].fullscreen &&
+					!windows[window_id].borderless) {
+				POINT cursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+				RECT wnd_rect;
+				GetWindowRect(hWnd, &wnd_rect);
+
+				bool is_max = windows[window_id].maximized;
+				// Resize border thickness. Zero when maximized (can't resize from border).
+				int frame_x = is_max ? 0 : (GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
+				int frame_y = is_max ? 0 : (GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
+
+				// --- Resize border hit zones ---
+				if (!is_max) {
+					bool at_top = cursor.y < wnd_rect.top + frame_y;
+					bool at_bottom = cursor.y >= wnd_rect.bottom - frame_y;
+					bool at_left = cursor.x < wnd_rect.left + frame_x;
+					bool at_right = cursor.x >= wnd_rect.right - frame_x;
+
+					if (at_top && at_left) {
+						return HTTOPLEFT;
+					}
+					if (at_top && at_right) {
+						return HTTOPRIGHT;
+					}
+					if (at_bottom && at_left) {
+						return HTBOTTOMLEFT;
+					}
+					if (at_bottom && at_right) {
+						return HTBOTTOMRIGHT;
+					}
+					if (at_top) {
+						return HTTOP;
+					}
+					if (at_bottom) {
+						return HTBOTTOM;
+					}
+					if (at_left) {
+						return HTLEFT;
+					}
+					if (at_right) {
+						return HTRIGHT;
+					}
+				}
+
+				return HTCLIENT;
 			}
 		} break;
 		case WM_MOUSEACTIVATE: {
@@ -6407,6 +6566,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			WINDOWPOS *window_pos_params = (WINDOWPOS *)lParam;
 
+			// Snapshot maximized state before the update block so we can detect transitions.
+			bool prev_maximized = window.maximized;
+
 			bool rect_changed = false;
 			if (!(window_pos_params->flags & SWP_NOSIZE) || window_pos_params->flags & SWP_FRAMECHANGED) {
 				int screen_id = window_get_current_screen(window_id);
@@ -6470,6 +6632,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 #endif
 #endif
+			}
+
+			// Notify the scene when maximized/minimized state changes so CaptionButtonOverlay updates its icon.
+			if (window.extend_to_title && window.maximized != prev_maximized) {
+				_send_window_event(window, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
 			}
 
 			if (!window.minimized && (!(window_pos_params->flags & SWP_NOMOVE) || window_pos_params->flags & SWP_FRAMECHANGED)) {

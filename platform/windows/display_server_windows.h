@@ -324,6 +324,8 @@ class DisplayServerWindows : public DisplayServer {
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
+		bool extend_to_title = false;
+		Vector2i caption_buttons_offset = Vector2i(23, 16);
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -656,6 +658,8 @@ public:
 
 	virtual void window_set_title(const String &p_title, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_title_size(const String &p_title, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual Vector3i window_get_safe_title_margins(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;

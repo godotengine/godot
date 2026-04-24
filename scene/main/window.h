@@ -38,6 +38,8 @@ class Font;
 class StyleBox;
 class ThemeOwner;
 class ThemeContext;
+class CanvasLayer;
+class CaptionButtonOverlay;
 
 class Window : public Viewport {
 	GDCLASS(Window, Viewport);
@@ -178,6 +180,18 @@ private:
 	Size2i max_size_used;
 
 	Rect2i nonclient_area;
+
+	// Engine-drawn caption buttons (close/minimize/maximize) used on platforms
+	// that support FEATURE_EXTEND_TO_TITLE but not native caption buttons (e.g. Windows).
+	CanvasLayer *caption_canvas_layer = nullptr;
+	CaptionButtonOverlay *caption_overlay = nullptr;
+	void _create_caption_overlay();
+	void _destroy_caption_overlay();
+	void _update_caption_overlay();
+	void _update_caption_overlay_existence();
+	void _caption_close_pressed();
+	void _caption_minimize_pressed();
+	void _caption_maximize_pressed();
 
 	Size2i _clamp_limit_size(const Size2i &p_limit_size);
 	Size2i _clamp_window_size(const Size2i &p_size);
