@@ -611,7 +611,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- All `.c` and `.h` files in `celt/`, `silk/` and `src/`
+- All `.c` and `.h` files in `celt/`, `silk/` and `src/`, except `celt/opus_custom_demo.c`, `src/opus_demo.c`, `src/qext_compare.c` and `src/repacketizer_demo.c`
 - All `.h` files in `include/` as `opus/`
 - `COPYING`
 
