@@ -36,7 +36,7 @@
 bool NavigationLayersCostMap3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 	if (path.begins_with("navigation_layers/")) {
-		uint32_t which = path.get_slicec('/', 1).to_int();
+		uint8_t which = path.get_slicec('/', 1).to_int();
 		if (path.ends_with("cost")) {
 			set_navigation_layer_cost(which, p_value);
 			return true;
@@ -48,7 +48,7 @@ bool NavigationLayersCostMap3D::_set(const StringName &p_path, const Variant &p_
 bool NavigationLayersCostMap3D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
 	if (path.begins_with("navigation_layers/")) {
-		uint32_t which = path.get_slicec('/', 1).to_int();
+		uint8_t which = path.get_slicec('/', 1).to_int();
 		if (path.ends_with("name")) {
 			r_ret = GLOBAL_GET(vformat("%s/layer_%d", PNAME("layer_names/3d_navigation"), which));
 			return true;
@@ -61,7 +61,7 @@ bool NavigationLayersCostMap3D::_get(const StringName &p_path, Variant &r_ret) c
 	return false;
 }
 
-void NavigationLayersCostMap3D::set_navigation_layer_cost(uint32_t p_layer_number, float p_cost) {
+void NavigationLayersCostMap3D::set_navigation_layer_cost(uint8_t p_layer_number, float p_cost) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
 	if (navigation_layers_cost_map[p_layer_number - 1] == p_cost) {
@@ -72,10 +72,36 @@ void NavigationLayersCostMap3D::set_navigation_layer_cost(uint32_t p_layer_numbe
 	emit_changed();
 }
 
-float NavigationLayersCostMap3D::get_navigation_layer_cost(uint32_t p_layer_number) const {
+float NavigationLayersCostMap3D::get_navigation_layer_cost(uint8_t p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, 1.0, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, 1.0, "Navigation layer number must be between 1 and 32 inclusive.");
 	return navigation_layers_cost_map[p_layer_number - 1];
+}
+
+struct _CostSortComparator {
+	_FORCE_INLINE_ bool operator()(const Pair<int, float> &a, const Pair<int, float> &b) const {
+		// first is the index, second is cost.
+		if (a.second == b.second) {
+			return a.first > b.first;
+		}
+		return a.second > b.second;
+	}
+};
+
+Vector<Pair<int, float>> NavigationLayersCostMap3D::get_navigation_layers_cost_map_sorted(uint32_t p_layers_mask) const {
+	// FIXME: sort in each call of set_navigation_layer_cost() and cache result. In here, only filter by p_layers_mask and return result.
+	Vector<Pair<int, float>> cost_map;
+
+	for (uint32_t i = 0; i < 32; i++) {
+		if (p_layers_mask & 1 << i) { // This layer bit we're interested in.
+			float cost = navigation_layers_cost_map[i];
+			if (!Math::is_equal_approx(cost, 1)) { // And it _doesn't_ have the default cost of `1.0`.
+				cost_map.push_back(Pair<int, float>(i, cost));
+			}
+		}
+	}
+	cost_map.sort_custom<_CostSortComparator>();
+	return cost_map;
 }
 
 void NavigationLayersCostMap3D::_validate_property(PropertyInfo &property) const {
@@ -85,7 +111,7 @@ void NavigationLayersCostMap3D::_validate_property(PropertyInfo &property) const
 }
 
 void NavigationLayersCostMap3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (uint32_t i = 0; i < 32; i++) {
+	for (uint8_t i = 0; i < 32; i++) {
 		const String prep = vformat("navigation_layers/%d/", i + 1);
 		p_list->push_back(PropertyInfo(Variant::STRING, prep + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, prep + "cost", PROPERTY_HINT_RANGE, "1.0,1000.0,0.01,or_greater"));
@@ -99,7 +125,7 @@ void NavigationLayersCostMap3D::_bind_methods() {
 
 NavigationLayersCostMap3D::NavigationLayersCostMap3D() {
 	navigation_layers_cost_map.resize(32);
-	for (uint32_t i = 0; i < 32; i++) {
+	for (uint8_t i = 0; i < 32; i++) {
 		navigation_layers_cost_map[i] = 1.0;
 	}
 }

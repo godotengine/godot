@@ -45,8 +45,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_navigation_layer_cost(uint32_t p_layer_number, float p_cost);
-	float get_navigation_layer_cost(uint32_t p_layer_number) const;
+	void set_navigation_layer_cost(uint8_t p_layer_number, float p_cost);
+	float get_navigation_layer_cost(uint8_t p_layer_number) const;
+
+	Vector<Pair<int, float>> get_navigation_layers_cost_map_sorted(uint32_t p_layers_mask) const;
 
 	const LocalVector<float> &get_navigation_layers_cost_map() { return navigation_layers_cost_map; }
 

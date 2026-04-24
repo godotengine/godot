@@ -21,6 +21,19 @@
 				Bakes the [NavigationMesh]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread. Baking on separate thread is useful because navigation baking is not a cheap operation. When it is completed, it automatically sets the new [NavigationMesh]. Please note that baking on separate thread may be very slow if geometry is parsed from meshes as async access to each mesh involves heavy synchronization. Also, please note that baking on a separate thread is automatically disabled on operating systems that cannot use threads (such as Web with threads disabled).
 			</description>
 		</method>
+		<method name="get_area_navigation_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_area_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_bounds" qualifiers="const">
 			<return type="AABB" />
 			<description>
@@ -56,6 +69,21 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] when the [NavigationMesh] is being baked on a background thread.
+			</description>
+		</method>
+		<method name="set_area_navigation_layer_value">
+			<return type="void" />
+			<param index="0" name="area" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<param index="2" name="value" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_area_navigation_layers">
+			<return type="void" />
+			<param index="0" name="area" type="int" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">

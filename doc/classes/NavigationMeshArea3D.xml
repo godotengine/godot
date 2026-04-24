@@ -45,7 +45,7 @@
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			Each navigation region has default [member NavigationRegion3D.navigation_layers]. This bitfield allows overwriting layers for the polygons that are part of this area during the baking process.
-			[b]Note:[/b] Changing this value at runtime requires baking the affected regions. For changes during runtime without having to bake the regions again, see [method NavigationRegion3D.set_areas_navigation_layers].
+			[b]Note:[/b] Changing this value at runtime requires baking the affected regions. For changes during runtime without having to bake the regions again, see [method NavigationRegion3D.set_area_navigation_layers].
 		</member>
 	</members>
 </class>

@@ -314,9 +314,9 @@ void NavRegion3D::_build_iteration() {
 
 	print_line("NavRegion3D::_build_iteration !!");
 	int i = 0;
-	for (uint32_t navigation_layers : iteration_build.navmesh_data.area_navlayers) {
+	for (uint32_t _navlayers : iteration_build.navmesh_data.area_navlayers) {
 		for (int polygon_index : iteration_build.navmesh_data.area_indices[i]) {
-			iteration_build.navmesh_data.polygons_meta.write[polygon_index] = navigation_layers;
+			iteration_build.navmesh_data.polygons_meta.write[polygon_index] = _navlayers;
 		}
 		i++;
 	}

@@ -933,7 +933,13 @@
 				Creates a new region.
 			</description>
 		</method>
-		<method name="region_get_areas_navigation_layers" qualifiers="const">
+		<method name="region_get_area_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="region_get_area_navigation_layers" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="area" type="int" />
@@ -1089,7 +1095,7 @@
 				[b]Note:[/b] If navigation meshes from different navigation regions overlap (which should be avoided in general) the result might not be what is expected.
 			</description>
 		</method>
-		<method name="region_set_areas_navigation_layers">
+		<method name="region_set_area_navigation_layers">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="area" type="int" />

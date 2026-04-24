@@ -45,7 +45,7 @@ class NavMap3D;
 struct NavMapIteration3D;
 
 class NavMeshQueries3D {
-	static float _get_polygon_travel_cost(const Nav3D::Polygon *p_polygon, uint32_t p_navigation_layers, const LocalVector<float> &p_cost_map);
+	static float _get_polygon_travel_cost(const Nav3D::Polygon *p_polygon, const LocalVector<int> &p_layer_cost_indices, const LocalVector<float> &p_layer_cost);
 
 public:
 	struct PathQuerySlot {
@@ -79,7 +79,8 @@ public:
 		bool include_regions = false;
 		LocalVector<RID> excluded_regions;
 		LocalVector<RID> included_regions;
-		LocalVector<float> navigation_layers_cost_map;
+		LocalVector<int> layer_cost_indices; // This and layer_cost are equal in length. Sorted from most to least expensive.
+		LocalVector<float> layer_cost;
 
 		float path_return_max_length = 0.0;
 		float path_return_max_radius = 0.0;

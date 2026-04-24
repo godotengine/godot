@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Mapping of layer to travel cost used in path queries [NavigationPathQueryParameters3D]. Can optionally be assigned to agents ([member NavigationAgent3D.navigation_layers_cost_map]).
-		A query takes the first matching layer between the query parameter and the polygon. This means if the polygon has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
+		[b]Note:[/b] When a polygon traversal cost is calculated, the most expensive enabled navigation layer is taken.
 	</description>
 	<tutorials>
 	</tutorials>

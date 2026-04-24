@@ -42,11 +42,13 @@ using namespace Nav3D;
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
 // Take the first matching layer between the query and the polygon.
-// This means if our p_polygon is an area that has multiple navigation layers enabled, the minimum or maximum cost is not necessarily considered.
-float NavMeshQueries3D::_get_polygon_travel_cost(const Polygon *p_polygon, uint32_t p_navigation_layers, const LocalVector<float> &p_costs_map) {
-	for (uint32_t i = 0; i < 32; i++) {
-		if ((p_polygon->navigation_layers & 1 << i) && (p_navigation_layers & 1 << i)) {
-			return p_costs_map[i];
+// The cost related parameters are sorted from highest to lowest cost.
+float NavMeshQueries3D::_get_polygon_travel_cost(const Polygon *p_polygon, const LocalVector<int> &p_layer_cost_indices, const LocalVector<float> &p_layer_cost) {
+	for (uint8_t i = 0; i < p_layer_cost_indices.size(); i++) {
+		uint32_t layer = p_layer_cost_indices[i];
+		if (p_polygon->navigation_layers & 1 << layer) {
+			// print_line(vformat("index: %d for cost %f", i, p_layer_cost[i]));
+			return p_layer_cost[i];
 		}
 	}
 	return 1.0;
@@ -167,14 +169,18 @@ void NavMeshQueries3D::map_query_path(NavMap3D *map, const Ref<NavigationPathQue
 
 	Ref<NavigationLayersCostMap3D> navigation_layers_cost_map = p_query_parameters->get_navigation_layers_cost_map();
 	if (!navigation_layers_cost_map.is_null()) {
-		query_task.navigation_layers_cost_map = navigation_layers_cost_map->get_navigation_layers_cost_map();
-	} else {
-		query_task.navigation_layers_cost_map.resize(32);
-		for (uint32_t i = 0; i < 32; i++) {
-			query_task.navigation_layers_cost_map[i] = 1.0;
+		// Get the changed costs we're interested in.
+		Vector<Pair<int, float>> _cost_map = navigation_layers_cost_map->get_navigation_layers_cost_map_sorted(p_query_parameters->get_navigation_layers());
+		int _cost_map_len = _cost_map.size();
+		query_task.layer_cost_indices.resize(_cost_map_len);
+		query_task.layer_cost.resize(_cost_map_len);
+		for (int i = 0; i < _cost_map_len; i++) {
+			const Pair<int, float> e = _cost_map[i];
+			query_task.layer_cost_indices[i] = e.first;
+			query_task.layer_cost[i] = e.second;
+			// print_line(vformat("index: %d -> cost: %f", e.first, e.second));
 		}
 	}
-	DEV_ASSERT(query_task.navigation_layers_cost_map.size() == 32);
 
 	query_task.start_position = p_query_parameters->get_start_position();
 	query_task.target_position = p_query_parameters->get_target_position();
@@ -314,7 +320,7 @@ void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTa
 			&traversable_polys = p_query_task.path_query_slot->traversable_polys;
 	LocalVector<NavigationPoly> &navigation_polys = p_query_task.path_query_slot->path_corridor;
 
-	real_t poly_travel_cost = _get_polygon_travel_cost(p_least_cost_poly.poly, p_query_task.navigation_layers, p_query_task.navigation_layers_cost_map);
+	real_t poly_travel_cost = _get_polygon_travel_cost(p_least_cost_poly.poly, p_query_task.layer_cost_indices, p_query_task.layer_cost);
 	Vector3 new_entry = Geometry3D::get_closest_point_to_segment(p_least_cost_poly.entry, p_connection.pathway_start, p_connection.pathway_end);
 	const real_t new_traveled_distance = p_least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + p_least_cost_poly.traveled_distance;
 
@@ -327,7 +333,7 @@ void NavMeshQueries3D::_query_task_search_polygon_connections(NavMeshPathQueryTa
 		neighbor_poly.back_navigation_edge_pathway_start = p_connection.pathway_start;
 		neighbor_poly.back_navigation_edge_pathway_end = p_connection.pathway_end;
 		neighbor_poly.traveled_distance = new_traveled_distance;
-		real_t poly_destination_cost = _get_polygon_travel_cost(p_connection.polygon, p_query_task.navigation_layers, p_query_task.navigation_layers_cost_map);
+		real_t poly_destination_cost = _get_polygon_travel_cost(p_connection.polygon, p_query_task.layer_cost_indices, p_query_task.layer_cost);
 		neighbor_poly.distance_to_destination = new_entry.distance_to(p_end_point) * poly_destination_cost;
 		neighbor_poly.entry = new_entry;
 
