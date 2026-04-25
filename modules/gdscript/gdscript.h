@@ -36,7 +36,6 @@
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
 #include "core/object/script_language.h"
-#include "core/templates/rb_set.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
@@ -68,15 +67,6 @@ class GDScript : public Script {
 		StringName getter;
 		GDScriptDataType data_type;
 		PropertyInfo property_info;
-	};
-
-	struct ClearData {
-		RBSet<GDScriptFunction *> functions;
-		RBSet<Ref<Script>> scripts;
-		void clear() {
-			functions.clear();
-			scripts.clear();
-		}
 	};
 
 	friend class GDScriptInstance;

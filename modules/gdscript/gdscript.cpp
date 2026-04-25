@@ -41,6 +41,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/templates/rb_set.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
