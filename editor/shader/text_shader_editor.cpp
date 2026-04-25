@@ -45,13 +45,16 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/split_container.h"
-#include "scene/resources/sky.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/resources/sky.h"
+#endif // _3D_DISABLED
 
 #include "modules/regex/regex.h"
 
@@ -230,12 +233,14 @@ TextShaderPreview::TextShaderPreview() {
 	surface_container->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
 	add_child(surface_container);
 
+#ifndef _3D_DISABLED
 	env.instantiate();
 	Ref<Sky> sky = memnew(Sky);
 	env->set_sky(sky);
 	env->set_background(Environment::BG_COLOR);
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+#endif // _3D_DISABLED
 
 	surface = memnew(MaterialEditor);
 	surface_container->add_child(surface);
@@ -488,7 +493,11 @@ void TextShaderPreview::_reset_shader_parameters(Ref<ShaderMaterial> &p_target) 
 }
 
 void TextShaderPreview::_show_error(const String &p_error) {
+#ifndef _3D_DISABLED
 	surface->edit(Ref<Material>(), env);
+#else
+	surface->edit(Ref<Material>());
+#endif // _3D_DISABLED
 	error_label->set_text(p_error);
 	error_label->show();
 }
@@ -517,6 +526,7 @@ Ref<ShaderMaterial> TextShaderPreview::_get_source_material() const {
 		return Ref<ShaderMaterial>();
 	}
 
+#ifndef _3D_DISABLED
 	const GeometryInstance3D *gi = Object::cast_to<GeometryInstance3D>(object);
 	if (gi) {
 		const Ref<ShaderMaterial> material_overlay = gi->get_material_overlay();
@@ -544,6 +554,7 @@ Ref<ShaderMaterial> TextShaderPreview::_get_source_material() const {
 			}
 		}
 	}
+#endif // _3D_DISABLED
 
 	return Ref<ShaderMaterial>();
 }
@@ -638,7 +649,11 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 
 	surface->show();
 	error_label->hide();
+#ifndef _3D_DISABLED
 	surface->edit(shader_material.ptr(), env);
+#else
+	surface->edit(shader_material.ptr());
+#endif // _3D_DISABLED
 }
 
 /*** SHADER SCRIPT EDITOR ****/

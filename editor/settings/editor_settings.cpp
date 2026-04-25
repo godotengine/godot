@@ -885,6 +885,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Editors */
 
+#ifndef _3D_DISABLED
 	// GridMap
 	// GridMapEditor
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/grid_map/pick_distance", 5000.0, "1,8192,0.1,or_greater");
@@ -990,6 +991,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01");
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_FLAGS, "editors/3d/show_gizmo_during_rotation", 2, "Global,Local");
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/view_plane_rotation_gizmo_scale", 1.14, "1.0,2.0,0.01,or_greater");
+#endif // _3D_DISABLED
 
 	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);

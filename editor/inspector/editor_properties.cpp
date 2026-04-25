@@ -55,8 +55,6 @@
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/gpu_particles_2d.h"
-#include "scene/3d/fog_volume.h"
-#include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/text_edit.h"
@@ -64,9 +62,14 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
+#include "servers/display/display_server.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/fog_volume.h"
+#include "scene/3d/gpu_particles_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
-#include "servers/display/display_server.h"
+#endif // _3D_DISABLED
 
 #include "modules/modules_enabled.gen.h"
 
@@ -3543,16 +3546,22 @@ void EditorPropertyResource::_update_preferred_shader() {
 		const StringName &ed_property = parent_property->get_edited_property();
 
 		// Set preferred shader based on edited parent type.
+#ifndef _3D_DISABLED
 		if ((Object::cast_to<GPUParticles2D>(ed_object) || Object::cast_to<GPUParticles3D>(ed_object)) && ed_property == SNAME("process_material")) {
+#else
+		if (Object::cast_to<GPUParticles2D>(ed_object) && ed_property == SNAME("process_material")) {
+#endif // _3D_DISABLED
 			shader_picker->set_preferred_mode(Shader::MODE_PARTICLES);
-		} else if (Object::cast_to<FogVolume>(ed_object)) {
-			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<CanvasItem>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
+#ifndef _3D_DISABLED
+		} else if (Object::cast_to<FogVolume>(ed_object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<Node3D>(ed_object) || Object::cast_to<Mesh>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
 		} else if (Object::cast_to<Sky>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SKY);
+#endif // _3D_DISABLED
 		}
 	}
 }

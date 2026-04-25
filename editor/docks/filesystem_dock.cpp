@@ -53,7 +53,6 @@
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/directory_create_dialog.h"
 #include "editor/gui/editor_dir_dialog.h"
-#include "editor/import/3d/scene_import_settings.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/editor_resource_tooltip_plugins.h"
@@ -74,6 +73,10 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
+
+#ifndef _3D_DISABLED
+#include "editor/import/3d/scene_import_settings.h"
+#endif // _3D_DISABLED
 
 Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 	TreeItem *item = get_item_at_position(get_local_mouse_position());
@@ -1327,6 +1330,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 		String resource_type = ResourceLoader::get_resource_type(fpath);
 		if (resource_type == "PackedScene" || resource_type == "AnimationLibrary") {
+#ifndef _3D_DISABLED
 			bool is_imported = false;
 			{
 				List<String> importer_exts;
@@ -1343,8 +1347,11 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			if (is_imported) {
 				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type);
 			} else {
+#endif // _3D_DISABLED
 				EditorNode::get_singleton()->load_scene_or_resource(fpath);
+#ifndef _3D_DISABLED
 			}
+#endif // _3D_DISABLED
 		} else if (ResourceLoader::is_imported(fpath)) {
 			// If the importer has advanced settings, show them.
 			int order;
