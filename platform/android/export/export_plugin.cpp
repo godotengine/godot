@@ -2142,7 +2142,7 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 
 			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-			int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+			int min_sdk_int = _uses_vulkan(Ref<EditorExportPreset>(p_preset)) ? VULKAN_MIN_SDK_VERSION : DEFAULT_MIN_SDK_VERSION;
 			if (min_sdk_str.is_valid_int()) {
 				min_sdk_int = min_sdk_str.to_int();
 			}
@@ -2203,7 +2203,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK, false, true));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", VULKAN_MIN_SDK_VERSION)), "", false, true));
+	const String min_sdk_placeholder = _uses_vulkan(nullptr) ? vformat("%d (Vulkan default)", VULKAN_MIN_SDK_VERSION) : vformat("%d (default)", DEFAULT_MIN_SDK_VERSION);
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, min_sdk_placeholder), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "gradle_build/custom_theme_attributes", PROPERTY_HINT_DICTIONARY_TYPE, "String;String"), Dictionary()));
@@ -3196,18 +3197,20 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		err += "\n";
 	}
 
-	String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-	int min_sdk_int = VULKAN_MIN_SDK_VERSION;
-	if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
-		if (min_sdk_str.is_valid_int()) {
-			min_sdk_int = min_sdk_str.to_int();
+	if (_uses_vulkan(p_preset)) {
+		String min_sdk_str = p_preset->get("gradle_build/min_sdk");
+		int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+		if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
+			if (min_sdk_str.is_valid_int()) {
+				min_sdk_int = min_sdk_str.to_int();
+			}
 		}
-	}
-	bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-	if (_uses_vulkan(p_preset) && min_sdk_int < VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
-		// Warning only, so don't override `valid`.
-		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
-		err += "\n";
+		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+		if (min_sdk_int < VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
+			// Warning only, so don't override `valid`.
+			err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
+			err += "\n";
+		}
 	}
 
 	String package_name = p_preset->get("package/unique_name");
@@ -3879,7 +3882,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String version_name = p_preset->get_version("version/name");
 		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
-			min_sdk_version = itos(VULKAN_MIN_SDK_VERSION);
+			min_sdk_version = _uses_vulkan(p_preset) ? itos(VULKAN_MIN_SDK_VERSION) : itos(DEFAULT_MIN_SDK_VERSION);
 		}
 		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
