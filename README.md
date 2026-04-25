@@ -38,3 +38,8 @@ i just don't like the whole 'approachability over correctness' philosophy that i
 
 ## Lmao why not c#
 because i don't wanna. if you want to, good! go ahead.
+
+## About repository recreation
+I did something stupid and wanted to renetwork this fork to another repo, siphon its changes, and reattach it to Godot upstream. Turns out once I did that I could no longer attach it to Godot. Oops. 
+
+The only fix was to delete the repository and rehoist it back up. Sorry about that.
