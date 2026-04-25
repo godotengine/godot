@@ -499,7 +499,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	HashMap<uint8_t, uint32_t> area_config_id_to_navigation_layers;
 
 	navigation_layers_to_area_config_id[0] = RC_NULL_AREA; // Recast unsigned char RC_NULL_AREA = 0.
-	uint32_t default_navlayers = p_navigation_mesh->get_navigation_layers();
+	uint32_t default_navlayers = p_navigation_mesh->_get_navigation_layers();
 	navigation_layers_to_area_config_id[default_navlayers] = RC_WALKABLE_AREA;
 
 	area_config_id_to_navigation_layers[static_cast<uint8_t>(RC_NULL_AREA)] = 0;

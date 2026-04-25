@@ -78,12 +78,12 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	}
 }
 
-void NavigationMesh::set_navigation_layers(uint32_t p_navigation_layers) {
+void NavigationMesh::_set_navigation_layers(uint32_t p_navigation_layers) {
 	RWLockWrite write_lock(rwlock);
 	navigation_layers = p_navigation_layers;
 }
 
-uint32_t NavigationMesh::get_navigation_layers() const {
+uint32_t NavigationMesh::_get_navigation_layers() const {
 	RWLockRead read_lock(rwlock);
 	return navigation_layers;
 }
@@ -621,6 +621,9 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 #endif // DEBUG_ENABLED
 
 void NavigationMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_set_navigation_layers", "navigation_layers"), &NavigationMesh::_set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("_get_navigation_layers"), &NavigationMesh::_get_navigation_layers);
+
 	ClassDB::bind_method(D_METHOD("set_sample_partition_type", "sample_partition_type"), &NavigationMesh::set_sample_partition_type);
 	ClassDB::bind_method(D_METHOD("get_sample_partition_type"), &NavigationMesh::get_sample_partition_type);
 
@@ -716,6 +719,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_area_indices"), &NavigationMesh::_get_area_indices);
 
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationMesh::clear);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_navigation_layers", "_get_navigation_layers");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");

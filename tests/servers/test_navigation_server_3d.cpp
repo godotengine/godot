@@ -566,7 +566,6 @@ TEST_SUITE("[Navigation3D]") {
 		ERR_PRINT_OFF;
 		navigation_server->region_bake_navigation_mesh(navigation_mesh, node_3d);
 		ERR_PRINT_ON;
-		// FIXME: The above line should trigger the update (line below) under the hood.
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
 		CHECK_EQ(navigation_mesh->get_polygon_count(), 2);
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 4);

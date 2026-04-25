@@ -124,8 +124,9 @@ protected:
 
 public:
 	// Recast settings
-	void set_navigation_layers(uint32_t p_navigation_layers);
-	uint32_t get_navigation_layers() const;
+	// Navigation layers are controlled by region.
+	void _set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t _get_navigation_layers() const;
 
 	void set_sample_partition_type(SamplePartitionType p_value);
 	SamplePartitionType get_sample_partition_type() const;

@@ -81,7 +81,7 @@ public:
 		AABB aabb; // Bounds.
 		Vector3 position; // Used by BOX and CYLINDER as position. Unused by POLYGON.
 		float radius = 0.0; // Used by CYLINDER only.
-		float elevation = 0.0; // Used by POLYGON only. // FIXME: is the area height min. this + height is the height max. Could be merged into position.y.
+		float elevation = 0.0; // Used by POLYGON only.
 		float height = 0.0; // Used by CYLINDER and POLYGON. For BOX, it is baked into aabb.
 		uint32_t navigation_layers = 0;
 		int priority = 0;

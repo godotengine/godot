@@ -116,7 +116,9 @@ void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 #endif // DEBUG_ENABLED
 
 	navmesh = p_navigation_mesh;
-	navmesh->set_navigation_layers(navigation_layers);
+	if (navmesh.is_valid()) {
+		navmesh->_set_navigation_layers(navigation_layers);
+	}
 
 	iteration_dirty = true;
 
@@ -153,7 +155,7 @@ void NavRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	navigation_layers = p_navigation_layers;
 
 	if (navmesh.is_valid()) {
-		navmesh->set_navigation_layers(navigation_layers);
+		navmesh->_set_navigation_layers(navigation_layers);
 	}
 
 	iteration_dirty = true;
@@ -286,7 +288,7 @@ void NavRegion3D::_build_iteration() {
 	iteration_build.reset();
 
 	if (navmesh.is_valid()) {
-		// Read data from latest bake result. Also containing latest changes to navigation layers of area-created polygons. 
+		// Read data from latest bake result. Also containing latest changes to navigation layers of area-created polygons.
 		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_navlayers, iteration_build.navmesh_data.area_indices);
 	}
 
