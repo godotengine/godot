@@ -1129,7 +1129,7 @@ GDScriptParser::ExpressionNode* GDScriptParser::parse_generic_call(ExpressionNod
 
             TypeNode* arg_type = parse_type(false);
             if (arg_type == nullptr) {
-                push_error(R"([Reginleif] Expected type in turbobrick generic argument list.)");
+                push_error(R"([Reginleif] Expected type in generic argument list.)");
                 break;
             }
 			
@@ -1149,9 +1149,13 @@ GDScriptParser::ExpressionNode* GDScriptParser::parse_generic_call(ExpressionNod
         explicit_args.push_back(arg_type);
     }
 
-    if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"([Reginleif] Expected '(' after generic call arguments.)")) {
+    if (!check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+        push_error(R"([Reginleif] Expected '(' after generic call arguments.)");
         return p_previous_operand;
     }
+
+    push_multiline(true);
+    advance();
 
     ExpressionNode* result = parse_call(p_previous_operand, p_can_assign);
     if (result == nullptr || result->type != Node::CALL) {
