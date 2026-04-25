@@ -1,0 +1,3 @@
+GDTEST_OK
+~~ WARNING at line 11: (ACCESS_PRIVATE_MEMBER) The member "_t" is private. It should not be accessed from an external script.
+~~ WARNING at line 12: (CALL_PRIVATE_METHOD) The method "_priv_method()" is private. It should not be called from an external script.
