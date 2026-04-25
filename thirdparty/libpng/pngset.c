@@ -1,6 +1,6 @@
 /* pngset.c - storage of image information into info struct
  *
- * Copyright (c) 2018-2025 Cosmin Truta
+ * Copyright (c) 2018-2026 Cosmin Truta
  * Copyright (c) 1998-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -333,7 +333,8 @@ png_set_eXIf_1(png_const_structrp png_ptr, png_inforp info_ptr,
    png_debug1(1, "in %s storage function", "eXIf");
 
    if (png_ptr == NULL || info_ptr == NULL ||
-       (png_ptr->mode & PNG_WROTE_eXIf) != 0)
+       (png_ptr->mode & PNG_WROTE_eXIf) != 0 ||
+       exif == NULL)
       return;
 
    new_exif = png_voidcast(png_bytep, png_malloc_warn(png_ptr, num_exif));
@@ -384,11 +385,12 @@ void PNGAPI
 png_set_hIST(png_const_structrp png_ptr, png_inforp info_ptr,
     png_const_uint_16p hist)
 {
+   png_uint_16 safe_hist[PNG_MAX_PALETTE_LENGTH];
    int i;
 
    png_debug1(1, "in %s storage function", "hIST");
 
-   if (png_ptr == NULL || info_ptr == NULL)
+   if (png_ptr == NULL || info_ptr == NULL || hist == NULL)
       return;
 
    if (info_ptr->num_palette == 0 || info_ptr->num_palette
@@ -399,6 +401,13 @@ png_set_hIST(png_const_structrp png_ptr, png_inforp info_ptr,
 
       return;
    }
+
+   /* Snapshot the caller's hist before freeing, in case it points to
+    * info_ptr->hist (getter-to-setter aliasing).
+    */
+   memcpy(safe_hist, hist, (unsigned int)info_ptr->num_palette *
+       (sizeof (png_uint_16)));
+   hist = safe_hist;
 
    png_free_data(png_ptr, info_ptr, PNG_FREE_HIST, 0);
 
@@ -741,7 +750,7 @@ void PNGAPI
 png_set_PLTE(png_structrp png_ptr, png_inforp info_ptr,
     png_const_colorp palette, int num_palette)
 {
-
+   png_color safe_palette[PNG_MAX_PALETTE_LENGTH];
    png_uint_32 max_palette_length;
 
    png_debug1(1, "in %s storage function", "PLTE");
@@ -775,28 +784,47 @@ png_set_PLTE(png_structrp png_ptr, png_inforp info_ptr,
       png_error(png_ptr, "Invalid palette");
    }
 
-   /* It may not actually be necessary to set png_ptr->palette here;
-    * we do it for backward compatibility with the way the png_handle_tRNS
-    * function used to do the allocation.
-    *
-    * 1.6.0: the above statement appears to be incorrect; something has to set
-    * the palette inside png_struct on read.
+   /* Snapshot the caller's palette before freeing, in case it points to
+    * info_ptr->palette (getter-to-setter aliasing).
     */
+   if (num_palette > 0)
+      memcpy(safe_palette, palette, (unsigned int)num_palette *
+          (sizeof (png_color)));
+
+   palette = safe_palette;
+
    png_free_data(png_ptr, info_ptr, PNG_FREE_PLTE, 0);
 
    /* Changed in libpng-1.2.1 to allocate PNG_MAX_PALETTE_LENGTH instead
     * of num_palette entries, in case of an invalid PNG file or incorrect
     * call to png_set_PLTE() with too-large sample values.
+    *
+    * Allocate independent buffers for info_ptr and png_ptr so that the
+    * lifetime of png_ptr->palette is decoupled from the lifetime of
+    * info_ptr->palette.  Previously, these two pointers were aliased,
+    * which caused a use-after-free vulnerability if png_free_data freed
+    * info_ptr->palette while png_ptr->palette was still in use by the
+    * row transform functions (e.g. png_do_expand_palette).
+    *
+    * Both buffers are allocated with png_calloc to zero-fill, because
+    * the ARM NEON palette riffle reads all 256 entries unconditionally,
+    * regardless of num_palette.
     */
+   png_free(png_ptr, png_ptr->palette);
    png_ptr->palette = png_voidcast(png_colorp, png_calloc(png_ptr,
        PNG_MAX_PALETTE_LENGTH * (sizeof (png_color))));
+   info_ptr->palette = png_voidcast(png_colorp, png_calloc(png_ptr,
+       PNG_MAX_PALETTE_LENGTH * (sizeof (png_color))));
+   png_ptr->num_palette = info_ptr->num_palette = (png_uint_16)num_palette;
 
    if (num_palette > 0)
+   {
+      memcpy(info_ptr->palette, palette, (unsigned int)num_palette *
+          (sizeof (png_color)));
       memcpy(png_ptr->palette, palette, (unsigned int)num_palette *
           (sizeof (png_color)));
+   }
 
-   info_ptr->palette = png_ptr->palette;
-   info_ptr->num_palette = png_ptr->num_palette = (png_uint_16)num_palette;
    info_ptr->free_me |= PNG_FREE_PLTE;
    info_ptr->valid |= PNG_INFO_PLTE;
 }
@@ -926,6 +954,7 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
     png_const_textp text_ptr, int num_text)
 {
    int i;
+   png_textp old_text = NULL;
 
    png_debug1(1, "in text storage function, chunk typeid = 0x%lx",
       png_ptr == NULL ? 0xabadca11UL : (unsigned long)png_ptr->chunk_name);
@@ -973,7 +1002,10 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
          return 1;
       }
 
-      png_free(png_ptr, info_ptr->text);
+      /* Defer freeing the old array until after the copy loop below,
+       * in case text_ptr aliases info_ptr->text (getter-to-setter).
+       */
+      old_text = info_ptr->text;
 
       info_ptr->text = new_text;
       info_ptr->free_me |= PNG_FREE_TEXT;
@@ -1058,6 +1090,7 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
       {
          png_chunk_report(png_ptr, "text chunk: out of memory",
              PNG_CHUNK_WRITE_ERROR);
+         png_free(png_ptr, old_text);
 
          return 1;
       }
@@ -1111,6 +1144,8 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
       png_debug1(3, "transferred text chunk %d", info_ptr->num_text);
    }
 
+   png_free(png_ptr, old_text);
+
    return 0;
 }
 #endif
@@ -1154,28 +1189,50 @@ png_set_tRNS(png_structrp png_ptr, png_inforp info_ptr,
 
    if (trans_alpha != NULL)
    {
-       /* It may not actually be necessary to set png_ptr->trans_alpha here;
-        * we do it for backward compatibility with the way the png_handle_tRNS
-        * function used to do the allocation.
-        *
-        * 1.6.0: The above statement is incorrect; png_handle_tRNS effectively
-        * relies on png_set_tRNS storing the information in png_struct
-        * (otherwise it won't be there for the code in pngrtran.c).
+       /* Snapshot the caller's trans_alpha before freeing, in case it
+        * points to info_ptr->trans_alpha (getter-to-setter aliasing).
         */
+       png_byte safe_trans[PNG_MAX_PALETTE_LENGTH];
+
+       if (num_trans > 0 && num_trans <= PNG_MAX_PALETTE_LENGTH)
+          memcpy(safe_trans, trans_alpha, (size_t)num_trans);
+
+       trans_alpha = safe_trans;
 
        png_free_data(png_ptr, info_ptr, PNG_FREE_TRNS, 0);
 
        if (num_trans > 0 && num_trans <= PNG_MAX_PALETTE_LENGTH)
        {
-         /* Changed from num_trans to PNG_MAX_PALETTE_LENGTH in version 1.2.1 */
+          /* Allocate info_ptr's copy of the transparency data.
+           * Initialize all entries to fully opaque (0xff), then overwrite
+           * the first num_trans entries with the actual values.
+           */
           info_ptr->trans_alpha = png_voidcast(png_bytep,
               png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH));
+          memset(info_ptr->trans_alpha, 0xff, PNG_MAX_PALETTE_LENGTH);
           memcpy(info_ptr->trans_alpha, trans_alpha, (size_t)num_trans);
-
           info_ptr->free_me |= PNG_FREE_TRNS;
           info_ptr->valid |= PNG_INFO_tRNS;
+
+          /* Allocate an independent copy for png_struct, so that the
+           * lifetime of png_ptr->trans_alpha is decoupled from the
+           * lifetime of info_ptr->trans_alpha.  Previously these two
+           * pointers were aliased, which caused a use-after-free if
+           * png_free_data freed info_ptr->trans_alpha while
+           * png_ptr->trans_alpha was still in use by the row transform
+           * functions (e.g. png_do_expand_palette).
+           */
+          png_free(png_ptr, png_ptr->trans_alpha);
+          png_ptr->trans_alpha = png_voidcast(png_bytep,
+              png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH));
+          memset(png_ptr->trans_alpha, 0xff, PNG_MAX_PALETTE_LENGTH);
+          memcpy(png_ptr->trans_alpha, trans_alpha, (size_t)num_trans);
        }
-       png_ptr->trans_alpha = info_ptr->trans_alpha;
+       else
+       {
+          png_free(png_ptr, png_ptr->trans_alpha);
+          png_ptr->trans_alpha = NULL;
+       }
    }
 
    if (trans_color != NULL)
@@ -1226,6 +1283,7 @@ png_set_sPLT(png_const_structrp png_ptr,
  */
 {
    png_sPLT_tp np;
+   png_sPLT_tp old_spalettes;
 
    png_debug1(1, "in %s storage function", "sPLT");
 
@@ -1246,7 +1304,10 @@ png_set_sPLT(png_const_structrp png_ptr,
       return;
    }
 
-   png_free(png_ptr, info_ptr->splt_palettes);
+   /* Defer freeing the old array until after the copy loop below,
+    * in case entries aliases info_ptr->splt_palettes (getter-to-setter).
+    */
+   old_spalettes = info_ptr->splt_palettes;
 
    info_ptr->splt_palettes = np;
    info_ptr->free_me |= PNG_FREE_SPLT;
@@ -1310,6 +1371,8 @@ png_set_sPLT(png_const_structrp png_ptr,
    }
    while (--nentries);
 
+   png_free(png_ptr, old_spalettes);
+
    if (nentries > 0)
       png_chunk_report(png_ptr, "sPLT out of memory", PNG_CHUNK_WRITE_ERROR);
 }
@@ -1358,6 +1421,7 @@ png_set_unknown_chunks(png_const_structrp png_ptr,
     png_inforp info_ptr, png_const_unknown_chunkp unknowns, int num_unknowns)
 {
    png_unknown_chunkp np;
+   png_unknown_chunkp old_unknowns;
 
    if (png_ptr == NULL || info_ptr == NULL || num_unknowns <= 0 ||
        unknowns == NULL)
@@ -1404,7 +1468,10 @@ png_set_unknown_chunks(png_const_structrp png_ptr,
       return;
    }
 
-   png_free(png_ptr, info_ptr->unknown_chunks);
+   /* Defer freeing the old array until after the copy loop below,
+    * in case unknowns aliases info_ptr->unknown_chunks (getter-to-setter).
+    */
+   old_unknowns = info_ptr->unknown_chunks;
 
    info_ptr->unknown_chunks = np; /* safe because it is initialized */
    info_ptr->free_me |= PNG_FREE_UNKN;
@@ -1450,6 +1517,8 @@ png_set_unknown_chunks(png_const_structrp png_ptr,
       ++np;
       ++(info_ptr->unknown_chunks_num);
    }
+
+   png_free(png_ptr, old_unknowns);
 }
 
 void PNGAPI
@@ -1873,7 +1942,7 @@ png_set_benign_errors(png_structrp png_ptr, int allowed)
 #endif /* BENIGN_ERRORS */
 
 #ifdef PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED
-   /* Whether to report invalid palette index; added at libng-1.5.10.
+   /* Whether to report invalid palette index; added at libpng-1.5.10.
     * It is possible for an indexed (color-type==3) PNG file to contain
     * pixels with invalid (out-of-range) indexes if the PLTE chunk has
     * fewer entries than the image's bit-depth would allow. We recover
