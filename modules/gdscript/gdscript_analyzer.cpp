@@ -4180,6 +4180,21 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		/// [Monarch] Infer generic bindings from call arguments (Stuff.from(3) => T = int resolution chain)
 		HashMap<StringName, GDScriptParser::DataType> call_generic_bindings(base_type.generic_type_bindings);
 
+		GDScriptParser::FunctionNode* script_func = nullptr;
+		{
+			GDScriptParser::ClassNode* base_class = base_type.class_type;
+			while (base_class != nullptr) {
+				if (base_class->has_member(p_call->function_name)) {
+					const auto &member = base_class->get_member(p_call->function_name);
+					if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
+						script_func = member.function;
+					}
+					break;
+				}
+				base_class = base_class->base_type.class_type;
+			}
+		}
+
 		List<GDScriptParser::DataType>::ConstIterator par_itr = par_types.begin();
 		for (int i = 0; i < p_call->arguments.size() && i < par_types.size(); ++i, ++par_itr) {
 			GDScriptParser::DataType param_type = *par_itr;
