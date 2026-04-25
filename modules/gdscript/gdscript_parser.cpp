@@ -2518,7 +2518,7 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		consume(GDScriptTokenizer::Token::TK_IN, R"(Expected "in" after "for" variable type specifier.)");
 	}
 
-	n_for->list = parse_expression(false, false, true); ///
+	n_for->list = parse_expression(false);
 
 	if (!n_for->list) {
 		push_error(R"(Expected iterable after "in".)");
@@ -2556,7 +2556,7 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	IfNode *n_if = alloc_node<IfNode>();
 
-	n_if->condition = parse_expression(false, false, true); ///
+	n_if->condition = parse_expression(false);
 	if (n_if->condition == nullptr) {
 		push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
 	}
@@ -2609,7 +2609,7 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	MatchNode *match_node = alloc_node<MatchNode>();
 
-	match_node->test = parse_expression(false, false, true); ///
+	match_node->test = parse_expression(false);
 	if (match_node->test == nullptr) {
 		push_error(R"(Expected expression to test after "match".)");
 	}
@@ -2729,7 +2729,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		branch->guard_body->parent_block = parent_block;
 		current_suite = branch->guard_body;
 
-		ExpressionNode *guard = parse_expression(false, false, true); ///
+		ExpressionNode *guard = parse_expression(false);
 		if (guard == nullptr) {
 			push_error(R"(Expected expression for pattern guard after "when".)");
 		} else {
@@ -2923,7 +2923,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::PatternNode::get_bind(const Stri
 GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	WhileNode *n_while = alloc_node<WhileNode>();
 
-	n_while->condition = parse_expression(false, false, true); ///
+	n_while->condition = parse_expression(false);
 	if (n_while->condition == nullptr) {
 		push_error(R"(Expected conditional expression after "while".)");
 	}
@@ -2953,7 +2953,7 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	return n_while;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign, bool p_stop_on_colon) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign) {
 	// Switch multiline mode on for grouping tokens.
 	// Do this early to avoid the tokenizer generating whitespace tokens.
 	switch (current.type) {
@@ -2996,14 +2996,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 #endif
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
-		/// [Monarch] Look, look, I can explain, I can explain, alright? Don't kill me yet aaaaaa
-		/// Basically this is practically required to solve the ambiguity problem between the `call:` (generic call)
-		/// and the Lua style dictionary constructor case, which is also, `x:`.
-		/// I require context to unfortunately be manually passed in :c as the only way to diff. and that's why that new
-		/// function argument was needed.
-		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || (p_stop_on_colon && current.type == GDScriptTokenizer::Token::COLON) || lambda_ended) {
-			                                                                                                       ///^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-																												   /// required for generic calls
+		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || lambda_ended) {
 			return previous_operand;
 		}
 		// Also switch multiline mode on here for infix operators.
@@ -3024,8 +3017,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	return previous_operand;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assign, bool p_stop_on_assign, bool p_stop_on_colon) { ///
-	return parse_precedence(PREC_ASSIGNMENT, p_can_assign, p_stop_on_assign, p_stop_on_colon);
+GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assign, bool p_stop_on_assign) {
+	return parse_precedence(PREC_ASSIGNMENT, p_can_assign, p_stop_on_assign);
 }
 
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
@@ -3502,7 +3495,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			}
 
 			// Key.
-			ExpressionNode *key = parse_expression(false, true, true); /// Stop on "=" or ":" so we can check for dict separators
+			ExpressionNode *key = parse_expression(false, true); // Stop on "=" so we can check for Lua table style.
 
 			if (key == nullptr) {
 				push_error(R"(Expected expression as dictionary key.)");
@@ -3684,127 +3677,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_pre
 
 	return cast;
 }
-
-GDScriptParser::ExpressionNode* GDScriptParser::parse_generic_call_with_type_arguments(ExpressionNode* p_previous_operand, bool p_can_assign) {
-	CallNode* call = alloc_node<CallNode>();
-
-	reset_extents(call, p_previous_operand);
-	call->callee = p_previous_operand;
-
-	if (call->callee == nullptr) {
-		push_error(R"([Reginleif] Expected callable expression before ":".)");
-		complete_extents(call);
-		return call;
-	}
-
-	/// Yaaaaay, completion fuckery! My favouuurite! why did i force myself into this shitass codebase dawg
-	/// a lot of spacing from this point on. The spacing is to ensure the code is readable to me later on because
-	/// the indents get very fucky from this point on.
-
-	if (call->callee->type == Node::IDENTIFIER) {
-
-		call->function_name = static_cast<IdentifierNode*>(call->callee)->name;
-		make_completion_context(COMPLETION_METHOD, call->callee);
-	
-	} else if (call->callee->type == Node::SUBSCRIPT) {
-
-		SubscriptNode* attribute = static_cast<SubscriptNode*>(call->callee);
-		if (attribute->is_attribute) {
-
-			if (attribute->attribute) { call->function_name = attribute->attribute->name; }
-			make_completion_context(COMPLETION_ATTRIBUTE_METHOD, call->callee);
-
-		} else { push_error(R"*([Reginleif] Cannot call on an expression. Use ".call()" if it's a Callable.)*"); }
-	} else { push_error(R"*([Reginleif] Cannot call on an expression. Use ".call()" if it's a Callable.)*"); }
-
-	if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
-
-
-		do {
-			TypeNode* type_argument = parse_type();
-			if (type_argument == nullptr) {
-				push_error(R"([Reginleif] Expected type argument(s) after "[".)");
-				break;
-			}
-			call->explicit_type_arguments.push_back(type_argument);
-		} while (match(GDScriptTokenizer::Token::COMMA));
-
-
-		consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"([Reginleif] Expected "]" after explicit generic type arguments.)");
-
-
-	} else {
-
-		///fills up the case for the shorthand in case there's only one param.
-		///as said by Fishy on the Godot discord: succ:int(32)
-
-		TypeNode* type_argument = parse_type();
-
-		if (type_argument == nullptr) {
-			push_error(R"([Reginleif] Expected type argument after ":".)");
-		} else {
-			call->explicit_type_arguments.push_back(type_argument);
-		}
-
-
-	}
-
-	if (call->explicit_type_arguments.is_empty()) {
-		push_error(R"([Reginleif] Expected at least one explicit type argument after ":", but received none.)");
-	}
-
-	if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"([Reginleif] Expected "(" after explicit type arguments.)")) {
-		complete_extents(call);
-		return call;
-	}
-
-	push_multiline(true);
-
-	CompletionType ct = COMPLETION_CALL_ARGUMENTS;
-
-	if (call->function_name == SNAME("load")) {
-		ct = COMPLETION_RESOURCE_PATH;
-	}
-
-	push_completion_call(call);
-	int argument_index = 0;
-
-
-
-	do {
-		make_completion_context(ct, call, argument_index);
-		set_last_completion_call_arg(argument_index);
-
-		if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
-			break;
-		}
-
-		ExpressionNode* argument = parse_expression(false);
-
-		if (argument == nullptr) {
-			push_error(R"([Reginleif] Expected an expression as the function argument.)");
-		} else {
-			call->arguments.push_back(argument);
-			if (argument->type == Node::LITERAL) {
-				override_completion_context(argument, ct, call, argument_index);
-			}
-		}
-
-		ct = COMPLETION_CALL_ARGUMENTS;
-		argument_index++;
-
-	} while (match(GDScriptTokenizer::Token::COMMA));
-
-
-
-	pop_completion_call();
-
-	pop_multiline();
-	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*([Reginleif] Expected closing ")" after call arguments.)*");
-	complete_extents(call);
-	return call;
-}
-
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	CallNode *call = alloc_node<CallNode>();
@@ -4673,7 +4545,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_attribute,            	PREC_ATTRIBUTE }, // PERIOD,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PERIOD_PERIOD,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PERIOD_PERIOD_PERIOD,
-		{ nullptr,                           &GDScriptParser::parse_generic_call_with_type_arguments,  PREC_SUBSCRIPT }, /// COLON,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // COLON,
 		{ &GDScriptParser::parse_get_node,               	nullptr,                                        PREC_NONE }, // DOLLAR,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORWARD_ARROW,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // UNDERSCORE,
@@ -6182,19 +6054,6 @@ void GDScriptParser::TreePrinter::print_call(CallNode *p_call) {
 	} else {
 		print_expression(p_call->callee);
 	}
-
-	///
-	if (!p_call->explicit_type_arguments.is_empty()) {
-		push_text("[");
-		for (int i = 0; i < p_call->explicit_type_arguments.size(); i++) {
-			if (i > 0) {
-				push_text(", ");
-			}
-			print_type(p_call->explicit_type_arguments[i]);
-		}
-		push_text("]");
-	}
-
 	push_text("( ");
 	for (int i = 0; i < p_call->arguments.size(); i++) {
 		if (i > 0) {
