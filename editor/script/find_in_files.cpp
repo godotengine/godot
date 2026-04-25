@@ -37,6 +37,7 @@
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
@@ -1140,6 +1141,9 @@ void FindInFilesPanel::_apply_replaces_in_file(const String &p_fpath, const Vect
 	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
 
 	f->store_string(buffer);
+	f->close();
+
+	EditorFileSystem::get_singleton()->update_file(p_fpath);
 }
 
 String FindInFilesPanel::_get_replace_text() {
