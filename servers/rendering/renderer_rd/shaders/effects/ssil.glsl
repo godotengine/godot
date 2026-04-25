@@ -29,7 +29,7 @@
 // Sample count is num_slices * num_samples.
 const int num_samples[5] = { 2, 3, 4, 8, 8 };
 const int num_slices[5] = { 2, 3, 4, 4, 6 };
-const uint lcgM = 2891336453u;// ideal for 32 bits with odd c
+const uint lcgM = 2891336453u; // ideal for 32 bits with odd c
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -69,127 +69,6 @@ params;
 float randf(int x, int y) {
 	return mod(52.9829189 * mod(0.06711056 * float(x) + 0.00583715 * float(y), 1.0), 1.0);
 }
-
-// From http://byteblacksmith.com/improvements-to-the-canonical-one-liner-glsl-rand-for-opengl-es-2-0/
-float rand2(vec2 co) {
-	float a = 12.9898;
-	float b = 78.233;
-	float c = 43758.5453;
-	float dt = dot(co.xy, vec2(a, b));
-	float sn = mod(dt, 3.14);
-	return fract(sin(sn) * c);
-}
-
-uint lcg(uint h)
-{
-	return h * lcgM + 0x5C995C6Du;
-}
-
-// Melissa E. O'Neill - "PCG: A Family of Simple Fast Space-Efficient Statistically Good Algorithms for Random Number Generation"
-// https://www.cs.hmc.edu/tr/hmc-cs-2014-0905.pdf
-
-// Mark Jarzynski & Marc Olano - "Hash Functions for GPU Rendering"
-// http://jcgt.org/published/0009/03/02/ | https://www.shadertoy.com/view/XlGcRh
-uvec3 pcg3Mix(uvec3 h)
-{
-	h.x += h.y * h.z; 
-	h.y += h.z * h.x; 
-	h.z += h.x * h.y;
-	
-	return h;
-}
-
-uvec3 pcg3Permute(uvec3 h)
-{
-	h = pcg3Mix(h);
-
-	h ^= h >> 16u;
-	
-	return pcg3Mix(h);
-}
-
-uvec3 pcg3(inout uint state)
-{
-	state = lcg(state);
-
-	return pcg3Permute(uvec3(2447445413u, state, 3242174889u));
-}
-
-uvec3 pcg3(uvec3 h, uint seed)
-{
-	uvec3 c = (seed << 1u) ^ uvec3(0x5C995C6Du, 0x6A3C6A57u, 0xC65536CBu);
-	
-	return pcg3Permute(h * lcgM + c);
-}
-
-uvec4 pcg4Mix(uvec4 h)
-{
-	h.x += h.y * h.w; 
-	h.y += h.z * h.x; 
-	h.z += h.x * h.y;
-	h.w += h.y * h.z;
-	
-	return h;
-}
-
-uvec4 pcg4Permute(uvec4 h)
-{
-	h = pcg4Mix(h);
-
-	h ^= h >> 16u;
-	
-	return pcg4Mix(h);
-}
-
-uvec4 pcg4(inout uint state)
-{
-	state = lcg(state);
-
-	return pcg4Permute(uvec4(2882110345u, state, 3518319153u, 2360945575u));
-}
-
-uvec4 pcg4(uvec4 h, uint seed)
-{
-	uvec4 c = (seed << 1u) ^ uvec4(0x5C995C6Du, 0x6A3C6A57u, 0xC65536CBu, 0x3563995Fu);
-
-	return pcg4Permute(h * lcgM + c);
-}
-
-uint pcg(inout uint state)
-{
-	state = lcg(state);
-	
-	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-	
-	return (word >> 22u) ^ word;
-}
-
-uint pcg(uint h, uint seed)
-{
-	uint c = (seed << 1u) ^ 0x5C995C6Du;
-
-	h = h * lcgM + c;
-	
-	h = ((h >> ((h >> 28u) + 4u)) ^ h) * 277803737u;
-	
-	return (h >> 22u) ^ h;
-}
-
-float Float01(uint x) { return float(    x ) * (1.0 / 4294967296.0); }
-float Float11(uint x) { return float(int(x)) * (1.0 / 2147483648.0); }
-
-vec2 Float01(uvec2 x) { return vec2(      x ) * (1.0 / 4294967296.0); }
-vec2 Float11(uvec2 x) { return vec2(ivec2(x)) * (1.0 / 2147483648.0); }
-
-vec3 Float01(uvec3 x) { return vec3(      x ) * (1.0 / 4294967296.0); }
-vec3 Float11(uvec3 x) { return vec3(ivec3(x)) * (1.0 / 2147483648.0); }
-
-vec4 Float01(uvec4 x) { return vec4(      x ) * (1.0 / 4294967296.0); }
-vec4 Float11(uvec4 x) { return vec4(ivec4(x)) * (1.0 / 2147483648.0); }
-uvec2 Hash(uvec2 h, uint seed) { return pcg3(uvec3(h, 0u), seed).xy; }
-vec3 Hash01x3(uvec3 v, uint seed) { return Float01(pcg3(v, seed)); }
-vec3 Hash01x3(uint  v, uint seed) { return Hash01x3(uvec3(v, 0u, 0u), seed); }
-vec2 Hash01x2(uint  v, uint seed) { return Hash01x3(uvec3(v, 0u, 0u), seed).xy; }
 
 // Projection conversions
 vec3 viewspace_to_screenspace(vec3 p_vpos) {
@@ -256,11 +135,10 @@ vec3 load_normal(ivec2 p_pos) {
 }
 
 // https://graphics.stanford.edu/%7Eseander/bithacks.html#CountBitsSetParallel | license: public domain
-uint CountBits(uint v)
-{
-    v = v - ((v >> 1u) & 0x55555555u);
-    v = (v & 0x33333333u) + ((v >> 2u) & 0x33333333u);
-    return ((v + (v >> 4u) & 0xF0F0F0Fu) * 0x1010101u) >> 24u;
+uint CountBits(uint v) {
+	v = v - ((v >> 1u) & 0x55555555u);
+	v = (v & 0x33333333u) + ((v >> 2u) & 0x33333333u);
+	return ((v + (v >> 4u) & 0xF0F0F0Fu) * 0x1010101u) >> 24u;
 }
 
 // noise
@@ -280,7 +158,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 
 	vec3 vs_pos = clipspace_to_viewspace(p_pos, p_linear_depth);
 	const vec2 pixel_size_at_center = clipspace_to_viewspace(p_pos + (1.0 / vec2(params.screen_size)), p_linear_depth).xy - vs_pos.xy;
-	
+
 	const float s = pow(params.radius / pixel_size_at_center.x, 1.0 / float(count));
 	uint OxFFFFFFFFu = 0xFFFFFFFFu;
 
@@ -340,7 +218,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 		vec3 gi0 = vec3(0.0);
 		uint occ_bits = 0u;
 
-		vec2 rnd01_vc2 = Hash01x2(n, 0x968CC604u);
+		vec2 rnd01_vc2 = vec2(randf(uvi.x, uvi.y), randf(uvi.y, uvi.x));
 
 		for (float d = -1.0; d <= 1.0; d += 2.0) {
 			vec2 ray_dir0 = dir * d;
