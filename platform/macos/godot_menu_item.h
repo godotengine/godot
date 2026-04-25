@@ -60,6 +60,7 @@ enum GlobalMenuCheckType {
 	bool enabled;
 	int max_states;
 	int state;
+	int indent;
 	Ref<Image> img;
 }
 
