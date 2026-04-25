@@ -4195,6 +4195,59 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			}
 		}
 
+		/// now we gotta seed call_generic_bindings from explicit type args given to us in the turbobrick
+
+		bool has_turbobrick = p_call->has_explicit_generic_args;
+
+		if (has_turbobrick) {
+			const Vector<GDScriptParser::IdentifierNode*>* param_list = nullptr;
+
+			if (script_func != nullptr && script_func->has_generic_parameters()) {
+				param_list = &script_func->generic_parameters;
+			} else if (base_type.class_type != nullptr && base_type.class_type->has_generic_parameters()) {
+				param_list = &base_type.class_type->generic_parameters;
+			}
+
+			if (param_list == nullptr) {
+				push_error(vformat(
+					R"([Reginleif] Generic args provided for '%s()' but the function takes no generic call parameters.)",
+					p_call->function_name), p_call);
+				p_call->set_datatype(call_type);
+				return;
+			}
+
+			int expected = param_list->size();
+			int got = p_call->explicit_generic_args.size();
+			if (got != expected) {
+				push_error(vformat(
+					R"([Reginleif] '%s()' has %d generic parameter(s) but %d parameters were provided.)",
+					p_call->function_name, expected, got), p_call);
+				p_call->set_datatype(call_type);
+				return;
+			}
+
+			for (int i = 0; i < got; i++) {
+				GDScriptParser::DataType arg_type = type_from_metatype(resolve_datatype(p_call->explicit_generic_args[i]));
+				const GDScriptParser::IdentifierNode* param = (*param_list)[i];
+
+				if (param->generic_upper_bound != nullptr) {
+					GDScriptParser::DataType upper = type_from_metatype(resolve_datatype(param->generic_upper_bound));
+					if (!upper.is_variant() && !is_type_compatible(upper, arg_type, true, p_call->explicit_generic_args[i])) {
+						push_error(vformat(
+							R"([Reginleif] Generic call argument '%s' for parameter '%s' violates upper bound '%s'.)",
+							arg_type.to_string(), param->name, upper.to_string()),
+							p_call->explicit_generic_args[i]);
+						p_call->set_datatype(call_type);
+						return;
+					}
+				}
+
+				call_generic_bindings[param->name] = arg_type;
+			}
+		}
+
+
+
 		List<GDScriptParser::DataType>::ConstIterator par_itr = par_types.begin();
 		for (int i = 0; i < p_call->arguments.size() && i < par_types.size(); ++i, ++par_itr) {
 			GDScriptParser::DataType param_type = *par_itr;
@@ -4205,13 +4258,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			}
 
 			GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
-			if (!infer_generic_bindings_from_types(param_type, arg_type, call_generic_bindings)) {
-				push_error(vformat(
-						R"([Reginleif] Conflicting generic type inference for call '%s()'.)",
-						p_call->function_name),
-						p_call->arguments[i]);
-				p_call->set_datatype(call_type);
-				return;
+
+			if (!has_turbobrick) { ///only try to infer if there's no explicit params
+				if (!infer_generic_bindings_from_types(param_type, arg_type, call_generic_bindings)) {
+					push_error(vformat(
+							R"([Reginleif] Conflicting generic type inference for call '%s()'.)",
+							p_call->function_name),
+							p_call->arguments[i]);
+					p_call->set_datatype(call_type);
+					return;
+				}
 			}
 
 			/// [Monarch] if param_type is now fully concrete (no longer an open generic),
