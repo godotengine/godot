@@ -136,6 +136,7 @@ static const char *token_names[] = {
 	"..", // PERIOD_PERIOD,
 	"...", // PERIOD_PERIOD_PERIOD,
 	":", // COLON,
+	"::", /// COLON_COLON
 	"$", // DOLLAR,
 	"->", // FORWARD_ARROW,
 	"_", // UNDERSCORE,
@@ -1444,8 +1445,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			return make_token(Token::TILDE);
 		case ',':
 			return make_token(Token::COMMA);
-		case ':':
-			return make_token(Token::COLON);
 		case ';':
 			return make_token(Token::SEMICOLON);
 		case '$':
@@ -1480,8 +1479,16 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 				return make_paren_error(c);
 			}
 			return make_token(Token::BRACE_CLOSE);
-
+			
 		// Double characters.
+		///
+		case ':':
+				if (_peek() == ':') {
+					_advance();
+					return make_token(Token::COLON_COLON);
+				}
+				return make_token(Token::COLON);
+
 		case '!':
 			if (_peek() == '=') {
 				_advance();
