@@ -117,7 +117,6 @@ void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 
 	navmesh = p_navigation_mesh;
 	navmesh->set_navigation_layers(navigation_layers);
-	// FIXME: this breaks areas
 
 	iteration_dirty = true;
 
@@ -245,10 +244,8 @@ LocalVector<Nav3D::Polygon> const &NavRegion3D::get_polygons() const {
 }
 
 bool NavRegion3D::sync() {
-	print_line("NavRegion3D::sync");
 	bool requires_map_update = false;
 	if (!map) {
-		print_line("has no map");
 		return requires_map_update;
 	}
 
@@ -278,7 +275,6 @@ void NavRegion3D::sync_async_tasks() {
 }
 
 void NavRegion3D::_build_iteration() {
-	print_line("NavRegion3D::_build_iteration ??");
 	if (!iteration_dirty || iteration_building || iteration_ready) {
 		return;
 	}
@@ -290,7 +286,7 @@ void NavRegion3D::_build_iteration() {
 	iteration_build.reset();
 
 	if (navmesh.is_valid()) {
-		// Read data from latest bake result.
+		// Read data from latest bake result. Also containing latest changes to navigation layers of area-created polygons. 
 		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_ids, iteration_build.navmesh_data.area_navlayers, iteration_build.navmesh_data.area_indices);
 	}
 
@@ -312,7 +308,7 @@ void NavRegion3D::_build_iteration() {
 	new_iteration->transform = get_transform();
 	new_iteration->owner_use_edge_connections = get_use_edge_connections();
 
-	print_line("NavRegion3D::_build_iteration !!");
+	// Flush potential changes to navigation layers of area-created polygons from navigation mesh to iteration:
 	int i = 0;
 	for (uint32_t _navlayers : iteration_build.navmesh_data.area_navlayers) {
 		for (int polygon_index : iteration_build.navmesh_data.area_indices[i]) {

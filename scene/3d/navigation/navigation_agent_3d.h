@@ -56,7 +56,7 @@ class NavigationAgent3D : public Node {
 	real_t avoidance_priority = 1.0;
 
 	// Path Query:
-	uint32_t navigation_layers = 1; // The layers this agent can trespass on: They exclude navmesh polygons or links from a query.
+	uint32_t navigation_layers = 1; // The layers this agent can traverse on: They exclude navmesh polygons or links from a query.
 	NavigationPathQueryParameters3D::PathfindingAlgorithm pathfinding_algorithm = NavigationPathQueryParameters3D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
 	NavigationPathQueryParameters3D::PathPostProcessing path_postprocessing = NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
 	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;

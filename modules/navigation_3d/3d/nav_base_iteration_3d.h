@@ -41,7 +41,7 @@ class NavBaseIteration3D : public RefCounted {
 
 public:
 	bool enabled = true;
-	uint32_t navigation_layers = 1; // NOTE: Each Polygon can have their own `navigation_layers` due to NavigationMeshArea.
+	uint32_t navigation_layers = 1; // The default layers. Each Polygon can overwrite this if they are created due to a NavigationMeshArea.
 #ifndef DISABLE_DEPRECATED
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;

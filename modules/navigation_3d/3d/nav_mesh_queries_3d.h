@@ -45,6 +45,7 @@ class NavMap3D;
 struct NavMapIteration3D;
 
 class NavMeshQueries3D {
+	// Take the first matching layer between the query and the polygon. The cost related parameters are already sorted from highest to lowest cost.
 	static float _get_polygon_travel_cost(const Nav3D::Polygon *p_polygon, const LocalVector<int> &p_layer_cost_indices, const LocalVector<float> &p_layer_cost);
 
 public:

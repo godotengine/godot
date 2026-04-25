@@ -41,17 +41,14 @@ using namespace Nav3D;
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
-// Take the first matching layer between the query and the polygon.
-// The cost related parameters are sorted from highest to lowest cost.
 float NavMeshQueries3D::_get_polygon_travel_cost(const Polygon *p_polygon, const LocalVector<int> &p_layer_cost_indices, const LocalVector<float> &p_layer_cost) {
 	for (uint8_t i = 0; i < p_layer_cost_indices.size(); i++) {
 		uint32_t layer = p_layer_cost_indices[i];
 		if (p_polygon->navigation_layers & 1 << layer) {
-			// print_line(vformat("index: %d for cost %f", i, p_layer_cost[i]));
 			return p_layer_cost[i];
 		}
 	}
-	return 1.0;
+	return 1.0; // Default cost.
 }
 
 bool NavMeshQueries3D::emit_callback(const Callable &p_callback) {
@@ -170,15 +167,14 @@ void NavMeshQueries3D::map_query_path(NavMap3D *map, const Ref<NavigationPathQue
 	Ref<NavigationLayersCostMap3D> navigation_layers_cost_map = p_query_parameters->get_navigation_layers_cost_map();
 	if (!navigation_layers_cost_map.is_null()) {
 		// Get the changed costs we're interested in.
-		Vector<Pair<int, float>> _cost_map = navigation_layers_cost_map->get_navigation_layers_cost_map_sorted(p_query_parameters->get_navigation_layers());
-		int _cost_map_len = _cost_map.size();
+		Vector<Pair<uint8_t, float>> _cost_map = navigation_layers_cost_map->get_navigation_layers_cost_map_sorted(p_query_parameters->get_navigation_layers());
+		uint8_t _cost_map_len = uint8_t(_cost_map.size());
 		query_task.layer_cost_indices.resize(_cost_map_len);
 		query_task.layer_cost.resize(_cost_map_len);
-		for (int i = 0; i < _cost_map_len; i++) {
-			const Pair<int, float> e = _cost_map[i];
+		for (uint8_t i = 0; i < _cost_map_len; i++) {
+			const Pair<uint8_t, float> e = _cost_map[i];
 			query_task.layer_cost_indices[i] = e.first;
 			query_task.layer_cost[i] = e.second;
-			// print_line(vformat("index: %d -> cost: %f", e.first, e.second));
 		}
 	}
 
@@ -277,7 +273,7 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 		// Find the initial poly and the end poly on this map.
 		for (const Polygon &p : region->get_navmesh_polygons()) {
 			// Only consider the polygon if it is in a region with compatible layers.
-			if ((p_query_task.navigation_layers & p.navigation_layers) == 0) {
+			if ((p_query_task.navigation_layers & p.navigation_layers) == 0) { // FIXME: check if this means that the start or end position cannot be within an area that has navlayers incompatible with the agent.
 				continue;
 			}
 

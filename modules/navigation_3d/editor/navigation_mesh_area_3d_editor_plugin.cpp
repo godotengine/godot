@@ -118,14 +118,6 @@ void NavigationMeshArea3DGizmoPlugin::begin_handle_action(const EditorNode3DGizm
 		return;
 	}
 
-	// NavigationMeshArea3D *area_node = Object::cast_to<NavigationMeshArea3D>(node);
-	//const Vector3 safe_scale = area_node->get_global_basis().get_scale().abs().maxf(0.001);
-	//const Transform3D gt = Transform3D(Basis().scaled(safe_scale), Vector3());
-	//Transform3D gi = gt.affine_inverse();
-	//Transform3D gt = Transform3D(area_node->get_global_basis().inverse(), area_node->get_global_position());
-	//Transform3D gt = area_node->get_global_transform();
-	// const Transform3D gbi = Transform3D(area_node->get_global_basis().inverse(), area_node->get_global_position());
-
 	helper->initialize_handle_action(get_handle_value(p_gizmo, p_id, p_secondary), node->get_global_transform());
 }
 
@@ -672,7 +664,6 @@ void NavigationMeshArea3DEditorPlugin::_wip_close() {
 
 		wip_vertices.clear();
 		wip_active = false;
-		//mode = MODE_EDIT;
 		NavigationMeshArea3DEditorPlugin::singleton->set_mode(NavigationMeshArea3DEditorPlugin::MODE_EDIT);
 		button_edit->set_pressed(true);
 		button_create->set_pressed(false);

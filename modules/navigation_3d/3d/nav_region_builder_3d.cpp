@@ -55,23 +55,21 @@ void NavRegionBuilder3D::build_iteration(NavRegionIterationBuild3D &r_build) {
 }
 
 void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuild3D &r_build) {
-	// Reading unaltered source data:
 	Vector<Vector3> _navmesh_vertices = r_build.navmesh_data.vertices;
 	Vector<Vector<int>> _navmesh_polygons = r_build.navmesh_data.polygons;
-	Vector<uint32_t> _navmesh_polygons_meta = r_build.navmesh_data.polygons_meta;
+	Vector<uint32_t> _navmesh_polygons_meta = r_build.navmesh_data.polygons_meta; // The areas' polygons' navigation layers may have changed.
 
 	if (_navmesh_vertices.is_empty() || _navmesh_polygons.is_empty()) {
 		return;
 	}
 
 	PerformanceData &performance_data = r_build.performance_data;
-	// Read the potential changes from `r_build.region_iteration`:
-	Ref<NavRegionIteration3D> region_iteration = r_build.region_iteration;
+	Ref<NavRegionIteration3D> region_iteration = r_build.region_iteration; // Read the potential changes.
 
-	const uint32_t navigation_layers = region_iteration->navigation_layers;
+	const uint32_t default_navigation_layers = region_iteration->navigation_layers;
 	const Transform3D &region_transform = region_iteration->transform;
 
-	// Write the new state into `navmesh_polygons`:
+	// This will hold the new state we're about to create:
 	LocalVector<Nav3D::Polygon> &navmesh_polygons = region_iteration->navmesh_polygons;
 
 	const int vertex_count = _navmesh_vertices.size();
@@ -92,10 +90,11 @@ void NavRegionBuilder3D::_build_step_process_navmesh_data(NavRegionIterationBuil
 		polygon.id = i;
 		polygon.owner = region_iteration.ptr();
 		polygon.surface_area = 0.0;
-		polygon.navigation_layers = navigation_layers;
 		if (use_polygon_meta) {
-			// Setting the layer as defined in the affecting NavigationArea (can be changed at runtime):
+			// Setting the layer as defined in the affecting NavigationMeshArea (can be changed at runtime):
 			polygon.navigation_layers = _navmesh_polygons_meta[i];
+		} else {
+			polygon.navigation_layers = default_navigation_layers;
 		}
 
 		Vector<int> polygon_indices = polygons_ptr[i];
@@ -187,7 +186,7 @@ void NavRegionBuilder3D::_build_step_find_edge_connection_pairs(NavRegionIterati
 	HashMap<EdgeKey, EdgeConnectionPair, EdgeKey> &connection_pairs_map = r_build.iter_connection_pairs_map;
 	connection_pairs_map.clear();
 
-	// Fill-in in a later step based on the for-loop result below, see _build_step_merge_edge_connection_pairs().
+	// Clearing for now. Fill-in in a later step based on the for-loop result below, see _build_step_merge_edge_connection_pairs().
 	region_iteration->internal_connections.clear();
 	region_iteration->internal_connections.resize(navmesh_polygons.size());
 	region_iteration->external_edges.clear();
@@ -263,7 +262,7 @@ void NavRegionBuilder3D::_build_step_merge_edge_connection_pairs(NavRegionIterat
 			ce.edge = connection.edge;
 			ce.pathway_start = connection.pathway_start;
 			ce.pathway_end = connection.pathway_end;
-			// Maybe we'll find so. for you, in NavMapBuilder3D::_build_step_find_edge_connection_pairs().
+			// Maybe we'll find so. for you later in NavMapBuilder3D::_build_step_find_edge_connection_pairs().
 			region_iteration->external_edges.push_back(ce);
 		}
 	}

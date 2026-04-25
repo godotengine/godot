@@ -36,6 +36,9 @@ class NavigationLayersCostMap3D : public Resource {
 	GDCLASS(NavigationLayersCostMap3D, Resource);
 
 	LocalVector<float> navigation_layers_cost_map;
+	Vector<Pair<uint8_t, float>> cost_map; // Cached result, expected to be changed rarely, if at all.
+
+	void calculate_custom_costs();
 
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
@@ -48,7 +51,7 @@ public:
 	void set_navigation_layer_cost(uint8_t p_layer_number, float p_cost);
 	float get_navigation_layer_cost(uint8_t p_layer_number) const;
 
-	Vector<Pair<int, float>> get_navigation_layers_cost_map_sorted(uint32_t p_layers_mask) const;
+	Vector<Pair<uint8_t, float>> get_navigation_layers_cost_map_sorted(uint32_t p_layers_mask) const;
 
 	const LocalVector<float> &get_navigation_layers_cost_map() { return navigation_layers_cost_map; }
 

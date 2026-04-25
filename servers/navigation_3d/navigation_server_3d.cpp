@@ -730,7 +730,6 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_material() {
 	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	material->set_albedo(debug_area_edge_color);
-	//material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 
 	debug_area_edge_material = material;
 	return debug_area_edge_material;
@@ -745,7 +744,6 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_disabled_materia
 	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	material->set_albedo(debug_area_edge_disabled_color);
-	//material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 
 	debug_area_edge_disabled_material = material;
 	return debug_area_edge_disabled_material;
@@ -760,7 +758,6 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_area_edge_invalid_material
 	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	material->set_albedo(debug_area_edge_invalid_color);
-	//material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 
 	debug_area_edge_invalid_material = material;
 	return debug_area_edge_invalid_material;

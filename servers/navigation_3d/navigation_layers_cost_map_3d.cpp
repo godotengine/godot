@@ -69,6 +69,7 @@ void NavigationLayersCostMap3D::set_navigation_layer_cost(uint8_t p_layer_number
 	}
 
 	navigation_layers_cost_map[p_layer_number - 1] = p_cost;
+	calculate_custom_costs();
 	emit_changed();
 }
 
@@ -79,7 +80,7 @@ float NavigationLayersCostMap3D::get_navigation_layer_cost(uint8_t p_layer_numbe
 }
 
 struct _CostSortComparator {
-	_FORCE_INLINE_ bool operator()(const Pair<int, float> &a, const Pair<int, float> &b) const {
+	_FORCE_INLINE_ bool operator()(const Pair<uint8_t, float> &a, const Pair<uint8_t, float> &b) const {
 		// first is the index, second is cost.
 		if (a.second == b.second) {
 			return a.first > b.first;
@@ -88,20 +89,27 @@ struct _CostSortComparator {
 	}
 };
 
-Vector<Pair<int, float>> NavigationLayersCostMap3D::get_navigation_layers_cost_map_sorted(uint32_t p_layers_mask) const {
-	// FIXME: sort in each call of set_navigation_layer_cost() and cache result. In here, only filter by p_layers_mask and return result.
-	Vector<Pair<int, float>> cost_map;
+void NavigationLayersCostMap3D::calculate_custom_costs() {
+	cost_map.clear();
 
 	for (uint32_t i = 0; i < 32; i++) {
-		if (p_layers_mask & 1 << i) { // This layer bit we're interested in.
-			float cost = navigation_layers_cost_map[i];
-			if (!Math::is_equal_approx(cost, 1)) { // And it _doesn't_ have the default cost of `1.0`.
-				cost_map.push_back(Pair<int, float>(i, cost));
-			}
+		float cost = navigation_layers_cost_map[i];
+		if (!Math::is_equal_approx(cost, 1)) { // Bingo, not the default cost of `1.0`.
+			cost_map.push_back(Pair<uint8_t, float>(uint8_t(i), cost));
 		}
 	}
 	cost_map.sort_custom<_CostSortComparator>();
-	return cost_map;
+}
+
+Vector<Pair<uint8_t, float>> NavigationLayersCostMap3D::get_navigation_layers_cost_map_sorted(uint32_t p_layers_mask) const {
+	Vector<Pair<uint8_t, float>> filtered_cost_map;
+
+	for (const Pair<uint8_t, float> cost : cost_map) {
+		if (p_layers_mask & 1 << cost.first) { // This layer bit we're interested in.
+			filtered_cost_map.push_back(cost);
+		}
+	}
+	return filtered_cost_map;
 }
 
 void NavigationLayersCostMap3D::_validate_property(PropertyInfo &property) const {

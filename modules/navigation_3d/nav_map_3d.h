@@ -52,7 +52,6 @@ class NavObstacle3D;
 
 // Holds regions (holds areas), agents, obstacles, and links.
 // Handles (or delegates to thirdparty library):
-// * parsing of NavArea3D objects created via server
 // * map iterations/syncs
 // * path queries for agents
 // * local avoidance

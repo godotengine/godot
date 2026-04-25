@@ -788,33 +788,7 @@ void NavMap3D::_sync_dirty_map_update_requests() {
 		iteration_dirty = true;
 	}
 
-	// Sync NavAreas: needs to happen before region, because region's navmesh polygon meta data needs to be updated in region->sync().
-	// RWLockWrite write_lock_areas(sync_dirty_requests.areas.rwlock);
-	// for (SelfList<NavArea3D> *element = sync_dirty_requests.areas.list.first(); element; element = element->next()) {
-	// 	bool requires_map_update = element->self()->sync();
-	// 	if (requires_map_update) {
-	// 		print_line("requires_map_update");
-	// 		RID region_rid = element->self()->get_region();
-	// 		print_line("look for region: ", region_rid.get_id());
-	// 		// NOTE: Area id is only unique per navmesh/region.
-	// 		for (NavRegion3D *region : regions) {
-	// 			if (region->get_self() != region_rid) {
-	// 				print_line("wrong region: ", region->get_self().get_id());
-	// 				continue;
-	// 			}
-	// 			print_line("region found");
-	// 			if (!region->is_iteration_dirty()) {
-	// 				region->scratch_polygons();
-	// 				print_line("mark map dirty");
-	// 			}
-	// 			break;
-	// 		}
-	// 		iteration_dirty = true;
-	// 	}
-	// }
-	// sync_dirty_requests.areas.list.clear();
-
-	// Sync NavRegions.
+	// Sync NavRegions. NOTE: areas are part of the region's navmesh, so no need to sync.
 	RWLockWrite write_lock_regions(sync_dirty_requests.regions.rwlock);
 	for (SelfList<NavRegion3D> *element = sync_dirty_requests.regions.list.first(); element; element = element->next()) {
 		bool requires_map_update = element->self()->sync();
