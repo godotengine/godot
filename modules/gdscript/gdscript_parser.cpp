@@ -1113,6 +1113,57 @@ GDScriptParser::TypeNode* GDScriptParser::parse_type_hint(bool p_allow_void) {
 	return type;
 }
 
+GDScriptParser::ExpressionNode* GDScriptParser::parse_generic_call(ExpressionNode* p_previous_operand, bool p_can_assign) {
+
+    /// previous token is now :: from the rules table, so collect type args from this point on
+    Vector<TypeNode*> explicit_args;
+
+    if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
+
+        /// ::[T, U, ...]
+        do {
+
+            if (check(GDScriptTokenizer::Token::BRACKET_CLOSE)) { 
+				break; 
+			}
+
+            TypeNode* arg_type = parse_type(false);
+            if (arg_type == nullptr) {
+                push_error(R"([Reginleif] Expected type in turbobrick generic argument list.)");
+                break;
+            }
+			
+            explicit_args.push_back(arg_type);
+        } while (match(GDScriptTokenizer::Token::COMMA));
+
+        consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"([Reginleif] Expected ']' after generic call arguments.)");
+
+    } else {
+        /// ::T  (in-house single argument sugar, yay?)
+        TypeNode* arg_type = parse_type(false);
+        if (arg_type == nullptr) {
+            push_error(R"([Reginleif] Expected type after '::' in generic call.)");
+            return p_previous_operand;
+        }
+
+        explicit_args.push_back(arg_type);
+    }
+
+    if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"([Reginleif] Expected '(' after generic call arguments.)")) {
+        return p_previous_operand;
+    }
+
+    ExpressionNode* result = parse_call(p_previous_operand, p_can_assign);
+    if (result == nullptr || result->type != Node::CALL) {
+        return result;
+    }
+
+    CallNode* call = static_cast<CallNode*>(result);
+    call->has_explicit_generic_args = true;
+    call->explicit_generic_args = explicit_args;
+
+    return call;
+}
 
 void GDScriptParser::parse_extends() {
 	current_class->extends_used = true;
@@ -4546,7 +4597,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PERIOD_PERIOD,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PERIOD_PERIOD_PERIOD,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // COLON,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, /// COLON_COLON
+		{ nullptr,                                          &GDScriptParser::parse_generic_call,            PREC_CALL }, /// COLON_COLON
 		{ &GDScriptParser::parse_get_node,               	nullptr,                                        PREC_NONE }, // DOLLAR,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORWARD_ARROW,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // UNDERSCORE,

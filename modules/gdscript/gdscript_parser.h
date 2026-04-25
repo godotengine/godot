@@ -549,6 +549,9 @@ public:
 		StringName function_name;
 		bool is_super = false;
 		bool is_static = false;
+		///
+		Vector<TypeNode*> explicit_generic_args;
+		bool has_explicit_generic_args = false;
 
 		CallNode() {
 			type = CALL;
@@ -1698,6 +1701,8 @@ private:
 	ExpressionNode *parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
+	///
+	ExpressionNode* parse_generic_call(ExpressionNode* p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
 
 #ifdef TOOLS_ENABLED
