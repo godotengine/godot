@@ -439,7 +439,7 @@ void NavMap3D::sync() {
 	for (NavRegion3D *region : regions) {
 		Ref<NavigationMesh> navmesh = region->get_navigation_mesh();
 		if (navmesh.is_valid()) {
-			area_count += navmesh->get_area_ids().size();
+			area_count += navmesh->get_area_count();
 		}
 	}
 	performance_data.pm_area_count = area_count;

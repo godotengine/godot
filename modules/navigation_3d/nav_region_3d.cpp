@@ -216,7 +216,7 @@ int NavRegion3D::get_area_count() const {
 	RWLockRead read_lock(iteration_rwlock);
 
 	if (navmesh.is_valid()) {
-		return navmesh->get_area_ids().size();
+		return navmesh->get_area_count();
 	}
 
 	return 0;
@@ -287,7 +287,7 @@ void NavRegion3D::_build_iteration() {
 
 	if (navmesh.is_valid()) {
 		// Read data from latest bake result. Also containing latest changes to navigation layers of area-created polygons. 
-		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_ids, iteration_build.navmesh_data.area_navlayers, iteration_build.navmesh_data.area_indices);
+		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons, iteration_build.navmesh_data.polygons_meta, iteration_build.navmesh_data.area_navlayers, iteration_build.navmesh_data.area_indices);
 	}
 
 	iteration_build.map_cell_size = map->get_merge_rasterizer_cell_size();

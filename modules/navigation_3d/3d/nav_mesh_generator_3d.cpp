@@ -508,23 +508,20 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	uint8_t next_free_area_config_id = 1; // Config ID for unique bitmask configuration, i.e. some areas can share the same ID.
 	uint8_t AREA_CONFIG_ID_MAX = RC_WALKABLE_AREA; // Recast unsigned char RC_WALKABLE_AREA = 63 is maximum allowed area config id.
 
-	Vector<uint16_t> nav_area_ids = Vector<uint16_t>();
+	Vector<NavigationMeshSourceGeometryData3D::ProjectedArea> usable_projected_areas;
 	Vector<uint32_t> nav_area_navlayers = Vector<uint32_t>();
 
 	// TODO: Use areas for cutting/carving mesh. Then, deprecate those features in obstacle.
 
 	if (!projected_areas.is_empty()) {
-		Vector<uint16_t> list_disallowed_areas;
-
 		for (const NavigationMeshSourceGeometryData3D::ProjectedArea &projected_area : projected_areas) {
 			uint32_t area_navigation_layers = projected_area.navigation_layers;
 			if (area_navigation_layers == default_navlayers) {
-				list_disallowed_areas.push_back(projected_area.id);
 				continue; // The area's layers are identical to the default, therefore don't use it for marking an area.
 			}
 
 			unsigned char recast_areaId = RC_WALKABLE_AREA;
-			nav_area_ids.push_back(projected_area.id);
+			usable_projected_areas.push_back(projected_area);
 			nav_area_navlayers.push_back(area_navigation_layers);
 
 			HashMap<uint32_t, uint8_t>::Iterator existing_layer = navigation_layers_to_area_config_id.find(area_navigation_layers);
@@ -578,16 +575,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float area_hmax = projected_area.elevation + projected_area.height;
 
 				rcMarkConvexPolyArea(&ctx, area_verts, area_nverts, area_hmin, area_hmax, recast_areaId, *chf);
-			}
-		}
-
-		// Keeping vector length aligned with: nav_area_ids, nav_area_navlayers.
-		for (uint16_t id : list_disallowed_areas) {
-			for (int remove_at = 0; remove_at < projected_areas.size(); remove_at++) {
-				if (projected_areas[remove_at].id == id) {
-					projected_areas.remove_at(remove_at);
-					break;
-				}
 			}
 		}
 	}
@@ -667,7 +654,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	Vector<Vector<int>> nav_polygons;
 	Vector<uint32_t> nav_polygons_layers;
 	Vector<Vector<int>> nav_area_indices;
-	nav_area_indices.resize(nav_area_ids.size());
+	nav_area_indices.resize(usable_projected_areas.size());
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		// If the polygon is not affected by an area, it gets the RC_WALKABLE_AREA area config id, i.e. we get the default navigation layers set above.
@@ -703,7 +690,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 				const float grow_incr = 0.05;
 				while (!match) {
 					int area_index = 0;
-					for (NavigationMeshSourceGeometryData3D::ProjectedArea &area : projected_areas) {
+					for (NavigationMeshSourceGeometryData3D::ProjectedArea &area : usable_projected_areas) {
 						if (navigation_layers != area.navigation_layers) {
 							area_index++;
 							continue;
@@ -730,7 +717,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 		}
 	}
 
-	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_ids, nav_area_navlayers, nav_area_indices);
+	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_layers, nav_area_navlayers, nav_area_indices);
 
 	p_generator_task->bake_state = NavMeshBakeState::BAKE_STATE_BAKE_CLEANUP; // step #11
 

@@ -338,9 +338,9 @@ Array NavigationMeshSourceGeometryData3D::get_projected_obstructions() const {
 	return ret;
 }
 
-uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_box(const Vector3 &size, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority) {
-	ERR_FAIL_COND_V(!size.is_finite(), 0);
-	ERR_FAIL_COND_V(size.is_zero_approx(), 0);
+int NavigationMeshSourceGeometryData3D::add_projected_area_box(const Vector3 &size, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority) {
+	ERR_FAIL_COND_V(!size.is_finite(), -1);
+	ERR_FAIL_COND_V(size.is_zero_approx(), -1);
 
 	Vector<Vector3> box_vertices;
 	box_vertices.resize(4);
@@ -354,9 +354,6 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_box(const Vector
 
 	ProjectedArea projected_area;
 
-	projected_area.id = next_free_area_id;
-	next_free_area_id++;
-
 	projected_area.aabb = box_bounds;
 	projected_area.navigation_layers = p_navigation_layers;
 	projected_area.priority = p_priority;
@@ -366,16 +363,13 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_box(const Vector
 	_projected_areas.push_back(projected_area);
 	bounds_dirty = true;
 
-	return projected_area.id;
+	return _projected_areas.size() - 1;
 }
 
-uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority) {
-	ERR_FAIL_COND_V(p_radius <= 0.0, 0);
+int NavigationMeshSourceGeometryData3D::add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority) {
+	ERR_FAIL_COND_V(p_radius <= 0.0, -1);
 
 	ProjectedArea projected_area;
-
-	projected_area.id = next_free_area_id;
-	next_free_area_id++;
 
 	projected_area.position = p_position;
 	projected_area.radius = p_radius;
@@ -393,17 +387,14 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_cylinder(const V
 	_projected_areas.push_back(projected_area);
 	bounds_dirty = true;
 
-	return projected_area.id;
+	return _projected_areas.size() - 1;
 }
 
-uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority) {
-	ERR_FAIL_COND_V(p_vertices.size() < 3, 0);
-	ERR_FAIL_COND_V(p_height < 0.0, 0);
+int NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, const Transform3D &p_xform, uint32_t p_navigation_layers, int p_priority) {
+	ERR_FAIL_COND_V(p_vertices.size() < 3, -1);
+	ERR_FAIL_COND_V(p_height < 0.0, -1);
 
 	ProjectedArea projected_area;
-
-	projected_area.id = next_free_area_id;
-	next_free_area_id++;
 
 	projected_area.vertices.resize(p_vertices.size() * 3);
 	projected_area.elevation = root_node_transform.origin.y + p_elevation;
@@ -433,7 +424,7 @@ uint16_t NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Ve
 	_projected_areas.push_back(projected_area);
 	bounds_dirty = true;
 
-	return projected_area.id;
+	return _projected_areas.size() - 1;
 }
 
 void NavigationMeshSourceGeometryData3D::set_projected_areas(const Array &p_array) {
@@ -446,7 +437,6 @@ void NavigationMeshSourceGeometryData3D::set_projected_areas(const Array &p_arra
 		uint32_t po_version = data["version"];
 
 		if (po_version == 1) {
-			ERR_FAIL_COND(!data.has("id"));
 			ERR_FAIL_COND(!data.has("vertices"));
 			ERR_FAIL_COND(!data.has("aabb"));
 			ERR_FAIL_COND(!data.has("position"));
@@ -459,7 +449,6 @@ void NavigationMeshSourceGeometryData3D::set_projected_areas(const Array &p_arra
 		}
 
 		ProjectedArea projected_area;
-		projected_area.id = data["id"];
 		projected_area.vertices = Vector<float>(data["vertices"]);
 		projected_area.aabb = data["aabb"];
 		projected_area.position = data["position"];
@@ -500,7 +489,6 @@ Array NavigationMeshSourceGeometryData3D::get_projected_areas() const {
 
 		Dictionary data;
 		data["version"] = (int)ProjectedObstruction::VERSION;
-		data["id"] = projected_area.id;
 		data["vertices"] = projected_area.vertices;
 		data["aabb"] = projected_area.aabb;
 		data["position"] = projected_area.position;

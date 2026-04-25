@@ -746,14 +746,12 @@ TEST_SUITE("[Navigation3D]") {
 		Vector<Vector3> vertices;
 		Vector<Vector<int>> polygons;
 		Vector<uint32_t> polygons_meta;
-		Vector<uint16_t> area_ids;
 		Vector<uint32_t> area_navlayers;
 		Vector<Vector<int>> area_indices;
-		navigation_mesh->get_data(vertices, polygons, polygons_meta, area_ids, area_navlayers, area_indices);
+		navigation_mesh->get_data(vertices, polygons, polygons_meta, area_navlayers, area_indices);
 		CHECK_EQ(vertices.size(), 0);
 		CHECK_EQ(polygons.size(), 0);
 		CHECK_EQ(polygons_meta.size(), 0);
-		CHECK_EQ(area_ids.size(), 0);
 		CHECK_EQ(area_navlayers.size(), 0);
 		CHECK_EQ(area_indices.size(), 0);
 
@@ -763,12 +761,11 @@ TEST_SUITE("[Navigation3D]") {
 		// FIXME: The above line should trigger the update (line below) under the hood.
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh); // Force update.
 
-		navigation_mesh->get_data(vertices, polygons, polygons_meta, area_ids, area_navlayers, area_indices);
+		navigation_mesh->get_data(vertices, polygons, polygons_meta, area_navlayers, area_indices);
 		// Not much use with areas carving in:
 		// CHECK_EQ(vertices.size(), ??);
 		// CHECK_EQ(polygons.size(), ??);
 		// CHECK_EQ(polygons_meta.size(), ??);
-		CHECK_EQ(area_ids.size(), 3);
 		CHECK_EQ(area_navlayers.size(), 3);
 		CHECK_EQ(area_indices.size(), 3);
 

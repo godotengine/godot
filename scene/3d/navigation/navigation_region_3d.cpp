@@ -133,9 +133,8 @@ bool NavigationRegion3D::get_navigation_layer_value(int p_layer_number) const {
 }
 
 bool NavigationRegion3D::_has_area(uint16_t p_area) const {
-	ERR_FAIL_COND_V_MSG(p_area == 0, false, vformat("Unknown navigation area: '%d'.", int(p_area)));
-	const int area_count = navigation_mesh->get_area_ids().size();
-	ERR_FAIL_COND_V_MSG(p_area > area_count, false, vformat("Unknown navigation area: '%d'.", int(p_area)));
+	const int area_count = navigation_mesh->get_area_count();
+	ERR_FAIL_COND_V_MSG(p_area >= area_count, false, vformat("Unknown navigation area: '%d'.", int(p_area)));
 
 	return true;
 }
@@ -357,9 +356,9 @@ void NavigationRegion3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		return;
 	}
 
-	for (int16_t id : navigation_mesh->get_area_ids()) {
-		const String prep = vformat("areas/%d/", id);
-		// navigation layers overwrites.
+	for (int16_t i = 0; i < navigation_mesh->get_area_count(); i++) {
+		const String prep = vformat("areas/%d/", i);
+		// Navigation layers overwrites.
 		p_list->push_back(PropertyInfo(Variant::INT, prep + "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_DEFAULT));
 	}
 }
@@ -429,9 +428,8 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 	}
 #endif // DISABLE_DEPRECATED
 	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
-		print_line("_set_area_layers");
 		int which = path.get_slicec('/', 1).to_int();
-		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
+		if (which < 0 || which >= navigation_mesh->get_area_count()) {
 			return false;
 		}
 		NavigationServer3D::get_singleton()->region_set_area_navigation_layers(region, (uint16_t)which, p_value);
@@ -443,7 +441,6 @@ bool NavigationRegion3D::_set(const StringName &p_path, const Variant &p_value) 
 
 bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
-	// print_line("path: ", path);
 #ifndef DISABLE_DEPRECATED
 	// Compatibility with earlier 4.0 betas.
 	if (path == "navmesh") {
@@ -452,9 +449,8 @@ bool NavigationRegion3D::_get(const StringName &p_path, Variant &r_ret) const {
 	}
 #endif // DISABLE_DEPRECATED
 	if (path.begins_with("areas/") && path.ends_with("layers") && navigation_mesh.is_valid()) {
-		// print_line("_get");
 		int which = path.get_slicec('/', 1).to_int();
-		if (which <= 0 || which > navigation_mesh->get_area_ids().size()) {
+		if (which < 0 || which >= navigation_mesh->get_area_count()) {
 			return false;
 		}
 		r_ret = (int)NavigationServer3D::get_singleton()->region_get_area_navigation_layers(region, (uint16_t)which);

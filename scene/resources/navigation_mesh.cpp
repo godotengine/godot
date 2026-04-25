@@ -44,7 +44,6 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	vertices = Vector<Vector3>();
 	polygons.clear();
 	polygons_meta.clear();
-	area_ids.clear();
 	area_navlayers.clear();
 	area_indices.clear();
 
@@ -355,7 +354,6 @@ void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
 	RWLockWrite write_lock(rwlock);
 	polygons = p_polygons;
 	polygons_meta = Vector<uint32_t>();
-	area_ids = Vector<uint16_t>();
 	area_navlayers = Vector<uint32_t>();
 	area_indices = Vector<Vector<int>>();
 	notify_property_list_changed();
@@ -387,7 +385,6 @@ void NavigationMesh::clear_polygons() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	polygons_meta.clear();
-	area_ids.clear();
 	area_navlayers.clear();
 	area_indices.clear();
 }
@@ -424,29 +421,9 @@ Array NavigationMesh::_get_polygons_meta() const {
 	return ret;
 }
 
-void NavigationMesh::_set_area_ids(const Array &p_area_ids) {
-	RWLockWrite write_lock(rwlock);
-
-	area_ids.resize(p_area_ids.size());
-	for (int i = 0; i < p_area_ids.size(); i++) {
-		area_ids.write[i] = p_area_ids[i];
-	}
-}
-
-Array NavigationMesh::_get_area_ids() const {
+uint16_t NavigationMesh::get_area_count() const {
 	RWLockRead read_lock(rwlock);
-	Array ret;
-	ret.resize(area_ids.size());
-	for (int i = 0; i < ret.size(); i++) {
-		ret[i] = area_ids[i];
-	}
-
-	return ret;
-}
-
-Vector<uint16_t> NavigationMesh::get_area_ids() const {
-	RWLockRead read_lock(rwlock);
-	return area_ids;
+	return area_navlayers.size();
 }
 
 void NavigationMesh::_set_area_navlayers(const Array &p_area_navlayers) {
@@ -489,32 +466,29 @@ Array NavigationMesh::_get_area_indices() const {
 	return ret;
 }
 
-void NavigationMesh::set_area_navigation_layers(uint16_t p_area_id, uint32_t p_navigation_layers) {
+void NavigationMesh::set_area_navigation_layers(uint16_t p_area_index, uint32_t p_navigation_layers) {
 	RWLockWrite write_lock(rwlock);
-	for (int i = 0; i < area_ids.size(); i++) {
-		if (area_ids[i] == p_area_id) {
-			area_navlayers.write[i] = p_navigation_layers;
-			// notify_property_list_changed();
-			return;
-		}
+	if (p_area_index >= area_navlayers.size()) {
+		return;
 	}
+
+	area_navlayers.write[p_area_index] = p_navigation_layers;
+	// notify_property_list_changed(); // FIXME: is this needed?
 }
 
-uint32_t NavigationMesh::get_area_navigation_layers(uint16_t p_area_id) const {
+uint32_t NavigationMesh::get_area_navigation_layers(uint16_t p_area_index) const {
 	RWLockRead read_lock(rwlock);
-	for (int i = 0; i < area_ids.size(); i++) {
-		if (area_ids[i] == p_area_id) {
-			return area_navlayers[i];
-		}
+	if (p_area_index >= area_navlayers.size()) {
+		return 0;
 	}
-	return 0;
+
+	return area_navlayers[p_area_index];
 }
 
 void NavigationMesh::clear() {
 	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	polygons_meta.clear();
-	area_ids.clear();
 	area_navlayers.clear();
 	area_indices.clear();
 	vertices.clear();
@@ -525,27 +499,24 @@ void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Ve
 	vertices = p_vertices;
 	polygons = p_polygons;
 	polygons_meta = Vector<uint32_t>();
-	area_ids = Vector<uint16_t>();
 	area_navlayers = Vector<uint32_t>();
 	area_indices = Vector<Vector<int>>();
 }
 
-void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint16_t> &p_area_ids, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices) {
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<uint32_t> &p_polygons_meta, const Vector<uint32_t> &p_area_navlayers, const Vector<Vector<int>> &p_area_indices) {
 	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	polygons = p_polygons;
 	polygons_meta = p_polygons_meta;
-	area_ids = p_area_ids;
 	area_navlayers = p_area_navlayers;
 	area_indices = p_area_indices;
 }
 
-void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint16_t> &r_area_ids, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices) {
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<uint32_t> &r_polygons_meta, Vector<uint32_t> &r_area_navlayers, Vector<Vector<int>> &r_area_indices) {
 	RWLockRead read_lock(rwlock);
 	r_vertices = vertices;
 	r_polygons = polygons;
 	r_polygons_meta = polygons_meta;
-	r_area_ids = area_ids;
 	r_area_navlayers = area_navlayers;
 	r_area_indices = area_indices;
 }
@@ -739,8 +710,6 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_polygons_meta", "polygons_meta"), &NavigationMesh::_set_polygons_meta);
 	ClassDB::bind_method(D_METHOD("_get_polygons_meta"), &NavigationMesh::_get_polygons_meta);
 
-	ClassDB::bind_method(D_METHOD("_set_area_ids", "area_ids"), &NavigationMesh::_set_area_ids);
-	ClassDB::bind_method(D_METHOD("_get_area_ids"), &NavigationMesh::_get_area_ids);
 	ClassDB::bind_method(D_METHOD("_set_area_navlayers", "area_navlayers"), &NavigationMesh::_set_area_navlayers);
 	ClassDB::bind_method(D_METHOD("_get_area_navlayers"), &NavigationMesh::_get_area_navlayers);
 	ClassDB::bind_method(D_METHOD("_set_area_indices", "area_indices"), &NavigationMesh::_set_area_indices);
@@ -752,7 +721,6 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons_meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons_meta", "_get_polygons_meta");
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_ids", "_get_area_ids");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_navlayers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_navlayers", "_get_area_navlayers");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_area_indices", "_get_area_indices");
 
