@@ -52,11 +52,14 @@
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
-#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifndef _3D_DISABLED
+#include "scene/resources/3d/sky_material.h"
+#endif // _3D_DISABLED
 
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
 	List<PropertyInfo> property_list;
@@ -869,8 +872,10 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 		const String base = allowed_types[i].strip_edges();
 		if (base == "BaseMaterial3D") {
 			allowed_types_with_convert.insert("Texture2D");
+#ifndef _3D_DISABLED
 		} else if (base == "PanoramaSkyMaterial") {
 			allowed_types_with_convert.insert("Texture2D");
+#endif // _3D_DISABLED
 		} else if (ClassDB::is_parent_class("ShaderMaterial", base)) {
 			allowed_types_with_convert.insert("Shader");
 		} else if (ClassDB::is_parent_class("ImageTexture", base)) {
@@ -1012,6 +1017,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
+#ifndef _3D_DISABLED
 				if (at == "PanoramaSkyMaterial" && Ref<Texture2D>(dropped_resource).is_valid()) {
 					Ref<PanoramaSkyMaterial> mat = edited_resource;
 					if (mat.is_null()) {
@@ -1021,6 +1027,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					dropped_resource = mat;
 					break;
 				}
+#endif // _3D_DISABLED
 
 				if (at == "ShaderMaterial" && Ref<Shader>(dropped_resource).is_valid()) {
 					Ref<ShaderMaterial> mat = edited_resource;

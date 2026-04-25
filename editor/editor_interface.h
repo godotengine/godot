@@ -81,8 +81,10 @@ class EditorInterface : public Object {
 
 	// Editor tools.
 
+#ifndef _3D_DISABLED
 	TypedArray<Texture2D> _make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size);
 	AABB _calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb);
+#endif // _3D_DISABLED
 
 protected:
 	static void _bind_methods();
@@ -112,9 +114,6 @@ public:
 	EditorUndoRedoManager *get_editor_undo_redo() const;
 	ScenePaint2DEditor *get_scene_paint_2d() const;
 
-	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
-	void make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size);
-
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
 
@@ -128,7 +127,6 @@ public:
 #endif
 	ScriptEditor *get_script_editor() const;
 	SubViewport *get_editor_viewport_2d() const;
-	SubViewport *get_editor_viewport_3d(int p_idx = 0) const;
 
 #ifndef DISABLE_DEPRECATED
 	void set_main_screen_editor(const String &p_name);
@@ -141,10 +139,16 @@ public:
 	float get_editor_scale() const;
 	String get_editor_language() const;
 
+#ifndef _3D_DISABLED
+	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
+	void make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size);
+	SubViewport *get_editor_viewport_3d(int p_idx = 0) const;
+
 	bool is_node_3d_snap_enabled() const;
 	real_t get_node_3d_translate_snap() const;
 	real_t get_node_3d_rotate_snap() const;
 	real_t get_node_3d_scale_snap() const;
+#endif // _3D_DISABLED
 
 	void popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect = Rect2i());
 	void popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize = Size2i());

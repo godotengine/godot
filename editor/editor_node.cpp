@@ -90,10 +90,12 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/gui/window_wrapper.h"
+#ifndef _3D_DISABLED
 #include "editor/import/3d/editor_import_collada.h"
 #include "editor/import/3d/resource_importer_obj.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/3d/scene_import_settings.h"
+#endif // _3D_DISABLED
 #include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/fbx_importer_manager.h"
@@ -126,11 +128,13 @@
 #include "editor/run/editor_run.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/game_view_plugin.h"
+#ifndef _3D_DISABLED
 #include "editor/scene/3d/material_3d_conversion_plugins.h"
 #include "editor/scene/3d/mesh_library_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/3d/root_motion_editor_plugin.h"
+#endif // _3D_DISABLED
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/material_editor_plugin.h"
@@ -156,7 +160,9 @@
 #include "editor/version_control/version_control_editor_plugin.h"
 #include "main/main.h"
 #include "scene/2d/node_2d.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/bone_attachment_3d.h"
+#endif // _3D_DISABLED
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/control.h"
@@ -173,7 +179,9 @@
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
+#ifndef _3D_DISABLED
 #include "scene/resources/3d/mesh_library.h"
+#endif // _3D_DISABLED
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
@@ -184,8 +192,12 @@
 #include "servers/display/display_server.h"
 #include "servers/display/display_server_enums.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
+#endif // NAVIGATION_3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d_manager.h"
+#endif // PHYSICS_3D_DISABLED
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -448,10 +460,14 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 				Node *node_with_visibility;
 				node_with_visibility = Object::cast_to<CanvasItem>(E);
 				if (!node_with_visibility || !node_with_visibility->is_inside_tree()) {
+#ifndef _3D_DISABLED
 					node_with_visibility = Object::cast_to<Node3D>(E);
 					if (!node_with_visibility || !node_with_visibility->is_inside_tree()) {
+#endif // _3D_DISABLED
 						continue;
+#ifndef _3D_DISABLED
 					}
+#endif // _3D_DISABLED
 				}
 
 				undo_redo->add_do_method(node_with_visibility, "set_visible", !node_with_visibility->get("visible"));
@@ -615,6 +631,7 @@ void EditorNode::_update_from_settings() {
 	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines"));
 	NavigationServer2D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color"));
 
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color"));
@@ -625,6 +642,7 @@ void EditorNode::_update_from_settings() {
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
+#endif // NAVIGATION_3D_DISABLED
 #endif // DEBUG_ENABLED
 }
 
@@ -985,7 +1003,9 @@ void EditorNode::_notification(int p_what) {
 			_update_theme(true);
 
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/timers/low_processor_mode_sleep_usec")));
+#ifndef _3D_DISABLED
 			get_tree()->get_root()->set_as_audio_listener_3d(false);
+#endif // _3D_DISABLED
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->get_root()->set_snap_2d_transforms_to_pixel(false);
 			get_tree()->get_root()->set_snap_2d_vertices_to_pixel(false);
@@ -1050,7 +1070,9 @@ void EditorNode::_notification(int p_what) {
 			}
 			default_layout->set_value("docks", "dock_9", String(",").join(bottom_docks));
 
+#ifndef _3D_DISABLED
 			RenderingServer::get_singleton()->viewport_set_disable_2d(get_scene_root()->get_viewport_rid(), true);
+#endif // _3D_DISABLED
 			RenderingServer::get_singleton()->viewport_set_environment_mode(get_viewport()->get_viewport_rid(), RSE::VIEWPORT_ENVIRONMENT_DISABLED);
 			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/display/keep_screen_on"));
 
@@ -2289,8 +2311,10 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 
 	if (p_node->is_class("CanvasItem")) {
 		count_2d++;
+#ifndef _3D_DISABLED
 	} else if (p_node->is_class("Node3D")) {
 		count_3d++;
+#endif // _3D_DISABLED
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -2324,6 +2348,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
 				img = viewport_texture->get_image();
 			}
+#ifndef _3D_DISABLED
 		} else {
 			// The 3D editor may be disabled as a feature, but scenes can still be opened.
 			// This check prevents the preview from regenerating in case those scenes are then saved.
@@ -2332,6 +2357,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
 			}
+#endif // _3D_DISABLED
 		}
 
 		if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
@@ -2527,7 +2553,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
 
 	editor_data.apply_changes_in_editors();
+#ifndef _3D_DISABLED
 	save_default_environment();
+#endif // _3D_DISABLED
 	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
@@ -2675,7 +2703,9 @@ void EditorNode::_save_all_scenes() {
 			_save_scene(scene_path, i);
 		}
 	}
+#ifndef _3D_DISABLED
 	save_default_environment();
+#endif // _3D_DISABLED
 
 	if (!scenes_to_save_as.is_empty()) {
 		_proceed_save_asing_scene_tabs();
@@ -2771,7 +2801,9 @@ void EditorNode::_dialog_action(String p_file) {
 					return;
 				}
 
+#ifndef _3D_DISABLED
 				save_default_environment();
+#endif // _3D_DISABLED
 				_save_scene_with_preview(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
 				save_editor_layout_delayed();
@@ -2795,7 +2827,9 @@ void EditorNode::_dialog_action(String p_file) {
 
 		case SAVE_AND_RUN: {
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
+#ifndef _3D_DISABLED
 				save_default_environment();
+#endif // _3D_DISABLED
 				_save_scene_with_preview(p_file);
 				project_run_bar->play_custom_scene(p_file);
 			}
@@ -2806,12 +2840,15 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->save();
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
+#ifndef _3D_DISABLED
 				save_default_environment();
+#endif // _3D_DISABLED
 				_save_scene_with_preview(p_file);
 				project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 			}
 		} break;
 
+#ifndef _3D_DISABLED
 		case FILE_EXPORT_MESH_LIBRARY: {
 			const Dictionary &fd_options = file_export_lib->get_selected_options();
 			bool merge_with_existing_library = fd_options.get(TTR("Merge With Existing"), true);
@@ -2843,6 +2880,7 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 		} break;
+#endif // _3D_DISABLED
 
 		case PROJECT_PACK_AS_ZIP: {
 			ProjectZIPPacker::pack_project_zip(p_file);
@@ -3087,6 +3125,7 @@ void EditorNode::push_item_no_inspector(Object *p_object) {
 	_edit_current(false, true);
 }
 
+#ifndef _3D_DISABLED
 void EditorNode::save_default_environment() {
 	Ref<Environment> fallback = get_tree()->get_root()->get_world_3d()->get_fallback_environment();
 
@@ -3096,6 +3135,7 @@ void EditorNode::save_default_environment() {
 		save_resource_in_path(fallback, fallback->get_path());
 	}
 }
+#endif // _3D_DISABLED
 
 void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 	if (p_editing_owner) {
@@ -4188,6 +4228,7 @@ void EditorNode::_tool_menu_option(int p_idx) {
 }
 
 void EditorNode::_export_as_menu_option(int p_idx) {
+#ifndef _3D_DISABLED
 	if (p_idx == 0) { // MeshLibrary
 		current_menu_option = FILE_EXPORT_MESH_LIBRARY;
 
@@ -4207,6 +4248,7 @@ void EditorNode::_export_as_menu_option(int p_idx) {
 		file_export_lib->set_title(TTR("Export Mesh Library"));
 		file_export_lib->popup_file_dialog();
 	} else { // Custom menu options added by plugins
+#endif // _3D_DISABLED
 		if (export_as_menu->get_item_submenu(p_idx).is_empty()) { // If not a submenu
 			Callable callback = export_as_menu->get_item_metadata(p_idx);
 			Callable::CallError ce;
@@ -4218,7 +4260,9 @@ void EditorNode::_export_as_menu_option(int p_idx) {
 				ERR_PRINT("Error calling function from export_as menu: " + err);
 			}
 		}
+#ifndef _3D_DISABLED
 	}
+#endif // _3D_DISABLED
 }
 
 int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
@@ -5314,10 +5358,12 @@ void EditorNode::get_preload_scene_modification_table(
 				if (canvas_item) {
 					new_additive_node_entry.transform_2d = canvas_item->get_transform();
 				}
+#ifndef _3D_DISABLED
 				Node3D *node_3d = Object::cast_to<Node3D>(p_node);
 				if (node_3d) {
 					new_additive_node_entry.transform_3d = node_3d->get_transform();
 				}
+#endif // _3D_DISABLED
 
 				p_instance_modifications.addition_list.push_back(new_additive_node_entry);
 			}
@@ -7191,6 +7237,7 @@ void EditorNode::_file_access_close_error_notify_impl(const String &p_str) {
 // tree so that editor scripts which create transient nodes will have the opportunity
 // to recreate them.
 void EditorNode::_notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes) {
+#ifndef _3D_DISABLED
 	Skeleton3D *skel_3d = Object::cast_to<Skeleton3D>(p_node);
 	if (skel_3d) {
 		skel_3d->reset_bone_poses();
@@ -7200,6 +7247,7 @@ void EditorNode::_notify_nodes_scene_reimported(Node *p_node, Array p_reimported
 			attachment->notify_rebind_required();
 		}
 	}
+#endif // _3D_DISABLED
 
 	p_node->call(SNAME("_nodes_scene_reimported"), p_reimported_nodes);
 
@@ -7628,10 +7676,12 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 						node_2d->set_transform(additive_node_entry.transform_2d);
 					}
 
+#ifndef _3D_DISABLED
 					Node3D *node_3d = Object::cast_to<Node3D>(additive_node_entry.node);
 					if (node_3d) {
 						node_3d->set_transform(additive_node_entry.transform_3d);
 					}
+#endif // _3D_DISABLED
 				}
 			}
 
@@ -7943,7 +7993,9 @@ void EditorNode::_feature_profile_changed() {
 		editor_dock_manager->set_dock_enabled(ImportDock::get_singleton(), !fs_dock_disabled && !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 		editor_dock_manager->set_dock_enabled(history_dock, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_HISTORY_DOCK));
 
+#ifndef _3D_DISABLED
 		editor_dock_manager->set_dock_enabled(Node3DEditor::get_singleton(), !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
+#endif // _3D_DISABLED
 		editor_dock_manager->set_dock_enabled(ScriptEditor::get_singleton(), !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
 		if (!Engine::get_singleton()->is_recovery_mode_hint()) {
 			editor_dock_manager->set_dock_enabled(GameView::get_dock(), !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME));
@@ -7957,7 +8009,9 @@ void EditorNode::_feature_profile_changed() {
 		editor_dock_manager->set_dock_enabled(GroupsDock::get_singleton(), true);
 		editor_dock_manager->set_dock_enabled(FileSystemDock::get_singleton(), true);
 		editor_dock_manager->set_dock_enabled(history_dock, true);
+#ifndef _3D_DISABLED
 		editor_dock_manager->set_dock_enabled(Node3DEditor::get_singleton(), true);
+#endif // _3D_DISABLED
 		editor_dock_manager->set_dock_enabled(ScriptEditor::get_singleton(), true);
 		if (!Engine::get_singleton()->is_recovery_mode_hint() && GameView::get_dock()) {
 			editor_dock_manager->set_dock_enabled(GameView::get_dock(), true);
@@ -8112,7 +8166,9 @@ void EditorNode::_build_file_menu(bool p_dark_mode) {
 
 	if (!export_as_menu) {
 		export_as_menu = memnew(PopupMenu);
+#ifndef _3D_DISABLED
 		export_as_menu->add_shortcut(ED_GET_SHORTCUT("editor/export_as_mesh_library"), FILE_EXPORT_MESH_LIBRARY);
+#endif // _3D_DISABLED
 		export_as_menu->connect("index_pressed", callable_mp(this, &EditorNode::_export_as_menu_option));
 	}
 	file_menu->add_submenu_node_item(TTRC("Export As..."), export_as_menu, SCENE_EXPORT_AS);
@@ -8437,7 +8493,9 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	settings["display/window/stretch/mode"] = "canvas_items";
 	settings["gui/common/auto_focus_strategy"] = Control::AutoFocusStrategy::STRATEGY_BALLOON;
 	settings["input_devices/joypads/ignore_joypad_on_unfocused_application"] = true;
+#ifndef PHYSICS_3D_DISABLED
 	settings["physics/3d/physics_engine"] = PhysicsServer3DManager::JOLT_PHYSICS_NAME;
+#endif // PHYSICS_3D_DISABLED
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
 	settings["rendering/lights_and_shadows/multi_bounce_occlusion/enabled"] = true;
 	return settings;
@@ -8458,12 +8516,14 @@ EditorNode::EditorNode() {
 
 		AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
 
+#ifndef NAVIGATION_3D_DISABLED
 		// No navigation by default if in editor.
 		if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
 			NavigationServer3D::get_singleton()->set_active(true);
 		} else {
 			NavigationServer3D::get_singleton()->set_active(false);
 		}
+#endif // NAVIGATION_3D_DISABLED
 
 		// No physics by default if in editor.
 #ifndef PHYSICS_3D_DISABLED
@@ -8664,6 +8724,7 @@ EditorNode::EditorNode() {
 		import_shader_file.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_shader_file);
 
+#ifndef _3D_DISABLED
 		Ref<ResourceImporterOBJ> import_obj;
 		import_obj.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_obj);
@@ -8695,6 +8756,7 @@ EditorNode::EditorNode() {
 			import_escn.instantiate();
 			ResourceImporterScene::add_scene_importer(import_escn);
 		}
+#endif // _3D_DISABLED
 
 		Ref<ResourceImporterBitMap> import_bitmap;
 		import_bitmap.instantiate();
@@ -8706,9 +8768,11 @@ EditorNode::EditorNode() {
 		eidp.instantiate();
 		EditorInspector::add_inspector_plugin(eidp);
 
+#ifndef _3D_DISABLED
 		Ref<EditorInspectorRootMotionPlugin> rmp;
 		rmp.instantiate();
 		EditorInspector::add_inspector_plugin(rmp);
+#endif // _3D_DISABLED
 
 		Ref<EditorInspectorParticleProcessMaterialPlugin> ppm;
 		ppm.instantiate();
@@ -8999,7 +9063,9 @@ EditorNode::EditorNode() {
 	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	scene_root->set_translation_domain(StringName());
 	scene_root->set_embedding_subwindows(true);
+#ifndef _3D_DISABLED
 	scene_root->set_disable_3d(true);
+#endif // _3D_DISABLED
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 
@@ -9020,8 +9086,10 @@ EditorNode::EditorNode() {
 	project_settings_editor = memnew(ProjectSettingsEditor(&editor_data));
 	gui_base->add_child(project_settings_editor);
 
+#ifndef _3D_DISABLED
 	scene_import_settings = memnew(SceneImportSettingsDialog);
 	gui_base->add_child(scene_import_settings);
+#endif // _3D_DISABLED
 
 	audio_stream_import_settings = memnew(AudioStreamImportSettingsDialog);
 	gui_base->add_child(audio_stream_import_settings);
@@ -9088,7 +9156,9 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/quick_open_scene", TTRC("Quick Open Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::O);
 	ED_SHORTCUT_AND_COMMAND("editor/quick_open_script", TTRC("Quick Open Script..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::ALT + Key::O);
 
+#ifndef _3D_DISABLED
 	ED_SHORTCUT("editor/export_as_mesh_library", TTRC("MeshLibrary..."));
+#endif // _3D_DISABLED
 
 	ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTRC("Reload Saved Scene"));
 	ED_SHORTCUT_AND_COMMAND("editor/close_scene", TTRC("Close Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::W);
@@ -9486,7 +9556,9 @@ EditorNode::EditorNode() {
 	gui_base->add_child(project_data_missing);
 
 	add_editor_plugin(memnew(CanvasItemEditorPlugin));
+#ifndef _3D_DISABLED
 	add_editor_plugin(memnew(Node3DEditorPlugin));
+#endif // _3D_DISABLED
 	add_editor_plugin(memnew(ScriptEditorPlugin));
 
 	if (!Engine::get_singleton()->is_recovery_mode_hint()) {
@@ -9552,6 +9624,7 @@ EditorNode::EditorNode() {
 		particles_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(particles_mat_convert);
 
+#ifndef _3D_DISABLED
 		Ref<StandardMaterial3DConversionPlugin> spatial_mat_convert;
 		spatial_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(spatial_mat_convert);
@@ -9575,6 +9648,7 @@ EditorNode::EditorNode() {
 		Ref<FogMaterialConversionPlugin> fog_mat_convert;
 		fog_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(fog_mat_convert);
+#endif // _3D_DISABLED
 	}
 
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
@@ -9701,7 +9775,9 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_load_callback(_resource_loaded);
 
 	// Apply setting presets in case the editor_settings file is missing values.
+#ifndef _3D_DISABLED
 	EditorSettingsDialog::update_3d_navigation_preset();
+#endif // _3D_DISABLED
 
 	screenshot_timer = memnew(Timer);
 	screenshot_timer->set_one_shot(true);
@@ -9754,7 +9830,6 @@ EditorNode::EditorNode() {
 	}
 	{
 		const String _2d_key = CanvasItemEditor::get_singleton()->get_effective_layout_key();
-		const String _3d_key = Node3DEditor::get_singleton()->get_effective_layout_key();
 		const String script_key = ScriptEditor::get_singleton()->get_effective_layout_key();
 		String game_key;
 		if (GameView::get_dock()) {
@@ -9764,7 +9839,12 @@ EditorNode::EditorNode() {
 		if (AssetLibraryEditorPlugin::get_library()) {
 			asset_lib_key = AssetLibraryEditorPlugin::get_library()->get_effective_layout_key();
 		}
+#ifndef _3D_DISABLED
+		const String _3d_key = Node3DEditor::get_singleton()->get_effective_layout_key();
 		default_layout->set_value(docks_section, DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_MAIN_SCREEN), vformat("%s,%s,%s,%s,%s", _2d_key, _3d_key, script_key, game_key, asset_lib_key));
+#else
+		default_layout->set_value(docks_section, DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_MAIN_SCREEN), vformat("%s,%s,%s,%s", _2d_key, script_key, game_key, asset_lib_key));
+#endif // _3D_DISABLED
 	}
 
 	int hsplits[] = { 0, dock_hsize, -dock_hsize, 0 };
@@ -9793,7 +9873,9 @@ EditorNode::EditorNode() {
 EditorNode::~EditorNode() {
 	EditorInspector::cleanup_plugins();
 	EditorTranslationParser::get_singleton()->clean_parsers();
+#ifndef _3D_DISABLED
 	ResourceImporterScene::clean_up_importer_plugins();
+#endif // _3D_DISABLED
 	EditorContextMenuPluginManager::cleanup();
 
 	remove_print_handler(&print_handler);

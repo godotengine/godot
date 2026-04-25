@@ -35,7 +35,9 @@
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/plugins/editor_plugin.h"
+#ifndef _3D_DISABLED
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#endif // _3D_DISABLED
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -102,10 +104,12 @@ void EditorMainScreen::_notification(int p_what) {
 
 			for (int i = 0; i < get_tab_count(); i++) {
 				EditorDock *dock = get_dock(i);
+#ifndef _3D_DISABLED
 				if (dock == Node3DEditor::get_singleton()) {
 					dock->make_visible();
 					break;
 				}
+#endif // _3D_DISABLED
 			}
 		} break;
 	}
