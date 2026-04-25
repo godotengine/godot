@@ -64,6 +64,8 @@ class NativeMenuMacOS : public NativeMenu {
 	RID help_menu;
 	RID dock_menu;
 
+	void _update_align(MenuData *p_md);
+
 	int _get_system_menu_start(const NSMenu *p_menu) const;
 	int _get_system_menu_count(const NSMenu *p_menu) const;
 	bool _is_menu_opened(NSMenu *p_menu) const;
