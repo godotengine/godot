@@ -6,6 +6,8 @@ be fucking braindead if I said GDScript was completely useless. It is EXTREMELY 
 on this language yet.
 
 Why not contribute to Godot itself? Well, I WANT to. But I have a few issues with that...
+
+0. GDScript dev team and I will probably never see eye-to-eye. We are solar systems apart with our philosophy towards languages. I want traits, sum types, exhaustive matching, structs (and not in the "just make object leaner" way), PROPER ERROR HANDLING, tuples, stronger static guarantees, hell I'd even be delighted if GDScript dropped dynamic typing altogether. I am very glad that the Godot project is at least open-source, so that I may leech off of upstream and add my own changes. 
 1. Godot PR review is GLACIAL. By glacial I do mean INSANELY GLACIAL. New features take YEARS to be accepted. The dev team actually just hates it when you touch `core`. I won't pretend they're evil and do it just because they're lazy or something (cough cough Redot), but obviously I'm unhappy with the pace, so I'll go ahead implementing some of these myself.
 2. I want the freedom to make mistakes with my PRs. I don't like C++ as a language and how much it relies to on me being completely fucking omniscient. Speaking of which...
 3. If I had a Rust dependency later on (something the Godot team will never accept), I want a platform to be able to do that.
@@ -151,6 +153,17 @@ this is because the `NEWLINE` token forces the parser into an ambiguous position
 oh, yeah! you can skip the `pass` keyword when using braces for empty blocks. this is completely legal:
 ```gdscript
 func _ready() -> void {}
+```
+
+A very unfortunate consequence of optional braces and then whitespace scoping being able to be mixed is that monstrous abominations straight out of Dante's Inferno are possible:
+```gdscript
+func _ready() -> void {
+	var x := 3
+	if x > 3 {
+		print("6")
+	} else:
+		print("7")
+}
 ```
 
 have fun with that.
