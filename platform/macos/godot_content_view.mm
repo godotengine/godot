@@ -524,6 +524,16 @@
 	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
 	NSPoint mpos = [event locationInWindow];
 
+	// Workaround for a macOS regression (first observed on macOS 26 / Tahoe): synthetic
+	// mouseMoved events with stale coordinates are injected after every fullscreen mouseDown,
+	// corrupting BaseButton's pressing_inside state. These phantom events always carry
+	// subtype=NSEventSubtypeMouseEvent, deviceID=0, and delta=(0,0).
+	if (wd.fullscreen && [event deviceID] == 0 &&
+			[event subtype] == NSEventSubtypeMouseEvent &&
+			delta.x == 0.0 && delta.y == 0.0) {
+		return;
+	}
+
 	if (ds->update_mouse_wrap(wd, delta, mpos, [event timestamp])) {
 		return;
 	}
