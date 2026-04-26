@@ -897,6 +897,20 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.where = "TypedArray";
 }
 
+/// [Monarch] set typed, but takes into account nested types too
+void Array::set_typed_nested(const ContainerTypeValidate& p_type) {
+    ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+    ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
+    ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
+    ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
+    ERR_FAIL_COND_MSG(p_type.class_name != StringName() && p_type.type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+    Ref<Script> script = p_type.script;
+    ERR_FAIL_COND_MSG(script.is_valid() && p_type.class_name == StringName(), "Script class can only be set together with base class name");
+
+    _p->typed = p_type;  // This copies the entire recursive structure
+    _p->typed.where = "TypedArray";
+}
+
 bool Array::is_typed() const {
 	return _p->typed.type != Variant::NIL;
 }
