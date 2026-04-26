@@ -577,7 +577,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::RenderTarget *render_target = texture_storage->get_render_target(p_to_render_target);
 
-	if (p_to_backbuffer && render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+	if (p_to_backbuffer && render_target->msaa_2d.mode != RSE::VIEWPORT_MSAA_DISABLED) {
 		WARN_PRINT_ONCE("MSAA is not supported by the Canvas backbuffer.");
 	}
 
@@ -2216,7 +2216,7 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 		GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE));
 		glBindTexture(GL_TEXTURE_2D, tex->tex_id);
 	} else {
-		if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.fbo != 0) {
+		if (render_target->msaa_2d.mode != RSE::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.fbo != 0) {
 			glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.fbo);
 		} else {
 			glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);

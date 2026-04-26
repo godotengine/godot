@@ -687,7 +687,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		if (!scenario_draw_canvas_bg && can_draw_3d) {
 			RSG::texture_storage->render_target_prepare_canvas_msaa(p_viewport->render_target);
 		}
-		
+
 		int canvas_idx = 0;
 		for (const KeyValue<Viewport::CanvasKey, Viewport::CanvasData *> &E : canvas_map) {
 			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value->canvas);

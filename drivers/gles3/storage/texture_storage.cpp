@@ -2706,7 +2706,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
-	if (rt->view_count == 1 && rt->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && (config->msaa_supported || config->rt_msaa_supported)) {
+	if (rt->view_count == 1 && rt->msaa_2d.mode != RSE::VIEWPORT_MSAA_DISABLED && (config->msaa_supported || config->rt_msaa_supported)) {
 		/* MSAA 2D FBO */
 		GLsizei samples[] = { 1, 2, 4, 8 };
 		rt->msaa_2d.samples = samples[rt->msaa_2d.mode];
@@ -2751,7 +2751,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 				rt->msaa_2d.color = 0;
 			}
 
-			rt->msaa_2d.mode = RS::VIEWPORT_MSAA_DISABLED;
+			rt->msaa_2d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 			rt->msaa_2d.samples = 1;
 			rt->msaa_2d.needs_resolve = false;
 		} else {
@@ -2760,14 +2760,14 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 		}
 
 	} else {
-		if (rt->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+		if (rt->msaa_2d.mode != RSE::VIEWPORT_MSAA_DISABLED) {
 			if (rt->view_count > 1) {
 				// We don't support 2D MSAA in multiview
 				WARN_PRINT_ONCE("MSAA 2D not supported in multiview.");
 			} else if (!config->msaa_supported && !config->rt_msaa_supported) {
 				WARN_PRINT_ONCE("MSAA 2D not supported on this device.");
 			}
-			rt->msaa_2d.mode = RS::VIEWPORT_MSAA_DISABLED;
+			rt->msaa_2d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 		}
 
 		rt->msaa_2d.samples = 1;
@@ -3247,7 +3247,7 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 	_clear_render_target(rt);
 	rt->direct_to_screen = p_direct_to_screen;
 	if (rt->direct_to_screen) {
-		rt->msaa_2d.mode = RS::VIEWPORT_MSAA_DISABLED;
+		rt->msaa_2d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 		rt->overridden.color = RID();
 		rt->overridden.depth = RID();
 		rt->overridden.velocity = RID();
@@ -3304,7 +3304,7 @@ void TextureStorage::render_target_do_msaa_resolve(RID p_render_target) {
 	ERR_FAIL_NULL(render_target);
 
 	// Blit MSAA 2D buffer to final buffer
-	if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.needs_resolve) {
+	if (render_target->msaa_2d.mode != RSE::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.needs_resolve) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, render_target->msaa_2d.fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_target->fbo);
 
@@ -3406,7 +3406,7 @@ void TextureStorage::render_target_prepare_canvas_msaa(RID p_render_target) {
 	RenderTarget *render_target = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(render_target);
 
-	if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED) {
+	if (render_target->msaa_2d.mode != RSE::VIEWPORT_MSAA_DISABLED) {
 		glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.fbo);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, render_target->color);
@@ -3782,7 +3782,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	}
 
 	// MSAA 2D: Resolve (part of the) FBO for backbuffer
-	if (rt->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && rt->msaa_2d.needs_resolve) {
+	if (rt->msaa_2d.mode != RSE::VIEWPORT_MSAA_DISABLED && rt->msaa_2d.needs_resolve) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->msaa_2d.fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->fbo);
 		glBlitFramebuffer(region.position.x, region.position.y, region.position.x + region.size.x, region.position.y + region.size.y,

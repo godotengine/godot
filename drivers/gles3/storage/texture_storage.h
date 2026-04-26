@@ -388,7 +388,7 @@ struct RenderTarget {
 	Rect2i render_region;
 
 	struct RTmsaa2d {
-		RS::ViewportMSAA mode = RS::VIEWPORT_MSAA_DISABLED;
+		RSE::ViewportMSAA mode = RSE::VIEWPORT_MSAA_DISABLED;
 		bool needs_resolve = false;
 		GLsizei samples = 1;
 		GLuint fbo = 0;
