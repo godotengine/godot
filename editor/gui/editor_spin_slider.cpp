@@ -124,7 +124,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			grabbing_spinner_dist_cache += diff_x * grabbing_spinner_speed;
 
 			if (!grabbing_spinner && Math::abs(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
-				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
+				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CONFINED_HIDDEN);
 				grabbing_spinner = true;
 			}
 
@@ -447,8 +447,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 			c.a = 0.9;
 			const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
 			draw_rect(grabber_rect, c);
-
-			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
 			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input && value_input->is_visible());
 			if (grabber->is_visible() != display_grabber) {
