@@ -663,6 +663,25 @@ void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_na
 	_p->typed_value.where = "TypedDictionary.Value";
 }
 
+void Dictionary::set_typed_nested(const ContainerTypeValidate& p_key_type, const ContainerTypeValidate& p_value_type) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty.");
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when dictionary has no more than one user.");
+	ERR_FAIL_COND_MSG(_p->typed_key.type != Variant::NIL || _p->typed_value.type != Variant::NIL, "Type can only be set once.");
+	ERR_FAIL_COND_MSG((p_key_type.class_name != StringName() && p_key_type.type != Variant::OBJECT) || (p_value_type.class_name != StringName() && p_value_type.type != Variant::OBJECT), "Class names can only be set for type OBJECT.");
+	Ref<Script> key_script = p_key_type.script;
+	ERR_FAIL_COND_MSG(key_script.is_valid() && p_key_type.class_name == StringName(), "Script class can only be set together with base class name.");
+	Ref<Script> value_script = p_value_type.script;
+	ERR_FAIL_COND_MSG(value_script.is_valid() && p_value_type.class_name == StringName(), "Script class can only be set together with base class name.");
+
+	_p->typed_key = p_key_type;
+	_p->typed_key.where = "TypedDictionary.Key";
+
+	_p->typed_value = p_value_type;
+	_p->typed_value.where = "TypedDictionary.Value";
+}
+
+
 bool Dictionary::is_typed() const {
 	return is_typed_key() || is_typed_value();
 }

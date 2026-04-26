@@ -167,8 +167,32 @@ private:
 				arr[i] = elem;
 			}
 			inout_variant = arr;
+
+		} else if (type == Variant::DICTIONARY && nested_types.size() >= 2) {
+
+			Dictionary dict = inout_variant;
+			Dictionary converted = dict.duplicate(false);
+			converted.clear();
+
+			const ContainerTypeValidate& key_type = nested_types[0];
+			const ContainerTypeValidate& value_type = nested_types[1];
+
+			const Variant* iter = nullptr;
+			while ((iter = dict.next(iter))) {
+				Variant key = *iter;
+				Variant value = dict[key];
+
+				if (!key_type.validate(key, p_operation) || !value_type.validate(value, p_operation)) {
+					return false;
+				}
+
+				converted[key] = value;
+			}
+
+			inout_variant = converted;
+
 		}
-		/// TODO: add the dict case here later?
+
 		/// TODO: expand to (maybe) cover generic classes?
 		return true;
 	}
