@@ -154,7 +154,7 @@ private:
 	}
 
 	///[Monarch] validates internal arrays, and stuff passed inside the array might mutate to accomodate the given type
-	_FORCE_INLINE_ bool _validate_nested(Variant& inout_variant, const char* p_operation) const {
+	bool _validate_nested(Variant& inout_variant, const char* p_operation) const {
 		if (type == Variant::ARRAY && !nested_types.is_empty()) {
 			Array arr = inout_variant;
 			
@@ -175,7 +175,7 @@ private:
 
 public:
 
-	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
+	bool validate(Variant &inout_variant, const char *p_operation = "use") const {
 
 		if(!_internal_validate(inout_variant, p_operation, true)) {
 			return false;
@@ -192,7 +192,7 @@ public:
 		return _internal_validate(tmp, "", false);
 	}
 
-	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
+	bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
 			return false;
 		} else if (type != Variant::OBJECT) {
@@ -229,10 +229,7 @@ public:
 		return true;
 	}
 
-	///inlining a recursive function is proooobably not the right call, but "make it work, then make it right, then make it fast"
-	///aaaand right now i'm on the making it work phase.
-
-	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
+	bool operator==(const ContainerTypeValidate &p_type) const {
 		bool is_same_class = (type == p_type.type && class_name == p_type.class_name && script == p_type.script);
 		if (!is_same_class) {
 			return false;
@@ -249,7 +246,7 @@ public:
 		return true;
 	}
 
-	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
+	bool operator!=(const ContainerTypeValidate &p_type) const {
 		return !(*this == p_type);
 	}
 };
