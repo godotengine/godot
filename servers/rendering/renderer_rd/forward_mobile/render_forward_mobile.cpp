@@ -2008,7 +2008,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 
 				ltc.lut1_texture = RS::get_singleton()->texture_2d_create(lut1_image);
 
-				int lut2_bytes = 3 * dimensions * dimensions;
+				int lut2_bytes = 4 * dimensions * dimensions;
 				size_t lut2_size = lut2_bytes * 4;
 
 				Ref<Image> lut2_image;
@@ -2016,7 +2016,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 				lut2_data.resize(lut2_size);
 
 				memcpy(lut2_data.ptrw(), LTC_LUT2, lut2_size);
-				lut2_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBF, lut2_data);
+				lut2_image = Image::create_from_data(dimensions, dimensions, false, Image::FORMAT_RGBAF, lut2_data);
 
 				ltc.lut2_texture = RS::get_singleton()->texture_2d_create(lut2_image);
 			}
