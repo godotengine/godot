@@ -110,6 +110,9 @@ struct Position {
 		dict["character"] = character;
 		return dict;
 	}
+
+	Position() = default;
+	Position(int p_line, int p_character) : line(p_line), character(p_character) {}
 };
 
 /**
@@ -160,6 +163,10 @@ struct Range {
 		dict["end"] = end.to_json();
 		return dict;
 	}
+
+	Range() = default;
+	Range(Position p_start, Position p_end) : start(p_start), end(p_end) {}
+	Range(int p_start_line, int p_start_column, int p_end_line, int p_end_column) : start(p_start_line, p_start_column), end(p_end_line, p_end_column) {}
 };
 
 /**

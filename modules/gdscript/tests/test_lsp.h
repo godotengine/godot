@@ -515,6 +515,39 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		CHECK_EQ(LSP::marked_documentation("Class [Sprite2D] with [url=https://godotengine.org]link[/url]"),
 				"Class `Sprite2D` with [link](https://godotengine.org)");
 	}
+	TEST_CASE("get_symbol_name_under_position") {
+		const String code = U"we_do	suPPort Unicöde  and @annotations, numb3rs \n0nly for-continuation #comment\n@start@\na\n b \n";
+		const HashMap<String, LSP::Range> symbols = {
+			{ "we_do", LSP::Range(0, 0, 0, 5) },
+			{ U"suPPort", LSP::Range(0, 6, 0, 13) },
+			{ U"Unicöde", LSP::Range(0, 14, 0, 21) },
+			{ U"and", LSP::Range(0, 23, 0, 26) },
+			{ "@annotations", LSP::Range(0, 27, 0, 39) },
+			{ U"numb3rs", LSP::Range(0, 41, 0, 48) },
+			{ U"nly", LSP::Range(1, 1, 1, 4) },
+			{ U"for", LSP::Range(1, 5, 1, 8) },
+			{ U"continuation", LSP::Range(1, 9, 1, 21) },
+			{ U"comment", LSP::Range(1, 23, 1, 30) },
+			{ U"@start", LSP::Range(2, 0, 2, 6) },
+			{ U"a", LSP::Range(3, 0, 3, 1) },
+			{ U"b", LSP::Range(4, 1, 4, 2) },
+		};
+
+		ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
+		parser->parse(code, "res://dummy.gd");
+
+		for (KeyValue<String, LSP::Range> symbol : symbols) {
+			for (int i = symbol.value.start.character; i <= symbol.value.end.character; i++) {
+				LSP::Range range;
+				const String symbol_name = parser->get_symbol_name_under_position(LSP::Position(symbol.value.start.line, i), range);
+
+				CHECK_EQ(symbol.key, symbol_name);
+				CHECK_EQ(range, symbol.value);
+			}
+		}
+
+		memdelete(parser);
+	}
 }
 
 } // namespace GDScriptTests
