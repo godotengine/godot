@@ -220,7 +220,7 @@ void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
 
 bool ScriptCreateDialog::_validate_parent(const String &p_string) {
 	if (p_string.length() == 0) {
-		return false;
+		return true;
 	}
 
 	if (can_inherit_from_file && p_string.is_quoted()) {
@@ -371,7 +371,7 @@ void ScriptCreateDialog::_create_new() {
 	const ScriptLanguage::ScriptTemplate sinfo = _get_current_template();
 
 	String parent_class = parent_name->get_text();
-	if (!parent_name->get_text().is_quoted() && !ClassDB::class_exists(parent_class) && !ScriptServer::is_global_class(parent_class)) {
+	if (!parent_class.is_empty() && !parent_name->get_text().is_quoted() && !ClassDB::class_exists(parent_class) && !ScriptServer::is_global_class(parent_class)) {
 		// If base is a custom type, replace with script path instead.
 		const EditorData::CustomType *type = EditorNode::get_editor_data().get_custom_type_by_name(parent_class);
 		ERR_FAIL_NULL(type);
