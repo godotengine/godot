@@ -220,6 +220,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void _subgizmo_selection_change();
 	void _disconnect_from_skeleton();
+	void _disconnect_from_tree();
 
 	int selected_bone = -1;
 
