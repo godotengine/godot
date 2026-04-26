@@ -153,9 +153,34 @@ private:
 		return true;
 	}
 
+	///[Monarch] validates internal arrays, and stuff passed inside the array might mutate to accomodate the given type
+	_FORCE_INLINE_ bool _validate_nested(Variant& inout_variant, const char* p_operation) const {
+		if (type == Variant::ARRAY && !nested_types.is_empty()) {
+			Array arr = inout_variant;
+			
+			const ContainerTypeValidate& elem_type = nested_types[0];
+			for (int i = 0; i < arr.size(); i++) {
+				Variant elem = arr[i];
+				if (!elem_type.validate(elem, p_operation)) {
+					return false;
+				}
+				arr[i] = elem;
+			}
+			inout_variant = arr;
+		}
+		/// TODO: add the dict case here later?
+		/// TODO: expand to (maybe) cover generic classes?
+		return true;
+	}
+
 public:
+
 	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
-		return _internal_validate(inout_variant, p_operation, true);
+
+		if(!_internal_validate(inout_variant, p_operation, true)) {
+			return false;
+		}
+		return _validate_nested(inout_variant, p_operation);
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
@@ -172,6 +197,17 @@ public:
 			return false;
 		} else if (type != Variant::OBJECT) {
 			return true;
+		}
+
+		///
+		if (nested_types.size() != p_type.nested_types.size()) {
+			return false;
+		}
+
+		for (int i = 0; i < nested_types.size(); i++) {
+			if (!nested_types[i].can_reference(p_type.nested_types[i])) {
+				return false;
+			}
 		}
 
 		if (class_name == StringName()) {
@@ -193,10 +229,27 @@ public:
 		return true;
 	}
 
+	///inlining a recursive function is proooobably not the right call, but "make it work, then make it right, then make it fast"
+	///aaaand right now i'm on the making it work phase.
+
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
+		bool is_same_class = (type == p_type.type && class_name == p_type.class_name && script == p_type.script);
+		if (!is_same_class) {
+			return false;
+		}
+		if (nested_types.size() != p_type.nested_types.size()) {
+			return false;
+		}
+		for (int i = 0; i < nested_types.size(); i++) {
+			if (nested_types[i] != p_type.nested_types[i]) {
+				return false;
+			}
+		}
+
+		return true;
 	}
+
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+		return !(*this == p_type);
 	}
 };
