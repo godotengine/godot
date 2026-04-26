@@ -133,6 +133,11 @@ public:
 		return s;
 	}
 
+	virtual RID mesh_surface_get_vertex_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+	virtual RID mesh_surface_get_attribute_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+	virtual RID mesh_surface_get_skin_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+	virtual RID mesh_surface_get_index_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+
 	virtual int mesh_get_surface_count(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_NULL_V(m, 0);
