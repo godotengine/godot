@@ -3542,7 +3542,7 @@ void TextureStorage::update_area_light_atlas() {
 						Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_tex_size);
 
 						if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-							copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
+							copy_effects->gaussian_blur(prev_blur_texture, blur_tex, copy_rect, mip_tex_size, true);
 						} else {
 							copy_effects->gaussian_blur_raster(prev_blur_texture, blur_tex, copy_rect, mip_tex_size);
 						}
