@@ -40,10 +40,20 @@ struct ContainerType {
 	Ref<Script> script;
 };
 
+
 struct ContainerTypeValidate {
+
+	/// [Monarch] Imagine there's an `Array[Array[int]]`. This `type` field says that the top-level type
+	///           is an `Array`.
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
+
+	/// [Monarch] Following the previous example, this `nested_type` argument holds types, so from that example,
+	///           this field would be a type validation field that holds an Array in it as its `type`.
+	///           Recursive typing, in the simplest sense.
+	Vector<ContainerTypeValidate> nested_types;
+
 	const char *where = "container";
 
 private:
