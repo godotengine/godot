@@ -116,6 +116,18 @@
 		</method>
 	</methods>
 	<members>
+		<member name="angular_drive_x/torque_limit" type="float" setter="set_param_x" getter="get_param_x" default="3.4028235e+38">
+			The maximum torque the joint can apply around the X angular axis. Used by both the spring drive and the angular motor; supersedes [member angular_motor_x/force_limit] when explicitly set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+		</member>
+		<member name="angular_drive_y/torque_limit" type="float" setter="set_param_y" getter="get_param_y" default="3.4028235e+38">
+			The maximum torque the joint can apply around the Y angular axis. Used by both the spring drive and the angular motor; supersedes [member angular_motor_y/force_limit] when explicitly set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+		</member>
+		<member name="angular_drive_z/torque_limit" type="float" setter="set_param_z" getter="get_param_z" default="3.4028235e+38">
+			The maximum torque the joint can apply around the Z angular axis. Used by both the spring drive and the angular motor; supersedes [member angular_motor_z/force_limit] when explicitly set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+		</member>
 		<member name="angular_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x" default="1.0">
 			The amount of rotational damping across the X axis.
 			The lower, the longer an impulse from one side takes to travel to the other side.
@@ -192,7 +204,7 @@
 		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="false">
 			If [code]true[/code], a rotating motor at the X axis is enabled.
 		</member>
-		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="300.0">
+		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="300.0" deprecated="Use [member angular_drive_x/torque_limit] instead, which applies in both spring and motor modes.">
 			Maximum acceleration for the motor at the X axis.
 		</member>
 		<member name="angular_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
@@ -201,7 +213,7 @@
 		<member name="angular_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="false">
 			If [code]true[/code], a rotating motor at the Y axis is enabled.
 		</member>
-		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="300.0">
+		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="300.0" deprecated="Use [member angular_drive_y/torque_limit] instead, which applies in both spring and motor modes.">
 			Maximum acceleration for the motor at the Y axis.
 		</member>
 		<member name="angular_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
@@ -210,7 +222,7 @@
 		<member name="angular_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="false">
 			If [code]true[/code], a rotating motor at the Z axis is enabled.
 		</member>
-		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="300.0">
+		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="300.0" deprecated="Use [member angular_drive_z/torque_limit] instead, which applies in both spring and motor modes.">
 			Maximum acceleration for the motor at the Z axis.
 		</member>
 		<member name="angular_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
@@ -239,6 +251,18 @@
 		<member name="angular_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 		</member>
 		<member name="angular_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
+		</member>
+		<member name="linear_drive_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="3.4028235e+38">
+			The maximum force the joint can apply along the X linear axis. Used by both the spring drive and the linear motor; supersedes [member linear_motor_x/force_limit] when explicitly set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+		</member>
+		<member name="linear_drive_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="3.4028235e+38">
+			The maximum force the joint can apply along the Y linear axis. Used by both the spring drive and the linear motor; supersedes [member linear_motor_y/force_limit] when explicitly set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+		</member>
+		<member name="linear_drive_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="3.4028235e+38">
+			The maximum force the joint can apply along the Z linear axis. Used by both the spring drive and the linear motor; supersedes [member linear_motor_z/force_limit] when explicitly set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
 		</member>
 		<member name="linear_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x" default="1.0">
 			The amount of damping that happens at the X motion.
@@ -297,7 +321,7 @@
 		<member name="linear_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="false">
 			If [code]true[/code], then there is a linear motor on the X axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
-		<member name="linear_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
+		<member name="linear_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="0.0" deprecated="Use [member linear_drive_x/force_limit] instead, which applies in both spring and motor modes.">
 			The maximum force the linear motor can apply on the X axis while trying to reach the target velocity.
 		</member>
 		<member name="linear_motor_x/target_velocity" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
@@ -306,7 +330,7 @@
 		<member name="linear_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="false">
 			If [code]true[/code], then there is a linear motor on the Y axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
-		<member name="linear_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
+		<member name="linear_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="0.0" deprecated="Use [member linear_drive_y/force_limit] instead, which applies in both spring and motor modes.">
 			The maximum force the linear motor can apply on the Y axis while trying to reach the target velocity.
 		</member>
 		<member name="linear_motor_y/target_velocity" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
@@ -315,7 +339,7 @@
 		<member name="linear_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="false">
 			If [code]true[/code], then there is a linear motor on the Z axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
-		<member name="linear_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
+		<member name="linear_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="0.0" deprecated="Use [member linear_drive_z/force_limit] instead, which applies in both spring and motor modes.">
 			The maximum force the linear motor can apply on the Z axis while trying to reach the target velocity.
 		</member>
 		<member name="linear_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
@@ -365,7 +389,7 @@
 		<constant name="PARAM_LINEAR_MOTOR_TARGET_VELOCITY" value="5" enum="Param">
 			The velocity the linear motor will try to reach.
 		</constant>
-		<constant name="PARAM_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="Param">
+		<constant name="PARAM_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="Param" deprecated="Use [constant PARAM_LINEAR_DRIVE_FORCE_LIMIT] instead, which applies in both spring and motor modes.">
 			The maximum force the linear motor will apply while trying to reach the velocity target.
 		</constant>
 		<constant name="PARAM_LINEAR_SPRING_STIFFNESS" value="7" enum="Param">
@@ -398,7 +422,7 @@
 		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="17" enum="Param">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="Param">
+		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="Param" deprecated="Use [constant PARAM_ANGULAR_DRIVE_TORQUE_LIMIT] instead, which applies in both spring and motor modes.">
 			Maximum acceleration for the motor at the axes.
 		</constant>
 		<constant name="PARAM_ANGULAR_SPRING_STIFFNESS" value="19" enum="Param">
@@ -407,7 +431,17 @@
 		</constant>
 		<constant name="PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT" value="21" enum="Param">
 		</constant>
-		<constant name="PARAM_MAX" value="22" enum="Param">
+		<constant name="PARAM_LINEAR_DRIVE_FORCE_LIMIT" value="22" enum="Param">
+			The maximum force the joint can apply along this linear axis.
+			Used by both the spring drive and the linear motor; supersedes [constant PARAM_LINEAR_MOTOR_FORCE_LIMIT] when set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+		</constant>
+		<constant name="PARAM_ANGULAR_DRIVE_TORQUE_LIMIT" value="23" enum="Param">
+			The maximum torque the joint can apply around this angular axis.
+			Used by both the spring drive and the angular motor; supersedes [constant PARAM_ANGULAR_MOTOR_FORCE_LIMIT] when set.
+			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+		</constant>
+		<constant name="PARAM_MAX" value="24" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="Flag">

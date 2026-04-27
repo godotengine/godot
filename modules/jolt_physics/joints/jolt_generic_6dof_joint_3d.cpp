@@ -151,10 +151,11 @@ void JoltGeneric6DOFJoint3D::_update_motor_limit(int p_axis) {
 
 	float limit = FLT_MAX;
 
-	if (motor_enabled[p_axis]) {
+	// Drive limit applies in both spring and motor modes when explicitly set
+	if (drive_limit_set[p_axis]) {
+		limit = (float)drive_limit[p_axis];
+	} else if (motor_enabled[p_axis]) {
 		limit = (float)motor_limit[p_axis];
-	} else if (spring_enabled[p_axis]) {
-		limit = (float)spring_limit[p_axis];
 	}
 
 	if (p_axis >= AXIS_LINEAR_X && p_axis <= AXIS_LINEAR_Z) {
@@ -263,7 +264,7 @@ void JoltGeneric6DOFJoint3D::_spring_equilibrium_changed(int p_axis) {
 	_wake_up_bodies();
 }
 
-void JoltGeneric6DOFJoint3D::_spring_limit_changed(int p_axis) {
+void JoltGeneric6DOFJoint3D::_drive_limit_changed(int p_axis) {
 	_update_motor_limit(p_axis);
 	_wake_up_bodies();
 }
@@ -308,6 +309,9 @@ double JoltGeneric6DOFJoint3D::get_param(Axis p_axis, Param p_param) const {
 		case JoltPhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT: {
 			return spring_equilibrium[axis_lin];
 		}
+		case PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT: {
+			return drive_limit[axis_lin];
+		}
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_LOWER_LIMIT: {
 			return limit_lower[axis_ang];
 		}
@@ -343,6 +347,9 @@ double JoltGeneric6DOFJoint3D::get_param(Axis p_axis, Param p_param) const {
 		}
 		case JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT: {
 			return spring_equilibrium[axis_ang];
+		}
+		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT: {
+			return drive_limit[axis_ang];
 		}
 		default: {
 			ERR_FAIL_V_MSG(0.0, vformat("Unhandled parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -398,6 +405,11 @@ void JoltGeneric6DOFJoint3D::set_param(Axis p_axis, Param p_param, double p_valu
 			spring_equilibrium[axis_lin] = p_value;
 			_spring_equilibrium_changed(axis_lin);
 		} break;
+		case PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT: {
+			drive_limit[axis_lin] = p_value;
+			drive_limit_set[axis_lin] = true;
+			_drive_limit_changed(axis_lin);
+		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_LOWER_LIMIT: {
 			limit_lower[axis_ang] = p_value;
 			_limits_changed();
@@ -451,6 +463,11 @@ void JoltGeneric6DOFJoint3D::set_param(Axis p_axis, Param p_param, double p_valu
 			spring_equilibrium[axis_ang] = p_value;
 			has_angular_target_rotation = false;
 			_spring_equilibrium_changed(axis_ang);
+		} break;
+		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT: {
+			drive_limit[axis_ang] = p_value;
+			drive_limit_set[axis_ang] = true;
+			_drive_limit_changed(axis_ang);
 		} break;
 		default: {
 			ERR_FAIL_MSG(vformat("Unhandled parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -560,9 +577,6 @@ double JoltGeneric6DOFJoint3D::get_jolt_param(Axis p_axis, JoltParam p_param) co
 		case JoltPhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_FREQUENCY: {
 			return spring_frequency[axis_lin];
 		}
-		case JoltPhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_MAX_FORCE: {
-			return spring_limit[axis_lin];
-		}
 		case JoltPhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SPRING_FREQUENCY: {
 			return limit_spring_frequency[axis_lin];
 		}
@@ -571,9 +585,6 @@ double JoltGeneric6DOFJoint3D::get_jolt_param(Axis p_axis, JoltParam p_param) co
 		}
 		case JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_FREQUENCY: {
 			return spring_frequency[axis_ang];
-		}
-		case JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_MAX_TORQUE: {
-			return spring_limit[axis_ang];
 		}
 		default: {
 			ERR_FAIL_V_MSG(0.0, vformat("Unhandled parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -590,10 +601,6 @@ void JoltGeneric6DOFJoint3D::set_jolt_param(Axis p_axis, JoltParam p_param, doub
 			spring_frequency[axis_lin] = p_value;
 			_spring_parameters_changed(axis_lin);
 		} break;
-		case JoltPhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_MAX_FORCE: {
-			spring_limit[axis_lin] = p_value;
-			_spring_limit_changed(axis_lin);
-		} break;
 		case JoltPhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SPRING_FREQUENCY: {
 			limit_spring_frequency[axis_lin] = p_value;
 			_limit_spring_parameters_changed(axis_lin);
@@ -605,10 +612,6 @@ void JoltGeneric6DOFJoint3D::set_jolt_param(Axis p_axis, JoltParam p_param, doub
 		case JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_FREQUENCY: {
 			spring_frequency[axis_ang] = p_value;
 			_spring_parameters_changed(axis_ang);
-		} break;
-		case JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_MAX_TORQUE: {
-			spring_limit[axis_ang] = p_value;
-			_spring_limit_changed(axis_ang);
 		} break;
 		default: {
 			ERR_FAIL_MSG(vformat("Unhandled parameter: '%d'. This should not happen. Please report this.", p_param));
