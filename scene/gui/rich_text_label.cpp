@@ -4646,6 +4646,10 @@ bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 			memdelete(it);
 		}
 		main->lines.remove_at(p_paragraph);
+		for (int i = p_paragraph; i < (int)main->lines.size(); i++) {
+			int prev_offset = (i > 0) ? main->lines[i - 1].char_offset + main->lines[i - 1].char_count : 0;
+			main->lines[i].char_offset = prev_offset;
+		}
 		current_char_ofs -= off;
 	}
 
