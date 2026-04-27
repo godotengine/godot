@@ -100,7 +100,8 @@ void CaptionButtonOverlay::_draw_icon_minimize(const Rect2 &p_rect, const Color 
 	float cx = p_rect.get_center().x;
 	float cy = p_rect.get_center().y;
 	float half = 5.0f * scale;
-	draw_line(Vector2(cx - half, cy), Vector2(cx + half, cy), p_color, scale);
+	bool antiAliased = std::abs(scale - std::round(scale)) > 1e-6f;
+	draw_line(Vector2(cx - half, cy), Vector2(cx + half, cy), p_color, scale, antiAliased);
 }
 
 void CaptionButtonOverlay::_draw_icon_maximize(const Rect2 &p_rect, const Color &p_color) {
@@ -109,8 +110,9 @@ void CaptionButtonOverlay::_draw_icon_maximize(const Rect2 &p_rect, const Color 
 	float cx = p_rect.get_center().x;
 	float cy = p_rect.get_center().y;
 	float half = 4.5f * scale;
+	bool antiAliased = std::abs(scale - std::round(scale)) > 1e-6f;
 	Rect2 sq(cx - half, cy - half, half * 2.0f, half * 2.0f);
-	draw_rect(sq, p_color, false, scale);
+	draw_rect(sq, p_color, false, scale, antiAliased);
 }
 
 void CaptionButtonOverlay::_draw_icon_restore(const Rect2 &p_rect, const Color &p_color) {
@@ -121,9 +123,11 @@ void CaptionButtonOverlay::_draw_icon_restore(const Rect2 &p_rect, const Color &
 	float sz = 7.0f * scale;
 	float offset = 2.0f * scale;
 
+	bool antiAliased = std::abs(scale - std::round(scale)) > 1e-6f;
+
 	// Front square — shifted down by half the offset so the combined icon is vertically centered.
 	Rect2 front(cx - sz * 0.5f, cy - sz * 0.5f + offset * 0.5f, sz, sz);
-	draw_rect(front, p_color, false, scale);
+	draw_rect(front, p_color, false, scale, antiAliased);
 
 	// Back square — derived directly from front (off px right, off px up).
 	Rect2 back(front.position + Vector2(offset, -offset), Size2(sz, sz));
@@ -133,11 +137,11 @@ void CaptionButtonOverlay::_draw_icon_restore(const Rect2 &p_rect, const Color &
 	float by = back.position.y;
 
 	// Top edge — stop short of the corner by radius.
-	draw_line(Point2(bx, by), Point2(bx + sz - r, by), p_color, scale);
+	draw_line(Point2(bx, by), Point2(bx + sz - r, by), p_color, scale, antiAliased);
 	// Right edge — start below the corner by radius.
-	draw_line(Point2(bx + sz, by + r), Point2(bx + sz, by + sz), p_color, scale);
+	draw_line(Point2(bx + sz, by + r), Point2(bx + sz, by + sz), p_color, scale, antiAliased);
 	// Quarter-circle arc joining them at the top-right corner.
-	draw_arc(Vector2(bx + sz - r, by + r), r, -Math::PI * 0.5f, 0.0f, 4, p_color, scale);
+	draw_arc(Vector2(bx + sz - r, by + r), r, -Math::PI * 0.5f, 0.0f, 4, p_color, scale, antiAliased);
 }
 
 void CaptionButtonOverlay::_draw_icon_close(const Rect2 &p_rect, const Color &p_color) {
