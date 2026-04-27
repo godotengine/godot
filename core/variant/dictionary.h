@@ -104,8 +104,6 @@ public:
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
-	///
-	void set_typed_nested(const ContainerTypeValidate& p_key_type, const ContainerTypeValidate& p_value_type);
 
 	bool is_typed() const;
 	bool is_typed_key() const;

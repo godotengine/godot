@@ -159,29 +159,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(2);
 				text += " is Array[";
 
-				int script_type_word = _code_ptr[ip + 3];
-				int builtin_type_word = 0;
-				int native_type_word = 0;
-				int metadata_word_offset = 0;
-				Ref<Script> script_type;
-				if (((script_type_word & ADDR_TYPE_MASK) >> ADDR_BITS) == ADDR_TYPE_CONSTANT) {
-					script_type = get_constant(script_type_word & ADDR_MASK);
-					builtin_type_word = _code_ptr[ip + 4];
-					native_type_word = _code_ptr[ip + 5];
-					metadata_word_offset = 6;
-				} else if (script_type_word >= 0 && script_type_word < Variant::VARIANT_MAX &&
-						ip + 4 < _code_size && _code_ptr[ip + 4] >= 0 && _code_ptr[ip + 4] <= _global_names_count) {
-					builtin_type_word = script_type_word;
-					native_type_word = _code_ptr[ip + 4];
-					metadata_word_offset = 5;
-				} else {
-					script_type = get_constant(script_type_word & ADDR_MASK);
-					builtin_type_word = _code_ptr[ip + 4];
-					native_type_word = _code_ptr[ip + 5];
-					metadata_word_offset = 6;
-				}
-				Variant::Type builtin_type = (Variant::Type)builtin_type_word;
-				StringName native_type = native_type_word == _global_names_count ? StringName() : get_global_name(native_type_word);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				StringName native_type = get_global_name(_code_ptr[ip + 5]);
 
 				if (script_type.is_valid() && script_type->is_valid()) {
 					text += "script(";
@@ -195,8 +175,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "]";
 
-				bool has_nested_metadata = ip + metadata_word_offset < _code_size && ((_code_ptr[ip + metadata_word_offset] & ADDR_TYPE_MASK) >> ADDR_BITS) == ADDR_TYPE_CONSTANT;
-				incr += has_nested_metadata ? metadata_word_offset + 1 : metadata_word_offset;
+				incr += 6;
 			} break;
 			case OPCODE_TYPE_TEST_DICTIONARY: {
 				text += "type test ";
@@ -237,7 +216,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "]";
 
-				incr += 11;
+				incr += 9;
 			} break;
 			case OPCODE_TYPE_TEST_NATIVE: {
 				text += "type test ";
@@ -470,7 +449,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(2);
 
-				incr += 7;
+				incr += 6;
 			} break;
 			case OPCODE_ASSIGN_TYPED_DICTIONARY: {
 				text += "assign typed dictionary ";
@@ -478,7 +457,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(2);
 
-				incr += 11;
+				incr += 9;
 			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
 				text += "assign typed native (";
@@ -623,7 +602,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "]";
 
-				incr += 7 + argc;
+				incr += 6 + argc;
 			} break;
 			case OPCODE_CONSTRUCT_DICTIONARY: {
 				int instr_var_args = _code_ptr[++ip];
@@ -650,8 +629,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				Ref<Script> key_script_type = get_constant(_code_ptr[ip + argc * 2 + 2] & ADDR_MASK);
-				Variant::Type key_builtin_type = (Variant::Type)_code_ptr[ip + argc * 2 + 7];
-				StringName key_native_type = get_global_name(_code_ptr[ip + argc * 2 + 8]);
+				Variant::Type key_builtin_type = (Variant::Type)_code_ptr[ip + argc * 2 + 5];
+				StringName key_native_type = get_global_name(_code_ptr[ip + argc * 2 + 6]);
 
 				String key_type_name;
 				if (key_script_type.is_valid() && key_script_type->is_valid()) {
@@ -663,8 +642,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 
 				Ref<Script> value_script_type = get_constant(_code_ptr[ip + argc * 2 + 3] & ADDR_MASK);
-				Variant::Type value_builtin_type = (Variant::Type)_code_ptr[ip + argc * 2 + 9];
-				StringName value_native_type = get_global_name(_code_ptr[ip + argc * 2 + 10]);
+				Variant::Type value_builtin_type = (Variant::Type)_code_ptr[ip + argc * 2 + 7];
+				StringName value_native_type = get_global_name(_code_ptr[ip + argc * 2 + 8]);
 
 				String value_type_name;
 				if (value_script_type.is_valid() && value_script_type->is_valid()) {
@@ -695,7 +674,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "}";
 
-				incr += 11 + argc * 2;
+				incr += 9 + argc * 2;
 			} break;
 			case OPCODE_CALL:
 			case OPCODE_CALL_RETURN:
@@ -1111,13 +1090,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "return typed array ";
 				text += DADDR(1);
 
-				incr += 6;
+				incr += 5;
 			} break;
 			case OPCODE_RETURN_TYPED_DICTIONARY: {
 				text += "return typed dictionary ";
 				text += DADDR(1);
 
-				incr += 10;
+				incr += 8;
 			} break;
 			case OPCODE_RETURN_TYPED_NATIVE: {
 				text += "return typed native (";
