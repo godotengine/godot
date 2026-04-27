@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+    <title>Godot Demo</title>
+    <style>
+        html, body, #canvas { margin: 0; padding: 0; border: 0; }
+        body { color: white; background-color: black; overflow: hidden; touch-action: none; }
+        #canvas { display: block; }
+        #canvas:focus { outline: none; }
+        #status, #status-splash, #status-progress { position: absolute; left: 0; right: 0; }
+        #status, #status-splash { top: 0; bottom: 0; }
+        #status { background-color: #3b3b3b; display: flex; flex-direction: column; justify-content: center; align-items: center; visibility: hidden; }
+        #status-splash { max-height: 100%; max-width: 100%; margin: auto; }
+        #status-splash.show-image--false { display: none; }
+        #status-splash.fullsize--true { height: 100%; width: 100%; object-fit: contain; }
+        #status-splash.use-filter--false { image-rendering: pixelated; }
+        #status-progress, #status-notice { display: none; }
+        #status-progress { bottom: 10%; width: 50%; margin: 0 auto; }
+        #status-notice { background-color: #5b3943; border-radius: 0.5rem; border: 1px solid #9b3943; color: #e0e0e0; font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif; line-height: 1.3; margin: 0 2rem; overflow: hidden; padding: 1rem; text-align: center; z-index: 1; }
+    </style>
+    $GODOT_HEAD_INCLUDE
+</head>
+<body>
+    <canvas id="canvas">Your browser does not support the canvas tag.</canvas>
+    <noscript>Your browser does not support JavaScript.</noscript>
+    <div id="status">
+        <progress id="status-progress"></progress>
+        <div id="status-notice"></div>
+    </div>
+
+    <script src="godot.js"></script>
+    <script>
+        //we use asnc so that engine startup and worker startup both involve asynchronous loading
+    (async function () {
+        //globals
+        window.godotHeapF32  = null; // this will later fold the godot wasm linear memory
+        window.interopReady = false;  //set to true once worker is ready
+
+        let heapDataView = null; //can read arbitrary bte offsets
+        let heapBigInt64 = null; //can access 64 bit integers
+
+        //attempts to obtain the engines wasm heap
+        function acquireHeap() {
+            if (window.godotHeapF32) return true;
+            const f32 = window.engine?.rtenv?.HEAPF32;
+            if (!f32) return false;
+            window.godotHeapF32 = f32;
+            heapDataView = new DataView(f32.buffer, f32.byteOffset, f32.byteLength);
+            heapBigInt64 = new BigInt64Array(f32.buffer, f32.byteOffset, f32.byteLength >> 3);
+            return true;
+        }
+
+        // Bulk read all entity positions from shared memory        
+        window.bulkRead = function(srcOffset, destArray, length) {
+            if (!window.godotHeapF32) throw new Error("Heap not ready");
+            const src = new Uint8Array(window.godotHeapF32.buffer, window.godotHeapF32.byteOffset + srcOffset, length);
+            destArray.set(src);
+        };
+        window.bulkWrite = function(srcArray, destOffset, length) {
+            if (!window.godotHeapF32) throw new Error("Heap not ready");
+            const dest = new Uint8Array(window.godotHeapF32.buffer, window.godotHeapF32.byteOffset + destOffset, length);
+            dest.set(srcArray);
+        };
+
+        //status UI helpers
+        const statusOverlay  = document.getElementById('status');
+        const statusProgress = document.getElementById('status-progress');
+        const statusNotice   = document.getElementById('status-notice');
+        let initializing = true;
+
+        //controls overlay mode, once initialization ends, it stops updating the overlay
+        function setStatusMode(mode) {
+            if (!initializing) return;
+            if (mode === 'hidden') { statusOverlay.remove(); initializing = false; return; }
+            statusOverlay.style.visibility = 'visible';
+            statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+            statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+        }
+        //sets the message text
+        function setStatusNotice(text) {
+            statusNotice.innerText = text;
+            statusNotice.style.display = 'block';
+        }
+
+        //displayes an error in overlay
+        function displayFailureNotice(err) {
+            setStatusNotice(err instanceof Error ? err.message : String(err));
+            setStatusMode('notice');
+        }
+
+        //godot config parameters
+        const GODOT_CONFIG = {
+            args: [],
+            canvasResizePolicy: 2,
+            executable: "godot", //base name
+            mainPack: "dot.pck", //packed project data for our game
+            fileSizes: { "godot.wasm": 0, "dot.pck": 0 },
+            gdextensionlibs: [] //no gdextension libraries
+        };
+        window.engine = new Engine(GODOT_CONFIG); //starts the godot engine
+
+        //checks whether rewuired browser features exists
+        const missing = Engine.getMissingFeatures({ threads: true });
+        if (missing.length) { displayFailureNotice("Missing features:\n" + missing.join('\n')); return; }
+
+        //shows UI progress
+        setStatusMode('progress');
+        setStatusNotice('Initializing engine...');
+
+        //starts the engine officially
+        try {
+            await engine.startGame({
+                onProgress: (current, total) => {
+                    if (current > 0 && total > 0) { statusProgress.value = current; statusProgress.max = total; }
+                    else { statusProgress.removeAttribute('value'); statusProgress.removeAttribute('max'); }
+                }
+            });
+        } catch (err) {
+            console.error("[START] engine.startGame() rejected:", err);
+            displayFailureNotice(err);
+            return;
+        }
+        //once the engine is live, script tries to get memory buffer, if it cant, nothing will proceed safely
+        if (!acquireHeap()) {
+            displayFailureNotice("Failed to obtain Godot heap (HEAPF32)");
+            return;
+        }
+
+        //launches the simulation worker
+        setStatusNotice('Starting simulation worker...');
+
+        const baseUrl = location.href.substring(0, location.href.lastIndexOf('/') + 1);
+        const dotnetJsUrl = baseUrl + 'cs/_framework/dotnet.js';
+        const WORKER_READY_OFFSET = 0x8000;   // must match memory contract
+
+        //worker code is embedded as a string and turned into a blob, this creates an inline worker without needing a separate file
+        const workerScript = `
+            let csExports = null;
+            const ENTITY_OFFSET = 0x1000;
+            const ENTITY_COUNT = 1000;
+            const WORKER_READY_OFFSET = ${WORKER_READY_OFFSET};
+            
+
+            self.onmessage = async function(e) {
+            //worker listens for initialization message
+                if (e.data.type === 'init') {
+                    self.godotHeapF32 = new Float32Array(e.data.buffer);
+                    const dotnetUrl = e.data.dotnetUrl;
+
+                    // Load runtime and interop
+                    try {
+                        const dotnetModule = await import(dotnetUrl);
+                        const dotnetRuntime = await dotnetModule.dotnet.create();
+                        const exports = await dotnetRuntime.getAssemblyExports('CrossRuntime');
+                        await exports.Host.InitInterop();          // loads interop.js (needs godotHeapF32)
+                        await exports.GameLogic.InitEntities();    // bulk write initial entities
+
+                        // Signal renderer that entity buffer is valid - this is the synchronization point
+                        const readyFlag = new Int32Array(self.godotHeapF32.buffer, WORKER_READY_OFFSET, 1);
+                        Atomics.store(readyFlag, 0, 1);
+                        csExports = exports;
+
+                        // Start non‑blocking simulation loop
+                        function simulate() {
+                            if (!csExports) return;
+                            try {
+                                csExports.GameLogic.UpdateEntities(ENTITY_OFFSET, ENTITY_COUNT, 0.016);
+                            } catch (err) {
+                                console.error('[Worker] Update error:', err);
+                            }
+                            setTimeout(simulate, 0);
+                        }
+                        simulate();
+
+                        self.postMessage({ type: 'ready' });
+                    } catch (err) {
+                        self.postMessage({ type: 'error', message: err.message });
+                    }
+                }
+            };
+        `;
+
+
+        //creates worker script and starts worker
+        const blob = new Blob([workerScript], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(blob);
+        const worker = new Worker(workerUrl);
+
+        //main thread worker events, listens for worker completion and catches worker crashes
+        worker.onmessage = function(e) {
+            if (e.data.type === 'ready') {
+                console.log('[Main] Simulation worker running — renderer unlocked');
+                window.interopReady = true;
+                setStatusMode('hidden');
+            } else if (e.data.type === 'error') {
+                displayFailureNotice('Simulation worker failed: ' + e.data.message);
+            }
+        };
+
+        worker.onerror = function(err) {
+            console.error('[Main] Worker error:', err);
+            displayFailureNotice('Simulation worker crashed.');
+        };
+
+        // Pass the shared buffer and the absolute dotnet URL
+        worker.postMessage({
+            type: 'init',
+            buffer: window.godotHeapF32.buffer,
+            dotnetUrl: dotnetJsUrl
+        });
+
+
+    })();
+    </script>
+</body>
+</html>

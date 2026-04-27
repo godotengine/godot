@@ -1,0 +1,12 @@
+{
+  "struct_name": "Entity",
+  "entity_count": 1000,
+  "base_offset": 4096,
+  "worker_ready_offset": 32768,
+  "fields": [
+    { "name": "x",  "type": "f32", "default": 100.0 },
+    { "name": "y",  "type": "f32", "default": 100.0 },
+    { "name": "vx", "type": "f32", "default": 100.0 },
+    { "name": "vy", "type": "f32", "default": 0.0 }
+  ]
+}

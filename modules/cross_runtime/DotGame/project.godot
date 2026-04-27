@@ -1,0 +1,13 @@
+; Engine configuration file.
+
+config_version=5
+
+[application]
+
+config/name="DotGame"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.6")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"

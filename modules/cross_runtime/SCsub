@@ -1,0 +1,9 @@
+Import("env")
+
+env.add_source_files(env.modules_sources, [
+    "bridge.cpp",
+    "register_types.cpp",
+    "dot_renderer.cpp"
+    
+])
+
