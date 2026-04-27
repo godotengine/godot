@@ -176,6 +176,9 @@
 			productRefGroup = D0BCFE3518AEBDA2004A7AAE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				$spm_packages
+			);
 			targets = (
 				D0BCFE3318AEBDA2004A7AAE /* $binary */,
 			);
@@ -407,6 +410,9 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+		$spm_package_refs
+		$spm_package_products
 	};
 	rootObject = D0BCFE2C18AEBDA2004A7AAE /* Project object */;
 }
