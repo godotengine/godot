@@ -1459,7 +1459,7 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 							}
 						}
 					}
-					if (!is_rasterized && !fix_edge) {
+					if (!is_rasterized && !fix_edge && p_font_data->hinting == TextServer::HINTING_NONE) {
 						hb_raster_draw_reset(p_font_data->hb_mono);
 						hb_raster_draw_set_scale_factor(p_font_data->hb_mono, 64.0, 64.0);
 						if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
