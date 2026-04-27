@@ -1596,6 +1596,25 @@ bool GodotPhysicsServer3D::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axi
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
 
+void GodotPhysicsServer3D::generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) {
+	ERR_FAIL_COND_MSG(!p_target_rotation.is_finite() || p_target_rotation.length_squared() <= CMP_EPSILON, "Angular target rotation must be a finite, non-zero quaternion.");
+
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF);
+	WARN_PRINT_ONCE("Quaternion angular target rotations for Generic6DOFJoint3D are only supported by Jolt Physics. This value will be ignored by GodotPhysics3D.");
+}
+
+Quaternion GodotPhysicsServer3D::generic_6dof_joint_get_angular_target_rotation(RID p_joint) const {
+	const GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, Quaternion());
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_6DOF, Quaternion());
+
+	// GodotPhysics3D does not apply angular spring equilibrium points, so there is no body-space target to return.
+	WARN_PRINT_ONCE("Quaternion angular target rotations for Generic6DOFJoint3D are only supported by Jolt Physics. GodotPhysics3D returns the identity quaternion.");
+	return Quaternion();
+}
+
 void GodotPhysicsServer3D::free_rid(RID p_rid) {
 	_update_shapes(); //just in case
 

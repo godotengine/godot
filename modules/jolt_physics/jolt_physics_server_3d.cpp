@@ -1546,6 +1546,26 @@ bool JoltPhysicsServer3D::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 	return g6dof_joint->get_flag(p_axis, p_flag);
 }
 
+void JoltPhysicsServer3D::generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
+
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF);
+	JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<JoltGeneric6DOFJoint3D *>(joint);
+
+	g6dof_joint->set_angular_target_rotation(p_target_rotation);
+}
+
+Quaternion JoltPhysicsServer3D::generic_6dof_joint_get_angular_target_rotation(RID p_joint) const {
+	const JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, Quaternion());
+
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_6DOF, Quaternion());
+	const JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<const JoltGeneric6DOFJoint3D *>(joint);
+
+	return g6dof_joint->get_angular_target_rotation();
+}
+
 PhysicsServer3D::JointType JoltPhysicsServer3D::joint_get_type(RID p_joint) const {
 	const JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, JOINT_TYPE_PIN);
