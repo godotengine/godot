@@ -112,7 +112,7 @@ typedef struct {
 	int16_t dur_ms; 			// Duration of tone / rumble (if applicable) (neg = infinite)
 
 	uint16_t noise_intensity;
-	uint16_t lfo_freq; 			// Drives both tone and rumble geneators
+	uint16_t lfo_freq; 			// Drives both tone and rumble generators
 	uint8_t lfo_depth; 			// percentage, typically 100
 	uint8_t rand_tone_gain; 	// Randomize each LFO cycle's gain
 	uint8_t script_id; 			// Used w/ dBgain for scripted haptics
@@ -153,6 +153,100 @@ typedef struct
 	} payload;
 
 } FeatureReportMsg;
+
+// Triton and derivatives utilize output reports for haptic commands. This is a
+// snapshot from Nov 2024 -- things may change.
+
+// Triton Output Report Lengths #defs include +1 for the OR ID
+
+// Output Report Haptic Messages for Triton
+typedef struct
+{
+    uint8_t type;
+    uint16_t intensity;
+    struct
+    {
+        uint16_t speed;
+        int8_t gain;
+    } left, right;
+} MsgHapticRumble;
+#define HID_RUMBLE_OUTPUT_REPORT_BYTES 10
+
+
+typedef struct
+{
+    uint8_t side;
+    uint16_t on_us;
+    uint16_t off_us;
+    uint16_t repeat_count;
+    uint16_t gain_db; 
+} MsgHapticPulse;
+#define HID_HAPTIC_PULSE_OUTPUT_REPORT_BYTES 10
+
+typedef struct
+{
+    uint8_t side;
+    uint8_t command;
+    int8_t gain_db;
+} MsgHapticCommand;
+#define HID_HAPTIC_COMMAND_REPORT_BYTES 4
+
+typedef struct
+{
+    uint8_t side;
+    int8_t gain_db;
+    uint16_t frequency;
+    uint16_t duration_ms;
+    uint16_t lfo_freq;
+    uint8_t lfo_depth;
+} MsgHapticLfoTone;
+#define HID_HAPTIC_LFO_TONE_REPORT_BYTES 10
+
+typedef struct
+{
+    uint8_t side;
+    int8_t gain_db;
+    uint16_t duration_ms;
+    struct
+    {
+        uint16_t frequency;
+    } start, end;
+} MsgHapticLogSweep;
+#define HID_HAPTIC_LOG_SWEEP_REPORT_BYTES 9
+
+typedef struct m
+{
+    uint8_t side;
+    uint8_t script_id;
+    int8_t gain_db;
+} MsgHapticScript;
+#define HID_HAPTIC_SCRIPT_REPORT_BYTES 4
+
+typedef enum
+{
+    ID_OUT_REPORT_HAPTIC_RUMBLE		= 0x80,
+    ID_OUT_REPORT_HAPTIC_PULSE		= 0x81,
+    ID_OUT_REPORT_HAPTIC_COMMAND	= 0x82,
+    ID_OUT_REPORT_HAPTIC_LFO_TONE	= 0x83,
+    ID_OUT_REPORT_HAPTIC_LOG_SWEEP	= 0x85,
+    ID_OUT_REPORT_HAPTIC_SCRIPT		= 0x86,
+} ValveTritonOutReportMessageIDs;
+
+typedef struct
+{
+    uint8_t report_id;
+    union
+    {
+        MsgHapticRumble hapticRumble;
+        MsgHapticPulse hapticPulse;
+        MsgHapticCommand hapticCommand;
+        MsgHapticLfoTone hapticLfoTone;
+        MsgHapticLogSweep hapticLogSweep;
+        MsgHapticScript hapticScript;
+    } payload;
+
+} OutputReportMsg;
+
 
 // Roll this version forward anytime that you are breaking compatibility of existing
 // message types within ValveInReport_t or the header itself.  Hopefully this should
@@ -261,7 +355,7 @@ typedef struct
 	short sRightPadX;
 	short sRightPadY;
 
-	//This mimcs how the dongle reconstitutes HID packets, there will be 0-4 shorts depending on gyro mode
+	//This mimics how the dongle reconstitutes HID packets, there will be 0-4 shorts depending on gyro mode
 	unsigned char ucGyroDataType; //TODO could maybe find some unused bits in the button field for this info (is only 2bits)
 	short sGyro[4];
 
@@ -413,50 +507,128 @@ typedef struct
 	unsigned short sPressurePadRight;
 } SteamDeckStatePacket_t;
 
+
 typedef struct
 {
-	ValveInReportHeader_t header;
-	
-	union
-	{
-		ValveControllerStatePacket_t controllerState;
-		ValveControllerBLEStatePacket_t controllerBLEState;
-		ValveControllerDebugPacket_t debugState;
-		ValveControllerTrackpadImage_t padImage;
-		ValveControllerRawTrackpadImage_t rawPadImage;
-		SteamControllerWirelessEvent_t wirelessEvent;
-		SteamControllerStatusEvent_t statusEvent;
-		SteamDeckStatePacket_t deckState;
-	} payload;
-	
+    ValveInReportHeader_t header;
+
+    union
+    {
+        ValveControllerStatePacket_t controllerState;
+        ValveControllerBLEStatePacket_t controllerBLEState;
+        ValveControllerDebugPacket_t debugState;
+        ValveControllerTrackpadImage_t padImage;
+        ValveControllerRawTrackpadImage_t rawPadImage;
+        SteamControllerWirelessEvent_t wirelessEvent;
+        SteamControllerStatusEvent_t statusEvent;
+        SteamDeckStatePacket_t deckState;
+    } payload;
+
 } ValveInReport_t;
 
-
-// Enumeration for BLE packet protocol
 enum EBLEPacketReportNums
 {
-	// Skipping past 2-3 because they are escape characters in Uart protocol
-	k_EBLEReportState = 4,
-	k_EBLEReportStatus = 5,
+	k_EBLEReportState	= 4,
+	k_EBLEReportStatus	= 5,
 };
-
-
 // Enumeration of data chunks in BLE state packets
 enum EBLEOptionDataChunksBitmask
 {
-	// First byte upper nibble
-	k_EBLEButtonChunk1 = 0x10,
-	k_EBLEButtonChunk2 = 0x20,
-	k_EBLEButtonChunk3 = 0x40,
-	k_EBLELeftJoystickChunk = 0x80,
+    // First byte upper nibble
+    k_EBLEButtonChunk1 = 0x10,
+    k_EBLEButtonChunk2 = 0x20,
+    k_EBLEButtonChunk3 = 0x40,
+    k_EBLELeftJoystickChunk = 0x80,
 
-	// Second full byte
-	k_EBLELeftTrackpadChunk = 0x100,
-	k_EBLERightTrackpadChunk = 0x200,
-	k_EBLEIMUAccelChunk = 0x400,
-	k_EBLEIMUGyroChunk = 0x800,
-	k_EBLEIMUQuatChunk = 0x1000,
+    // Second full byte
+    k_EBLELeftTrackpadChunk = 0x100,
+    k_EBLERightTrackpadChunk = 0x200,
+    k_EBLEIMUAccelChunk = 0x400,
+    k_EBLEIMUGyroChunk = 0x800,
+    k_EBLEIMUQuatChunk = 0x1000,
 };
+
+// Triton and derivatives do not use the ValveInReport_t structure
+
+enum ETritonReportIDTypes
+{
+    ID_TRITON_CONTROLLER_STATE	= 0x42,
+    ID_TRITON_BATTERY_STATUS	= 0x43,
+    ID_TRITON_CONTROLLER_STATE_BLE = 0x45,
+    ID_TRITON_WIRELESS_STATUS_X = 0x46,
+    ID_TRITON_WIRELESS_STATUS   = 0x79,
+};
+
+enum ETritonWirelessState
+{
+    k_ETritonWirelessStateDisconnect = 1,
+	k_ETritonWirelessStateConnect = 2,
+};
+
+typedef struct
+{
+    uint32_t uTimestamp;
+    short sAccelX;
+    short sAccelY;
+    short sAccelZ;
+
+    short sGyroX;
+    short sGyroY;
+    short sGyroZ;
+
+    short sGyroQuatW;
+    short sGyroQuatX;
+    short sGyroQuatY;
+    short sGyroQuatZ;
+} TritonMTUIMU_t;
+
+typedef struct
+{
+    uint8_t cSeq_num;
+    uint32_t uButtons;
+    short sTriggerLeft;
+    short sTriggerRight;
+
+    short sLeftStickX;
+    short sLeftStickY;
+    short sRightStickX;
+    short sRightStickY;
+
+    short sLeftPadX;
+    short sLeftPadY;
+    unsigned short ucPressureLeft;
+
+    short sRightPadX;
+    short sRightPadY;
+    unsigned short ucPressureRight;
+    TritonMTUIMU_t imu;
+} TritonMTUFull_t;
+
+enum EChargeState
+{
+    k_EChargeStateReset,
+    k_EChargeStateDischarging,
+    k_EChargeStateCharging,
+    k_EChargeStateSrcValidate,
+    k_EChargeStateChargingDone,
+};
+
+typedef struct
+{
+    unsigned char ucChargeState; // EChargeState
+    unsigned char ucBatteryLevel;
+    unsigned short sBatteryVoltage;
+    unsigned short sSystemVoltage;
+    unsigned short sInputVoltage;
+    unsigned short sCurrent;
+    unsigned short sInputCurrent;
+    unsigned short sTemperature;
+} TritonBatteryStatus_t;
+
+typedef struct
+{
+    unsigned char state;
+} TritonWirelessStatus_t;
 
 #pragma pack()
 

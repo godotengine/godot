@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,8 @@
 
 #if defined(__SIZEOF_WCHAR_T__)
 #define SDL_SIZEOF_WCHAR_T __SIZEOF_WCHAR_T__
+#elif defined(SDL_PLATFORM_NGAGE)
+#define SDL_SIZEOF_WCHAR_T 2
 #elif defined(SDL_PLATFORM_WINDOWS)
 #define SDL_SIZEOF_WCHAR_T 2
 #else  // assume everything else is UTF-32 (add more tests if compiler-assert fails below!)
@@ -716,7 +718,7 @@ int SDL_memcmp(const void *s1, const void *s2, size_t len)
         ++s2p;
     }
     return 0;
-#endif // HAVE_MEMCMP
+#endif // SDL_PLATFORM_VITA
 }
 
 size_t SDL_strlen(const char *string)
@@ -1117,7 +1119,7 @@ char *SDL_strnstr(const char *haystack, const char *needle, size_t maxlen)
         --maxlen;
     }
     return NULL;
-#endif // HAVE_STRSTR
+#endif // HAVE_STRNSTR
 }
 
 char *SDL_strstr(const char *haystack, const char *needle)
@@ -1828,24 +1830,7 @@ int SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_
     return result;
 }
 
-#if defined(HAVE_LIBC) && defined(__WATCOMC__)
-// _vsnprintf() doesn't ensure nul termination
-int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
-{
-    int result;
-    if (!fmt) {
-        fmt = "";
-    }
-    result = _vsnprintf(text, maxlen, fmt, ap);
-    if (maxlen > 0) {
-        text[maxlen - 1] = '\0';
-    }
-    if (result < 0) {
-        result = (int)maxlen;
-    }
-    return result;
-}
-#elif defined(HAVE_VSNPRINTF)
+#if defined(HAVE_VSNPRINTF)
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
     if (!fmt) {
@@ -2373,6 +2358,10 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FO
 
 int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap)
 {
+    if (text) {
+        text[0] = 0;
+    }
+
     char *fmt_utf8 = NULL;
     if (fmt) {
         fmt_utf8 = SDL_iconv_string("UTF-8", "WCHAR_T", (const char *)fmt, (SDL_wcslen(fmt) + 1) * sizeof(wchar_t));
@@ -2494,7 +2483,7 @@ int SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list
 char * SDL_strpbrk(const char *str, const char *breakset)
 {
 #ifdef HAVE_STRPBRK
-    return strpbrk(str, breakset);
+    return SDL_const_cast(char *, strpbrk(str, breakset));
 #else
 
     for (; *str; str++) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -391,11 +391,50 @@ extern "C" {
  * concept, so it applies to a physical audio device in this case, and not an
  * SDL_AudioStream, nor an SDL logical audio device.
  *
+ * For Windows WASAPI audio, the following roles are supported, and map to
+ * `AUDIO_STREAM_CATEGORY`:
+ *
+ * - "Other" (default)
+ * - "Communications" - Real-time communications, such as VOIP or chat
+ * - "Game" - Game audio
+ * - "GameChat" - Game chat audio, similar to "Communications" except that
+ *   this will not attenuate other audio streams
+ * - "Movie" - Music or sound with dialog
+ * - "Media" - Music or sound without dialog
+ *
+ * Android's AAudio target supports this hint as of SDL 3.4.4. Android does
+ * not support the exact same options as WASAPI, but for portability, will
+ * attempt to map these same strings to the `aaudio_usage_t` constants. For
+ * example, "Movie" and "Media" will both map to `AAUDIO_USAGE_MEDIA`, etc.
+ *
+ * If your application applies its own echo cancellation, gain control, and
+ * noise reduction it should also set SDL_HINT_AUDIO_DEVICE_RAW_STREAM.
+ *
  * This hint should be set before an audio device is opened.
  *
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
+
+/**
+ * Specify whether this audio device should do audio processing.
+ *
+ * Some operating systems perform echo cancellation, gain control, and noise
+ * reduction as needed. If your application already handles these, you can set
+ * this hint to prevent the OS from doing additional audio processing.
+ *
+ * This corresponds to the WASAPI audio option `AUDCLNT_STREAMOPTIONS_RAW`.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": audio processing can be done by the OS. (default)
+ * - "1": audio processing is done by the application.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_AUDIO_DEVICE_RAW_STREAM "SDL_AUDIO_DEVICE_RAW_STREAM"
 
 /**
  * Specify the input file when recording audio using the disk audio driver.
@@ -686,6 +725,21 @@ extern "C" {
 #define SDL_HINT_DISPLAY_USABLE_BOUNDS "SDL_DISPLAY_USABLE_BOUNDS"
 
 /**
+ * Set the level of checking for invalid parameters passed to SDL functions.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "1": Enable fast parameter error checking, e.g. quick NULL checks, etc.
+ * - "2": Enable full parameter error checking, e.g. validating objects are
+ *   the correct type, etc. (default)
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_INVALID_PARAM_CHECKS "SDL_INVALID_PARAM_CHECKS"
+
+/**
  * Disable giving back control to the browser automatically when running with
  * asyncify.
  *
@@ -711,8 +765,6 @@ extern "C" {
  *
  * This hint only applies to the emscripten platform.
  *
- * The default value is "#canvas"
- *
  * This hint should be set before creating a window.
  *
  * \since This hint is available since SDL 3.2.0.
@@ -726,7 +778,7 @@ extern "C" {
  *
  * The variable can be one of:
  *
- * - "#window": the javascript window object (default)
+ * - "#window": the javascript window object
  * - "#document": the javascript document object
  * - "#screen": the javascript window.screen object
  * - "#canvas": the WebGL canvas element
@@ -1037,6 +1089,21 @@ extern "C" {
  */
 #define SDL_HINT_HIDAPI_LIBUSB "SDL_HIDAPI_LIBUSB"
 
+
+/**
+ * A variable to control whether HIDAPI uses libusb for GameCube adapters.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will not use libusb for GameCube adapters.
+ * - "1": HIDAPI will use libusb for GameCube adapters if available. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_HIDAPI_LIBUSB_GAMECUBE "SDL_HIDAPI_LIBUSB_GAMECUBE"
+
 /**
  * A variable to control whether HIDAPI uses libusb only for whitelisted
  * devices.
@@ -1143,8 +1210,8 @@ extern "C" {
 #define SDL_HINT_IME_IMPLEMENTED_UI "SDL_IME_IMPLEMENTED_UI"
 
 /**
- * A variable controlling whether the home indicator bar on iPhone X should be
- * hidden.
+ * A variable controlling whether the home indicator bar on iPhone X and later
+ * should be hidden.
  *
  * The variable can be set to the following values:
  *
@@ -1344,6 +1411,26 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_GAMEINPUT "SDL_JOYSTICK_GAMEINPUT"
+
+/**
+ * A variable controlling whether GameInput should be used for handling 
+ * GIP devices that require raw report processing, but aren't supported 
+ * by HIDRAW, such as Xbox One Guitars.
+ * 
+ * Note that this is only supported with GameInput 3 or newer.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": GameInput is not used to handle raw GIP devices.
+ * - "1": GameInput is used.
+ *
+ * The default is "1" when using GameInput 3 or newer, and is "0" otherwise.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.4.4.
+ */
+#define SDL_HINT_JOYSTICK_GAMEINPUT_RAW "SDL_JOYSTICK_GAMEINPUT_RAW"
 
 /**
  * A variable containing a list of devices known to have a GameCube form
@@ -1716,12 +1803,105 @@ extern "C" {
  * A variable controlling whether the HIDAPI driver for HORI licensed Steam
  * controllers should be used.
  *
- * This variable can be set to the following values: "0" - HIDAPI driver is
- * not used "1" - HIDAPI driver is used
+ * The variable can be set to the following values:
  *
- * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAM_HORI "SDL_JOYSTICK_HIDAPI_STEAM_HORI"
+
+/**
+ * A variable controlling whether the HIDAPI driver for some Logitech wheels
+ * should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_LG4FF "SDL_JOYSTICK_HIDAPI_LG4FF"
+
+/**
+ * A variable controlling whether the HIDAPI driver for 8BitDo controllers
+ * should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_8BITDO "SDL_JOYSTICK_HIDAPI_8BITDO"
+
+/**
+ * A variable controlling whether the HIDAPI driver for SInput controllers
+ * should be used.
+ *
+ * More info - https://github.com/HandHeldLegend/SInput-HID
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_SINPUT"
+
+/**
+ * A variable controlling whether the HIDAPI driver for ZUIKI controllers
+ * should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_ZUIKI "SDL_JOYSTICK_HIDAPI_ZUIKI"
+
+/**
+ * A variable controlling whether the HIDAPI driver for Flydigi controllers
+ * should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI "SDL_JOYSTICK_HIDAPI_FLYDIGI"
 
 /**
  * A variable controlling whether the HIDAPI driver for Nintendo Switch
@@ -1773,6 +1953,23 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED "SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"
+
+/**
+ * A variable controlling whether the HIDAPI driver for Nintendo Switch 2
+ * controllers should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_SWITCH2 "SDL_JOYSTICK_HIDAPI_SWITCH2"
 
 /**
  * A variable controlling whether Nintendo Switch Joy-Con controllers will be
@@ -1925,6 +2122,41 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
+
+/**
+ * A variable controlling whether the new HIDAPI driver for wired Xbox One
+ * (GIP) controllers should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_GIP "SDL_JOYSTICK_HIDAPI_GIP"
+
+/**
+ * A variable controlling whether the new HIDAPI driver for wired Xbox One
+ * (GIP) controllers should reset the controller if it can't get the metadata
+ * from the controller.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Assume this is a generic controller.
+ * - "1": Reset the controller to get metadata.
+ *
+ * By default the controller is not reset.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA "SDL_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA"
 
 /**
  * A variable controlling whether IOKit should be used for controller
@@ -2228,9 +2460,9 @@ extern "C" {
  *   pressing the 1 key would yield the keycode SDLK_1, or '1', instead of
  *   SDLK_AMPERSAND, or '&'
  * - "latin_letters": For keyboards using non-Latin letters, such as Russian
- *   or Thai, the letter keys generate keycodes as though it had an en_US
- *   layout. e.g. pressing the key associated with SDL_SCANCODE_A on a Russian
- *   keyboard would yield 'a' instead of a Cyrillic letter.
+ *   or Thai, the letter keys generate keycodes as though it had an English
+ *   QWERTY layout. e.g. pressing the key associated with SDL_SCANCODE_A on a
+ *   Russian keyboard would yield 'a' instead of a Cyrillic letter.
  *
  * The default value for this hint is "french_numbers,latin_letters"
  *
@@ -2290,6 +2522,27 @@ extern "C" {
 #define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER "SDL_KMSDRM_REQUIRE_DRM_MASTER"
 
 /**
+ * A variable that controls whether KMSDRM will use "atomic" functionality.
+ *
+ * The KMSDRM backend can use atomic commits, if both DRM_CLIENT_CAP_ATOMIC
+ * and DRM_CLIENT_CAP_UNIVERSAL_PLANES is supported by the system. As of SDL
+ * 3.4.0, it will favor this functionality, but in case this doesn't work well
+ * on a given system or other surprises, this hint can be used to disable it.
+ *
+ * This hint can not enable the functionality if it isn't available.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": SDL will not use the KMSDRM "atomic" functionality.
+ * - "1": SDL will allow usage of the KMSDRM "atomic" functionality. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_KMSDRM_ATOMIC "SDL_KMSDRM_ATOMIC"
+
+/**
  * A variable controlling the default SDL log levels.
  *
  * This variable is a comma separated set of category=level tokens that define
@@ -2308,6 +2561,11 @@ extern "C" {
  * If this hint isn't set, the default log levels are equivalent to:
  *
  * `app=info,assert=warn,test=verbose,*=error`
+ *
+ * If the `DEBUG_INVOCATION` environment variable is set to "1", the default
+ * log levels are equivalent to:
+ *
+ * `assert=warn,test=verbose,*=debug`
  *
  * This hint can be set anytime.
  *
@@ -2411,6 +2669,21 @@ extern "C" {
 #define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_MAC_SCROLL_MOMENTUM"
 
 /**
+ * A variable controlling whether holding down a key will repeat the pressed
+ * key or open the accents menu on macOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Holding a key will repeat the pressed key.
+ * - "1": Holding a key will open the accents menu for that key. (default)
+ *
+ * This hint needs to be set before SDL_Init().
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_MAC_PRESS_AND_HOLD "SDL_MAC_PRESS_AND_HOLD"
+
+/**
  * Request SDL_AppIterate() be called at a specific rate.
  *
  * If this is set to a number, it represents Hz, so "60" means try to iterate
@@ -2429,6 +2702,10 @@ extern "C" {
  *
  * This defaults to 0, and specifying NULL for the hint's value will restore
  * the default.
+ *
+ * This doesn't have to be an integer value. For example, "59.94" won't be
+ * rounded to an integer rate; the digits after the decimal are actually
+ * respected.
  *
  * This hint can be set anytime.
  *
@@ -2486,6 +2763,24 @@ extern "C" {
 #define SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR "SDL_MOUSE_DEFAULT_SYSTEM_CURSOR"
 
 /**
+ * A variable setting whether we should scale cursors by the current display
+ * scale.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Cursors will not change size based on the display content scale.
+ *   (default)
+ * - "1": Cursors will automatically match the display content scale (e.g. a
+ *   2x sized cursor will be used when the window is on a monitor with 200%
+ *   scale). This is currently implemented on Windows and Wayland.
+ *
+ * This hint needs to be set before creating cursors.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_MOUSE_DPI_SCALE_CURSORS "SDL_MOUSE_DPI_SCALE_CURSORS"
+
+/**
  * A variable controlling whether warping a hidden mouse cursor will activate
  * relative mouse mode.
  *
@@ -2493,7 +2788,7 @@ extern "C" {
  * the window center occur within a short time period, SDL will emulate mouse
  * warps using relative mouse mode. This can provide smoother and more
  * reliable mouse motion for some older games, which continuously calculate
- * the distance travelled by the mouse pointer and warp it back to the center
+ * the distance traveled by the mouse pointer and warp it back to the center
  * of the window, rather than using relative mouse motion.
  *
  * Note that relative mouse mode may have different mouse acceleration
@@ -2737,6 +3032,46 @@ extern "C" {
 #define SDL_HINT_OPENGL_ES_DRIVER "SDL_OPENGL_ES_DRIVER"
 
 /**
+ * A variable controlling whether to force an sRGB-capable OpenGL context.
+ *
+ * At OpenGL context creation time, some platforms can request an sRGB-capable
+ * context. However, sometimes any form of the request can cause surprising
+ * results on some drivers, platforms, and hardware. Usually the surprise is
+ * in the form of rendering that is either a little darker or a little
+ * brighter than intended.
+ *
+ * This hint allows the user to override the app's sRGB requests and either
+ * force a specific value, or avoid requesting anything at all, depending on
+ * what makes things work correctly for their system.
+ *
+ * This is meant as a fail-safe; apps should probably not explicitly set this,
+ * and most users should not, either.
+ *
+ * Note that some platforms cannot make this request at all, and on all
+ * platforms this request can be denied by the operating system.
+ *
+ * In addition to attempting to obtain the type of sRGB-capable OpenGL context
+ * requested by this hint, SDL will try to force the state of
+ * GL_FRAMEBUFFER_SRGB on the new context, if appropriate.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Force a request for an OpenGL context that is _not_ sRGB-capable.
+ * - "1": Force a request for an OpenGL context that _is_ sRGB-capable.
+ * - "skip": Don't make any request for an sRGB-capable context (don't specify
+ *   the attribute at all during context creation time).
+ * - any other string is undefined behavior.
+ *
+ * If unset, or set to an empty string, SDL will make a request using the
+ * value the app specified with the SDL_GL_FRAMEBUFFER_SRGB_CAPABLE attribute.
+ *
+ * This hint should be set before an OpenGL context is created.
+ *
+ * \since This hint is available since SDL 3.4.2.
+ */
+#define SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER "SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER"
+
+/**
  * Mechanism to specify openvr_api library location
  *
  * By default, when using the OpenVR driver, it will search for the API
@@ -2858,6 +3193,24 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_RENDER_DIRECT3D11_DEBUG "SDL_RENDER_DIRECT3D11_DEBUG"
+
+/**
+ * A variable controlling whether to use the Direct3D 11 WARP software
+ * rasterizer.
+ *
+ * For more information, see:
+ * https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable WARP rasterizer. (default)
+ * - "1": Enable WARP rasterizer.
+ *
+ * This hint should be set before creating a renderer.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_RENDER_DIRECT3D11_WARP "SDL_RENDER_DIRECT3D11_WARP"
 
 /**
  * A variable controlling whether to enable Vulkan Validation Layers.
@@ -3040,6 +3393,49 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED "SDL_ROG_GAMEPAD_MICE_EXCLUDED"
+
+/**
+ * A variable controlling the width of the PS2's framebuffer in pixels.
+ *
+ * By default, the variable is "640".
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_PS2_GS_WIDTH    "SDL_PS2_GS_WIDTH"
+
+/**
+ * A variable controlling the height of the PS2's framebuffer in pixels.
+ *
+ * By default, the variable is "448".
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_PS2_GS_HEIGHT    "SDL_PS2_GS_HEIGHT"
+
+/**
+ * A variable controlling whether the signal is interlaced or progressive.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Image is interlaced. (default)
+ * - "1": Image is progressive.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_PS2_GS_PROGRESSIVE    "SDL_PS2_GS_PROGRESSIVE"
+
+/**
+ * A variable controlling the video mode of the console.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "": Console-native. (default)
+ * - "NTSC": 60hz region.
+ * - "PAL": 50hz region.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_PS2_GS_MODE    "SDL_PS2_GS_MODE"
 
 /**
  * A variable controlling which Dispmanx layer to use on a Raspberry PI.
@@ -3267,10 +3663,12 @@ extern "C" {
  * prioritized in the list of displays, as exposed by calling
  * SDL_GetDisplays(), with the first listed becoming the primary display. The
  * naming convention can vary depending on the environment, but it is usually
- * a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-A-1',etc...).
+ * a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-A-1', etc...).
  *
- * On Wayland and X11 desktops, the connector names associated with displays
- * can typically be found by using the `xrandr` utility.
+ * On Wayland desktops, the connector names associated with displays can be
+ * found in the `name` property of the info output from `wayland-info -i
+ * wl_output`. On X11 desktops, the `xrandr` utility can be used to retrieve
+ * the connector names associated with displays.
  *
  * This hint is currently supported on the following drivers:
  *
@@ -3408,14 +3806,53 @@ extern "C" {
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY "SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY"
 
 /**
+ * A variable indicating whether the metal layer drawable size should be
+ * updated for the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event on macOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": the metal layer drawable size will not be updated on the
+ *   SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
+ * - "1": the metal layer drawable size will be updated on the
+ *   SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event. (default)
+ *
+ * This hint should be set before SDL_Metal_CreateView called.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE "SDL_VIDEO_METAL_AUTO_RESIZE_DRAWABLE"
+
+/**
+ * A variable controlling whether SDL will attempt to automatically set the
+ * destination display to a mode most closely matching that of the previous
+ * display if an exclusive fullscreen window is moved onto it.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": SDL will not attempt to automatically set a matching mode on the
+ *   destination display. If an exclusive fullscreen window is moved to a new
+ *   display, the window will become fullscreen desktop.
+ * - "1": SDL will attempt to automatically set a mode on the destination
+ *   display that most closely matches the mode of the display that the
+ *   exclusive fullscreen window was previously on. (default)
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE "SDL_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE"
+
+/**
  * A variable controlling whether fullscreen windows are minimized when they
  * lose focus.
  *
  * The variable can be set to the following values:
  *
  * - "0": Fullscreen windows will not be minimized when they lose focus.
- *   (default)
  * - "1": Fullscreen windows are minimized when they lose focus.
+ * - "auto": Fullscreen windows are minimized when they lose focus if they use
+ *   exclusive fullscreen modes, so the desktop video mode is restored.
+ *   (default)
  *
  * This hint can be set anytime.
  *
@@ -4061,15 +4498,14 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": GameInput is not used for raw keyboard and mouse events.
+ * - "0": GameInput is not used for raw keyboard and mouse events. (default)
  * - "1": GameInput is used for raw keyboard and mouse events, if available.
- *   (default)
  *
  * This hint should be set before SDL is initialized.
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_GAMEINPUT   "SDL_WINDOWS_GAMEINPUT"
+#define SDL_HINT_WINDOWS_GAMEINPUT "SDL_WINDOWS_GAMEINPUT"
 
 /**
  * A variable controlling whether raw keyboard events are used on Windows.
@@ -4084,6 +4520,45 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD "SDL_WINDOWS_RAW_KEYBOARD"
+
+/**
+ * A variable controlling whether or not the RIDEV_NOHOTKEYS flag is set when
+ * enabling Windows raw keyboard events.
+ *
+ * This blocks any hotkeys that have been registered by applications from
+ * having any effect beyond generating raw WM_INPUT events.
+ *
+ * This flag does not affect system-hotkeys like ALT-TAB or CTRL-ALT-DEL, but
+ * does affect the Windows Logo key since it is a userland hotkey registered
+ * by explorer.exe.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Hotkeys are not excluded. (default)
+ * - "1": Hotkeys are excluded.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"
+
+/**
+ * A variable controlling whether the RIDEV_INPUTSINK flag is set when
+ * enabling Windows raw keyboard events.
+ *
+ * This enables the window to still receive input even if not in foreground.
+ *
+ * Focused windows that receive text input will still prevent input events from triggering.
+ *
+ * - "0": Input is not received when not in focus or foreground. (default)
+ * - "1": Input will be received even when not in focus or foreground.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.4.
+ */
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK "SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"
 
 /**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
@@ -4114,7 +4589,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
+#define SDL_HINT_WINDOWS_INTRESOURCE_ICON "SDL_WINDOWS_INTRESOURCE_ICON"
 
 /**
  * A variable to specify custom icon resource id from RC file on Windows
@@ -4287,7 +4762,6 @@ extern "C" {
  */
 #define SDL_HINT_PEN_TOUCH_EVENTS "SDL_PEN_TOUCH_EVENTS"
 
-
 /**
  * An enumeration of hint priorities.
  *
@@ -4386,19 +4860,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \threadsafety It is safe to call this function from any thread, however the
- *               return value only remains valid until the hint is changed; if
- *               another thread might do so, the app should supply locks
- *               and/or make a copy of the string. Note that using a hint
- *               callback instead is always thread-safe, as SDL holds a lock
- *               on the thread subsystem during the callback.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.
@@ -4421,7 +4890,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetHintBoolean(const char *name, bool defau
  * A callback used to send notifications of hint value changes.
  *
  * This is called an initial time during SDL_AddHintCallback with the hint's
- * current value, and then again each time the hint's value changes.
+ * current value, and then again each time the hint's value changes. In the
+ * initial call, the current value is in both `oldValue` and `newValue`.
  *
  * \param userdata what was passed as `userdata` to SDL_AddHintCallback().
  * \param name what was passed as `name` to SDL_AddHintCallback().
@@ -4474,8 +4944,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintC
  * \sa SDL_AddHintCallback
  */
 extern SDL_DECLSPEC void SDLCALL SDL_RemoveHintCallback(const char *name,
-                                                     SDL_HintCallback callback,
-                                                     void *userdata);
+                                                        SDL_HintCallback callback,
+                                                        void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

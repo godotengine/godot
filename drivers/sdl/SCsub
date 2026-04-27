@@ -96,24 +96,34 @@ if env["builtin_sdl"]:
     # HIDAPI
     thirdparty_sources += [
         "hidapi/SDL_hidapi.c",
+        "haptic/hidapi/SDL_hidapihaptic.c",
+        "haptic/hidapi/SDL_hidapihaptic_lg4ff.c",
+        "joystick/hidapi/SDL_report_descriptor.c",
+        "joystick/hidapi/SDL_hidapi_8bitdo.c",
         "joystick/hidapi/SDL_hidapi_combined.c",
+        "joystick/hidapi/SDL_hidapi_flydigi.c",
         "joystick/hidapi/SDL_hidapi_gamecube.c",
+        "joystick/hidapi/SDL_hidapi_gip.c",
         "joystick/hidapi/SDL_hidapijoystick.c",
+        "joystick/hidapi/SDL_hidapi_lg4ff.c",
         "joystick/hidapi/SDL_hidapi_luna.c",
         "joystick/hidapi/SDL_hidapi_ps3.c",
         "joystick/hidapi/SDL_hidapi_ps4.c",
         "joystick/hidapi/SDL_hidapi_ps5.c",
         "joystick/hidapi/SDL_hidapi_rumble.c",
         "joystick/hidapi/SDL_hidapi_shield.c",
+        "joystick/hidapi/SDL_hidapi_sinput.c",
         "joystick/hidapi/SDL_hidapi_stadia.c",
         "joystick/hidapi/SDL_hidapi_steam.c",
         "joystick/hidapi/SDL_hidapi_steamdeck.c",
         "joystick/hidapi/SDL_hidapi_steam_hori.c",
+        "joystick/hidapi/SDL_hidapi_steam_triton.c",
         "joystick/hidapi/SDL_hidapi_switch.c",
         "joystick/hidapi/SDL_hidapi_wii.c",
         "joystick/hidapi/SDL_hidapi_xbox360.c",
         "joystick/hidapi/SDL_hidapi_xbox360w.c",
         "joystick/hidapi/SDL_hidapi_xboxone.c",
+        "joystick/hidapi/SDL_hidapi_zuiki.c",
     ]
 
     # Platform specific sources.
@@ -141,7 +151,7 @@ if env["builtin_sdl"]:
             "thread/pthread/SDL_systls.c",
             "timer/unix/SDL_systimer.c",
         ]
-        env_sdl.Prepend(CPPPATH=[thirdparty_dir + "core/linux"])
+        env_sdl.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/udev/", thirdparty_dir + "core/linux"])
 
     elif env["platform"] == "macos":
         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_MACOS"])
@@ -163,7 +173,7 @@ if env["builtin_sdl"]:
     elif env["platform"] == "windows":
         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_WINDOWS"])
         thirdparty_sources += [
-            "core/windows/SDL_gameinput.c",
+            "core/windows/SDL_gameinput.cpp",
             "core/windows/SDL_hid.c",
             "core/windows/SDL_immdevice.c",
             "core/windows/SDL_windows.c",

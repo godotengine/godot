@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,9 @@
 #ifndef DBUS_TIMEOUT_INFINITE
 #define DBUS_TIMEOUT_INFINITE ((int) 0x7fffffff)
 #endif
+#ifndef DBUS_TYPE_UNIX_FD
+#define DBUS_TYPE_UNIX_FD ((int) 'h')
+#endif
 
 typedef struct SDL_DBusContext
 {
@@ -43,6 +46,8 @@ typedef struct SDL_DBusContext
     DBusConnection *(*bus_get_private)(DBusBusType, DBusError *);
     dbus_bool_t (*bus_register)(DBusConnection *, DBusError *);
     void (*bus_add_match)(DBusConnection *, const char *, DBusError *);
+    void (*bus_remove_match)(DBusConnection *, const char *, DBusError *);
+    const char *(*bus_get_unique_name)(DBusConnection *);
     DBusConnection *(*connection_open_private)(const char *, DBusError *);
     void (*connection_set_exit_on_disconnect)(DBusConnection *, dbus_bool_t);
     dbus_bool_t (*connection_get_is_connected)(DBusConnection *);
@@ -57,10 +62,14 @@ typedef struct SDL_DBusContext
     void (*connection_unref)(DBusConnection *);
     void (*connection_flush)(DBusConnection *);
     dbus_bool_t (*connection_read_write)(DBusConnection *, int);
+    dbus_bool_t (*connection_read_write_dispatch)(DBusConnection *, int);
     DBusDispatchStatus (*connection_dispatch)(DBusConnection *);
+    dbus_bool_t (*type_is_fixed)(int);
     dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
     dbus_bool_t (*message_has_path)(DBusMessage *, const char *);
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
+    DBusMessage *(*message_new_signal)(const char *, const char *, const char *);
+    void (*message_set_no_reply)(DBusMessage *, dbus_bool_t);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);
     void (*message_iter_init_append)(DBusMessage *, DBusMessageIter *);
@@ -78,6 +87,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*threads_init_default)(void);
     void (*error_init)(DBusError *);
     dbus_bool_t (*error_is_set)(const DBusError *);
+    dbus_bool_t (*error_has_name)(const DBusError *, const char *);
     void (*error_free)(DBusError *);
     char *(*get_local_machine_id)(void);
     char *(*try_get_local_machine_id)(DBusError *);
@@ -92,14 +102,19 @@ extern void SDL_DBus_Quit(void);
 extern SDL_DBusContext *SDL_DBus_GetContext(void);
 
 // These use the built-in Session connection.
-extern bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallMethod(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...);
 extern bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...);
-extern bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+// save_reply must be non-NULL if it's a string property
+extern bool SDL_DBus_QueryProperty(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
 
 // These use whatever connection you like.
-extern bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...);
 extern bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
-extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+// save_reply must be non-NULL if it's a string property
+extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+
+// Used to free any reply returned from SDL_DBus_CallMethod() and SDL_DBus_QueryProperty()
+extern void SDL_DBus_FreeReply(DBusMessage **saved_reply);
 
 extern void SDL_DBus_ScreensaverTickle(void);
 extern bool SDL_DBus_ScreensaverInhibit(bool inhibit);
@@ -108,6 +123,8 @@ extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
 
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
+
+extern int SDL_DBus_CameraPortalRequestAccess(void);
 
 #endif // HAVE_DBUS_DBUS_H
 

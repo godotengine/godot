@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,12 +42,6 @@
 #define GYRO_RES_PER_DEGREE             1024.0f
 #define ACCEL_RES_PER_G                 8192.0f
 #define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
-
-#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-#define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0) |  \
-                            (((Uint32)(B)) << 8) |  \
-                            (((Uint32)(C)) << 16) | \
-                            (((Uint32)(D)) << 24))
 
 enum
 {
@@ -162,6 +156,7 @@ typedef struct
     Uint8 rgucTouchpadData1[3];   // 32 - X/Y, 12 bits per axis
     Uint8 ucTouchpadCounter2;     // 35 - high bit clear + counter
     Uint8 rgucTouchpadData2[3];   // 36 - X/Y, 12 bits per axis
+    Uint8 rgucDeviceSpecific[8];  // 40
 
     // There's more unknown data at the end, and a 32-bit CRC on Bluetooth
 } PS5StatePacketAlt_t;
@@ -230,7 +225,7 @@ typedef struct
 {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
-    bool is_nacon_dongle;
+    bool is_dongle;
     bool use_alternate_report;
     bool sensors_supported;
     bool lightbar_supported;
@@ -238,6 +233,9 @@ typedef struct
     bool playerled_supported;
     bool touchpad_supported;
     bool effects_supported;
+    bool guitar_whammy_supported;
+    bool guitar_tilt_supported;
+    bool guitar_effects_selector_supported;
     HIDAPI_PS5_EnhancedReportHint enhanced_report_hint;
     bool enhanced_reports;
     bool enhanced_mode;
@@ -454,6 +452,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         if (size == 48 && data[2] == 0x28) {
             Uint8 capabilities = data[4];
             Uint8 capabilities2 = data[20];
+            Uint8 device_specific_capabilities = data[24];
             Uint8 device_type = data[5];
 
 #ifdef DEBUG_PS5_PROTOCOL
@@ -475,12 +474,25 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->playerled_supported = true;
             }
 
+            if (capabilities2 & 0x01) {
+                ctx->report_battery = true;
+            }
+
             switch (device_type) {
             case 0x00:
                 joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
                 break;
             case 0x01:
                 joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                if (device_specific_capabilities & 0x01) {
+                    ctx->guitar_effects_selector_supported = true;
+                }
+                if (device_specific_capabilities & 0x02) {
+                    ctx->guitar_tilt_supported = true;
+                }
+                if (device_specific_capabilities & 0x04) {
+                    ctx->guitar_whammy_supported = true;
+                }
                 break;
             case 0x02:
                 joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
@@ -500,6 +512,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             }
 
             ctx->use_alternate_report = true;
+            ctx->report_battery = true;
 
             if (device->vendor_id == USB_VENDOR_NACON_ALT &&
                 (device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRED ||
@@ -515,8 +528,10 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             ctx->touchpad_supported = true;
             ctx->use_alternate_report = true;
         } else if (device->vendor_id == USB_VENDOR_RAZER &&
-                   device->product_id == USB_PRODUCT_RAZER_KITSUNE) {
-            // The Razer Kitsune doesn't respond to the detection protocol, but has a touchpad
+                   (device->product_id == USB_PRODUCT_RAZER_KITSUNE ||
+                    device->product_id == USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRED ||
+                    device->product_id == USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRELESS)) {
+            // The Razer Kitsune and Raiju don't respond to the detection protocol, but have a touchpad
             joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
             ctx->touchpad_supported = true;
             ctx->use_alternate_report = true;
@@ -524,9 +539,13 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
 
-    if (device->vendor_id == USB_VENDOR_NACON_ALT &&
-        device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRELESS) {
-        ctx->is_nacon_dongle = true;
+    if ((device->vendor_id == USB_VENDOR_NACON_ALT &&
+         device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRELESS) ||
+        (device->vendor_id == USB_VENDOR_RAZER &&
+         (device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRELESS ||
+          device->product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRELESS ||
+          device->product_id == USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRELESS))) {
+        ctx->is_dongle = true;
     }
 
     device->joystick_type = joystick_type;
@@ -540,7 +559,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     }
     HIDAPI_SetDeviceSerial(device, serial);
 
-    if (ctx->is_nacon_dongle) {
+    if (ctx->is_dongle) {
         // We don't know if this is connected yet, wait for reports
         return true;
     }
@@ -823,7 +842,7 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
     if (ctx->sensors_supported) {
         // Standard DualSense sensor update rate is 250 Hz over USB
         float update_rate = 250.0f;
-        
+
         if (ctx->device->is_bluetooth) {
             // Bluetooth sensor update rate appears to be 1000 Hz
             update_rate = 1000.0f;
@@ -833,6 +852,11 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
         }
 
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, update_rate);
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
+    }
+
+    if (ctx->guitar_tilt_supported) {
+        float update_rate = 250.0f;
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
     }
 
@@ -964,6 +988,10 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     joystick->nhats = 1;
     joystick->firmware_version = ctx->firmware_version;
 
+    if (ctx->is_dongle) {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
+    }
+
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
                         SDL_PS5EnhancedReportsChanged, ctx);
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
@@ -1062,10 +1090,11 @@ static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *c
 
     if (ctx->device->is_bluetooth) {
         data[0] = k_EPS5ReportIdBluetoothEffects;
-        data[1] = 0x02; // Magic value
+        data[1] = 0x00; // Tag and sequence
+        data[2] = 0x10; // Magic value
 
         report_size = 78;
-        offset = 2;
+        offset = 3;
     } else {
         data[0] = k_EPS5ReportIdUsbEffects;
 
@@ -1122,7 +1151,7 @@ static bool HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device
 
     HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(ctx);
 
-    if (!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) {
+    if ((!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) && !ctx->guitar_tilt_supported) {
         return SDL_Unsupported();
     }
 
@@ -1427,6 +1456,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
     static const float TOUCHPAD_SCALEY = 9.34579439e-4f; // 1.0f / 1070
     bool touchpad_down;
     int touchpad_x, touchpad_y;
+    Sint16 axis;
 
     if (ctx->report_touchpad) {
         touchpad_down = ((packet->ucTouchpadCounter1 & 0x80) == 0);
@@ -1440,7 +1470,61 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
     }
 
+    if (ctx->report_battery) {
+        SDL_PowerState state;
+        int percent;
+        Uint8 status = (packet->ucBatteryLevel >> 4) & 0x0F;
+        Uint8 level = (packet->ucBatteryLevel & 0x0F);
+
+        // 0x0C means a controller isn't reporting battery levels
+        if (level != 0x0C) {
+            switch (status) {
+            case 0:
+                state = SDL_POWERSTATE_ON_BATTERY;
+                percent = SDL_min(level * 10 + 5, 100);
+                break;
+            case 1:
+                state = SDL_POWERSTATE_CHARGING;
+                percent = SDL_min(level * 10 + 5, 100);
+                break;
+            case 2:
+                state = SDL_POWERSTATE_CHARGED;
+                percent = 100;
+                break;
+            default:
+                state = SDL_POWERSTATE_UNKNOWN;
+                percent = 0;
+                break;
+            }
+            SDL_SendJoystickPowerInfo(joystick, state, percent);
+        }
+    }
+
     HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, dev, ctx, (PS5StatePacketCommon_t *)packet, timestamp);
+
+    if (ctx->guitar_whammy_supported) {
+        axis = ((int)packet->rgucDeviceSpecific[1] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+    }
+
+    if (ctx->guitar_effects_selector_supported) {
+        // Align pickup selector mappings with PS3 instruments
+        static const Sint16 effects_mappings[] = {24576, 11008, -1792, -13568, -26880};
+        if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[packet->rgucDeviceSpecific[0]]);
+        }
+    }
+
+    if (ctx->guitar_tilt_supported) {
+        float sensor_data[3];
+        sensor_data[0] = ((float)packet->rgucDeviceSpecific[2] / 255) * SDL_STANDARD_GRAVITY;
+        sensor_data[1] = 0;
+        sensor_data[2] = 0;
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
+
+        // Align tilt mappings with PS3 instruments
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, packet->rgucDeviceSpecific[2] > 0xF0);
+    }
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
@@ -1464,15 +1548,16 @@ static bool HIDAPI_DriverPS5_IsPacketValid(SDL_DriverPS5_Context *ctx, Uint8 *da
 {
     switch (data[0]) {
     case k_EPS5ReportIdState:
-        if (ctx->is_nacon_dongle && size >= (1 + sizeof(PS5StatePacketAlt_t))) {
+        if (ctx->is_dongle && size >= (1 + sizeof(PS5StatePacketAlt_t))) {
             // The report timestamp doesn't change when the controller isn't connected
             PS5StatePacketAlt_t *packet = (PS5StatePacketAlt_t *)&data[1];
             if (SDL_memcmp(packet->rgucPacketSequence, ctx->last_state.state.rgucPacketSequence, sizeof(packet->rgucPacketSequence)) == 0) {
                 return false;
             }
-            if (ctx->last_state.alt_state.rgucAccelX[0] == 0 && ctx->last_state.alt_state.rgucAccelX[1] == 0 &&
-                ctx->last_state.alt_state.rgucAccelY[0] == 0 && ctx->last_state.alt_state.rgucAccelY[1] == 0 &&
-                ctx->last_state.alt_state.rgucAccelZ[0] == 0 && ctx->last_state.alt_state.rgucAccelZ[1] == 0) {
+            if (ctx->last_state.state.rgucPacketSequence[0] == 0 &&
+                ctx->last_state.state.rgucPacketSequence[1] == 0 &&
+                ctx->last_state.state.rgucPacketSequence[2] == 0 &&
+                ctx->last_state.state.rgucPacketSequence[3] == 0) {
                 // We don't have any state to compare yet, go ahead and copy it
                 SDL_memcpy(&ctx->last_state, &data[1], sizeof(PS5StatePacketAlt_t));
                 return false;
@@ -1571,7 +1656,7 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (ctx->is_nacon_dongle) {
+    if (ctx->is_dongle) {
         if (packet_count == 0) {
             if (device->num_joysticks > 0) {
                 // Check to see if it looks like the device disconnected

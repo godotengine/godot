@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,8 @@
 #define SDL_USE_LIBUDEV 1
 #endif
 
-//#include <libudev.h>
-#include <thirdparty/linuxbsd_headers/udev/libudev.h>
+#include <libudev.h>
+#include <linux/input.h>
 #include <sys/time.h>
 #include <sys/types.h>
 
@@ -57,6 +57,7 @@ typedef struct SDL_UDEV_Symbols
 {
     const char *(*udev_device_get_action)(struct udev_device *);
     const char *(*udev_device_get_devnode)(struct udev_device *);
+    const char *(*udev_device_get_driver)(struct udev_device *);
     const char *(*udev_device_get_syspath)(struct udev_device *);
     const char *(*udev_device_get_subsystem)(struct udev_device *);
     struct udev_device *(*udev_device_get_parent_with_subsystem_devtype)(struct udev_device *udev_device, const char *subsystem, const char *devtype);
@@ -103,8 +104,8 @@ extern void SDL_UDEV_UnloadLibrary(void);
 extern bool SDL_UDEV_LoadLibrary(void);
 extern void SDL_UDEV_Poll(void);
 extern bool SDL_UDEV_Scan(void);
-extern bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class);
-extern bool SDL_UDEV_GetProductSerial(const char *device_path, const char **serial);
+extern bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, int *class, char **driver);
+extern char *SDL_UDEV_GetProductSerial(const char *device_path);
 extern bool SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
 extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);

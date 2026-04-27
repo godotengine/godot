@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,6 +45,7 @@ extern HWND SDL_HelperWindow;
 // local variables
 static bool coinitialized = false;
 static LPDIRECTINPUT8 dinput = NULL;
+static bool has_broken_EZFRD64DLL = false;
 
 // Taken from Wine - Thanks!
 static DIOBJECTDATAFORMAT dfDIJoystick2[] = {
@@ -289,7 +290,7 @@ static bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, Uint16 vendor_id, Uint1
     }
 
     *manufacturer_string = NULL;
-    *product_string = WIN_StringToUTF8(dipstr.wsz);
+    *product_string = WIN_StringToUTF8W(dipstr.wsz);
 
     return true;
 }
@@ -437,6 +438,7 @@ bool SDL_DINPUT_JoystickInit(void)
         dinput = NULL;
         return SetDIerror("IDirectInput::Initialize", result);
     }
+
     return true;
 }
 
@@ -778,12 +780,14 @@ bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
         return SetDIerror("IDirectInputDevice8::SetDataFormat", result);
     }
 
-    // Get device capabilities
-    result =
-        IDirectInputDevice8_GetCapabilities(joystick->hwdata->InputDevice,
-                                            &joystick->hwdata->Capabilities);
-    if (FAILED(result)) {
-        return SetDIerror("IDirectInputDevice8::GetCapabilities", result);
+    if (!has_broken_EZFRD64DLL) {
+        // Get device capabilities to see if we are force feedback capable
+        result =
+            IDirectInputDevice8_GetCapabilities(joystick->hwdata->InputDevice,
+                                                &joystick->hwdata->Capabilities);
+        if (FAILED(result)) {
+            return SetDIerror("IDirectInputDevice8::GetCapabilities", result);
+        }
     }
 
     // Force capable?

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -250,10 +250,10 @@ static bool SDLCALL CopyOneProperty(void *userdata, const SDL_HashTable *table, 
 
 bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
 {
-    if (!src) {
+    CHECK_PARAM(!src) {
         return SDL_InvalidParamError("src");
     }
-    if (!dst) {
+    CHECK_PARAM(!dst) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -261,11 +261,11 @@ bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
     SDL_Properties *dst_properties = NULL;
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)src, (const void **)&src_properties);
-    if (!src_properties) {
+    CHECK_PARAM(!src_properties) {
         return SDL_InvalidParamError("src");
     }
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)dst, (const void **)&dst_properties);
-    if (!dst_properties) {
+    CHECK_PARAM(!dst_properties) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -287,12 +287,12 @@ bool SDL_LockProperties(SDL_PropertiesID props)
 {
     SDL_Properties *properties = NULL;
 
-    if (!props) {
+    CHECK_PARAM(!props) {
         return SDL_InvalidParamError("props");
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
+    CHECK_PARAM(!properties) {
         return SDL_InvalidParamError("props");
     }
 
@@ -321,17 +321,17 @@ static bool SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL
     SDL_Properties *properties = NULL;
     bool result = true;
 
-    if (!props) {
+    CHECK_PARAM(!props) {
         SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("props");
     }
-    if (!name || !*name) {
+    CHECK_PARAM(!name || !*name) {
         SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("name");
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
+    CHECK_PARAM(!properties) {
         SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("props");
     }
@@ -409,7 +409,7 @@ static void SDLCALL CleanupSurface(void *userdata, void *value)
 {
     SDL_Surface *surface = (SDL_Surface *)value;
 
-    //SDL_DestroySurface(surface);
+    // SDL_DestroySurface(surface);
 }
 
 bool SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface)
@@ -755,15 +755,15 @@ bool SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCall
 {
     SDL_Properties *properties = NULL;
 
-    if (!props) {
+    CHECK_PARAM(!props) {
         return SDL_InvalidParamError("props");
     }
-    if (!callback) {
+    CHECK_PARAM(!callback) {
         return SDL_InvalidParamError("callback");
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
+    CHECK_PARAM(!properties) {
         return SDL_InvalidParamError("props");
     }
 

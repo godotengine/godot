@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,14 @@
 
 #include "joystick/SDL_joystick_c.h" // For SDL_GetGamepadTypeFromVIDPID()
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_force_free(void *ptr)
+{
+    free(ptr);  // This should NOT be SDL_free()
+}
+#endif
 
 // Common utility functions that aren't in the public API
 
@@ -137,6 +145,30 @@ Uint32 SDL_GetNextObjectID(void)
 
 static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
+bool SDL_object_validation = true;
+
+static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    bool validation_enabled = true;
+
+#ifndef OBJECT_VALIDATION_REQUIRED
+    if (hint) {
+        switch (*hint) {
+        case '0':
+        case '1':
+            validation_enabled = false;
+            break;
+        case '2':
+            validation_enabled = true;
+            break;
+        default:
+            break;
+        }
+    }
+#endif // !OBJECT_VALIDATION_REQUIRED
+
+    SDL_object_validation = validation_enabled;
+}
 
 static Uint32 SDLCALL SDL_HashObject(void *unused, const void *key)
 {
@@ -159,6 +191,7 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
         if (!initialized) {
             return;
         }
+        SDL_AddHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
     }
 
     if (valid) {
@@ -168,12 +201,8 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
     }
 }
 
-bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+bool SDL_FindObject(void *object, SDL_ObjectType type)
 {
-    if (!object) {
-        return false;
-    }
-
     const void *object_type;
     if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
         return false;
@@ -229,7 +258,7 @@ static bool SDLCALL LogOneLeakedObject(void *userdata, const SDL_HashTable *tabl
         #undef SDLOBJTYPECASE
         default: break;
     }
-    SDL_Log("Leaked %s (%p)", type, object);
+    SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Leaked %s (%p)", type, object);
     return true;  // keep iterating.
 }
 
@@ -238,10 +267,10 @@ void SDL_SetObjectsInvalid(void)
     if (SDL_ShouldQuit(&SDL_objects_init)) {
         // Log any leaked objects
         SDL_IterateHashTable(SDL_objects, LogOneLeakedObject, NULL);
-        SDL_assert(SDL_HashTableEmpty(SDL_objects));
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
         SDL_SetInitialized(&SDL_objects_init, false);
+        SDL_RemoveHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
     }
 }
 
@@ -424,6 +453,7 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         const char *prefix;
         const char *replacement;
     } replacements[] = {
+        { "(Standard system devices) ", "" },
         { "8BitDo Tech Ltd", "8BitDo" },
         { "ASTRO Gaming", "ASTRO" },
         { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
@@ -552,3 +582,10 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
 
     return name;
 }
+
+
+void SDL_DebugLogBackend(const char *subsystem, const char *backend)
+{
+    SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
+}
+

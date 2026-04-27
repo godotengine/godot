@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -210,8 +210,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasPrimarySelectionText(void);
 typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const char *mime_type, size_t *size);
 
 /**
- * Callback function that will be called when the clipboard is cleared, or when new
- * data is set.
+ * Callback function that will be called when the clipboard is cleared, or
+ * when new data is set.
  *
  * \param userdata a pointer to the provided user data.
  *
@@ -238,7 +238,8 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * \param cleanup a function pointer to the function that cleans up the
  *                clipboard data.
  * \param userdata an opaque pointer that will be forwarded to the callbacks.
- * \param mime_types a list of mime-types that are being offered. SDL copies the given list.
+ * \param mime_types a list of mime-types that are being offered. SDL copies
+ *                   the given list.
  * \param num_mime_types the number of mime-types in the mime_types list.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
