@@ -36,6 +36,7 @@
 #include "core/os/os.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void ItemList::_shape_text(int p_idx) {
@@ -867,9 +868,10 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid()) { // Copied from ScrollContainer.
 		if (mb->is_pressed()) {
 			bool v_scroll_hidden = !scroll_bar_v->is_visible();
+			bool swap_axis = !DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed();
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				// By default, the vertical orientation takes precedence. This is an exception.
-				if (mb->is_shift_pressed() || v_scroll_hidden) {
+				if (swap_axis || v_scroll_hidden) {
 					scroll_bar_h->scroll(-scroll_bar_h->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else {
@@ -878,7 +880,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				if (mb->is_shift_pressed() || v_scroll_hidden) {
+				if (swap_axis || v_scroll_hidden) {
 					scroll_bar_h->scroll(scroll_bar_h->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else {
@@ -890,7 +892,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			bool h_scroll_hidden = !scroll_bar_h->is_visible();
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				// By default, the horizontal orientation takes precedence. This is an exception.
-				if (mb->is_shift_pressed() || h_scroll_hidden) {
+				if (swap_axis || h_scroll_hidden) {
 					scroll_bar_v->scroll(-scroll_bar_v->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else {
@@ -899,7 +901,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
-				if (mb->is_shift_pressed() || h_scroll_hidden) {
+				if (swap_axis || h_scroll_hidden) {
 					scroll_bar_v->scroll(scroll_bar_v->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else {
