@@ -654,6 +654,9 @@ void ScenePaint2DEditor::_advanced_settings_id_pressed(int p_id) {
 		case MENU_ITEM_FREE_PAINT_MODE:
 		case MENU_ITEM_SNAP_TO_GRID_PAINT_MODE:
 		case MENU_ITEM_SNAP_TO_GRID_CELL_CENTER_PAINT_MODE: {
+			for (int i = MENU_ITEM_FREE_PAINT_MODE; i <= MENU_ITEM_SNAP_TO_GRID_CELL_CENTER_PAINT_MODE; i++) {
+				advanced_settings_popup->set_item_checked(i, p_id == i);
+			}
 			_paint_mode_changed(advanced_settings_popup->get_item_metadata(p_id));
 		} break;
 		case MENU_ITEM_ALLOW_OVERLAPPING: {
@@ -860,13 +863,21 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	advanced_settings_popup->add_item(TTRC("Free Paint"), MENU_ITEM_FREE_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_FREE);
 	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable free painting without snapping."));
+	advanced_settings_popup->set_item_as_radio_checkable(-1, true);
+	advanced_settings_popup->set_item_checked(-1, true);
+
 	advanced_settings_popup->add_item(TTRC("Snap to Grid"), MENU_ITEM_SNAP_TO_GRID_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID);
 	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable snapping to grid when painting."));
+	advanced_settings_popup->set_item_as_radio_checkable(-1, true);
+
 	advanced_settings_popup->add_item(TTRC("Snap to Grid Cell Center"), MENU_ITEM_SNAP_TO_GRID_CELL_CENTER_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID_CELL_CENTER);
 	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable snapping to grid cell center when painting."));
+	advanced_settings_popup->set_item_as_radio_checkable(-1, true);
+
 	advanced_settings_popup->add_separator();
+
 	advanced_settings_popup->add_check_item(TTRC("Allow Overlapping"), MENU_ITEM_ALLOW_OVERLAPPING);
 	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHolding shift temporarily toggles this option."));
 	advanced_settings_popup->set_item_disabled(-1, true);
