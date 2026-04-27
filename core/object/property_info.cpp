@@ -86,7 +86,7 @@ String PropertyInfo::serialize_hint_type() {
 	return serialize_hint_type(type, hint, hint_string);
 }
 
-bool PropertyInfo::try_parse_hint_type_string(const String &p_string, Variant::Type &out_type, PropertyHint &out_hint, String &out_hint_string) {
+bool PropertyInfo::try_parse_hint_type_string(const String &p_string, Variant::Type &r_type, PropertyHint &r_hint, String &r_hint_string) {
 	int subtype_separator = p_string.find_char(':');
 	if (subtype_separator < 0) {
 		return false;
@@ -94,11 +94,11 @@ bool PropertyInfo::try_parse_hint_type_string(const String &p_string, Variant::T
 	String subtype_string = p_string.substr(0, subtype_separator);
 	int slash_pos = subtype_string.find_char('/');
 	if (slash_pos >= 0) {
-		out_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
+		r_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
 		subtype_string = subtype_string.substr(0, slash_pos);
 	}
-	out_hint_string = p_string.substr(subtype_separator + 1);
-	out_type = Variant::Type(subtype_string.to_int());
+	r_hint_string = p_string.substr(subtype_separator + 1);
+	r_type = Variant::Type(subtype_string.to_int());
 	return true;
 }
 

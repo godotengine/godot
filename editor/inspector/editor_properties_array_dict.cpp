@@ -51,13 +51,13 @@
 
 // Helper functions shared between Array & Dictionary editor properties
 
-void parse_hint_type_string(const String &p_string, Variant::Type &out_type, PropertyHint &out_hint, String &out_hint_string) {
-	if (!PropertyInfo::try_parse_hint_type_string(p_string, out_type, out_hint, out_hint_string)) {
-		out_type = Variant::get_type_by_name(p_string);
-		if (out_type == Variant::VARIANT_MAX) {
-			out_type = Variant::OBJECT;
-			out_hint = PROPERTY_HINT_RESOURCE_TYPE;
-			out_hint_string = p_string;
+void parse_hint_type_string(const String &p_string, Variant::Type &r_type, PropertyHint &r_hint, String &r_hint_string) {
+	if (!PropertyInfo::try_parse_hint_type_string(p_string, r_type, r_hint, r_hint_string)) {
+		r_type = Variant::get_type_by_name(p_string);
+		if (r_type == Variant::VARIANT_MAX) {
+			r_type = Variant::OBJECT;
+			r_hint = PROPERTY_HINT_RESOURCE_TYPE;
+			r_hint_string = p_string;
 		}
 	}
 }
