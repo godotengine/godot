@@ -23,4 +23,8 @@ public partial class Methods : GodotObject
     private void GenericMethod<T>(T t)
     {
     }
+
+    private void MethodWithDefaultValues(int a, int b = 1)
+    {
+    }
 }
