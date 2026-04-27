@@ -522,6 +522,9 @@ public:
 	EXBIND4(generic_6dof_joint_set_flag, RID, Vector3::Axis, G6DOFJointAxisFlag, bool)
 	EXBIND3RC(bool, generic_6dof_joint_get_flag, RID, Vector3::Axis, G6DOFJointAxisFlag)
 
+	EXBIND2(generic_6dof_joint_set_angular_target_rotation, RID, const Quaternion &)
+	EXBIND1RC(Quaternion, generic_6dof_joint_get_angular_target_rotation, RID)
+
 	EXBIND1RC(JointType, joint_get_type, RID)
 
 	EXBIND2(joint_set_solver_priority, RID, int)

@@ -423,6 +423,9 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override {}
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const override { return false; }
 
+	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) override {}
+	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const override { return Quaternion(); }
+
 	/* MISC */
 
 	virtual void free_rid(RID p_rid) override {}

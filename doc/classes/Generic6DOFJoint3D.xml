@@ -10,6 +10,18 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear_angular_target_rotation">
+			<return type="void" />
+			<description>
+				Clears the quaternion angular target. After clearing, the joint is driven by [constant PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT] on each axis as configured.
+			</description>
+		</method>
+		<method name="get_angular_target_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+				Returns the joint's current angular target as a body-space quaternion. If no explicit target was set via [method set_angular_target_rotation], the value is derived from [constant PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT] on backends that support it; other backends return the identity quaternion.
+			</description>
+		</method>
 		<method name="get_flag_x" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
@@ -44,6 +56,20 @@
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
 			<description>
+			</description>
+		</method>
+		<method name="has_target_rotation" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a quaternion angular target was explicitly set via [method set_angular_target_rotation] and has not been cleared. Returns [code]false[/code] when the joint is driven by [constant PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT] only.
+			</description>
+		</method>
+		<method name="set_angular_target_rotation">
+			<return type="void" />
+			<param index="0" name="target_rotation" type="Quaternion" />
+			<description>
+				Sets the target angular orientation as a body-space quaternion describing the desired orientation of body B relative to body A. Replaces any previously set target and supersedes [constant PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT] until [method clear_angular_target_rotation] is called.
+				[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
 			</description>
 		</method>
 		<method name="set_flag_x">

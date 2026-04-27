@@ -759,6 +759,14 @@
 				Destroys any of the objects created by PhysicsServer3D. If the [RID] passed is not one of the objects that can be created by PhysicsServer3D, an error will be sent to the console.
 			</description>
 		</method>
+		<method name="generic_6dof_joint_get_angular_target_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the target angular orientation of a generic 6DOF joint as a body-space quaternion describing the desired orientation of body B relative to body A.
+				[b]Note:[/b] Only for Jolt backend. Other 3D physics backends return the identity quaternion.
+			</description>
+		</method>
 		<method name="generic_6dof_joint_get_flag" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
@@ -775,6 +783,15 @@
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<description>
 				Returns the value of a generic 6DOF joint parameter.
+			</description>
+		</method>
+		<method name="generic_6dof_joint_set_angular_target_rotation">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="target_rotation" type="Quaternion" />
+			<description>
+				Sets the target angular orientation of a generic 6DOF joint as a body-space quaternion describing the desired orientation of body B relative to body A.
+				[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_flag">

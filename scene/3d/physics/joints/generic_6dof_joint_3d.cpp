@@ -51,6 +51,11 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag_z", "flag", "value"), &Generic6DOFJoint3D::set_flag_z);
 	ClassDB::bind_method(D_METHOD("get_flag_z", "flag"), &Generic6DOFJoint3D::get_flag_z);
 
+	ClassDB::bind_method(D_METHOD("set_angular_target_rotation", "target_rotation"), &Generic6DOFJoint3D::set_angular_target_rotation);
+	ClassDB::bind_method(D_METHOD("get_angular_target_rotation"), &Generic6DOFJoint3D::get_angular_target_rotation);
+	ClassDB::bind_method(D_METHOD("has_target_rotation"), &Generic6DOFJoint3D::has_target_rotation);
+	ClassDB::bind_method(D_METHOD("clear_angular_target_rotation"), &Generic6DOFJoint3D::clear_angular_target_rotation);
+
 	ADD_GROUP("Linear Limit", "linear_limit_");
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "linear_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_LINEAR_LIMIT);
@@ -201,6 +206,9 @@ void Generic6DOFJoint3D::_bind_methods() {
 void Generic6DOFJoint3D::set_param_x(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_x[p_param] = p_value;
+	if (p_param == PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT) {
+		has_angular_target_rotation = false;
+	}
 	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
@@ -216,6 +224,9 @@ real_t Generic6DOFJoint3D::get_param_x(Param p_param) const {
 void Generic6DOFJoint3D::set_param_y(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_y[p_param] = p_value;
+	if (p_param == PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT) {
+		has_angular_target_rotation = false;
+	}
 	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
@@ -230,6 +241,9 @@ real_t Generic6DOFJoint3D::get_param_y(Param p_param) const {
 void Generic6DOFJoint3D::set_param_z(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_z[p_param] = p_value;
+	if (p_param == PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT) {
+		has_angular_target_rotation = false;
+	}
 	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
@@ -283,6 +297,58 @@ bool Generic6DOFJoint3D::get_flag_z(Flag p_flag) const {
 	return flags_z[p_flag];
 }
 
+bool Generic6DOFJoint3D::_is_valid_angular_target_rotation(const Quaternion &p_target_rotation) {
+	return p_target_rotation.is_finite() && p_target_rotation.length_squared() > CMP_EPSILON;
+}
+
+void Generic6DOFJoint3D::set_angular_target_rotation(const Quaternion &p_target_rotation) {
+	ERR_FAIL_COND_MSG(!_is_valid_angular_target_rotation(p_target_rotation), "Angular target rotation must be a finite, non-zero quaternion.");
+
+	angular_target_rotation = p_target_rotation.normalized();
+	has_angular_target_rotation = true;
+
+	if (!is_configured()) {
+		return;
+	}
+
+	PhysicsServer3D::get_singleton()->generic_6dof_joint_set_angular_target_rotation(get_rid(), angular_target_rotation);
+}
+
+Quaternion Generic6DOFJoint3D::get_angular_target_rotation() const {
+	if (has_angular_target_rotation) {
+		return angular_target_rotation;
+	}
+
+	if (is_configured()) {
+		return PhysicsServer3D::get_singleton()->generic_6dof_joint_get_angular_target_rotation(get_rid());
+	}
+
+	// Equilibrium point is in constraint space; body-space conversion requires the constraint frame.
+	ERR_PRINT("Cannot derive a body-space angular target rotation from Generic6DOFJoint3D equilibrium points before the joint is configured. Returning the identity quaternion.");
+	return Quaternion();
+}
+
+bool Generic6DOFJoint3D::has_target_rotation() const {
+	return has_angular_target_rotation;
+}
+
+void Generic6DOFJoint3D::clear_angular_target_rotation() {
+	if (!has_angular_target_rotation) {
+		return;
+	}
+	has_angular_target_rotation = false;
+	angular_target_rotation = Quaternion();
+
+	if (!is_configured()) {
+		return;
+	}
+
+	PhysicsServer3D *server = PhysicsServer3D::get_singleton();
+	server->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_X, PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, params_x[PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT]);
+	server->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Y, PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, params_y[PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT]);
+	server->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Z, PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, params_z[PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT]);
+}
+
 void Generic6DOFJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
 	Transform3D gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
@@ -311,6 +377,10 @@ void Generic6DOFJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, Ph
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(p_joint, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_x[i]);
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(p_joint, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_y[i]);
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(p_joint, Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_z[i]);
+	}
+
+	if (has_angular_target_rotation) {
+		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_angular_target_rotation(p_joint, angular_target_rotation);
 	}
 }
 
