@@ -353,7 +353,7 @@ enum GamepadButtons
 // Mode adjust
 enum ModeAdjustModes
 {
-	MODE_ADJUST_SENSITITY=1,
+	MODE_ADJUST_SENSITIVITY=1,
 	MODE_ADJUST_LEFT_PAD_SECONDARY_MODE,
 	MODE_ADJUST_RIGHT_PAD_SECONDARY_MODE,
 	MODE_ADJUST_COUNT
@@ -364,8 +364,8 @@ typedef enum
 {
 	ATTRIB_UNIQUE_ID,
 	ATTRIB_PRODUCT_ID,
-	ATTRIB_PRODUCT_REVISON,											// deprecated
-	ATTRIB_CAPABILITIES = ATTRIB_PRODUCT_REVISON,	// intentional aliasing
+	ATTRIB_PRODUCT_REVISION,											// deprecated
+	ATTRIB_CAPABILITIES = ATTRIB_PRODUCT_REVISION,	// intentional aliasing
 	ATTRIB_FIRMWARE_VERSION,										// deprecated
 	ATTRIB_FIRMWARE_BUILD_TIME,
 	ATTRIB_RADIO_FIRMWARE_BUILD_TIME,
@@ -411,6 +411,12 @@ typedef enum {
 	TRACKPAD_NUM_MODES
 } TrackpadDPadMode;
 
+typedef enum
+{
+	LIZARD_MODE_OFF,
+	LIZARD_MODE_ON,
+} LizardModeState_t;
+
 // Read-write controller settings (only add to this enum and never change the order)
 typedef enum 
 {
@@ -423,7 +429,7 @@ typedef enum
 	SETTING_USB_DEBUG_MODE,
 	SETTING_LEFT_TRACKPAD_MODE,
 	SETTING_RIGHT_TRACKPAD_MODE,
-	SETTING_MOUSE_POINTER_ENABLED,
+	SETTING_LIZARD_MODE,
 
 	// 10
 	SETTING_DPAD_DEADZONE,

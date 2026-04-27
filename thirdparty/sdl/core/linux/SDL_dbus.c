@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,13 +22,18 @@
 #include "SDL_dbus.h"
 #include "../../stdlib/SDL_vacopy.h"
 
+#include <fcntl.h>
+#include <unistd.h>
+
 #ifdef SDL_USE_LIBDBUS
 // we never link directly to libdbus.
-static const char *dbus_library = "libdbus-1.so.3";
+#define SDL_DRIVER_DBUS_DYNAMIC "libdbus-1.so.3"
+static const char *dbus_library = SDL_DRIVER_DBUS_DYNAMIC;
 static SDL_SharedObject *dbus_handle = NULL;
 static char *inhibit_handle = NULL;
 static unsigned int screensaver_cookie = 0;
 static SDL_DBusContext dbus;
+
 
 static bool LoadDBUSSyms(void)
 {
@@ -48,6 +53,8 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(DBusConnection *(*)(DBusBusType, DBusError *), bus_get_private);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusError *), bus_register);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_add_match);
+    SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_remove_match);
+    SDL_DBUS_SYM(const char *(*)(DBusConnection *), bus_get_unique_name);
     SDL_DBUS_SYM(DBusConnection *(*)(const char *, DBusError *), connection_open_private);
     SDL_DBUS_SYM(void (*)(DBusConnection *, dbus_bool_t), connection_set_exit_on_disconnect);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *), connection_get_is_connected);
@@ -61,10 +68,14 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_unref);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_flush);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write);
+    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write_dispatch);
     SDL_DBUS_SYM(DBusDispatchStatus (*)(DBusConnection *), connection_dispatch);
+    SDL_DBUS_SYM(dbus_bool_t (*)(int), type_is_fixed);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *, const char *), message_is_signal);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *), message_has_path);
     SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *, const char *), message_new_method_call);
+    SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *), message_new_signal);
+    SDL_DBUS_SYM(void (*)(DBusMessage *, dbus_bool_t), message_set_no_reply);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, ...), message_append_args);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, va_list), message_append_args_valist);
     SDL_DBUS_SYM(void (*)(DBusMessage *, DBusMessageIter *), message_iter_init_append);
@@ -82,6 +93,7 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(dbus_bool_t (*)(void), threads_init_default);
     SDL_DBUS_SYM(void (*)(DBusError *), error_init);
     SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *), error_is_set);
+    SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *, const char *), error_has_name);
     SDL_DBUS_SYM(void (*)(DBusError *), error_free);
     SDL_DBUS_SYM(char *(*)(void), get_local_machine_id);
     SDL_DBUS_SYM_OPTIONAL(char *(*)(DBusError *), try_get_local_machine_id);
@@ -97,18 +109,15 @@ static bool LoadDBUSSyms(void)
 
 static void UnloadDBUSLibrary(void)
 {
-#ifdef SOWRAP_ENABLED // Godot build system constant
     if (dbus_handle) {
         SDL_UnloadObject(dbus_handle);
         dbus_handle = NULL;
     }
-#endif
 }
 
 static bool LoadDBUSLibrary(void)
 {
     bool result = true;
-#ifdef SOWRAP_ENABLED // Godot build system constant
     if (!dbus_handle) {
         dbus_handle = SDL_LoadObject(dbus_library);
         if (!dbus_handle) {
@@ -121,9 +130,6 @@ static bool LoadDBUSLibrary(void)
             }
         }
     }
-#else
-    result = LoadDBUSSyms();
-#endif
     return result;
 }
 
@@ -222,7 +228,7 @@ SDL_DBusContext *SDL_DBus_GetContext(void)
     return (dbus_handle && dbus.session_conn) ? &dbus : NULL;
 }
 
-static bool SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, va_list ap)
+static bool SDL_DBus_CallMethodInternal(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, va_list ap)
 {
     bool result = false;
 
@@ -254,7 +260,11 @@ static bool SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *node, 
                     if ((firstarg == DBUS_TYPE_INVALID) || dbus.message_get_args_valist(reply, NULL, firstarg, ap_reply)) {
                         result = true;
                     }
-                    dbus.message_unref(reply);
+                    if (save_reply) {
+                        *save_reply = reply;
+                    } else {
+                        dbus.message_unref(reply);
+                    }
                 }
             }
             va_end(ap_reply);
@@ -265,22 +275,22 @@ static bool SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *node, 
     return result;
 }
 
-bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
+bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...)
 {
     bool result;
     va_list ap;
     va_start(ap, method);
-    result = SDL_DBus_CallMethodInternal(conn, node, path, interface, method, ap);
+    result = SDL_DBus_CallMethodInternal(conn, save_reply, node, path, interface, method, ap);
     va_end(ap);
     return result;
 }
 
-bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...)
+bool SDL_DBus_CallMethod(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...)
 {
     bool result;
     va_list ap;
     va_start(ap, method);
-    result = SDL_DBus_CallMethodInternal(dbus.session_conn, node, path, interface, method, ap);
+    result = SDL_DBus_CallMethodInternal(dbus.session_conn, save_reply, node, path, interface, method, ap);
     va_end(ap);
     return result;
 }
@@ -294,6 +304,7 @@ static bool SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *no
         if (msg) {
             int firstarg = va_arg(ap, int);
             if ((firstarg == DBUS_TYPE_INVALID) || dbus.message_append_args_valist(msg, firstarg, ap)) {
+                dbus.message_set_no_reply(msg, true);
                 if (dbus.connection_send(conn, msg, NULL)) {
                     dbus.connection_flush(conn);
                     result = true;
@@ -305,31 +316,6 @@ static bool SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *no
     }
 
     return result;
-}
-
-static bool SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage *msg, const int expectedtype, void *result)
-{
-    bool retval = false;
-
-    DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
-    if (reply) {
-        DBusMessageIter iter, actual_iter;
-        dbus.message_iter_init(reply, &iter);
-        if (dbus.message_iter_get_arg_type(&iter) == DBUS_TYPE_VARIANT) {
-            dbus.message_iter_recurse(&iter, &actual_iter);
-        } else {
-            actual_iter = iter;
-        }
-
-        if (dbus.message_iter_get_arg_type(&actual_iter) == expectedtype) {
-            dbus.message_iter_get_basic(&actual_iter, result);
-            retval = true;
-        }
-
-        dbus.message_unref(reply);
-    }
-
-    return retval;
 }
 
 bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
@@ -352,7 +338,40 @@ bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *int
     return result;
 }
 
-bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result)
+static bool SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage **save_reply, DBusMessage *msg, const int expectedtype, void *result)
+{
+    bool retval = false;
+
+    // Make sure we're not looking up strings here, otherwise we'd have to save and return the reply
+    SDL_assert(save_reply == NULL || *save_reply == NULL);
+    SDL_assert(save_reply != NULL || dbus.type_is_fixed(expectedtype));
+
+    DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
+    if (reply) {
+        DBusMessageIter iter, actual_iter;
+        dbus.message_iter_init(reply, &iter);
+        if (dbus.message_iter_get_arg_type(&iter) == DBUS_TYPE_VARIANT) {
+            dbus.message_iter_recurse(&iter, &actual_iter);
+        } else {
+            actual_iter = iter;
+        }
+
+        if (dbus.message_iter_get_arg_type(&actual_iter) == expectedtype) {
+            dbus.message_iter_get_basic(&actual_iter, result);
+            retval = true;
+        }
+
+        if (save_reply) {
+            *save_reply = reply;
+        } else {
+            dbus.message_unref(reply);
+        }
+    }
+
+    return retval;
+}
+
+bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result)
 {
     bool retval = false;
 
@@ -360,7 +379,7 @@ bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, 
         DBusMessage *msg = dbus.message_new_method_call(node, path, "org.freedesktop.DBus.Properties", "Get");
         if (msg) {
             if (dbus.message_append_args(msg, DBUS_TYPE_STRING, &interface, DBUS_TYPE_STRING, &property, DBUS_TYPE_INVALID)) {
-                retval = SDL_DBus_CallWithBasicReply(conn, msg, expectedtype, result);
+                retval = SDL_DBus_CallWithBasicReply(conn, save_reply, msg, expectedtype, result);
             }
             dbus.message_unref(msg);
         }
@@ -369,9 +388,18 @@ bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, 
     return retval;
 }
 
-bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result)
+bool SDL_DBus_QueryProperty(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result)
 {
-    return SDL_DBus_QueryPropertyOnConnection(dbus.session_conn, node, path, interface, property, expectedtype, result);
+    return SDL_DBus_QueryPropertyOnConnection(dbus.session_conn, save_reply, node, path, interface, property, expectedtype, result);
+}
+
+void SDL_DBus_FreeReply(DBusMessage **saved_reply)
+{
+    DBusMessage *reply = *saved_reply;
+    if (reply) {
+        dbus.message_unref(reply);
+        *saved_reply = NULL;
+    }
 }
 
 void SDL_DBus_ScreensaverTickle(void)
@@ -440,9 +468,118 @@ static bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const cha
    return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
 }
 
+bool SDL_DBus_OpenURI(const char *uri, const char *window_id, const char *activation_token)
+{
+    static const char *bus_name = "org.freedesktop.portal.Desktop";
+    static const char *path = "/org/freedesktop/portal/desktop";
+    static const char *interface = "org.freedesktop.portal.OpenURI";
+
+    if (!dbus.session_conn) {
+        /* We either lost connection to the session bus or were not able to
+         * load the D-Bus library at all.
+         */
+        return false;
+    }
+
+    DBusMessageIter iterInit;
+    DBusMessage *msg = NULL;
+    int fd = -1;
+    bool ret = false;
+    const bool has_file_scheme = SDL_strncasecmp(uri, "file:/", 6) == 0;
+
+    // The OpenURI method can't open 'file://' URIs or local paths, so OpenFile must be used instead.
+    if (has_file_scheme || !SDL_IsURI(uri)) {
+        char *decoded_path = NULL;
+
+        // Decode the path if it is a URI.
+        if (has_file_scheme) {
+            const size_t len = SDL_strlen(uri) + 1;
+            decoded_path = SDL_malloc(len);
+            if (!decoded_path) {
+                goto done;
+            }
+            if (SDL_URIToLocal(uri, decoded_path) < 0) {
+                SDL_free(decoded_path);
+                goto done;
+            }
+            uri = decoded_path;
+        }
+        fd = open(uri, O_RDWR | O_CLOEXEC);
+        SDL_free(decoded_path);
+        if (fd >= 0) {
+            msg = dbus.message_new_method_call(bus_name, path, interface, "OpenFile");
+        }
+    } else {
+        msg = dbus.message_new_method_call(bus_name, path, interface, "OpenURI");
+    }
+    if (!msg) {
+        goto done;
+    }
+
+    dbus.message_iter_init_append(msg, &iterInit);
+
+    if (!window_id) {
+        window_id = "";
+    }
+    if (!dbus.message_iter_append_basic(&iterInit, DBUS_TYPE_STRING, &window_id)) {
+        goto done;
+    }
+
+    if (fd >= 0) {
+        if (!dbus.message_iter_append_basic(&iterInit, DBUS_TYPE_UNIX_FD, &fd)) {
+            goto done;
+        }
+    } else {
+        if (!dbus.message_iter_append_basic(&iterInit, DBUS_TYPE_STRING, &uri)) {
+            goto done;
+        }
+    }
+
+    if (activation_token) {
+        if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, "activation_token", activation_token)) {
+            goto done;
+        }
+    } else {
+        // The array must be in the parameter list, even if empty.
+        DBusMessageIter iterArray;
+        if (!dbus.message_iter_open_container(&iterInit, DBUS_TYPE_ARRAY, "{sv}", &iterArray)) {
+            goto done;
+        }
+        if (!dbus.message_iter_close_container(&iterInit, &iterArray)) {
+            goto done;
+        }
+    }
+
+    {
+        DBusMessage *reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, -1, NULL);
+        if (reply) {
+            ret = true;
+            dbus.message_unref(reply);
+        }
+    }
+
+done:
+    if (msg) {
+        dbus.message_unref(msg);
+    }
+
+    // The file descriptor is duplicated by D-Bus, so it can be closed on this end.
+    if (fd >= 0) {
+        close(fd);
+    }
+
+    return ret;
+}
+
 bool SDL_DBus_ScreensaverInhibit(bool inhibit)
 {
+    static bool interface_unavailable = false;
     const char *default_inhibit_reason = "Playing a game";
+
+    // If the interface was previously queried and is unavailable, return false.
+    if (interface_unavailable) {
+        return false;
+    }
 
     if ((inhibit && (screensaver_cookie != 0 || inhibit_handle)) || (!inhibit && (screensaver_cookie == 0 && !inhibit_handle))) {
         return true;
@@ -466,7 +603,7 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
             DBusMessage *msg;
             bool result = false;
             const char *key = "reason";
-            const char *reply = NULL;
+            const char *reply_path = NULL;
             const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
             if (!reason || !reason[0]) {
                 reason = default_inhibit_reason;
@@ -490,11 +627,14 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
                 return false;
             }
 
-            if (SDL_DBus_CallWithBasicReply(dbus.session_conn, msg, DBUS_TYPE_OBJECT_PATH, &reply)) {
-                inhibit_handle = SDL_strdup(reply);
+            DBusMessage *reply = NULL;
+            if (SDL_DBus_CallWithBasicReply(dbus.session_conn, &reply, msg, DBUS_TYPE_OBJECT_PATH, &reply_path)) {
+                inhibit_handle = SDL_strdup(reply_path);
                 result = true;
+            } else {
+                interface_unavailable = true;
             }
-
+            SDL_DBus_FreeReply(&reply);
             dbus.message_unref(msg);
             return result;
         } else {
@@ -516,9 +656,10 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
                 reason = default_inhibit_reason;
             }
 
-            if (!SDL_DBus_CallMethod(bus_name, path, interface, "Inhibit",
+            if (!SDL_DBus_CallMethod(NULL, bus_name, path, interface, "Inhibit",
                                      DBUS_TYPE_STRING, &app, DBUS_TYPE_STRING, &reason, DBUS_TYPE_INVALID,
                                      DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
+                interface_unavailable = true;
                 return false;
             }
             return (screensaver_cookie != 0);
@@ -642,6 +783,186 @@ failed:
     }
 
     return NULL;
+}
+
+typedef struct SDL_DBus_CameraPortalMessageHandlerData
+{
+    uint32_t response;
+    char *path;
+    DBusError *err;
+    bool done;
+} SDL_DBus_CameraPortalMessageHandlerData;
+
+static DBusHandlerResult SDL_DBus_CameraPortalMessageHandler(DBusConnection *conn, DBusMessage *msg, void *v)
+{
+    SDL_DBus_CameraPortalMessageHandlerData *data = v;
+    const char *name, *old, *new;
+
+    if (dbus.message_is_signal(msg, "org.freedesktop.DBus", "NameOwnerChanged")) {
+        if (!dbus.message_get_args(msg, data->err,
+                DBUS_TYPE_STRING, &name,
+                DBUS_TYPE_STRING, &old,
+                DBUS_TYPE_STRING, &new,
+                DBUS_TYPE_INVALID)) {
+            data->done = true;
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        if (SDL_strcmp(name, "org.freedesktop.portal.Desktop") != 0 ||
+            SDL_strcmp(new, "") != 0) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        data->done = true;
+        data->response = -1;
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+    if (!dbus.message_has_path(msg, data->path) || !dbus.message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+    dbus.message_get_args(msg, data->err, DBUS_TYPE_UINT32, &data->response, DBUS_TYPE_INVALID);
+    data->done = true;
+    return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+#define SIGNAL_NAMEOWNERCHANGED "type='signal',\
+        sender='org.freedesktop.DBus',\
+        interface='org.freedesktop.DBus',\
+        member='NameOwnerChanged',\
+        arg0='org.freedesktop.portal.Desktop',\
+        arg2=''"
+
+/*
+ * Requests access for the camera. Returns -1 on error, -2 on denied access or
+ * missing portal, otherwise returns a file descriptor to be used by the Pipewire driver.
+ * https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Camera.html
+ */
+int SDL_DBus_CameraPortalRequestAccess(void)
+{
+    SDL_DBus_CameraPortalMessageHandlerData data;
+    DBusError err;
+    DBusMessageIter iter, iterDict;
+    DBusMessage *reply, *msg;
+    int fd;
+
+    if (SDL_GetSandbox() == SDL_SANDBOX_NONE) {
+        return -2;
+    }
+
+    if (!SDL_DBus_GetContext()) {
+        return -2;
+    }
+
+    dbus.error_init(&err);
+
+    msg = dbus.message_new_method_call("org.freedesktop.portal.Desktop",
+                                       "/org/freedesktop/portal/desktop",
+                                       "org.freedesktop.portal.Camera",
+                                       "AccessCamera");
+
+    dbus.message_iter_init_append(msg, &iter);
+    if (!dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &iterDict) ||
+        !dbus.message_iter_close_container(&iter, &iterDict)) {
+        SDL_OutOfMemory();
+        dbus.message_unref(msg);
+        goto failed;
+    }
+
+    reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, &err);
+    dbus.message_unref(msg);
+
+    if (reply) {
+        dbus.message_get_args(reply, &err, DBUS_TYPE_OBJECT_PATH, &data.path, DBUS_TYPE_INVALID);
+        if (dbus.error_is_set(&err)) {
+            dbus.message_unref(reply);
+            goto failed;
+        }
+        if ((data.path = SDL_strdup(data.path)) == NULL) {
+            dbus.message_unref(reply);
+            SDL_OutOfMemory();
+            goto failed;
+        }
+        dbus.message_unref(reply);
+    } else {
+        if (dbus.error_has_name(&err, DBUS_ERROR_NAME_HAS_NO_OWNER)) {
+            return -2;
+        }
+        goto failed;
+    }
+
+    dbus.bus_add_match(dbus.session_conn, SIGNAL_NAMEOWNERCHANGED, &err);
+    if (dbus.error_is_set(&err)) {
+        SDL_free(data.path);
+        goto failed;
+    }
+    data.err = &err;
+    data.done = false;
+    if (!dbus.connection_add_filter(dbus.session_conn, SDL_DBus_CameraPortalMessageHandler, &data, NULL)) {
+        SDL_free(data.path);
+        SDL_OutOfMemory();
+        goto failed;
+    }
+    while (!data.done && dbus.connection_read_write_dispatch(dbus.session_conn, -1)) {
+        ;
+    }
+
+    dbus.bus_remove_match(dbus.session_conn, SIGNAL_NAMEOWNERCHANGED, &err);
+    if (dbus.error_is_set(&err)) {
+        SDL_free(data.path);
+        goto failed;
+    }
+    dbus.connection_remove_filter(dbus.session_conn, SDL_DBus_CameraPortalMessageHandler, &data);
+    SDL_free(data.path);
+    if (!data.done) {
+        goto failed;
+    }
+    if (dbus.error_is_set(&err)) { // from the message handler
+        goto failed;
+    }
+    if (data.response == 1 || data.response == 2) {
+        return -2;
+    } else if (data.response != 0) {
+        goto failed;
+    }
+
+    msg = dbus.message_new_method_call("org.freedesktop.portal.Desktop",
+                                       "/org/freedesktop/portal/desktop",
+                                       "org.freedesktop.portal.Camera",
+                                       "OpenPipeWireRemote");
+
+    dbus.message_iter_init_append(msg, &iter);
+    if (!dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &iterDict) ||
+        !dbus.message_iter_close_container(&iter, &iterDict)) {
+        SDL_OutOfMemory();
+        dbus.message_unref(msg);
+        goto failed;
+    }
+
+    reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, &err);
+    dbus.message_unref(msg);
+
+    if (reply) {
+        dbus.message_get_args(reply, &err, DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
+        dbus.message_unref(reply);
+        if (dbus.error_is_set(&err)) {
+            goto failed;
+        }
+    } else {
+        goto failed;
+    }
+
+    return fd;
+
+failed:
+    if (dbus.error_is_set(&err)) {
+        if (dbus.error_has_name(&err, DBUS_ERROR_NO_MEMORY)) {
+            SDL_OutOfMemory();
+        }
+        SDL_SetError("%s: %s", err.name, err.message);
+        dbus.error_free(&err);
+    } else {
+        SDL_SetError("Error requesting access for the camera");
+    }
+
+    return -1;
 }
 
 #endif

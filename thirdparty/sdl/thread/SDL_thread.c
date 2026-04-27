@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,7 @@ void *SDL_GetTLS(SDL_TLSID *id)
     SDL_TLSData *storage;
     int storage_index;
 
-    if (id == NULL) {
+    CHECK_PARAM(id == NULL) {
         SDL_InvalidParamError("id");
         return NULL;
     }
@@ -59,7 +59,7 @@ bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback dest
     SDL_TLSData *storage;
     int storage_index;
 
-    if (id == NULL) {
+    CHECK_PARAM(id == NULL) {
         return SDL_InvalidParamError("id");
     }
 
@@ -99,7 +99,7 @@ bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback dest
 
         oldlimit = storage ? storage->limit : 0;
         newlimit = (storage_index + TLS_ALLOC_CHUNKSIZE);
-        new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
+        new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + newlimit * sizeof(storage->array[0]));
         if (!new_storage) {
             return false;
         }
@@ -262,9 +262,12 @@ void SDL_Generic_QuitTLSData(void)
 static SDL_error *SDL_GetStaticErrBuf(void)
 {
     static SDL_error SDL_global_error;
-    static char SDL_global_error_str[128];
-    SDL_global_error.str = SDL_global_error_str;
-    SDL_global_error.len = sizeof(SDL_global_error_str);
+    static char SDL_global_error_str1[128];
+    static char SDL_global_error_str2[128];
+    SDL_global_error.info[0].str = SDL_global_error_str1;
+    SDL_global_error.info[0].len = sizeof(SDL_global_error_str1);
+    SDL_global_error.info[1].str = SDL_global_error_str2;
+    SDL_global_error.info[1].len = sizeof(SDL_global_error_str2);
     return &SDL_global_error;
 }
 
@@ -272,9 +275,11 @@ static SDL_error *SDL_GetStaticErrBuf(void)
 static void SDLCALL SDL_FreeErrBuf(void *data)
 {
     SDL_error *errbuf = (SDL_error *)data;
-
-    if (errbuf->str) {
-        errbuf->free_func(errbuf->str);
+    if (errbuf->info[0].str) {
+        errbuf->free_func(errbuf->info[0].str);
+    }
+    if (errbuf->info[1].str) {
+        errbuf->free_func(errbuf->info[1].str);
     }
     errbuf->free_func(errbuf);
 }
@@ -333,6 +338,8 @@ void SDL_RunThread(SDL_Thread *thread)
     // Get the thread id
     thread->threadid = SDL_GetCurrentThreadID();
 
+    SDL_SignalSemaphore(thread->ready_sem);  // the thread is officially ready to run!
+
     // Run the function
     *statusloc = userfunc(userdata);
 
@@ -389,6 +396,13 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
         }
     }
 
+    thread->ready_sem = SDL_CreateSemaphore(0);
+    if (!thread->ready_sem) {
+        SDL_free(thread->name);
+        SDL_free(thread);
+        return NULL;
+    }
+
     thread->userfunc = fn;
     thread->userdata = userdata;
     thread->stacksize = stacksize;
@@ -399,10 +413,15 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
     if (!SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread)) {
         // Oops, failed.  Gotta free everything
         SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
+        SDL_DestroySemaphore(thread->ready_sem);
         SDL_free(thread->name);
         SDL_free(thread);
-        thread = NULL;
+		return NULL;
     }
+
+    SDL_WaitSemaphore(thread->ready_sem);
+    SDL_DestroySemaphore(thread->ready_sem);
+    thread->ready_sem = NULL;
 
     // Everything is running now
     return thread;

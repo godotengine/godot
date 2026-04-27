@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,9 +37,11 @@ typedef struct JoyStick_DeviceData
     char *joystickname;
     Uint8 send_add_event;
     SDL_JoystickID nInstanceID;
+#ifdef SDL_JOYSTICK_XINPUT
     bool bXInputDevice;
     BYTE SubType;
     Uint8 XInputUserId;
+#endif
     DIDEVICEINSTANCE dxdevice;
     char path[MAX_PATH];
     int steam_virtual_gamepad_slot;
@@ -85,10 +87,12 @@ struct joystick_hwdata
     LPDIRECTINPUTEFFECT ffeffect_ref;
 #endif
 
+#ifdef SDL_JOYSTICK_XINPUT
     bool bXInputDevice; // true if this device supports using the xinput API rather than DirectInput
     bool bXInputHaptic; // Supports force feedback via XInput.
     Uint8 userid;           // XInput userid index for this joystick
     DWORD dwPacketNumber;
+#endif
 };
 
 #ifdef SDL_JOYSTICK_DINPUT
