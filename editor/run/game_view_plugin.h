@@ -80,7 +80,7 @@ public:
 	virtual bool capture(const String &p_message, const Array &p_data, int p_session) override;
 	virtual bool has_capture(const String &p_capture) const override;
 
-	bool add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect, bool p_hdr);
+	bool add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect);
 
 	void window_request_size();
 	void hdr_output_request_state();
@@ -237,8 +237,8 @@ class GameView : public VBoxContainer {
 	void _play_pressed();
 	static void _instance_starting_static(int p_idx, List<String> &r_arguments);
 	void _instance_starting(int p_idx, List<String> &r_arguments);
-	static bool _instance_rq_screenshot_static(const Callable &p_callback, bool p_hdr);
-	bool _instance_rq_screenshot(const Callable &p_callback, bool p_hdr);
+	static bool _instance_rq_screenshot_static(const Callable &p_callback);
+	bool _instance_rq_screenshot(const Callable &p_callback);
 	void _stop_pressed();
 	void _embedding_completed();
 	void _embedding_failed();

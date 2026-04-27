@@ -3894,12 +3894,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case EDITOR_TAKE_SCREENSHOT: {
 			screenshot_timer->start();
 		} break;
-		case EDITOR_HDR_SCREENSHOT: {
-			bool ischecked = settings_menu->is_item_checked(settings_menu->get_item_index(EDITOR_HDR_SCREENSHOT));
-
-			settings_menu->set_item_checked(settings_menu->get_item_index(EDITOR_HDR_SCREENSHOT), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("screenshot", "hdr_screenshot", !ischecked);
-		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			List<String> extensions;
@@ -3999,20 +3993,15 @@ void EditorNode::_request_screenshot() {
 }
 
 void EditorNode::_screenshot(bool p_use_utc) {
-	bool hdr_screenshot = EditorSettings::get_singleton()->get_project_metadata("screenshot", "hdr_screenshot", true);
-	bool hdr = DisplayServer::get_singleton()->window_is_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID);
-	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).remove_char(':') + (hdr && hdr_screenshot ? ".exr" : ".png");
+	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).remove_char(':') + ".png";
 	String path = String("user://") + name;
 
-	if (!EditorRun::request_screenshot(callable_mp(this, &EditorNode::_save_screenshot_with_embedded_process).bind(path), hdr_screenshot)) {
+	if (!EditorRun::request_screenshot(callable_mp(this, &EditorNode::_save_screenshot_with_embedded_process).bind(path))) {
 		_save_screenshot(path);
 	}
 }
 
 void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path) {
-	bool hdr_screenshot = EditorSettings::get_singleton()->get_project_metadata("screenshot", "hdr_screenshot", true);
-	bool hdr = DisplayServer::get_singleton()->window_is_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID);
-
 	Control *main_screen_control = editor_main_screen->get_control();
 	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
 	Viewport *viewport = main_screen_control->get_viewport();
@@ -4021,36 +4010,15 @@ void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
-	if (hdr && hdr_screenshot) {
-		img->convert(Image::FORMAT_RGBAH);
-	} else {
-		Image::Format fmt = img->get_format();
-		img->convert(Image::FORMAT_RGBA8);
-		if (fmt == Image::FORMAT_RGBAH) {
-			img->linear_to_srgb();
-		}
-	}
+	img->convert(Image::FORMAT_RGBA8);
 	ERR_FAIL_COND(p_emb_path.is_empty());
 	Ref<Image> overlay = Image::load_from_file(p_emb_path);
 	DirAccess::remove_absolute(p_emb_path);
 	ERR_FAIL_COND_MSG(overlay.is_null(), "Cannot get an image from a embedded process.");
-	if (hdr && hdr_screenshot) {
-		overlay->convert(Image::FORMAT_RGBAH);
-	} else {
-		Image::Format fmt = overlay->get_format();
-		overlay->convert(Image::FORMAT_RGBA8);
-		if (fmt == Image::FORMAT_RGBAH) {
-			overlay->linear_to_srgb();
-		}
-	}
+	overlay->convert(Image::FORMAT_RGBA8);
 	overlay->resize(p_rect.size.x, p_rect.size.y);
 	img->blend_rect(overlay, Rect2i(0, 0, p_w, p_h), p_rect.position);
-	Error error = OK;
-	if (hdr) {
-		error = img->save_exr(p_path, false, true, DisplayServer::get_singleton()->window_get_output_max_linear_value(DisplayServerEnums::MAIN_WINDOW_ID));
-	} else {
-		error = img->save_png(p_path);
-	}
+	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 
 	if (EDITOR_GET("interface/editor/behavior/automatically_open_screenshots")) {
@@ -4066,24 +4034,8 @@ void EditorNode::_save_screenshot(const String &p_path) {
 	Ref<ViewportTexture> texture = viewport->get_texture();
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
-	bool hdr = DisplayServer::get_singleton()->window_is_hdr_output_enabled(DisplayServerEnums::MAIN_WINDOW_ID);
-	bool hdr_screenshot = EditorSettings::get_singleton()->get_project_metadata("screenshot", "hdr_screenshot", true);
-	if (hdr && hdr_screenshot) {
-		img->convert(Image::FORMAT_RGBAH);
-	} else {
-		Image::Format fmt = img->get_format();
-		img->convert(Image::FORMAT_RGBA8);
-		if (fmt == Image::FORMAT_RGBAH) {
-			img->linear_to_srgb();
-		}
-	}
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
-	Error error = OK;
-	if (hdr) {
-		error = img->save_exr(p_path, false, true, DisplayServer::get_singleton()->window_get_output_max_linear_value(DisplayServerEnums::MAIN_WINDOW_ID));
-	} else {
-		error = img->save_png(p_path);
-	}
+	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 
 	if (EDITOR_GET("interface/editor/behavior/automatically_open_screenshots")) {
@@ -8162,11 +8114,6 @@ void EditorNode::_build_settings_menu() {
 
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_TAKE_SCREENSHOT);
 	settings_menu->set_item_tooltip(-1, TTRC("Screenshots are stored in the user data folder (\"user://\")."));
-
-	settings_menu->add_check_shortcut(ED_SHORTCUT("editor/hdr_screenshot", TTRC("Save HDR screenshots")), EDITOR_HDR_SCREENSHOT);
-	settings_menu->set_item_tooltip(-1, TTRC("If selected, screenshots are saved in EXR format, otherwise screenshots are converted to SDR and saved in PNG format."));
-	settings_menu->set_item_checked(-1, EditorSettings::get_singleton()->get_project_metadata("screenshot", "hdr_screenshot", true));
-	settings_menu->add_separator();
 
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/fullscreen_mode"), EDITOR_TOGGLE_FULLSCREEN);
 	settings_menu->add_separator();

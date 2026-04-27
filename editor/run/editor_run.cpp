@@ -195,9 +195,9 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	return OK;
 }
 
-bool EditorRun::request_screenshot(const Callable &p_callback, bool p_hdr) {
+bool EditorRun::request_screenshot(const Callable &p_callback) {
 	if (instance_rq_screenshot_callback) {
-		return instance_rq_screenshot_callback(p_callback, p_hdr);
+		return instance_rq_screenshot_callback(p_callback);
 	} else {
 		return false;
 	}
