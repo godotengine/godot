@@ -32,6 +32,8 @@
 
 #include "core/object/class_db.h"
 
+#include <cfloat> // FLT_MAX
+
 void Generic6DOFJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param_x", "param", "value"), &Generic6DOFJoint3D::set_param_x);
 	ClassDB::bind_method(D_METHOD("get_param_x", "param"), &Generic6DOFJoint3D::get_param_x);
@@ -105,6 +107,12 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_spring_z/damping"), "set_param_z", "get_param_z", PARAM_LINEAR_SPRING_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_spring_z/equilibrium_point", PROPERTY_HINT_NONE, "suffix:m"), "set_param_z", "get_param_z", PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT);
 
+	ADD_GROUP("Linear Drive", "linear_drive_");
+
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_drive_x/force_limit", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m/s\u00B2 (N)"), "set_param_x", "get_param_x", PARAM_LINEAR_DRIVE_FORCE_LIMIT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_drive_y/force_limit", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m/s\u00B2 (N)"), "set_param_y", "get_param_y", PARAM_LINEAR_DRIVE_FORCE_LIMIT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_drive_z/force_limit", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m/s\u00B2 (N)"), "set_param_z", "get_param_z", PARAM_LINEAR_DRIVE_FORCE_LIMIT);
+
 	ADD_GROUP("Angular Limit", "angular_limit_");
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "angular_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_ANGULAR_LIMIT);
@@ -165,6 +173,12 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_spring_z/damping"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_spring_z/equilibrium_point", PROPERTY_HINT_RANGE, "-180,180,0.01,radians_as_degrees"), "set_param_z", "get_param_z", PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT);
 
+	ADD_GROUP("Angular Drive", "angular_drive_");
+
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_drive_x/torque_limit", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m\u00B2/s\u00B2 (Nm)"), "set_param_x", "get_param_x", PARAM_ANGULAR_DRIVE_TORQUE_LIMIT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_drive_y/torque_limit", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m\u00B2/s\u00B2 (Nm)"), "set_param_y", "get_param_y", PARAM_ANGULAR_DRIVE_TORQUE_LIMIT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_drive_z/torque_limit", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m\u00B2/s\u00B2 (Nm)"), "set_param_z", "get_param_z", PARAM_ANGULAR_DRIVE_TORQUE_LIMIT);
+
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LOWER_LIMIT);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_UPPER_LIMIT);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_SOFTNESS);
@@ -187,6 +201,8 @@ void Generic6DOFJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_SPRING_STIFFNESS);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_SPRING_DAMPING);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_DRIVE_FORCE_LIMIT);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_DRIVE_TORQUE_LIMIT);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(FLAG_ENABLE_LINEAR_LIMIT);
@@ -201,6 +217,10 @@ void Generic6DOFJoint3D::_bind_methods() {
 void Generic6DOFJoint3D::set_param_x(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_x[p_param] = p_value;
+	if (!setting_default_params) {
+		_set_drive_limit_explicit(Vector3::AXIS_X, p_param);
+		_warn_if_deprecated_param(p_param);
+	}
 	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
@@ -216,6 +236,10 @@ real_t Generic6DOFJoint3D::get_param_x(Param p_param) const {
 void Generic6DOFJoint3D::set_param_y(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_y[p_param] = p_value;
+	if (!setting_default_params) {
+		_set_drive_limit_explicit(Vector3::AXIS_Y, p_param);
+		_warn_if_deprecated_param(p_param);
+	}
 	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
@@ -230,10 +254,39 @@ real_t Generic6DOFJoint3D::get_param_y(Param p_param) const {
 void Generic6DOFJoint3D::set_param_z(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params_z[p_param] = p_value;
+	if (!setting_default_params) {
+		_set_drive_limit_explicit(Vector3::AXIS_Z, p_param);
+		_warn_if_deprecated_param(p_param);
+	}
 	if (is_configured()) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisParam(p_param), p_value);
 	}
 	update_gizmos();
+}
+
+void Generic6DOFJoint3D::_warn_if_deprecated_param(Param p_param) {
+	if (p_param == PARAM_LINEAR_MOTOR_FORCE_LIMIT) {
+		WARN_PRINT_ONCE("PARAM_LINEAR_MOTOR_FORCE_LIMIT is deprecated and will be removed in a future release. Use PARAM_LINEAR_DRIVE_FORCE_LIMIT, which applies in both spring and motor modes.");
+	} else if (p_param == PARAM_ANGULAR_MOTOR_FORCE_LIMIT) {
+		WARN_PRINT_ONCE("PARAM_ANGULAR_MOTOR_FORCE_LIMIT is deprecated and will be removed in a future release. Use PARAM_ANGULAR_DRIVE_TORQUE_LIMIT, which applies in both spring and motor modes.");
+	}
+}
+
+void Generic6DOFJoint3D::_set_drive_limit_explicit(Vector3::Axis p_axis, Param p_param) {
+	if (p_param == PARAM_LINEAR_DRIVE_FORCE_LIMIT) {
+		linear_drive_force_limit_set[p_axis] = true;
+	} else if (p_param == PARAM_ANGULAR_DRIVE_TORQUE_LIMIT) {
+		angular_drive_torque_limit_set[p_axis] = true;
+	}
+}
+
+bool Generic6DOFJoint3D::_should_replay_param(Vector3::Axis p_axis, Param p_param) const {
+	if (p_param == PARAM_LINEAR_DRIVE_FORCE_LIMIT) {
+		return linear_drive_force_limit_set[p_axis];
+	} else if (p_param == PARAM_ANGULAR_DRIVE_TORQUE_LIMIT) {
+		return angular_drive_torque_limit_set[p_axis];
+	}
+	return true;
 }
 
 real_t Generic6DOFJoint3D::get_param_z(Param p_param) const {
@@ -303,9 +356,16 @@ void Generic6DOFJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, Ph
 
 	PhysicsServer3D::get_singleton()->joint_make_generic_6dof(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(i), params_x[i]);
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(i), params_y[i]);
-		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisParam(i), params_z[i]);
+		const Param param = static_cast<Param>(i);
+		if (_should_replay_param(Vector3::AXIS_X, param)) {
+			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(i), params_x[i]);
+		}
+		if (_should_replay_param(Vector3::AXIS_Y, param)) {
+			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(i), params_y[i]);
+		}
+		if (_should_replay_param(Vector3::AXIS_Z, param)) {
+			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(p_joint, Vector3::AXIS_Z, PhysicsServer3D::G6DOFJointAxisParam(i), params_z[i]);
+		}
 	}
 	for (int i = 0; i < FLAG_MAX; i++) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_flag(p_joint, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisFlag(i), flags_x[i]);
@@ -325,6 +385,7 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_param_x(PARAM_LINEAR_SPRING_STIFFNESS, 0.01);
 	set_param_x(PARAM_LINEAR_SPRING_DAMPING, 0.01);
 	set_param_x(PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT, 0.0);
+	set_param_x(PARAM_LINEAR_DRIVE_FORCE_LIMIT, FLT_MAX);
 	set_param_x(PARAM_ANGULAR_LOWER_LIMIT, 0);
 	set_param_x(PARAM_ANGULAR_UPPER_LIMIT, 0);
 	set_param_x(PARAM_ANGULAR_LIMIT_SOFTNESS, 0.5f);
@@ -337,6 +398,7 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_param_x(PARAM_ANGULAR_SPRING_STIFFNESS, 0);
 	set_param_x(PARAM_ANGULAR_SPRING_DAMPING, 0);
 	set_param_x(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT, 0);
+	set_param_x(PARAM_ANGULAR_DRIVE_TORQUE_LIMIT, FLT_MAX);
 
 	set_flag_x(FLAG_ENABLE_ANGULAR_LIMIT, true);
 	set_flag_x(FLAG_ENABLE_LINEAR_LIMIT, true);
@@ -355,6 +417,7 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_param_y(PARAM_LINEAR_SPRING_STIFFNESS, 0.01);
 	set_param_y(PARAM_LINEAR_SPRING_DAMPING, 0.01);
 	set_param_y(PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT, 0.0);
+	set_param_y(PARAM_LINEAR_DRIVE_FORCE_LIMIT, FLT_MAX);
 	set_param_y(PARAM_ANGULAR_LOWER_LIMIT, 0);
 	set_param_y(PARAM_ANGULAR_UPPER_LIMIT, 0);
 	set_param_y(PARAM_ANGULAR_LIMIT_SOFTNESS, 0.5f);
@@ -367,6 +430,7 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_param_y(PARAM_ANGULAR_SPRING_STIFFNESS, 0);
 	set_param_y(PARAM_ANGULAR_SPRING_DAMPING, 0);
 	set_param_y(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT, 0);
+	set_param_y(PARAM_ANGULAR_DRIVE_TORQUE_LIMIT, FLT_MAX);
 
 	set_flag_y(FLAG_ENABLE_ANGULAR_LIMIT, true);
 	set_flag_y(FLAG_ENABLE_LINEAR_LIMIT, true);
@@ -385,6 +449,7 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_param_z(PARAM_LINEAR_SPRING_STIFFNESS, 0.01);
 	set_param_z(PARAM_LINEAR_SPRING_DAMPING, 0.01);
 	set_param_z(PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT, 0.0);
+	set_param_z(PARAM_LINEAR_DRIVE_FORCE_LIMIT, FLT_MAX);
 	set_param_z(PARAM_ANGULAR_LOWER_LIMIT, 0);
 	set_param_z(PARAM_ANGULAR_UPPER_LIMIT, 0);
 	set_param_z(PARAM_ANGULAR_LIMIT_SOFTNESS, 0.5f);
@@ -397,6 +462,7 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_param_z(PARAM_ANGULAR_SPRING_STIFFNESS, 0);
 	set_param_z(PARAM_ANGULAR_SPRING_DAMPING, 0);
 	set_param_z(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT, 0);
+	set_param_z(PARAM_ANGULAR_DRIVE_TORQUE_LIMIT, FLT_MAX);
 
 	set_flag_z(FLAG_ENABLE_ANGULAR_LIMIT, true);
 	set_flag_z(FLAG_ENABLE_LINEAR_LIMIT, true);
@@ -404,4 +470,6 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_flag_z(FLAG_ENABLE_LINEAR_SPRING, false);
 	set_flag_z(FLAG_ENABLE_MOTOR, false);
 	set_flag_z(FLAG_ENABLE_LINEAR_MOTOR, false);
+
+	setting_default_params = false;
 }

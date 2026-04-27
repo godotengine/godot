@@ -70,7 +70,8 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	double spring_frequency[AXIS_COUNT] = {};
 	double spring_damping[AXIS_COUNT] = {};
 	double spring_equilibrium[AXIS_COUNT] = {};
-	double spring_limit[AXIS_COUNT] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+	double drive_limit[AXIS_COUNT] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+	bool drive_limit_set[AXIS_COUNT] = {};
 
 	bool limit_enabled[AXIS_COUNT] = {};
 
@@ -98,7 +99,7 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	void _spring_state_changed(int p_axis);
 	void _spring_parameters_changed(int p_axis);
 	void _spring_equilibrium_changed(int p_axis);
-	void _spring_limit_changed(int p_axis);
+	void _drive_limit_changed(int p_axis);
 
 public:
 	JoltGeneric6DOFJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
