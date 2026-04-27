@@ -140,6 +140,9 @@ struct PropertyInfo {
 	operator Dictionary() const;
 
 	static PropertyInfo from_dict(const Dictionary &p_dict);
+	static String serialize_hint_type(Variant::Type p_type, PropertyHint p_hint, const String &p_hint_string = "");
+	String serialize_hint_type();
+	static bool try_parse_hint_type_string(const String &p_string, Variant::Type &out_type, PropertyHint &out_hint, String &out_hint_string);
 
 	PropertyInfo() {}
 
