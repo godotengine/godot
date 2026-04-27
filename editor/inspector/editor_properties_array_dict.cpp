@@ -51,7 +51,7 @@
 
 // Helper functions shared between Array & Dictionary editor properties
 
-void parse_hint_type_string(const String &p_string, Variant::Type &r_type, PropertyHint &r_hint, String &r_hint_string) {
+static void _parse_hint_type_string(const String &p_string, Variant::Type &r_type, PropertyHint &r_hint, String &r_hint_string) {
 	if (!PropertyInfo::try_parse_hint_type_string(p_string, r_type, r_hint, r_hint_string)) {
 		r_type = Variant::get_type_by_name(p_string);
 		if (r_type == Variant::VARIANT_MAX) {
@@ -900,7 +900,7 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 	// The format of p_hint_string is:
 	// subType/subTypeHint:nextSubtype ... etc.
-	parse_hint_type_string(p_hint_string, subtype, subtype_hint, subtype_hint_string);
+	_parse_hint_type_string(p_hint_string, subtype, subtype_hint, subtype_hint_string);
 }
 
 void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_event) {
@@ -1182,7 +1182,7 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 	PackedStringArray types = p_hint_string.split(";", true, 1);
 	if (types.size() > 0 && !types[0].is_empty()) {
 		String key = types[0];
-		parse_hint_type_string(key, key_subtype, key_subtype_hint, key_subtype_hint_string);
+		_parse_hint_type_string(key, key_subtype, key_subtype_hint, key_subtype_hint_string);
 		Variant new_key = object->get_new_item_key();
 		VariantInternal::initialize(&new_key, key_subtype);
 		object->set_new_item_key(new_key);
@@ -1190,7 +1190,7 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 
 	if (types.size() > 1 && !types[1].is_empty()) {
 		String value = types[1];
-		parse_hint_type_string(value, value_subtype, value_subtype_hint, value_subtype_hint_string);
+		_parse_hint_type_string(value, value_subtype, value_subtype_hint, value_subtype_hint_string);
 		Variant new_value = object->get_new_item_value();
 		VariantInternal::initialize(&new_value, value_subtype);
 		object->set_new_item_value(new_value);
