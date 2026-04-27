@@ -50,7 +50,6 @@
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/caption_button_overlay.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -474,7 +473,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Control);
 	GDREGISTER_VIRTUAL_CLASS(BaseButton);
 	GDREGISTER_CLASS(Button);
-	GDREGISTER_INTERNAL_CLASS(CaptionButtonOverlay);
 	GDREGISTER_CLASS(Label);
 	GDREGISTER_VIRTUAL_CLASS(Range);
 	GDREGISTER_ABSTRACT_CLASS(ScrollBar);
