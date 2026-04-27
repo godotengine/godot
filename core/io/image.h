@@ -195,6 +195,11 @@ public:
 		float rdo_quality_loss = 0;
 	};
 
+	static void _srgb2lin_hft4(void *p_td, uint32_t p_i);
+	static void _srgb2lin_hft3(void *p_td, uint32_t p_i);
+	static void _lin2srgb_hft4(void *p_td, uint32_t p_i);
+	static void _lin2srgb_hft3(void *p_td, uint32_t p_i);
+
 	// External saver function pointers.
 
 	static inline SavePNGFunc save_png_func = nullptr;

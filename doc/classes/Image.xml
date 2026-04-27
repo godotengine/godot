@@ -327,7 +327,7 @@
 		<method name="linear_to_srgb">
 			<return type="void" />
 			<description>
-				Converts the entire image from linear encoding to nonlinear sRGB encoding by using a lookup table. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+				Converts the entire image from linear encoding to nonlinear sRGB encoding. Only works on images with [constant FORMAT_RGB8], [constant FORMAT_RGBA8], [constant FORMAT_RGBH], or [constant FORMAT_RGBAH] format.
 			</description>
 		</method>
 		<method name="load">
@@ -636,8 +636,8 @@
 		<method name="srgb_to_linear">
 			<return type="void" />
 			<description>
-				Converts the raw data from nonlinear sRGB encoding to linear encoding using a lookup table. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
-				[b]Note:[/b] The 8-bit formats required by this method are not suitable for storing linearly encoded values; a significant amount of color information will be lost in darker values. To maintain image quality, this method should not be used.
+				Converts the raw data from nonlinear sRGB encoding to linear encoding. Only works on images with [constant FORMAT_RGB8], [constant FORMAT_RGBA8], [constant FORMAT_RGBH], or [constant FORMAT_RGBAH] format.
+				[b]Note:[/b] The 8-bit formats are not suitable for storing linearly encoded values; a significant amount of color information will be lost in darker values. Use this function on images that use a floating point format instead.
 			</description>
 		</method>
 	</methods>

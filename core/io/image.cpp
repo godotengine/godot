@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
@@ -4168,6 +4169,38 @@ bool Image::detect_signed(bool p_include_mips) const {
 	return false;
 }
 
+_FORCE_INLINE_ uint16_t _srgb2lin_hf(uint16_t p_s) {
+	float sf = Math::half_to_float(p_s);
+	if (sf < 0.04045) {
+		sf /= 12.92f;
+	} else {
+		sf = Math::pow((sf + 0.055f) / 1.055f, 2.4f);
+	}
+	return Math::make_half_float(sf);
+}
+
+void Image::_srgb2lin_hft4(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(i << 2) + 0] = _srgb2lin_hf(data_ptr[(i << 2) + 0]);
+		data_ptr[(i << 2) + 1] = _srgb2lin_hf(data_ptr[(i << 2) + 1]);
+		data_ptr[(i << 2) + 2] = _srgb2lin_hf(data_ptr[(i << 2) + 2]);
+	}
+}
+
+void Image::_srgb2lin_hft3(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(i * 3) + 0] = _srgb2lin_hf(data_ptr[(i * 3) + 0]);
+		data_ptr[(i * 3) + 1] = _srgb2lin_hf(data_ptr[(i * 3) + 1]);
+		data_ptr[(i * 3) + 2] = _srgb2lin_hf(data_ptr[(i * 3) + 2]);
+	}
+}
+
 void Image::srgb_to_linear() {
 	if (data.is_empty()) {
 		return;
@@ -4175,9 +4208,15 @@ void Image::srgb_to_linear() {
 
 	static const uint8_t srgb2lin[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 31, 31, 32, 33, 33, 34, 35, 36, 36, 37, 38, 38, 39, 40, 41, 42, 42, 43, 44, 45, 46, 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 80, 81, 82, 83, 84, 85, 87, 88, 89, 90, 92, 93, 94, 95, 97, 98, 99, 101, 102, 103, 105, 106, 107, 109, 110, 112, 113, 114, 116, 117, 119, 120, 122, 123, 125, 126, 128, 129, 131, 132, 134, 135, 137, 139, 140, 142, 144, 145, 147, 148, 150, 152, 153, 155, 157, 159, 160, 162, 164, 166, 167, 169, 171, 173, 175, 176, 178, 180, 182, 184, 186, 188, 190, 192, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 218, 220, 222, 224, 226, 228, 230, 232, 235, 237, 239, 241, 243, 245, 248, 250, 252, 255 };
 
-	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
+	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8 && format != FORMAT_RGBH && format != FORMAT_RGBAH);
 
-	if (format == FORMAT_RGBA8) {
+	if (format == FORMAT_RGBAH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft4, this, height, -1, true, String("SRGB2LIN4"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft3, this, height, -1, true, String("SRGB2LIN3"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBA8) {
 		int len = data.size() / 4;
 		uint8_t *data_ptr = data.ptrw();
 
@@ -4199,6 +4238,38 @@ void Image::srgb_to_linear() {
 	}
 }
 
+_FORCE_INLINE_ uint16_t _lin2srgb_hf(uint16_t p_l) {
+	float lf = Math::half_to_float(p_l);
+	if (lf < 0.0031308f) {
+		lf *= 12.92f;
+	} else {
+		lf = 1.055f * Math::pow(lf, 1.0f / 2.4f) - 0.055f;
+	}
+	return Math::make_half_float(lf);
+}
+
+void Image::_lin2srgb_hft4(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(p_i << 2) + 0] = _lin2srgb_hf(data_ptr[(i << 2) + 0]);
+		data_ptr[(p_i << 2) + 1] = _lin2srgb_hf(data_ptr[(i << 2) + 1]);
+		data_ptr[(p_i << 2) + 2] = _lin2srgb_hf(data_ptr[(i << 2) + 2]);
+	}
+}
+
+void Image::_lin2srgb_hft3(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(i * 3) + 0] = _lin2srgb_hf(data_ptr[(i * 3) + 0]);
+		data_ptr[(i * 3) + 1] = _lin2srgb_hf(data_ptr[(i * 3) + 1]);
+		data_ptr[(i * 3) + 2] = _lin2srgb_hf(data_ptr[(i * 3) + 2]);
+	}
+}
+
 void Image::linear_to_srgb() {
 	if (data.is_empty()) {
 		return;
@@ -4206,9 +4277,15 @@ void Image::linear_to_srgb() {
 
 	static const uint8_t lin2srgb[256] = { 0, 12, 21, 28, 33, 38, 42, 46, 49, 52, 55, 58, 61, 63, 66, 68, 70, 73, 75, 77, 79, 81, 82, 84, 86, 88, 89, 91, 93, 94, 96, 97, 99, 100, 102, 103, 104, 106, 107, 109, 110, 111, 112, 114, 115, 116, 117, 118, 120, 121, 122, 123, 124, 125, 126, 127, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 151, 152, 153, 154, 155, 156, 157, 157, 158, 159, 160, 161, 161, 162, 163, 164, 165, 165, 166, 167, 168, 168, 169, 170, 171, 171, 172, 173, 174, 174, 175, 176, 176, 177, 178, 179, 179, 180, 181, 181, 182, 183, 183, 184, 185, 185, 186, 187, 187, 188, 189, 189, 190, 191, 191, 192, 193, 193, 194, 194, 195, 196, 196, 197, 197, 198, 199, 199, 200, 201, 201, 202, 202, 203, 204, 204, 205, 205, 206, 206, 207, 208, 208, 209, 209, 210, 210, 211, 212, 212, 213, 213, 214, 214, 215, 215, 216, 217, 217, 218, 218, 219, 219, 220, 220, 221, 221, 222, 222, 223, 223, 224, 224, 225, 226, 226, 227, 227, 228, 228, 229, 229, 230, 230, 231, 231, 232, 232, 233, 233, 234, 234, 235, 235, 236, 236, 237, 237, 237, 238, 238, 239, 239, 240, 240, 241, 241, 242, 242, 243, 243, 244, 244, 245, 245, 245, 246, 246, 247, 247, 248, 248, 249, 249, 250, 250, 251, 251, 251, 252, 252, 253, 253, 254, 254, 255 };
 
-	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
+	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8 && format != FORMAT_RGBH && format != FORMAT_RGBAH);
 
-	if (format == FORMAT_RGBA8) {
+	if (format == FORMAT_RGBAH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft4, this, height, -1, true, String("LIN2SRGB4"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft3, this, height, -1, true, String("LIN2SRGB3"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBA8) {
 		int len = data.size() / 4;
 		uint8_t *data_ptr = data.ptrw();
 
